@@ -2,6 +2,26 @@
 
 ---
 
+## [2026-04-01] Phase 11 — Standard Video Backend Input Foundation
+
+**Ne:** Standard Video modülü için backend input foundation kuruldu. `standard_videos` tablosu, CRUD API ve 8 yeni test eklendi.
+**Eklenen/değiştirilen dosyalar:**
+- `backend/app/db/models.py` (`StandardVideo` modeli eklendi)
+- `backend/app/modules/__init__.py` (yeni)
+- `backend/app/modules/standard_video/__init__.py` (yeni)
+- `backend/app/modules/standard_video/schemas.py` (yeni — Create/Update/Response)
+- `backend/app/modules/standard_video/service.py` (yeni — list/get/create/update)
+- `backend/app/modules/standard_video/router.py` (yeni — GET/POST/PATCH)
+- `backend/app/api/router.py` (standard_video_router eklendi)
+- `backend/alembic/versions/bf791934579f_add_standard_videos_table.py` (yeni)
+- `backend/tests/test_standard_video_api.py` (8 yeni test)
+- `docs/testing/test-report-phase-11-standard-video-backend.md` (yeni)
+**Testler:** `pytest` — 44 passed (36 mevcut + 8 yeni) in ~0.22s
+**Commit:** `f4a0aa4` — `feat: add phase 11 standard video backend input foundation`
+**Push:** ✅ `git@github.com:huskobro/contenthub.git`
+
+---
+
 ## [2026-04-01] Phase 10 — Job Detail Page
 
 **Ne:** Job detayı side panel'den çıkarılıp ayrı `/admin/jobs/:jobId` sayfasına taşındı. JobOverviewPanel, JobTimelinePanel, JobSystemPanels eklendi.
