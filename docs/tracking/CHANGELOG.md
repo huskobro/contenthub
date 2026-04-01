@@ -2,6 +2,23 @@
 
 ---
 
+## [2026-04-01] Phase 12 — Standard Video Script Backend Foundation
+
+**Ne:** Standard Video için script artifact backend'i kuruldu. `standard_video_scripts` tablosu, script CRUD API ve 8 yeni test eklendi.
+**Eklenen/değiştirilen dosyalar:**
+- `backend/app/db/models.py` (`StandardVideoScript` modeli eklendi)
+- `backend/app/modules/standard_video/schemas.py` (script şemaları eklendi)
+- `backend/app/modules/standard_video/service.py` (script servis fonksiyonları eklendi)
+- `backend/app/modules/standard_video/router.py` (script endpoint'leri eklendi)
+- `backend/alembic/versions/2472507548c3_add_standard_video_scripts_table.py` (yeni)
+- `backend/tests/test_standard_video_script_api.py` (8 yeni test)
+- `docs/testing/test-report-phase-12-standard-video-script-backend.md` (yeni)
+**Testler:** `pytest` — 52 passed (44 mevcut + 8 yeni) in ~0.36s
+**Commit:** `849ec84` — `feat: add phase 12 standard video script backend foundation`
+**Push:** ✅ `git@github.com:huskobro/contenthub.git`
+
+---
+
 ## [2026-04-01] Phase 11 — Standard Video Backend Input Foundation
 
 **Ne:** Standard Video modülü için backend input foundation kuruldu. `standard_videos` tablosu, CRUD API ve 8 yeni test eklendi.
