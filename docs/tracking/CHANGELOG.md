@@ -19,8 +19,8 @@
 - `docs/tracking/STATUS.md`
 - `docs/tracking/CHANGELOG.md`
 **Testler:** Yok (doküman değişikliği)
-**Commit:** TBD
-**Push:** TBD
+**Commit:** `84c4661` — `docs: turkcelestir repository dokumantasyonu`
+**Push:** ✓ `git@github.com:huskobro/contenthub.git`
 
 ---
 
