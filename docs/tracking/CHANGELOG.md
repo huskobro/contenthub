@@ -15,7 +15,7 @@
 - `frontend/src/tests/standard-video-detail-page.smoke.test.tsx` (2 test güncellendi)
 - `docs/testing/test-report-phase-17-standard-video-metadata-frontend.md` (yeni)
 **Testler:** `npm test` — 75 passed (63 mevcut + 12 yeni) | build ✅ 301.46 kB
-**Commit:** `PLACEHOLDER` — `feat: add phase 17 admin standard video metadata frontend`
+**Commit:** `320da4b` — `feat: add phase 17 admin standard video metadata frontend`
 **Push:** ✅ `git@github.com:huskobro/contenthub.git`
 
 ---
