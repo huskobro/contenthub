@@ -1,10 +1,10 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 3 — Settings Registry Backend ✓ TAMAMLANDI
+Phase 4 — Visibility Engine Backend Temeli ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Settings veritabanı yönetimli ürün objeleri haline getirildi. Tam CRUD API, migration, 9 yeni test.
+Görünürlük kuralları first-class backend objesi olarak kuruldu. Tam CRUD API, migration, 11 yeni test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
@@ -15,6 +15,7 @@ Settings veritabanı yönetimli ürün objeleri haline getirildi. Tam CRUD API, 
 - Phase 2 DB temeli: SQLite WAL + SQLAlchemy async + Alembic ilk migration + 8 test geçti (2026-04-01)
 - Phase 3 settings backend: Setting modeli, schema'lar, service, router, migration, toplam 17 test geçti (2026-04-01)
 - Doküman Türkçeleştirme: repository genelindeki İngilizce dokümanlar Türkçeleştirildi (2026-04-01)
+- Phase 4 visibility backend: VisibilityRule modeli, schema'lar, service, router, migration, toplam 28 test geçti (2026-04-01)
 
 ## Mevcut Riskler
 - Henüz auth / rol zorlama yok (kasıtlı, Phase 3+)

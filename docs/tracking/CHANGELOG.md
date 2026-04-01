@@ -2,6 +2,26 @@
 
 ---
 
+## [2026-04-01] Phase 4 — Visibility Engine Backend Temeli
+
+**Ne:** Görünürlük kuralları (`visibility_rules`) first-class backend objesi olarak kuruldu. VisibilityRule modeli, Pydantic schema'ları, service katmanı, FastAPI CRUD router, Alembic migration. `test_settings_api.py` testlerinde paylaşılan DB üzerinde oluşan unique key çakışması `_uid()` suffix ile düzeltildi.
+**Eklenen/değiştirilen dosyalar:**
+- `backend/app/db/models.py` (`VisibilityRule` modeli eklendi)
+- `backend/app/visibility/__init__.py`
+- `backend/app/visibility/schemas.py` (VisibilityRuleCreate, VisibilityRuleUpdate, VisibilityRuleResponse)
+- `backend/app/visibility/service.py` (list, get, create, update)
+- `backend/app/visibility/router.py` (GET /visibility-rules, GET /visibility-rules/{id}, POST /visibility-rules, PATCH /visibility-rules/{id})
+- `backend/app/api/router.py` (visibility router bağlandı)
+- `backend/alembic/versions/de267292b2ab_add_visibility_rules_table.py`
+- `backend/tests/test_visibility_api.py` (11 yeni test)
+- `backend/tests/test_settings_api.py` (key çakışması düzeltmesi)
+- `docs/testing/test-report-phase-4-visibility-backend.md`
+**Testler:** `pytest tests/test_visibility_api.py tests/test_settings_api.py tests/test_health.py tests/test_db_bootstrap.py` — 28 passed in 0.09s
+**Commit:** TBD
+**Push:** TBD
+
+---
+
 ## [2026-04-01] Doküman Türkçeleştirme
 
 **Ne:** Repository genelindeki İngilizce dokümantasyon Türkçeye çevrildi. `CLAUDE.md` istisna olarak İngilizce bırakıldı.

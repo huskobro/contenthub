@@ -1,5 +1,5 @@
 """
-Foundation models — Phase 2 + Phase 3.
+Foundation models — Phase 2, 3, 4.
 
 Bootstrap tables (Phase 2):
   - app_state: key/value application state store
@@ -8,6 +8,7 @@ Bootstrap tables (Phase 2):
 
 Domain models (Phase 3+):
   - settings: settings registry — product objects with metadata, not ad-hoc config
+  - visibility_rules: visibility engine — first-class visibility rules per target/role/mode
 
 Remaining domain models (jobs, templates, sources, publish, analytics)
 will be added in later phases as their subsystems are built.
@@ -16,7 +17,7 @@ will be added in later phases as their subsystems are built.
 import uuid
 from datetime import datetime, timezone
 from typing import Optional
-from sqlalchemy import String, Text, DateTime, Boolean
+from sqlalchemy import String, Text, DateTime, Boolean, Integer
 from sqlalchemy.orm import Mapped, mapped_column
 from app.db.base import Base
 
@@ -97,6 +98,49 @@ class Setting(Base):
     validation_rules_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
     status: Mapped[str] = mapped_column(String(50), nullable=False, default="active")
     version: Mapped[int] = mapped_column(nullable=False, default=1)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now, onupdate=_now
+    )
+
+
+class VisibilityRule(Base):
+    """Visibility Engine — first-class visibility rules.
+
+    Each rule declares whether a target (page, widget, field, wizard_step)
+    is visible, read-only, or wizard-visible for a given role and/or mode.
+    The resolver (built in a later phase) queries these rows and merges them
+    with the requesting context. Higher priority value = evaluated first.
+
+    rule_type  : the category of the target (page, widget, field, wizard_step)
+    target_key : stable unique identifier of the controlled element
+    module_scope : which content module this applies to; null = platform-wide
+    role_scope   : 'admin', 'user', or null = applies to all roles
+    mode_scope   : 'guided', 'advanced', or null = applies to all modes
+    visible       : is the target visible at all
+    read_only     : if visible, is it read-only
+    wizard_visible: is it shown inside wizard flows
+    status        : 'active' / 'inactive' — inactive rules are ignored by resolver
+    priority      : higher value = higher precedence when multiple rules match
+    notes         : optional short human-readable explanation
+    """
+
+    __tablename__ = "visibility_rules"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    rule_type: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
+    target_key: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    module_scope: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    role_scope: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    mode_scope: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    visible: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    read_only: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    wizard_visible: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    status: Mapped[str] = mapped_column(String(50), nullable=False, default="active")
+    priority: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=_now
     )

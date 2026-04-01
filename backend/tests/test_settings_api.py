@@ -11,10 +11,17 @@ Covers:
   G) Existing health tests are not broken (verified in separate file)
 """
 
+import uuid
 import pytest
 from httpx import AsyncClient
 
 BASE = "/api/v1/settings"
+
+
+def _uid() -> str:
+    """Short unique suffix so test keys never collide across runs."""
+    return uuid.uuid4().hex[:8]
+
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -22,7 +29,7 @@ BASE = "/api/v1/settings"
 
 def _payload(**overrides) -> dict:
     base = {
-        "key": "test.sample_key",
+        "key": f"test.sample_key.{_uid()}",
         "group_name": "test",
         "type": "string",
         "default_value_json": '"hello"',
@@ -58,15 +65,12 @@ async def test_create_setting(client: AsyncClient):
     response = await client.post(BASE, json=_payload())
     assert response.status_code == 201
     body = response.json()
-    assert body["key"] == "test.sample_key"
+    assert body["key"].startswith("test.sample_key.")
     assert body["group_name"] == "test"
     assert body["type"] == "string"
     assert body["version"] == 1
     assert "id" in body
     assert "created_at" in body
-
-    # Cleanup
-    await client.delete(f"{BASE}/{body['id']}") if False else None  # delete not implemented
 
 
 # ---------------------------------------------------------------------------
@@ -76,27 +80,29 @@ async def test_create_setting(client: AsyncClient):
 @pytest.mark.asyncio
 async def test_list_settings_returns_list(client: AsyncClient):
     # Create one so list is non-empty
-    create_resp = await client.post(BASE, json=_payload(key="test.list_key"))
-    assert create_resp.status_code == 201
+    created = await client.post(BASE, json=_payload())
+    assert created.status_code == 201
+    created_key = created.json()["key"]
 
     response = await client.get(BASE)
     assert response.status_code == 200
     body = response.json()
     assert isinstance(body, list)
     keys = [s["key"] for s in body]
-    assert "test.list_key" in keys
+    assert created_key in keys
 
 
 @pytest.mark.asyncio
 async def test_list_settings_group_filter(client: AsyncClient):
-    await client.post(BASE, json=_payload(key="test.gf_key", group_name="groupA"))
-    await client.post(BASE, json=_payload(key="test.gf_key2", group_name="groupB"))
+    uid = _uid()
+    await client.post(BASE, json=_payload(key=f"test.gf_key.{uid}", group_name="groupA"))
+    await client.post(BASE, json=_payload(key=f"test.gf_key2.{uid}", group_name="groupB"))
 
     resp_a = await client.get(BASE, params={"group_name": "groupA"})
     assert resp_a.status_code == 200
     groups_a = [s["group_name"] for s in resp_a.json()]
     assert all(g == "groupA" for g in groups_a)
-    assert any(s["key"] == "test.gf_key" for s in resp_a.json())
+    assert any(s["key"] == f"test.gf_key.{uid}" for s in resp_a.json())
 
 
 # ---------------------------------------------------------------------------
@@ -105,14 +111,15 @@ async def test_list_settings_group_filter(client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_get_setting_by_id(client: AsyncClient):
-    create_resp = await client.post(BASE, json=_payload(key="test.fetch_key"))
+    p = _payload()
+    create_resp = await client.post(BASE, json=p)
     assert create_resp.status_code == 201
     setting_id = create_resp.json()["id"]
 
     response = await client.get(f"{BASE}/{setting_id}")
     assert response.status_code == 200
     assert response.json()["id"] == setting_id
-    assert response.json()["key"] == "test.fetch_key"
+    assert response.json()["key"] == p["key"]
 
 
 @pytest.mark.asyncio
@@ -127,7 +134,7 @@ async def test_get_setting_not_found(client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_update_setting(client: AsyncClient):
-    create_resp = await client.post(BASE, json=_payload(key="test.update_key"))
+    create_resp = await client.post(BASE, json=_payload())
     assert create_resp.status_code == 201
     setting_id = create_resp.json()["id"]
 
@@ -158,6 +165,7 @@ async def test_update_setting_not_found(client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_create_duplicate_key_returns_409(client: AsyncClient):
-    await client.post(BASE, json=_payload(key="test.dup_key"))
-    resp2 = await client.post(BASE, json=_payload(key="test.dup_key"))
+    dup_key = f"test.dup_key.{_uid()}"
+    await client.post(BASE, json=_payload(key=dup_key))
+    resp2 = await client.post(BASE, json=_payload(key=dup_key))
     assert resp2.status_code == 409
