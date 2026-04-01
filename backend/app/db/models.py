@@ -1,5 +1,5 @@
 """
-Foundation models — Phase 2, 3, 4.
+Foundation models — Phase 2, 3, 4, 7.
 
 Bootstrap tables (Phase 2):
   - app_state: key/value application state store
@@ -10,14 +10,18 @@ Domain models (Phase 3+):
   - settings: settings registry — product objects with metadata, not ad-hoc config
   - visibility_rules: visibility engine — first-class visibility rules per target/role/mode
 
-Remaining domain models (jobs, templates, sources, publish, analytics)
+Domain models (Phase 7+):
+  - jobs: job engine — first-class job objects with state, ownership, timing
+  - job_steps: per-step tracking within a job
+
+Remaining domain models (templates, sources, publish, analytics)
 will be added in later phases as their subsystems are built.
 """
 
 import uuid
 from datetime import datetime, timezone
 from typing import Optional
-from sqlalchemy import String, Text, DateTime, Boolean, Integer
+from sqlalchemy import String, Text, DateTime, Boolean, Integer, Float, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column
 from app.db.base import Base
 
@@ -143,6 +147,93 @@ class VisibilityRule(Base):
     notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=_now
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now, onupdate=_now
+    )
+
+
+class Job(Base):
+    """Job Engine — first-class job objects.
+
+    Each job represents a content production run. Status is stored as a plain
+    string so new states can be introduced without a migration. The initial
+    status on creation is 'queued'. Steps are tracked separately in JobStep.
+
+    module_type           : e.g. 'standard_video', 'news_bulletin'
+    status                : 'queued' | 'running' | 'completed' | 'failed' | 'cancelled'
+    owner_id              : nullable until auth is introduced
+    template_id           : nullable; will reference a template in a later phase
+    source_context_json   : arbitrary JSON for source/news linkage
+    current_step_key      : key of the currently active step
+    retry_count           : number of retries attempted
+    elapsed_total_seconds : running total; updated by the queue worker (later)
+    estimated_remaining_seconds : ETA; null until the worker calculates it
+    workspace_path        : local directory for job artifacts
+    last_error            : short summary of the most recent failure
+    """
+
+    __tablename__ = "jobs"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    module_type: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
+    status: Mapped[str] = mapped_column(String(50), nullable=False, default="queued", index=True)
+    owner_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True)
+    template_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True)
+    source_context_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    current_step_key: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    retry_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    elapsed_total_seconds: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    estimated_remaining_seconds: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    workspace_path: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    last_error: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now
+    )
+    started_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    finished_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now, onupdate=_now
+    )
+
+
+class JobStep(Base):
+    """Per-step tracking within a job.
+
+    step_key          : logical step name, e.g. 'script', 'metadata', 'tts'
+    step_order        : integer for display ordering within the job
+    status            : same domain as Job.status
+    artifact_refs_json: JSON array of artifact paths/references; nullable for now
+    log_text          : free-text log captured during step execution
+    elapsed_seconds   : how long this step ran
+    last_error        : step-level error summary
+    """
+
+    __tablename__ = "job_steps"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    job_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("jobs.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    step_key: Mapped[str] = mapped_column(String(100), nullable=False)
+    step_order: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    status: Mapped[str] = mapped_column(String(50), nullable=False, default="pending")
+    artifact_refs_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    log_text: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    elapsed_seconds: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    last_error: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now
+    )
+    started_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    finished_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
     )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=_now, onupdate=_now

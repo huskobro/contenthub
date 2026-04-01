@@ -1,10 +1,10 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 6 Integration Check ✓ TAMAMLANDI
+Phase 7 — Job Engine Backend Foundation ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Frontend-backend entegrasyon uyumu doğrulama ve Vite dev proxy eklenmesi.
+Job ve JobStep modelleri, CRUD API, migration, testler.
 
 ## Devam Eden
 — (devam eden çalışma yok)
@@ -18,6 +18,7 @@ Frontend-backend entegrasyon uyumu doğrulama ve Vite dev proxy eklenmesi.
 - Phase 5 settings frontend: API katmanı, React Query hooks, SettingsRegistryPage, 9 frontend test (2026-04-01)
 - Phase 6 visibility frontend: API katmanı, React Query hooks, VisibilityRegistryPage, 14 frontend test toplam (2026-04-01)
 - Phase 6 integration check: Vite proxy eklendi, endpoint uyumu doğrulandı, curl ile manuel test geçti (2026-04-01)
+- Phase 7 jobs backend: Job + JobStep modeli, migration, CRUD API, 8 yeni test, 36 toplam backend test (2026-04-01)
 
 ## Mevcut Riskler
 - Henüz auth / rol zorlama yok (kasıtlı)

@@ -2,6 +2,22 @@
 
 ---
 
+## [2026-04-01] Phase 7 — Job Engine Backend Foundation
+
+**Ne:** Job ve JobStep first-class backend objeler olarak eklendi. Alembic migration, service katmanı, CRUD API (GET list, GET detail, POST create).
+**Eklenen/değiştirilen dosyalar:**
+- `backend/app/db/models.py` (`Job`, `JobStep` modelleri eklendi)
+- `backend/app/jobs/__init__.py`, `schemas.py`, `service.py`, `router.py`
+- `backend/app/api/router.py` (jobs_router bağlandı)
+- `backend/alembic/versions/f67997a06ef5_add_jobs_and_job_steps_tables.py`
+- `backend/tests/test_jobs_api.py` (8 yeni test)
+- `docs/testing/test-report-phase-7-jobs-backend.md`
+**Testler:** `pytest tests/` — 36 passed in 0.16s
+**Commit:** `TBD`
+**Push:** `TBD`
+
+---
+
 ## [2026-04-01] Phase 6 Integration Check — Frontend-Backend Alignment
 
 **Ne:** Frontend API path'leri backend endpoint'leriyle tam uyumlu doğrulandı. Vite dev proxy eklendi (`/api` → `http://127.0.0.1:8000`). Manuel curl doğrulaması yapıldı.
