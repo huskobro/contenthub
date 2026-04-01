@@ -135,7 +135,7 @@ describe("Standard Video Detail Page smoke tests", () => {
   it("shows script preview when script exists", async () => {
     makeRouter(mockAllFetch(MOCK_VIDEO, MOCK_SCRIPT, MOCK_METADATA));
     await waitFor(() => {
-      expect(screen.getByText("Script")).toBeDefined();
+      expect(screen.getAllByText("Script").length).toBeGreaterThan(0);
       expect(screen.getByText("İçerik Önizleme")).toBeDefined();
     });
   });

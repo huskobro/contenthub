@@ -2,6 +2,24 @@
 
 ---
 
+## [2026-04-01] Phase 16 — Admin Standard Video Script Frontend Foundation
+
+**Ne:** Standard Video detail sayfasında script artifact için tam create/edit UI eklendi. Loading, error, empty, read, create, edit durumları destekleniyor.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/api/standardVideoApi.ts` (`StandardVideoScriptCreatePayload`, `StandardVideoScriptUpdatePayload`, `createStandardVideoScript`, `updateStandardVideoScript` eklendi)
+- `frontend/src/hooks/useCreateStandardVideoScript.ts` (yeni)
+- `frontend/src/hooks/useUpdateStandardVideoScript.ts` (yeni)
+- `frontend/src/components/standard-video/StandardVideoScriptPanel.tsx` (yeni)
+- `frontend/src/pages/admin/StandardVideoDetailPage.tsx` (script panel entegre edildi)
+- `frontend/src/tests/standard-video-script-panel.smoke.test.tsx` (13 yeni test)
+- `frontend/src/tests/standard-video-detail-page.smoke.test.tsx` (getByText → getAllByText düzeltmesi)
+- `docs/testing/test-report-phase-16-standard-video-script-frontend.md` (yeni)
+**Testler:** `npm test` — 63 passed (50 mevcut + 13 yeni) | build ✅ 294.76 kB
+**Commit:** `PLACEHOLDER` — `feat: add phase 16 admin standard video script frontend foundation`
+**Push:** ✅ `git@github.com:huskobro/contenthub.git`
+
+---
+
 ## [2026-04-01] Phase 15 — Standard Video Create/Edit Frontend
 
 **Ne:** Standard Video create ve edit UI eklendi. Yeniden kullanılabilir form bileşeni, create sayfası, detail sayfasına edit modu, `/admin/standard-videos/new` route ve liste sayfasına "Yeni Standard Video" butonu eklendi.

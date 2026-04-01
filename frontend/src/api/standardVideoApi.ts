@@ -123,3 +123,43 @@ export async function updateStandardVideo(
   if (!res.ok) throw new Error(`Failed to update standard video ${id}: ${res.status}`);
   return res.json();
 }
+
+export interface StandardVideoScriptCreatePayload {
+  content: string;
+  source_type?: string | null;
+  generation_status?: string | null;
+  notes?: string | null;
+}
+
+export interface StandardVideoScriptUpdatePayload {
+  content?: string | null;
+  source_type?: string | null;
+  generation_status?: string | null;
+  notes?: string | null;
+}
+
+export async function createStandardVideoScript(
+  videoId: string,
+  payload: StandardVideoScriptCreatePayload
+): Promise<StandardVideoScriptResponse> {
+  const res = await fetch(`${BASE_URL}/${videoId}/script`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error(`Failed to create script for ${videoId}: ${res.status}`);
+  return res.json();
+}
+
+export async function updateStandardVideoScript(
+  videoId: string,
+  payload: StandardVideoScriptUpdatePayload
+): Promise<StandardVideoScriptResponse> {
+  const res = await fetch(`${BASE_URL}/${videoId}/script`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error(`Failed to update script for ${videoId}: ${res.status}`);
+  return res.json();
+}

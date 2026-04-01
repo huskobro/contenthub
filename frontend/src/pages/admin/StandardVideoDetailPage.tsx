@@ -6,10 +6,13 @@ import {
   useStandardVideoMetadata,
 } from "../../hooks/useStandardVideoDetail";
 import { StandardVideoOverviewPanel } from "../../components/standard-video/StandardVideoOverviewPanel";
+import { StandardVideoScriptPanel } from "../../components/standard-video/StandardVideoScriptPanel";
 import { StandardVideoArtifactsPanel } from "../../components/standard-video/StandardVideoArtifactsPanel";
 import { StandardVideoForm } from "../../components/standard-video/StandardVideoForm";
 import type { StandardVideoFormValues } from "../../components/standard-video/StandardVideoForm";
 import { useUpdateStandardVideo } from "../../hooks/useUpdateStandardVideo";
+import { useCreateStandardVideoScript } from "../../hooks/useCreateStandardVideoScript";
+import { useUpdateStandardVideoScript } from "../../hooks/useUpdateStandardVideoScript";
 
 export function StandardVideoDetailPage() {
   const { itemId } = useParams<{ itemId: string }>();
@@ -28,6 +31,8 @@ export function StandardVideoDetailPage() {
   } = useStandardVideoMetadata(itemId ?? null);
 
   const { mutate: updateVideo, isPending: isUpdating, error: updateError } = useUpdateStandardVideo(itemId ?? "");
+  const { mutate: createScript, isPending: isCreatingScript, error: createScriptError } = useCreateStandardVideoScript(itemId ?? "");
+  const { mutate: updateScript, isPending: isUpdatingScript, error: updateScriptError } = useUpdateStandardVideoScript(itemId ?? "");
 
   function handleEditSubmit(values: StandardVideoFormValues) {
     const payload = {
@@ -115,6 +120,20 @@ export function StandardVideoDetailPage() {
       ) : (
         <>
           <StandardVideoOverviewPanel video={video} />
+
+          <StandardVideoScriptPanel
+            videoId={itemId ?? ""}
+            isLoading={scriptLoading}
+            isError={scriptError}
+            script={script ?? null}
+            onCreate={(payload) => createScript(payload)}
+            onUpdate={(payload) => updateScript(payload)}
+            isCreating={isCreatingScript}
+            isUpdating={isUpdatingScript}
+            createError={createScriptError ? createScriptError.message : null}
+            updateError={updateScriptError ? updateScriptError.message : null}
+          />
+
           <StandardVideoArtifactsPanel
             scriptLoading={scriptLoading}
             scriptError={scriptError}

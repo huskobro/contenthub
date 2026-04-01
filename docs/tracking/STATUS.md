@@ -1,10 +1,10 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 15 — Standard Video Create/Edit Frontend ✓ TAMAMLANDI
+Phase 16 — Admin Standard Video Script Frontend Foundation ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Standard Video create/edit UI: form bileşeni, create sayfası, edit modu, yeni route, 50 toplam frontend test.
+Script artifact create/edit UI in Standard Video admin detail page: panel bileşeni, mutation hook'ları, API fonksiyonları, 63 toplam frontend test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
@@ -27,6 +27,7 @@ Standard Video create/edit UI: form bileşeni, create sayfası, edit modu, yeni 
 - Phase 13 standard video metadata backend: StandardVideoMetadata modeli, metadata CRUD API, 8 yeni test, 60 toplam backend test (2026-04-01)
 - Phase 14 standard video admin frontend: API katmanı, hooks, tablo, overview/artifacts panelleri, 11 yeni frontend test, 44 toplam frontend test (2026-04-01)
 - Phase 15 standard video create/edit frontend: StandardVideoForm, CreatePage, edit modu, /new route, Yeni butonu, 6 yeni test, 50 toplam frontend test (2026-04-01)
+- Phase 16 admin standard video script frontend: StandardVideoScriptPanel, create/update mutation hook'ları, API fonksiyonları, 13 yeni test, 63 toplam frontend test (2026-04-01)
 
 ## Mevcut Riskler
 - Henüz auth / rol zorlama yok (kasıtlı)
