@@ -3,8 +3,8 @@ export function AdminOverviewPage() {
     <div>
       <h2>Admin Overview</h2>
       <p>
-        This is the admin area. Settings, visibility rules, templates, jobs, and
-        publish records are managed here.
+        Manage settings, visibility rules, templates, jobs, and publish records
+        from this area.
       </p>
     </div>
   );

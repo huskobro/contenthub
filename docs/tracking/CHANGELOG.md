@@ -59,3 +59,21 @@
 **Tests:** No code tests — structural verification only
 **Commit:** `48a1d50` — `chore: add phase 1 renderer and workspace skeleton`
 **Push:** ✓ Pushed to `git@github.com:huskobro/contenthub.git`
+
+---
+
+## [2026-04-01] Phase 2 — Frontend Panel Shell
+
+**What:** Replaced toggle-based app shell with real react-router-dom routing. Admin and User layouts with header and sidebar. Route structure: `/admin`, `/user`, `/` → redirect to `/user`.
+**Files added/changed:**
+- `frontend/src/app/router.tsx`
+- `frontend/src/app/layouts/AdminLayout.tsx`, `UserLayout.tsx`
+- `frontend/src/components/layout/AppHeader.tsx`, `AppSidebar.tsx`
+- `frontend/src/app/App.tsx` (updated)
+- `frontend/src/pages/AdminOverviewPage.tsx`, `UserDashboardPage.tsx` (minor updates)
+- `frontend/src/tests/app.smoke.test.tsx` (rewritten for routing)
+- `frontend/package.json` (added react-router-dom)
+- `docs/testing/test-report-phase-2-panel-shell.md`
+**Tests:** `npm test` — 4 passed in 433ms
+**Commit:** TBD
+**Push:** TBD

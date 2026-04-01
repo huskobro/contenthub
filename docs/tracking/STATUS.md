@@ -1,25 +1,23 @@
 # STATUS
 
 ## Current Phase
-Phase 1 — Complete (backend + frontend + renderer skeleton done)
+Phase 2 — Frontend Panel Shell
 
 ## Current Goal
-Phase 1 fully complete. All three layers have a clean starting surface.
+Real route-based Admin/User shells in place. Layout components established.
 
 ## In Progress
 — (nothing in progress)
 
 ## Last Completed
-- Phase 0: repo init, CLAUDE.md, docs skeleton (2026-04-01)
-- Phase 1 backend: FastAPI skeleton, health endpoint, 2 tests passing (2026-04-01)
-- Phase 1 frontend: React + Vite + TS skeleton, app shell, 3 smoke tests passing (2026-04-01)
-- Phase 1 renderer: renderer/ and workspace/ skeleton, .gitignore updated (2026-04-01)
-- GitHub backup: SSH remote confirmed, all commits pushed (2026-04-01)
+- Phase 1: backend + frontend + renderer skeleton complete (2026-04-01)
+- Phase 2 panel shell: react-router-dom added, AdminLayout/UserLayout, AppHeader, AppSidebar, 4 smoke tests passing (2026-04-01)
 
 ## Current Risks
-- No DB layer yet (intentional, Phase 2+)
+- No DB layer yet (intentional, Phase 3+)
+- No auth / role enforcement yet (intentional, Phase 3+)
 - Node not on default shell PATH — must set manually or via Makefile (planned)
-- Remotion not installed yet (intentional, after Template and Style Blueprint systems)
+- React Router v7 future flag warning in tests — cosmetic, not a failure
 
 ## GitHub Backup Status
 ✓ Active. `git@github.com:huskobro/contenthub.git` — main branch upstream set and up to date.
