@@ -1,0 +1,30 @@
+# CHANGELOG
+
+---
+
+## [2026-04-01] Phase 0 — Repo Init & Docs Skeleton
+
+**What:** Initialized git repository, added project baseline docs.
+**Files:** `.gitignore`, `README.md`, `CLAUDE.md`, `docs/architecture/README.md`, `docs/testing/README.md`, `docs/decisions/.gitkeep`, `docs/phases/.gitkeep`
+**Tests:** None (no code)
+**Commit:** `2e0c3ba` — `chore: initialize repository with docs skeleton and project baseline`
+**Push:** No remote configured
+
+---
+
+## [2026-04-01] Phase 1 — Backend Skeleton
+
+**What:** FastAPI backend skeleton with health endpoint, config, logging, db placeholder, tests, and lightweight tracking docs.
+**Files added/changed:**
+- `backend/pyproject.toml`
+- `backend/app/main.py`, `__init__.py`
+- `backend/app/api/health.py`, `router.py`, `__init__.py`
+- `backend/app/core/config.py`, `logging.py`, `__init__.py`
+- `backend/app/db/session.py`, `__init__.py`
+- `backend/tests/conftest.py`, `test_health.py`
+- `data/.gitkeep`
+- `docs/tracking/STATUS.md`, `CHANGELOG.md`
+- `docs/testing/test-report-phase-1-backend.md`
+**Tests:** `pytest backend/tests/test_health.py` — results below
+**Commit:** TBD this turn
+**Push:** TBD this turn
