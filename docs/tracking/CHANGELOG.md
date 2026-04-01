@@ -42,5 +42,5 @@
 - `frontend/src/tests/app.smoke.test.tsx`
 - `docs/testing/test-report-phase-1-frontend.md`
 **Tests:** `npm test` (vitest run) — 3 passed in 589ms
-**Commit:** TBD
-**Push:** TBD
+**Commit:** `340006e` — `chore: add phase 1 frontend skeleton with basic app shell`
+**Push:** ✓ Pushed to `git@github.com:huskobro/contenthub.git`
