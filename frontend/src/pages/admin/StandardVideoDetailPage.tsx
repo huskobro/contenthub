@@ -7,12 +7,14 @@ import {
 } from "../../hooks/useStandardVideoDetail";
 import { StandardVideoOverviewPanel } from "../../components/standard-video/StandardVideoOverviewPanel";
 import { StandardVideoScriptPanel } from "../../components/standard-video/StandardVideoScriptPanel";
-import { StandardVideoArtifactsPanel } from "../../components/standard-video/StandardVideoArtifactsPanel";
+import { StandardVideoMetadataPanel } from "../../components/standard-video/StandardVideoMetadataPanel";
 import { StandardVideoForm } from "../../components/standard-video/StandardVideoForm";
 import type { StandardVideoFormValues } from "../../components/standard-video/StandardVideoForm";
 import { useUpdateStandardVideo } from "../../hooks/useUpdateStandardVideo";
 import { useCreateStandardVideoScript } from "../../hooks/useCreateStandardVideoScript";
 import { useUpdateStandardVideoScript } from "../../hooks/useUpdateStandardVideoScript";
+import { useCreateStandardVideoMetadata } from "../../hooks/useCreateStandardVideoMetadata";
+import { useUpdateStandardVideoMetadata } from "../../hooks/useUpdateStandardVideoMetadata";
 
 export function StandardVideoDetailPage() {
   const { itemId } = useParams<{ itemId: string }>();
@@ -33,6 +35,8 @@ export function StandardVideoDetailPage() {
   const { mutate: updateVideo, isPending: isUpdating, error: updateError } = useUpdateStandardVideo(itemId ?? "");
   const { mutate: createScript, isPending: isCreatingScript, error: createScriptError } = useCreateStandardVideoScript(itemId ?? "");
   const { mutate: updateScript, isPending: isUpdatingScript, error: updateScriptError } = useUpdateStandardVideoScript(itemId ?? "");
+  const { mutate: createMeta, isPending: isCreatingMeta, error: createMetaError } = useCreateStandardVideoMetadata(itemId ?? "");
+  const { mutate: updateMeta, isPending: isUpdatingMeta, error: updateMetaError } = useUpdateStandardVideoMetadata(itemId ?? "");
 
   function handleEditSubmit(values: StandardVideoFormValues) {
     const payload = {
@@ -49,9 +53,7 @@ export function StandardVideoDetailPage() {
       status: values.status || null,
     };
     updateVideo(payload, {
-      onSuccess: () => {
-        setEditMode(false);
-      },
+      onSuccess: () => setEditMode(false),
     });
   }
 
@@ -134,13 +136,17 @@ export function StandardVideoDetailPage() {
             updateError={updateScriptError ? updateScriptError.message : null}
           />
 
-          <StandardVideoArtifactsPanel
-            scriptLoading={scriptLoading}
-            scriptError={scriptError}
-            script={script}
-            metadataLoading={metadataLoading}
-            metadataError={metadataError}
-            metadata={metadata}
+          <StandardVideoMetadataPanel
+            videoId={itemId ?? ""}
+            isLoading={metadataLoading}
+            isError={metadataError}
+            metadata={metadata ?? null}
+            onCreate={(payload) => createMeta(payload)}
+            onUpdate={(payload) => updateMeta(payload)}
+            isCreating={isCreatingMeta}
+            isUpdating={isUpdatingMeta}
+            createError={createMetaError ? createMetaError.message : null}
+            updateError={updateMetaError ? updateMetaError.message : null}
           />
         </>
       )}

@@ -132,18 +132,19 @@ describe("Standard Video Detail Page smoke tests", () => {
     });
   });
 
-  it("shows script preview when script exists", async () => {
+  it("shows script panel with script content when script exists", async () => {
     makeRouter(mockAllFetch(MOCK_VIDEO, MOCK_SCRIPT, MOCK_METADATA));
     await waitFor(() => {
       expect(screen.getAllByText("Script").length).toBeGreaterThan(0);
-      expect(screen.getByText("İçerik Önizleme")).toBeDefined();
+      // script content visible in read mode
+      expect(screen.getByText("Bu videonun scripti burada yer almaktadır. Detaylı içerik yazılacak.")).toBeDefined();
     });
   });
 
   it("shows metadata panel when metadata exists", async () => {
     makeRouter(mockAllFetch(MOCK_VIDEO, MOCK_SCRIPT, MOCK_METADATA));
     await waitFor(() => {
-      expect(screen.getByText("Metadata")).toBeDefined();
+      expect(screen.getAllByText("Metadata").length).toBeGreaterThan(0);
       expect(screen.getByText("Yapay Zeka ve Geleceğimiz")).toBeDefined();
     });
   });
@@ -151,8 +152,8 @@ describe("Standard Video Detail Page smoke tests", () => {
   it("shows empty state when script and metadata are absent (404)", async () => {
     makeRouter(mockAllFetch(MOCK_VIDEO, null, null, 404, 404));
     await waitFor(() => {
-      expect(screen.getByText("Henüz script oluşturulmadı.")).toBeDefined();
-      expect(screen.getByText("Henüz metadata oluşturulmadı.")).toBeDefined();
+      expect(screen.getByText("Henüz script yok.")).toBeDefined();
+      expect(screen.getByText("Henüz metadata yok.")).toBeDefined();
     });
   });
 });

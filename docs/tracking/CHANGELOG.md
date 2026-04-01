@@ -2,6 +2,24 @@
 
 ---
 
+## [2026-04-01] Phase 17 — Admin Standard Video Metadata Frontend
+
+**Ne:** Standard Video detail sayfasında metadata artifact için tam create/edit UI eklendi. ArtifactsPanel kaldırılıp yerine bağımsız ScriptPanel + MetadataPanel konuldu.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/api/standardVideoApi.ts` (metadata create/update payloads ve fonksiyonlar eklendi)
+- `frontend/src/hooks/useCreateStandardVideoMetadata.ts` (yeni)
+- `frontend/src/hooks/useUpdateStandardVideoMetadata.ts` (yeni)
+- `frontend/src/components/standard-video/StandardVideoMetadataPanel.tsx` (yeni)
+- `frontend/src/pages/admin/StandardVideoDetailPage.tsx` (metadata panel entegre edildi, ArtifactsPanel kaldırıldı)
+- `frontend/src/tests/standard-video-metadata-panel.smoke.test.tsx` (12 yeni test)
+- `frontend/src/tests/standard-video-detail-page.smoke.test.tsx` (2 test güncellendi)
+- `docs/testing/test-report-phase-17-standard-video-metadata-frontend.md` (yeni)
+**Testler:** `npm test` — 75 passed (63 mevcut + 12 yeni) | build ✅ 301.46 kB
+**Commit:** `PLACEHOLDER` — `feat: add phase 17 admin standard video metadata frontend`
+**Push:** ✅ `git@github.com:huskobro/contenthub.git`
+
+---
+
 ## [2026-04-01] Phase 16 — Admin Standard Video Script Frontend Foundation
 
 **Ne:** Standard Video detail sayfasında script artifact için tam create/edit UI eklendi. Loading, error, empty, read, create, edit durumları destekleniyor.

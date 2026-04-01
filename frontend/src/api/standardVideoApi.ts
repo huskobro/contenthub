@@ -163,3 +163,51 @@ export async function updateStandardVideoScript(
   if (!res.ok) throw new Error(`Failed to update script for ${videoId}: ${res.status}`);
   return res.json();
 }
+
+export interface StandardVideoMetadataCreatePayload {
+  title: string;
+  description?: string | null;
+  tags_json?: string | null;
+  category?: string | null;
+  language?: string | null;
+  source_type?: string | null;
+  generation_status?: string | null;
+  notes?: string | null;
+}
+
+export interface StandardVideoMetadataUpdatePayload {
+  title?: string | null;
+  description?: string | null;
+  tags_json?: string | null;
+  category?: string | null;
+  language?: string | null;
+  source_type?: string | null;
+  generation_status?: string | null;
+  notes?: string | null;
+}
+
+export async function createStandardVideoMetadata(
+  videoId: string,
+  payload: StandardVideoMetadataCreatePayload
+): Promise<StandardVideoMetadataResponse> {
+  const res = await fetch(`${BASE_URL}/${videoId}/metadata`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error(`Failed to create metadata for ${videoId}: ${res.status}`);
+  return res.json();
+}
+
+export async function updateStandardVideoMetadata(
+  videoId: string,
+  payload: StandardVideoMetadataUpdatePayload
+): Promise<StandardVideoMetadataResponse> {
+  const res = await fetch(`${BASE_URL}/${videoId}/metadata`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error(`Failed to update metadata for ${videoId}: ${res.status}`);
+  return res.json();
+}
