@@ -7,17 +7,16 @@ Phase 1 — Backend Technical Skeleton
 Backend skeleton running and tested. GitHub backup in place.
 
 ## In Progress
-- Phase 1 backend skeleton (this turn)
+— (nothing in progress)
 
 ## Last Completed
-- Phase 0: repo init, CLAUDE.md, docs skeleton, first git commit (2026-04-01)
-- Backend files created: pyproject.toml, main.py, config.py, logging.py, health endpoint, tests
+- Phase 0: repo init, CLAUDE.md, docs skeleton (2026-04-01)
+- Phase 1: backend skeleton, health endpoint, tests, 2 passing (2026-04-01)
+- GitHub backup: SSH auth confirmed, remote set to SSH, all commits pushed (2026-04-01)
 
 ## Current Risks
-- No GitHub remote yet — only local git
 - No DB layer yet (intentional, Phase 2+)
 - No frontend yet (intentional, Phase 2+)
 
 ## GitHub Backup Status
-Not configured. GitHub CLI not installed; SSH key not authorized for git@github.com.
-To enable: install `gh`, run `gh auth login`, then `gh repo create contenthub --private --source=. --push`.
+✓ Active. `git@github.com:huskobro/contenthub.git` — main branch upstream set and up to date.
