@@ -37,3 +37,57 @@ export async function fetchSourceById(sourceId: string): Promise<SourceResponse>
   if (!resp.ok) throw new Error(`Failed to fetch source ${sourceId}: ${resp.status}`);
   return resp.json();
 }
+
+export interface SourceCreatePayload {
+  name: string;
+  source_type: string;
+  status?: string;
+  base_url?: string;
+  feed_url?: string;
+  api_endpoint?: string;
+  trust_level?: string;
+  scan_mode?: string;
+  language?: string;
+  category?: string;
+  notes?: string;
+}
+
+export interface SourceUpdatePayload {
+  name?: string;
+  source_type?: string;
+  status?: string;
+  base_url?: string;
+  feed_url?: string;
+  api_endpoint?: string;
+  trust_level?: string;
+  scan_mode?: string;
+  language?: string;
+  category?: string;
+  notes?: string;
+}
+
+export async function createSource(payload: SourceCreatePayload): Promise<SourceResponse> {
+  const resp = await fetch(BASE_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!resp.ok) {
+    const err = await resp.json().catch(() => ({}));
+    throw new Error(err?.detail?.[0]?.msg ?? err?.detail ?? `Failed to create source: ${resp.status}`);
+  }
+  return resp.json();
+}
+
+export async function updateSource(sourceId: string, payload: SourceUpdatePayload): Promise<SourceResponse> {
+  const resp = await fetch(`${BASE_URL}/${sourceId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!resp.ok) {
+    const err = await resp.json().catch(() => ({}));
+    throw new Error(err?.detail?.[0]?.msg ?? err?.detail ?? `Failed to update source: ${resp.status}`);
+  }
+  return resp.json();
+}

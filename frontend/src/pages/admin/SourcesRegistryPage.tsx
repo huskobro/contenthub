@@ -1,15 +1,35 @@
 import { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useSourcesList } from "../../hooks/useSourcesList";
 import { SourcesTable } from "../../components/sources/SourcesTable";
 import { SourceDetailPanel } from "../../components/sources/SourceDetailPanel";
 
 export function SourcesRegistryPage() {
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const initialSelected = (location.state as { selectedId?: string } | null)?.selectedId ?? null;
+  const [selectedId, setSelectedId] = useState<string | null>(initialSelected);
   const { data: sources, isLoading, isError, error } = useSourcesList();
 
   return (
     <div>
-      <h2 style={{ margin: "0 0 0.25rem" }}>Sources Registry</h2>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.25rem" }}>
+        <h2 style={{ margin: 0 }}>Sources Registry</h2>
+        <button
+          onClick={() => navigate("/admin/sources/new")}
+          style={{
+            padding: "0.375rem 0.875rem",
+            background: "#1e40af",
+            color: "#fff",
+            border: "none",
+            borderRadius: "4px",
+            cursor: "pointer",
+            fontSize: "0.875rem",
+          }}
+        >
+          + Yeni Source
+        </button>
+      </div>
       <p style={{ margin: "0 0 1.25rem", color: "#64748b", fontSize: "0.875rem" }}>
         Haber kaynaklarının admin görünümü. Detay için bir source seçin.
       </p>

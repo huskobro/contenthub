@@ -1,4 +1,8 @@
+import { useState } from "react";
 import { useSourceDetail } from "../../hooks/useSourceDetail";
+import { useUpdateSource } from "../../hooks/useUpdateSource";
+import { SourceForm } from "./SourceForm";
+import type { SourceCreatePayload } from "../../api/sourcesApi";
 
 interface SourceDetailPanelProps {
   sourceId: string | null;
@@ -34,7 +38,16 @@ function UrlField({ label, value }: { label: string; value: string | null }) {
 }
 
 export function SourceDetailPanel({ sourceId }: SourceDetailPanelProps) {
+  const [editMode, setEditMode] = useState(false);
   const { data: source, isLoading, isError, error } = useSourceDetail(sourceId);
+  const { mutate: updateMutate, isPending: isUpdating, error: updateError } = useUpdateSource(sourceId ?? "");
+
+  // Reset edit mode when selected source changes
+  const [prevSourceId, setPrevSourceId] = useState(sourceId);
+  if (sourceId !== prevSourceId) {
+    setPrevSourceId(sourceId);
+    setEditMode(false);
+  }
 
   if (!sourceId) {
     return (
@@ -59,9 +72,45 @@ export function SourceDetailPanel({ sourceId }: SourceDetailPanelProps) {
 
   if (!source) return null;
 
+  if (editMode) {
+    return (
+      <div style={{ padding: "1.25rem", border: "1px solid #e2e8f0", borderRadius: "6px", background: "#fff" }}>
+        <h3 style={{ margin: "0 0 1rem", fontSize: "1rem", color: "#1e293b" }}>Düzenle: {source.name}</h3>
+        <SourceForm
+          initial={source}
+          onSubmit={(payload: SourceCreatePayload) => {
+            updateMutate(payload, {
+              onSuccess: () => setEditMode(false),
+            });
+          }}
+          onCancel={() => setEditMode(false)}
+          isPending={isUpdating}
+          submitError={updateError instanceof Error ? updateError.message : null}
+          submitLabel="Güncelle"
+        />
+      </div>
+    );
+  }
+
   return (
     <div style={{ padding: "1.25rem", border: "1px solid #e2e8f0", borderRadius: "6px", background: "#fff" }}>
-      <h3 style={{ margin: "0 0 1rem", fontSize: "1rem", color: "#1e293b" }}>{source.name}</h3>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
+        <h3 style={{ margin: 0, fontSize: "1rem", color: "#1e293b" }}>{source.name}</h3>
+        <button
+          onClick={() => setEditMode(true)}
+          style={{
+            padding: "0.25rem 0.75rem",
+            background: "transparent",
+            color: "#1e40af",
+            border: "1px solid #bfdbfe",
+            borderRadius: "4px",
+            cursor: "pointer",
+            fontSize: "0.8rem",
+          }}
+        >
+          Düzenle
+        </button>
+      </div>
 
       <Field label="Source Type" value={source.source_type} />
       <Field label="Status" value={source.status} />

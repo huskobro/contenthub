@@ -2,6 +2,26 @@
 
 ---
 
+## [2026-04-02] Phase 25 — Admin Sources Create and Edit Frontend
+
+**Ne:** Sources create/edit formu eklendi. SourceForm, SourceCreatePage, detail panel edit modu ve mutation hook'ları oluşturuldu.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/api/sourcesApi.ts` (genişletildi: createSource, updateSource)
+- `frontend/src/hooks/useCreateSource.ts` (yeni)
+- `frontend/src/hooks/useUpdateSource.ts` (yeni)
+- `frontend/src/components/sources/SourceForm.tsx` (yeni)
+- `frontend/src/pages/admin/SourceCreatePage.tsx` (yeni)
+- `frontend/src/components/sources/SourceDetailPanel.tsx` (edit mode eklendi)
+- `frontend/src/pages/admin/SourcesRegistryPage.tsx` (+ Yeni Source butonu, selectedId state)
+- `frontend/src/app/router.tsx` (/admin/sources/new route eklendi)
+- `frontend/src/tests/source-form.smoke.test.tsx` (9 yeni test)
+- `docs/testing/test-report-phase-25-source-form-frontend.md` (yeni)
+**Testler:** `npm test` — 121 passed (112 mevcut + 9 yeni) | build ✅ 337.20 kB
+**Commit:** — `feat: add phase 25 admin sources create and edit frontend`
+**Push:** ✅ `git@github.com:huskobro/contenthub.git`
+
+---
+
 ## [2026-04-02] Phase 24 — Admin Sources Registry Frontend Foundation
 
 **Ne:** Sources admin sayfası oluşturuldu. API katmanı, hooks, tablo, detail panel, registry sayfası ve sidebar entegrasyonu eklendi.
