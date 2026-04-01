@@ -2,6 +2,23 @@
 
 ---
 
+## [2026-04-01] Phase 13 — Standard Video Metadata Backend Foundation
+
+**Ne:** Standard Video için metadata artifact backend'i kuruldu. `standard_video_metadata` tablosu, metadata CRUD API ve 8 yeni test eklendi.
+**Eklenen/değiştirilen dosyalar:**
+- `backend/app/db/models.py` (`StandardVideoMetadata` modeli eklendi)
+- `backend/app/modules/standard_video/schemas.py` (metadata şemaları eklendi)
+- `backend/app/modules/standard_video/service.py` (metadata servis fonksiyonları eklendi)
+- `backend/app/modules/standard_video/router.py` (metadata endpoint'leri eklendi)
+- `backend/alembic/versions/f96474c7ec08_add_standard_video_metadata_table.py` (yeni)
+- `backend/tests/test_standard_video_metadata_api.py` (8 yeni test)
+- `docs/testing/test-report-phase-13-standard-video-metadata-backend.md` (yeni)
+**Testler:** `pytest` — 60 passed (52 mevcut + 8 yeni) in ~0.33s
+**Commit:** `6cc17c5` — `feat: add phase 13 standard video metadata backend foundation`
+**Push:** ✅ `git@github.com:huskobro/contenthub.git`
+
+---
+
 ## [2026-04-01] Phase 12 — Standard Video Script Backend Foundation
 
 **Ne:** Standard Video için script artifact backend'i kuruldu. `standard_video_scripts` tablosu, script CRUD API ve 8 yeni test eklendi.
