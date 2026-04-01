@@ -9,8 +9,8 @@
 - `frontend/vite.config.ts` — `server.proxy` eklendi
 - `docs/testing/test-report-phase-6-integration-check.md`
 **Testler:** 28 backend + 14 frontend = 42 passed
-**Commit:** `TBD`
-**Push:** `TBD`
+**Commit:** `04c7cf9` — `fix: align frontend admin registries with real backend endpoints`
+**Push:** ✅ `git@github.com:huskobro/contenthub.git`
 
 ---
 
