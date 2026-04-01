@@ -12,6 +12,7 @@ import { StandardVideoDetailPage } from "../pages/admin/StandardVideoDetailPage"
 import { StandardVideoCreatePage } from "../pages/admin/StandardVideoCreatePage";
 import { TemplatesRegistryPage } from "../pages/admin/TemplatesRegistryPage";
 import { TemplateCreatePage } from "../pages/admin/TemplateCreatePage";
+import { StyleBlueprintsRegistryPage } from "../pages/admin/StyleBlueprintsRegistryPage";
 
 export const router = createBrowserRouter([
   {
@@ -32,6 +33,7 @@ export const router = createBrowserRouter([
       { path: "standard-videos/:itemId", element: <StandardVideoDetailPage /> },
       { path: "templates/new", element: <TemplateCreatePage /> },
       { path: "templates", element: <TemplatesRegistryPage /> },
+      { path: "style-blueprints", element: <StyleBlueprintsRegistryPage /> },
     ],
   },
   {

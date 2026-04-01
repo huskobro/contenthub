@@ -9,6 +9,7 @@ const ADMIN_NAV = [
   { label: "Jobs", to: "/admin/jobs" },
   { label: "Standard Video", to: "/admin/standard-videos" },
   { label: "Templates", to: "/admin/templates" },
+  { label: "Style Blueprints", to: "/admin/style-blueprints" },
 ];
 
 export function AdminLayout() {

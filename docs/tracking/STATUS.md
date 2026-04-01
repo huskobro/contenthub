@@ -1,10 +1,10 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 21 — Style Blueprint Backend Foundation ✓ TAMAMLANDI
+Phase 22 — Admin Style Blueprints Registry Frontend ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-StyleBlueprint modeli, migration, schemas, service, router, 11 yeni test, 82 toplam backend test.
+Style Blueprints frontend: API, hooks, table, detail panel, registry page, sidebar, 9 yeni test, 103 toplam frontend test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
@@ -33,6 +33,7 @@ StyleBlueprint modeli, migration, schemas, service, router, 11 yeni test, 82 top
 - Phase 19 admin templates registry frontend: API katmanı, hooks, TemplatesTable, TemplateDetailPanel, TemplatesRegistryPage, sidebar, 9 yeni test, 84 toplam frontend test (2026-04-02)
 - Phase 20 template create/edit form frontend: TemplateForm, TemplateCreatePage, edit mode, useCreateTemplate, useUpdateTemplate, 10 yeni test, 94 toplam frontend test (2026-04-02)
 - Phase 21 style blueprint backend: StyleBlueprint modeli, migration, schemas, service, router, 11 yeni test, 82 toplam backend test (2026-04-02)
+- Phase 22 admin style blueprints registry frontend: API, hooks, table, detail panel, registry page, sidebar, 9 yeni test, 103 toplam frontend test (2026-04-02)
 
 ## Mevcut Riskler
 - Henüz auth / rol zorlama yok (kasıtlı)

@@ -2,6 +2,25 @@
 
 ---
 
+## [2026-04-02] Phase 22 — Admin Style Blueprints Registry Frontend
+
+**Ne:** Style Blueprints admin sayfası oluşturuldu. API katmanı, hooks, tablo, detail panel, registry sayfası ve sidebar entegrasyonu eklendi.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/api/styleBlueprintsApi.ts` (yeni)
+- `frontend/src/hooks/useStyleBlueprintsList.ts` (yeni)
+- `frontend/src/hooks/useStyleBlueprintDetail.ts` (yeni)
+- `frontend/src/components/style-blueprints/StyleBlueprintsTable.tsx` (yeni)
+- `frontend/src/components/style-blueprints/StyleBlueprintDetailPanel.tsx` (yeni)
+- `frontend/src/pages/admin/StyleBlueprintsRegistryPage.tsx` (yeni)
+- `frontend/src/app/router.tsx` (/admin/style-blueprints route eklendi)
+- `frontend/src/app/layouts/AdminLayout.tsx` (Style Blueprints nav item eklendi)
+- `frontend/src/tests/style-blueprints-registry.smoke.test.tsx` (9 yeni test)
+- `docs/testing/test-report-phase-22-style-blueprints-frontend.md` (yeni)
+**Testler:** `npm test` — 103 passed (94 mevcut + 9 yeni) | build ✅ 324.25 kB
+**Commit:** (bekliyor)
+
+---
+
 ## [2026-04-02] Phase 21 — Style Blueprint Backend Foundation
 
 **Ne:** StyleBlueprint modeli, migration, schemas, service, router ve API testleri eklendi.
@@ -16,7 +35,8 @@
 - `backend/tests/test_style_blueprints_api.py` (11 test)
 - `docs/testing/test-report-phase-21-style-blueprints-backend.md` (yeni)
 **Testler:** 11/11 style blueprint testi | 82/82 toplam backend test ✅
-**Commit:** (bekliyor)
+**Commit:** `e4770cf` — `feat: add phase 21 style blueprint backend foundation`
+**Push:** ✅ `git@github.com:huskobro/contenthub.git`
 
 ---
 
