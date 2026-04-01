@@ -57,5 +57,5 @@
 - `.gitignore` (workspace negation rules)
 - `docs/testing/test-report-phase-1-renderer.md`
 **Tests:** No code tests — structural verification only
-**Commit:** TBD
-**Push:** TBD
+**Commit:** `48a1d50` — `chore: add phase 1 renderer and workspace skeleton`
+**Push:** ✓ Pushed to `git@github.com:huskobro/contenthub.git`
