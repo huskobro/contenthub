@@ -2,6 +2,18 @@
 
 ---
 
+## [2026-04-01] Phase 6 Integration Check — Frontend-Backend Alignment
+
+**Ne:** Frontend API path'leri backend endpoint'leriyle tam uyumlu doğrulandı. Vite dev proxy eklendi (`/api` → `http://127.0.0.1:8000`). Manuel curl doğrulaması yapıldı.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/vite.config.ts` — `server.proxy` eklendi
+- `docs/testing/test-report-phase-6-integration-check.md`
+**Testler:** 28 backend + 14 frontend = 42 passed
+**Commit:** `TBD`
+**Push:** `TBD`
+
+---
+
 ## [2026-04-01] Phase 6 — Admin Visibility Registry Frontend
 
 **Ne:** Admin panelde visibility kurallarını backend'den listeleme ve tekil detay görüntüleme. API katmanı, React Query hooks, VisibilityRegistryPage, VisibilityRulesTable, VisibilityRuleDetailPanel.

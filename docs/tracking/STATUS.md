@@ -1,10 +1,10 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 6 — Admin Visibility Registry Frontend ✓ TAMAMLANDI
+Phase 6 Integration Check ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Admin panelde visibility kurallarını backend'den listeleme ve detay görüntüleme.
+Frontend-backend entegrasyon uyumu doğrulama ve Vite dev proxy eklenmesi.
 
 ## Devam Eden
 — (devam eden çalışma yok)
@@ -17,11 +17,12 @@ Admin panelde visibility kurallarını backend'den listeleme ve detay görüntü
 - Doküman Türkçeleştirme (2026-04-01)
 - Phase 5 settings frontend: API katmanı, React Query hooks, SettingsRegistryPage, 9 frontend test (2026-04-01)
 - Phase 6 visibility frontend: API katmanı, React Query hooks, VisibilityRegistryPage, 14 frontend test toplam (2026-04-01)
+- Phase 6 integration check: Vite proxy eklendi, endpoint uyumu doğrulandı, curl ile manuel test geçti (2026-04-01)
 
 ## Mevcut Riskler
 - Henüz auth / rol zorlama yok (kasıtlı)
 - Node varsayılan shell PATH'inde değil
-- Vite proxy henüz yapılandırılmadı — geliştirme sırasında backend'e erişim için gerekebilir
+- Port 8000 başka bir uygulama tarafından kullanılıyorsa dev proxy çalışmaz
 - Testlerde React Router v7 future flag uyarısı — kozmetik
 
 ## GitHub Yedek Durumu
