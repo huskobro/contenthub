@@ -10,6 +10,9 @@ from app.modules.standard_video.schemas import (
     StandardVideoCreate,
     StandardVideoUpdate,
     StandardVideoResponse,
+    StandardVideoScriptCreate,
+    StandardVideoScriptUpdate,
+    StandardVideoScriptResponse,
 )
 
 router = APIRouter(prefix="/modules/standard-video", tags=["standard-video"])
@@ -53,3 +56,48 @@ async def update_standard_video(
     if item is None:
         raise HTTPException(status_code=404, detail="Standard video not found")
     return item
+
+
+# ---------------------------------------------------------------------------
+# Script endpoints
+# ---------------------------------------------------------------------------
+
+async def _require_video(item_id: str, db: AsyncSession) -> None:
+    item = await service.get_standard_video(db, item_id)
+    if item is None:
+        raise HTTPException(status_code=404, detail="Standard video not found")
+
+
+@router.get("/{item_id}/script", response_model=StandardVideoScriptResponse)
+async def get_script(
+    item_id: str,
+    db: AsyncSession = Depends(get_db),
+) -> StandardVideoScriptResponse:
+    await _require_video(item_id, db)
+    script = await service.get_script_for_video(db, item_id)
+    if script is None:
+        raise HTTPException(status_code=404, detail="Script not found for this video")
+    return script
+
+
+@router.post("/{item_id}/script", response_model=StandardVideoScriptResponse, status_code=201)
+async def create_script(
+    item_id: str,
+    payload: StandardVideoScriptCreate,
+    db: AsyncSession = Depends(get_db),
+) -> StandardVideoScriptResponse:
+    await _require_video(item_id, db)
+    return await service.create_script_for_video(db, item_id, payload)
+
+
+@router.patch("/{item_id}/script", response_model=StandardVideoScriptResponse)
+async def update_script(
+    item_id: str,
+    payload: StandardVideoScriptUpdate,
+    db: AsyncSession = Depends(get_db),
+) -> StandardVideoScriptResponse:
+    await _require_video(item_id, db)
+    script = await service.update_script_for_video(db, item_id, payload)
+    if script is None:
+        raise HTTPException(status_code=404, detail="Script not found for this video")
+    return script

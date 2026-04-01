@@ -281,3 +281,41 @@ class StandardVideo(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=_now, onupdate=_now
     )
+
+
+class StandardVideoScript(Base):
+    """Script artifact for a Standard Video record.
+
+    Stores the script content produced (manually or generated) for a standard
+    video. The relationship to StandardVideo is a real FK with cascade delete.
+    One active script per video is the v1 assumption; version field allows
+    future expansion without a migration.
+
+    standard_video_id : FK to standard_videos.id (CASCADE)
+    content           : full script text; required, not blank
+    version           : integer version counter; starts at 1
+    source_type       : 'manual' | 'generated' — how the script was produced
+    generation_status : e.g. 'draft', 'ready'
+    notes             : optional short annotation
+    """
+
+    __tablename__ = "standard_video_scripts"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    standard_video_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("standard_videos.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+    version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    source_type: Mapped[str] = mapped_column(String(50), nullable=False, default="manual")
+    generation_status: Mapped[str] = mapped_column(String(50), nullable=False, default="draft")
+    notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now, onupdate=_now
+    )

@@ -1,10 +1,10 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 11 — Standard Video Backend Input Foundation ✓ TAMAMLANDI
+Phase 12 — Standard Video Script Backend Foundation ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Standard Video modülü için backend input foundation: model, migration, CRUD API, testler.
+Standard Video için script step backend foundation: StandardVideoScript modeli, script CRUD API, migration, testler.
 
 ## Devam Eden
 — (devam eden çalışma yok)
@@ -23,6 +23,7 @@ Standard Video modülü için backend input foundation: model, migration, CRUD A
 - Phase 9 elapsed/ETA frontend: formatDuration, DurationBadge, jobs UI güncellendi, 28 toplam frontend test (2026-04-01)
 - Phase 10 job detail page: JobDetailPage, JobOverviewPanel, JobTimelinePanel, JobSystemPanels, /admin/jobs/:jobId, 33 toplam frontend test (2026-04-01)
 - Phase 11 standard video backend: StandardVideo modeli, migration, CRUD API, 8 yeni test, 44 toplam backend test (2026-04-01)
+- Phase 12 standard video script backend: StandardVideoScript modeli, script CRUD API, 8 yeni test, 52 toplam backend test (2026-04-01)
 
 ## Mevcut Riskler
 - Henüz auth / rol zorlama yok (kasıtlı)
