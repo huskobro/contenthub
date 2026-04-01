@@ -62,6 +62,25 @@
 
 ---
 
+## [2026-04-01] Phase 3 — Settings Registry Backend
+
+**What:** Settings as DB-managed product objects. Setting model with full metadata fields, Pydantic schemas (create/update/response), service layer, FastAPI router wired into api_router, Alembic migration.
+**Files added/changed:**
+- `backend/app/db/models.py` (added `Setting` model)
+- `backend/app/settings/__init__.py`
+- `backend/app/settings/schemas.py` (SettingCreate, SettingUpdate, SettingResponse)
+- `backend/app/settings/service.py` (list, get, create, update)
+- `backend/app/settings/router.py` (GET /settings, GET /settings/{id}, POST /settings, PATCH /settings/{id})
+- `backend/app/api/router.py` (wired settings router)
+- `backend/alembic/versions/f0dea9dfd155_add_settings_table.py`
+- `backend/tests/test_settings_api.py` (9 new tests)
+- `docs/testing/test-report-phase-3-settings-backend.md`
+**Tests:** `pytest tests/test_settings_api.py tests/test_health.py tests/test_db_bootstrap.py` — 17 passed in 0.06s
+**Commit:** TBD
+**Push:** TBD
+
+---
+
 ## [2026-04-01] Phase 2 — Backend Database Foundation
 
 **What:** SQLite database foundation with WAL mode, SQLAlchemy 2.0 async engine, Alembic migration pipeline, and three bootstrap tables (app_state, audit_logs, users).

@@ -1,19 +1,22 @@
 """
-Foundation models — Phase 2.
+Foundation models — Phase 2 + Phase 3.
 
-Only the three bootstrap tables are defined here:
+Bootstrap tables (Phase 2):
   - app_state: key/value application state store
   - audit_logs: append-only audit trail
   - users: local role model baseline (no auth yet)
 
-Domain models (settings registry, jobs, templates, sources, publish, analytics)
+Domain models (Phase 3+):
+  - settings: settings registry — product objects with metadata, not ad-hoc config
+
+Remaining domain models (jobs, templates, sources, publish, analytics)
 will be added in later phases as their subsystems are built.
 """
 
 import uuid
 from datetime import datetime, timezone
 from typing import Optional
-from sqlalchemy import String, Text, DateTime
+from sqlalchemy import String, Text, DateTime, Boolean
 from sqlalchemy.orm import Mapped, mapped_column
 from app.db.base import Base
 
@@ -60,6 +63,40 @@ class User(Base):
     display_name: Mapped[str] = mapped_column(String(255), nullable=False)
     role: Mapped[str] = mapped_column(String(50), nullable=False, default="user")
     status: Mapped[str] = mapped_column(String(50), nullable=False, default="active")
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now, onupdate=_now
+    )
+
+
+class Setting(Base):
+    """Settings registry — product objects with metadata, not ad-hoc config.
+
+    Each setting carries full visibility, editability, and wizard metadata so
+    that the Visibility Engine and Wizard flows can query it directly.
+    json fields store arbitrary JSON text; no structural enforcement at the DB
+    layer (validation lives in the service layer).
+    """
+
+    __tablename__ = "settings"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    key: Mapped[str] = mapped_column(String(255), unique=True, nullable=False, index=True)
+    group_name: Mapped[str] = mapped_column(String(100), nullable=False, default="general", index=True)
+    type: Mapped[str] = mapped_column(String(50), nullable=False, default="string")
+    default_value_json: Mapped[str] = mapped_column(Text, nullable=False, default="null")
+    admin_value_json: Mapped[str] = mapped_column(Text, nullable=False, default="null")
+    user_override_allowed: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    visible_to_user: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    visible_in_wizard: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    read_only_for_user: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    module_scope: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    help_text: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    validation_rules_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
+    status: Mapped[str] = mapped_column(String(50), nullable=False, default="active")
+    version: Mapped[int] = mapped_column(nullable=False, default=1)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=_now
     )

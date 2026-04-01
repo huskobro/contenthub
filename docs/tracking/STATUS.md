@@ -1,10 +1,10 @@
 # STATUS
 
 ## Current Phase
-Phase 2 — Backend Database Foundation ✓ COMPLETE
+Phase 3 — Settings Registry Backend ✓ COMPLETE
 
 ## Current Goal
-SQLite + WAL + SQLAlchemy async + Alembic migration pipeline in place. Three bootstrap tables live.
+Settings as DB-managed product objects. Full CRUD API, migration, 9 new tests.
 
 ## In Progress
 — (nothing in progress)
@@ -13,6 +13,7 @@ SQLite + WAL + SQLAlchemy async + Alembic migration pipeline in place. Three boo
 - Phase 1: backend + frontend + renderer skeleton complete (2026-04-01)
 - Phase 2 panel shell: react-router-dom added, AdminLayout/UserLayout, AppHeader, AppSidebar, 4 smoke tests passing (2026-04-01)
 - Phase 2 DB foundation: SQLite WAL + SQLAlchemy async + Alembic initial migration + 8 tests passing (2026-04-01)
+- Phase 3 settings backend: Setting model, schemas, service, router, migration, 17 total tests passing (2026-04-01)
 
 ## Current Risks
 - No auth / role enforcement yet (intentional, Phase 3+)
