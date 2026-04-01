@@ -2,6 +2,24 @@
 
 ---
 
+## [2026-04-02] Phase 21 — Style Blueprint Backend Foundation
+
+**Ne:** StyleBlueprint modeli, migration, schemas, service, router ve API testleri eklendi.
+**Eklenen/değiştirilen dosyalar:**
+- `backend/app/db/models.py` (StyleBlueprint ORM modeli eklendi)
+- `backend/alembic/versions/705dbe9d9ef1_add_style_blueprints_table.py` (yeni migration)
+- `backend/app/modules/style_blueprints/__init__.py` (yeni)
+- `backend/app/modules/style_blueprints/schemas.py` (Create, Update, Response)
+- `backend/app/modules/style_blueprints/service.py` (list, get, create, update)
+- `backend/app/modules/style_blueprints/router.py` (GET/POST /style-blueprints, GET/PATCH /{id})
+- `backend/app/api/router.py` (style_blueprints_router eklendi)
+- `backend/tests/test_style_blueprints_api.py` (11 test)
+- `docs/testing/test-report-phase-21-style-blueprints-backend.md` (yeni)
+**Testler:** 11/11 style blueprint testi | 82/82 toplam backend test ✅
+**Commit:** (bekliyor)
+
+---
+
 ## [2026-04-02] Phase 20 — Template Create/Edit Form Frontend
 
 **Ne:** Template create sayfası, ortak TemplateForm bileşeni ve detail panel içinde edit mode eklendi.
@@ -17,7 +35,8 @@
 - `frontend/src/tests/template-form.smoke.test.tsx` (10 yeni test)
 - `docs/testing/test-report-phase-20-template-form-frontend.md` (yeni)
 **Testler:** `npm test` — 94 passed (84 mevcut + 10 yeni) | build ✅ 318.37 kB
-**Commit:** (bekliyor)
+**Commit:** `0f87a67` — `feat: add phase 20 admin templates create/edit form frontend`
+**Push:** ✅ `git@github.com:huskobro/contenthub.git`
 
 ---
 

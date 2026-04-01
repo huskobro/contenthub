@@ -405,3 +405,46 @@ class Template(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=_now, onupdate=_now
     )
+
+
+class StyleBlueprint(Base):
+    """
+    Style Blueprint — Phase 21.
+
+    First-class admin-managed style definition object.
+    Defines visual identity, motion, layout, subtitle, thumbnail, and preview rules.
+    Separate from Template; linkage to Templates deferred to a later phase.
+
+    name           : blueprint name
+    module_scope   : e.g. 'standard_video', 'news_bulletin', or null (global)
+    status         : e.g. 'draft', 'active', 'archived'
+    version        : integer version counter
+    visual_rules_json    : general visual identity rules
+    motion_rules_json    : motion/effect approach
+    layout_rules_json    : composition/layout approach
+    subtitle_rules_json  : subtitle style rules
+    thumbnail_rules_json : thumbnail direction rules
+    preview_strategy_json: future preview-first system hook
+    notes          : short description/notes
+    """
+
+    __tablename__ = "style_blueprints"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    name: Mapped[str] = mapped_column(String(200), nullable=False, index=True)
+    module_scope: Mapped[Optional[str]] = mapped_column(String(100), nullable=True, index=True)
+    status: Mapped[str] = mapped_column(String(50), nullable=False, default="draft", index=True)
+    version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    visual_rules_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    motion_rules_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    layout_rules_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    subtitle_rules_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    thumbnail_rules_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    preview_strategy_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now, onupdate=_now
+    )
