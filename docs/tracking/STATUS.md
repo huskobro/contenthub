@@ -1,27 +1,27 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 4 — Visibility Engine Backend Temeli ✓ TAMAMLANDI
+Phase 5 — Admin Settings Registry Frontend ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Görünürlük kuralları first-class backend objesi olarak kuruldu. Tam CRUD API, migration, 11 yeni test.
+Admin panelde ayarları backend'den listeleme ve detay görüntüleme. React Query entegrasyonu.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
 - Phase 1: backend + frontend + renderer iskeleti tamamlandı (2026-04-01)
-- Phase 2 panel shell: react-router-dom eklendi, AdminLayout/UserLayout, AppHeader, AppSidebar, 4 smoke test geçti (2026-04-01)
-- Phase 2 DB temeli: SQLite WAL + SQLAlchemy async + Alembic ilk migration + 8 test geçti (2026-04-01)
-- Phase 3 settings backend: Setting modeli, schema'lar, service, router, migration, toplam 17 test geçti (2026-04-01)
-- Doküman Türkçeleştirme: repository genelindeki İngilizce dokümanlar Türkçeleştirildi (2026-04-01)
-- Phase 4 visibility backend: VisibilityRule modeli, schema'lar, service, router, migration, toplam 28 test geçti (2026-04-01)
+- Phase 2 panel shell + DB temeli tamamlandı (2026-04-01)
+- Phase 3 settings backend: Setting modeli, CRUD API, 17 test (2026-04-01)
+- Phase 4 visibility backend: VisibilityRule modeli, CRUD API, 28 backend test (2026-04-01)
+- Doküman Türkçeleştirme (2026-04-01)
+- Phase 5 settings frontend: API katmanı, React Query hooks, SettingsRegistryPage, 9 frontend test (2026-04-01)
 
 ## Mevcut Riskler
-- Henüz auth / rol zorlama yok (kasıtlı, Phase 3+)
-- Node varsayılan shell PATH'inde değil — elle veya Makefile ile ayarlanmalı (planlandı)
-- Testlerde React Router v7 future flag uyarısı — kozmetik, hata değil
-- `backend/data/` dizini `backend/` üzerinden alembic çalıştırılmadan önce var olmalı — `backend/data/.gitkeep` ile yönetiliyor
+- Henüz auth / rol zorlama yok (kasıtlı)
+- Node varsayılan shell PATH'inde değil
+- Vite proxy henüz yapılandırılmadı — geliştirme sırasında backend'e erişim için gerekebilir
+- Testlerde React Router v7 future flag uyarısı — kozmetik
 
 ## GitHub Yedek Durumu
 ✓ Aktif. `git@github.com:huskobro/contenthub.git` — main branch upstream ayarlandı ve güncel.

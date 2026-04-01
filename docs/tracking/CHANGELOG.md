@@ -2,6 +2,26 @@
 
 ---
 
+## [2026-04-01] Phase 5 — Admin Settings Registry Frontend
+
+**Ne:** Admin panelde ayarları backend'den listeleme ve tekil detay görüntüleme. React Query entegrasyonu, API katmanı, hooks, SettingsRegistryPage, SettingsTable, SettingDetailPanel.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/package.json` (`@tanstack/react-query` eklendi)
+- `frontend/src/api/settingsApi.ts`
+- `frontend/src/hooks/useSettingsList.ts`, `useSettingDetail.ts`
+- `frontend/src/pages/admin/SettingsRegistryPage.tsx`
+- `frontend/src/components/settings/SettingsTable.tsx`, `SettingDetailPanel.tsx`
+- `frontend/src/app/router.tsx` (`/admin/settings` route eklendi)
+- `frontend/src/app/layouts/AdminLayout.tsx` (Settings linki aktif)
+- `frontend/src/app/App.tsx` (`QueryClientProvider` eklendi)
+- `frontend/src/tests/settings-registry.smoke.test.tsx` (5 yeni test)
+- `docs/testing/test-report-phase-5-settings-frontend.md`
+**Testler:** `npm test` — 9 passed (4 eski + 5 yeni) in 827ms
+**Commit:** TBD
+**Push:** TBD
+
+---
+
 ## [2026-04-01] Phase 4 — Visibility Engine Backend Temeli
 
 **Ne:** Görünürlük kuralları (`visibility_rules`) first-class backend objesi olarak kuruldu. VisibilityRule modeli, Pydantic schema'ları, service katmanı, FastAPI CRUD router, Alembic migration. `test_settings_api.py` testlerinde paylaşılan DB üzerinde oluşan unique key çakışması `_uid()` suffix ile düzeltildi.

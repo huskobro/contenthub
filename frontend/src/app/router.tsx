@@ -3,6 +3,7 @@ import { AdminLayout } from "./layouts/AdminLayout";
 import { UserLayout } from "./layouts/UserLayout";
 import { AdminOverviewPage } from "../pages/AdminOverviewPage";
 import { UserDashboardPage } from "../pages/UserDashboardPage";
+import { SettingsRegistryPage } from "../pages/admin/SettingsRegistryPage";
 
 export const router = createBrowserRouter([
   {
@@ -14,6 +15,7 @@ export const router = createBrowserRouter([
     element: <AdminLayout />,
     children: [
       { index: true, element: <AdminOverviewPage /> },
+      { path: "settings", element: <SettingsRegistryPage /> },
     ],
   },
   {
