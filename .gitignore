@@ -39,7 +39,17 @@ data/*.sqlite
 data/*.sqlite3
 
 # Local runtime / workspace
-workspace/
+# Ignore all runtime content but allow .gitkeep to track folder structure
+workspace/*
+!workspace/jobs/
+workspace/jobs/*
+!workspace/jobs/.gitkeep
+!workspace/exports/
+workspace/exports/*
+!workspace/exports/.gitkeep
+!workspace/temp/
+workspace/temp/*
+!workspace/temp/.gitkeep
 .tmp/
 
 # Editor / system

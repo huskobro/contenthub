@@ -44,3 +44,18 @@
 **Tests:** `npm test` (vitest run) — 3 passed in 589ms
 **Commit:** `340006e` — `chore: add phase 1 frontend skeleton with basic app shell`
 **Push:** ✓ Pushed to `git@github.com:huskobro/contenthub.git`
+
+---
+
+## [2026-04-01] Phase 1 — Renderer & Workspace Skeleton
+
+**What:** Renderer directory skeleton for future Remotion integration. Workspace folder structure tracked via .gitkeep. .gitignore updated to allow workspace structure while keeping runtime content ignored.
+**Files added/changed:**
+- `renderer/README.md`
+- `renderer/src/compositions/.gitkeep`, `renderer/src/shared/.gitkeep`, `renderer/tests/.gitkeep`
+- `workspace/jobs/.gitkeep`, `workspace/exports/.gitkeep`, `workspace/temp/.gitkeep`
+- `.gitignore` (workspace negation rules)
+- `docs/testing/test-report-phase-1-renderer.md`
+**Tests:** No code tests — structural verification only
+**Commit:** TBD
+**Push:** TBD
