@@ -19,4 +19,5 @@ Backend skeleton running and tested. GitHub backup in place.
 - No frontend yet (intentional, Phase 2+)
 
 ## GitHub Backup Status
-Not configured yet. Remote to be added this turn.
+Not configured. GitHub CLI not installed; SSH key not authorized for git@github.com.
+To enable: install `gh`, run `gh auth login`, then `gh repo create contenthub --private --source=. --push`.

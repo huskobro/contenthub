@@ -26,5 +26,5 @@
 - `docs/tracking/STATUS.md`, `CHANGELOG.md`
 - `docs/testing/test-report-phase-1-backend.md`
 **Tests:** `pytest backend/tests/test_health.py` — results below
-**Commit:** TBD this turn
-**Push:** TBD this turn
+**Commit:** `d7edb9a` — `chore: add phase 1 backend skeleton and lightweight tracking docs`
+**Push:** No remote — GitHub CLI not installed, SSH auth not configured
