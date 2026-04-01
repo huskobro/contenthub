@@ -1,4 +1,5 @@
 import type { JobStepResponse } from "../../api/jobsApi";
+import { formatDuration } from "../../lib/formatDuration";
 
 interface JobStepsListProps {
   steps: JobStepResponse[];
@@ -27,9 +28,9 @@ export function JobStepsList({ steps }: JobStepsListProps) {
             <strong style={{ fontFamily: "monospace" }}>{s.step_key}</strong>
             <span style={{ color: "#64748b" }}>#{s.step_order} — {s.status}</span>
           </div>
-          {s.elapsed_seconds != null && (
-            <div style={{ color: "#64748b" }}>elapsed: {s.elapsed_seconds}s</div>
-          )}
+          <div style={{ color: "#64748b" }}>
+            elapsed: {formatDuration(s.elapsed_seconds)}
+          </div>
           {s.last_error && (
             <div style={{ color: "#dc2626", marginTop: "0.125rem" }}>{s.last_error}</div>
           )}

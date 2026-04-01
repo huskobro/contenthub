@@ -1,4 +1,5 @@
 import type { JobResponse } from "../../api/jobsApi";
+import { formatDuration } from "../../lib/formatDuration";
 
 interface JobsTableProps {
   jobs: JobResponse[];
@@ -19,6 +20,7 @@ export function JobsTable({ jobs, selectedId, onSelect }: JobsTableProps) {
           <th style={{ padding: "0.5rem" }}>status</th>
           <th style={{ padding: "0.5rem" }}>current_step_key</th>
           <th style={{ padding: "0.5rem" }}>retry_count</th>
+          <th style={{ padding: "0.5rem" }}>elapsed</th>
           <th style={{ padding: "0.5rem" }}>created_at</th>
         </tr>
       </thead>
@@ -39,6 +41,9 @@ export function JobsTable({ jobs, selectedId, onSelect }: JobsTableProps) {
               {j.current_step_key ?? <em style={{ color: "#94a3b8" }}>—</em>}
             </td>
             <td style={{ padding: "0.5rem" }}>{j.retry_count}</td>
+            <td style={{ padding: "0.5rem", fontSize: "0.8125rem", color: "#64748b" }}>
+              {formatDuration(j.elapsed_total_seconds)}
+            </td>
             <td style={{ padding: "0.5rem", fontSize: "0.8125rem", color: "#64748b" }}>
               {j.created_at.slice(0, 19).replace("T", " ")}
             </td>

@@ -1,10 +1,10 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 8 — Admin Jobs Registry Frontend ✓ TAMAMLANDI
+Phase 9 — Elapsed Time & ETA Frontend Display ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Admin panelde job kayıtlarını listeleme, tekil job + step detayı görüntüleme.
+formatDuration helper, DurationBadge component, elapsed/ETA gösterimi jobs UI'da.
 
 ## Devam Eden
 — (devam eden çalışma yok)
@@ -20,6 +20,7 @@ Admin panelde job kayıtlarını listeleme, tekil job + step detayı görüntül
 - Phase 6 integration check: Vite proxy eklendi, endpoint uyumu doğrulandı, curl ile manuel test geçti (2026-04-01)
 - Phase 7 jobs backend: Job + JobStep modeli, migration, CRUD API, 8 yeni test, 36 toplam backend test (2026-04-01)
 - Phase 8 jobs frontend: API katmanı, hooks, JobsTable, JobDetailPanel, JobStepsList, JobsRegistryPage, 19 toplam frontend test (2026-04-01)
+- Phase 9 elapsed/ETA frontend: formatDuration, DurationBadge, jobs UI güncellendi, 28 toplam frontend test (2026-04-01)
 
 ## Mevcut Riskler
 - Henüz auth / rol zorlama yok (kasıtlı)

@@ -171,4 +171,48 @@ describe("Jobs Registry smoke tests", () => {
       expect(screen.getByText("Job Detayı")).toBeDefined();
     });
   });
+
+  it("shows formatted elapsed and ETA in detail panel", async () => {
+    const jobWithTiming = {
+      ...MOCK_JOBS[1],
+      elapsed_total_seconds: 65,
+      estimated_remaining_seconds: 125,
+    };
+    const detailFetch = vi.fn()
+      .mockResolvedValueOnce({
+        ok: true, status: 200,
+        json: () => Promise.resolve(MOCK_JOBS),
+      })
+      .mockResolvedValue({
+        ok: true, status: 200,
+        json: () => Promise.resolve(jobWithTiming),
+      });
+
+    renderJobs(detailFetch);
+
+    await waitFor(() => {
+      expect(screen.getByText("news_bulletin")).toBeDefined();
+    });
+
+    const user = userEvent.setup();
+    const rows = screen.getAllByText("news_bulletin");
+    await user.click(rows[0]);
+
+    await waitFor(() => {
+      expect(screen.getByText("Job Detayı")).toBeDefined();
+      // formatDuration(65) → "1 dk 5 sn"
+      expect(screen.getAllByText("1 dk 5 sn").length).toBeGreaterThan(0);
+      // formatDuration(125) → "2 dk 5 sn" (with ~ prefix for ETA)
+      expect(screen.getByText("~2 dk 5 sn")).toBeDefined();
+    });
+  });
+
+  it("shows formatted elapsed in table row", async () => {
+    const jobWithElapsed = [{ ...MOCK_JOBS[1], elapsed_total_seconds: 30 }];
+    renderJobs(mockFetch(jobWithElapsed));
+    await waitFor(() => {
+      // formatDuration(30) → "30 sn"
+      expect(screen.getByText("30 sn")).toBeDefined();
+    });
+  });
 });

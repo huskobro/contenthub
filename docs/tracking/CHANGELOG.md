@@ -2,6 +2,24 @@
 
 ---
 
+## [2026-04-01] Phase 9 — Elapsed Time & ETA Frontend Display
+
+**Ne:** formatDuration helper (Türkçe, saf fonksiyon), DurationBadge component, elapsed/ETA alanları jobs UI'da okunabilir formatla gösteriliyor.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/lib/formatDuration.ts` (yeni)
+- `frontend/src/components/jobs/DurationBadge.tsx` (yeni)
+- `frontend/src/components/jobs/JobDetailPanel.tsx` (DurationBadge ile elapsed/ETA)
+- `frontend/src/components/jobs/JobStepsList.tsx` (formatDuration ile step elapsed)
+- `frontend/src/components/jobs/JobsTable.tsx` (elapsed sütunu eklendi)
+- `frontend/src/tests/format-duration.test.ts` (7 unit test)
+- `frontend/src/tests/jobs-registry.smoke.test.tsx` (2 yeni test)
+- `docs/testing/test-report-phase-9-eta-frontend.md`
+**Testler:** `npm test` — 28 passed (4+5+5+7+7) in ~3s
+**Commit:** `TBD`
+**Push:** `TBD`
+
+---
+
 ## [2026-04-01] Phase 8 — Admin Jobs Registry Frontend Foundation
 
 **Ne:** Admin panelde job kayıtlarını backend'den listeleme ve tekil job + step detayı görüntüleme.

@@ -1,5 +1,6 @@
 import { useJobDetail } from "../../hooks/useJobDetail";
 import { JobStepsList } from "./JobStepsList";
+import { DurationBadge } from "./DurationBadge";
 
 interface JobDetailPanelProps {
   selectedId: string | null;
@@ -60,10 +61,10 @@ export function JobDetailPanel({ selectedId }: JobDetailPanelProps) {
         ) : em}
       </Row>
       <Row label="elapsed_total_seconds">
-        {data.elapsed_total_seconds != null ? `${data.elapsed_total_seconds}s` : em}
+        <DurationBadge seconds={data.elapsed_total_seconds} />
       </Row>
       <Row label="estimated_remaining_seconds">
-        {data.estimated_remaining_seconds != null ? `${data.estimated_remaining_seconds}s` : em}
+        <DurationBadge seconds={data.estimated_remaining_seconds} approximate />
       </Row>
       <Row label="created_at">{data.created_at.slice(0, 19).replace("T", " ")}</Row>
       <Row label="started_at">
