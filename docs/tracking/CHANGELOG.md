@@ -16,8 +16,8 @@
 - `frontend/src/tests/settings-registry.smoke.test.tsx` (`global.fetch` → `window.fetch` düzeltmesi)
 - `docs/testing/test-report-phase-6-visibility-frontend.md`
 **Testler:** `npm test` — 14 passed (4 + 5 + 5) in 777ms
-**Commit:** `TBD`
-**Push:** `TBD`
+**Commit:** `f291944` — `feat: add phase 6 admin visibility registry frontend foundation`
+**Push:** ✓ `git@github.com:huskobro/contenthub.git`
 
 ---
 
