@@ -5,6 +5,7 @@ import { AppSidebar } from "../../components/layout/AppSidebar";
 const ADMIN_NAV = [
   { label: "Overview", to: "/admin" },
   { label: "Settings", to: "/admin/settings" },
+  { label: "Visibility", to: "/admin/visibility" },
   { label: "Jobs" },
 ];
 

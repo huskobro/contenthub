@@ -1,10 +1,10 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 5 — Admin Settings Registry Frontend ✓ TAMAMLANDI
+Phase 6 — Admin Visibility Registry Frontend ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Admin panelde ayarları backend'den listeleme ve detay görüntüleme. React Query entegrasyonu.
+Admin panelde visibility kurallarını backend'den listeleme ve detay görüntüleme.
 
 ## Devam Eden
 — (devam eden çalışma yok)
@@ -16,6 +16,7 @@ Admin panelde ayarları backend'den listeleme ve detay görüntüleme. React Que
 - Phase 4 visibility backend: VisibilityRule modeli, CRUD API, 28 backend test (2026-04-01)
 - Doküman Türkçeleştirme (2026-04-01)
 - Phase 5 settings frontend: API katmanı, React Query hooks, SettingsRegistryPage, 9 frontend test (2026-04-01)
+- Phase 6 visibility frontend: API katmanı, React Query hooks, VisibilityRegistryPage, 14 frontend test toplam (2026-04-01)
 
 ## Mevcut Riskler
 - Henüz auth / rol zorlama yok (kasıtlı)

@@ -4,6 +4,7 @@ import { UserLayout } from "./layouts/UserLayout";
 import { AdminOverviewPage } from "../pages/AdminOverviewPage";
 import { UserDashboardPage } from "../pages/UserDashboardPage";
 import { SettingsRegistryPage } from "../pages/admin/SettingsRegistryPage";
+import { VisibilityRegistryPage } from "../pages/admin/VisibilityRegistryPage";
 
 export const router = createBrowserRouter([
   {
@@ -16,6 +17,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <AdminOverviewPage /> },
       { path: "settings", element: <SettingsRegistryPage /> },
+      { path: "visibility", element: <VisibilityRegistryPage /> },
     ],
   },
   {

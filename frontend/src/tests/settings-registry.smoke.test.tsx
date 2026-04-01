@@ -57,8 +57,8 @@ function mockFetch(data: unknown, status = 200) {
   });
 }
 
-function renderSettings(fetchFn: typeof global.fetch) {
-  global.fetch = fetchFn;
+function renderSettings(fetchFn: typeof window.fetch) {
+  window.fetch = fetchFn;
 
   const queryClient = new QueryClient({
     defaultOptions: {
@@ -99,7 +99,7 @@ describe("Settings Registry smoke tests", () => {
 
   it("shows loading state", () => {
     // fetch that never resolves
-    global.fetch = vi.fn().mockReturnValue(new Promise(() => {}));
+    window.fetch = vi.fn().mockReturnValue(new Promise(() => {}));
     const queryClient = new QueryClient({
       defaultOptions: { queries: { retry: false } },
     });

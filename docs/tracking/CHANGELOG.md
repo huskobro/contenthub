@@ -2,6 +2,25 @@
 
 ---
 
+## [2026-04-01] Phase 6 — Admin Visibility Registry Frontend
+
+**Ne:** Admin panelde visibility kurallarını backend'den listeleme ve tekil detay görüntüleme. API katmanı, React Query hooks, VisibilityRegistryPage, VisibilityRulesTable, VisibilityRuleDetailPanel.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/api/visibilityApi.ts`
+- `frontend/src/hooks/useVisibilityRulesList.ts`, `useVisibilityRuleDetail.ts`
+- `frontend/src/pages/admin/VisibilityRegistryPage.tsx`
+- `frontend/src/components/visibility/VisibilityRulesTable.tsx`, `VisibilityRuleDetailPanel.tsx`
+- `frontend/src/app/router.tsx` (`/admin/visibility` route eklendi)
+- `frontend/src/app/layouts/AdminLayout.tsx` (Visibility linki aktif)
+- `frontend/src/tests/visibility-registry.smoke.test.tsx` (5 yeni test)
+- `frontend/src/tests/settings-registry.smoke.test.tsx` (`global.fetch` → `window.fetch` düzeltmesi)
+- `docs/testing/test-report-phase-6-visibility-frontend.md`
+**Testler:** `npm test` — 14 passed (4 + 5 + 5) in 777ms
+**Commit:** `TBD`
+**Push:** `TBD`
+
+---
+
 ## [2026-04-01] Phase 5 — Admin Settings Registry Frontend
 
 **Ne:** Admin panelde ayarları backend'den listeleme ve tekil detay görüntüleme. React Query entegrasyonu, API katmanı, hooks, SettingsRegistryPage, SettingsTable, SettingDetailPanel.
