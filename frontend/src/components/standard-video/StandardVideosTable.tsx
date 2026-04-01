@@ -1,0 +1,74 @@
+import type { StandardVideoResponse } from "../../api/standardVideoApi";
+import { formatDuration } from "../../lib/formatDuration";
+
+interface Props {
+  videos: StandardVideoResponse[];
+  selectedId: string | null;
+  onSelect: (id: string) => void;
+}
+
+const STATUS_COLORS: Record<string, string> = {
+  draft: "#64748b",
+  script_ready: "#2563eb",
+  metadata_ready: "#7c3aed",
+  ready: "#16a34a",
+  failed: "#dc2626",
+};
+
+export function StandardVideosTable({ videos, selectedId, onSelect }: Props) {
+  if (videos.length === 0) {
+    return (
+      <p style={{ color: "#64748b", fontSize: "0.875rem" }}>
+        Henüz kayıt yok.
+      </p>
+    );
+  }
+
+  return (
+    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.875rem" }}>
+      <thead>
+        <tr style={{ background: "#f8fafc", textAlign: "left" }}>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Başlık</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Konu</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Durum</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Dil</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Hedef Süre</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Oluşturulma</th>
+        </tr>
+      </thead>
+      <tbody>
+        {videos.map((v) => (
+          <tr
+            key={v.id}
+            onClick={() => onSelect(v.id)}
+            style={{
+              cursor: "pointer",
+              background: selectedId === v.id ? "#eff6ff" : "transparent",
+              borderBottom: "1px solid #f1f5f9",
+            }}
+          >
+            <td style={{ padding: "0.5rem 0.75rem" }}>{v.title ?? "—"}</td>
+            <td style={{ padding: "0.5rem 0.75rem" }}>{v.topic}</td>
+            <td style={{ padding: "0.5rem 0.75rem" }}>
+              <span
+                style={{
+                  color: STATUS_COLORS[v.status] ?? "#64748b",
+                  fontWeight: 500,
+                }}
+              >
+                {v.status}
+              </span>
+            </td>
+            <td style={{ padding: "0.5rem 0.75rem" }}>{v.language ?? "—"}</td>
+            <td style={{ padding: "0.5rem 0.75rem" }}>
+              {formatDuration(v.target_duration_seconds)}
+            </td>
+            <td style={{ padding: "0.5rem 0.75rem", color: "#94a3b8" }}>
+              {new Date(v.created_at).toLocaleString("tr-TR")}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}

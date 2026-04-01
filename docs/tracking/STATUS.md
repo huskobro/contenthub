@@ -1,10 +1,10 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 13 — Standard Video Metadata Backend Foundation ✓ TAMAMLANDI
+Phase 14 — Standard Video Admin Frontend ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Standard Video için metadata step backend foundation: StandardVideoMetadata modeli, metadata CRUD API, migration, testler.
+Standard Video admin registry ve detail sayfaları: API katmanı, hooks, tablo, overview/artifacts panelleri, rotalar.
 
 ## Devam Eden
 — (devam eden çalışma yok)
@@ -25,6 +25,7 @@ Standard Video için metadata step backend foundation: StandardVideoMetadata mod
 - Phase 11 standard video backend: StandardVideo modeli, migration, CRUD API, 8 yeni test, 44 toplam backend test (2026-04-01)
 - Phase 12 standard video script backend: StandardVideoScript modeli, script CRUD API, 8 yeni test, 52 toplam backend test (2026-04-01)
 - Phase 13 standard video metadata backend: StandardVideoMetadata modeli, metadata CRUD API, 8 yeni test, 60 toplam backend test (2026-04-01)
+- Phase 14 standard video admin frontend: API katmanı, hooks, tablo, overview/artifacts panelleri, 11 yeni frontend test, 44 toplam frontend test (2026-04-01)
 
 ## Mevcut Riskler
 - Henüz auth / rol zorlama yok (kasıtlı)

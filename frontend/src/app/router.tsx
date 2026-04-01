@@ -7,6 +7,8 @@ import { SettingsRegistryPage } from "../pages/admin/SettingsRegistryPage";
 import { VisibilityRegistryPage } from "../pages/admin/VisibilityRegistryPage";
 import { JobsRegistryPage } from "../pages/admin/JobsRegistryPage";
 import { JobDetailPage } from "../pages/admin/JobDetailPage";
+import { StandardVideoRegistryPage } from "../pages/admin/StandardVideoRegistryPage";
+import { StandardVideoDetailPage } from "../pages/admin/StandardVideoDetailPage";
 
 export const router = createBrowserRouter([
   {
@@ -22,6 +24,8 @@ export const router = createBrowserRouter([
       { path: "visibility", element: <VisibilityRegistryPage /> },
       { path: "jobs", element: <JobsRegistryPage /> },
       { path: "jobs/:jobId", element: <JobDetailPage /> },
+      { path: "standard-videos", element: <StandardVideoRegistryPage /> },
+      { path: "standard-videos/:itemId", element: <StandardVideoDetailPage /> },
     ],
   },
   {

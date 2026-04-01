@@ -7,6 +7,7 @@ const ADMIN_NAV = [
   { label: "Settings", to: "/admin/settings" },
   { label: "Visibility", to: "/admin/visibility" },
   { label: "Jobs", to: "/admin/jobs" },
+  { label: "Standard Video", to: "/admin/standard-videos" },
 ];
 
 export function AdminLayout() {
