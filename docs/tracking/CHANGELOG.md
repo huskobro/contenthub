@@ -28,3 +28,19 @@
 **Tests:** `pytest backend/tests/test_health.py` — results below
 **Commit:** `d7edb9a` — `chore: add phase 1 backend skeleton and lightweight tracking docs`
 **Push:** ✓ All commits pushed. Remote switched to SSH. `git@github.com:huskobro/contenthub.git`
+
+---
+
+## [2026-04-01] Phase 1 — Frontend Skeleton
+
+**What:** React + Vite + TypeScript skeleton with app shell (Admin/User toggle), two page stubs, 3 smoke tests passing, build clean.
+**Files added:**
+- `frontend/package.json`, `tsconfig.json`, `tsconfig.node.json`, `vite.config.ts`, `index.html`
+- `frontend/src/main.tsx`
+- `frontend/src/app/App.tsx`
+- `frontend/src/pages/AdminOverviewPage.tsx`, `UserDashboardPage.tsx`
+- `frontend/src/tests/app.smoke.test.tsx`
+- `docs/testing/test-report-phase-1-frontend.md`
+**Tests:** `npm test` (vitest run) — 3 passed in 589ms
+**Commit:** TBD
+**Push:** TBD
