@@ -14,8 +14,8 @@
 - `frontend/src/tests/jobs-registry.smoke.test.tsx` (5 yeni test)
 - `docs/testing/test-report-phase-8-jobs-frontend.md`
 **Testler:** `npm test` — 19 passed (4+5+5+5) in ~3s
-**Commit:** `TBD`
-**Push:** `TBD`
+**Commit:** `2d29037` — `feat: add phase 8 admin jobs registry frontend foundation`
+**Push:** ✅ `git@github.com:huskobro/contenthub.git`
 
 ---
 
