@@ -2,6 +2,25 @@
 
 ---
 
+## [2026-04-02] Phase 26 — Source Scans Backend Foundation
+
+**Ne:** SourceScan modeli, migration, schemas, service, router ve 14 test eklendi.
+**Eklenen/değiştirilen dosyalar:**
+- `backend/app/db/models.py` (SourceScan ORM modeli eklendi)
+- `backend/alembic/versions/5769e14d7322_add_source_scans_table.py` (yeni migration)
+- `backend/app/source_scans/__init__.py` (yeni)
+- `backend/app/source_scans/schemas.py` (ScanCreate, ScanUpdate, ScanResponse)
+- `backend/app/source_scans/service.py` (list, get, create, update; source existence check)
+- `backend/app/source_scans/router.py` (/api/v1/source-scans CRUD)
+- `backend/app/api/router.py` (source_scans_router eklendi)
+- `backend/tests/test_source_scans_api.py` (14 yeni test)
+- `docs/testing/test-report-phase-26-source-scans-backend.md` (yeni)
+**Testler:** `pytest` — 14/14 passed | 111/111 toplam passed
+**Commit:** — `feat: add phase 26 source scans backend foundation`
+**Push:** ✅ `git@github.com:huskobro/contenthub.git`
+
+---
+
 ## [2026-04-02] Phase 25 — Admin Sources Create and Edit Frontend
 
 **Ne:** Sources create/edit formu eklendi. SourceForm, SourceCreatePage, detail panel edit modu ve mutation hook'ları oluşturuldu.

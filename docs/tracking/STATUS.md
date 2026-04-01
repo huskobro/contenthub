@@ -1,10 +1,10 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 25 — Admin Sources Create and Edit Frontend ✓ TAMAMLANDI
+Phase 26 — Source Scans Backend Foundation ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Sources create/edit: SourceForm, SourceCreatePage, edit mode in detail panel, useCreateSource, useUpdateSource, 9 yeni test, 121 toplam frontend test.
+Source scans backend: SourceScan modeli, migration, schemas, service, router, 14 yeni test, 111 toplam backend test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
@@ -37,6 +37,7 @@ Sources create/edit: SourceForm, SourceCreatePage, edit mode in detail panel, us
 - Phase 23 news source registry backend: NewsSource modeli, migration, schemas, service, router, 15 yeni test, 97 toplam backend test (2026-04-02)
 - Phase 24 admin sources registry frontend: API, hooks, table, detail panel, registry page, sidebar, 9 yeni test, 112 toplam frontend test (2026-04-02)
 - Phase 25 admin sources create/edit frontend: SourceForm, SourceCreatePage, edit mode, useCreateSource, useUpdateSource, 9 yeni test, 121 toplam frontend test (2026-04-02)
+- Phase 26 source scans backend: SourceScan modeli, migration, schemas, service, router, 14 yeni test, 111 toplam backend test (2026-04-02)
 
 ## Mevcut Riskler
 - Henüz auth / rol zorlama yok (kasıtlı)

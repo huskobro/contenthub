@@ -491,3 +491,43 @@ class NewsSource(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=_now, onupdate=_now
     )
+
+
+class SourceScan(Base):
+    """
+    Source scan records — Phase 26.
+
+    Tracks scan attempts (manual, auto, curated) against a NewsSource.
+    Does not perform real fetches; stores scan state and results summary.
+
+    source_id        : FK to news_sources.id
+    scan_mode        : 'manual', 'auto', 'curated'
+    status           : 'queued', 'completed', 'failed'
+    requested_by     : optional initiator identifier
+    started_at       : when scan started (nullable)
+    finished_at      : when scan finished (nullable)
+    result_count     : number of items found (nullable)
+    error_summary    : short error description on failure (nullable)
+    raw_result_preview_json : small preview of raw results (nullable)
+    notes            : short description/notes
+    """
+
+    __tablename__ = "source_scans"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    source_id: Mapped[str] = mapped_column(String(36), nullable=False, index=True)
+    scan_mode: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
+    status: Mapped[str] = mapped_column(String(50), nullable=False, default="queued", index=True)
+    requested_by: Mapped[Optional[str]] = mapped_column(String(200), nullable=True)
+    started_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    finished_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    result_count: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    error_summary: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    raw_result_preview_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now, onupdate=_now
+    )
