@@ -1,10 +1,10 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 9 — Elapsed Time & ETA Frontend Display ✓ TAMAMLANDI
+Phase 10 — Job Detail Page ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-formatDuration helper, DurationBadge component, elapsed/ETA gösterimi jobs UI'da.
+Ayrı Job Detail sayfası, overview/timeline/system panelleri, /admin/jobs/:jobId route.
 
 ## Devam Eden
 — (devam eden çalışma yok)
@@ -21,6 +21,7 @@ formatDuration helper, DurationBadge component, elapsed/ETA gösterimi jobs UI'd
 - Phase 7 jobs backend: Job + JobStep modeli, migration, CRUD API, 8 yeni test, 36 toplam backend test (2026-04-01)
 - Phase 8 jobs frontend: API katmanı, hooks, JobsTable, JobDetailPanel, JobStepsList, JobsRegistryPage, 19 toplam frontend test (2026-04-01)
 - Phase 9 elapsed/ETA frontend: formatDuration, DurationBadge, jobs UI güncellendi, 28 toplam frontend test (2026-04-01)
+- Phase 10 job detail page: JobDetailPage, JobOverviewPanel, JobTimelinePanel, JobSystemPanels, /admin/jobs/:jobId, 33 toplam frontend test (2026-04-01)
 
 ## Mevcut Riskler
 - Henüz auth / rol zorlama yok (kasıtlı)

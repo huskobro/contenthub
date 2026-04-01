@@ -2,6 +2,24 @@
 
 ---
 
+## [2026-04-01] Phase 10 — Job Detail Page
+
+**Ne:** Job detayı side panel'den çıkarılıp ayrı `/admin/jobs/:jobId` sayfasına taşındı. JobOverviewPanel, JobTimelinePanel, JobSystemPanels eklendi.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/pages/admin/JobDetailPage.tsx` (yeni)
+- `frontend/src/components/jobs/JobOverviewPanel.tsx` (yeni)
+- `frontend/src/components/jobs/JobTimelinePanel.tsx` (yeni)
+- `frontend/src/components/jobs/JobSystemPanels.tsx` (yeni)
+- `frontend/src/app/router.tsx` (`/admin/jobs/:jobId` eklendi)
+- `frontend/src/pages/admin/JobsRegistryPage.tsx` (navigate eklendi)
+- `frontend/src/tests/job-detail-page.smoke.test.tsx` (5 yeni test)
+- `frontend/src/tests/jobs-registry.smoke.test.tsx` (güncellendi)
+**Testler:** `npm test` — 33 passed (4+5+5+7+7+5) in ~4.5s
+**Commit:** `TBD`
+**Push:** `TBD`
+
+---
+
 ## [2026-04-01] Phase 9 — Elapsed Time & ETA Frontend Display
 
 **Ne:** formatDuration helper (Türkçe, saf fonksiyon), DurationBadge component, elapsed/ETA alanları jobs UI'da okunabilir formatla gösteriliyor.

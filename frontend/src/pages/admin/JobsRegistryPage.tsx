@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useJobsList } from "../../hooks/useJobsList";
 import { JobsTable } from "../../components/jobs/JobsTable";
 import { JobDetailPanel } from "../../components/jobs/JobDetailPanel";
@@ -6,6 +7,7 @@ import { JobDetailPanel } from "../../components/jobs/JobDetailPanel";
 export function JobsRegistryPage() {
   const { data: jobs, isLoading, isError, error } = useJobsList();
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   return (
     <div>
@@ -27,7 +29,10 @@ export function JobsRegistryPage() {
             <JobsTable
               jobs={jobs}
               selectedId={selectedId}
-              onSelect={setSelectedId}
+              onSelect={(id) => {
+                setSelectedId(id);
+                navigate(`/admin/jobs/${id}`);
+              }}
             />
           </div>
           <div
