@@ -13,8 +13,8 @@
 - `backend/tests/test_jobs_api.py` (8 yeni test)
 - `docs/testing/test-report-phase-7-jobs-backend.md`
 **Testler:** `pytest tests/` — 36 passed in 0.16s
-**Commit:** `TBD`
-**Push:** `TBD`
+**Commit:** `a6a1848` — `feat: add phase 7 job engine backend foundation`
+**Push:** ✅ `git@github.com:huskobro/contenthub.git`
 
 ---
 
