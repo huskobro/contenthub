@@ -15,8 +15,8 @@
 - `frontend/src/tests/job-detail-page.smoke.test.tsx` (5 yeni test)
 - `frontend/src/tests/jobs-registry.smoke.test.tsx` (güncellendi)
 **Testler:** `npm test` — 33 passed (4+5+5+7+7+5) in ~4.5s
-**Commit:** `TBD`
-**Push:** `TBD`
+**Commit:** `956e862` — `feat: add phase 10 job detail page with overview timeline and system panels`
+**Push:** ✅ `git@github.com:huskobro/contenthub.git`
 
 ---
 
