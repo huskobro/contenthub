@@ -1,22 +1,30 @@
 # ContentHub
 
-ContentHub is a localhost-first modular content production and publishing platform.
+ContentHub, yerel ortamda çalışan, modüler bir içerik üretim ve yayınlama platformudur.
 
-It is not a CMS. It combines content creation, publishing workflows, operations visibility, analytics, template and style management, and news source ingestion into a single local system.
+Klasik bir CMS değildir. İçerik oluşturma, yayın iş akışları, operasyon görünürlüğü, analitik, şablon ve stil yönetimi ile haber kaynağı entegrasyonunu tek bir yerel sistem altında birleştirir.
 
-## Status
+## Durum
 
-Early development. Currently in Phase 0 — project baseline and docs grounding.
+Erken geliştirme aşaması. Şu an Phase 3 tamamlandı — Settings Registry backend temeli kuruldu.
 
-## Stack
+## Teknoloji Yığını
 
 - Backend: FastAPI (Python)
 - Frontend: React + Vite + TypeScript
-- Database: SQLite with WAL mode
-- Rendering: Remotion
-- Realtime: SSE
-- Queue: In-process async job queue
+- Veritabanı: SQLite (WAL modu)
+- Render: Remotion
+- Gerçek zamanlı: SSE
+- Kuyruk: Süreç içi asenkron iş kuyruğu
 
-## Documentation
+## Dokümantasyon
 
-See [CLAUDE.md](./CLAUDE.md) for the full product constitution, architecture rules, delivery phases, and working conventions.
+Ürün kuralları, mimari kararlar, teslim fazları ve çalışma kuralları için bkz. [CLAUDE.md](./CLAUDE.md).
+
+## Dokümantasyon Dili
+
+Bu repository'deki genel dokümantasyon varsayılan olarak **Türkçe** yazılır.
+
+- Dosya yolları, endpoint path'leri, sınıf/fonksiyon adları, değişken isimleri, komutlar ve paket isimleri çevrilmez — teknik tanımlayıcı olarak aynen kalır.
+- `CLAUDE.md` şu aşamada istisna olarak İngilizce bırakılmıştır.
+- Yeni eklenen genel dokümanlar varsayılan olarak Türkçe yazılmalıdır.

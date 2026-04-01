@@ -1,44 +1,44 @@
-# Test Report — Phase 1 Renderer & Workspace Skeleton
+# Test Raporu — Phase 1 Renderer & Workspace Skeleton
 
-**Date:** 2026-04-01
-**Phase:** 1 — Renderer and Workspace Skeleton
+**Tarih:** 2026-04-01
+**Faz:** 1 — Renderer ve Workspace İskeleti
 
-## Goal
-Establish the renderer directory as a clean future surface for Remotion integration and verify workspace folder structure is correctly tracked in git.
+## Amaç
+Renderer dizinini Remotion entegrasyonu için temiz bir gelecek yüzeyi olarak kur. Workspace klasör yapısının git'te doğru şekilde izlendiğini doğrula.
 
-## Verifications Run
+## Çalıştırılan Doğrulamalar
 
 ```bash
-# Directory structure check
+# Dizin yapısı kontrolü
 find renderer/ -not -path '*/.git*' | sort
 find workspace/ | sort
 
-# gitignore behavior check
+# .gitignore davranış kontrolü
 git add workspace/
-git status workspace/   # confirms only .gitkeep files are staged
+git status workspace/   # yalnızca .gitkeep dosyalarının staged olduğunu doğrular
 ```
 
-## Results
+## Sonuçlar
 
-- `renderer/README.md` created ✓
-- `renderer/src/compositions/.gitkeep` created ✓
-- `renderer/src/shared/.gitkeep` created ✓
-- `renderer/tests/.gitkeep` created ✓
-- `workspace/jobs/.gitkeep` tracked ✓
-- `workspace/exports/.gitkeep` tracked ✓
-- `workspace/temp/.gitkeep` tracked ✓
-- Runtime workspace content (`workspace/*`) remains ignored ✓
-- `.gitignore` updated: negation rules allow `.gitkeep` inside `workspace/` subdirectories while keeping all other workspace content ignored ✓
+- `renderer/README.md` oluşturuldu ✓
+- `renderer/src/compositions/.gitkeep` oluşturuldu ✓
+- `renderer/src/shared/.gitkeep` oluşturuldu ✓
+- `renderer/tests/.gitkeep` oluşturuldu ✓
+- `workspace/jobs/.gitkeep` izleniyor ✓
+- `workspace/exports/.gitkeep` izleniyor ✓
+- `workspace/temp/.gitkeep` izleniyor ✓
+- Çalışma zamanı workspace içeriği (`workspace/*`) görmezden geliniyor ✓
+- `.gitignore` güncellendi: negation kuralları `workspace/` alt dizinleri içinde `.gitkeep` dosyalarına izin verirken diğer tüm workspace içeriğini görmezden gelmeye devam ediyor ✓
 
-## No Code Tests
-No application code was added. No unit/integration tests apply.
+## Kod Testi Yok
+Uygulama kodu eklenmedi. Birim/entegrasyon testi uygulanamaz.
 
-## Intentionally Not Done
-- Remotion package not installed
-- No composition components written
-- No preview pipeline
-- No job engine integration
-- No package.json for renderer
+## Kasıtlı Olarak Yapılmayanlar
+- Remotion paketi kurulmadı
+- Composition bileşeni yazılmadı
+- Önizleme pipeline'ı yok
+- İş motoru entegrasyonu yok
+- Renderer için package.json yok
 
-## Risks
-- `.gitignore` negation pattern (`!workspace/jobs/` + `workspace/jobs/*` + `!workspace/jobs/.gitkeep`) is correct but somewhat verbose. It is the minimal correct approach for this case — a simpler `workspace/` ignore with a docs note would have lost the folder structure from git entirely.
+## Riskler
+- `.gitignore` negation deseni (`!workspace/jobs/` + `workspace/jobs/*` + `!workspace/jobs/.gitkeep`) doğru ama biraz ayrıntılı. Bu durum için minimal doğru yaklaşımdır — daha basit bir `workspace/` ignore klasör yapısını git'ten tamamen silmiş olurdu.

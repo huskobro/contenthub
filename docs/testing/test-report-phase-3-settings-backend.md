@@ -1,13 +1,13 @@
-# Test Report — Phase 3: Settings Registry Backend
+# Test Raporu — Phase 3: Settings Registry Backend
 
-**Date:** 2026-04-01
-**Phase:** 3 — Settings Registry Backend Foundation
+**Tarih:** 2026-04-01
+**Faz:** 3 — Settings Registry Backend Temeli
 
 ---
 
 ## Amaç
 
-Settings'i ad-hoc config olmaktan çıkarıp DB yönetimli ürün objelerine dönüştürmek.
+Settings'i ad-hoc config olmaktan çıkarıp veritabanı yönetimli ürün objelerine dönüştürmek.
 Bu turda yalnızca backend: model, schema, service, router, migration, testler.
 
 ---
@@ -49,44 +49,44 @@ Revision: `f0dea9dfd155_add_settings_table.py`
 
 | Test | Sonuç |
 |------|-------|
-| test_settings_table_exists | PASSED |
-| test_create_setting | PASSED |
-| test_list_settings_returns_list | PASSED |
-| test_list_settings_group_filter | PASSED |
-| test_get_setting_by_id | PASSED |
-| test_get_setting_not_found | PASSED |
-| test_update_setting | PASSED |
-| test_update_setting_not_found | PASSED |
-| test_create_duplicate_key_returns_409 | PASSED |
-| test_health_returns_200 | PASSED |
-| test_health_response_shape | PASSED |
-| test_engine_connects | PASSED |
-| test_wal_mode_enabled | PASSED |
-| test_foreign_keys_enabled | PASSED |
-| test_foundation_tables_exist | PASSED |
-| test_session_factory_yields_session | PASSED |
-| test_app_state_crud | PASSED |
+| `test_settings_table_exists` | PASSED |
+| `test_create_setting` | PASSED |
+| `test_list_settings_returns_list` | PASSED |
+| `test_list_settings_group_filter` | PASSED |
+| `test_get_setting_by_id` | PASSED |
+| `test_get_setting_not_found` | PASSED |
+| `test_update_setting` | PASSED |
+| `test_update_setting_not_found` | PASSED |
+| `test_create_duplicate_key_returns_409` | PASSED |
+| `test_health_returns_200` | PASSED |
+| `test_health_response_shape` | PASSED |
+| `test_engine_connects` | PASSED |
+| `test_wal_mode_enabled` | PASSED |
+| `test_foreign_keys_enabled` | PASSED |
+| `test_foundation_tables_exist` | PASSED |
+| `test_session_factory_yields_session` | PASSED |
+| `test_app_state_crud` | PASSED |
 
 ---
 
-## Bilerek Yapılmayanlar
+## Kasıtlı Olarak Yapılmayanlar
 
 - DELETE endpoint
-- Bulk import/export
-- User override resolution
-- Visibility resolution
-- Caching
+- Toplu içe/dışa aktarma
+- Kullanıcı override çözümleme
+- Görünürlük çözümleme
+- Önbellekleme
 - SSE invalidation
 - Audit log entegrasyonu derinleştirmesi
 - Settings seed sistemi
-- Role bazlı permission enforcement
+- Rol bazlı yetki zorlama
 - Frontend settings sayfası
 - Wizard / Visibility Engine entegrasyonu
 
 ---
 
-## Riskler / Ertelenmiş
+## Riskler / Ertelenenler
 
-- `version` alanı elle artırılıyor — ileride optimistic lock veya event-driven versiyon yönetimine geçilebilir.
+- `version` alanı elle artırılıyor — ilerleyen fazlarda iyimser kilitleme veya olay güdümlü versiyon yönetimine geçilebilir.
 - `validation_rules_json` alanı DB katmanında yapısal doğrulama yapmıyor; service katmanında değerlendirme ilerleyen fazlarda eklenecek.
 - Test veritabanı prod DB ile aynı SQLite dosyasını paylaşıyor — izolasyon için in-memory test DB ilerleyen fazlarda değerlendirilebilir.

@@ -1,27 +1,27 @@
 # Renderer
 
-This directory contains the rendering layer for ContentHub.
+Bu dizin ContentHub'ın render katmanını barındırır.
 
-## Purpose
+## Amaç
 
-The renderer is kept separate from the backend (`backend/`) intentionally. Rendering is a distinct concern — it transforms structured content data into video/image artifacts using Remotion. Mixing it into the FastAPI application would create a monolithic boundary that is hard to isolate, test, or replace.
+Renderer kasıtlı olarak backend'den (`backend/`) ayrı tutulur. Render ayrı bir sorumluluk alanıdır — yapılandırılmış içerik verisini Remotion kullanarak video/görsel çıktılara dönüştürür. Bu mantığı FastAPI uygulamasının içine karıştırmak, izole etmesi, test etmesi veya değiştirmesi güç monolitik bir sınır oluşturur.
 
-## Why No Remotion Code Yet
+## Neden Henüz Remotion Kodu Yok
 
-Remotion requires composition components, a render entry point, and a bundled composition registry. These depend on the Template system and Style Blueprint system, which are not yet built. Introducing Remotion before those contracts are stable would create premature coupling.
+Remotion, composition bileşenleri, bir render giriş noktası ve paketlenmiş bir composition kaydı gerektirir. Bunlar Template sistemi ve Style Blueprint sistemine bağımlıdır; henüz bu sistemler inşa edilmemiştir. Remotion'ı bu sözleşmeler kararlı hale gelmeden önce eklemek erken bağımlılık yaratır.
 
-## What Will Live Here
+## Buraya Gelecek Olanlar
 
-- `src/compositions/` — Remotion composition components, one per content module type
-- `src/shared/` — shared layout primitives, safe composition mapping, type contracts
-- Safe composition mapping: AI-generated content is never allowed to write uncontrolled render code. A deterministic mapping layer here translates structured data to Remotion props.
-- Final render entrypoints: called by the job engine once content is approved
-- Preview/draft composition surfaces: lightweight single-frame or short-segment outputs for wizard previews and style selection
+- `src/compositions/` — Remotion composition bileşenleri, her içerik modül tipi için ayrı
+- `src/shared/` — paylaşılan layout primitifleri, güvenli composition mapping, tip sözleşmeleri
+- Güvenli composition mapping: Yapay zeka tarafından üretilen içeriğin kontrolsüz render kodu yazmasına asla izin verilmez. Buradaki deterministik mapping katmanı yapılandırılmış veriyi Remotion prop'larına çevirir.
+- Final render giriş noktaları: içerik onaylandıktan sonra iş motoru tarafından çağrılır
+- Önizleme/taslak composition yüzeyleri: sihirbaz önizlemeleri ve stil seçimi için hafif tek kare veya kısa segment çıktıları
 
-## What Is Not Here
+## Buraya Gelmeyecek Olanlar
 
-- No Remotion package yet
-- No composition components
-- No preview pipeline
-- No job engine integration
-- No connection to backend or frontend
+- Henüz Remotion paketi yok
+- Composition bileşeni yok
+- Önizleme pipeline'ı yok
+- İş motoru entegrasyonu yok
+- Backend veya frontend ile bağlantı yok

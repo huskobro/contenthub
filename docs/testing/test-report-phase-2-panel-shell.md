@@ -1,12 +1,12 @@
-# Test Report — Phase 2 Frontend Panel Shell
+# Test Raporu — Phase 2 Frontend Panel Shell
 
-**Date:** 2026-04-01
-**Phase:** 2 — Frontend Panel Shell and Basic Routing
+**Tarih:** 2026-04-01
+**Faz:** 2 — Frontend Panel Shell ve Temel Routing
 
-## Goal
-Replace toggle-based single-screen approach with real route structure. Verify that both Admin and User shells render correctly via react-router-dom.
+## Amaç
+Toggle tabanlı tek ekran yaklaşımını gerçek route yapısıyla değiştir. Admin ve User shell'lerinin react-router-dom üzerinden doğru render edildiğini doğrula.
 
-## Commands Run
+## Çalıştırılan Komutlar
 
 ```bash
 export PATH="/opt/homebrew/opt/node/bin:$PATH"
@@ -16,7 +16,7 @@ npm run build                # tsc --noEmit + vite build
 npm test                     # vitest run
 ```
 
-## Test Results
+## Test Sonuçları
 
 ```
 src/tests/app.smoke.test.tsx (4 tests) 43ms
@@ -30,7 +30,7 @@ Test Files  1 passed (1)
   Duration  433ms
 ```
 
-## Build Output
+## Build Çıktısı
 
 ```
 ✓ 40 modules transformed.
@@ -38,17 +38,17 @@ dist/assets/index-DPVJ4PiW.js  210.45 kB │ gzip: 68.61 kB
 ✓ built in 318ms
 ```
 
-## Issues Fixed During This Turn
-- First test run: `getByText("Dashboard")` found 2 elements — the sidebar NavLink and the page `<h2>`. Fixed by using `getByRole("heading", { name: "Dashboard" })` to target only the heading.
+## Bu Turda Çözülen Sorunlar
+- İlk test çalışmasında `getByText("Dashboard")` 2 element buldu — sidebar NavLink ve sayfa `<h2>`'si. Yalnızca heading'i hedeflemek için `getByRole("heading", { name: "Dashboard" })` kullanıldı.
 
-## Intentionally Not Done
-- Auth / role enforcement
-- Zustand stores
+## Kasıtlı Olarak Yapılmayanlar
+- Auth / rol zorlama
+- Zustand store'ları
 - React Query
-- Permission guards on routes
-- 404 page
-- Real navigation between all sidebar items
+- Route üzerinde yetki koruması
+- 404 sayfası
+- Tüm sidebar öğeleri arasında gerçek navigasyon
 
-## Risks
-- React Router v7 future flag warning (`v7_startTransition`) appears in test stderr — not a failure, just a deprecation notice. Will resolve naturally when upgrading to v7 in a later phase.
-- Node not on default shell PATH — must prefix with `export PATH=...` each session.
+## Riskler
+- React Router v7 future flag uyarısı (`v7_startTransition`) test stderr'inde görünüyor — hata değil, sadece deprecation bildirimi. İlerleyen fazda v7'ye geçildiğinde kendiliğinden çözülecek.
+- Node varsayılan shell PATH'inde değil — her oturumda `export PATH=...` ile eklenmelidir.

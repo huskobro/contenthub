@@ -1,9 +1,9 @@
-# Architecture
+# Mimari
 
-This directory will hold architecture documentation as the project evolves.
+Bu dizin, proje geliştikçe mimari dokümantasyonu barındıracaktır.
 
-Currently in Phase 0. No subsystem code exists yet.
+Şu an Phase 3 tamamlandı. Temel alt sistem kodları mevcut.
 
-The primary reference document is [CLAUDE.md](../../CLAUDE.md). All architecture rules, patterns, and non-negotiable constraints are defined there.
+Ana referans doküman [CLAUDE.md](../../CLAUDE.md)'dir. Tüm mimari kurallar, desenler ve değiştirilmez kısıtlamalar orada tanımlanmıştır.
 
-As subsystems are built, architecture notes for each will be added here (e.g., `job-engine.md`, `settings-registry.md`, `visibility-engine.md`).
+Alt sistemler inşa edildikçe her birinin mimari notları buraya eklenecektir (örneğin `job-engine.md`, `settings-registry.md`, `visibility-engine.md`).

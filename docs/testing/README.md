@@ -1,9 +1,7 @@
-# Testing
+# Test Raporları
 
-This directory will hold test reports and testing documentation.
+Bu dizin, test raporlarını ve test dokümantasyonunu barındırır.
 
-Every meaningful change must include relevant tests and a written record of results, per CLAUDE.md policy.
+`CLAUDE.md` politikası gereği her anlamlı değişiklik ilgili testleri ve yazılı sonuç kaydını içermelidir.
 
-Currently in Phase 0. No application code exists yet, so no tests have been run.
-
-As phases progress, test reports will be recorded here by phase and subsystem.
+Fazlar ilerledikçe test raporları burada faz ve alt sistem bazında tutulmaktadır.

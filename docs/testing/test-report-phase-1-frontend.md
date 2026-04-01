@@ -1,13 +1,13 @@
-# Test Report — Phase 1 Frontend Skeleton
+# Test Raporu — Phase 1 Frontend Skeleton
 
-**Date:** 2026-04-01
-**Phase:** 1 — Frontend Technical Skeleton
+**Tarih:** 2026-04-01
+**Faz:** 1 — Frontend Teknik İskeleti
 **Node:** v25.8.1 (homebrew, arm64)
 
-## Goal
-Verify that the minimum frontend skeleton builds cleanly and smoke tests pass.
+## Amaç
+Minimum frontend iskeletinin temiz derlendiğini ve smoke testlerinin geçtiğini doğrula.
 
-## Commands Run
+## Çalıştırılan Komutlar
 
 ```bash
 export PATH="/opt/homebrew/opt/node/bin:$PATH"
@@ -17,7 +17,7 @@ npm run build      # tsc --noEmit + vite build
 npm test           # vitest run
 ```
 
-## Test Results
+## Test Sonuçları
 
 ```
 src/tests/app.smoke.test.tsx (3 tests) 45ms
@@ -30,7 +30,7 @@ Test Files  1 passed (1)
   Duration  589ms
 ```
 
-## Build Output
+## Build Çıktısı
 
 ```
 dist/index.html                  0.32 kB │ gzip: 0.23 kB
@@ -38,15 +38,15 @@ dist/assets/index-BLCbotNH.js  143.36 kB │ gzip: 46.06 kB
 ✓ built in 232ms
 ```
 
-## Issues Fixed During This Turn
-- `tsconfig.node.json`: removed `noEmit: true` and added `composite: true` — the two are incompatible in a referenced project.
-- `@testing-library/user-event` added to devDependencies — was used in test but missing from package.json.
+## Bu Turda Çözülen Sorunlar
+- `tsconfig.node.json`: `noEmit: true` kaldırıldı ve `composite: true` eklendi — ikisi referenced project'te birlikte kullanılamaz.
+- `@testing-library/user-event` devDependencies'e eklendi — testte kullanılıyordu ama package.json'da eksikti.
 
-## Intentionally Not Tested
-- Routing (not implemented)
-- Auth (not implemented)
-- Any server state / React Query hooks
-- Any Zustand stores
+## Kasıtlı Olarak Test Edilmeyenler
+- Routing (henüz uygulanmadı)
+- Auth (uygulanmadı)
+- Sunucu durumu / React Query hook'ları
+- Zustand store'ları
 
-## Risks
-- Node is not on the default shell PATH. Must use `export PATH="/opt/homebrew/opt/node/bin:$PATH"` or configure shell profile. A Makefile in a later phase should handle this.
+## Riskler
+- Node varsayılan shell PATH'inde değil. Her oturumda `export PATH="/opt/homebrew/opt/node/bin:$PATH"` ile eklenmelidir. İlerleyen fazda Makefile ile çözülecek.
