@@ -75,5 +75,5 @@
 - `frontend/package.json` (added react-router-dom)
 - `docs/testing/test-report-phase-2-panel-shell.md`
 **Tests:** `npm test` — 4 passed in 433ms
-**Commit:** TBD
-**Push:** TBD
+**Commit:** `943ac13` — `feat: add phase 2 frontend panel shell and basic routing`
+**Push:** ✓ Pushed to `git@github.com:huskobro/contenthub.git`
