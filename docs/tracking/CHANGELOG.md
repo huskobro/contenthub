@@ -78,8 +78,8 @@
 - `backend/tests/test_db_bootstrap.py` (6 new async tests)
 - `docs/testing/test-report-phase-2-db-foundation.md`
 **Tests:** `pytest tests/test_db_bootstrap.py tests/test_health.py` — 8 passed in 0.14s
-**Commit:** TBD
-**Push:** TBD
+**Commit:** `0fb487d` — `feat: add phase 2 backend database foundation with sqlite and alembic`
+**Push:** ✓ Pushed to `git@github.com:huskobro/contenthub.git`
 
 ---
 
