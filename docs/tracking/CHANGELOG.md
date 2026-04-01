@@ -2,6 +2,25 @@
 
 ---
 
+## [2026-04-02] Phase 23 — News Source Registry Backend Foundation
+
+**Ne:** NewsSource modeli, migration, schemas, service, router ve API testleri eklendi.
+**Eklenen/değiştirilen dosyalar:**
+- `backend/app/db/models.py` (NewsSource ORM modeli eklendi)
+- `backend/alembic/versions/a1078575e258_add_news_sources_table.py` (yeni migration)
+- `backend/app/sources/__init__.py` (yeni)
+- `backend/app/sources/schemas.py` (SourceCreate, SourceUpdate, SourceResponse)
+- `backend/app/sources/service.py` (list, get, create, update)
+- `backend/app/sources/router.py` (/api/v1/sources CRUD)
+- `backend/app/api/router.py` (sources_router eklendi)
+- `backend/tests/test_sources_api.py` (15 yeni test)
+- `docs/testing/test-report-phase-23-sources-backend.md` (yeni)
+**Testler:** `pytest` — 15/15 phase test passed | 97/97 toplam passed
+**Commit:** — `feat: add phase 23 sources backend foundation`
+**Push:** ✅ `git@github.com:huskobro/contenthub.git`
+
+---
+
 ## [2026-04-02] Phase 22 — Admin Style Blueprints Registry Frontend
 
 **Ne:** Style Blueprints admin sayfası oluşturuldu. API katmanı, hooks, tablo, detail panel, registry sayfası ve sidebar entegrasyonu eklendi.
@@ -17,7 +36,8 @@
 - `frontend/src/tests/style-blueprints-registry.smoke.test.tsx` (9 yeni test)
 - `docs/testing/test-report-phase-22-style-blueprints-frontend.md` (yeni)
 **Testler:** `npm test` — 103 passed (94 mevcut + 9 yeni) | build ✅ 324.25 kB
-**Commit:** (bekliyor)
+**Commit:** `4e8f00e` — `feat: add phase 22 admin style blueprints registry frontend`
+**Push:** ✅ `git@github.com:huskobro/contenthub.git`
 
 ---
 

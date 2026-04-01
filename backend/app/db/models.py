@@ -448,3 +448,46 @@ class StyleBlueprint(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=_now, onupdate=_now
     )
+
+
+class NewsSource(Base):
+    """
+    News Source Registry — Phase 23.
+
+    First-class admin-managed news source record.
+    Supports RSS, manual URL, and API source types.
+    Foundation for source scan engine, used-news registry, and News Bulletin module.
+
+    name         : user-friendly source name
+    source_type  : e.g. 'rss', 'manual_url', 'api'
+    base_url     : main site/source URL (nullable)
+    feed_url     : RSS/Atom feed address (nullable)
+    api_endpoint : API-based source endpoint (nullable)
+    trust_level  : e.g. 'low', 'medium', 'high'
+    scan_mode    : e.g. 'manual', 'auto', 'curated'
+    language     : e.g. 'tr', 'en'
+    category     : e.g. 'general', 'crypto', 'finance', 'tech'
+    status       : e.g. 'active', 'paused', 'archived'
+    notes        : short description/notes
+    """
+
+    __tablename__ = "news_sources"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    name: Mapped[str] = mapped_column(String(200), nullable=False, index=True)
+    source_type: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
+    base_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    feed_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    api_endpoint: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    trust_level: Mapped[Optional[str]] = mapped_column(String(50), nullable=True, index=True)
+    scan_mode: Mapped[Optional[str]] = mapped_column(String(50), nullable=True, index=True)
+    language: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
+    category: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    status: Mapped[str] = mapped_column(String(50), nullable=False, default="active", index=True)
+    notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now, onupdate=_now
+    )
