@@ -1,0 +1,49 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Node
+node_modules/
+dist/
+coverage/
+.next/
+out/
+
+# Environment and secrets
+.env
+.env.*
+*.pem
+token.json
+credentials.json
+*.key
+*.secret
+
+# Local app data
+data/*.db
+data/*.sqlite
+data/*.sqlite3
+
+# Local runtime / workspace
+workspace/
+.tmp/
+
+# Editor / system
+.idea/
+.vscode/
+*.swp
+*.swo
