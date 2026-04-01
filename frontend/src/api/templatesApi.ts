@@ -38,3 +38,49 @@ export async function fetchTemplateById(templateId: string): Promise<TemplateRes
   if (!resp.ok) throw new Error(`Failed to fetch template ${templateId}: ${resp.status}`);
   return resp.json();
 }
+
+export interface TemplateCreatePayload {
+  name: string;
+  template_type: string;
+  owner_scope: string;
+  module_scope?: string | null;
+  description?: string | null;
+  style_profile_json?: string | null;
+  content_rules_json?: string | null;
+  publish_profile_json?: string | null;
+  status?: string;
+  version?: number;
+}
+
+export interface TemplateUpdatePayload {
+  name?: string;
+  template_type?: string;
+  owner_scope?: string;
+  module_scope?: string | null;
+  description?: string | null;
+  style_profile_json?: string | null;
+  content_rules_json?: string | null;
+  publish_profile_json?: string | null;
+  status?: string;
+  version?: number;
+}
+
+export async function createTemplate(payload: TemplateCreatePayload): Promise<TemplateResponse> {
+  const resp = await fetch(BASE_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!resp.ok) throw new Error(`Failed to create template: ${resp.status}`);
+  return resp.json();
+}
+
+export async function updateTemplate(templateId: string, payload: TemplateUpdatePayload): Promise<TemplateResponse> {
+  const resp = await fetch(`${BASE_URL}/${templateId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!resp.ok) throw new Error(`Failed to update template ${templateId}: ${resp.status}`);
+  return resp.json();
+}

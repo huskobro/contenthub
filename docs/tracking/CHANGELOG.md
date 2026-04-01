@@ -2,6 +2,25 @@
 
 ---
 
+## [2026-04-02] Phase 20 — Template Create/Edit Form Frontend
+
+**Ne:** Template create sayfası, ortak TemplateForm bileşeni ve detail panel içinde edit mode eklendi.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/api/templatesApi.ts` (createTemplate, updateTemplate, payload tipleri eklendi)
+- `frontend/src/hooks/useCreateTemplate.ts` (yeni)
+- `frontend/src/hooks/useUpdateTemplate.ts` (yeni)
+- `frontend/src/components/templates/TemplateForm.tsx` (yeni — ortak form)
+- `frontend/src/pages/admin/TemplateCreatePage.tsx` (yeni — /admin/templates/new)
+- `frontend/src/components/templates/TemplateDetailPanel.tsx` (edit mode eklendi)
+- `frontend/src/pages/admin/TemplatesRegistryPage.tsx` ("+ Yeni Template" butonu eklendi)
+- `frontend/src/app/router.tsx` (templates/new route eklendi)
+- `frontend/src/tests/template-form.smoke.test.tsx` (10 yeni test)
+- `docs/testing/test-report-phase-20-template-form-frontend.md` (yeni)
+**Testler:** `npm test` — 94 passed (84 mevcut + 10 yeni) | build ✅ 318.37 kB
+**Commit:** (bekliyor)
+
+---
+
 ## [2026-04-02] Phase 19 — Admin Templates Registry Frontend
 
 **Ne:** Templates admin sayfası oluşturuldu. API katmanı, React Query hook'ları, TemplatesTable, TemplateDetailPanel, TemplatesRegistryPage ve sidebar entegrasyonu eklendi.
@@ -17,7 +36,8 @@
 - `frontend/src/tests/templates-registry.smoke.test.tsx` (9 yeni test)
 - `docs/testing/test-report-phase-19-templates-frontend.md` (yeni)
 **Testler:** `npm test` — 84 passed (75 mevcut + 9 yeni) | build ✅ 308.82 kB
-**Commit:** (bekliyor)
+**Commit:** `347d104` — `feat: add phase 19 admin templates registry frontend`
+**Push:** ✅ `git@github.com:huskobro/contenthub.git`
 
 ---
 

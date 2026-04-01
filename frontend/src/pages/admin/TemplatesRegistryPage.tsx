@@ -1,15 +1,35 @@
 import { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useTemplatesList } from "../../hooks/useTemplatesList";
 import { TemplatesTable } from "../../components/templates/TemplatesTable";
 import { TemplateDetailPanel } from "../../components/templates/TemplateDetailPanel";
 
 export function TemplatesRegistryPage() {
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const location = useLocation();
+  const initialSelected = (location.state as { selectedId?: string } | null)?.selectedId ?? null;
+  const [selectedId, setSelectedId] = useState<string | null>(initialSelected);
+  const navigate = useNavigate();
   const { data: templates, isLoading, isError, error } = useTemplatesList();
 
   return (
     <div>
-      <h2 style={{ margin: "0 0 0.25rem" }}>Templates Registry</h2>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0.25rem" }}>
+        <h2 style={{ margin: 0 }}>Templates Registry</h2>
+        <button
+          onClick={() => navigate("/admin/templates/new")}
+          style={{
+            padding: "0.375rem 1rem",
+            fontSize: "0.875rem",
+            background: "#3b82f6",
+            color: "#fff",
+            border: "none",
+            borderRadius: "4px",
+            cursor: "pointer",
+          }}
+        >
+          + Yeni Template
+        </button>
+      </div>
       <p style={{ margin: "0 0 1.25rem", color: "#64748b", fontSize: "0.875rem" }}>
         Sistemde kayıtlı template'lerin listesi. Detay için bir template seçin.
       </p>

@@ -1,4 +1,8 @@
+import { useState } from "react";
 import { useTemplateDetail } from "../../hooks/useTemplateDetail";
+import { useUpdateTemplate } from "../../hooks/useUpdateTemplate";
+import { TemplateForm } from "./TemplateForm";
+import type { TemplateFormValues } from "./TemplateForm";
 
 interface TemplateDetailPanelProps {
   templateId: string | null;
@@ -60,7 +64,16 @@ function Field({ label, value }: { label: string; value: string | number | null 
 }
 
 export function TemplateDetailPanel({ templateId }: TemplateDetailPanelProps) {
+  const [editMode, setEditMode] = useState(false);
   const { data: template, isLoading, isError, error } = useTemplateDetail(templateId);
+  const { mutate: updateTemplate, isPending: isUpdating, error: updateError } = useUpdateTemplate(templateId ?? "");
+
+  // Reset edit mode when template selection changes
+  const [prevId, setPrevId] = useState(templateId);
+  if (prevId !== templateId) {
+    setPrevId(templateId);
+    setEditMode(false);
+  }
 
   if (!templateId) {
     return (
@@ -93,6 +106,48 @@ export function TemplateDetailPanel({ templateId }: TemplateDetailPanelProps) {
 
   if (!template) return null;
 
+  if (editMode) {
+    function handleUpdate(values: TemplateFormValues) {
+      updateTemplate(
+        {
+          name: values.name.trim(),
+          template_type: values.template_type,
+          owner_scope: values.owner_scope,
+          module_scope: values.module_scope.trim() || null,
+          description: values.description.trim() || null,
+          status: values.status,
+          version: values.version.trim() ? Number(values.version) : undefined,
+          style_profile_json: values.style_profile_json.trim() || null,
+          content_rules_json: values.content_rules_json.trim() || null,
+          publish_profile_json: values.publish_profile_json.trim() || null,
+        },
+        { onSuccess: () => setEditMode(false) }
+      );
+    }
+
+    return (
+      <div
+        style={{
+          padding: "1.25rem",
+          border: "1px solid #e2e8f0",
+          borderRadius: "6px",
+          background: "#fff",
+        }}
+      >
+        <h3 style={{ margin: "0 0 1rem", fontSize: "1rem", color: "#1e293b" }}>Düzenle</h3>
+        <TemplateForm
+          mode="edit"
+          initial={template}
+          isSubmitting={isUpdating}
+          submitError={updateError instanceof Error ? updateError.message : null}
+          onSubmit={handleUpdate}
+          onCancel={() => setEditMode(false)}
+          submitLabel="Kaydet"
+        />
+      </div>
+    );
+  }
+
   return (
     <div
       style={{
@@ -102,7 +157,23 @@ export function TemplateDetailPanel({ templateId }: TemplateDetailPanelProps) {
         background: "#fff",
       }}
     >
-      <h3 style={{ margin: "0 0 1rem", fontSize: "1rem", color: "#1e293b" }}>{template.name}</h3>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1rem" }}>
+        <h3 style={{ margin: 0, fontSize: "1rem", color: "#1e293b" }}>{template.name}</h3>
+        <button
+          onClick={() => setEditMode(true)}
+          style={{
+            padding: "0.25rem 0.75rem",
+            fontSize: "0.8rem",
+            background: "#f1f5f9",
+            color: "#475569",
+            border: "1px solid #e2e8f0",
+            borderRadius: "4px",
+            cursor: "pointer",
+          }}
+        >
+          Düzenle
+        </button>
+      </div>
 
       <Field label="Type" value={template.template_type} />
       <Field label="Owner Scope" value={template.owner_scope} />
