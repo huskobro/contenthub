@@ -17,8 +17,8 @@
 - `frontend/src/tests/settings-registry.smoke.test.tsx` (5 yeni test)
 - `docs/testing/test-report-phase-5-settings-frontend.md`
 **Testler:** `npm test` — 9 passed (4 eski + 5 yeni) in 827ms
-**Commit:** TBD
-**Push:** TBD
+**Commit:** `318f262` — `feat: add phase 5 admin settings registry frontend foundation`
+**Push:** ✓ `git@github.com:huskobro/contenthub.git`
 
 ---
 
