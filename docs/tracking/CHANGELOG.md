@@ -2,6 +2,26 @@
 
 ---
 
+## [2026-04-01] Phase 15 — Standard Video Create/Edit Frontend
+
+**Ne:** Standard Video create ve edit UI eklendi. Yeniden kullanılabilir form bileşeni, create sayfası, detail sayfasına edit modu, `/admin/standard-videos/new` route ve liste sayfasına "Yeni Standard Video" butonu eklendi.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/api/standardVideoApi.ts` (`StandardVideoCreatePayload`, `StandardVideoUpdatePayload`, `createStandardVideo`, `updateStandardVideo` eklendi)
+- `frontend/src/hooks/useCreateStandardVideo.ts` (yeni)
+- `frontend/src/hooks/useUpdateStandardVideo.ts` (yeni)
+- `frontend/src/components/standard-video/StandardVideoForm.tsx` (yeni)
+- `frontend/src/pages/admin/StandardVideoCreatePage.tsx` (yeni)
+- `frontend/src/pages/admin/StandardVideoDetailPage.tsx` (edit modu eklendi)
+- `frontend/src/app/router.tsx` (`/admin/standard-videos/new` rotası eklendi)
+- `frontend/src/pages/admin/StandardVideoRegistryPage.tsx` (Yeni butonu eklendi)
+- `frontend/src/tests/standard-video-form.smoke.test.tsx` (6 yeni test)
+- `docs/testing/test-report-phase-15-standard-video-form-frontend.md` (yeni)
+**Testler:** `npm test` — 50 passed (44 mevcut + 6 yeni) | build ✅ 287.99 kB
+**Commit:** `PLACEHOLDER` — `feat: add phase 15 standard video create/edit frontend`
+**Push:** ✅ `git@github.com:huskobro/contenthub.git`
+
+---
+
 ## [2026-04-01] Phase 14 — Standard Video Admin Frontend
 
 **Ne:** Standard Video admin registry ve detail sayfaları eklendi. API katmanı, hooks, tablo, overview/artifacts panelleri ve rotalar kuruldu.

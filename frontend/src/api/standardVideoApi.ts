@@ -73,3 +73,53 @@ export async function fetchStandardVideoMetadata(
   if (!res.ok) throw new Error(`Failed to fetch metadata for ${id}: ${res.status}`);
   return res.json();
 }
+
+export interface StandardVideoCreatePayload {
+  topic: string;
+  title?: string | null;
+  brief?: string | null;
+  target_duration_seconds?: number | null;
+  tone?: string | null;
+  language?: string | null;
+  visual_direction?: string | null;
+  subtitle_style?: string | null;
+  job_id?: string | null;
+}
+
+export interface StandardVideoUpdatePayload {
+  topic?: string | null;
+  title?: string | null;
+  brief?: string | null;
+  target_duration_seconds?: number | null;
+  tone?: string | null;
+  language?: string | null;
+  visual_direction?: string | null;
+  subtitle_style?: string | null;
+  status?: string | null;
+  job_id?: string | null;
+}
+
+export async function createStandardVideo(
+  payload: StandardVideoCreatePayload
+): Promise<StandardVideoResponse> {
+  const res = await fetch(BASE_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error(`Failed to create standard video: ${res.status}`);
+  return res.json();
+}
+
+export async function updateStandardVideo(
+  id: string,
+  payload: StandardVideoUpdatePayload
+): Promise<StandardVideoResponse> {
+  const res = await fetch(`${BASE_URL}/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error(`Failed to update standard video ${id}: ${res.status}`);
+  return res.json();
+}

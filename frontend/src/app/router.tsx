@@ -9,6 +9,7 @@ import { JobsRegistryPage } from "../pages/admin/JobsRegistryPage";
 import { JobDetailPage } from "../pages/admin/JobDetailPage";
 import { StandardVideoRegistryPage } from "../pages/admin/StandardVideoRegistryPage";
 import { StandardVideoDetailPage } from "../pages/admin/StandardVideoDetailPage";
+import { StandardVideoCreatePage } from "../pages/admin/StandardVideoCreatePage";
 
 export const router = createBrowserRouter([
   {
@@ -25,6 +26,7 @@ export const router = createBrowserRouter([
       { path: "jobs", element: <JobsRegistryPage /> },
       { path: "jobs/:jobId", element: <JobDetailPage /> },
       { path: "standard-videos", element: <StandardVideoRegistryPage /> },
+      { path: "standard-videos/new", element: <StandardVideoCreatePage /> },
       { path: "standard-videos/:itemId", element: <StandardVideoDetailPage /> },
     ],
   },

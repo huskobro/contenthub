@@ -8,7 +8,23 @@ export function StandardVideoRegistryPage() {
 
   return (
     <div>
-      <h2 style={{ margin: "0 0 0.25rem" }}>Standard Video Registry</h2>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0.25rem" }}>
+        <h2 style={{ margin: 0 }}>Standard Video Registry</h2>
+        <button
+          onClick={() => navigate("/admin/standard-videos/new")}
+          style={{
+            padding: "0.375rem 1rem",
+            fontSize: "0.875rem",
+            background: "#3b82f6",
+            color: "#fff",
+            border: "none",
+            borderRadius: "4px",
+            cursor: "pointer",
+          }}
+        >
+          + Yeni Standard Video
+        </button>
+      </div>
       <p style={{ margin: "0 0 1rem", color: "#64748b", fontSize: "0.875rem" }}>
         Sistemde kayıtlı standard video kayıtlarının listesi.
       </p>
