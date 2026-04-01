@@ -1,10 +1,10 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 18 — Template Engine Backend Foundation ✓ TAMAMLANDI
+Phase 19 — Admin Templates Registry Frontend ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Template modeli, migration, schemas, service, router, API testleri: 11/11 test, 71 toplam backend test.
+Templates frontend: API katmanı, hooks, TemplatesTable, TemplateDetailPanel, TemplatesRegistryPage, sidebar, 9 yeni test, 84 toplam frontend test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
@@ -30,6 +30,7 @@ Template modeli, migration, schemas, service, router, API testleri: 11/11 test, 
 - Phase 16 admin standard video script frontend: StandardVideoScriptPanel, create/update mutation hook'ları, API fonksiyonları, 13 yeni test, 63 toplam frontend test (2026-04-01)
 - Phase 17 admin standard video metadata frontend: StandardVideoMetadataPanel, create/update mutation hook'ları, API fonksiyonları, 12 yeni test, 75 toplam frontend test (2026-04-01)
 - Phase 18 template engine backend: Template modeli, migration, schemas, service, router, 11 yeni test, 71 toplam backend test (2026-04-02)
+- Phase 19 admin templates registry frontend: API katmanı, hooks, TemplatesTable, TemplateDetailPanel, TemplatesRegistryPage, sidebar, 9 yeni test, 84 toplam frontend test (2026-04-02)
 
 ## Mevcut Riskler
 - Henüz auth / rol zorlama yok (kasıtlı)

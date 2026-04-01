@@ -2,6 +2,25 @@
 
 ---
 
+## [2026-04-02] Phase 19 — Admin Templates Registry Frontend
+
+**Ne:** Templates admin sayfası oluşturuldu. API katmanı, React Query hook'ları, TemplatesTable, TemplateDetailPanel, TemplatesRegistryPage ve sidebar entegrasyonu eklendi.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/api/templatesApi.ts` (yeni — fetchTemplates, fetchTemplateById)
+- `frontend/src/hooks/useTemplatesList.ts` (yeni)
+- `frontend/src/hooks/useTemplateDetail.ts` (yeni)
+- `frontend/src/components/templates/TemplatesTable.tsx` (yeni)
+- `frontend/src/components/templates/TemplateDetailPanel.tsx` (yeni)
+- `frontend/src/pages/admin/TemplatesRegistryPage.tsx` (yeni)
+- `frontend/src/app/router.tsx` (/admin/templates route eklendi)
+- `frontend/src/app/layouts/AdminLayout.tsx` (Templates nav item eklendi)
+- `frontend/src/tests/templates-registry.smoke.test.tsx` (9 yeni test)
+- `docs/testing/test-report-phase-19-templates-frontend.md` (yeni)
+**Testler:** `npm test` — 84 passed (75 mevcut + 9 yeni) | build ✅ 308.82 kB
+**Commit:** (bekliyor)
+
+---
+
 ## [2026-04-02] Phase 18 — Template Engine Backend Foundation
 
 **Ne:** Template modeli, Alembic migrasyonu, schemas, service, router ve tam API test seti eklendi.
@@ -16,7 +35,8 @@
 - `backend/tests/test_templates_api.py` (11 yeni test)
 - `docs/testing/test-report-phase-18-templates-backend.md` (yeni)
 **Testler:** 11/11 template testi geçti | 71 toplam backend test ✅
-**Commit:** (bekliyor)
+**Commit:** `3be3e13` — `feat: add phase 18 templates backend foundation`
+**Push:** ✅ `git@github.com:huskobro/contenthub.git`
 
 ---
 

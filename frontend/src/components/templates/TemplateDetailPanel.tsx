@@ -1,0 +1,126 @@
+import { useTemplateDetail } from "../../hooks/useTemplateDetail";
+
+interface TemplateDetailPanelProps {
+  templateId: string | null;
+}
+
+function JsonField({ label, value }: { label: string; value: string | null }) {
+  if (value === null || value === undefined) {
+    return (
+      <div style={{ marginBottom: "0.75rem" }}>
+        <div style={{ fontSize: "0.75rem", fontWeight: 600, color: "#64748b", marginBottom: "0.25rem" }}>
+          {label}
+        </div>
+        <span style={{ color: "#94a3b8", fontSize: "0.875rem" }}>—</span>
+      </div>
+    );
+  }
+
+  let formatted = value;
+  try {
+    formatted = JSON.stringify(JSON.parse(value), null, 2);
+  } catch {
+    // not valid JSON, show as-is
+  }
+
+  return (
+    <div style={{ marginBottom: "0.75rem" }}>
+      <div style={{ fontSize: "0.75rem", fontWeight: 600, color: "#64748b", marginBottom: "0.25rem" }}>
+        {label}
+      </div>
+      <pre
+        style={{
+          margin: 0,
+          padding: "0.5rem",
+          background: "#f8fafc",
+          border: "1px solid #e2e8f0",
+          borderRadius: "4px",
+          fontSize: "0.8rem",
+          overflowX: "auto",
+          maxHeight: "120px",
+          whiteSpace: "pre-wrap",
+          wordBreak: "break-all",
+        }}
+      >
+        {formatted}
+      </pre>
+    </div>
+  );
+}
+
+function Field({ label, value }: { label: string; value: string | number | null }) {
+  return (
+    <div style={{ marginBottom: "0.5rem" }}>
+      <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "#64748b" }}>{label}: </span>
+      <span style={{ fontSize: "0.875rem", color: value !== null && value !== undefined ? "#1e293b" : "#94a3b8" }}>
+        {value !== null && value !== undefined ? String(value) : "—"}
+      </span>
+    </div>
+  );
+}
+
+export function TemplateDetailPanel({ templateId }: TemplateDetailPanelProps) {
+  const { data: template, isLoading, isError, error } = useTemplateDetail(templateId);
+
+  if (!templateId) {
+    return (
+      <div
+        style={{
+          padding: "2rem",
+          color: "#94a3b8",
+          fontSize: "0.875rem",
+          textAlign: "center",
+          border: "1px dashed #e2e8f0",
+          borderRadius: "6px",
+        }}
+      >
+        Bir template seçin.
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return <p style={{ color: "#64748b", padding: "1rem" }}>Yükleniyor...</p>;
+  }
+
+  if (isError) {
+    return (
+      <p style={{ color: "#dc2626", padding: "1rem" }}>
+        Hata: {error instanceof Error ? error.message : "Bilinmeyen hata"}
+      </p>
+    );
+  }
+
+  if (!template) return null;
+
+  return (
+    <div
+      style={{
+        padding: "1.25rem",
+        border: "1px solid #e2e8f0",
+        borderRadius: "6px",
+        background: "#fff",
+      }}
+    >
+      <h3 style={{ margin: "0 0 1rem", fontSize: "1rem", color: "#1e293b" }}>{template.name}</h3>
+
+      <Field label="Type" value={template.template_type} />
+      <Field label="Owner Scope" value={template.owner_scope} />
+      <Field label="Module Scope" value={template.module_scope} />
+      <Field label="Status" value={template.status} />
+      <Field label="Version" value={template.version} />
+      <Field label="Description" value={template.description} />
+
+      <div style={{ marginTop: "1rem", borderTop: "1px solid #f1f5f9", paddingTop: "1rem" }}>
+        <JsonField label="style_profile_json" value={template.style_profile_json} />
+        <JsonField label="content_rules_json" value={template.content_rules_json} />
+        <JsonField label="publish_profile_json" value={template.publish_profile_json} />
+      </div>
+
+      <div style={{ marginTop: "0.75rem", borderTop: "1px solid #f1f5f9", paddingTop: "0.75rem" }}>
+        <Field label="Created" value={new Date(template.created_at).toLocaleString()} />
+        <Field label="Updated" value={new Date(template.updated_at).toLocaleString()} />
+      </div>
+    </div>
+  );
+}
