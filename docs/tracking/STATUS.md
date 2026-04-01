@@ -1,10 +1,10 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 10 — Job Detail Page ✓ TAMAMLANDI
+Phase 11 — Standard Video Backend Input Foundation ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Ayrı Job Detail sayfası, overview/timeline/system panelleri, /admin/jobs/:jobId route.
+Standard Video modülü için backend input foundation: model, migration, CRUD API, testler.
 
 ## Devam Eden
 — (devam eden çalışma yok)
@@ -22,6 +22,7 @@ Ayrı Job Detail sayfası, overview/timeline/system panelleri, /admin/jobs/:jobI
 - Phase 8 jobs frontend: API katmanı, hooks, JobsTable, JobDetailPanel, JobStepsList, JobsRegistryPage, 19 toplam frontend test (2026-04-01)
 - Phase 9 elapsed/ETA frontend: formatDuration, DurationBadge, jobs UI güncellendi, 28 toplam frontend test (2026-04-01)
 - Phase 10 job detail page: JobDetailPage, JobOverviewPanel, JobTimelinePanel, JobSystemPanels, /admin/jobs/:jobId, 33 toplam frontend test (2026-04-01)
+- Phase 11 standard video backend: StandardVideo modeli, migration, CRUD API, 8 yeni test, 44 toplam backend test (2026-04-01)
 
 ## Mevcut Riskler
 - Henüz auth / rol zorlama yok (kasıtlı)

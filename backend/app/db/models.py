@@ -1,5 +1,5 @@
 """
-Foundation models — Phase 2, 3, 4, 7.
+Foundation models — Phase 2, 3, 4, 7, 11.
 
 Bootstrap tables (Phase 2):
   - app_state: key/value application state store
@@ -13,6 +13,9 @@ Domain models (Phase 3+):
 Domain models (Phase 7+):
   - jobs: job engine — first-class job objects with state, ownership, timing
   - job_steps: per-step tracking within a job
+
+Domain models (Phase 11+):
+  - standard_videos: standard video module input records
 
 Remaining domain models (templates, sources, publish, analytics)
 will be added in later phases as their subsystems are built.
@@ -234,6 +237,46 @@ class JobStep(Base):
     )
     finished_at: Mapped[Optional[datetime]] = mapped_column(
         DateTime(timezone=True), nullable=True
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now, onupdate=_now
+    )
+
+
+class StandardVideo(Base):
+    """Standard Video module — input record.
+
+    Stores the user-defined parameters for a standard video production job.
+    Does not drive job automation at this stage; job_id is a loose reference
+    that will be wired once the pipeline runner is introduced.
+
+    title             : human-friendly label; nullable
+    topic             : main subject of the video; required
+    brief             : additional direction or context; nullable
+    target_duration_seconds : desired output length in seconds; nullable, not negative
+    tone              : e.g. 'formal', 'casual', 'dramatic'
+    language          : e.g. 'tr', 'en'
+    visual_direction  : e.g. 'clean', 'cinematic', 'minimal'
+    subtitle_style    : e.g. 'standard', 'bold', 'news'
+    status            : lifecycle state; starts as 'draft'
+    job_id            : loose reference to a Job; no hard FK constraint yet
+    """
+
+    __tablename__ = "standard_videos"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    title: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    topic: Mapped[str] = mapped_column(Text, nullable=False)
+    brief: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    target_duration_seconds: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    tone: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    language: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
+    visual_direction: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    subtitle_style: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    status: Mapped[str] = mapped_column(String(50), nullable=False, default="draft", index=True)
+    job_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now
     )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=_now, onupdate=_now
