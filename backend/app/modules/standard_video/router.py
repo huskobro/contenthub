@@ -13,6 +13,9 @@ from app.modules.standard_video.schemas import (
     StandardVideoScriptCreate,
     StandardVideoScriptUpdate,
     StandardVideoScriptResponse,
+    StandardVideoMetadataCreate,
+    StandardVideoMetadataUpdate,
+    StandardVideoMetadataResponse,
 )
 
 router = APIRouter(prefix="/modules/standard-video", tags=["standard-video"])
@@ -101,3 +104,42 @@ async def update_script(
     if script is None:
         raise HTTPException(status_code=404, detail="Script not found for this video")
     return script
+
+
+# ---------------------------------------------------------------------------
+# Metadata endpoints
+# ---------------------------------------------------------------------------
+
+@router.get("/{item_id}/metadata", response_model=StandardVideoMetadataResponse)
+async def get_metadata(
+    item_id: str,
+    db: AsyncSession = Depends(get_db),
+) -> StandardVideoMetadataResponse:
+    await _require_video(item_id, db)
+    meta = await service.get_metadata_for_video(db, item_id)
+    if meta is None:
+        raise HTTPException(status_code=404, detail="Metadata not found for this video")
+    return meta
+
+
+@router.post("/{item_id}/metadata", response_model=StandardVideoMetadataResponse, status_code=201)
+async def create_metadata(
+    item_id: str,
+    payload: StandardVideoMetadataCreate,
+    db: AsyncSession = Depends(get_db),
+) -> StandardVideoMetadataResponse:
+    await _require_video(item_id, db)
+    return await service.create_metadata_for_video(db, item_id, payload)
+
+
+@router.patch("/{item_id}/metadata", response_model=StandardVideoMetadataResponse)
+async def update_metadata(
+    item_id: str,
+    payload: StandardVideoMetadataUpdate,
+    db: AsyncSession = Depends(get_db),
+) -> StandardVideoMetadataResponse:
+    await _require_video(item_id, db)
+    meta = await service.update_metadata_for_video(db, item_id, payload)
+    if meta is None:
+        raise HTTPException(status_code=404, detail="Metadata not found for this video")
+    return meta

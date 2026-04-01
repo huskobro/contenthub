@@ -4,12 +4,14 @@ from typing import Optional
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models import StandardVideo, StandardVideoScript
+from app.db.models import StandardVideo, StandardVideoScript, StandardVideoMetadata
 from app.modules.standard_video.schemas import (
     StandardVideoCreate,
     StandardVideoUpdate,
     StandardVideoScriptCreate,
     StandardVideoScriptUpdate,
+    StandardVideoMetadataCreate,
+    StandardVideoMetadataUpdate,
 )
 
 
@@ -100,3 +102,50 @@ async def update_script_for_video(
     await db.commit()
     await db.refresh(script)
     return script
+
+
+# ---------------------------------------------------------------------------
+# Metadata operations
+# ---------------------------------------------------------------------------
+
+async def get_metadata_for_video(
+    db: AsyncSession, standard_video_id: str
+) -> Optional[StandardVideoMetadata]:
+    result = await db.execute(
+        select(StandardVideoMetadata)
+        .where(StandardVideoMetadata.standard_video_id == standard_video_id)
+        .order_by(StandardVideoMetadata.created_at.desc())
+        .limit(1)
+    )
+    return result.scalar_one_or_none()
+
+
+async def create_metadata_for_video(
+    db: AsyncSession, standard_video_id: str, payload: StandardVideoMetadataCreate
+) -> StandardVideoMetadata:
+    meta = StandardVideoMetadata(
+        standard_video_id=standard_video_id,
+        **payload.model_dump(),
+    )
+    db.add(meta)
+    # Advance video status when metadata is added
+    video = await get_standard_video(db, standard_video_id)
+    if video and video.status in ("draft", "script_ready"):
+        video.status = "metadata_ready"
+    await db.commit()
+    await db.refresh(meta)
+    return meta
+
+
+async def update_metadata_for_video(
+    db: AsyncSession, standard_video_id: str, payload: StandardVideoMetadataUpdate
+) -> Optional[StandardVideoMetadata]:
+    meta = await get_metadata_for_video(db, standard_video_id)
+    if meta is None:
+        return None
+    update_data = payload.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(meta, field, value)
+    await db.commit()
+    await db.refresh(meta)
+    return meta

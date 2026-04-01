@@ -17,6 +17,12 @@ Domain models (Phase 7+):
 Domain models (Phase 11+):
   - standard_videos: standard video module input records
 
+Domain models (Phase 12+):
+  - standard_video_scripts: script artifact per standard video
+
+Domain models (Phase 13+):
+  - standard_video_metadata: publish metadata artifact per standard video
+
 Remaining domain models (templates, sources, publish, analytics)
 will be added in later phases as their subsystems are built.
 """
@@ -309,6 +315,51 @@ class StandardVideoScript(Base):
         index=True,
     )
     content: Mapped[str] = mapped_column(Text, nullable=False)
+    version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    source_type: Mapped[str] = mapped_column(String(50), nullable=False, default="manual")
+    generation_status: Mapped[str] = mapped_column(String(50), nullable=False, default="draft")
+    notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now, onupdate=_now
+    )
+
+
+class StandardVideoMetadata(Base):
+    """Publish-ready metadata artifact for a Standard Video record.
+
+    Stores title, description, tags, and related fields that will eventually
+    feed into a publish payload. One active record per video in v1; version
+    field allows future expansion.
+
+    standard_video_id : FK to standard_videos.id (CASCADE)
+    title             : publish title; required, not blank
+    description       : publish description; nullable
+    tags_json         : JSON text list of tags; nullable
+    category          : e.g. 'education', 'news', 'general'
+    language          : e.g. 'tr', 'en'
+    version           : integer version counter; starts at 1
+    source_type       : 'manual' | 'generated'
+    generation_status : e.g. 'draft', 'ready'
+    notes             : optional short annotation
+    """
+
+    __tablename__ = "standard_video_metadata"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    standard_video_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("standard_videos.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    title: Mapped[str] = mapped_column(Text, nullable=False)
+    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    tags_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    category: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    language: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
     version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
     source_type: Mapped[str] = mapped_column(String(50), nullable=False, default="manual")
     generation_status: Mapped[str] = mapped_column(String(50), nullable=False, default="draft")

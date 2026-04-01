@@ -106,3 +106,61 @@ class StandardVideoScriptResponse(BaseModel):
     updated_at: datetime
 
     model_config = {"from_attributes": True}
+
+
+# ---------------------------------------------------------------------------
+# Metadata schemas
+# ---------------------------------------------------------------------------
+
+class StandardVideoMetadataCreate(BaseModel):
+    title: str
+    description: Optional[str] = None
+    tags_json: Optional[str] = None
+    category: Optional[str] = None
+    language: Optional[str] = None
+    source_type: Optional[str] = "manual"
+    generation_status: Optional[str] = "draft"
+    notes: Optional[str] = None
+
+    @field_validator("title")
+    @classmethod
+    def title_not_blank(cls, v: str) -> str:
+        if not v or not v.strip():
+            raise ValueError("title must not be empty or whitespace")
+        return v
+
+
+class StandardVideoMetadataUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    tags_json: Optional[str] = None
+    category: Optional[str] = None
+    language: Optional[str] = None
+    source_type: Optional[str] = None
+    generation_status: Optional[str] = None
+    notes: Optional[str] = None
+
+    @field_validator("title")
+    @classmethod
+    def title_not_blank(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None and not v.strip():
+            raise ValueError("title must not be empty or whitespace")
+        return v
+
+
+class StandardVideoMetadataResponse(BaseModel):
+    id: str
+    standard_video_id: str
+    title: str
+    description: Optional[str] = None
+    tags_json: Optional[str] = None
+    category: Optional[str] = None
+    language: Optional[str] = None
+    version: int
+    source_type: str
+    generation_status: str
+    notes: Optional[str] = None
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = {"from_attributes": True}
