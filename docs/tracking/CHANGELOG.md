@@ -2,6 +2,24 @@
 
 ---
 
+## [2026-04-02] Phase 18 — Template Engine Backend Foundation
+
+**Ne:** Template modeli, Alembic migrasyonu, schemas, service, router ve tam API test seti eklendi.
+**Eklenen/değiştirilen dosyalar:**
+- `backend/app/db/models.py` (Template ORM modeli eklendi)
+- `backend/alembic/versions/2e7eb44ff9c8_add_templates_table.py` (yeni migration)
+- `backend/app/modules/templates/__init__.py` (yeni)
+- `backend/app/modules/templates/schemas.py` (TemplateCreate, TemplateUpdate, TemplateResponse)
+- `backend/app/modules/templates/service.py` (list, get, create, update)
+- `backend/app/modules/templates/router.py` (GET/POST /templates, GET/PATCH /templates/{id})
+- `backend/app/api/router.py` (templates_router eklendi)
+- `backend/tests/test_templates_api.py` (11 yeni test)
+- `docs/testing/test-report-phase-18-templates-backend.md` (yeni)
+**Testler:** 11/11 template testi geçti | 71 toplam backend test ✅
+**Commit:** (bekliyor)
+
+---
+
 ## [2026-04-01] Phase 17 — Admin Standard Video Metadata Frontend
 
 **Ne:** Standard Video detail sayfasında metadata artifact için tam create/edit UI eklendi. ArtifactsPanel kaldırılıp yerine bağımsız ScriptPanel + MetadataPanel konuldu.

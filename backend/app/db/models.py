@@ -370,3 +370,38 @@ class StandardVideoMetadata(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=_now, onupdate=_now
     )
+
+
+class Template(Base):
+    """
+    Template Engine — Phase 18.
+
+    template_type  : 'style' | 'content' | 'publish'
+    owner_scope    : 'system' | 'admin' | 'user'
+    module_scope   : e.g. 'standard_video', 'news_bulletin', or null (global)
+    style_profile_json   : style template data payload
+    content_rules_json   : content template data payload
+    publish_profile_json : publish template data payload
+    status         : e.g. 'draft', 'active', 'archived'
+    version        : integer version counter
+    """
+
+    __tablename__ = "templates"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    name: Mapped[str] = mapped_column(String(200), nullable=False, index=True)
+    template_type: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
+    owner_scope: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
+    module_scope: Mapped[Optional[str]] = mapped_column(String(100), nullable=True, index=True)
+    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    style_profile_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    content_rules_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    publish_profile_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    status: Mapped[str] = mapped_column(String(50), nullable=False, default="draft", index=True)
+    version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now, onupdate=_now
+    )

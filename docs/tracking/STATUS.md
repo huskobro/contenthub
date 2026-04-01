@@ -1,10 +1,10 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 17 — Admin Standard Video Metadata Frontend ✓ TAMAMLANDI
+Phase 18 — Template Engine Backend Foundation ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Metadata artifact create/edit UI in Standard Video admin detail page: panel bileşeni, mutation hook'ları, API fonksiyonları, 75 toplam frontend test.
+Template modeli, migration, schemas, service, router, API testleri: 11/11 test, 71 toplam backend test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
@@ -29,6 +29,7 @@ Metadata artifact create/edit UI in Standard Video admin detail page: panel bile
 - Phase 15 standard video create/edit frontend: StandardVideoForm, CreatePage, edit modu, /new route, Yeni butonu, 6 yeni test, 50 toplam frontend test (2026-04-01)
 - Phase 16 admin standard video script frontend: StandardVideoScriptPanel, create/update mutation hook'ları, API fonksiyonları, 13 yeni test, 63 toplam frontend test (2026-04-01)
 - Phase 17 admin standard video metadata frontend: StandardVideoMetadataPanel, create/update mutation hook'ları, API fonksiyonları, 12 yeni test, 75 toplam frontend test (2026-04-01)
+- Phase 18 template engine backend: Template modeli, migration, schemas, service, router, 11 yeni test, 71 toplam backend test (2026-04-02)
 
 ## Mevcut Riskler
 - Henüz auth / rol zorlama yok (kasıtlı)
