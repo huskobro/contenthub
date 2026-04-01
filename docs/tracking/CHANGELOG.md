@@ -76,8 +76,8 @@
 - `backend/tests/test_settings_api.py` (9 new tests)
 - `docs/testing/test-report-phase-3-settings-backend.md`
 **Tests:** `pytest tests/test_settings_api.py tests/test_health.py tests/test_db_bootstrap.py` — 17 passed in 0.06s
-**Commit:** TBD
-**Push:** TBD
+**Commit:** `b370e24` — `feat: add phase 3 backend settings registry foundation`
+**Push:** ✓ Pushed to `git@github.com:huskobro/contenthub.git`
 
 ---
 
