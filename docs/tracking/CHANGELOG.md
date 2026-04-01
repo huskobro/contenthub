@@ -2,6 +2,29 @@
 
 ---
 
+## [2026-04-01] Phase 14 — Standard Video Admin Frontend
+
+**Ne:** Standard Video admin registry ve detail sayfaları eklendi. API katmanı, hooks, tablo, overview/artifacts panelleri ve rotalar kuruldu.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/api/standardVideoApi.ts` (yeni)
+- `frontend/src/hooks/useStandardVideosList.ts` (yeni)
+- `frontend/src/hooks/useStandardVideoDetail.ts` (yeni)
+- `frontend/src/components/standard-video/StandardVideosTable.tsx` (yeni)
+- `frontend/src/components/standard-video/StandardVideoOverviewPanel.tsx` (yeni)
+- `frontend/src/components/standard-video/StandardVideoArtifactsPanel.tsx` (yeni)
+- `frontend/src/pages/admin/StandardVideoRegistryPage.tsx` (yeni)
+- `frontend/src/pages/admin/StandardVideoDetailPage.tsx` (yeni)
+- `frontend/src/app/router.tsx` (standard-videos rotaları eklendi)
+- `frontend/src/app/layouts/AdminLayout.tsx` (Standard Video nav linki eklendi)
+- `frontend/src/tests/standard-video-registry.smoke.test.tsx` (5 yeni test)
+- `frontend/src/tests/standard-video-detail-page.smoke.test.tsx` (6 yeni test)
+- `docs/testing/test-report-phase-14-standard-video-admin-frontend.md` (yeni)
+**Testler:** `npm test` — 44 passed (33 mevcut + 11 yeni) | build ✅ 278.36 kB
+**Commit:** `b03fb8d` — `feat: add phase 14 standard video admin frontend`
+**Push:** ✅ `git@github.com:huskobro/contenthub.git`
+
+---
+
 ## [2026-04-01] Phase 13 — Standard Video Metadata Backend Foundation
 
 **Ne:** Standard Video için metadata artifact backend'i kuruldu. `standard_video_metadata` tablosu, metadata CRUD API ve 8 yeni test eklendi.
