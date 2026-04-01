@@ -10,6 +10,7 @@ const ADMIN_NAV = [
   { label: "Standard Video", to: "/admin/standard-videos" },
   { label: "Templates", to: "/admin/templates" },
   { label: "Style Blueprints", to: "/admin/style-blueprints" },
+  { label: "Sources", to: "/admin/sources" },
 ];
 
 export function AdminLayout() {

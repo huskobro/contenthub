@@ -1,0 +1,57 @@
+import type { SourceResponse } from "../../api/sourcesApi";
+
+interface SourcesTableProps {
+  sources: SourceResponse[];
+  selectedId: string | null;
+  onSelect: (id: string) => void;
+}
+
+export function SourcesTable({ sources, selectedId, onSelect }: SourcesTableProps) {
+  return (
+    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.875rem" }}>
+      <thead>
+        <tr style={{ background: "#f1f5f9", textAlign: "left" }}>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Name</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Type</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Trust</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Scan Mode</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Status</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Language</th>
+        </tr>
+      </thead>
+      <tbody>
+        {sources.map((src) => (
+          <tr
+            key={src.id}
+            onClick={() => onSelect(src.id)}
+            style={{
+              cursor: "pointer",
+              background: selectedId === src.id ? "#eff6ff" : "transparent",
+              borderBottom: "1px solid #f1f5f9",
+            }}
+          >
+            <td style={{ padding: "0.5rem 0.75rem", color: "#1e40af", fontWeight: selectedId === src.id ? 600 : 400 }}>
+              {src.name}
+            </td>
+            <td style={{ padding: "0.5rem 0.75rem", color: "#64748b" }}>{src.source_type}</td>
+            <td style={{ padding: "0.5rem 0.75rem", color: "#64748b" }}>{src.trust_level ?? "—"}</td>
+            <td style={{ padding: "0.5rem 0.75rem", color: "#64748b" }}>{src.scan_mode ?? "—"}</td>
+            <td style={{ padding: "0.5rem 0.75rem" }}>
+              <span style={{
+                display: "inline-block",
+                padding: "0.125rem 0.5rem",
+                borderRadius: "9999px",
+                fontSize: "0.75rem",
+                background: src.status === "active" ? "#dcfce7" : "#f1f5f9",
+                color: src.status === "active" ? "#166534" : "#475569",
+              }}>
+                {src.status}
+              </span>
+            </td>
+            <td style={{ padding: "0.5rem 0.75rem", color: "#64748b" }}>{src.language ?? "—"}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}

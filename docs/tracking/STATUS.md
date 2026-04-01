@@ -1,10 +1,10 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 23 — News Source Registry Backend Foundation ✓ TAMAMLANDI
+Phase 24 — Admin Sources Registry Frontend Foundation ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Sources backend: NewsSource modeli, migration, schemas, service, router, 15 yeni test, 97 toplam backend test.
+Sources frontend: API, hooks, table, detail panel, registry page, sidebar, 9 yeni test, 112 toplam frontend test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
@@ -35,6 +35,7 @@ Sources backend: NewsSource modeli, migration, schemas, service, router, 15 yeni
 - Phase 21 style blueprint backend: StyleBlueprint modeli, migration, schemas, service, router, 11 yeni test, 82 toplam backend test (2026-04-02)
 - Phase 22 admin style blueprints registry frontend: API, hooks, table, detail panel, registry page, sidebar, 9 yeni test, 103 toplam frontend test (2026-04-02)
 - Phase 23 news source registry backend: NewsSource modeli, migration, schemas, service, router, 15 yeni test, 97 toplam backend test (2026-04-02)
+- Phase 24 admin sources registry frontend: API, hooks, table, detail panel, registry page, sidebar, 9 yeni test, 112 toplam frontend test (2026-04-02)
 
 ## Mevcut Riskler
 - Henüz auth / rol zorlama yok (kasıtlı)

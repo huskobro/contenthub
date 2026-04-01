@@ -2,6 +2,26 @@
 
 ---
 
+## [2026-04-02] Phase 24 — Admin Sources Registry Frontend Foundation
+
+**Ne:** Sources admin sayfası oluşturuldu. API katmanı, hooks, tablo, detail panel, registry sayfası ve sidebar entegrasyonu eklendi.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/api/sourcesApi.ts` (yeni)
+- `frontend/src/hooks/useSourcesList.ts` (yeni)
+- `frontend/src/hooks/useSourceDetail.ts` (yeni)
+- `frontend/src/components/sources/SourcesTable.tsx` (yeni)
+- `frontend/src/components/sources/SourceDetailPanel.tsx` (yeni)
+- `frontend/src/pages/admin/SourcesRegistryPage.tsx` (yeni)
+- `frontend/src/app/router.tsx` (/admin/sources route eklendi)
+- `frontend/src/app/layouts/AdminLayout.tsx` (Sources nav item eklendi)
+- `frontend/src/tests/sources-registry.smoke.test.tsx` (9 yeni test)
+- `docs/testing/test-report-phase-24-sources-frontend.md` (yeni)
+**Testler:** `npm test` — 112 passed (103 mevcut + 9 yeni) | build ✅ 329.75 kB
+**Commit:** — `feat: add phase 24 admin sources registry frontend foundation`
+**Push:** ✅ `git@github.com:huskobro/contenthub.git`
+
+---
+
 ## [2026-04-02] Phase 23 — News Source Registry Backend Foundation
 
 **Ne:** NewsSource modeli, migration, schemas, service, router ve API testleri eklendi.
