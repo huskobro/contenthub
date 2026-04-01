@@ -17,8 +17,8 @@
 - `backend/tests/test_settings_api.py` (key çakışması düzeltmesi)
 - `docs/testing/test-report-phase-4-visibility-backend.md`
 **Testler:** `pytest tests/test_visibility_api.py tests/test_settings_api.py tests/test_health.py tests/test_db_bootstrap.py` — 28 passed in 0.09s
-**Commit:** TBD
-**Push:** TBD
+**Commit:** `3966990` — `feat: add phase 4 backend visibility registry foundation`
+**Push:** ✓ `git@github.com:huskobro/contenthub.git`
 
 ---
 
