@@ -17,7 +17,7 @@
 - `frontend/src/tests/standard-video-form.smoke.test.tsx` (6 yeni test)
 - `docs/testing/test-report-phase-15-standard-video-form-frontend.md` (yeni)
 **Testler:** `npm test` — 50 passed (44 mevcut + 6 yeni) | build ✅ 287.99 kB
-**Commit:** `PLACEHOLDER` — `feat: add phase 15 standard video create/edit frontend`
+**Commit:** `1fb66eb` — `feat: add phase 15 standard video create/edit frontend`
 **Push:** ✅ `git@github.com:huskobro/contenthub.git`
 
 ---
