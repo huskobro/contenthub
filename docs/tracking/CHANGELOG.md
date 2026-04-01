@@ -15,7 +15,7 @@
 - `frontend/src/tests/standard-video-detail-page.smoke.test.tsx` (getByText → getAllByText düzeltmesi)
 - `docs/testing/test-report-phase-16-standard-video-script-frontend.md` (yeni)
 **Testler:** `npm test` — 63 passed (50 mevcut + 13 yeni) | build ✅ 294.76 kB
-**Commit:** `PLACEHOLDER` — `feat: add phase 16 admin standard video script frontend foundation`
+**Commit:** `267cc92` — `feat: add phase 16 admin standard video script frontend foundation`
 **Push:** ✅ `git@github.com:huskobro/contenthub.git`
 
 ---
