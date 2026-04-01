@@ -2,6 +2,23 @@
 
 ---
 
+## [2026-04-01] Phase 8 — Admin Jobs Registry Frontend Foundation
+
+**Ne:** Admin panelde job kayıtlarını backend'den listeleme ve tekil job + step detayı görüntüleme.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/api/jobsApi.ts`, `hooks/useJobsList.ts`, `hooks/useJobDetail.ts`
+- `frontend/src/components/jobs/JobsTable.tsx`, `JobDetailPanel.tsx`, `JobStepsList.tsx`
+- `frontend/src/pages/admin/JobsRegistryPage.tsx`
+- `frontend/src/app/router.tsx` (`/admin/jobs` eklendi)
+- `frontend/src/app/layouts/AdminLayout.tsx` (Jobs linki aktif)
+- `frontend/src/tests/jobs-registry.smoke.test.tsx` (5 yeni test)
+- `docs/testing/test-report-phase-8-jobs-frontend.md`
+**Testler:** `npm test` — 19 passed (4+5+5+5) in ~3s
+**Commit:** `TBD`
+**Push:** `TBD`
+
+---
+
 ## [2026-04-01] Phase 7 — Job Engine Backend Foundation
 
 **Ne:** Job ve JobStep first-class backend objeler olarak eklendi. Alembic migration, service katmanı, CRUD API (GET list, GET detail, POST create).

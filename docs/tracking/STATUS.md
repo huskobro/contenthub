@@ -1,10 +1,10 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 7 — Job Engine Backend Foundation ✓ TAMAMLANDI
+Phase 8 — Admin Jobs Registry Frontend ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Job ve JobStep modelleri, CRUD API, migration, testler.
+Admin panelde job kayıtlarını listeleme, tekil job + step detayı görüntüleme.
 
 ## Devam Eden
 — (devam eden çalışma yok)
@@ -19,6 +19,7 @@ Job ve JobStep modelleri, CRUD API, migration, testler.
 - Phase 6 visibility frontend: API katmanı, React Query hooks, VisibilityRegistryPage, 14 frontend test toplam (2026-04-01)
 - Phase 6 integration check: Vite proxy eklendi, endpoint uyumu doğrulandı, curl ile manuel test geçti (2026-04-01)
 - Phase 7 jobs backend: Job + JobStep modeli, migration, CRUD API, 8 yeni test, 36 toplam backend test (2026-04-01)
+- Phase 8 jobs frontend: API katmanı, hooks, JobsTable, JobDetailPanel, JobStepsList, JobsRegistryPage, 19 toplam frontend test (2026-04-01)
 
 ## Mevcut Riskler
 - Henüz auth / rol zorlama yok (kasıtlı)

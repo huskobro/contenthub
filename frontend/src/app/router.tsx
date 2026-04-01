@@ -5,6 +5,7 @@ import { AdminOverviewPage } from "../pages/AdminOverviewPage";
 import { UserDashboardPage } from "../pages/UserDashboardPage";
 import { SettingsRegistryPage } from "../pages/admin/SettingsRegistryPage";
 import { VisibilityRegistryPage } from "../pages/admin/VisibilityRegistryPage";
+import { JobsRegistryPage } from "../pages/admin/JobsRegistryPage";
 
 export const router = createBrowserRouter([
   {
@@ -18,6 +19,7 @@ export const router = createBrowserRouter([
       { index: true, element: <AdminOverviewPage /> },
       { path: "settings", element: <SettingsRegistryPage /> },
       { path: "visibility", element: <VisibilityRegistryPage /> },
+      { path: "jobs", element: <JobsRegistryPage /> },
     ],
   },
   {
