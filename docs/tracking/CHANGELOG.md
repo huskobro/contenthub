@@ -15,8 +15,8 @@
 - `frontend/src/tests/jobs-registry.smoke.test.tsx` (2 yeni test)
 - `docs/testing/test-report-phase-9-eta-frontend.md`
 **Testler:** `npm test` — 28 passed (4+5+5+7+7) in ~3s
-**Commit:** `TBD`
-**Push:** `TBD`
+**Commit:** `8aa3ab4` — `feat: add phase 9 elapsed time and eta frontend display`
+**Push:** ✅ `git@github.com:huskobro/contenthub.git`
 
 ---
 
