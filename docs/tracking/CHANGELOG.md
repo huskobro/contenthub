@@ -2,6 +2,19 @@
 
 ---
 
+## [2026-04-02] Phase 102 — Used News Artifact Consistency Summary Frontend Foundation
+
+**Ne:** Used News listesine artifact tutarlılık özeti eklendi. Pure frontend türetimi.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/used-news/UsedNewsArtifactConsistencyBadge.tsx` (yeni)
+- `frontend/src/components/used-news/UsedNewsArtifactConsistencySummary.tsx` (yeni, computeUsedNewsArtifactConsistency)
+- `frontend/src/components/used-news/UsedNewsTable.tsx` (Artifact Tutarlılığı sütunu eklendi)
+- `frontend/src/tests/used-news-artifact-consistency-summary.smoke.test.tsx` (yeni, 10 test)
+- `docs/testing/test-report-phase-102-used-news-artifact-consistency-summary-frontend.md` (yeni)
+**Test:** 10 yeni smoke test, 783 toplam, build temiz.
+
+---
+
 ## [2026-04-02] Phase 101 — News Item Artifact Consistency Summary Frontend Foundation
 
 **Ne:** News Items listesine artifact tutarlılık özeti eklendi. Pure frontend türetimi.
