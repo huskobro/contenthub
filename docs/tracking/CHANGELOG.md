@@ -2,6 +2,26 @@
 
 ---
 
+## [2026-04-02] Phase 36 — Admin News Bulletin Metadata Frontend Foundation
+
+**Ne:** News bulletin metadata yönetimi için frontend katmanı oluşturuldu. MetadataPanel view/create/edit mod state machine'i, form bileşeni ve DetailPanel entegrasyonu eklendi.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/api/newsBulletinApi.ts` (metadata API fonksiyonları + tipler eklendi)
+- `frontend/src/hooks/useNewsBulletinMetadata.ts` (yeni)
+- `frontend/src/hooks/useCreateNewsBulletinMetadata.ts` (yeni)
+- `frontend/src/hooks/useUpdateNewsBulletinMetadata.ts` (yeni)
+- `frontend/src/components/news-bulletin/NewsBulletinMetadataForm.tsx` (yeni)
+- `frontend/src/components/news-bulletin/NewsBulletinMetadataPanel.tsx` (yeni)
+- `frontend/src/components/news-bulletin/NewsBulletinDetailPanel.tsx` (MetadataPanel entegrasyonu)
+- `frontend/src/tests/news-bulletin-metadata-panel.smoke.test.tsx` (11 yeni test)
+- `frontend/src/tests/news-bulletin-form.smoke.test.tsx` (metadata URL mock ayrımı eklendi)
+**Testler:** 11/11 yeni test PASSED | 167/167 toplam PASSED
+**Build:** 368.37 kB (tsc + vite build ✅)
+**Commit:** `feat: add phase 36 admin news bulletin metadata frontend foundation`
+**Push:** ✅ `git@github.com:huskobro/contenthub.git`
+
+---
+
 ## [2026-04-02] Phase 35 — Admin News Bulletin Script Frontend Foundation
 
 **Ne:** News bulletin script yönetimi için frontend katmanı oluşturuldu. ScriptPanel view/create/edit mod state machine'i, form bileşeni ve DetailPanel entegrasyonu eklendi.

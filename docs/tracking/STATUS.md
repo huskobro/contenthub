@@ -1,10 +1,10 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 35 — Admin News Bulletin Script Frontend Foundation ✓ TAMAMLANDI
+Phase 36 — Admin News Bulletin Metadata Frontend Foundation ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-News bulletin script frontend: API genişletildi, script hooks, NewsBulletinScriptForm, NewsBulletinScriptPanel, DetailPanel güncellendi, 9 yeni test, 156 toplam frontend test.
+News bulletin metadata frontend: API genişletildi, metadata hooks, NewsBulletinMetadataForm, NewsBulletinMetadataPanel, DetailPanel güncellendi, 11 yeni test, 167 toplam frontend test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
@@ -47,6 +47,7 @@ News bulletin script frontend: API genişletildi, script hooks, NewsBulletinScri
 - Phase 33 news bulletin script backend: NewsBulletinScript modeli, migration, schemas+service+router genişletildi, 9 yeni test, 159 toplam backend test (2026-04-02)
 - Phase 34 news bulletin metadata backend: NewsBulletinMetadata modeli, migration, schemas+service+router genişletildi, 7 yeni test, 166 toplam backend test (2026-04-02)
 - Phase 35 admin news bulletin script frontend: API genişletildi, useNewsBulletinScript + create/update hooks, NewsBulletinScriptForm, NewsBulletinScriptPanel, DetailPanel güncellendi, 9 yeni test, 156 toplam frontend test (2026-04-02)
+- Phase 36 admin news bulletin metadata frontend: API genişletildi, useNewsBulletinMetadata + create/update hooks, NewsBulletinMetadataForm, NewsBulletinMetadataPanel, DetailPanel güncellendi, 11 yeni test, 167 toplam frontend test (2026-04-02)
 
 ## Mevcut Riskler
 - Henüz auth / rol zorlama yok (kasıtlı)

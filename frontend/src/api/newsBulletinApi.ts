@@ -129,6 +129,79 @@ export async function updateNewsBulletinScript(
   return resp.json();
 }
 
+export interface NewsBulletinMetadataResponse {
+  id: string;
+  news_bulletin_id: string;
+  title: string | null;
+  description: string | null;
+  tags_json: string | null;
+  category: string | null;
+  language: string | null;
+  version: number;
+  source_type: string | null;
+  generation_status: string;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface NewsBulletinMetadataCreatePayload {
+  title?: string;
+  description?: string;
+  tags_json?: string;
+  category?: string;
+  language?: string;
+  source_type?: string;
+  generation_status?: string;
+  notes?: string;
+}
+
+export interface NewsBulletinMetadataUpdatePayload {
+  title?: string | null;
+  description?: string | null;
+  tags_json?: string | null;
+  category?: string | null;
+  language?: string | null;
+  source_type?: string | null;
+  generation_status?: string;
+  notes?: string | null;
+}
+
+export async function fetchNewsBulletinMetadata(
+  bulletinId: string
+): Promise<NewsBulletinMetadataResponse | null> {
+  const resp = await fetch(`/api/v1/modules/news-bulletin/${bulletinId}/metadata`);
+  if (resp.status === 404) return null;
+  if (!resp.ok) throw new Error(`Failed to fetch metadata: ${resp.status}`);
+  return resp.json();
+}
+
+export async function createNewsBulletinMetadata(
+  bulletinId: string,
+  payload: NewsBulletinMetadataCreatePayload
+): Promise<NewsBulletinMetadataResponse> {
+  const resp = await fetch(`/api/v1/modules/news-bulletin/${bulletinId}/metadata`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!resp.ok) throw new Error(`Failed to create metadata: ${resp.status}`);
+  return resp.json();
+}
+
+export async function updateNewsBulletinMetadata(
+  bulletinId: string,
+  payload: NewsBulletinMetadataUpdatePayload
+): Promise<NewsBulletinMetadataResponse> {
+  const resp = await fetch(`/api/v1/modules/news-bulletin/${bulletinId}/metadata`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!resp.ok) throw new Error(`Failed to update metadata: ${resp.status}`);
+  return resp.json();
+}
+
 export async function fetchNewsBulletins(): Promise<NewsBulletinResponse[]> {
   const resp = await fetch(BASE_URL);
   if (!resp.ok) throw new Error(`Failed to fetch news bulletins: ${resp.status}`);

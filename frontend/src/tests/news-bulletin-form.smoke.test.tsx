@@ -136,7 +136,7 @@ describe("NewsBulletinForm / Create page smoke tests", () => {
       if (callCount === 1) {
         return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve([MOCK_BULLETIN]) });
       }
-      if (typeof url === "string" && url.includes("/script")) {
+      if (typeof url === "string" && (url.includes("/script") || url.includes("/metadata"))) {
         return Promise.resolve({ ok: false, status: 404, json: () => Promise.resolve({}) });
       }
       return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(MOCK_BULLETIN) });
@@ -168,7 +168,7 @@ describe("NewsBulletinForm / Create page smoke tests", () => {
       if (callCount === 1) {
         return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve([MOCK_BULLETIN]) });
       }
-      if (typeof url === "string" && url.includes("/script")) {
+      if (typeof url === "string" && (url.includes("/script") || url.includes("/metadata"))) {
         return Promise.resolve({ ok: false, status: 404, json: () => Promise.resolve({}) });
       }
       return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(MOCK_BULLETIN) });
