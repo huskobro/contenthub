@@ -2,6 +2,22 @@
 
 ---
 
+## [2026-04-02] Phase 90 — News Item Used News Linkage Summary Frontend Foundation
+
+**Ne:** News Items listesine used-news bağı özeti eklendi. Küçük backend genişletme (batch DISTINCT sorgusu) + frontend türetimi.
+**Eklenen/değiştirilen dosyalar:**
+- `backend/app/news_items/schemas.py` (has_published_used_news_link eklendi)
+- `backend/app/news_items/service.py` (batch published link sorgusu)
+- `frontend/src/api/newsItemsApi.ts` (has_published_used_news_link eklendi)
+- `frontend/src/components/news-items/NewsItemUsedNewsLinkageBadge.tsx` (yeni)
+- `frontend/src/components/news-items/NewsItemUsedNewsLinkageSummary.tsx` (yeni)
+- `frontend/src/components/news-items/NewsItemsTable.tsx` (Used News Bağı sütunu eklendi)
+- `frontend/src/tests/news-item-used-news-linkage-summary.smoke.test.tsx` (yeni, 10 test)
+- `docs/testing/test-report-phase-90-news-item-used-news-linkage-summary-frontend.md` (yeni)
+**Test:** 10 yeni smoke test, 663 toplam, build temiz.
+
+---
+
 ## [2026-04-02] Phase 89 — Used News Target Resolution Summary Frontend Foundation
 
 **Ne:** Used News registry listesine hedef çözümü özeti eklendi. Küçük backend genişletme (batch ID lookup) + frontend türetimi.

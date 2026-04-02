@@ -32,6 +32,23 @@ async def list_news_items_with_usage_summary(
     """Return news item list enriched with usage_count, last_usage_type, last_target_module."""
     from sqlalchemy import func as sqlfunc
     items = await list_news_items(db, status=status, source_id=source_id, language=language)
+
+    # Batch-load published used-news links (usage_type contains published/scheduled)
+    if items:
+        item_ids = [i.id for i in items]
+        pub_rows = await db.execute(
+            select(UsedNewsRegistry.news_item_id)
+            .where(
+                UsedNewsRegistry.news_item_id.in_(item_ids),
+                UsedNewsRegistry.usage_type.ilike("%published%")
+                | UsedNewsRegistry.usage_type.ilike("%scheduled%"),
+            )
+            .distinct()
+        )
+        published_link_set = set(pub_rows.scalars().all())
+    else:
+        published_link_set = set()
+
     result = []
     for item in items:
         count_row = await db.execute(
@@ -86,6 +103,7 @@ async def list_news_items_with_usage_summary(
                 source_name=source_name,
                 source_status=source_status,
                 source_scan_status=source_scan_status,
+                has_published_used_news_link=item.id in published_link_set,
             )
         )
     return result

@@ -21,6 +21,7 @@ export interface NewsItemResponse {
   source_name?: string | null;
   source_status?: string | null;
   source_scan_status?: string | null;
+  has_published_used_news_link?: boolean;
 }
 
 export interface NewsItemCreatePayload {

@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 89 — Used News Target Resolution Summary Frontend Foundation ✓ TAMAMLANDI
+Phase 90 — News Item Used News Linkage Summary Frontend Foundation ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Küçük backend genişletme + frontend türetimi: UsedNewsTargetResolutionBadge + UsedNewsTargetResolutionSummary. 10 yeni test, 653 toplam.
+Küçük backend genişletme + frontend türetimi: NewsItemUsedNewsLinkageBadge + NewsItemUsedNewsLinkageSummary. 10 yeni test, 663 toplam.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 90: news item used-news linkage summary: backend has_published_used_news_link batch query, NewsItemUsedNewsLinkageBadge, NewsItemUsedNewsLinkageSummary, Used News Bağı sütunu, 10 yeni test, 663 toplam (2026-04-02)
 - Phase 89: used news target resolution summary: backend has_target_resolved batch lookup, UsedNewsTargetResolutionBadge, UsedNewsTargetResolutionSummary, Hedef Çözümü sütunu, 10 yeni test, 653 toplam (2026-04-02)
 - Phase 88: job publication outcome summary: pure frontend, JobPublicationOutcomeBadge, JobPublicationOutcomeSummary, Yayın Sonucu sütunu, 10 yeni test, 643 toplam (2026-04-02)
 - Phase 87: source scan publication yield summary: backend linked/reviewed/used COUNT batch queries, SourceScanPublicationYieldBadge, SourceScanPublicationYieldSummary, Yayın Verimi sütunu, 10 yeni test, 633 toplam (2026-04-02)

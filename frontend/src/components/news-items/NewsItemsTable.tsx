@@ -5,6 +5,7 @@ import { NewsItemSourceSummary } from "./NewsItemSourceSummary";
 import { NewsItemScanLineageSummary } from "./NewsItemScanLineageSummary";
 import { NewsItemContentCompletenessSummary } from "./NewsItemContentCompletenessSummary";
 import { NewsItemPublicationSignalSummary } from "./NewsItemPublicationSignalSummary";
+import { NewsItemUsedNewsLinkageSummary } from "./NewsItemUsedNewsLinkageSummary";
 
 interface Props {
   items: NewsItemResponse[];
@@ -34,6 +35,7 @@ export function NewsItemsTable({ items, selectedId, onSelect }: Props) {
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Scan Kaynağı</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>İçerik</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Yayın Sinyali</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Used News Bağı</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Created</th>
         </tr>
       </thead>
@@ -108,6 +110,12 @@ export function NewsItemsTable({ items, selectedId, onSelect }: Props) {
                   title={item.title}
                   summary={item.summary}
                   url={item.url}
+                />
+              </td>
+              <td style={{ padding: "0.5rem 0.75rem" }}>
+                <NewsItemUsedNewsLinkageSummary
+                  usageCount={item.usage_count}
+                  hasPublishedUsedNewsLink={item.has_published_used_news_link}
                 />
               </td>
               <td style={{ padding: "0.5rem 0.75rem", color: "#94a3b8", fontSize: "0.8rem" }}>

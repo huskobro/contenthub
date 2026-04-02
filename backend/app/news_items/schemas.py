@@ -94,5 +94,6 @@ class NewsItemResponse(BaseModel):
     source_name: Optional[str] = None
     source_status: Optional[str] = None
     source_scan_status: Optional[str] = None
+    has_published_used_news_link: bool = False
 
     model_config = {"from_attributes": True}
