@@ -50,7 +50,8 @@ async def list_news_bulletins(db: AsyncSession) -> List[NewsBulletin]:
 async def list_news_bulletins_with_artifacts(
     db: AsyncSession,
 ) -> List[NewsBulletinResponse]:
-    """Return bulletin list enriched with has_script and has_metadata flags."""
+    """Return bulletin list enriched with has_script, has_metadata, and selected_news_count."""
+    from sqlalchemy import func as sqlfunc
     bulletins = await list_news_bulletins(db)
     result = []
     for b in bulletins:
@@ -59,6 +60,10 @@ async def list_news_bulletins_with_artifacts(
         )
         meta_row = await db.execute(
             select(NewsBulletinMetadata).where(NewsBulletinMetadata.news_bulletin_id == b.id).limit(1)
+        )
+        count_row = await db.execute(
+            select(sqlfunc.count()).select_from(NewsBulletinSelectedItem)
+            .where(NewsBulletinSelectedItem.news_bulletin_id == b.id)
         )
         result.append(
             NewsBulletinResponse(
@@ -78,6 +83,7 @@ async def list_news_bulletins_with_artifacts(
                 updated_at=b.updated_at,
                 has_script=script_row.scalar_one_or_none() is not None,
                 has_metadata=meta_row.scalar_one_or_none() is not None,
+                selected_news_count=count_row.scalar() or 0,
             )
         )
     return result

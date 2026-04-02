@@ -2,6 +2,21 @@
 
 ---
 
+## [2026-04-02] Phase 53 — News Bulletin Selected News Summary Frontend Foundation
+
+**Ne:** Registry listesinde her bulletin için seçili haber sayısı sade badge olarak gösterildi.
+**Eklenen/değiştirilen dosyalar:**
+- `backend/app/modules/news_bulletin/schemas.py` — `selected_news_count` eklendi
+- `backend/app/modules/news_bulletin/service.py` — COUNT sorgusu eklendi
+- `frontend/src/api/newsBulletinApi.ts` — `selected_news_count?` eklendi
+- `frontend/src/components/news-bulletin/NewsBulletinSelectedNewsCountBadge.tsx` (yeni)
+- `frontend/src/components/news-bulletin/NewsBulletinSelectedNewsSummary.tsx` (yeni)
+- `frontend/src/components/news-bulletin/NewsBulletinsTable.tsx` — Haberler sütunu eklendi
+- `frontend/src/tests/news-bulletin-selected-news-summary.smoke.test.tsx` (yeni, 10 test)
+**Sonuç:** 195 backend test, 293 frontend test — tümü geçti. Build başarılı.
+
+---
+
 ## [2026-04-02] Phase 52 — News Bulletin Artifact Summary Frontend Foundation
 
 **Ne:** Registry listesinde her bulletin için script/metadata varlık bilgisi badge olarak gösterildi.

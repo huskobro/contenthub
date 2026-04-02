@@ -76,6 +76,7 @@ class NewsBulletinResponse(BaseModel):
     updated_at: datetime
     has_script: bool = False
     has_metadata: bool = False
+    selected_news_count: int = 0
 
     model_config = {"from_attributes": True}
 

@@ -17,6 +17,7 @@ export interface NewsBulletinResponse {
   updated_at: string;
   has_script?: boolean;
   has_metadata?: boolean;
+  selected_news_count?: number;
 }
 
 export interface NewsBulletinCreatePayload {
