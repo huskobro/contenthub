@@ -1,5 +1,6 @@
 import type { SourceScanResponse } from "../../api/sourceScansApi";
 import { SourceScanExecutionSummary } from "./SourceScanExecutionSummary";
+import { SourceScanSourceSummary } from "./SourceScanSourceSummary";
 
 interface SourceScansTableProps {
   scans: SourceScanResponse[];
@@ -18,7 +19,7 @@ export function SourceScansTable({ scans, selectedId, onSelect }: SourceScansTab
     <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.875rem" }}>
       <thead>
         <tr style={{ background: "#f1f5f9", textAlign: "left" }}>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Source ID</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Kaynak</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Scan Mode</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Status</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Results</th>
@@ -39,8 +40,12 @@ export function SourceScansTable({ scans, selectedId, onSelect }: SourceScansTab
                 borderBottom: "1px solid #f1f5f9",
               }}
             >
-              <td style={{ padding: "0.5rem 0.75rem", color: "#1e40af", fontWeight: selectedId === scan.id ? 600 : 400, fontFamily: "monospace", fontSize: "0.8rem" }}>
-                {scan.source_id.slice(0, 12)}…
+              <td style={{ padding: "0.5rem 0.75rem" }}>
+                <SourceScanSourceSummary
+                  sourceId={scan.source_id}
+                  sourceName={scan.source_name}
+                  sourceStatus={scan.source_status}
+                />
               </td>
               <td style={{ padding: "0.5rem 0.75rem", color: "#64748b" }}>{scan.scan_mode}</td>
               <td style={{ padding: "0.5rem 0.75rem" }}>

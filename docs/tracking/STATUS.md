@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 72 — News Bulletin Source Coverage Summary Frontend Foundation ✓ TAMAMLANDI
+Phase 73 — Source Scan Source Context Summary Frontend Foundation ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-selected_news_source_count/has_selected_news_missing_source backend + NewsBulletinSourceCoverageBadge + NewsBulletinSourceCoverageSummary frontend. 10 yeni test, 483 toplam.
+source_name/source_status backend enrichment + SourceScanSourceStatusBadge + SourceScanSourceSummary frontend. 10 yeni test, 493 toplam.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 73: source scan source context summary: source_name/source_status backend lookup, SourceScanSourceStatusBadge, SourceScanSourceSummary, Kaynak sütunu güncellendi, 10 yeni test, 493 toplam (2026-04-02)
 - Phase 72: news bulletin source coverage summary: source_count/missing_source backend, NewsBulletinSourceCoverageBadge, NewsBulletinSourceCoverageSummary, Kaynak Kapsamı sütunu, 10 yeni test, 483 toplam (2026-04-02)
 - Phase 71: news item scan lineage summary: source_scan_status backend lookup, NewsItemScanLineageBadge, NewsItemScanLineageSummary, Scan Kaynağı sütunu, 10 yeni test, 473 toplam (2026-04-02)
 - Phase 70: news item source summary: source_name/source_status backend lookup, NewsItemSourceStatusBadge, NewsItemSourceSummary, Kaynak Özeti sütunu, 10 yeni test, 463 toplam (2026-04-02)

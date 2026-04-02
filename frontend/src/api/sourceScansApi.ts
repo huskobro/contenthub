@@ -14,6 +14,8 @@ export interface SourceScanResponse {
   notes: string | null;
   created_at: string;
   updated_at: string;
+  source_name?: string | null;
+  source_status?: string | null;
 }
 
 export interface SourceScanCreatePayload {

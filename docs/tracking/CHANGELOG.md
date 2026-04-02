@@ -2,6 +2,23 @@
 
 ---
 
+## [2026-04-02] Phase 73 — Source Scan Source Context Summary Frontend Foundation
+
+**Ne:** Source Scans listesine kaynak bağlantı görünürlüğü eklendi. Backend source_name/source_status ile NewsSource çözümlemesi yapıyor, frontend badge + summary ile gösteriyor.
+**Eklenen/değiştirilen dosyalar:**
+- `backend/app/source_scans/schemas.py` — source_name, source_status
+- `backend/app/source_scans/service.py` — list_scans_with_source_summary()
+- `backend/app/source_scans/router.py` — list endpoint güncellendi
+- `frontend/src/api/sourceScansApi.ts` — source_name, source_status
+- `frontend/src/components/source-scans/SourceScanSourceStatusBadge.tsx` (yeni)
+- `frontend/src/components/source-scans/SourceScanSourceSummary.tsx` (yeni)
+- `frontend/src/components/source-scans/SourceScansTable.tsx` — Kaynak sütunu güncellendi
+- `frontend/src/tests/source-scan-source-summary.smoke.test.tsx` (yeni, 10 test)
+- `docs/testing/test-report-phase-73-source-scan-source-summary-frontend.md` (yeni)
+**Sonuç:** 493 frontend test — tümü geçti. Build başarılı.
+
+---
+
 ## [2026-04-02] Phase 72 — News Bulletin Source Coverage Summary Frontend Foundation
 
 **Ne:** News Bulletin listesine kaynak kapsam görünürlüğü eklendi. Backend selected_news_source_count/has_selected_news_missing_source hesaplıyor, frontend badge + summary ile gösteriyor.

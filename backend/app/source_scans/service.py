@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException
 
 from app.db.models import SourceScan, NewsSource
-from .schemas import ScanCreate, ScanUpdate
+from .schemas import ScanCreate, ScanUpdate, ScanResponse
 
 
 async def list_scans(
@@ -22,6 +22,48 @@ async def list_scans(
         q = q.where(SourceScan.scan_mode == scan_mode)
     result = await db.execute(q)
     return list(result.scalars().all())
+
+
+async def list_scans_with_source_summary(
+    db: AsyncSession,
+    source_id: Optional[str] = None,
+    status: Optional[str] = None,
+    scan_mode: Optional[str] = None,
+) -> List[ScanResponse]:
+    """Return scan list enriched with source_name and source_status."""
+    scans = await list_scans(db, source_id=source_id, status=status, scan_mode=scan_mode)
+    result = []
+    for scan in scans:
+        source_name = None
+        source_status_val = None
+        if scan.source_id:
+            source_row = await db.execute(
+                select(NewsSource).where(NewsSource.id == scan.source_id).limit(1)
+            )
+            source = source_row.scalar_one_or_none()
+            if source:
+                source_name = source.name
+                source_status_val = source.status
+        result.append(
+            ScanResponse(
+                id=scan.id,
+                source_id=scan.source_id,
+                scan_mode=scan.scan_mode,
+                status=scan.status,
+                requested_by=scan.requested_by,
+                started_at=scan.started_at,
+                finished_at=scan.finished_at,
+                result_count=scan.result_count,
+                error_summary=scan.error_summary,
+                raw_result_preview_json=scan.raw_result_preview_json,
+                notes=scan.notes,
+                created_at=scan.created_at,
+                updated_at=scan.updated_at,
+                source_name=source_name,
+                source_status=source_status_val,
+            )
+        )
+    return result
 
 
 async def get_scan(db: AsyncSession, scan_id: str) -> Optional[SourceScan]:

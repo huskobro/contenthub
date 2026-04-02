@@ -16,7 +16,7 @@ async def list_scans(
     scan_mode: Optional[str] = Query(None),
     db: AsyncSession = Depends(get_db),
 ):
-    return await service.list_scans(db, source_id=source_id, status=status, scan_mode=scan_mode)
+    return await service.list_scans_with_source_summary(db, source_id=source_id, status=status, scan_mode=scan_mode)
 
 
 @router.get("/{scan_id}", response_model=ScanResponse)

@@ -69,5 +69,7 @@ class ScanResponse(BaseModel):
     notes: Optional[str]
     created_at: datetime
     updated_at: datetime
+    source_name: Optional[str] = None
+    source_status: Optional[str] = None
 
     model_config = {"from_attributes": True}
