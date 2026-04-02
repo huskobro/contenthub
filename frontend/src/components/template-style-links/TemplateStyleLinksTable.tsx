@@ -1,0 +1,81 @@
+import type { TemplateStyleLinkResponse } from "../../api/templateStyleLinksApi";
+
+interface TemplateStyleLinksTableProps {
+  links: TemplateStyleLinkResponse[];
+  selectedId: string | null;
+  onSelect: (id: string) => void;
+}
+
+const STATUS_COLORS: Record<string, string> = {
+  active: "#16a34a",
+  inactive: "#64748b",
+  archived: "#94a3b8",
+};
+
+export function TemplateStyleLinksTable({
+  links,
+  selectedId,
+  onSelect,
+}: TemplateStyleLinksTableProps) {
+  return (
+    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.875rem" }}>
+      <thead>
+        <tr style={{ background: "#f8fafc", borderBottom: "1px solid #e2e8f0" }}>
+          <th style={{ textAlign: "left", padding: "0.5rem 0.75rem", fontWeight: 600, color: "#475569" }}>
+            Template ID
+          </th>
+          <th style={{ textAlign: "left", padding: "0.5rem 0.75rem", fontWeight: 600, color: "#475569" }}>
+            Blueprint ID
+          </th>
+          <th style={{ textAlign: "left", padding: "0.5rem 0.75rem", fontWeight: 600, color: "#475569" }}>
+            Role
+          </th>
+          <th style={{ textAlign: "left", padding: "0.5rem 0.75rem", fontWeight: 600, color: "#475569" }}>
+            Status
+          </th>
+          <th style={{ textAlign: "left", padding: "0.5rem 0.75rem", fontWeight: 600, color: "#475569" }}>
+            Created
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        {links.map((link) => (
+          <tr
+            key={link.id}
+            onClick={() => onSelect(link.id)}
+            style={{
+              cursor: "pointer",
+              background: selectedId === link.id ? "#eff6ff" : "transparent",
+              borderBottom: "1px solid #f1f5f9",
+            }}
+          >
+            <td style={{ padding: "0.5rem 0.75rem", color: "#1e293b", fontFamily: "monospace", fontSize: "0.8rem" }}>
+              {link.template_id.slice(0, 8)}…
+            </td>
+            <td style={{ padding: "0.5rem 0.75rem", color: "#1e293b", fontFamily: "monospace", fontSize: "0.8rem" }}>
+              {link.style_blueprint_id.slice(0, 8)}…
+            </td>
+            <td style={{ padding: "0.5rem 0.75rem", color: "#475569" }}>
+              {link.link_role ?? "—"}
+            </td>
+            <td style={{ padding: "0.5rem 0.75rem" }}>
+              <span style={{
+                padding: "0.125rem 0.5rem",
+                borderRadius: "999px",
+                fontSize: "0.75rem",
+                fontWeight: 600,
+                color: "#fff",
+                background: STATUS_COLORS[link.status] ?? "#94a3b8",
+              }}>
+                {link.status}
+              </span>
+            </td>
+            <td style={{ padding: "0.5rem 0.75rem", color: "#64748b", fontSize: "0.8rem" }}>
+              {new Date(link.created_at).toLocaleDateString()}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}

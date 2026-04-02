@@ -1,10 +1,10 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 43 — Template ↔ Style Blueprint Link Backend Foundation ✓ TAMAMLANDI
+Phase 44 — Admin Template Style Links Registry Frontend Foundation ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-TemplateStyleLink modeli, migration, schemas+service+router, GET/POST/PATCH /template-style-links, FK doğrulama (404), duplicate → 409, 11 yeni test, 185 toplam backend test.
+templateStyleLinksApi, useTemplateStyleLinksList, useTemplateStyleLinkDetail, TemplateStyleLinksTable, TemplateStyleLinkDetailPanel, TemplateStyleLinksRegistryPage, sidebar + route, 8 yeni test, 213 toplam frontend test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
@@ -54,6 +54,7 @@ TemplateStyleLink modeli, migration, schemas+service+router, GET/POST/PATCH /tem
 - Phase 40 admin news items registry frontend: newsItemsApi, useNewsItemsList, useNewsItemDetail, NewsItemsTable, NewsItemDetailPanel, NewsItemsRegistryPage, sidebar + route, 8 yeni test, 195 toplam frontend test (2026-04-02)
 - Phase 42 admin style blueprint create/edit frontend: API genişletildi (Create+UpdatePayload, create+update fonksiyonları), useCreateStyleBlueprint, useUpdateStyleBlueprint, StyleBlueprintForm, StyleBlueprintCreatePage, DetailPanel edit modu, /new route, 10 yeni test, 205 toplam frontend test (2026-04-02)
 - Phase 43 template↔style blueprint link backend: TemplateStyleLink modeli, UniqueConstraint, migration, schemas+service+router, GET/POST/PATCH /template-style-links, FK 404, duplicate 409, 11 yeni test, 185 toplam backend test (2026-04-02)
+- Phase 44 admin template style links registry frontend: templateStyleLinksApi, useTemplateStyleLinksList, useTemplateStyleLinkDetail, TemplateStyleLinksTable, TemplateStyleLinkDetailPanel, TemplateStyleLinksRegistryPage, sidebar + route, 8 yeni test, 213 toplam frontend test (2026-04-02)
 
 ## Mevcut Riskler
 - Henüz auth / rol zorlama yok (kasıtlı)

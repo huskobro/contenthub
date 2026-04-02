@@ -15,6 +15,7 @@ const ADMIN_NAV = [
   { label: "News Bulletin", to: "/admin/news-bulletins" },
   { label: "Used News", to: "/admin/used-news" },
   { label: "News Items", to: "/admin/news-items" },
+  { label: "Template Style Links", to: "/admin/template-style-links" },
 ];
 
 export function AdminLayout() {
