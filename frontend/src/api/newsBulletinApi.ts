@@ -210,6 +210,10 @@ export interface NewsBulletinSelectedItemResponse {
   selection_reason: string | null;
   created_at: string;
   updated_at: string;
+  used_news_count?: number;
+  used_news_warning?: boolean;
+  last_usage_type?: string | null;
+  last_target_module?: string | null;
 }
 
 export interface NewsBulletinSelectedItemCreatePayload {

@@ -4,6 +4,8 @@ import { useCreateNewsBulletinSelectedItem } from "../../hooks/useCreateNewsBull
 import { useUpdateNewsBulletinSelectedItem } from "../../hooks/useUpdateNewsBulletinSelectedItem";
 import { NewsBulletinSelectedItemForm } from "./NewsBulletinSelectedItemForm";
 import { NewsBulletinSelectedNewsPicker } from "./NewsBulletinSelectedNewsPicker";
+import { UsedNewsWarningBadge } from "./UsedNewsWarningBadge";
+import { UsedNewsWarningDetails } from "./UsedNewsWarningDetails";
 import type { SelectedItemFormValues } from "./NewsBulletinSelectedItemForm";
 import type { NewsItemResponse } from "../../api/newsItemsApi";
 
@@ -144,6 +146,7 @@ export function NewsBulletinSelectedItemsPanel({ bulletinId }: Props) {
               <th style={{ textAlign: "left", padding: "0.25rem 0.5rem", color: "#64748b", fontWeight: 500 }}>News Item ID</th>
               <th style={{ textAlign: "left", padding: "0.25rem 0.5rem", color: "#64748b", fontWeight: 500 }}>Sıra</th>
               <th style={{ textAlign: "left", padding: "0.25rem 0.5rem", color: "#64748b", fontWeight: 500 }}>Gerekçe</th>
+              <th style={{ textAlign: "left", padding: "0.25rem 0.5rem", color: "#64748b", fontWeight: 500 }}>Uyarı</th>
               <th style={{ textAlign: "left", padding: "0.25rem 0.5rem", color: "#64748b", fontWeight: 500 }}>Eklendi</th>
               <th style={{ padding: "0.25rem 0.5rem" }}></th>
             </tr>
@@ -156,6 +159,16 @@ export function NewsBulletinSelectedItemsPanel({ bulletinId }: Props) {
                 </td>
                 <td style={{ padding: "0.25rem 0.5rem" }}>{item.sort_order}</td>
                 <td style={{ padding: "0.25rem 0.5rem" }}>{item.selection_reason ?? "—"}</td>
+                <td style={{ padding: "0.25rem 0.5rem" }}>
+                  <UsedNewsWarningBadge warning={item.used_news_warning ?? false} />
+                  {item.used_news_warning && (
+                    <UsedNewsWarningDetails
+                      usedNewsCount={item.used_news_count ?? 0}
+                      lastUsageType={item.last_usage_type}
+                      lastTargetModule={item.last_target_module}
+                    />
+                  )}
+                </td>
                 <td style={{ padding: "0.25rem 0.5rem", color: "#94a3b8" }}>
                   {new Date(item.created_at).toLocaleDateString()}
                 </td>

@@ -2,6 +2,20 @@
 
 ---
 
+## [2026-04-02] Phase 51 — News Bulletin Used News Warning UI Frontend Foundation
+
+**Ne:** Backend enforcement alanları frontend'e taşındı; selected news listesinde her item için sade warning badge ve detay gösterimi eklendi.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/api/newsBulletinApi.ts` — `NewsBulletinSelectedItemResponse`'a 4 opsiyonel enforcement alanı eklendi
+- `frontend/src/components/news-bulletin/UsedNewsWarningBadge.tsx` (yeni)
+- `frontend/src/components/news-bulletin/UsedNewsWarningDetails.tsx` (yeni)
+- `frontend/src/components/news-bulletin/NewsBulletinSelectedItemsPanel.tsx` — warning entegrasyonu
+- `frontend/src/tests/news-bulletin-used-news-warning.smoke.test.tsx` (yeni, 10 test)
+- `docs/testing/test-report-phase-51-news-bulletin-used-news-warning-frontend.md` (yeni)
+**Sonuç:** 10 yeni test, 273 toplam frontend test — tümü geçti. Build başarılı.
+
+---
+
 ## [2026-04-02] Phase 40 — Admin News Items Registry Frontend Foundation
 
 **Ne:** News items için read-only admin frontend oluşturuldu. Liste (başlık, status badge, kaynak, dil, kategori) + detay akışı.
