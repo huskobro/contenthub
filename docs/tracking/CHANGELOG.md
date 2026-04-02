@@ -2,6 +2,26 @@
 
 ---
 
+## [2026-04-02] Phase 31 — Admin News Bulletin Registry Frontend Foundation
+
+**Ne:** News Bulletin admin sayfası oluşturuldu. API katmanı, hooks, tablo, detail panel, registry sayfası ve sidebar entegrasyonu eklendi.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/api/newsBulletinApi.ts` (yeni)
+- `frontend/src/hooks/useNewsBulletinsList.ts` (yeni)
+- `frontend/src/hooks/useNewsBulletinDetail.ts` (yeni)
+- `frontend/src/components/news-bulletin/NewsBulletinsTable.tsx` (yeni)
+- `frontend/src/components/news-bulletin/NewsBulletinDetailPanel.tsx` (yeni)
+- `frontend/src/pages/admin/NewsBulletinRegistryPage.tsx` (yeni)
+- `frontend/src/app/router.tsx` (/admin/news-bulletins route eklendi)
+- `frontend/src/app/layouts/AdminLayout.tsx` (News Bulletin nav item eklendi)
+- `frontend/src/tests/news-bulletin-registry.smoke.test.tsx` (9 yeni test)
+- `docs/testing/test-report-phase-31-news-bulletin-frontend.md` (yeni)
+**Testler:** 139/139 passed | build ✅ 347.57 kB
+**Commit:** `feat: add phase 31 admin news bulletin registry frontend foundation`
+**Push:** ✅ `git@github.com:huskobro/contenthub.git`
+
+---
+
 ## [2026-04-02] Phase 30 — News Bulletin Backend Foundation
 
 **Ne:** NewsBulletin modeli, migration, schemas, service, router ve 11 test eklendi.

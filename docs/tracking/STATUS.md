@@ -1,10 +1,10 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 30 — News Bulletin Backend Foundation ✓ TAMAMLANDI
+Phase 31 — Admin News Bulletin Registry Frontend Foundation ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-News bulletin backend: NewsBulletin modeli, migration, schemas, service, router, 11 yeni test, 150 toplam backend test.
+News bulletin frontend: API, hooks, table, detail panel, registry page, sidebar, 9 yeni test, 139 toplam frontend test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
@@ -42,6 +42,7 @@ News bulletin backend: NewsBulletin modeli, migration, schemas, service, router,
 - Phase 28 news items backend: NewsItem modeli, migration, schemas, service, router, 14 yeni test, 125 toplam backend test (2026-04-02)
 - Phase 29 used news registry backend: UsedNewsRegistry modeli, migration, schemas, service, router, 14 yeni test, 139 toplam backend test (2026-04-02)
 - Phase 30 news bulletin backend: NewsBulletin modeli, migration, schemas, service, router, 11 yeni test, 150 toplam backend test (2026-04-02)
+- Phase 31 admin news bulletin registry frontend: API, hooks, table, detail panel, registry page, sidebar, 9 yeni test, 139 toplam frontend test (2026-04-02)
 
 ## Mevcut Riskler
 - Henüz auth / rol zorlama yok (kasıtlı)

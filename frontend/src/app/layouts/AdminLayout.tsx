@@ -12,6 +12,7 @@ const ADMIN_NAV = [
   { label: "Style Blueprints", to: "/admin/style-blueprints" },
   { label: "Sources", to: "/admin/sources" },
   { label: "Source Scans", to: "/admin/source-scans" },
+  { label: "News Bulletin", to: "/admin/news-bulletins" },
 ];
 
 export function AdminLayout() {
