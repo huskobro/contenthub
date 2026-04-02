@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useUsedNewsList } from "../../hooks/useUsedNewsList";
 import { UsedNewsTable } from "../../components/used-news/UsedNewsTable";
 import { UsedNewsDetailPanel } from "../../components/used-news/UsedNewsDetailPanel";
@@ -6,12 +7,37 @@ import { UsedNewsDetailPanel } from "../../components/used-news/UsedNewsDetailPa
 export function UsedNewsRegistryPage() {
   const { data: records, isLoading, isError } = useUsedNewsList();
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    const state = location.state as { selectedId?: string } | null;
+    if (state?.selectedId) {
+      setSelectedId(state.selectedId);
+      window.history.replaceState({}, "");
+    }
+  }, [location.state]);
 
   return (
     <div style={{ display: "flex", gap: "1.5rem" }}>
       <div style={{ flex: 1 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
           <h2>Used News Registry</h2>
+          <button
+            onClick={() => navigate("/admin/used-news/new")}
+            style={{
+              padding: "0.375rem 1rem",
+              fontSize: "0.875rem",
+              background: "#3b82f6",
+              color: "#fff",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer",
+              whiteSpace: "nowrap",
+            }}
+          >
+            + Yeni
+          </button>
         </div>
 
         {isLoading && <p>Yükleniyor...</p>}

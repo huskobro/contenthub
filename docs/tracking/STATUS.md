@@ -1,10 +1,10 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 46 — Admin News Items Create/Edit Frontend Foundation ✓ TAMAMLANDI
+Phase 48 — Admin Used News Create/Edit Frontend Foundation ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-newsItemsApi genişletildi, useCreateNewsItem, useUpdateNewsItem, NewsItemForm, NewsItemCreatePage, DetailPanel edit modu, /new route, 10 yeni test, 233 toplam frontend test.
+usedNewsApi genişletildi, useCreateUsedNews, useUpdateUsedNews, UsedNewsForm, UsedNewsCreatePage, DetailPanel edit modu, /new route, 10 yeni test, 253 toplam frontend test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
@@ -57,6 +57,8 @@ newsItemsApi genişletildi, useCreateNewsItem, useUpdateNewsItem, NewsItemForm, 
 - Phase 44 admin template style links registry frontend: templateStyleLinksApi, useTemplateStyleLinksList, useTemplateStyleLinkDetail, TemplateStyleLinksTable, TemplateStyleLinkDetailPanel, TemplateStyleLinksRegistryPage, sidebar + route, 8 yeni test, 213 toplam frontend test (2026-04-02)
 - Phase 45 admin template style links create/edit frontend: API genişletildi (Create+UpdatePayload, create+update fonksiyonları), useCreateTemplateStyleLink, useUpdateTemplateStyleLink, TemplateStyleLinkForm, TemplateStyleLinkCreatePage, DetailPanel edit modu, /new route, 10 yeni test, 223 toplam frontend test (2026-04-02)
 - Phase 46 admin news items create/edit frontend: newsItemsApi genişletildi, useCreateNewsItem, useUpdateNewsItem, NewsItemForm, NewsItemCreatePage, DetailPanel edit modu, /new route, 10 yeni test, 233 toplam frontend test (2026-04-02)
+- Phase 47 admin source scans create/edit frontend: sourceScansApi genişletildi, useCreateSourceScan, useUpdateSourceScan, SourceScanForm, SourceScanCreatePage, DetailPanel edit modu, /new route, 10 yeni test, 243 toplam frontend test (2026-04-02)
+- Phase 48 admin used news create/edit frontend: usedNewsApi genişletildi, useCreateUsedNews, useUpdateUsedNews, UsedNewsForm, UsedNewsCreatePage, DetailPanel edit modu, /new route, 10 yeni test, 253 toplam frontend test (2026-04-02)
 
 ## Mevcut Riskler
 - Henüz auth / rol zorlama yok (kasıtlı)

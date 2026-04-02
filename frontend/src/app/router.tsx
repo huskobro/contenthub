@@ -21,6 +21,7 @@ import { SourceScanCreatePage } from "../pages/admin/SourceScanCreatePage";
 import { NewsBulletinRegistryPage } from "../pages/admin/NewsBulletinRegistryPage";
 import { NewsBulletinCreatePage } from "../pages/admin/NewsBulletinCreatePage";
 import { UsedNewsRegistryPage } from "../pages/admin/UsedNewsRegistryPage";
+import { UsedNewsCreatePage } from "../pages/admin/UsedNewsCreatePage";
 import { NewsItemsRegistryPage } from "../pages/admin/NewsItemsRegistryPage";
 import { NewsItemCreatePage } from "../pages/admin/NewsItemCreatePage";
 import { TemplateStyleLinksRegistryPage } from "../pages/admin/TemplateStyleLinksRegistryPage";
@@ -53,6 +54,7 @@ export const router = createBrowserRouter([
       { path: "source-scans", element: <SourceScansRegistryPage /> },
       { path: "news-bulletins/new", element: <NewsBulletinCreatePage /> },
       { path: "news-bulletins", element: <NewsBulletinRegistryPage /> },
+      { path: "used-news/new", element: <UsedNewsCreatePage /> },
       { path: "used-news", element: <UsedNewsRegistryPage /> },
       { path: "news-items/new", element: <NewsItemCreatePage /> },
       { path: "news-items", element: <NewsItemsRegistryPage /> },
