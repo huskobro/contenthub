@@ -2,6 +2,19 @@
 
 ---
 
+## [2026-04-02] Phase 83 — Style Blueprint Publication Signal Summary Frontend Foundation
+
+**Ne:** Style Blueprints listesine yayın sinyal özeti eklendi. Saf frontend türetimi — backend değişikliği yok.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/style-blueprints/StyleBlueprintPublicationSignalBadge.tsx` (yeni)
+- `frontend/src/components/style-blueprints/StyleBlueprintPublicationSignalSummary.tsx` (yeni)
+- `frontend/src/components/style-blueprints/StyleBlueprintsTable.tsx` (Yayın Sinyali sütunu eklendi)
+- `frontend/src/tests/style-blueprint-publication-signal-summary.smoke.test.tsx` (yeni, 10 test)
+- `docs/testing/test-report-phase-83-style-blueprint-publication-signal-summary-frontend.md` (yeni)
+**Test:** 10 yeni smoke test, 593 toplam, build temiz.
+
+---
+
 ## [2026-04-02] Phase 82 — Template Publication Signal Summary Frontend Foundation
 
 **Ne:** Templates listesine yayın sinyal özeti eklendi. Saf frontend türetimi — backend değişikliği yok.
