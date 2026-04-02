@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 64 — Source Scan Execution Summary Frontend Foundation ✓ TAMAMLANDI
+Phase 65 — Style Blueprint Readiness Summary Frontend Foundation ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Mevcut status/result_count alanlarından frontend execution özeti. SourceScanExecutionBadge, SourceScanExecutionSummary, SourceScansTable Çalışma Özeti sütunu, 10 yeni test, 403 toplam.
+6 JSON kural alanı + status'tan frontend readiness özeti. StyleBlueprintReadinessBadge, StyleBlueprintReadinessSummary, StyleBlueprintsTable Hazırlık sütunu, 10 yeni test, 413 toplam.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 65: style blueprint readiness summary frontend: StyleBlueprintReadinessBadge, StyleBlueprintReadinessSummary, Hazırlık sütunu, 10 yeni test, 413 toplam (2026-04-02)
 - Phase 64: source scan execution summary frontend: SourceScanExecutionBadge, SourceScanExecutionSummary, Çalışma Özeti sütunu, 10 yeni test, 403 toplam (2026-04-02)
 - Phase 63: standard video readiness summary frontend: StandardVideoReadinessBadge, StandardVideoReadinessSummary, Hazırlık sütunu, 10 yeni test, 393 toplam (2026-04-02)
 - Phase 62: used news state summary frontend: UsedNewsStateBadge, UsedNewsStateSummary, Durum sütunu, 10 yeni test, 383 toplam (2026-04-02)

@@ -2,6 +2,20 @@
 
 ---
 
+## [2026-04-02] Phase 65 — Style Blueprint Readiness Summary Frontend Foundation
+
+**Ne:** Style Blueprints registry listesinde her kayıt için sade readiness özeti eklendi.
+**Yaklaşım:** Backend değişikliği yok; 6 JSON kural alanı + status'tan frontend türetildi.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/style-blueprints/StyleBlueprintReadinessBadge.tsx` (yeni)
+- `frontend/src/components/style-blueprints/StyleBlueprintReadinessSummary.tsx` (yeni)
+- `frontend/src/components/style-blueprints/StyleBlueprintsTable.tsx` — Hazırlık sütunu eklendi
+- `frontend/src/tests/style-blueprint-readiness-summary.smoke.test.tsx` (yeni, 10 test)
+- `docs/testing/test-report-phase-65-style-blueprint-readiness-summary-frontend.md` (yeni)
+**Sonuç:** 413 frontend test — tümü geçti. Build başarılı.
+
+---
+
 ## [2026-04-02] Phase 64 — Source Scan Execution Summary Frontend Foundation
 
 **Ne:** Source Scans registry listesinde her kayıt için sade execution özeti eklendi.
