@@ -2,6 +2,19 @@
 
 ---
 
+## [2026-04-02] Phase 97 — Style Blueprint Artifact Consistency Summary Frontend Foundation
+
+**Ne:** Style Blueprints listesine artifact tutarlılık özeti eklendi. Pure frontend türetimi.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/style-blueprints/StyleBlueprintArtifactConsistencyBadge.tsx` (yeni)
+- `frontend/src/components/style-blueprints/StyleBlueprintArtifactConsistencySummary.tsx` (yeni, computeStyleBlueprintArtifactConsistency)
+- `frontend/src/components/style-blueprints/StyleBlueprintsTable.tsx` (Artifact Tutarlılığı sütunu eklendi)
+- `frontend/src/tests/style-blueprint-artifact-consistency-summary.smoke.test.tsx` (yeni, 10 test)
+- `docs/testing/test-report-phase-97-style-blueprint-artifact-consistency-summary-frontend.md` (yeni)
+**Test:** 10 yeni smoke test, 733 toplam, build temiz.
+
+---
+
 ## [2026-04-02] Phase 96 — Template Artifact Consistency Summary Frontend Foundation
 
 **Ne:** Templates listesine artifact tutarlılık özeti eklendi. Pure frontend türetimi.
