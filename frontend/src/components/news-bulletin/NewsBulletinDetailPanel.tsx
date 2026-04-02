@@ -1,4 +1,8 @@
+import { useState, useEffect } from "react";
 import { useNewsBulletinDetail } from "../../hooks/useNewsBulletinDetail";
+import { useUpdateNewsBulletin } from "../../hooks/useUpdateNewsBulletin";
+import { NewsBulletinForm } from "./NewsBulletinForm";
+import type { NewsBulletinFormValues } from "./NewsBulletinForm";
 
 interface Props {
   selectedId: string | null;
@@ -15,6 +19,12 @@ function Field({ label, value }: { label: string; value: React.ReactNode }) {
 
 export function NewsBulletinDetailPanel({ selectedId }: Props) {
   const { data, isLoading, isError } = useNewsBulletinDetail(selectedId);
+  const updateMutation = useUpdateNewsBulletin(selectedId ?? "");
+  const [editMode, setEditMode] = useState(false);
+
+  useEffect(() => {
+    setEditMode(false);
+  }, [selectedId]);
 
   if (!selectedId) {
     return <p>Bir news bulletin seçin.</p>;
@@ -28,9 +38,49 @@ export function NewsBulletinDetailPanel({ selectedId }: Props) {
     return <p style={{ color: "red" }}>Hata: detay yüklenemedi.</p>;
   }
 
+  if (editMode) {
+    function handleSubmit(values: NewsBulletinFormValues) {
+      const dur = values.target_duration_seconds.trim();
+      updateMutation.mutate(
+        {
+          topic: values.topic.trim(),
+          title: values.title.trim() || null,
+          brief: values.brief.trim() || null,
+          target_duration_seconds: dur !== "" ? Number(dur) : null,
+          language: values.language || null,
+          tone: values.tone || null,
+          bulletin_style: values.bulletin_style || null,
+          source_mode: values.source_mode || null,
+          selected_news_ids_json: values.selected_news_ids_json.trim() || null,
+          status: values.status,
+        },
+        { onSuccess: () => setEditMode(false) }
+      );
+    }
+
+    return (
+      <div>
+        <h3>News Bulletin Düzenle</h3>
+        {updateMutation.isError && (
+          <p style={{ color: "red" }}>Hata: güncelleme başarısız.</p>
+        )}
+        <NewsBulletinForm
+          initial={data}
+          onSubmit={handleSubmit}
+          onCancel={() => setEditMode(false)}
+          isSubmitting={updateMutation.isPending}
+          submitLabel="Güncelle"
+        />
+      </div>
+    );
+  }
+
   return (
     <div>
-      <h3>News Bulletin Detayı</h3>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <h3>News Bulletin Detayı</h3>
+        <button onClick={() => setEditMode(true)}>Düzenle</button>
+      </div>
       <Field label="ID" value={data.id} />
       <Field label="Title" value={data.title} />
       <Field label="Topic" value={data.topic} />

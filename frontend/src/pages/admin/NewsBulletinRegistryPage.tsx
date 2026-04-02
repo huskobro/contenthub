@@ -1,15 +1,24 @@
 import { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useNewsBulletinsList } from "../../hooks/useNewsBulletinsList";
 import { NewsBulletinsTable } from "../../components/news-bulletin/NewsBulletinsTable";
 import { NewsBulletinDetailPanel } from "../../components/news-bulletin/NewsBulletinDetailPanel";
 
 export function NewsBulletinRegistryPage() {
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const initialSelected = (location.state as { selectedId?: string } | null)?.selectedId ?? null;
+  const [selectedId, setSelectedId] = useState<string | null>(initialSelected);
   const { data, isLoading, isError } = useNewsBulletinsList();
 
   return (
     <div>
-      <h1>News Bulletin Registry</h1>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <h1>News Bulletin Registry</h1>
+        <button onClick={() => navigate("/admin/news-bulletins/new")}>
+          + Yeni News Bulletin
+        </button>
+      </div>
       <p>Admin news bulletin kayıtları.</p>
 
       <div style={{ display: "flex", gap: "24px", alignItems: "flex-start" }}>

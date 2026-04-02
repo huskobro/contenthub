@@ -2,6 +2,26 @@
 
 ---
 
+## [2026-04-02] Phase 32 — Admin News Bulletin Create/Edit Frontend
+
+**Ne:** News Bulletin create/edit form eklendi. API genişletildi, mutation hook'ları yazıldı, form component'i oluşturuldu, registry/detail edit mode'a taşındı.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/api/newsBulletinApi.ts` (createNewsBulletin, updateNewsBulletin eklendi)
+- `frontend/src/hooks/useCreateNewsBulletin.ts` (yeni)
+- `frontend/src/hooks/useUpdateNewsBulletin.ts` (yeni)
+- `frontend/src/components/news-bulletin/NewsBulletinForm.tsx` (yeni)
+- `frontend/src/components/news-bulletin/NewsBulletinDetailPanel.tsx` (edit mode eklendi)
+- `frontend/src/pages/admin/NewsBulletinCreatePage.tsx` (yeni)
+- `frontend/src/pages/admin/NewsBulletinRegistryPage.tsx` (+ Yeni butonu, selectedId state)
+- `frontend/src/app/router.tsx` (/admin/news-bulletins/new route eklendi)
+- `frontend/src/tests/news-bulletin-form.smoke.test.tsx` (8 yeni test)
+- `docs/testing/test-report-phase-32-news-bulletin-form-frontend.md` (yeni)
+**Testler:** 147/147 passed | build ✅ 354.42 kB
+**Commit:** `feat: add phase 32 admin news bulletin create/edit frontend`
+**Push:** ✅ `git@github.com:huskobro/contenthub.git`
+
+---
+
 ## [2026-04-02] Phase 31 — Admin News Bulletin Registry Frontend Foundation
 
 **Ne:** News Bulletin admin sayfası oluşturuldu. API katmanı, hooks, tablo, detail panel, registry sayfası ve sidebar entegrasyonu eklendi.
