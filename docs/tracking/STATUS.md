@@ -1,10 +1,10 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 51 — News Bulletin Used News Warning UI Frontend Foundation ✓ TAMAMLANDI
+Phase 52 — News Bulletin Artifact Summary Frontend Foundation ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-UsedNewsWarningBadge, UsedNewsWarningDetails, NewsBulletinSelectedItemsPanel uyarı entegrasyonu, frontend tipler güncellendi, 10 yeni frontend test, 273 toplam frontend test.
+has_script/has_metadata backend alanları, NewsBulletinArtifactStatusBadge, NewsBulletinArtifactSummary, registry tablosuna Artifacts sütunu, 10 yeni frontend test, 283 toplam frontend test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
@@ -62,6 +62,7 @@ UsedNewsWarningBadge, UsedNewsWarningDetails, NewsBulletinSelectedItemsPanel uya
 - Phase 49 news bulletin selected news picker frontend: useNewsItemsPickerList, NewsItemPickerTable, NewsBulletinSelectedNewsPicker, SelectedItemsPanel güncellendi (+picker entegrasyonu), 10 yeni test, 263 toplam frontend test (2026-04-02)
 - Phase 50 news bulletin used news enforcement backend: get_used_news_enforcement() helper, NewsBulletinSelectedItemWithEnforcementResponse schema, list/create endpoints enforcement alanları döndürüyor, 10 yeni backend test, 195 toplam backend test (2026-04-02)
 - Phase 51 news bulletin used news warning frontend: UsedNewsWarningBadge, UsedNewsWarningDetails, NewsBulletinSelectedItemsPanel uyarı entegrasyonu, frontend tipler güncellendi, 10 yeni frontend test, 273 toplam frontend test (2026-04-02)
+- Phase 52 news bulletin artifact summary frontend: has_script/has_metadata backend, NewsBulletinArtifactStatusBadge, NewsBulletinArtifactSummary, registry Artifacts sütunu, 10 yeni frontend test, 283 toplam frontend test, 195 backend test (2026-04-02)
 
 ## Mevcut Riskler
 - Henüz auth / rol zorlama yok (kasıtlı)

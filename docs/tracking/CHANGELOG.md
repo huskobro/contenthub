@@ -2,6 +2,22 @@
 
 ---
 
+## [2026-04-02] Phase 52 — News Bulletin Artifact Summary Frontend Foundation
+
+**Ne:** Registry listesinde her bulletin için script/metadata varlık bilgisi badge olarak gösterildi.
+**Eklenen/değiştirilen dosyalar:**
+- `backend/app/modules/news_bulletin/schemas.py` — `has_script`, `has_metadata` eklendi
+- `backend/app/modules/news_bulletin/service.py` — `list_news_bulletins_with_artifacts()` eklendi
+- `backend/app/modules/news_bulletin/router.py` — list endpoint güncellendi
+- `frontend/src/api/newsBulletinApi.ts` — `has_script?`, `has_metadata?` eklendi
+- `frontend/src/components/news-bulletin/NewsBulletinArtifactStatusBadge.tsx` (yeni)
+- `frontend/src/components/news-bulletin/NewsBulletinArtifactSummary.tsx` (yeni)
+- `frontend/src/components/news-bulletin/NewsBulletinsTable.tsx` — Artifacts sütunu eklendi
+- `frontend/src/tests/news-bulletin-artifact-summary.smoke.test.tsx` (yeni, 10 test)
+**Sonuç:** 195 backend test, 283 frontend test — tümü geçti. Build başarılı.
+
+---
+
 ## [2026-04-02] Phase 51 — News Bulletin Used News Warning UI Frontend Foundation
 
 **Ne:** Backend enforcement alanları frontend'e taşındı; selected news listesinde her item için sade warning badge ve detay gösterimi eklendi.

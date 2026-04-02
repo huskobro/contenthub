@@ -18,7 +18,7 @@ router = APIRouter(prefix="/modules/news-bulletin", tags=["news-bulletin"])
 
 @router.get("", response_model=List[NewsBulletinResponse])
 async def list_news_bulletins(db: AsyncSession = Depends(get_db)):
-    return await service.list_news_bulletins(db)
+    return await service.list_news_bulletins_with_artifacts(db)
 
 
 @router.get("/{item_id}", response_model=NewsBulletinResponse)

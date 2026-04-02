@@ -74,6 +74,8 @@ class NewsBulletinResponse(BaseModel):
     job_id: Optional[str]
     created_at: datetime
     updated_at: datetime
+    has_script: bool = False
+    has_metadata: bool = False
 
     model_config = {"from_attributes": True}
 

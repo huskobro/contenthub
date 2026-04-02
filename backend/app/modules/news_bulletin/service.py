@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import NewsBulletin, NewsBulletinScript, NewsBulletinMetadata, NewsBulletinSelectedItem, NewsItem, UsedNewsRegistry
 from .schemas import (
-    NewsBulletinCreate, NewsBulletinUpdate,
+    NewsBulletinCreate, NewsBulletinUpdate, NewsBulletinResponse,
     NewsBulletinScriptCreate, NewsBulletinScriptUpdate,
     NewsBulletinMetadataCreate, NewsBulletinMetadataUpdate,
     NewsBulletinSelectedItemCreate, NewsBulletinSelectedItemUpdate,
@@ -45,6 +45,42 @@ async def list_news_bulletins(db: AsyncSession) -> List[NewsBulletin]:
         select(NewsBulletin).order_by(NewsBulletin.created_at.desc())
     )
     return list(result.scalars().all())
+
+
+async def list_news_bulletins_with_artifacts(
+    db: AsyncSession,
+) -> List[NewsBulletinResponse]:
+    """Return bulletin list enriched with has_script and has_metadata flags."""
+    bulletins = await list_news_bulletins(db)
+    result = []
+    for b in bulletins:
+        script_row = await db.execute(
+            select(NewsBulletinScript).where(NewsBulletinScript.news_bulletin_id == b.id).limit(1)
+        )
+        meta_row = await db.execute(
+            select(NewsBulletinMetadata).where(NewsBulletinMetadata.news_bulletin_id == b.id).limit(1)
+        )
+        result.append(
+            NewsBulletinResponse(
+                id=b.id,
+                title=b.title,
+                topic=b.topic,
+                brief=b.brief,
+                target_duration_seconds=b.target_duration_seconds,
+                language=b.language,
+                tone=b.tone,
+                bulletin_style=b.bulletin_style,
+                source_mode=b.source_mode,
+                selected_news_ids_json=b.selected_news_ids_json,
+                status=b.status,
+                job_id=b.job_id,
+                created_at=b.created_at,
+                updated_at=b.updated_at,
+                has_script=script_row.scalar_one_or_none() is not None,
+                has_metadata=meta_row.scalar_one_or_none() is not None,
+            )
+        )
+    return result
 
 
 async def get_news_bulletin(db: AsyncSession, item_id: str) -> Optional[NewsBulletin]:

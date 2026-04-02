@@ -1,4 +1,5 @@
 import type { NewsBulletinResponse } from "../../api/newsBulletinApi";
+import { NewsBulletinArtifactSummary } from "./NewsBulletinArtifactSummary";
 
 interface Props {
   bulletins: NewsBulletinResponse[];
@@ -21,6 +22,7 @@ export function NewsBulletinsTable({ bulletins, selectedId, onSelect }: Props) {
           <th style={{ textAlign: "left", padding: "6px 8px" }}>Style</th>
           <th style={{ textAlign: "left", padding: "6px 8px" }}>Status</th>
           <th style={{ textAlign: "left", padding: "6px 8px" }}>Language</th>
+          <th style={{ textAlign: "left", padding: "6px 8px" }}>Artifacts</th>
           <th style={{ textAlign: "left", padding: "6px 8px" }}>Created</th>
         </tr>
       </thead>
@@ -40,6 +42,9 @@ export function NewsBulletinsTable({ bulletins, selectedId, onSelect }: Props) {
             <td style={{ padding: "6px 8px" }}>{b.bulletin_style ?? "—"}</td>
             <td style={{ padding: "6px 8px" }}>{b.status}</td>
             <td style={{ padding: "6px 8px" }}>{b.language ?? "—"}</td>
+            <td style={{ padding: "6px 8px" }}>
+              <NewsBulletinArtifactSummary hasScript={b.has_script} hasMetadata={b.has_metadata} />
+            </td>
             <td style={{ padding: "6px 8px" }}>
               {new Date(b.created_at).toLocaleDateString()}
             </td>
