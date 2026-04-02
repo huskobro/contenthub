@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 85 — Used News Source Context Summary Frontend Foundation ✓ TAMAMLANDI
+Phase 86 — Used News Publication Linkage Summary Frontend Foundation ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Küçük backend genişletme + frontend türetimi: UsedNewsSourceContextBadge + UsedNewsSourceContextSummary. 10 yeni test, 613 toplam.
+Saf frontend türetimi: UsedNewsPublicationLinkageBadge + UsedNewsPublicationLinkageSummary. 10 yeni test, 623 toplam.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 86: used news publication linkage summary: pure frontend, UsedNewsPublicationLinkageBadge, UsedNewsPublicationLinkageSummary, Yayın Bağı sütunu, 10 yeni test, 623 toplam (2026-04-02)
 - Phase 85: used news source context summary: backend has_news_item_source/has_news_item_scan_reference batch JOIN, UsedNewsSourceContextBadge, UsedNewsSourceContextSummary, Kaynak Bağlamı sütunu, 10 yeni test, 613 toplam (2026-04-02)
 - Phase 84: job output richness summary: pure frontend, JobOutputRichnessBadge, JobOutputRichnessSummary, Çıktı Zenginliği sütunu, 10 yeni test, 603 toplam (2026-04-02)
 - Phase 83: style blueprint publication signal summary: pure frontend, StyleBlueprintPublicationSignalBadge, StyleBlueprintPublicationSignalSummary, Yayın Sinyali sütunu, 10 yeni test, 593 toplam (2026-04-02)

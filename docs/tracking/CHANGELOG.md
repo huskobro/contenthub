@@ -2,6 +2,19 @@
 
 ---
 
+## [2026-04-02] Phase 86 — Used News Publication Linkage Summary Frontend Foundation
+
+**Ne:** Used News registry listesine yayın bağı özeti eklendi. Saf frontend türetimi — backend değişikliği yok.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/used-news/UsedNewsPublicationLinkageBadge.tsx` (yeni)
+- `frontend/src/components/used-news/UsedNewsPublicationLinkageSummary.tsx` (yeni)
+- `frontend/src/components/used-news/UsedNewsTable.tsx` (Yayın Bağı sütunu eklendi)
+- `frontend/src/tests/used-news-publication-linkage-summary.smoke.test.tsx` (yeni, 10 test)
+- `docs/testing/test-report-phase-86-used-news-publication-linkage-summary-frontend.md` (yeni)
+**Test:** 10 yeni smoke test, 623 toplam, build temiz.
+
+---
+
 ## [2026-04-02] Phase 85 — Used News Source Context Summary Frontend Foundation
 
 **Ne:** Used News registry listesine kaynak bağlamı özeti eklendi. Küçük backend genişletme (batch JOIN) + frontend türetimi.

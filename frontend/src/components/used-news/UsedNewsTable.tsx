@@ -1,6 +1,7 @@
 import type { UsedNewsResponse } from "../../api/usedNewsApi";
 import { UsedNewsStateSummary } from "./UsedNewsStateSummary";
 import { UsedNewsSourceContextSummary } from "./UsedNewsSourceContextSummary";
+import { UsedNewsPublicationLinkageSummary } from "./UsedNewsPublicationLinkageSummary";
 
 interface Props {
   records: UsedNewsResponse[];
@@ -17,6 +18,7 @@ export function UsedNewsTable({ records, selectedId, onSelect }: Props) {
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Usage Type</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Durum</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Kaynak Bağlamı</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Yayın Bağı</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Target Module</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Target Entity ID</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Created</th>
@@ -49,6 +51,12 @@ export function UsedNewsTable({ records, selectedId, onSelect }: Props) {
                 newsItemId={record.news_item_id}
                 hasNewsItemSource={record.has_news_item_source}
                 hasNewsItemScanReference={record.has_news_item_scan_reference}
+              />
+            </td>
+            <td style={{ padding: "0.5rem 0.75rem" }}>
+              <UsedNewsPublicationLinkageSummary
+                usageType={record.usage_type}
+                targetEntityId={record.target_entity_id}
               />
             </td>
             <td style={{ padding: "0.5rem 0.75rem", color: "#64748b" }}>{record.target_module}</td>
