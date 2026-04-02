@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 69 — News Bulletin Enforcement Summary Frontend Foundation ✓ TAMAMLANDI
+Phase 70 — News Item Source Summary Frontend Foundation ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-has_selected_news_warning/selected_news_warning_count backend + NewsBulletinEnforcementSummary frontend. 10 yeni test, 453 toplam.
+source_name/source_status backend enrichment + NewsItemSourceStatusBadge + NewsItemSourceSummary frontend. 10 yeni test, 463 toplam.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 70: news item source summary: source_name/source_status backend lookup, NewsItemSourceStatusBadge, NewsItemSourceSummary, Kaynak Özeti sütunu, 10 yeni test, 463 toplam (2026-04-02)
 - Phase 69: news bulletin enforcement summary: warning aggregate backend, NewsBulletinEnforcementStatusBadge, NewsBulletinEnforcementSummary, Enforcement sütunu, 10 yeni test, 453 toplam (2026-04-02)
 - Phase 68: standard video artifact summary: has_script/has_metadata backend, StandardVideoArtifactStatusBadge, StandardVideoArtifactSummary, Artifact sütunu, 10 yeni test, 443 toplam (2026-04-02)
 - Phase 67: job actionability summary frontend: JobActionabilityBadge, JobActionabilitySummary, Aksiyon Özeti sütunu, 10 yeni test, 433 toplam (2026-04-02)

@@ -2,7 +2,7 @@ from typing import List, Optional
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models import NewsItem, UsedNewsRegistry
+from app.db.models import NewsItem, UsedNewsRegistry, NewsSource
 from .schemas import NewsItemCreate, NewsItemUpdate, NewsItemResponse
 
 
@@ -45,6 +45,17 @@ async def list_news_items_with_usage_summary(
             .limit(1)
         )
         last_usage = last_usage_row.scalar_one_or_none()
+        source_name = None
+        source_status = None
+        if item.source_id:
+            source_row = await db.execute(
+                select(NewsSource).where(NewsSource.id == item.source_id).limit(1)
+            )
+            source = source_row.scalar_one_or_none()
+            if source:
+                source_name = source.name
+                source_status = source.status
+
         result.append(
             NewsItemResponse(
                 id=item.id,
@@ -64,6 +75,8 @@ async def list_news_items_with_usage_summary(
                 usage_count=count_row.scalar() or 0,
                 last_usage_type=last_usage.usage_type if last_usage else None,
                 last_target_module=last_usage.target_module if last_usage else None,
+                source_name=source_name,
+                source_status=source_status,
             )
         )
     return result

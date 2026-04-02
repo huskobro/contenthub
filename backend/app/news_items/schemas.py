@@ -91,5 +91,7 @@ class NewsItemResponse(BaseModel):
     usage_count: int = 0
     last_usage_type: Optional[str] = None
     last_target_module: Optional[str] = None
+    source_name: Optional[str] = None
+    source_status: Optional[str] = None
 
     model_config = {"from_attributes": True}

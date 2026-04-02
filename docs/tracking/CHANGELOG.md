@@ -2,6 +2,22 @@
 
 ---
 
+## [2026-04-02] Phase 70 — News Item Source Summary Frontend Foundation
+
+**Ne:** News Items listesine source bağlantı görünürlüğü eklendi. Backend enrichment ile source_name/source_status alanları dolduruluyor, frontend badge + summary ile gösteriliyor.
+**Eklenen/değiştirilen dosyalar:**
+- `backend/app/news_items/schemas.py` — source_name, source_status alanları
+- `backend/app/news_items/service.py` — NewsSource lookup in list_news_items_with_usage_summary
+- `frontend/src/api/newsItemsApi.ts` — source_name, source_status alanları
+- `frontend/src/components/news-items/NewsItemSourceStatusBadge.tsx` (yeni)
+- `frontend/src/components/news-items/NewsItemSourceSummary.tsx` (yeni)
+- `frontend/src/components/news-items/NewsItemsTable.tsx` — Kaynak Özeti sütunu güncellendi
+- `frontend/src/tests/news-item-source-summary.smoke.test.tsx` (yeni, 10 test)
+- `docs/testing/test-report-phase-70-news-item-source-summary-frontend.md` (yeni)
+**Sonuç:** 463 frontend test — tümü geçti. Build başarılı.
+
+---
+
 ## [2026-04-02] Phase 69 — News Bulletin Enforcement Summary Frontend Foundation
 
 **Ne:** News Bulletin listesine selected news warning aggregate özeti eklendi.

@@ -1,6 +1,7 @@
 import type { NewsItemResponse } from "../../api/newsItemsApi";
 import { NewsItemUsageSummary } from "./NewsItemUsageSummary";
 import { NewsItemReadinessSummary } from "./NewsItemReadinessSummary";
+import { NewsItemSourceSummary } from "./NewsItemSourceSummary";
 
 interface Props {
   items: NewsItemResponse[];
@@ -22,7 +23,7 @@ export function NewsItemsTable({ items, selectedId, onSelect }: Props) {
         <tr style={{ background: "#f1f5f9", textAlign: "left" }}>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Başlık</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Status</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Kaynak</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Kaynak Özeti</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Dil</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Kategori</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Kullanım</th>
@@ -51,8 +52,12 @@ export function NewsItemsTable({ items, selectedId, onSelect }: Props) {
                   {item.status}
                 </span>
               </td>
-              <td style={{ padding: "0.5rem 0.75rem", color: "#94a3b8", fontFamily: "monospace", fontSize: "0.75rem" }}>
-                {item.source_id ? item.source_id.slice(0, 10) + "…" : "—"}
+              <td style={{ padding: "0.5rem 0.75rem" }}>
+                <NewsItemSourceSummary
+                  sourceId={item.source_id}
+                  sourceName={item.source_name}
+                  sourceStatus={item.source_status}
+                />
               </td>
               <td style={{ padding: "0.5rem 0.75rem", color: "#64748b" }}>{item.language ?? "—"}</td>
               <td style={{ padding: "0.5rem 0.75rem", color: "#64748b" }}>{item.category ?? "—"}</td>

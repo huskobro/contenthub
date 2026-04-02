@@ -18,6 +18,8 @@ export interface NewsItemResponse {
   usage_count?: number;
   last_usage_type?: string | null;
   last_target_module?: string | null;
+  source_name?: string | null;
+  source_status?: string | null;
 }
 
 export interface NewsItemCreatePayload {
