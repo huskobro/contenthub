@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 105 — Source Input Quality Summary Frontend Foundation ✓ TAMAMLANDI
+Phase 106 — Source Scan Input Quality Summary Frontend Foundation ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Pure frontend türetimi: SourceInputQualityBadge + SourceInputQualitySummary. 10 yeni test, 813 toplam.
+Pure frontend türetimi: SourceScanInputQualityBadge + SourceScanInputQualitySummary. 10 yeni test, 823 toplam.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 106: source scan input quality summary: pure frontend, SourceScanInputQualityBadge, SourceScanInputQualitySummary, Girdi Kalitesi sütunu, 10 yeni test, 823 toplam (2026-04-02)
 - Phase 105: source input quality summary: pure frontend, SourceInputQualityBadge, SourceInputQualitySummary, Girdi Kalitesi sütunu, 10 yeni test, 813 toplam (2026-04-02)
 - Phase 104: style blueprint input quality summary: pure frontend, StyleBlueprintInputQualityBadge, StyleBlueprintInputQualitySummary, Girdi Kalitesi sütunu, 10 yeni test, 803 toplam (2026-04-02)
 - Phase 103: template input quality summary: pure frontend, TemplateInputQualityBadge, TemplateInputQualitySummary, Girdi Kalitesi sütunu, 10 yeni test, 793 toplam (2026-04-02)

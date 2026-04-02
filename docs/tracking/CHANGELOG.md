@@ -2,6 +2,19 @@
 
 ---
 
+## [2026-04-02] Phase 106 — Source Scan Input Quality Summary Frontend Foundation
+
+**Ne:** Source Scans listesine source-input quality özeti eklendi. Pure frontend türetimi.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/source-scans/SourceScanInputQualityBadge.tsx` (yeni)
+- `frontend/src/components/source-scans/SourceScanInputQualitySummary.tsx` (yeni, computeSourceScanInputQuality)
+- `frontend/src/components/source-scans/SourceScansTable.tsx` (Girdi Kalitesi sütunu eklendi)
+- `frontend/src/tests/source-scan-input-quality-summary.smoke.test.tsx` (yeni, 10 test)
+- `docs/testing/test-report-phase-106-source-scan-input-quality-summary-frontend.md` (yeni)
+**Test:** 10 yeni smoke test, 823 toplam, build temiz.
+
+---
+
 ## [2026-04-02] Phase 105 — Source Input Quality Summary Frontend Foundation
 
 **Ne:** Sources listesine source-input quality özeti eklendi. Pure frontend türetimi.
