@@ -2,6 +2,19 @@
 
 ---
 
+## [2026-04-02] Phase 120 — Source Input Specificity Summary Frontend Foundation
+
+**Ne:** Sources listesine input specificity özeti eklendi. Pure frontend türetimi, 3 seviye.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/sources/SourceInputSpecificityBadge.tsx` (yeni)
+- `frontend/src/components/sources/SourceInputSpecificitySummary.tsx` (yeni, computeSourceInputSpecificity)
+- `frontend/src/components/sources/SourcesTable.tsx` (Girdi Özgüllüğü sütunu eklendi)
+- `frontend/src/tests/source-input-specificity-summary.smoke.test.tsx` (yeni, 10 test)
+- `docs/testing/test-report-phase-120-source-input-specificity-summary-frontend.md` (yeni)
+**Test:** 10 yeni smoke test, 963 toplam, build temiz.
+
+---
+
 ## [2026-04-02] Phase 119 — Source Scan Input Specificity Summary Frontend Foundation
 
 **Ne:** Source Scans listesine input specificity özeti eklendi. Pure frontend türetimi, 3 seviye.
