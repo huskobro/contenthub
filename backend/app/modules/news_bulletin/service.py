@@ -1,12 +1,14 @@
 from typing import List, Optional
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models import NewsBulletin, NewsBulletinScript, NewsBulletinMetadata
+from app.db.models import NewsBulletin, NewsBulletinScript, NewsBulletinMetadata, NewsBulletinSelectedItem, NewsItem
 from .schemas import (
     NewsBulletinCreate, NewsBulletinUpdate,
     NewsBulletinScriptCreate, NewsBulletinScriptUpdate,
     NewsBulletinMetadataCreate, NewsBulletinMetadataUpdate,
+    NewsBulletinSelectedItemCreate, NewsBulletinSelectedItemUpdate,
 )
 
 
@@ -152,3 +154,63 @@ async def update_bulletin_metadata(
     await db.commit()
     await db.refresh(meta)
     return meta
+
+
+async def list_bulletin_selected_items(
+    db: AsyncSession, bulletin_id: str
+) -> List[NewsBulletinSelectedItem]:
+    result = await db.execute(
+        select(NewsBulletinSelectedItem)
+        .where(NewsBulletinSelectedItem.news_bulletin_id == bulletin_id)
+        .order_by(NewsBulletinSelectedItem.sort_order.asc())
+    )
+    return list(result.scalars().all())
+
+
+async def get_bulletin_selected_item(
+    db: AsyncSession, selection_id: str
+) -> Optional[NewsBulletinSelectedItem]:
+    result = await db.execute(
+        select(NewsBulletinSelectedItem).where(NewsBulletinSelectedItem.id == selection_id)
+    )
+    return result.scalar_one_or_none()
+
+
+async def create_bulletin_selected_item(
+    db: AsyncSession, bulletin_id: str, payload: NewsBulletinSelectedItemCreate
+) -> Optional[NewsBulletinSelectedItem]:
+    """Returns None if bulletin or news_item not found."""
+    bulletin = await get_news_bulletin(db, bulletin_id)
+    if bulletin is None:
+        return None
+    news_item = await db.execute(select(NewsItem).where(NewsItem.id == payload.news_item_id))
+    if news_item.scalar_one_or_none() is None:
+        return None
+    item = NewsBulletinSelectedItem(
+        news_bulletin_id=bulletin_id,
+        news_item_id=payload.news_item_id,
+        sort_order=payload.sort_order,
+        selection_reason=payload.selection_reason,
+    )
+    db.add(item)
+    try:
+        await db.commit()
+    except IntegrityError:
+        await db.rollback()
+        raise
+    await db.refresh(item)
+    return item
+
+
+async def update_bulletin_selected_item(
+    db: AsyncSession, selection_id: str, payload: NewsBulletinSelectedItemUpdate
+) -> Optional[NewsBulletinSelectedItem]:
+    item = await get_bulletin_selected_item(db, selection_id)
+    if item is None:
+        return None
+    data = payload.model_dump(exclude_unset=True)
+    for field, value in data.items():
+        setattr(item, field, value)
+    await db.commit()
+    await db.refresh(item)
+    return item

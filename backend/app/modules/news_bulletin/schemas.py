@@ -119,6 +119,50 @@ class NewsBulletinMetadataResponse(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class NewsBulletinSelectedItemCreate(BaseModel):
+    news_item_id: str
+    sort_order: int = 0
+    selection_reason: Optional[str] = None
+
+    @field_validator("news_item_id")
+    @classmethod
+    def news_item_id_not_blank(cls, v: str) -> str:
+        if not v.strip():
+            raise ValueError("news_item_id must not be blank")
+        return v
+
+    @field_validator("sort_order")
+    @classmethod
+    def sort_order_not_negative(cls, v: int) -> int:
+        if v < 0:
+            raise ValueError("sort_order must not be negative")
+        return v
+
+
+class NewsBulletinSelectedItemUpdate(BaseModel):
+    sort_order: Optional[int] = None
+    selection_reason: Optional[str] = None
+
+    @field_validator("sort_order")
+    @classmethod
+    def sort_order_not_negative(cls, v: Optional[int]) -> Optional[int]:
+        if v is not None and v < 0:
+            raise ValueError("sort_order must not be negative")
+        return v
+
+
+class NewsBulletinSelectedItemResponse(BaseModel):
+    id: str
+    news_bulletin_id: str
+    news_item_id: str
+    sort_order: int
+    selection_reason: Optional[str]
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
 class NewsBulletinScriptCreate(BaseModel):
     content: str
     version: int = 1

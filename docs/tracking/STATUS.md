@@ -1,10 +1,10 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 36 — Admin News Bulletin Metadata Frontend Foundation ✓ TAMAMLANDI
+Phase 37 — News Bulletin Selected Items Backend Foundation ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-News bulletin metadata frontend: API genişletildi, metadata hooks, NewsBulletinMetadataForm, NewsBulletinMetadataPanel, DetailPanel güncellendi, 11 yeni test, 167 toplam frontend test.
+news_bulletin_selected_items tablosu, GET/POST/PATCH endpoint'leri, duplicate 409 koruması, 8 yeni test, 174 toplam backend test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
@@ -48,6 +48,7 @@ News bulletin metadata frontend: API genişletildi, metadata hooks, NewsBulletin
 - Phase 34 news bulletin metadata backend: NewsBulletinMetadata modeli, migration, schemas+service+router genişletildi, 7 yeni test, 166 toplam backend test (2026-04-02)
 - Phase 35 admin news bulletin script frontend: API genişletildi, useNewsBulletinScript + create/update hooks, NewsBulletinScriptForm, NewsBulletinScriptPanel, DetailPanel güncellendi, 9 yeni test, 156 toplam frontend test (2026-04-02)
 - Phase 36 admin news bulletin metadata frontend: API genişletildi, useNewsBulletinMetadata + create/update hooks, NewsBulletinMetadataForm, NewsBulletinMetadataPanel, DetailPanel güncellendi, 11 yeni test, 167 toplam frontend test (2026-04-02)
+- Phase 37 news bulletin selected items backend: NewsBulletinSelectedItem modeli, UniqueConstraint, migration, schemas+service+router genişletildi, IntegrityError → 409, 8 yeni test, 174 toplam backend test (2026-04-02)
 
 ## Mevcut Riskler
 - Henüz auth / rol zorlama yok (kasıtlı)

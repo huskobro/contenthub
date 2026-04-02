@@ -2,6 +2,22 @@
 
 ---
 
+## [2026-04-02] Phase 37 — News Bulletin Selected Items Backend Foundation
+
+**Ne:** news_bulletin_selected_items tablosu eklendi. Bir news bulletin ile seçilen news item'ları arasında explicit linkage, sıralama ve seçim gerekçesi desteği.
+**Eklenen/değiştirilen dosyalar:**
+- `backend/app/db/models.py` (NewsBulletinSelectedItem modeli, UniqueConstraint, UniqueConstraint import)
+- `backend/alembic/versions/721a304e877f_add_news_bulletin_selected_items_table.py` (yeni)
+- `backend/app/modules/news_bulletin/schemas.py` (SelectedItem schemas eklendi)
+- `backend/app/modules/news_bulletin/service.py` (SelectedItem service fonksiyonları, IntegrityError handling)
+- `backend/app/modules/news_bulletin/router.py` (GET/POST/PATCH selected-news endpoint'leri, 409 handling)
+- `backend/tests/test_news_bulletin_selected_items_api.py` (8 yeni test)
+**Testler:** 8/8 yeni test PASSED | 174/174 toplam PASSED
+**Commit:** `feat: add phase 37 news bulletin selected items backend foundation`
+**Push:** ✅ `git@github.com:huskobro/contenthub.git`
+
+---
+
 ## [2026-04-02] Phase 36 — Admin News Bulletin Metadata Frontend Foundation
 
 **Ne:** News bulletin metadata yönetimi için frontend katmanı oluşturuldu. MetadataPanel view/create/edit mod state machine'i, form bileşeni ve DetailPanel entegrasyonu eklendi.

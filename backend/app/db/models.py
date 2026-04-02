@@ -30,7 +30,7 @@ will be added in later phases as their subsystems are built.
 import uuid
 from datetime import datetime, timezone
 from typing import Optional
-from sqlalchemy import String, Text, DateTime, Boolean, Integer, Float, ForeignKey
+from sqlalchemy import String, Text, DateTime, Boolean, Integer, Float, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 from app.db.base import Base
 
@@ -679,6 +679,48 @@ class NewsBulletinScript(Base):
         String(50), nullable=False, default="draft"
     )
     notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now, onupdate=_now
+    )
+
+
+class NewsBulletinSelectedItem(Base):
+    """
+    News Bulletin Selected Items — Phase 37.
+
+    Explicit linkage table between a news bulletin and the news items
+    chosen for it.  Provides ordering and selection context without
+    overwriting the legacy selected_news_ids_json field.
+
+    news_bulletin_id  : FK to news_bulletins.id (required, indexed)
+    news_item_id      : FK to news_items.id (required, indexed)
+    sort_order        : display/processing order (non-negative)
+    selection_reason  : optional note about why this item was chosen
+    """
+
+    __tablename__ = "news_bulletin_selected_items"
+    __table_args__ = (
+        UniqueConstraint("news_bulletin_id", "news_item_id", name="uq_bulletin_news_item"),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    news_bulletin_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("news_bulletins.id"),
+        nullable=False,
+        index=True,
+    )
+    news_item_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("news_items.id"),
+        nullable=False,
+        index=True,
+    )
+    sort_order: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    selection_reason: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=_now
     )
