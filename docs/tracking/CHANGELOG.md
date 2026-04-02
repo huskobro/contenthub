@@ -2,6 +2,25 @@
 
 ---
 
+## [2026-04-02] Phase 30 — News Bulletin Backend Foundation
+
+**Ne:** NewsBulletin modeli, migration, schemas, service, router ve 11 test eklendi.
+**Eklenen/değiştirilen dosyalar:**
+- `backend/app/db/models.py` (NewsBulletin ORM modeli eklendi)
+- `backend/alembic/versions/8c913edf5154_add_news_bulletins_table.py` (yeni migration)
+- `backend/app/modules/news_bulletin/__init__.py` (yeni)
+- `backend/app/modules/news_bulletin/schemas.py` (NewsBulletinCreate, NewsBulletinUpdate, NewsBulletinResponse)
+- `backend/app/modules/news_bulletin/service.py` (list/get/create/update)
+- `backend/app/modules/news_bulletin/router.py` (/api/v1/modules/news-bulletin CRUD)
+- `backend/app/api/router.py` (news_bulletin_router dahil edildi)
+- `backend/tests/test_news_bulletin_api.py` (11 yeni test)
+- `docs/testing/test-report-phase-30-news-bulletin-backend.md` (yeni)
+**Testler:** 11/11 phase tests PASSED | 150/150 toplam PASSED
+**Commit:** `feat: add phase 30 news bulletin backend foundation`
+**Push:** ✅ `git@github.com:huskobro/contenthub.git`
+
+---
+
 ## [2026-04-02] Phase 29 — Used News Registry Backend Foundation
 
 **Ne:** UsedNewsRegistry modeli, migration, schemas, service, router ve 14 test eklendi.

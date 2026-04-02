@@ -605,3 +605,45 @@ class UsedNewsRegistry(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=_now, onupdate=_now
     )
+
+
+class NewsBulletin(Base):
+    """
+    News Bulletin — Phase 30.
+
+    Input record for a news bulletin production run.
+    Stores configuration and selected news references.
+
+    title                 : user-friendly record name (nullable)
+    topic                 : main subject / headline (required, not blank)
+    brief                 : short direction text (nullable)
+    target_duration_seconds: target output duration in seconds (nullable, non-negative)
+    language              : e.g. 'tr', 'en'
+    tone                  : e.g. 'formal', 'casual', 'urgent'
+    bulletin_style        : e.g. 'studio', 'futuristic', 'traditional'
+    source_mode           : e.g. 'manual', 'curated', 'auto'
+    selected_news_ids_json: JSON text list of manually selected news item ids
+    status                : e.g. 'draft', 'in_progress', 'done'
+    job_id                : nullable reference to jobs.id
+    """
+
+    __tablename__ = "news_bulletins"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    title: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    topic: Mapped[str] = mapped_column(Text, nullable=False)
+    brief: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    target_duration_seconds: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    language: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
+    tone: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    bulletin_style: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    source_mode: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    selected_news_ids_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    status: Mapped[str] = mapped_column(String(50), nullable=False, default="draft", index=True)
+    job_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now, onupdate=_now
+    )
