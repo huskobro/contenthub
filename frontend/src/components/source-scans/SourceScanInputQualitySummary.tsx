@@ -1,3 +1,5 @@
+import { SourceScanInputQualityBadge } from "./SourceScanInputQualityBadge";
+
 export type SourceScanInputQualityLevel = "Zayıf giriş" | "Kısmi giriş" | "Güçlü giriş";
 
 function isNonEmpty(v: string | null | undefined): boolean {
@@ -24,5 +26,3 @@ export function SourceScanInputQualitySummary({ sourceId, scanMode, requestedBy 
   const level = computeSourceScanInputQuality(sourceId, scanMode, requestedBy);
   return <SourceScanInputQualityBadge level={level} />;
 }
-
-import { SourceScanInputQualityBadge } from "./SourceScanInputQualityBadge";

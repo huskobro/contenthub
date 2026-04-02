@@ -27,18 +27,18 @@ export function SourceScansTable({ scans, selectedId, onSelect }: SourceScansTab
       <thead>
         <tr style={{ background: "#f1f5f9", textAlign: "left" }}>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Kaynak</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Scan Mode</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Status</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Results</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Tarama Modu</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Durum</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Sonuç</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Çalışma Özeti</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Çıktı Zenginliği</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Yayın Verimi</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Artifact Tutarlılığı</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Girdi Kalitesi</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Target/Output Tutarlılığı</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Yayın Sonucu</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Girdi Özgüllüğü</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Created</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Yayın Verimi</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Yayın Sonucu</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Artifact Tutarlılığı</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Target/Output Tutarlılığı</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Oluşturulma</th>
         </tr>
       </thead>
       <tbody>
@@ -54,6 +54,7 @@ export function SourceScansTable({ scans, selectedId, onSelect }: SourceScansTab
                 borderBottom: "1px solid #f1f5f9",
               }}
             >
+              {/* Kimlik & Durum */}
               <td style={{ padding: "0.5rem 0.75rem" }}>
                 <SourceScanSourceSummary
                   sourceId={scan.source_id}
@@ -77,6 +78,7 @@ export function SourceScansTable({ scans, selectedId, onSelect }: SourceScansTab
               <td style={{ padding: "0.5rem 0.75rem", color: "#64748b" }}>
                 {scan.result_count !== null ? scan.result_count : "—"}
               </td>
+              {/* Çalışma & Çıktı */}
               <td style={{ padding: "0.5rem 0.75rem" }}>
                 <SourceScanExecutionSummary
                   status={scan.status}
@@ -92,19 +94,7 @@ export function SourceScansTable({ scans, selectedId, onSelect }: SourceScansTab
                   rawResultPreviewJson={scan.raw_result_preview_json}
                 />
               </td>
-              <td style={{ padding: "0.5rem 0.75rem" }}>
-                <SourceScanPublicationYieldSummary
-                  linkedCount={scan.linked_news_count_from_scan}
-                  reviewedCount={scan.reviewed_news_count_from_scan}
-                  usedCount={scan.used_news_count_from_scan}
-                />
-              </td>
-              <td style={{ padding: "0.5rem 0.75rem" }}>
-                <SourceScanArtifactConsistencySummary
-                  sourceId={scan.source_id}
-                  linkedNewsCountFromScan={scan.linked_news_count_from_scan}
-                />
-              </td>
+              {/* Girdi Grubu */}
               <td style={{ padding: "0.5rem 0.75rem" }}>
                 <SourceScanInputQualitySummary
                   sourceId={scan.source_id}
@@ -113,11 +103,19 @@ export function SourceScansTable({ scans, selectedId, onSelect }: SourceScansTab
                 />
               </td>
               <td style={{ padding: "0.5rem 0.75rem" }}>
-                <SourceScanTargetOutputConsistencySummary
+                <SourceScanInputSpecificitySummary
                   sourceId={scan.source_id}
-                  resultCount={scan.result_count}
-                  linkedNewsCountFromScan={scan.linked_news_count_from_scan}
-                  usedNewsCountFromScan={scan.used_news_count_from_scan}
+                  scanMode={scan.scan_mode}
+                  requestedBy={scan.requested_by}
+                  notes={scan.notes}
+                />
+              </td>
+              {/* Yayın Grubu */}
+              <td style={{ padding: "0.5rem 0.75rem" }}>
+                <SourceScanPublicationYieldSummary
+                  linkedCount={scan.linked_news_count_from_scan}
+                  reviewedCount={scan.reviewed_news_count_from_scan}
+                  usedCount={scan.used_news_count_from_scan}
                 />
               </td>
               <td style={{ padding: "0.5rem 0.75rem" }}>
@@ -130,14 +128,22 @@ export function SourceScansTable({ scans, selectedId, onSelect }: SourceScansTab
                   errorSummary={scan.error_summary}
                 />
               </td>
+              {/* Tutarlılık Grubu */}
               <td style={{ padding: "0.5rem 0.75rem" }}>
-                <SourceScanInputSpecificitySummary
+                <SourceScanArtifactConsistencySummary
                   sourceId={scan.source_id}
-                  scanMode={scan.scan_mode}
-                  requestedBy={scan.requested_by}
-                  notes={scan.notes}
+                  linkedNewsCountFromScan={scan.linked_news_count_from_scan}
                 />
               </td>
+              <td style={{ padding: "0.5rem 0.75rem" }}>
+                <SourceScanTargetOutputConsistencySummary
+                  sourceId={scan.source_id}
+                  resultCount={scan.result_count}
+                  linkedNewsCountFromScan={scan.linked_news_count_from_scan}
+                  usedNewsCountFromScan={scan.used_news_count_from_scan}
+                />
+              </td>
+              {/* Zaman */}
               <td style={{ padding: "0.5rem 0.75rem", color: "#94a3b8", fontSize: "0.8rem" }}>
                 {new Date(scan.created_at).toLocaleDateString()}
               </td>

@@ -2,6 +2,18 @@
 
 ---
 
+## [2026-04-03] Phase 135 — Source Scans Registry Visibility Completion Pack
+
+**Ne:** Source Scans tablosunun görünürlük ve okunabilirlik iyileştirmesi. Konservatif yaklaşım.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/source-scans/SourceScanInputQualitySummary.tsx` (import sırası düzeltmesi)
+- `frontend/src/components/source-scans/SourceScansTable.tsx` (sütun başlıkları Türkçeleştirildi, sütun sırası mantıksal gruplara ayrıldı)
+- `docs/testing/test-report-phase-135-source-scans-registry-visibility-completion-pack.md` (yeni)
+**Korunan:** Badge stilleri (4 grup), secondary textler, tüm 13 sütun. Bilgi kaybı sıfır.
+**Test:** 1093 toplam, tsc temiz.
+
+---
+
 ## [2026-04-03] Phase 134 — Sources Registry Visibility Completion Pack
 
 **Ne:** Sources Registry tablosunun görünürlük ve okunabilirlik iyileştirmesi. Konservatif yaklaşım.
