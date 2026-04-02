@@ -16,6 +16,9 @@ export interface SourceScanResponse {
   updated_at: string;
   source_name?: string | null;
   source_status?: string | null;
+  linked_news_count_from_scan?: number;
+  reviewed_news_count_from_scan?: number;
+  used_news_count_from_scan?: number;
 }
 
 export interface SourceScanCreatePayload {

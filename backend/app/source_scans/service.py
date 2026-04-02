@@ -1,9 +1,9 @@
 from typing import List, Optional
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException
 
-from app.db.models import SourceScan, NewsSource
+from app.db.models import SourceScan, NewsSource, NewsItem, UsedNewsRegistry
 from .schemas import ScanCreate, ScanUpdate, ScanResponse
 
 
@@ -30,20 +30,51 @@ async def list_scans_with_source_summary(
     status: Optional[str] = None,
     scan_mode: Optional[str] = None,
 ) -> List[ScanResponse]:
-    """Return scan list enriched with source_name and source_status."""
+    """Return scan list enriched with source_name, source_status, and publication yield counts."""
     scans = await list_scans(db, source_id=source_id, status=status, scan_mode=scan_mode)
+    if not scans:
+        return []
+
+    scan_ids = [s.id for s in scans]
+    source_ids = list({s.source_id for s in scans})
+
+    # Batch-load sources
+    source_rows = await db.execute(
+        select(NewsSource).where(NewsSource.id.in_(source_ids))
+    )
+    sources_map = {src.id: src for src in source_rows.scalars().all()}
+
+    # Batch-load linked news counts per scan
+    linked_rows = await db.execute(
+        select(NewsItem.source_scan_id, func.count(NewsItem.id))
+        .where(NewsItem.source_scan_id.in_(scan_ids))
+        .group_by(NewsItem.source_scan_id)
+    )
+    linked_map = {row[0]: row[1] for row in linked_rows.all()}
+
+    # Batch-load reviewed news counts per scan
+    reviewed_rows = await db.execute(
+        select(NewsItem.source_scan_id, func.count(NewsItem.id))
+        .where(
+            NewsItem.source_scan_id.in_(scan_ids),
+            NewsItem.status == "reviewed",
+        )
+        .group_by(NewsItem.source_scan_id)
+    )
+    reviewed_map = {row[0]: row[1] for row in reviewed_rows.all()}
+
+    # Batch-load used news counts per scan (via NewsItem join)
+    used_rows = await db.execute(
+        select(NewsItem.source_scan_id, func.count(UsedNewsRegistry.id))
+        .join(UsedNewsRegistry, UsedNewsRegistry.news_item_id == NewsItem.id)
+        .where(NewsItem.source_scan_id.in_(scan_ids))
+        .group_by(NewsItem.source_scan_id)
+    )
+    used_map = {row[0]: row[1] for row in used_rows.all()}
+
     result = []
     for scan in scans:
-        source_name = None
-        source_status_val = None
-        if scan.source_id:
-            source_row = await db.execute(
-                select(NewsSource).where(NewsSource.id == scan.source_id).limit(1)
-            )
-            source = source_row.scalar_one_or_none()
-            if source:
-                source_name = source.name
-                source_status_val = source.status
+        source = sources_map.get(scan.source_id)
         result.append(
             ScanResponse(
                 id=scan.id,
@@ -59,8 +90,11 @@ async def list_scans_with_source_summary(
                 notes=scan.notes,
                 created_at=scan.created_at,
                 updated_at=scan.updated_at,
-                source_name=source_name,
-                source_status=source_status_val,
+                source_name=source.name if source else None,
+                source_status=source.status if source else None,
+                linked_news_count_from_scan=linked_map.get(scan.id, 0),
+                reviewed_news_count_from_scan=reviewed_map.get(scan.id, 0),
+                used_news_count_from_scan=used_map.get(scan.id, 0),
             )
         )
     return result

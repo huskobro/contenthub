@@ -71,5 +71,8 @@ class ScanResponse(BaseModel):
     updated_at: datetime
     source_name: Optional[str] = None
     source_status: Optional[str] = None
+    linked_news_count_from_scan: int = 0
+    reviewed_news_count_from_scan: int = 0
+    used_news_count_from_scan: int = 0
 
     model_config = {"from_attributes": True}

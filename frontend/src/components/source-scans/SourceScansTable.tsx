@@ -2,6 +2,7 @@ import type { SourceScanResponse } from "../../api/sourceScansApi";
 import { SourceScanExecutionSummary } from "./SourceScanExecutionSummary";
 import { SourceScanSourceSummary } from "./SourceScanSourceSummary";
 import { SourceScanResultRichnessSummary } from "./SourceScanResultRichnessSummary";
+import { SourceScanPublicationYieldSummary } from "./SourceScanPublicationYieldSummary";
 
 interface SourceScansTableProps {
   scans: SourceScanResponse[];
@@ -26,6 +27,7 @@ export function SourceScansTable({ scans, selectedId, onSelect }: SourceScansTab
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Results</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Çalışma Özeti</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Çıktı Zenginliği</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Yayın Verimi</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Created</th>
         </tr>
       </thead>
@@ -78,6 +80,13 @@ export function SourceScansTable({ scans, selectedId, onSelect }: SourceScansTab
                   resultCount={scan.result_count}
                   errorSummary={scan.error_summary}
                   rawResultPreviewJson={scan.raw_result_preview_json}
+                />
+              </td>
+              <td style={{ padding: "0.5rem 0.75rem" }}>
+                <SourceScanPublicationYieldSummary
+                  linkedCount={scan.linked_news_count_from_scan}
+                  reviewedCount={scan.reviewed_news_count_from_scan}
+                  usedCount={scan.used_news_count_from_scan}
                 />
               </td>
               <td style={{ padding: "0.5rem 0.75rem", color: "#94a3b8", fontSize: "0.8rem" }}>

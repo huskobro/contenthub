@@ -2,6 +2,22 @@
 
 ---
 
+## [2026-04-02] Phase 87 — Source Scan Publication Yield Summary Frontend Foundation
+
+**Ne:** Source Scans listesine yayın verimi özeti eklendi. Küçük backend genişletme (batch COUNT sorguları) + frontend türetimi.
+**Eklenen/değiştirilen dosyalar:**
+- `backend/app/source_scans/schemas.py` (linked/reviewed/used count alanları eklendi)
+- `backend/app/source_scans/service.py` (batch GROUP BY COUNT sorguları)
+- `frontend/src/api/sourceScansApi.ts` (yeni alanlar eklendi)
+- `frontend/src/components/source-scans/SourceScanPublicationYieldBadge.tsx` (yeni)
+- `frontend/src/components/source-scans/SourceScanPublicationYieldSummary.tsx` (yeni)
+- `frontend/src/components/source-scans/SourceScansTable.tsx` (Yayın Verimi sütunu eklendi)
+- `frontend/src/tests/source-scan-publication-yield-summary.smoke.test.tsx` (yeni, 10 test)
+- `docs/testing/test-report-phase-87-source-scan-publication-yield-summary-frontend.md` (yeni)
+**Test:** 10 yeni smoke test, 633 toplam, build temiz.
+
+---
+
 ## [2026-04-02] Phase 86 — Used News Publication Linkage Summary Frontend Foundation
 
 **Ne:** Used News registry listesine yayın bağı özeti eklendi. Saf frontend türetimi — backend değişikliği yok.
