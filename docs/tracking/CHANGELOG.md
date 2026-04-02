@@ -2,6 +2,19 @@
 
 ---
 
+## [2026-04-02] Phase 103 — Template Input Quality Summary Frontend Foundation
+
+**Ne:** Templates listesine source-input quality özeti eklendi. Pure frontend türetimi.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/templates/TemplateInputQualityBadge.tsx` (yeni)
+- `frontend/src/components/templates/TemplateInputQualitySummary.tsx` (yeni, computeTemplateInputQuality)
+- `frontend/src/components/templates/TemplatesTable.tsx` (Girdi Kalitesi sütunu eklendi)
+- `frontend/src/tests/template-input-quality-summary.smoke.test.tsx` (yeni, 10 test)
+- `docs/testing/test-report-phase-103-template-input-quality-summary-frontend.md` (yeni)
+**Test:** 10 yeni smoke test, 793 toplam, build temiz.
+
+---
+
 ## [2026-04-02] Phase 102 — Used News Artifact Consistency Summary Frontend Foundation
 
 **Ne:** Used News listesine artifact tutarlılık özeti eklendi. Pure frontend türetimi.

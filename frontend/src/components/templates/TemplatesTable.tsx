@@ -3,6 +3,7 @@ import { TemplateStyleLinkSummary } from "./TemplateStyleLinkSummary";
 import { TemplateReadinessSummary } from "./TemplateReadinessSummary";
 import { TemplatePublicationSignalSummary } from "./TemplatePublicationSignalSummary";
 import { TemplateArtifactConsistencySummary } from "./TemplateArtifactConsistencySummary";
+import { TemplateInputQualitySummary } from "./TemplateInputQualitySummary";
 
 interface TemplatesTableProps {
   templates: TemplateResponse[];
@@ -30,6 +31,7 @@ export function TemplatesTable({ templates, selectedId, onSelect }: TemplatesTab
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Hazırlık</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Yayın Sinyali</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Artifact Tutarlılığı</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Girdi Kalitesi</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Version</th>
         </tr>
       </thead>
@@ -97,6 +99,14 @@ export function TemplatesTable({ templates, selectedId, onSelect }: TemplatesTab
                 contentRulesJson={t.content_rules_json}
                 publishProfileJson={t.publish_profile_json}
                 styleLinkCount={t.style_link_count}
+              />
+            </td>
+            <td style={{ padding: "0.5rem 0.75rem" }}>
+              <TemplateInputQualitySummary
+                templateType={t.template_type}
+                styleProfileJson={t.style_profile_json}
+                contentRulesJson={t.content_rules_json}
+                publishProfileJson={t.publish_profile_json}
               />
             </td>
             <td style={{ padding: "0.5rem 0.75rem", color: "#64748b" }}>v{t.version}</td>

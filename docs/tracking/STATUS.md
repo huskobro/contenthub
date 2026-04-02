@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 102 — Used News Artifact Consistency Summary Frontend Foundation ✓ TAMAMLANDI
+Phase 103 — Template Input Quality Summary Frontend Foundation ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Pure frontend türetimi: UsedNewsArtifactConsistencyBadge + UsedNewsArtifactConsistencySummary. 10 yeni test, 783 toplam.
+Pure frontend türetimi: TemplateInputQualityBadge + TemplateInputQualitySummary. 10 yeni test, 793 toplam.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 103: template input quality summary: pure frontend, TemplateInputQualityBadge, TemplateInputQualitySummary, Girdi Kalitesi sütunu, 10 yeni test, 793 toplam (2026-04-02)
 - Phase 102: used news artifact consistency summary: pure frontend, UsedNewsArtifactConsistencyBadge, UsedNewsArtifactConsistencySummary, Artifact Tutarlılığı sütunu, 10 yeni test, 783 toplam (2026-04-02)
 - Phase 101: news item artifact consistency summary: pure frontend, NewsItemArtifactConsistencyBadge, NewsItemArtifactConsistencySummary, Artifact Tutarlılığı sütunu, 10 yeni test, 773 toplam (2026-04-02)
 - Phase 100: job artifact consistency summary: pure frontend, JobArtifactConsistencyBadge, JobArtifactConsistencySummary, Artifact Tutarlılığı sütunu, 10 yeni test, 763 toplam (2026-04-02)
