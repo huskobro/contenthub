@@ -2,6 +2,19 @@
 
 ---
 
+## [2026-04-02] Phase 118 — Used News Input Specificity Summary Frontend Foundation
+
+**Ne:** Used News listesine input specificity özeti eklendi. Pure frontend türetimi, 3 seviye.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/used-news/UsedNewsInputSpecificityBadge.tsx` (yeni)
+- `frontend/src/components/used-news/UsedNewsInputSpecificitySummary.tsx` (yeni, computeUsedNewsInputSpecificity)
+- `frontend/src/components/used-news/UsedNewsTable.tsx` (Girdi Özgüllüğü sütunu eklendi)
+- `frontend/src/tests/used-news-input-specificity-summary.smoke.test.tsx` (yeni, 10 test)
+- `docs/testing/test-report-phase-118-used-news-input-specificity-summary-frontend.md` (yeni)
+**Test:** 10 yeni smoke test, 943 toplam, build temiz.
+
+---
+
 ## [2026-04-02] Phase 117 — News Bulletin Input Specificity Summary Frontend Foundation
 
 **Ne:** News Bulletin listesine input specificity özeti eklendi. Pure frontend türetimi, 3 seviye.
