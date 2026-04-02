@@ -12,6 +12,7 @@ export interface UsedNewsResponse {
   updated_at: string;
   has_news_item_source: boolean;
   has_news_item_scan_reference: boolean;
+  has_target_resolved: boolean;
 }
 
 export async function fetchUsedNews(): Promise<UsedNewsResponse[]> {

@@ -67,5 +67,6 @@ class UsedNewsResponse(BaseModel):
     updated_at: datetime
     has_news_item_source: bool = False
     has_news_item_scan_reference: bool = False
+    has_target_resolved: bool = False
 
     model_config = {"from_attributes": True}

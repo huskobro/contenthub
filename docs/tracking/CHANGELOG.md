@@ -2,6 +2,22 @@
 
 ---
 
+## [2026-04-02] Phase 89 — Used News Target Resolution Summary Frontend Foundation
+
+**Ne:** Used News registry listesine hedef çözümü özeti eklendi. Küçük backend genişletme (batch ID lookup) + frontend türetimi.
+**Eklenen/değiştirilen dosyalar:**
+- `backend/app/used_news/schemas.py` (has_target_resolved eklendi)
+- `backend/app/used_news/service.py` (_batch_resolve_targets helper, news_bulletin/standard_video/job tabloları)
+- `frontend/src/api/usedNewsApi.ts` (has_target_resolved eklendi)
+- `frontend/src/components/used-news/UsedNewsTargetResolutionBadge.tsx` (yeni)
+- `frontend/src/components/used-news/UsedNewsTargetResolutionSummary.tsx` (yeni)
+- `frontend/src/components/used-news/UsedNewsTable.tsx` (Hedef Çözümü sütunu eklendi)
+- `frontend/src/tests/used-news-target-resolution-summary.smoke.test.tsx` (yeni, 10 test)
+- `docs/testing/test-report-phase-89-used-news-target-resolution-summary-frontend.md` (yeni)
+**Test:** 10 yeni smoke test, 653 toplam, build temiz.
+
+---
+
 ## [2026-04-02] Phase 88 — Job Publication Outcome Summary Frontend Foundation
 
 **Ne:** Jobs listesine yayın sonucu özeti eklendi. Saf frontend türetimi — backend değişikliği yok.

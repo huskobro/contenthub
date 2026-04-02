@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 88 — Job Publication Outcome Summary Frontend Foundation ✓ TAMAMLANDI
+Phase 89 — Used News Target Resolution Summary Frontend Foundation ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Saf frontend türetimi: JobPublicationOutcomeBadge + JobPublicationOutcomeSummary. 10 yeni test, 643 toplam.
+Küçük backend genişletme + frontend türetimi: UsedNewsTargetResolutionBadge + UsedNewsTargetResolutionSummary. 10 yeni test, 653 toplam.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 89: used news target resolution summary: backend has_target_resolved batch lookup, UsedNewsTargetResolutionBadge, UsedNewsTargetResolutionSummary, Hedef Çözümü sütunu, 10 yeni test, 653 toplam (2026-04-02)
 - Phase 88: job publication outcome summary: pure frontend, JobPublicationOutcomeBadge, JobPublicationOutcomeSummary, Yayın Sonucu sütunu, 10 yeni test, 643 toplam (2026-04-02)
 - Phase 87: source scan publication yield summary: backend linked/reviewed/used COUNT batch queries, SourceScanPublicationYieldBadge, SourceScanPublicationYieldSummary, Yayın Verimi sütunu, 10 yeni test, 633 toplam (2026-04-02)
 - Phase 86: used news publication linkage summary: pure frontend, UsedNewsPublicationLinkageBadge, UsedNewsPublicationLinkageSummary, Yayın Bağı sütunu, 10 yeni test, 623 toplam (2026-04-02)
