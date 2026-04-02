@@ -2,6 +2,19 @@
 
 ---
 
+## [2026-04-02] Phase 80 — News Bulletin Publication Signal Summary Frontend Foundation
+
+**Ne:** News Bulletin listesine yayın sinyal özeti eklendi. Saf frontend türetimi — backend değişikliği yok.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/news-bulletin/NewsBulletinPublicationSignalBadge.tsx` (yeni)
+- `frontend/src/components/news-bulletin/NewsBulletinPublicationSignalSummary.tsx` (yeni)
+- `frontend/src/components/news-bulletin/NewsBulletinsTable.tsx` (Yayın Sinyali sütunu eklendi)
+- `frontend/src/tests/news-bulletin-publication-signal-summary.smoke.test.tsx` (yeni, 10 test)
+- `docs/testing/test-report-phase-80-news-bulletin-publication-signal-summary-frontend.md` (yeni)
+**Test:** 10 yeni smoke test, 563 toplam, build temiz.
+
+---
+
 ## [2026-04-02] Phase 79 — Source Publication Supply Summary Frontend Foundation
 
 **Ne:** Sources listesine yayın kaynağı özeti eklendi. Backend enrichment + frontend türetimi.

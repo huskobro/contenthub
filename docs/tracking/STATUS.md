@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 79 — Source Publication Supply Summary Frontend Foundation ✓ TAMAMLANDI
+Phase 80 — News Bulletin Publication Signal Summary Frontend Foundation ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Backend enrichment + frontend türetimi: reviewed_news_count + used_news_count_from_source. SourcePublicationSupplyBadge, SourcePublicationSupplySummary, Yayın Kaynağı sütunu, 10 yeni test, 553 toplam.
+Saf frontend türetimi: NewsBulletinPublicationSignalBadge + NewsBulletinPublicationSignalSummary. 10 yeni test, 563 toplam.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 80: news bulletin publication signal summary: pure frontend, NewsBulletinPublicationSignalBadge, NewsBulletinPublicationSignalSummary, Yayın Sinyali sütunu, 10 yeni test, 563 toplam (2026-04-02)
 - Phase 79: source publication supply summary: backend reviewed/used counts, SourcePublicationSupplyBadge, SourcePublicationSupplySummary, Yayın Kaynağı sütunu, 10 yeni test, 553 toplam (2026-04-02)
 - Phase 78: news item publication signal summary: pure frontend, NewsItemPublicationSignalBadge, NewsItemPublicationSignalSummary, Yayın Sinyali sütunu, 10 yeni test, 543 toplam (2026-04-02)
 - Phase 77: source scan result richness summary: pure frontend, SourceScanResultRichnessBadge, SourceScanResultRichnessSummary, Çıktı Zenginliği sütunu, 10 yeni test, 533 toplam (2026-04-02)
