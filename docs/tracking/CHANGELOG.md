@@ -2,6 +2,22 @@
 
 ---
 
+## [2026-04-02] Phase 85 — Used News Source Context Summary Frontend Foundation
+
+**Ne:** Used News registry listesine kaynak bağlamı özeti eklendi. Küçük backend genişletme (batch JOIN) + frontend türetimi.
+**Eklenen/değiştirilen dosyalar:**
+- `backend/app/used_news/schemas.py` (has_news_item_source, has_news_item_scan_reference eklendi)
+- `backend/app/used_news/service.py` (batch NewsItem JOIN, _enrich helper)
+- `frontend/src/api/usedNewsApi.ts` (yeni alanlar eklendi)
+- `frontend/src/components/used-news/UsedNewsSourceContextBadge.tsx` (yeni)
+- `frontend/src/components/used-news/UsedNewsSourceContextSummary.tsx` (yeni)
+- `frontend/src/components/used-news/UsedNewsTable.tsx` (Kaynak Bağlamı sütunu eklendi)
+- `frontend/src/tests/used-news-source-context-summary.smoke.test.tsx` (yeni, 10 test)
+- `docs/testing/test-report-phase-85-used-news-source-context-summary-frontend.md` (yeni)
+**Test:** 10 yeni smoke test, 613 toplam, build temiz.
+
+---
+
 ## [2026-04-02] Phase 84 — Job Output Richness Summary Frontend Foundation
 
 **Ne:** Jobs listesine çıktı zenginlik özeti eklendi. Saf frontend türetimi — backend değişikliği yok.

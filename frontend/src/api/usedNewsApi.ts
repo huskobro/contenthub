@@ -10,6 +10,8 @@ export interface UsedNewsResponse {
   notes: string | null;
   created_at: string;
   updated_at: string;
+  has_news_item_source: boolean;
+  has_news_item_scan_reference: boolean;
 }
 
 export async function fetchUsedNews(): Promise<UsedNewsResponse[]> {

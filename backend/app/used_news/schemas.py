@@ -65,5 +65,7 @@ class UsedNewsResponse(BaseModel):
     notes: Optional[str]
     created_at: datetime
     updated_at: datetime
+    has_news_item_source: bool = False
+    has_news_item_scan_reference: bool = False
 
     model_config = {"from_attributes": True}
