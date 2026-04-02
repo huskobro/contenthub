@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 60 — Source Readiness Summary Frontend Foundation ✓ TAMAMLANDI
+Phase 61 — News Item Readiness Summary Frontend Foundation ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Mevcut alanlardan frontend source readiness özeti. SourceReadinessBadge, SourceReadinessSummary, SourcesTable Hazırlık sütunu, 10 yeni test, 363 toplam.
+Mevcut alanlardan frontend news item readiness özeti. NewsItemReadinessBadge, NewsItemReadinessSummary, NewsItemsTable Hazırlık sütunu, 10 yeni test, 373 toplam.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 61: news item readiness summary frontend: NewsItemReadinessBadge, NewsItemReadinessSummary, Hazırlık sütunu, 10 yeni test, 373 toplam (2026-04-02)
 - Phase 60: source readiness summary frontend: SourceReadinessBadge, SourceReadinessSummary, Hazırlık sütunu, 10 yeni test, 363 toplam (2026-04-02)
 - Phase 59: template readiness summary frontend: TemplateReadinessBadge, TemplateReadinessSummary, Hazırlık sütunu, 10 yeni test, 353 toplam (2026-04-02)
 - Phase 58: template style link summary frontend: style_link_count/primary_link_role, TemplateStyleLinkStatusBadge, TemplateStyleLinkSummary, Style Links sütunu, 10 yeni test, 343 toplam (2026-04-02)

@@ -2,6 +2,19 @@
 
 ---
 
+## [2026-04-02] Phase 61 — News Item Readiness Summary Frontend Foundation
+
+**Ne:** News Items registry listesinde her haber için sade hazırlık özeti eklendi.
+**Yaklaşım:** Backend değişikliği yok; mevcut title/url/status alanlarından frontend türetildi.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/news-items/NewsItemReadinessBadge.tsx` (yeni)
+- `frontend/src/components/news-items/NewsItemReadinessSummary.tsx` (yeni)
+- `frontend/src/components/news-items/NewsItemsTable.tsx` — Hazırlık sütunu eklendi
+- `frontend/src/tests/news-item-readiness-summary.smoke.test.tsx` (yeni, 10 test)
+**Sonuç:** 373 frontend test — tümü geçti. Build başarılı.
+
+---
+
 ## [2026-04-02] Phase 60 — Source Readiness Summary Frontend Foundation
 
 **Ne:** Sources registry listesinde her kaynak için sade operasyonel hazırlık özeti eklendi.

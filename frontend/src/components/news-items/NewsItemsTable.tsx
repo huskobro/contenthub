@@ -1,5 +1,6 @@
 import type { NewsItemResponse } from "../../api/newsItemsApi";
 import { NewsItemUsageSummary } from "./NewsItemUsageSummary";
+import { NewsItemReadinessSummary } from "./NewsItemReadinessSummary";
 
 interface Props {
   items: NewsItemResponse[];
@@ -25,6 +26,7 @@ export function NewsItemsTable({ items, selectedId, onSelect }: Props) {
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Dil</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Kategori</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Kullanım</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Hazırlık</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Created</th>
         </tr>
       </thead>
@@ -56,6 +58,17 @@ export function NewsItemsTable({ items, selectedId, onSelect }: Props) {
               <td style={{ padding: "0.5rem 0.75rem", color: "#64748b" }}>{item.category ?? "—"}</td>
               <td style={{ padding: "0.5rem 0.75rem" }}>
                 <NewsItemUsageSummary
+                  usageCount={item.usage_count}
+                  lastUsageType={item.last_usage_type}
+                  lastTargetModule={item.last_target_module}
+                />
+              </td>
+              <td style={{ padding: "0.5rem 0.75rem" }}>
+                <NewsItemReadinessSummary
+                  title={item.title}
+                  url={item.url}
+                  status={item.status}
+                  sourceId={item.source_id}
                   usageCount={item.usage_count}
                   lastUsageType={item.last_usage_type}
                   lastTargetModule={item.last_target_module}
