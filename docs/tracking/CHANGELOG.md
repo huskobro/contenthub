@@ -2,6 +2,19 @@
 
 ---
 
+## [2026-04-02] Phase 96 — Template Artifact Consistency Summary Frontend Foundation
+
+**Ne:** Templates listesine artifact tutarlılık özeti eklendi. Pure frontend türetimi.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/templates/TemplateArtifactConsistencyBadge.tsx` (yeni)
+- `frontend/src/components/templates/TemplateArtifactConsistencySummary.tsx` (yeni, computeTemplateArtifactConsistency)
+- `frontend/src/components/templates/TemplatesTable.tsx` (Artifact Tutarlılığı sütunu eklendi)
+- `frontend/src/tests/template-artifact-consistency-summary.smoke.test.tsx` (yeni, 10 test)
+- `docs/testing/test-report-phase-96-template-artifact-consistency-summary-frontend.md` (yeni)
+**Test:** 10 yeni smoke test, 723 toplam, build temiz.
+
+---
+
 ## [2026-04-02] Phase 95 — Standard Video Artifact Consistency Summary Frontend Foundation
 
 **Ne:** Standard Video listesine artifact tutarlılık özeti eklendi. Pure frontend türetimi.

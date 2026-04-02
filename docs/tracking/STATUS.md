@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 95 — Standard Video Artifact Consistency Summary Frontend Foundation ✓ TAMAMLANDI
+Phase 96 — Template Artifact Consistency Summary Frontend Foundation ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Pure frontend türetimi: StandardVideoArtifactConsistencyBadge + StandardVideoArtifactConsistencySummary. 10 yeni test, 713 toplam.
+Pure frontend türetimi: TemplateArtifactConsistencyBadge + TemplateArtifactConsistencySummary. 10 yeni test, 723 toplam.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 96: template artifact consistency summary: pure frontend, TemplateArtifactConsistencyBadge, TemplateArtifactConsistencySummary, Artifact Tutarlılığı sütunu, 10 yeni test, 723 toplam (2026-04-02)
 - Phase 95: standard video artifact consistency summary: pure frontend, StandardVideoArtifactConsistencyBadge, StandardVideoArtifactConsistencySummary, Artifact Tutarlılığı sütunu, 10 yeni test, 713 toplam (2026-04-02)
 - Phase 94: news bulletin artifact consistency summary: pure frontend, NewsBulletinArtifactConsistencyBadge, NewsBulletinArtifactConsistencySummary, Artifact Tutarlılığı sütunu, 10 yeni test, 703 toplam (2026-04-02)
 - Phase 93: standard video input quality summary: pure frontend, StandardVideoInputQualityBadge, StandardVideoInputQualitySummary, Girdi Kalitesi sütunu, 10 yeni test, 693 toplam (2026-04-02)
