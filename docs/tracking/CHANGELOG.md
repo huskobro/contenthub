@@ -2,6 +2,26 @@
 
 ---
 
+## [2026-04-02] Phase 39 — Admin Used News Registry Frontend Foundation
+
+**Ne:** Used news registry için read-only admin frontend oluşturuldu. Liste + detay akışı.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/api/usedNewsApi.ts` (yeni)
+- `frontend/src/hooks/useUsedNewsList.ts` (yeni)
+- `frontend/src/hooks/useUsedNewsDetail.ts` (yeni)
+- `frontend/src/components/used-news/UsedNewsTable.tsx` (yeni)
+- `frontend/src/components/used-news/UsedNewsDetailPanel.tsx` (yeni)
+- `frontend/src/pages/admin/UsedNewsRegistryPage.tsx` (yeni)
+- `frontend/src/app/router.tsx` (used-news route eklendi)
+- `frontend/src/app/layouts/AdminLayout.tsx` (Used News nav eklendi)
+- `frontend/src/tests/used-news-registry.smoke.test.tsx` (8 yeni test)
+**Testler:** 8/8 yeni test PASSED | 187/187 toplam PASSED
+**Build:** 378.33 kB (tsc + vite build ✅)
+**Commit:** `feat: add phase 39 admin used news registry frontend foundation`
+**Push:** ✅ `git@github.com:huskobro/contenthub.git`
+
+---
+
 ## [2026-04-02] Phase 38 — Admin News Bulletin Selected Items Frontend Foundation
 
 **Ne:** Selected items yönetimi için frontend katmanı oluşturuldu. Panel view/create/edit mod state machine'i, form bileşeni, DetailPanel entegrasyonu.
