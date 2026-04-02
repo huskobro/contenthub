@@ -1,5 +1,6 @@
 import type { SourceResponse } from "../../api/sourcesApi";
 import { SourceScanSummary } from "./SourceScanSummary";
+import { SourceReadinessSummary } from "./SourceReadinessSummary";
 
 interface SourcesTableProps {
   sources: SourceResponse[];
@@ -19,6 +20,7 @@ export function SourcesTable({ sources, selectedId, onSelect }: SourcesTableProp
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Status</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Language</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Scans</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Hazırlık</th>
         </tr>
       </thead>
       <tbody>
@@ -56,6 +58,17 @@ export function SourcesTable({ sources, selectedId, onSelect }: SourcesTableProp
                 scanCount={src.scan_count}
                 lastScanStatus={src.last_scan_status}
                 lastScanFinishedAt={src.last_scan_finished_at}
+              />
+            </td>
+            <td style={{ padding: "0.5rem 0.75rem" }}>
+              <SourceReadinessSummary
+                sourceType={src.source_type}
+                status={src.status}
+                baseUrl={src.base_url}
+                feedUrl={src.feed_url}
+                apiEndpoint={src.api_endpoint}
+                scanCount={src.scan_count}
+                lastScanStatus={src.last_scan_status}
               />
             </td>
           </tr>

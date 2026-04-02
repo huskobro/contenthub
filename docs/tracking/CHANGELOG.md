@@ -2,6 +2,19 @@
 
 ---
 
+## [2026-04-02] Phase 60 — Source Readiness Summary Frontend Foundation
+
+**Ne:** Sources registry listesinde her kaynak için sade operasyonel hazırlık özeti eklendi.
+**Yaklaşım:** Backend değişikliği yok; mevcut alanlardan frontend türetildi.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/sources/SourceReadinessBadge.tsx` (yeni)
+- `frontend/src/components/sources/SourceReadinessSummary.tsx` (yeni)
+- `frontend/src/components/sources/SourcesTable.tsx` — Hazırlık sütunu eklendi
+- `frontend/src/tests/source-readiness-summary.smoke.test.tsx` (yeni, 10 test)
+**Sonuç:** 363 frontend test — tümü geçti. Build başarılı.
+
+---
+
 ## [2026-04-02] Phase 59 — Template Readiness Summary Frontend Foundation
 
 **Ne:** Templates registry listesinde her template için sade hazırlık özeti eklendi.
