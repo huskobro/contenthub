@@ -5,6 +5,7 @@ import { SourceScanResultRichnessSummary } from "./SourceScanResultRichnessSumma
 import { SourceScanPublicationYieldSummary } from "./SourceScanPublicationYieldSummary";
 import { SourceScanArtifactConsistencySummary } from "./SourceScanArtifactConsistencySummary";
 import { SourceScanInputQualitySummary } from "./SourceScanInputQualitySummary";
+import { SourceScanTargetOutputConsistencySummary } from "./SourceScanTargetOutputConsistencySummary";
 
 interface SourceScansTableProps {
   scans: SourceScanResponse[];
@@ -32,6 +33,7 @@ export function SourceScansTable({ scans, selectedId, onSelect }: SourceScansTab
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Yayın Verimi</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Artifact Tutarlılığı</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Girdi Kalitesi</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Target/Output Tutarlılığı</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Created</th>
         </tr>
       </thead>
@@ -104,6 +106,14 @@ export function SourceScansTable({ scans, selectedId, onSelect }: SourceScansTab
                   sourceId={scan.source_id}
                   scanMode={scan.scan_mode}
                   requestedBy={scan.requested_by}
+                />
+              </td>
+              <td style={{ padding: "0.5rem 0.75rem" }}>
+                <SourceScanTargetOutputConsistencySummary
+                  sourceId={scan.source_id}
+                  resultCount={scan.result_count}
+                  linkedNewsCountFromScan={scan.linked_news_count_from_scan}
+                  usedNewsCountFromScan={scan.used_news_count_from_scan}
                 />
               </td>
               <td style={{ padding: "0.5rem 0.75rem", color: "#94a3b8", fontSize: "0.8rem" }}>

@@ -2,6 +2,19 @@
 
 ---
 
+## [2026-04-02] Phase 111 — Source Scan Target-Output Consistency Summary Frontend Foundation
+
+**Ne:** Source Scans listesine target-output consistency özeti eklendi. Pure frontend türetimi.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/source-scans/SourceScanTargetOutputConsistencyBadge.tsx` (yeni)
+- `frontend/src/components/source-scans/SourceScanTargetOutputConsistencySummary.tsx` (yeni, computeSourceScanTargetOutputConsistency)
+- `frontend/src/components/source-scans/SourceScansTable.tsx` (Target/Output Tutarlılığı sütunu eklendi)
+- `frontend/src/tests/source-scan-target-output-consistency-summary.smoke.test.tsx` (yeni, 10 test)
+- `docs/testing/test-report-phase-111-source-scan-target-output-consistency-summary-frontend.md` (yeni)
+**Test:** 10 yeni smoke test, 873 toplam, build temiz.
+
+---
+
 ## [2026-04-02] Phase 110 — Used News Input Quality Summary Frontend Foundation
 
 **Ne:** Used News listesine source-input quality özeti eklendi. Pure frontend türetimi.
