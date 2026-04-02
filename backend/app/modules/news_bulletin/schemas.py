@@ -163,6 +163,13 @@ class NewsBulletinSelectedItemResponse(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class NewsBulletinSelectedItemWithEnforcementResponse(NewsBulletinSelectedItemResponse):
+    used_news_count: int = 0
+    used_news_warning: bool = False
+    last_usage_type: Optional[str] = None
+    last_target_module: Optional[str] = None
+
+
 class NewsBulletinScriptCreate(BaseModel):
     content: str
     version: int = 1

@@ -3,13 +3,41 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models import NewsBulletin, NewsBulletinScript, NewsBulletinMetadata, NewsBulletinSelectedItem, NewsItem
+from app.db.models import NewsBulletin, NewsBulletinScript, NewsBulletinMetadata, NewsBulletinSelectedItem, NewsItem, UsedNewsRegistry
 from .schemas import (
     NewsBulletinCreate, NewsBulletinUpdate,
     NewsBulletinScriptCreate, NewsBulletinScriptUpdate,
     NewsBulletinMetadataCreate, NewsBulletinMetadataUpdate,
     NewsBulletinSelectedItemCreate, NewsBulletinSelectedItemUpdate,
+    NewsBulletinSelectedItemWithEnforcementResponse,
 )
+
+
+async def get_used_news_enforcement(
+    db: AsyncSession, news_item_id: str
+) -> dict:
+    """Return enforcement summary for a given news_item_id."""
+    result = await db.execute(
+        select(UsedNewsRegistry)
+        .where(UsedNewsRegistry.news_item_id == news_item_id)
+        .order_by(UsedNewsRegistry.created_at.desc())
+    )
+    records = list(result.scalars().all())
+    count = len(records)
+    if count == 0:
+        return {
+            "used_news_count": 0,
+            "used_news_warning": False,
+            "last_usage_type": None,
+            "last_target_module": None,
+        }
+    latest = records[0]
+    return {
+        "used_news_count": count,
+        "used_news_warning": True,
+        "last_usage_type": latest.usage_type,
+        "last_target_module": latest.target_module,
+    }
 
 
 async def list_news_bulletins(db: AsyncSession) -> List[NewsBulletin]:
@@ -214,3 +242,44 @@ async def update_bulletin_selected_item(
     await db.commit()
     await db.refresh(item)
     return item
+
+
+async def list_bulletin_selected_items_with_enforcement(
+    db: AsyncSession, bulletin_id: str
+) -> List[NewsBulletinSelectedItemWithEnforcementResponse]:
+    items = await list_bulletin_selected_items(db, bulletin_id)
+    result = []
+    for item in items:
+        enforcement = await get_used_news_enforcement(db, item.news_item_id)
+        result.append(
+            NewsBulletinSelectedItemWithEnforcementResponse(
+                id=item.id,
+                news_bulletin_id=item.news_bulletin_id,
+                news_item_id=item.news_item_id,
+                sort_order=item.sort_order,
+                selection_reason=item.selection_reason,
+                created_at=item.created_at,
+                updated_at=item.updated_at,
+                **enforcement,
+            )
+        )
+    return result
+
+
+async def create_bulletin_selected_item_with_enforcement(
+    db: AsyncSession, bulletin_id: str, payload: NewsBulletinSelectedItemCreate
+) -> Optional[NewsBulletinSelectedItemWithEnforcementResponse]:
+    item = await create_bulletin_selected_item(db, bulletin_id, payload)
+    if item is None:
+        return None
+    enforcement = await get_used_news_enforcement(db, item.news_item_id)
+    return NewsBulletinSelectedItemWithEnforcementResponse(
+        id=item.id,
+        news_bulletin_id=item.news_bulletin_id,
+        news_item_id=item.news_item_id,
+        sort_order=item.sort_order,
+        selection_reason=item.selection_reason,
+        created_at=item.created_at,
+        updated_at=item.updated_at,
+        **enforcement,
+    )

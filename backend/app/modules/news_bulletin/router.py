@@ -9,6 +9,7 @@ from .schemas import (
     NewsBulletinScriptCreate, NewsBulletinScriptUpdate, NewsBulletinScriptResponse,
     NewsBulletinMetadataCreate, NewsBulletinMetadataUpdate, NewsBulletinMetadataResponse,
     NewsBulletinSelectedItemCreate, NewsBulletinSelectedItemUpdate, NewsBulletinSelectedItemResponse,
+    NewsBulletinSelectedItemWithEnforcementResponse,
 )
 from . import service
 
@@ -100,20 +101,20 @@ async def update_bulletin_metadata(
         raise HTTPException(status_code=404, detail="Metadata not found")
     return meta
 
-@router.get("/{item_id}/selected-news", response_model=List[NewsBulletinSelectedItemResponse])
+@router.get("/{item_id}/selected-news", response_model=List[NewsBulletinSelectedItemWithEnforcementResponse])
 async def list_bulletin_selected_items(item_id: str, db: AsyncSession = Depends(get_db)):
     bulletin = await service.get_news_bulletin(db, item_id)
     if bulletin is None:
         raise HTTPException(status_code=404, detail="News bulletin not found")
-    return await service.list_bulletin_selected_items(db, item_id)
+    return await service.list_bulletin_selected_items_with_enforcement(db, item_id)
 
 
-@router.post("/{item_id}/selected-news", response_model=NewsBulletinSelectedItemResponse, status_code=201)
+@router.post("/{item_id}/selected-news", response_model=NewsBulletinSelectedItemWithEnforcementResponse, status_code=201)
 async def create_bulletin_selected_item(
     item_id: str, payload: NewsBulletinSelectedItemCreate, db: AsyncSession = Depends(get_db)
 ):
     try:
-        result = await service.create_bulletin_selected_item(db, item_id, payload)
+        result = await service.create_bulletin_selected_item_with_enforcement(db, item_id, payload)
     except IntegrityError:
         raise HTTPException(status_code=409, detail="News item already selected for this bulletin")
     if result is None:

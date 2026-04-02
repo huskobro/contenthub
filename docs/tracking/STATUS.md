@@ -1,10 +1,10 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 49 — News Bulletin Selected News Picker Frontend Foundation ✓ TAMAMLANDI
+Phase 50 — News Bulletin Used News Enforcement Backend Foundation ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-useNewsItemsPickerList, NewsItemPickerTable, NewsBulletinSelectedNewsPicker, NewsBulletinSelectedItemsPanel güncellendi, 10 yeni test, 263 toplam frontend test.
+get_used_news_enforcement() service helper, NewsBulletinSelectedItemWithEnforcementResponse schema, list/create endpoints enforcement alanları döndürüyor, 10 yeni backend test, 195 toplam backend test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
@@ -60,6 +60,7 @@ useNewsItemsPickerList, NewsItemPickerTable, NewsBulletinSelectedNewsPicker, New
 - Phase 47 admin source scans create/edit frontend: sourceScansApi genişletildi, useCreateSourceScan, useUpdateSourceScan, SourceScanForm, SourceScanCreatePage, DetailPanel edit modu, /new route, 10 yeni test, 243 toplam frontend test (2026-04-02)
 - Phase 48 admin used news create/edit frontend: usedNewsApi genişletildi, useCreateUsedNews, useUpdateUsedNews, UsedNewsForm, UsedNewsCreatePage, DetailPanel edit modu, /new route, 10 yeni test, 253 toplam frontend test (2026-04-02)
 - Phase 49 news bulletin selected news picker frontend: useNewsItemsPickerList, NewsItemPickerTable, NewsBulletinSelectedNewsPicker, SelectedItemsPanel güncellendi (+picker entegrasyonu), 10 yeni test, 263 toplam frontend test (2026-04-02)
+- Phase 50 news bulletin used news enforcement backend: get_used_news_enforcement() helper, NewsBulletinSelectedItemWithEnforcementResponse schema, list/create endpoints enforcement alanları döndürüyor, 10 yeni backend test, 195 toplam backend test (2026-04-02)
 
 ## Mevcut Riskler
 - Henüz auth / rol zorlama yok (kasıtlı)
