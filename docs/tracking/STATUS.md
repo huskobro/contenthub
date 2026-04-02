@@ -1,10 +1,10 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 26 — Source Scans Backend Foundation ✓ TAMAMLANDI
+Phase 27 — Admin Source Scans Registry Frontend Foundation ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Source scans backend: SourceScan modeli, migration, schemas, service, router, 14 yeni test, 111 toplam backend test.
+Source scans frontend: API, hooks, table, detail panel, registry page, sidebar, 9 yeni test, 130 toplam frontend test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
@@ -38,6 +38,7 @@ Source scans backend: SourceScan modeli, migration, schemas, service, router, 14
 - Phase 24 admin sources registry frontend: API, hooks, table, detail panel, registry page, sidebar, 9 yeni test, 112 toplam frontend test (2026-04-02)
 - Phase 25 admin sources create/edit frontend: SourceForm, SourceCreatePage, edit mode, useCreateSource, useUpdateSource, 9 yeni test, 121 toplam frontend test (2026-04-02)
 - Phase 26 source scans backend: SourceScan modeli, migration, schemas, service, router, 14 yeni test, 111 toplam backend test (2026-04-02)
+- Phase 27 admin source scans registry frontend: API, hooks, table, detail panel, registry page, sidebar, 9 yeni test, 130 toplam frontend test (2026-04-02)
 
 ## Mevcut Riskler
 - Henüz auth / rol zorlama yok (kasıtlı)

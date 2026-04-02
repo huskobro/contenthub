@@ -2,6 +2,25 @@
 
 ---
 
+## [2026-04-02] Phase 27 — Admin Source Scans Registry Frontend Foundation
+
+**Ne:** Source scans admin sayfası oluşturuldu. API katmanı, hooks, tablo, detail panel, registry sayfası ve sidebar entegrasyonu eklendi.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/api/sourceScansApi.ts` (yeni)
+- `frontend/src/hooks/useSourceScansList.ts` (yeni)
+- `frontend/src/hooks/useSourceScanDetail.ts` (yeni)
+- `frontend/src/components/source-scans/SourceScansTable.tsx` (yeni)
+- `frontend/src/components/source-scans/SourceScanDetailPanel.tsx` (yeni)
+- `frontend/src/pages/admin/SourceScansRegistryPage.tsx` (yeni)
+- `frontend/src/app/router.tsx` (/admin/source-scans route eklendi)
+- `frontend/src/app/layouts/AdminLayout.tsx` (Source Scans nav item eklendi)
+- `frontend/src/tests/source-scans-registry.smoke.test.tsx` (9 yeni test)
+**Testler:** 130/130 passed | build ✅ 343.68 kB
+**Commit:** — `feat: add phase 27 admin source scans registry frontend foundation`
+**Push:** ✅ `git@github.com:huskobro/contenthub.git`
+
+---
+
 ## [2026-04-02] Phase 26 — Source Scans Backend Foundation
 
 **Ne:** SourceScan modeli, migration, schemas, service, router ve 14 test eklendi.

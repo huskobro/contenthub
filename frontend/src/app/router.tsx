@@ -15,6 +15,7 @@ import { TemplateCreatePage } from "../pages/admin/TemplateCreatePage";
 import { StyleBlueprintsRegistryPage } from "../pages/admin/StyleBlueprintsRegistryPage";
 import { SourcesRegistryPage } from "../pages/admin/SourcesRegistryPage";
 import { SourceCreatePage } from "../pages/admin/SourceCreatePage";
+import { SourceScansRegistryPage } from "../pages/admin/SourceScansRegistryPage";
 
 export const router = createBrowserRouter([
   {
@@ -38,6 +39,7 @@ export const router = createBrowserRouter([
       { path: "style-blueprints", element: <StyleBlueprintsRegistryPage /> },
       { path: "sources/new", element: <SourceCreatePage /> },
       { path: "sources", element: <SourcesRegistryPage /> },
+      { path: "source-scans", element: <SourceScansRegistryPage /> },
     ],
   },
   {
