@@ -773,3 +773,46 @@ class NewsBulletinMetadata(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=_now, onupdate=_now
     )
+
+
+class TemplateStyleLink(Base):
+    """
+    Template <-> Style Blueprint Link -- Phase 43.
+
+    First-class association between a Template and a Style Blueprint.
+    Makes the relationship visible, queryable, and manageable via admin.
+
+    template_id         : FK to templates.id (required, indexed)
+    style_blueprint_id  : FK to style_blueprints.id (required, indexed)
+    link_role           : e.g. 'primary', 'fallback', 'experimental'
+    status              : e.g. 'active', 'inactive', 'archived'
+    notes               : optional note
+    """
+
+    __tablename__ = "template_style_links"
+    __table_args__ = (
+        UniqueConstraint("template_id", "style_blueprint_id", name="uq_template_style_blueprint"),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    template_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("templates.id"),
+        nullable=False,
+        index=True,
+    )
+    style_blueprint_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("style_blueprints.id"),
+        nullable=False,
+        index=True,
+    )
+    link_role: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    status: Mapped[str] = mapped_column(String(50), nullable=False, default="active")
+    notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now, onupdate=_now
+    )

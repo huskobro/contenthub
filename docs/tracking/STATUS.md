@@ -1,10 +1,10 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 40 — Admin News Items Registry Frontend Foundation ✓ TAMAMLANDI
+Phase 43 — Template ↔ Style Blueprint Link Backend Foundation ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-News items registry frontend: newsItemsApi, useNewsItemsList, useNewsItemDetail, NewsItemsTable, NewsItemDetailPanel, NewsItemsRegistryPage, sidebar + route, 8 yeni test, 195 toplam frontend test.
+TemplateStyleLink modeli, migration, schemas+service+router, GET/POST/PATCH /template-style-links, FK doğrulama (404), duplicate → 409, 11 yeni test, 185 toplam backend test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
@@ -52,6 +52,8 @@ News items registry frontend: newsItemsApi, useNewsItemsList, useNewsItemDetail,
 - Phase 38 admin news bulletin selected items frontend: API genişletildi, useNewsBulletinSelectedItems + create/update hooks, NewsBulletinSelectedItemForm, NewsBulletinSelectedItemsPanel, DetailPanel güncellendi, 11 yeni test, 179 toplam frontend test (2026-04-02)
 - Phase 39 admin used news registry frontend: usedNewsApi, useUsedNewsList, useUsedNewsDetail, UsedNewsTable, UsedNewsDetailPanel, UsedNewsRegistryPage, sidebar + route, 8 yeni test, 187 toplam frontend test (2026-04-02)
 - Phase 40 admin news items registry frontend: newsItemsApi, useNewsItemsList, useNewsItemDetail, NewsItemsTable, NewsItemDetailPanel, NewsItemsRegistryPage, sidebar + route, 8 yeni test, 195 toplam frontend test (2026-04-02)
+- Phase 42 admin style blueprint create/edit frontend: API genişletildi (Create+UpdatePayload, create+update fonksiyonları), useCreateStyleBlueprint, useUpdateStyleBlueprint, StyleBlueprintForm, StyleBlueprintCreatePage, DetailPanel edit modu, /new route, 10 yeni test, 205 toplam frontend test (2026-04-02)
+- Phase 43 template↔style blueprint link backend: TemplateStyleLink modeli, UniqueConstraint, migration, schemas+service+router, GET/POST/PATCH /template-style-links, FK 404, duplicate 409, 11 yeni test, 185 toplam backend test (2026-04-02)
 
 ## Mevcut Riskler
 - Henüz auth / rol zorlama yok (kasıtlı)
