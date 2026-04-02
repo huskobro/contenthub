@@ -6,6 +6,7 @@ from app.db.session import get_db
 from .schemas import (
     NewsBulletinCreate, NewsBulletinUpdate, NewsBulletinResponse,
     NewsBulletinScriptCreate, NewsBulletinScriptUpdate, NewsBulletinScriptResponse,
+    NewsBulletinMetadataCreate, NewsBulletinMetadataUpdate, NewsBulletinMetadataResponse,
 )
 from . import service
 
@@ -68,3 +69,31 @@ async def update_bulletin_script(
     if script is None:
         raise HTTPException(status_code=404, detail="Script not found")
     return script
+
+
+@router.get("/{item_id}/metadata", response_model=NewsBulletinMetadataResponse)
+async def get_bulletin_metadata(item_id: str, db: AsyncSession = Depends(get_db)):
+    meta = await service.get_bulletin_metadata(db, item_id)
+    if meta is None:
+        raise HTTPException(status_code=404, detail="Metadata not found")
+    return meta
+
+
+@router.post("/{item_id}/metadata", response_model=NewsBulletinMetadataResponse, status_code=201)
+async def create_bulletin_metadata(
+    item_id: str, payload: NewsBulletinMetadataCreate, db: AsyncSession = Depends(get_db)
+):
+    meta = await service.create_bulletin_metadata(db, item_id, payload)
+    if meta is None:
+        raise HTTPException(status_code=404, detail="News bulletin not found")
+    return meta
+
+
+@router.patch("/{item_id}/metadata", response_model=NewsBulletinMetadataResponse)
+async def update_bulletin_metadata(
+    item_id: str, payload: NewsBulletinMetadataUpdate, db: AsyncSession = Depends(get_db)
+):
+    meta = await service.update_bulletin_metadata(db, item_id, payload)
+    if meta is None:
+        raise HTTPException(status_code=404, detail="Metadata not found")
+    return meta

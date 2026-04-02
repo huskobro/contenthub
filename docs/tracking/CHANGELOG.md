@@ -2,6 +2,23 @@
 
 ---
 
+## [2026-04-02] Phase 34 — News Bulletin Metadata Backend Foundation
+
+**Ne:** NewsBulletinMetadata modeli eklendi, metadata CRUD endpoint'leri news bulletin router'a entegre edildi.
+**Eklenen/değiştirilen dosyalar:**
+- `backend/app/db/models.py` (NewsBulletinMetadata modeli eklendi)
+- `backend/alembic/versions/3d2bdaf23628_add_news_bulletin_metadata_table.py` (yeni)
+- `backend/app/modules/news_bulletin/schemas.py` (Metadata schemas eklendi)
+- `backend/app/modules/news_bulletin/service.py` (Metadata service fonksiyonları eklendi)
+- `backend/app/modules/news_bulletin/router.py` (GET/POST/PATCH /{id}/metadata eklendi)
+- `backend/tests/test_news_bulletin_metadata_api.py` (7 yeni test)
+- `docs/testing/test-report-phase-34-news-bulletin-metadata-backend.md` (yeni)
+**Testler:** 7/7 phase tests PASSED | 166/166 toplam PASSED
+**Commit:** `feat: add phase 34 news bulletin metadata backend foundation`
+**Push:** ✅ `git@github.com:huskobro/contenthub.git`
+
+---
+
 ## [2026-04-02] Phase 33 — News Bulletin Script Backend Foundation
 
 **Ne:** NewsBulletinScript modeli eklendi, script CRUD endpoint'leri news bulletin router'a entegre edildi.

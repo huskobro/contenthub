@@ -78,6 +78,47 @@ class NewsBulletinResponse(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class NewsBulletinMetadataCreate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    tags_json: Optional[str] = None
+    category: Optional[str] = None
+    language: Optional[str] = None
+    version: int = 1
+    source_type: Optional[str] = None
+    generation_status: str = "draft"
+    notes: Optional[str] = None
+
+
+class NewsBulletinMetadataUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    tags_json: Optional[str] = None
+    category: Optional[str] = None
+    language: Optional[str] = None
+    source_type: Optional[str] = None
+    generation_status: Optional[str] = None
+    notes: Optional[str] = None
+
+
+class NewsBulletinMetadataResponse(BaseModel):
+    id: str
+    news_bulletin_id: str
+    title: Optional[str]
+    description: Optional[str]
+    tags_json: Optional[str]
+    category: Optional[str]
+    language: Optional[str]
+    version: int
+    source_type: Optional[str]
+    generation_status: str
+    notes: Optional[str]
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
 class NewsBulletinScriptCreate(BaseModel):
     content: str
     version: int = 1

@@ -2,8 +2,12 @@ from typing import List, Optional
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models import NewsBulletin, NewsBulletinScript
-from .schemas import NewsBulletinCreate, NewsBulletinUpdate, NewsBulletinScriptCreate, NewsBulletinScriptUpdate
+from app.db.models import NewsBulletin, NewsBulletinScript, NewsBulletinMetadata
+from .schemas import (
+    NewsBulletinCreate, NewsBulletinUpdate,
+    NewsBulletinScriptCreate, NewsBulletinScriptUpdate,
+    NewsBulletinMetadataCreate, NewsBulletinMetadataUpdate,
+)
 
 
 async def list_news_bulletins(db: AsyncSession) -> List[NewsBulletin]:
@@ -99,3 +103,52 @@ async def update_bulletin_script(
     await db.commit()
     await db.refresh(script)
     return script
+
+
+async def get_bulletin_metadata(
+    db: AsyncSession, bulletin_id: str
+) -> Optional[NewsBulletinMetadata]:
+    result = await db.execute(
+        select(NewsBulletinMetadata)
+        .where(NewsBulletinMetadata.news_bulletin_id == bulletin_id)
+        .order_by(NewsBulletinMetadata.version.desc())
+    )
+    return result.scalars().first()
+
+
+async def create_bulletin_metadata(
+    db: AsyncSession, bulletin_id: str, payload: NewsBulletinMetadataCreate
+) -> Optional[NewsBulletinMetadata]:
+    bulletin = await get_news_bulletin(db, bulletin_id)
+    if bulletin is None:
+        return None
+    meta = NewsBulletinMetadata(
+        news_bulletin_id=bulletin_id,
+        title=payload.title,
+        description=payload.description,
+        tags_json=payload.tags_json,
+        category=payload.category,
+        language=payload.language,
+        version=payload.version,
+        source_type=payload.source_type,
+        generation_status=payload.generation_status or "draft",
+        notes=payload.notes,
+    )
+    db.add(meta)
+    await db.commit()
+    await db.refresh(meta)
+    return meta
+
+
+async def update_bulletin_metadata(
+    db: AsyncSession, bulletin_id: str, payload: NewsBulletinMetadataUpdate
+) -> Optional[NewsBulletinMetadata]:
+    meta = await get_bulletin_metadata(db, bulletin_id)
+    if meta is None:
+        return None
+    data = payload.model_dump(exclude_unset=True)
+    for field, value in data.items():
+        setattr(meta, field, value)
+    await db.commit()
+    await db.refresh(meta)
+    return meta
