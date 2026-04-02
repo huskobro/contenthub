@@ -123,8 +123,8 @@ describe("Sources Registry smoke tests", () => {
   it("shows source_type column values", async () => {
     renderRegistry(mockFetch(MOCK_SOURCES));
     await waitFor(() => {
-      expect(screen.getByText("rss")).toBeDefined();
-      expect(screen.getByText("manual_url")).toBeDefined();
+      expect(screen.getAllByText("rss").length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByText("manual_url").length).toBeGreaterThanOrEqual(1);
     });
   });
 

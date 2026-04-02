@@ -2,6 +2,20 @@
 
 ---
 
+## [2026-04-02] Phase 75 — Source Config Coverage Summary Frontend Foundation
+
+**Ne:** Sources listesine source_type bazlı konfigürasyon özeti eklendi. Saf frontend türetimi — backend değişikliği yok.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/sources/SourceConfigCoverageBadge.tsx` (yeni)
+- `frontend/src/components/sources/SourceConfigCoverageSummary.tsx` (yeni)
+- `frontend/src/components/sources/SourcesTable.tsx` — Konfigürasyon sütunu eklendi
+- `frontend/src/tests/source-config-coverage-summary.smoke.test.tsx` (yeni, 10 test)
+- `frontend/src/tests/sources-registry.smoke.test.tsx` — getAllByText ile güncellendi
+- `docs/testing/test-report-phase-75-source-config-coverage-summary-frontend.md` (yeni)
+**Sonuç:** 513 frontend test — tümü geçti. Build başarılı.
+
+---
+
 ## [2026-04-02] Phase 74 — Source Linked News Summary Frontend Foundation
 
 **Ne:** Sources listesine bağlı haber sayısı görünürlüğü eklendi. Backend linked_news_count hesaplıyor, frontend badge + summary ile gösteriyor.
