@@ -8,6 +8,7 @@ import { SourceArtifactConsistencySummary } from "./SourceArtifactConsistencySum
 import { SourceInputQualitySummary } from "./SourceInputQualitySummary";
 import { SourceInputSpecificitySummary } from "./SourceInputSpecificitySummary";
 import { SourceTargetOutputConsistencySummary } from "./SourceTargetOutputConsistencySummary";
+import { SourcePublicationOutcomeSummary } from "./SourcePublicationOutcomeSummary";
 
 interface SourcesTableProps {
   sources: SourceResponse[];
@@ -35,6 +36,7 @@ export function SourcesTable({ sources, selectedId, onSelect }: SourcesTableProp
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Girdi Kalitesi</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Girdi Özgüllüğü</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Target/Output Tutarlılığı</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Yayın Çıktısı</th>
         </tr>
       </thead>
       <tbody>
@@ -138,6 +140,13 @@ export function SourcesTable({ sources, selectedId, onSelect }: SourcesTableProp
                 feedUrl={src.feed_url}
                 baseUrl={src.base_url}
                 apiEndpoint={src.api_endpoint}
+                linkedNewsCount={src.linked_news_count}
+                reviewedNewsCount={src.reviewed_news_count}
+                usedNewsCountFromSource={src.used_news_count_from_source}
+              />
+            </td>
+            <td style={{ padding: "0.5rem 0.75rem" }}>
+              <SourcePublicationOutcomeSummary
                 linkedNewsCount={src.linked_news_count}
                 reviewedNewsCount={src.reviewed_news_count}
                 usedNewsCountFromSource={src.used_news_count_from_source}
