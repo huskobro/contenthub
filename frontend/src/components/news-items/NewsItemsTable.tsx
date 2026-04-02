@@ -8,6 +8,7 @@ import { NewsItemPublicationSignalSummary } from "./NewsItemPublicationSignalSum
 import { NewsItemUsedNewsLinkageSummary } from "./NewsItemUsedNewsLinkageSummary";
 import { NewsItemPublicationLineageSummary } from "./NewsItemPublicationLineageSummary";
 import { NewsItemArtifactConsistencySummary } from "./NewsItemArtifactConsistencySummary";
+import { NewsItemInputQualitySummary } from "./NewsItemInputQualitySummary";
 
 interface Props {
   items: NewsItemResponse[];
@@ -39,6 +40,7 @@ export function NewsItemsTable({ items, selectedId, onSelect }: Props) {
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Yayın Sinyali</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Used News Bağı</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Yayın Zinciri</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Girdi Kalitesi</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Artifact Tutarlılığı</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Created</th>
         </tr>
@@ -126,6 +128,18 @@ export function NewsItemsTable({ items, selectedId, onSelect }: Props) {
                 <NewsItemPublicationLineageSummary
                   usageCount={item.usage_count}
                   hasPublishedUsedNewsLink={item.has_published_used_news_link}
+                />
+              </td>
+              <td style={{ padding: "0.5rem 0.75rem" }}>
+                <NewsItemInputQualitySummary
+                  title={item.title}
+                  url={item.url}
+                  summary={item.summary}
+                  sourceId={item.source_id}
+                  sourceScanId={item.source_scan_id}
+                  language={item.language}
+                  category={item.category}
+                  publishedAt={item.published_at ? String(item.published_at) : null}
                 />
               </td>
               <td style={{ padding: "0.5rem 0.75rem" }}>

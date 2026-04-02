@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 107 — Job Input Quality Summary Frontend Foundation ✓ TAMAMLANDI
+Phase 108 — News Item Input Quality Summary Frontend Foundation ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Pure frontend türetimi: JobInputQualityBadge + JobInputQualitySummary. 10 yeni test, 833 toplam.
+Pure frontend türetimi: NewsItemInputQualityBadge + NewsItemInputQualitySummary. 10 yeni test, 843 toplam.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 108: news item input quality summary: pure frontend, NewsItemInputQualityBadge, NewsItemInputQualitySummary, Girdi Kalitesi sütunu, 10 yeni test, 843 toplam (2026-04-02)
 - Phase 107: job input quality summary: pure frontend, JobInputQualityBadge, JobInputQualitySummary, Girdi Kalitesi sütunu, 10 yeni test, 833 toplam (2026-04-02)
 - Phase 106: source scan input quality summary: pure frontend, SourceScanInputQualityBadge, SourceScanInputQualitySummary, Girdi Kalitesi sütunu, 10 yeni test, 823 toplam (2026-04-02)
 - Phase 105: source input quality summary: pure frontend, SourceInputQualityBadge, SourceInputQualitySummary, Girdi Kalitesi sütunu, 10 yeni test, 813 toplam (2026-04-02)
