@@ -2,6 +2,25 @@
 
 ---
 
+## [2026-04-02] Phase 29 — Used News Registry Backend Foundation
+
+**Ne:** UsedNewsRegistry modeli, migration, schemas, service, router ve 14 test eklendi.
+**Eklenen/değiştirilen dosyalar:**
+- `backend/app/db/models.py` (UsedNewsRegistry ORM modeli eklendi)
+- `backend/alembic/versions/3771f6696ce2_add_used_news_registry_table.py` (yeni migration)
+- `backend/app/used_news/__init__.py` (yeni)
+- `backend/app/used_news/schemas.py` (UsedNewsCreate, UsedNewsUpdate, UsedNewsResponse)
+- `backend/app/used_news/service.py` (list/get/create/update; news_item varlık kontrolü)
+- `backend/app/used_news/router.py` (/api/v1/used-news CRUD)
+- `backend/app/api/router.py` (used_news_router dahil edildi)
+- `backend/tests/test_used_news_api.py` (14 yeni test)
+- `docs/testing/test-report-phase-29-used-news-backend.md` (yeni)
+**Testler:** 14/14 phase tests PASSED | 139/139 toplam PASSED
+**Commit:** `feat: add phase 29 used news backend foundation`
+**Push:** ✅ `git@github.com:huskobro/contenthub.git`
+
+---
+
 ## [2026-04-02] Phase 28 — News Items Backend Foundation
 
 **Ne:** NewsItem modeli, migration, schemas, service, router ve 14 test eklendi.

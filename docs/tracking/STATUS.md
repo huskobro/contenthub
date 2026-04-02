@@ -1,10 +1,10 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 28 — News Items Backend Foundation ✓ TAMAMLANDI
+Phase 29 — Used News Registry Backend Foundation ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-News items backend: NewsItem modeli, migration, schemas, service, router, 14 yeni test, 125 toplam backend test.
+Used news registry backend: UsedNewsRegistry modeli, migration, schemas, service, router, 14 yeni test, 139 toplam backend test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
@@ -40,6 +40,7 @@ News items backend: NewsItem modeli, migration, schemas, service, router, 14 yen
 - Phase 26 source scans backend: SourceScan modeli, migration, schemas, service, router, 14 yeni test, 111 toplam backend test (2026-04-02)
 - Phase 27 admin source scans registry frontend: API, hooks, table, detail panel, registry page, sidebar, 9 yeni test, 130 toplam frontend test (2026-04-02)
 - Phase 28 news items backend: NewsItem modeli, migration, schemas, service, router, 14 yeni test, 125 toplam backend test (2026-04-02)
+- Phase 29 used news registry backend: UsedNewsRegistry modeli, migration, schemas, service, router, 14 yeni test, 139 toplam backend test (2026-04-02)
 
 ## Mevcut Riskler
 - Henüz auth / rol zorlama yok (kasıtlı)

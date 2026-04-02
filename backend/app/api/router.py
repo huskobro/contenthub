@@ -9,6 +9,7 @@ from app.modules.style_blueprints.router import router as style_blueprints_route
 from app.sources.router import router as sources_router
 from app.source_scans.router import router as source_scans_router
 from app.news_items.router import router as news_items_router
+from app.used_news.router import router as used_news_router
 
 api_router = APIRouter()
 api_router.include_router(health.router, tags=["health"])
@@ -21,3 +22,4 @@ api_router.include_router(style_blueprints_router)
 api_router.include_router(sources_router)
 api_router.include_router(source_scans_router)
 api_router.include_router(news_items_router)
+api_router.include_router(used_news_router)

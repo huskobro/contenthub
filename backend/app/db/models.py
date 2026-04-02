@@ -573,3 +573,35 @@ class NewsItem(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=_now, onupdate=_now
     )
+
+
+class UsedNewsRegistry(Base):
+    """
+    Used News Registry — Phase 29.
+
+    Tracks which news items have been consumed and in what context.
+    Provides the data surface for future duplicate-prevention logic.
+
+    news_item_id   : reference to news_items.id (required)
+    usage_type     : e.g. 'draft', 'published', 'scheduled', 'reserved'
+    usage_context  : short human-readable context string (nullable)
+    target_module  : e.g. 'news_bulletin', 'standard_video', 'publish_center'
+    target_entity_id: nullable reference to related job/content/publish entity
+    notes          : optional free-text note
+    """
+
+    __tablename__ = "used_news_registry"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    news_item_id: Mapped[str] = mapped_column(String(36), nullable=False, index=True)
+    usage_type: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
+    usage_context: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    target_module: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
+    target_entity_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True)
+    notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now, onupdate=_now
+    )
