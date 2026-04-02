@@ -2,6 +2,22 @@
 
 ---
 
+## [2026-04-02] Phase 58 — Template Style Link Summary Frontend Foundation
+
+**Ne:** Templates registry listesinde her template için style blueprint link özeti eklendi.
+**Eklenen/değiştirilen dosyalar:**
+- `backend/app/modules/templates/schemas.py` — `style_link_count`, `primary_link_role` eklendi
+- `backend/app/modules/templates/service.py` — `list_templates_with_style_link_summary()` eklendi
+- `backend/app/modules/templates/router.py` — list endpoint güncellendi
+- `frontend/src/api/templatesApi.ts` — 2 opsiyonel alan eklendi
+- `frontend/src/components/templates/TemplateStyleLinkStatusBadge.tsx` (yeni)
+- `frontend/src/components/templates/TemplateStyleLinkSummary.tsx` (yeni)
+- `frontend/src/components/templates/TemplatesTable.tsx` — Style Links sütunu eklendi
+- `frontend/src/tests/template-style-link-summary.smoke.test.tsx` (yeni, 10 test)
+**Sonuç:** 195 backend test, 343 frontend test — tümü geçti. Build başarılı.
+
+---
+
 ## [2026-04-02] Phase 57 — Job Context Summary Frontend Foundation
 
 **Ne:** Jobs registry listesinde her job için module-aware context summary eklendi.

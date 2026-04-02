@@ -14,6 +14,8 @@ export interface TemplateResponse {
   version: number;
   created_at: string;
   updated_at: string;
+  style_link_count?: number;
+  primary_link_role?: string | null;
 }
 
 export async function fetchTemplates(params?: {

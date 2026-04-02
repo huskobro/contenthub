@@ -81,5 +81,7 @@ class TemplateResponse(BaseModel):
     version: int
     created_at: datetime
     updated_at: datetime
+    style_link_count: int = 0
+    primary_link_role: Optional[str] = None
 
     model_config = {"from_attributes": True}

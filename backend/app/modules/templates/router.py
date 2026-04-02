@@ -18,7 +18,7 @@ async def list_templates(
     status: Optional[str] = Query(None),
     db: AsyncSession = Depends(get_db),
 ):
-    return await service.list_templates(
+    return await service.list_templates_with_style_link_summary(
         db,
         template_type=template_type,
         owner_scope=owner_scope,

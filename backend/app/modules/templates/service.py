@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from typing import List, Optional
 
-from sqlalchemy import select
+from sqlalchemy import select, func as sqlfunc
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models import Template
-from .schemas import TemplateCreate, TemplateUpdate
+from app.db.models import Template, TemplateStyleLink
+from .schemas import TemplateCreate, TemplateResponse, TemplateUpdate
 
 
 async def list_templates(
@@ -67,3 +67,57 @@ async def update_template(
     await db.commit()
     await db.refresh(template)
     return template
+
+
+async def list_templates_with_style_link_summary(
+    db: AsyncSession,
+    template_type: Optional[str] = None,
+    owner_scope: Optional[str] = None,
+    module_scope: Optional[str] = None,
+    status: Optional[str] = None,
+) -> List[TemplateResponse]:
+    templates = await list_templates(
+        db,
+        template_type=template_type,
+        owner_scope=owner_scope,
+        module_scope=module_scope,
+        status=status,
+    )
+    result = []
+    for t in templates:
+        count_row = await db.execute(
+            select(sqlfunc.count()).select_from(TemplateStyleLink).where(
+                TemplateStyleLink.template_id == t.id
+            )
+        )
+        style_link_count = count_row.scalar() or 0
+
+        primary_row = await db.execute(
+            select(TemplateStyleLink).where(
+                TemplateStyleLink.template_id == t.id,
+                TemplateStyleLink.status == "active",
+            ).order_by(TemplateStyleLink.created_at.asc()).limit(1)
+        )
+        primary_link = primary_row.scalar_one_or_none()
+        primary_link_role = primary_link.link_role if primary_link else None
+
+        result.append(
+            TemplateResponse(
+                id=t.id,
+                name=t.name,
+                template_type=t.template_type,
+                owner_scope=t.owner_scope,
+                module_scope=t.module_scope,
+                description=t.description,
+                style_profile_json=t.style_profile_json,
+                content_rules_json=t.content_rules_json,
+                publish_profile_json=t.publish_profile_json,
+                status=t.status,
+                version=t.version,
+                created_at=t.created_at,
+                updated_at=t.updated_at,
+                style_link_count=style_link_count,
+                primary_link_role=primary_link_role,
+            )
+        )
+    return result

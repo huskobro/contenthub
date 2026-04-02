@@ -1,4 +1,5 @@
 import type { TemplateResponse } from "../../api/templatesApi";
+import { TemplateStyleLinkSummary } from "./TemplateStyleLinkSummary";
 
 interface TemplatesTableProps {
   templates: TemplateResponse[];
@@ -22,6 +23,7 @@ export function TemplatesTable({ templates, selectedId, onSelect }: TemplatesTab
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Owner</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Module</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Status</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Style Links</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Version</th>
         </tr>
       </thead>
@@ -55,6 +57,12 @@ export function TemplatesTable({ templates, selectedId, onSelect }: TemplatesTab
               >
                 {t.status}
               </span>
+            </td>
+            <td style={{ padding: "0.5rem 0.75rem" }}>
+              <TemplateStyleLinkSummary
+                styleLinkCount={t.style_link_count}
+                primaryLinkRole={t.primary_link_role}
+              />
             </td>
             <td style={{ padding: "0.5rem 0.75rem", color: "#64748b" }}>v{t.version}</td>
           </tr>
