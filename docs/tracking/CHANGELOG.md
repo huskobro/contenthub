@@ -2,6 +2,19 @@
 
 ---
 
+## [2026-04-02] Phase 77 — Source Scan Result Richness Summary Frontend Foundation
+
+**Ne:** Source Scans listesine çıktı zenginlik özeti eklendi. Saf frontend türetimi — backend değişikliği yok.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/source-scans/SourceScanResultRichnessBadge.tsx` (yeni)
+- `frontend/src/components/source-scans/SourceScanResultRichnessSummary.tsx` (yeni)
+- `frontend/src/components/source-scans/SourceScansTable.tsx` (Çıktı Zenginliği sütunu eklendi)
+- `frontend/src/tests/source-scan-result-richness-summary.smoke.test.tsx` (yeni, 10 test)
+- `docs/testing/test-report-phase-77-source-scan-result-richness-summary-frontend.md` (yeni)
+**Test:** 10 yeni smoke test, 533 toplam, build temiz.
+
+---
+
 ## [2026-04-02] Phase 76 — News Item Content Completeness Summary Frontend Foundation
 
 **Ne:** News Items listesine içerik doluluk özeti eklendi. Saf frontend türetimi — backend değişikliği yok.
