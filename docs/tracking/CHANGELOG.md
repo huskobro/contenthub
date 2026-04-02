@@ -2,6 +2,19 @@
 
 ---
 
+## [2026-04-02] Phase 107 — Job Input Quality Summary Frontend Foundation
+
+**Ne:** Jobs listesine source-input quality özeti eklendi. Pure frontend türetimi.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/jobs/JobInputQualityBadge.tsx` (yeni)
+- `frontend/src/components/jobs/JobInputQualitySummary.tsx` (yeni, computeJobInputQuality)
+- `frontend/src/components/jobs/JobsTable.tsx` (Girdi Kalitesi sütunu eklendi)
+- `frontend/src/tests/job-input-quality-summary.smoke.test.tsx` (yeni, 10 test)
+- `docs/testing/test-report-phase-107-job-input-quality-summary-frontend.md` (yeni)
+**Test:** 10 yeni smoke test, 833 toplam, build temiz.
+
+---
+
 ## [2026-04-02] Phase 106 — Source Scan Input Quality Summary Frontend Foundation
 
 **Ne:** Source Scans listesine source-input quality özeti eklendi. Pure frontend türetimi.
