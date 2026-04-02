@@ -2,6 +2,25 @@
 
 ---
 
+## [2026-04-02] Phase 28 — News Items Backend Foundation
+
+**Ne:** NewsItem modeli, migration, schemas, service, router ve 14 test eklendi.
+**Eklenen/değiştirilen dosyalar:**
+- `backend/app/db/models.py` (NewsItem ORM modeli eklendi)
+- `backend/alembic/versions/0ee09dfddce7_add_news_items_table.py` (yeni migration)
+- `backend/app/news_items/__init__.py` (yeni)
+- `backend/app/news_items/schemas.py` (NewsItemCreate, NewsItemUpdate, NewsItemResponse)
+- `backend/app/news_items/service.py` (list/get/create/update)
+- `backend/app/news_items/router.py` (/api/v1/news-items CRUD)
+- `backend/app/api/router.py` (news_items_router eklendi)
+- `backend/tests/test_news_items_api.py` (14 yeni test)
+- `docs/testing/test-report-phase-28-news-items-backend.md` (yeni)
+**Testler:** 14/14 phase tests PASSED | 125/125 toplam PASSED
+**Commit:** `feat: add phase 28 news items backend foundation`
+**Push:** ✅ `git@github.com:huskobro/contenthub.git`
+
+---
+
 ## [2026-04-02] Phase 27 — Admin Source Scans Registry Frontend Foundation
 
 **Ne:** Source scans admin sayfası oluşturuldu. API katmanı, hooks, tablo, detail panel, registry sayfası ve sidebar entegrasyonu eklendi.
