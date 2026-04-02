@@ -23,6 +23,7 @@ const statusColors: Record<string, { bg: string; color: string }> = {
 
 export function SourceScansTable({ scans, selectedId, onSelect }: SourceScansTableProps) {
   return (
+    <div style={{ overflowX: "auto" }}>
     <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.875rem" }}>
       <thead>
         <tr style={{ background: "#f1f5f9", textAlign: "left" }}>
@@ -152,5 +153,6 @@ export function SourceScansTable({ scans, selectedId, onSelect }: SourceScansTab
         })}
       </tbody>
     </table>
+    </div>
   );
 }

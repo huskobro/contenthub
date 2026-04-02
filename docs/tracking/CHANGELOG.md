@@ -2,6 +2,20 @@
 
 ---
 
+## [2026-04-03] Phase 141 — Registry Density & Overflow Safety Pack
+
+**Ne:** 9 registry tablosunda yoğunluk ve taşma güvenliği standardizasyonu.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/jobs/JobsTable.tsx` (header background #f1f5f9, border 2px→1px, padding 0.5rem→0.5rem 0.75rem)
+- `frontend/src/components/standard-video/StandardVideosTable.tsx` (header background #f8fafc→#f1f5f9)
+- `frontend/src/components/news-bulletin/NewsBulletinsTable.tsx` (fontSize: "0.875rem" eklendi)
+- 9 tablo: `<div style={{ overflowX: "auto" }}>` wrapper eklendi (Sources, SourceScans, Jobs, NewsItems, UsedNews, Templates, StyleBlueprints, StandardVideos, NewsBulletins)
+- `docs/testing/test-report-phase-141-registry-density-overflow-safety-pack.md` (yeni)
+**Korunan:** Badge stilleri, secondary textler, tüm sütunlar, tüm summary bileşenleri. Bilgi kaybı sıfır.
+**Test:** 1093 toplam, tsc temiz.
+
+---
+
 ## [2026-04-03] Phase 140 — Cross-Registry Header/Grouping Consistency Pack
 
 **Ne:** 9 registry tablosu arasında başlık dili ve kavram tutarlılığı hizalaması.

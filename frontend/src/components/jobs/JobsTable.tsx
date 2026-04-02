@@ -22,24 +22,25 @@ export function JobsTable({ jobs, selectedId, onSelect }: JobsTableProps) {
   }
 
   return (
+    <div style={{ overflowX: "auto" }}>
     <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.875rem" }}>
       <thead>
-        <tr style={{ borderBottom: "2px solid #e2e8f0", textAlign: "left" }}>
-          <th style={{ padding: "0.5rem" }}>Modül</th>
-          <th style={{ padding: "0.5rem" }}>Bağlam</th>
-          <th style={{ padding: "0.5rem" }}>Durum</th>
-          <th style={{ padding: "0.5rem" }}>Aksiyon Özeti</th>
-          <th style={{ padding: "0.5rem" }}>Mevcut Adım</th>
-          <th style={{ padding: "0.5rem" }}>Tekrar</th>
-          <th style={{ padding: "0.5rem" }}>Süre</th>
-          <th style={{ padding: "0.5rem" }}>Girdi Kalitesi</th>
-          <th style={{ padding: "0.5rem" }}>Girdi Özgüllüğü</th>
-          <th style={{ padding: "0.5rem" }}>Çıktı Zenginliği</th>
-          <th style={{ padding: "0.5rem" }}>Yayın Verimi</th>
-          <th style={{ padding: "0.5rem" }}>Yayın Çıktısı</th>
-          <th style={{ padding: "0.5rem" }}>Artifact Tutarlılığı</th>
-          <th style={{ padding: "0.5rem" }}>Target/Output Tutarlılığı</th>
-          <th style={{ padding: "0.5rem" }}>Oluşturulma</th>
+        <tr style={{ background: "#f1f5f9", textAlign: "left" }}>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Modül</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Bağlam</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Durum</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Aksiyon Özeti</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Mevcut Adım</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Tekrar</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Süre</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Girdi Kalitesi</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Girdi Özgüllüğü</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Çıktı Zenginliği</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Yayın Verimi</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Yayın Çıktısı</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Artifact Tutarlılığı</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Target/Output Tutarlılığı</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Oluşturulma</th>
         </tr>
       </thead>
       <tbody>
@@ -54,12 +55,12 @@ export function JobsTable({ jobs, selectedId, onSelect }: JobsTableProps) {
             }}
           >
             {/* Kimlik & Durum */}
-            <td style={{ padding: "0.5rem", fontFamily: "monospace" }}>{j.module_type}</td>
-            <td style={{ padding: "0.5rem" }}>
+            <td style={{ padding: "0.5rem 0.75rem", fontFamily: "monospace" }}>{j.module_type}</td>
+            <td style={{ padding: "0.5rem 0.75rem" }}>
               <JobContextSummary moduleType={j.module_type} sourceContextJson={j.source_context_json} />
             </td>
-            <td style={{ padding: "0.5rem" }}>{j.status}</td>
-            <td style={{ padding: "0.5rem" }}>
+            <td style={{ padding: "0.5rem 0.75rem" }}>{j.status}</td>
+            <td style={{ padding: "0.5rem 0.75rem" }}>
               <JobActionabilitySummary
                 status={j.status}
                 lastError={j.last_error}
@@ -68,22 +69,22 @@ export function JobsTable({ jobs, selectedId, onSelect }: JobsTableProps) {
                 estimatedRemainingSeconds={j.estimated_remaining_seconds}
               />
             </td>
-            <td style={{ padding: "0.5rem" }}>
+            <td style={{ padding: "0.5rem 0.75rem" }}>
               {j.current_step_key ?? <em style={{ color: "#94a3b8" }}>—</em>}
             </td>
-            <td style={{ padding: "0.5rem" }}>{j.retry_count}</td>
-            <td style={{ padding: "0.5rem", fontSize: "0.8125rem", color: "#64748b" }}>
+            <td style={{ padding: "0.5rem 0.75rem" }}>{j.retry_count}</td>
+            <td style={{ padding: "0.5rem 0.75rem", fontSize: "0.8125rem", color: "#64748b" }}>
               {formatDuration(j.elapsed_total_seconds)}
             </td>
             {/* Girdi Grubu */}
-            <td style={{ padding: "0.5rem" }}>
+            <td style={{ padding: "0.5rem 0.75rem" }}>
               <JobInputQualitySummary
                 sourceContextJson={j.source_context_json}
                 templateId={j.template_id}
                 workspacePath={j.workspace_path}
               />
             </td>
-            <td style={{ padding: "0.5rem" }}>
+            <td style={{ padding: "0.5rem 0.75rem" }}>
               <JobInputSpecificitySummary
                 sourceContextJson={j.source_context_json}
                 templateId={j.template_id}
@@ -91,7 +92,7 @@ export function JobsTable({ jobs, selectedId, onSelect }: JobsTableProps) {
               />
             </td>
             {/* Çıktı & Yayın Grubu */}
-            <td style={{ padding: "0.5rem" }}>
+            <td style={{ padding: "0.5rem 0.75rem" }}>
               <JobOutputRichnessSummary
                 lastError={j.last_error}
                 sourceContextJson={j.source_context_json}
@@ -99,7 +100,7 @@ export function JobsTable({ jobs, selectedId, onSelect }: JobsTableProps) {
                 workspacePath={j.workspace_path}
               />
             </td>
-            <td style={{ padding: "0.5rem" }}>
+            <td style={{ padding: "0.5rem 0.75rem" }}>
               <JobPublicationYieldSummary
                 status={j.status}
                 sourceContextJson={j.source_context_json}
@@ -109,7 +110,7 @@ export function JobsTable({ jobs, selectedId, onSelect }: JobsTableProps) {
                 lastError={j.last_error}
               />
             </td>
-            <td style={{ padding: "0.5rem" }}>
+            <td style={{ padding: "0.5rem 0.75rem" }}>
               <JobPublicationOutcomeSummary
                 status={j.status}
                 lastError={j.last_error}
@@ -119,7 +120,7 @@ export function JobsTable({ jobs, selectedId, onSelect }: JobsTableProps) {
               />
             </td>
             {/* Tutarlılık Grubu */}
-            <td style={{ padding: "0.5rem" }}>
+            <td style={{ padding: "0.5rem 0.75rem" }}>
               <JobArtifactConsistencySummary
                 sourceContextJson={j.source_context_json}
                 templateId={j.template_id}
@@ -128,7 +129,7 @@ export function JobsTable({ jobs, selectedId, onSelect }: JobsTableProps) {
                 currentStepKey={j.current_step_key}
               />
             </td>
-            <td style={{ padding: "0.5rem" }}>
+            <td style={{ padding: "0.5rem 0.75rem" }}>
               <JobTargetOutputConsistencySummary
                 sourceContextJson={j.source_context_json}
                 templateId={j.template_id}
@@ -139,12 +140,13 @@ export function JobsTable({ jobs, selectedId, onSelect }: JobsTableProps) {
               />
             </td>
             {/* Zaman */}
-            <td style={{ padding: "0.5rem", fontSize: "0.8125rem", color: "#64748b" }}>
+            <td style={{ padding: "0.5rem 0.75rem", fontSize: "0.8125rem", color: "#64748b" }}>
               {j.created_at.slice(0, 19).replace("T", " ")}
             </td>
           </tr>
         ))}
       </tbody>
     </table>
+    </div>
   );
 }

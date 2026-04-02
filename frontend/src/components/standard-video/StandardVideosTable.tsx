@@ -32,9 +32,10 @@ export function StandardVideosTable({ videos, selectedId, onSelect }: Props) {
   }
 
   return (
+    <div style={{ overflowX: "auto" }}>
     <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.875rem" }}>
       <thead>
-        <tr style={{ background: "#f8fafc", textAlign: "left" }}>
+        <tr style={{ background: "#f1f5f9", textAlign: "left" }}>
           {/* Kimlik & Durum */}
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Başlık</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Konu</th>
@@ -147,5 +148,6 @@ export function StandardVideosTable({ videos, selectedId, onSelect }: Props) {
         ))}
       </tbody>
     </table>
+    </div>
   );
 }

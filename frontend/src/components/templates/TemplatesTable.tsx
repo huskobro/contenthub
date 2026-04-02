@@ -16,6 +16,7 @@ interface TemplatesTableProps {
 
 export function TemplatesTable({ templates, selectedId, onSelect }: TemplatesTableProps) {
   return (
+    <div style={{ overflowX: "auto" }}>
     <table
       style={{
         width: "100%",
@@ -154,5 +155,6 @@ export function TemplatesTable({ templates, selectedId, onSelect }: TemplatesTab
         ))}
       </tbody>
     </table>
+    </div>
   );
 }

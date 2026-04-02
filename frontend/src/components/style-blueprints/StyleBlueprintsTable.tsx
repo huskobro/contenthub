@@ -15,6 +15,7 @@ interface StyleBlueprintsTableProps {
 
 export function StyleBlueprintsTable({ blueprints, selectedId, onSelect }: StyleBlueprintsTableProps) {
   return (
+    <div style={{ overflowX: "auto" }}>
     <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.875rem" }}>
       <thead>
         <tr style={{ background: "#f1f5f9", textAlign: "left" }}>
@@ -146,5 +147,6 @@ export function StyleBlueprintsTable({ blueprints, selectedId, onSelect }: Style
         ))}
       </tbody>
     </table>
+    </div>
   );
 }

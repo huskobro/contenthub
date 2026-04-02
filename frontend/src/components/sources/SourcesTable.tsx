@@ -18,6 +18,7 @@ interface SourcesTableProps {
 
 export function SourcesTable({ sources, selectedId, onSelect }: SourcesTableProps) {
   return (
+    <div style={{ overflowX: "auto" }}>
     <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.875rem" }}>
       <thead>
         <tr style={{ background: "#f1f5f9", textAlign: "left" }}>
@@ -161,5 +162,6 @@ export function SourcesTable({ sources, selectedId, onSelect }: SourcesTableProp
         ))}
       </tbody>
     </table>
+    </div>
   );
 }

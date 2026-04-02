@@ -23,7 +23,8 @@ export function NewsBulletinsTable({ bulletins, selectedId, onSelect }: Props) {
   }
 
   return (
-    <table style={{ width: "100%", borderCollapse: "collapse" }}>
+    <div style={{ overflowX: "auto" }}>
+    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.875rem" }}>
       <thead>
         <tr style={{ background: "#f1f5f9", textAlign: "left" }}>
           {/* Kimlik & Durum */}
@@ -161,5 +162,6 @@ export function NewsBulletinsTable({ bulletins, selectedId, onSelect }: Props) {
         ))}
       </tbody>
     </table>
+    </div>
   );
 }

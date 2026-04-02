@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 140 — Cross-Registry Header/Grouping Consistency Pack ✓ TAMAMLANDI
+Phase 141 — Registry Density & Overflow Safety Pack ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-9 registry tablosu arasında başlık dili tutarlılığı: "Yayın Sonucu" → "Yayın Çıktısı" (2 tablo), "Enforcement" → "Uygunluk" (1 tablo), 1 test güncellemesi. Badge stilleri korundu. 1093 toplam test.
+9 registry tablosu için yoğunluk ve taşma güvenliği: overflow-x auto wrapper (9 tablo), header stili hizalama (Jobs, StandardVideo, NewsBulletin), fontSize tutarlılığı. Badge stilleri korundu. 1093 toplam test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 141: registry density overflow safety pack: overflow-x wrapper (9 tablo), Jobs header background/border/padding fix, StandardVideo header background fix, NewsBulletin fontSize fix, badge stilleri korundu, 1093 toplam (2026-04-03)
 - Phase 140: cross registry header grouping consistency pack: Yayın Sonucu→Yayın Çıktısı (SourceScans, Jobs), Enforcement→Uygunluk (NewsBulletin), 1 test fix, badge stilleri korundu, 1093 toplam (2026-04-03)
 - Phase 139: standardvideo newsbulletin registry visibility completion pack: StandardVideo sütun sıralama, NewsBulletin 8 başlık Türkçeleştirme + sıralama, 1 import fix, 1 test fix, badge stilleri korundu, 1093 toplam (2026-04-03)
 - Phase 138: template styleblueprint registry visibility completion pack: Templates + StyleBlueprints Türkçeleştirme, mantıksal sıralama, 2 import fix, 1 test fix, badge stilleri korundu, 1093 toplam (2026-04-03)
