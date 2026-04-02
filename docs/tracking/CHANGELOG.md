@@ -2,6 +2,19 @@
 
 ---
 
+## [2026-04-02] Phase 104 — Style Blueprint Input Quality Summary Frontend Foundation
+
+**Ne:** Style Blueprints listesine source-input quality özeti eklendi. Pure frontend türetimi.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/style-blueprints/StyleBlueprintInputQualityBadge.tsx` (yeni)
+- `frontend/src/components/style-blueprints/StyleBlueprintInputQualitySummary.tsx` (yeni, computeStyleBlueprintInputQuality)
+- `frontend/src/components/style-blueprints/StyleBlueprintsTable.tsx` (Girdi Kalitesi sütunu eklendi)
+- `frontend/src/tests/style-blueprint-input-quality-summary.smoke.test.tsx` (yeni, 10 test)
+- `docs/testing/test-report-phase-104-style-blueprint-input-quality-summary-frontend.md` (yeni)
+**Test:** 10 yeni smoke test, 803 toplam, build temiz.
+
+---
+
 ## [2026-04-02] Phase 103 — Template Input Quality Summary Frontend Foundation
 
 **Ne:** Templates listesine source-input quality özeti eklendi. Pure frontend türetimi.

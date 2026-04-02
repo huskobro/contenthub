@@ -2,6 +2,7 @@ import type { StyleBlueprintResponse } from "../../api/styleBlueprintsApi";
 import { StyleBlueprintReadinessSummary } from "./StyleBlueprintReadinessSummary";
 import { StyleBlueprintPublicationSignalSummary } from "./StyleBlueprintPublicationSignalSummary";
 import { StyleBlueprintArtifactConsistencySummary } from "./StyleBlueprintArtifactConsistencySummary";
+import { StyleBlueprintInputQualitySummary } from "./StyleBlueprintInputQualitySummary";
 
 interface StyleBlueprintsTableProps {
   blueprints: StyleBlueprintResponse[];
@@ -21,6 +22,7 @@ export function StyleBlueprintsTable({ blueprints, selectedId, onSelect }: Style
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Hazırlık</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Yayın Sinyali</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Artifact Tutarlılığı</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Girdi Kalitesi</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Created</th>
         </tr>
       </thead>
@@ -76,6 +78,16 @@ export function StyleBlueprintsTable({ blueprints, selectedId, onSelect }: Style
             </td>
             <td style={{ padding: "0.5rem 0.75rem" }}>
               <StyleBlueprintArtifactConsistencySummary
+                visualRulesJson={bp.visual_rules_json}
+                motionRulesJson={bp.motion_rules_json}
+                layoutRulesJson={bp.layout_rules_json}
+                subtitleRulesJson={bp.subtitle_rules_json}
+                thumbnailRulesJson={bp.thumbnail_rules_json}
+                previewStrategyJson={bp.preview_strategy_json}
+              />
+            </td>
+            <td style={{ padding: "0.5rem 0.75rem" }}>
+              <StyleBlueprintInputQualitySummary
                 visualRulesJson={bp.visual_rules_json}
                 motionRulesJson={bp.motion_rules_json}
                 layoutRulesJson={bp.layout_rules_json}
