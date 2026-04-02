@@ -1,15 +1,36 @@
 import { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useTemplateStyleLinksList } from "../../hooks/useTemplateStyleLinksList";
 import { TemplateStyleLinksTable } from "../../components/template-style-links/TemplateStyleLinksTable";
 import { TemplateStyleLinkDetailPanel } from "../../components/template-style-links/TemplateStyleLinkDetailPanel";
 
 export function TemplateStyleLinksRegistryPage() {
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [selectedId, setSelectedId] = useState<string | null>(
+    (location.state as { selectedId?: string } | null)?.selectedId ?? null
+  );
   const { data: links, isLoading, isError, error } = useTemplateStyleLinksList();
 
   return (
     <div>
-      <h2 style={{ margin: "0 0 0.25rem" }}>Template Style Links</h2>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.25rem" }}>
+        <h2 style={{ margin: 0 }}>Template Style Links</h2>
+        <button
+          onClick={() => navigate("/admin/template-style-links/new")}
+          style={{
+            padding: "0.375rem 1rem",
+            fontSize: "0.875rem",
+            background: "#3b82f6",
+            color: "#fff",
+            border: "none",
+            borderRadius: "4px",
+            cursor: "pointer",
+          }}
+        >
+          Yeni
+        </button>
+      </div>
       <p style={{ margin: "0 0 1.25rem", color: "#64748b", fontSize: "0.875rem" }}>
         Template ve Style Blueprint arasındaki bağlantı kayıtları. Detay için bir kayıt seçin.
       </p>

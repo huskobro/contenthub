@@ -1,4 +1,8 @@
+import { useState } from "react";
 import { useTemplateStyleLinkDetail } from "../../hooks/useTemplateStyleLinkDetail";
+import { useUpdateTemplateStyleLink } from "../../hooks/useUpdateTemplateStyleLink";
+import { TemplateStyleLinkForm } from "./TemplateStyleLinkForm";
+import type { TemplateStyleLinkFormValues } from "./TemplateStyleLinkForm";
 
 interface TemplateStyleLinkDetailPanelProps {
   linkId: string | null;
@@ -16,7 +20,9 @@ function Field({ label, value }: { label: string; value: string | number | null 
 }
 
 export function TemplateStyleLinkDetailPanel({ linkId }: TemplateStyleLinkDetailPanelProps) {
+  const [editing, setEditing] = useState(false);
   const { data: link, isLoading, isError, error } = useTemplateStyleLinkDetail(linkId);
+  const { mutate, isPending, error: updateError } = useUpdateTemplateStyleLink(linkId ?? "");
 
   if (!linkId) {
     return (
@@ -41,11 +47,53 @@ export function TemplateStyleLinkDetailPanel({ linkId }: TemplateStyleLinkDetail
 
   if (!link) return null;
 
+  if (editing) {
+    function handleSubmit(values: TemplateStyleLinkFormValues) {
+      mutate(
+        {
+          link_role: values.link_role.trim() || null,
+          status: values.status,
+          notes: values.notes.trim() || null,
+        },
+        { onSuccess: () => setEditing(false) }
+      );
+    }
+
+    return (
+      <div style={{ padding: "1.25rem", border: "1px solid #e2e8f0", borderRadius: "6px", background: "#fff" }}>
+        <h3 style={{ margin: "0 0 1rem", fontSize: "1rem", color: "#1e293b" }}>Link Düzenle</h3>
+        <TemplateStyleLinkForm
+          mode="edit"
+          initial={link}
+          isSubmitting={isPending}
+          submitError={updateError instanceof Error ? updateError.message : null}
+          onSubmit={handleSubmit}
+          onCancel={() => setEditing(false)}
+          submitLabel="Kaydet"
+        />
+      </div>
+    );
+  }
+
   return (
     <div style={{ padding: "1.25rem", border: "1px solid #e2e8f0", borderRadius: "6px", background: "#fff" }}>
-      <h3 style={{ margin: "0 0 1rem", fontSize: "1rem", color: "#1e293b" }}>
-        Template Style Link Detayı
-      </h3>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
+        <h3 style={{ margin: 0, fontSize: "1rem", color: "#1e293b" }}>Template Style Link Detayı</h3>
+        <button
+          onClick={() => setEditing(true)}
+          style={{
+            padding: "0.25rem 0.75rem",
+            fontSize: "0.8rem",
+            background: "#f1f5f9",
+            color: "#475569",
+            border: "1px solid #e2e8f0",
+            borderRadius: "4px",
+            cursor: "pointer",
+          }}
+        >
+          Düzenle
+        </button>
+      </div>
 
       <Field label="ID" value={link.id} />
       <Field label="Template ID" value={link.template_id} />
