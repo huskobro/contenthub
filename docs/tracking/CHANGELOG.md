@@ -2,6 +2,19 @@
 
 ---
 
+## [2026-04-02] Phase 112 — Job Target-Output Consistency Summary Frontend Foundation
+
+**Ne:** Jobs listesine target-output consistency özeti eklendi. Pure frontend türetimi.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/jobs/JobTargetOutputConsistencyBadge.tsx` (yeni)
+- `frontend/src/components/jobs/JobTargetOutputConsistencySummary.tsx` (yeni, computeJobTargetOutputConsistency)
+- `frontend/src/components/jobs/JobsTable.tsx` (Target/Output Tutarlılığı sütunu eklendi)
+- `frontend/src/tests/job-target-output-consistency-summary.smoke.test.tsx` (yeni, 10 test)
+- `docs/testing/test-report-phase-112-job-target-output-consistency-summary-frontend.md` (yeni)
+**Test:** 10 yeni smoke test, 883 toplam, build temiz.
+
+---
+
 ## [2026-04-02] Phase 111 — Source Scan Target-Output Consistency Summary Frontend Foundation
 
 **Ne:** Source Scans listesine target-output consistency özeti eklendi. Pure frontend türetimi.
