@@ -2,6 +2,19 @@
 
 ---
 
+## [2026-04-02] Phase 124 — Template Target-Output Consistency Summary Frontend Foundation
+
+**Ne:** Templates listesine target-output consistency özeti eklendi. Pure frontend türetimi, 4 seviye.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/templates/TemplateTargetOutputConsistencyBadge.tsx` (yeni)
+- `frontend/src/components/templates/TemplateTargetOutputConsistencySummary.tsx` (yeni, computeTemplateTargetOutputConsistency)
+- `frontend/src/components/templates/TemplatesTable.tsx` (Target/Output Tutarlılığı sütunu eklendi)
+- `frontend/src/tests/template-target-output-consistency-summary.smoke.test.tsx` (yeni, 10 test)
+- `docs/testing/test-report-phase-124-template-target-output-consistency-summary-frontend.md` (yeni)
+**Test:** 10 yeni smoke test, 1003 toplam, build temiz.
+
+---
+
 ## [2026-04-02] Phase 123 — Style Blueprint Input Specificity Summary Frontend Foundation
 
 **Ne:** Style Blueprints listesine input specificity özeti eklendi. Pure frontend türetimi, 3 seviye.
