@@ -6,6 +6,7 @@ import { StandardVideoPublicationSignalSummary } from "./StandardVideoPublicatio
 import { StandardVideoInputQualitySummary } from "./StandardVideoInputQualitySummary";
 import { StandardVideoArtifactConsistencySummary } from "./StandardVideoArtifactConsistencySummary";
 import { StandardVideoInputSpecificitySummary } from "./StandardVideoInputSpecificitySummary";
+import { StandardVideoTargetOutputConsistencySummary } from "./StandardVideoTargetOutputConsistencySummary";
 
 interface Props {
   videos: StandardVideoResponse[];
@@ -43,6 +44,7 @@ export function StandardVideosTable({ videos, selectedId, onSelect }: Props) {
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Girdi Kalitesi</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Artifact Tutarlılığı</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Girdi Özgüllüğü</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Target/Output Tutarlılığı</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Dil</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Hedef Süre</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Oluşturulma</th>
@@ -110,6 +112,16 @@ export function StandardVideosTable({ videos, selectedId, onSelect }: Props) {
                 brief={v.brief}
                 targetDurationSeconds={v.target_duration_seconds}
                 language={v.language}
+              />
+            </td>
+            <td style={{ padding: "0.5rem 0.75rem" }}>
+              <StandardVideoTargetOutputConsistencySummary
+                topic={v.topic}
+                brief={v.brief}
+                targetDurationSeconds={v.target_duration_seconds}
+                language={v.language}
+                hasScript={v.has_script}
+                hasMetadata={v.has_metadata}
               />
             </td>
             <td style={{ padding: "0.5rem 0.75rem" }}>{v.language ?? "—"}</td>
