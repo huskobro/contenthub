@@ -2,6 +2,19 @@
 
 ---
 
+## [2026-04-02] Phase 84 — Job Output Richness Summary Frontend Foundation
+
+**Ne:** Jobs listesine çıktı zenginlik özeti eklendi. Saf frontend türetimi — backend değişikliği yok.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/jobs/JobOutputRichnessBadge.tsx` (yeni)
+- `frontend/src/components/jobs/JobOutputRichnessSummary.tsx` (yeni)
+- `frontend/src/components/jobs/JobsTable.tsx` (Çıktı Zenginliği sütunu eklendi)
+- `frontend/src/tests/job-output-richness-summary.smoke.test.tsx` (yeni, 10 test)
+- `docs/testing/test-report-phase-84-job-output-richness-summary-frontend.md` (yeni)
+**Test:** 10 yeni smoke test, 603 toplam, build temiz.
+
+---
+
 ## [2026-04-02] Phase 83 — Style Blueprint Publication Signal Summary Frontend Foundation
 
 **Ne:** Style Blueprints listesine yayın sinyal özeti eklendi. Saf frontend türetimi — backend değişikliği yok.
