@@ -5,6 +5,7 @@ import { StyleBlueprintArtifactConsistencySummary } from "./StyleBlueprintArtifa
 import { StyleBlueprintInputQualitySummary } from "./StyleBlueprintInputQualitySummary";
 import { StyleBlueprintInputSpecificitySummary } from "./StyleBlueprintInputSpecificitySummary";
 import { StyleBlueprintTargetOutputConsistencySummary } from "./StyleBlueprintTargetOutputConsistencySummary";
+import { StyleBlueprintPublicationOutcomeSummary } from "./StyleBlueprintPublicationOutcomeSummary";
 
 interface StyleBlueprintsTableProps {
   blueprints: StyleBlueprintResponse[];
@@ -27,6 +28,7 @@ export function StyleBlueprintsTable({ blueprints, selectedId, onSelect }: Style
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Girdi Kalitesi</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Girdi Özgüllüğü</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Target/Output Tutarlılığı</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Yayın Çıktısı</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Created</th>
         </tr>
       </thead>
@@ -118,6 +120,17 @@ export function StyleBlueprintsTable({ blueprints, selectedId, onSelect }: Style
                 subtitleRulesJson={bp.subtitle_rules_json}
                 thumbnailRulesJson={bp.thumbnail_rules_json}
                 previewStrategyJson={bp.preview_strategy_json}
+              />
+            </td>
+            <td style={{ padding: "0.5rem 0.75rem" }}>
+              <StyleBlueprintPublicationOutcomeSummary
+                visualRulesJson={bp.visual_rules_json}
+                motionRulesJson={bp.motion_rules_json}
+                layoutRulesJson={bp.layout_rules_json}
+                subtitleRulesJson={bp.subtitle_rules_json}
+                thumbnailRulesJson={bp.thumbnail_rules_json}
+                previewStrategyJson={bp.preview_strategy_json}
+                status={bp.status}
               />
             </td>
             <td style={{ padding: "0.5rem 0.75rem", color: "#94a3b8", fontSize: "0.8rem" }}>
