@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 66 — Template Style Link Readiness Summary Frontend Foundation ✓ TAMAMLANDI
+Phase 67 — Job Actionability Summary Frontend Foundation ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-status/link_role alanlarından frontend role özeti. TemplateStyleLinkReadinessBadge, TemplateStyleLinkReadinessSummary, TemplateStyleLinksTable Bağ Durumu sütunu, 10 yeni test, 423 toplam.
+status/last_error/retry_count alanlarından frontend actionability özeti. JobActionabilityBadge, JobActionabilitySummary, JobsTable Aksiyon Özeti sütunu, 10 yeni test, 433 toplam.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 67: job actionability summary frontend: JobActionabilityBadge, JobActionabilitySummary, Aksiyon Özeti sütunu, 10 yeni test, 433 toplam (2026-04-02)
 - Phase 66: template style link readiness summary frontend: TemplateStyleLinkReadinessBadge, TemplateStyleLinkReadinessSummary, Bağ Durumu sütunu, 10 yeni test, 423 toplam (2026-04-02)
 - Phase 65: style blueprint readiness summary frontend: StyleBlueprintReadinessBadge, StyleBlueprintReadinessSummary, Hazırlık sütunu, 10 yeni test, 413 toplam (2026-04-02)
 - Phase 64: source scan execution summary frontend: SourceScanExecutionBadge, SourceScanExecutionSummary, Çalışma Özeti sütunu, 10 yeni test, 403 toplam (2026-04-02)

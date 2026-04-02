@@ -2,6 +2,20 @@
 
 ---
 
+## [2026-04-02] Phase 67 — Job Actionability Summary Frontend Foundation
+
+**Ne:** Jobs registry listesinde her job için sade actionability özeti eklendi.
+**Yaklaşım:** Backend değişikliği yok; mevcut status/last_error/retry_count/current_step_key alanlarından frontend türetildi.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/jobs/JobActionabilityBadge.tsx` (yeni)
+- `frontend/src/components/jobs/JobActionabilitySummary.tsx` (yeni)
+- `frontend/src/components/jobs/JobsTable.tsx` — Aksiyon Özeti sütunu eklendi
+- `frontend/src/tests/job-actionability-summary.smoke.test.tsx` (yeni, 10 test)
+- `docs/testing/test-report-phase-67-job-actionability-summary-frontend.md` (yeni)
+**Sonuç:** 433 frontend test — tümü geçti. Build başarılı.
+
+---
+
 ## [2026-04-02] Phase 66 — Template Style Link Readiness Summary Frontend Foundation
 
 **Ne:** Template Style Links registry listesinde her link kaydı için sade role/readiness özeti eklendi.

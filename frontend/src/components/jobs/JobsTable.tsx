@@ -1,6 +1,7 @@
 import type { JobResponse } from "../../api/jobsApi";
 import { formatDuration } from "../../lib/formatDuration";
 import { JobContextSummary } from "./JobContextSummary";
+import { JobActionabilitySummary } from "./JobActionabilitySummary";
 
 interface JobsTableProps {
   jobs: JobResponse[];
@@ -20,6 +21,7 @@ export function JobsTable({ jobs, selectedId, onSelect }: JobsTableProps) {
           <th style={{ padding: "0.5rem" }}>module_type</th>
           <th style={{ padding: "0.5rem" }}>Context</th>
           <th style={{ padding: "0.5rem" }}>status</th>
+          <th style={{ padding: "0.5rem" }}>Aksiyon Özeti</th>
           <th style={{ padding: "0.5rem" }}>current_step_key</th>
           <th style={{ padding: "0.5rem" }}>retry_count</th>
           <th style={{ padding: "0.5rem" }}>elapsed</th>
@@ -42,6 +44,15 @@ export function JobsTable({ jobs, selectedId, onSelect }: JobsTableProps) {
               <JobContextSummary moduleType={j.module_type} sourceContextJson={j.source_context_json} />
             </td>
             <td style={{ padding: "0.5rem" }}>{j.status}</td>
+            <td style={{ padding: "0.5rem" }}>
+              <JobActionabilitySummary
+                status={j.status}
+                lastError={j.last_error}
+                retryCount={j.retry_count}
+                currentStepKey={j.current_step_key}
+                estimatedRemainingSeconds={j.estimated_remaining_seconds}
+              />
+            </td>
             <td style={{ padding: "0.5rem" }}>
               {j.current_step_key ?? <em style={{ color: "#94a3b8" }}>—</em>}
             </td>
