@@ -2,6 +2,26 @@
 
 ---
 
+## [2026-04-02] Phase 40 — Admin News Items Registry Frontend Foundation
+
+**Ne:** News items için read-only admin frontend oluşturuldu. Liste (başlık, status badge, kaynak, dil, kategori) + detay akışı.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/api/newsItemsApi.ts` (yeni)
+- `frontend/src/hooks/useNewsItemsList.ts` (yeni)
+- `frontend/src/hooks/useNewsItemDetail.ts` (yeni)
+- `frontend/src/components/news-items/NewsItemsTable.tsx` (yeni)
+- `frontend/src/components/news-items/NewsItemDetailPanel.tsx` (yeni)
+- `frontend/src/pages/admin/NewsItemsRegistryPage.tsx` (yeni)
+- `frontend/src/app/router.tsx` (news-items route eklendi)
+- `frontend/src/app/layouts/AdminLayout.tsx` (News Items nav eklendi)
+- `frontend/src/tests/news-items-registry.smoke.test.tsx` (8 yeni test)
+**Testler:** 8/8 yeni test PASSED | 195/195 toplam PASSED
+**Build:** 383.18 kB (tsc + vite build ✅)
+**Commit:** `feat: add phase 40 admin news items registry frontend foundation`
+**Push:** ✅ `git@github.com:huskobro/contenthub.git`
+
+---
+
 ## [2026-04-02] Phase 39 — Admin Used News Registry Frontend Foundation
 
 **Ne:** Used news registry için read-only admin frontend oluşturuldu. Liste + detay akışı.

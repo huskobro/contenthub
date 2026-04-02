@@ -19,6 +19,7 @@ import { SourceScansRegistryPage } from "../pages/admin/SourceScansRegistryPage"
 import { NewsBulletinRegistryPage } from "../pages/admin/NewsBulletinRegistryPage";
 import { NewsBulletinCreatePage } from "../pages/admin/NewsBulletinCreatePage";
 import { UsedNewsRegistryPage } from "../pages/admin/UsedNewsRegistryPage";
+import { NewsItemsRegistryPage } from "../pages/admin/NewsItemsRegistryPage";
 
 export const router = createBrowserRouter([
   {
@@ -46,6 +47,7 @@ export const router = createBrowserRouter([
       { path: "news-bulletins/new", element: <NewsBulletinCreatePage /> },
       { path: "news-bulletins", element: <NewsBulletinRegistryPage /> },
       { path: "used-news", element: <UsedNewsRegistryPage /> },
+      { path: "news-items", element: <NewsItemsRegistryPage /> },
     ],
   },
   {

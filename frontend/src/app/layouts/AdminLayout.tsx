@@ -14,6 +14,7 @@ const ADMIN_NAV = [
   { label: "Source Scans", to: "/admin/source-scans" },
   { label: "News Bulletin", to: "/admin/news-bulletins" },
   { label: "Used News", to: "/admin/used-news" },
+  { label: "News Items", to: "/admin/news-items" },
 ];
 
 export function AdminLayout() {
