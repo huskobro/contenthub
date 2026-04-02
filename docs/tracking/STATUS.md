@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 56 — News Bulletin Readiness Summary Frontend Foundation ✓ TAMAMLANDI
+Phase 57 — Job Context Summary Frontend Foundation ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Mevcut selected_news_count/has_script/has_metadata alanlarından frontend readiness özeti türetildi. NewsBulletinReadinessBadge, NewsBulletinReadinessSummary, NewsBulletinsTable Hazırlık sütunu, 10 yeni test, 323 toplam.
+module_type + source_context_json'dan frontend context özeti. JobContextBadge, JobContextSummary, JobsTable Context sütunu, 10 yeni test, 333 toplam.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 57: job context summary frontend: JobContextBadge, JobContextSummary, JobsTable Context sütunu, 10 yeni test, 333 toplam (2026-04-02)
 - Phase 56: news bulletin readiness summary frontend: computeReadinessLevel, NewsBulletinReadinessBadge, NewsBulletinReadinessSummary, Hazırlık sütunu, 10 yeni test, 323 toplam (2026-04-02)
 - Phase 55: news item usage summary frontend: usage_count/last_usage_type/last_target_module, NewsItemUsageBadge, NewsItemUsageSummary, NewsItemsTable Kullanım sütunu, 10 yeni test, 313 toplam (2026-04-02)
 - Phase 54: source scan summary frontend: scan_count/last_scan_status/last_scan_finished_at, SourceScanStatusBadge, SourceScanSummary, SourcesTable Scans sütunu, 10 yeni test, 303 toplam (2026-04-02)

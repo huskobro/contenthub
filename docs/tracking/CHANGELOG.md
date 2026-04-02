@@ -2,6 +2,19 @@
 
 ---
 
+## [2026-04-02] Phase 57 — Job Context Summary Frontend Foundation
+
+**Ne:** Jobs registry listesinde her job için module-aware context summary eklendi.
+**Yaklaşım:** Frontend-only; mevcut module_type ve source_context_json alanlarından türetildi.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/jobs/JobContextBadge.tsx` (yeni)
+- `frontend/src/components/jobs/JobContextSummary.tsx` (yeni, extractContextTitle helper dahil)
+- `frontend/src/components/jobs/JobsTable.tsx` — Context sütunu eklendi
+- `frontend/src/tests/job-context-summary.smoke.test.tsx` (yeni, 10 test)
+**Sonuç:** 333 frontend test — tümü geçti. Build başarılı.
+
+---
+
 ## [2026-04-02] Phase 56 — News Bulletin Readiness Summary Frontend Foundation
 
 **Ne:** News Bulletin registry listesinde her bülten için sade üretim hazırlık özeti eklendi.
