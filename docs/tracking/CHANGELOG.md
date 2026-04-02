@@ -2,6 +2,20 @@
 
 ---
 
+## [2026-04-02] Phase 64 — Source Scan Execution Summary Frontend Foundation
+
+**Ne:** Source Scans registry listesinde her kayıt için sade execution özeti eklendi.
+**Yaklaşım:** Backend değişikliği yok; mevcut status/result_count alanlarından frontend türetildi.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/source-scans/SourceScanExecutionBadge.tsx` (yeni)
+- `frontend/src/components/source-scans/SourceScanExecutionSummary.tsx` (yeni)
+- `frontend/src/components/source-scans/SourceScansTable.tsx` — Çalışma Özeti sütunu eklendi
+- `frontend/src/tests/source-scan-execution-summary.smoke.test.tsx` (yeni, 10 test)
+- `docs/testing/test-report-phase-64-source-scan-execution-summary-frontend.md` (yeni)
+**Sonuç:** 403 frontend test — tümü geçti. Build başarılı.
+
+---
+
 ## [2026-04-02] Phase 63 — Standard Video Readiness Summary Frontend Foundation
 
 **Ne:** Standard Video registry listesinde her kayıt için sade readiness özeti eklendi.

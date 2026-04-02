@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 63 — Standard Video Readiness Summary Frontend Foundation ✓ TAMAMLANDI
+Phase 64 — Source Scan Execution Summary Frontend Foundation ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Mevcut topic/status alanlarından frontend readiness özeti. StandardVideoReadinessBadge, StandardVideoReadinessSummary, StandardVideosTable Hazırlık sütunu, 10 yeni test, 393 toplam.
+Mevcut status/result_count alanlarından frontend execution özeti. SourceScanExecutionBadge, SourceScanExecutionSummary, SourceScansTable Çalışma Özeti sütunu, 10 yeni test, 403 toplam.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 64: source scan execution summary frontend: SourceScanExecutionBadge, SourceScanExecutionSummary, Çalışma Özeti sütunu, 10 yeni test, 403 toplam (2026-04-02)
 - Phase 63: standard video readiness summary frontend: StandardVideoReadinessBadge, StandardVideoReadinessSummary, Hazırlık sütunu, 10 yeni test, 393 toplam (2026-04-02)
 - Phase 62: used news state summary frontend: UsedNewsStateBadge, UsedNewsStateSummary, Durum sütunu, 10 yeni test, 383 toplam (2026-04-02)
 - Phase 61: news item readiness summary frontend: NewsItemReadinessBadge, NewsItemReadinessSummary, Hazırlık sütunu, 10 yeni test, 373 toplam (2026-04-02)
