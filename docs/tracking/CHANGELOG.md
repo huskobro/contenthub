@@ -2,6 +2,19 @@
 
 ---
 
+## [2026-04-02] Phase 117 — News Bulletin Input Specificity Summary Frontend Foundation
+
+**Ne:** News Bulletin listesine input specificity özeti eklendi. Pure frontend türetimi, 3 seviye.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/news-bulletin/NewsBulletinInputSpecificityBadge.tsx` (yeni)
+- `frontend/src/components/news-bulletin/NewsBulletinInputSpecificitySummary.tsx` (yeni, computeNewsBulletinInputSpecificity)
+- `frontend/src/components/news-bulletin/NewsBulletinsTable.tsx` (Girdi Özgüllüğü sütunu eklendi)
+- `frontend/src/tests/news-bulletin-input-specificity-summary.smoke.test.tsx` (yeni, 10 test)
+- `docs/testing/test-report-phase-117-news-bulletin-input-specificity-summary-frontend.md` (yeni)
+**Test:** 10 yeni smoke test, 933 toplam, build temiz.
+
+---
+
 ## [2026-04-02] Phase 116 — News Item Input Specificity Summary Frontend Foundation
 
 **Ne:** News Items listesine input specificity özeti eklendi. Pure frontend türetimi, 3 seviye.

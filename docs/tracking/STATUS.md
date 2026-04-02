@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 116 — News Item Input Specificity Summary Frontend Foundation ✓ TAMAMLANDI
+Phase 117 — News Bulletin Input Specificity Summary Frontend Foundation ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Pure frontend türetimi: NewsItemInputSpecificityBadge + NewsItemInputSpecificitySummary. 10 yeni test, 923 toplam.
+Pure frontend türetimi: NewsBulletinInputSpecificityBadge + NewsBulletinInputSpecificitySummary. 10 yeni test, 933 toplam.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 117: news bulletin input specificity summary: pure frontend, NewsBulletinInputSpecificityBadge, NewsBulletinInputSpecificitySummary, Girdi Özgüllüğü sütunu, 10 yeni test, 933 toplam (2026-04-02)
 - Phase 116: news item input specificity summary: pure frontend, NewsItemInputSpecificityBadge, NewsItemInputSpecificitySummary, Girdi Özgüllüğü sütunu, 10 yeni test, 923 toplam (2026-04-02)
 - Phase 115: job input specificity summary: pure frontend, JobInputSpecificityBadge, JobInputSpecificitySummary, Girdi Özgüllüğü sütunu, 10 yeni test, 913 toplam (2026-04-02)
 - Phase 114: job publication yield summary: pure frontend, JobPublicationYieldBadge, JobPublicationYieldSummary, Yayın Verimi sütunu, 10 yeni test, 903 toplam (2026-04-02)
