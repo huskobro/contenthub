@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 70 — News Item Source Summary Frontend Foundation ✓ TAMAMLANDI
+Phase 71 — News Item Scan Lineage Summary Frontend Foundation ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-source_name/source_status backend enrichment + NewsItemSourceStatusBadge + NewsItemSourceSummary frontend. 10 yeni test, 463 toplam.
+source_scan_status backend enrichment + NewsItemScanLineageBadge + NewsItemScanLineageSummary frontend. 10 yeni test, 473 toplam.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 71: news item scan lineage summary: source_scan_status backend lookup, NewsItemScanLineageBadge, NewsItemScanLineageSummary, Scan Kaynağı sütunu, 10 yeni test, 473 toplam (2026-04-02)
 - Phase 70: news item source summary: source_name/source_status backend lookup, NewsItemSourceStatusBadge, NewsItemSourceSummary, Kaynak Özeti sütunu, 10 yeni test, 463 toplam (2026-04-02)
 - Phase 69: news bulletin enforcement summary: warning aggregate backend, NewsBulletinEnforcementStatusBadge, NewsBulletinEnforcementSummary, Enforcement sütunu, 10 yeni test, 453 toplam (2026-04-02)
 - Phase 68: standard video artifact summary: has_script/has_metadata backend, StandardVideoArtifactStatusBadge, StandardVideoArtifactSummary, Artifact sütunu, 10 yeni test, 443 toplam (2026-04-02)

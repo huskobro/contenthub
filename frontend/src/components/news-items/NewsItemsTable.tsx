@@ -2,6 +2,7 @@ import type { NewsItemResponse } from "../../api/newsItemsApi";
 import { NewsItemUsageSummary } from "./NewsItemUsageSummary";
 import { NewsItemReadinessSummary } from "./NewsItemReadinessSummary";
 import { NewsItemSourceSummary } from "./NewsItemSourceSummary";
+import { NewsItemScanLineageSummary } from "./NewsItemScanLineageSummary";
 
 interface Props {
   items: NewsItemResponse[];
@@ -28,6 +29,7 @@ export function NewsItemsTable({ items, selectedId, onSelect }: Props) {
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Kategori</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Kullanım</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Hazırlık</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Scan Kaynağı</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Created</th>
         </tr>
       </thead>
@@ -77,6 +79,12 @@ export function NewsItemsTable({ items, selectedId, onSelect }: Props) {
                   usageCount={item.usage_count}
                   lastUsageType={item.last_usage_type}
                   lastTargetModule={item.last_target_module}
+                />
+              </td>
+              <td style={{ padding: "0.5rem 0.75rem" }}>
+                <NewsItemScanLineageSummary
+                  sourceScanId={item.source_scan_id}
+                  sourceScanStatus={item.source_scan_status}
                 />
               </td>
               <td style={{ padding: "0.5rem 0.75rem", color: "#94a3b8", fontSize: "0.8rem" }}>

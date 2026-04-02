@@ -2,6 +2,22 @@
 
 ---
 
+## [2026-04-02] Phase 71 — News Item Scan Lineage Summary Frontend Foundation
+
+**Ne:** News Items listesine scan lineage görünürlüğü eklendi. Backend source_scan_status alanıyla SourceScan kaydı çözümleniyor, frontend badge + summary ile gösteriliyor.
+**Eklenen/değiştirilen dosyalar:**
+- `backend/app/news_items/schemas.py` — source_scan_status alanı
+- `backend/app/news_items/service.py` — SourceScan lookup in list_news_items_with_usage_summary
+- `frontend/src/api/newsItemsApi.ts` — source_scan_status alanı
+- `frontend/src/components/news-items/NewsItemScanLineageBadge.tsx` (yeni)
+- `frontend/src/components/news-items/NewsItemScanLineageSummary.tsx` (yeni)
+- `frontend/src/components/news-items/NewsItemsTable.tsx` — Scan Kaynağı sütunu eklendi
+- `frontend/src/tests/news-item-scan-lineage-summary.smoke.test.tsx` (yeni, 10 test)
+- `docs/testing/test-report-phase-71-news-item-scan-lineage-summary-frontend.md` (yeni)
+**Sonuç:** 473 frontend test — tümü geçti. Build başarılı.
+
+---
+
 ## [2026-04-02] Phase 70 — News Item Source Summary Frontend Foundation
 
 **Ne:** News Items listesine source bağlantı görünürlüğü eklendi. Backend enrichment ile source_name/source_status alanları dolduruluyor, frontend badge + summary ile gösteriliyor.

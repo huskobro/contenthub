@@ -93,5 +93,6 @@ class NewsItemResponse(BaseModel):
     last_target_module: Optional[str] = None
     source_name: Optional[str] = None
     source_status: Optional[str] = None
+    source_scan_status: Optional[str] = None
 
     model_config = {"from_attributes": True}

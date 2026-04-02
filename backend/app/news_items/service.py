@@ -2,7 +2,7 @@ from typing import List, Optional
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models import NewsItem, UsedNewsRegistry, NewsSource
+from app.db.models import NewsItem, UsedNewsRegistry, NewsSource, SourceScan
 from .schemas import NewsItemCreate, NewsItemUpdate, NewsItemResponse
 
 
@@ -56,6 +56,14 @@ async def list_news_items_with_usage_summary(
                 source_name = source.name
                 source_status = source.status
 
+        source_scan_status = None
+        if item.source_scan_id:
+            scan_row = await db.execute(
+                select(SourceScan).where(SourceScan.id == item.source_scan_id).limit(1)
+            )
+            scan = scan_row.scalar_one_or_none()
+            source_scan_status = scan.status if scan else "not_found"
+
         result.append(
             NewsItemResponse(
                 id=item.id,
@@ -77,6 +85,7 @@ async def list_news_items_with_usage_summary(
                 last_target_module=last_usage.target_module if last_usage else None,
                 source_name=source_name,
                 source_status=source_status,
+                source_scan_status=source_scan_status,
             )
         )
     return result
