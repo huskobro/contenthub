@@ -1,10 +1,10 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 32 — Admin News Bulletin Create/Edit Frontend ✓ TAMAMLANDI
+Phase 33 — News Bulletin Script Backend Foundation ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-News bulletin form frontend: create/update API, mutation hooks, NewsBulletinForm, CreatePage, edit mode, 8 yeni test, 147 toplam frontend test.
+News bulletin script backend: NewsBulletinScript modeli, migration, schemas, service, router endpoints, 9 yeni test, 159 toplam backend test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
@@ -44,6 +44,7 @@ News bulletin form frontend: create/update API, mutation hooks, NewsBulletinForm
 - Phase 30 news bulletin backend: NewsBulletin modeli, migration, schemas, service, router, 11 yeni test, 150 toplam backend test (2026-04-02)
 - Phase 31 admin news bulletin registry frontend: API, hooks, table, detail panel, registry page, sidebar, 9 yeni test, 139 toplam frontend test (2026-04-02)
 - Phase 32 admin news bulletin create/edit frontend: useCreateNewsBulletin, useUpdateNewsBulletin, NewsBulletinForm, CreatePage, edit mode, /new route, 8 yeni test, 147 toplam frontend test (2026-04-02)
+- Phase 33 news bulletin script backend: NewsBulletinScript modeli, migration, schemas+service+router genişletildi, 9 yeni test, 159 toplam backend test (2026-04-02)
 
 ## Mevcut Riskler
 - Henüz auth / rol zorlama yok (kasıtlı)

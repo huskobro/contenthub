@@ -647,3 +647,41 @@ class NewsBulletin(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=_now, onupdate=_now
     )
+
+
+class NewsBulletinScript(Base):
+    """
+    News Bulletin Script — Phase 33.
+
+    Stores the script artifact for a news bulletin production run.
+
+    news_bulletin_id  : FK to news_bulletins.id (required)
+    content           : script text (required, not blank)
+    version           : integer version counter, starts at 1
+    source_type       : 'manual' or 'generated'
+    generation_status : 'draft', 'ready'
+    notes             : optional free-text note
+    """
+
+    __tablename__ = "news_bulletin_scripts"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    news_bulletin_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("news_bulletins.id"),
+        nullable=False,
+        index=True,
+    )
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+    version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    source_type: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    generation_status: Mapped[str] = mapped_column(
+        String(50), nullable=False, default="draft"
+    )
+    notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now, onupdate=_now
+    )

@@ -76,3 +76,46 @@ class NewsBulletinResponse(BaseModel):
     updated_at: datetime
 
     model_config = {"from_attributes": True}
+
+
+class NewsBulletinScriptCreate(BaseModel):
+    content: str
+    version: int = 1
+    source_type: Optional[str] = None
+    generation_status: str = "draft"
+    notes: Optional[str] = None
+
+    @field_validator("content")
+    @classmethod
+    def content_not_blank(cls, v: str) -> str:
+        if not v.strip():
+            raise ValueError("content must not be blank")
+        return v
+
+
+class NewsBulletinScriptUpdate(BaseModel):
+    content: Optional[str] = None
+    source_type: Optional[str] = None
+    generation_status: Optional[str] = None
+    notes: Optional[str] = None
+
+    @field_validator("content")
+    @classmethod
+    def content_not_blank(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None and not v.strip():
+            raise ValueError("content must not be blank")
+        return v
+
+
+class NewsBulletinScriptResponse(BaseModel):
+    id: str
+    news_bulletin_id: str
+    content: str
+    version: int
+    source_type: Optional[str]
+    generation_status: str
+    notes: Optional[str]
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = {"from_attributes": True}

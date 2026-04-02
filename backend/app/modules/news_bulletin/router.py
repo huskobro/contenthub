@@ -3,7 +3,10 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
-from .schemas import NewsBulletinCreate, NewsBulletinUpdate, NewsBulletinResponse
+from .schemas import (
+    NewsBulletinCreate, NewsBulletinUpdate, NewsBulletinResponse,
+    NewsBulletinScriptCreate, NewsBulletinScriptUpdate, NewsBulletinScriptResponse,
+)
 from . import service
 
 router = APIRouter(prefix="/modules/news-bulletin", tags=["news-bulletin"])
@@ -37,3 +40,31 @@ async def update_news_bulletin(
     if item is None:
         raise HTTPException(status_code=404, detail="News bulletin not found")
     return item
+
+
+@router.get("/{item_id}/script", response_model=NewsBulletinScriptResponse)
+async def get_bulletin_script(item_id: str, db: AsyncSession = Depends(get_db)):
+    script = await service.get_bulletin_script(db, item_id)
+    if script is None:
+        raise HTTPException(status_code=404, detail="Script not found")
+    return script
+
+
+@router.post("/{item_id}/script", response_model=NewsBulletinScriptResponse, status_code=201)
+async def create_bulletin_script(
+    item_id: str, payload: NewsBulletinScriptCreate, db: AsyncSession = Depends(get_db)
+):
+    script = await service.create_bulletin_script(db, item_id, payload)
+    if script is None:
+        raise HTTPException(status_code=404, detail="News bulletin not found")
+    return script
+
+
+@router.patch("/{item_id}/script", response_model=NewsBulletinScriptResponse)
+async def update_bulletin_script(
+    item_id: str, payload: NewsBulletinScriptUpdate, db: AsyncSession = Depends(get_db)
+):
+    script = await service.update_bulletin_script(db, item_id, payload)
+    if script is None:
+        raise HTTPException(status_code=404, detail="Script not found")
+    return script

@@ -2,6 +2,23 @@
 
 ---
 
+## [2026-04-02] Phase 33 — News Bulletin Script Backend Foundation
+
+**Ne:** NewsBulletinScript modeli eklendi, script CRUD endpoint'leri news bulletin router'a entegre edildi.
+**Eklenen/değiştirilen dosyalar:**
+- `backend/app/db/models.py` (NewsBulletinScript modeli eklendi)
+- `backend/alembic/versions/485edfc2f2b5_add_news_bulletin_scripts_table.py` (yeni)
+- `backend/app/modules/news_bulletin/schemas.py` (Script schemas eklendi)
+- `backend/app/modules/news_bulletin/service.py` (Script service fonksiyonları eklendi)
+- `backend/app/modules/news_bulletin/router.py` (GET/POST/PATCH /{id}/script eklendi)
+- `backend/tests/test_news_bulletin_script_api.py` (9 yeni test)
+- `docs/testing/test-report-phase-33-news-bulletin-script-backend.md` (yeni)
+**Testler:** 9/9 phase tests PASSED | 159/159 toplam PASSED
+**Commit:** `feat: add phase 33 news bulletin script backend foundation`
+**Push:** ✅ `git@github.com:huskobro/contenthub.git`
+
+---
+
 ## [2026-04-02] Phase 32 — Admin News Bulletin Create/Edit Frontend
 
 **Ne:** News Bulletin create/edit form eklendi. API genişletildi, mutation hook'ları yazıldı, form component'i oluşturuldu, registry/detail edit mode'a taşındı.
