@@ -2,6 +2,19 @@
 
 ---
 
+## [2026-04-02] Phase 99 — Source Scan Artifact Consistency Summary Frontend Foundation
+
+**Ne:** Source Scans listesine artifact tutarlılık özeti eklendi. Pure frontend türetimi.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/source-scans/SourceScanArtifactConsistencyBadge.tsx` (yeni)
+- `frontend/src/components/source-scans/SourceScanArtifactConsistencySummary.tsx` (yeni, computeSourceScanArtifactConsistency)
+- `frontend/src/components/source-scans/SourceScansTable.tsx` (Artifact Tutarlılığı sütunu eklendi)
+- `frontend/src/tests/source-scan-artifact-consistency-summary.smoke.test.tsx` (yeni, 10 test)
+- `docs/testing/test-report-phase-99-source-scan-artifact-consistency-summary-frontend.md` (yeni)
+**Test:** 10 yeni smoke test, 753 toplam, build temiz.
+
+---
+
 ## [2026-04-02] Phase 98 — Source Artifact Consistency Summary Frontend Foundation
 
 **Ne:** Sources listesine artifact tutarlılık özeti eklendi. Pure frontend türetimi.
