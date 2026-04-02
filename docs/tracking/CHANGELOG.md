@@ -2,6 +2,19 @@
 
 ---
 
+## [2026-04-02] Phase 105 — Source Input Quality Summary Frontend Foundation
+
+**Ne:** Sources listesine source-input quality özeti eklendi. Pure frontend türetimi.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/sources/SourceInputQualityBadge.tsx` (yeni)
+- `frontend/src/components/sources/SourceInputQualitySummary.tsx` (yeni, computeSourceInputQuality)
+- `frontend/src/components/sources/SourcesTable.tsx` (Girdi Kalitesi sütunu eklendi)
+- `frontend/src/tests/source-input-quality-summary.smoke.test.tsx` (yeni, 10 test)
+- `docs/testing/test-report-phase-105-source-input-quality-summary-frontend.md` (yeni)
+**Test:** 10 yeni smoke test, 813 toplam, build temiz.
+
+---
+
 ## [2026-04-02] Phase 104 — Style Blueprint Input Quality Summary Frontend Foundation
 
 **Ne:** Style Blueprints listesine source-input quality özeti eklendi. Pure frontend türetimi.

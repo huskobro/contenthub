@@ -5,6 +5,7 @@ import { SourceLinkedNewsSummary } from "./SourceLinkedNewsSummary";
 import { SourceConfigCoverageSummary } from "./SourceConfigCoverageSummary";
 import { SourcePublicationSupplySummary } from "./SourcePublicationSupplySummary";
 import { SourceArtifactConsistencySummary } from "./SourceArtifactConsistencySummary";
+import { SourceInputQualitySummary } from "./SourceInputQualitySummary";
 
 interface SourcesTableProps {
   sources: SourceResponse[];
@@ -29,6 +30,7 @@ export function SourcesTable({ sources, selectedId, onSelect }: SourcesTableProp
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Konfigürasyon</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Yayın Kaynağı</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Artifact Tutarlılığı</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Girdi Kalitesi</th>
         </tr>
       </thead>
       <tbody>
@@ -104,6 +106,16 @@ export function SourcesTable({ sources, selectedId, onSelect }: SourcesTableProp
                 feedUrl={src.feed_url}
                 apiEndpoint={src.api_endpoint}
                 linkedNewsCount={src.linked_news_count}
+              />
+            </td>
+            <td style={{ padding: "0.5rem 0.75rem" }}>
+              <SourceInputQualitySummary
+                sourceType={src.source_type}
+                name={src.name}
+                baseUrl={src.base_url}
+                feedUrl={src.feed_url}
+                apiEndpoint={src.api_endpoint}
+                language={src.language}
               />
             </td>
           </tr>
