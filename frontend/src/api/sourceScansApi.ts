@@ -16,6 +16,30 @@ export interface SourceScanResponse {
   updated_at: string;
 }
 
+export interface SourceScanCreatePayload {
+  source_id: string;
+  scan_mode: string;
+  status?: string;
+  requested_by?: string | null;
+  started_at?: string | null;
+  finished_at?: string | null;
+  result_count?: number | null;
+  error_summary?: string | null;
+  raw_result_preview_json?: string | null;
+  notes?: string | null;
+}
+
+export interface SourceScanUpdatePayload {
+  status?: string;
+  requested_by?: string | null;
+  started_at?: string | null;
+  finished_at?: string | null;
+  result_count?: number | null;
+  error_summary?: string | null;
+  raw_result_preview_json?: string | null;
+  notes?: string | null;
+}
+
 export async function fetchSourceScans(params?: {
   source_id?: string;
   status?: string;
@@ -34,5 +58,30 @@ export async function fetchSourceScans(params?: {
 export async function fetchSourceScanById(scanId: string): Promise<SourceScanResponse> {
   const resp = await fetch(`${BASE_URL}/${scanId}`);
   if (!resp.ok) throw new Error(`Failed to fetch source scan ${scanId}: ${resp.status}`);
+  return resp.json();
+}
+
+export async function createSourceScan(
+  payload: SourceScanCreatePayload
+): Promise<SourceScanResponse> {
+  const resp = await fetch(BASE_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!resp.ok) throw new Error(`Failed to create source scan: ${resp.status}`);
+  return resp.json();
+}
+
+export async function updateSourceScan(
+  scanId: string,
+  payload: SourceScanUpdatePayload
+): Promise<SourceScanResponse> {
+  const resp = await fetch(`${BASE_URL}/${scanId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!resp.ok) throw new Error(`Failed to update source scan ${scanId}: ${resp.status}`);
   return resp.json();
 }

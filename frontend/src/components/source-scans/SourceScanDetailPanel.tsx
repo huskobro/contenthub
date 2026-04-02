@@ -1,4 +1,8 @@
+import { useState } from "react";
 import { useSourceScanDetail } from "../../hooks/useSourceScanDetail";
+import { useUpdateSourceScan } from "../../hooks/useUpdateSourceScan";
+import { SourceScanForm } from "./SourceScanForm";
+import type { SourceScanFormValues } from "./SourceScanForm";
 
 interface SourceScanDetailPanelProps {
   scanId: string | null;
@@ -41,6 +45,8 @@ function JsonPreviewField({ label, value }: { label: string; value: string | nul
 
 export function SourceScanDetailPanel({ scanId }: SourceScanDetailPanelProps) {
   const { data: scan, isLoading, isError, error } = useSourceScanDetail(scanId);
+  const updateMutation = useUpdateSourceScan(scanId ?? "");
+  const [editing, setEditing] = useState(false);
 
   if (!scanId) {
     return (
@@ -65,9 +71,55 @@ export function SourceScanDetailPanel({ scanId }: SourceScanDetailPanelProps) {
 
   if (!scan) return null;
 
+  if (editing) {
+    function handleUpdate(values: SourceScanFormValues) {
+      const payload = {
+        status: values.status || undefined,
+        requested_by: values.requested_by.trim() || null,
+        result_count: values.result_count.trim() !== "" ? Number(values.result_count) : null,
+        error_summary: values.error_summary.trim() || null,
+        notes: values.notes.trim() || null,
+      };
+      updateMutation.mutate(payload, {
+        onSuccess: () => setEditing(false),
+      });
+    }
+
+    return (
+      <div style={{ padding: "1.25rem", border: "1px solid #e2e8f0", borderRadius: "6px", background: "#fff" }}>
+        <h3 style={{ margin: "0 0 1rem", fontSize: "1rem", color: "#1e293b" }}>Scan Düzenle</h3>
+        <SourceScanForm
+          mode="edit"
+          initial={scan}
+          isSubmitting={updateMutation.isPending}
+          submitError={updateMutation.error instanceof Error ? updateMutation.error.message : updateMutation.error ? String(updateMutation.error) : null}
+          onSubmit={handleUpdate}
+          onCancel={() => setEditing(false)}
+          submitLabel="Kaydet"
+        />
+      </div>
+    );
+  }
+
   return (
     <div style={{ padding: "1.25rem", border: "1px solid #e2e8f0", borderRadius: "6px", background: "#fff" }}>
-      <h3 style={{ margin: "0 0 1rem", fontSize: "1rem", color: "#1e293b" }}>Scan Detayı</h3>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
+        <h3 style={{ margin: 0, fontSize: "1rem", color: "#1e293b" }}>Scan Detayı</h3>
+        <button
+          onClick={() => setEditing(true)}
+          style={{
+            padding: "0.25rem 0.75rem",
+            fontSize: "0.8rem",
+            background: "#f1f5f9",
+            color: "#475569",
+            border: "1px solid #e2e8f0",
+            borderRadius: "4px",
+            cursor: "pointer",
+          }}
+        >
+          Düzenle
+        </button>
+      </div>
 
       <Field label="ID" value={scan.id} />
       <Field label="Source ID" value={scan.source_id} />

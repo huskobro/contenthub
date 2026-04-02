@@ -17,6 +17,7 @@ import { StyleBlueprintCreatePage } from "../pages/admin/StyleBlueprintCreatePag
 import { SourcesRegistryPage } from "../pages/admin/SourcesRegistryPage";
 import { SourceCreatePage } from "../pages/admin/SourceCreatePage";
 import { SourceScansRegistryPage } from "../pages/admin/SourceScansRegistryPage";
+import { SourceScanCreatePage } from "../pages/admin/SourceScanCreatePage";
 import { NewsBulletinRegistryPage } from "../pages/admin/NewsBulletinRegistryPage";
 import { NewsBulletinCreatePage } from "../pages/admin/NewsBulletinCreatePage";
 import { UsedNewsRegistryPage } from "../pages/admin/UsedNewsRegistryPage";
@@ -48,6 +49,7 @@ export const router = createBrowserRouter([
       { path: "style-blueprints", element: <StyleBlueprintsRegistryPage /> },
       { path: "sources/new", element: <SourceCreatePage /> },
       { path: "sources", element: <SourcesRegistryPage /> },
+      { path: "source-scans/new", element: <SourceScanCreatePage /> },
       { path: "source-scans", element: <SourceScansRegistryPage /> },
       { path: "news-bulletins/new", element: <NewsBulletinCreatePage /> },
       { path: "news-bulletins", element: <NewsBulletinRegistryPage /> },
