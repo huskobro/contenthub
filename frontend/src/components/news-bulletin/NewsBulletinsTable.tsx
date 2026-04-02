@@ -9,6 +9,7 @@ import { NewsBulletinSelectedNewsQualitySummary } from "./NewsBulletinSelectedNe
 import { NewsBulletinArtifactConsistencySummary } from "./NewsBulletinArtifactConsistencySummary";
 import { NewsBulletinInputQualitySummary } from "./NewsBulletinInputQualitySummary";
 import { NewsBulletinInputSpecificitySummary } from "./NewsBulletinInputSpecificitySummary";
+import { NewsBulletinTargetOutputConsistencySummary } from "./NewsBulletinTargetOutputConsistencySummary";
 
 interface Props {
   bulletins: NewsBulletinResponse[];
@@ -41,6 +42,7 @@ export function NewsBulletinsTable({ bulletins, selectedId, onSelect }: Props) {
           <th style={{ textAlign: "left", padding: "6px 8px" }}>Girdi Kalitesi</th>
           <th style={{ textAlign: "left", padding: "6px 8px" }}>Artifact Tutarlılığı</th>
           <th style={{ textAlign: "left", padding: "6px 8px" }}>Girdi Özgüllüğü</th>
+          <th style={{ textAlign: "left", padding: "6px 8px" }}>Target/Output Tutarlılığı</th>
           <th style={{ textAlign: "left", padding: "6px 8px" }}>Created</th>
         </tr>
       </thead>
@@ -127,6 +129,17 @@ export function NewsBulletinsTable({ bulletins, selectedId, onSelect }: Props) {
                 selectedNewsSourceCount={b.selected_news_source_count}
                 language={b.language}
                 bulletinStyle={b.bulletin_style}
+              />
+            </td>
+            <td style={{ padding: "6px 8px" }}>
+              <NewsBulletinTargetOutputConsistencySummary
+                title={b.title}
+                topic={b.topic}
+                selectedNewsCount={b.selected_news_count}
+                language={b.language}
+                bulletinStyle={b.bulletin_style}
+                hasScript={b.has_script}
+                hasMetadata={b.has_metadata}
               />
             </td>
             <td style={{ padding: "6px 8px" }}>
