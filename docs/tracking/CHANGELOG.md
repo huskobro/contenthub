@@ -2,6 +2,19 @@
 
 ---
 
+## [2026-04-02] Phase 122 — Template Input Specificity Summary Frontend Foundation
+
+**Ne:** Templates listesine input specificity özeti eklendi. Pure frontend türetimi, 3 seviye.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/templates/TemplateInputSpecificityBadge.tsx` (yeni)
+- `frontend/src/components/templates/TemplateInputSpecificitySummary.tsx` (yeni, computeTemplateInputSpecificity)
+- `frontend/src/components/templates/TemplatesTable.tsx` (Girdi Özgüllüğü sütunu eklendi)
+- `frontend/src/tests/template-input-specificity-summary.smoke.test.tsx` (yeni, 10 test)
+- `docs/testing/test-report-phase-122-template-input-specificity-summary-frontend.md` (yeni)
+**Test:** 10 yeni smoke test, 983 toplam, build temiz.
+
+---
+
 ## [2026-04-02] Phase 121 — Standard Video Input Specificity Summary Frontend Foundation
 
 **Ne:** Standard Video listesine input specificity özeti eklendi. Pure frontend türetimi, 3 seviye.
