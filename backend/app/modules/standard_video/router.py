@@ -26,8 +26,7 @@ async def list_standard_videos(
     status: Optional[str] = Query(None),
     db: AsyncSession = Depends(get_db),
 ) -> list[StandardVideoResponse]:
-    items = await service.list_standard_videos(db, status=status)
-    return items
+    return await service.list_standard_videos_with_artifact_summary(db, status=status)
 
 
 @router.get("/{item_id}", response_model=StandardVideoResponse)

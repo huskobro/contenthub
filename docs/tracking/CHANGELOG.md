@@ -2,6 +2,23 @@
 
 ---
 
+## [2026-04-02] Phase 68 — Standard Video Artifact Summary Frontend Foundation
+
+**Ne:** Standard Video registry listesine gerçek artifact varlığı (script/metadata) özeti eklendi.
+**Eklenen/değiştirilen dosyalar:**
+- `backend/app/modules/standard_video/schemas.py` — has_script, has_metadata alanları
+- `backend/app/modules/standard_video/service.py` — list_standard_videos_with_artifact_summary
+- `backend/app/modules/standard_video/router.py` — list endpoint güncellendi
+- `frontend/src/api/standardVideoApi.ts` — has_script, has_metadata eklendi
+- `frontend/src/components/standard-video/StandardVideoArtifactStatusBadge.tsx` (yeni)
+- `frontend/src/components/standard-video/StandardVideoArtifactSummary.tsx` (yeni)
+- `frontend/src/components/standard-video/StandardVideosTable.tsx` — Artifact sütunu eklendi
+- `frontend/src/tests/standard-video-artifact-summary.smoke.test.tsx` (yeni, 10 test)
+- `docs/testing/test-report-phase-68-standard-video-artifact-summary-frontend.md` (yeni)
+**Sonuç:** 443 frontend test — tümü geçti. Build başarılı.
+
+---
+
 ## [2026-04-02] Phase 67 — Job Actionability Summary Frontend Foundation
 
 **Ne:** Jobs registry listesinde her job için sade actionability özeti eklendi.

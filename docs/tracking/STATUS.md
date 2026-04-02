@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 67 — Job Actionability Summary Frontend Foundation ✓ TAMAMLANDI
+Phase 68 — Standard Video Artifact Summary Frontend Foundation ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-status/last_error/retry_count alanlarından frontend actionability özeti. JobActionabilityBadge, JobActionabilitySummary, JobsTable Aksiyon Özeti sütunu, 10 yeni test, 433 toplam.
+has_script/has_metadata backend alanları + StandardVideoArtifactSummary frontend bileşeni. 10 yeni test, 443 toplam.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 68: standard video artifact summary: has_script/has_metadata backend, StandardVideoArtifactStatusBadge, StandardVideoArtifactSummary, Artifact sütunu, 10 yeni test, 443 toplam (2026-04-02)
 - Phase 67: job actionability summary frontend: JobActionabilityBadge, JobActionabilitySummary, Aksiyon Özeti sütunu, 10 yeni test, 433 toplam (2026-04-02)
 - Phase 66: template style link readiness summary frontend: TemplateStyleLinkReadinessBadge, TemplateStyleLinkReadinessSummary, Bağ Durumu sütunu, 10 yeni test, 423 toplam (2026-04-02)
 - Phase 65: style blueprint readiness summary frontend: StyleBlueprintReadinessBadge, StyleBlueprintReadinessSummary, Hazırlık sütunu, 10 yeni test, 413 toplam (2026-04-02)

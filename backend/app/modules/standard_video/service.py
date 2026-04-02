@@ -1,7 +1,7 @@
 """Service layer for the Standard Video module."""
 
 from typing import Optional
-from sqlalchemy import select
+from sqlalchemy import select, func as sqlfunc
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import StandardVideo, StandardVideoScript, StandardVideoMetadata
@@ -12,6 +12,7 @@ from app.modules.standard_video.schemas import (
     StandardVideoScriptUpdate,
     StandardVideoMetadataCreate,
     StandardVideoMetadataUpdate,
+    StandardVideoResponse,
 )
 
 
@@ -24,6 +25,47 @@ async def list_standard_videos(
         stmt = stmt.where(StandardVideo.status == status)
     result = await db.execute(stmt)
     return list(result.scalars().all())
+
+
+async def list_standard_videos_with_artifact_summary(
+    db: AsyncSession,
+    status: Optional[str] = None,
+) -> list[StandardVideoResponse]:
+    videos = await list_standard_videos(db, status=status)
+    result = []
+    for v in videos:
+        script_row = await db.execute(
+            select(sqlfunc.count()).select_from(StandardVideoScript).where(
+                StandardVideoScript.standard_video_id == v.id
+            )
+        )
+        has_script = (script_row.scalar_one() or 0) > 0
+
+        meta_row = await db.execute(
+            select(sqlfunc.count()).select_from(StandardVideoMetadata).where(
+                StandardVideoMetadata.standard_video_id == v.id
+            )
+        )
+        has_metadata = (meta_row.scalar_one() or 0) > 0
+
+        result.append(StandardVideoResponse(
+            id=v.id,
+            title=v.title,
+            topic=v.topic,
+            brief=v.brief,
+            target_duration_seconds=v.target_duration_seconds,
+            tone=v.tone,
+            language=v.language,
+            visual_direction=v.visual_direction,
+            subtitle_style=v.subtitle_style,
+            status=v.status,
+            job_id=v.job_id,
+            created_at=v.created_at,
+            updated_at=v.updated_at,
+            has_script=has_script,
+            has_metadata=has_metadata,
+        ))
+    return result
 
 
 async def get_standard_video(db: AsyncSession, item_id: str) -> Optional[StandardVideo]:

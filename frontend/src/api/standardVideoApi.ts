@@ -14,6 +14,8 @@ export interface StandardVideoResponse {
   job_id: string | null;
   created_at: string;
   updated_at: string;
+  has_script?: boolean;
+  has_metadata?: boolean;
 }
 
 export interface StandardVideoScriptResponse {

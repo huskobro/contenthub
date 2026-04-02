@@ -58,6 +58,9 @@ class StandardVideoResponse(BaseModel):
     job_id: Optional[str] = None
     created_at: datetime
     updated_at: datetime
+    # Artifact summary fields (populated by list_standard_videos_with_artifact_summary)
+    has_script: bool = False
+    has_metadata: bool = False
 
     model_config = {"from_attributes": True}
 
