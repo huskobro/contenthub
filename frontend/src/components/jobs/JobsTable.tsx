@@ -4,6 +4,7 @@ import { JobContextSummary } from "./JobContextSummary";
 import { JobActionabilitySummary } from "./JobActionabilitySummary";
 import { JobOutputRichnessSummary } from "./JobOutputRichnessSummary";
 import { JobPublicationOutcomeSummary } from "./JobPublicationOutcomeSummary";
+import { JobArtifactConsistencySummary } from "./JobArtifactConsistencySummary";
 
 interface JobsTableProps {
   jobs: JobResponse[];
@@ -26,6 +27,7 @@ export function JobsTable({ jobs, selectedId, onSelect }: JobsTableProps) {
           <th style={{ padding: "0.5rem" }}>Aksiyon Özeti</th>
           <th style={{ padding: "0.5rem" }}>Çıktı Zenginliği</th>
           <th style={{ padding: "0.5rem" }}>Yayın Sonucu</th>
+          <th style={{ padding: "0.5rem" }}>Artifact Tutarlılığı</th>
           <th style={{ padding: "0.5rem" }}>current_step_key</th>
           <th style={{ padding: "0.5rem" }}>retry_count</th>
           <th style={{ padding: "0.5rem" }}>elapsed</th>
@@ -72,6 +74,15 @@ export function JobsTable({ jobs, selectedId, onSelect }: JobsTableProps) {
                 sourceContextJson={j.source_context_json}
                 templateId={j.template_id}
                 workspacePath={j.workspace_path}
+              />
+            </td>
+            <td style={{ padding: "0.5rem" }}>
+              <JobArtifactConsistencySummary
+                sourceContextJson={j.source_context_json}
+                templateId={j.template_id}
+                workspacePath={j.workspace_path}
+                status={j.status}
+                currentStepKey={j.current_step_key}
               />
             </td>
             <td style={{ padding: "0.5rem" }}>
