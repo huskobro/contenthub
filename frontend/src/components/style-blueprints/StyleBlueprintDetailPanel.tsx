@@ -1,4 +1,8 @@
+import { useState } from "react";
 import { useStyleBlueprintDetail } from "../../hooks/useStyleBlueprintDetail";
+import { useUpdateStyleBlueprint } from "../../hooks/useUpdateStyleBlueprint";
+import { StyleBlueprintForm } from "./StyleBlueprintForm";
+import type { StyleBlueprintFormValues } from "./StyleBlueprintForm";
 
 interface StyleBlueprintDetailPanelProps {
   blueprintId: string | null;
@@ -40,7 +44,9 @@ function Field({ label, value }: { label: string; value: string | number | null 
 }
 
 export function StyleBlueprintDetailPanel({ blueprintId }: StyleBlueprintDetailPanelProps) {
+  const [editing, setEditing] = useState(false);
   const { data: blueprint, isLoading, isError, error } = useStyleBlueprintDetail(blueprintId);
+  const { mutate, isPending, error: updateError } = useUpdateStyleBlueprint(blueprintId ?? "");
 
   if (!blueprintId) {
     return (
@@ -65,9 +71,61 @@ export function StyleBlueprintDetailPanel({ blueprintId }: StyleBlueprintDetailP
 
   if (!blueprint) return null;
 
+  if (editing) {
+    function handleSubmit(values: StyleBlueprintFormValues) {
+      mutate(
+        {
+          name: values.name.trim(),
+          module_scope: values.module_scope.trim() || null,
+          status: values.status,
+          version: values.version.trim() ? Number(values.version) : undefined,
+          visual_rules_json: values.visual_rules_json.trim() || null,
+          motion_rules_json: values.motion_rules_json.trim() || null,
+          layout_rules_json: values.layout_rules_json.trim() || null,
+          subtitle_rules_json: values.subtitle_rules_json.trim() || null,
+          thumbnail_rules_json: values.thumbnail_rules_json.trim() || null,
+          preview_strategy_json: values.preview_strategy_json.trim() || null,
+          notes: values.notes.trim() || null,
+        },
+        { onSuccess: () => setEditing(false) }
+      );
+    }
+
+    return (
+      <div style={{ padding: "1.25rem", border: "1px solid #e2e8f0", borderRadius: "6px", background: "#fff" }}>
+        <h3 style={{ margin: "0 0 1rem", fontSize: "1rem", color: "#1e293b" }}>Blueprint Düzenle</h3>
+        <StyleBlueprintForm
+          mode="edit"
+          initial={blueprint}
+          isSubmitting={isPending}
+          submitError={updateError instanceof Error ? updateError.message : null}
+          onSubmit={handleSubmit}
+          onCancel={() => setEditing(false)}
+          submitLabel="Kaydet"
+        />
+      </div>
+    );
+  }
+
   return (
     <div style={{ padding: "1.25rem", border: "1px solid #e2e8f0", borderRadius: "6px", background: "#fff" }}>
-      <h3 style={{ margin: "0 0 1rem", fontSize: "1rem", color: "#1e293b" }}>{blueprint.name}</h3>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
+        <h3 style={{ margin: 0, fontSize: "1rem", color: "#1e293b" }}>{blueprint.name}</h3>
+        <button
+          onClick={() => setEditing(true)}
+          style={{
+            padding: "0.25rem 0.75rem",
+            fontSize: "0.8rem",
+            background: "#f1f5f9",
+            color: "#475569",
+            border: "1px solid #e2e8f0",
+            borderRadius: "4px",
+            cursor: "pointer",
+          }}
+        >
+          Düzenle
+        </button>
+      </div>
 
       <Field label="Module Scope" value={blueprint.module_scope} />
       <Field label="Status" value={blueprint.status} />
