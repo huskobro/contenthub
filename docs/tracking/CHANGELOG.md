@@ -2,6 +2,19 @@
 
 ---
 
+## [2026-04-02] Phase 95 — Standard Video Artifact Consistency Summary Frontend Foundation
+
+**Ne:** Standard Video listesine artifact tutarlılık özeti eklendi. Pure frontend türetimi.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/standard-video/StandardVideoArtifactConsistencyBadge.tsx` (yeni)
+- `frontend/src/components/standard-video/StandardVideoArtifactConsistencySummary.tsx` (yeni, computeStandardVideoArtifactConsistency)
+- `frontend/src/components/standard-video/StandardVideosTable.tsx` (Artifact Tutarlılığı sütunu eklendi)
+- `frontend/src/tests/standard-video-artifact-consistency-summary.smoke.test.tsx` (yeni, 10 test)
+- `docs/testing/test-report-phase-95-standard-video-artifact-consistency-summary-frontend.md` (yeni)
+**Test:** 10 yeni smoke test, 713 toplam, build temiz.
+
+---
+
 ## [2026-04-02] Phase 94 — News Bulletin Artifact Consistency Summary Frontend Foundation
 
 **Ne:** News Bulletins listesine artifact tutarlılık özeti eklendi. Pure frontend türetimi.
