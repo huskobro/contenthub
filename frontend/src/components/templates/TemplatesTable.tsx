@@ -6,6 +6,7 @@ import { TemplateArtifactConsistencySummary } from "./TemplateArtifactConsistenc
 import { TemplateInputQualitySummary } from "./TemplateInputQualitySummary";
 import { TemplateInputSpecificitySummary } from "./TemplateInputSpecificitySummary";
 import { TemplateTargetOutputConsistencySummary } from "./TemplateTargetOutputConsistencySummary";
+import { TemplatePublicationOutcomeSummary } from "./TemplatePublicationOutcomeSummary";
 
 interface TemplatesTableProps {
   templates: TemplateResponse[];
@@ -36,6 +37,7 @@ export function TemplatesTable({ templates, selectedId, onSelect }: TemplatesTab
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Girdi Kalitesi</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Girdi Özgüllüğü</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Target/Output Tutarlılığı</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Yayın Çıktısı</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Version</th>
         </tr>
       </thead>
@@ -130,6 +132,16 @@ export function TemplatesTable({ templates, selectedId, onSelect }: TemplatesTab
                 contentRulesJson={t.content_rules_json}
                 publishProfileJson={t.publish_profile_json}
                 styleLinkCount={t.style_link_count}
+              />
+            </td>
+            <td style={{ padding: "0.5rem 0.75rem" }}>
+              <TemplatePublicationOutcomeSummary
+                templateType={t.template_type}
+                styleProfileJson={t.style_profile_json}
+                contentRulesJson={t.content_rules_json}
+                publishProfileJson={t.publish_profile_json}
+                styleLinkCount={t.style_link_count}
+                status={t.status}
               />
             </td>
             <td style={{ padding: "0.5rem 0.75rem", color: "#64748b" }}>v{t.version}</td>
