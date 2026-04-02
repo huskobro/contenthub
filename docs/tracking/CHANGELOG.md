@@ -2,6 +2,19 @@
 
 ---
 
+## [2026-04-02] Phase 98 — Source Artifact Consistency Summary Frontend Foundation
+
+**Ne:** Sources listesine artifact tutarlılık özeti eklendi. Pure frontend türetimi.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/sources/SourceArtifactConsistencyBadge.tsx` (yeni)
+- `frontend/src/components/sources/SourceArtifactConsistencySummary.tsx` (yeni, computeSourceArtifactConsistency)
+- `frontend/src/components/sources/SourcesTable.tsx` (Artifact Tutarlılığı sütunu eklendi)
+- `frontend/src/tests/source-artifact-consistency-summary.smoke.test.tsx` (yeni, 10 test)
+- `docs/testing/test-report-phase-98-source-artifact-consistency-summary-frontend.md` (yeni)
+**Test:** 10 yeni smoke test, 743 toplam, build temiz.
+
+---
+
 ## [2026-04-02] Phase 97 — Style Blueprint Artifact Consistency Summary Frontend Foundation
 
 **Ne:** Style Blueprints listesine artifact tutarlılık özeti eklendi. Pure frontend türetimi.
