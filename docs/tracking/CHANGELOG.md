@@ -2,6 +2,19 @@
 
 ---
 
+## [2026-04-02] Phase 59 — Template Readiness Summary Frontend Foundation
+
+**Ne:** Templates registry listesinde her template için sade hazırlık özeti eklendi.
+**Yaklaşım:** Backend değişikliği yok; mevcut alanlardan frontend türetildi.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/templates/TemplateReadinessBadge.tsx` (yeni)
+- `frontend/src/components/templates/TemplateReadinessSummary.tsx` (yeni)
+- `frontend/src/components/templates/TemplatesTable.tsx` — Hazırlık sütunu eklendi
+- `frontend/src/tests/template-readiness-summary.smoke.test.tsx` (yeni, 10 test)
+**Sonuç:** 353 frontend test — tümü geçti. Build başarılı.
+
+---
+
 ## [2026-04-02] Phase 58 — Template Style Link Summary Frontend Foundation
 
 **Ne:** Templates registry listesinde her template için style blueprint link özeti eklendi.

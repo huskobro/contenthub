@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 58 — Template Style Link Summary Frontend Foundation ✓ TAMAMLANDI
+Phase 59 — Template Readiness Summary Frontend Foundation ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-style_link_count/primary_link_role backend alanları, TemplateStyleLinkStatusBadge, TemplateStyleLinkSummary, TemplatesTable Style Links sütunu, 10 yeni test, 343 toplam.
+Mevcut alanlardan frontend readiness özeti. TemplateReadinessBadge, TemplateReadinessSummary, TemplatesTable Hazırlık sütunu, 10 yeni test, 353 toplam.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 59: template readiness summary frontend: TemplateReadinessBadge, TemplateReadinessSummary, Hazırlık sütunu, 10 yeni test, 353 toplam (2026-04-02)
 - Phase 58: template style link summary frontend: style_link_count/primary_link_role, TemplateStyleLinkStatusBadge, TemplateStyleLinkSummary, Style Links sütunu, 10 yeni test, 343 toplam (2026-04-02)
 - Phase 57: job context summary frontend: JobContextBadge, JobContextSummary, JobsTable Context sütunu, 10 yeni test, 333 toplam (2026-04-02)
 - Phase 56: news bulletin readiness summary frontend: computeReadinessLevel, NewsBulletinReadinessBadge, NewsBulletinReadinessSummary, Hazırlık sütunu, 10 yeni test, 323 toplam (2026-04-02)
