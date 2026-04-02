@@ -2,6 +2,19 @@
 
 ---
 
+## [2026-04-02] Phase 116 — News Item Input Specificity Summary Frontend Foundation
+
+**Ne:** News Items listesine input specificity özeti eklendi. Pure frontend türetimi, 3 seviye.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/news-items/NewsItemInputSpecificityBadge.tsx` (yeni)
+- `frontend/src/components/news-items/NewsItemInputSpecificitySummary.tsx` (yeni, computeNewsItemInputSpecificity)
+- `frontend/src/components/news-items/NewsItemsTable.tsx` (Girdi Özgüllüğü sütunu eklendi)
+- `frontend/src/tests/news-item-input-specificity-summary.smoke.test.tsx` (yeni, 10 test)
+- `docs/testing/test-report-phase-116-news-item-input-specificity-summary-frontend.md` (yeni)
+**Test:** 10 yeni smoke test, 923 toplam, build temiz.
+
+---
+
 ## [2026-04-02] Phase 115 — Job Input Specificity Summary Frontend Foundation
 
 **Ne:** Jobs listesine module-input specificity özeti eklendi. Pure frontend türetimi, 3 seviye.
