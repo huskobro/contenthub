@@ -2,6 +2,19 @@
 
 ---
 
+## [2026-04-02] Phase 93 — Standard Video Input Quality Summary Frontend Foundation
+
+**Ne:** Standard Video listesine girdi kalite özeti eklendi. Pure frontend türetimi.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/standard-video/StandardVideoInputQualityBadge.tsx` (yeni)
+- `frontend/src/components/standard-video/StandardVideoInputQualitySummary.tsx` (yeni, computeStandardVideoInputQuality)
+- `frontend/src/components/standard-video/StandardVideosTable.tsx` (Girdi Kalitesi sütunu eklendi)
+- `frontend/src/tests/standard-video-input-quality-summary.smoke.test.tsx` (yeni, 10 test)
+- `docs/testing/test-report-phase-93-standard-video-input-quality-summary-frontend.md` (yeni)
+**Test:** 10 yeni smoke test, 693 toplam, build temiz.
+
+---
+
 ## [2026-04-02] Phase 92 — News Bulletin Selected-News Quality Summary Frontend Foundation
 
 **Ne:** News Bulletins listesine seçilmiş haber kalite özeti eklendi. Backend 3 yeni aggregate alan + frontend türetimi.

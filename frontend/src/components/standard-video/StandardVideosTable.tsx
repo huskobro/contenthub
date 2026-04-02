@@ -3,6 +3,7 @@ import { formatDuration } from "../../lib/formatDuration";
 import { StandardVideoReadinessSummary } from "./StandardVideoReadinessSummary";
 import { StandardVideoArtifactSummary } from "./StandardVideoArtifactSummary";
 import { StandardVideoPublicationSignalSummary } from "./StandardVideoPublicationSignalSummary";
+import { StandardVideoInputQualitySummary } from "./StandardVideoInputQualitySummary";
 
 interface Props {
   videos: StandardVideoResponse[];
@@ -37,6 +38,7 @@ export function StandardVideosTable({ videos, selectedId, onSelect }: Props) {
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Hazırlık</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Artifact</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Yayın Sinyali</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Girdi Kalitesi</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Dil</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Hedef Süre</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Oluşturulma</th>
@@ -82,6 +84,14 @@ export function StandardVideosTable({ videos, selectedId, onSelect }: Props) {
                 topic={v.topic}
                 hasScript={v.has_script}
                 hasMetadata={v.has_metadata}
+              />
+            </td>
+            <td style={{ padding: "0.5rem 0.75rem" }}>
+              <StandardVideoInputQualitySummary
+                topic={v.topic}
+                brief={v.brief}
+                targetDurationSeconds={v.target_duration_seconds}
+                language={v.language}
               />
             </td>
             <td style={{ padding: "0.5rem 0.75rem" }}>{v.language ?? "—"}</td>
