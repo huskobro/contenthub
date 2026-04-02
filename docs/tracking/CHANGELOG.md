@@ -2,6 +2,19 @@
 
 ---
 
+## [2026-04-02] Phase 115 — Job Input Specificity Summary Frontend Foundation
+
+**Ne:** Jobs listesine module-input specificity özeti eklendi. Pure frontend türetimi, 3 seviye.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/jobs/JobInputSpecificityBadge.tsx` (yeni)
+- `frontend/src/components/jobs/JobInputSpecificitySummary.tsx` (yeni, computeJobInputSpecificity)
+- `frontend/src/components/jobs/JobsTable.tsx` (Girdi Özgüllüğü sütunu eklendi)
+- `frontend/src/tests/job-input-specificity-summary.smoke.test.tsx` (yeni, 10 test)
+- `docs/testing/test-report-phase-115-job-input-specificity-summary-frontend.md` (yeni)
+**Test:** 10 yeni smoke test, 913 toplam, build temiz.
+
+---
+
 ## [2026-04-02] Phase 114 — Job Publication Yield Summary Frontend Foundation
 
 **Ne:** Jobs listesine publication yield özeti eklendi. Pure frontend türetimi, 6 seviye.

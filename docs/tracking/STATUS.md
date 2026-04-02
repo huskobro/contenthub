@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 114 — Job Publication Yield Summary Frontend Foundation ✓ TAMAMLANDI
+Phase 115 — Job Input Specificity Summary Frontend Foundation ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Pure frontend türetimi: JobPublicationYieldBadge + JobPublicationYieldSummary. 10 yeni test, 903 toplam.
+Pure frontend türetimi: JobInputSpecificityBadge + JobInputSpecificitySummary. 10 yeni test, 913 toplam.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 115: job input specificity summary: pure frontend, JobInputSpecificityBadge, JobInputSpecificitySummary, Girdi Özgüllüğü sütunu, 10 yeni test, 913 toplam (2026-04-02)
 - Phase 114: job publication yield summary: pure frontend, JobPublicationYieldBadge, JobPublicationYieldSummary, Yayın Verimi sütunu, 10 yeni test, 903 toplam (2026-04-02)
 - Phase 113: source scan publication outcome summary: pure frontend, SourceScanPublicationOutcomeBadge, SourceScanPublicationOutcomeSummary, Yayın Sonucu sütunu, 10 yeni test, 893 toplam (2026-04-02)
 - Phase 112: job target-output consistency summary: pure frontend, JobTargetOutputConsistencyBadge, JobTargetOutputConsistencySummary, Target/Output Tutarlılığı sütunu, 10 yeni test, 883 toplam (2026-04-02)
