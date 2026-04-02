@@ -7,6 +7,7 @@ import { NewsItemContentCompletenessSummary } from "./NewsItemContentCompletenes
 import { NewsItemPublicationSignalSummary } from "./NewsItemPublicationSignalSummary";
 import { NewsItemUsedNewsLinkageSummary } from "./NewsItemUsedNewsLinkageSummary";
 import { NewsItemPublicationLineageSummary } from "./NewsItemPublicationLineageSummary";
+import { NewsItemArtifactConsistencySummary } from "./NewsItemArtifactConsistencySummary";
 
 interface Props {
   items: NewsItemResponse[];
@@ -38,6 +39,7 @@ export function NewsItemsTable({ items, selectedId, onSelect }: Props) {
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Yayın Sinyali</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Used News Bağı</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Yayın Zinciri</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Artifact Tutarlılığı</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Created</th>
         </tr>
       </thead>
@@ -122,6 +124,14 @@ export function NewsItemsTable({ items, selectedId, onSelect }: Props) {
               </td>
               <td style={{ padding: "0.5rem 0.75rem" }}>
                 <NewsItemPublicationLineageSummary
+                  usageCount={item.usage_count}
+                  hasPublishedUsedNewsLink={item.has_published_used_news_link}
+                />
+              </td>
+              <td style={{ padding: "0.5rem 0.75rem" }}>
+                <NewsItemArtifactConsistencySummary
+                  sourceId={item.source_id}
+                  sourceScanId={item.source_scan_id}
                   usageCount={item.usage_count}
                   hasPublishedUsedNewsLink={item.has_published_used_news_link}
                 />

@@ -1,15 +1,17 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 99 — Source Scan Artifact Consistency Summary Frontend Foundation ✓ TAMAMLANDI
+Phase 101 — News Item Artifact Consistency Summary Frontend Foundation ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Pure frontend türetimi: SourceScanArtifactConsistencyBadge + SourceScanArtifactConsistencySummary. 10 yeni test, 753 toplam.
+Pure frontend türetimi: NewsItemArtifactConsistencyBadge + NewsItemArtifactConsistencySummary. 10 yeni test, 773 toplam.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 101: news item artifact consistency summary: pure frontend, NewsItemArtifactConsistencyBadge, NewsItemArtifactConsistencySummary, Artifact Tutarlılığı sütunu, 10 yeni test, 773 toplam (2026-04-02)
+- Phase 100: job artifact consistency summary: pure frontend, JobArtifactConsistencyBadge, JobArtifactConsistencySummary, Artifact Tutarlılığı sütunu, 10 yeni test, 763 toplam (2026-04-02)
 - Phase 99: source scan artifact consistency summary: pure frontend, SourceScanArtifactConsistencyBadge, SourceScanArtifactConsistencySummary, Artifact Tutarlılığı sütunu, 10 yeni test, 753 toplam (2026-04-02)
 - Phase 98: source artifact consistency summary: pure frontend, SourceArtifactConsistencyBadge, SourceArtifactConsistencySummary, Artifact Tutarlılığı sütunu, 10 yeni test, 743 toplam (2026-04-02)
 - Phase 97: style blueprint artifact consistency summary: pure frontend, StyleBlueprintArtifactConsistencyBadge, StyleBlueprintArtifactConsistencySummary, Artifact Tutarlılığı sütunu, 10 yeni test, 733 toplam (2026-04-02)

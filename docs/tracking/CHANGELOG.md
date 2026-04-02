@@ -2,6 +2,19 @@
 
 ---
 
+## [2026-04-02] Phase 101 — News Item Artifact Consistency Summary Frontend Foundation
+
+**Ne:** News Items listesine artifact tutarlılık özeti eklendi. Pure frontend türetimi.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/news-items/NewsItemArtifactConsistencyBadge.tsx` (yeni)
+- `frontend/src/components/news-items/NewsItemArtifactConsistencySummary.tsx` (yeni, computeNewsItemArtifactConsistency)
+- `frontend/src/components/news-items/NewsItemsTable.tsx` (Artifact Tutarlılığı sütunu eklendi)
+- `frontend/src/tests/news-item-artifact-consistency-summary.smoke.test.tsx` (yeni, 10 test)
+- `docs/testing/test-report-phase-101-news-item-artifact-consistency-summary-frontend.md` (yeni)
+**Test:** 10 yeni smoke test, 773 toplam, build temiz.
+
+---
+
 ## [2026-04-02] Phase 99 — Source Scan Artifact Consistency Summary Frontend Foundation
 
 **Ne:** Source Scans listesine artifact tutarlılık özeti eklendi. Pure frontend türetimi.
