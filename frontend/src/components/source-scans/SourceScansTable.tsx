@@ -6,6 +6,7 @@ import { SourceScanPublicationYieldSummary } from "./SourceScanPublicationYieldS
 import { SourceScanArtifactConsistencySummary } from "./SourceScanArtifactConsistencySummary";
 import { SourceScanInputQualitySummary } from "./SourceScanInputQualitySummary";
 import { SourceScanTargetOutputConsistencySummary } from "./SourceScanTargetOutputConsistencySummary";
+import { SourceScanPublicationOutcomeSummary } from "./SourceScanPublicationOutcomeSummary";
 
 interface SourceScansTableProps {
   scans: SourceScanResponse[];
@@ -34,6 +35,7 @@ export function SourceScansTable({ scans, selectedId, onSelect }: SourceScansTab
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Artifact Tutarlılığı</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Girdi Kalitesi</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Target/Output Tutarlılığı</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Yayın Sonucu</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Created</th>
         </tr>
       </thead>
@@ -114,6 +116,16 @@ export function SourceScansTable({ scans, selectedId, onSelect }: SourceScansTab
                   resultCount={scan.result_count}
                   linkedNewsCountFromScan={scan.linked_news_count_from_scan}
                   usedNewsCountFromScan={scan.used_news_count_from_scan}
+                />
+              </td>
+              <td style={{ padding: "0.5rem 0.75rem" }}>
+                <SourceScanPublicationOutcomeSummary
+                  status={scan.status}
+                  resultCount={scan.result_count}
+                  linkedNewsCountFromScan={scan.linked_news_count_from_scan}
+                  reviewedNewsCountFromScan={scan.reviewed_news_count_from_scan}
+                  usedNewsCountFromScan={scan.used_news_count_from_scan}
+                  errorSummary={scan.error_summary}
                 />
               </td>
               <td style={{ padding: "0.5rem 0.75rem", color: "#94a3b8", fontSize: "0.8rem" }}>

@@ -2,6 +2,19 @@
 
 ---
 
+## [2026-04-02] Phase 113 — Source Scan Publication Outcome Summary Frontend Foundation
+
+**Ne:** Source Scans listesine publication outcome özeti eklendi. Pure frontend türetimi, 6 seviye.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/source-scans/SourceScanPublicationOutcomeBadge.tsx` (yeni)
+- `frontend/src/components/source-scans/SourceScanPublicationOutcomeSummary.tsx` (yeni, computeSourceScanPublicationOutcome)
+- `frontend/src/components/source-scans/SourceScansTable.tsx` (Yayın Sonucu sütunu eklendi)
+- `frontend/src/tests/source-scan-publication-outcome-summary.smoke.test.tsx` (yeni, 10 test)
+- `docs/testing/test-report-phase-113-source-scan-publication-outcome-summary-frontend.md` (yeni)
+**Test:** 10 yeni smoke test, 893 toplam, build temiz.
+
+---
+
 ## [2026-04-02] Phase 112 — Job Target-Output Consistency Summary Frontend Foundation
 
 **Ne:** Jobs listesine target-output consistency özeti eklendi. Pure frontend türetimi.
