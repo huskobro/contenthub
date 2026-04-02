@@ -5,6 +5,7 @@ import { NewsBulletinReadinessSummary } from "./NewsBulletinReadinessSummary";
 import { NewsBulletinEnforcementSummary } from "./NewsBulletinEnforcementSummary";
 import { NewsBulletinSourceCoverageSummary } from "./NewsBulletinSourceCoverageSummary";
 import { NewsBulletinPublicationSignalSummary } from "./NewsBulletinPublicationSignalSummary";
+import { NewsBulletinSelectedNewsQualitySummary } from "./NewsBulletinSelectedNewsQualitySummary";
 
 interface Props {
   bulletins: NewsBulletinResponse[];
@@ -33,6 +34,7 @@ export function NewsBulletinsTable({ bulletins, selectedId, onSelect }: Props) {
           <th style={{ textAlign: "left", padding: "6px 8px" }}>Enforcement</th>
           <th style={{ textAlign: "left", padding: "6px 8px" }}>Kaynak Kapsamı</th>
           <th style={{ textAlign: "left", padding: "6px 8px" }}>Yayın Sinyali</th>
+          <th style={{ textAlign: "left", padding: "6px 8px" }}>İçerik Kalitesi</th>
           <th style={{ textAlign: "left", padding: "6px 8px" }}>Created</th>
         </tr>
       </thead>
@@ -85,6 +87,14 @@ export function NewsBulletinsTable({ bulletins, selectedId, onSelect }: Props) {
                 hasScript={b.has_script}
                 hasMetadata={b.has_metadata}
                 selectedNewsWarningCount={b.selected_news_warning_count}
+              />
+            </td>
+            <td style={{ padding: "6px 8px" }}>
+              <NewsBulletinSelectedNewsQualitySummary
+                selectedNewsCount={b.selected_news_count}
+                selectedNewsQualityCompleteCount={b.selected_news_quality_complete_count}
+                selectedNewsQualityPartialCount={b.selected_news_quality_partial_count}
+                selectedNewsQualityWeakCount={b.selected_news_quality_weak_count}
               />
             </td>
             <td style={{ padding: "6px 8px" }}>

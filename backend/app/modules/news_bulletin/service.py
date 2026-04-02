@@ -77,6 +77,9 @@ async def list_news_bulletins_with_artifacts(
         warning_count = 0
         selected_news_source_count = 0
         has_selected_news_missing_source = False
+        quality_complete_count = 0
+        quality_partial_count = 0
+        quality_weak_count = 0
         if news_item_ids:
             warn_row = await db.execute(
                 select(sqlfunc.count(sqlfunc.distinct(UsedNewsRegistry.news_item_id)))
@@ -84,15 +87,29 @@ async def list_news_bulletins_with_artifacts(
             )
             warning_count = warn_row.scalar() or 0
 
-            # Count distinct non-null source_ids among selected news items
+            # Batch fetch title, url, summary, source_id for quality + source coverage
             news_items_row = await db.execute(
-                select(NewsItem.source_id)
+                select(NewsItem.source_id, NewsItem.title, NewsItem.url, NewsItem.summary)
                 .where(NewsItem.id.in_(news_item_ids))
             )
-            source_ids = [row[0] for row in news_items_row.fetchall()]
+            news_rows = news_items_row.fetchall()
+            source_ids = [row[0] for row in news_rows]
             distinct_sources = set(s for s in source_ids if s)
             selected_news_source_count = len(distinct_sources)
             has_selected_news_missing_source = any(s is None for s in source_ids)
+
+            # Quality classification: weak = no title/url, partial = title+url but no summary, complete = title+url+summary
+            for row in news_rows:
+                _source_id, title, url, summary = row
+                has_title = bool(title and title.strip())
+                has_url = bool(url and url.strip())
+                has_summary = bool(summary and summary.strip())
+                if not has_title or not has_url:
+                    quality_weak_count += 1
+                elif not has_summary:
+                    quality_partial_count += 1
+                else:
+                    quality_complete_count += 1
 
         result.append(
             NewsBulletinResponse(
@@ -117,6 +134,9 @@ async def list_news_bulletins_with_artifacts(
                 selected_news_warning_count=warning_count,
                 selected_news_source_count=selected_news_source_count,
                 has_selected_news_missing_source=has_selected_news_missing_source,
+                selected_news_quality_complete_count=quality_complete_count,
+                selected_news_quality_partial_count=quality_partial_count,
+                selected_news_quality_weak_count=quality_weak_count,
             )
         )
     return result

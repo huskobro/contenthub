@@ -22,6 +22,9 @@ export interface NewsBulletinResponse {
   selected_news_warning_count?: number;
   selected_news_source_count?: number;
   has_selected_news_missing_source?: boolean;
+  selected_news_quality_complete_count?: number;
+  selected_news_quality_partial_count?: number;
+  selected_news_quality_weak_count?: number;
 }
 
 export interface NewsBulletinCreatePayload {

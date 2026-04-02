@@ -81,6 +81,9 @@ class NewsBulletinResponse(BaseModel):
     selected_news_warning_count: int = 0
     selected_news_source_count: int = 0
     has_selected_news_missing_source: bool = False
+    selected_news_quality_complete_count: int = 0
+    selected_news_quality_partial_count: int = 0
+    selected_news_quality_weak_count: int = 0
 
     model_config = {"from_attributes": True}
 

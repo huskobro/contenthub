@@ -1,15 +1,17 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 90 — News Item Used News Linkage Summary Frontend Foundation ✓ TAMAMLANDI
+Phase 92 — News Bulletin Selected-News Quality Summary Frontend Foundation ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Küçük backend genişletme + frontend türetimi: NewsItemUsedNewsLinkageBadge + NewsItemUsedNewsLinkageSummary. 10 yeni test, 663 toplam.
+Backend genişletme (quality count fields) + frontend türetimi: NewsBulletinSelectedNewsQualityBadge + NewsBulletinSelectedNewsQualitySummary. 10 yeni test, 683 toplam.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 92: news bulletin selected-news quality summary: backend 3 quality count fields (complete/partial/weak), NewsBulletinSelectedNewsQualityBadge, NewsBulletinSelectedNewsQualitySummary, İçerik Kalitesi sütunu, 10 yeni test, 683 toplam (2026-04-02)
+- Phase 91: news item publication lineage summary: pure frontend, NewsItemPublicationLineageBadge, NewsItemPublicationLineageSummary, Yayın Zinciri sütunu, 10 yeni test, 673 toplam (2026-04-02)
 - Phase 90: news item used-news linkage summary: backend has_published_used_news_link batch query, NewsItemUsedNewsLinkageBadge, NewsItemUsedNewsLinkageSummary, Used News Bağı sütunu, 10 yeni test, 663 toplam (2026-04-02)
 - Phase 89: used news target resolution summary: backend has_target_resolved batch lookup, UsedNewsTargetResolutionBadge, UsedNewsTargetResolutionSummary, Hedef Çözümü sütunu, 10 yeni test, 653 toplam (2026-04-02)
 - Phase 88: job publication outcome summary: pure frontend, JobPublicationOutcomeBadge, JobPublicationOutcomeSummary, Yayın Sonucu sütunu, 10 yeni test, 643 toplam (2026-04-02)

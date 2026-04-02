@@ -2,6 +2,35 @@
 
 ---
 
+## [2026-04-02] Phase 92 — News Bulletin Selected-News Quality Summary Frontend Foundation
+
+**Ne:** News Bulletins listesine seçilmiş haber kalite özeti eklendi. Backend 3 yeni aggregate alan + frontend türetimi.
+**Eklenen/değiştirilen dosyalar:**
+- `backend/app/modules/news_bulletin/schemas.py` (selected_news_quality_complete/partial/weak_count eklendi)
+- `backend/app/modules/news_bulletin/service.py` (batch title/url/summary fetch + quality classification)
+- `frontend/src/api/newsBulletinApi.ts` (3 quality count alanları eklendi)
+- `frontend/src/components/news-bulletin/NewsBulletinSelectedNewsQualityBadge.tsx` (yeni)
+- `frontend/src/components/news-bulletin/NewsBulletinSelectedNewsQualitySummary.tsx` (yeni)
+- `frontend/src/components/news-bulletin/NewsBulletinsTable.tsx` (İçerik Kalitesi sütunu eklendi)
+- `frontend/src/tests/news-bulletin-selected-news-quality-summary.smoke.test.tsx` (yeni, 10 test)
+- `docs/testing/test-report-phase-92-news-bulletin-selected-news-quality-summary-frontend.md` (yeni)
+**Test:** 10 yeni smoke test, 683 frontend toplam, 11 backend pass, build temiz.
+
+---
+
+## [2026-04-02] Phase 91 — News Item Publication Lineage Summary Frontend Foundation
+
+**Ne:** News Items listesine yayın zinciri özeti eklendi. Pure frontend türetimi.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/news-items/NewsItemPublicationLineageBadge.tsx` (yeni)
+- `frontend/src/components/news-items/NewsItemPublicationLineageSummary.tsx` (yeni)
+- `frontend/src/components/news-items/NewsItemsTable.tsx` (Yayın Zinciri sütunu eklendi)
+- `frontend/src/tests/news-item-publication-lineage-summary.smoke.test.tsx` (yeni, 10 test)
+- `docs/testing/test-report-phase-91-news-item-publication-lineage-summary-frontend.md` (yeni)
+**Test:** 10 yeni smoke test, 673 toplam, build temiz.
+
+---
+
 ## [2026-04-02] Phase 90 — News Item Used News Linkage Summary Frontend Foundation
 
 **Ne:** News Items listesine used-news bağı özeti eklendi. Küçük backend genişletme (batch DISTINCT sorgusu) + frontend türetimi.
