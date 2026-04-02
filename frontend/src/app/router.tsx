@@ -21,6 +21,7 @@ import { NewsBulletinRegistryPage } from "../pages/admin/NewsBulletinRegistryPag
 import { NewsBulletinCreatePage } from "../pages/admin/NewsBulletinCreatePage";
 import { UsedNewsRegistryPage } from "../pages/admin/UsedNewsRegistryPage";
 import { NewsItemsRegistryPage } from "../pages/admin/NewsItemsRegistryPage";
+import { NewsItemCreatePage } from "../pages/admin/NewsItemCreatePage";
 import { TemplateStyleLinksRegistryPage } from "../pages/admin/TemplateStyleLinksRegistryPage";
 import { TemplateStyleLinkCreatePage } from "../pages/admin/TemplateStyleLinkCreatePage";
 
@@ -51,6 +52,7 @@ export const router = createBrowserRouter([
       { path: "news-bulletins/new", element: <NewsBulletinCreatePage /> },
       { path: "news-bulletins", element: <NewsBulletinRegistryPage /> },
       { path: "used-news", element: <UsedNewsRegistryPage /> },
+      { path: "news-items/new", element: <NewsItemCreatePage /> },
       { path: "news-items", element: <NewsItemsRegistryPage /> },
       { path: "template-style-links/new", element: <TemplateStyleLinkCreatePage /> },
       { path: "template-style-links", element: <TemplateStyleLinksRegistryPage /> },

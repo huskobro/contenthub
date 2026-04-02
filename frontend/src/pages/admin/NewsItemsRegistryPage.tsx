@@ -1,17 +1,36 @@
 import { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useNewsItemsList } from "../../hooks/useNewsItemsList";
 import { NewsItemsTable } from "../../components/news-items/NewsItemsTable";
 import { NewsItemDetailPanel } from "../../components/news-items/NewsItemDetailPanel";
 
 export function NewsItemsRegistryPage() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [selectedId, setSelectedId] = useState<string | null>(
+    (location.state as { selectedId?: string } | null)?.selectedId ?? null
+  );
   const { data: items, isLoading, isError } = useNewsItemsList();
-  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   return (
     <div style={{ display: "flex", gap: "1.5rem" }}>
       <div style={{ flex: 1 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
-          <h2>News Items</h2>
+          <h2 style={{ margin: 0 }}>News Items</h2>
+          <button
+            onClick={() => navigate("/admin/news-items/new")}
+            style={{
+              padding: "0.375rem 1rem",
+              fontSize: "0.875rem",
+              background: "#3b82f6",
+              color: "#fff",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer",
+            }}
+          >
+            Yeni
+          </button>
         </div>
 
         {isLoading && <p>Yükleniyor...</p>}
