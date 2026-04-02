@@ -2,6 +2,19 @@
 
 ---
 
+## [2026-04-02] Phase 78 — News Item Publication Signal Summary Frontend Foundation
+
+**Ne:** News Items listesine yayın sinyal özeti eklendi. Saf frontend türetimi — backend değişikliği yok.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/news-items/NewsItemPublicationSignalBadge.tsx` (yeni)
+- `frontend/src/components/news-items/NewsItemPublicationSignalSummary.tsx` (yeni)
+- `frontend/src/components/news-items/NewsItemsTable.tsx` (Yayın Sinyali sütunu eklendi)
+- `frontend/src/tests/news-item-publication-signal-summary.smoke.test.tsx` (yeni, 10 test)
+- `docs/testing/test-report-phase-78-news-item-publication-signal-summary-frontend.md` (yeni)
+**Test:** 10 yeni smoke test, 543 toplam, build temiz.
+
+---
+
 ## [2026-04-02] Phase 77 — Source Scan Result Richness Summary Frontend Foundation
 
 **Ne:** Source Scans listesine çıktı zenginlik özeti eklendi. Saf frontend türetimi — backend değişikliği yok.

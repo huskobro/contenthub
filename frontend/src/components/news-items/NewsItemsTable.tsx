@@ -4,6 +4,7 @@ import { NewsItemReadinessSummary } from "./NewsItemReadinessSummary";
 import { NewsItemSourceSummary } from "./NewsItemSourceSummary";
 import { NewsItemScanLineageSummary } from "./NewsItemScanLineageSummary";
 import { NewsItemContentCompletenessSummary } from "./NewsItemContentCompletenessSummary";
+import { NewsItemPublicationSignalSummary } from "./NewsItemPublicationSignalSummary";
 
 interface Props {
   items: NewsItemResponse[];
@@ -32,6 +33,7 @@ export function NewsItemsTable({ items, selectedId, onSelect }: Props) {
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Hazırlık</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Scan Kaynağı</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>İçerik</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Yayın Sinyali</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Created</th>
         </tr>
       </thead>
@@ -97,6 +99,15 @@ export function NewsItemsTable({ items, selectedId, onSelect }: Props) {
                   language={item.language}
                   category={item.category}
                   publishedAt={item.published_at ? String(item.published_at) : null}
+                />
+              </td>
+              <td style={{ padding: "0.5rem 0.75rem" }}>
+                <NewsItemPublicationSignalSummary
+                  status={item.status}
+                  usedNewsCount={item.usage_count}
+                  title={item.title}
+                  summary={item.summary}
+                  url={item.url}
                 />
               </td>
               <td style={{ padding: "0.5rem 0.75rem", color: "#94a3b8", fontSize: "0.8rem" }}>
