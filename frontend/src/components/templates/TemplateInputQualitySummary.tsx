@@ -1,3 +1,5 @@
+import { TemplateInputQualityBadge } from "./TemplateInputQualityBadge";
+
 export type TemplateInputQualityLevel = "Zayıf giriş" | "Kısmi giriş" | "Güçlü giriş";
 
 function getRelevantJson(
@@ -63,5 +65,3 @@ export function TemplateInputQualitySummary({
   const level = computeTemplateInputQuality(templateType, styleProfileJson, contentRulesJson, publishProfileJson);
   return <TemplateInputQualityBadge level={level} />;
 }
-
-import { TemplateInputQualityBadge } from "./TemplateInputQualityBadge";

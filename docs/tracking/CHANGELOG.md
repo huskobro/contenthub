@@ -2,6 +2,21 @@
 
 ---
 
+## [2026-04-03] Phase 138 — Templates + Style Blueprints Registry Visibility Completion Pack
+
+**Ne:** Templates ve Style Blueprints tablolarının görünürlük ve okunabilirlik iyileştirmesi. Konservatif yaklaşım.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/templates/TemplateInputQualitySummary.tsx` (import sırası düzeltmesi)
+- `frontend/src/components/style-blueprints/StyleBlueprintInputQualitySummary.tsx` (import sırası düzeltmesi)
+- `frontend/src/components/templates/TemplatesTable.tsx` (7 başlık Türkçeleştirildi, 14 sütun mantıksal gruplara ayrıldı)
+- `frontend/src/components/style-blueprints/StyleBlueprintsTable.tsx` (5 başlık Türkçeleştirildi, 12 sütun mantıksal gruplara ayrıldı)
+- `frontend/src/tests/template-style-link-summary.smoke.test.tsx` (header testi güncellendi)
+- `docs/testing/test-report-phase-138-template-styleblueprint-registry-visibility-completion-pack.md` (yeni)
+**Korunan:** Badge stilleri, secondary textler, tüm sütunlar (Templates: 14, StyleBlueprints: 12). Bilgi kaybı sıfır.
+**Test:** 1093 toplam, tsc temiz.
+
+---
+
 ## [2026-04-03] Phase 137 — News Registry Visibility Completion Pack
 
 **Ne:** News Items + Used News tablolarının görünürlük ve okunabilirlik iyileştirmesi. Konservatif yaklaşım.

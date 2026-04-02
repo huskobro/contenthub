@@ -82,7 +82,7 @@ const mockTemplate = (overrides: object = {}) => ({
 describe("TemplatesTable style link summary", () => {
   it("H) renders Style Links column header", () => {
     render(<TemplatesTable templates={[mockTemplate()]} selectedId={null} onSelect={() => {}} />);
-    expect(screen.getByText("Style Links")).toBeTruthy();
+    expect(screen.getByText("Stil Bağları")).toBeTruthy();
   });
 
   it("I) shows Bağ yok for template with no links", () => {

@@ -1,3 +1,5 @@
+import { StyleBlueprintInputQualityBadge } from "./StyleBlueprintInputQualityBadge";
+
 export type StyleBlueprintInputQualityLevel = "Zayıf giriş" | "Kısmi giriş" | "Güçlü giriş";
 
 function isNonEmpty(v: string | null | undefined): boolean {
@@ -55,5 +57,3 @@ export function StyleBlueprintInputQualitySummary({
   );
   return <StyleBlueprintInputQualityBadge level={level} />;
 }
-
-import { StyleBlueprintInputQualityBadge } from "./StyleBlueprintInputQualityBadge";
