@@ -1,4 +1,5 @@
 import type { SourceResponse } from "../../api/sourcesApi";
+import { SourceScanSummary } from "./SourceScanSummary";
 
 interface SourcesTableProps {
   sources: SourceResponse[];
@@ -17,6 +18,7 @@ export function SourcesTable({ sources, selectedId, onSelect }: SourcesTableProp
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Scan Mode</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Status</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Language</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Scans</th>
         </tr>
       </thead>
       <tbody>
@@ -49,6 +51,13 @@ export function SourcesTable({ sources, selectedId, onSelect }: SourcesTableProp
               </span>
             </td>
             <td style={{ padding: "0.5rem 0.75rem", color: "#64748b" }}>{src.language ?? "—"}</td>
+            <td style={{ padding: "0.5rem 0.75rem" }}>
+              <SourceScanSummary
+                scanCount={src.scan_count}
+                lastScanStatus={src.last_scan_status}
+                lastScanFinishedAt={src.last_scan_finished_at}
+              />
+            </td>
           </tr>
         ))}
       </tbody>

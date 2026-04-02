@@ -1,10 +1,10 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 53 — News Bulletin Selected News Summary Frontend Foundation ✓ TAMAMLANDI
+Phase 54 — Source Scan Summary Frontend Foundation ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-selected_news_count backend alanı, NewsBulletinSelectedNewsCountBadge, NewsBulletinSelectedNewsSummary, registry tablosuna Haberler sütunu, 10 yeni frontend test, 293 toplam frontend test.
+scan_count/last_scan_status/last_scan_finished_at backend alanları, SourceScanStatusBadge, SourceScanSummary, SourcesTable Scans sütunu, 10 yeni frontend test, 303 toplam frontend test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
@@ -64,6 +64,7 @@ selected_news_count backend alanı, NewsBulletinSelectedNewsCountBadge, NewsBull
 - Phase 51 news bulletin used news warning frontend: UsedNewsWarningBadge, UsedNewsWarningDetails, NewsBulletinSelectedItemsPanel uyarı entegrasyonu, frontend tipler güncellendi, 10 yeni frontend test, 273 toplam frontend test (2026-04-02)
 - Phase 52 news bulletin artifact summary frontend: has_script/has_metadata backend, NewsBulletinArtifactStatusBadge, NewsBulletinArtifactSummary, registry Artifacts sütunu, 10 yeni frontend test, 283 toplam frontend test, 195 backend test (2026-04-02)
 - Phase 53 news bulletin selected news summary frontend: selected_news_count backend, NewsBulletinSelectedNewsCountBadge, NewsBulletinSelectedNewsSummary, registry Haberler sütunu, 10 yeni frontend test, 293 toplam frontend test, 195 backend test (2026-04-02)
+- Phase 54 source scan summary frontend: scan_count/last_scan_status/last_scan_finished_at backend, SourceScanStatusBadge, SourceScanSummary, SourcesTable Scans sütunu, 10 yeni frontend test, 303 toplam frontend test, 195 backend test (2026-04-02)
 
 ## Mevcut Riskler
 - Henüz auth / rol zorlama yok (kasıtlı)

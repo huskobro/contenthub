@@ -15,6 +15,9 @@ export interface SourceResponse {
   notes: string | null;
   created_at: string;
   updated_at: string;
+  scan_count?: number;
+  last_scan_status?: string | null;
+  last_scan_finished_at?: string | null;
 }
 
 export async function fetchSources(params?: {

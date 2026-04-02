@@ -2,8 +2,8 @@ from typing import List, Optional
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models import NewsSource
-from .schemas import SourceCreate, SourceUpdate
+from app.db.models import NewsSource, SourceScan
+from .schemas import SourceCreate, SourceUpdate, SourceResponse
 
 
 async def list_sources(
@@ -21,6 +21,52 @@ async def list_sources(
         q = q.where(NewsSource.scan_mode == scan_mode)
     result = await db.execute(q)
     return list(result.scalars().all())
+
+
+async def list_sources_with_scan_summary(
+    db: AsyncSession,
+    source_type: Optional[str] = None,
+    status: Optional[str] = None,
+    scan_mode: Optional[str] = None,
+) -> List[SourceResponse]:
+    """Return source list enriched with scan_count, last_scan_status, last_scan_finished_at."""
+    from sqlalchemy import func as sqlfunc
+    sources = await list_sources(db, source_type=source_type, status=status, scan_mode=scan_mode)
+    result = []
+    for s in sources:
+        count_row = await db.execute(
+            select(sqlfunc.count()).select_from(SourceScan)
+            .where(SourceScan.source_id == s.id)
+        )
+        last_scan_row = await db.execute(
+            select(SourceScan)
+            .where(SourceScan.source_id == s.id)
+            .order_by(SourceScan.created_at.desc())
+            .limit(1)
+        )
+        last_scan = last_scan_row.scalar_one_or_none()
+        result.append(
+            SourceResponse(
+                id=s.id,
+                name=s.name,
+                source_type=s.source_type,
+                status=s.status,
+                base_url=s.base_url,
+                feed_url=s.feed_url,
+                api_endpoint=s.api_endpoint,
+                trust_level=s.trust_level,
+                scan_mode=s.scan_mode,
+                language=s.language,
+                category=s.category,
+                notes=s.notes,
+                created_at=s.created_at,
+                updated_at=s.updated_at,
+                scan_count=count_row.scalar() or 0,
+                last_scan_status=last_scan.status if last_scan else None,
+                last_scan_finished_at=last_scan.finished_at if last_scan else None,
+            )
+        )
+    return result
 
 
 async def get_source(db: AsyncSession, source_id: str) -> Optional[NewsSource]:

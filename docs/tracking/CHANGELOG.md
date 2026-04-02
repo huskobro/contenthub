@@ -2,6 +2,22 @@
 
 ---
 
+## [2026-04-02] Phase 54 — Source Scan Summary Frontend Foundation
+
+**Ne:** Sources registry listesinde her kaynak için scan sayısı ve son scan durumu eklendi.
+**Eklenen/değiştirilen dosyalar:**
+- `backend/app/sources/schemas.py` — `scan_count`, `last_scan_status`, `last_scan_finished_at` eklendi
+- `backend/app/sources/service.py` — `list_sources_with_scan_summary()` eklendi
+- `backend/app/sources/router.py` — list endpoint güncellendi
+- `frontend/src/api/sourcesApi.ts` — 3 opsiyonel alan eklendi
+- `frontend/src/components/sources/SourceScanStatusBadge.tsx` (yeni)
+- `frontend/src/components/sources/SourceScanSummary.tsx` (yeni)
+- `frontend/src/components/sources/SourcesTable.tsx` — Scans sütunu eklendi
+- `frontend/src/tests/source-scan-summary.smoke.test.tsx` (yeni, 10 test)
+**Sonuç:** 195 backend test, 303 frontend test — tümü geçti. Build başarılı.
+
+---
+
 ## [2026-04-02] Phase 53 — News Bulletin Selected News Summary Frontend Foundation
 
 **Ne:** Registry listesinde her bulletin için seçili haber sayısı sade badge olarak gösterildi.

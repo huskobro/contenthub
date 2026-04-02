@@ -78,5 +78,8 @@ class SourceResponse(BaseModel):
     notes: Optional[str]
     created_at: datetime
     updated_at: datetime
+    scan_count: int = 0
+    last_scan_status: Optional[str] = None
+    last_scan_finished_at: Optional[datetime] = None
 
     model_config = {"from_attributes": True}
