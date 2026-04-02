@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 118 — Used News Input Specificity Summary Frontend Foundation ✓ TAMAMLANDI
+Phase 119 — Source Scan Input Specificity Summary Frontend Foundation ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Pure frontend türetimi: UsedNewsInputSpecificityBadge + UsedNewsInputSpecificitySummary. 10 yeni test, 943 toplam.
+Pure frontend türetimi: SourceScanInputSpecificityBadge + SourceScanInputSpecificitySummary. 10 yeni test, 953 toplam.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 119: source scan input specificity summary: pure frontend, SourceScanInputSpecificityBadge, SourceScanInputSpecificitySummary, Girdi Özgüllüğü sütunu, 10 yeni test, 953 toplam (2026-04-02)
 - Phase 118: used news input specificity summary: pure frontend, UsedNewsInputSpecificityBadge, UsedNewsInputSpecificitySummary, Girdi Özgüllüğü sütunu, 10 yeni test, 943 toplam (2026-04-02)
 - Phase 117: news bulletin input specificity summary: pure frontend, NewsBulletinInputSpecificityBadge, NewsBulletinInputSpecificitySummary, Girdi Özgüllüğü sütunu, 10 yeni test, 933 toplam (2026-04-02)
 - Phase 116: news item input specificity summary: pure frontend, NewsItemInputSpecificityBadge, NewsItemInputSpecificitySummary, Girdi Özgüllüğü sütunu, 10 yeni test, 923 toplam (2026-04-02)
