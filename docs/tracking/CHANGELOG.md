@@ -2,6 +2,19 @@
 
 ---
 
+## [2026-04-02] Phase 123 — Style Blueprint Input Specificity Summary Frontend Foundation
+
+**Ne:** Style Blueprints listesine input specificity özeti eklendi. Pure frontend türetimi, 3 seviye.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/style-blueprints/StyleBlueprintInputSpecificityBadge.tsx` (yeni)
+- `frontend/src/components/style-blueprints/StyleBlueprintInputSpecificitySummary.tsx` (yeni, computeStyleBlueprintInputSpecificity)
+- `frontend/src/components/style-blueprints/StyleBlueprintsTable.tsx` (Girdi Özgüllüğü sütunu eklendi)
+- `frontend/src/tests/style-blueprint-input-specificity-summary.smoke.test.tsx` (yeni, 10 test)
+- `docs/testing/test-report-phase-123-style-blueprint-input-specificity-summary-frontend.md` (yeni)
+**Test:** 10 yeni smoke test, 993 toplam, build temiz.
+
+---
+
 ## [2026-04-02] Phase 122 — Template Input Specificity Summary Frontend Foundation
 
 **Ne:** Templates listesine input specificity özeti eklendi. Pure frontend türetimi, 3 seviye.
