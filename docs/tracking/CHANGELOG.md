@@ -2,6 +2,19 @@
 
 ---
 
+## [2026-04-02] Phase 110 — Used News Input Quality Summary Frontend Foundation
+
+**Ne:** Used News listesine source-input quality özeti eklendi. Pure frontend türetimi.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/used-news/UsedNewsInputQualityBadge.tsx` (yeni)
+- `frontend/src/components/used-news/UsedNewsInputQualitySummary.tsx` (yeni, computeUsedNewsInputQuality)
+- `frontend/src/components/used-news/UsedNewsTable.tsx` (Girdi Kalitesi sütunu eklendi)
+- `frontend/src/tests/used-news-input-quality-summary.smoke.test.tsx` (yeni, 10 test)
+- `docs/testing/test-report-phase-110-used-news-input-quality-summary-frontend.md` (yeni)
+**Test:** 10 yeni smoke test, 863 toplam, build temiz.
+
+---
+
 ## [2026-04-02] Phase 109 — News Bulletin Input Quality Summary Frontend Foundation
 
 **Ne:** News Bulletin listesine source-input quality özeti eklendi. Pure frontend türetimi.

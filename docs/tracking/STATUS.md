@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 109 — News Bulletin Input Quality Summary Frontend Foundation ✓ TAMAMLANDI
+Phase 110 — Used News Input Quality Summary Frontend Foundation ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Pure frontend türetimi: NewsBulletinInputQualityBadge + NewsBulletinInputQualitySummary. 10 yeni test, 853 toplam.
+Pure frontend türetimi: UsedNewsInputQualityBadge + UsedNewsInputQualitySummary. 10 yeni test, 863 toplam.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 110: used news input quality summary: pure frontend, UsedNewsInputQualityBadge, UsedNewsInputQualitySummary, Girdi Kalitesi sütunu, 10 yeni test, 863 toplam (2026-04-02)
 - Phase 109: news bulletin input quality summary: pure frontend, NewsBulletinInputQualityBadge, NewsBulletinInputQualitySummary, Girdi Kalitesi sütunu, 10 yeni test, 853 toplam (2026-04-02)
 - Phase 108: news item input quality summary: pure frontend, NewsItemInputQualityBadge, NewsItemInputQualitySummary, Girdi Kalitesi sütunu, 10 yeni test, 843 toplam (2026-04-02)
 - Phase 107: job input quality summary: pure frontend, JobInputQualityBadge, JobInputQualitySummary, Girdi Kalitesi sütunu, 10 yeni test, 833 toplam (2026-04-02)

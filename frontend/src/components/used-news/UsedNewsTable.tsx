@@ -4,6 +4,7 @@ import { UsedNewsSourceContextSummary } from "./UsedNewsSourceContextSummary";
 import { UsedNewsPublicationLinkageSummary } from "./UsedNewsPublicationLinkageSummary";
 import { UsedNewsTargetResolutionSummary } from "./UsedNewsTargetResolutionSummary";
 import { UsedNewsArtifactConsistencySummary } from "./UsedNewsArtifactConsistencySummary";
+import { UsedNewsInputQualitySummary } from "./UsedNewsInputQualitySummary";
 
 interface Props {
   records: UsedNewsResponse[];
@@ -23,6 +24,7 @@ export function UsedNewsTable({ records, selectedId, onSelect }: Props) {
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Yayın Bağı</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Hedef Çözümü</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Artifact Tutarlılığı</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Girdi Kalitesi</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Target Module</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Target Entity ID</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Created</th>
@@ -77,6 +79,16 @@ export function UsedNewsTable({ records, selectedId, onSelect }: Props) {
                 hasTargetResolved={record.has_target_resolved}
                 targetModule={record.target_module}
                 targetEntityId={record.target_entity_id}
+              />
+            </td>
+            <td style={{ padding: "0.5rem 0.75rem" }}>
+              <UsedNewsInputQualitySummary
+                newsItemId={record.news_item_id}
+                usageType={record.usage_type}
+                targetModule={record.target_module}
+                targetEntityId={record.target_entity_id}
+                usageContext={record.usage_context}
+                notes={record.notes}
               />
             </td>
             <td style={{ padding: "0.5rem 0.75rem", color: "#64748b" }}>{record.target_module}</td>
