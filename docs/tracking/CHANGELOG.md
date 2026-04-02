@@ -2,6 +2,19 @@
 
 ---
 
+## [2026-04-02] Phase 81 — Standard Video Publication Signal Summary Frontend Foundation
+
+**Ne:** Standard Video listesine yayın sinyal özeti eklendi. Saf frontend türetimi — backend değişikliği yok.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/standard-video/StandardVideoPublicationSignalBadge.tsx` (yeni)
+- `frontend/src/components/standard-video/StandardVideoPublicationSignalSummary.tsx` (yeni)
+- `frontend/src/components/standard-video/StandardVideosTable.tsx` (Yayın Sinyali sütunu eklendi)
+- `frontend/src/tests/standard-video-publication-signal-summary.smoke.test.tsx` (yeni, 10 test)
+- `docs/testing/test-report-phase-81-standard-video-publication-signal-summary-frontend.md` (yeni)
+**Test:** 10 yeni smoke test, 573 toplam, build temiz.
+
+---
+
 ## [2026-04-02] Phase 80 — News Bulletin Publication Signal Summary Frontend Foundation
 
 **Ne:** News Bulletin listesine yayın sinyal özeti eklendi. Saf frontend türetimi — backend değişikliği yok.
