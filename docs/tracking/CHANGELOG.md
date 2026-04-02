@@ -2,6 +2,19 @@
 
 ---
 
+## [2026-04-02] Phase 121 — Standard Video Input Specificity Summary Frontend Foundation
+
+**Ne:** Standard Video listesine input specificity özeti eklendi. Pure frontend türetimi, 3 seviye.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/standard-video/StandardVideoInputSpecificityBadge.tsx` (yeni)
+- `frontend/src/components/standard-video/StandardVideoInputSpecificitySummary.tsx` (yeni, computeStandardVideoInputSpecificity)
+- `frontend/src/components/standard-video/StandardVideosTable.tsx` (Girdi Özgüllüğü sütunu eklendi)
+- `frontend/src/tests/standard-video-input-specificity-summary.smoke.test.tsx` (yeni, 10 test)
+- `docs/testing/test-report-phase-121-standard-video-input-specificity-summary-frontend.md` (yeni)
+**Test:** 10 yeni smoke test, 973 toplam, build temiz.
+
+---
+
 ## [2026-04-02] Phase 120 — Source Input Specificity Summary Frontend Foundation
 
 **Ne:** Sources listesine input specificity özeti eklendi. Pure frontend türetimi, 3 seviye.

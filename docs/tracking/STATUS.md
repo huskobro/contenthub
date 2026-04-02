@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 120 — Source Input Specificity Summary Frontend Foundation ✓ TAMAMLANDI
+Phase 121 — Standard Video Input Specificity Summary Frontend Foundation ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Pure frontend türetimi: SourceInputSpecificityBadge + SourceInputSpecificitySummary. 10 yeni test, 963 toplam.
+Pure frontend türetimi: StandardVideoInputSpecificityBadge + StandardVideoInputSpecificitySummary. 10 yeni test, 973 toplam.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 121: standard video input specificity summary: pure frontend, StandardVideoInputSpecificityBadge, StandardVideoInputSpecificitySummary, Girdi Özgüllüğü sütunu, 10 yeni test, 973 toplam (2026-04-02)
 - Phase 120: source input specificity summary: pure frontend, SourceInputSpecificityBadge, SourceInputSpecificitySummary, Girdi Özgüllüğü sütunu, 10 yeni test, 963 toplam (2026-04-02)
 - Phase 119: source scan input specificity summary: pure frontend, SourceScanInputSpecificityBadge, SourceScanInputSpecificitySummary, Girdi Özgüllüğü sütunu, 10 yeni test, 953 toplam (2026-04-02)
 - Phase 118: used news input specificity summary: pure frontend, UsedNewsInputSpecificityBadge, UsedNewsInputSpecificitySummary, Girdi Özgüllüğü sütunu, 10 yeni test, 943 toplam (2026-04-02)
