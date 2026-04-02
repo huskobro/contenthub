@@ -10,6 +10,7 @@ import { NewsItemPublicationLineageSummary } from "./NewsItemPublicationLineageS
 import { NewsItemArtifactConsistencySummary } from "./NewsItemArtifactConsistencySummary";
 import { NewsItemInputQualitySummary } from "./NewsItemInputQualitySummary";
 import { NewsItemInputSpecificitySummary } from "./NewsItemInputSpecificitySummary";
+import { NewsItemTargetOutputConsistencySummary } from "./NewsItemTargetOutputConsistencySummary";
 
 interface Props {
   items: NewsItemResponse[];
@@ -44,6 +45,7 @@ export function NewsItemsTable({ items, selectedId, onSelect }: Props) {
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Girdi Kalitesi</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Artifact Tutarlılığı</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Girdi Özgüllüğü</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Target/Output Tutarlılığı</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Created</th>
         </tr>
       </thead>
@@ -162,6 +164,16 @@ export function NewsItemsTable({ items, selectedId, onSelect }: Props) {
                   language={item.language}
                   category={item.category}
                   publishedAt={item.published_at ? String(item.published_at) : null}
+                />
+              </td>
+              <td style={{ padding: "0.5rem 0.75rem" }}>
+                <NewsItemTargetOutputConsistencySummary
+                  title={item.title}
+                  url={item.url}
+                  summary={item.summary}
+                  usedNewsLinkCount={item.usage_count}
+                  hasPublishedUsedNewsLink={item.has_published_used_news_link}
+                  hasScheduledUsedNewsLink={null}
                 />
               </td>
               <td style={{ padding: "0.5rem 0.75rem", color: "#94a3b8", fontSize: "0.8rem" }}>
