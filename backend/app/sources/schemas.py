@@ -81,5 +81,6 @@ class SourceResponse(BaseModel):
     scan_count: int = 0
     last_scan_status: Optional[str] = None
     last_scan_finished_at: Optional[datetime] = None
+    linked_news_count: int = 0
 
     model_config = {"from_attributes": True}

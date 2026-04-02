@@ -2,7 +2,7 @@ from typing import List, Optional
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models import NewsSource, SourceScan
+from app.db.models import NewsSource, SourceScan, NewsItem
 from .schemas import SourceCreate, SourceUpdate, SourceResponse
 
 
@@ -45,6 +45,11 @@ async def list_sources_with_scan_summary(
             .limit(1)
         )
         last_scan = last_scan_row.scalar_one_or_none()
+        news_count_row = await db.execute(
+            select(sqlfunc.count()).select_from(NewsItem)
+            .where(NewsItem.source_id == s.id)
+        )
+        linked_news_count = news_count_row.scalar() or 0
         result.append(
             SourceResponse(
                 id=s.id,
@@ -64,6 +69,7 @@ async def list_sources_with_scan_summary(
                 scan_count=count_row.scalar() or 0,
                 last_scan_status=last_scan.status if last_scan else None,
                 last_scan_finished_at=last_scan.finished_at if last_scan else None,
+                linked_news_count=linked_news_count,
             )
         )
     return result

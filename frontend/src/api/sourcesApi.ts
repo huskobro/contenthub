@@ -18,6 +18,7 @@ export interface SourceResponse {
   scan_count?: number;
   last_scan_status?: string | null;
   last_scan_finished_at?: string | null;
+  linked_news_count?: number;
 }
 
 export async function fetchSources(params?: {

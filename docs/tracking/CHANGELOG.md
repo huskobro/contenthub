@@ -2,6 +2,22 @@
 
 ---
 
+## [2026-04-02] Phase 74 — Source Linked News Summary Frontend Foundation
+
+**Ne:** Sources listesine bağlı haber sayısı görünürlüğü eklendi. Backend linked_news_count hesaplıyor, frontend badge + summary ile gösteriyor.
+**Eklenen/değiştirilen dosyalar:**
+- `backend/app/sources/schemas.py` — linked_news_count
+- `backend/app/sources/service.py` — NewsItem COUNT sorgusu
+- `frontend/src/api/sourcesApi.ts` — linked_news_count
+- `frontend/src/components/sources/SourceLinkedNewsStatusBadge.tsx` (yeni)
+- `frontend/src/components/sources/SourceLinkedNewsSummary.tsx` (yeni)
+- `frontend/src/components/sources/SourcesTable.tsx` — Haberler sütunu eklendi
+- `frontend/src/tests/source-linked-news-summary.smoke.test.tsx` (yeni, 10 test)
+- `docs/testing/test-report-phase-74-source-linked-news-summary-frontend.md` (yeni)
+**Sonuç:** 503 frontend test — tümü geçti. Build başarılı.
+
+---
+
 ## [2026-04-02] Phase 73 — Source Scan Source Context Summary Frontend Foundation
 
 **Ne:** Source Scans listesine kaynak bağlantı görünürlüğü eklendi. Backend source_name/source_status ile NewsSource çözümlemesi yapıyor, frontend badge + summary ile gösteriyor.

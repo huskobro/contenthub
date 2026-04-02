@@ -1,6 +1,7 @@
 import type { SourceResponse } from "../../api/sourcesApi";
 import { SourceScanSummary } from "./SourceScanSummary";
 import { SourceReadinessSummary } from "./SourceReadinessSummary";
+import { SourceLinkedNewsSummary } from "./SourceLinkedNewsSummary";
 
 interface SourcesTableProps {
   sources: SourceResponse[];
@@ -21,6 +22,7 @@ export function SourcesTable({ sources, selectedId, onSelect }: SourcesTableProp
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Language</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Scans</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Hazırlık</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Haberler</th>
         </tr>
       </thead>
       <tbody>
@@ -70,6 +72,9 @@ export function SourcesTable({ sources, selectedId, onSelect }: SourcesTableProp
                 scanCount={src.scan_count}
                 lastScanStatus={src.last_scan_status}
               />
+            </td>
+            <td style={{ padding: "0.5rem 0.75rem" }}>
+              <SourceLinkedNewsSummary linkedNewsCount={src.linked_news_count} />
             </td>
           </tr>
         ))}
