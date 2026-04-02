@@ -50,6 +50,16 @@ async def list_sources_with_scan_summary(
             .where(NewsItem.source_id == s.id)
         )
         linked_news_count = news_count_row.scalar() or 0
+        reviewed_row = await db.execute(
+            select(sqlfunc.count()).select_from(NewsItem)
+            .where(NewsItem.source_id == s.id, NewsItem.status == "reviewed")
+        )
+        reviewed_news_count = reviewed_row.scalar() or 0
+        used_row = await db.execute(
+            select(sqlfunc.count()).select_from(NewsItem)
+            .where(NewsItem.source_id == s.id, NewsItem.status == "used")
+        )
+        used_news_count_from_source = used_row.scalar() or 0
         result.append(
             SourceResponse(
                 id=s.id,
@@ -70,6 +80,8 @@ async def list_sources_with_scan_summary(
                 last_scan_status=last_scan.status if last_scan else None,
                 last_scan_finished_at=last_scan.finished_at if last_scan else None,
                 linked_news_count=linked_news_count,
+                reviewed_news_count=reviewed_news_count,
+                used_news_count_from_source=used_news_count_from_source,
             )
         )
     return result

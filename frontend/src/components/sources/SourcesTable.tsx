@@ -3,6 +3,7 @@ import { SourceScanSummary } from "./SourceScanSummary";
 import { SourceReadinessSummary } from "./SourceReadinessSummary";
 import { SourceLinkedNewsSummary } from "./SourceLinkedNewsSummary";
 import { SourceConfigCoverageSummary } from "./SourceConfigCoverageSummary";
+import { SourcePublicationSupplySummary } from "./SourcePublicationSupplySummary";
 
 interface SourcesTableProps {
   sources: SourceResponse[];
@@ -25,6 +26,7 @@ export function SourcesTable({ sources, selectedId, onSelect }: SourcesTableProp
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Hazırlık</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Haberler</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Konfigürasyon</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Yayın Kaynağı</th>
         </tr>
       </thead>
       <tbody>
@@ -84,6 +86,13 @@ export function SourcesTable({ sources, selectedId, onSelect }: SourcesTableProp
                 baseUrl={src.base_url}
                 feedUrl={src.feed_url}
                 apiEndpoint={src.api_endpoint}
+              />
+            </td>
+            <td style={{ padding: "0.5rem 0.75rem" }}>
+              <SourcePublicationSupplySummary
+                linkedNewsCount={src.linked_news_count}
+                reviewedNewsCount={src.reviewed_news_count}
+                usedNewsCountFromSource={src.used_news_count_from_source}
               />
             </td>
           </tr>

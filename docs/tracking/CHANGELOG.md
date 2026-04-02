@@ -2,6 +2,22 @@
 
 ---
 
+## [2026-04-02] Phase 79 — Source Publication Supply Summary Frontend Foundation
+
+**Ne:** Sources listesine yayın kaynağı özeti eklendi. Backend enrichment + frontend türetimi.
+**Eklenen/değiştirilen dosyalar:**
+- `backend/app/sources/schemas.py` (reviewed_news_count, used_news_count_from_source eklendi)
+- `backend/app/sources/service.py` (list_sources_with_scan_summary enriched)
+- `frontend/src/api/sourcesApi.ts` (yeni alanlar eklendi)
+- `frontend/src/components/sources/SourcePublicationSupplyBadge.tsx` (yeni)
+- `frontend/src/components/sources/SourcePublicationSupplySummary.tsx` (yeni)
+- `frontend/src/components/sources/SourcesTable.tsx` (Yayın Kaynağı sütunu eklendi)
+- `frontend/src/tests/source-publication-supply-summary.smoke.test.tsx` (yeni, 10 test)
+- `docs/testing/test-report-phase-79-source-publication-supply-summary-frontend.md` (yeni)
+**Test:** 10 yeni smoke test, 553 toplam, backend 15/15, build temiz.
+
+---
+
 ## [2026-04-02] Phase 78 — News Item Publication Signal Summary Frontend Foundation
 
 **Ne:** News Items listesine yayın sinyal özeti eklendi. Saf frontend türetimi — backend değişikliği yok.
