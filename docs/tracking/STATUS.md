@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 93 — Standard Video Input Quality Summary Frontend Foundation ✓ TAMAMLANDI
+Phase 94 — News Bulletin Artifact Consistency Summary Frontend Foundation ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Pure frontend türetimi: StandardVideoInputQualityBadge + StandardVideoInputQualitySummary. 10 yeni test, 693 toplam.
+Pure frontend türetimi: NewsBulletinArtifactConsistencyBadge + NewsBulletinArtifactConsistencySummary. 10 yeni test, 703 toplam.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 94: news bulletin artifact consistency summary: pure frontend, NewsBulletinArtifactConsistencyBadge, NewsBulletinArtifactConsistencySummary, Artifact Tutarlılığı sütunu, 10 yeni test, 703 toplam (2026-04-02)
 - Phase 93: standard video input quality summary: pure frontend, StandardVideoInputQualityBadge, StandardVideoInputQualitySummary, Girdi Kalitesi sütunu, 10 yeni test, 693 toplam (2026-04-02)
 - Phase 92: news bulletin selected-news quality summary: backend 3 quality count fields (complete/partial/weak), NewsBulletinSelectedNewsQualityBadge, NewsBulletinSelectedNewsQualitySummary, İçerik Kalitesi sütunu, 10 yeni test, 683 toplam (2026-04-02)
 - Phase 91: news item publication lineage summary: pure frontend, NewsItemPublicationLineageBadge, NewsItemPublicationLineageSummary, Yayın Zinciri sütunu, 10 yeni test, 673 toplam (2026-04-02)

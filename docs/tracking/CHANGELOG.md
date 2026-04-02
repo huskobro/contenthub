@@ -2,6 +2,19 @@
 
 ---
 
+## [2026-04-02] Phase 94 — News Bulletin Artifact Consistency Summary Frontend Foundation
+
+**Ne:** News Bulletins listesine artifact tutarlılık özeti eklendi. Pure frontend türetimi.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/news-bulletin/NewsBulletinArtifactConsistencyBadge.tsx` (yeni)
+- `frontend/src/components/news-bulletin/NewsBulletinArtifactConsistencySummary.tsx` (yeni, computeNewsBulletinArtifactConsistency)
+- `frontend/src/components/news-bulletin/NewsBulletinsTable.tsx` (Artifact Tutarlılığı sütunu eklendi)
+- `frontend/src/tests/news-bulletin-artifact-consistency-summary.smoke.test.tsx` (yeni, 10 test)
+- `docs/testing/test-report-phase-94-news-bulletin-artifact-consistency-summary-frontend.md` (yeni)
+**Test:** 10 yeni smoke test, 703 toplam, build temiz.
+
+---
+
 ## [2026-04-02] Phase 93 — Standard Video Input Quality Summary Frontend Foundation
 
 **Ne:** Standard Video listesine girdi kalite özeti eklendi. Pure frontend türetimi.
