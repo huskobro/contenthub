@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 113 — Source Scan Publication Outcome Summary Frontend Foundation ✓ TAMAMLANDI
+Phase 114 — Job Publication Yield Summary Frontend Foundation ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Pure frontend türetimi: SourceScanPublicationOutcomeBadge + SourceScanPublicationOutcomeSummary. 10 yeni test, 893 toplam.
+Pure frontend türetimi: JobPublicationYieldBadge + JobPublicationYieldSummary. 10 yeni test, 903 toplam.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 114: job publication yield summary: pure frontend, JobPublicationYieldBadge, JobPublicationYieldSummary, Yayın Verimi sütunu, 10 yeni test, 903 toplam (2026-04-02)
 - Phase 113: source scan publication outcome summary: pure frontend, SourceScanPublicationOutcomeBadge, SourceScanPublicationOutcomeSummary, Yayın Sonucu sütunu, 10 yeni test, 893 toplam (2026-04-02)
 - Phase 112: job target-output consistency summary: pure frontend, JobTargetOutputConsistencyBadge, JobTargetOutputConsistencySummary, Target/Output Tutarlılığı sütunu, 10 yeni test, 883 toplam (2026-04-02)
 - Phase 111: source scan target-output consistency summary: pure frontend, SourceScanTargetOutputConsistencyBadge, SourceScanTargetOutputConsistencySummary, Target/Output Tutarlılığı sütunu, 10 yeni test, 873 toplam (2026-04-02)

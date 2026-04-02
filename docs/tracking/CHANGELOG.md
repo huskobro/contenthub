@@ -2,6 +2,19 @@
 
 ---
 
+## [2026-04-02] Phase 114 — Job Publication Yield Summary Frontend Foundation
+
+**Ne:** Jobs listesine publication yield özeti eklendi. Pure frontend türetimi, 6 seviye.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/jobs/JobPublicationYieldBadge.tsx` (yeni)
+- `frontend/src/components/jobs/JobPublicationYieldSummary.tsx` (yeni, computeJobPublicationYield)
+- `frontend/src/components/jobs/JobsTable.tsx` (Yayın Verimi sütunu eklendi)
+- `frontend/src/tests/job-publication-yield-summary.smoke.test.tsx` (yeni, 10 test)
+- `docs/testing/test-report-phase-114-job-publication-yield-summary-frontend.md` (yeni)
+**Test:** 10 yeni smoke test, 903 toplam, build temiz.
+
+---
+
 ## [2026-04-02] Phase 113 — Source Scan Publication Outcome Summary Frontend Foundation
 
 **Ne:** Source Scans listesine publication outcome özeti eklendi. Pure frontend türetimi, 6 seviye.
