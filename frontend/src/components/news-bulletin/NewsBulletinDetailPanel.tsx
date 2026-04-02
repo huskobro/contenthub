@@ -5,6 +5,7 @@ import { NewsBulletinForm } from "./NewsBulletinForm";
 import type { NewsBulletinFormValues } from "./NewsBulletinForm";
 import { NewsBulletinScriptPanel } from "./NewsBulletinScriptPanel";
 import { NewsBulletinMetadataPanel } from "./NewsBulletinMetadataPanel";
+import { NewsBulletinSelectedItemsPanel } from "./NewsBulletinSelectedItemsPanel";
 
 interface Props {
   selectedId: string | null;
@@ -107,6 +108,7 @@ export function NewsBulletinDetailPanel({ selectedId }: Props) {
       <Field label="Created" value={new Date(data.created_at).toLocaleString()} />
       <Field label="Updated" value={new Date(data.updated_at).toLocaleString()} />
 
+      <NewsBulletinSelectedItemsPanel bulletinId={data.id} />
       <NewsBulletinScriptPanel bulletinId={data.id} />
       <NewsBulletinMetadataPanel bulletinId={data.id} />
     </div>

@@ -1,10 +1,10 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 37 — News Bulletin Selected Items Backend Foundation ✓ TAMAMLANDI
+Phase 38 — Admin News Bulletin Selected Items Frontend Foundation ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-news_bulletin_selected_items tablosu, GET/POST/PATCH endpoint'leri, duplicate 409 koruması, 8 yeni test, 174 toplam backend test.
+Selected items frontend: API genişletildi, 3 hook, NewsBulletinSelectedItemForm, NewsBulletinSelectedItemsPanel, DetailPanel güncellendi, 11 yeni test, 179 toplam frontend test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
@@ -49,6 +49,7 @@ news_bulletin_selected_items tablosu, GET/POST/PATCH endpoint'leri, duplicate 40
 - Phase 35 admin news bulletin script frontend: API genişletildi, useNewsBulletinScript + create/update hooks, NewsBulletinScriptForm, NewsBulletinScriptPanel, DetailPanel güncellendi, 9 yeni test, 156 toplam frontend test (2026-04-02)
 - Phase 36 admin news bulletin metadata frontend: API genişletildi, useNewsBulletinMetadata + create/update hooks, NewsBulletinMetadataForm, NewsBulletinMetadataPanel, DetailPanel güncellendi, 11 yeni test, 167 toplam frontend test (2026-04-02)
 - Phase 37 news bulletin selected items backend: NewsBulletinSelectedItem modeli, UniqueConstraint, migration, schemas+service+router genişletildi, IntegrityError → 409, 8 yeni test, 174 toplam backend test (2026-04-02)
+- Phase 38 admin news bulletin selected items frontend: API genişletildi, useNewsBulletinSelectedItems + create/update hooks, NewsBulletinSelectedItemForm, NewsBulletinSelectedItemsPanel, DetailPanel güncellendi, 11 yeni test, 179 toplam frontend test (2026-04-02)
 
 ## Mevcut Riskler
 - Henüz auth / rol zorlama yok (kasıtlı)

@@ -202,6 +202,62 @@ export async function updateNewsBulletinMetadata(
   return resp.json();
 }
 
+export interface NewsBulletinSelectedItemResponse {
+  id: string;
+  news_bulletin_id: string;
+  news_item_id: string;
+  sort_order: number;
+  selection_reason: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface NewsBulletinSelectedItemCreatePayload {
+  news_item_id: string;
+  sort_order?: number;
+  selection_reason?: string;
+}
+
+export interface NewsBulletinSelectedItemUpdatePayload {
+  sort_order?: number;
+  selection_reason?: string | null;
+}
+
+export async function fetchNewsBulletinSelectedItems(
+  bulletinId: string
+): Promise<NewsBulletinSelectedItemResponse[]> {
+  const resp = await fetch(`/api/v1/modules/news-bulletin/${bulletinId}/selected-news`);
+  if (!resp.ok) throw new Error(`Failed to fetch selected items: ${resp.status}`);
+  return resp.json();
+}
+
+export async function createNewsBulletinSelectedItem(
+  bulletinId: string,
+  payload: NewsBulletinSelectedItemCreatePayload
+): Promise<NewsBulletinSelectedItemResponse> {
+  const resp = await fetch(`/api/v1/modules/news-bulletin/${bulletinId}/selected-news`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!resp.ok) throw new Error(`Failed to create selected item: ${resp.status}`);
+  return resp.json();
+}
+
+export async function updateNewsBulletinSelectedItem(
+  bulletinId: string,
+  selectionId: string,
+  payload: NewsBulletinSelectedItemUpdatePayload
+): Promise<NewsBulletinSelectedItemResponse> {
+  const resp = await fetch(`/api/v1/modules/news-bulletin/${bulletinId}/selected-news/${selectionId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!resp.ok) throw new Error(`Failed to update selected item: ${resp.status}`);
+  return resp.json();
+}
+
 export async function fetchNewsBulletins(): Promise<NewsBulletinResponse[]> {
   const resp = await fetch(BASE_URL);
   if (!resp.ok) throw new Error(`Failed to fetch news bulletins: ${resp.status}`);

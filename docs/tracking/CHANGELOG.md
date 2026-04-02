@@ -2,6 +2,26 @@
 
 ---
 
+## [2026-04-02] Phase 38 — Admin News Bulletin Selected Items Frontend Foundation
+
+**Ne:** Selected items yönetimi için frontend katmanı oluşturuldu. Panel view/create/edit mod state machine'i, form bileşeni, DetailPanel entegrasyonu.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/api/newsBulletinApi.ts` (selected items API fonksiyonları + tipler eklendi)
+- `frontend/src/hooks/useNewsBulletinSelectedItems.ts` (yeni)
+- `frontend/src/hooks/useCreateNewsBulletinSelectedItem.ts` (yeni)
+- `frontend/src/hooks/useUpdateNewsBulletinSelectedItem.ts` (yeni)
+- `frontend/src/components/news-bulletin/NewsBulletinSelectedItemForm.tsx` (yeni)
+- `frontend/src/components/news-bulletin/NewsBulletinSelectedItemsPanel.tsx` (yeni)
+- `frontend/src/components/news-bulletin/NewsBulletinDetailPanel.tsx` (SelectedItemsPanel eklendi)
+- `frontend/src/tests/news-bulletin-selected-items-panel.smoke.test.tsx` (11 yeni test)
+- `frontend/src/tests/news-bulletin-form.smoke.test.tsx` (selected-news mock ayrımı eklendi)
+**Testler:** 11/11 yeni test PASSED | 179/179 toplam PASSED
+**Build:** 374.43 kB (tsc + vite build ✅)
+**Commit:** `feat: add phase 38 admin news bulletin selected items frontend foundation`
+**Push:** ✅ `git@github.com:huskobro/contenthub.git`
+
+---
+
 ## [2026-04-02] Phase 37 — News Bulletin Selected Items Backend Foundation
 
 **Ne:** news_bulletin_selected_items tablosu eklendi. Bir news bulletin ile seçilen news item'ları arasında explicit linkage, sıralama ve seçim gerekçesi desteği.
