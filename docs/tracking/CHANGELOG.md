@@ -2,6 +2,19 @@
 
 ---
 
+## [2026-04-02] Phase 109 — News Bulletin Input Quality Summary Frontend Foundation
+
+**Ne:** News Bulletin listesine source-input quality özeti eklendi. Pure frontend türetimi.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/news-bulletin/NewsBulletinInputQualityBadge.tsx` (yeni)
+- `frontend/src/components/news-bulletin/NewsBulletinInputQualitySummary.tsx` (yeni, computeNewsBulletinInputQuality)
+- `frontend/src/components/news-bulletin/NewsBulletinsTable.tsx` (Girdi Kalitesi sütunu eklendi)
+- `frontend/src/tests/news-bulletin-input-quality-summary.smoke.test.tsx` (yeni, 10 test)
+- `docs/testing/test-report-phase-109-news-bulletin-input-quality-summary-frontend.md` (yeni)
+**Test:** 10 yeni smoke test, 853 toplam, build temiz.
+
+---
+
 ## [2026-04-02] Phase 108 — News Item Input Quality Summary Frontend Foundation
 
 **Ne:** News Items listesine source-input quality özeti eklendi. Pure frontend türetimi.

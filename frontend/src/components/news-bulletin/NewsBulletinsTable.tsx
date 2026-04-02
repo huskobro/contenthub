@@ -7,6 +7,7 @@ import { NewsBulletinSourceCoverageSummary } from "./NewsBulletinSourceCoverageS
 import { NewsBulletinPublicationSignalSummary } from "./NewsBulletinPublicationSignalSummary";
 import { NewsBulletinSelectedNewsQualitySummary } from "./NewsBulletinSelectedNewsQualitySummary";
 import { NewsBulletinArtifactConsistencySummary } from "./NewsBulletinArtifactConsistencySummary";
+import { NewsBulletinInputQualitySummary } from "./NewsBulletinInputQualitySummary";
 
 interface Props {
   bulletins: NewsBulletinResponse[];
@@ -36,6 +37,7 @@ export function NewsBulletinsTable({ bulletins, selectedId, onSelect }: Props) {
           <th style={{ textAlign: "left", padding: "6px 8px" }}>Kaynak Kapsamı</th>
           <th style={{ textAlign: "left", padding: "6px 8px" }}>Yayın Sinyali</th>
           <th style={{ textAlign: "left", padding: "6px 8px" }}>İçerik Kalitesi</th>
+          <th style={{ textAlign: "left", padding: "6px 8px" }}>Girdi Kalitesi</th>
           <th style={{ textAlign: "left", padding: "6px 8px" }}>Artifact Tutarlılığı</th>
           <th style={{ textAlign: "left", padding: "6px 8px" }}>Created</th>
         </tr>
@@ -97,6 +99,16 @@ export function NewsBulletinsTable({ bulletins, selectedId, onSelect }: Props) {
                 selectedNewsQualityCompleteCount={b.selected_news_quality_complete_count}
                 selectedNewsQualityPartialCount={b.selected_news_quality_partial_count}
                 selectedNewsQualityWeakCount={b.selected_news_quality_weak_count}
+              />
+            </td>
+            <td style={{ padding: "6px 8px" }}>
+              <NewsBulletinInputQualitySummary
+                title={b.title}
+                topic={b.topic}
+                selectedNewsCount={b.selected_news_count}
+                selectedNewsSourceCount={b.selected_news_source_count}
+                language={b.language}
+                bulletinStyle={b.bulletin_style}
               />
             </td>
             <td style={{ padding: "6px 8px" }}>
