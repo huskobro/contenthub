@@ -18,6 +18,8 @@ export interface NewsBulletinResponse {
   has_script?: boolean;
   has_metadata?: boolean;
   selected_news_count?: number;
+  has_selected_news_warning?: boolean;
+  selected_news_warning_count?: number;
 }
 
 export interface NewsBulletinCreatePayload {

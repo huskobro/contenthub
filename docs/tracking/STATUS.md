@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 68 — Standard Video Artifact Summary Frontend Foundation ✓ TAMAMLANDI
+Phase 69 — News Bulletin Enforcement Summary Frontend Foundation ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-has_script/has_metadata backend alanları + StandardVideoArtifactSummary frontend bileşeni. 10 yeni test, 443 toplam.
+has_selected_news_warning/selected_news_warning_count backend + NewsBulletinEnforcementSummary frontend. 10 yeni test, 453 toplam.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 69: news bulletin enforcement summary: warning aggregate backend, NewsBulletinEnforcementStatusBadge, NewsBulletinEnforcementSummary, Enforcement sütunu, 10 yeni test, 453 toplam (2026-04-02)
 - Phase 68: standard video artifact summary: has_script/has_metadata backend, StandardVideoArtifactStatusBadge, StandardVideoArtifactSummary, Artifact sütunu, 10 yeni test, 443 toplam (2026-04-02)
 - Phase 67: job actionability summary frontend: JobActionabilityBadge, JobActionabilitySummary, Aksiyon Özeti sütunu, 10 yeni test, 433 toplam (2026-04-02)
 - Phase 66: template style link readiness summary frontend: TemplateStyleLinkReadinessBadge, TemplateStyleLinkReadinessSummary, Bağ Durumu sütunu, 10 yeni test, 423 toplam (2026-04-02)

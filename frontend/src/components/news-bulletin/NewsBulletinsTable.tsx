@@ -2,6 +2,7 @@ import type { NewsBulletinResponse } from "../../api/newsBulletinApi";
 import { NewsBulletinArtifactSummary } from "./NewsBulletinArtifactSummary";
 import { NewsBulletinSelectedNewsSummary } from "./NewsBulletinSelectedNewsSummary";
 import { NewsBulletinReadinessSummary } from "./NewsBulletinReadinessSummary";
+import { NewsBulletinEnforcementSummary } from "./NewsBulletinEnforcementSummary";
 
 interface Props {
   bulletins: NewsBulletinResponse[];
@@ -27,6 +28,7 @@ export function NewsBulletinsTable({ bulletins, selectedId, onSelect }: Props) {
           <th style={{ textAlign: "left", padding: "6px 8px" }}>Artifacts</th>
           <th style={{ textAlign: "left", padding: "6px 8px" }}>Haberler</th>
           <th style={{ textAlign: "left", padding: "6px 8px" }}>Hazırlık</th>
+          <th style={{ textAlign: "left", padding: "6px 8px" }}>Enforcement</th>
           <th style={{ textAlign: "left", padding: "6px 8px" }}>Created</th>
         </tr>
       </thead>
@@ -57,6 +59,13 @@ export function NewsBulletinsTable({ bulletins, selectedId, onSelect }: Props) {
                 selectedNewsCount={b.selected_news_count}
                 hasScript={b.has_script}
                 hasMetadata={b.has_metadata}
+              />
+            </td>
+            <td style={{ padding: "6px 8px" }}>
+              <NewsBulletinEnforcementSummary
+                selectedNewsCount={b.selected_news_count}
+                hasSelectedNewsWarning={b.has_selected_news_warning}
+                selectedNewsWarningCount={b.selected_news_warning_count}
               />
             </td>
             <td style={{ padding: "6px 8px" }}>

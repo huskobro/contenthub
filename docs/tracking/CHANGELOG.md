@@ -2,6 +2,22 @@
 
 ---
 
+## [2026-04-02] Phase 69 — News Bulletin Enforcement Summary Frontend Foundation
+
+**Ne:** News Bulletin listesine selected news warning aggregate özeti eklendi.
+**Eklenen/değiştirilen dosyalar:**
+- `backend/app/modules/news_bulletin/schemas.py` — has_selected_news_warning, selected_news_warning_count
+- `backend/app/modules/news_bulletin/service.py` — warning aggregate hesabı
+- `frontend/src/api/newsBulletinApi.ts` — warning alanları
+- `frontend/src/components/news-bulletin/NewsBulletinEnforcementStatusBadge.tsx` (yeni)
+- `frontend/src/components/news-bulletin/NewsBulletinEnforcementSummary.tsx` (yeni)
+- `frontend/src/components/news-bulletin/NewsBulletinsTable.tsx` — Enforcement sütunu
+- `frontend/src/tests/news-bulletin-enforcement-summary.smoke.test.tsx` (yeni, 10 test)
+- `docs/testing/test-report-phase-69-news-bulletin-enforcement-summary-frontend.md` (yeni)
+**Sonuç:** 453 frontend test — tümü geçti. Build başarılı.
+
+---
+
 ## [2026-04-02] Phase 68 — Standard Video Artifact Summary Frontend Foundation
 
 **Ne:** Standard Video registry listesine gerçek artifact varlığı (script/metadata) özeti eklendi.

@@ -50,7 +50,7 @@ async def list_news_bulletins(db: AsyncSession) -> List[NewsBulletin]:
 async def list_news_bulletins_with_artifacts(
     db: AsyncSession,
 ) -> List[NewsBulletinResponse]:
-    """Return bulletin list enriched with has_script, has_metadata, and selected_news_count."""
+    """Return bulletin list enriched with has_script, has_metadata, selected_news_count, and warning aggregate."""
     from sqlalchemy import func as sqlfunc
     bulletins = await list_news_bulletins(db)
     result = []
@@ -65,6 +65,23 @@ async def list_news_bulletins_with_artifacts(
             select(sqlfunc.count()).select_from(NewsBulletinSelectedItem)
             .where(NewsBulletinSelectedItem.news_bulletin_id == b.id)
         )
+        selected_news_count = count_row.scalar() or 0
+
+        # Count selected items whose news_item_id appears in UsedNewsRegistry
+        items_row = await db.execute(
+            select(NewsBulletinSelectedItem.news_item_id)
+            .where(NewsBulletinSelectedItem.news_bulletin_id == b.id)
+        )
+        news_item_ids = [row[0] for row in items_row.fetchall()]
+
+        warning_count = 0
+        if news_item_ids:
+            warn_row = await db.execute(
+                select(sqlfunc.count(sqlfunc.distinct(UsedNewsRegistry.news_item_id)))
+                .where(UsedNewsRegistry.news_item_id.in_(news_item_ids))
+            )
+            warning_count = warn_row.scalar() or 0
+
         result.append(
             NewsBulletinResponse(
                 id=b.id,
@@ -83,7 +100,9 @@ async def list_news_bulletins_with_artifacts(
                 updated_at=b.updated_at,
                 has_script=script_row.scalar_one_or_none() is not None,
                 has_metadata=meta_row.scalar_one_or_none() is not None,
-                selected_news_count=count_row.scalar() or 0,
+                selected_news_count=selected_news_count,
+                has_selected_news_warning=warning_count > 0,
+                selected_news_warning_count=warning_count,
             )
         )
     return result
