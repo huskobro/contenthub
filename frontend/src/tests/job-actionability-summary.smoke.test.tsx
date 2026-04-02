@@ -104,6 +104,7 @@ const mockJob = (overrides: object = {}) => ({
   started_at: null,
   finished_at: null,
   updated_at: "2026-04-02T10:00:00Z",
+  steps: [],
   ...overrides,
 });
 

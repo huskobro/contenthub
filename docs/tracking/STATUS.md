@@ -1,15 +1,17 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 124 — Template Target-Output Consistency Summary Frontend Foundation ✓ TAMAMLANDI
+Phase 134 — Sources Registry Visibility Completion Pack ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Pure frontend türetimi: TemplateTargetOutputConsistencyBadge + TemplateTargetOutputConsistencySummary. 10 yeni test, 1003 toplam.
+Sources tablosu görünürlük iyileştirmesi: sütun başlıkları Türkçeleştirildi, sütun sırası mantıksal gruplara ayrıldı, import düzeltmesi, test mock eksiklikleri giderildi. Badge stilleri ve secondary textler korundu. 1093 toplam test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 134: sources registry visibility completion pack: sütun Türkçeleştirme, mantıksal sıralama, import fix, test mock düzeltmeleri, badge stilleri korundu, 1093 toplam (2026-04-03)
+- Phase 133: source publication outcome summary: pure frontend, SourcePublicationOutcomeBadge, SourcePublicationOutcomeSummary, Yayın Çıktısı sütunu, 10 yeni test, 1093 toplam (2026-04-02)
 - Phase 124: template target-output consistency summary: pure frontend, TemplateTargetOutputConsistencyBadge, TemplateTargetOutputConsistencySummary, Target/Output Tutarlılığı sütunu, 10 yeni test, 1003 toplam (2026-04-02)
 - Phase 123: style blueprint input specificity summary: pure frontend, StyleBlueprintInputSpecificityBadge, StyleBlueprintInputSpecificitySummary, Girdi Özgüllüğü sütunu, 10 yeni test, 993 toplam (2026-04-02)
 - Phase 122: template input specificity summary: pure frontend, TemplateInputSpecificityBadge, TemplateInputSpecificitySummary, Girdi Özgüllüğü sütunu, 10 yeni test, 983 toplam (2026-04-02)

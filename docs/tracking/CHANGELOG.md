@@ -2,6 +2,25 @@
 
 ---
 
+## [2026-04-03] Phase 134 — Sources Registry Visibility Completion Pack
+
+**Ne:** Sources Registry tablosunun görünürlük ve okunabilirlik iyileştirmesi. Konservatif yaklaşım.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/sources/SourceInputQualitySummary.tsx` (import sırası düzeltmesi)
+- `frontend/src/components/sources/SourcesTable.tsx` (sütun başlıkları Türkçeleştirildi, sütun sırası mantıksal gruplara ayrıldı)
+- `frontend/src/tests/source-scan-summary.smoke.test.tsx` (header testi güncellendi)
+- `frontend/src/tests/used-news-registry.smoke.test.tsx` (mock eksiklikleri giderildi)
+- `frontend/src/tests/used-news-form.smoke.test.tsx` (mock eksiklikleri giderildi)
+- `frontend/src/tests/used-news-state-summary.smoke.test.tsx` (mock eksiklikleri giderildi)
+- `frontend/src/tests/news-bulletin-readiness-summary.smoke.test.tsx` (mock eksiklikleri giderildi)
+- `frontend/src/tests/news-item-readiness-summary.smoke.test.tsx` (mock eksiklikleri giderildi)
+- `frontend/src/tests/job-actionability-summary.smoke.test.tsx` (mock eksiklikleri giderildi)
+- `docs/testing/test-report-phase-134-sources-registry-visibility-completion-pack.md` (yeni)
+**Korunan:** Badge stilleri, secondary textler, tüm 16 sütun. Bilgi kaybı sıfır.
+**Test:** 1093 toplam, tsc temiz, build temiz.
+
+---
+
 ## [2026-04-02] Phase 124 — Template Target-Output Consistency Summary Frontend Foundation
 
 **Ne:** Templates listesine target-output consistency özeti eklendi. Pure frontend türetimi, 4 seviye.

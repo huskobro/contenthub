@@ -16,6 +16,9 @@ const MOCK_RECORD: UsedNewsResponse = {
   notes: null,
   created_at: "2026-04-02T10:00:00Z",
   updated_at: "2026-04-02T10:00:00Z",
+  has_news_item_source: true,
+  has_news_item_scan_reference: false,
+  has_target_resolved: true,
 };
 
 function mockFetch(data: unknown, status = 200) {

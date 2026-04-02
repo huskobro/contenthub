@@ -1,3 +1,5 @@
+import { SourceInputQualityBadge } from "./SourceInputQualityBadge";
+
 export type SourceInputQualityLevel = "Zayıf giriş" | "Kısmi giriş" | "Güçlü giriş";
 
 function isNonEmpty(v: string | null | undefined): boolean {
@@ -58,5 +60,3 @@ export function SourceInputQualitySummary({
   const level = computeSourceInputQuality(sourceType, name, baseUrl, feedUrl, apiEndpoint, language);
   return <SourceInputQualityBadge level={level} />;
 }
-
-import { SourceInputQualityBadge } from "./SourceInputQualityBadge";

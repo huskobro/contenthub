@@ -83,9 +83,9 @@ const mockSource = (overrides: object = {}) => ({
 });
 
 describe("SourcesTable scan summary", () => {
-  it("H) renders Scans column header", () => {
+  it("H) renders Taramalar column header", () => {
     render(<SourcesTable sources={[mockSource()]} selectedId={null} onSelect={() => {}} />);
-    expect(screen.getByText("Scans")).toBeTruthy();
+    expect(screen.getByText("Taramalar")).toBeTruthy();
   });
 
   it("I) shows Scan yok for source with no scans", () => {
