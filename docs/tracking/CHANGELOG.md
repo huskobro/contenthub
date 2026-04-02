@@ -2,6 +2,22 @@
 
 ---
 
+## [2026-04-02] Phase 72 — News Bulletin Source Coverage Summary Frontend Foundation
+
+**Ne:** News Bulletin listesine kaynak kapsam görünürlüğü eklendi. Backend selected_news_source_count/has_selected_news_missing_source hesaplıyor, frontend badge + summary ile gösteriyor.
+**Eklenen/değiştirilen dosyalar:**
+- `backend/app/modules/news_bulletin/schemas.py` — selected_news_source_count, has_selected_news_missing_source
+- `backend/app/modules/news_bulletin/service.py` — NewsItem.source_id aggregate
+- `frontend/src/api/newsBulletinApi.ts` — yeni alanlar
+- `frontend/src/components/news-bulletin/NewsBulletinSourceCoverageBadge.tsx` (yeni)
+- `frontend/src/components/news-bulletin/NewsBulletinSourceCoverageSummary.tsx` (yeni)
+- `frontend/src/components/news-bulletin/NewsBulletinsTable.tsx` — Kaynak Kapsamı sütunu
+- `frontend/src/tests/news-bulletin-source-coverage-summary.smoke.test.tsx` (yeni, 10 test)
+- `docs/testing/test-report-phase-72-news-bulletin-source-coverage-summary-frontend.md` (yeni)
+**Sonuç:** 483 frontend test — tümü geçti. Build başarılı.
+
+---
+
 ## [2026-04-02] Phase 71 — News Item Scan Lineage Summary Frontend Foundation
 
 **Ne:** News Items listesine scan lineage görünürlüğü eklendi. Backend source_scan_status alanıyla SourceScan kaydı çözümleniyor, frontend badge + summary ile gösteriliyor.

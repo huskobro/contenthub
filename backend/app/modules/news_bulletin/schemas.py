@@ -79,6 +79,8 @@ class NewsBulletinResponse(BaseModel):
     selected_news_count: int = 0
     has_selected_news_warning: bool = False
     selected_news_warning_count: int = 0
+    selected_news_source_count: int = 0
+    has_selected_news_missing_source: bool = False
 
     model_config = {"from_attributes": True}
 

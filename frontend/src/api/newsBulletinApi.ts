@@ -20,6 +20,8 @@ export interface NewsBulletinResponse {
   selected_news_count?: number;
   has_selected_news_warning?: boolean;
   selected_news_warning_count?: number;
+  selected_news_source_count?: number;
+  has_selected_news_missing_source?: boolean;
 }
 
 export interface NewsBulletinCreatePayload {

@@ -75,12 +75,24 @@ async def list_news_bulletins_with_artifacts(
         news_item_ids = [row[0] for row in items_row.fetchall()]
 
         warning_count = 0
+        selected_news_source_count = 0
+        has_selected_news_missing_source = False
         if news_item_ids:
             warn_row = await db.execute(
                 select(sqlfunc.count(sqlfunc.distinct(UsedNewsRegistry.news_item_id)))
                 .where(UsedNewsRegistry.news_item_id.in_(news_item_ids))
             )
             warning_count = warn_row.scalar() or 0
+
+            # Count distinct non-null source_ids among selected news items
+            news_items_row = await db.execute(
+                select(NewsItem.source_id)
+                .where(NewsItem.id.in_(news_item_ids))
+            )
+            source_ids = [row[0] for row in news_items_row.fetchall()]
+            distinct_sources = set(s for s in source_ids if s)
+            selected_news_source_count = len(distinct_sources)
+            has_selected_news_missing_source = any(s is None for s in source_ids)
 
         result.append(
             NewsBulletinResponse(
@@ -103,6 +115,8 @@ async def list_news_bulletins_with_artifacts(
                 selected_news_count=selected_news_count,
                 has_selected_news_warning=warning_count > 0,
                 selected_news_warning_count=warning_count,
+                selected_news_source_count=selected_news_source_count,
+                has_selected_news_missing_source=has_selected_news_missing_source,
             )
         )
     return result
