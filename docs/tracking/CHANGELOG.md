@@ -2,6 +2,20 @@
 
 ---
 
+## [2026-04-02] Phase 62 — Used News State Summary Frontend Foundation
+
+**Ne:** Used News registry listesinde her kayıt için sade state özeti eklendi.
+**Yaklaşım:** Backend değişikliği yok; mevcut usage_type/target_module alanlarından frontend türetildi.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/used-news/UsedNewsStateBadge.tsx` (yeni)
+- `frontend/src/components/used-news/UsedNewsStateSummary.tsx` (yeni, computeUsedNewsState helper dahil)
+- `frontend/src/components/used-news/UsedNewsTable.tsx` — Durum sütunu eklendi
+- `frontend/src/tests/used-news-state-summary.smoke.test.tsx` (yeni, 10 test)
+- `docs/testing/test-report-phase-62-used-news-state-summary-frontend.md` (yeni)
+**Sonuç:** 383 frontend test — tümü geçti. Build başarılı.
+
+---
+
 ## [2026-04-02] Phase 61 — News Item Readiness Summary Frontend Foundation
 
 **Ne:** News Items registry listesinde her haber için sade hazırlık özeti eklendi.

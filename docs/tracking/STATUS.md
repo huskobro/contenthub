@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 61 — News Item Readiness Summary Frontend Foundation ✓ TAMAMLANDI
+Phase 62 — Used News State Summary Frontend Foundation ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Mevcut alanlardan frontend news item readiness özeti. NewsItemReadinessBadge, NewsItemReadinessSummary, NewsItemsTable Hazırlık sütunu, 10 yeni test, 373 toplam.
+Mevcut usage_type/target_module alanlarından frontend state özeti. UsedNewsStateBadge, UsedNewsStateSummary, UsedNewsTable Durum sütunu, 10 yeni test, 383 toplam.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 62: used news state summary frontend: UsedNewsStateBadge, UsedNewsStateSummary, Durum sütunu, 10 yeni test, 383 toplam (2026-04-02)
 - Phase 61: news item readiness summary frontend: NewsItemReadinessBadge, NewsItemReadinessSummary, Hazırlık sütunu, 10 yeni test, 373 toplam (2026-04-02)
 - Phase 60: source readiness summary frontend: SourceReadinessBadge, SourceReadinessSummary, Hazırlık sütunu, 10 yeni test, 363 toplam (2026-04-02)
 - Phase 59: template readiness summary frontend: TemplateReadinessBadge, TemplateReadinessSummary, Hazırlık sütunu, 10 yeni test, 353 toplam (2026-04-02)

@@ -1,4 +1,5 @@
 import type { UsedNewsResponse } from "../../api/usedNewsApi";
+import { UsedNewsStateSummary } from "./UsedNewsStateSummary";
 
 interface Props {
   records: UsedNewsResponse[];
@@ -13,6 +14,7 @@ export function UsedNewsTable({ records, selectedId, onSelect }: Props) {
         <tr style={{ background: "#f1f5f9", textAlign: "left" }}>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>News Item ID</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Usage Type</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Durum</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Target Module</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Target Entity ID</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Created</th>
@@ -33,6 +35,13 @@ export function UsedNewsTable({ records, selectedId, onSelect }: Props) {
               {record.news_item_id}
             </td>
             <td style={{ padding: "0.5rem 0.75rem", color: "#64748b" }}>{record.usage_type}</td>
+            <td style={{ padding: "0.5rem 0.75rem" }}>
+              <UsedNewsStateSummary
+                usageType={record.usage_type}
+                targetModule={record.target_module}
+                targetEntityId={record.target_entity_id}
+              />
+            </td>
             <td style={{ padding: "0.5rem 0.75rem", color: "#64748b" }}>{record.target_module}</td>
             <td style={{ padding: "0.5rem 0.75rem", color: "#94a3b8", fontFamily: "monospace", fontSize: "0.8rem" }}>
               {record.target_entity_id ?? "—"}
