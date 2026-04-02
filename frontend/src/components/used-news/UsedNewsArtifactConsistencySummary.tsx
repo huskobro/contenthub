@@ -1,3 +1,5 @@
+import { UsedNewsArtifactConsistencyBadge } from "./UsedNewsArtifactConsistencyBadge";
+
 export type UsedNewsArtifactConsistencyLevel =
   | "Artifacts yok"
   | "Tek taraflı"
@@ -52,5 +54,3 @@ export function UsedNewsArtifactConsistencySummary({
   );
   return <UsedNewsArtifactConsistencyBadge level={level} />;
 }
-
-import { UsedNewsArtifactConsistencyBadge } from "./UsedNewsArtifactConsistencyBadge";

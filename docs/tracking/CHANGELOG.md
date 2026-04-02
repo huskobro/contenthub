@@ -2,6 +2,19 @@
 
 ---
 
+## [2026-04-03] Phase 137 — News Registry Visibility Completion Pack
+
+**Ne:** News Items + Used News tablolarının görünürlük ve okunabilirlik iyileştirmesi. Konservatif yaklaşım.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/used-news/UsedNewsArtifactConsistencySummary.tsx` (import sırası düzeltmesi)
+- `frontend/src/components/news-items/NewsItemsTable.tsx` (sütun başlıkları Türkçeleştirildi, sütun sırası mantıksal gruplara ayrıldı)
+- `frontend/src/components/used-news/UsedNewsTable.tsx` (sütun başlıkları Türkçeleştirildi, sütun sırası mantıksal gruplara ayrıldı)
+- `docs/testing/test-report-phase-137-news-registry-visibility-completion-pack.md` (yeni)
+**Korunan:** Badge stilleri, secondary textler, tüm sütunlar (NewsItems: 17, UsedNews: 13). Bilgi kaybı sıfır.
+**Test:** 1093 toplam, tsc temiz.
+
+---
+
 ## [2026-04-03] Phase 136 — Jobs Registry Visibility Completion Pack
 
 **Ne:** Jobs tablosunun görünürlük ve okunabilirlik iyileştirmesi. Konservatif yaklaşım.
