@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 81 — Standard Video Publication Signal Summary Frontend Foundation ✓ TAMAMLANDI
+Phase 82 — Template Publication Signal Summary Frontend Foundation ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Saf frontend türetimi: StandardVideoPublicationSignalBadge + StandardVideoPublicationSignalSummary. 10 yeni test, 573 toplam.
+Saf frontend türetimi: TemplatePublicationSignalBadge + TemplatePublicationSignalSummary. 10 yeni test, 583 toplam.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 82: template publication signal summary: pure frontend, TemplatePublicationSignalBadge, TemplatePublicationSignalSummary, Yayın Sinyali sütunu, 10 yeni test, 583 toplam (2026-04-02)
 - Phase 81: standard video publication signal summary: pure frontend, StandardVideoPublicationSignalBadge, StandardVideoPublicationSignalSummary, Yayın Sinyali sütunu, 10 yeni test, 573 toplam (2026-04-02)
 - Phase 80: news bulletin publication signal summary: pure frontend, NewsBulletinPublicationSignalBadge, NewsBulletinPublicationSignalSummary, Yayın Sinyali sütunu, 10 yeni test, 563 toplam (2026-04-02)
 - Phase 79: source publication supply summary: backend reviewed/used counts, SourcePublicationSupplyBadge, SourcePublicationSupplySummary, Yayın Kaynağı sütunu, 10 yeni test, 553 toplam (2026-04-02)

@@ -2,6 +2,19 @@
 
 ---
 
+## [2026-04-02] Phase 82 — Template Publication Signal Summary Frontend Foundation
+
+**Ne:** Templates listesine yayın sinyal özeti eklendi. Saf frontend türetimi — backend değişikliği yok.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/templates/TemplatePublicationSignalBadge.tsx` (yeni)
+- `frontend/src/components/templates/TemplatePublicationSignalSummary.tsx` (yeni)
+- `frontend/src/components/templates/TemplatesTable.tsx` (Yayın Sinyali sütunu eklendi)
+- `frontend/src/tests/template-publication-signal-summary.smoke.test.tsx` (yeni, 10 test)
+- `docs/testing/test-report-phase-82-template-publication-signal-summary-frontend.md` (yeni)
+**Test:** 10 yeni smoke test, 583 toplam, build temiz.
+
+---
+
 ## [2026-04-02] Phase 81 — Standard Video Publication Signal Summary Frontend Foundation
 
 **Ne:** Standard Video listesine yayın sinyal özeti eklendi. Saf frontend türetimi — backend değişikliği yok.
