@@ -1,5 +1,6 @@
 import type { StandardVideoResponse } from "../../api/standardVideoApi";
 import { formatDuration } from "../../lib/formatDuration";
+import { StandardVideoReadinessSummary } from "./StandardVideoReadinessSummary";
 
 interface Props {
   videos: StandardVideoResponse[];
@@ -31,6 +32,7 @@ export function StandardVideosTable({ videos, selectedId, onSelect }: Props) {
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Başlık</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Konu</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Durum</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Hazırlık</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Dil</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Hedef Süre</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Oluşturulma</th>
@@ -58,6 +60,12 @@ export function StandardVideosTable({ videos, selectedId, onSelect }: Props) {
               >
                 {v.status}
               </span>
+            </td>
+            <td style={{ padding: "0.5rem 0.75rem" }}>
+              <StandardVideoReadinessSummary
+                topic={v.topic}
+                status={v.status}
+              />
             </td>
             <td style={{ padding: "0.5rem 0.75rem" }}>{v.language ?? "—"}</td>
             <td style={{ padding: "0.5rem 0.75rem" }}>

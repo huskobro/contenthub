@@ -2,6 +2,20 @@
 
 ---
 
+## [2026-04-02] Phase 63 — Standard Video Readiness Summary Frontend Foundation
+
+**Ne:** Standard Video registry listesinde her kayıt için sade readiness özeti eklendi.
+**Yaklaşım:** Backend değişikliği yok; mevcut topic/status alanlarından frontend türetildi.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/standard-video/StandardVideoReadinessBadge.tsx` (yeni)
+- `frontend/src/components/standard-video/StandardVideoReadinessSummary.tsx` (yeni)
+- `frontend/src/components/standard-video/StandardVideosTable.tsx` — Hazırlık sütunu eklendi
+- `frontend/src/tests/standard-video-readiness-summary.smoke.test.tsx` (yeni, 10 test)
+- `docs/testing/test-report-phase-63-standard-video-readiness-summary-frontend.md` (yeni)
+**Sonuç:** 393 frontend test — tümü geçti. Build başarılı.
+
+---
+
 ## [2026-04-02] Phase 62 — Used News State Summary Frontend Foundation
 
 **Ne:** Used News registry listesinde her kayıt için sade state özeti eklendi.
