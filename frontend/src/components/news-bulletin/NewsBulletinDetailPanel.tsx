@@ -3,6 +3,7 @@ import { useNewsBulletinDetail } from "../../hooks/useNewsBulletinDetail";
 import { useUpdateNewsBulletin } from "../../hooks/useUpdateNewsBulletin";
 import { NewsBulletinForm } from "./NewsBulletinForm";
 import type { NewsBulletinFormValues } from "./NewsBulletinForm";
+import { NewsBulletinScriptPanel } from "./NewsBulletinScriptPanel";
 
 interface Props {
   selectedId: string | null;
@@ -104,6 +105,8 @@ export function NewsBulletinDetailPanel({ selectedId }: Props) {
       <Field label="Job ID" value={data.job_id} />
       <Field label="Created" value={new Date(data.created_at).toLocaleString()} />
       <Field label="Updated" value={new Date(data.updated_at).toLocaleString()} />
+
+      <NewsBulletinScriptPanel bulletinId={data.id} />
     </div>
   );
 }

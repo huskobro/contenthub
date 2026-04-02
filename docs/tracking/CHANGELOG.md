@@ -2,6 +2,26 @@
 
 ---
 
+## [2026-04-02] Phase 35 — Admin News Bulletin Script Frontend Foundation
+
+**Ne:** News bulletin script yönetimi için frontend katmanı oluşturuldu. ScriptPanel view/create/edit mod state machine'i, form bileşeni ve DetailPanel entegrasyonu eklendi.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/api/newsBulletinApi.ts` (script API fonksiyonları + tipler eklendi)
+- `frontend/src/hooks/useNewsBulletinScript.ts` (yeni)
+- `frontend/src/hooks/useCreateNewsBulletinScript.ts` (yeni)
+- `frontend/src/hooks/useUpdateNewsBulletinScript.ts` (yeni)
+- `frontend/src/components/news-bulletin/NewsBulletinScriptForm.tsx` (yeni)
+- `frontend/src/components/news-bulletin/NewsBulletinScriptPanel.tsx` (yeni)
+- `frontend/src/components/news-bulletin/NewsBulletinDetailPanel.tsx` (ScriptPanel entegrasyonu)
+- `frontend/src/tests/news-bulletin-script-panel.smoke.test.tsx` (9 yeni test)
+- `frontend/src/tests/news-bulletin-form.smoke.test.tsx` (fetch mock URL ayrımı düzeltildi)
+**Testler:** 9/9 yeni test PASSED | 156/156 toplam PASSED
+**Build:** 360.60 kB (tsc + vite build ✅)
+**Commit:** `feat: add phase 35 admin news bulletin script frontend foundation`
+**Push:** ✅ `git@github.com:huskobro/contenthub.git`
+
+---
+
 ## [2026-04-02] Phase 34 — News Bulletin Metadata Backend Foundation
 
 **Ne:** NewsBulletinMetadata modeli eklendi, metadata CRUD endpoint'leri news bulletin router'a entegre edildi.

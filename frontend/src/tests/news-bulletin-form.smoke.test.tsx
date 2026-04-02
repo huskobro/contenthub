@@ -131,10 +131,13 @@ describe("NewsBulletinForm / Create page smoke tests", () => {
 
   it("edit mode opens when Düzenle is clicked in detail panel", async () => {
     let callCount = 0;
-    window.fetch = vi.fn().mockImplementation(() => {
+    window.fetch = vi.fn().mockImplementation((url: string) => {
       callCount++;
       if (callCount === 1) {
         return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve([MOCK_BULLETIN]) });
+      }
+      if (typeof url === "string" && url.includes("/script")) {
+        return Promise.resolve({ ok: false, status: 404, json: () => Promise.resolve({}) });
       }
       return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(MOCK_BULLETIN) });
     });
@@ -160,10 +163,13 @@ describe("NewsBulletinForm / Create page smoke tests", () => {
 
   it("cancel closes edit mode in detail panel", async () => {
     let callCount = 0;
-    window.fetch = vi.fn().mockImplementation(() => {
+    window.fetch = vi.fn().mockImplementation((url: string) => {
       callCount++;
       if (callCount === 1) {
         return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve([MOCK_BULLETIN]) });
+      }
+      if (typeof url === "string" && url.includes("/script")) {
+        return Promise.resolve({ ok: false, status: 404, json: () => Promise.resolve({}) });
       }
       return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(MOCK_BULLETIN) });
     });
