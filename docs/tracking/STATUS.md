@@ -1,15 +1,17 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 54 — Source Scan Summary Frontend Foundation ✓ TAMAMLANDI
+Phase 55 — News Item Usage Summary Frontend Foundation ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-scan_count/last_scan_status/last_scan_finished_at backend alanları, SourceScanStatusBadge, SourceScanSummary, SourcesTable Scans sütunu, 10 yeni frontend test, 303 toplam frontend test.
+usage_count/last_usage_type/last_target_module backend alanları, NewsItemUsageBadge, NewsItemUsageSummary, NewsItemsTable Kullanım sütunu, 10 yeni frontend test, 313 toplam frontend test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 55: news item usage summary frontend: usage_count/last_usage_type/last_target_module, NewsItemUsageBadge, NewsItemUsageSummary, NewsItemsTable Kullanım sütunu, 10 yeni test, 313 toplam (2026-04-02)
+- Phase 54: source scan summary frontend: scan_count/last_scan_status/last_scan_finished_at, SourceScanStatusBadge, SourceScanSummary, SourcesTable Scans sütunu, 10 yeni test, 303 toplam (2026-04-02)
 - Phase 1: backend + frontend + renderer iskeleti tamamlandı (2026-04-01)
 - Phase 2 panel shell + DB temeli tamamlandı (2026-04-01)
 - Phase 3 settings backend: Setting modeli, CRUD API, 17 test (2026-04-01)

@@ -88,5 +88,8 @@ class NewsItemResponse(BaseModel):
     raw_payload_json: Optional[str]
     created_at: datetime
     updated_at: datetime
+    usage_count: int = 0
+    last_usage_type: Optional[str] = None
+    last_target_module: Optional[str] = None
 
     model_config = {"from_attributes": True}

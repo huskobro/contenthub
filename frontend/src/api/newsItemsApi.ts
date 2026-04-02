@@ -15,6 +15,9 @@ export interface NewsItemResponse {
   raw_payload_json: string | null;
   created_at: string;
   updated_at: string;
+  usage_count?: number;
+  last_usage_type?: string | null;
+  last_target_module?: string | null;
 }
 
 export interface NewsItemCreatePayload {
