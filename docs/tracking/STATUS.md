@@ -1,10 +1,10 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 48 — Admin Used News Create/Edit Frontend Foundation ✓ TAMAMLANDI
+Phase 49 — News Bulletin Selected News Picker Frontend Foundation ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-usedNewsApi genişletildi, useCreateUsedNews, useUpdateUsedNews, UsedNewsForm, UsedNewsCreatePage, DetailPanel edit modu, /new route, 10 yeni test, 253 toplam frontend test.
+useNewsItemsPickerList, NewsItemPickerTable, NewsBulletinSelectedNewsPicker, NewsBulletinSelectedItemsPanel güncellendi, 10 yeni test, 263 toplam frontend test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
@@ -59,6 +59,7 @@ usedNewsApi genişletildi, useCreateUsedNews, useUpdateUsedNews, UsedNewsForm, U
 - Phase 46 admin news items create/edit frontend: newsItemsApi genişletildi, useCreateNewsItem, useUpdateNewsItem, NewsItemForm, NewsItemCreatePage, DetailPanel edit modu, /new route, 10 yeni test, 233 toplam frontend test (2026-04-02)
 - Phase 47 admin source scans create/edit frontend: sourceScansApi genişletildi, useCreateSourceScan, useUpdateSourceScan, SourceScanForm, SourceScanCreatePage, DetailPanel edit modu, /new route, 10 yeni test, 243 toplam frontend test (2026-04-02)
 - Phase 48 admin used news create/edit frontend: usedNewsApi genişletildi, useCreateUsedNews, useUpdateUsedNews, UsedNewsForm, UsedNewsCreatePage, DetailPanel edit modu, /new route, 10 yeni test, 253 toplam frontend test (2026-04-02)
+- Phase 49 news bulletin selected news picker frontend: useNewsItemsPickerList, NewsItemPickerTable, NewsBulletinSelectedNewsPicker, SelectedItemsPanel güncellendi (+picker entegrasyonu), 10 yeni test, 263 toplam frontend test (2026-04-02)
 
 ## Mevcut Riskler
 - Henüz auth / rol zorlama yok (kasıtlı)

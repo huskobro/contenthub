@@ -3,7 +3,9 @@ import { useNewsBulletinSelectedItems } from "../../hooks/useNewsBulletinSelecte
 import { useCreateNewsBulletinSelectedItem } from "../../hooks/useCreateNewsBulletinSelectedItem";
 import { useUpdateNewsBulletinSelectedItem } from "../../hooks/useUpdateNewsBulletinSelectedItem";
 import { NewsBulletinSelectedItemForm } from "./NewsBulletinSelectedItemForm";
+import { NewsBulletinSelectedNewsPicker } from "./NewsBulletinSelectedNewsPicker";
 import type { SelectedItemFormValues } from "./NewsBulletinSelectedItemForm";
+import type { NewsItemResponse } from "../../api/newsItemsApi";
 
 interface Props {
   bulletinId: string;
@@ -15,6 +17,7 @@ export function NewsBulletinSelectedItemsPanel({ bulletinId }: Props) {
   const updateMutation = useUpdateNewsBulletinSelectedItem(bulletinId);
   const [mode, setMode] = useState<"view" | "create" | "edit">("view");
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [pickerError, setPickerError] = useState<string | null>(null);
 
   const sectionStyle: React.CSSProperties = {
     border: "1px solid #e2e8f0",
@@ -31,6 +34,19 @@ export function NewsBulletinSelectedItemsPanel({ bulletinId }: Props) {
         selection_reason: values.selection_reason.trim() || undefined,
       },
       { onSuccess: () => setMode("view") }
+    );
+  }
+
+  function handlePickerSelect(item: NewsItemResponse) {
+    setPickerError(null);
+    createMutation.mutate(
+      { news_item_id: item.id, sort_order: (items?.length ?? 0) + 1 },
+      {
+        onError: (err) => {
+          const msg = err instanceof Error ? err.message : String(err);
+          setPickerError(msg.includes("409") ? "Bu haber zaten eklenmiş (duplicate)." : msg);
+        },
+      }
     );
   }
 
@@ -110,8 +126,14 @@ export function NewsBulletinSelectedItemsPanel({ bulletinId }: Props) {
     <div style={sectionStyle}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
         <h4 style={{ margin: 0 }}>Selected News</h4>
-        <button onClick={() => setMode("create")}>+ Item Ekle</button>
+        <button onClick={() => setMode("create")}>+ Manuel Ekle</button>
       </div>
+
+      <NewsBulletinSelectedNewsPicker
+        onSelect={handlePickerSelect}
+        isAdding={createMutation.isPending}
+        addError={pickerError}
+      />
 
       {!items || items.length === 0 ? (
         <p style={{ color: "#94a3b8", margin: 0 }}>Henüz seçilmiş haber yok.</p>

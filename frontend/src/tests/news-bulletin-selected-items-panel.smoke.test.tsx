@@ -63,18 +63,18 @@ describe("NewsBulletinSelectedItemsPanel smoke tests", () => {
     });
   });
 
-  it("shows '+ Item Ekle' button", async () => {
+  it("shows '+ Manuel Ekle' button", async () => {
     renderPanel(mockFetch([]));
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: "+ Item Ekle" })).toBeDefined();
+      expect(screen.getByRole("button", { name: "+ Manuel Ekle" })).toBeDefined();
     });
   });
 
-  it("opens create form when '+ Item Ekle' is clicked", async () => {
+  it("opens create form when '+ Manuel Ekle' is clicked", async () => {
     renderPanel(mockFetch([]));
     const user = userEvent.setup();
-    await waitFor(() => expect(screen.getByRole("button", { name: "+ Item Ekle" })).toBeDefined());
-    await user.click(screen.getByRole("button", { name: "+ Item Ekle" }));
+    await waitFor(() => expect(screen.getByRole("button", { name: "+ Manuel Ekle" })).toBeDefined());
+    await user.click(screen.getByRole("button", { name: "+ Manuel Ekle" }));
     await waitFor(() => {
       expect(screen.getByRole("heading", { name: "Selected Item Ekle" })).toBeDefined();
     });
@@ -83,8 +83,8 @@ describe("NewsBulletinSelectedItemsPanel smoke tests", () => {
   it("shows validation error when news_item_id is empty on submit", async () => {
     renderPanel(mockFetch([]));
     const user = userEvent.setup();
-    await waitFor(() => expect(screen.getByRole("button", { name: "+ Item Ekle" })).toBeDefined());
-    await user.click(screen.getByRole("button", { name: "+ Item Ekle" }));
+    await waitFor(() => expect(screen.getByRole("button", { name: "+ Manuel Ekle" })).toBeDefined());
+    await user.click(screen.getByRole("button", { name: "+ Manuel Ekle" }));
     await waitFor(() => expect(screen.getByRole("heading", { name: "Selected Item Ekle" })).toBeDefined());
     await user.click(screen.getByRole("button", { name: "Ekle" }));
     await waitFor(() => {
@@ -95,8 +95,8 @@ describe("NewsBulletinSelectedItemsPanel smoke tests", () => {
   it("shows validation error when sort_order is negative", async () => {
     renderPanel(mockFetch([]));
     const user = userEvent.setup();
-    await waitFor(() => expect(screen.getByRole("button", { name: "+ Item Ekle" })).toBeDefined());
-    await user.click(screen.getByRole("button", { name: "+ Item Ekle" }));
+    await waitFor(() => expect(screen.getByRole("button", { name: "+ Manuel Ekle" })).toBeDefined());
+    await user.click(screen.getByRole("button", { name: "+ Manuel Ekle" }));
     await waitFor(() => expect(screen.getByRole("heading", { name: "Selected Item Ekle" })).toBeDefined());
     const inputs = screen.getAllByRole("textbox");
     // inputs[0] = news_item_id, inputs[1] = sort_order, inputs[2] = selection_reason
@@ -113,8 +113,8 @@ describe("NewsBulletinSelectedItemsPanel smoke tests", () => {
   it("cancel closes create form and returns to view", async () => {
     renderPanel(mockFetch([]));
     const user = userEvent.setup();
-    await waitFor(() => expect(screen.getByRole("button", { name: "+ Item Ekle" })).toBeDefined());
-    await user.click(screen.getByRole("button", { name: "+ Item Ekle" }));
+    await waitFor(() => expect(screen.getByRole("button", { name: "+ Manuel Ekle" })).toBeDefined());
+    await user.click(screen.getByRole("button", { name: "+ Manuel Ekle" }));
     await waitFor(() => expect(screen.getByRole("heading", { name: "Selected Item Ekle" })).toBeDefined());
     await user.click(screen.getByRole("button", { name: "İptal" }));
     await waitFor(() => {
