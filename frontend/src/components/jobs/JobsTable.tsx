@@ -25,21 +25,21 @@ export function JobsTable({ jobs, selectedId, onSelect }: JobsTableProps) {
     <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.875rem" }}>
       <thead>
         <tr style={{ borderBottom: "2px solid #e2e8f0", textAlign: "left" }}>
-          <th style={{ padding: "0.5rem" }}>module_type</th>
-          <th style={{ padding: "0.5rem" }}>Context</th>
-          <th style={{ padding: "0.5rem" }}>status</th>
+          <th style={{ padding: "0.5rem" }}>Modül</th>
+          <th style={{ padding: "0.5rem" }}>Bağlam</th>
+          <th style={{ padding: "0.5rem" }}>Durum</th>
           <th style={{ padding: "0.5rem" }}>Aksiyon Özeti</th>
-          <th style={{ padding: "0.5rem" }}>Çıktı Zenginliği</th>
-          <th style={{ padding: "0.5rem" }}>Yayın Sonucu</th>
+          <th style={{ padding: "0.5rem" }}>Mevcut Adım</th>
+          <th style={{ padding: "0.5rem" }}>Tekrar</th>
+          <th style={{ padding: "0.5rem" }}>Süre</th>
           <th style={{ padding: "0.5rem" }}>Girdi Kalitesi</th>
+          <th style={{ padding: "0.5rem" }}>Girdi Özgüllüğü</th>
+          <th style={{ padding: "0.5rem" }}>Çıktı Zenginliği</th>
+          <th style={{ padding: "0.5rem" }}>Yayın Verimi</th>
+          <th style={{ padding: "0.5rem" }}>Yayın Sonucu</th>
           <th style={{ padding: "0.5rem" }}>Artifact Tutarlılığı</th>
           <th style={{ padding: "0.5rem" }}>Target/Output Tutarlılığı</th>
-          <th style={{ padding: "0.5rem" }}>Yayın Verimi</th>
-          <th style={{ padding: "0.5rem" }}>Girdi Özgüllüğü</th>
-          <th style={{ padding: "0.5rem" }}>current_step_key</th>
-          <th style={{ padding: "0.5rem" }}>retry_count</th>
-          <th style={{ padding: "0.5rem" }}>elapsed</th>
-          <th style={{ padding: "0.5rem" }}>created_at</th>
+          <th style={{ padding: "0.5rem" }}>Oluşturulma</th>
         </tr>
       </thead>
       <tbody>
@@ -53,6 +53,7 @@ export function JobsTable({ jobs, selectedId, onSelect }: JobsTableProps) {
               background: selectedId === j.id ? "#eff6ff" : "transparent",
             }}
           >
+            {/* Kimlik & Durum */}
             <td style={{ padding: "0.5rem", fontFamily: "monospace" }}>{j.module_type}</td>
             <td style={{ padding: "0.5rem" }}>
               <JobContextSummary moduleType={j.module_type} sourceContextJson={j.source_context_json} />
@@ -68,11 +69,44 @@ export function JobsTable({ jobs, selectedId, onSelect }: JobsTableProps) {
               />
             </td>
             <td style={{ padding: "0.5rem" }}>
+              {j.current_step_key ?? <em style={{ color: "#94a3b8" }}>—</em>}
+            </td>
+            <td style={{ padding: "0.5rem" }}>{j.retry_count}</td>
+            <td style={{ padding: "0.5rem", fontSize: "0.8125rem", color: "#64748b" }}>
+              {formatDuration(j.elapsed_total_seconds)}
+            </td>
+            {/* Girdi Grubu */}
+            <td style={{ padding: "0.5rem" }}>
+              <JobInputQualitySummary
+                sourceContextJson={j.source_context_json}
+                templateId={j.template_id}
+                workspacePath={j.workspace_path}
+              />
+            </td>
+            <td style={{ padding: "0.5rem" }}>
+              <JobInputSpecificitySummary
+                sourceContextJson={j.source_context_json}
+                templateId={j.template_id}
+                workspacePath={j.workspace_path}
+              />
+            </td>
+            {/* Çıktı & Yayın Grubu */}
+            <td style={{ padding: "0.5rem" }}>
               <JobOutputRichnessSummary
                 lastError={j.last_error}
                 sourceContextJson={j.source_context_json}
                 templateId={j.template_id}
                 workspacePath={j.workspace_path}
+              />
+            </td>
+            <td style={{ padding: "0.5rem" }}>
+              <JobPublicationYieldSummary
+                status={j.status}
+                sourceContextJson={j.source_context_json}
+                templateId={j.template_id}
+                workspacePath={j.workspace_path}
+                currentStepKey={j.current_step_key}
+                lastError={j.last_error}
               />
             </td>
             <td style={{ padding: "0.5rem" }}>
@@ -84,13 +118,7 @@ export function JobsTable({ jobs, selectedId, onSelect }: JobsTableProps) {
                 workspacePath={j.workspace_path}
               />
             </td>
-            <td style={{ padding: "0.5rem" }}>
-              <JobInputQualitySummary
-                sourceContextJson={j.source_context_json}
-                templateId={j.template_id}
-                workspacePath={j.workspace_path}
-              />
-            </td>
+            {/* Tutarlılık Grubu */}
             <td style={{ padding: "0.5rem" }}>
               <JobArtifactConsistencySummary
                 sourceContextJson={j.source_context_json}
@@ -110,30 +138,7 @@ export function JobsTable({ jobs, selectedId, onSelect }: JobsTableProps) {
                 lastError={j.last_error}
               />
             </td>
-            <td style={{ padding: "0.5rem" }}>
-              <JobPublicationYieldSummary
-                status={j.status}
-                sourceContextJson={j.source_context_json}
-                templateId={j.template_id}
-                workspacePath={j.workspace_path}
-                currentStepKey={j.current_step_key}
-                lastError={j.last_error}
-              />
-            </td>
-            <td style={{ padding: "0.5rem" }}>
-              <JobInputSpecificitySummary
-                sourceContextJson={j.source_context_json}
-                templateId={j.template_id}
-                workspacePath={j.workspace_path}
-              />
-            </td>
-            <td style={{ padding: "0.5rem" }}>
-              {j.current_step_key ?? <em style={{ color: "#94a3b8" }}>—</em>}
-            </td>
-            <td style={{ padding: "0.5rem" }}>{j.retry_count}</td>
-            <td style={{ padding: "0.5rem", fontSize: "0.8125rem", color: "#64748b" }}>
-              {formatDuration(j.elapsed_total_seconds)}
-            </td>
+            {/* Zaman */}
             <td style={{ padding: "0.5rem", fontSize: "0.8125rem", color: "#64748b" }}>
               {j.created_at.slice(0, 19).replace("T", " ")}
             </td>

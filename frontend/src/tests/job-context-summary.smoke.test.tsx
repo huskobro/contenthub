@@ -95,8 +95,8 @@ const mockJob = (overrides: object = {}) => ({
 });
 
 describe("JobsTable context summary", () => {
-  it("J) renders Context column header", () => {
+  it("J) renders Bağlam column header", () => {
     render(<JobsTable jobs={[mockJob()]} selectedId={null} onSelect={() => {}} />);
-    expect(screen.getByText("Context")).toBeTruthy();
+    expect(screen.getByText("Bağlam")).toBeTruthy();
   });
 });

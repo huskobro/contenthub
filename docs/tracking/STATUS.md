@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 135 — Source Scans Registry Visibility Completion Pack ✓ TAMAMLANDI
+Phase 136 — Jobs Registry Visibility Completion Pack ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Source Scans tablosu görünürlük iyileştirmesi: sütun başlıkları Türkçeleştirildi, sütun sırası mantıksal gruplara ayrıldı, import düzeltmesi. Badge stilleri ve secondary textler korundu. 1093 toplam test.
+Jobs tablosu görünürlük iyileştirmesi: sütun başlıkları Türkçeleştirildi, sütun sırası mantıksal gruplara ayrıldı, 2 import düzeltmesi. Badge stilleri ve secondary textler korundu. 1093 toplam test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 136: jobs registry visibility completion pack: sütun Türkçeleştirme, mantıksal sıralama, 2 import fix, badge stilleri korundu, 1093 toplam (2026-04-03)
 - Phase 135: source scans registry visibility completion pack: sütun Türkçeleştirme, mantıksal sıralama, import fix, badge stilleri korundu, 1093 toplam (2026-04-03)
 - Phase 134: sources registry visibility completion pack: sütun Türkçeleştirme, mantıksal sıralama, import fix, test mock düzeltmeleri, badge stilleri korundu, 1093 toplam (2026-04-03)
 - Phase 133: source publication outcome summary: pure frontend, SourcePublicationOutcomeBadge, SourcePublicationOutcomeSummary, Yayın Çıktısı sütunu, 10 yeni test, 1093 toplam (2026-04-02)

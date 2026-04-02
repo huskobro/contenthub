@@ -1,3 +1,5 @@
+import { JobInputQualityBadge } from "./JobInputQualityBadge";
+
 export type JobInputQualityLevel = "Zayıf giriş" | "Kısmi giriş" | "Güçlü giriş";
 
 function isNonEmpty(v: string | null | undefined): boolean {
@@ -60,5 +62,3 @@ export function JobInputQualitySummary({ sourceContextJson, templateId, workspac
   const level = computeJobInputQuality(sourceContextJson, templateId, workspacePath);
   return <JobInputQualityBadge level={level} />;
 }
-
-import { JobInputQualityBadge } from "./JobInputQualityBadge";

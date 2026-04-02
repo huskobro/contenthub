@@ -2,6 +2,20 @@
 
 ---
 
+## [2026-04-03] Phase 136 — Jobs Registry Visibility Completion Pack
+
+**Ne:** Jobs tablosunun görünürlük ve okunabilirlik iyileştirmesi. Konservatif yaklaşım.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/jobs/JobInputQualitySummary.tsx` (import sırası düzeltmesi)
+- `frontend/src/components/jobs/JobArtifactConsistencySummary.tsx` (import sırası düzeltmesi)
+- `frontend/src/components/jobs/JobsTable.tsx` (sütun başlıkları Türkçeleştirildi, sütun sırası mantıksal gruplara ayrıldı)
+- `frontend/src/tests/job-context-summary.smoke.test.tsx` (header testi güncellendi)
+- `docs/testing/test-report-phase-136-jobs-registry-visibility-completion-pack.md` (yeni)
+**Korunan:** Badge stilleri (4 grup), secondary textler, tüm 15 sütun. Bilgi kaybı sıfır.
+**Test:** 1093 toplam, tsc temiz.
+
+---
+
 ## [2026-04-03] Phase 135 — Source Scans Registry Visibility Completion Pack
 
 **Ne:** Source Scans tablosunun görünürlük ve okunabilirlik iyileştirmesi. Konservatif yaklaşım.

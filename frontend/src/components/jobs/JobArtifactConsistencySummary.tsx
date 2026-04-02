@@ -1,3 +1,5 @@
+import { JobArtifactConsistencyBadge } from "./JobArtifactConsistencyBadge";
+
 export type JobArtifactConsistencyLevel =
   | "Artifacts yok"
   | "Tek taraflı"
@@ -61,5 +63,3 @@ export function JobArtifactConsistencySummary({
   );
   return <JobArtifactConsistencyBadge level={level} />;
 }
-
-import { JobArtifactConsistencyBadge } from "./JobArtifactConsistencyBadge";
