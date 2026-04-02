@@ -36,7 +36,7 @@ export function JobsTable({ jobs, selectedId, onSelect }: JobsTableProps) {
           <th style={{ padding: "0.5rem" }}>Girdi Özgüllüğü</th>
           <th style={{ padding: "0.5rem" }}>Çıktı Zenginliği</th>
           <th style={{ padding: "0.5rem" }}>Yayın Verimi</th>
-          <th style={{ padding: "0.5rem" }}>Yayın Sonucu</th>
+          <th style={{ padding: "0.5rem" }}>Yayın Çıktısı</th>
           <th style={{ padding: "0.5rem" }}>Artifact Tutarlılığı</th>
           <th style={{ padding: "0.5rem" }}>Target/Output Tutarlılığı</th>
           <th style={{ padding: "0.5rem" }}>Oluşturulma</th>

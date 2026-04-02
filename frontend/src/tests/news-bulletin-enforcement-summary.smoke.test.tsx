@@ -109,6 +109,6 @@ const mockBulletin = (overrides: object = {}) => ({
 describe("NewsBulletinsTable enforcement summary", () => {
   it("J) renders Enforcement column header", () => {
     render(<NewsBulletinsTable bulletins={[mockBulletin()]} selectedId={null} onSelect={() => {}} />);
-    expect(screen.getByText("Enforcement")).toBeTruthy();
+    expect(screen.getByText("Uygunluk")).toBeTruthy();
   });
 });

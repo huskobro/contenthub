@@ -2,6 +2,20 @@
 
 ---
 
+## [2026-04-03] Phase 140 — Cross-Registry Header/Grouping Consistency Pack
+
+**Ne:** 9 registry tablosu arasında başlık dili ve kavram tutarlılığı hizalaması.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/source-scans/SourceScansTable.tsx` ("Yayın Sonucu" → "Yayın Çıktısı")
+- `frontend/src/components/jobs/JobsTable.tsx` ("Yayın Sonucu" → "Yayın Çıktısı")
+- `frontend/src/components/news-bulletin/NewsBulletinsTable.tsx` ("Enforcement" → "Uygunluk")
+- `frontend/src/tests/news-bulletin-enforcement-summary.smoke.test.tsx` (header testi güncellendi)
+- `docs/testing/test-report-phase-140-cross-registry-header-grouping-consistency-pack.md` (yeni)
+**Korunan:** Badge stilleri, secondary textler, tüm sütunlar, entity-specific grup isimleri. Bilgi kaybı sıfır.
+**Test:** 1093 toplam, tsc temiz.
+
+---
+
 ## [2026-04-03] Phase 139 — Standard Video + News Bulletin Registry Visibility Completion Pack
 
 **Ne:** Standard Video ve News Bulletin tablolarının görünürlük ve okunabilirlik iyileştirmesi. Konservatif yaklaşım.

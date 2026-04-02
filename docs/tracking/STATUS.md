@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 139 — Standard Video + News Bulletin Registry Visibility Completion Pack ✓ TAMAMLANDI
+Phase 140 — Cross-Registry Header/Grouping Consistency Pack ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Standard Video + News Bulletin tabloları görünürlük iyileştirmesi: sütun başlıkları Türkçeleştirildi, sütun sırası mantıksal gruplara ayrıldı, 1 import düzeltmesi, 1 test güncellemesi. Badge stilleri ve secondary textler korundu. 1093 toplam test.
+9 registry tablosu arasında başlık dili tutarlılığı: "Yayın Sonucu" → "Yayın Çıktısı" (2 tablo), "Enforcement" → "Uygunluk" (1 tablo), 1 test güncellemesi. Badge stilleri korundu. 1093 toplam test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 140: cross registry header grouping consistency pack: Yayın Sonucu→Yayın Çıktısı (SourceScans, Jobs), Enforcement→Uygunluk (NewsBulletin), 1 test fix, badge stilleri korundu, 1093 toplam (2026-04-03)
 - Phase 139: standardvideo newsbulletin registry visibility completion pack: StandardVideo sütun sıralama, NewsBulletin 8 başlık Türkçeleştirme + sıralama, 1 import fix, 1 test fix, badge stilleri korundu, 1093 toplam (2026-04-03)
 - Phase 138: template styleblueprint registry visibility completion pack: Templates + StyleBlueprints Türkçeleştirme, mantıksal sıralama, 2 import fix, 1 test fix, badge stilleri korundu, 1093 toplam (2026-04-03)
 - Phase 137: news registry visibility completion pack: NewsItems + UsedNews Türkçeleştirme, mantıksal sıralama, import fix, badge stilleri korundu, 1093 toplam (2026-04-03)
