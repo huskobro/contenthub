@@ -2,6 +2,19 @@
 
 ---
 
+## [2026-04-02] Phase 76 — News Item Content Completeness Summary Frontend Foundation
+
+**Ne:** News Items listesine içerik doluluk özeti eklendi. Saf frontend türetimi — backend değişikliği yok.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/news-items/NewsItemContentCompletenessBadge.tsx` (yeni)
+- `frontend/src/components/news-items/NewsItemContentCompletenessSummary.tsx` (yeni)
+- `frontend/src/components/news-items/NewsItemsTable.tsx` — İçerik sütunu eklendi
+- `frontend/src/tests/news-item-content-completeness-summary.smoke.test.tsx` (yeni, 10 test)
+- `docs/testing/test-report-phase-76-news-item-content-completeness-summary-frontend.md` (yeni)
+**Sonuç:** 523 frontend test — tümü geçti. Build başarılı.
+
+---
+
 ## [2026-04-02] Phase 75 — Source Config Coverage Summary Frontend Foundation
 
 **Ne:** Sources listesine source_type bazlı konfigürasyon özeti eklendi. Saf frontend türetimi — backend değişikliği yok.

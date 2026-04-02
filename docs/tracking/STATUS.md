@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 75 — Source Config Coverage Summary Frontend Foundation ✓ TAMAMLANDI
+Phase 76 — News Item Content Completeness Summary Frontend Foundation ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Saf frontend türetimi: SourceConfigCoverageBadge + SourceConfigCoverageSummary. 10 yeni test, 513 toplam.
+Saf frontend türetimi: NewsItemContentCompletenessBadge + NewsItemContentCompletenessSummary. 10 yeni test, 523 toplam.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 76: news item content completeness summary: pure frontend, NewsItemContentCompletenessBadge, NewsItemContentCompletenessSummary, İçerik sütunu, 10 yeni test, 523 toplam (2026-04-02)
 - Phase 75: source config coverage summary: pure frontend, SourceConfigCoverageBadge, SourceConfigCoverageSummary, Konfigürasyon sütunu, 10 yeni test, 513 toplam (2026-04-02)
 - Phase 74: source linked news summary: linked_news_count backend, SourceLinkedNewsStatusBadge, SourceLinkedNewsSummary, Haberler sütunu, 10 yeni test, 503 toplam (2026-04-02)
 - Phase 73: source scan source context summary: source_name/source_status backend lookup, SourceScanSourceStatusBadge, SourceScanSourceSummary, Kaynak sütunu güncellendi, 10 yeni test, 493 toplam (2026-04-02)
