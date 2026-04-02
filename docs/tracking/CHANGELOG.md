@@ -2,6 +2,19 @@
 
 ---
 
+## [2026-04-02] Phase 56 — News Bulletin Readiness Summary Frontend Foundation
+
+**Ne:** News Bulletin registry listesinde her bülten için sade üretim hazırlık özeti eklendi.
+**Yaklaşım:** Mevcut backend alanlarından frontend'de türetildi, yeni backend değişikliği yapılmadı.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/news-bulletin/NewsBulletinReadinessBadge.tsx` (yeni)
+- `frontend/src/components/news-bulletin/NewsBulletinReadinessSummary.tsx` (yeni)
+- `frontend/src/components/news-bulletin/NewsBulletinsTable.tsx` — Hazırlık sütunu eklendi
+- `frontend/src/tests/news-bulletin-readiness-summary.smoke.test.tsx` (yeni, 10 test)
+**Sonuç:** 323 frontend test — tümü geçti. Build başarılı.
+
+---
+
 ## [2026-04-02] Phase 55 — News Item Usage Summary Frontend Foundation
 
 **Ne:** News Items registry listesinde her haber için kullanım sayısı ve son kullanım bağlamı eklendi.

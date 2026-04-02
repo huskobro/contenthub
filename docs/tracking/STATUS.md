@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 55 — News Item Usage Summary Frontend Foundation ✓ TAMAMLANDI
+Phase 56 — News Bulletin Readiness Summary Frontend Foundation ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-usage_count/last_usage_type/last_target_module backend alanları, NewsItemUsageBadge, NewsItemUsageSummary, NewsItemsTable Kullanım sütunu, 10 yeni frontend test, 313 toplam frontend test.
+Mevcut selected_news_count/has_script/has_metadata alanlarından frontend readiness özeti türetildi. NewsBulletinReadinessBadge, NewsBulletinReadinessSummary, NewsBulletinsTable Hazırlık sütunu, 10 yeni test, 323 toplam.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 56: news bulletin readiness summary frontend: computeReadinessLevel, NewsBulletinReadinessBadge, NewsBulletinReadinessSummary, Hazırlık sütunu, 10 yeni test, 323 toplam (2026-04-02)
 - Phase 55: news item usage summary frontend: usage_count/last_usage_type/last_target_module, NewsItemUsageBadge, NewsItemUsageSummary, NewsItemsTable Kullanım sütunu, 10 yeni test, 313 toplam (2026-04-02)
 - Phase 54: source scan summary frontend: scan_count/last_scan_status/last_scan_finished_at, SourceScanStatusBadge, SourceScanSummary, SourcesTable Scans sütunu, 10 yeni test, 303 toplam (2026-04-02)
 - Phase 1: backend + frontend + renderer iskeleti tamamlandı (2026-04-01)
