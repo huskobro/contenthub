@@ -3,6 +3,7 @@ import { formatDuration } from "../../lib/formatDuration";
 import { JobContextSummary } from "./JobContextSummary";
 import { JobActionabilitySummary } from "./JobActionabilitySummary";
 import { JobOutputRichnessSummary } from "./JobOutputRichnessSummary";
+import { JobPublicationOutcomeSummary } from "./JobPublicationOutcomeSummary";
 
 interface JobsTableProps {
   jobs: JobResponse[];
@@ -24,6 +25,7 @@ export function JobsTable({ jobs, selectedId, onSelect }: JobsTableProps) {
           <th style={{ padding: "0.5rem" }}>status</th>
           <th style={{ padding: "0.5rem" }}>Aksiyon Özeti</th>
           <th style={{ padding: "0.5rem" }}>Çıktı Zenginliği</th>
+          <th style={{ padding: "0.5rem" }}>Yayın Sonucu</th>
           <th style={{ padding: "0.5rem" }}>current_step_key</th>
           <th style={{ padding: "0.5rem" }}>retry_count</th>
           <th style={{ padding: "0.5rem" }}>elapsed</th>
@@ -57,6 +59,15 @@ export function JobsTable({ jobs, selectedId, onSelect }: JobsTableProps) {
             </td>
             <td style={{ padding: "0.5rem" }}>
               <JobOutputRichnessSummary
+                lastError={j.last_error}
+                sourceContextJson={j.source_context_json}
+                templateId={j.template_id}
+                workspacePath={j.workspace_path}
+              />
+            </td>
+            <td style={{ padding: "0.5rem" }}>
+              <JobPublicationOutcomeSummary
+                status={j.status}
                 lastError={j.last_error}
                 sourceContextJson={j.source_context_json}
                 templateId={j.template_id}

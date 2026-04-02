@@ -2,6 +2,19 @@
 
 ---
 
+## [2026-04-02] Phase 88 — Job Publication Outcome Summary Frontend Foundation
+
+**Ne:** Jobs listesine yayın sonucu özeti eklendi. Saf frontend türetimi — backend değişikliği yok.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/jobs/JobPublicationOutcomeBadge.tsx` (yeni)
+- `frontend/src/components/jobs/JobPublicationOutcomeSummary.tsx` (yeni)
+- `frontend/src/components/jobs/JobsTable.tsx` (Yayın Sonucu sütunu eklendi)
+- `frontend/src/tests/job-publication-outcome-summary.smoke.test.tsx` (yeni, 10 test)
+- `docs/testing/test-report-phase-88-job-publication-outcome-summary-frontend.md` (yeni)
+**Test:** 10 yeni smoke test, 643 toplam, build temiz.
+
+---
+
 ## [2026-04-02] Phase 87 — Source Scan Publication Yield Summary Frontend Foundation
 
 **Ne:** Source Scans listesine yayın verimi özeti eklendi. Küçük backend genişletme (batch COUNT sorguları) + frontend türetimi.

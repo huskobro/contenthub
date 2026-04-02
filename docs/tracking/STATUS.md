@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 87 — Source Scan Publication Yield Summary Frontend Foundation ✓ TAMAMLANDI
+Phase 88 — Job Publication Outcome Summary Frontend Foundation ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Küçük backend genişletme + frontend türetimi: SourceScanPublicationYieldBadge + SourceScanPublicationYieldSummary. 10 yeni test, 633 toplam.
+Saf frontend türetimi: JobPublicationOutcomeBadge + JobPublicationOutcomeSummary. 10 yeni test, 643 toplam.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 88: job publication outcome summary: pure frontend, JobPublicationOutcomeBadge, JobPublicationOutcomeSummary, Yayın Sonucu sütunu, 10 yeni test, 643 toplam (2026-04-02)
 - Phase 87: source scan publication yield summary: backend linked/reviewed/used COUNT batch queries, SourceScanPublicationYieldBadge, SourceScanPublicationYieldSummary, Yayın Verimi sütunu, 10 yeni test, 633 toplam (2026-04-02)
 - Phase 86: used news publication linkage summary: pure frontend, UsedNewsPublicationLinkageBadge, UsedNewsPublicationLinkageSummary, Yayın Bağı sütunu, 10 yeni test, 623 toplam (2026-04-02)
 - Phase 85: used news source context summary: backend has_news_item_source/has_news_item_scan_reference batch JOIN, UsedNewsSourceContextBadge, UsedNewsSourceContextSummary, Kaynak Bağlamı sütunu, 10 yeni test, 613 toplam (2026-04-02)
