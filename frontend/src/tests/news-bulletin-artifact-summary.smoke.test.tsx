@@ -90,7 +90,7 @@ describe("NewsBulletinsTable artifact column", () => {
 
   it("H) renders Artifacts column header", () => {
     render(<NewsBulletinsTable bulletins={mockBulletins} selectedId={null} onSelect={() => {}} />);
-    expect(screen.getByText("Artifacts")).toBeTruthy();
+    expect(screen.getByText("Artifact")).toBeTruthy();
   });
 
   it("I) renders Var for has_script=true", () => {

@@ -2,6 +2,20 @@
 
 ---
 
+## [2026-04-03] Phase 139 — Standard Video + News Bulletin Registry Visibility Completion Pack
+
+**Ne:** Standard Video ve News Bulletin tablolarının görünürlük ve okunabilirlik iyileştirmesi. Konservatif yaklaşım.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/news-bulletin/NewsBulletinInputQualitySummary.tsx` (import sırası düzeltmesi)
+- `frontend/src/components/standard-video/StandardVideosTable.tsx` (sütun sırası mantıksal gruplara ayrıldı)
+- `frontend/src/components/news-bulletin/NewsBulletinsTable.tsx` (8 başlık Türkçeleştirildi, header stili tutarlı hale getirildi, sütun sırası mantıksal gruplara ayrıldı)
+- `frontend/src/tests/news-bulletin-artifact-summary.smoke.test.tsx` (header testi güncellendi)
+- `docs/testing/test-report-phase-139-standardvideo-newsbulletin-registry-visibility-completion-pack.md` (yeni)
+**Korunan:** Badge stilleri, secondary textler, tüm sütunlar (StandardVideo: 13, NewsBulletin: 18). Bilgi kaybı sıfır.
+**Test:** 1093 toplam, tsc temiz.
+
+---
+
 ## [2026-04-03] Phase 138 — Templates + Style Blueprints Registry Visibility Completion Pack
 
 **Ne:** Templates ve Style Blueprints tablolarının görünürlük ve okunabilirlik iyileştirmesi. Konservatif yaklaşım.

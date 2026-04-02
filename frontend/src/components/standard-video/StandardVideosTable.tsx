@@ -35,18 +35,24 @@ export function StandardVideosTable({ videos, selectedId, onSelect }: Props) {
     <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.875rem" }}>
       <thead>
         <tr style={{ background: "#f8fafc", textAlign: "left" }}>
+          {/* Kimlik & Durum */}
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Başlık</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Konu</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Durum</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Hazırlık</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Artifact</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Yayın Sinyali</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Girdi Kalitesi</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Artifact Tutarlılığı</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Girdi Özgüllüğü</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Target/Output Tutarlılığı</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Dil</th>
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Hedef Süre</th>
+          {/* Hazırlık & İçerik */}
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Hazırlık</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Artifact</th>
+          {/* Girdi */}
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Girdi Kalitesi</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Girdi Özgüllüğü</th>
+          {/* Yayın */}
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Yayın Sinyali</th>
+          {/* Tutarlılık */}
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Artifact Tutarlılığı</th>
+          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Target/Output Tutarlılığı</th>
+          {/* Zaman */}
           <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Oluşturulma</th>
         </tr>
       </thead>
@@ -61,6 +67,7 @@ export function StandardVideosTable({ videos, selectedId, onSelect }: Props) {
               borderBottom: "1px solid #f1f5f9",
             }}
           >
+            {/* Kimlik & Durum */}
             <td style={{ padding: "0.5rem 0.75rem" }}>{v.title ?? "—"}</td>
             <td style={{ padding: "0.5rem 0.75rem" }}>{v.topic}</td>
             <td style={{ padding: "0.5rem 0.75rem" }}>
@@ -73,6 +80,11 @@ export function StandardVideosTable({ videos, selectedId, onSelect }: Props) {
                 {v.status}
               </span>
             </td>
+            <td style={{ padding: "0.5rem 0.75rem" }}>{v.language ?? "—"}</td>
+            <td style={{ padding: "0.5rem 0.75rem" }}>
+              {formatDuration(v.target_duration_seconds)}
+            </td>
+            {/* Hazırlık & İçerik */}
             <td style={{ padding: "0.5rem 0.75rem" }}>
               <StandardVideoReadinessSummary
                 topic={v.topic}
@@ -85,13 +97,7 @@ export function StandardVideosTable({ videos, selectedId, onSelect }: Props) {
                 hasMetadata={v.has_metadata}
               />
             </td>
-            <td style={{ padding: "0.5rem 0.75rem" }}>
-              <StandardVideoPublicationSignalSummary
-                topic={v.topic}
-                hasScript={v.has_script}
-                hasMetadata={v.has_metadata}
-              />
-            </td>
+            {/* Girdi */}
             <td style={{ padding: "0.5rem 0.75rem" }}>
               <StandardVideoInputQualitySummary
                 topic={v.topic}
@@ -101,17 +107,26 @@ export function StandardVideosTable({ videos, selectedId, onSelect }: Props) {
               />
             </td>
             <td style={{ padding: "0.5rem 0.75rem" }}>
-              <StandardVideoArtifactConsistencySummary
-                hasScript={v.has_script}
-                hasMetadata={v.has_metadata}
-              />
-            </td>
-            <td style={{ padding: "0.5rem 0.75rem" }}>
               <StandardVideoInputSpecificitySummary
                 topic={v.topic}
                 brief={v.brief}
                 targetDurationSeconds={v.target_duration_seconds}
                 language={v.language}
+              />
+            </td>
+            {/* Yayın */}
+            <td style={{ padding: "0.5rem 0.75rem" }}>
+              <StandardVideoPublicationSignalSummary
+                topic={v.topic}
+                hasScript={v.has_script}
+                hasMetadata={v.has_metadata}
+              />
+            </td>
+            {/* Tutarlılık */}
+            <td style={{ padding: "0.5rem 0.75rem" }}>
+              <StandardVideoArtifactConsistencySummary
+                hasScript={v.has_script}
+                hasMetadata={v.has_metadata}
               />
             </td>
             <td style={{ padding: "0.5rem 0.75rem" }}>
@@ -124,10 +139,7 @@ export function StandardVideosTable({ videos, selectedId, onSelect }: Props) {
                 hasMetadata={v.has_metadata}
               />
             </td>
-            <td style={{ padding: "0.5rem 0.75rem" }}>{v.language ?? "—"}</td>
-            <td style={{ padding: "0.5rem 0.75rem" }}>
-              {formatDuration(v.target_duration_seconds)}
-            </td>
+            {/* Zaman */}
             <td style={{ padding: "0.5rem 0.75rem", color: "#94a3b8" }}>
               {new Date(v.created_at).toLocaleString("tr-TR")}
             </td>

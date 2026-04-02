@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 138 — Templates + Style Blueprints Registry Visibility Completion Pack ✓ TAMAMLANDI
+Phase 139 — Standard Video + News Bulletin Registry Visibility Completion Pack ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Templates + Style Blueprints tabloları görünürlük iyileştirmesi: sütun başlıkları Türkçeleştirildi, sütun sırası mantıksal gruplara ayrıldı, 2 import düzeltmesi, 1 test güncellemesi. Badge stilleri ve secondary textler korundu. 1093 toplam test.
+Standard Video + News Bulletin tabloları görünürlük iyileştirmesi: sütun başlıkları Türkçeleştirildi, sütun sırası mantıksal gruplara ayrıldı, 1 import düzeltmesi, 1 test güncellemesi. Badge stilleri ve secondary textler korundu. 1093 toplam test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 139: standardvideo newsbulletin registry visibility completion pack: StandardVideo sütun sıralama, NewsBulletin 8 başlık Türkçeleştirme + sıralama, 1 import fix, 1 test fix, badge stilleri korundu, 1093 toplam (2026-04-03)
 - Phase 138: template styleblueprint registry visibility completion pack: Templates + StyleBlueprints Türkçeleştirme, mantıksal sıralama, 2 import fix, 1 test fix, badge stilleri korundu, 1093 toplam (2026-04-03)
 - Phase 137: news registry visibility completion pack: NewsItems + UsedNews Türkçeleştirme, mantıksal sıralama, import fix, badge stilleri korundu, 1093 toplam (2026-04-03)
 - Phase 136: jobs registry visibility completion pack: sütun Türkçeleştirme, mantıksal sıralama, 2 import fix, badge stilleri korundu, 1093 toplam (2026-04-03)

@@ -1,3 +1,5 @@
+import { NewsBulletinInputQualityBadge } from "./NewsBulletinInputQualityBadge";
+
 export type NewsBulletinInputQualityLevel = "Zayıf giriş" | "Kısmi giriş" | "Güçlü giriş";
 
 function isNonEmpty(v: string | null | undefined): boolean {
@@ -54,4 +56,3 @@ export function NewsBulletinInputQualitySummary({
   return <NewsBulletinInputQualityBadge level={level} />;
 }
 
-import { NewsBulletinInputQualityBadge } from "./NewsBulletinInputQualityBadge";
