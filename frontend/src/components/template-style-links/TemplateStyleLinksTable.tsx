@@ -1,4 +1,5 @@
 import type { TemplateStyleLinkResponse } from "../../api/templateStyleLinksApi";
+import { TemplateStyleLinkReadinessSummary } from "./TemplateStyleLinkReadinessSummary";
 
 interface TemplateStyleLinksTableProps {
   links: TemplateStyleLinkResponse[];
@@ -32,6 +33,9 @@ export function TemplateStyleLinksTable({
           </th>
           <th style={{ textAlign: "left", padding: "0.5rem 0.75rem", fontWeight: 600, color: "#475569" }}>
             Status
+          </th>
+          <th style={{ textAlign: "left", padding: "0.5rem 0.75rem", fontWeight: 600, color: "#475569" }}>
+            Bağ Durumu
           </th>
           <th style={{ textAlign: "left", padding: "0.5rem 0.75rem", fontWeight: 600, color: "#475569" }}>
             Created
@@ -69,6 +73,14 @@ export function TemplateStyleLinksTable({
               }}>
                 {link.status}
               </span>
+            </td>
+            <td style={{ padding: "0.5rem 0.75rem" }}>
+              <TemplateStyleLinkReadinessSummary
+                status={link.status}
+                linkRole={link.link_role}
+                templateId={link.template_id}
+                styleBlueprintId={link.style_blueprint_id}
+              />
             </td>
             <td style={{ padding: "0.5rem 0.75rem", color: "#64748b", fontSize: "0.8rem" }}>
               {new Date(link.created_at).toLocaleDateString()}

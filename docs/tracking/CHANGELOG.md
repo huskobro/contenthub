@@ -2,6 +2,20 @@
 
 ---
 
+## [2026-04-02] Phase 66 — Template Style Link Readiness Summary Frontend Foundation
+
+**Ne:** Template Style Links registry listesinde her link kaydı için sade role/readiness özeti eklendi.
+**Yaklaşım:** Backend değişikliği yok; mevcut status/link_role/template_id/style_blueprint_id alanlarından frontend türetildi.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/template-style-links/TemplateStyleLinkReadinessBadge.tsx` (yeni)
+- `frontend/src/components/template-style-links/TemplateStyleLinkReadinessSummary.tsx` (yeni)
+- `frontend/src/components/template-style-links/TemplateStyleLinksTable.tsx` — Bağ Durumu sütunu eklendi
+- `frontend/src/tests/template-style-link-readiness-summary.smoke.test.tsx` (yeni, 10 test)
+- `docs/testing/test-report-phase-66-template-style-link-readiness-summary-frontend.md` (yeni)
+**Sonuç:** 423 frontend test — tümü geçti. Build başarılı.
+
+---
+
 ## [2026-04-02] Phase 65 — Style Blueprint Readiness Summary Frontend Foundation
 
 **Ne:** Style Blueprints registry listesinde her kayıt için sade readiness özeti eklendi.

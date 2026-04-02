@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 65 — Style Blueprint Readiness Summary Frontend Foundation ✓ TAMAMLANDI
+Phase 66 — Template Style Link Readiness Summary Frontend Foundation ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-6 JSON kural alanı + status'tan frontend readiness özeti. StyleBlueprintReadinessBadge, StyleBlueprintReadinessSummary, StyleBlueprintsTable Hazırlık sütunu, 10 yeni test, 413 toplam.
+status/link_role alanlarından frontend role özeti. TemplateStyleLinkReadinessBadge, TemplateStyleLinkReadinessSummary, TemplateStyleLinksTable Bağ Durumu sütunu, 10 yeni test, 423 toplam.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 66: template style link readiness summary frontend: TemplateStyleLinkReadinessBadge, TemplateStyleLinkReadinessSummary, Bağ Durumu sütunu, 10 yeni test, 423 toplam (2026-04-02)
 - Phase 65: style blueprint readiness summary frontend: StyleBlueprintReadinessBadge, StyleBlueprintReadinessSummary, Hazırlık sütunu, 10 yeni test, 413 toplam (2026-04-02)
 - Phase 64: source scan execution summary frontend: SourceScanExecutionBadge, SourceScanExecutionSummary, Çalışma Özeti sütunu, 10 yeni test, 403 toplam (2026-04-02)
 - Phase 63: standard video readiness summary frontend: StandardVideoReadinessBadge, StandardVideoReadinessSummary, Hazırlık sütunu, 10 yeni test, 393 toplam (2026-04-02)
