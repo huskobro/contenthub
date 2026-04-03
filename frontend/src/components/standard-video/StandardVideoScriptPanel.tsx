@@ -9,6 +9,7 @@ const DASH = "—";
 const LABEL_TD: React.CSSProperties = { color: "#64748b", paddingRight: "1rem", paddingBottom: "0.25rem" };
 const SECTION_STYLE: React.CSSProperties = { border: "1px solid #e2e8f0", borderRadius: "6px", padding: "1rem", marginBottom: "1.25rem" };
 const FORM_HEADING: React.CSSProperties = { margin: "0 0 1rem", fontSize: "0.9375rem", fontWeight: 600 };
+const RADIUS_XS = "4px";
 
 interface Props {
   videoId: string;
@@ -128,7 +129,7 @@ export function StandardVideoScriptPanel({
               background: "transparent",
               color: "#3b82f6",
               border: "1px solid #3b82f6",
-              borderRadius: "4px",
+              borderRadius: RADIUS_XS,
               cursor: "pointer",
             }}
           >
@@ -143,7 +144,7 @@ export function StandardVideoScriptPanel({
               background: "#3b82f6",
               color: "#fff",
               border: "none",
-              borderRadius: "4px",
+              borderRadius: RADIUS_XS,
               cursor: "pointer",
             }}
           >
@@ -184,7 +185,7 @@ export function StandardVideoScriptPanel({
             style={{
               background: "#f8fafc",
               border: "1px solid #e2e8f0",
-              borderRadius: "4px",
+              borderRadius: RADIUS_XS,
               padding: "0.75rem",
               fontSize: "0.8125rem",
               whiteSpace: "pre-wrap",

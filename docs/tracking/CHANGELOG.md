@@ -2,6 +2,19 @@
 
 ---
 
+## [2026-04-03] Phase 181 — Repeated Small Border Radius Constant Pack
+
+**Ne:** Bileşenlerde tekrar eden `borderRadius` literal'larını dosya-seviyesi const'lara taşıma.
+**Eklenen/değiştirilen dosyalar:**
+- `StandardVideoScriptPanel.tsx`: `RADIUS_XS = "4px"` eklendi, 3× inline → const
+- `TemplateStyleLinkDetailPanel.tsx`: `RADIUS_SM = "6px"` eklendi, 3× inline → const
+- `docs/testing/test-report-phase-181-repeated-small-border-radius-constant-pack.md` (yeni)
+**Atlanılan:** TemplateDetailPanel (2× inline), MetadataPanel (2× inline), form dosyaları (const tanımlarda — inline değil)
+**Test:** 1587 toplam test, tsc temiz, vite build temiz
+**Dokunulmayan:** Görünüm, davranış, badge stilleri, backend
+
+---
+
 ## [2026-04-03] Phase 180 — Repeated Small Loading/Busy Text Constant Pack
 
 **Ne:** Tüm bileşenlerde tekrar eden loading/busy text literal ("Yükleniyor...", "Kaydediliyor...") kapsamlı audit'i.

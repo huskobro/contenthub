@@ -5,6 +5,8 @@ import { TemplateStyleLinkForm } from "./TemplateStyleLinkForm";
 import { formatDateTime } from "../../lib/formatDate";
 import type { TemplateStyleLinkFormValues } from "./TemplateStyleLinkForm";
 
+const RADIUS_SM = "6px";
+
 interface TemplateStyleLinkDetailPanelProps {
   linkId: string | null;
 }
@@ -29,7 +31,7 @@ export function TemplateStyleLinkDetailPanel({ linkId }: TemplateStyleLinkDetail
     return (
       <div style={{
         padding: "2rem", color: "#94a3b8", fontSize: "0.875rem",
-        textAlign: "center", border: "1px dashed #e2e8f0", borderRadius: "6px",
+        textAlign: "center", border: "1px dashed #e2e8f0", borderRadius: RADIUS_SM,
       }}>
         Bir link seçin.
       </div>
@@ -61,7 +63,7 @@ export function TemplateStyleLinkDetailPanel({ linkId }: TemplateStyleLinkDetail
     }
 
     return (
-      <div style={{ padding: "1.25rem", border: "1px solid #e2e8f0", borderRadius: "6px", background: "#fff" }}>
+      <div style={{ padding: "1.25rem", border: "1px solid #e2e8f0", borderRadius: RADIUS_SM, background: "#fff" }}>
         <h3 style={{ margin: "0 0 1rem", fontSize: "1rem", color: "#1e293b" }}>Link Düzenle</h3>
         <TemplateStyleLinkForm
           mode="edit"
@@ -77,7 +79,7 @@ export function TemplateStyleLinkDetailPanel({ linkId }: TemplateStyleLinkDetail
   }
 
   return (
-    <div style={{ padding: "1.25rem", border: "1px solid #e2e8f0", borderRadius: "6px", background: "#fff" }}>
+    <div style={{ padding: "1.25rem", border: "1px solid #e2e8f0", borderRadius: RADIUS_SM, background: "#fff" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
         <h3 style={{ margin: 0, fontSize: "1rem", color: "#1e293b" }}>Template Style Link Detayı</h3>
         <button

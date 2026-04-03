@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 180 — Repeated Small Loading/Busy Text Constant Pack ✓ TAMAMLANDI (audit-only)
+Phase 181 — Repeated Small Border Radius Constant Pack ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Tüm bileşenlerde tekrar eden loading/busy text literal ("Yükleniyor...", "Kaydediliyor...") audit. Threshold 3+ sağlayan yeni dosya bulunamadı. 1587 toplam test.
+Bileşenlerde tekrar eden borderRadius literal'larını const ile extraction. StandardVideoScriptPanel RADIUS_XS×3, TemplateStyleLinkDetailPanel RADIUS_SM×3. 1587 toplam test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 181: repeated small border radius constant pack: RADIUS_XS + RADIUS_SM extraction (2 dosya), 1587 toplam (2026-04-03)
 - Phase 180: repeated small loading/busy text constant pack: kapsamlı audit, threshold altı (max 2× per dosya), hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 179: repeated small status text constant pack: kapsamlı audit, threshold altı (max 2× per dosya), hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 178: repeated small monospace/code style constant pack: kapsamlı audit, threshold altı (max 2× per dosya), hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
