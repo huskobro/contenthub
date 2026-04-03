@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 209 — Repeated Small Local Error Message Readability Pack ✓ TAMAMLANDI (audit-only)
+Phase 210 — Repeated Small Loading/Error/Fallback Render Pattern Pack ✓ TAMAMLANDI (audit-only)
 
 ## Mevcut Hedef
-error message readability audit. Gerçek error message literal tekrarı yok. StyleBlueprintForm field name'leri TS tip güvenliği nedeniyle dokunulmadı. Hiçbir dosya değiştirilmedi. 1587 toplam test.
+loading/error/fallback render pattern audit. || null ve isLoading/isError farklı bağlamlarda — extraction değer katmıyor. Hiçbir dosya değiştirilmedi. 1587 toplam test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 210: repeated small loading/error/fallback render pattern pack: kapsamlı audit, extraction değer katmıyor, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 209: repeated small local error message readability pack: kapsamlı audit, gerçek error literal yok, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 208: repeated small date/timestamp formatting constant pack: kapsamlı audit, extraction değer katmıyor, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 207: repeated small inline number formatting constant pack: kapsamlı audit, extraction değer katmıyor, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
