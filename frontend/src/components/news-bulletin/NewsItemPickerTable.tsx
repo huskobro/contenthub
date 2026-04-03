@@ -2,6 +2,7 @@ import type { NewsItemResponse } from "../../api/newsItemsApi";
 import { formatDateShort } from "../../lib/formatDate";
 
 const DASH = "—";
+const TH_STYLE: React.CSSProperties = { textAlign: "left", padding: "0.375rem 0.5rem", color: "#64748b", fontWeight: 500 };
 
 interface Props {
   items: NewsItemResponse[];
@@ -17,11 +18,11 @@ export function NewsItemPickerTable({ items, onSelect }: Props) {
     <table style={{ width: "100%", fontSize: "0.8125rem", borderCollapse: "collapse" }}>
       <thead>
         <tr style={{ background: "#f8fafc", borderBottom: "1px solid #e2e8f0" }}>
-          <th style={{ textAlign: "left", padding: "0.375rem 0.5rem", color: "#64748b", fontWeight: 500 }}>Başlık</th>
-          <th style={{ textAlign: "left", padding: "0.375rem 0.5rem", color: "#64748b", fontWeight: 500 }}>Durum</th>
-          <th style={{ textAlign: "left", padding: "0.375rem 0.5rem", color: "#64748b", fontWeight: 500 }}>Kategori</th>
-          <th style={{ textAlign: "left", padding: "0.375rem 0.5rem", color: "#64748b", fontWeight: 500 }}>Dil</th>
-          <th style={{ textAlign: "left", padding: "0.375rem 0.5rem", color: "#64748b", fontWeight: 500 }}>Tarih</th>
+          <th style={TH_STYLE}>Başlık</th>
+          <th style={TH_STYLE}>Durum</th>
+          <th style={TH_STYLE}>Kategori</th>
+          <th style={TH_STYLE}>Dil</th>
+          <th style={TH_STYLE}>Tarih</th>
           <th style={{ padding: "0.375rem 0.5rem" }}></th>
         </tr>
       </thead>

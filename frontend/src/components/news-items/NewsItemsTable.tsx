@@ -13,6 +13,9 @@ import { NewsItemInputQualitySummary } from "./NewsItemInputQualitySummary";
 import { NewsItemInputSpecificitySummary } from "./NewsItemInputSpecificitySummary";
 import { NewsItemTargetOutputConsistencySummary } from "./NewsItemTargetOutputConsistencySummary";
 
+const TH_STYLE: React.CSSProperties = { padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" };
+const TD_STYLE: React.CSSProperties = { padding: "0.5rem 0.75rem" };
+
 interface Props {
   items: NewsItemResponse[];
   selectedId: string | null;
@@ -32,23 +35,23 @@ export function NewsItemsTable({ items, selectedId, onSelect }: Props) {
     <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.875rem" }}>
       <thead>
         <tr style={{ background: "#f1f5f9", textAlign: "left" }}>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Başlık</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Durum</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Kaynak Özeti</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Dil</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Kategori</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Hazırlık</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>İçerik</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Girdi Kalitesi</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Girdi Özgüllüğü</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Scan Kaynağı</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Kullanım</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Used News Bağı</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Yayın Sinyali</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Yayın Zinciri</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Artifact Tutarlılığı</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Target/Output Tutarlılığı</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Oluşturulma</th>
+          <th style={TH_STYLE}>Başlık</th>
+          <th style={TH_STYLE}>Durum</th>
+          <th style={TH_STYLE}>Kaynak Özeti</th>
+          <th style={TH_STYLE}>Dil</th>
+          <th style={TH_STYLE}>Kategori</th>
+          <th style={TH_STYLE}>Hazırlık</th>
+          <th style={TH_STYLE}>İçerik</th>
+          <th style={TH_STYLE}>Girdi Kalitesi</th>
+          <th style={TH_STYLE}>Girdi Özgüllüğü</th>
+          <th style={TH_STYLE}>Scan Kaynağı</th>
+          <th style={TH_STYLE}>Kullanım</th>
+          <th style={TH_STYLE}>Used News Bağı</th>
+          <th style={TH_STYLE}>Yayın Sinyali</th>
+          <th style={TH_STYLE}>Yayın Zinciri</th>
+          <th style={TH_STYLE}>Artifact Tutarlılığı</th>
+          <th style={TH_STYLE}>Target/Output Tutarlılığı</th>
+          <th style={TH_STYLE}>Oluşturulma</th>
         </tr>
       </thead>
       <tbody>
@@ -68,12 +71,12 @@ export function NewsItemsTable({ items, selectedId, onSelect }: Props) {
               <td style={{ padding: "0.5rem 0.75rem", fontWeight: selectedId === item.id ? 600 : 400, maxWidth: "260px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                 {item.title}
               </td>
-              <td style={{ padding: "0.5rem 0.75rem" }}>
+              <td style={TD_STYLE}>
                 <span style={{ display: "inline-block", padding: "0.125rem 0.5rem", borderRadius: "9999px", fontSize: "0.75rem", background: colors.bg, color: colors.color }}>
                   {item.status}
                 </span>
               </td>
-              <td style={{ padding: "0.5rem 0.75rem" }}>
+              <td style={TD_STYLE}>
                 <NewsItemSourceSummary
                   sourceId={item.source_id}
                   sourceName={item.source_name}
@@ -83,7 +86,7 @@ export function NewsItemsTable({ items, selectedId, onSelect }: Props) {
               <td style={{ padding: "0.5rem 0.75rem", color: "#64748b" }}>{item.language ?? "—"}</td>
               <td style={{ padding: "0.5rem 0.75rem", color: "#64748b" }}>{item.category ?? "—"}</td>
               {/* Hazırlık & İçerik */}
-              <td style={{ padding: "0.5rem 0.75rem" }}>
+              <td style={TD_STYLE}>
                 <NewsItemReadinessSummary
                   title={item.title}
                   url={item.url}
@@ -94,7 +97,7 @@ export function NewsItemsTable({ items, selectedId, onSelect }: Props) {
                   lastTargetModule={item.last_target_module}
                 />
               </td>
-              <td style={{ padding: "0.5rem 0.75rem" }}>
+              <td style={TD_STYLE}>
                 <NewsItemContentCompletenessSummary
                   title={item.title}
                   url={item.url}
@@ -105,7 +108,7 @@ export function NewsItemsTable({ items, selectedId, onSelect }: Props) {
                 />
               </td>
               {/* Girdi Grubu */}
-              <td style={{ padding: "0.5rem 0.75rem" }}>
+              <td style={TD_STYLE}>
                 <NewsItemInputQualitySummary
                   title={item.title}
                   url={item.url}
@@ -117,7 +120,7 @@ export function NewsItemsTable({ items, selectedId, onSelect }: Props) {
                   publishedAt={item.published_at ? String(item.published_at) : null}
                 />
               </td>
-              <td style={{ padding: "0.5rem 0.75rem" }}>
+              <td style={TD_STYLE}>
                 <NewsItemInputSpecificitySummary
                   title={item.title}
                   url={item.url}
@@ -130,27 +133,27 @@ export function NewsItemsTable({ items, selectedId, onSelect }: Props) {
                 />
               </td>
               {/* Lineage & Kullanım Grubu */}
-              <td style={{ padding: "0.5rem 0.75rem" }}>
+              <td style={TD_STYLE}>
                 <NewsItemScanLineageSummary
                   sourceScanId={item.source_scan_id}
                   sourceScanStatus={item.source_scan_status}
                 />
               </td>
-              <td style={{ padding: "0.5rem 0.75rem" }}>
+              <td style={TD_STYLE}>
                 <NewsItemUsageSummary
                   usageCount={item.usage_count}
                   lastUsageType={item.last_usage_type}
                   lastTargetModule={item.last_target_module}
                 />
               </td>
-              <td style={{ padding: "0.5rem 0.75rem" }}>
+              <td style={TD_STYLE}>
                 <NewsItemUsedNewsLinkageSummary
                   usageCount={item.usage_count}
                   hasPublishedUsedNewsLink={item.has_published_used_news_link}
                 />
               </td>
               {/* Yayın Grubu */}
-              <td style={{ padding: "0.5rem 0.75rem" }}>
+              <td style={TD_STYLE}>
                 <NewsItemPublicationSignalSummary
                   status={item.status}
                   usedNewsCount={item.usage_count}
@@ -159,14 +162,14 @@ export function NewsItemsTable({ items, selectedId, onSelect }: Props) {
                   url={item.url}
                 />
               </td>
-              <td style={{ padding: "0.5rem 0.75rem" }}>
+              <td style={TD_STYLE}>
                 <NewsItemPublicationLineageSummary
                   usageCount={item.usage_count}
                   hasPublishedUsedNewsLink={item.has_published_used_news_link}
                 />
               </td>
               {/* Tutarlılık Grubu */}
-              <td style={{ padding: "0.5rem 0.75rem" }}>
+              <td style={TD_STYLE}>
                 <NewsItemArtifactConsistencySummary
                   sourceId={item.source_id}
                   sourceScanId={item.source_scan_id}
@@ -174,7 +177,7 @@ export function NewsItemsTable({ items, selectedId, onSelect }: Props) {
                   hasPublishedUsedNewsLink={item.has_published_used_news_link}
                 />
               </td>
-              <td style={{ padding: "0.5rem 0.75rem" }}>
+              <td style={TD_STYLE}>
                 <NewsItemTargetOutputConsistencySummary
                   title={item.title}
                   url={item.url}

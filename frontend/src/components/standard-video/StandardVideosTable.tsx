@@ -10,6 +10,8 @@ import { StandardVideoInputSpecificitySummary } from "./StandardVideoInputSpecif
 import { StandardVideoTargetOutputConsistencySummary } from "./StandardVideoTargetOutputConsistencySummary";
 
 const DASH = "—";
+const TH_STYLE: React.CSSProperties = { padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" };
+const TD_STYLE: React.CSSProperties = { padding: "0.5rem 0.75rem" };
 
 interface Props {
   videos: StandardVideoResponse[];
@@ -40,24 +42,24 @@ export function StandardVideosTable({ videos, selectedId, onSelect }: Props) {
       <thead>
         <tr style={{ background: "#f1f5f9", textAlign: "left" }}>
           {/* Kimlik & Durum */}
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Başlık</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Konu</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Durum</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Dil</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Hedef Süre</th>
+          <th style={TH_STYLE}>Başlık</th>
+          <th style={TH_STYLE}>Konu</th>
+          <th style={TH_STYLE}>Durum</th>
+          <th style={TH_STYLE}>Dil</th>
+          <th style={TH_STYLE}>Hedef Süre</th>
           {/* Hazırlık & İçerik */}
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Hazırlık</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Artifact</th>
+          <th style={TH_STYLE}>Hazırlık</th>
+          <th style={TH_STYLE}>Artifact</th>
           {/* Girdi */}
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Girdi Kalitesi</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Girdi Özgüllüğü</th>
+          <th style={TH_STYLE}>Girdi Kalitesi</th>
+          <th style={TH_STYLE}>Girdi Özgüllüğü</th>
           {/* Yayın */}
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Yayın Sinyali</th>
+          <th style={TH_STYLE}>Yayın Sinyali</th>
           {/* Tutarlılık */}
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Artifact Tutarlılığı</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Target/Output Tutarlılığı</th>
+          <th style={TH_STYLE}>Artifact Tutarlılığı</th>
+          <th style={TH_STYLE}>Target/Output Tutarlılığı</th>
           {/* Zaman */}
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Oluşturulma</th>
+          <th style={TH_STYLE}>Oluşturulma</th>
         </tr>
       </thead>
       <tbody>
@@ -74,7 +76,7 @@ export function StandardVideosTable({ videos, selectedId, onSelect }: Props) {
             {/* Kimlik & Durum */}
             <td style={{ padding: "0.5rem 0.75rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>{v.title ?? DASH}</td>
             <td style={{ padding: "0.5rem 0.75rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>{v.topic ?? DASH}</td>
-            <td style={{ padding: "0.5rem 0.75rem" }}>
+            <td style={TD_STYLE}>
               <span
                 style={{
                   color: STATUS_COLORS[v.status] ?? "#64748b",
@@ -84,25 +86,25 @@ export function StandardVideosTable({ videos, selectedId, onSelect }: Props) {
                 {v.status ?? DASH}
               </span>
             </td>
-            <td style={{ padding: "0.5rem 0.75rem" }}>{v.language ?? DASH}</td>
-            <td style={{ padding: "0.5rem 0.75rem" }}>
+            <td style={TD_STYLE}>{v.language ?? DASH}</td>
+            <td style={TD_STYLE}>
               {formatDuration(v.target_duration_seconds)}
             </td>
             {/* Hazırlık & İçerik */}
-            <td style={{ padding: "0.5rem 0.75rem" }}>
+            <td style={TD_STYLE}>
               <StandardVideoReadinessSummary
                 topic={v.topic}
                 status={v.status}
               />
             </td>
-            <td style={{ padding: "0.5rem 0.75rem" }}>
+            <td style={TD_STYLE}>
               <StandardVideoArtifactSummary
                 hasScript={v.has_script}
                 hasMetadata={v.has_metadata}
               />
             </td>
             {/* Girdi */}
-            <td style={{ padding: "0.5rem 0.75rem" }}>
+            <td style={TD_STYLE}>
               <StandardVideoInputQualitySummary
                 topic={v.topic}
                 brief={v.brief}
@@ -110,7 +112,7 @@ export function StandardVideosTable({ videos, selectedId, onSelect }: Props) {
                 language={v.language}
               />
             </td>
-            <td style={{ padding: "0.5rem 0.75rem" }}>
+            <td style={TD_STYLE}>
               <StandardVideoInputSpecificitySummary
                 topic={v.topic}
                 brief={v.brief}
@@ -119,7 +121,7 @@ export function StandardVideosTable({ videos, selectedId, onSelect }: Props) {
               />
             </td>
             {/* Yayın */}
-            <td style={{ padding: "0.5rem 0.75rem" }}>
+            <td style={TD_STYLE}>
               <StandardVideoPublicationSignalSummary
                 topic={v.topic}
                 hasScript={v.has_script}
@@ -127,13 +129,13 @@ export function StandardVideosTable({ videos, selectedId, onSelect }: Props) {
               />
             </td>
             {/* Tutarlılık */}
-            <td style={{ padding: "0.5rem 0.75rem" }}>
+            <td style={TD_STYLE}>
               <StandardVideoArtifactConsistencySummary
                 hasScript={v.has_script}
                 hasMetadata={v.has_metadata}
               />
             </td>
-            <td style={{ padding: "0.5rem 0.75rem" }}>
+            <td style={TD_STYLE}>
               <StandardVideoTargetOutputConsistencySummary
                 topic={v.topic}
                 brief={v.brief}

@@ -11,6 +11,8 @@ import { SourceTargetOutputConsistencySummary } from "./SourceTargetOutputConsis
 import { SourcePublicationOutcomeSummary } from "./SourcePublicationOutcomeSummary";
 
 const DASH = "—";
+const TH_STYLE: React.CSSProperties = { padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" };
+const TD_STYLE: React.CSSProperties = { padding: "0.5rem 0.75rem" };
 
 interface SourcesTableProps {
   sources: SourceResponse[];
@@ -24,22 +26,22 @@ export function SourcesTable({ sources, selectedId, onSelect }: SourcesTableProp
     <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.875rem" }}>
       <thead>
         <tr style={{ background: "#f1f5f9", textAlign: "left" }}>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Ad</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Tür</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Durum</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Güven</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Tarama Modu</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Dil</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Taramalar</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Hazırlık</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Konfigürasyon</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Girdi Kalitesi</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Girdi Özgüllüğü</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Haberler</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Yayın Kaynağı</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Artifact Tutarlılığı</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Target/Output Tutarlılığı</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Yayın Çıktısı</th>
+          <th style={TH_STYLE}>Ad</th>
+          <th style={TH_STYLE}>Tür</th>
+          <th style={TH_STYLE}>Durum</th>
+          <th style={TH_STYLE}>Güven</th>
+          <th style={TH_STYLE}>Tarama Modu</th>
+          <th style={TH_STYLE}>Dil</th>
+          <th style={TH_STYLE}>Taramalar</th>
+          <th style={TH_STYLE}>Hazırlık</th>
+          <th style={TH_STYLE}>Konfigürasyon</th>
+          <th style={TH_STYLE}>Girdi Kalitesi</th>
+          <th style={TH_STYLE}>Girdi Özgüllüğü</th>
+          <th style={TH_STYLE}>Haberler</th>
+          <th style={TH_STYLE}>Yayın Kaynağı</th>
+          <th style={TH_STYLE}>Artifact Tutarlılığı</th>
+          <th style={TH_STYLE}>Target/Output Tutarlılığı</th>
+          <th style={TH_STYLE}>Yayın Çıktısı</th>
         </tr>
       </thead>
       <tbody>
@@ -58,7 +60,7 @@ export function SourcesTable({ sources, selectedId, onSelect }: SourcesTableProp
               {src.name ?? DASH}
             </td>
             <td style={{ padding: "0.5rem 0.75rem", color: "#64748b" }}>{src.source_type ?? DASH}</td>
-            <td style={{ padding: "0.5rem 0.75rem" }}>
+            <td style={TD_STYLE}>
               <span style={{
                 display: "inline-block",
                 padding: "0.125rem 0.5rem",
@@ -74,14 +76,14 @@ export function SourcesTable({ sources, selectedId, onSelect }: SourcesTableProp
             <td style={{ padding: "0.5rem 0.75rem", color: "#64748b" }}>{src.scan_mode ?? DASH}</td>
             <td style={{ padding: "0.5rem 0.75rem", color: "#64748b" }}>{src.language ?? DASH}</td>
             {/* Tarama & Hazırlık */}
-            <td style={{ padding: "0.5rem 0.75rem" }}>
+            <td style={TD_STYLE}>
               <SourceScanSummary
                 scanCount={src.scan_count}
                 lastScanStatus={src.last_scan_status}
                 lastScanFinishedAt={src.last_scan_finished_at}
               />
             </td>
-            <td style={{ padding: "0.5rem 0.75rem" }}>
+            <td style={TD_STYLE}>
               <SourceReadinessSummary
                 sourceType={src.source_type}
                 status={src.status}
@@ -93,7 +95,7 @@ export function SourcesTable({ sources, selectedId, onSelect }: SourcesTableProp
               />
             </td>
             {/* Girdi Grubu */}
-            <td style={{ padding: "0.5rem 0.75rem" }}>
+            <td style={TD_STYLE}>
               <SourceConfigCoverageSummary
                 sourceType={src.source_type}
                 baseUrl={src.base_url}
@@ -101,7 +103,7 @@ export function SourcesTable({ sources, selectedId, onSelect }: SourcesTableProp
                 apiEndpoint={src.api_endpoint}
               />
             </td>
-            <td style={{ padding: "0.5rem 0.75rem" }}>
+            <td style={TD_STYLE}>
               <SourceInputQualitySummary
                 sourceType={src.source_type}
                 name={src.name}
@@ -111,7 +113,7 @@ export function SourcesTable({ sources, selectedId, onSelect }: SourcesTableProp
                 language={src.language}
               />
             </td>
-            <td style={{ padding: "0.5rem 0.75rem" }}>
+            <td style={TD_STYLE}>
               <SourceInputSpecificitySummary
                 sourceType={src.source_type}
                 name={src.name}
@@ -122,10 +124,10 @@ export function SourcesTable({ sources, selectedId, onSelect }: SourcesTableProp
               />
             </td>
             {/* Haber & Yayın Grubu */}
-            <td style={{ padding: "0.5rem 0.75rem" }}>
+            <td style={TD_STYLE}>
               <SourceLinkedNewsSummary linkedNewsCount={src.linked_news_count} />
             </td>
-            <td style={{ padding: "0.5rem 0.75rem" }}>
+            <td style={TD_STYLE}>
               <SourcePublicationSupplySummary
                 linkedNewsCount={src.linked_news_count}
                 reviewedNewsCount={src.reviewed_news_count}
@@ -133,7 +135,7 @@ export function SourcesTable({ sources, selectedId, onSelect }: SourcesTableProp
               />
             </td>
             {/* Tutarlılık & Çıktı Grubu */}
-            <td style={{ padding: "0.5rem 0.75rem" }}>
+            <td style={TD_STYLE}>
               <SourceArtifactConsistencySummary
                 sourceType={src.source_type}
                 baseUrl={src.base_url}
@@ -142,7 +144,7 @@ export function SourcesTable({ sources, selectedId, onSelect }: SourcesTableProp
                 linkedNewsCount={src.linked_news_count}
               />
             </td>
-            <td style={{ padding: "0.5rem 0.75rem" }}>
+            <td style={TD_STYLE}>
               <SourceTargetOutputConsistencySummary
                 sourceType={src.source_type}
                 feedUrl={src.feed_url}
@@ -153,7 +155,7 @@ export function SourcesTable({ sources, selectedId, onSelect }: SourcesTableProp
                 usedNewsCountFromSource={src.used_news_count_from_source}
               />
             </td>
-            <td style={{ padding: "0.5rem 0.75rem" }}>
+            <td style={TD_STYLE}>
               <SourcePublicationOutcomeSummary
                 linkedNewsCount={src.linked_news_count}
                 reviewedNewsCount={src.reviewed_news_count}

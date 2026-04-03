@@ -1,6 +1,8 @@
 import type { VisibilityRuleResponse } from "../../api/visibilityApi";
 
 const DASH = "—";
+const TH_STYLE: React.CSSProperties = { padding: "0.5rem" };
+const TD_STYLE: React.CSSProperties = { padding: "0.5rem" };
 
 interface VisibilityRulesTableProps {
   rules: VisibilityRuleResponse[];
@@ -17,12 +19,12 @@ export function VisibilityRulesTable({ rules, selectedId, onSelect }: Visibility
     <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.875rem" }}>
       <thead>
         <tr style={{ borderBottom: "2px solid #e2e8f0", textAlign: "left" }}>
-          <th style={{ padding: "0.5rem" }}>rule_type</th>
-          <th style={{ padding: "0.5rem" }}>target_key</th>
-          <th style={{ padding: "0.5rem" }}>module_scope</th>
-          <th style={{ padding: "0.5rem" }}>role_scope</th>
-          <th style={{ padding: "0.5rem" }}>status</th>
-          <th style={{ padding: "0.5rem" }}>priority</th>
+          <th style={TD_STYLE}>rule_type</th>
+          <th style={TD_STYLE}>target_key</th>
+          <th style={TD_STYLE}>module_scope</th>
+          <th style={TD_STYLE}>role_scope</th>
+          <th style={TD_STYLE}>status</th>
+          <th style={TD_STYLE}>priority</th>
         </tr>
       </thead>
       <tbody>
@@ -36,12 +38,12 @@ export function VisibilityRulesTable({ rules, selectedId, onSelect }: Visibility
               background: selectedId === r.id ? "#eff6ff" : "transparent",
             }}
           >
-            <td style={{ padding: "0.5rem" }}>{r.rule_type ?? DASH}</td>
+            <td style={TD_STYLE}>{r.rule_type ?? DASH}</td>
             <td style={{ padding: "0.5rem", fontFamily: "monospace", wordBreak: "break-all", overflowWrap: "anywhere" }}>{r.target_key ?? DASH}</td>
-            <td style={{ padding: "0.5rem" }}>{r.module_scope ?? <em style={{ color: "#94a3b8" }}>—</em>}</td>
-            <td style={{ padding: "0.5rem" }}>{r.role_scope ?? <em style={{ color: "#94a3b8" }}>—</em>}</td>
-            <td style={{ padding: "0.5rem" }}>{r.status ?? DASH}</td>
-            <td style={{ padding: "0.5rem" }}>{r.priority ?? DASH}</td>
+            <td style={TD_STYLE}>{r.module_scope ?? <em style={{ color: "#94a3b8" }}>—</em>}</td>
+            <td style={TD_STYLE}>{r.role_scope ?? <em style={{ color: "#94a3b8" }}>—</em>}</td>
+            <td style={TD_STYLE}>{r.status ?? DASH}</td>
+            <td style={TD_STYLE}>{r.priority ?? DASH}</td>
           </tr>
         ))}
       </tbody>

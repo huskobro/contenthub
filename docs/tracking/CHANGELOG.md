@@ -2,6 +2,18 @@
 
 ---
 
+## [2026-04-03] Phase 162 — Repeated Table Cell Style Constant Pack
+
+**Ne:** Registry tablo bileşenlerindeki tekrar eden `th`/`td` inline style nesnelerini dosya başı `TH_STYLE`/`TD_STYLE` const ile extraction.
+**Eklenen/değiştirilen dosyalar:**
+- 12 tablo bileşeni: TH_STYLE/TD_STYLE const eklendi, inline style nesneleri kaldırıldı
+  - SourcesTable, SourceScansTable, NewsItemsTable, NewsBulletinsTable, UsedNewsTable, JobsTable, TemplatesTable, StyleBlueprintsTable, StandardVideosTable, SettingsTable, VisibilityRulesTable, NewsItemPickerTable
+- `docs/testing/test-report-phase-162-repeated-table-cell-style-constant-pack.md` (yeni)
+**Test:** 1587 toplam test, tsc temiz, vite build temiz
+**Dokunulmayan:** Görünüm, davranış, badge stilleri, ek style property'li TD'ler, backend
+
+---
+
 ## [2026-04-03] Phase 161 — Repeated Panel Label Style Constant Pack
 
 **Ne:** Aynı dosya içinde tekrar eden inline label style nesnelerini dosya başı `const` ile extraction. 6 dosyada LABEL_TD, LABEL_TD_TOP, LABEL_SPAN pattern'leri.

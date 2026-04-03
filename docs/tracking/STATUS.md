@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 161 — Repeated Panel Label Style Constant Pack ✓ TAMAMLANDI
+Phase 162 — Repeated Table Cell Style Constant Pack ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Aynı dosya içinde tekrar eden inline label style nesnelerini dosya başı const ile sadeleştirme. 1587 toplam test.
+Registry tablolarındaki th/td inline style tekrarlarını TH_STYLE/TD_STYLE const ile sadeleştirme. 1587 toplam test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 162: repeated table cell style constant pack: 12 tablo dosyasında TH_STYLE/TD_STYLE extraction, 1587 toplam (2026-04-03)
 - Phase 161: repeated panel label style constant pack: 6 dosyada LABEL_TD/LABEL_TD_TOP/LABEL_SPAN extraction, 27 inline style → const referansı, 1587 toplam (2026-04-03)
 - Phase 160: field/row label-value rendering consistency pack: 3 Row value overflowWrap fix, 2 Field label color+fontSize fix, 1587 toplam (2026-04-03)
 - Phase 159: helper return-type consistency call-site safety pack: formatDateTime default fallback null→"—", dönüş tipi string|null→string, 1 test güncelleme, 1587 toplam (2026-04-03)

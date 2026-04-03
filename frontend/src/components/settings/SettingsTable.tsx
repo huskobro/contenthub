@@ -1,6 +1,8 @@
 import type { SettingResponse } from "../../api/settingsApi";
 
 const DASH = "—";
+const TH_STYLE: React.CSSProperties = { padding: "0.5rem" };
+const TD_STYLE: React.CSSProperties = { padding: "0.5rem" };
 
 interface SettingsTableProps {
   settings: SettingResponse[];
@@ -17,11 +19,11 @@ export function SettingsTable({ settings, selectedId, onSelect }: SettingsTableP
     <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.875rem" }}>
       <thead>
         <tr style={{ borderBottom: "2px solid #e2e8f0", textAlign: "left" }}>
-          <th style={{ padding: "0.5rem" }}>key</th>
-          <th style={{ padding: "0.5rem" }}>group_name</th>
-          <th style={{ padding: "0.5rem" }}>type</th>
-          <th style={{ padding: "0.5rem" }}>status</th>
-          <th style={{ padding: "0.5rem" }}>version</th>
+          <th style={TD_STYLE}>key</th>
+          <th style={TD_STYLE}>group_name</th>
+          <th style={TD_STYLE}>type</th>
+          <th style={TD_STYLE}>status</th>
+          <th style={TD_STYLE}>version</th>
         </tr>
       </thead>
       <tbody>
@@ -37,9 +39,9 @@ export function SettingsTable({ settings, selectedId, onSelect }: SettingsTableP
           >
             <td style={{ padding: "0.5rem", fontFamily: "monospace", wordBreak: "break-all", overflowWrap: "anywhere" }}>{s.key ?? DASH}</td>
             <td style={{ padding: "0.5rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>{s.group_name ?? DASH}</td>
-            <td style={{ padding: "0.5rem" }}>{s.type ?? DASH}</td>
-            <td style={{ padding: "0.5rem" }}>{s.status ?? DASH}</td>
-            <td style={{ padding: "0.5rem" }}>{s.version ?? DASH}</td>
+            <td style={TD_STYLE}>{s.type ?? DASH}</td>
+            <td style={TD_STYLE}>{s.status ?? DASH}</td>
+            <td style={TD_STYLE}>{s.version ?? DASH}</td>
           </tr>
         ))}
       </tbody>

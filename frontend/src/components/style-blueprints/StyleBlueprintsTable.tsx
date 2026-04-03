@@ -10,6 +10,8 @@ import { StyleBlueprintTargetOutputConsistencySummary } from "./StyleBlueprintTa
 import { StyleBlueprintPublicationOutcomeSummary } from "./StyleBlueprintPublicationOutcomeSummary";
 
 const DASH = "—";
+const TH_STYLE: React.CSSProperties = { padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" };
+const TD_STYLE: React.CSSProperties = { padding: "0.5rem 0.75rem" };
 
 interface StyleBlueprintsTableProps {
   blueprints: StyleBlueprintResponse[];
@@ -23,18 +25,18 @@ export function StyleBlueprintsTable({ blueprints, selectedId, onSelect }: Style
     <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.875rem" }}>
       <thead>
         <tr style={{ background: "#f1f5f9", textAlign: "left" }}>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Ad</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Modül</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Durum</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Sürüm</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Hazırlık</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Girdi Kalitesi</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Girdi Özgüllüğü</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Yayın Sinyali</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Yayın Çıktısı</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Artifact Tutarlılığı</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Target/Output Tutarlılığı</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Oluşturulma</th>
+          <th style={TH_STYLE}>Ad</th>
+          <th style={TH_STYLE}>Modül</th>
+          <th style={TH_STYLE}>Durum</th>
+          <th style={TH_STYLE}>Sürüm</th>
+          <th style={TH_STYLE}>Hazırlık</th>
+          <th style={TH_STYLE}>Girdi Kalitesi</th>
+          <th style={TH_STYLE}>Girdi Özgüllüğü</th>
+          <th style={TH_STYLE}>Yayın Sinyali</th>
+          <th style={TH_STYLE}>Yayın Çıktısı</th>
+          <th style={TH_STYLE}>Artifact Tutarlılığı</th>
+          <th style={TH_STYLE}>Target/Output Tutarlılığı</th>
+          <th style={TH_STYLE}>Oluşturulma</th>
         </tr>
       </thead>
       <tbody>
@@ -53,7 +55,7 @@ export function StyleBlueprintsTable({ blueprints, selectedId, onSelect }: Style
               {bp.name ?? DASH}
             </td>
             <td style={{ padding: "0.5rem 0.75rem", color: "#64748b" }}>{bp.module_scope ?? DASH}</td>
-            <td style={{ padding: "0.5rem 0.75rem" }}>
+            <td style={TD_STYLE}>
               <span style={{
                 display: "inline-block",
                 padding: "0.125rem 0.5rem",
@@ -67,7 +69,7 @@ export function StyleBlueprintsTable({ blueprints, selectedId, onSelect }: Style
             </td>
             <td style={{ padding: "0.5rem 0.75rem", color: "#64748b" }}>v{safeNumber(bp.version, 0)}</td>
             {/* Hazırlık */}
-            <td style={{ padding: "0.5rem 0.75rem" }}>
+            <td style={TD_STYLE}>
               <StyleBlueprintReadinessSummary
                 status={bp.status}
                 visualRulesJson={bp.visual_rules_json}
@@ -79,7 +81,7 @@ export function StyleBlueprintsTable({ blueprints, selectedId, onSelect }: Style
               />
             </td>
             {/* Girdi Grubu */}
-            <td style={{ padding: "0.5rem 0.75rem" }}>
+            <td style={TD_STYLE}>
               <StyleBlueprintInputQualitySummary
                 visualRulesJson={bp.visual_rules_json}
                 motionRulesJson={bp.motion_rules_json}
@@ -89,7 +91,7 @@ export function StyleBlueprintsTable({ blueprints, selectedId, onSelect }: Style
                 previewStrategyJson={bp.preview_strategy_json}
               />
             </td>
-            <td style={{ padding: "0.5rem 0.75rem" }}>
+            <td style={TD_STYLE}>
               <StyleBlueprintInputSpecificitySummary
                 visualRulesJson={bp.visual_rules_json}
                 motionRulesJson={bp.motion_rules_json}
@@ -100,7 +102,7 @@ export function StyleBlueprintsTable({ blueprints, selectedId, onSelect }: Style
               />
             </td>
             {/* Yayın Grubu */}
-            <td style={{ padding: "0.5rem 0.75rem" }}>
+            <td style={TD_STYLE}>
               <StyleBlueprintPublicationSignalSummary
                 status={bp.status}
                 visualRulesJson={bp.visual_rules_json}
@@ -111,7 +113,7 @@ export function StyleBlueprintsTable({ blueprints, selectedId, onSelect }: Style
                 previewStrategyJson={bp.preview_strategy_json}
               />
             </td>
-            <td style={{ padding: "0.5rem 0.75rem" }}>
+            <td style={TD_STYLE}>
               <StyleBlueprintPublicationOutcomeSummary
                 visualRulesJson={bp.visual_rules_json}
                 motionRulesJson={bp.motion_rules_json}
@@ -123,7 +125,7 @@ export function StyleBlueprintsTable({ blueprints, selectedId, onSelect }: Style
               />
             </td>
             {/* Tutarlılık Grubu */}
-            <td style={{ padding: "0.5rem 0.75rem" }}>
+            <td style={TD_STYLE}>
               <StyleBlueprintArtifactConsistencySummary
                 visualRulesJson={bp.visual_rules_json}
                 motionRulesJson={bp.motion_rules_json}
@@ -133,7 +135,7 @@ export function StyleBlueprintsTable({ blueprints, selectedId, onSelect }: Style
                 previewStrategyJson={bp.preview_strategy_json}
               />
             </td>
-            <td style={{ padding: "0.5rem 0.75rem" }}>
+            <td style={TD_STYLE}>
               <StyleBlueprintTargetOutputConsistencySummary
                 visualRulesJson={bp.visual_rules_json}
                 motionRulesJson={bp.motion_rules_json}

@@ -10,6 +10,8 @@ import { TemplateTargetOutputConsistencySummary } from "./TemplateTargetOutputCo
 import { TemplatePublicationOutcomeSummary } from "./TemplatePublicationOutcomeSummary";
 
 const DASH = "—";
+const TH_STYLE: React.CSSProperties = { padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" };
+const TD_STYLE: React.CSSProperties = { padding: "0.5rem 0.75rem" };
 
 interface TemplatesTableProps {
   templates: TemplateResponse[];
@@ -29,20 +31,20 @@ export function TemplatesTable({ templates, selectedId, onSelect }: TemplatesTab
     >
       <thead>
         <tr style={{ background: "#f1f5f9", textAlign: "left" }}>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Ad</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Tür</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Sahip</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Modül</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Durum</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Sürüm</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Stil Bağları</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Hazırlık</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Girdi Kalitesi</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Girdi Özgüllüğü</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Yayın Sinyali</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Yayın Çıktısı</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Artifact Tutarlılığı</th>
-          <th style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" }}>Target/Output Tutarlılığı</th>
+          <th style={TH_STYLE}>Ad</th>
+          <th style={TH_STYLE}>Tür</th>
+          <th style={TH_STYLE}>Sahip</th>
+          <th style={TH_STYLE}>Modül</th>
+          <th style={TH_STYLE}>Durum</th>
+          <th style={TH_STYLE}>Sürüm</th>
+          <th style={TH_STYLE}>Stil Bağları</th>
+          <th style={TH_STYLE}>Hazırlık</th>
+          <th style={TH_STYLE}>Girdi Kalitesi</th>
+          <th style={TH_STYLE}>Girdi Özgüllüğü</th>
+          <th style={TH_STYLE}>Yayın Sinyali</th>
+          <th style={TH_STYLE}>Yayın Çıktısı</th>
+          <th style={TH_STYLE}>Artifact Tutarlılığı</th>
+          <th style={TH_STYLE}>Target/Output Tutarlılığı</th>
         </tr>
       </thead>
       <tbody>
@@ -63,7 +65,7 @@ export function TemplatesTable({ templates, selectedId, onSelect }: TemplatesTab
             <td style={{ padding: "0.5rem 0.75rem", color: "#334155" }}>{t.template_type ?? DASH}</td>
             <td style={{ padding: "0.5rem 0.75rem", color: "#334155" }}>{t.owner_scope ?? DASH}</td>
             <td style={{ padding: "0.5rem 0.75rem", color: "#64748b" }}>{t.module_scope ?? DASH}</td>
-            <td style={{ padding: "0.5rem 0.75rem" }}>
+            <td style={TD_STYLE}>
               <span
                 style={{
                   display: "inline-block",
@@ -79,13 +81,13 @@ export function TemplatesTable({ templates, selectedId, onSelect }: TemplatesTab
             </td>
             <td style={{ padding: "0.5rem 0.75rem", color: "#64748b" }}>v{safeNumber(t.version, 0)}</td>
             {/* Stil & Hazırlık */}
-            <td style={{ padding: "0.5rem 0.75rem" }}>
+            <td style={TD_STYLE}>
               <TemplateStyleLinkSummary
                 styleLinkCount={t.style_link_count}
                 primaryLinkRole={t.primary_link_role}
               />
             </td>
-            <td style={{ padding: "0.5rem 0.75rem" }}>
+            <td style={TD_STYLE}>
               <TemplateReadinessSummary
                 templateType={t.template_type}
                 status={t.status}
@@ -96,7 +98,7 @@ export function TemplatesTable({ templates, selectedId, onSelect }: TemplatesTab
               />
             </td>
             {/* Girdi Grubu */}
-            <td style={{ padding: "0.5rem 0.75rem" }}>
+            <td style={TD_STYLE}>
               <TemplateInputQualitySummary
                 templateType={t.template_type}
                 styleProfileJson={t.style_profile_json}
@@ -104,7 +106,7 @@ export function TemplatesTable({ templates, selectedId, onSelect }: TemplatesTab
                 publishProfileJson={t.publish_profile_json}
               />
             </td>
-            <td style={{ padding: "0.5rem 0.75rem" }}>
+            <td style={TD_STYLE}>
               <TemplateInputSpecificitySummary
                 templateType={t.template_type}
                 styleProfileJson={t.style_profile_json}
@@ -115,7 +117,7 @@ export function TemplatesTable({ templates, selectedId, onSelect }: TemplatesTab
               />
             </td>
             {/* Yayın Grubu */}
-            <td style={{ padding: "0.5rem 0.75rem" }}>
+            <td style={TD_STYLE}>
               <TemplatePublicationSignalSummary
                 templateType={t.template_type}
                 status={t.status}
@@ -125,7 +127,7 @@ export function TemplatesTable({ templates, selectedId, onSelect }: TemplatesTab
                 styleLinkCount={t.style_link_count}
               />
             </td>
-            <td style={{ padding: "0.5rem 0.75rem" }}>
+            <td style={TD_STYLE}>
               <TemplatePublicationOutcomeSummary
                 templateType={t.template_type}
                 styleProfileJson={t.style_profile_json}
@@ -136,7 +138,7 @@ export function TemplatesTable({ templates, selectedId, onSelect }: TemplatesTab
               />
             </td>
             {/* Tutarlılık Grubu */}
-            <td style={{ padding: "0.5rem 0.75rem" }}>
+            <td style={TD_STYLE}>
               <TemplateArtifactConsistencySummary
                 templateType={t.template_type}
                 styleProfileJson={t.style_profile_json}
@@ -145,7 +147,7 @@ export function TemplatesTable({ templates, selectedId, onSelect }: TemplatesTab
                 styleLinkCount={t.style_link_count}
               />
             </td>
-            <td style={{ padding: "0.5rem 0.75rem" }}>
+            <td style={TD_STYLE}>
               <TemplateTargetOutputConsistencySummary
                 templateType={t.template_type}
                 styleProfileJson={t.style_profile_json}
