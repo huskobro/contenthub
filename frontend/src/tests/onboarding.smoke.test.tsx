@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -436,6 +436,59 @@ describe("OnboardingPage completion flow", () => {
     await screen.findByText("Provider / API Yapilandirmasi");
     fireEvent.click(screen.getByText("Iptal"));
     expect(await screen.findByText("Kurulum Durumu")).toBeDefined();
+  });
+});
+
+describe("OnboardingPage completion gate (end-to-end)", () => {
+  it("completion screen renders Uygulamaya Basla and navigates to /user", async () => {
+    window.fetch = mockFetch({});
+    wrap(<OnboardingCompletionScreen />);
+    expect(screen.getByText("Kurulum Tamamlandi")).toBeDefined();
+    fireEvent.click(screen.getByText("Uygulamaya Basla"));
+    const el = await screen.findByTestId("user-dashboard");
+    expect(el).toBeDefined();
+  });
+
+  it("completion screen auto-calls complete mutation on mount", async () => {
+    const fetchSpy = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({}),
+    });
+    window.fetch = fetchSpy as unknown as typeof window.fetch;
+    wrap(<OnboardingCompletionScreen />);
+    // Wait for the useEffect to fire the POST /onboarding/complete call
+    await waitFor(() => {
+      const postCalls = fetchSpy.mock.calls.filter(
+        (call: unknown[]) => typeof call[0] === "string" && call[0].includes("/complete") && (call[1] as { method?: string })?.method === "POST"
+      );
+      expect(postCalls.length).toBe(1);
+    });
+  });
+
+  it("requirements screen blocks completion when not all done", async () => {
+    window.fetch = mockFetch(MOCK_REQUIREMENTS);
+    wrap(<OnboardingRequirementsScreen />);
+    await screen.findByText("Devam Et");
+    expect(screen.queryByText("Kurulumu Tamamla")).toBeNull();
+  });
+
+  it("requirements screen enables completion when all done", async () => {
+    window.fetch = mockFetch(MOCK_REQUIREMENTS_ALL_DONE);
+    wrap(<OnboardingRequirementsScreen />);
+    expect(await screen.findByText("Kurulumu Tamamla")).toBeDefined();
+    expect(screen.queryByText("Devam Et")).toBeNull();
+  });
+
+  it("review screen Kurulumu Tamamla triggers completion step", async () => {
+    window.fetch = mockFetchMulti({
+      "onboarding/requirements": MOCK_REQUIREMENTS_ALL_DONE,
+      "/settings": MOCK_SETTINGS_WITH_PROVIDERS_AND_WORKSPACE,
+    });
+    const onComplete = vi.fn();
+    wrap(<OnboardingReviewSummaryScreen onBack={vi.fn()} onComplete={onComplete} />);
+    const btn = await screen.findByText("Kurulumu Tamamla");
+    fireEvent.click(btn);
+    expect(onComplete).toHaveBeenCalledTimes(1);
   });
 });
 

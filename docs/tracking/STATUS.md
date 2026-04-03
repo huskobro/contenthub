@@ -1,10 +1,10 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 245 — App Entry Re-Entry Rules & Post-Setup Bypass ✓ TAMAMLANDI (feature)
+Phase 247 — Onboarding Completion Gate & Ready-to-Enter Flow ✓ TAMAMLANDI (test)
 
 ## Mevcut Hedef
-Onboarding tamamlanan kullanicilar artik `/onboarding` route'una gelse bile otomatik olarak `/user`'a yonlendirilir. Entry gate ve onboarding bypass davranisi testlerle guvenlik altinda. 1655 toplam test.
+Onboarding tamamlama akisi uctan uca testlerle dogrulanmis durumda. Completion ekrani, auto-mutation, requirements bloklama/acma, review→completion gecisi test ediliyor. 1660 toplam test.
 
 ## Devam Eden
 — (devam eden calisma yok)
@@ -15,6 +15,8 @@ Onboarding tamamlanan kullanicilar artik `/onboarding` route'una gelse bile otom
 - **ANA FAZ BAŞLADI:** Wizard / Onboarding (ürün geliştirme hattı)
 
 ## Son Tamamlananlar
+- Phase 247: onboarding completion gate & ready-to-enter flow — end-to-end zincir testleri (completion/mutation/requirements bloklama/review gecisi), 5 yeni test, 1660 toplam (2026-04-03)
+- Phase 246: duplicate — Phase 240 ile ayni, degisiklik yok (2026-04-03)
 - Phase 245: app entry re-entry rules & post-setup bypass — OnboardingPage bypass guard, tamamlanan kullanicilar /onboarding'den /user'a yonlendirilir, 5 yeni test, 1655 toplam (2026-04-03)
 - Phase 244: onboarding setup summary review step — kurulum ozeti ekrani (5 satir: sources/templates/settings/providers/workspace), workspace→review→completion zinciri, 7 yeni test, 1650 toplam (2026-04-03)
 - Phase 243: onboarding output/workspace path setup step — workspace yapilandirma ekrani (workspace_root + output_dir), provider→workspace→completion zinciri, 7 yeni test, 1643 toplam (2026-04-03)

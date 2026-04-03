@@ -2,6 +2,16 @@
 
 ---
 
+## [2026-04-03] Phase 247 — Onboarding Completion Gate & Ready-to-Enter Flow
+
+**Ne:** Onboarding tamamlama akisinin uctan uca calistigini dogrulayan 5 yeni end-to-end zincir testi eklendi. Yeni islevsellik eklenmedi — mevcut Phase 241/244/245 implementasyonlari hedeflenen davranisi zaten karsiliyordu. Phase 246 duplicate oldugu icin atlanmisti.
+**Sonuc:** Completion ekrani render/navigasyon, auto-mutation tetikleme, requirements bloklama/acma, review→completion gecisi test edildi.
+**Degistirilen dosyalar:**
+- `frontend/src/tests/onboarding.smoke.test.tsx` (+5 yeni test, toplam 73)
+**Test:** 1660 toplam test (+5 yeni), tsc temiz, build temiz
+
+---
+
 ## [2026-04-03] Phase 245 — App Entry Re-Entry Rules & Post-Setup Bypass
 
 **Ne:** Onboarding tamamlandiktan sonra kullanicinin `/onboarding` route'una gelmesi durumunda otomatik bypass eklendi. OnboardingPage artik `useOnboardingStatus()` ile durumu kontrol eder ve `onboarding_required === false` ise `/user`'a yonlendirir. Loading/error durumunda guvenli varsayilan olarak wizard gosterilmeye devam eder.
