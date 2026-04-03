@@ -7,12 +7,12 @@ import { isBlank } from "../../lib/isBlank";
 const PREVIEW_LIMIT = 400;
 const DASH = "—";
 const PAD_B_XS = "0.25rem";
-const LABEL_TD: React.CSSProperties = { color: "#64748b", paddingRight: "1rem", paddingBottom: PAD_B_XS };
-const SECTION_STYLE: React.CSSProperties = { border: "1px solid #e2e8f0", borderRadius: "6px", padding: "1rem", marginBottom: "1.25rem" };
-const FORM_HEADING: React.CSSProperties = { margin: "0 0 1rem", fontSize: "0.9375rem", fontWeight: 600 };
 const RADIUS_XS = "4px";
 const CURSOR_PTR = "pointer";
 const COLOR_BLUE = "#3b82f6";
+const LABEL_TD: React.CSSProperties = { color: "#64748b", paddingRight: "1rem", paddingBottom: PAD_B_XS };
+const SECTION_STYLE: React.CSSProperties = { border: "1px solid #e2e8f0", borderRadius: "6px", padding: "1rem", marginBottom: "1.25rem" };
+const FORM_HEADING: React.CSSProperties = { margin: "0 0 1rem", fontSize: "0.9375rem", fontWeight: 600 };
 
 interface Props {
   videoId: string;

@@ -2,6 +2,18 @@
 
 ---
 
+## [2026-04-03] Phase 194 — Repeated Small Helper Function Name/Const Readability Pack
+
+**Ne:** Son fazlarda çok const eklenen bileşenlerde const/helper sıralama ve yerleşim iyileştirmesi.
+**Eklenen/değiştirilen dosyalar:**
+- `StandardVideoScriptPanel.tsx`: Primitive const'lar (`RADIUS_XS`, `CURSOR_PTR`, `COLOR_BLUE`) style object const'larından önceye taşındı
+- `TemplateForm.tsx`: `REQ_MARK` const'ı `errorStyle`'ın hemen ardına taşındı (her ikisi de `COLOR_ERR` bağımlısı)
+- `docs/testing/test-report-phase-194-repeated-small-helper-function-name-const-readability-pack.md` (yeni)
+**Test:** 1587 toplam test, tsc temiz, vite build temiz
+**Dokunulmayan:** Görünüm, davranış, const isimleri, backend
+
+---
+
 ## [2026-04-03] Phase 193 — Repeated Placeholder/Empty-State String Literal Constant Pack
 
 **Ne:** Bileşenlerde tekrar eden placeholder/empty-state string literal değerlerinin kapsamlı audit'i.

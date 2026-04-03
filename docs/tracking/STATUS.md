@@ -1,7 +1,17 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 193 — Repeated Placeholder/Empty-State String Literal Constant Pack ✓ TAMAMLANDI (audit-only)
+Phase 194 — Repeated Small Helper Function Name/Const Readability Pack ✓ TAMAMLANDI
+
+## Mevcut Hedef
+Const/helper sıralama ve yerleşim audit. StandardVideoScriptPanel primitive→style sırası düzeltildi, TemplateForm REQ_MARK errorStyle yanına taşındı. 1587 toplam test.
+
+## Devam Eden
+— (devam eden çalışma yok)
+
+## Son Tamamlananlar
+- Phase 194: repeated small helper function name/const readability pack: StandardVideoScriptPanel const reorder, TemplateForm REQ_MARK reorder, 1587 toplam (2026-04-03)
+- Phase 193 — Repeated Placeholder/Empty-State String Literal Constant Pack ✓ TAMAMLANDI (audit-only)
 
 ## Mevcut Hedef
 Placeholder/empty-state string literal audit. Tüm değerler max 1× per dosya — threshold altı. Hiçbir dosya değiştirilmedi. 1587 toplam test.

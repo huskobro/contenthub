@@ -57,6 +57,8 @@ const errorStyle: React.CSSProperties = {
   marginTop: "0.2rem",
 };
 
+const REQ_MARK: React.CSSProperties = { color: COLOR_ERR };
+
 const JSON_TEXTAREA: React.CSSProperties = {
   ...inputStyle,
   minHeight: "70px",
@@ -64,8 +66,6 @@ const JSON_TEXTAREA: React.CSSProperties = {
   fontFamily: "monospace",
   fontSize: "0.8rem",
 };
-
-const REQ_MARK: React.CSSProperties = { color: COLOR_ERR };
 
 const BTN_PRIMARY: React.CSSProperties = {
   padding: "0.375rem 1rem",
