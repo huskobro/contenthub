@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 227 — Repeated Small Return Object / Payload Shape Readability Pack ✓ TAMAMLANDI (audit-only)
+Phase 228 — Repeated Small Hook Call Readability Pack ✓ TAMAMLANDI (audit-only)
 
 ## Mevcut Hedef
-Return object/payload shape audit. Her form dosyasında tek handleSubmit, tek payload build. Aynı payload shape 3+ kez tekrar eden dosya yok. Hiçbir dosya değiştirilmedi. 1587 toplam test.
+Hook call readability audit. useState çoklu kullanım controlled form standard. Detail panel'larda farklı custom hook'lar. Aynı hook 3+ kez tekrar eden dosya yok. Hiçbir dosya değiştirilmedi. 1587 toplam test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 228: repeated small hook call readability pack: kapsamlı audit, useState per-field standart, custom hook'lar farklı, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 227: repeated small return object/payload shape readability pack: kapsamlı audit, tek payload build per dosya, threshold karşılanmadı, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 226: repeated small local derived value readability pack: kapsamlı audit, aynı computation tekrar etmiyor, farklı bağlam, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 225: repeated small JSX fragment/wrapper readability pack: kapsamlı audit, fragment yok, çoklu return farklı conditional path, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
