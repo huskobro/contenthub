@@ -2,6 +2,20 @@
 
 ---
 
+## [2026-04-03] Phase 248 — Post-Onboarding First Landing & User Handoff Flow
+
+**Ne:** Onboarding tamamlandiktan sonra kullanicinin /user yuzeyinde bos ekranla karsilasmasini engelleyen handoff deneyimi eklendi. PostOnboardingHandoff component'i "Sistem Hazir" gostergesi, "Ilk Iceriginizi Olusturun" basligi, ana CTA (Yeni Icerik Olustur → /admin/standard-videos/new) ve ikincil CTA (Yonetim Paneli → /admin) icerir. UserDashboardPage artik useOnboardingStatus ile durumu kontrol eder.
+**Sonuc:** Onboarding sonrasi kullanici net bir yonlendirme goruyor. Onboarding devam ederken veya status fetch basarisiz oldugunda eski karsilama mesaji korunuyor. Mevcut kullanici akisi bozulmuyor.
+**Eklenen dosyalar:**
+- `frontend/src/components/dashboard/PostOnboardingHandoff.tsx`
+- `frontend/src/tests/post-onboarding-handoff.smoke.test.tsx` (7 yeni test)
+**Degistirilen dosyalar:**
+- `frontend/src/pages/UserDashboardPage.tsx` (onboarding status entegrasyonu)
+- `frontend/src/tests/app.smoke.test.tsx` (QueryClientProvider eklendi)
+**Test:** 1667 toplam test (+7 yeni), tsc temiz, build temiz
+
+---
+
 ## [2026-04-03] Phase 247 — Onboarding Completion Gate & Ready-to-Enter Flow
 
 **Ne:** Onboarding tamamlama akisinin uctan uca calistigini dogrulayan 5 yeni end-to-end zincir testi eklendi. Yeni islevsellik eklenmedi — mevcut Phase 241/244/245 implementasyonlari hedeflenen davranisi zaten karsiliyordu. Phase 246 duplicate oldugu icin atlanmisti.

@@ -1,12 +1,21 @@
 import { render, screen } from "@testing-library/react";
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AdminLayout } from "../app/layouts/AdminLayout";
 import { UserLayout } from "../app/layouts/UserLayout";
 import { AdminOverviewPage } from "../pages/AdminOverviewPage";
 import { UserDashboardPage } from "../pages/UserDashboardPage";
 
+function mockFetch(data: unknown) {
+  return vi.fn().mockResolvedValue({
+    ok: true,
+    json: () => Promise.resolve(data),
+  }) as unknown as typeof window.fetch;
+}
+
 function renderAt(path: string) {
+  const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   const testRouter = createMemoryRouter(
     [
       {
@@ -22,8 +31,17 @@ function renderAt(path: string) {
     ],
     { initialEntries: [path] }
   );
-  return render(<RouterProvider router={testRouter} />);
+  return render(
+    <QueryClientProvider client={qc}>
+      <RouterProvider router={testRouter} />
+    </QueryClientProvider>
+  );
 }
+
+beforeEach(() => {
+  // Default: onboarding not yet completed (generic welcome)
+  window.fetch = mockFetch({ onboarding_required: true, completed_at: null });
+});
 
 describe("Panel shell smoke tests", () => {
   it("renders user dashboard at /user", () => {
