@@ -6,6 +6,7 @@ import { OnboardingTemplateSetupScreen } from "../components/onboarding/Onboardi
 import { OnboardingSettingsSetupScreen } from "../components/onboarding/OnboardingSettingsSetupScreen";
 import { OnboardingProviderSetupScreen } from "../components/onboarding/OnboardingProviderSetupScreen";
 import { OnboardingWorkspaceSetupScreen } from "../components/onboarding/OnboardingWorkspaceSetupScreen";
+import { OnboardingReviewSummaryScreen } from "../components/onboarding/OnboardingReviewSummaryScreen";
 import { OnboardingCompletionScreen } from "../components/onboarding/OnboardingCompletionScreen";
 
 type OnboardingStep =
@@ -16,6 +17,7 @@ type OnboardingStep =
   | "settings-setup"
   | "provider-setup"
   | "workspace-setup"
+  | "review"
   | "completion";
 
 export function OnboardingPage() {
@@ -61,6 +63,15 @@ export function OnboardingPage() {
     return (
       <OnboardingWorkspaceSetupScreen
         onBack={() => setStep("provider-setup")}
+        onComplete={() => setStep("review")}
+      />
+    );
+  }
+
+  if (step === "review") {
+    return (
+      <OnboardingReviewSummaryScreen
+        onBack={() => setStep("workspace-setup")}
         onComplete={() => setStep("completion")}
       />
     );

@@ -2,6 +2,20 @@
 
 ---
 
+## [2026-04-03] Phase 244 — Wizard / Onboarding — Setup Summary Review Step
+
+**Ne:** Onboarding wizard'ina completion ekranindan once kurulum ozeti/review adimi eklendi. Kullanicinin onboarding boyunca yaptigi yapilandirmalari (sources, templates, settings, providers, workspace) tek ekranda gormesini saglar. Veriler `useSetupRequirements()` ve `useSettingsList()` hook'larindan okunur.
+**Sonuc:** Onboarding zinciri 9 adima genisletildi (welcome/requirements/source-setup/template-setup/settings-setup/provider-setup/workspace-setup/review/completion). Workspace setup'in onComplete'i artik review ekranina yonlendiriyor. Review'dan "Kurulumu Tamamla" ile completion'a gecis yapilir.
+**Eklenen dosyalar:**
+- `frontend/src/components/onboarding/OnboardingReviewSummaryScreen.tsx` (yeni)
+- `docs/testing/test-report-phase-244-onboarding-setup-summary-review-step.md` (yeni)
+**Degistirilen dosyalar:**
+- `frontend/src/pages/OnboardingPage.tsx` (review step, 9 adimli akis)
+- `frontend/src/tests/onboarding.smoke.test.tsx` (+7 yeni test, mockFetchMulti helper, toplam 63)
+**Test:** 1650 toplam test (+7 yeni), tsc temiz, build temiz
+
+---
+
 ## [2026-04-03] Phase 243 — Wizard / Onboarding — Output / Workspace Path Setup Step
 
 **Ne:** Onboarding wizard'ina calisma alani ve cikti dizini yapilandirma adimi eklendi. Provider setup sonrasi kullanici is artefaktlarinin (`workspace_root`) ve ciktilarin (`output_dir`) nereye yazilacagini belirleyebiliyor. Her iki ayar Settings tablosuna `group_name="workspace"` ile kaydedilir. Varsayilan degerler pre-filled (`workspace/jobs`, `workspace/exports`).

@@ -10,6 +10,7 @@ import { OnboardingSettingsSetupScreen } from "../components/onboarding/Onboardi
 import { OnboardingCompletionScreen } from "../components/onboarding/OnboardingCompletionScreen";
 import { OnboardingProviderSetupScreen } from "../components/onboarding/OnboardingProviderSetupScreen";
 import { OnboardingWorkspaceSetupScreen } from "../components/onboarding/OnboardingWorkspaceSetupScreen";
+import { OnboardingReviewSummaryScreen } from "../components/onboarding/OnboardingReviewSummaryScreen";
 import { OnboardingPage } from "../pages/OnboardingPage";
 import { AppEntryGate } from "../app/AppEntryGate";
 
@@ -46,6 +47,23 @@ const MOCK_REQUIREMENTS_ALL_DONE = {
     { key: "settings", title: "Sistem Ayarlari", description: "desc", status: "completed", detail: "10 ayar" },
   ],
 };
+
+const MOCK_SETTINGS_WITH_PROVIDERS_AND_WORKSPACE = [
+  { id: "1", key: "llm_api_key", group_name: "providers", type: "string", admin_value_json: '"sk-test"', status: "active" },
+  { id: "2", key: "workspace_root", group_name: "workspace", type: "string", admin_value_json: '"workspace/jobs"', status: "active" },
+  { id: "3", key: "output_dir", group_name: "workspace", type: "string", admin_value_json: '"workspace/exports"', status: "active" },
+];
+
+function mockFetchMulti(responses: Record<string, unknown>) {
+  return vi.fn().mockImplementation((url: string) => {
+    for (const [pattern, data] of Object.entries(responses)) {
+      if (url.includes(pattern)) {
+        return Promise.resolve({ ok: true, json: () => Promise.resolve(data) });
+      }
+    }
+    return Promise.resolve({ ok: true, json: () => Promise.resolve({}) });
+  }) as unknown as typeof window.fetch;
+}
 
 function wrap(element: React.ReactElement) {
   const queryClient = new QueryClient({
@@ -532,6 +550,84 @@ describe("OnboardingPage workspace-setup flow", () => {
     wrap(<OnboardingWorkspaceSetupScreen onBack={onBack} onComplete={vi.fn()} />);
     fireEvent.click(screen.getByText("Iptal"));
     expect(onBack).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("OnboardingReviewSummaryScreen", () => {
+  it("renders review summary heading", async () => {
+    window.fetch = mockFetchMulti({
+      "onboarding/requirements": MOCK_REQUIREMENTS_ALL_DONE,
+      "/settings": MOCK_SETTINGS_WITH_PROVIDERS_AND_WORKSPACE,
+    });
+    wrap(<OnboardingReviewSummaryScreen onBack={vi.fn()} onComplete={vi.fn()} />);
+    expect(await screen.findByText("Kurulum Ozeti")).toBeDefined();
+  });
+
+  it("renders all five summary row labels", async () => {
+    window.fetch = mockFetchMulti({
+      "onboarding/requirements": MOCK_REQUIREMENTS_ALL_DONE,
+      "/settings": MOCK_SETTINGS_WITH_PROVIDERS_AND_WORKSPACE,
+    });
+    wrap(<OnboardingReviewSummaryScreen onBack={vi.fn()} onComplete={vi.fn()} />);
+    expect(await screen.findByText("Haber Kaynaklari")).toBeDefined();
+    expect(screen.getByText("Sablonlar")).toBeDefined();
+    expect(screen.getByText("Sistem Ayarlari")).toBeDefined();
+    expect(screen.getByText("Provider / API")).toBeDefined();
+    expect(screen.getByText("Calisma Alani")).toBeDefined();
+  });
+
+  it("renders Kurulumu Tamamla CTA", async () => {
+    window.fetch = mockFetchMulti({
+      "onboarding/requirements": MOCK_REQUIREMENTS_ALL_DONE,
+      "/settings": MOCK_SETTINGS_WITH_PROVIDERS_AND_WORKSPACE,
+    });
+    wrap(<OnboardingReviewSummaryScreen onBack={vi.fn()} onComplete={vi.fn()} />);
+    expect(await screen.findByText("Kurulumu Tamamla")).toBeDefined();
+  });
+
+  it("calls onComplete when Kurulumu Tamamla clicked", async () => {
+    window.fetch = mockFetchMulti({
+      "onboarding/requirements": MOCK_REQUIREMENTS_ALL_DONE,
+      "/settings": MOCK_SETTINGS_WITH_PROVIDERS_AND_WORKSPACE,
+    });
+    const onComplete = vi.fn();
+    wrap(<OnboardingReviewSummaryScreen onBack={vi.fn()} onComplete={onComplete} />);
+    const btn = await screen.findByText("Kurulumu Tamamla");
+    fireEvent.click(btn);
+    expect(onComplete).toHaveBeenCalledTimes(1);
+  });
+
+  it("calls onBack when Geri Don clicked", async () => {
+    window.fetch = mockFetchMulti({
+      "onboarding/requirements": MOCK_REQUIREMENTS_ALL_DONE,
+      "/settings": MOCK_SETTINGS_WITH_PROVIDERS_AND_WORKSPACE,
+    });
+    const onBack = vi.fn();
+    wrap(<OnboardingReviewSummaryScreen onBack={onBack} onComplete={vi.fn()} />);
+    const btn = await screen.findByText("Geri Don");
+    fireEvent.click(btn);
+    expect(onBack).toHaveBeenCalledTimes(1);
+  });
+
+  it("shows requirement detail values", async () => {
+    window.fetch = mockFetchMulti({
+      "onboarding/requirements": MOCK_REQUIREMENTS_ALL_DONE,
+      "/settings": MOCK_SETTINGS_WITH_PROVIDERS_AND_WORKSPACE,
+    });
+    wrap(<OnboardingReviewSummaryScreen onBack={vi.fn()} onComplete={vi.fn()} />);
+    expect(await screen.findByText("3 aktif kaynak")).toBeDefined();
+    expect(screen.getByText("2 aktif sablon")).toBeDefined();
+    expect(screen.getByText("10 ayar")).toBeDefined();
+  });
+
+  it("shows provider and workspace summaries", async () => {
+    window.fetch = mockFetchMulti({
+      "onboarding/requirements": MOCK_REQUIREMENTS_ALL_DONE,
+      "/settings": MOCK_SETTINGS_WITH_PROVIDERS_AND_WORKSPACE,
+    });
+    wrap(<OnboardingReviewSummaryScreen onBack={vi.fn()} onComplete={vi.fn()} />);
+    expect(await screen.findByText(/1 provider/)).toBeDefined();
+    expect(screen.getByText(/workspace\/jobs/)).toBeDefined();
   });
 });
 
