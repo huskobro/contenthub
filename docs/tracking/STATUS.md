@@ -1,18 +1,24 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 234 — Repeated Small Detail Field/Row Call-Site Readability Pack ✓ TAMAMLANDI (audit-only)
+Phase 235 — Hygiene Closure & Product Pivot Gate ✓ TAMAMLANDI (closure gate)
 
 ## Mevcut Hedef
-Detail/Overview panel Field/Row call-site audit. Her Row/Field çağrısı farklı label+field — aynı pattern yok. formatDateTime 2× per dosya. Hiçbir dosya değiştirilmedi. 1587 toplam test.
+Frontend hygiene / readability / render-safety hattı resmen kapatıldı. Ürün fazlarına geçiş için baseline stabil. Sıradaki ana faz: Wizard / Onboarding.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
+## Hygiene Hattı Kapanış Durumu
+- **KAPATILDI:** Mikro readability faz zinciri Phase 235 ile resmen kapatıldı.
+- **YENİ MİKRO FAZ AÇILMAYACAK.** Son ~45 fazın büyük çoğunluğu audit-only kapandı; marjinal getiri düştü.
+- **SONRAKİ ANA FAZ:** Wizard / Onboarding (ürün geliştirme hattı)
+
 ## Son Tamamlananlar
-- Phase 234: repeated small detail field/row call-site readability pack: kapsamlı audit, per-field Row/Field farklı, threshold karşılanmadı, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
-- Phase 233: repeated small summary component call readability pack: kapsamlı audit, her summary call farklı component, BoolBadge farklı field+label, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
-- Phase 232: repeated small table cell content readability pack: kapsamlı audit, style const'lar mevcut, wordBreak max 2×, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
+- Phase 235: hygiene closure & product pivot gate — kapanış doğrulaması, baseline stabil, 1587 toplam (2026-04-03)
+- Phase 234: repeated small detail field/row call-site readability pack: audit-only, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
+- Phase 233: repeated small summary component call readability pack: audit-only, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
+- Phase 232: repeated small table cell content readability pack: audit-only, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 231: repeated small form validation readability pack: kapsamlı audit, per-field validation farklı, threshold karşılanmadı, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 230: repeated small label/heading text readability pack: kapsamlı audit, tam string tekrar yok, DASH const mevcut, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 229: repeated small setter/update call readability pack: kapsamlı audit, per-field standart, farklı argümanlar, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)

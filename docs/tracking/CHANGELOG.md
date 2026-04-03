@@ -2,6 +2,16 @@
 
 ---
 
+## [2026-04-03] Phase 235 — Hygiene Closure & Product Pivot Gate
+
+**Ne:** Frontend hygiene / readability / render-safety / fallback-safety hattının resmi kapanışı ve ürün fazlarına geçiş kapısı.
+**Sonuç:** Mikro readability faz zinciri resmen kapatıldı. 234 faz test raporu üretildi. Completed: null/empty/fallback safety, date formatting, json preview, text overflow, required-field, badge enum safety, numeric safety, boolean render safety, string normalization, helper/constant extraction. Audit-only closed: array/list render safety, form/detail/table readability sweep'leri, 45+ mikro readability audit fazı. Deferred: threshold altı extraction fırsatları, cross-file shared helper, badge iç readability. Baseline stabil: tsc temiz, 1587/1587 test, build temiz. Sıradaki ana faz: Wizard / Onboarding.
+**Eklenen dosyalar:**
+- `docs/testing/test-report-phase-235-hygiene-closure-product-pivot-gate.md` (yeni — kapanış raporu)
+**Test:** 1587 toplam test, tsc temiz, build temiz
+
+---
+
 ## [2026-04-03] Phase 234 — Repeated Small Detail Field/Row Call-Site Readability Pack
 
 **Ne:** Detail/Overview panel bileşenlerinde tekrar eden Field/Row çağrı pattern'larının kapsamlı audit'i.
