@@ -28,7 +28,7 @@ export function AdminContinuityStrip() {
 
   return (
     <div style={STRIP} data-testid="admin-continuity-strip">
-      <span>Yonetim panelinde islem yapiyorsunuz. Islemler burada devam ediyor.</span>
+      <span>Uretim ve yonetim islemleri icin yonetim panelindeysiniz.</span>
       <button
         style={BACK_LINK}
         onClick={() => navigate("/user")}

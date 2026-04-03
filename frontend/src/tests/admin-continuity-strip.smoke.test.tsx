@@ -53,7 +53,7 @@ describe("Admin continuity strip", () => {
   it("shows continuity strip on admin pages", () => {
     renderAt("/admin");
     expect(screen.getByTestId("admin-continuity-strip")).toBeDefined();
-    expect(screen.getByText(/Yonetim panelinde islem yapiyorsunuz/)).toBeDefined();
+    expect(screen.getByText(/Uretim ve yonetim islemleri icin yonetim panelindeysiniz/)).toBeDefined();
   });
 
   it("shows back to user panel link", () => {

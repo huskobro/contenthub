@@ -2,6 +2,25 @@
 
 ---
 
+## [2026-04-03] Phase 263 — User/Admin Route Intent Clarity Pass
+
+**Ne:** User ve admin panellerinin rolleri urun diliyle belirginlestirildi. User dashboard "Baslangic ve takip merkezi" olarak tanimlandi, admin overview "Uretim ve yonetim merkezi" olarak tanimlandi. Her iki panel kendi subtitle'inda karsi panelin rolune referans veriyor. Continuity strip mesaji intent odakli hale getirildi. DashboardActionHub admin kart desc'ine "uretim ve yonetim merkezi" kimlik vurgusu eklendi. Admin overview'a data-testid eklendi.
+**Sonuc:** Kullanici panel gecislerinin nedenini daha net anliyor. "Baslangic/takip" vs "uretim/yonetim" ayrimi her yuzeyden gorunur. Panel rolleri birbirini tamamlayan ama farkli amaclara hizmet eden iki yuzeyi ifade ediyor.
+**Degistirilen dosyalar:**
+- `frontend/src/pages/UserDashboardPage.tsx` (subtitle intent)
+- `frontend/src/pages/AdminOverviewPage.tsx` (subtitle intent + testid)
+- `frontend/src/components/layout/AdminContinuityStrip.tsx` (strip copy intent)
+- `frontend/src/components/dashboard/DashboardActionHub.tsx` (admin kart desc)
+- `frontend/src/tests/admin-continuity-strip.smoke.test.tsx` (metin)
+- `frontend/src/tests/admin-to-user-return-clarity.smoke.test.tsx` (metin)
+- `frontend/src/tests/user-nav-state-clarity.smoke.test.tsx` (metin)
+- `frontend/src/tests/user-route-landing-consistency.smoke.test.tsx` (metin)
+**Eklenen dosyalar:**
+- `frontend/src/tests/user-admin-route-intent-clarity.smoke.test.tsx` (11 yeni test)
+**Test:** 1778 toplam test (+11 yeni), tsc temiz, build temiz
+
+---
+
 ## [2026-04-03] Phase 262 — Panel Switch Destination Clarity Pass
 
 **Ne:** Header panel switch butonunun copy'si salt panel isminden fiil iceren yonlu metne donusturuldu. "Yonetim Paneli" → "Yonetim Paneline Gec", "Kullanici Paneli" → "Kullanici Paneline Gec". Ayrica title ve aria-label ile erisilebilirlik ve hover ipucu eklendi. CTA kalip sistemiyle uyumlu yeni "X Gec" gecis kalibi olusturuldu.

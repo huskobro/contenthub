@@ -91,7 +91,7 @@ const HUB_ENTRIES = [
     icon: "P",
     iconBg: "#059669",
     title: "Yonetim Paneli",
-    desc: "Ayarlar, sablonlar, kaynaklar ve tum uretim islemlerini yonetin.",
+    desc: "Uretim ve yonetim merkezi: ayarlar, sablonlar, kaynaklar ve islemleri yonetin.",
     cta: "Yonetim Paneline Git",
     to: "/admin",
     testId: "hub-action-admin",

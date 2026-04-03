@@ -1,10 +1,10 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 262 — Panel Switch Destination Clarity Pass ✓ TAMAMLANDI (feature)
+Phase 263 — User/Admin Route Intent Clarity Pass ✓ TAMAMLANDI (feature)
 
 ## Mevcut Hedef
-Header panel switch copy'si fiil iceren yonlu metne donustu ("X Gec"). Title ve aria-label eklendi. Panel gecisi daha bilinçli bir hareket gibi hissediliyor. 1767 toplam test.
+User panel "baslangic ve takip merkezi", admin panel "uretim ve yonetim merkezi" olarak intent netlesti. Karsit referanslarla panel rolleri belirginlesti. 1778 toplam test.
 
 ## Devam Eden
 — (devam eden calisma yok)
@@ -15,6 +15,7 @@ Header panel switch copy'si fiil iceren yonlu metne donustu ("X Gec"). Title ve 
 - **ANA FAZ BAŞLADI:** Wizard / Onboarding (ürün geliştirme hattı)
 
 ## Son Tamamlananlar
+- Phase 263: user/admin route intent clarity — panel rolleri netlesti (baslangic+takip vs uretim+yonetim), karsit referanslar, 11 yeni test, 1778 toplam (2026-04-03)
 - Phase 262: panel switch destination clarity — switch copy "X Gec" fiili, title+aria-label, 10 yeni test, 1767 toplam (2026-04-03)
 - Phase 261: user panel cross-link recovery — content→publish ve publish→content cross-link, sidebar'siz section gecisi, 8 yeni test, 1757 toplam (2026-04-03)
 - Phase 260: user panel route landing consistency — SUBTITLE margin/maxWidth hizalama, CARD transition ekleme, 12 yeni test, 1749 toplam (2026-04-03)

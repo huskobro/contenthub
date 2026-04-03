@@ -79,9 +79,10 @@ export function AdminOverviewPage() {
     <div>
       <h2>Genel Bakis</h2>
       <div style={SECTION}>
-        <p style={SUBTITLE}>
-          Yonetim panelinden icerik uretimi, kaynak yonetimi, sablonlar,
-          isler ve sistem ayarlarini tek merkezden yonetin.
+        <p style={SUBTITLE} data-testid="admin-overview-subtitle">
+          Uretim ve yonetim merkezi. Icerik olusturma, kaynak yonetimi,
+          sablonlar, isler ve sistem ayarlarini buradan yonetin. Baslangic
+          ve takip islemleri icin kullanici panelini kullanabilirsiniz.
         </p>
       </div>
 

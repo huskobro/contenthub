@@ -53,7 +53,7 @@ describe("User panel route landing consistency", () => {
       renderAt("/user");
       const subtitle = await screen.findByTestId("dashboard-context-note");
       expect(subtitle).toBeDefined();
-      expect(subtitle.textContent).toContain("Baslangic merkezi");
+      expect(subtitle.textContent).toContain("Baslangic ve takip merkezi");
     });
 
     it("has action hub block", async () => {

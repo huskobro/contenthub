@@ -52,7 +52,7 @@ describe("User panel navigation state clarity", () => {
     it("shows section identity in context note", async () => {
       renderAt("/user");
       const note = await screen.findByTestId("dashboard-context-note");
-      expect(note.textContent).toContain("Baslangic merkezi");
+      expect(note.textContent).toContain("Baslangic ve takip merkezi");
     });
 
     it("sidebar Anasayfa link is active", () => {

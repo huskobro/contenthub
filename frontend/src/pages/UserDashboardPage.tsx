@@ -22,8 +22,9 @@ export function UserDashboardPage() {
       {onboardingCompleted ? (
         <>
           <p style={SUBTITLE} data-testid="dashboard-context-note">
-            Baslangic merkezi. Icerik olusturma, yayin takibi ve yonetim
-            paneline gecis islemlerinizi buradan yonetebilirsiniz.
+            Baslangic ve takip merkezi. Icerik akisinizi baslatabilir, yayin
+            durumunu takip edebilir ve detayli islemler icin yonetim paneline
+            gecebilirsiniz.
           </p>
           <PostOnboardingHandoff />
           <DashboardActionHub />
