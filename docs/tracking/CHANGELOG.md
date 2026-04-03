@@ -2,6 +2,16 @@
 
 ---
 
+## [2026-04-03] Phase 206 — Repeated Small Boolean/Ternary Label Text Constant Pack
+
+**Ne:** Bileşenlerde tekrar eden boolean/ternary label text literal değerlerinin kapsamlı audit'i.
+**Sonuç:** Hiçbir dosyada aynı boolean label 3+ kez tekrarlanmıyor. Dosya değişikliği yapılmadı.
+**Eklenen/değiştirilen dosyalar:**
+- `docs/testing/test-report-phase-206-repeated-small-boolean-ternary-label-text-constant-pack.md` (yeni — audit belgesi)
+**Test:** 1587 toplam test, tsc temiz
+
+---
+
 ## [2026-04-03] Phase 205 — Repeated Small List/Marker/Bullet Text Constant Pack
 
 **Ne:** Bileşenlerde tekrar eden marker/bullet/separator text literal değerlerinin kapsamlı audit'i.
