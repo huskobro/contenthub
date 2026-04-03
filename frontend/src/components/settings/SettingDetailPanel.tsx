@@ -64,10 +64,10 @@ export function SettingDetailPanel({ selectedId }: SettingDetailPanelProps) {
     <div style={{ padding: "1rem" }}>
       <h3 style={{ margin: "0 0 0.75rem", fontSize: "1rem" }}>Ayar Detayı</h3>
       <Row label="key">
-        <code>{data.key}</code>
+        <code>{data.key ?? "—"}</code>
       </Row>
-      <Row label="group_name">{data.group_name}</Row>
-      <Row label="type">{data.type}</Row>
+      <Row label="group_name">{data.group_name ?? "—"}</Row>
+      <Row label="type">{data.type ?? "—"}</Row>
       <Row label="default_value_json">
         <code style={{ wordBreak: "break-all", overflowWrap: "anywhere" }}>{data.default_value_json ?? "—"}</code>
       </Row>
@@ -88,8 +88,8 @@ export function SettingDetailPanel({ selectedId }: SettingDetailPanelProps) {
       </Row>
       <Row label="module_scope">{data.module_scope ?? <em style={{ color: "#94a3b8" }}>—</em>}</Row>
       <Row label="help_text">{data.help_text ?? <em style={{ color: "#94a3b8" }}>—</em>}</Row>
-      <Row label="status">{data.status}</Row>
-      <Row label="version">{data.version}</Row>
+      <Row label="status">{data.status ?? "—"}</Row>
+      <Row label="version">{data.version ?? "—"}</Row>
     </div>
   );
 }

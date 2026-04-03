@@ -55,10 +55,10 @@ export function TemplatesTable({ templates, selectedId, onSelect }: TemplatesTab
           >
             {/* Kimlik & Durum */}
             <td style={{ padding: "0.5rem 0.75rem", color: "#1e40af", fontWeight: selectedId === t.id ? 600 : 400, wordBreak: "break-word", overflowWrap: "anywhere" }}>
-              {t.name}
+              {t.name ?? "—"}
             </td>
-            <td style={{ padding: "0.5rem 0.75rem", color: "#334155" }}>{t.template_type}</td>
-            <td style={{ padding: "0.5rem 0.75rem", color: "#334155" }}>{t.owner_scope}</td>
+            <td style={{ padding: "0.5rem 0.75rem", color: "#334155" }}>{t.template_type ?? "—"}</td>
+            <td style={{ padding: "0.5rem 0.75rem", color: "#334155" }}>{t.owner_scope ?? "—"}</td>
             <td style={{ padding: "0.5rem 0.75rem", color: "#64748b" }}>{t.module_scope ?? "—"}</td>
             <td style={{ padding: "0.5rem 0.75rem" }}>
               <span
@@ -71,10 +71,10 @@ export function TemplatesTable({ templates, selectedId, onSelect }: TemplatesTab
                   color: t.status === "active" ? "#166534" : "#475569",
                 }}
               >
-                {t.status}
+                {t.status ?? "—"}
               </span>
             </td>
-            <td style={{ padding: "0.5rem 0.75rem", color: "#64748b" }}>v{t.version}</td>
+            <td style={{ padding: "0.5rem 0.75rem", color: "#64748b" }}>v{t.version ?? 0}</td>
             {/* Stil & Hazırlık */}
             <td style={{ padding: "0.5rem 0.75rem" }}>
               <TemplateStyleLinkSummary

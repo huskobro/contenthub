@@ -2,6 +2,18 @@
 
 ---
 
+## [2026-04-03] Phase 150 — Required Field Assumption Safety Pack
+
+**Ne:** Required kabul edilen text/enum/id alanlarında null fallback koruması. 9 registry tablo ve 2 detail panelde toplam 30 property render'a `?? "—"` veya `?? 0` fallback eklendi.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/tests/required-field-safety.smoke.test.tsx` (yeni — 42 structural guard test)
+- `SettingsTable.tsx` (5 fallback), `VisibilityRulesTable.tsx` (4), `SourcesTable.tsx` (3), `StandardVideosTable.tsx` (2), `TemplatesTable.tsx` (5), `StyleBlueprintsTable.tsx` (3), `NewsBulletinsTable.tsx` (2), `NewsItemPickerTable.tsx` (2), `TemplateStyleLinksTable.tsx` (1)
+- `SettingDetailPanel.tsx` (5 fallback), `VisibilityRuleDetailPanel.tsx` (4)
+**Test:** 1251 toplam test (+42 yeni), tsc temiz, vite build temiz
+**Dokunulmayan:** Backend schema yok, validation yok, badge stilleri korundu, business logic değişiklik yok
+
+---
+
 ## [2026-04-03] Phase 149 — Clipboard / Copy Surface Safety & Text Export Hygiene Pack
 
 **Ne:** Kopyalanabilir text yüzeylerinde null/undefined sızıntı koruması. Script, metadata, artifacts panellerinde 13 property'ye `?? "—"` fallback eklendi. Content block'larda null-safe length check. overflowWrap eklendi. safeJsonPretty whitespace-only string guard eklendi.

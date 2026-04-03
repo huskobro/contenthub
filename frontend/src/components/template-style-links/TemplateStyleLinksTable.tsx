@@ -72,7 +72,7 @@ export function TemplateStyleLinksTable({
                 color: "#fff",
                 background: STATUS_COLORS[link.status] ?? "#94a3b8",
               }}>
-                {link.status}
+                {link.status ?? "—"}
               </span>
             </td>
             <td style={{ padding: "0.5rem 0.75rem" }}>

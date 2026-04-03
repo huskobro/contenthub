@@ -47,7 +47,7 @@ export function StyleBlueprintsTable({ blueprints, selectedId, onSelect }: Style
           >
             {/* Kimlik & Durum */}
             <td style={{ padding: "0.5rem 0.75rem", color: "#1e40af", fontWeight: selectedId === bp.id ? 600 : 400, wordBreak: "break-word", overflowWrap: "anywhere" }}>
-              {bp.name}
+              {bp.name ?? "—"}
             </td>
             <td style={{ padding: "0.5rem 0.75rem", color: "#64748b" }}>{bp.module_scope ?? "—"}</td>
             <td style={{ padding: "0.5rem 0.75rem" }}>
@@ -59,10 +59,10 @@ export function StyleBlueprintsTable({ blueprints, selectedId, onSelect }: Style
                 background: bp.status === "active" ? "#dcfce7" : "#f1f5f9",
                 color: bp.status === "active" ? "#166534" : "#475569",
               }}>
-                {bp.status}
+                {bp.status ?? "—"}
               </span>
             </td>
-            <td style={{ padding: "0.5rem 0.75rem", color: "#64748b" }}>v{bp.version}</td>
+            <td style={{ padding: "0.5rem 0.75rem", color: "#64748b" }}>v{bp.version ?? 0}</td>
             {/* Hazırlık */}
             <td style={{ padding: "0.5rem 0.75rem" }}>
               <StyleBlueprintReadinessSummary

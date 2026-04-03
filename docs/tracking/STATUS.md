@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 149 — Clipboard / Copy Surface Safety & Text Export Hygiene Pack ✓ TAMAMLANDI
+Phase 150 — Required Field Assumption Safety Pack ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Kopyalanabilir text yüzeylerinde null/undefined sızıntı koruması, content block null-safe length check, overflowWrap ekleme, safeJsonPretty whitespace guard, 25 yeni guard test. 1209 toplam test.
+Required kabul edilen text/enum/id alanlarında null fallback koruması. 30 property render, 11 dosya, 42 yeni guard test. 1251 toplam test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 150: required field assumption safety pack: 30 property null fallback (9 tablo + 2 detail panel), version numeric fallback, 42 yeni guard test, badge stilleri korundu, 1251 toplam (2026-04-03)
 - Phase 149: clipboard copy surface safety text export hygiene pack: 13 property null fallback, 3 content block null-safe length, 4 overflowWrap fix, safeJsonPretty whitespace guard, 25 yeni guard test, badge stilleri korundu, 1209 toplam (2026-04-03)
 - Phase 148: url link surface safety external target hygiene pack: anchor null guard fix, rel="noopener noreferrer" fix, UrlField overflowWrap, 13 yeni guard test, badge stilleri korundu, 1184 toplam (2026-04-03)
 - Phase 147: text field overflow long content safety pack: 9 panel Field/Row overflow fix, 5 inline text overflow fix, 7 registry table td overflow fix, 14 form error overflow fix, 34 yeni guard test, badge stilleri korundu, 1171 toplam (2026-04-03)

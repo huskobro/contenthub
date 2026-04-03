@@ -53,9 +53,9 @@ export function SourcesTable({ sources, selectedId, onSelect }: SourcesTableProp
           >
             {/* Kimlik */}
             <td style={{ padding: "0.5rem 0.75rem", color: "#1e40af", fontWeight: selectedId === src.id ? 600 : 400, wordBreak: "break-word", overflowWrap: "anywhere" }}>
-              {src.name}
+              {src.name ?? "—"}
             </td>
-            <td style={{ padding: "0.5rem 0.75rem", color: "#64748b" }}>{src.source_type}</td>
+            <td style={{ padding: "0.5rem 0.75rem", color: "#64748b" }}>{src.source_type ?? "—"}</td>
             <td style={{ padding: "0.5rem 0.75rem" }}>
               <span style={{
                 display: "inline-block",
@@ -65,7 +65,7 @@ export function SourcesTable({ sources, selectedId, onSelect }: SourcesTableProp
                 background: src.status === "active" ? "#dcfce7" : "#f1f5f9",
                 color: src.status === "active" ? "#166534" : "#475569",
               }}>
-                {src.status}
+                {src.status ?? "—"}
               </span>
             </td>
             <td style={{ padding: "0.5rem 0.75rem", color: "#64748b" }}>{src.trust_level ?? "—"}</td>

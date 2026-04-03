@@ -61,16 +61,16 @@ export function VisibilityRuleDetailPanel({ selectedId }: VisibilityRuleDetailPa
   return (
     <div style={{ padding: "1rem" }}>
       <h3 style={{ margin: "0 0 0.75rem", fontSize: "1rem" }}>Rule Detayı</h3>
-      <Row label="rule_type">{data.rule_type}</Row>
-      <Row label="target_key"><code>{data.target_key}</code></Row>
+      <Row label="rule_type">{data.rule_type ?? "—"}</Row>
+      <Row label="target_key"><code>{data.target_key ?? "—"}</code></Row>
       <Row label="module_scope">{data.module_scope ?? <em style={{ color: "#94a3b8" }}>—</em>}</Row>
       <Row label="role_scope">{data.role_scope ?? <em style={{ color: "#94a3b8" }}>—</em>}</Row>
       <Row label="mode_scope">{data.mode_scope ?? <em style={{ color: "#94a3b8" }}>—</em>}</Row>
       <Row label="visible"><BoolBadge value={data.visible} /></Row>
       <Row label="read_only"><BoolBadge value={data.read_only} /></Row>
       <Row label="wizard_visible"><BoolBadge value={data.wizard_visible} /></Row>
-      <Row label="status">{data.status}</Row>
-      <Row label="priority">{data.priority}</Row>
+      <Row label="status">{data.status ?? "—"}</Row>
+      <Row label="priority">{data.priority ?? "—"}</Row>
       <Row label="notes">{data.notes ?? <em style={{ color: "#94a3b8" }}>—</em>}</Row>
     </div>
   );
