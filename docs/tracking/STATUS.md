@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 211 — Repeated Small Nullish-Coalescing Readability Pack ✓ TAMAMLANDI (audit-only)
+Phase 212 — Repeated Small .join() / Separator-Based Array Render Pattern Pack ✓ TAMAMLANDI (audit-only)
 
 ## Mevcut Hedef
-nullish-coalescing readability audit. ?? "" 17 dosyada yaygın ama const extraction okunabilirliği artırmıyor. Hiçbir dosya değiştirilmedi. 1587 toplam test.
+.join() separator pattern audit. Hiçbir dosyada aynı separator 3+ kez kullanılmıyor. Hiçbir dosya değiştirilmedi. 1587 toplam test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 212: repeated small .join()/separator array render pattern pack: kapsamlı audit, threshold karşılanmadı, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 211: repeated small nullish-coalescing readability pack: kapsamlı audit, ?? "" standart kullanım, extraction değer katmıyor, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 210: repeated small loading/error/fallback render pattern pack: kapsamlı audit, extraction değer katmıyor, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 209: repeated small local error message readability pack: kapsamlı audit, gerçek error literal yok, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)

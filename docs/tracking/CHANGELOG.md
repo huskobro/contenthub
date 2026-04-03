@@ -2,6 +2,16 @@
 
 ---
 
+## [2026-04-03] Phase 212 — Repeated Small .join() / Separator-Based Array Render Pattern Pack
+
+**Ne:** Detail/panel/overview/summary bileşenlerinde tekrar eden .join() separator pattern'larının kapsamlı audit'i.
+**Sonuç:** Hiçbir dosyada aynı separator 3+ kez kullanılmıyor. Dosya değişikliği yapılmadı.
+**Eklenen/değiştirilen dosyalar:**
+- `docs/testing/test-report-phase-212-repeated-small-join-separator-array-render-pattern-pack.md` (yeni — audit belgesi)
+**Test:** 1587 toplam test, tsc temiz
+
+---
+
 ## [2026-04-03] Phase 211 — Repeated Small Nullish-Coalescing Readability Pack
 
 **Ne:** Form/panel bileşenlerinde tekrar eden nullish-coalescing fallback pattern'larının kapsamlı audit'i.
