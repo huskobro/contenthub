@@ -1,13 +1,18 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 263 — User/Admin Route Intent Clarity Pass ✓ TAMAMLANDI (feature)
+Phase 264–267 — Navigation Closure Pack ✓ TAMAMLANDI (closure)
+
+**ANA FAZ 2 KAPATILDI.**
 
 ## Mevcut Hedef
-User panel "baslangic ve takip merkezi", admin panel "uretim ve yonetim merkezi" olarak intent netlesti. Karsit referanslarla panel rolleri belirginlesti. 1778 toplam test.
+Ana Faz 2 (Kullanici Akisi / Navigasyon) resmi olarak kapatildi. Task-chain visibility, admin entry clarity, navigation consistency final pass ve kapanış doğrulaması tamamlandi. 1795 toplam test.
 
 ## Devam Eden
 — (devam eden calisma yok)
+
+## Siradaki Ana Faz
+Ana Faz 3 — Video uretim zinciri (PM tarafindan belirlenecek)
 
 ## Hygiene Hattı Kapanış Durumu
 - **KAPATILDI:** Mikro readability faz zinciri Phase 235 ile resmen kapatıldı.
@@ -15,6 +20,7 @@ User panel "baslangic ve takip merkezi", admin panel "uretim ve yonetim merkezi"
 - **ANA FAZ BAŞLADI:** Wizard / Onboarding (ürün geliştirme hattı)
 
 ## Son Tamamlananlar
+- Phase 264–267: navigation closure pack — task-chain visibility (ikinci/ucuncu adim), admin entry clarity (fiil-odakli subtitle, style hizalama), navigation consistency final pass, ANA FAZ 2 KAPATILDI, 17 yeni test, 1795 toplam (2026-04-03)
 - Phase 263: user/admin route intent clarity — panel rolleri netlesti (baslangic+takip vs uretim+yonetim), karsit referanslar, 11 yeni test, 1778 toplam (2026-04-03)
 - Phase 262: panel switch destination clarity — switch copy "X Gec" fiili, title+aria-label, 10 yeni test, 1767 toplam (2026-04-03)
 - Phase 261: user panel cross-link recovery — content→publish ve publish→content cross-link, sidebar'siz section gecisi, 8 yeni test, 1757 toplam (2026-04-03)

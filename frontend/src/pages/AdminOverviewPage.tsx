@@ -5,10 +5,11 @@ const SECTION: React.CSSProperties = {
 };
 
 const SUBTITLE: React.CSSProperties = {
-  margin: "0 0 1.25rem",
+  margin: "0 0 1.5rem",
   fontSize: "0.9375rem",
   color: "#475569",
   lineHeight: 1.6,
+  maxWidth: "720px",
 };
 
 const GRID: React.CSSProperties = {
@@ -21,8 +22,9 @@ const CARD: React.CSSProperties = {
   padding: "1rem 1.25rem",
   background: "#fff",
   border: "1px solid #e2e8f0",
-  borderRadius: "8px",
+  borderRadius: "10px",
   cursor: "pointer",
+  transition: "border-color 0.15s",
 };
 
 const CARD_TITLE: React.CSSProperties = {
@@ -80,14 +82,18 @@ export function AdminOverviewPage() {
       <h2>Genel Bakis</h2>
       <div style={SECTION}>
         <p style={SUBTITLE} data-testid="admin-overview-subtitle">
-          Uretim ve yonetim merkezi. Icerik olusturma, kaynak yonetimi,
-          sablonlar, isler ve sistem ayarlarini buradan yonetin. Baslangic
+          Uretim ve yonetim merkezi. Buradan icerik olusturabilir, kaynaklari
+          yonetebilir, sablonlari duzenleyebilir, uretim islerini takip
+          edebilir ve sistem ayarlarini yapilandirabilirsiniz. Baslangic
           ve takip islemleri icin kullanici panelini kullanabilirsiniz.
         </p>
       </div>
 
       <div style={SECTION}>
-        <h3 style={{ margin: "0 0 0.75rem", fontSize: "1rem", fontWeight: 600, color: "#1e293b" }}>
+        <h3
+          style={{ margin: "0 0 0.75rem", fontSize: "1rem", fontWeight: 600, color: "#1e293b" }}
+          data-testid="admin-quick-access-heading"
+        >
           Hizli Erisim
         </h3>
         <div style={GRID}>

@@ -116,9 +116,9 @@ export function UserContentEntryPage() {
     <div>
       <h2>Icerik</h2>
       <p style={SUBTITLE} data-testid="content-section-subtitle">
-        Icerik uretim merkezi. Bir tur secerek yeni icerik olusturma
-        akisina baslayabilirsiniz. Tamamlanan icerikler Yayin ekraninda
-        takip edilebilir.
+        Icerik uretim merkezi. Gorev zincirinizin ikinci adimi: bir tur
+        secerek yeni icerik olusturma akisina baslayabilirsiniz. Tamamlanan
+        icerikler Yayin ekraninda takip edilebilir.
       </p>
 
       <div style={GRID}>

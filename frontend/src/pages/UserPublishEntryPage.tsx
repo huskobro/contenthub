@@ -125,9 +125,9 @@ export function UserPublishEntryPage() {
     <div>
       <h2>Yayin</h2>
       <p style={SUBTITLE} data-testid="publish-section-subtitle">
-        Yayin ve dagitim merkezi. Icerik ekraninda olusturulan
-        iceriklerinizin yayin durumunu buradan takip edebilirsiniz.
-        Tamamlanan uretim isleri yonetim panelinden yayinlanabilir.
+        Yayin ve dagitim merkezi. Gorev zincirinizin ucuncu adimi: Icerik
+        ekraninda olusturulan iceriklerinizin yayin durumunu buradan takip
+        edebilirsiniz. Tamamlanan uretim isleri yonetim panelinden yayinlanabilir.
       </p>
 
       <div style={GRID}>
