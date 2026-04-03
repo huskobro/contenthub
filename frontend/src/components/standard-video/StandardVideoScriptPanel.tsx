@@ -196,7 +196,7 @@ export function StandardVideoScriptPanel({
             }}
           >
             {isBlank(script.content)
-              ? "—"
+              ? DASH
               : showFull || (script.content ?? "").length <= PREVIEW_LIMIT
               ? script.content
               : (script.content ?? "").slice(0, PREVIEW_LIMIT) + "..."}

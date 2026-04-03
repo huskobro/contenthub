@@ -2,6 +2,20 @@
 
 ---
 
+## [2026-04-03] Phase 158 — Repeated Date Fallback Constant & Readability Pack
+
+**Ne:** Date render yüzeylerinde kalan inline `"—"` fallback'lerini DASH const'a dönüştürme. Phase 157'de kaçan content ternary `"—"` kalıntılarını temizleme.
+**Eklenen/değiştirilen dosyalar:**
+- `StandardVideoOverviewPanel.tsx`: `const DASH` eklendi, 3 inline `"—"` → `DASH`
+- `StandardVideosTable.tsx`: formatDateTime fallback `"—"` → `DASH`
+- `NewsBulletinScriptPanel.tsx`: content ternary `"—"` → `DASH`
+- `StandardVideoScriptPanel.tsx`: content ternary `"—"` → `DASH`
+- `docs/testing/test-report-phase-158-repeated-date-fallback-constant-readability-pack.md` (yeni)
+**Test:** 1587 toplam test, tsc temiz, vite build temiz
+**Dokunulmayan:** Date helper mimarisi, locale, relative time, 2 tekrarlı dosyalar, badge stilleri, backend
+
+---
+
 ## [2026-04-03] Phase 157 — Duplicate Inline Fallback Pattern Reduction Pack
 
 **Ne:** Bileşen içinde 3+ kez tekrar eden `?? "—"` inline fallback pattern'lerini `const DASH = "—"` local const extraction ile sadeleştirme. 13 dosyada toplam 62 inline string → const referansına dönüşüm.

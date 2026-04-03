@@ -3,12 +3,14 @@ import { formatDuration } from "../../lib/formatDuration";
 import { formatDateTime } from "../../lib/formatDate";
 import { isBlank } from "../../lib/isBlank";
 
+const DASH = "—";
+
 interface Props {
   video: StandardVideoResponse;
 }
 
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
-  const display = typeof value === "string" && isBlank(value) ? "—" : (value ?? "—");
+  const display = typeof value === "string" && isBlank(value) ? DASH : (value ?? DASH);
   return (
     <tr>
       <td
@@ -63,8 +65,8 @@ export function StandardVideoOverviewPanel({ video }: Props) {
           <Row label="Altyazı Stili" value={video.subtitle_style} />
           <Row label="Durum" value={video.status} />
           <Row label="Job ID" value={video.job_id} />
-          <Row label="Oluşturulma" value={formatDateTime(video.created_at, "—")} />
-          <Row label="Güncelleme" value={formatDateTime(video.updated_at, "—")} />
+          <Row label="Oluşturulma" value={formatDateTime(video.created_at, DASH)} />
+          <Row label="Güncelleme" value={formatDateTime(video.updated_at, DASH)} />
         </tbody>
       </table>
     </div>

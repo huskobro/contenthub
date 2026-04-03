@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 157 — Duplicate Inline Fallback Pattern Reduction Pack ✓ TAMAMLANDI
+Phase 158 — Repeated Date Fallback Constant & Readability Pack ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Bileşen içi tekrar eden `?? "—"` inline fallback pattern'lerini `const DASH` extraction ile sadeleştirme. 13 dosya, 62 inline string → const ref, 11 test assertion güncelleme. 1587 toplam test.
+Date render yüzeylerinde kalan inline "—" fallback tekrarlarını DASH const'a dönüştürme. 4 dosya, formatDateTime fallback + content ternary temizliği. 1587 toplam test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 158: repeated date fallback constant readability pack: 4 dosyada kalan inline "—" → DASH (1 yeni DASH + 3 mevcut DASH kullanım), 1587 toplam (2026-04-03)
 - Phase 157: duplicate inline fallback pattern reduction pack: 13 dosyada const DASH extraction, 62 inline "—" → DASH, 11 test assertion güncelleme, 1587 toplam (2026-04-03)
 - Phase 156: shared fallback helper consolidation pack: 8 safeNumber konsolidasyonu, 1 formatDateISO konsolidasyonu, 4 test dosyası güncelleme, 1587 toplam (2026-04-03)
 - Phase 155: string normalization whitespace safety pack: isBlank helper, 10 bileşen fix, 27 yeni guard test, 1587 toplam (2026-04-03)

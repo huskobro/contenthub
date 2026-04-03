@@ -144,7 +144,7 @@ export function NewsBulletinScriptPanel({ bulletinId }: Props) {
           </table>
           <div style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: "4px", padding: "0.75rem", fontSize: "0.8125rem", whiteSpace: "pre-wrap", wordBreak: "break-word", overflowWrap: "anywhere" }}>
             {isBlank(script.content)
-              ? "—"
+              ? DASH
               : showFull || (script.content ?? "").length <= PREVIEW_LIMIT
               ? script.content
               : (script.content ?? "").slice(0, PREVIEW_LIMIT) + "..."}
