@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 212 — Repeated Small .join() / Separator-Based Array Render Pattern Pack ✓ TAMAMLANDI (audit-only)
+Phase 213 — Repeated Small Boolean Prop Readability Pack ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-.join() separator pattern audit. Hiçbir dosyada aynı separator 3+ kez kullanılmıyor. Hiçbir dosya değiştirilmedi. 1587 toplam test.
+boolean prop readability audit. mode === "create" 4 dosyada 3×. const isCreate eklendi. 1587 toplam test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 213: repeated small boolean prop readability pack: 4 dosyada const isCreate eklendi, 12 satır değiştirildi, 1587 toplam (2026-04-03)
 - Phase 212: repeated small .join()/separator array render pattern pack: kapsamlı audit, threshold karşılanmadı, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 211: repeated small nullish-coalescing readability pack: kapsamlı audit, ?? "" standart kullanım, extraction değer katmıyor, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 210: repeated small loading/error/fallback render pattern pack: kapsamlı audit, extraction değer katmıyor, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)

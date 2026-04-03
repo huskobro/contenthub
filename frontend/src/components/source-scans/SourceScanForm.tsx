@@ -94,6 +94,7 @@ export function SourceScanForm({
   });
 
   const [errors, setErrors] = useState<Partial<Record<keyof SourceScanFormValues, string>>>({});
+  const isCreate = mode === "create";
 
   function set(field: keyof SourceScanFormValues, value: string) {
     setValues((prev) => ({ ...prev, [field]: value }));
@@ -102,7 +103,7 @@ export function SourceScanForm({
 
   function validate(): boolean {
     const newErrors: Partial<Record<keyof SourceScanFormValues, string>> = {};
-    if (mode === "create") {
+    if (isCreate) {
       if (!values.source_id.trim()) newErrors.source_id = "Source ID zorunlu";
       if (!values.scan_mode.trim()) newErrors.scan_mode = "Scan mode zorunlu";
     }
@@ -121,7 +122,7 @@ export function SourceScanForm({
 
   return (
     <form onSubmit={handleSubmit} noValidate>
-      {mode === "create" && (
+      {isCreate && (
         <>
           <div style={fieldStyle}>
             <label style={labelStyle}>
@@ -217,7 +218,7 @@ export function SourceScanForm({
           disabled={isSubmitting}
           style={{ ...BTN_PRIMARY, background: isSubmitting ? "#93c5fd" : "#3b82f6", cursor: isSubmitting ? "not-allowed" : "pointer" }}
         >
-          {isSubmitting ? "Kaydediliyor..." : (submitLabel ?? (mode === "create" ? "Oluştur" : "Kaydet"))}
+          {isSubmitting ? "Kaydediliyor..." : (submitLabel ?? (isCreate ? "Oluştur" : "Kaydet"))}
         </button>
         <button
           type="button"

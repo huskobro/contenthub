@@ -82,6 +82,7 @@ export function TemplateStyleLinkForm({
   });
 
   const [errors, setErrors] = useState<Partial<Record<keyof TemplateStyleLinkFormValues, string>>>({});
+  const isCreate = mode === "create";
 
   function set(field: keyof TemplateStyleLinkFormValues, value: string) {
     setValues((prev) => ({ ...prev, [field]: value }));
@@ -90,7 +91,7 @@ export function TemplateStyleLinkForm({
 
   function validate(): boolean {
     const newErrors: Partial<Record<keyof TemplateStyleLinkFormValues, string>> = {};
-    if (mode === "create") {
+    if (isCreate) {
       if (!values.template_id.trim()) newErrors.template_id = "Template ID zorunlu";
       if (!values.style_blueprint_id.trim()) newErrors.style_blueprint_id = "Blueprint ID zorunlu";
     }
@@ -105,7 +106,7 @@ export function TemplateStyleLinkForm({
 
   return (
     <form onSubmit={handleSubmit} noValidate>
-      {mode === "create" && (
+      {isCreate && (
         <>
           <div style={fieldStyle}>
             <label style={labelStyle}>
@@ -174,7 +175,7 @@ export function TemplateStyleLinkForm({
           disabled={isSubmitting}
           style={{ ...BTN_PRIMARY, background: isSubmitting ? "#93c5fd" : "#3b82f6", cursor: isSubmitting ? "not-allowed" : "pointer" }}
         >
-          {isSubmitting ? "Kaydediliyor..." : (submitLabel ?? (mode === "create" ? "Oluştur" : "Kaydet"))}
+          {isSubmitting ? "Kaydediliyor..." : (submitLabel ?? (isCreate ? "Oluştur" : "Kaydet"))}
         </button>
         <button
           type="button"

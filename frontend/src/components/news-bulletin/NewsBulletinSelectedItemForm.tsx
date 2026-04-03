@@ -31,6 +31,7 @@ export function NewsBulletinSelectedItemForm({
     selection_reason: initial?.selection_reason ?? "",
   });
   const [error, setError] = useState<string | null>(null);
+  const isCreate = mode === "create";
 
   function set(field: keyof SelectedItemFormValues, value: string) {
     setValues((v) => ({ ...v, [field]: value }));
@@ -38,7 +39,7 @@ export function NewsBulletinSelectedItemForm({
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (mode === "create" && !values.news_item_id.trim()) {
+    if (isCreate && !values.news_item_id.trim()) {
       setError("News Item ID boş olamaz.");
       return;
     }
@@ -57,7 +58,7 @@ export function NewsBulletinSelectedItemForm({
     <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
       {localError && <p style={{ color: "red", margin: 0, wordBreak: "break-word", overflowWrap: "anywhere" }}>{localError}</p>}
 
-      {mode === "create" && (
+      {isCreate && (
         <label>
           News Item ID <span style={{ color: "red" }}>*</span>
           <input
@@ -91,7 +92,7 @@ export function NewsBulletinSelectedItemForm({
 
       <div style={{ display: "flex", gap: "8px" }}>
         <button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Kaydediliyor..." : mode === "create" ? "Ekle" : "Güncelle"}
+          {isSubmitting ? "Kaydediliyor..." : isCreate ? "Ekle" : "Güncelle"}
         </button>
         <button type="button" onClick={onCancel}>
           İptal

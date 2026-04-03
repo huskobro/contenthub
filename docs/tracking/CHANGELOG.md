@@ -2,6 +2,19 @@
 
 ---
 
+## [2026-04-03] Phase 213 — Repeated Small Boolean Prop Readability Pack
+
+**Ne:** Form bileşenlerinde tekrar eden `mode === "create"` pattern'larını `const isCreate` const'larına çıkarma.
+**Değiştirilen dosyalar:**
+- `source-scans/SourceScanForm.tsx`: `const isCreate` eklendi, 3× inline değiştirildi
+- `news-bulletin/NewsBulletinSelectedItemForm.tsx`: `const isCreate` eklendi, 3× inline değiştirildi
+- `template-style-links/TemplateStyleLinkForm.tsx`: `const isCreate` eklendi, 3× inline değiştirildi
+- `used-news/UsedNewsForm.tsx`: `const isCreate` eklendi, 3× inline değiştirildi
+- `docs/testing/test-report-phase-213-repeated-small-boolean-prop-readability-pack.md` (yeni)
+**Test:** 1587 toplam test, tsc temiz
+
+---
+
 ## [2026-04-03] Phase 212 — Repeated Small .join() / Separator-Based Array Render Pattern Pack
 
 **Ne:** Detail/panel/overview/summary bileşenlerinde tekrar eden .join() separator pattern'larının kapsamlı audit'i.
