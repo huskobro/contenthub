@@ -98,9 +98,9 @@ export function UserContentEntryPage() {
     <div>
       <h2>Icerik</h2>
       <p style={SUBTITLE} data-testid="content-section-subtitle">
-        Icerik uretim merkezi. Uretilebilecek icerik turlerini asagida
-        gorebilirsiniz. Bir tur secerek yeni icerik olusturma akisina
-        baslayabilirsiniz.
+        Icerik uretim merkezi. Bir tur secerek yeni icerik olusturma
+        akisina baslayabilirsiniz. Tamamlanan icerikler Yayin ekraninda
+        takip edilebilir.
       </p>
 
       <div style={GRID}>

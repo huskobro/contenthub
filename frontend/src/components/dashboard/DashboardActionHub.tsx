@@ -73,7 +73,7 @@ const HUB_ENTRIES = [
     icon: "I",
     iconBg: "#2563eb",
     title: "Icerik",
-    desc: "Yeni icerik olusturun veya mevcut icerikleri inceleyin.",
+    desc: "Ilk adim: yeni icerik olusturun veya mevcut icerikleri inceleyin.",
     cta: "Icerige Git",
     to: "/user/content",
     testId: "hub-action-content",
@@ -82,7 +82,7 @@ const HUB_ENTRIES = [
     icon: "Y",
     iconBg: "#7c3aed",
     title: "Yayin",
-    desc: "Yayin durumlarini takip edin ve yayin surecleri hakkinda bilgi alin.",
+    desc: "Sonraki adim: olusturulan iceriklerin yayin durumunu takip edin.",
     cta: "Yayina Git",
     to: "/user/publish",
     testId: "hub-action-publish",
@@ -104,8 +104,9 @@ export function DashboardActionHub() {
   return (
     <div style={SECTION} data-testid="dashboard-action-hub">
       <h3 style={SECTION_HEADING}>Hizli Erisim</h3>
-      <p style={SECTION_DESC}>
-        Ana calisma alanlariniza buradan ulasabilirsiniz.
+      <p style={SECTION_DESC} data-testid="hub-flow-desc">
+        Once icerik olusturun, ardindan yayin surecini takip edin.
+        Detayli islemler icin yonetim panelini kullanin.
       </p>
 
       <div style={GRID}>

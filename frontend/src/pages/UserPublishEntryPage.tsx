@@ -107,9 +107,9 @@ export function UserPublishEntryPage() {
     <div>
       <h2>Yayin</h2>
       <p style={SUBTITLE} data-testid="publish-section-subtitle">
-        Yayin ve dagitim merkezi. Iceriklerinizin yayin durumunu buradan
-        takip edebilirsiniz. Tamamlanan uretim isleri yayin adimina
-        hazirlanan icerikler olarak yonetim panelinden yayinlanabilir.
+        Yayin ve dagitim merkezi. Icerik ekraninda olusturulan
+        iceriklerinizin yayin durumunu buradan takip edebilirsiniz.
+        Tamamlanan uretim isleri yonetim panelinden yayinlanabilir.
       </p>
 
       <div style={GRID}>

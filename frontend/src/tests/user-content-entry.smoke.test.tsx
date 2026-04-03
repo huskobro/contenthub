@@ -50,7 +50,7 @@ describe("User content entry surface", () => {
 
   it("shows description text", () => {
     renderAt("/user/content");
-    expect(screen.getByText(/Uretilebilecek icerik turlerini/)).toBeDefined();
+    expect(screen.getByText(/Icerik uretim merkezi/)).toBeDefined();
   });
 
   it("shows standard video content card", () => {
