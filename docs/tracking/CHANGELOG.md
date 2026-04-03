@@ -2,6 +2,16 @@
 
 ---
 
+## [2026-04-03] Phase 233 — Repeated Small Summary Component Call Readability Pack
+
+**Ne:** Table/Panel/Detail bileşenlerinde tekrar eden summary component çağrısı pattern'larının kapsamlı audit'i.
+**Sonuç:** Table dosyalarında her Summary component çağrısı farklı component adı taşıyor — aynı component 3+ tekrar etmiyor. Panel dosyalarında BoolBadge 3-4× farklı field+label ile çağrılıyor — extraction Row label bilgisini kaybettirir. Dosya değişikliği yapılmadı.
+**Eklenen dosyalar:**
+- `docs/testing/test-report-phase-233-repeated-small-summary-component-call-readability-pack.md` (yeni — audit belgesi)
+**Test:** 1587 toplam test, tsc temiz
+
+---
+
 ## [2026-04-03] Phase 232 — Repeated Small Table Cell Content Readability Pack
 
 **Ne:** Table bileşenlerinde tekrar eden küçük hücre içerik pattern'larının kapsamlı audit'i.
