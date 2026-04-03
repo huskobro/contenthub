@@ -34,7 +34,8 @@ export function NewsItemReadinessSummary({
   lastTargetModule,
 }: Props) {
   const level = computeNewsItemReadiness(title, url, status);
-  const count = usageCount ?? 0;
+  const raw = usageCount ?? 0;
+  const count = typeof raw === "number" && !isNaN(raw) && isFinite(raw) ? raw : 0;
 
   const parts: string[] = [];
   parts.push(sourceId ? "Kaynak var" : "Kaynak yok");

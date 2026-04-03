@@ -35,7 +35,7 @@ export function JobActionabilitySummary({
 
   const parts: string[] = [];
   if (currentStepKey) parts.push(currentStepKey);
-  if (retryCount != null && retryCount > 0) parts.push(`${retryCount}x retry`);
+  if (retryCount != null && !isNaN(retryCount) && isFinite(retryCount) && retryCount > 0) parts.push(`${retryCount}x retry`);
   if (estimatedRemainingSeconds != null && estimatedRemainingSeconds > 0) {
     parts.push(`ETA: ${formatDuration(estimatedRemainingSeconds)}`);
   }

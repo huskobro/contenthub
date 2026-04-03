@@ -27,7 +27,7 @@ export function SourceScanExecutionSummary({ status, resultCount, errorSummary }
   const level = computeSourceScanExecution(status, resultCount);
 
   const parts: string[] = [];
-  if (resultCount != null) parts.push(`${resultCount} sonuç`);
+  if (resultCount != null && !isNaN(resultCount) && isFinite(resultCount)) parts.push(`${resultCount} sonuç`);
   if (errorSummary) parts.push(errorSummary.slice(0, 30) + (errorSummary.length > 30 ? "…" : ""));
   const detail = parts.length > 0 ? parts.join(" • ") : "detay yok";
 

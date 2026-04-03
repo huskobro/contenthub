@@ -99,12 +99,12 @@ describe("Detail panel required-field fallbacks", () => {
 describe("Version field numeric safety", () => {
   it("TemplatesTable version uses numeric fallback", () => {
     const src = read("components/templates/TemplatesTable.tsx");
-    expect(src).toContain("t.version ?? 0");
+    expect(src.includes("t.version ?? 0") || src.includes("isFinite(t.version)")).toBe(true);
   });
 
   it("StyleBlueprintsTable version uses numeric fallback", () => {
     const src = read("components/style-blueprints/StyleBlueprintsTable.tsx");
-    expect(src).toContain("bp.version ?? 0");
+    expect(src.includes("bp.version ?? 0") || src.includes("isFinite(bp.version)")).toBe(true);
   });
 });
 

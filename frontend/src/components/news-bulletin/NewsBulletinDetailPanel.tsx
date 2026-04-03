@@ -50,7 +50,7 @@ export function NewsBulletinDetailPanel({ selectedId }: Props) {
           topic: (values.topic ?? "").trim(),
           title: (values.title ?? "").trim() || null,
           brief: (values.brief ?? "").trim() || null,
-          target_duration_seconds: dur !== "" ? Number(dur) : null,
+          target_duration_seconds: (() => { if (dur === "") return null; const n = Number(dur); return isNaN(n) || !isFinite(n) ? null : n; })(),
           language: values.language || null,
           tone: values.tone || null,
           bulletin_style: values.bulletin_style || null,

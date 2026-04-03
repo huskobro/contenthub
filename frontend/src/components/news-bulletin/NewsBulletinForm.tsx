@@ -63,7 +63,7 @@ export function NewsBulletinForm({
       return;
     }
     const dur = values.target_duration_seconds.trim();
-    if (dur !== "" && (isNaN(Number(dur)) || Number(dur) < 0)) {
+    if (dur !== "" && (isNaN(Number(dur)) || !isFinite(Number(dur)) || Number(dur) < 0)) {
       setError("Hedef süre negatif olamaz.");
       return;
     }

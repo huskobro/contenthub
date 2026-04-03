@@ -89,7 +89,7 @@ export function StandardVideoForm({
     }
     if (values.target_duration_seconds !== "") {
       const n = Number(values.target_duration_seconds);
-      if (isNaN(n) || n < 0) {
+      if (isNaN(n) || !isFinite(n) || n < 0) {
         setDurationError("Hedef süre negatif olamaz.");
         valid = false;
       } else {

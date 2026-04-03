@@ -50,7 +50,8 @@ export function TemplateReadinessSummary({
   publishProfileJson,
   styleLinkCount,
 }: Props) {
-  const count = styleLinkCount ?? 0;
+  const raw = styleLinkCount ?? 0;
+  const count = typeof raw === "number" && !isNaN(raw) && isFinite(raw) ? raw : 0;
   const level = computeTemplateReadiness(
     templateType,
     status,

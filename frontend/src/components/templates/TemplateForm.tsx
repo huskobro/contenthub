@@ -91,7 +91,7 @@ export function TemplateForm({
     if (!values.owner_scope.trim()) newErrors.owner_scope = "Owner scope zorunlu";
 
     const versionNum = Number(values.version);
-    if (values.version.trim() !== "" && (isNaN(versionNum) || versionNum < 0)) {
+    if (values.version.trim() !== "" && (isNaN(versionNum) || !isFinite(versionNum) || versionNum < 0)) {
       newErrors.version = "Version negatif olamaz";
     }
 

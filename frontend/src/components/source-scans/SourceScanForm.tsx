@@ -82,7 +82,7 @@ export function SourceScanForm({
     }
     if (values.result_count.trim() !== "") {
       const n = Number(values.result_count);
-      if (isNaN(n) || n < 0) newErrors.result_count = "Result count negatif olamaz";
+      if (isNaN(n) || !isFinite(n) || n < 0) newErrors.result_count = "Result count negatif olamaz";
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;

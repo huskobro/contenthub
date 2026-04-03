@@ -2,6 +2,22 @@
 
 ---
 
+## [2026-04-03] Phase 152 — Numeric / Count / Ratio Display Safety Pack
+
+**Ne:** Sayısal alanlarda NaN/Infinity/undefined sızıntı koruması. Summary count display'lerde, table version interpolation'larda, detail panel Number() dönüşümlerinde ve form validation'larda isFinite/isNaN guard eklendi.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/lib/safeNumber.ts` (yeni — shared numeric safety helper)
+- `frontend/src/tests/numeric-display-safety.smoke.test.tsx` (yeni — 33 structural guard test)
+- 7 summary bileşeni: count/ratio display guard
+- 2 tablo: version interpolation guard
+- 5 detail panel: Number() NaN/Infinity guard
+- 6 form: isFinite validation eklendi
+- `required-field-safety.smoke.test.tsx` (version test pattern güncellendi)
+**Test:** 1520 toplam test (+33 yeni), tsc temiz, vite build temiz
+**Dokunulmayan:** Score/analytics mantığı yok, badge stili yok, backend yok, business logic yok
+
+---
+
 ## [2026-04-03] Phase 151 — Badge Enum / Status Unknown-Value Safety Pack
 
 **Ne:** Badge bileşenlerinde bilinmeyen enum/status değerleri için iki katmanlı koruma: (1) style map lookup'larda neutral fallback (`?? { bg: "#f8fafc", ... }`), (2) label text render'larda null fallback (`{level ?? "—"}`, `{status ?? "—"}`).

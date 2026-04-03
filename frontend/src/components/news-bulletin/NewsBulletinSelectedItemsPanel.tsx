@@ -33,7 +33,7 @@ export function NewsBulletinSelectedItemsPanel({ bulletinId }: Props) {
     createMutation.mutate(
       {
         news_item_id: values.news_item_id.trim(),
-        sort_order: Number(values.sort_order),
+        sort_order: (() => { const n = Number(values.sort_order); return isNaN(n) || !isFinite(n) ? 0 : n; })(),
         selection_reason: values.selection_reason.trim() || undefined,
       },
       { onSuccess: () => setMode("view") }
@@ -59,7 +59,7 @@ export function NewsBulletinSelectedItemsPanel({ bulletinId }: Props) {
       {
         selectionId: editingId,
         payload: {
-          sort_order: Number(values.sort_order),
+          sort_order: (() => { const n = Number(values.sort_order); return isNaN(n) || !isFinite(n) ? 0 : n; })(),
           selection_reason: values.selection_reason.trim() || null,
         },
       },

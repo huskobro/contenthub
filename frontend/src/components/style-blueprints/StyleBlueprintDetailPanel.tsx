@@ -56,7 +56,7 @@ export function StyleBlueprintDetailPanel({ blueprintId }: StyleBlueprintDetailP
           name: values.name.trim(),
           module_scope: values.module_scope.trim() || null,
           status: values.status,
-          version: values.version.trim() ? Number(values.version) : undefined,
+          version: (() => { const v = values.version.trim(); if (!v) return undefined; const n = Number(v); return isNaN(n) || !isFinite(n) ? undefined : n; })(),
           visual_rules_json: values.visual_rules_json.trim() || null,
           motion_rules_json: values.motion_rules_json.trim() || null,
           layout_rules_json: values.layout_rules_json.trim() || null,

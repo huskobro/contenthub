@@ -41,7 +41,7 @@ export function NewsBulletinSelectedItemForm({
       return;
     }
     const order = Number(values.sort_order);
-    if (isNaN(order) || order < 0) {
+    if (isNaN(order) || !isFinite(order) || order < 0) {
       setError("Sort order negatif olamaz.");
       return;
     }

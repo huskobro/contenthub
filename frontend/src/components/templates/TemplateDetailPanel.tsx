@@ -74,7 +74,7 @@ export function TemplateDetailPanel({ templateId }: TemplateDetailPanelProps) {
           module_scope: values.module_scope.trim() || null,
           description: values.description.trim() || null,
           status: values.status,
-          version: values.version.trim() ? Number(values.version) : undefined,
+          version: (() => { const v = values.version.trim(); if (!v) return undefined; const n = Number(v); return isNaN(n) || !isFinite(n) ? undefined : n; })(),
           style_profile_json: values.style_profile_json.trim() || null,
           content_rules_json: values.content_rules_json.trim() || null,
           publish_profile_json: values.publish_profile_json.trim() || null,

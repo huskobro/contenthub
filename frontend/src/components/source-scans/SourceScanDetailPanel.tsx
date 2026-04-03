@@ -54,7 +54,7 @@ export function SourceScanDetailPanel({ scanId }: SourceScanDetailPanelProps) {
       const payload = {
         status: values.status || undefined,
         requested_by: (values.requested_by ?? "").trim() || null,
-        result_count: (values.result_count ?? "").trim() !== "" ? Number(values.result_count) : null,
+        result_count: (() => { const v = (values.result_count ?? "").trim(); if (v === "") return null; const n = Number(v); return isNaN(n) || !isFinite(n) ? null : n; })(),
         error_summary: (values.error_summary ?? "").trim() || null,
         notes: (values.notes ?? "").trim() || null,
       };

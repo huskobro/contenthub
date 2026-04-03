@@ -27,9 +27,10 @@ export function NewsBulletinSourceCoverageSummary({
 }: Props) {
   const level = computeNewsBulletinSourceCoverage(selectedNewsCount, selectedNewsSourceCount, hasMissingSource);
 
+  const safeSourceCount = typeof selectedNewsSourceCount === "number" && !isNaN(selectedNewsSourceCount) && isFinite(selectedNewsSourceCount) ? selectedNewsSourceCount : 0;
   const detail =
-    (selectedNewsSourceCount ?? 0) > 0 && !isNaN(selectedNewsSourceCount ?? 0)
-      ? `${selectedNewsSourceCount} kaynak${hasMissingSource ? " • eksik var" : ""}`
+    safeSourceCount > 0
+      ? `${safeSourceCount} kaynak${hasMissingSource ? " • eksik var" : ""}`
       : selectedNewsCount && selectedNewsCount > 0
       ? "kaynak bilgisi yok"
       : "seçili haber yok";

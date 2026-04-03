@@ -91,7 +91,7 @@ export function StyleBlueprintForm({
     if (!values.name.trim()) newErrors.name = "Ad zorunlu";
 
     const versionNum = Number(values.version);
-    if (values.version.trim() !== "" && (isNaN(versionNum) || versionNum < 0)) {
+    if (values.version.trim() !== "" && (isNaN(versionNum) || !isFinite(versionNum) || versionNum < 0)) {
       newErrors.version = "Version negatif olamaz";
     }
 

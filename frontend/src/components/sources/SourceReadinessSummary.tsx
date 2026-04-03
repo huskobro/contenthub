@@ -49,7 +49,8 @@ export function SourceReadinessSummary({
   scanCount,
   lastScanStatus,
 }: Props) {
-  const count = scanCount ?? 0;
+  const raw = scanCount ?? 0;
+  const count = typeof raw === "number" && !isNaN(raw) && isFinite(raw) ? raw : 0;
   const level = computeSourceReadiness(
     sourceType,
     status,

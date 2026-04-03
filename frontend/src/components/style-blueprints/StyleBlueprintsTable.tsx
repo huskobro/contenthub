@@ -62,7 +62,7 @@ export function StyleBlueprintsTable({ blueprints, selectedId, onSelect }: Style
                 {bp.status ?? "—"}
               </span>
             </td>
-            <td style={{ padding: "0.5rem 0.75rem", color: "#64748b" }}>v{bp.version ?? 0}</td>
+            <td style={{ padding: "0.5rem 0.75rem", color: "#64748b" }}>v{typeof bp.version === "number" && isFinite(bp.version) ? bp.version : 0}</td>
             {/* Hazırlık */}
             <td style={{ padding: "0.5rem 0.75rem" }}>
               <StyleBlueprintReadinessSummary

@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 151 — Badge Enum / Status Unknown-Value Safety Pack ✓ TAMAMLANDI
+Phase 152 — Numeric / Count / Ratio Display Safety Pack ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Badge bileşenlerinde bilinmeyen enum/status değerleri için style lookup fallback ve label text null fallback koruması. 76 badge dosyası, 236 yeni guard test. 1487 toplam test.
+Sayısal alanlarda NaN/Infinity/undefined sızıntı koruması. 17 dosya, safeNumber helper, 33 yeni guard test. 1520 toplam test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 152: numeric count ratio display safety pack: 7 summary count guard, 2 table version guard, 5 detail panel Number() guard, 6 form isFinite guard, safeNumber helper, 33 yeni guard test, 1520 toplam (2026-04-03)
 - Phase 151: badge enum status unknown-value safety pack: 62 badge style lookup neutral fallback, 76 badge label text null fallback (70 level + 6 status), 236 yeni guard test, 1487 toplam (2026-04-03)
 - Phase 150: required field assumption safety pack: 30 property null fallback (9 tablo + 2 detail panel), version numeric fallback, 42 yeni guard test, badge stilleri korundu, 1251 toplam (2026-04-03)
 - Phase 149: clipboard copy surface safety text export hygiene pack: 13 property null fallback, 3 content block null-safe length, 4 overflowWrap fix, safeJsonPretty whitespace guard, 25 yeni guard test, badge stilleri korundu, 1209 toplam (2026-04-03)
