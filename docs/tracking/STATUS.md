@@ -1,10 +1,10 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 257 — Cross-Surface CTA Consistency Pass ✓ TAMAMLANDI (feature)
+Phase 258 — User Panel Navigation State Clarity Pass ✓ TAMAMLANDI (feature)
 
 ## Mevcut Hedef
-CTA dili urun genelinde tutarli hale getirildi: navigasyon "X Git", olusturma "Yeni X Olustur", goruntuleme "X Goruntule", donus "X Don" kaliplari. 1720 toplam test.
+User panel section kimlikleri netlestirildi: Baslangic merkezi / Icerik uretim merkezi / Yayin ve dagitim merkezi. Sidebar aktif state + heading + subtitle uyumu. 1729 toplam test.
 
 ## Devam Eden
 — (devam eden calisma yok)
@@ -15,6 +15,7 @@ CTA dili urun genelinde tutarli hale getirildi: navigasyon "X Git", olusturma "Y
 - **ANA FAZ BAŞLADI:** Wizard / Onboarding (ürün geliştirme hattı)
 
 ## Son Tamamlananlar
+- Phase 258: user panel navigation state clarity — section kimlikleri (Baslangic/Icerik uretim/Yayin dagitim merkezi), subtitle stili tutarliligi, typo fix, 9 yeni test, 1729 toplam (2026-04-03)
 - Phase 257: cross-surface CTA consistency pass — handoff/hub CTA dili hizalandi, "Yeni Icerik Olustur"→"Yeni Video Olustur", "Panele Git"→"Yonetim Paneline Git", 1720 toplam (2026-04-03)
 - Phase 256: user panel empty/no-action state clarity — dashboard pending note, content first-use note, publish first-use note, 8 yeni test, 1720 toplam (2026-04-03)
 - Phase 255: admin to user return landing clarity — dashboard context note, kullanici paneli yon bilgisi, handoff/hub ile uyumlu, 8 yeni test, 1712 toplam (2026-04-03)

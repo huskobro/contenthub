@@ -4,9 +4,9 @@ import { DashboardActionHub } from "../components/dashboard/DashboardActionHub";
 
 const SUBTITLE: React.CSSProperties = {
   margin: "0 0 1.25rem",
-  fontSize: "0.8125rem",
-  color: "#64748b",
-  lineHeight: 1.5,
+  fontSize: "0.9375rem",
+  color: "#475569",
+  lineHeight: 1.6,
   maxWidth: "720px",
 };
 
@@ -22,7 +22,7 @@ export function UserDashboardPage() {
       {onboardingCompleted ? (
         <>
           <p style={SUBTITLE} data-testid="dashboard-context-note">
-            Kullanici panelindesiniz. Icerik olusturma, yayin takibi ve yonetim
+            Baslangic merkezi. Icerik olusturma, yayin takibi ve yonetim
             paneline gecis islemlerinizi buradan yonetebilirsiniz.
           </p>
           <PostOnboardingHandoff />

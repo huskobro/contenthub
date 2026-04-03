@@ -75,7 +75,7 @@ const PUBLISH_ENTRIES = [
     icon: "I",
     iconBg: "#059669",
     title: "Isler",
-    desc: "Uretim islerini takip edin. Tamamlanan isler yayin adiminahazirlanan iceriklerdir.",
+    desc: "Uretim islerini takip edin. Tamamlanan isler yayin adimina hazirlanan iceriklerdir.",
     cta: "Isleri Goruntule",
     to: "/admin/jobs",
     testId: "publish-entry-jobs",
@@ -106,10 +106,10 @@ export function UserPublishEntryPage() {
   return (
     <div>
       <h2>Yayin</h2>
-      <p style={SUBTITLE}>
-        Iceriklerinizin yayin durumunu buradan takip edebilirsiniz.
-        Tamamlanan uretim isleri yayin adiminahazirlanan icerikler
-        olarak yonetim panelinden yayinlanabilir.
+      <p style={SUBTITLE} data-testid="publish-section-subtitle">
+        Yayin ve dagitim merkezi. Iceriklerinizin yayin durumunu buradan
+        takip edebilirsiniz. Tamamlanan uretim isleri yayin adimina
+        hazirlanan icerikler olarak yonetim panelinden yayinlanabilir.
       </p>
 
       <div style={GRID}>

@@ -53,7 +53,7 @@ describe("Admin to user return landing clarity", () => {
   it("shows context note on user dashboard for completed onboarding", async () => {
     renderAt("/user");
     expect(await screen.findByTestId("dashboard-context-note")).toBeDefined();
-    expect(screen.getByText(/Kullanici panelindesiniz/)).toBeDefined();
+    expect(screen.getByText(/Baslangic merkezi/)).toBeDefined();
   });
 
   it("context note explains available actions", async () => {

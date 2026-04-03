@@ -2,6 +2,21 @@
 
 ---
 
+## [2026-04-03] Phase 258 — User Panel Navigation State Clarity Pass
+
+**Ne:** User panel icindeki uc ana yuzeyde section kimligi netlestirildi. Dashboard context note "Baslangic merkezi", content subtitle "Icerik uretim merkezi", publish subtitle "Yayin ve dagitim merkezi" olarak guncellendi. Dashboard subtitle stili content/publish ile tutarli hale getirildi. Publish entry'deki "adiminahazirlanan" typo'su duzeltildi. Sidebar aktif state, heading ve subtitle uyumu test edildi.
+**Sonuc:** Kullanici user panelde bolum degistirdiginde yon kaybetmiyor. Her sayfa kendi rolunu acikca anlatiyor. Navigation state ile page content daha tutarli hissediliyor.
+**Degistirilen dosyalar:**
+- `frontend/src/pages/UserDashboardPage.tsx` (subtitle stili + section kimlik)
+- `frontend/src/pages/UserContentEntryPage.tsx` (section kimlik + testid)
+- `frontend/src/pages/UserPublishEntryPage.tsx` (section kimlik + testid + typo fix)
+- `frontend/src/tests/admin-to-user-return-clarity.smoke.test.tsx` (metin guncelleme)
+**Eklenen dosyalar:**
+- `frontend/src/tests/user-nav-state-clarity.smoke.test.tsx` (9 yeni test)
+**Test:** 1729 toplam test (+9 yeni), tsc temiz, build temiz
+
+---
+
 ## [2026-04-03] Phase 257 — Cross-Surface CTA Consistency Pass
 
 **Ne:** User dashboard, handoff, content/publish entry ve admin continuity yuzeylerindeki CTA dili urun genelinde tutarli hale getirildi. PostOnboardingHandoff: "Yeni Icerik Olustur"→"Yeni Video Olustur" (hedef spesifikligine uyumlu), "Yonetim Paneli"→"Yonetim Paneline Git" (navigasyon kalibina uyumlu). DashboardActionHub: "Panele Git"→"Yonetim Paneline Git". Handoff aciklama metni CTA'larla daha uyumlu hale getirildi.
