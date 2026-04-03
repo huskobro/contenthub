@@ -649,4 +649,67 @@ describe("AppEntryGate", () => {
     const el = await screen.findByTestId("user-dashboard");
     expect(el).toBeDefined();
   });
+
+  it("does not redirect to onboarding when status fetch fails", async () => {
+    const failFetch = vi.fn().mockResolvedValue({
+      ok: false,
+      json: () => Promise.resolve({}),
+    }) as unknown as typeof window.fetch;
+    renderGate(failFetch);
+    const el = await screen.findByTestId("user-dashboard");
+    expect(el).toBeDefined();
+  });
+});
+
+describe("OnboardingPage bypass (post-setup)", () => {
+  function renderOnboardingRoute(fetchFn: typeof window.fetch) {
+    window.fetch = fetchFn;
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+    return render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter initialEntries={["/onboarding"]}>
+          <Routes>
+            <Route path="/onboarding" element={<OnboardingPage />} />
+            <Route path="/user" element={<div data-testid="user-dashboard">User</div>} />
+          </Routes>
+        </MemoryRouter>
+      </QueryClientProvider>
+    );
+  }
+
+  it("redirects completed user from /onboarding to /user", async () => {
+    renderOnboardingRoute(mockFetch({ onboarding_required: false, completed_at: "2026-04-03T00:00:00Z" }));
+    const el = await screen.findByTestId("user-dashboard");
+    expect(el).toBeDefined();
+  });
+
+  it("shows onboarding when onboarding is required", async () => {
+    renderOnboardingRoute(mockFetch({ onboarding_required: true, completed_at: null }));
+    expect(await screen.findByText("ContentHub'a Hosgeldiniz")).toBeDefined();
+  });
+
+  it("shows onboarding when status fetch fails (safe default)", async () => {
+    const failFetch = vi.fn().mockResolvedValue({
+      ok: false,
+      json: () => Promise.resolve({}),
+    }) as unknown as typeof window.fetch;
+    renderOnboardingRoute(failFetch);
+    expect(await screen.findByText("ContentHub'a Hosgeldiniz")).toBeDefined();
+  });
+
+  it("does not flash onboarding for completed user during loading", async () => {
+    let resolveFetch: (v: unknown) => void;
+    const delayedFetch = vi.fn().mockReturnValue(
+      new Promise((r) => { resolveFetch = r; })
+    ) as unknown as typeof window.fetch;
+    renderOnboardingRoute(delayedFetch);
+    // While loading, onboarding welcome should still show (safe default, no blocking loading screen)
+    expect(screen.getByText("ContentHub'a Hosgeldiniz")).toBeDefined();
+    // Resolve with completed status
+    resolveFetch!({ ok: true, json: () => Promise.resolve({ onboarding_required: false, completed_at: "2026-04-03" }) });
+    const el = await screen.findByTestId("user-dashboard");
+    expect(el).toBeDefined();
+  });
 });

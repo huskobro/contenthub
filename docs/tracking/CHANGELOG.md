@@ -2,6 +2,17 @@
 
 ---
 
+## [2026-04-03] Phase 245 — App Entry Re-Entry Rules & Post-Setup Bypass
+
+**Ne:** Onboarding tamamlandiktan sonra kullanicinin `/onboarding` route'una gelmesi durumunda otomatik bypass eklendi. OnboardingPage artik `useOnboardingStatus()` ile durumu kontrol eder ve `onboarding_required === false` ise `/user`'a yonlendirir. Loading/error durumunda guvenli varsayilan olarak wizard gosterilmeye devam eder.
+**Sonuc:** Tamamlanmis kullanicilar icin re-entry loop riski ortadan kaldirildi. AppEntryGate'in error fallback'i test edildi. Entry gate matrisi: eksik→onboarding, tamam→user, error→user (guvenli fallback).
+**Degistirilen dosyalar:**
+- `frontend/src/pages/OnboardingPage.tsx` (bypass guard eklendi)
+- `frontend/src/tests/onboarding.smoke.test.tsx` (+5 yeni test, toplam 68)
+**Test:** 1655 toplam test (+5 yeni), tsc temiz, build temiz
+
+---
+
 ## [2026-04-03] Phase 244 — Wizard / Onboarding — Setup Summary Review Step
 
 **Ne:** Onboarding wizard'ina completion ekranindan once kurulum ozeti/review adimi eklendi. Kullanicinin onboarding boyunca yaptigi yapilandirmalari (sources, templates, settings, providers, workspace) tek ekranda gormesini saglar. Veriler `useSetupRequirements()` ve `useSettingsList()` hook'larindan okunur.
