@@ -1,13 +1,13 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 237 — Onboarding Setup Requirements Screen ✓ TAMAMLANDI (feature)
+Phase 239 — Onboarding Template Setup Required Action ✓ TAMAMLANDI (feature)
 
 ## Mevcut Hedef
-Onboarding requirements ekrani eklendi. Backend requirements endpoint (gercek domain verisi), welcome → requirements step akisi, 7 yeni test. 1601 toplam test.
+Onboarding requirements ekraninda template maddesi icin "Sablon Ekle" aksiyon butonu eklendi. Onboarding icinde sablon olusturma akisi kuruldu. 1615 toplam test.
 
 ## Devam Eden
-— (devam eden çalışma yok)
+— (devam eden calisma yok)
 
 ## Hygiene Hattı Kapanış Durumu
 - **KAPATILDI:** Mikro readability faz zinciri Phase 235 ile resmen kapatıldı.
@@ -15,6 +15,8 @@ Onboarding requirements ekrani eklendi. Backend requirements endpoint (gercek do
 - **ANA FAZ BAŞLADI:** Wizard / Onboarding (ürün geliştirme hattı)
 
 ## Son Tamamlananlar
+- Phase 239: onboarding template setup required action — requirements ekraninda sablon aksiyonu, OnboardingTemplateSetupScreen, mevcut TemplateForm tekrar kullanimi, 7 yeni test, 1615 toplam (2026-04-03)
+- Phase 238: onboarding source setup first required action — requirements ekraninda kaynak aksiyonu, OnboardingSourceSetupScreen, mevcut SourceForm tekrar kullanimi, 7 yeni test, 1608 toplam (2026-04-03)
 - Phase 237: onboarding setup requirements screen — backend requirements endpoint, frontend requirements ekrani, welcome→requirements akisi, 7 yeni test, 1601 toplam (2026-04-03)
 - Phase 236: onboarding app entry gate & welcome screen — backend API, frontend gate, welcome screen, 7 test, 1594 toplam (2026-04-03)
 - Phase 235: hygiene closure & product pivot gate — kapanış doğrulaması, baseline stabil, 1587 toplam (2026-04-03)

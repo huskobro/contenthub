@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { OnboardingWelcomeScreen } from "../components/onboarding/OnboardingWelcomeScreen";
 import { OnboardingRequirementsScreen } from "../components/onboarding/OnboardingRequirementsScreen";
 import { OnboardingSourceSetupScreen } from "../components/onboarding/OnboardingSourceSetupScreen";
+import { OnboardingTemplateSetupScreen } from "../components/onboarding/OnboardingTemplateSetupScreen";
 import { OnboardingPage } from "../pages/OnboardingPage";
 import { AppEntryGate } from "../app/AppEntryGate";
 
@@ -222,6 +223,69 @@ describe("OnboardingPage source-setup flow", () => {
     const btn = await screen.findByText("Kaynak Ekle");
     fireEvent.click(btn);
     await screen.findByText("Kaynagi Ekle");
+    fireEvent.click(screen.getByText("İptal"));
+    expect(await screen.findByText("Kurulum Durumu")).toBeDefined();
+  });
+});
+
+describe("OnboardingRequirementsScreen template action buttons", () => {
+  it("shows Sablon Ekle button for missing templates requirement", async () => {
+    window.fetch = mockFetch(MOCK_REQUIREMENTS);
+    const onTemplateSetup = vi.fn();
+    wrap(<OnboardingRequirementsScreen onTemplateSetup={onTemplateSetup} />);
+    const btn = await screen.findByText("Sablon Ekle");
+    expect(btn).toBeDefined();
+    fireEvent.click(btn);
+    expect(onTemplateSetup).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not show Sablon Ekle when templates requirement is completed", async () => {
+    window.fetch = mockFetch(MOCK_REQUIREMENTS_ALL_DONE);
+    wrap(<OnboardingRequirementsScreen />);
+    await screen.findByText("Kurulumu Tamamla");
+    expect(screen.queryByText("Sablon Ekle")).toBeNull();
+  });
+});
+
+describe("OnboardingTemplateSetupScreen", () => {
+  it("renders template setup heading", () => {
+    window.fetch = mockFetch({});
+    wrap(<OnboardingTemplateSetupScreen onBack={vi.fn()} onComplete={vi.fn()} />);
+    expect(screen.getByText("Sablon Olustur")).toBeDefined();
+  });
+
+  it("renders template form with Sablonu Olustur submit button", () => {
+    window.fetch = mockFetch({});
+    wrap(<OnboardingTemplateSetupScreen onBack={vi.fn()} onComplete={vi.fn()} />);
+    expect(screen.getByText("Sablonu Olustur")).toBeDefined();
+  });
+
+  it("calls onBack when cancel is clicked", () => {
+    window.fetch = mockFetch({});
+    const onBack = vi.fn();
+    wrap(<OnboardingTemplateSetupScreen onBack={onBack} onComplete={vi.fn()} />);
+    fireEvent.click(screen.getByText("İptal"));
+    expect(onBack).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("OnboardingPage template-setup flow", () => {
+  it("transitions from requirements to template-setup on Sablon Ekle click", async () => {
+    window.fetch = mockFetch(MOCK_REQUIREMENTS);
+    wrap(<OnboardingPage />);
+    fireEvent.click(screen.getByText("Kurulumu Baslat"));
+    const btn = await screen.findByText("Sablon Ekle");
+    fireEvent.click(btn);
+    expect(await screen.findByText("Sablonu Olustur")).toBeDefined();
+  });
+
+  it("can go back from template-setup to requirements", async () => {
+    window.fetch = mockFetch(MOCK_REQUIREMENTS);
+    wrap(<OnboardingPage />);
+    fireEvent.click(screen.getByText("Kurulumu Baslat"));
+    const btn = await screen.findByText("Sablon Ekle");
+    fireEvent.click(btn);
+    await screen.findByText("Sablonu Olustur");
     fireEvent.click(screen.getByText("İptal"));
     expect(await screen.findByText("Kurulum Durumu")).toBeDefined();
   });

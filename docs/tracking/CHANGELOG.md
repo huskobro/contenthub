@@ -2,6 +2,36 @@
 
 ---
 
+## [2026-04-03] Phase 239 — Onboarding Template Setup Required Action
+
+**Ne:** Onboarding requirements ekranindaki "Sablon Olustur" maddesine "Sablon Ekle" aksiyon butonu eklendi. Butona tiklandiginda onboarding icinde sablon olusturma formu aciliyor. Mevcut TemplateForm komponenti ve useCreateTemplate hook'u tekrar kullaniliyor.
+**Sonuc:** Requirements → "Sablon Ekle" → TemplateForm → POST /api/v1/templates → basarili → requirements'a donus. Cancel ile de requirements'a donus. OnboardingPage step state 4 adima genisletildi (welcome/requirements/source-setup/template-setup).
+**Eklenen dosyalar:**
+- `frontend/src/components/onboarding/OnboardingTemplateSetupScreen.tsx` (yeni)
+- `docs/testing/test-report-phase-239-onboarding-template-setup-action.md` (yeni)
+**Degistirilen dosyalar:**
+- `frontend/src/components/onboarding/OnboardingRequirementsScreen.tsx` (template aksiyon butonu, onTemplateSetup prop, requirement row action mapping)
+- `frontend/src/pages/OnboardingPage.tsx` (template-setup step)
+- `frontend/src/tests/onboarding.smoke.test.tsx` (+7 yeni test, toplam 28)
+**Test:** 1615 toplam test (+7 yeni), tsc temiz, build temiz
+
+---
+
+## [2026-04-03] Phase 238 — Onboarding Source Setup First Required Action
+
+**Ne:** Onboarding requirements ekranindaki "Haber Kaynagi Ekle" maddesine "Kaynak Ekle" aksiyon butonu eklendi. Butona tiklandiginda onboarding icinde kaynak ekleme formu aciliyor. Mevcut SourceForm komponenti ve useCreateSource hook'u tekrar kullaniliyor.
+**Sonuc:** Requirements → "Kaynak Ekle" → SourceForm → POST /api/v1/sources → basarili → requirements'a donus. Cancel ile de requirements'a donus. OnboardingPage step state 3 adima genisletildi (welcome/requirements/source-setup).
+**Eklenen dosyalar:**
+- `frontend/src/components/onboarding/OnboardingSourceSetupScreen.tsx` (yeni)
+- `docs/testing/test-report-phase-238-onboarding-source-setup-action.md` (yeni)
+**Degistirilen dosyalar:**
+- `frontend/src/components/onboarding/OnboardingRequirementsScreen.tsx` (aksiyon butonu, onSourceSetup prop)
+- `frontend/src/pages/OnboardingPage.tsx` (source-setup step)
+- `frontend/src/tests/onboarding.smoke.test.tsx` (+7 yeni test, toplam 21)
+**Test:** 1608 toplam test (+7 yeni), tsc temiz, build temiz
+
+---
+
 ## [2026-04-03] Phase 237 — Onboarding Setup Requirements Screen
 
 **Ne:** Onboarding akisinda welcome screen'den sonra gelen setup requirements ekrani. Backend `GET /onboarding/requirements` endpoint'i gercek domain verisine dayanarak 3 zorunlu kurulum maddesini kontrol ediyor (sources, templates, settings). Frontend requirements ekrani checklist seklinde gosteriyor.

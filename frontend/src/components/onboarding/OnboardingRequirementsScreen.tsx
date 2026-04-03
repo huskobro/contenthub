@@ -173,9 +173,10 @@ function RequirementRow({
 interface Props {
   onBack?: () => void;
   onSourceSetup?: () => void;
+  onTemplateSetup?: () => void;
 }
 
-export function OnboardingRequirementsScreen({ onBack, onSourceSetup }: Props) {
+export function OnboardingRequirementsScreen({ onBack, onSourceSetup, onTemplateSetup }: Props) {
   const { data, isLoading, isError } = useSetupRequirements();
   const completeMutation = useCompleteOnboarding();
   const navigate = useNavigate();
@@ -223,14 +224,25 @@ export function OnboardingRequirementsScreen({ onBack, onSourceSetup }: Props) {
         </p>
 
         <div style={REQ_LIST}>
-          {data.requirements.map((req) => (
-            <RequirementRow
-              key={req.key}
-              item={req}
-              onAction={req.key === "sources" ? onSourceSetup : undefined}
-              actionLabel={req.key === "sources" ? "Kaynak Ekle" : undefined}
-            />
-          ))}
+          {data.requirements.map((req) => {
+            let onAction: (() => void) | undefined;
+            let actionLabel: string | undefined;
+            if (req.key === "sources") {
+              onAction = onSourceSetup;
+              actionLabel = "Kaynak Ekle";
+            } else if (req.key === "templates") {
+              onAction = onTemplateSetup;
+              actionLabel = "Sablon Ekle";
+            }
+            return (
+              <RequirementRow
+                key={req.key}
+                item={req}
+                onAction={onAction}
+                actionLabel={actionLabel}
+              />
+            );
+          })}
         </div>
 
         {data.all_completed ? (
