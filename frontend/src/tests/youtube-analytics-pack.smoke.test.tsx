@@ -54,7 +54,7 @@ describe("YouTube Analytics Pack (Phase 293-298)", () => {
       renderAt("/admin");
       const card = screen.getByTestId("quick-link-analytics");
       expect(card).toBeDefined();
-      expect(card.textContent).toContain("performans metriklerini takip et");
+      expect(card.textContent).toContain("raporlama");
     });
 
     it("sidebar has analytics entry", () => {

@@ -58,6 +58,7 @@ export function AnalyticsContentPage() {
       <p style={SUBTITLE} data-testid="analytics-content-subtitle">
         Video bazinda uretim ve yayin performansini buradan takip edebilirsiniz.
         Her icerik ogesinin uretim sureci, yayin durumu ve sonuclari gorunur.
+        Bu sayfa kullanim ve performans ozetinin temelini olusturur.
       </p>
       <p
         style={{
@@ -69,9 +70,10 @@ export function AnalyticsContentPage() {
         }}
         data-testid="analytics-content-workflow-note"
       >
-        Icerik performansi, uretim tamamlanma orani, yayin basarisi ve modul
-        bazinda dagilimiyla olculur. Detayli video performansi icin ilgili
-        standard video detay sayfasina basvurabilirsiniz.
+        Kullanim/performans rapor zinciri: Modul Dagilimi → Icerik Uretim
+        Orani → Yayin Basarisi → Sablon/Kaynak Etkisi → Verimlilik Ozeti.
+        Detayli video performansi icin ilgili standard video detay sayfasina
+        basvurabilirsiniz.
       </p>
 
       {/* Video-level performance — Phase 295 */}
@@ -120,6 +122,7 @@ export function AnalyticsContentPage() {
         >
           Icerik uretiminin modullere gore dagilimi. Hangi modul daha yogun
           kullaniliyor, hangi modulde daha fazla hata olusuyor gorunur.
+          Modul bazli verimlilik karari icin bu dagilimi kullanabilirsiniz.
         </p>
         <p style={{ fontSize: "0.8125rem", color: "#94a3b8" }}>
           <em>Modul dagilim verileri analytics backend aktif olunca gorunecektir.</em>

@@ -68,7 +68,8 @@ export function AnalyticsOperationsPage() {
       </h2>
       <p style={SUBTITLE} data-testid="analytics-operations-subtitle">
         Is basari orani, uretim suresi, yeniden deneme ve provider hata
-        detaylarini buradan inceleyebilirsiniz.
+        detaylarini buradan inceleyebilirsiniz. Bu sayfa operasyonel saglik
+        raporunun temelini olusturur.
       </p>
       <p
         style={{
@@ -80,8 +81,9 @@ export function AnalyticsOperationsPage() {
         }}
         data-testid="analytics-operations-workflow-note"
       >
-        Operasyon metrikleri, uretim hattinin sagligini gosterir. Yuksek retry
-        orani veya provider hata orani sistemde dikkat gerektiren alanlari isaret eder.
+        Operasyonel rapor zinciri: Is Basari Orani → Retry/Hata Dagilimi →
+        Provider Sagligi → Kaynak Etkisi → Karar Noktasi. Yuksek retry orani
+        veya provider hata orani sistemde dikkat gerektiren alanlari isaret eder.
       </p>
 
       {/* Job Performance */}

@@ -2,6 +2,23 @@
 
 ---
 
+## [2026-04-03] Phase 314–317 — Reporting / Business Intelligence Pack
+
+**Ne:** Reporting / business intelligence omurgasi oturdu. Phase 314: AdminOverviewPage analytics quick link desc guncellendi (raporlama + karar destek), AnalyticsOverviewPage subtitle ve workflow note genisledi (Raporlama zinciri), analytics-reporting-distinction notu eklendi (canli metrikler vs ozetleyici gorunum), sub-nav kartlari genisledi. Phase 315: AnalyticsOperationsPage subtitle genisledi (operasyonel saglik raporu), workflow note yeniden yazildi (Operasyonel rapor zinciri: Is Basari Orani → Retry/Hata → Provider Sagligi → Kaynak Etkisi → Karar Noktasi). Phase 316: AnalyticsContentPage subtitle genisledi (kullanim/performans ozeti), workflow note yeniden yazildi (Kullanim/performans rapor zinciri: Modul Dagilimi → Icerik Uretim → Yayin Basarisi → Sablon/Kaynak Etkisi → Verimlilik Ozeti), modul dagilimi notu verimlilik karari konteksti, kanal ozeti karar destek gorunumu. Phase 317: Uctan uca dogrulama.
+**Sonuc:** Reporting / BI yuzeyler urun icinde baslatilabilir, anlasilir ve izlenebilir. Analytics vs raporlama ayrimi net. Operasyonel ve icerik rapor zincirleri kuruldu. Omurga oturdu; gercek backend analytics API, charting, advanced reporting ileride.
+**Degistirilen dosyalar:**
+- `frontend/src/pages/AdminOverviewPage.tsx` (analytics quick link desc)
+- `frontend/src/pages/admin/AnalyticsOverviewPage.tsx` (subtitle, workflow, distinction, channel note, sub-nav)
+- `frontend/src/pages/admin/AnalyticsOperationsPage.tsx` (subtitle, workflow note)
+- `frontend/src/pages/admin/AnalyticsContentPage.tsx` (subtitle, workflow note, module note)
+- `frontend/src/tests/youtube-analytics-pack.smoke.test.tsx` (referans guncelleme)
+**Eklenen dosyalar:**
+- `frontend/src/tests/reporting-business-intelligence-pack.smoke.test.tsx` (25 yeni test)
+- `docs/testing/test-report-phase-314-317-reporting-business-intelligence-pack.md`
+**Test:** 2018 toplam test (+25 yeni), tsc temiz, build temiz
+
+---
+
 ## [2026-04-03] Phase 310–313 — Automation / Batch Operations Pack
 
 **Ne:** Automation / batch operations omurgasi oturdu. Phase 310: AdminOverviewPage jobs quick link desc guncellendi (kuyruk + toplu operasyon konteksti), JobsRegistryPage subtitle eklendi (kuyruk durumu ve toplu operasyon gorunumu). Phase 311: JobsRegistryPage workflow note yeniden yazildi (Is akis zinciri: Olusturma → Kuyruga Alma → Adim Isleme → Tamamlama/Hata → Yayin Hazirligi), JobOverviewPanel satirlari Turkish label'lara gecti (Is Kimlik, Modul Turu, Durum, Aktif Adim, Yeniden Deneme Sayisi, Sahip, Sablon, Calisma Alani, Toplam Gecen Sure, Tahmini Kalan, Son Hata, Olusturulma, Baslanma, Tamamlanma), publish note genisledi. Phase 312: JobDetailPage workflow note genisledi (retry/cancel/skip referansi), Operasyonel Aksiyonlar paneli eklendi — Retry/Cancel/Skip aksiyon kartlari ve backend entegrasyonu notu. Phase 313: Uctan uca dogrulama.

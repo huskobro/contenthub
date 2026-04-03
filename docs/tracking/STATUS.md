@@ -1,12 +1,12 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 310–313 — Automation / Batch Operations Pack ✓ TAMAMLANDI (feature)
+Phase 314–317 — Reporting / Business Intelligence Pack ✓ TAMAMLANDI (feature)
 
-**ANA FAZ 10 TAMAMLANDI: Automation / batch operations omurgasi**
+**ANA FAZ 11 TAMAMLANDI: Reporting / business intelligence omurgasi**
 
 ## Mevcut Hedef
-Automation / batch operations omurgasi oturdu. Batch giris noktasi, queue/job batch control flow, retry/cancel/skip davranis netligi ve uctan uca dogrulama tamamlandi. 1993 toplam test.
+Reporting / business intelligence omurgasi oturdu. Reporting giris noktasi, analytics/raporlama ayrimi, operasyonel metrik gorunurlugu, kullanim/performans ozeti ve uctan uca dogrulama tamamlandi. 2018 toplam test.
 
 ## Devam Eden
 — (devam eden calisma yok)
@@ -17,6 +17,7 @@ Automation / batch operations omurgasi oturdu. Batch giris noktasi, queue/job ba
 - **ANA FAZ BAŞLADI:** Wizard / Onboarding (ürün geliştirme hattı)
 
 ## Son Tamamlananlar
+- Phase 314–317: reporting/business intelligence pack — reporting giris noktasi, analytics/raporlama ayrimi, operasyonel rapor zinciri, kullanim/performans rapor zinciri, karar destek konteksti, end-to-end verification, 25 yeni test, 2018 toplam (2026-04-03)
 - Phase 310–313: automation/batch operations pack — batch giris noktasi, queue/job batch control flow, retry/cancel/skip davranis netligi, operasyonel aksiyonlar paneli, Turkish label'lar, end-to-end verification, 23 yeni test, 1993 toplam (2026-04-03)
 - Phase 305–309: admin/advanced settings governance pack — settings/visibility registry headingleri, workflow notlari, detail panel governance section gruplama (Kimlik/Governance/Kapsam), Turkish label'lar, admin overview quick link governance desc, end-to-end verification, 23 yeni test, 1970 toplam (2026-04-03)
 - Phase 299–304: library/gallery/content management pack — birlesik icerik kutuphanesi, filtre/sort/search yuzeyi, detail baglantisi, reuse/clone/manage aksiyonlari, end-to-end verification, 31 yeni test, 1947 toplam (2026-04-03)

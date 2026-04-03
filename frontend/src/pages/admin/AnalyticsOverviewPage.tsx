@@ -89,8 +89,22 @@ export function AnalyticsOverviewPage() {
         Analytics
       </h2>
       <p style={SUBTITLE} data-testid="analytics-overview-subtitle">
-        Uretim ve yayin sonrasi performans gorunurlugu. Publish, job ve icerik
-        metriklerini buradan takip edebilirsiniz.
+        Uretim ve yayin sonrasi performans gorunurlugu, raporlama ve karar
+        destek ozetleri. Canli metrikler, operasyonel saglik ve icerik
+        performansini buradan takip edebilirsiniz.
+      </p>
+      <p
+        style={{
+          margin: "0 0 0.5rem",
+          fontSize: "0.8125rem",
+          color: "#94a3b8",
+          lineHeight: 1.5,
+          maxWidth: "640px",
+        }}
+        data-testid="analytics-overview-workflow-note"
+      >
+        Raporlama zinciri: Uretim Tamamlama → Yayin Sonucu → Platform
+        Metrikleri → Icerik Performansi → Operasyonel Saglik → Karar Destek Ozeti.
       </p>
       <p
         style={{
@@ -100,9 +114,11 @@ export function AnalyticsOverviewPage() {
           lineHeight: 1.5,
           maxWidth: "640px",
         }}
-        data-testid="analytics-overview-workflow-note"
+        data-testid="analytics-reporting-distinction"
       >
-        Analytics zinciri: Uretim Tamamlama → Yayin Sonucu → Platform Metrikleri → Icerik Performansi.
+        Analytics canli metrikleri ve anlik durumu gosterir. Raporlama ise
+        ozetleyici ve karar destekleyici gorunum saglar. Her iki alan da
+        ayni veri kaynaklarindan beslenir, farkli bakis acilari sunar.
       </p>
 
       {/* Core Metrics — Phase 294 */}
@@ -154,8 +170,9 @@ export function AnalyticsOverviewPage() {
           Kanal Ozeti
         </h3>
         <p style={{ margin: "0 0 0.75rem", fontSize: "0.75rem", color: "#94a3b8" }} data-testid="channel-overview-note">
-          Platform ve kanal duzeyinde genel performans. Tek video performansindan
-          farkli olarak tum yayin kanalini kapsar.
+          Platform ve kanal duzeyinde genel performans ozeti. Tek video
+          performansindan farkli olarak tum yayin kanalini kapsar.
+          Bu ozet, karar destek gorunumu olarak kullanilabilir.
         </p>
         <div style={METRIC_GRID}>
           <div style={METRIC_CARD} data-testid="metric-total-content">
@@ -263,11 +280,11 @@ export function AnalyticsOverviewPage() {
         <div style={NAV_GRID}>
           <Link to="/admin/analytics/content" style={NAV_CARD} data-testid="analytics-nav-content">
             <p style={NAV_TITLE}>Icerik Performansi</p>
-            <p style={NAV_DESC}>Video bazinda uretim ve yayin performansini inceleyin.</p>
+            <p style={NAV_DESC}>Video bazinda uretim ve yayin performansini inceleyin. Kullanim ve etki ozeti.</p>
           </Link>
           <Link to="/admin/analytics/operations" style={NAV_CARD} data-testid="analytics-nav-operations">
             <p style={NAV_TITLE}>Operasyon Metrikleri</p>
-            <p style={NAV_DESC}>Is basari orani, sure, retry ve provider hata detaylari.</p>
+            <p style={NAV_DESC}>Is basari orani, sure, retry ve provider hata detaylari. Operasyonel saglik raporu.</p>
           </Link>
         </div>
       </div>

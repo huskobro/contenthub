@@ -86,7 +86,7 @@ const QUICK_LINKS = [
   },
   {
     title: "Analytics",
-    desc: "Uretim ve yayin sonrasi performans metriklerini takip et",
+    desc: "Uretim metrikleri, raporlama ve karar destek ozetlerini goruntule",
     to: "/admin/analytics",
     testId: "quick-link-analytics",
   },
