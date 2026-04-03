@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 218 — Repeated Small Inline Event Handler Readability Pack ✓ TAMAMLANDI (audit-only)
+Phase 219 — Repeated Small Import Grouping/Ordering Readability Pack ✓ TAMAMLANDI (audit-only)
 
 ## Mevcut Hedef
-Inline event handler audit. onChange handler'ları farklı setter/key çağırıyor; onClick handler'ları farklı argümanlar içeriyor. Tekrar eden aynı handler yok. Hiçbir dosya değiştirilmedi. 1587 toplam test.
+Import sıralama/gruplama audit. Tüm bileşenler zaten tutarlı convention'ı izliyor: react → local api → local lib → local component. Üçüncü taraf/local karışıklığı yok. Hiçbir dosya değiştirilmedi. 1587 toplam test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 219: repeated small import grouping/ordering readability pack: kapsamlı audit, tüm dosyalar tutarlı, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 218: repeated small inline event handler readability pack: kapsamlı audit, onChange per-field setter farklı, onClick farklı argümanlar, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 217: repeated small CSSProperties type annotation readability pack: kapsamlı audit, 39 dosya zaten tutarlı, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 216: repeated small title/subject/name text readability pack: kapsamlı audit, loop variable property access, dosya-seviyesi const uygunsuz, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
