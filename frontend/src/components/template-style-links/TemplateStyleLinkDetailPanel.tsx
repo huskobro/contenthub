@@ -6,6 +6,7 @@ import { formatDateTime } from "../../lib/formatDate";
 import type { TemplateStyleLinkFormValues } from "./TemplateStyleLinkForm";
 
 const RADIUS_SM = "6px";
+const COLOR_DARK = "#1e293b";
 
 interface TemplateStyleLinkDetailPanelProps {
   linkId: string | null;
@@ -15,7 +16,7 @@ function Field({ label, value }: { label: string; value: string | number | null 
   return (
     <div style={{ marginBottom: "0.5rem" }}>
       <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "#64748b" }}>{label}: </span>
-      <span style={{ fontSize: "0.875rem", color: value !== null && value !== undefined ? "#1e293b" : "#94a3b8", wordBreak: "break-word", overflowWrap: "anywhere" }}>
+      <span style={{ fontSize: "0.875rem", color: value !== null && value !== undefined ? COLOR_DARK : "#94a3b8", wordBreak: "break-word", overflowWrap: "anywhere" }}>
         {value !== null && value !== undefined ? String(value) : "—"}
       </span>
     </div>
@@ -64,7 +65,7 @@ export function TemplateStyleLinkDetailPanel({ linkId }: TemplateStyleLinkDetail
 
     return (
       <div style={{ padding: "1.25rem", border: "1px solid #e2e8f0", borderRadius: RADIUS_SM, background: "#fff" }}>
-        <h3 style={{ margin: "0 0 1rem", fontSize: "1rem", color: "#1e293b" }}>Link Düzenle</h3>
+        <h3 style={{ margin: "0 0 1rem", fontSize: "1rem", color: COLOR_DARK }}>Link Düzenle</h3>
         <TemplateStyleLinkForm
           mode="edit"
           initial={link}
@@ -81,7 +82,7 @@ export function TemplateStyleLinkDetailPanel({ linkId }: TemplateStyleLinkDetail
   return (
     <div style={{ padding: "1.25rem", border: "1px solid #e2e8f0", borderRadius: RADIUS_SM, background: "#fff" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
-        <h3 style={{ margin: 0, fontSize: "1rem", color: "#1e293b" }}>Template Style Link Detayı</h3>
+        <h3 style={{ margin: 0, fontSize: "1rem", color: COLOR_DARK }}>Template Style Link Detayı</h3>
         <button
           onClick={() => setEditing(true)}
           style={{

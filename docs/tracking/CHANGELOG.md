@@ -2,6 +2,21 @@
 
 ---
 
+## [2026-04-03] Phase 188 — Repeated Small Color Literal Constant Pack
+
+**Ne:** Badge surface'leri hariç, bileşenlerde tekrar eden renk hex literal değerlerini dosya-seviyesi const'lara taşıma.
+**Eklenen/değiştirilen dosyalar:**
+- `COLOR_DARK = "#1e293b"`: TemplateStyleLinkDetailPanel, StyleBlueprintDetailPanel, TemplateDetailPanel, SourceScanDetailPanel, SourceDetailPanel (5 dosya)
+- `COLOR_ERR = "#dc2626"`: StyleBlueprintForm, TemplateForm, UsedNewsForm, NewsItemForm, TemplateStyleLinkForm, StandardVideoForm, StandardVideoMetadataForm, StandardVideoScriptForm, SourceScanForm, SourceScanDetailPanel (10 dosya)
+- `COLOR_FAINT = "#94a3b8"`: SourceDetailPanel (1 dosya)
+- `COLOR_BLUE = "#3b82f6"`: StandardVideoScriptPanel (1 dosya)
+- `docs/testing/test-report-phase-188-repeated-small-color-literal-constant-pack.md` (yeni)
+**Atlanılan:** Badge surface'leri, threshold altındaki dosyalar, global color token sistemi
+**Test:** 1587 toplam test, tsc temiz, vite build temiz
+**Dokunulmayan:** Görünüm, davranış, badge stilleri, backend
+
+---
+
 ## [2026-04-03] Phase 187 — Repeated Small Margin/Padding Literal Constant Pack
 
 **Ne:** Bileşenlerde tekrar eden margin/padding literal değerlerini dosya-seviyesi const'lara taşıma.

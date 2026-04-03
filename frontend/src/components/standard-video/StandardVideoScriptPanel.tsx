@@ -12,6 +12,7 @@ const SECTION_STYLE: React.CSSProperties = { border: "1px solid #e2e8f0", border
 const FORM_HEADING: React.CSSProperties = { margin: "0 0 1rem", fontSize: "0.9375rem", fontWeight: 600 };
 const RADIUS_XS = "4px";
 const CURSOR_PTR = "pointer";
+const COLOR_BLUE = "#3b82f6";
 
 interface Props {
   videoId: string;
@@ -129,7 +130,7 @@ export function StandardVideoScriptPanel({
               fontSize: "0.8125rem",
               padding: "0.25rem 0.75rem",
               background: "transparent",
-              color: "#3b82f6",
+              color: COLOR_BLUE,
               border: "1px solid #3b82f6",
               borderRadius: RADIUS_XS,
               cursor: CURSOR_PTR,
@@ -143,7 +144,7 @@ export function StandardVideoScriptPanel({
             style={{
               fontSize: "0.8125rem",
               padding: "0.25rem 0.75rem",
-              background: "#3b82f6",
+              background: COLOR_BLUE,
               color: "#fff",
               border: "none",
               borderRadius: RADIUS_XS,
@@ -209,7 +210,7 @@ export function StandardVideoScriptPanel({
                 fontSize: "0.8125rem",
                 background: "none",
                 border: "none",
-                color: "#3b82f6",
+                color: COLOR_BLUE,
                 cursor: CURSOR_PTR,
                 padding: 0,
               }}

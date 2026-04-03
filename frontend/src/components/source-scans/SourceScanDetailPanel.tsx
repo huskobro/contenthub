@@ -8,6 +8,8 @@ import { isBlank } from "../../lib/isBlank";
 import { JsonPreviewField } from "../shared/JsonPreviewField";
 
 const FONT_SM = "0.875rem";
+const COLOR_DARK = "#1e293b";
+const COLOR_ERR = "#dc2626";
 const LABEL_SPAN: React.CSSProperties = { fontSize: "0.75rem", fontWeight: 600, color: "#64748b" };
 const PANEL_BOX: React.CSSProperties = { padding: "1.25rem", border: "1px solid #e2e8f0", borderRadius: "6px", background: "#fff" };
 const SECTION_DIVIDER: React.CSSProperties = { marginTop: "0.75rem", borderTop: "1px solid #f1f5f9", paddingTop: "0.75rem" };
@@ -21,7 +23,7 @@ function Field({ label, value }: { label: string; value: string | number | null 
   return (
     <div style={{ marginBottom: "0.5rem" }}>
       <span style={LABEL_SPAN}>{label}: </span>
-      <span style={{ fontSize: FONT_SM, color: isEmpty ? "#94a3b8" : "#1e293b", wordBreak: "break-word", overflowWrap: "anywhere" }}>
+      <span style={{ fontSize: FONT_SM, color: isEmpty ? "#94a3b8" : COLOR_DARK, wordBreak: "break-word", overflowWrap: "anywhere" }}>
         {isEmpty ? "—" : String(value)}
       </span>
     </div>
@@ -48,7 +50,7 @@ export function SourceScanDetailPanel({ scanId }: SourceScanDetailPanelProps) {
 
   if (isError) {
     return (
-      <p style={{ color: "#dc2626", padding: "1rem" }}>
+      <p style={{ color: COLOR_ERR, padding: "1rem" }}>
         Hata: {error instanceof Error ? error.message : "Bilinmeyen hata"}
       </p>
     );
@@ -72,7 +74,7 @@ export function SourceScanDetailPanel({ scanId }: SourceScanDetailPanelProps) {
 
     return (
       <div style={PANEL_BOX}>
-        <h3 style={{ margin: "0 0 1rem", fontSize: "1rem", color: "#1e293b" }}>Scan Düzenle</h3>
+        <h3 style={{ margin: "0 0 1rem", fontSize: "1rem", color: COLOR_DARK }}>Scan Düzenle</h3>
         <SourceScanForm
           mode="edit"
           initial={scan}
@@ -89,7 +91,7 @@ export function SourceScanDetailPanel({ scanId }: SourceScanDetailPanelProps) {
   return (
     <div style={PANEL_BOX}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
-        <h3 style={{ margin: 0, fontSize: "1rem", color: "#1e293b" }}>Scan Detayı</h3>
+        <h3 style={{ margin: 0, fontSize: "1rem", color: COLOR_DARK }}>Scan Detayı</h3>
         <button
           onClick={() => setEditing(true)}
           style={{
@@ -115,8 +117,8 @@ export function SourceScanDetailPanel({ scanId }: SourceScanDetailPanelProps) {
 
       {scan.error_summary && (
         <div style={{ marginBottom: "0.5rem" }}>
-          <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "#dc2626" }}>Error: </span>
-          <span style={{ fontSize: FONT_SM, color: "#dc2626" }}>{scan.error_summary}</span>
+          <span style={{ fontSize: "0.75rem", fontWeight: 600, color: COLOR_ERR }}>Error: </span>
+          <span style={{ fontSize: FONT_SM, color: COLOR_ERR }}>{scan.error_summary}</span>
         </div>
       )}
 

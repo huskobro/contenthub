@@ -20,6 +20,7 @@ interface UsedNewsFormProps {
   submitLabel?: string;
 }
 
+const COLOR_ERR = "#dc2626";
 const inputStyle: React.CSSProperties = {
   width: "100%",
   padding: "0.375rem 0.5rem",
@@ -43,11 +44,11 @@ const fieldStyle: React.CSSProperties = {
 
 const errorStyle: React.CSSProperties = {
   fontSize: "0.75rem",
-  color: "#dc2626",
+  color: COLOR_ERR,
   marginTop: "0.2rem",
 };
 
-const REQ_MARK: React.CSSProperties = { color: "#dc2626" };
+const REQ_MARK: React.CSSProperties = { color: COLOR_ERR };
 
 const BTN_PRIMARY: React.CSSProperties = {
   padding: "0.375rem 1rem",
@@ -115,7 +116,7 @@ export function UsedNewsForm({
             News Item ID <span style={REQ_MARK}>*</span>
           </label>
           <input
-            style={{ ...inputStyle, borderColor: errors.news_item_id ? "#dc2626" : "#e2e8f0" }}
+            style={{ ...inputStyle, borderColor: errors.news_item_id ? COLOR_ERR : "#e2e8f0" }}
             value={values.news_item_id}
             onChange={(e) => set("news_item_id", e.target.value)}
             placeholder="News item UUID"
@@ -129,7 +130,7 @@ export function UsedNewsForm({
           Usage Type <span style={REQ_MARK}>*</span>
         </label>
         <input
-          style={{ ...inputStyle, borderColor: errors.usage_type ? "#dc2626" : "#e2e8f0" }}
+          style={{ ...inputStyle, borderColor: errors.usage_type ? COLOR_ERR : "#e2e8f0" }}
           value={values.usage_type}
           onChange={(e) => set("usage_type", e.target.value)}
           placeholder="ör. bulletin, video"
@@ -142,7 +143,7 @@ export function UsedNewsForm({
           Target Module <span style={REQ_MARK}>*</span>
         </label>
         <input
-          style={{ ...inputStyle, borderColor: errors.target_module ? "#dc2626" : "#e2e8f0" }}
+          style={{ ...inputStyle, borderColor: errors.target_module ? COLOR_ERR : "#e2e8f0" }}
           value={values.target_module}
           onChange={(e) => set("target_module", e.target.value)}
           placeholder="ör. news_bulletin, standard_video"
@@ -181,7 +182,7 @@ export function UsedNewsForm({
       </div>
 
       {submitError && (
-        <div style={{ color: "#dc2626", fontSize: "0.875rem", marginBottom: "0.75rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>{submitError}</div>
+        <div style={{ color: COLOR_ERR, fontSize: "0.875rem", marginBottom: "0.75rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>{submitError}</div>
       )}
 
       <div style={{ display: "flex", gap: "0.5rem" }}>

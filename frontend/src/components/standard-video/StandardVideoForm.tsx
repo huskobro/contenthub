@@ -23,6 +23,7 @@ interface Props {
 }
 
 const STATUS_OPTIONS = ["draft", "script_ready", "metadata_ready", "ready", "failed"];
+const COLOR_ERR = "#dc2626";
 
 const FIELD_STYLE: React.CSSProperties = {
   display: "block",
@@ -125,7 +126,7 @@ export function StandardVideoForm({
     <form onSubmit={handleSubmit} style={{ maxWidth: "560px" }}>
       <div style={ROW_STYLE}>
         <label style={LABEL_STYLE}>
-          Konu <span style={{ color: "#dc2626" }}>*</span>
+          Konu <span style={{ color: COLOR_ERR }}>*</span>
         </label>
         <input
           style={FIELD_STYLE}
@@ -134,7 +135,7 @@ export function StandardVideoForm({
           placeholder="Videonun ana konusu"
         />
         {topicError && (
-          <p style={{ color: "#dc2626", fontSize: "0.8rem", margin: "0.25rem 0 0" }}>
+          <p style={{ color: COLOR_ERR, fontSize: "0.8rem", margin: "0.25rem 0 0" }}>
             {topicError}
           </p>
         )}
@@ -171,7 +172,7 @@ export function StandardVideoForm({
           placeholder="örn. 120"
         />
         {durationError && (
-          <p style={{ color: "#dc2626", fontSize: "0.8rem", margin: "0.25rem 0 0" }}>
+          <p style={{ color: COLOR_ERR, fontSize: "0.8rem", margin: "0.25rem 0 0" }}>
             {durationError}
           </p>
         )}
@@ -233,7 +234,7 @@ export function StandardVideoForm({
       </div>
 
       {submitError && (
-        <p style={{ color: "#dc2626", fontSize: "0.875rem", marginBottom: "0.75rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>
+        <p style={{ color: COLOR_ERR, fontSize: "0.875rem", marginBottom: "0.75rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>
           {submitError}
         </p>
       )}

@@ -22,6 +22,7 @@ interface SourceScanFormProps {
 }
 
 const BORDER_COLOR = "#e2e8f0";
+const COLOR_ERR = "#dc2626";
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
@@ -46,7 +47,7 @@ const fieldStyle: React.CSSProperties = {
 
 const errorStyle: React.CSSProperties = {
   fontSize: "0.75rem",
-  color: "#dc2626",
+  color: COLOR_ERR,
   marginTop: "0.2rem",
 };
 
@@ -124,10 +125,10 @@ export function SourceScanForm({
         <>
           <div style={fieldStyle}>
             <label style={labelStyle}>
-              Source ID <span style={{ color: "#dc2626" }}>*</span>
+              Source ID <span style={{ color: COLOR_ERR }}>*</span>
             </label>
             <input
-              style={{ ...inputStyle, borderColor: errors.source_id ? "#dc2626" : BORDER_COLOR }}
+              style={{ ...inputStyle, borderColor: errors.source_id ? COLOR_ERR : BORDER_COLOR }}
               value={values.source_id}
               onChange={(e) => set("source_id", e.target.value)}
               placeholder="Source UUID"
@@ -137,10 +138,10 @@ export function SourceScanForm({
 
           <div style={fieldStyle}>
             <label style={labelStyle}>
-              Scan Mode <span style={{ color: "#dc2626" }}>*</span>
+              Scan Mode <span style={{ color: COLOR_ERR }}>*</span>
             </label>
             <select
-              style={{ ...inputStyle, borderColor: errors.scan_mode ? "#dc2626" : BORDER_COLOR }}
+              style={{ ...inputStyle, borderColor: errors.scan_mode ? COLOR_ERR : BORDER_COLOR }}
               value={values.scan_mode}
               onChange={(e) => set("scan_mode", e.target.value)}
             >
@@ -177,7 +178,7 @@ export function SourceScanForm({
       <div style={fieldStyle}>
         <label style={labelStyle}>Result Count</label>
         <input
-          style={{ ...inputStyle, borderColor: errors.result_count ? "#dc2626" : BORDER_COLOR }}
+          style={{ ...inputStyle, borderColor: errors.result_count ? COLOR_ERR : BORDER_COLOR }}
           type="text"
           value={values.result_count}
           onChange={(e) => set("result_count", e.target.value)}
@@ -207,7 +208,7 @@ export function SourceScanForm({
       </div>
 
       {submitError && (
-        <div style={{ color: "#dc2626", fontSize: "0.875rem", marginBottom: "0.75rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>{submitError}</div>
+        <div style={{ color: COLOR_ERR, fontSize: "0.875rem", marginBottom: "0.75rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>{submitError}</div>
       )}
 
       <div style={{ display: "flex", gap: "0.5rem" }}>

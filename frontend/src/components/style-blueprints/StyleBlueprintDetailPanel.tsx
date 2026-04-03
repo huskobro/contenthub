@@ -6,6 +6,7 @@ import { formatDateTime } from "../../lib/formatDate";
 import { JsonPreviewField } from "../shared/JsonPreviewField";
 import type { StyleBlueprintFormValues } from "./StyleBlueprintForm";
 
+const COLOR_DARK = "#1e293b";
 const PANEL_BOX: React.CSSProperties = { padding: "1.25rem", border: "1px solid #e2e8f0", borderRadius: "6px", background: "#fff" };
 const SECTION_DIVIDER: React.CSSProperties = { marginTop: "0.75rem", borderTop: "1px solid #f1f5f9", paddingTop: "0.75rem" };
 
@@ -17,7 +18,7 @@ function Field({ label, value }: { label: string; value: string | number | null 
   return (
     <div style={{ marginBottom: "0.5rem" }}>
       <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "#64748b" }}>{label}: </span>
-      <span style={{ fontSize: "0.875rem", color: value !== null && value !== undefined ? "#1e293b" : "#94a3b8", wordBreak: "break-word", overflowWrap: "anywhere" }}>
+      <span style={{ fontSize: "0.875rem", color: value !== null && value !== undefined ? COLOR_DARK : "#94a3b8", wordBreak: "break-word", overflowWrap: "anywhere" }}>
         {value !== null && value !== undefined ? String(value) : "—"}
       </span>
     </div>
@@ -74,7 +75,7 @@ export function StyleBlueprintDetailPanel({ blueprintId }: StyleBlueprintDetailP
 
     return (
       <div style={PANEL_BOX}>
-        <h3 style={{ margin: "0 0 1rem", fontSize: "1rem", color: "#1e293b" }}>Blueprint Düzenle</h3>
+        <h3 style={{ margin: "0 0 1rem", fontSize: "1rem", color: COLOR_DARK }}>Blueprint Düzenle</h3>
         <StyleBlueprintForm
           mode="edit"
           initial={blueprint}
@@ -91,7 +92,7 @@ export function StyleBlueprintDetailPanel({ blueprintId }: StyleBlueprintDetailP
   return (
     <div style={PANEL_BOX}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
-        <h3 style={{ margin: 0, fontSize: "1rem", color: "#1e293b" }}>{blueprint.name}</h3>
+        <h3 style={{ margin: 0, fontSize: "1rem", color: COLOR_DARK }}>{blueprint.name}</h3>
         <button
           onClick={() => setEditing(true)}
           style={{

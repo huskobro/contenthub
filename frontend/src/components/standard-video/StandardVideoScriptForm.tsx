@@ -1,5 +1,6 @@
 import { useState } from "react";
 
+const COLOR_ERR = "#dc2626";
 const FIELD_STYLE: React.CSSProperties = {
   display: "block",
   width: "100%",
@@ -96,7 +97,7 @@ export function StandardVideoScriptForm({
     <form onSubmit={handleSubmit}>
       <div style={ROW_STYLE}>
         <label style={LABEL_STYLE}>
-          İçerik <span style={{ color: "#dc2626" }}>*</span>
+          İçerik <span style={{ color: COLOR_ERR }}>*</span>
         </label>
         <textarea
           style={{ ...FIELD_STYLE, minHeight: "160px", resize: "vertical" }}
@@ -105,7 +106,7 @@ export function StandardVideoScriptForm({
           placeholder="Script içeriği..."
         />
         {contentError && (
-          <p style={{ color: "#dc2626", fontSize: "0.8rem", margin: "0.25rem 0 0" }}>
+          <p style={{ color: COLOR_ERR, fontSize: "0.8rem", margin: "0.25rem 0 0" }}>
             {contentError}
           </p>
         )}
@@ -149,7 +150,7 @@ export function StandardVideoScriptForm({
       </div>
 
       {submitError && (
-        <p style={{ color: "#dc2626", fontSize: "0.875rem", marginBottom: "0.75rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>
+        <p style={{ color: COLOR_ERR, fontSize: "0.875rem", marginBottom: "0.75rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>
           {submitError}
         </p>
       )}

@@ -7,6 +7,7 @@ import { formatDateTime } from "../../lib/formatDate";
 import { isBlank } from "../../lib/isBlank";
 import { JsonPreviewField } from "../shared/JsonPreviewField";
 
+const COLOR_DARK = "#1e293b";
 const PANEL_BOX: React.CSSProperties = { padding: "1.25rem", border: "1px solid #e2e8f0", borderRadius: "6px", background: "#fff" };
 const SECTION_DIVIDER: React.CSSProperties = { marginTop: "0.75rem", borderTop: "1px solid #f1f5f9", paddingTop: "0.75rem" };
 
@@ -19,7 +20,7 @@ function Field({ label, value }: { label: string; value: string | number | null 
   return (
     <div style={{ marginBottom: "0.5rem" }}>
       <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "#64748b" }}>{label}: </span>
-      <span style={{ fontSize: "0.875rem", color: isEmpty ? "#94a3b8" : "#1e293b", wordBreak: "break-word", overflowWrap: "anywhere" }}>
+      <span style={{ fontSize: "0.875rem", color: isEmpty ? "#94a3b8" : COLOR_DARK, wordBreak: "break-word", overflowWrap: "anywhere" }}>
         {isEmpty ? "—" : String(value)}
       </span>
     </div>
@@ -92,7 +93,7 @@ export function TemplateDetailPanel({ templateId }: TemplateDetailPanelProps) {
       <div
         style={PANEL_BOX}
       >
-        <h3 style={{ margin: "0 0 1rem", fontSize: "1rem", color: "#1e293b" }}>Düzenle</h3>
+        <h3 style={{ margin: "0 0 1rem", fontSize: "1rem", color: COLOR_DARK }}>Düzenle</h3>
         <TemplateForm
           mode="edit"
           initial={template}
@@ -116,7 +117,7 @@ export function TemplateDetailPanel({ templateId }: TemplateDetailPanelProps) {
       }}
     >
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1rem" }}>
-        <h3 style={{ margin: 0, fontSize: "1rem", color: "#1e293b" }}>{template.name}</h3>
+        <h3 style={{ margin: 0, fontSize: "1rem", color: COLOR_DARK }}>{template.name}</h3>
         <button
           onClick={() => setEditMode(true)}
           style={{

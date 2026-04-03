@@ -1,5 +1,6 @@
 import { useState } from "react";
 
+const COLOR_ERR = "#dc2626";
 const FIELD_STYLE: React.CSSProperties = {
   display: "block",
   width: "100%",
@@ -104,7 +105,7 @@ export function StandardVideoMetadataForm({
     <form onSubmit={handleSubmit}>
       <div style={ROW_STYLE}>
         <label style={LABEL_STYLE}>
-          Başlık <span style={{ color: "#dc2626" }}>*</span>
+          Başlık <span style={{ color: COLOR_ERR }}>*</span>
         </label>
         <input
           style={FIELD_STYLE}
@@ -113,7 +114,7 @@ export function StandardVideoMetadataForm({
           placeholder="Video başlığı"
         />
         {titleError && (
-          <p style={{ color: "#dc2626", fontSize: "0.8rem", margin: "0.25rem 0 0" }}>
+          <p style={{ color: COLOR_ERR, fontSize: "0.8rem", margin: "0.25rem 0 0" }}>
             {titleError}
           </p>
         )}
@@ -203,7 +204,7 @@ export function StandardVideoMetadataForm({
       </div>
 
       {submitError && (
-        <p style={{ color: "#dc2626", fontSize: "0.875rem", marginBottom: "0.75rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>
+        <p style={{ color: COLOR_ERR, fontSize: "0.875rem", marginBottom: "0.75rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>
           {submitError}
         </p>
       )}

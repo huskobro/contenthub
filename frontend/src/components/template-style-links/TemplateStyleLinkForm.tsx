@@ -19,6 +19,7 @@ interface TemplateStyleLinkFormProps {
   submitLabel?: string;
 }
 
+const COLOR_ERR = "#dc2626";
 const inputStyle: React.CSSProperties = {
   width: "100%",
   padding: "0.375rem 0.5rem",
@@ -42,7 +43,7 @@ const fieldStyle: React.CSSProperties = {
 
 const errorStyle: React.CSSProperties = {
   fontSize: "0.75rem",
-  color: "#dc2626",
+  color: COLOR_ERR,
   marginTop: "0.2rem",
 };
 
@@ -108,10 +109,10 @@ export function TemplateStyleLinkForm({
         <>
           <div style={fieldStyle}>
             <label style={labelStyle}>
-              Template ID <span style={{ color: "#dc2626" }}>*</span>
+              Template ID <span style={{ color: COLOR_ERR }}>*</span>
             </label>
             <input
-              style={{ ...inputStyle, borderColor: errors.template_id ? "#dc2626" : "#e2e8f0" }}
+              style={{ ...inputStyle, borderColor: errors.template_id ? COLOR_ERR : "#e2e8f0" }}
               value={values.template_id}
               onChange={(e) => set("template_id", e.target.value)}
               placeholder="Template UUID"
@@ -121,10 +122,10 @@ export function TemplateStyleLinkForm({
 
           <div style={fieldStyle}>
             <label style={labelStyle}>
-              Style Blueprint ID <span style={{ color: "#dc2626" }}>*</span>
+              Style Blueprint ID <span style={{ color: COLOR_ERR }}>*</span>
             </label>
             <input
-              style={{ ...inputStyle, borderColor: errors.style_blueprint_id ? "#dc2626" : "#e2e8f0" }}
+              style={{ ...inputStyle, borderColor: errors.style_blueprint_id ? COLOR_ERR : "#e2e8f0" }}
               value={values.style_blueprint_id}
               onChange={(e) => set("style_blueprint_id", e.target.value)}
               placeholder="Style Blueprint UUID"
@@ -164,7 +165,7 @@ export function TemplateStyleLinkForm({
       </div>
 
       {submitError && (
-        <div style={{ color: "#dc2626", fontSize: "0.875rem", marginBottom: "0.75rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>{submitError}</div>
+        <div style={{ color: COLOR_ERR, fontSize: "0.875rem", marginBottom: "0.75rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>{submitError}</div>
       )}
 
       <div style={{ display: "flex", gap: "0.5rem" }}>

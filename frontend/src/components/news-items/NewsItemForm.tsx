@@ -24,6 +24,7 @@ interface NewsItemFormProps {
   submitLabel?: string;
 }
 
+const COLOR_ERR = "#dc2626";
 const inputStyle: React.CSSProperties = {
   width: "100%",
   padding: "0.375rem 0.5rem",
@@ -47,7 +48,7 @@ const fieldStyle: React.CSSProperties = {
 
 const errorStyle: React.CSSProperties = {
   fontSize: "0.75rem",
-  color: "#dc2626",
+  color: COLOR_ERR,
   marginTop: "0.2rem",
 };
 
@@ -113,10 +114,10 @@ export function NewsItemForm({
     <form onSubmit={handleSubmit} noValidate>
       <div style={fieldStyle}>
         <label style={labelStyle}>
-          Başlık <span style={{ color: "#dc2626" }}>*</span>
+          Başlık <span style={{ color: COLOR_ERR }}>*</span>
         </label>
         <input
-          style={{ ...inputStyle, borderColor: errors.title ? "#dc2626" : "#e2e8f0" }}
+          style={{ ...inputStyle, borderColor: errors.title ? COLOR_ERR : "#e2e8f0" }}
           value={values.title}
           onChange={(e) => set("title", e.target.value)}
           placeholder="Haber başlığı"
@@ -126,10 +127,10 @@ export function NewsItemForm({
 
       <div style={fieldStyle}>
         <label style={labelStyle}>
-          URL <span style={{ color: "#dc2626" }}>*</span>
+          URL <span style={{ color: COLOR_ERR }}>*</span>
         </label>
         <input
-          style={{ ...inputStyle, borderColor: errors.url ? "#dc2626" : "#e2e8f0" }}
+          style={{ ...inputStyle, borderColor: errors.url ? COLOR_ERR : "#e2e8f0" }}
           value={values.url}
           onChange={(e) => set("url", e.target.value)}
           placeholder="Haber URL'si"
@@ -209,7 +210,7 @@ export function NewsItemForm({
       </div>
 
       {submitError && (
-        <div style={{ color: "#dc2626", fontSize: "0.875rem", marginBottom: "0.75rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>{submitError}</div>
+        <div style={{ color: COLOR_ERR, fontSize: "0.875rem", marginBottom: "0.75rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>{submitError}</div>
       )}
 
       <div style={{ display: "flex", gap: "0.5rem" }}>

@@ -29,6 +29,7 @@ interface StyleBlueprintFormProps {
 
 
 const BORDER_COLOR = "#e2e8f0";
+const COLOR_ERR = "#dc2626";
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
@@ -53,7 +54,7 @@ const fieldStyle: React.CSSProperties = {
 
 const errorStyle: React.CSSProperties = {
   fontSize: "0.75rem",
-  color: "#dc2626",
+  color: COLOR_ERR,
   marginTop: "0.2rem",
 };
 
@@ -148,10 +149,10 @@ export function StyleBlueprintForm({
     <form onSubmit={handleSubmit} noValidate>
       <div style={fieldStyle}>
         <label style={labelStyle}>
-          Ad <span style={{ color: "#dc2626" }}>*</span>
+          Ad <span style={{ color: COLOR_ERR }}>*</span>
         </label>
         <input
-          style={{ ...inputStyle, borderColor: errors.name ? "#dc2626" : BORDER_COLOR }}
+          style={{ ...inputStyle, borderColor: errors.name ? COLOR_ERR : BORDER_COLOR }}
           value={values.name}
           onChange={(e) => set("name", e.target.value)}
           placeholder="Blueprint adı"
@@ -181,7 +182,7 @@ export function StyleBlueprintForm({
       <div style={fieldStyle}>
         <label style={labelStyle}>Version</label>
         <input
-          style={{ ...inputStyle, borderColor: errors.version ? "#dc2626" : BORDER_COLOR }}
+          style={{ ...inputStyle, borderColor: errors.version ? COLOR_ERR : BORDER_COLOR }}
           type="text"
           value={values.version}
           onChange={(e) => set("version", e.target.value)}
@@ -213,7 +214,7 @@ export function StyleBlueprintForm({
           <div key={field} style={fieldStyle}>
             <label style={labelStyle}>{label}</label>
             <textarea
-              style={{ ...JSON_TEXTAREA, borderColor: errors[field] ? "#dc2626" : BORDER_COLOR }}
+              style={{ ...JSON_TEXTAREA, borderColor: errors[field] ? COLOR_ERR : BORDER_COLOR }}
               value={values[field]}
               onChange={(e) => set(field, e.target.value)}
               placeholder='{"key": "value"}'
@@ -224,7 +225,7 @@ export function StyleBlueprintForm({
       </div>
 
       {submitError && (
-        <div style={{ color: "#dc2626", fontSize: "0.875rem", marginBottom: "0.75rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>{submitError}</div>
+        <div style={{ color: COLOR_ERR, fontSize: "0.875rem", marginBottom: "0.75rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>{submitError}</div>
       )}
 
       <div style={{ display: "flex", gap: "0.5rem" }}>

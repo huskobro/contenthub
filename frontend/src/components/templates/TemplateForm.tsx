@@ -28,6 +28,7 @@ interface TemplateFormProps {
 
 
 const BORDER_COLOR = "#e2e8f0";
+const COLOR_ERR = "#dc2626";
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
@@ -52,7 +53,7 @@ const fieldStyle: React.CSSProperties = {
 
 const errorStyle: React.CSSProperties = {
   fontSize: "0.75rem",
-  color: "#dc2626",
+  color: COLOR_ERR,
   marginTop: "0.2rem",
 };
 
@@ -64,7 +65,7 @@ const JSON_TEXTAREA: React.CSSProperties = {
   fontSize: "0.8rem",
 };
 
-const REQ_MARK: React.CSSProperties = { color: "#dc2626" };
+const REQ_MARK: React.CSSProperties = { color: COLOR_ERR };
 
 const BTN_PRIMARY: React.CSSProperties = {
   padding: "0.375rem 1rem",
@@ -147,7 +148,7 @@ export function TemplateForm({
           Ad <span style={REQ_MARK}>*</span>
         </label>
         <input
-          style={{ ...inputStyle, borderColor: errors.name ? "#dc2626" : BORDER_COLOR }}
+          style={{ ...inputStyle, borderColor: errors.name ? COLOR_ERR : BORDER_COLOR }}
           value={values.name}
           onChange={(e) => set("name", e.target.value)}
           placeholder="Template adı"
@@ -211,7 +212,7 @@ export function TemplateForm({
       <div style={fieldStyle}>
         <label style={labelStyle}>Version</label>
         <input
-          style={{ ...inputStyle, borderColor: errors.version ? "#dc2626" : BORDER_COLOR }}
+          style={{ ...inputStyle, borderColor: errors.version ? COLOR_ERR : BORDER_COLOR }}
           type="number"
           min={0}
           value={values.version}
@@ -224,7 +225,7 @@ export function TemplateForm({
         <div style={fieldStyle}>
           <label style={labelStyle}>style_profile_json</label>
           <textarea
-            style={{ ...JSON_TEXTAREA, borderColor: errors.style_profile_json ? "#dc2626" : BORDER_COLOR }}
+            style={{ ...JSON_TEXTAREA, borderColor: errors.style_profile_json ? COLOR_ERR : BORDER_COLOR }}
             value={values.style_profile_json}
             onChange={(e) => set("style_profile_json", e.target.value)}
             placeholder='{"key": "value"}'
@@ -235,7 +236,7 @@ export function TemplateForm({
         <div style={fieldStyle}>
           <label style={labelStyle}>content_rules_json</label>
           <textarea
-            style={{ ...JSON_TEXTAREA, borderColor: errors.content_rules_json ? "#dc2626" : BORDER_COLOR }}
+            style={{ ...JSON_TEXTAREA, borderColor: errors.content_rules_json ? COLOR_ERR : BORDER_COLOR }}
             value={values.content_rules_json}
             onChange={(e) => set("content_rules_json", e.target.value)}
             placeholder='{"key": "value"}'
@@ -246,7 +247,7 @@ export function TemplateForm({
         <div style={fieldStyle}>
           <label style={labelStyle}>publish_profile_json</label>
           <textarea
-            style={{ ...JSON_TEXTAREA, borderColor: errors.publish_profile_json ? "#dc2626" : BORDER_COLOR }}
+            style={{ ...JSON_TEXTAREA, borderColor: errors.publish_profile_json ? COLOR_ERR : BORDER_COLOR }}
             value={values.publish_profile_json}
             onChange={(e) => set("publish_profile_json", e.target.value)}
             placeholder='{"key": "value"}'
@@ -256,7 +257,7 @@ export function TemplateForm({
       </div>
 
       {submitError && (
-        <div style={{ color: "#dc2626", fontSize: "0.875rem", marginBottom: "0.75rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>{submitError}</div>
+        <div style={{ color: COLOR_ERR, fontSize: "0.875rem", marginBottom: "0.75rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>{submitError}</div>
       )}
 
       <div style={{ display: "flex", gap: "0.5rem" }}>
