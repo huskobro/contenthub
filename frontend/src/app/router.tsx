@@ -1,6 +1,8 @@
-import { createBrowserRouter, Navigate } from "react-router-dom";
+import { createBrowserRouter } from "react-router-dom";
 import { AdminLayout } from "./layouts/AdminLayout";
 import { UserLayout } from "./layouts/UserLayout";
+import { AppEntryGate } from "./AppEntryGate";
+import { OnboardingPage } from "../pages/OnboardingPage";
 import { AdminOverviewPage } from "../pages/AdminOverviewPage";
 import { UserDashboardPage } from "../pages/UserDashboardPage";
 import { SettingsRegistryPage } from "../pages/admin/SettingsRegistryPage";
@@ -30,7 +32,11 @@ import { TemplateStyleLinkCreatePage } from "../pages/admin/TemplateStyleLinkCre
 export const router = createBrowserRouter([
   {
     path: "/",
-    element: <Navigate to="/user" replace />,
+    element: <AppEntryGate />,
+  },
+  {
+    path: "/onboarding",
+    element: <OnboardingPage />,
   },
   {
     path: "/admin",

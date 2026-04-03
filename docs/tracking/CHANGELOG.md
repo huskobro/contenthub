@@ -2,6 +2,26 @@
 
 ---
 
+## [2026-04-03] Phase 236 — Onboarding App Entry Gate & Welcome Screen
+
+**Ne:** Ürün ana fazı: onboarding entry gate ve welcome screen. Backend onboarding API (app_state tablosu kullanarak), frontend entry gate component, profesyonel welcome screen, route wiring.
+**Sonuç:** Uygulama açıldığında setup gerekip gerekmediğini kontrol eden entry gate kuruldu. Setup gerekli ise `/onboarding` welcome screen gösterilir, setup tamam ise `/user`'a geçilir. Backend `GET /onboarding/status` ve `POST /onboarding/complete` endpoint'leri eklendi.
+**Eklenen dosyalar:**
+- `backend/app/onboarding/__init__.py`, `schemas.py`, `service.py`, `router.py` (yeni — backend onboarding modülü)
+- `frontend/src/api/onboardingApi.ts` (yeni — API client)
+- `frontend/src/hooks/useOnboardingStatus.ts`, `useCompleteOnboarding.ts` (yeni — React Query hook'ları)
+- `frontend/src/components/onboarding/OnboardingWelcomeScreen.tsx` (yeni — welcome screen)
+- `frontend/src/pages/OnboardingPage.tsx` (yeni — page wrapper)
+- `frontend/src/app/AppEntryGate.tsx` (yeni — entry gate)
+- `frontend/src/tests/onboarding.smoke.test.tsx` (yeni — 7 test)
+**Değiştirilen dosyalar:**
+- `backend/app/api/router.py` (onboarding router eklendi)
+- `frontend/src/app/router.tsx` (entry gate + onboarding route eklendi)
+- `docs/testing/test-report-phase-236-onboarding-app-entry-gate-welcome-screen.md` (yeni — test raporu)
+**Test:** 1594 toplam test (+7 yeni), tsc temiz, build temiz
+
+---
+
 ## [2026-04-03] Phase 235 — Hygiene Closure & Product Pivot Gate
 
 **Ne:** Frontend hygiene / readability / render-safety / fallback-safety hattının resmi kapanışı ve ürün fazlarına geçiş kapısı.

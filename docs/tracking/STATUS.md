@@ -1,10 +1,10 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 235 — Hygiene Closure & Product Pivot Gate ✓ TAMAMLANDI (closure gate)
+Phase 236 — Onboarding App Entry Gate & Welcome Screen ✓ TAMAMLANDI (feature)
 
 ## Mevcut Hedef
-Frontend hygiene / readability / render-safety hattı resmen kapatıldı. Ürün fazlarına geçiş için baseline stabil. Sıradaki ana faz: Wizard / Onboarding.
+Onboarding entry gate ve welcome screen eklendi. Backend onboarding API (app_state tablosu), frontend entry gate, welcome screen, 7 yeni test. 1594 toplam test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
@@ -12,9 +12,10 @@ Frontend hygiene / readability / render-safety hattı resmen kapatıldı. Ürün
 ## Hygiene Hattı Kapanış Durumu
 - **KAPATILDI:** Mikro readability faz zinciri Phase 235 ile resmen kapatıldı.
 - **YENİ MİKRO FAZ AÇILMAYACAK.** Son ~45 fazın büyük çoğunluğu audit-only kapandı; marjinal getiri düştü.
-- **SONRAKİ ANA FAZ:** Wizard / Onboarding (ürün geliştirme hattı)
+- **ANA FAZ BAŞLADI:** Wizard / Onboarding (ürün geliştirme hattı)
 
 ## Son Tamamlananlar
+- Phase 236: onboarding app entry gate & welcome screen — backend API, frontend gate, welcome screen, 7 test, 1594 toplam (2026-04-03)
 - Phase 235: hygiene closure & product pivot gate — kapanış doğrulaması, baseline stabil, 1587 toplam (2026-04-03)
 - Phase 234: repeated small detail field/row call-site readability pack: audit-only, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 233: repeated small summary component call readability pack: audit-only, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
