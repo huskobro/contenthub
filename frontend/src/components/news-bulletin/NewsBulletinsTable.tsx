@@ -12,6 +12,8 @@ import { NewsBulletinInputQualitySummary } from "./NewsBulletinInputQualitySumma
 import { NewsBulletinInputSpecificitySummary } from "./NewsBulletinInputSpecificitySummary";
 import { NewsBulletinTargetOutputConsistencySummary } from "./NewsBulletinTargetOutputConsistencySummary";
 
+const DASH = "—";
+
 interface Props {
   bulletins: NewsBulletinResponse[];
   selectedId: string | null;
@@ -65,12 +67,12 @@ export function NewsBulletinsTable({ bulletins, selectedId, onSelect }: Props) {
             }}
           >
             {/* Kimlik & Durum */}
-            <td style={{ padding: "0.5rem 0.75rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>{b.title ?? "—"}</td>
-            <td style={{ padding: "0.5rem 0.75rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>{b.topic ?? "—"}</td>
-            <td style={{ padding: "0.5rem 0.75rem" }}>{b.source_mode ?? "—"}</td>
-            <td style={{ padding: "0.5rem 0.75rem" }}>{b.bulletin_style ?? "—"}</td>
-            <td style={{ padding: "0.5rem 0.75rem" }}>{b.status ?? "—"}</td>
-            <td style={{ padding: "0.5rem 0.75rem" }}>{b.language ?? "—"}</td>
+            <td style={{ padding: "0.5rem 0.75rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>{b.title ?? DASH}</td>
+            <td style={{ padding: "0.5rem 0.75rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>{b.topic ?? DASH}</td>
+            <td style={{ padding: "0.5rem 0.75rem" }}>{b.source_mode ?? DASH}</td>
+            <td style={{ padding: "0.5rem 0.75rem" }}>{b.bulletin_style ?? DASH}</td>
+            <td style={{ padding: "0.5rem 0.75rem" }}>{b.status ?? DASH}</td>
+            <td style={{ padding: "0.5rem 0.75rem" }}>{b.language ?? DASH}</td>
             {/* Hazırlık & İçerik */}
             <td style={{ padding: "0.5rem 0.75rem" }}>
               <NewsBulletinReadinessSummary

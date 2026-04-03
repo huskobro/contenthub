@@ -1,6 +1,8 @@
 import type { NewsItemResponse } from "../../api/newsItemsApi";
 import { formatDateShort } from "../../lib/formatDate";
 
+const DASH = "—";
+
 interface Props {
   items: NewsItemResponse[];
   onSelect: (item: NewsItemResponse) => void;
@@ -27,11 +29,11 @@ export function NewsItemPickerTable({ items, onSelect }: Props) {
         {items.map((item) => (
           <tr key={item.id} style={{ borderBottom: "1px solid #f1f5f9" }}>
             <td style={{ padding: "0.375rem 0.5rem", maxWidth: "200px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-              {(item.title ?? "").length > 50 ? (item.title ?? "").slice(0, 50) + "…" : (item.title ?? "—")}
+              {(item.title ?? "").length > 50 ? (item.title ?? "").slice(0, 50) + "…" : (item.title ?? DASH)}
             </td>
-            <td style={{ padding: "0.375rem 0.5rem", color: "#64748b" }}>{item.status ?? "—"}</td>
-            <td style={{ padding: "0.375rem 0.5rem", color: "#64748b" }}>{item.category ?? "—"}</td>
-            <td style={{ padding: "0.375rem 0.5rem", color: "#64748b" }}>{item.language ?? "—"}</td>
+            <td style={{ padding: "0.375rem 0.5rem", color: "#64748b" }}>{item.status ?? DASH}</td>
+            <td style={{ padding: "0.375rem 0.5rem", color: "#64748b" }}>{item.category ?? DASH}</td>
+            <td style={{ padding: "0.375rem 0.5rem", color: "#64748b" }}>{item.language ?? DASH}</td>
             <td style={{ padding: "0.375rem 0.5rem", color: "#94a3b8" }}>
               {formatDateShort(item.published_at)}
             </td>

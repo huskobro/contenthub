@@ -9,6 +9,8 @@ import { StyleBlueprintInputSpecificitySummary } from "./StyleBlueprintInputSpec
 import { StyleBlueprintTargetOutputConsistencySummary } from "./StyleBlueprintTargetOutputConsistencySummary";
 import { StyleBlueprintPublicationOutcomeSummary } from "./StyleBlueprintPublicationOutcomeSummary";
 
+const DASH = "—";
+
 interface StyleBlueprintsTableProps {
   blueprints: StyleBlueprintResponse[];
   selectedId: string | null;
@@ -48,9 +50,9 @@ export function StyleBlueprintsTable({ blueprints, selectedId, onSelect }: Style
           >
             {/* Kimlik & Durum */}
             <td style={{ padding: "0.5rem 0.75rem", color: "#1e40af", fontWeight: selectedId === bp.id ? 600 : 400, wordBreak: "break-word", overflowWrap: "anywhere" }}>
-              {bp.name ?? "—"}
+              {bp.name ?? DASH}
             </td>
-            <td style={{ padding: "0.5rem 0.75rem", color: "#64748b" }}>{bp.module_scope ?? "—"}</td>
+            <td style={{ padding: "0.5rem 0.75rem", color: "#64748b" }}>{bp.module_scope ?? DASH}</td>
             <td style={{ padding: "0.5rem 0.75rem" }}>
               <span style={{
                 display: "inline-block",
@@ -60,7 +62,7 @@ export function StyleBlueprintsTable({ blueprints, selectedId, onSelect }: Style
                 background: bp.status === "active" ? "#dcfce7" : "#f1f5f9",
                 color: bp.status === "active" ? "#166534" : "#475569",
               }}>
-                {bp.status ?? "—"}
+                {bp.status ?? DASH}
               </span>
             </td>
             <td style={{ padding: "0.5rem 0.75rem", color: "#64748b" }}>v{safeNumber(bp.version, 0)}</td>

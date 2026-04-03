@@ -2,6 +2,18 @@
 
 ---
 
+## [2026-04-03] Phase 157 — Duplicate Inline Fallback Pattern Reduction Pack
+
+**Ne:** Bileşen içinde 3+ kez tekrar eden `?? "—"` inline fallback pattern'lerini `const DASH = "—"` local const extraction ile sadeleştirme. 13 dosyada toplam 62 inline string → const referansına dönüşüm.
+**Eklenen/değiştirilen dosyalar:**
+- 13 bileşen: `const DASH = "—"` extraction + inline `"—"` → `DASH` (8 tablo, 3 panel, 2 script panel)
+- `frontend/src/tests/clipboard-text-hygiene.smoke.test.tsx`: 11 assertion güncelleme (DASH pattern kabul)
+- `docs/testing/test-report-phase-157-duplicate-inline-fallback-pattern-reduction-pack.md` (yeni)
+**Test:** 1587 toplam test, tsc temiz, vite build temiz
+**Dokunulmayan:** Form `?? ""` pattern'leri (standard React), 1-2 tekrarlı dosyalar, badge stilleri, backend, business logic
+
+---
+
 ## [2026-04-03] Phase 156 — Shared Fallback Helper Consolidation Pack
 
 **Ne:** Inline güvenlik pattern'lerinin shared helper'lara konsolidasyonu. 5 summary bileşende inline `typeof raw === "number" && !isNaN(raw) && isFinite(raw)` pattern'i `safeNumber()` ile değiştirildi. 2 tablo bileşende version interpolation `safeNumber()` ile konsolide edildi. 1 summary bileşende lokal `safeCount()` fonksiyonu kaldırılıp `safeNumber()` ile değiştirildi. 1 timeline panelde inline date slice `formatDateISO()` ile değiştirildi.

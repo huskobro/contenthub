@@ -9,6 +9,8 @@ import { TemplateInputSpecificitySummary } from "./TemplateInputSpecificitySumma
 import { TemplateTargetOutputConsistencySummary } from "./TemplateTargetOutputConsistencySummary";
 import { TemplatePublicationOutcomeSummary } from "./TemplatePublicationOutcomeSummary";
 
+const DASH = "—";
+
 interface TemplatesTableProps {
   templates: TemplateResponse[];
   selectedId: string | null;
@@ -56,11 +58,11 @@ export function TemplatesTable({ templates, selectedId, onSelect }: TemplatesTab
           >
             {/* Kimlik & Durum */}
             <td style={{ padding: "0.5rem 0.75rem", color: "#1e40af", fontWeight: selectedId === t.id ? 600 : 400, wordBreak: "break-word", overflowWrap: "anywhere" }}>
-              {t.name ?? "—"}
+              {t.name ?? DASH}
             </td>
-            <td style={{ padding: "0.5rem 0.75rem", color: "#334155" }}>{t.template_type ?? "—"}</td>
-            <td style={{ padding: "0.5rem 0.75rem", color: "#334155" }}>{t.owner_scope ?? "—"}</td>
-            <td style={{ padding: "0.5rem 0.75rem", color: "#64748b" }}>{t.module_scope ?? "—"}</td>
+            <td style={{ padding: "0.5rem 0.75rem", color: "#334155" }}>{t.template_type ?? DASH}</td>
+            <td style={{ padding: "0.5rem 0.75rem", color: "#334155" }}>{t.owner_scope ?? DASH}</td>
+            <td style={{ padding: "0.5rem 0.75rem", color: "#64748b" }}>{t.module_scope ?? DASH}</td>
             <td style={{ padding: "0.5rem 0.75rem" }}>
               <span
                 style={{
@@ -72,7 +74,7 @@ export function TemplatesTable({ templates, selectedId, onSelect }: TemplatesTab
                   color: t.status === "active" ? "#166534" : "#475569",
                 }}
               >
-                {t.status ?? "—"}
+                {t.status ?? DASH}
               </span>
             </td>
             <td style={{ padding: "0.5rem 0.75rem", color: "#64748b" }}>v{safeNumber(t.version, 0)}</td>

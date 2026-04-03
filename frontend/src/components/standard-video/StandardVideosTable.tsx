@@ -9,6 +9,8 @@ import { StandardVideoArtifactConsistencySummary } from "./StandardVideoArtifact
 import { StandardVideoInputSpecificitySummary } from "./StandardVideoInputSpecificitySummary";
 import { StandardVideoTargetOutputConsistencySummary } from "./StandardVideoTargetOutputConsistencySummary";
 
+const DASH = "—";
+
 interface Props {
   videos: StandardVideoResponse[];
   selectedId: string | null;
@@ -70,8 +72,8 @@ export function StandardVideosTable({ videos, selectedId, onSelect }: Props) {
             }}
           >
             {/* Kimlik & Durum */}
-            <td style={{ padding: "0.5rem 0.75rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>{v.title ?? "—"}</td>
-            <td style={{ padding: "0.5rem 0.75rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>{v.topic ?? "—"}</td>
+            <td style={{ padding: "0.5rem 0.75rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>{v.title ?? DASH}</td>
+            <td style={{ padding: "0.5rem 0.75rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>{v.topic ?? DASH}</td>
             <td style={{ padding: "0.5rem 0.75rem" }}>
               <span
                 style={{
@@ -79,10 +81,10 @@ export function StandardVideosTable({ videos, selectedId, onSelect }: Props) {
                   fontWeight: 500,
                 }}
               >
-                {v.status ?? "—"}
+                {v.status ?? DASH}
               </span>
             </td>
-            <td style={{ padding: "0.5rem 0.75rem" }}>{v.language ?? "—"}</td>
+            <td style={{ padding: "0.5rem 0.75rem" }}>{v.language ?? DASH}</td>
             <td style={{ padding: "0.5rem 0.75rem" }}>
               {formatDuration(v.target_duration_seconds)}
             </td>

@@ -14,17 +14,17 @@ function read(relPath: string): string {
 describe("Script panel text hygiene", () => {
   it("StandardVideoScriptPanel has null fallback on version", () => {
     const src = read("components/standard-video/StandardVideoScriptPanel.tsx");
-    expect(src).toContain('script.version ?? "—"');
+    expect(src.includes('script.version ?? "—"') || src.includes("script.version ?? DASH")).toBe(true);
   });
 
   it("StandardVideoScriptPanel has null fallback on source_type", () => {
     const src = read("components/standard-video/StandardVideoScriptPanel.tsx");
-    expect(src).toContain('script.source_type ?? "—"');
+    expect(src.includes('script.source_type ?? "—"') || src.includes("script.source_type ?? DASH")).toBe(true);
   });
 
   it("StandardVideoScriptPanel has null fallback on generation_status", () => {
     const src = read("components/standard-video/StandardVideoScriptPanel.tsx");
-    expect(src).toContain('script.generation_status ?? "—"');
+    expect(src.includes('script.generation_status ?? "—"') || src.includes("script.generation_status ?? DASH")).toBe(true);
   });
 
   it("StandardVideoScriptPanel content block has null-safe length check", () => {
@@ -43,12 +43,12 @@ describe("Script panel text hygiene", () => {
 
   it("NewsBulletinScriptPanel has null fallback on version", () => {
     const src = read("components/news-bulletin/NewsBulletinScriptPanel.tsx");
-    expect(src).toContain('script.version ?? "—"');
+    expect(src.includes('script.version ?? "—"') || src.includes("script.version ?? DASH")).toBe(true);
   });
 
   it("NewsBulletinScriptPanel has null fallback on generation_status", () => {
     const src = read("components/news-bulletin/NewsBulletinScriptPanel.tsx");
-    expect(src).toContain('script.generation_status ?? "—"');
+    expect(src.includes('script.generation_status ?? "—"') || src.includes("script.generation_status ?? DASH")).toBe(true);
   });
 
   it("NewsBulletinScriptPanel content block has null-safe length check", () => {
@@ -70,32 +70,32 @@ describe("Script panel text hygiene", () => {
 describe("Metadata panel text hygiene", () => {
   it("StandardVideoMetadataPanel has null fallback on title", () => {
     const src = read("components/standard-video/StandardVideoMetadataPanel.tsx");
-    expect(src).toContain('metadata.title ?? "—"');
+    expect(src.includes('metadata.title ?? "—"') || src.includes("metadata.title ?? DASH")).toBe(true);
   });
 
   it("StandardVideoMetadataPanel has null fallback on version", () => {
     const src = read("components/standard-video/StandardVideoMetadataPanel.tsx");
-    expect(src).toContain('metadata.version ?? "—"');
+    expect(src.includes('metadata.version ?? "—"') || src.includes("metadata.version ?? DASH")).toBe(true);
   });
 
   it("StandardVideoMetadataPanel has null fallback on source_type", () => {
     const src = read("components/standard-video/StandardVideoMetadataPanel.tsx");
-    expect(src).toContain('metadata.source_type ?? "—"');
+    expect(src.includes('metadata.source_type ?? "—"') || src.includes("metadata.source_type ?? DASH")).toBe(true);
   });
 
   it("StandardVideoMetadataPanel has null fallback on generation_status", () => {
     const src = read("components/standard-video/StandardVideoMetadataPanel.tsx");
-    expect(src).toContain('metadata.generation_status ?? "—"');
+    expect(src.includes('metadata.generation_status ?? "—"') || src.includes("metadata.generation_status ?? DASH")).toBe(true);
   });
 
   it("NewsBulletinMetadataPanel has null fallback on version", () => {
     const src = read("components/news-bulletin/NewsBulletinMetadataPanel.tsx");
-    expect(src).toContain('metadata.version ?? "—"');
+    expect(src.includes('metadata.version ?? "—"') || src.includes("metadata.version ?? DASH")).toBe(true);
   });
 
   it("NewsBulletinMetadataPanel has null fallback on generation_status", () => {
     const src = read("components/news-bulletin/NewsBulletinMetadataPanel.tsx");
-    expect(src).toContain('metadata.generation_status ?? "—"');
+    expect(src.includes('metadata.generation_status ?? "—"') || src.includes("metadata.generation_status ?? DASH")).toBe(true);
   });
 });
 

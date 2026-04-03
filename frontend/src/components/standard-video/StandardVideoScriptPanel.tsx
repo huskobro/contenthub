@@ -5,6 +5,7 @@ import type { ScriptFormValues } from "./StandardVideoScriptForm";
 import { isBlank } from "../../lib/isBlank";
 
 const PREVIEW_LIMIT = 400;
+const DASH = "—";
 
 interface Props {
   videoId: string;
@@ -164,15 +165,15 @@ export function StandardVideoScriptPanel({
             <tbody>
               <tr>
                 <td style={{ color: "#64748b", paddingRight: "1rem", paddingBottom: "0.25rem" }}>Versiyon</td>
-                <td style={{ paddingBottom: "0.25rem" }}>{script.version ?? "—"}</td>
+                <td style={{ paddingBottom: "0.25rem" }}>{script.version ?? DASH}</td>
               </tr>
               <tr>
                 <td style={{ color: "#64748b", paddingRight: "1rem", paddingBottom: "0.25rem" }}>Kaynak</td>
-                <td style={{ paddingBottom: "0.25rem" }}>{script.source_type ?? "—"}</td>
+                <td style={{ paddingBottom: "0.25rem" }}>{script.source_type ?? DASH}</td>
               </tr>
               <tr>
                 <td style={{ color: "#64748b", paddingRight: "1rem", paddingBottom: "0.25rem" }}>Durum</td>
-                <td style={{ paddingBottom: "0.25rem" }}>{script.generation_status ?? "—"}</td>
+                <td style={{ paddingBottom: "0.25rem" }}>{script.generation_status ?? DASH}</td>
               </tr>
               {!isBlank(script.notes) && (
                 <tr>

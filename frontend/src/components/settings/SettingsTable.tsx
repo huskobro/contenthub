@@ -1,5 +1,7 @@
 import type { SettingResponse } from "../../api/settingsApi";
 
+const DASH = "—";
+
 interface SettingsTableProps {
   settings: SettingResponse[];
   selectedId: string | null;
@@ -33,11 +35,11 @@ export function SettingsTable({ settings, selectedId, onSelect }: SettingsTableP
               background: selectedId === s.id ? "#eff6ff" : "transparent",
             }}
           >
-            <td style={{ padding: "0.5rem", fontFamily: "monospace", wordBreak: "break-all", overflowWrap: "anywhere" }}>{s.key ?? "—"}</td>
-            <td style={{ padding: "0.5rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>{s.group_name ?? "—"}</td>
-            <td style={{ padding: "0.5rem" }}>{s.type ?? "—"}</td>
-            <td style={{ padding: "0.5rem" }}>{s.status ?? "—"}</td>
-            <td style={{ padding: "0.5rem" }}>{s.version ?? "—"}</td>
+            <td style={{ padding: "0.5rem", fontFamily: "monospace", wordBreak: "break-all", overflowWrap: "anywhere" }}>{s.key ?? DASH}</td>
+            <td style={{ padding: "0.5rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>{s.group_name ?? DASH}</td>
+            <td style={{ padding: "0.5rem" }}>{s.type ?? DASH}</td>
+            <td style={{ padding: "0.5rem" }}>{s.status ?? DASH}</td>
+            <td style={{ padding: "0.5rem" }}>{s.version ?? DASH}</td>
           </tr>
         ))}
       </tbody>

@@ -6,6 +6,8 @@ import { NewsBulletinScriptForm } from "./NewsBulletinScriptForm";
 import { isBlank } from "../../lib/isBlank";
 import type { ScriptFormValues } from "./NewsBulletinScriptForm";
 
+const DASH = "—";
+
 interface Props {
   bulletinId: string;
 }
@@ -122,15 +124,15 @@ export function NewsBulletinScriptPanel({ bulletinId }: Props) {
             <tbody>
               <tr>
                 <td style={{ color: "#64748b", paddingRight: "1rem", paddingBottom: "0.25rem" }}>Versiyon</td>
-                <td>{script.version ?? "—"}</td>
+                <td>{script.version ?? DASH}</td>
               </tr>
               <tr>
                 <td style={{ color: "#64748b", paddingRight: "1rem", paddingBottom: "0.25rem" }}>Kaynak</td>
-                <td>{script.source_type ?? "—"}</td>
+                <td>{script.source_type ?? DASH}</td>
               </tr>
               <tr>
                 <td style={{ color: "#64748b", paddingRight: "1rem", paddingBottom: "0.25rem" }}>Durum</td>
-                <td>{script.generation_status ?? "—"}</td>
+                <td>{script.generation_status ?? DASH}</td>
               </tr>
               {!isBlank(script.notes) && (
                 <tr>
