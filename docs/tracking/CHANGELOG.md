@@ -2,6 +2,16 @@
 
 ---
 
+## [2026-04-03] Phase 203 — Repeated Small text-decoration Literal Constant Pack
+
+**Ne:** Bileşenlerde tekrar eden textDecoration literal değerlerinin kapsamlı audit'i.
+**Sonuç:** Sadece AppSidebar.tsx'de 1 kullanım var, threshold karşılanmadı. Dosya değişikliği yapılmadı.
+**Eklenen/değiştirilen dosyalar:**
+- `docs/testing/test-report-phase-203-repeated-small-text-decoration-literal-constant-pack.md` (yeni — audit belgesi)
+**Test:** 1587 toplam test, tsc temiz
+
+---
+
 ## [2026-04-03] Phase 202 — Repeated Small outline/boxShadow Literal Constant Pack
 
 **Ne:** Bileşenlerde tekrar eden outline/boxShadow literal değerlerinin kapsamlı audit'i.
