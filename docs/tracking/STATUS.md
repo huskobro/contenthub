@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 174 — Repeated Required Mark Constant Pack ✓ TAMAMLANDI (audit-only)
+Phase 175 — Repeated Small Panel Divider Constant Pack ✓ TAMAMLANDI (audit-only)
 
 ## Mevcut Hedef
-Tüm form bileşenlerinde tekrar eden required-mark span pattern audit. Threshold 3+ sağlayan yeni dosya bulunamadı — Phase 173'te zaten yapılmıştı. 1587 toplam test.
+Tüm panel ve form bileşenlerinde tekrar eden divider/separator style pattern audit. Threshold 3+ sağlayan yeni dosya bulunamadı. 1587 toplam test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 175: repeated small panel divider constant pack: kapsamlı audit, threshold altı (max 1× per dosya), hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 174: repeated required mark constant pack: kapsamlı audit, threshold altı (max 2 tekrar kalan dosyalarda), hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 173: repeated form label style constant pack: REQ_MARK extraction (TemplateForm×3, UsedNewsForm×3), 1587 toplam (2026-04-03)
 - Phase 172: repeated input/textarea style constant pack: JSON_TEXTAREA + TEXTAREA extraction (3 dosya), 1587 toplam (2026-04-03)
