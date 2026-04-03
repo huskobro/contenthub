@@ -74,7 +74,7 @@ const QUICK_LINKS = [
   },
   {
     title: "Haber Bultenleri",
-    desc: "Bulten icerigi olustur ve yonet",
+    desc: "Ikinci uretim akisi: haber bulteni icerigi olustur ve yonet",
     to: "/admin/news-bulletins",
     testId: "quick-link-news-bulletins",
   },

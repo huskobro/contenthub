@@ -82,9 +82,21 @@ export function NewsBulletinDetailPanel({ selectedId }: Props) {
   return (
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <h3>News Bulletin Detayı</h3>
+        <h3 data-testid="nb-detail-heading">Haber Bulteni Detayi</h3>
         <button onClick={() => setEditMode(true)}>Düzenle</button>
       </div>
+      <p
+        style={{
+          margin: "0 0 1rem",
+          fontSize: "0.8125rem",
+          color: "#94a3b8",
+          lineHeight: 1.5,
+        }}
+        data-testid="nb-detail-workflow-chain"
+      >
+        Uretim zinciri: Kaynak Tarama → Haber Secimi → Bulten Kaydi → Script → Metadata → Uretim.
+        Asagidaki panellerden secili haberleri, script ve metadata adimlarini yonetebilirsiniz.
+      </p>
       <Field label="ID" value={data.id} />
       <Field label="Title" value={data.title} />
       <Field label="Topic" value={data.topic} />

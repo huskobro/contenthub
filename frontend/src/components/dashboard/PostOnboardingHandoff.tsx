@@ -87,7 +87,8 @@ export function PostOnboardingHandoff() {
       <h3 style={HEADING}>Ilk Iceriginizi Olusturun</h3>
       <p style={DESC}>
         Kurulumunuz tamamlandi. Video uretimi ana icerik akisinizdir.
-        Asagidaki seceneklerle ilk standart video iceriginizi olusturabilir
+        Haber bulteni ikinci uretim akisinizdir.
+        Asagidaki seceneklerle ilk iceriginizi olusturabilir
         veya yonetim paneline giderek kaynak, sablon ve diger ayarlari
         yonetebilirsiniz.
       </p>

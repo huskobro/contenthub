@@ -2,6 +2,29 @@
 
 ---
 
+## [2026-04-03] Phase 276–281 — News Workflow Pack
+
+**Ne:** News workflow omurgasi oturdu. Phase 276: Giris noktalarinda (user content entry, admin quick access, post-onboarding handoff) haber bulteni "ikinci uretim akisi" olarak konumlandirildi. Create page'e workflow intro subtitle ve zincir aciklamasi eklendi. Registry page heading ve workflow notu guncellendi. Phase 277: Workflow zinciri (Kaynak Tarama → Haber Secimi → Bulten Kaydi → Script → Metadata → Uretim) create ve detail yuzeylerinde gorunur kilindi. Phase 278: Selected items paneline kurasyon notu eklendi. Phase 279: Script paneline generation notu eklendi. Phase 280: Metadata paneline context notu eklendi, detail panel workflow zinciri guncellendi. Phase 281: End-to-end dogrulama — tum giris noktalari, create, registry, detail, curation, script, metadata zinciri calisiyor.
+**Sonuc:** Kullanici news workflow'u baslatabilir, her adimi anlayabilir ve takip edebilir. Workflow entry → create → registry → detail (secili haberler + script + metadata) zinciri gorunur ve tutarli. Omurga oturdu; derin modul isleri (AI enrichment, semantic dedupe, job entegrasyonu, publish akisi) ileride.
+**Degistirilen dosyalar:**
+- `frontend/src/pages/admin/NewsBulletinCreatePage.tsx` (heading h2+testid, workflow subtitle, workflow chain)
+- `frontend/src/pages/admin/NewsBulletinRegistryPage.tsx` (heading h2+testid, workflow note, button copy)
+- `frontend/src/pages/UserContentEntryPage.tsx` (news bulletin card desc)
+- `frontend/src/pages/AdminOverviewPage.tsx` (news bulletins quick link desc)
+- `frontend/src/components/dashboard/PostOnboardingHandoff.tsx` (haber bulteni vurgusu)
+- `frontend/src/components/news-bulletin/NewsBulletinDetailPanel.tsx` (heading testid, workflow chain note)
+- `frontend/src/components/news-bulletin/NewsBulletinSelectedItemsPanel.tsx` (heading testid, curation note)
+- `frontend/src/components/news-bulletin/NewsBulletinScriptPanel.tsx` (heading testid, generation note)
+- `frontend/src/components/news-bulletin/NewsBulletinMetadataPanel.tsx` (heading testid, context note)
+- `frontend/src/tests/news-bulletin-registry.smoke.test.tsx` (testid guncelleme)
+- `frontend/src/tests/news-bulletin-form.smoke.test.tsx` (testid guncelleme)
+**Eklenen dosyalar:**
+- `frontend/src/tests/news-workflow-pack.smoke.test.tsx` (18 yeni test)
+- `docs/testing/test-report-phase-276-281-news-workflow-pack.md`
+**Test:** 1838 toplam test (+18 yeni), tsc temiz, build temiz
+
+---
+
 ## [2026-04-03] Phase 269–275 — Video Workflow Pack
 
 **Ne:** Standard Video workflow omurgasi oturdu. Phase 269: Create ekranina workflow baslangic aciklamasi ve testid eklendi. Phase 270-271: Detail ekranina uretim zinciri aciklamasi (Kayit → Script → Metadata → TTS → Altyazi → Kompozisyon) ve testid eklendi. Phase 272: TTS/Altyazi/Kompozisyon adimlari zincir referansinda gorunur kilindi. Phase 273: Job detail'e workflow takip notu ve testid eklendi. Phase 274: Detail/review/artifacts yuzeylerinin workflow ile baglantisi korundu. Phase 275: End-to-end dogrulama — tum giris noktalari, create, detail, job detail ve timeline zinciri calisiyor.

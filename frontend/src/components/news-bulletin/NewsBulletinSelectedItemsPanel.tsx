@@ -130,10 +130,22 @@ export function NewsBulletinSelectedItemsPanel({ bulletinId }: Props) {
   // view mode
   return (
     <div style={sectionStyle}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
-        <h4 style={{ margin: 0 }}>Selected News</h4>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem" }}>
+        <h4 style={{ margin: 0 }} data-testid="nb-selected-news-heading">Secili Haberler</h4>
         <button onClick={() => setMode("create")}>+ Manuel Ekle</button>
       </div>
+      <p
+        style={{
+          margin: "0 0 0.75rem",
+          fontSize: "0.8125rem",
+          color: "#94a3b8",
+          lineHeight: 1.5,
+        }}
+        data-testid="nb-selected-news-note"
+      >
+        Kaynaklardan gelen haberlerden bulteninize dahil edilecek olanlari secin.
+        Secili haberler bulten taslagi, script ve icerik uretiminin temelini olusturur.
+      </p>
 
       <NewsBulletinSelectedNewsPicker
         onSelect={handlePickerSelect}

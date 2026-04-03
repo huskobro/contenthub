@@ -113,14 +113,26 @@ export function NewsBulletinMetadataPanel({ bulletinId }: Props) {
   // view mode
   return (
     <div style={SECTION_STYLE}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
-        <h4 style={{ margin: 0 }}>Metadata</h4>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem" }}>
+        <h4 style={{ margin: 0 }} data-testid="nb-metadata-heading">Metadata</h4>
         {metadata ? (
           <button onClick={() => setMode("edit")}>Düzenle</button>
         ) : (
           <button onClick={() => setMode("create")}>+ Metadata Ekle</button>
         )}
       </div>
+      <p
+        style={{
+          margin: "0 0 0.75rem",
+          fontSize: "0.8125rem",
+          color: "#94a3b8",
+          lineHeight: 1.5,
+        }}
+        data-testid="nb-metadata-note"
+      >
+        Bulten baslik, aciklama, etiket ve kategori bilgileri. Metadata,
+        script ile birlikte bulten ciktisinin temelini olusturur.
+      </p>
 
       {!metadata ? (
         <p style={{ color: "#94a3b8", margin: 0 }}>Henüz metadata yok.</p>

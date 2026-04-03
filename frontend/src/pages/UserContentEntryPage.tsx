@@ -102,7 +102,7 @@ const CONTENT_TYPES = [
     icon: "H",
     iconBg: "#7c3aed",
     title: "Haber Bulteni",
-    desc: "Haber kaynaklarinizdan sectiginiz ogelerle bir bulten olusturun. Tarama, derleme ve uretim adimlari otomatik yurutulur.",
+    desc: "Ikinci uretim akisi: haber kaynaklarinizdan sectiginiz haberlerle bulten olusturun. Kaynak tarama, haber secimi, script ve metadata adimlari ilerleyecektir.",
     cta: "Yeni Bulten Olustur",
     to: "/admin/news-bulletins/new",
     testId: "content-entry-news-bulletin",

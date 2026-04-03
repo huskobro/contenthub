@@ -14,12 +14,30 @@ export function NewsBulletinRegistryPage() {
   return (
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <h1>News Bulletin Registry</h1>
+        <h2
+          style={{ margin: 0, fontSize: "1.125rem", fontWeight: 600 }}
+          data-testid="nb-registry-heading"
+        >
+          Haber Bulteni Kayitlari
+        </h2>
         <button onClick={() => navigate("/admin/news-bulletins/new")}>
-          + Yeni News Bulletin
+          + Yeni Bulten Olustur
         </button>
       </div>
-      <p>Admin news bulletin kayıtları.</p>
+      <p
+        style={{
+          margin: "0.5rem 0 1.25rem",
+          fontSize: "0.8125rem",
+          color: "#94a3b8",
+          lineHeight: 1.5,
+          maxWidth: "640px",
+        }}
+        data-testid="nb-registry-workflow-note"
+      >
+        Haber bulteni kayitlarinizi buradan yonetebilirsiniz. Bir bulten
+        sectiginizde detay panelinde secili haberler, script ve metadata
+        adimlarini gorebilir ve duzenleyebilirsiniz.
+      </p>
 
       <div style={{ display: "flex", gap: "24px", alignItems: "flex-start" }}>
         <div style={{ flex: 2 }}>

@@ -56,7 +56,7 @@ beforeEach(() => {
 describe("NewsBulletinForm / Create page smoke tests", () => {
   it("renders the create page heading", () => {
     renderCreatePage(mockFetch(MOCK_BULLETIN));
-    expect(screen.getByRole("heading", { name: "Yeni News Bulletin" })).toBeDefined();
+    expect(screen.getByTestId("nb-create-heading")).toBeDefined();
   });
 
   it("shows topic field", () => {
@@ -126,7 +126,7 @@ describe("NewsBulletinForm / Create page smoke tests", () => {
         <RouterProvider router={testRouter} />
       </QueryClientProvider>
     );
-    expect(screen.getByRole("button", { name: "+ Yeni News Bulletin" })).toBeDefined();
+    expect(screen.getByRole("button", { name: "+ Yeni Bulten Olustur" })).toBeDefined();
   });
 
   it("edit mode opens when Düzenle is clicked in detail panel", async () => {
@@ -197,7 +197,7 @@ describe("NewsBulletinForm / Create page smoke tests", () => {
     await waitFor(() => expect(screen.getByRole("heading", { name: "News Bulletin Düzenle" })).toBeDefined());
     await user.click(screen.getByRole("button", { name: "İptal" }));
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "News Bulletin Detayı" })).toBeDefined();
+      expect(screen.getByTestId("nb-detail-heading")).toBeDefined();
     });
   });
 });

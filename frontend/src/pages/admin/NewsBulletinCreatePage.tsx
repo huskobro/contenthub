@@ -31,8 +31,39 @@ export function NewsBulletinCreatePage() {
   }
 
   return (
-    <div>
-      <h1>Yeni News Bulletin</h1>
+    <div style={{ padding: "1.5rem" }}>
+      <h2
+        style={{ fontSize: "1.125rem", fontWeight: 600, marginBottom: "0.5rem" }}
+        data-testid="nb-create-heading"
+      >
+        Yeni Haber Bulteni
+      </h2>
+      <p
+        style={{
+          margin: "0 0 1.25rem",
+          fontSize: "0.875rem",
+          color: "#64748b",
+          lineHeight: 1.6,
+          maxWidth: "640px",
+        }}
+        data-testid="nb-create-subtitle"
+      >
+        Haber bulteni uretim akisinin baslangic noktasi. Konu ve temel bilgileri
+        girerek yeni bir bulten kaydi olusturun. Kaynaklardan gelen haberler
+        secilerek bulten taslagi, script ve metadata adimlari ilerleyecektir.
+      </p>
+      <p
+        style={{
+          margin: "0 0 1.25rem",
+          fontSize: "0.8125rem",
+          color: "#94a3b8",
+          lineHeight: 1.5,
+          maxWidth: "640px",
+        }}
+        data-testid="nb-create-workflow-chain"
+      >
+        Uretim zinciri: Kaynak Tarama → Haber Secimi → Bulten Kaydi → Script → Metadata → Uretim.
+      </p>
       {mutation.isError && (
         <p style={{ color: "red" }}>Hata: kayıt oluşturulamadı.</p>
       )}

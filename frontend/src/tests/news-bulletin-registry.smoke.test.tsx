@@ -70,7 +70,7 @@ beforeEach(() => {
 describe("News Bulletin Registry smoke tests", () => {
   it("renders the page heading", () => {
     renderRegistry(mockFetch(MOCK_BULLETINS));
-    expect(screen.getByRole("heading", { name: "News Bulletin Registry" })).toBeDefined();
+    expect(screen.getByTestId("nb-registry-heading")).toBeDefined();
   });
 
   it("shows loading state", () => {
@@ -185,7 +185,7 @@ describe("News Bulletin Registry smoke tests", () => {
     await waitFor(() => expect(screen.getByText("Tech News Today")).toBeDefined());
     await user.click(screen.getByText("Tech News Today"));
     await waitFor(() => {
-      expect(screen.getByText("News Bulletin Detayı")).toBeDefined();
+      expect(screen.getByTestId("nb-detail-heading")).toBeDefined();
     });
   });
 });
