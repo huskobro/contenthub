@@ -118,7 +118,7 @@ export function StandardVideoArtifactsPanel({
             <InfoRow label="Kaynak Tipi" value={metadata.source_type} />
             <InfoRow label="Durum" value={metadata.generation_status} />
             {metadata.tags_json && (
-              <InfoRow label="Etiketler" value={<code style={{ fontSize: "0.8rem" }}>{metadata.tags_json}</code>} />
+              <InfoRow label="Etiketler" value={<code style={{ fontSize: "0.8rem", wordBreak: "break-all", overflowWrap: "anywhere" }}>{metadata.tags_json}</code>} />
             )}
           </div>
         )}

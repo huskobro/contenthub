@@ -4,53 +4,10 @@ import { useUpdateTemplate } from "../../hooks/useUpdateTemplate";
 import { TemplateForm } from "./TemplateForm";
 import type { TemplateFormValues } from "./TemplateForm";
 import { formatDateTime } from "../../lib/formatDate";
+import { JsonPreviewField } from "../shared/JsonPreviewField";
 
 interface TemplateDetailPanelProps {
   templateId: string | null;
-}
-
-function JsonField({ label, value }: { label: string; value: string | null }) {
-  if (value === null || value === undefined) {
-    return (
-      <div style={{ marginBottom: "0.75rem" }}>
-        <div style={{ fontSize: "0.75rem", fontWeight: 600, color: "#64748b", marginBottom: "0.25rem" }}>
-          {label}
-        </div>
-        <span style={{ color: "#94a3b8", fontSize: "0.875rem" }}>—</span>
-      </div>
-    );
-  }
-
-  let formatted = value;
-  try {
-    formatted = JSON.stringify(JSON.parse(value), null, 2);
-  } catch {
-    // not valid JSON, show as-is
-  }
-
-  return (
-    <div style={{ marginBottom: "0.75rem" }}>
-      <div style={{ fontSize: "0.75rem", fontWeight: 600, color: "#64748b", marginBottom: "0.25rem" }}>
-        {label}
-      </div>
-      <pre
-        style={{
-          margin: 0,
-          padding: "0.5rem",
-          background: "#f8fafc",
-          border: "1px solid #e2e8f0",
-          borderRadius: "4px",
-          fontSize: "0.8rem",
-          overflowX: "auto",
-          maxHeight: "120px",
-          whiteSpace: "pre-wrap",
-          wordBreak: "break-all",
-        }}
-      >
-        {formatted}
-      </pre>
-    </div>
-  );
 }
 
 function Field({ label, value }: { label: string; value: string | number | null }) {
@@ -184,9 +141,9 @@ export function TemplateDetailPanel({ templateId }: TemplateDetailPanelProps) {
       <Field label="Description" value={template.description} />
 
       <div style={{ marginTop: "1rem", borderTop: "1px solid #f1f5f9", paddingTop: "1rem" }}>
-        <JsonField label="style_profile_json" value={template.style_profile_json} />
-        <JsonField label="content_rules_json" value={template.content_rules_json} />
-        <JsonField label="publish_profile_json" value={template.publish_profile_json} />
+        <JsonPreviewField label="style_profile_json" value={template.style_profile_json} />
+        <JsonPreviewField label="content_rules_json" value={template.content_rules_json} />
+        <JsonPreviewField label="publish_profile_json" value={template.publish_profile_json} />
       </div>
 
       <div style={{ marginTop: "0.75rem", borderTop: "1px solid #f1f5f9", paddingTop: "0.75rem" }}>

@@ -2,6 +2,28 @@
 
 ---
 
+## [2026-04-03] Phase 146 — JSON Field Preview Safety & Readability Pack
+
+**Ne:** JSON alanlarını gösteren yüzeylerde güvenlik ve okunurluk iyileştirmeleri. Paylaşılan helper ve bileşen çıkarıldı, duplicate tanımlar kaldırıldı, overflow koruması eklendi.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/lib/safeJson.ts` (yeni — safeJsonPretty + validateJson)
+- `frontend/src/components/shared/JsonPreviewField.tsx` (yeni — shared JSON preview bileşeni)
+- `frontend/src/tests/json-safety.smoke.test.tsx` (yeni — 19 guard test)
+- `TemplateDetailPanel.tsx` (local JsonField → shared import)
+- `StyleBlueprintDetailPanel.tsx` (local JsonField → shared import)
+- `SourceScanDetailPanel.tsx` (local JsonPreviewField → shared import)
+- `TemplateForm.tsx` (local validateJson → shared import)
+- `StyleBlueprintForm.tsx` (local validateJson → shared import)
+- `NewsBulletinDetailPanel.tsx` (overflow safety eklendi)
+- `StandardVideoArtifactsPanel.tsx` (overflow safety eklendi)
+- `NewsBulletinMetadataPanel.tsx` (overflow safety eklendi)
+- `SettingDetailPanel.tsx` (overflow safety + null fallback eklendi)
+- `docs/testing/test-report-phase-146-json-field-preview-safety-readability-pack.md` (yeni)
+**Korunan:** Badge stilleri, business logic, mevcut JSON rendering davranışı. Bilgi kaybı sıfır.
+**Test:** 1137 toplam (+19 yeni), tsc temiz, build temiz.
+
+---
+
 ## [2026-04-03] Phase 145 — List/Detail/Form Date Formatting Safety Unification Pack
 
 **Ne:** Paylaşılan tarih helper kütüphanesi oluşturuldu ve tüm inline tarih pattern'leri (5 farklı pattern) bu helper'larla değiştirildi. 23 dosya güncellendi.

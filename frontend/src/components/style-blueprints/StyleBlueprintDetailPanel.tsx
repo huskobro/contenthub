@@ -3,34 +3,11 @@ import { useStyleBlueprintDetail } from "../../hooks/useStyleBlueprintDetail";
 import { useUpdateStyleBlueprint } from "../../hooks/useUpdateStyleBlueprint";
 import { StyleBlueprintForm } from "./StyleBlueprintForm";
 import { formatDateTime } from "../../lib/formatDate";
+import { JsonPreviewField } from "../shared/JsonPreviewField";
 import type { StyleBlueprintFormValues } from "./StyleBlueprintForm";
 
 interface StyleBlueprintDetailPanelProps {
   blueprintId: string | null;
-}
-
-function JsonField({ label, value }: { label: string; value: string | null }) {
-  if (!value) {
-    return (
-      <div style={{ marginBottom: "0.75rem" }}>
-        <div style={{ fontSize: "0.75rem", fontWeight: 600, color: "#64748b", marginBottom: "0.25rem" }}>{label}</div>
-        <span style={{ color: "#94a3b8", fontSize: "0.875rem" }}>—</span>
-      </div>
-    );
-  }
-  let formatted = value;
-  try { formatted = JSON.stringify(JSON.parse(value), null, 2); } catch { /* show as-is */ }
-  return (
-    <div style={{ marginBottom: "0.75rem" }}>
-      <div style={{ fontSize: "0.75rem", fontWeight: 600, color: "#64748b", marginBottom: "0.25rem" }}>{label}</div>
-      <pre style={{
-        margin: 0, padding: "0.5rem", background: "#f8fafc",
-        border: "1px solid #e2e8f0", borderRadius: "4px",
-        fontSize: "0.8rem", overflowX: "auto", maxHeight: "120px",
-        whiteSpace: "pre-wrap", wordBreak: "break-all",
-      }}>{formatted}</pre>
-    </div>
-  );
 }
 
 function Field({ label, value }: { label: string; value: string | number | null }) {
@@ -134,12 +111,12 @@ export function StyleBlueprintDetailPanel({ blueprintId }: StyleBlueprintDetailP
       <Field label="Notes" value={blueprint.notes} />
 
       <div style={{ marginTop: "1rem", borderTop: "1px solid #f1f5f9", paddingTop: "1rem" }}>
-        <JsonField label="visual_rules_json" value={blueprint.visual_rules_json} />
-        <JsonField label="motion_rules_json" value={blueprint.motion_rules_json} />
-        <JsonField label="layout_rules_json" value={blueprint.layout_rules_json} />
-        <JsonField label="subtitle_rules_json" value={blueprint.subtitle_rules_json} />
-        <JsonField label="thumbnail_rules_json" value={blueprint.thumbnail_rules_json} />
-        <JsonField label="preview_strategy_json" value={blueprint.preview_strategy_json} />
+        <JsonPreviewField label="visual_rules_json" value={blueprint.visual_rules_json} />
+        <JsonPreviewField label="motion_rules_json" value={blueprint.motion_rules_json} />
+        <JsonPreviewField label="layout_rules_json" value={blueprint.layout_rules_json} />
+        <JsonPreviewField label="subtitle_rules_json" value={blueprint.subtitle_rules_json} />
+        <JsonPreviewField label="thumbnail_rules_json" value={blueprint.thumbnail_rules_json} />
+        <JsonPreviewField label="preview_strategy_json" value={blueprint.preview_strategy_json} />
       </div>
 
       <div style={{ marginTop: "0.75rem", borderTop: "1px solid #f1f5f9", paddingTop: "0.75rem" }}>

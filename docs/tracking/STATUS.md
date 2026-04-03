@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 145 — List/Detail/Form Date Formatting Safety Unification Pack ✓ TAMAMLANDI
+Phase 146 — JSON Field Preview Safety & Readability Pack ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Paylaşılan tarih helper kütüphanesi (formatDate.ts) oluşturuldu, 23 dosyada inline tarih pattern'leri helper'larla değiştirildi, SourceScanSummary'ye eksik Invalid Date guard eklendi, 19 yeni guard test. 1118 toplam test.
+Paylaşılan JSON helper'ları (safeJsonPretty, validateJson) ve JsonPreviewField bileşeni oluşturuldu, 3 duplicate tanım kaldırıldı, 4 raw inline render'a overflow safety eklendi, 19 yeni guard test. 1137 toplam test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 146: json field preview safety readability pack: shared safeJson.ts + JsonPreviewField, 3 duplicate kaldırıldı, 4 overflow fix, 2 validateJson dedup, 19 yeni guard test, badge stilleri korundu, 1137 toplam (2026-04-03)
 - Phase 145: list detail form date formatting safety unification pack: 4 helper (formatDateTime, formatDateShort, formatDateISO, normalizeDateForInput), 23 dosya güncellendi, SourceScanSummary Invalid Date guard eklendi, 19 yeni guard test, badge stilleri korundu, 1118 toplam (2026-04-03)
 - Phase 144: form surface empty null state safety pack: 2 version String(null) guard, 1 published_at String() coercion, 11 form zaten güvenli, 4 yeni guard test, badge stilleri korundu, 1099 toplam (2026-04-03)
 - Phase 143: detail panel empty null state safety pack: 9 panel tarih ternary guard, 2 Job panel .slice() crash fix, 4 form handler .trim() null coalescing (22 alan), 2 yeni guard test, badge stilleri korundu, 1095 toplam (2026-04-03)

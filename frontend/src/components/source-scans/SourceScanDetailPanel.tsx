@@ -4,6 +4,7 @@ import { useUpdateSourceScan } from "../../hooks/useUpdateSourceScan";
 import { SourceScanForm } from "./SourceScanForm";
 import type { SourceScanFormValues } from "./SourceScanForm";
 import { formatDateTime } from "../../lib/formatDate";
+import { JsonPreviewField } from "../shared/JsonPreviewField";
 
 interface SourceScanDetailPanelProps {
   scanId: string | null;
@@ -16,30 +17,6 @@ function Field({ label, value }: { label: string; value: string | number | null 
       <span style={{ fontSize: "0.875rem", color: value !== null && value !== undefined ? "#1e293b" : "#94a3b8" }}>
         {value !== null && value !== undefined ? String(value) : "—"}
       </span>
-    </div>
-  );
-}
-
-function JsonPreviewField({ label, value }: { label: string; value: string | null }) {
-  if (!value) {
-    return (
-      <div style={{ marginBottom: "0.75rem" }}>
-        <div style={{ fontSize: "0.75rem", fontWeight: 600, color: "#64748b", marginBottom: "0.25rem" }}>{label}</div>
-        <span style={{ color: "#94a3b8", fontSize: "0.875rem" }}>—</span>
-      </div>
-    );
-  }
-  let formatted = value;
-  try { formatted = JSON.stringify(JSON.parse(value), null, 2); } catch { /* show as-is */ }
-  return (
-    <div style={{ marginBottom: "0.75rem" }}>
-      <div style={{ fontSize: "0.75rem", fontWeight: 600, color: "#64748b", marginBottom: "0.25rem" }}>{label}</div>
-      <pre style={{
-        margin: 0, padding: "0.5rem", background: "#f8fafc",
-        border: "1px solid #e2e8f0", borderRadius: "4px",
-        fontSize: "0.8rem", overflowX: "auto", maxHeight: "120px",
-        whiteSpace: "pre-wrap", wordBreak: "break-all",
-      }}>{formatted}</pre>
     </div>
   );
 }

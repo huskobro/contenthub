@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { TemplateResponse } from "../../api/templatesApi";
+import { validateJson } from "../../lib/safeJson";
 
 export interface TemplateFormValues {
   name: string;
@@ -24,15 +25,7 @@ interface TemplateFormProps {
   submitLabel?: string;
 }
 
-function validateJson(value: string): string | null {
-  if (!value.trim()) return null; // empty is OK (optional field)
-  try {
-    JSON.parse(value);
-    return null;
-  } catch {
-    return "Geçersiz JSON";
-  }
-}
+
 
 const inputStyle: React.CSSProperties = {
   width: "100%",

@@ -98,7 +98,7 @@ export function NewsBulletinDetailPanel({ selectedId }: Props) {
         label="Selected News IDs"
         value={
           data.selected_news_ids_json ? (
-            <code style={{ fontSize: "0.85em", wordBreak: "break-all" }}>
+            <code style={{ fontSize: "0.85em", wordBreak: "break-all", overflowWrap: "anywhere" }}>
               {data.selected_news_ids_json}
             </code>
           ) : null

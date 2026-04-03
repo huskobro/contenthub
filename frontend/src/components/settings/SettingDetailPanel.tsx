@@ -69,10 +69,10 @@ export function SettingDetailPanel({ selectedId }: SettingDetailPanelProps) {
       <Row label="group_name">{data.group_name}</Row>
       <Row label="type">{data.type}</Row>
       <Row label="default_value_json">
-        <code>{data.default_value_json}</code>
+        <code style={{ wordBreak: "break-all", overflowWrap: "anywhere" }}>{data.default_value_json ?? "—"}</code>
       </Row>
       <Row label="admin_value_json">
-        <code>{data.admin_value_json}</code>
+        <code style={{ wordBreak: "break-all", overflowWrap: "anywhere" }}>{data.admin_value_json ?? "—"}</code>
       </Row>
       <Row label="user_override_allowed">
         <BoolBadge value={data.user_override_allowed} />

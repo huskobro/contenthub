@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { StyleBlueprintResponse } from "../../api/styleBlueprintsApi";
+import { validateJson } from "../../lib/safeJson";
 
 export interface StyleBlueprintFormValues {
   name: string;
@@ -25,15 +26,7 @@ interface StyleBlueprintFormProps {
   submitLabel?: string;
 }
 
-function validateJson(value: string): string | null {
-  if (!value.trim()) return null;
-  try {
-    JSON.parse(value);
-    return null;
-  } catch {
-    return "Geçersiz JSON";
-  }
-}
+
 
 const inputStyle: React.CSSProperties = {
   width: "100%",

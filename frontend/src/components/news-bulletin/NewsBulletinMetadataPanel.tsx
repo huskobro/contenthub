@@ -137,7 +137,7 @@ export function NewsBulletinMetadataPanel({ bulletinId }: Props) {
             </tr>
             <tr>
               <td style={{ color: "#64748b", paddingRight: "1rem", paddingBottom: "0.25rem" }}>Etiketler</td>
-              <td>{metadata.tags_json ?? "—"}</td>
+              <td style={{ wordBreak: "break-all", overflowWrap: "anywhere" }}>{metadata.tags_json ?? "—"}</td>
             </tr>
             <tr>
               <td style={{ color: "#64748b", paddingRight: "1rem", paddingBottom: "0.25rem" }}>Kategori</td>
