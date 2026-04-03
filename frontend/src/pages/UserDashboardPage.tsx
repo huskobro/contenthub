@@ -1,5 +1,6 @@
 import { useOnboardingStatus } from "../hooks/useOnboardingStatus";
 import { PostOnboardingHandoff } from "../components/dashboard/PostOnboardingHandoff";
+import { DashboardActionHub } from "../components/dashboard/DashboardActionHub";
 
 export function UserDashboardPage() {
   const { data: onboardingStatus } = useOnboardingStatus();
@@ -11,7 +12,10 @@ export function UserDashboardPage() {
     <div>
       <h2>Anasayfa</h2>
       {onboardingCompleted ? (
-        <PostOnboardingHandoff />
+        <>
+          <PostOnboardingHandoff />
+          <DashboardActionHub />
+        </>
       ) : (
         <p style={{ color: "#475569", fontSize: "0.9375rem", lineHeight: 1.6 }}>
           ContentHub'a hosgeldiniz. Kurulumu tamamladiktan sonra buradan icerik

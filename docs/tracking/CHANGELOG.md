@@ -2,6 +2,19 @@
 
 ---
 
+## [2026-04-03] Phase 253 — User Flow / Navigation — User Dashboard as Primary Action Hub
+
+**Ne:** `/user` anasayfasi pasif karsilama ekrani olmaktan cikarildi. DashboardActionHub component'i eklendi: 3 hizli erisim karti (Icerik → `/user/content`, Yayin → `/user/publish`, Yonetim Paneli → `/admin`). Onboarding tamamlanmis kullanici icin PostOnboardingHandoff ile birlikte gorunur. Onboarding tamamlanmamis kullanici icin mevcut guvenli fallback korunur.
+**Sonuc:** Kullanici `/user` anasayfasindan ana calisma alanlarina hizlica ulasabiliyor. Handoff ile hub birlikte tutarli calisiyor. Dashboard artik bir baslangic merkezi.
+**Eklenen dosyalar:**
+- `frontend/src/components/dashboard/DashboardActionHub.tsx`
+- `frontend/src/tests/dashboard-action-hub.smoke.test.tsx` (8 yeni test)
+**Degistirilen dosyalar:**
+- `frontend/src/pages/UserDashboardPage.tsx` (DashboardActionHub entegrasyonu)
+**Test:** 1697 toplam test (+8 yeni), tsc temiz, build temiz
+
+---
+
 ## [2026-04-03] Phase 252 — User Flow / Navigation — Publish Entry Surface
 
 **Ne:** User panelindeki "Yayin" alani pasif placeholder olmaktan cikarildi. `/user/publish` route'u ve `UserPublishEntryPage` eklendi. Sayfa 3 yayin-iliskili kart gosteriyor: Isler (→ `/admin/jobs`), Standart Videolar (→ `/admin/standard-videos`), Haber Bultenleri (→ `/admin/news-bulletins`). User sidebar'da "Yayin" artik aktif link. Alt not ile admin gecisi hakkinda bilgi verildi.

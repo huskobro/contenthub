@@ -1,10 +1,10 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 252 — User Flow / Navigation — Publish Entry Surface ✓ TAMAMLANDI (feature)
+Phase 253 — User Flow / Navigation — User Dashboard as Primary Action Hub ✓ TAMAMLANDI (feature)
 
 ## Mevcut Hedef
-User panelinde "Yayin" artik gercek bir entry surface: /user/publish route'u, Isler/Standart Videolar/Haber Bultenleri yayin kartlari, mevcut calisan admin yuzeylerine yonlendirme. 1689 toplam test.
+/user anasayfasi artik bir primary action hub: Icerik/Yayin/Yonetim Paneli hizli erisim kartlari, onboarding handoff ile uyumlu, 1697 toplam test.
 
 ## Devam Eden
 — (devam eden calisma yok)
@@ -15,6 +15,7 @@ User panelinde "Yayin" artik gercek bir entry surface: /user/publish route'u, Is
 - **ANA FAZ BAŞLADI:** Wizard / Onboarding (ürün geliştirme hattı)
 
 ## Son Tamamlananlar
+- Phase 253: user dashboard primary action hub — DashboardActionHub, Icerik/Yayin/Yonetim Paneli hizli erisim kartlari, handoff ile uyumlu, 8 yeni test, 1697 toplam (2026-04-03)
 - Phase 252: user flow / navigation publish entry surface — UserPublishEntryPage, /user/publish route, Isler + Standart Videolar + Haber Bultenleri kartlari, sidebar link aktif, 10 yeni test, 1689 toplam (2026-04-03)
 - Phase 251: user flow / navigation content entry surface — UserContentEntryPage, /user/content route, Standart Video + Haber Bulteni kartlari, sidebar link aktif, 8 yeni test, 1679 toplam (2026-04-03)
 - Phase 250: entry information architecture & primary route clarity — Turkce header/sidebar/dashboard, panel gecis butonu, admin section gruplari, hizli erisim kartlari, 4 yeni test, 1671 toplam (2026-04-03)
