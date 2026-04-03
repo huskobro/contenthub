@@ -2,6 +2,28 @@
 
 ---
 
+## [2026-04-03] Phase 143 — Detail Panel Empty/Null State Safety Pack
+
+**Ne:** 11 detail panel bileşeninde null/undefined/empty state render ve form handler güvenliği.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/templates/TemplateDetailPanel.tsx` (created_at/updated_at ternary guard)
+- `frontend/src/components/sources/SourceDetailPanel.tsx` (created_at/updated_at ternary guard)
+- `frontend/src/components/news-bulletin/NewsBulletinDetailPanel.tsx` (date guard + 6 field .trim() null safety)
+- `frontend/src/components/style-blueprints/StyleBlueprintDetailPanel.tsx` (created_at/updated_at ternary guard)
+- `frontend/src/components/template-style-links/TemplateStyleLinkDetailPanel.tsx` (created_at/updated_at ternary guard)
+- `frontend/src/components/source-scans/SourceScanDetailPanel.tsx` (date guard + 4 field .trim() null safety)
+- `frontend/src/components/used-news/UsedNewsDetailPanel.tsx` (date guard + 5 field .trim() null safety)
+- `frontend/src/components/news-items/NewsItemDetailPanel.tsx` (date guard + 7 field .trim() null safety)
+- `frontend/src/components/standard-video/StandardVideoOverviewPanel.tsx` (created_at/updated_at ternary guard)
+- `frontend/src/components/jobs/JobDetailPanel.tsx` (.slice() crash guard)
+- `frontend/src/components/jobs/JobOverviewPanel.tsx` (.slice() crash guard)
+- `frontend/src/tests/detail-panel-null-safety.smoke.test.tsx` (yeni — 2 guard test)
+- `docs/testing/test-report-phase-143-detail-panel-empty-null-state-safety-pack.md` (yeni)
+**Korunan:** Badge stilleri, summary mantığı, tüm sütunlar, business logic. Bilgi kaybı sıfır.
+**Test:** 1095 toplam (+2 yeni), tsc temiz.
+
+---
+
 ## [2026-04-03] Phase 142 — Registry Empty/Null State Safety Pack
 
 **Ne:** 9 registry tablosu ve summary bileşenlerinde null/undefined/empty state render güvenliği.

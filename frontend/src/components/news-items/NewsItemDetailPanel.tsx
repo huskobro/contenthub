@@ -38,15 +38,15 @@ export function NewsItemDetailPanel({ selectedId }: Props) {
     function handleSubmit(values: NewsItemFormValues) {
       mutate(
         {
-          title: values.title.trim(),
-          url: values.url.trim(),
+          title: (values.title ?? "").trim(),
+          url: (values.url ?? "").trim(),
           status: values.status,
-          source_id: values.source_id.trim() || null,
-          summary: values.summary.trim() || null,
-          language: values.language.trim() || null,
-          category: values.category.trim() || null,
+          source_id: (values.source_id ?? "").trim() || null,
+          summary: (values.summary ?? "").trim() || null,
+          language: (values.language ?? "").trim() || null,
+          category: (values.category ?? "").trim() || null,
           published_at: values.published_at ? new Date(values.published_at).toISOString() : null,
-          dedupe_key: values.dedupe_key.trim() || null,
+          dedupe_key: (values.dedupe_key ?? "").trim() || null,
         },
         { onSuccess: () => setEditing(false) }
       );
@@ -98,8 +98,8 @@ export function NewsItemDetailPanel({ selectedId }: Props) {
       <Field label="Yayınlanma" value={data.published_at ? new Date(data.published_at).toLocaleString() : null} />
       {data.summary && <Field label="Özet" value={data.summary} />}
       <Field label="Dedupe Key" value={data.dedupe_key} />
-      <Field label="Created" value={new Date(data.created_at).toLocaleString()} />
-      <Field label="Updated" value={new Date(data.updated_at).toLocaleString()} />
+      <Field label="Created" value={data.created_at ? new Date(data.created_at).toLocaleString() : null} />
+      <Field label="Updated" value={data.updated_at ? new Date(data.updated_at).toLocaleString() : null} />
     </div>
   );
 }

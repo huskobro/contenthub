@@ -60,8 +60,8 @@ export function StandardVideoOverviewPanel({ video }: Props) {
           <Row label="Altyazı Stili" value={video.subtitle_style} />
           <Row label="Durum" value={video.status} />
           <Row label="Job ID" value={video.job_id} />
-          <Row label="Oluşturulma" value={new Date(video.created_at).toLocaleString("tr-TR")} />
-          <Row label="Güncelleme" value={new Date(video.updated_at).toLocaleString("tr-TR")} />
+          <Row label="Oluşturulma" value={video.created_at ? new Date(video.created_at).toLocaleString("tr-TR") : "—"} />
+          <Row label="Güncelleme" value={video.updated_at ? new Date(video.updated_at).toLocaleString("tr-TR") : "—"} />
         </tbody>
       </table>
     </div>

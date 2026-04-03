@@ -189,8 +189,8 @@ export function TemplateDetailPanel({ templateId }: TemplateDetailPanelProps) {
       </div>
 
       <div style={{ marginTop: "0.75rem", borderTop: "1px solid #f1f5f9", paddingTop: "0.75rem" }}>
-        <Field label="Created" value={new Date(template.created_at).toLocaleString()} />
-        <Field label="Updated" value={new Date(template.updated_at).toLocaleString()} />
+        <Field label="Created" value={template.created_at ? new Date(template.created_at).toLocaleString() : null} />
+        <Field label="Updated" value={template.updated_at ? new Date(template.updated_at).toLocaleString() : null} />
       </div>
     </div>
   );

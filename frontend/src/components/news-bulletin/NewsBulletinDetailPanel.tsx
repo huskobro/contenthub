@@ -43,18 +43,18 @@ export function NewsBulletinDetailPanel({ selectedId }: Props) {
 
   if (editMode) {
     function handleSubmit(values: NewsBulletinFormValues) {
-      const dur = values.target_duration_seconds.trim();
+      const dur = (values.target_duration_seconds ?? "").trim();
       updateMutation.mutate(
         {
-          topic: values.topic.trim(),
-          title: values.title.trim() || null,
-          brief: values.brief.trim() || null,
+          topic: (values.topic ?? "").trim(),
+          title: (values.title ?? "").trim() || null,
+          brief: (values.brief ?? "").trim() || null,
           target_duration_seconds: dur !== "" ? Number(dur) : null,
           language: values.language || null,
           tone: values.tone || null,
           bulletin_style: values.bulletin_style || null,
           source_mode: values.source_mode || null,
-          selected_news_ids_json: values.selected_news_ids_json.trim() || null,
+          selected_news_ids_json: (values.selected_news_ids_json ?? "").trim() || null,
           status: values.status,
         },
         { onSuccess: () => setEditMode(false) }
@@ -105,8 +105,8 @@ export function NewsBulletinDetailPanel({ selectedId }: Props) {
       />
       <Field label="Status" value={data.status} />
       <Field label="Job ID" value={data.job_id} />
-      <Field label="Created" value={new Date(data.created_at).toLocaleString()} />
-      <Field label="Updated" value={new Date(data.updated_at).toLocaleString()} />
+      <Field label="Created" value={data.created_at ? new Date(data.created_at).toLocaleString() : null} />
+      <Field label="Updated" value={data.updated_at ? new Date(data.updated_at).toLocaleString() : null} />
 
       <NewsBulletinSelectedItemsPanel bulletinId={data.id} />
       <NewsBulletinScriptPanel bulletinId={data.id} />

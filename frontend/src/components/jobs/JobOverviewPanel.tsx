@@ -49,7 +49,7 @@ export function JobOverviewPanel({ job }: JobOverviewPanelProps) {
           <span style={{ color: "#dc2626" }}>{job.last_error}</span>
         ) : em}
       </Row>
-      <Row label="created_at">{job.created_at.slice(0, 19).replace("T", " ")}</Row>
+      <Row label="created_at">{job.created_at ? job.created_at.slice(0, 19).replace("T", " ") : em}</Row>
       <Row label="started_at">
         {job.started_at ? job.started_at.slice(0, 19).replace("T", " ") : em}
       </Row>

@@ -103,8 +103,8 @@ export function TemplateStyleLinkDetailPanel({ linkId }: TemplateStyleLinkDetail
       <Field label="Notes" value={link.notes} />
 
       <div style={{ marginTop: "0.75rem", borderTop: "1px solid #f1f5f9", paddingTop: "0.75rem" }}>
-        <Field label="Created" value={new Date(link.created_at).toLocaleString()} />
-        <Field label="Updated" value={new Date(link.updated_at).toLocaleString()} />
+        <Field label="Created" value={link.created_at ? new Date(link.created_at).toLocaleString() : null} />
+        <Field label="Updated" value={link.updated_at ? new Date(link.updated_at).toLocaleString() : null} />
       </div>
     </div>
   );

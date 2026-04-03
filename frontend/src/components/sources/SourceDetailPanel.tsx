@@ -132,8 +132,8 @@ export function SourceDetailPanel({ sourceId }: SourceDetailPanelProps) {
       )}
 
       <div style={{ marginTop: "0.75rem", borderTop: "1px solid #f1f5f9", paddingTop: "0.75rem" }}>
-        <Field label="Created" value={new Date(source.created_at).toLocaleString()} />
-        <Field label="Updated" value={new Date(source.updated_at).toLocaleString()} />
+        <Field label="Created" value={source.created_at ? new Date(source.created_at).toLocaleString() : null} />
+        <Field label="Updated" value={source.updated_at ? new Date(source.updated_at).toLocaleString() : null} />
       </div>
     </div>
   );

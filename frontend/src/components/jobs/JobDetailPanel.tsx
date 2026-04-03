@@ -66,7 +66,7 @@ export function JobDetailPanel({ selectedId }: JobDetailPanelProps) {
       <Row label="estimated_remaining_seconds">
         <DurationBadge seconds={data.estimated_remaining_seconds} approximate />
       </Row>
-      <Row label="created_at">{data.created_at.slice(0, 19).replace("T", " ")}</Row>
+      <Row label="created_at">{data.created_at ? data.created_at.slice(0, 19).replace("T", " ") : em}</Row>
       <Row label="started_at">
         {data.started_at ? data.started_at.slice(0, 19).replace("T", " ") : em}
       </Row>

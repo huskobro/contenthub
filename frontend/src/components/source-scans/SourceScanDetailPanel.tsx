@@ -75,10 +75,10 @@ export function SourceScanDetailPanel({ scanId }: SourceScanDetailPanelProps) {
     function handleUpdate(values: SourceScanFormValues) {
       const payload = {
         status: values.status || undefined,
-        requested_by: values.requested_by.trim() || null,
-        result_count: values.result_count.trim() !== "" ? Number(values.result_count) : null,
-        error_summary: values.error_summary.trim() || null,
-        notes: values.notes.trim() || null,
+        requested_by: (values.requested_by ?? "").trim() || null,
+        result_count: (values.result_count ?? "").trim() !== "" ? Number(values.result_count) : null,
+        error_summary: (values.error_summary ?? "").trim() || null,
+        notes: (values.notes ?? "").trim() || null,
       };
       updateMutation.mutate(payload, {
         onSuccess: () => setEditing(false),
@@ -151,8 +151,8 @@ export function SourceScanDetailPanel({ scanId }: SourceScanDetailPanelProps) {
       )}
 
       <div style={{ marginTop: "0.75rem", borderTop: "1px solid #f1f5f9", paddingTop: "0.75rem" }}>
-        <Field label="Created" value={new Date(scan.created_at).toLocaleString()} />
-        <Field label="Updated" value={new Date(scan.updated_at).toLocaleString()} />
+        <Field label="Created" value={scan.created_at ? new Date(scan.created_at).toLocaleString() : null} />
+        <Field label="Updated" value={scan.updated_at ? new Date(scan.updated_at).toLocaleString() : null} />
       </div>
     </div>
   );

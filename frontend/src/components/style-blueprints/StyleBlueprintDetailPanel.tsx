@@ -142,8 +142,8 @@ export function StyleBlueprintDetailPanel({ blueprintId }: StyleBlueprintDetailP
       </div>
 
       <div style={{ marginTop: "0.75rem", borderTop: "1px solid #f1f5f9", paddingTop: "0.75rem" }}>
-        <Field label="Created" value={new Date(blueprint.created_at).toLocaleString()} />
-        <Field label="Updated" value={new Date(blueprint.updated_at).toLocaleString()} />
+        <Field label="Created" value={blueprint.created_at ? new Date(blueprint.created_at).toLocaleString() : null} />
+        <Field label="Updated" value={blueprint.updated_at ? new Date(blueprint.updated_at).toLocaleString() : null} />
       </div>
     </div>
   );

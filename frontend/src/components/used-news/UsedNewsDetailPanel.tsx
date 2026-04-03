@@ -37,11 +37,11 @@ export function UsedNewsDetailPanel({ selectedId }: Props) {
   if (editing) {
     function handleUpdate(values: UsedNewsFormValues) {
       const payload = {
-        usage_type: values.usage_type.trim() || undefined,
-        target_module: values.target_module.trim() || undefined,
-        usage_context: values.usage_context.trim() || null,
-        target_entity_id: values.target_entity_id.trim() || null,
-        notes: values.notes.trim() || null,
+        usage_type: (values.usage_type ?? "").trim() || undefined,
+        target_module: (values.target_module ?? "").trim() || undefined,
+        usage_context: (values.usage_context ?? "").trim() || null,
+        target_entity_id: (values.target_entity_id ?? "").trim() || null,
+        notes: (values.notes ?? "").trim() || null,
       };
       updateMutation.mutate(payload, {
         onSuccess: () => setEditing(false),
@@ -90,8 +90,8 @@ export function UsedNewsDetailPanel({ selectedId }: Props) {
       <Field label="Target Module" value={data.target_module} />
       <Field label="Target Entity ID" value={data.target_entity_id} />
       <Field label="Notes" value={data.notes} />
-      <Field label="Created" value={new Date(data.created_at).toLocaleString()} />
-      <Field label="Updated" value={new Date(data.updated_at).toLocaleString()} />
+      <Field label="Created" value={data.created_at ? new Date(data.created_at).toLocaleString() : null} />
+      <Field label="Updated" value={data.updated_at ? new Date(data.updated_at).toLocaleString() : null} />
     </div>
   );
 }
