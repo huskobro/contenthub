@@ -5,7 +5,7 @@ import { AppSidebar } from "../../components/layout/AppSidebar";
 const USER_NAV = [
   { label: "Anasayfa", to: "/user" },
   { label: "Icerik", to: "/user/content" },
-  { label: "Yayin" },
+  { label: "Yayin", to: "/user/publish" },
 ];
 
 export function UserLayout() {

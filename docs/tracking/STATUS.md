@@ -1,10 +1,10 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 251 — User Flow / Navigation — Content Entry Surface ✓ TAMAMLANDI (feature)
+Phase 252 — User Flow / Navigation — Publish Entry Surface ✓ TAMAMLANDI (feature)
 
 ## Mevcut Hedef
-User panelinde "Icerik" artik gercek bir entry surface: /user/content route'u, Standart Video ve Haber Bulteni icerik turu kartlari, mevcut calisan admin olusturma yuzeylerine yonlendirme. 1679 toplam test.
+User panelinde "Yayin" artik gercek bir entry surface: /user/publish route'u, Isler/Standart Videolar/Haber Bultenleri yayin kartlari, mevcut calisan admin yuzeylerine yonlendirme. 1689 toplam test.
 
 ## Devam Eden
 — (devam eden calisma yok)
@@ -15,6 +15,7 @@ User panelinde "Icerik" artik gercek bir entry surface: /user/content route'u, S
 - **ANA FAZ BAŞLADI:** Wizard / Onboarding (ürün geliştirme hattı)
 
 ## Son Tamamlananlar
+- Phase 252: user flow / navigation publish entry surface — UserPublishEntryPage, /user/publish route, Isler + Standart Videolar + Haber Bultenleri kartlari, sidebar link aktif, 10 yeni test, 1689 toplam (2026-04-03)
 - Phase 251: user flow / navigation content entry surface — UserContentEntryPage, /user/content route, Standart Video + Haber Bulteni kartlari, sidebar link aktif, 8 yeni test, 1679 toplam (2026-04-03)
 - Phase 250: entry information architecture & primary route clarity — Turkce header/sidebar/dashboard, panel gecis butonu, admin section gruplari, hizli erisim kartlari, 4 yeni test, 1671 toplam (2026-04-03)
 - Phase 249: onboarding flow polish & step coherence pass — Turkce dil tutarliligi, CTA netligi, geri donus mantigi, completion checklist genisletildi, 1667 toplam (2026-04-03)

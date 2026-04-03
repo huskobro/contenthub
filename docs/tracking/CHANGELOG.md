@@ -2,6 +2,20 @@
 
 ---
 
+## [2026-04-03] Phase 252 — User Flow / Navigation — Publish Entry Surface
+
+**Ne:** User panelindeki "Yayin" alani pasif placeholder olmaktan cikarildi. `/user/publish` route'u ve `UserPublishEntryPage` eklendi. Sayfa 3 yayin-iliskili kart gosteriyor: Isler (→ `/admin/jobs`), Standart Videolar (→ `/admin/standard-videos`), Haber Bultenleri (→ `/admin/news-bulletins`). User sidebar'da "Yayin" artik aktif link. Alt not ile admin gecisi hakkinda bilgi verildi.
+**Sonuc:** Kullanici user panelden "Yayin" → alan secimi → admin yuzey zinciriyle yayin durumunu takip edebiliyor. Sidebar'da tum 3 entry artik aktif (Anasayfa, Icerik, Yayin).
+**Eklenen dosyalar:**
+- `frontend/src/pages/UserPublishEntryPage.tsx`
+- `frontend/src/tests/user-publish-entry.smoke.test.tsx` (10 yeni test)
+**Degistirilen dosyalar:**
+- `frontend/src/app/router.tsx` (+ /user/publish route)
+- `frontend/src/app/layouts/UserLayout.tsx` (Yayin link aktif)
+**Test:** 1689 toplam test (+10 yeni), tsc temiz, build temiz
+
+---
+
 ## [2026-04-03] Phase 251 — User Flow / Navigation — Content Entry Surface
 
 **Ne:** User panelindeki "Icerik" alani gri placeholder olmaktan cikarildi. `/user/content` route'u ve `UserContentEntryPage` eklendi. Sayfa 2 icerik turu karti gosteriyor: Standart Video (→ `/admin/standard-videos/new`) ve Haber Bulteni (→ `/admin/news-bulletins/new`). User sidebar'da "Icerik" artik aktif link. Alt not ile admin gecisi hakkinda bilgi verildi.

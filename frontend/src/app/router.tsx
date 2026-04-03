@@ -6,6 +6,7 @@ import { OnboardingPage } from "../pages/OnboardingPage";
 import { AdminOverviewPage } from "../pages/AdminOverviewPage";
 import { UserDashboardPage } from "../pages/UserDashboardPage";
 import { UserContentEntryPage } from "../pages/UserContentEntryPage";
+import { UserPublishEntryPage } from "../pages/UserPublishEntryPage";
 import { SettingsRegistryPage } from "../pages/admin/SettingsRegistryPage";
 import { VisibilityRegistryPage } from "../pages/admin/VisibilityRegistryPage";
 import { JobsRegistryPage } from "../pages/admin/JobsRegistryPage";
@@ -75,6 +76,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <UserDashboardPage /> },
       { path: "content", element: <UserContentEntryPage /> },
+      { path: "publish", element: <UserPublishEntryPage /> },
     ],
   },
 ]);
