@@ -2,6 +2,16 @@
 
 ---
 
+## [2026-04-03] Phase 218 — Repeated Small Inline Event Handler Readability Pack
+
+**Ne:** Form/panel bileşenlerinde tekrar eden onClick ve onChange inline handler pattern'larının kapsamlı audit'i.
+**Sonuç:** onChange handler'ları her biri farklı setter/key çağırıyor; onClick handler'ları farklı argümanlar içeriyor. Tekrar eden aynı inline handler yok. Dosya değişikliği yapılmadı.
+**Eklenen dosyalar:**
+- `docs/testing/test-report-phase-218-repeated-small-inline-event-handler-readability-pack.md` (yeni — audit belgesi)
+**Test:** 1587 toplam test, tsc temiz
+
+---
+
 ## [2026-04-03] Phase 217 — Repeated Small CSSProperties Type Annotation Readability Pack
 
 **Ne:** Bileşenlerde kısmen typed/kısmen untyped style const karışıklığının kapsamlı audit'i.
