@@ -13,7 +13,7 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
       <span style={{ width: "200px", flexShrink: 0, color: "#64748b", fontSize: "0.8125rem" }}>
         {label}
       </span>
-      <span style={{ fontSize: "0.875rem", wordBreak: "break-word" }}>{children}</span>
+      <span style={{ fontSize: "0.875rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>{children}</span>
     </div>
   );
 }

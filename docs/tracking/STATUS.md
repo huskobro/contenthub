@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 159 — Helper Return-Type Consistency & Call-Site Safety Pack ✓ TAMAMLANDI
+Phase 160 — Field/Row Label-Value Rendering Consistency Pack ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Helper dönüş tipleri ile call-site beklentileri arasındaki tutarsızlıkları giderme. formatDateTime: string|null → string, default null → "—". 1587 toplam test.
+Detail panel bileşenlerinde Row/Field label-value görsel dilini hizalama. Row value overflowWrap, Field label renk+font. 1587 toplam test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 160: field/row label-value rendering consistency pack: 3 Row value overflowWrap fix, 2 Field label color+fontSize fix, 1587 toplam (2026-04-03)
 - Phase 159: helper return-type consistency call-site safety pack: formatDateTime default fallback null→"—", dönüş tipi string|null→string, 1 test güncelleme, 1587 toplam (2026-04-03)
 - Phase 158: repeated date fallback constant readability pack: 4 dosyada kalan inline "—" → DASH, 1587 toplam (2026-04-03)
 - Phase 157: duplicate inline fallback pattern reduction pack: 13 dosyada const DASH extraction, 62 inline "—" → DASH, 11 test assertion güncelleme, 1587 toplam (2026-04-03)

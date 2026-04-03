@@ -2,6 +2,21 @@
 
 ---
 
+## [2026-04-03] Phase 160 — Field/Row Label-Value Rendering Consistency Pack
+
+**Ne:** Detail panel bileşenlerinde Row ve Field label-value görsel dilinin hizalanması. 3 Row value span'e `overflowWrap: "anywhere"` eklendi (JobDetailPanel, JobOverviewPanel, VisibilityRuleDetailPanel). 2 Field label span'e `color: "#64748b"` + `fontSize: "0.8125rem"` eklendi (NewsBulletinDetailPanel, UsedNewsDetailPanel).
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/jobs/JobDetailPanel.tsx`: Row value overflowWrap
+- `frontend/src/components/jobs/JobOverviewPanel.tsx`: Row value overflowWrap
+- `frontend/src/components/visibility/VisibilityRuleDetailPanel.tsx`: Row value overflowWrap
+- `frontend/src/components/news-bulletin/NewsBulletinDetailPanel.tsx`: Field label color+fontSize
+- `frontend/src/components/used-news/UsedNewsDetailPanel.tsx`: Field label color+fontSize
+- `docs/testing/test-report-phase-160-field-row-label-value-rendering-consistency-pack.md` (yeni)
+**Test:** 1587 toplam test, tsc temiz, vite build temiz
+**Dokunulmayan:** Badge stilleri, form bileşenleri, business logic, backend, mevcut ham sütunlar
+
+---
+
 ## [2026-04-03] Phase 159 — Helper Return-Type Consistency & Call-Site Safety Pack
 
 **Ne:** Helper dönüş tipleri ile call-site beklentileri arasındaki tutarsızlıkları giderme. `formatDateTime` default fallback `null` → `"—"`, dönüş tipi `string | null` → `string`.
