@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 226 — Repeated Small Local Derived Value Readability Pack ✓ TAMAMLANDI (audit-only)
+Phase 227 — Repeated Small Return Object / Payload Shape Readability Pack ✓ TAMAMLANDI (audit-only)
 
 ## Mevcut Hedef
-Derived value computation audit. .length === 0 yok, JSON.parse/stringify yok. .filter/.map max 4× ama farklı input/bağlam. Hiçbir dosya değiştirilmedi. 1587 toplam test.
+Return object/payload shape audit. Her form dosyasında tek handleSubmit, tek payload build. Aynı payload shape 3+ kez tekrar eden dosya yok. Hiçbir dosya değiştirilmedi. 1587 toplam test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 227: repeated small return object/payload shape readability pack: kapsamlı audit, tek payload build per dosya, threshold karşılanmadı, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 226: repeated small local derived value readability pack: kapsamlı audit, aynı computation tekrar etmiyor, farklı bağlam, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 225: repeated small JSX fragment/wrapper readability pack: kapsamlı audit, fragment yok, çoklu return farklı conditional path, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 224: repeated small early return/guard clause readability pack: kapsamlı audit, 3+ olan dosyalar summary kapsam dışı, detail/panel max 2×, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
