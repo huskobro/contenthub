@@ -3,6 +3,7 @@ import { NavLink } from "react-router-dom";
 interface NavItem {
   label: string;
   to?: string;
+  section?: boolean;
 }
 
 interface AppSidebarProps {
@@ -23,7 +24,20 @@ export function AppSidebar({ items }: AppSidebarProps) {
       <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
         {items.map((item) => (
           <li key={item.label}>
-            {item.to ? (
+            {item.section ? (
+              <div
+                style={{
+                  padding: "0.75rem 1.25rem 0.25rem",
+                  fontSize: "0.6875rem",
+                  fontWeight: 700,
+                  color: "#94a3b8",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.05em",
+                }}
+              >
+                {item.label}
+              </div>
+            ) : item.to ? (
               <NavLink
                 to={item.to}
                 style={({ isActive }) => ({

@@ -39,30 +39,53 @@ function renderAt(path: string) {
 }
 
 beforeEach(() => {
-  // Default: onboarding not yet completed (generic welcome)
   window.fetch = mockFetch({ onboarding_required: true, completed_at: null });
 });
 
 describe("Panel shell smoke tests", () => {
   it("renders user dashboard at /user", () => {
     renderAt("/user");
-    expect(screen.getByRole("heading", { name: "Dashboard" })).toBeDefined();
+    expect(screen.getByRole("heading", { name: "Anasayfa" })).toBeDefined();
     expect(screen.getByText("ContentHub")).toBeDefined();
   });
 
   it("renders admin overview at /admin", () => {
     renderAt("/admin");
-    expect(screen.getByRole("heading", { name: "Admin Overview" })).toBeDefined();
+    expect(screen.getByRole("heading", { name: "Genel Bakis" })).toBeDefined();
     expect(screen.getByText("ContentHub")).toBeDefined();
   });
 
-  it("user shell shows header with User label", () => {
+  it("user shell shows header with Kullanici Paneli label", () => {
     renderAt("/user");
-    expect(screen.getByText("User")).toBeDefined();
+    expect(screen.getByText("Kullanici Paneli")).toBeDefined();
   });
 
-  it("admin shell shows header with Admin label", () => {
+  it("admin shell shows header with Yonetim Paneli label", () => {
     renderAt("/admin");
-    expect(screen.getByText("Admin")).toBeDefined();
+    expect(screen.getByText("Yonetim Paneli")).toBeDefined();
+  });
+
+  it("header shows panel switch button", () => {
+    renderAt("/user");
+    expect(screen.getByTestId("header-panel-switch")).toBeDefined();
+    expect(screen.getByTestId("header-panel-switch").textContent).toBe("Yonetim Paneli");
+  });
+
+  it("admin header shows switch to user panel", () => {
+    renderAt("/admin");
+    expect(screen.getByTestId("header-panel-switch").textContent).toBe("Kullanici Paneli");
+  });
+
+  it("admin sidebar shows section headers", () => {
+    renderAt("/admin");
+    expect(screen.getByText("Sistem")).toBeDefined();
+    expect(screen.getByText("Icerik Uretimi")).toBeDefined();
+    expect(screen.getByText("Haber")).toBeDefined();
+  });
+
+  it("admin overview shows quick access links", () => {
+    renderAt("/admin");
+    expect(screen.getByText("Hizli Erisim")).toBeDefined();
+    expect(screen.getByText("Yeni Video Olustur")).toBeDefined();
   });
 });

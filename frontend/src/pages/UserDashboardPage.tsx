@@ -9,11 +9,14 @@ export function UserDashboardPage() {
 
   return (
     <div>
-      <h2>Dashboard</h2>
+      <h2>Anasayfa</h2>
       {onboardingCompleted ? (
         <PostOnboardingHandoff />
       ) : (
-        <p>Welcome to ContentHub. Create and manage your content from here.</p>
+        <p style={{ color: "#475569", fontSize: "0.9375rem", lineHeight: 1.6 }}>
+          ContentHub'a hosgeldiniz. Kurulumu tamamladiktan sonra buradan icerik
+          uretmeye ve yayinlamaya baslayabilirsiniz.
+        </p>
       )}
     </div>
   );

@@ -3,9 +3,9 @@ import { AppHeader } from "../../components/layout/AppHeader";
 import { AppSidebar } from "../../components/layout/AppSidebar";
 
 const USER_NAV = [
-  { label: "Dashboard", to: "/user" },
-  { label: "Content" },
-  { label: "Publish" },
+  { label: "Anasayfa", to: "/user" },
+  { label: "Icerik" },
+  { label: "Yayin" },
 ];
 
 export function UserLayout() {

@@ -51,7 +51,7 @@ describe("Post-onboarding handoff", () => {
     renderDashboard();
     // Handoff should not appear
     expect(screen.queryByTestId("post-onboarding-handoff")).toBeNull();
-    expect(screen.getByText(/Welcome to ContentHub/)).toBeDefined();
+    expect(screen.getByText(/ContentHub'a hosgeldiniz/)).toBeDefined();
   });
 
   it("primary CTA is present and clickable", async () => {
@@ -74,7 +74,7 @@ describe("Post-onboarding handoff", () => {
     window.fetch = mockFetch({ onboarding_required: false, completed_at: "2026-04-03T10:00:00Z" });
     renderDashboard();
     await screen.findByTestId("post-onboarding-handoff");
-    expect(screen.getByRole("heading", { name: "Dashboard" })).toBeDefined();
+    expect(screen.getByRole("heading", { name: "Anasayfa" })).toBeDefined();
   });
 
   it("shows generic welcome when status fetch fails", () => {
@@ -82,7 +82,7 @@ describe("Post-onboarding handoff", () => {
     renderDashboard();
     // Fallback: no handoff, just welcome
     expect(screen.queryByTestId("post-onboarding-handoff")).toBeNull();
-    expect(screen.getByText(/Welcome to ContentHub/)).toBeDefined();
+    expect(screen.getByText(/ContentHub'a hosgeldiniz/)).toBeDefined();
   });
 
   it("onboarding gate bypass is not affected", async () => {
@@ -91,6 +91,6 @@ describe("Post-onboarding handoff", () => {
     renderDashboard();
     // User lands on /user and sees handoff — not redirected elsewhere
     await screen.findByTestId("post-onboarding-handoff");
-    expect(screen.getByRole("heading", { name: "Dashboard" })).toBeDefined();
+    expect(screen.getByRole("heading", { name: "Anasayfa" })).toBeDefined();
   });
 });

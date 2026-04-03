@@ -3,19 +3,22 @@ import { AppHeader } from "../../components/layout/AppHeader";
 import { AppSidebar } from "../../components/layout/AppSidebar";
 
 const ADMIN_NAV = [
-  { label: "Overview", to: "/admin" },
-  { label: "Settings", to: "/admin/settings" },
-  { label: "Visibility", to: "/admin/visibility" },
-  { label: "Jobs", to: "/admin/jobs" },
-  { label: "Standard Video", to: "/admin/standard-videos" },
-  { label: "Templates", to: "/admin/templates" },
-  { label: "Style Blueprints", to: "/admin/style-blueprints" },
-  { label: "Sources", to: "/admin/sources" },
-  { label: "Source Scans", to: "/admin/source-scans" },
-  { label: "News Bulletin", to: "/admin/news-bulletins" },
-  { label: "Used News", to: "/admin/used-news" },
-  { label: "News Items", to: "/admin/news-items" },
-  { label: "Template Style Links", to: "/admin/template-style-links" },
+  { label: "Genel Bakis", to: "/admin" },
+  { label: "Sistem", section: true },
+  { label: "Ayarlar", to: "/admin/settings" },
+  { label: "Gorunurluk", to: "/admin/visibility" },
+  { label: "Isler", to: "/admin/jobs" },
+  { label: "Icerik Uretimi", section: true },
+  { label: "Standart Video", to: "/admin/standard-videos" },
+  { label: "Sablonlar", to: "/admin/templates" },
+  { label: "Stil Sablonlari", to: "/admin/style-blueprints" },
+  { label: "Sablon-Stil Baglantilari", to: "/admin/template-style-links" },
+  { label: "Haber", section: true },
+  { label: "Kaynaklar", to: "/admin/sources" },
+  { label: "Kaynak Taramalari", to: "/admin/source-scans" },
+  { label: "Haber Bultenleri", to: "/admin/news-bulletins" },
+  { label: "Haber Ogeler", to: "/admin/news-items" },
+  { label: "Kullanilan Haberler", to: "/admin/used-news" },
 ];
 
 export function AdminLayout() {

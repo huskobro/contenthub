@@ -2,6 +2,23 @@
 
 ---
 
+## [2026-04-03] Phase 250 — Entry Information Architecture & Primary Route Clarity
+
+**Ne:** Ana giris noktalari ve route yuzeyleri kullanici acisindan netlestirildi. Header'da "User"/"Admin" → "Kullanici Paneli"/"Yonetim Paneli" ve paneller arasi gecis butonu eklendi. Admin sidebar'da Turkce label'lar ve 3 section grubu (Sistem/Icerik Uretimi/Haber). Admin overview Turkce aciklama ve 6 hizli erisim karti. User sidebar Turkce (Anasayfa/Icerik/Yayin). User dashboard Turkce baslik ve fallback mesaji.
+**Sonuc:** Kullanici hangi panelde oldugunu, nereye gidebilecegini ve her yuzey ne ise yaradigini daha net anliyor. Panel gecis butonu ile URL bilmeden user/admin arasi gecilebilir.
+**Degistirilen dosyalar:**
+- `frontend/src/components/layout/AppHeader.tsx` (Turkce label, panel switch)
+- `frontend/src/components/layout/AppSidebar.tsx` (section prop)
+- `frontend/src/app/layouts/AdminLayout.tsx` (Turkce sidebar, section gruplar)
+- `frontend/src/app/layouts/UserLayout.tsx` (Turkce sidebar)
+- `frontend/src/pages/AdminOverviewPage.tsx` (Turkce icerik, hizli erisim)
+- `frontend/src/pages/UserDashboardPage.tsx` (Turkce baslik/fallback)
+- `frontend/src/tests/app.smoke.test.tsx` (+4 yeni test, toplam 8)
+- `frontend/src/tests/post-onboarding-handoff.smoke.test.tsx` (metin guncelleme)
+**Test:** 1671 toplam test (+4 yeni), tsc temiz, build temiz
+
+---
+
 ## [2026-04-03] Phase 249 — Onboarding Flow Polish & Step Coherence Pass
 
 **Ne:** Onboarding zincirinin urun seviyesinde tutarliligini saglayan polish gecisi yapildi. Feature card'lari Turkce'ye cevirildi. "Simdilik Atla" → "Sonra Tamamla" (onboarding'i tamamlamamis olarak birakir). "Devam Et" → "Sonra Tamamla" (gri). Tum alt setup ekranlarinda "Iptal" → "Geri Don". Provider/workspace CTA "Kaydet" → "Ayarlari Kaydet". Completion checklist 3'ten 5 ogeye genisletildi. Review "Geri Don" artik workspace-setup yerine requirements'a donuyor.
