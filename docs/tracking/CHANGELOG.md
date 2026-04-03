@@ -2,6 +2,16 @@
 
 ---
 
+## [2026-04-03] Phase 192 — Repeated Line-Height Literal Constant Pack
+
+**Ne:** Bileşenlerde tekrar eden lineHeight literal değerlerinin kapsamlı audit'i.
+**Sonuç:** Hiçbir component dosyasında `lineHeight` style property'si kullanılmıyor. Dosya değişikliği yapılmadı.
+**Eklenen/değiştirilen dosyalar:**
+- `docs/testing/test-report-phase-192-repeated-line-height-literal-constant-pack.md` (yeni — audit belgesi)
+**Test:** 1587 toplam test, tsc temiz
+
+---
+
 ## [2026-04-03] Phase 191 — Repeated Width/MinWidth Literal Constant Pack
 
 **Ne:** Bileşenlerde tekrar eden width/minWidth/maxWidth literal değerlerinin kapsamlı audit'i.

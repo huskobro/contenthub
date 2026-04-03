@@ -1,7 +1,17 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 191 — Repeated Width/MinWidth Literal Constant Pack ✓ TAMAMLANDI (audit-only)
+Phase 192 — Repeated Line-Height Literal Constant Pack ✓ TAMAMLANDI (audit-only)
+
+## Mevcut Hedef
+lineHeight literal audit. Hiçbir component dosyasında lineHeight kullanımı bulunamadı. Hiçbir dosya değiştirilmedi. 1587 toplam test.
+
+## Devam Eden
+— (devam eden çalışma yok)
+
+## Son Tamamlananlar
+- Phase 192: repeated line-height literal constant pack: kapsamlı audit, lineHeight kullanılmıyor, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
+- Phase 191 — Repeated Width/MinWidth Literal Constant Pack ✓ TAMAMLANDI (audit-only)
 
 ## Mevcut Hedef
 Width/minWidth/maxWidth literal audit. Tüm değerler max 2× per dosya — threshold altı. Hiçbir dosya değiştirilmedi. 1587 toplam test.
