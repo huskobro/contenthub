@@ -2,6 +2,16 @@
 
 ---
 
+## [2026-04-03] Phase 234 — Repeated Small Detail Field/Row Call-Site Readability Pack
+
+**Ne:** Detail/Overview panel bileşenlerinde tekrar eden Field/Row çağrı pattern'larının kapsamlı audit'i.
+**Sonuç:** 13 Detail + 2 Overview paneli incelendi. Her Row/Field çağrısı farklı label + farklı data field — aynı (label, field) ikilisi 3+ tekrar etmiyor. formatDateTime 2× per dosya, threshold altı. Dosya değişikliği yapılmadı.
+**Eklenen dosyalar:**
+- `docs/testing/test-report-phase-234-repeated-small-detail-field-row-call-site-readability-pack.md` (yeni — audit belgesi)
+**Test:** 1587 toplam test, tsc temiz
+
+---
+
 ## [2026-04-03] Phase 233 — Repeated Small Summary Component Call Readability Pack
 
 **Ne:** Table/Panel/Detail bileşenlerinde tekrar eden summary component çağrısı pattern'larının kapsamlı audit'i.

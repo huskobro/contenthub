@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 233 — Repeated Small Summary Component Call Readability Pack ✓ TAMAMLANDI (audit-only)
+Phase 234 — Repeated Small Detail Field/Row Call-Site Readability Pack ✓ TAMAMLANDI (audit-only)
 
 ## Mevcut Hedef
-Summary component call audit. Table dosyalarında her Summary component farklı component — aynı component 3+ tekrar etmiyor. Panel dosyalarında BoolBadge 3-4× farklı field, extraction bilgi kaybı yaratır. Hiçbir dosya değiştirilmedi. 1587 toplam test.
+Detail/Overview panel Field/Row call-site audit. Her Row/Field çağrısı farklı label+field — aynı pattern yok. formatDateTime 2× per dosya. Hiçbir dosya değiştirilmedi. 1587 toplam test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 234: repeated small detail field/row call-site readability pack: kapsamlı audit, per-field Row/Field farklı, threshold karşılanmadı, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 233: repeated small summary component call readability pack: kapsamlı audit, her summary call farklı component, BoolBadge farklı field+label, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 232: repeated small table cell content readability pack: kapsamlı audit, style const'lar mevcut, wordBreak max 2×, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 231: repeated small form validation readability pack: kapsamlı audit, per-field validation farklı, threshold karşılanmadı, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
