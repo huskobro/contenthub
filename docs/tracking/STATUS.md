@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 170 — Repeated Action Row Style Constant Pack ✓ TAMAMLANDI
+Phase 171 — Repeated Simple Layout Constant Pack ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Panel/form bileşenlerindeki tekrar eden action row flex container style bloklarını const ile extraction. StandardVideoMetadataForm + ScriptForm güncellendi. 1587 toplam test.
+Küçük form bileşenlerinde tekrar eden basit layout style bloklarını const ile extraction. 4 NewsBulletin form dosyasında FIELD const eklendi (toplam 23 inline → const). 1587 toplam test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 171: repeated simple layout constant pack: FIELD extraction (Form×10, MetadataForm×8, ScriptForm×3+spread, SelectedItemForm×2+spread), 1587 toplam (2026-04-03)
 - Phase 170: repeated action row style constant pack: PAIR_ROW + FLEX_1 extraction (MetadataForm 4+2, ScriptForm 2+1), 1587 toplam (2026-04-03)
 - Phase 169: repeated form section heading constant pack: kapsamlı audit, threshold altı (max 2 tekrar per dosya), hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 168: repeated action button text constant pack: kapsamlı audit, threshold altı (max 2 tekrar), hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)

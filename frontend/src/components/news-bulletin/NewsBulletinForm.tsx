@@ -3,6 +3,8 @@ import type { NewsBulletinResponse } from "../../api/newsBulletinApi";
 
 const DASH = "—";
 
+const FIELD: React.CSSProperties = { display: "block", width: "100%", marginTop: "4px" };
+
 export interface NewsBulletinFormValues {
   topic: string;
   title: string;
@@ -82,7 +84,7 @@ export function NewsBulletinForm({
         <input
           value={values.topic}
           onChange={(e) => set("topic", e.target.value)}
-          style={{ display: "block", width: "100%", marginTop: "4px" }}
+          style={FIELD}
         />
       </label>
 
@@ -91,7 +93,7 @@ export function NewsBulletinForm({
         <input
           value={values.title}
           onChange={(e) => set("title", e.target.value)}
-          style={{ display: "block", width: "100%", marginTop: "4px" }}
+          style={FIELD}
         />
       </label>
 
@@ -101,7 +103,7 @@ export function NewsBulletinForm({
           value={values.brief}
           onChange={(e) => set("brief", e.target.value)}
           rows={3}
-          style={{ display: "block", width: "100%", marginTop: "4px" }}
+          style={FIELD}
         />
       </label>
 
@@ -112,7 +114,7 @@ export function NewsBulletinForm({
           min={0}
           value={values.target_duration_seconds}
           onChange={(e) => set("target_duration_seconds", e.target.value)}
-          style={{ display: "block", width: "100%", marginTop: "4px" }}
+          style={FIELD}
         />
       </label>
 
@@ -121,7 +123,7 @@ export function NewsBulletinForm({
         <select
           value={values.language}
           onChange={(e) => set("language", e.target.value)}
-          style={{ display: "block", width: "100%", marginTop: "4px" }}
+          style={FIELD}
         >
           <option value="">{DASH}</option>
           <option value="tr">tr</option>
@@ -134,7 +136,7 @@ export function NewsBulletinForm({
         <select
           value={values.tone}
           onChange={(e) => set("tone", e.target.value)}
-          style={{ display: "block", width: "100%", marginTop: "4px" }}
+          style={FIELD}
         >
           <option value="">{DASH}</option>
           <option value="formal">formal</option>
@@ -148,7 +150,7 @@ export function NewsBulletinForm({
         <select
           value={values.bulletin_style}
           onChange={(e) => set("bulletin_style", e.target.value)}
-          style={{ display: "block", width: "100%", marginTop: "4px" }}
+          style={FIELD}
         >
           <option value="">{DASH}</option>
           <option value="studio">studio</option>
@@ -162,7 +164,7 @@ export function NewsBulletinForm({
         <select
           value={values.source_mode}
           onChange={(e) => set("source_mode", e.target.value)}
-          style={{ display: "block", width: "100%", marginTop: "4px" }}
+          style={FIELD}
         >
           <option value="">{DASH}</option>
           <option value="manual">manual</option>
@@ -187,7 +189,7 @@ export function NewsBulletinForm({
         <select
           value={values.status}
           onChange={(e) => set("status", e.target.value)}
-          style={{ display: "block", width: "100%", marginTop: "4px" }}
+          style={FIELD}
         >
           <option value="draft">draft</option>
           <option value="ready">ready</option>

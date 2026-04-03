@@ -1,5 +1,7 @@
 import { useState } from "react";
 
+const FIELD: React.CSSProperties = { display: "block", width: "100%", marginTop: "4px" };
+
 export interface MetadataFormValues {
   title: string;
   description: string;
@@ -66,7 +68,7 @@ export function NewsBulletinMetadataForm({
           type="text"
           value={values.title}
           onChange={(e) => set("title", e.target.value)}
-          style={{ display: "block", width: "100%", marginTop: "4px" }}
+          style={FIELD}
         />
       </label>
 
@@ -76,7 +78,7 @@ export function NewsBulletinMetadataForm({
           value={values.description}
           onChange={(e) => set("description", e.target.value)}
           rows={3}
-          style={{ display: "block", width: "100%", marginTop: "4px" }}
+          style={FIELD}
         />
       </label>
 
@@ -86,7 +88,7 @@ export function NewsBulletinMetadataForm({
           type="text"
           value={values.tags_json}
           onChange={(e) => set("tags_json", e.target.value)}
-          style={{ display: "block", width: "100%", marginTop: "4px" }}
+          style={FIELD}
         />
       </label>
 
@@ -96,7 +98,7 @@ export function NewsBulletinMetadataForm({
           type="text"
           value={values.category}
           onChange={(e) => set("category", e.target.value)}
-          style={{ display: "block", width: "100%", marginTop: "4px" }}
+          style={FIELD}
         />
       </label>
 
@@ -106,7 +108,7 @@ export function NewsBulletinMetadataForm({
           type="text"
           value={values.language}
           onChange={(e) => set("language", e.target.value)}
-          style={{ display: "block", width: "100%", marginTop: "4px" }}
+          style={FIELD}
         />
       </label>
 
@@ -115,7 +117,7 @@ export function NewsBulletinMetadataForm({
         <select
           value={values.source_type}
           onChange={(e) => set("source_type", e.target.value)}
-          style={{ display: "block", width: "100%", marginTop: "4px" }}
+          style={FIELD}
         >
           <option value="manual">manual</option>
           <option value="generated">generated</option>
@@ -127,7 +129,7 @@ export function NewsBulletinMetadataForm({
         <select
           value={values.generation_status}
           onChange={(e) => set("generation_status", e.target.value)}
-          style={{ display: "block", width: "100%", marginTop: "4px" }}
+          style={FIELD}
         >
           <option value="draft">draft</option>
           <option value="ready">ready</option>
@@ -140,7 +142,7 @@ export function NewsBulletinMetadataForm({
           value={values.notes}
           onChange={(e) => set("notes", e.target.value)}
           rows={2}
-          style={{ display: "block", width: "100%", marginTop: "4px" }}
+          style={FIELD}
         />
       </label>
 

@@ -1,5 +1,7 @@
 import { useState } from "react";
 
+const FIELD: React.CSSProperties = { display: "block", width: "100%", marginTop: "4px" };
+
 export interface SelectedItemFormValues {
   news_item_id: string;
   sort_order: string;
@@ -62,7 +64,7 @@ export function NewsBulletinSelectedItemForm({
             type="text"
             value={values.news_item_id}
             onChange={(e) => set("news_item_id", e.target.value)}
-            style={{ display: "block", width: "100%", marginTop: "4px", fontFamily: "monospace" }}
+            style={{ ...FIELD, fontFamily: "monospace" }}
           />
         </label>
       )}
@@ -73,7 +75,7 @@ export function NewsBulletinSelectedItemForm({
           type="text"
           value={values.sort_order}
           onChange={(e) => set("sort_order", e.target.value)}
-          style={{ display: "block", width: "100%", marginTop: "4px" }}
+          style={FIELD}
         />
       </label>
 
@@ -83,7 +85,7 @@ export function NewsBulletinSelectedItemForm({
           type="text"
           value={values.selection_reason}
           onChange={(e) => set("selection_reason", e.target.value)}
-          style={{ display: "block", width: "100%", marginTop: "4px" }}
+          style={FIELD}
         />
       </label>
 

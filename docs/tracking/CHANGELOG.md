@@ -2,6 +2,20 @@
 
 ---
 
+## [2026-04-03] Phase 171 — Repeated Simple Layout Constant Pack
+
+**Ne:** NewsBulletin form bileşenlerindeki tekrar eden field layout style bloklarını dosya-seviyesi const'lara taşıma.
+**Eklenen/değiştirilen dosyalar:**
+- `NewsBulletinForm.tsx`: `const FIELD` eklendi, 10× inline → const
+- `NewsBulletinMetadataForm.tsx`: `const FIELD` eklendi, 8× inline → const
+- `NewsBulletinScriptForm.tsx`: `const FIELD` eklendi, 3× + 1 spread
+- `NewsBulletinSelectedItemForm.tsx`: `const FIELD` eklendi, 2× + 1 spread
+- `docs/testing/test-report-phase-171-repeated-simple-layout-constant-pack.md` (yeni)
+**Test:** 1587 toplam test, tsc temiz, vite build temiz
+**Dokunulmayan:** Görünüm, davranış, badge stilleri, backend
+
+---
+
 ## [2026-04-03] Phase 170 — Repeated Action Row Style Constant Pack
 
 **Ne:** Form bileşenlerindeki tekrar eden flex container / action row style bloklarını dosya-seviyesi const'lara taşıma.

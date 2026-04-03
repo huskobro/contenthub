@@ -1,5 +1,7 @@
 import { useState } from "react";
 
+const FIELD: React.CSSProperties = { display: "block", width: "100%", marginTop: "4px" };
+
 export interface ScriptFormValues {
   content: string;
   source_type: string;
@@ -58,7 +60,7 @@ export function NewsBulletinScriptForm({
           value={values.content}
           onChange={(e) => set("content", e.target.value)}
           rows={8}
-          style={{ display: "block", width: "100%", marginTop: "4px", fontFamily: "monospace", fontSize: "0.85em" }}
+          style={{ ...FIELD, fontFamily: "monospace", fontSize: "0.85em" }}
         />
       </label>
 
@@ -67,7 +69,7 @@ export function NewsBulletinScriptForm({
         <select
           value={values.source_type}
           onChange={(e) => set("source_type", e.target.value)}
-          style={{ display: "block", width: "100%", marginTop: "4px" }}
+          style={FIELD}
         >
           <option value="manual">manual</option>
           <option value="generated">generated</option>
@@ -79,7 +81,7 @@ export function NewsBulletinScriptForm({
         <select
           value={values.generation_status}
           onChange={(e) => set("generation_status", e.target.value)}
-          style={{ display: "block", width: "100%", marginTop: "4px" }}
+          style={FIELD}
         >
           <option value="draft">draft</option>
           <option value="ready">ready</option>
@@ -92,7 +94,7 @@ export function NewsBulletinScriptForm({
           value={values.notes}
           onChange={(e) => set("notes", e.target.value)}
           rows={2}
-          style={{ display: "block", width: "100%", marginTop: "4px" }}
+          style={FIELD}
         />
       </label>
 
