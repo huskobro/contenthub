@@ -2,6 +2,19 @@
 
 ---
 
+## [2026-04-03] Phase 172 — Repeated Input/Textarea Style Constant Pack
+
+**Ne:** Form bileşenlerindeki tekrar eden textarea/input style bloklarını dosya-seviyesi const'lara taşıma.
+**Eklenen/değiştirilen dosyalar:**
+- `TemplateForm.tsx`: `JSON_TEXTAREA` eklendi, 3× multiline → 1-line spread
+- `StyleBlueprintForm.tsx`: `JSON_TEXTAREA` eklendi, map textarea → spread
+- `SourceScanForm.tsx`: `TEXTAREA` eklendi, 2× inline → const
+- `docs/testing/test-report-phase-172-repeated-input-textarea-style-constant-pack.md` (yeni)
+**Test:** 1587 toplam test, tsc temiz, vite build temiz
+**Dokunulmayan:** Görünüm, davranış, badge stilleri, backend
+
+---
+
 ## [2026-04-03] Phase 171 — Repeated Simple Layout Constant Pack
 
 **Ne:** NewsBulletin form bileşenlerindeki tekrar eden field layout style bloklarını dosya-seviyesi const'lara taşıma.

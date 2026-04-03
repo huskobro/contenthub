@@ -50,6 +50,12 @@ const errorStyle: React.CSSProperties = {
   marginTop: "0.2rem",
 };
 
+const TEXTAREA: React.CSSProperties = {
+  ...inputStyle,
+  minHeight: "50px",
+  resize: "vertical",
+};
+
 const BTN_PRIMARY: React.CSSProperties = {
   padding: "0.375rem 1rem",
   fontSize: "0.875rem",
@@ -183,7 +189,7 @@ export function SourceScanForm({
       <div style={fieldStyle}>
         <label style={labelStyle}>Error Summary</label>
         <textarea
-          style={{ ...inputStyle, minHeight: "50px", resize: "vertical" }}
+          style={TEXTAREA}
           value={values.error_summary}
           onChange={(e) => set("error_summary", e.target.value)}
           placeholder="Hata özeti (opsiyonel)"
@@ -193,7 +199,7 @@ export function SourceScanForm({
       <div style={fieldStyle}>
         <label style={labelStyle}>Notes</label>
         <textarea
-          style={{ ...inputStyle, minHeight: "50px", resize: "vertical" }}
+          style={TEXTAREA}
           value={values.notes}
           onChange={(e) => set("notes", e.target.value)}
           placeholder="Notlar (opsiyonel)"

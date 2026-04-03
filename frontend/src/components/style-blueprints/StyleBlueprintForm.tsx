@@ -57,6 +57,14 @@ const errorStyle: React.CSSProperties = {
   marginTop: "0.2rem",
 };
 
+const JSON_TEXTAREA: React.CSSProperties = {
+  ...inputStyle,
+  minHeight: "70px",
+  resize: "vertical",
+  fontFamily: "monospace",
+  fontSize: "0.8rem",
+};
+
 const BTN_PRIMARY: React.CSSProperties = {
   padding: "0.375rem 1rem",
   fontSize: "0.875rem",
@@ -205,14 +213,7 @@ export function StyleBlueprintForm({
           <div key={field} style={fieldStyle}>
             <label style={labelStyle}>{label}</label>
             <textarea
-              style={{
-                ...inputStyle,
-                minHeight: "70px",
-                resize: "vertical",
-                fontFamily: "monospace",
-                fontSize: "0.8rem",
-                borderColor: errors[field] ? "#dc2626" : BORDER_COLOR,
-              }}
+              style={{ ...JSON_TEXTAREA, borderColor: errors[field] ? "#dc2626" : BORDER_COLOR }}
               value={values[field]}
               onChange={(e) => set(field, e.target.value)}
               placeholder='{"key": "value"}'

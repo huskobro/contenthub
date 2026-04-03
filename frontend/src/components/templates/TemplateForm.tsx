@@ -56,6 +56,14 @@ const errorStyle: React.CSSProperties = {
   marginTop: "0.2rem",
 };
 
+const JSON_TEXTAREA: React.CSSProperties = {
+  ...inputStyle,
+  minHeight: "70px",
+  resize: "vertical",
+  fontFamily: "monospace",
+  fontSize: "0.8rem",
+};
+
 const BTN_PRIMARY: React.CSSProperties = {
   padding: "0.375rem 1rem",
   fontSize: "0.875rem",
@@ -214,14 +222,7 @@ export function TemplateForm({
         <div style={fieldStyle}>
           <label style={labelStyle}>style_profile_json</label>
           <textarea
-            style={{
-              ...inputStyle,
-              minHeight: "70px",
-              resize: "vertical",
-              fontFamily: "monospace",
-              fontSize: "0.8rem",
-              borderColor: errors.style_profile_json ? "#dc2626" : BORDER_COLOR,
-            }}
+            style={{ ...JSON_TEXTAREA, borderColor: errors.style_profile_json ? "#dc2626" : BORDER_COLOR }}
             value={values.style_profile_json}
             onChange={(e) => set("style_profile_json", e.target.value)}
             placeholder='{"key": "value"}'
@@ -232,14 +233,7 @@ export function TemplateForm({
         <div style={fieldStyle}>
           <label style={labelStyle}>content_rules_json</label>
           <textarea
-            style={{
-              ...inputStyle,
-              minHeight: "70px",
-              resize: "vertical",
-              fontFamily: "monospace",
-              fontSize: "0.8rem",
-              borderColor: errors.content_rules_json ? "#dc2626" : BORDER_COLOR,
-            }}
+            style={{ ...JSON_TEXTAREA, borderColor: errors.content_rules_json ? "#dc2626" : BORDER_COLOR }}
             value={values.content_rules_json}
             onChange={(e) => set("content_rules_json", e.target.value)}
             placeholder='{"key": "value"}'
@@ -250,14 +244,7 @@ export function TemplateForm({
         <div style={fieldStyle}>
           <label style={labelStyle}>publish_profile_json</label>
           <textarea
-            style={{
-              ...inputStyle,
-              minHeight: "70px",
-              resize: "vertical",
-              fontFamily: "monospace",
-              fontSize: "0.8rem",
-              borderColor: errors.publish_profile_json ? "#dc2626" : BORDER_COLOR,
-            }}
+            style={{ ...JSON_TEXTAREA, borderColor: errors.publish_profile_json ? "#dc2626" : BORDER_COLOR }}
             value={values.publish_profile_json}
             onChange={(e) => set("publish_profile_json", e.target.value)}
             placeholder='{"key": "value"}'
