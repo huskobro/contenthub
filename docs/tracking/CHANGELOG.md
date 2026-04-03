@@ -2,6 +2,16 @@
 
 ---
 
+## [2026-04-03] Phase 196 — Repeated textTransform/letterSpacing Literal Constant Pack
+
+**Ne:** Bileşenlerde tekrar eden textTransform/letterSpacing literal değerlerinin kapsamlı audit'i.
+**Sonuç:** Bu property'ler codebase'de kullanılmıyor. Dosya değişikliği yapılmadı.
+**Eklenen/değiştirilen dosyalar:**
+- `docs/testing/test-report-phase-196-repeated-text-transform-letter-spacing-literal-constant-pack.md` (yeni — audit belgesi)
+**Test:** 1587 toplam test, tsc temiz
+
+---
+
 ## [2026-04-03] Phase 195 — Repeated Small Border Literal Constant Pack
 
 **Ne:** Bileşenlerde tekrar eden border literal değerlerini dosya-seviyesi const'lara taşıma.

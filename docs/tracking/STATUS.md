@@ -1,7 +1,17 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 195 — Repeated Small Border Literal Constant Pack ✓ TAMAMLANDI
+Phase 196 — Repeated textTransform/letterSpacing Literal Constant Pack ✓ TAMAMLANDI (audit-only)
+
+## Mevcut Hedef
+textTransform/letterSpacing literal audit. Bu property'ler codebase'de kullanılmıyor. Hiçbir dosya değiştirilmedi. 1587 toplam test.
+
+## Devam Eden
+— (devam eden çalışma yok)
+
+## Son Tamamlananlar
+- Phase 196: repeated textTransform/letterSpacing literal constant pack: kapsamlı audit, kullanım yok, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
+- Phase 195 — Repeated Small Border Literal Constant Pack ✓ TAMAMLANDI
 
 ## Mevcut Hedef
 Border literal audit. BORDER = "1px solid #e2e8f0" (3 dosya: TemplateStyleLinkDetailPanel×3, TemplateDetailPanel×3, StandardVideoArtifactsPanel×3). 1587 toplam test.
