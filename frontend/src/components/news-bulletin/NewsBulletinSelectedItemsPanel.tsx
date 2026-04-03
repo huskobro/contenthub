@@ -11,6 +11,7 @@ import type { SelectedItemFormValues } from "./NewsBulletinSelectedItemForm";
 import type { NewsItemResponse } from "../../api/newsItemsApi";
 
 const MUTED_TEXT = "#64748b";
+const TH_CELL: React.CSSProperties = { textAlign: "left", padding: "0.25rem 0.5rem", color: MUTED_TEXT, fontWeight: 500 };
 
 interface Props {
   bulletinId: string;
@@ -146,11 +147,11 @@ export function NewsBulletinSelectedItemsPanel({ bulletinId }: Props) {
         <table style={{ width: "100%", fontSize: "0.8125rem", borderCollapse: "collapse" }}>
           <thead>
             <tr style={{ borderBottom: "1px solid #e2e8f0" }}>
-              <th style={{ textAlign: "left", padding: "0.25rem 0.5rem", color: MUTED_TEXT, fontWeight: 500 }}>News Item ID</th>
-              <th style={{ textAlign: "left", padding: "0.25rem 0.5rem", color: MUTED_TEXT, fontWeight: 500 }}>Sıra</th>
-              <th style={{ textAlign: "left", padding: "0.25rem 0.5rem", color: MUTED_TEXT, fontWeight: 500 }}>Gerekçe</th>
-              <th style={{ textAlign: "left", padding: "0.25rem 0.5rem", color: MUTED_TEXT, fontWeight: 500 }}>Uyarı</th>
-              <th style={{ textAlign: "left", padding: "0.25rem 0.5rem", color: MUTED_TEXT, fontWeight: 500 }}>Eklendi</th>
+              <th style={TH_CELL}>News Item ID</th>
+              <th style={TH_CELL}>Sıra</th>
+              <th style={TH_CELL}>Gerekçe</th>
+              <th style={TH_CELL}>Uyarı</th>
+              <th style={TH_CELL}>Eklendi</th>
               <th style={{ padding: "0.25rem 0.5rem" }}></th>
             </tr>
           </thead>

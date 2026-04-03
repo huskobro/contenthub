@@ -8,6 +8,8 @@ interface TemplateStyleLinksTableProps {
   onSelect: (id: string) => void;
 }
 
+const TH_CELL: React.CSSProperties = { textAlign: "left", padding: "0.5rem 0.75rem", fontWeight: 600, color: "#475569" };
+
 const STATUS_COLORS: Record<string, string> = {
   active: "#16a34a",
   inactive: "#64748b",
@@ -23,22 +25,22 @@ export function TemplateStyleLinksTable({
     <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.875rem" }}>
       <thead>
         <tr style={{ background: "#f8fafc", borderBottom: "1px solid #e2e8f0" }}>
-          <th style={{ textAlign: "left", padding: "0.5rem 0.75rem", fontWeight: 600, color: "#475569" }}>
+          <th style={TH_CELL}>
             Template ID
           </th>
-          <th style={{ textAlign: "left", padding: "0.5rem 0.75rem", fontWeight: 600, color: "#475569" }}>
+          <th style={TH_CELL}>
             Blueprint ID
           </th>
-          <th style={{ textAlign: "left", padding: "0.5rem 0.75rem", fontWeight: 600, color: "#475569" }}>
+          <th style={TH_CELL}>
             Role
           </th>
-          <th style={{ textAlign: "left", padding: "0.5rem 0.75rem", fontWeight: 600, color: "#475569" }}>
+          <th style={TH_CELL}>
             Status
           </th>
-          <th style={{ textAlign: "left", padding: "0.5rem 0.75rem", fontWeight: 600, color: "#475569" }}>
+          <th style={TH_CELL}>
             Bağ Durumu
           </th>
-          <th style={{ textAlign: "left", padding: "0.5rem 0.75rem", fontWeight: 600, color: "#475569" }}>
+          <th style={TH_CELL}>
             Created
           </th>
         </tr>

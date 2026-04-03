@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 182 — Repeated Small Font Size Literal Constant Pack ✓ TAMAMLANDI
+Phase 183 — Repeated Small Font Weight Constant Pack ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Bileşenlerde tekrar eden fontSize literal'larını const ile extraction. StandardVideoArtifactsPanel FONT_SM×8, SourceScanDetailPanel FONT_SM×3, SourceDetailPanel FONT_SM×3. 1587 toplam test.
+Bileşenlerde tekrar eden fontWeight literal içeren th style object'lerini const ile extraction. TemplateStyleLinksTable TH_CELL×6, NewsBulletinSelectedItemsPanel TH_CELL×5. 1587 toplam test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 183: repeated small font weight constant pack: TH_CELL extraction (TemplateStyleLinksTable×6, NewsBulletinSelectedItemsPanel×5), 1587 toplam (2026-04-03)
 - Phase 182: repeated small font size literal constant pack: FONT_SM extraction (3 dosya: ArtifactsPanel×8, SourceScanDetailPanel×3, SourceDetailPanel×3), 1587 toplam (2026-04-03)
 - Phase 181: repeated small border radius constant pack: RADIUS_XS + RADIUS_SM extraction (2 dosya), 1587 toplam (2026-04-03)
 - Phase 180: repeated small loading/busy text constant pack: kapsamlı audit, threshold altı (max 2× per dosya), hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)

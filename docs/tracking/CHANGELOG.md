@@ -2,6 +2,19 @@
 
 ---
 
+## [2026-04-03] Phase 183 — Repeated Small Font Weight Constant Pack
+
+**Ne:** Bileşenlerde tekrar eden `fontWeight` literal içeren th style object'lerini dosya-seviyesi const'lara taşıma.
+**Eklenen/değiştirilen dosyalar:**
+- `TemplateStyleLinksTable.tsx`: `TH_CELL` eklendi, 6× th inline → const
+- `NewsBulletinSelectedItemsPanel.tsx`: `TH_CELL` eklendi, 5× th inline → const
+- `docs/testing/test-report-phase-183-repeated-small-font-weight-constant-pack.md` (yeni)
+**Atlanılan:** ArtifactsPanel/MetadataPanel (farklı nesnelerde, threshold altı), diğerleri max 2×
+**Test:** 1587 toplam test, tsc temiz, vite build temiz
+**Dokunulmayan:** Görünüm, davranış, badge stilleri, backend
+
+---
+
 ## [2026-04-03] Phase 182 — Repeated Small Font Size Literal Constant Pack
 
 **Ne:** Bileşenlerde tekrar eden `fontSize` literal'larını dosya-seviyesi const'lara taşıma.
