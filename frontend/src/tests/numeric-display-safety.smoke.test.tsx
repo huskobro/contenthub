@@ -23,41 +23,42 @@ describe("safeNumber helper", () => {
 // ─── Summary count display guards ─────────────────────────────
 
 describe("Summary numeric display guards", () => {
-  const cases: Array<{ file: string; guard: string }> = [
+  const cases: Array<{ file: string; guards: string[] }> = [
     {
       file: "components/source-scans/SourceScanExecutionSummary.tsx",
-      guard: "isFinite(resultCount)",
+      guards: ["isFinite(resultCount)"],
     },
     {
       file: "components/news-bulletin/NewsBulletinReadinessSummary.tsx",
-      guard: "isFinite(raw)",
+      guards: ["safeNumber(", "isFinite(raw)"],
     },
     {
       file: "components/news-items/NewsItemReadinessSummary.tsx",
-      guard: "isFinite(raw)",
+      guards: ["safeNumber(", "isFinite(raw)"],
     },
     {
       file: "components/sources/SourceReadinessSummary.tsx",
-      guard: "isFinite(raw)",
+      guards: ["safeNumber(", "isFinite(raw)"],
     },
     {
       file: "components/jobs/JobActionabilitySummary.tsx",
-      guard: "isFinite(retryCount)",
+      guards: ["isFinite(retryCount)"],
     },
     {
       file: "components/templates/TemplateReadinessSummary.tsx",
-      guard: "isFinite(raw)",
+      guards: ["safeNumber(", "isFinite(raw)"],
     },
     {
       file: "components/news-bulletin/NewsBulletinSourceCoverageSummary.tsx",
-      guard: "isFinite(selectedNewsSourceCount)",
+      guards: ["safeNumber(", "isFinite(selectedNewsSourceCount)"],
     },
   ];
 
-  for (const { file, guard } of cases) {
-    it(`${path.basename(file)} has numeric guard: ${guard}`, () => {
+  for (const { file, guards } of cases) {
+    it(`${path.basename(file)} has numeric guard`, () => {
       const src = read(file);
-      expect(src).toContain(guard);
+      const hasGuard = guards.some(g => src.includes(g));
+      expect(hasGuard, `${file} missing numeric guard (expected one of: ${guards.join(", ")})`).toBe(true);
     });
   }
 });
@@ -67,12 +68,12 @@ describe("Summary numeric display guards", () => {
 describe("Version interpolation safety in tables", () => {
   it("TemplatesTable uses safe version interpolation", () => {
     const src = read("components/templates/TemplatesTable.tsx");
-    expect(src).toContain("isFinite(t.version)");
+    expect(src.includes("isFinite(t.version)") || src.includes("safeNumber(t.version,")).toBe(true);
   });
 
   it("StyleBlueprintsTable uses safe version interpolation", () => {
     const src = read("components/style-blueprints/StyleBlueprintsTable.tsx");
-    expect(src).toContain("isFinite(bp.version)");
+    expect(src.includes("isFinite(bp.version)") || src.includes("safeNumber(bp.version,")).toBe(true);
   });
 });
 
@@ -155,7 +156,7 @@ describe("No bare numeric interpolation without guard in summaries", () => {
     it(`${path.basename(file)} has isFinite or isNaN guard`, () => {
       const src = read(file);
       expect(
-        src.includes("isFinite") || src.includes("isNaN"),
+        src.includes("isFinite") || src.includes("isNaN") || src.includes("safeNumber("),
         `${file} lacks numeric safety guards`
       ).toBe(true);
     });

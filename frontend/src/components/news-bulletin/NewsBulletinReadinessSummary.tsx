@@ -1,4 +1,5 @@
 import { NewsBulletinReadinessBadge, ReadinessLevel } from "./NewsBulletinReadinessBadge";
+import { safeNumber } from "../../lib/safeNumber";
 
 interface Props {
   selectedNewsCount?: number;
@@ -19,8 +20,7 @@ export function computeReadinessLevel(
 }
 
 export function NewsBulletinReadinessSummary({ selectedNewsCount, hasScript, hasMetadata }: Props) {
-  const raw = selectedNewsCount ?? 0;
-  const count = typeof raw === "number" && !isNaN(raw) && isFinite(raw) ? raw : 0;
+  const count = safeNumber(selectedNewsCount, 0);
   const script = hasScript ?? false;
   const meta = hasMetadata ?? false;
   const level = computeReadinessLevel(count, script, meta);

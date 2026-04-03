@@ -1,4 +1,5 @@
 import { NewsBulletinSelectedNewsQualityBadge, type QualityLevel } from "./NewsBulletinSelectedNewsQualityBadge";
+import { safeNumber } from "../../lib/safeNumber";
 
 export function computeNewsBulletinSelectedNewsQuality(
   selectedNewsCount: number | null | undefined,
@@ -29,13 +30,9 @@ function buildDetail(
   selectedNewsCount: number | null | undefined,
 ): string | undefined {
   if (!selectedNewsCount || selectedNewsCount <= 0) return undefined;
-  const safeCount = (n: number | null | undefined): number => {
-    const v = n ?? 0;
-    return typeof v === "number" && !isNaN(v) && isFinite(v) ? v : 0;
-  };
-  const complete = safeCount(completeCount);
-  const partial = safeCount(partialCount);
-  const weak = safeCount(weakCount);
+  const complete = safeNumber(completeCount, 0);
+  const partial = safeNumber(partialCount, 0);
+  const weak = safeNumber(weakCount, 0);
   const parts: string[] = [];
   if (complete > 0) parts.push(`${complete} güçlü`);
   if (partial > 0) parts.push(`${partial} kısmi`);

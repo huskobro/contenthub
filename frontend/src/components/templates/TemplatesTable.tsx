@@ -1,4 +1,5 @@
 import type { TemplateResponse } from "../../api/templatesApi";
+import { safeNumber } from "../../lib/safeNumber";
 import { TemplateStyleLinkSummary } from "./TemplateStyleLinkSummary";
 import { TemplateReadinessSummary } from "./TemplateReadinessSummary";
 import { TemplatePublicationSignalSummary } from "./TemplatePublicationSignalSummary";
@@ -74,7 +75,7 @@ export function TemplatesTable({ templates, selectedId, onSelect }: TemplatesTab
                 {t.status ?? "—"}
               </span>
             </td>
-            <td style={{ padding: "0.5rem 0.75rem", color: "#64748b" }}>v{typeof t.version === "number" && isFinite(t.version) ? t.version : 0}</td>
+            <td style={{ padding: "0.5rem 0.75rem", color: "#64748b" }}>v{safeNumber(t.version, 0)}</td>
             {/* Stil & Hazırlık */}
             <td style={{ padding: "0.5rem 0.75rem" }}>
               <TemplateStyleLinkSummary

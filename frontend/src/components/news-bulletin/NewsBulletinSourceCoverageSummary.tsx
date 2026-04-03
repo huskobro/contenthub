@@ -1,4 +1,5 @@
 import { NewsBulletinSourceCoverageBadge, NewsBulletinSourceCoverageLevel } from "./NewsBulletinSourceCoverageBadge";
+import { safeNumber } from "../../lib/safeNumber";
 
 interface Props {
   selectedNewsCount?: number;
@@ -27,7 +28,7 @@ export function NewsBulletinSourceCoverageSummary({
 }: Props) {
   const level = computeNewsBulletinSourceCoverage(selectedNewsCount, selectedNewsSourceCount, hasMissingSource);
 
-  const safeSourceCount = typeof selectedNewsSourceCount === "number" && !isNaN(selectedNewsSourceCount) && isFinite(selectedNewsSourceCount) ? selectedNewsSourceCount : 0;
+  const safeSourceCount = safeNumber(selectedNewsSourceCount, 0);
   const detail =
     safeSourceCount > 0
       ? `${safeSourceCount} kaynak${hasMissingSource ? " • eksik var" : ""}`

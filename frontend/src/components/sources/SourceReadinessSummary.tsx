@@ -1,4 +1,5 @@
 import { SourceReadinessBadge, SourceReadinessLevel } from "./SourceReadinessBadge";
+import { safeNumber } from "../../lib/safeNumber";
 
 interface Props {
   sourceType: string;
@@ -49,8 +50,7 @@ export function SourceReadinessSummary({
   scanCount,
   lastScanStatus,
 }: Props) {
-  const raw = scanCount ?? 0;
-  const count = typeof raw === "number" && !isNaN(raw) && isFinite(raw) ? raw : 0;
+  const count = safeNumber(scanCount, 0);
   const level = computeSourceReadiness(
     sourceType,
     status,

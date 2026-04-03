@@ -1,4 +1,5 @@
 import { NewsItemReadinessBadge, NewsItemReadinessLevel } from "./NewsItemReadinessBadge";
+import { safeNumber } from "../../lib/safeNumber";
 
 interface Props {
   title?: string | null;
@@ -34,8 +35,7 @@ export function NewsItemReadinessSummary({
   lastTargetModule,
 }: Props) {
   const level = computeNewsItemReadiness(title, url, status);
-  const raw = usageCount ?? 0;
-  const count = typeof raw === "number" && !isNaN(raw) && isFinite(raw) ? raw : 0;
+  const count = safeNumber(usageCount, 0);
 
   const parts: string[] = [];
   parts.push(sourceId ? "Kaynak var" : "Kaynak yok");

@@ -1,4 +1,5 @@
 import { TemplateReadinessBadge, TemplateReadinessLevel } from "./TemplateReadinessBadge";
+import { safeNumber } from "../../lib/safeNumber";
 
 interface Props {
   templateType: string;
@@ -50,8 +51,7 @@ export function TemplateReadinessSummary({
   publishProfileJson,
   styleLinkCount,
 }: Props) {
-  const raw = styleLinkCount ?? 0;
-  const count = typeof raw === "number" && !isNaN(raw) && isFinite(raw) ? raw : 0;
+  const count = safeNumber(styleLinkCount, 0);
   const level = computeTemplateReadiness(
     templateType,
     status,

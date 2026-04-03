@@ -1,5 +1,6 @@
 import type { JobStepResponse } from "../../api/jobsApi";
 import { formatDuration } from "../../lib/formatDuration";
+import { formatDateISO } from "../../lib/formatDate";
 
 interface JobTimelinePanelProps {
   steps: JobStepResponse[];
@@ -75,7 +76,7 @@ export function JobTimelinePanel({ steps }: JobTimelinePanelProps) {
                   elapsed: {formatDuration(s.elapsed_seconds)}
                   {s.started_at && (
                     <span style={{ marginLeft: "0.75rem" }}>
-                      başlangıç: {s.started_at.slice(0, 19).replace("T", " ")}
+                      başlangıç: {formatDateISO(s.started_at)}
                     </span>
                   )}
                 </div>

@@ -2,6 +2,20 @@
 
 ---
 
+## [2026-04-03] Phase 156 — Shared Fallback Helper Consolidation Pack
+
+**Ne:** Inline güvenlik pattern'lerinin shared helper'lara konsolidasyonu. 5 summary bileşende inline `typeof raw === "number" && !isNaN(raw) && isFinite(raw)` pattern'i `safeNumber()` ile değiştirildi. 2 tablo bileşende version interpolation `safeNumber()` ile konsolide edildi. 1 summary bileşende lokal `safeCount()` fonksiyonu kaldırılıp `safeNumber()` ile değiştirildi. 1 timeline panelde inline date slice `formatDateISO()` ile değiştirildi.
+**Eklenen/değiştirilen dosyalar:**
+- 5 summary bileşen: `safeNumber()` konsolidasyonu (TemplateReadiness, SourceReadiness, NewsBulletinReadiness, NewsBulletinSourceCoverage, NewsItemReadiness)
+- 1 summary bileşen: lokal `safeCount` → `safeNumber()` (NewsBulletinSelectedNewsQuality)
+- 2 tablo bileşen: version `safeNumber()` konsolidasyonu (TemplatesTable, StyleBlueprintsTable)
+- 1 panel: `formatDateISO()` konsolidasyonu (JobTimelinePanel)
+- 2 test dosyası güncelleme: safeNumber pattern kabul (numeric-display-safety, required-field-safety)
+**Test:** 1587 toplam test, tsc temiz, vite build temiz
+**Dokunulmayan:** Conditional validity check pattern'leri (SourceScanExecutionSummary inline korundu), yeni test eklenmedi, badge stilleri korundu
+
+---
+
 ## [2026-04-03] Phase 155 — String Normalization & Whitespace Safety Pack
 
 **Ne:** String/whitespace render yüzeylerinde blank-aware fallback koruması. Shared `isBlank()` helper oluşturuldu. 4 detail panel Field, 1 overview Row, 1 UrlField, 7 conditional notes render, 3 script content display whitespace-safe hale getirildi.

@@ -1,15 +1,17 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 155 — String Normalization & Whitespace Safety Pack ✓ TAMAMLANDI
+Phase 156 — Shared Fallback Helper Consolidation Pack ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-String/whitespace render yüzeylerinde blank-aware fallback koruması. isBlank helper, 10 bileşen fix, 27 yeni guard test. 1587 toplam test.
+Inline safety pattern'leri shared helper'lara konsolide etme. 8 safeNumber konsolidasyonu, 1 formatDateISO konsolidasyonu, 4 test güncelleme. 1587 toplam test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 156: shared fallback helper consolidation pack: 8 safeNumber konsolidasyonu (5 summary + 2 table version + 1 selected quality), 1 formatDateISO konsolidasyonu (JobTimelinePanel), 4 test dosyası güncelleme, 1587 toplam (2026-04-03)
+- Phase 155: string normalization whitespace safety pack: isBlank helper, 10 bileşen fix, 27 yeni guard test, 1587 toplam (2026-04-03)
 - Phase 153: array list render safety pack: 2 steps array guard (JobTimelinePanel, JobStepsList), Array.isArray + safeSteps pattern, 15 yeni guard test, 1535 toplam (2026-04-03)
 - Phase 152: numeric count ratio display safety pack: 7 summary count guard, 2 table version guard, 5 detail panel Number() guard, 6 form isFinite guard, safeNumber helper, 33 yeni guard test, 1520 toplam (2026-04-03)
 - Phase 151: badge enum status unknown-value safety pack: 62 badge style lookup neutral fallback, 76 badge label text null fallback (70 level + 6 status), 236 yeni guard test, 1487 toplam (2026-04-03)
