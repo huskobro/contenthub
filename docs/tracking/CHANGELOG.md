@@ -2,6 +2,16 @@
 
 ---
 
+## [2026-04-03] Phase 174 — Repeated Required Mark Constant Pack
+
+**Ne:** Tüm form bileşenlerinde tekrar eden required-mark span style bloklarının kapsamlı audit'i.
+**Sonuç:** Threshold 3+ sağlayan yeni dosya bulunamadı. TemplateForm ve UsedNewsForm Phase 173'te zaten extraction yapılmıştı. Kalan dosyalarda max 2× inline span (threshold altı). Dosya değişikliği yapılmadı.
+**Eklenen/değiştirilen dosyalar:**
+- `docs/testing/test-report-phase-174-repeated-required-mark-constant-pack.md` (yeni — audit belgesi)
+**Test:** 1587 toplam test, tsc temiz
+
+---
+
 ## [2026-04-03] Phase 173 — Repeated Form Label Style Constant Pack
 
 **Ne:** Form bileşenlerindeki tekrar eden required-field span style bloklarını dosya-seviyesi const'lara taşıma.
