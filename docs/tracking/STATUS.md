@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 229 — Repeated Small Setter/Update Call Readability Pack ✓ TAMAMLANDI (audit-only)
+Phase 230 — Repeated Small Label/Heading Text Readability Pack ✓ TAMAMLANDI (audit-only)
 
 ## Mevcut Hedef
-Setter/update call readability audit. Per-field setter standart React. setMode çoklu kullanım farklı argümanlar. queryClient/mutation.mutate bileşenlerde yok. Hiçbir dosya değiştirilmedi. 1587 toplam test.
+Label/heading text readability audit. Aynı tam string 3+ kez tekrar etmiyor. "zorunludur" 5 farklı mesajda ortak kelime. DASH zaten const. Hiçbir dosya değiştirilmedi. 1587 toplam test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 230: repeated small label/heading text readability pack: kapsamlı audit, tam string tekrar yok, DASH const mevcut, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 229: repeated small setter/update call readability pack: kapsamlı audit, per-field standart, farklı argümanlar, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 228: repeated small hook call readability pack: kapsamlı audit, useState per-field standart, custom hook'lar farklı, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 227: repeated small return object/payload shape readability pack: kapsamlı audit, tek payload build per dosya, threshold karşılanmadı, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
