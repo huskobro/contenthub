@@ -74,7 +74,7 @@ describe("Dashboard action hub", () => {
     const card = screen.getByTestId("hub-action-admin");
     expect(card).toBeDefined();
     expect(card.textContent).toContain("Yonetim Paneli");
-    expect(card.textContent).toContain("Panele Git");
+    expect(card.textContent).toContain("Yonetim Paneline Git");
   });
 
   it("does not show action hub when onboarding is incomplete", () => {

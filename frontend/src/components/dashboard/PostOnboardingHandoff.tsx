@@ -86,9 +86,9 @@ export function PostOnboardingHandoff() {
 
       <h3 style={HEADING}>Ilk Iceriginizi Olusturun</h3>
       <p style={DESC}>
-        Kurulumunuz tamamlandi. Yonetim panelinden ilk video iceriginizi
-        olusturabilir, haber kaynaklarinizi tarayabilir ve sablonlarinizi
-        yonetebilirsiniz.
+        Kurulumunuz tamamlandi. Asagidaki seceneklerle ilk video iceriginizi
+        olusturabilir veya yonetim paneline giderek kaynak, sablon ve
+        diger ayarlari yonetebilirsiniz.
       </p>
 
       <div style={ACTIONS}>
@@ -97,14 +97,14 @@ export function PostOnboardingHandoff() {
           onClick={() => navigate("/admin/standard-videos/new")}
           data-testid="handoff-create-content"
         >
-          Yeni Icerik Olustur
+          Yeni Video Olustur
         </button>
         <button
           style={SECONDARY_BTN}
           onClick={() => navigate("/admin")}
           data-testid="handoff-go-admin"
         >
-          Yonetim Paneli
+          Yonetim Paneline Git
         </button>
       </div>
     </div>

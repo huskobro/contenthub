@@ -2,6 +2,19 @@
 
 ---
 
+## [2026-04-03] Phase 257 — Cross-Surface CTA Consistency Pass
+
+**Ne:** User dashboard, handoff, content/publish entry ve admin continuity yuzeylerindeki CTA dili urun genelinde tutarli hale getirildi. PostOnboardingHandoff: "Yeni Icerik Olustur"→"Yeni Video Olustur" (hedef spesifikligine uyumlu), "Yonetim Paneli"→"Yonetim Paneline Git" (navigasyon kalibina uyumlu). DashboardActionHub: "Panele Git"→"Yonetim Paneline Git". Handoff aciklama metni CTA'larla daha uyumlu hale getirildi.
+**Sonuc:** Kullanici farkli ekranlarda ayni isi yapan ama farkli konusan butonlar gormuyor. Navigasyon "X Git", olusturma "Yeni X Olustur", goruntuleme "X Goruntule", donus "X Don" kaliplari tutarli.
+**Degistirilen dosyalar:**
+- `frontend/src/components/dashboard/PostOnboardingHandoff.tsx` (CTA + aciklama)
+- `frontend/src/components/dashboard/DashboardActionHub.tsx` (admin CTA)
+- `frontend/src/tests/post-onboarding-handoff.smoke.test.tsx` (metin guncelleme)
+- `frontend/src/tests/dashboard-action-hub.smoke.test.tsx` (metin guncelleme)
+**Test:** 1720 toplam test, tsc temiz, build temiz
+
+---
+
 ## [2026-04-03] Phase 256 — User Panel Empty/No-Action State Clarity Pass
 
 **Ne:** User panel yuzeylerine first-use/empty-state yonlendirme metinleri eklendi. Dashboard onboarding-pending mesaji aksiyonel hale getirildi ("kurulum adimlarini tamamlayin"). Content entry note'a "ilk iceriginizi baslatabilirsiniz" yonlendirmesi eklendi. Publish entry note'a "once Icerik ekranindan bir icerik olusturun" icerik→yayin akisi aciklamasi eklendi.

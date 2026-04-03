@@ -1,10 +1,10 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 256 — User Panel Empty/No-Action State Clarity Pass ✓ TAMAMLANDI (feature)
+Phase 257 — Cross-Surface CTA Consistency Pass ✓ TAMAMLANDI (feature)
 
 ## Mevcut Hedef
-User panel yuzeylerine first-use/empty-state yonlendirme metinleri eklendi: dashboard pending note, content first-use note, publish first-use note. 1720 toplam test.
+CTA dili urun genelinde tutarli hale getirildi: navigasyon "X Git", olusturma "Yeni X Olustur", goruntuleme "X Goruntule", donus "X Don" kaliplari. 1720 toplam test.
 
 ## Devam Eden
 — (devam eden calisma yok)
@@ -15,6 +15,7 @@ User panel yuzeylerine first-use/empty-state yonlendirme metinleri eklendi: dash
 - **ANA FAZ BAŞLADI:** Wizard / Onboarding (ürün geliştirme hattı)
 
 ## Son Tamamlananlar
+- Phase 257: cross-surface CTA consistency pass — handoff/hub CTA dili hizalandi, "Yeni Icerik Olustur"→"Yeni Video Olustur", "Panele Git"→"Yonetim Paneline Git", 1720 toplam (2026-04-03)
 - Phase 256: user panel empty/no-action state clarity — dashboard pending note, content first-use note, publish first-use note, 8 yeni test, 1720 toplam (2026-04-03)
 - Phase 255: admin to user return landing clarity — dashboard context note, kullanici paneli yon bilgisi, handoff/hub ile uyumlu, 8 yeni test, 1712 toplam (2026-04-03)
 - Phase 254: user to admin task continuity strip — AdminContinuityStrip, yonetim paneli bilgi bandi, kullanici paneline donus linki, 7 yeni test, 1704 toplam (2026-04-03)

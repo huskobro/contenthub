@@ -58,7 +58,7 @@ describe("Post-onboarding handoff", () => {
     window.fetch = mockFetch({ onboarding_required: false, completed_at: "2026-04-03T10:00:00Z" });
     renderDashboard();
     const btn = await screen.findByTestId("handoff-create-content");
-    expect(btn.textContent).toBe("Yeni Icerik Olustur");
+    expect(btn.textContent).toBe("Yeni Video Olustur");
     expect(btn.tagName).toBe("BUTTON");
   });
 
@@ -66,7 +66,7 @@ describe("Post-onboarding handoff", () => {
     window.fetch = mockFetch({ onboarding_required: false, completed_at: "2026-04-03T10:00:00Z" });
     renderDashboard();
     const btn = await screen.findByTestId("handoff-go-admin");
-    expect(btn.textContent).toBe("Yonetim Paneli");
+    expect(btn.textContent).toBe("Yonetim Paneline Git");
     expect(btn.tagName).toBe("BUTTON");
   });
 
