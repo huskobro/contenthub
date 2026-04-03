@@ -2,6 +2,16 @@
 
 ---
 
+## [2026-04-03] Phase 220 — Repeated Small Local Type Alias/Union Readability Pack
+
+**Ne:** Bileşenlerde tekrar eden küçük string union type'lar ve dağınık type alias yerleşiminin kapsamlı audit'i.
+**Sonuç:** Form/panel/table/detail dosyalarında hiç type declaration yok. Badge/Summary dosyaları standing rule gereği kapsam dışı. Dosya değişikliği yapılmadı.
+**Eklenen dosyalar:**
+- `docs/testing/test-report-phase-220-repeated-small-local-type-alias-union-readability-pack.md` (yeni — audit belgesi)
+**Test:** 1587 toplam test, tsc temiz
+
+---
+
 ## [2026-04-03] Phase 219 — Repeated Small Import Grouping/Ordering Readability Pack
 
 **Ne:** Bileşenlerde import bloklarının kapsamlı audit'i.
