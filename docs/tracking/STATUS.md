@@ -1,7 +1,17 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 190 — Repeated Display/Layout Literal Constant Pack ✓ TAMAMLANDI (audit-only)
+Phase 191 — Repeated Width/MinWidth Literal Constant Pack ✓ TAMAMLANDI (audit-only)
+
+## Mevcut Hedef
+Width/minWidth/maxWidth literal audit. Tüm değerler max 2× per dosya — threshold altı. Hiçbir dosya değiştirilmedi. 1587 toplam test.
+
+## Devam Eden
+— (devam eden çalışma yok)
+
+## Son Tamamlananlar
+- Phase 191: repeated width/minwidth literal constant pack: kapsamlı audit, threshold altı (max 2× per dosya), hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
+- Phase 190 — Repeated Display/Layout Literal Constant Pack ✓ TAMAMLANDI (audit-only)
 
 ## Mevcut Hedef
 Display/layout literal audit. Anlamlı extraction fırsatı bulunamadı. JobTimelinePanel 3× "flex" farklı nesnelerde, StandardVideoArtifactSummary 2× composite (threshold altı). Hiçbir dosya değiştirilmedi. 1587 toplam test.
