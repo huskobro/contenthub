@@ -6,7 +6,7 @@ describe("formatDateTime", () => {
     expect(formatDateTime(null, "—")).toBe("—");
   });
   it("returns fallback for undefined", () => {
-    expect(formatDateTime(undefined)).toBeNull();
+    expect(formatDateTime(undefined)).toBe("—");
   });
   it("returns fallback for empty string", () => {
     expect(formatDateTime("", "fb")).toBe("fb");

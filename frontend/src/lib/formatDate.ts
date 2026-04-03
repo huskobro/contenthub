@@ -9,8 +9,8 @@ import type { ReactNode } from "react";
 /** Full date+time for detail panels: "3.04.2026, 14:30:00" */
 export function formatDateTime(
   value: string | null | undefined,
-  fallback: string | null = null,
-): string | null {
+  fallback: string = "—",
+): string {
   if (!value) return fallback;
   const d = new Date(value);
   if (isNaN(d.getTime())) return fallback;

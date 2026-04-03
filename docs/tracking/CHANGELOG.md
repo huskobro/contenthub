@@ -2,6 +2,18 @@
 
 ---
 
+## [2026-04-03] Phase 159 — Helper Return-Type Consistency & Call-Site Safety Pack
+
+**Ne:** Helper dönüş tipleri ile call-site beklentileri arasındaki tutarsızlıkları giderme. `formatDateTime` default fallback `null` → `"—"`, dönüş tipi `string | null` → `string`.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/lib/formatDate.ts`: formatDateTime imza değişikliği
+- `frontend/src/tests/date-formatting-safety.smoke.test.tsx`: 1 assertion güncelleme
+- `docs/testing/test-report-phase-159-helper-return-type-consistency-call-site-safety-pack.md` (yeni)
+**Test:** 1587 toplam test, tsc temiz, vite build temiz
+**Dokunulmayan:** formatDateISO ReactNode dönüş tipi korundu, formatDuration parametrize edilmedi, helper mimarisi yeniden yazılmadı, badge stilleri, backend
+
+---
+
 ## [2026-04-03] Phase 158 — Repeated Date Fallback Constant & Readability Pack
 
 **Ne:** Date render yüzeylerinde kalan inline `"—"` fallback'lerini DASH const'a dönüştürme. Phase 157'de kaçan content ternary `"—"` kalıntılarını temizleme.
