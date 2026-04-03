@@ -2,6 +2,20 @@
 
 ---
 
+## [2026-04-03] Phase 251 — User Flow / Navigation — Content Entry Surface
+
+**Ne:** User panelindeki "Icerik" alani gri placeholder olmaktan cikarildi. `/user/content` route'u ve `UserContentEntryPage` eklendi. Sayfa 2 icerik turu karti gosteriyor: Standart Video (→ `/admin/standard-videos/new`) ve Haber Bulteni (→ `/admin/news-bulletins/new`). User sidebar'da "Icerik" artik aktif link. Alt not ile admin gecisi hakkinda bilgi verildi.
+**Sonuc:** Kullanici user panelden "Icerik" → tur secimi → admin olusturma ekrani zinciriyle icerik uretimine baslayabiliyor. Sidebar'da gri alan kalkmis, gercek yuzey aktif.
+**Eklenen dosyalar:**
+- `frontend/src/pages/UserContentEntryPage.tsx`
+- `frontend/src/tests/user-content-entry.smoke.test.tsx` (8 yeni test)
+**Degistirilen dosyalar:**
+- `frontend/src/app/router.tsx` (+ /user/content route)
+- `frontend/src/app/layouts/UserLayout.tsx` (Icerik link aktif)
+**Test:** 1679 toplam test (+8 yeni), tsc temiz, build temiz
+
+---
+
 ## [2026-04-03] Phase 250 — Entry Information Architecture & Primary Route Clarity
 
 **Ne:** Ana giris noktalari ve route yuzeyleri kullanici acisindan netlestirildi. Header'da "User"/"Admin" → "Kullanici Paneli"/"Yonetim Paneli" ve paneller arasi gecis butonu eklendi. Admin sidebar'da Turkce label'lar ve 3 section grubu (Sistem/Icerik Uretimi/Haber). Admin overview Turkce aciklama ve 6 hizli erisim karti. User sidebar Turkce (Anasayfa/Icerik/Yayin). User dashboard Turkce baslik ve fallback mesaji.

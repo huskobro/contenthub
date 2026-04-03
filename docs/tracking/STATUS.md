@@ -1,10 +1,10 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 250 — Entry Information Architecture & Primary Route Clarity ✓ TAMAMLANDI (feature)
+Phase 251 — User Flow / Navigation — Content Entry Surface ✓ TAMAMLANDI (feature)
 
 ## Mevcut Hedef
-Ana giris noktalari ve route yuzeyleri kullanici acisindan netlestirildi. Header'da Turkce panel isimleri ve gecis butonu, admin sidebar'da section gruplari, admin overview'da hizli erisim kartlari, user dashboard'da Turkce icerik. 1671 toplam test.
+User panelinde "Icerik" artik gercek bir entry surface: /user/content route'u, Standart Video ve Haber Bulteni icerik turu kartlari, mevcut calisan admin olusturma yuzeylerine yonlendirme. 1679 toplam test.
 
 ## Devam Eden
 — (devam eden calisma yok)
@@ -15,6 +15,7 @@ Ana giris noktalari ve route yuzeyleri kullanici acisindan netlestirildi. Header
 - **ANA FAZ BAŞLADI:** Wizard / Onboarding (ürün geliştirme hattı)
 
 ## Son Tamamlananlar
+- Phase 251: user flow / navigation content entry surface — UserContentEntryPage, /user/content route, Standart Video + Haber Bulteni kartlari, sidebar link aktif, 8 yeni test, 1679 toplam (2026-04-03)
 - Phase 250: entry information architecture & primary route clarity — Turkce header/sidebar/dashboard, panel gecis butonu, admin section gruplari, hizli erisim kartlari, 4 yeni test, 1671 toplam (2026-04-03)
 - Phase 249: onboarding flow polish & step coherence pass — Turkce dil tutarliligi, CTA netligi, geri donus mantigi, completion checklist genisletildi, 1667 toplam (2026-04-03)
 - Phase 248: post-onboarding first landing & user handoff flow — PostOnboardingHandoff component, UserDashboardPage entegrasyonu, ana/ikincil CTA, 7 yeni test, 1667 toplam (2026-04-03)

@@ -5,6 +5,7 @@ import { AppEntryGate } from "./AppEntryGate";
 import { OnboardingPage } from "../pages/OnboardingPage";
 import { AdminOverviewPage } from "../pages/AdminOverviewPage";
 import { UserDashboardPage } from "../pages/UserDashboardPage";
+import { UserContentEntryPage } from "../pages/UserContentEntryPage";
 import { SettingsRegistryPage } from "../pages/admin/SettingsRegistryPage";
 import { VisibilityRegistryPage } from "../pages/admin/VisibilityRegistryPage";
 import { JobsRegistryPage } from "../pages/admin/JobsRegistryPage";
@@ -73,6 +74,7 @@ export const router = createBrowserRouter([
     element: <UserLayout />,
     children: [
       { index: true, element: <UserDashboardPage /> },
+      { path: "content", element: <UserContentEntryPage /> },
     ],
   },
 ]);
