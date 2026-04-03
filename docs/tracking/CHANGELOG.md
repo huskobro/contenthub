@@ -2,6 +2,16 @@
 
 ---
 
+## [2026-04-03] Phase 208 — Repeated Small Date/Timestamp Formatting Constant Pack
+
+**Ne:** Bileşenlerde tekrar eden date/timestamp formatting pattern'larının kapsamlı audit'i.
+**Sonuç:** formatDateTime/formatDateISO farklı argümanlarla — extraction okunabilirliği artırmıyor. Dosya değişikliği yapılmadı.
+**Eklenen/değiştirilen dosyalar:**
+- `docs/testing/test-report-phase-208-repeated-small-date-timestamp-formatting-constant-pack.md` (yeni — audit belgesi)
+**Test:** 1587 toplam test, tsc temiz
+
+---
+
 ## [2026-04-03] Phase 207 — Repeated Small Inline Number Formatting Constant Pack
 
 **Ne:** Bileşenlerde tekrar eden inline number formatting pattern'larının kapsamlı audit'i.
