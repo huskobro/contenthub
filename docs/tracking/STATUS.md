@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 225 — Repeated Small JSX Fragment/Wrapper Readability Pack ✓ TAMAMLANDI (audit-only)
+Phase 226 — Repeated Small Local Derived Value Readability Pack ✓ TAMAMLANDI (audit-only)
 
 ## Mevcut Hedef
-JSX fragment/wrapper audit. React.Fragment kullanımı yok. Çoklu return() kullanımlar farklı conditional path. SECTION_STYLE zaten extracted. Hiçbir dosya değiştirilmedi. 1587 toplam test.
+Derived value computation audit. .length === 0 yok, JSON.parse/stringify yok. .filter/.map max 4× ama farklı input/bağlam. Hiçbir dosya değiştirilmedi. 1587 toplam test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 226: repeated small local derived value readability pack: kapsamlı audit, aynı computation tekrar etmiyor, farklı bağlam, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 225: repeated small JSX fragment/wrapper readability pack: kapsamlı audit, fragment yok, çoklu return farklı conditional path, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 224: repeated small early return/guard clause readability pack: kapsamlı audit, 3+ olan dosyalar summary kapsam dışı, detail/panel max 2×, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 223: repeated small function parameter naming/destructuring readability pack: kapsamlı audit, tüm imzalar tutarlı, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)

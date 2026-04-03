@@ -2,6 +2,16 @@
 
 ---
 
+## [2026-04-03] Phase 226 — Repeated Small Local Derived Value Readability Pack
+
+**Ne:** Panel/form/detail bileşenlerinde tekrar eden küçük derived-value computation pattern'larının kapsamlı audit'i.
+**Sonuç:** Aynı derived computation 3+ kez tekrar eden dosya yok. .map().filter(Boolean) farklı input/bağlam. Dosya değişikliği yapılmadı.
+**Eklenen dosyalar:**
+- `docs/testing/test-report-phase-226-repeated-small-local-derived-value-readability-pack.md` (yeni — audit belgesi)
+**Test:** 1587 toplam test, tsc temiz
+
+---
+
 ## [2026-04-03] Phase 225 — Repeated Small JSX Fragment/Wrapper Readability Pack
 
 **Ne:** Panel/form/detail bileşenlerinde tekrar eden JSX fragment ve wrapper pattern'larının kapsamlı audit'i.
