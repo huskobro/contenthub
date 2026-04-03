@@ -2,6 +2,16 @@
 
 ---
 
+## [2026-04-03] Phase 229 — Repeated Small Setter/Update Call Readability Pack
+
+**Ne:** Form/panel bileşenlerinde tekrar eden setter/update call pattern'larının kapsamlı audit'i.
+**Sonuç:** Per-field setter standart React controlled form. setMode farklı argümanlarla. queryClient/mutation.mutate bileşenlerde yok. Dosya değişikliği yapılmadı.
+**Eklenen dosyalar:**
+- `docs/testing/test-report-phase-229-repeated-small-setter-update-call-readability-pack.md` (yeni — audit belgesi)
+**Test:** 1587 toplam test, tsc temiz
+
+---
+
 ## [2026-04-03] Phase 228 — Repeated Small Hook Call Readability Pack
 
 **Ne:** Form/panel/detail bileşenlerinde tekrar eden hook call pattern'larının kapsamlı audit'i.
