@@ -2,6 +2,20 @@
 
 ---
 
+## [2026-04-03] Phase 147 — Text Field Overflow & Long Content Safety Pack
+
+**Ne:** Tüm korumasız metin render yüzeylerine wordBreak/overflowWrap overflow koruması eklendi. 9 detail panel Field/Row, 5 inline metin, 7 registry table (10 td), 14 form error display düzeltildi.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/tests/text-overflow-safety.smoke.test.tsx` (yeni — 34 structural guard test)
+- 9 detail panel: SourceDetailPanel, NewsItemDetailPanel, UsedNewsDetailPanel, TemplateDetailPanel, StyleBlueprintDetailPanel, NewsBulletinDetailPanel, TemplateStyleLinkDetailPanel, SourceScanDetailPanel, StandardVideoOverviewPanel (Field/Row overflow fix)
+- 5 inline panel: JobTimelinePanel, StandardVideoMetadataPanel, NewsBulletinMetadataPanel, NewsBulletinSelectedItemsPanel (inline text overflow fix)
+- 7 registry table: SettingsTable, VisibilityRulesTable, SourcesTable, TemplatesTable, StandardVideosTable, StyleBlueprintsTable, NewsBulletinsTable (td overflow fix)
+- 14 form: TemplateForm, StyleBlueprintForm, TemplateStyleLinkForm, SourceScanForm, NewsItemForm, UsedNewsForm, StandardVideoForm, StandardVideoScriptForm, StandardVideoMetadataForm, SourceForm, NewsBulletinMetadataForm, NewsBulletinScriptForm, NewsBulletinSelectedItemForm, NewsBulletinForm (error display overflow fix)
+**Test:** 1171 toplam test (+34 yeni), tsc temiz, vite build temiz
+**Dokunulmayan:** Font boyutları, layout yapısı, max-width/truncation yok, badge stilleri korundu, backend değişiklik yok
+
+---
+
 ## [2026-04-03] Phase 146 — JSON Field Preview Safety & Readability Pack
 
 **Ne:** JSON alanlarını gösteren yüzeylerde güvenlik ve okunurluk iyileştirmeleri. Paylaşılan helper ve bileşen çıkarıldı, duplicate tanımlar kaldırıldı, overflow koruması eklendi.

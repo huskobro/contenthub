@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 146 — JSON Field Preview Safety & Readability Pack ✓ TAMAMLANDI
+Phase 147 — Text Field Overflow & Long Content Safety Pack ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Paylaşılan JSON helper'ları (safeJsonPretty, validateJson) ve JsonPreviewField bileşeni oluşturuldu, 3 duplicate tanım kaldırıldı, 4 raw inline render'a overflow safety eklendi, 19 yeni guard test. 1137 toplam test.
+Tüm korumasız metin render yüzeylerine overflow koruması eklendi: 9 detail panel Field/Row, 5 inline render, 7 registry table (10 td), 14 form error display. 34 yeni guard test. 1171 toplam test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 147: text field overflow long content safety pack: 9 panel Field/Row overflow fix, 5 inline text overflow fix, 7 registry table td overflow fix, 14 form error overflow fix, 34 yeni guard test, badge stilleri korundu, 1171 toplam (2026-04-03)
 - Phase 146: json field preview safety readability pack: shared safeJson.ts + JsonPreviewField, 3 duplicate kaldırıldı, 4 overflow fix, 2 validateJson dedup, 19 yeni guard test, badge stilleri korundu, 1137 toplam (2026-04-03)
 - Phase 145: list detail form date formatting safety unification pack: 4 helper (formatDateTime, formatDateShort, formatDateISO, normalizeDateForInput), 23 dosya güncellendi, SourceScanSummary Invalid Date guard eklendi, 19 yeni guard test, badge stilleri korundu, 1118 toplam (2026-04-03)
 - Phase 144: form surface empty null state safety pack: 2 version String(null) guard, 1 published_at String() coercion, 11 form zaten güvenli, 4 yeni guard test, badge stilleri korundu, 1099 toplam (2026-04-03)

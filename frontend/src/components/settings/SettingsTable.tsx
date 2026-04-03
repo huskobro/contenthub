@@ -33,8 +33,8 @@ export function SettingsTable({ settings, selectedId, onSelect }: SettingsTableP
               background: selectedId === s.id ? "#eff6ff" : "transparent",
             }}
           >
-            <td style={{ padding: "0.5rem", fontFamily: "monospace" }}>{s.key}</td>
-            <td style={{ padding: "0.5rem" }}>{s.group_name}</td>
+            <td style={{ padding: "0.5rem", fontFamily: "monospace", wordBreak: "break-all", overflowWrap: "anywhere" }}>{s.key}</td>
+            <td style={{ padding: "0.5rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>{s.group_name}</td>
             <td style={{ padding: "0.5rem" }}>{s.type}</td>
             <td style={{ padding: "0.5rem" }}>{s.status}</td>
             <td style={{ padding: "0.5rem" }}>{s.version}</td>

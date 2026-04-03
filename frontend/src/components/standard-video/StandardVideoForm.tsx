@@ -214,7 +214,7 @@ export function StandardVideoForm({
       </div>
 
       {submitError && (
-        <p style={{ color: "#dc2626", fontSize: "0.875rem", marginBottom: "0.75rem" }}>
+        <p style={{ color: "#dc2626", fontSize: "0.875rem", marginBottom: "0.75rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>
           {submitError}
         </p>
       )}

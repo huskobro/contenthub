@@ -58,7 +58,7 @@ export function NewsBulletinMetadataForm({
 
   return (
     <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-      {localError && <p style={{ color: "red", margin: 0 }}>{localError}</p>}
+      {localError && <p style={{ color: "red", margin: 0, wordBreak: "break-word", overflowWrap: "anywhere" }}>{localError}</p>}
 
       <label>
         Başlık <span style={{ color: "red" }}>*</span>

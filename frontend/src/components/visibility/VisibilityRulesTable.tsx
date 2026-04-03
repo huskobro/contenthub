@@ -35,7 +35,7 @@ export function VisibilityRulesTable({ rules, selectedId, onSelect }: Visibility
             }}
           >
             <td style={{ padding: "0.5rem" }}>{r.rule_type}</td>
-            <td style={{ padding: "0.5rem", fontFamily: "monospace" }}>{r.target_key}</td>
+            <td style={{ padding: "0.5rem", fontFamily: "monospace", wordBreak: "break-all", overflowWrap: "anywhere" }}>{r.target_key}</td>
             <td style={{ padding: "0.5rem" }}>{r.module_scope ?? <em style={{ color: "#94a3b8" }}>—</em>}</td>
             <td style={{ padding: "0.5rem" }}>{r.role_scope ?? <em style={{ color: "#94a3b8" }}>—</em>}</td>
             <td style={{ padding: "0.5rem" }}>{r.status}</td>

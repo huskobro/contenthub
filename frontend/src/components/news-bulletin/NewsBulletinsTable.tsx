@@ -65,8 +65,8 @@ export function NewsBulletinsTable({ bulletins, selectedId, onSelect }: Props) {
             }}
           >
             {/* Kimlik & Durum */}
-            <td style={{ padding: "0.5rem 0.75rem" }}>{b.title ?? "—"}</td>
-            <td style={{ padding: "0.5rem 0.75rem" }}>{b.topic}</td>
+            <td style={{ padding: "0.5rem 0.75rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>{b.title ?? "—"}</td>
+            <td style={{ padding: "0.5rem 0.75rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>{b.topic}</td>
             <td style={{ padding: "0.5rem 0.75rem" }}>{b.source_mode ?? "—"}</td>
             <td style={{ padding: "0.5rem 0.75rem" }}>{b.bulletin_style ?? "—"}</td>
             <td style={{ padding: "0.5rem 0.75rem" }}>{b.status}</td>

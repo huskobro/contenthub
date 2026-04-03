@@ -13,7 +13,7 @@ function Field({ label, value }: { label: string; value: string | number | null 
   return (
     <div style={{ marginBottom: "0.5rem" }}>
       <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "#64748b" }}>{label}: </span>
-      <span style={{ fontSize: "0.875rem", color: value !== null && value !== undefined ? "#1e293b" : "#94a3b8" }}>
+      <span style={{ fontSize: "0.875rem", color: value !== null && value !== undefined ? "#1e293b" : "#94a3b8", wordBreak: "break-word", overflowWrap: "anywhere" }}>
         {value !== null && value !== undefined ? String(value) : "—"}
       </span>
     </div>

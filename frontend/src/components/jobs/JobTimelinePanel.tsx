@@ -79,7 +79,7 @@ export function JobTimelinePanel({ steps }: JobTimelinePanelProps) {
                   )}
                 </div>
                 {s.last_error && (
-                  <div style={{ fontSize: "0.8125rem", color: "#dc2626", marginTop: "0.25rem" }}>
+                  <div style={{ fontSize: "0.8125rem", color: "#dc2626", marginTop: "0.25rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>
                     {s.last_error}
                   </div>
                 )}

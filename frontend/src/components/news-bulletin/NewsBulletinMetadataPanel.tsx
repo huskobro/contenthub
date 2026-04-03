@@ -129,11 +129,11 @@ export function NewsBulletinMetadataPanel({ bulletinId }: Props) {
           <tbody>
             <tr>
               <td style={{ color: "#64748b", paddingRight: "1rem", paddingBottom: "0.25rem" }}>Başlık</td>
-              <td>{metadata.title ?? "—"}</td>
+              <td style={{ wordBreak: "break-word", overflowWrap: "anywhere" }}>{metadata.title ?? "—"}</td>
             </tr>
             <tr>
               <td style={{ color: "#64748b", paddingRight: "1rem", paddingBottom: "0.25rem" }}>Açıklama</td>
-              <td>{metadata.description ?? "—"}</td>
+              <td style={{ wordBreak: "break-word", overflowWrap: "anywhere" }}>{metadata.description ?? "—"}</td>
             </tr>
             <tr>
               <td style={{ color: "#64748b", paddingRight: "1rem", paddingBottom: "0.25rem" }}>Etiketler</td>
@@ -162,7 +162,7 @@ export function NewsBulletinMetadataPanel({ bulletinId }: Props) {
             {metadata.notes && (
               <tr>
                 <td style={{ color: "#64748b", paddingRight: "1rem", paddingBottom: "0.25rem" }}>Notlar</td>
-                <td>{metadata.notes}</td>
+                <td style={{ wordBreak: "break-word", overflowWrap: "anywhere" }}>{metadata.notes}</td>
               </tr>
             )}
           </tbody>

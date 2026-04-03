@@ -192,7 +192,7 @@ export function NewsItemForm({
       </div>
 
       {submitError && (
-        <div style={{ color: "#dc2626", fontSize: "0.875rem", marginBottom: "0.75rem" }}>{submitError}</div>
+        <div style={{ color: "#dc2626", fontSize: "0.875rem", marginBottom: "0.75rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>{submitError}</div>
       )}
 
       <div style={{ display: "flex", gap: "0.5rem" }}>

@@ -159,7 +159,7 @@ export function NewsBulletinSelectedItemsPanel({ bulletinId }: Props) {
                   {item.news_item_id}
                 </td>
                 <td style={{ padding: "0.25rem 0.5rem" }}>{item.sort_order}</td>
-                <td style={{ padding: "0.25rem 0.5rem" }}>{item.selection_reason ?? "—"}</td>
+                <td style={{ padding: "0.25rem 0.5rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>{item.selection_reason ?? "—"}</td>
                 <td style={{ padding: "0.25rem 0.5rem" }}>
                   <UsedNewsWarningBadge warning={item.used_news_warning ?? false} />
                   {item.used_news_warning && (

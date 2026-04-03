@@ -29,6 +29,8 @@ const errorStyle: React.CSSProperties = {
   color: "#dc2626",
   fontSize: "0.8rem",
   marginTop: "0.25rem",
+  wordBreak: "break-word",
+  overflowWrap: "anywhere",
 };
 
 interface SourceFormProps {

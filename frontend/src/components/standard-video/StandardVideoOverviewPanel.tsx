@@ -21,7 +21,7 @@ function Row({ label, value }: { label: string; value: React.ReactNode }) {
       >
         {label}
       </td>
-      <td style={{ padding: "0.375rem 0.75rem", fontSize: "0.875rem" }}>{value ?? "—"}</td>
+      <td style={{ padding: "0.375rem 0.75rem", fontSize: "0.875rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>{value ?? "—"}</td>
     </tr>
   );
 }

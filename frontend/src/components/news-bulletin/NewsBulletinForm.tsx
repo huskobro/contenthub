@@ -73,7 +73,7 @@ export function NewsBulletinForm({
 
   return (
     <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      {error && <p style={{ color: "red", wordBreak: "break-word", overflowWrap: "anywhere" }}>{error}</p>}
 
       <label>
         Topic <span style={{ color: "red" }}>*</span>

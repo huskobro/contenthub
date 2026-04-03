@@ -16,7 +16,7 @@ function Field({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div style={{ marginBottom: "8px" }}>
       <span style={{ fontWeight: 600, marginRight: "8px" }}>{label}:</span>
-      <span>{value ?? "—"}</span>
+      <span style={{ wordBreak: "break-word", overflowWrap: "anywhere" }}>{value ?? "—"}</span>
     </div>
   );
 }

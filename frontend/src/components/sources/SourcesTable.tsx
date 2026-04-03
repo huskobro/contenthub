@@ -52,7 +52,7 @@ export function SourcesTable({ sources, selectedId, onSelect }: SourcesTableProp
             }}
           >
             {/* Kimlik */}
-            <td style={{ padding: "0.5rem 0.75rem", color: "#1e40af", fontWeight: selectedId === src.id ? 600 : 400 }}>
+            <td style={{ padding: "0.5rem 0.75rem", color: "#1e40af", fontWeight: selectedId === src.id ? 600 : 400, wordBreak: "break-word", overflowWrap: "anywhere" }}>
               {src.name}
             </td>
             <td style={{ padding: "0.5rem 0.75rem", color: "#64748b" }}>{src.source_type}</td>

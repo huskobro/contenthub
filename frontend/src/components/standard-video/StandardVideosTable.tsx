@@ -70,8 +70,8 @@ export function StandardVideosTable({ videos, selectedId, onSelect }: Props) {
             }}
           >
             {/* Kimlik & Durum */}
-            <td style={{ padding: "0.5rem 0.75rem" }}>{v.title ?? "—"}</td>
-            <td style={{ padding: "0.5rem 0.75rem" }}>{v.topic}</td>
+            <td style={{ padding: "0.5rem 0.75rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>{v.title ?? "—"}</td>
+            <td style={{ padding: "0.5rem 0.75rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>{v.topic}</td>
             <td style={{ padding: "0.5rem 0.75rem" }}>
               <span
                 style={{
