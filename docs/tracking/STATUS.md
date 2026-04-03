@@ -1,10 +1,10 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 241 — Onboarding Completion Gate & Continue to App Flow ✓ TAMAMLANDI (feature)
+Phase 242 — Wizard / Onboarding — Provider / API Setup Step ✓ TAMAMLANDI (feature)
 
 ## Mevcut Hedef
-Onboarding wizard'inin ilk calisir versiyonu tamamlandi. Welcome → Requirements (3 aksiyon) → Completion → Uygulamaya Gecis zinciri calisiyor. 1629 toplam test.
+Onboarding wizard'ina provider/API yapilandirma adimi eklendi. Welcome → Requirements (3 aksiyon) → Provider Setup → Completion → Uygulamaya Gecis zinciri calisiyor. 1636 toplam test.
 
 ## Devam Eden
 — (devam eden calisma yok)
@@ -15,6 +15,7 @@ Onboarding wizard'inin ilk calisir versiyonu tamamlandi. Welcome → Requirement
 - **ANA FAZ BAŞLADI:** Wizard / Onboarding (ürün geliştirme hattı)
 
 ## Son Tamamlananlar
+- Phase 242: onboarding provider/API setup step — provider yapilandirma ekrani (TTS/LLM/YouTube API keys), requirements→provider-setup→completion zinciri, 7 yeni test, 1636 toplam (2026-04-03)
 - Phase 241: onboarding completion gate & continue flow — completion ekrani, requirements→completion→uygulamaya gecis zinciri, 7 yeni test, 1629 toplam (2026-04-03)
 - Phase 240: onboarding settings setup required action — requirements ekraninda ayar aksiyonu, OnboardingSettingsSetupScreen, createSetting API+hook, 7 yeni test, 1622 toplam (2026-04-03)
 - Phase 239: onboarding template setup required action — requirements ekraninda sablon aksiyonu, OnboardingTemplateSetupScreen, mevcut TemplateForm tekrar kullanimi, 7 yeni test, 1615 toplam (2026-04-03)

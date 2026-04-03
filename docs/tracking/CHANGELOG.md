@@ -2,6 +2,20 @@
 
 ---
 
+## [2026-04-03] Phase 242 — Wizard / Onboarding — Provider / API Setup Step
+
+**Ne:** Onboarding wizard'ina provider/API yapilandirma adimi eklendi. Requirements tamamlandiktan sonra kullanici TTS, LLM ve YouTube API anahtarlarini girebiliyor. En az bir anahtar zorunlu. Anahtarlar Settings tablosuna `group_name="providers"` ile kaydediliyor. Akis: Requirements → Provider Setup → Completion.
+**Sonuc:** Onboarding zinciri 7 adima genisletildi (welcome/requirements/source-setup/template-setup/settings-setup/provider-setup/completion). Mevcut completion flow testleri requirements→provider-setup gecisine guncellendi.
+**Eklenen dosyalar:**
+- `frontend/src/components/onboarding/OnboardingProviderSetupScreen.tsx` (yeni)
+- `docs/testing/test-report-phase-242-onboarding-provider-api-setup-step.md` (yeni)
+**Degistirilen dosyalar:**
+- `frontend/src/pages/OnboardingPage.tsx` (provider-setup step, 7 adimli akis)
+- `frontend/src/tests/onboarding.smoke.test.tsx` (+7 yeni test, 2 guncellenen test, toplam 49)
+**Test:** 1636 toplam test (+7 yeni), tsc temiz, build temiz
+
+---
+
 ## [2026-04-03] Phase 241 — Onboarding Completion Gate & Continue to App Flow
 
 **Ne:** Onboarding wizard'inin tamamlanma ekrani eklendi. Tum requirements tamamlandiginda kullaniciya "Kurulum Tamamlandi" ekrani gosteriliyor. Completion screen otomatik olarak `POST /onboarding/complete` cagiriyor ve "Uygulamaya Basla" CTA ile normal uygulama akisina yonlendiriyor.

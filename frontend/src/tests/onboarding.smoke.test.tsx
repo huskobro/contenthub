@@ -8,6 +8,7 @@ import { OnboardingSourceSetupScreen } from "../components/onboarding/Onboarding
 import { OnboardingTemplateSetupScreen } from "../components/onboarding/OnboardingTemplateSetupScreen";
 import { OnboardingSettingsSetupScreen } from "../components/onboarding/OnboardingSettingsSetupScreen";
 import { OnboardingCompletionScreen } from "../components/onboarding/OnboardingCompletionScreen";
+import { OnboardingProviderSetupScreen } from "../components/onboarding/OnboardingProviderSetupScreen";
 import { OnboardingPage } from "../pages/OnboardingPage";
 import { AppEntryGate } from "../app/AppEntryGate";
 
@@ -390,14 +391,13 @@ describe("OnboardingCompletionScreen", () => {
 });
 
 describe("OnboardingPage completion flow", () => {
-  it("shows completion screen when all requirements done and Kurulumu Tamamla clicked", async () => {
+  it("transitions from requirements to provider-setup when Kurulumu Tamamla clicked", async () => {
     window.fetch = mockFetch(MOCK_REQUIREMENTS_ALL_DONE);
     wrap(<OnboardingPage />);
     fireEvent.click(screen.getByText("Kurulumu Baslat"));
     const btn = await screen.findByText("Kurulumu Tamamla");
     fireEvent.click(btn);
-    expect(await screen.findByText("Kurulum Tamamlandi")).toBeDefined();
-    expect(screen.getByText("Uygulamaya Basla")).toBeDefined();
+    expect(await screen.findByText("Provider / API Yapilandirmasi")).toBeDefined();
   });
 
   it("does not show completion when requirements are not all done", async () => {
@@ -408,14 +408,73 @@ describe("OnboardingPage completion flow", () => {
     expect(screen.queryByText("Kurulum Tamamlandi")).toBeNull();
   });
 
-  it("can go back from completion to requirements", async () => {
+  it("can go back from provider-setup to requirements via Iptal", async () => {
     window.fetch = mockFetch(MOCK_REQUIREMENTS_ALL_DONE);
     wrap(<OnboardingPage />);
     fireEvent.click(screen.getByText("Kurulumu Baslat"));
     const btn = await screen.findByText("Kurulumu Tamamla");
     fireEvent.click(btn);
-    await screen.findByText("Kurulum Tamamlandi");
-    fireEvent.click(screen.getByText("Gereksinimleri Gozden Gecir"));
+    await screen.findByText("Provider / API Yapilandirmasi");
+    fireEvent.click(screen.getByText("Iptal"));
+    expect(await screen.findByText("Kurulum Durumu")).toBeDefined();
+  });
+});
+
+describe("OnboardingProviderSetupScreen", () => {
+  it("renders provider setup heading", () => {
+    window.fetch = mockFetch({});
+    wrap(<OnboardingProviderSetupScreen onBack={vi.fn()} onComplete={vi.fn()} />);
+    expect(screen.getByText("Provider / API Yapilandirmasi")).toBeDefined();
+  });
+
+  it("renders Kaydet submit button", () => {
+    window.fetch = mockFetch({});
+    wrap(<OnboardingProviderSetupScreen onBack={vi.fn()} onComplete={vi.fn()} />);
+    expect(screen.getByText("Kaydet")).toBeDefined();
+  });
+
+  it("renders all three API key sections", () => {
+    window.fetch = mockFetch({});
+    wrap(<OnboardingProviderSetupScreen onBack={vi.fn()} onComplete={vi.fn()} />);
+    expect(screen.getByText("TTS (Seslendirme)")).toBeDefined();
+    expect(screen.getByText("LLM (Dil Modeli)")).toBeDefined();
+    expect(screen.getByText("YouTube")).toBeDefined();
+  });
+
+  it("calls onBack when Iptal is clicked", () => {
+    window.fetch = mockFetch({});
+    const onBack = vi.fn();
+    wrap(<OnboardingProviderSetupScreen onBack={onBack} onComplete={vi.fn()} />);
+    fireEvent.click(screen.getByText("Iptal"));
+    expect(onBack).toHaveBeenCalledTimes(1);
+  });
+
+  it("shows validation error when submitting with all empty fields", async () => {
+    window.fetch = mockFetch({});
+    wrap(<OnboardingProviderSetupScreen onBack={vi.fn()} onComplete={vi.fn()} />);
+    fireEvent.click(screen.getByText("Kaydet"));
+    expect(await screen.findByText("En az bir provider API anahtari girin.")).toBeDefined();
+  });
+});
+
+describe("OnboardingPage provider-setup flow", () => {
+  it("transitions from requirements to provider-setup via Kurulumu Tamamla", async () => {
+    window.fetch = mockFetch(MOCK_REQUIREMENTS_ALL_DONE);
+    wrap(<OnboardingPage />);
+    fireEvent.click(screen.getByText("Kurulumu Baslat"));
+    const btn = await screen.findByText("Kurulumu Tamamla");
+    fireEvent.click(btn);
+    expect(await screen.findByText("Provider / API Yapilandirmasi")).toBeDefined();
+  });
+
+  it("can go back from provider-setup to requirements", async () => {
+    window.fetch = mockFetch(MOCK_REQUIREMENTS_ALL_DONE);
+    wrap(<OnboardingPage />);
+    fireEvent.click(screen.getByText("Kurulumu Baslat"));
+    const btn = await screen.findByText("Kurulumu Tamamla");
+    fireEvent.click(btn);
+    await screen.findByText("Provider / API Yapilandirmasi");
+    fireEvent.click(screen.getByText("Iptal"));
     expect(await screen.findByText("Kurulum Durumu")).toBeDefined();
   });
 });
