@@ -88,7 +88,7 @@ beforeEach(() => {
 describe("Visibility Registry smoke tests", () => {
   it("renders the visibility page at /admin/visibility", async () => {
     renderVisibility(mockFetch(MOCK_RULES));
-    expect(screen.getByRole("heading", { name: "Visibility Registry" })).toBeDefined();
+    expect(screen.getByRole("heading", { name: "Gorunurluk Kurallari" })).toBeDefined();
   });
 
   it("shows loading state", () => {
@@ -152,7 +152,7 @@ describe("Visibility Registry smoke tests", () => {
     await user.click(screen.getByText("user.email"));
 
     await waitFor(() => {
-      expect(screen.getByText("Rule Detayı")).toBeDefined();
+      expect(screen.getByText("Kural Detayi")).toBeDefined();
       expect(screen.getByText("Admin can see email")).toBeDefined();
     });
   });

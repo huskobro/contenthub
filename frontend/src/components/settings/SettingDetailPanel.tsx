@@ -83,34 +83,49 @@ export function SettingDetailPanel({ selectedId }: SettingDetailPanelProps) {
 
   return (
     <div style={{ padding: "1rem" }}>
-      <h3 style={{ margin: "0 0 0.75rem", fontSize: "1rem" }}>Ayar Detayı</h3>
-      <Row label="key">
+      <h3 style={{ margin: "0 0 0.25rem", fontSize: "1rem" }} data-testid="setting-detail-heading">Ayar Detayi</h3>
+      <p style={{ margin: "0 0 0.75rem", fontSize: "0.6875rem", color: "#94a3b8" }} data-testid="setting-detail-note">
+        Ayar bilgileri, degerleri ve governance durumu asagida gorunur.
+      </p>
+
+      <div style={{ marginBottom: "0.5rem", fontSize: "0.6875rem", fontWeight: 600, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em" }} data-testid="setting-section-identity">
+        Kimlik ve Deger
+      </div>
+      <Row label="Anahtar">
         <code>{data.key ?? DASH}</code>
       </Row>
-      <Row label="group_name">{data.group_name ?? DASH}</Row>
-      <Row label="type">{data.type ?? DASH}</Row>
-      <Row label="default_value_json">
+      <Row label="Grup">{data.group_name ?? DASH}</Row>
+      <Row label="Tur">{data.type ?? DASH}</Row>
+      <Row label="Varsayilan Deger">
         <code style={{ wordBreak: "break-all", overflowWrap: "anywhere" }}>{data.default_value_json ?? DASH}</code>
       </Row>
-      <Row label="admin_value_json">
+      <Row label="Admin Degeri">
         <code style={{ wordBreak: "break-all", overflowWrap: "anywhere" }}>{data.admin_value_json ?? DASH}</code>
       </Row>
-      <Row label="user_override_allowed">
-        <BoolBadge value={data.user_override_allowed} />
-      </Row>
-      <Row label="visible_to_user">
+
+      <div style={{ marginTop: "0.75rem", marginBottom: "0.5rem", fontSize: "0.6875rem", fontWeight: 600, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em" }} data-testid="setting-section-governance">
+        Governance
+      </div>
+      <Row label="Kullanici Gorunur">
         <BoolBadge value={data.visible_to_user} />
       </Row>
-      <Row label="visible_in_wizard">
+      <Row label="Override Izni">
+        <BoolBadge value={data.user_override_allowed} />
+      </Row>
+      <Row label="Wizard Gorunur">
         <BoolBadge value={data.visible_in_wizard} />
       </Row>
-      <Row label="read_only_for_user">
+      <Row label="Salt Okunur">
         <BoolBadge value={data.read_only_for_user} />
       </Row>
-      <Row label="module_scope">{data.module_scope ?? <em style={MUTED}>—</em>}</Row>
-      <Row label="help_text">{data.help_text ?? <em style={MUTED}>—</em>}</Row>
-      <Row label="status">{data.status ?? DASH}</Row>
-      <Row label="version">{data.version ?? DASH}</Row>
+
+      <div style={{ marginTop: "0.75rem", marginBottom: "0.5rem", fontSize: "0.6875rem", fontWeight: 600, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em" }} data-testid="setting-section-scope">
+        Kapsam ve Durum
+      </div>
+      <Row label="Modul Kapsami">{data.module_scope ?? <em style={MUTED}>—</em>}</Row>
+      <Row label="Aciklama">{data.help_text ?? <em style={MUTED}>—</em>}</Row>
+      <Row label="Durum">{data.status ?? DASH}</Row>
+      <Row label="Versiyon">{data.version ?? DASH}</Row>
     </div>
   );
 }

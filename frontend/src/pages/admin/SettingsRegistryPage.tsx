@@ -9,9 +9,39 @@ export function SettingsRegistryPage() {
 
   return (
     <div>
-      <h2 style={{ margin: "0 0 0.25rem" }}>Settings Registry</h2>
-      <p style={{ margin: "0 0 1rem", color: "#64748b", fontSize: "0.875rem" }}>
-        Sistemde tanımlı ayarların listesi ve detayları.
+      <h2
+        style={{ margin: "0 0 0.25rem", fontSize: "1.125rem", fontWeight: 600 }}
+        data-testid="settings-registry-heading"
+      >
+        Ayar Kayitlari
+      </h2>
+      <p
+        style={{
+          margin: "0.25rem 0 0.5rem",
+          fontSize: "0.8125rem",
+          color: "#94a3b8",
+          lineHeight: 1.5,
+          maxWidth: "640px",
+        }}
+        data-testid="settings-registry-subtitle"
+      >
+        Sistemde tanimli ayarlarin listesi ve detaylari. Ayarlar grup, modul
+        kapsami ve governance durumuna gore yonetilir.
+      </p>
+      <p
+        style={{
+          margin: "0 0 1rem",
+          fontSize: "0.8125rem",
+          color: "#94a3b8",
+          lineHeight: 1.5,
+          maxWidth: "640px",
+        }}
+        data-testid="settings-registry-workflow-note"
+      >
+        Ayar yonetim zinciri: Tanimlama → Gruplama → Governance Kontrolu →
+        Kullanici/Wizard Gorunurlugu. Bir ayar sectiginizde detay panelinde
+        governance durumunu ve modul kapsamini gorebilirsiniz. Gorunurluk
+        kurallari icin Gorunurluk sayfasini kullanin.
       </p>
 
       {isLoading && <p style={{ color: "#64748b" }}>Yükleniyor...</p>}

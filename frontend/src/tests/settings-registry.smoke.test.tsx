@@ -94,7 +94,7 @@ beforeEach(() => {
 describe("Settings Registry smoke tests", () => {
   it("renders the settings page at /admin/settings", async () => {
     renderSettings(mockFetch(MOCK_SETTINGS));
-    expect(screen.getByRole("heading", { name: "Settings Registry" })).toBeDefined();
+    expect(screen.getByRole("heading", { name: "Ayar Kayitlari" })).toBeDefined();
   });
 
   it("shows loading state", () => {
@@ -159,7 +159,7 @@ describe("Settings Registry smoke tests", () => {
     await user.click(screen.getByText("app.name"));
 
     await waitFor(() => {
-      expect(screen.getByText("Ayar Detayı")).toBeDefined();
+      expect(screen.getByText("Ayar Detayi")).toBeDefined();
       expect(screen.getByText("Uygulama adı")).toBeDefined();
     });
   });

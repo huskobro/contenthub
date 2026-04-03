@@ -2,6 +2,25 @@
 
 ---
 
+## [2026-04-03] Phase 305–309 — Admin / Advanced Settings Governance Pack
+
+**Ne:** Admin / advanced settings governance omurgasi oturdu. Phase 305: SettingsRegistryPage heading "Ayar Kayitlari" + subtitle + workflow note (Tanimlama → Gruplama → Governance Kontrolu → Kullanici/Wizard Gorunurlugu). Phase 306: SettingDetailPanel governance section gruplama — Kimlik ve Deger (Anahtar, Grup, Tur, Varsayilan Deger, Admin Degeri), Governance (Kullanici Gorunur, Override Izni, Wizard Gorunur, Salt Okunur), Kapsam ve Durum (Modul Kapsami, Aciklama, Durum, Versiyon). Phase 307: VisibilityRegistryPage heading "Gorunurluk Kurallari" + subtitle + workflow note (Kural Tanimlama → Hedef Belirleme → Rol/Mod Kapsami → Wizard Durumu). Phase 308: VisibilityRuleDetailPanel governance section gruplama — Kimlik ve Hedef, Kapsam, Governance, Durum ve Notlar. Phase 309: AdminOverviewPage settings quick link governance desc + end-to-end dogrulama.
+**Sonuc:** Settings ve visibility registry'ler governance-odakli aciklamalara ve section gruplama'ya kavustu. Detail panel'ler bolumlu gorunum sunuyor: kimlik, governance, kapsam/durum. Admin overview'da settings quick link governance kontekstini yansitivor. Omurga oturdu; admin duzenleme aksiyonlari, kural ekleme/silme UI'i ileride.
+**Degistirilen dosyalar:**
+- `frontend/src/pages/admin/SettingsRegistryPage.tsx` (heading + subtitle + workflow note)
+- `frontend/src/components/settings/SettingDetailPanel.tsx` (section gruplama + Turkish labels + testids)
+- `frontend/src/pages/admin/VisibilityRegistryPage.tsx` (heading + subtitle + workflow note)
+- `frontend/src/components/visibility/VisibilityRuleDetailPanel.tsx` (section gruplama + Turkish labels + testids)
+- `frontend/src/pages/AdminOverviewPage.tsx` (settings quick link desc)
+- `frontend/src/tests/settings-registry.smoke.test.tsx` (heading + detail heading referansi guncelleme)
+- `frontend/src/tests/visibility-registry.smoke.test.tsx` (heading + detail heading referansi guncelleme)
+**Eklenen dosyalar:**
+- `frontend/src/tests/admin-advanced-settings-governance-pack.smoke.test.tsx` (23 yeni test)
+- `docs/testing/test-report-phase-305-309-admin-advanced-settings-governance-pack.md`
+**Test:** 1970 toplam test (+23 yeni), tsc temiz, build temiz
+
+---
+
 ## [2026-04-03] Phase 299–304 — Library / Gallery / Content Management Pack
 
 **Ne:** Library / gallery / content management omurgasi oturdu. Phase 299: ContentLibraryPage olusturuldu, AdminOverviewPage'e library quick link, sidebar'a Icerik Kutuphanesi linki, UserContentEntryPage'e library crosslink eklendi. Phase 300: Birlesik icerik listesi — standard video + news bulletin ayni tabloda, status badge, tarih siralamasi, bos durum mesaji. Phase 301: Filtre ve Arama section'i — search input, icerik turu select, durum select, siralama select (disabled, backend bekleniyor). Phase 302: StandardVideoRegistryPage heading "Standart Video Kayitlari" + testid + workflow note, StandardVideoDetailPage'e library back-link ve manage note eklendi. Phase 303: Icerik Yonetim Aksiyonlari section'i — duzenleme, yeniden kullanma, klonlama aksiyonlari gorunur. Phase 304: End-to-end dogrulama.

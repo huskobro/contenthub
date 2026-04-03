@@ -74,7 +74,7 @@ const QUICK_LINKS = [
   },
   {
     title: "Ayarlar",
-    desc: "Sistem yapilandirmasini yonet",
+    desc: "Ayar kayitlarini ve governance durumunu yonet",
     to: "/admin/settings",
     testId: "quick-link-settings",
   },

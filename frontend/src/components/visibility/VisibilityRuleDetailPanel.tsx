@@ -81,18 +81,37 @@ export function VisibilityRuleDetailPanel({ selectedId }: VisibilityRuleDetailPa
 
   return (
     <div style={{ padding: "1rem" }}>
-      <h3 style={{ margin: "0 0 0.75rem", fontSize: "1rem" }}>Rule Detayı</h3>
-      <Row label="rule_type">{data.rule_type ?? DASH}</Row>
-      <Row label="target_key"><code>{data.target_key ?? DASH}</code></Row>
-      <Row label="module_scope">{data.module_scope ?? <em style={MUTED}>—</em>}</Row>
-      <Row label="role_scope">{data.role_scope ?? <em style={MUTED}>—</em>}</Row>
-      <Row label="mode_scope">{data.mode_scope ?? <em style={MUTED}>—</em>}</Row>
-      <Row label="visible"><BoolBadge value={data.visible} /></Row>
-      <Row label="read_only"><BoolBadge value={data.read_only} /></Row>
-      <Row label="wizard_visible"><BoolBadge value={data.wizard_visible} /></Row>
-      <Row label="status">{data.status ?? DASH}</Row>
-      <Row label="priority">{data.priority ?? DASH}</Row>
-      <Row label="notes">{data.notes ?? <em style={MUTED}>—</em>}</Row>
+      <h3 style={{ margin: "0 0 0.25rem", fontSize: "1rem" }} data-testid="visibility-detail-heading">Kural Detayi</h3>
+      <p style={{ margin: "0 0 0.75rem", fontSize: "0.6875rem", color: "#94a3b8" }} data-testid="visibility-detail-note">
+        Kural bilgileri, kapsam ayarlari ve governance durumu asagida gorunur.
+      </p>
+
+      <div style={{ marginBottom: "0.5rem", fontSize: "0.6875rem", fontWeight: 600, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em" }} data-testid="visibility-section-identity">
+        Kimlik ve Hedef
+      </div>
+      <Row label="Kural Turu">{data.rule_type ?? DASH}</Row>
+      <Row label="Hedef Anahtar"><code>{data.target_key ?? DASH}</code></Row>
+
+      <div style={{ marginTop: "0.75rem", marginBottom: "0.5rem", fontSize: "0.6875rem", fontWeight: 600, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em" }} data-testid="visibility-section-scope">
+        Kapsam
+      </div>
+      <Row label="Modul Kapsami">{data.module_scope ?? <em style={MUTED}>—</em>}</Row>
+      <Row label="Rol Kapsami">{data.role_scope ?? <em style={MUTED}>—</em>}</Row>
+      <Row label="Mod Kapsami">{data.mode_scope ?? <em style={MUTED}>—</em>}</Row>
+
+      <div style={{ marginTop: "0.75rem", marginBottom: "0.5rem", fontSize: "0.6875rem", fontWeight: 600, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em" }} data-testid="visibility-section-governance">
+        Governance
+      </div>
+      <Row label="Gorunur"><BoolBadge value={data.visible} /></Row>
+      <Row label="Salt Okunur"><BoolBadge value={data.read_only} /></Row>
+      <Row label="Wizard Gorunur"><BoolBadge value={data.wizard_visible} /></Row>
+
+      <div style={{ marginTop: "0.75rem", marginBottom: "0.5rem", fontSize: "0.6875rem", fontWeight: 600, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em" }} data-testid="visibility-section-status">
+        Durum ve Notlar
+      </div>
+      <Row label="Durum">{data.status ?? DASH}</Row>
+      <Row label="Oncelik">{data.priority ?? DASH}</Row>
+      <Row label="Notlar">{data.notes ?? <em style={MUTED}>—</em>}</Row>
     </div>
   );
 }
