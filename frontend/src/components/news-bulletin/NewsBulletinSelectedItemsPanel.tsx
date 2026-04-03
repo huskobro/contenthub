@@ -10,6 +10,8 @@ import { UsedNewsWarningDetails } from "./UsedNewsWarningDetails";
 import type { SelectedItemFormValues } from "./NewsBulletinSelectedItemForm";
 import type { NewsItemResponse } from "../../api/newsItemsApi";
 
+const MUTED_TEXT = "#64748b";
+
 interface Props {
   bulletinId: string;
 }
@@ -75,7 +77,7 @@ export function NewsBulletinSelectedItemsPanel({ bulletinId }: Props) {
   if (isLoading) {
     return (
       <div style={sectionStyle}>
-        <p style={{ color: "#64748b", margin: 0 }}>Selected news yükleniyor...</p>
+        <p style={{ color: MUTED_TEXT, margin: 0 }}>Selected news yükleniyor...</p>
       </div>
     );
   }
@@ -144,11 +146,11 @@ export function NewsBulletinSelectedItemsPanel({ bulletinId }: Props) {
         <table style={{ width: "100%", fontSize: "0.8125rem", borderCollapse: "collapse" }}>
           <thead>
             <tr style={{ borderBottom: "1px solid #e2e8f0" }}>
-              <th style={{ textAlign: "left", padding: "0.25rem 0.5rem", color: "#64748b", fontWeight: 500 }}>News Item ID</th>
-              <th style={{ textAlign: "left", padding: "0.25rem 0.5rem", color: "#64748b", fontWeight: 500 }}>Sıra</th>
-              <th style={{ textAlign: "left", padding: "0.25rem 0.5rem", color: "#64748b", fontWeight: 500 }}>Gerekçe</th>
-              <th style={{ textAlign: "left", padding: "0.25rem 0.5rem", color: "#64748b", fontWeight: 500 }}>Uyarı</th>
-              <th style={{ textAlign: "left", padding: "0.25rem 0.5rem", color: "#64748b", fontWeight: 500 }}>Eklendi</th>
+              <th style={{ textAlign: "left", padding: "0.25rem 0.5rem", color: MUTED_TEXT, fontWeight: 500 }}>News Item ID</th>
+              <th style={{ textAlign: "left", padding: "0.25rem 0.5rem", color: MUTED_TEXT, fontWeight: 500 }}>Sıra</th>
+              <th style={{ textAlign: "left", padding: "0.25rem 0.5rem", color: MUTED_TEXT, fontWeight: 500 }}>Gerekçe</th>
+              <th style={{ textAlign: "left", padding: "0.25rem 0.5rem", color: MUTED_TEXT, fontWeight: 500 }}>Uyarı</th>
+              <th style={{ textAlign: "left", padding: "0.25rem 0.5rem", color: MUTED_TEXT, fontWeight: 500 }}>Eklendi</th>
               <th style={{ padding: "0.25rem 0.5rem" }}></th>
             </tr>
           </thead>

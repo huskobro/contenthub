@@ -27,11 +27,13 @@ interface TemplateFormProps {
 
 
 
+const BORDER_COLOR = "#e2e8f0";
+
 const inputStyle: React.CSSProperties = {
   width: "100%",
   padding: "0.375rem 0.5rem",
   fontSize: "0.875rem",
-  border: "1px solid #e2e8f0",
+  border: `1px solid ${BORDER_COLOR}`,
   borderRadius: "4px",
   boxSizing: "border-box",
 };
@@ -118,7 +120,7 @@ export function TemplateForm({
           Ad <span style={{ color: "#dc2626" }}>*</span>
         </label>
         <input
-          style={{ ...inputStyle, borderColor: errors.name ? "#dc2626" : "#e2e8f0" }}
+          style={{ ...inputStyle, borderColor: errors.name ? "#dc2626" : BORDER_COLOR }}
           value={values.name}
           onChange={(e) => set("name", e.target.value)}
           placeholder="Template adı"
@@ -182,7 +184,7 @@ export function TemplateForm({
       <div style={fieldStyle}>
         <label style={labelStyle}>Version</label>
         <input
-          style={{ ...inputStyle, borderColor: errors.version ? "#dc2626" : "#e2e8f0" }}
+          style={{ ...inputStyle, borderColor: errors.version ? "#dc2626" : BORDER_COLOR }}
           type="number"
           min={0}
           value={values.version}
@@ -201,7 +203,7 @@ export function TemplateForm({
               resize: "vertical",
               fontFamily: "monospace",
               fontSize: "0.8rem",
-              borderColor: errors.style_profile_json ? "#dc2626" : "#e2e8f0",
+              borderColor: errors.style_profile_json ? "#dc2626" : BORDER_COLOR,
             }}
             value={values.style_profile_json}
             onChange={(e) => set("style_profile_json", e.target.value)}
@@ -219,7 +221,7 @@ export function TemplateForm({
               resize: "vertical",
               fontFamily: "monospace",
               fontSize: "0.8rem",
-              borderColor: errors.content_rules_json ? "#dc2626" : "#e2e8f0",
+              borderColor: errors.content_rules_json ? "#dc2626" : BORDER_COLOR,
             }}
             value={values.content_rules_json}
             onChange={(e) => set("content_rules_json", e.target.value)}
@@ -237,7 +239,7 @@ export function TemplateForm({
               resize: "vertical",
               fontFamily: "monospace",
               fontSize: "0.8rem",
-              borderColor: errors.publish_profile_json ? "#dc2626" : "#e2e8f0",
+              borderColor: errors.publish_profile_json ? "#dc2626" : BORDER_COLOR,
             }}
             value={values.publish_profile_json}
             onChange={(e) => set("publish_profile_json", e.target.value)}
@@ -276,7 +278,7 @@ export function TemplateForm({
             fontSize: "0.875rem",
             background: "#f1f5f9",
             color: "#475569",
-            border: "1px solid #e2e8f0",
+            border: `1px solid ${BORDER_COLOR}`,
             borderRadius: "4px",
             cursor: isSubmitting ? "not-allowed" : "pointer",
           }}

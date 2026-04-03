@@ -2,6 +2,20 @@
 
 ---
 
+## [2026-04-03] Phase 166 — Repeated Neutral Color Literal Constant Pack
+
+**Ne:** Form ve panel bileşenlerinde 4+ tekrarlı bare color literal'lerini dosya-seviyesi const'lara taşıma. `BORDER_COLOR` (#e2e8f0) ve `MUTED_TEXT` (#64748b) eklendi.
+**Eklenen/değiştirilen dosyalar:**
+- `TemplateForm.tsx`: `const BORDER_COLOR` eklendi, 7 → const referansı
+- `SourceScanForm.tsx`: `const BORDER_COLOR` eklendi, 5 → const referansı
+- `StyleBlueprintForm.tsx`: `const BORDER_COLOR` eklendi, 5 → const referansı
+- `NewsBulletinSelectedItemsPanel.tsx`: `const MUTED_TEXT` eklendi, 6 → const referansı
+- `docs/testing/test-report-phase-166-repeated-neutral-color-literal-constant-pack.md` (yeni)
+**Test:** 1587 toplam test, tsc temiz, vite build temiz
+**Dokunulmayan:** Görünüm, davranış, badge stilleri, backend
+
+---
+
 ## [2026-04-03] Phase 165 — Repeated Empty/Fallback String Constant Pack
 
 **Ne:** Bileşenlerde 3+ kez tekrar eden fallback string literal'lerini const ile extraction. Kapsamlı audit yapıldı; tek gerçek extraction fırsatı NewsBulletinForm.tsx'de bulundu.

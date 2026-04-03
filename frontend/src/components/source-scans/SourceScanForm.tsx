@@ -21,11 +21,13 @@ interface SourceScanFormProps {
   submitLabel?: string;
 }
 
+const BORDER_COLOR = "#e2e8f0";
+
 const inputStyle: React.CSSProperties = {
   width: "100%",
   padding: "0.375rem 0.5rem",
   fontSize: "0.875rem",
-  border: "1px solid #e2e8f0",
+  border: `1px solid ${BORDER_COLOR}`,
   borderRadius: "4px",
   boxSizing: "border-box",
 };
@@ -102,7 +104,7 @@ export function SourceScanForm({
               Source ID <span style={{ color: "#dc2626" }}>*</span>
             </label>
             <input
-              style={{ ...inputStyle, borderColor: errors.source_id ? "#dc2626" : "#e2e8f0" }}
+              style={{ ...inputStyle, borderColor: errors.source_id ? "#dc2626" : BORDER_COLOR }}
               value={values.source_id}
               onChange={(e) => set("source_id", e.target.value)}
               placeholder="Source UUID"
@@ -115,7 +117,7 @@ export function SourceScanForm({
               Scan Mode <span style={{ color: "#dc2626" }}>*</span>
             </label>
             <select
-              style={{ ...inputStyle, borderColor: errors.scan_mode ? "#dc2626" : "#e2e8f0" }}
+              style={{ ...inputStyle, borderColor: errors.scan_mode ? "#dc2626" : BORDER_COLOR }}
               value={values.scan_mode}
               onChange={(e) => set("scan_mode", e.target.value)}
             >
@@ -152,7 +154,7 @@ export function SourceScanForm({
       <div style={fieldStyle}>
         <label style={labelStyle}>Result Count</label>
         <input
-          style={{ ...inputStyle, borderColor: errors.result_count ? "#dc2626" : "#e2e8f0" }}
+          style={{ ...inputStyle, borderColor: errors.result_count ? "#dc2626" : BORDER_COLOR }}
           type="text"
           value={values.result_count}
           onChange={(e) => set("result_count", e.target.value)}
@@ -210,7 +212,7 @@ export function SourceScanForm({
             fontSize: "0.875rem",
             background: "#f1f5f9",
             color: "#475569",
-            border: "1px solid #e2e8f0",
+            border: `1px solid ${BORDER_COLOR}`,
             borderRadius: "4px",
             cursor: isSubmitting ? "not-allowed" : "pointer",
           }}
