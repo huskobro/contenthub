@@ -2,6 +2,19 @@
 
 ---
 
+## [2026-04-03] Phase 254 — User Flow / Navigation — User to Admin Task Continuity Strip
+
+**Ne:** User panelden admin yüzeylerine gecen kullanici icin kopukluk hissini azaltan continuity strip eklendi. AdminContinuityStrip component'i admin layout'a entegre edildi. Tum admin sayfalarinda header altinda hafif mavi bilgi bandi gorunur: "Yonetim panelinde islem yapiyorsunuz" mesaji ve "Kullanici Paneline Don" link butonu.
+**Sonuc:** User → admin gecislerinde kullanici yon kaybetmiyor. Admin tarafinda oldugunu biliyor ve tek tikla user panele donebiliyor. Iki panel arasinda baglantili yuezey hissi olusturuluyor.
+**Eklenen dosyalar:**
+- `frontend/src/components/layout/AdminContinuityStrip.tsx`
+- `frontend/src/tests/admin-continuity-strip.smoke.test.tsx` (7 yeni test)
+**Degistirilen dosyalar:**
+- `frontend/src/app/layouts/AdminLayout.tsx` (AdminContinuityStrip entegrasyonu)
+**Test:** 1704 toplam test (+7 yeni), tsc temiz, build temiz
+
+---
+
 ## [2026-04-03] Phase 253 — User Flow / Navigation — User Dashboard as Primary Action Hub
 
 **Ne:** `/user` anasayfasi pasif karsilama ekrani olmaktan cikarildi. DashboardActionHub component'i eklendi: 3 hizli erisim karti (Icerik → `/user/content`, Yayin → `/user/publish`, Yonetim Paneli → `/admin`). Onboarding tamamlanmis kullanici icin PostOnboardingHandoff ile birlikte gorunur. Onboarding tamamlanmamis kullanici icin mevcut guvenli fallback korunur.
