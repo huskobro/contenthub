@@ -2,6 +2,16 @@
 
 ---
 
+## [2026-04-03] Phase 176 — Repeated Small Form Help Text Style Constant Pack
+
+**Ne:** Tüm form ve panel bileşenlerinde tekrar eden help text / muted text inline style bloklarının kapsamlı audit'i.
+**Sonuç:** Aynı dosya içinde threshold 3+ sağlayan yeni dosya bulunamadı. Max 2× per dosya (validation hint, submitError, label helper, muted span). Dosya değişikliği yapılmadı.
+**Eklenen/değiştirilen dosyalar:**
+- `docs/testing/test-report-phase-176-repeated-small-form-help-text-style-constant-pack.md` (yeni — audit belgesi)
+**Test:** 1587 toplam test, tsc temiz
+
+---
+
 ## [2026-04-03] Phase 175 — Repeated Small Panel Divider Constant Pack
 
 **Ne:** Tüm panel ve form bileşenlerinde tekrar eden divider/separator inline style bloklarının kapsamlı audit'i.
