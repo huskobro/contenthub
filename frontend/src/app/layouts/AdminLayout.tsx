@@ -14,6 +14,8 @@ const ADMIN_NAV = [
   { label: "Sablonlar", to: "/admin/templates" },
   { label: "Stil Sablonlari", to: "/admin/style-blueprints" },
   { label: "Sablon-Stil Baglantilari", to: "/admin/template-style-links" },
+  { label: "Analytics", section: true },
+  { label: "Analytics", to: "/admin/analytics" },
   { label: "Haber", section: true },
   { label: "Kaynaklar", to: "/admin/sources" },
   { label: "Kaynak Taramalari", to: "/admin/source-scans" },

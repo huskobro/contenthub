@@ -78,6 +78,12 @@ const QUICK_LINKS = [
     to: "/admin/news-bulletins",
     testId: "quick-link-news-bulletins",
   },
+  {
+    title: "Analytics",
+    desc: "Uretim ve yayin sonrasi performans metriklerini takip et",
+    to: "/admin/analytics",
+    testId: "quick-link-analytics",
+  },
 ];
 
 export function AdminOverviewPage() {

@@ -2,6 +2,24 @@
 
 ---
 
+## [2026-04-03] Phase 293–298 — YouTube Analytics Pack
+
+**Ne:** YouTube analytics omurgasi oturdu. Phase 293: AdminOverviewPage'e analytics quick link, AdminLayout sidebar'a Analytics section ve link, AnalyticsOverviewPage olusturuldu (heading, subtitle, workflow zinciri). Phase 294: Temel Metrikler section'i — 6 metrik karti (yayin sayisi, basarisiz yayin, is basari orani, ort. uretim suresi, retry orani, provider hata orani). Phase 295: AnalyticsContentPage — video performans tablosu, modul dagilimi, standard video referansi. Phase 296: Kanal Ozeti — 3 metrik karti (toplam icerik, aktif moduller, sablon etkisi), video-level/kanal-level ayrimi. Phase 297: Filtre ve Tarih Araligi — date inputlari, modul select, devre disi notu. Phase 298: AnalyticsOperationsPage — is performansi, provider sagligi, kaynak etkisi; end-to-end dogrulama.
+**Sonuc:** Analytics yuzeyler urun icinde baslatilabilir, anlasilir ve izlenebilir. Admin overview'dan giris, sidebar'dan navigasyon, overview'da temel metrikler + kanal ozeti + filtreler, alt sayfalarda icerik performansi ve operasyon metrikleri gorunur. Omurga oturdu; gercek veri entegrasyonu (backend API), charting ve advanced dashboard ileride.
+**Degistirilen dosyalar:**
+- `frontend/src/app/router.tsx` (3 analytics route)
+- `frontend/src/app/layouts/AdminLayout.tsx` (sidebar analytics section + link)
+- `frontend/src/pages/AdminOverviewPage.tsx` (analytics quick link)
+**Eklenen dosyalar:**
+- `frontend/src/pages/admin/AnalyticsOverviewPage.tsx`
+- `frontend/src/pages/admin/AnalyticsContentPage.tsx`
+- `frontend/src/pages/admin/AnalyticsOperationsPage.tsx`
+- `frontend/src/tests/youtube-analytics-pack.smoke.test.tsx` (38 yeni test)
+- `docs/testing/test-report-phase-293-298-youtube-analytics-pack.md`
+**Test:** 1916 toplam test (+38 yeni), tsc temiz, build temiz
+
+---
+
 ## [2026-04-03] Phase 287–292 — YouTube Publish Workflow Pack
 
 **Ne:** YouTube publish workflow omurgasi oturdu. Phase 287: UserPublishEntryPage'de 3 kart aciklamasi yayin readiness kontekstiyle guncellendi, yayin zinciri (Icerik Uretimi → Readiness Kontrolu → Metadata Finalizasyonu → YouTube Yayini → Sonuc Takibi) eklendi. Phase 288: JobsRegistryPage heading "Uretim Isleri" + workflow note, AdminOverviewPage jobs quick link desc guncellendi. Phase 289: JobDetailPage workflow note'a yayin hazirlik durumu referansi, JobOverviewPanel'e heading testid ve publish readiness notu eklendi. Phase 290: StandardVideoDetailPage workflow chain'e yayin sureci referansi eklendi. Phase 291-292: Cross-surface tutarlilik dogrulamasi ve end-to-end verification.
