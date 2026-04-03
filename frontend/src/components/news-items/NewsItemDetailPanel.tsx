@@ -90,7 +90,7 @@ export function NewsItemDetailPanel({ selectedId }: Props) {
       </div>
       <Field label="ID" value={<code style={{ fontSize: "0.75rem" }}>{data.id}</code>} />
       <Field label="Başlık" value={data.title} />
-      <Field label="URL" value={<a href={data.url} target="_blank" rel="noreferrer" style={{ fontSize: "0.8rem", wordBreak: "break-all" }}>{data.url}</a>} />
+      <Field label="URL" value={data.url ? <a href={data.url} target="_blank" rel="noopener noreferrer" style={{ fontSize: "0.8rem", wordBreak: "break-all" }}>{data.url}</a> : null} />
       <Field label="Status" value={data.status} />
       <Field label="Kaynak ID" value={data.source_id} />
       <Field label="Scan ID" value={data.source_scan_id} />

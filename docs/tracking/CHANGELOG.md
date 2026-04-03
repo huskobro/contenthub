@@ -2,6 +2,18 @@
 
 ---
 
+## [2026-04-03] Phase 148 — URL / Link Surface Safety & External Target Hygiene Pack
+
+**Ne:** URL/link yüzeylerinde güvenlik denetimi ve düzeltme. Anchor null guard, rel attribute fix, UrlField overflowWrap eklendi.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/tests/url-link-safety.smoke.test.tsx` (yeni — 13 structural guard test)
+- `NewsItemDetailPanel.tsx` (anchor null guard + rel="noopener noreferrer" fix)
+- `SourceDetailPanel.tsx` (UrlField overflowWrap eklendi)
+**Test:** 1184 toplam test (+13 yeni), tsc temiz, vite build temiz
+**Dokunulmayan:** Link preview yok, favicon yok, URL normalization yok, badge stilleri korundu, backend değişiklik yok
+
+---
+
 ## [2026-04-03] Phase 147 — Text Field Overflow & Long Content Safety Pack
 
 **Ne:** Tüm korumasız metin render yüzeylerine wordBreak/overflowWrap overflow koruması eklendi. 9 detail panel Field/Row, 5 inline metin, 7 registry table (10 td), 14 form error display düzeltildi.

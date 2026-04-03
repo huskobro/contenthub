@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 147 — Text Field Overflow & Long Content Safety Pack ✓ TAMAMLANDI
+Phase 148 — URL / Link Surface Safety & External Target Hygiene Pack ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Tüm korumasız metin render yüzeylerine overflow koruması eklendi: 9 detail panel Field/Row, 5 inline render, 7 registry table (10 td), 14 form error display. 34 yeni guard test. 1171 toplam test.
+URL/link yüzeylerinde güvenlik denetimi ve düzeltme: anchor null guard, rel="noopener noreferrer" fix, UrlField overflowWrap, 13 yeni guard test. 1184 toplam test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 148: url link surface safety external target hygiene pack: anchor null guard fix, rel="noopener noreferrer" fix, UrlField overflowWrap, 13 yeni guard test, badge stilleri korundu, 1184 toplam (2026-04-03)
 - Phase 147: text field overflow long content safety pack: 9 panel Field/Row overflow fix, 5 inline text overflow fix, 7 registry table td overflow fix, 14 form error overflow fix, 34 yeni guard test, badge stilleri korundu, 1171 toplam (2026-04-03)
 - Phase 146: json field preview safety readability pack: shared safeJson.ts + JsonPreviewField, 3 duplicate kaldırıldı, 4 overflow fix, 2 validateJson dedup, 19 yeni guard test, badge stilleri korundu, 1137 toplam (2026-04-03)
 - Phase 145: list detail form date formatting safety unification pack: 4 helper (formatDateTime, formatDateShort, formatDateISO, normalizeDateForInput), 23 dosya güncellendi, SourceScanSummary Invalid Date guard eklendi, 19 yeni guard test, badge stilleri korundu, 1118 toplam (2026-04-03)

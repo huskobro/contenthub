@@ -27,7 +27,7 @@ function UrlField({ label, value }: { label: string; value: string | null }) {
       {value ? (
         <span style={{
           fontSize: "0.8rem", color: "#1e40af",
-          wordBreak: "break-all", fontFamily: "monospace",
+          wordBreak: "break-all", overflowWrap: "anywhere", fontFamily: "monospace",
         }}>
           {value}
         </span>
