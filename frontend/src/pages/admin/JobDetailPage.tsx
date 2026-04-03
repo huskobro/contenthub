@@ -50,7 +50,8 @@ export function JobDetailPage() {
         data-testid="job-detail-workflow-note"
       >
         Bu isin ilerleme durumunu, adimlarini ve sure bilgilerini asagidaki
-        timeline ve panellerden takip edebilirsiniz.
+        timeline ve panellerden takip edebilirsiniz. Is tamamlandiginda
+        yayin hazirlik durumu ve sonuclari buradan gorunur.
       </p>
 
       <JobOverviewPanel job={job} />

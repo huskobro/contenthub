@@ -30,7 +30,19 @@ export function JobOverviewPanel({ job }: JobOverviewPanelProps) {
         marginBottom: "1.5rem",
       }}
     >
-      <h3 style={{ margin: "0 0 0.75rem", fontSize: "1rem" }}>Genel Bilgi</h3>
+      <h3 style={{ margin: "0 0 0.25rem", fontSize: "1rem" }} data-testid="job-overview-heading">Genel Bilgi</h3>
+      <p
+        style={{
+          margin: "0 0 0.75rem",
+          fontSize: "0.75rem",
+          color: "#94a3b8",
+          lineHeight: 1.4,
+        }}
+        data-testid="job-overview-publish-note"
+      >
+        Isin tamamlanma durumu yayin hazirligini belirler. Basarili isler
+        yayin adimina gecebilir.
+      </p>
       <Row label="id"><code style={{ fontSize: "0.75rem" }}>{job.id}</code></Row>
       <Row label="module_type">{job.module_type}</Row>
       <Row label="status">{job.status}</Row>

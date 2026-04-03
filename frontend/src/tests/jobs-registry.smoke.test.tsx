@@ -108,7 +108,7 @@ beforeEach(() => {
 describe("Jobs Registry smoke tests", () => {
   it("renders the jobs page at /admin/jobs", async () => {
     renderJobs(mockFetch(MOCK_JOBS));
-    expect(screen.getByRole("heading", { name: "Jobs Registry" })).toBeDefined();
+    expect(screen.getByRole("heading", { name: "Uretim Isleri" })).toBeDefined();
   });
 
   it("shows loading state", () => {

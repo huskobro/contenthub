@@ -117,7 +117,8 @@ export function StandardVideoDetailPage() {
         data-testid="sv-detail-workflow-chain"
       >
         Uretim zinciri: Kayit → Script → Metadata → TTS → Altyazi → Kompozisyon.
-        Asagidaki panellerden her adimi yonetebilirsiniz.
+        Asagidaki panellerden her adimi yonetebilirsiniz. Tum adimlar
+        tamamlandiginda yayin sureci baslatilabilir.
       </p>
 
       {editMode ? (

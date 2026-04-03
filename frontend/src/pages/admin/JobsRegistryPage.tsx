@@ -11,9 +11,25 @@ export function JobsRegistryPage() {
 
   return (
     <div>
-      <h2 style={{ margin: "0 0 0.25rem" }}>Jobs Registry</h2>
-      <p style={{ margin: "0 0 1rem", color: "#64748b", fontSize: "0.875rem" }}>
-        Sistemde kayıtlı job'ların listesi ve detayları.
+      <h2
+        style={{ margin: "0 0 0.25rem", fontSize: "1.125rem", fontWeight: 600 }}
+        data-testid="jobs-registry-heading"
+      >
+        Uretim Isleri
+      </h2>
+      <p
+        style={{
+          margin: "0 0 0.5rem",
+          fontSize: "0.8125rem",
+          color: "#94a3b8",
+          lineHeight: 1.5,
+          maxWidth: "640px",
+        }}
+        data-testid="jobs-registry-workflow-note"
+      >
+        Uretim islerini ve yayin hazirligini buradan takip edebilirsiniz.
+        Tamamlanan isler yayin adimina hazir hale gelir. Yayin durumu,
+        sonuc ve hata bilgileri is detayinda gorunur.
       </p>
 
       {isLoading && <p style={{ color: "#64748b" }}>Yükleniyor...</p>}

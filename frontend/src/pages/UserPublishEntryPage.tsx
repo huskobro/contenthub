@@ -93,7 +93,7 @@ const PUBLISH_ENTRIES = [
     icon: "I",
     iconBg: "#059669",
     title: "Isler",
-    desc: "Uretim islerini takip edin. Tamamlanan isler yayin adimina hazirlanan iceriklerdir.",
+    desc: "Uretim islerini ve yayin hazirligini takip edin. Tamamlanan isler yayin adimina hazirlanan iceriklerdir. Yayin durumu ve sonuclari buradan gorulur.",
     cta: "Isleri Goruntule",
     to: "/admin/jobs",
     testId: "publish-entry-jobs",
@@ -102,7 +102,7 @@ const PUBLISH_ENTRIES = [
     icon: "V",
     iconBg: "#2563eb",
     title: "Standart Videolar",
-    desc: "Olusturulan videolari inceleyin ve yayin oncesi durumlarini kontrol edin.",
+    desc: "Olusturulan videolarin yayin hazirligini inceleyin. Metadata, script ve uretim tamamlandiginda YouTube yayini tetiklenebilir.",
     cta: "Videolari Goruntule",
     to: "/admin/standard-videos",
     testId: "publish-entry-standard-videos",
@@ -111,7 +111,7 @@ const PUBLISH_ENTRIES = [
     icon: "H",
     iconBg: "#7c3aed",
     title: "Haber Bultenleri",
-    desc: "Derlenen haber bultenlerini inceleyin ve yayin surecini takip edin.",
+    desc: "Derlenen haber bultenlerinin yayin hazirligini inceleyin. Script ve metadata tamamlandiginda yayin sureci baslatilabilir.",
     cta: "Bultenleri Goruntule",
     to: "/admin/news-bulletins",
     testId: "publish-entry-news-bulletins",
@@ -128,6 +128,18 @@ export function UserPublishEntryPage() {
         Yayin ve dagitim merkezi. Gorev zincirinizin ucuncu adimi: Icerik
         ekraninda olusturulan iceriklerinizin yayin durumunu buradan takip
         edebilirsiniz. Tamamlanan uretim isleri yonetim panelinden yayinlanabilir.
+      </p>
+      <p
+        style={{
+          margin: "-1rem 0 1.5rem",
+          fontSize: "0.8125rem",
+          color: "#94a3b8",
+          lineHeight: 1.5,
+          maxWidth: "720px",
+        }}
+        data-testid="publish-workflow-chain"
+      >
+        Yayin zinciri: Icerik Uretimi → Readiness Kontrolu → Metadata Finalizasyonu → YouTube Yayini → Sonuc Takibi.
       </p>
 
       <div style={GRID}>

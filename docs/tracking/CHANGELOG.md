@@ -2,6 +2,25 @@
 
 ---
 
+## [2026-04-03] Phase 287–292 — YouTube Publish Workflow Pack
+
+**Ne:** YouTube publish workflow omurgasi oturdu. Phase 287: UserPublishEntryPage'de 3 kart aciklamasi yayin readiness kontekstiyle guncellendi, yayin zinciri (Icerik Uretimi → Readiness Kontrolu → Metadata Finalizasyonu → YouTube Yayini → Sonuc Takibi) eklendi. Phase 288: JobsRegistryPage heading "Uretim Isleri" + workflow note, AdminOverviewPage jobs quick link desc guncellendi. Phase 289: JobDetailPage workflow note'a yayin hazirlik durumu referansi, JobOverviewPanel'e heading testid ve publish readiness notu eklendi. Phase 290: StandardVideoDetailPage workflow chain'e yayin sureci referansi eklendi. Phase 291-292: Cross-surface tutarlilik dogrulamasi ve end-to-end verification.
+**Sonuc:** Yayin zinciri tum yuzeylerden gorunur ve tutarli. Kullanici publish entry'den baslayip jobs→job detail→overview→standard video detail zincirinde yayin kontekstini her adimda gorebilir. Omurga oturdu; gercek YouTube API entegrasyonu, yayin butonu, sonuc feedback mekanizmasi ileride.
+**Degistirilen dosyalar:**
+- `frontend/src/pages/UserPublishEntryPage.tsx` (kart desc'leri + workflow chain)
+- `frontend/src/pages/admin/JobsRegistryPage.tsx` (heading testid + workflow note)
+- `frontend/src/pages/admin/JobDetailPage.tsx` (workflow note yayin referansi)
+- `frontend/src/pages/admin/StandardVideoDetailPage.tsx` (workflow chain yayin referansi)
+- `frontend/src/pages/AdminOverviewPage.tsx` (jobs quick link desc)
+- `frontend/src/components/jobs/JobOverviewPanel.tsx` (heading testid + publish note)
+- `frontend/src/tests/jobs-registry.smoke.test.tsx` (heading referansi guncelleme)
+**Eklenen dosyalar:**
+- `frontend/src/tests/youtube-publish-workflow-pack.smoke.test.tsx` (20 yeni test)
+- `docs/testing/test-report-phase-287-292-youtube-publish-workflow-pack.md`
+**Test:** 1878 toplam test (+20 yeni, +3 guncellenen), tsc temiz, build temiz
+
+---
+
 ## [2026-04-03] Phase 282–286 — Template / Style / Blueprint Pack
 
 **Ne:** Template / Style / Blueprint sistemi omurgasi oturdu. Phase 282: Admin overview quick link, templates/style blueprints/links registry heading'leri, workflow note'lari ve button copy'leri guncellendi. Phase 283: Template create page'e workflow subtitle eklendi, detail panele workflow note eklendi. Phase 284: Style blueprint create'e farkli rolunu anlatan subtitle eklendi, detail panele gorsel/yapisal kural notu eklendi. Phase 285: Template-style link create'e baglanti amacini anlatan subtitle eklendi, detail panele workflow note eklendi. Phase 286: End-to-end dogrulama — tum giris noktalari, registry, create, detail panelleri calisiyor.
