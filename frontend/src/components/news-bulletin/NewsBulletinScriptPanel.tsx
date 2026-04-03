@@ -7,6 +7,7 @@ import { isBlank } from "../../lib/isBlank";
 import type { ScriptFormValues } from "./NewsBulletinScriptForm";
 
 const DASH = "—";
+const LABEL_TD: React.CSSProperties = { color: "#64748b", paddingRight: "1rem", paddingBottom: "0.25rem" };
 
 interface Props {
   bulletinId: string;
@@ -123,20 +124,20 @@ export function NewsBulletinScriptPanel({ bulletinId }: Props) {
           <table style={{ fontSize: "0.8125rem", borderCollapse: "collapse", marginBottom: "0.75rem" }}>
             <tbody>
               <tr>
-                <td style={{ color: "#64748b", paddingRight: "1rem", paddingBottom: "0.25rem" }}>Versiyon</td>
+                <td style={LABEL_TD}>Versiyon</td>
                 <td>{script.version ?? DASH}</td>
               </tr>
               <tr>
-                <td style={{ color: "#64748b", paddingRight: "1rem", paddingBottom: "0.25rem" }}>Kaynak</td>
+                <td style={LABEL_TD}>Kaynak</td>
                 <td>{script.source_type ?? DASH}</td>
               </tr>
               <tr>
-                <td style={{ color: "#64748b", paddingRight: "1rem", paddingBottom: "0.25rem" }}>Durum</td>
+                <td style={LABEL_TD}>Durum</td>
                 <td>{script.generation_status ?? DASH}</td>
               </tr>
               {!isBlank(script.notes) && (
                 <tr>
-                  <td style={{ color: "#64748b", paddingRight: "1rem", paddingBottom: "0.25rem" }}>Notlar</td>
+                  <td style={LABEL_TD}>Notlar</td>
                   <td>{script.notes}</td>
                 </tr>
               )}

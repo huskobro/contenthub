@@ -2,6 +2,22 @@
 
 ---
 
+## [2026-04-03] Phase 161 — Repeated Panel Label Style Constant Pack
+
+**Ne:** Aynı dosya içinde tekrar eden inline label style nesnelerini dosya başı `const` ile extraction. 6 dosyada LABEL_TD, LABEL_TD_TOP, LABEL_SPAN pattern'leri.
+**Eklenen/değiştirilen dosyalar:**
+- `NewsBulletinMetadataPanel.tsx`: `LABEL_TD` const, 9 td satırı sadeleşti
+- `StandardVideoMetadataPanel.tsx`: `LABEL_TD` + `LABEL_TD_TOP` const, 8 td satırı sadeleşti
+- `NewsBulletinScriptPanel.tsx`: `LABEL_TD` const, 4 td satırı sadeleşti
+- `StandardVideoScriptPanel.tsx`: `LABEL_TD` const, 4 td satırı sadeleşti
+- `SourceDetailPanel.tsx`: `LABEL_SPAN` const, 2 span sadeleşti
+- `SourceScanDetailPanel.tsx`: `LABEL_SPAN` const, 1 span sadeleşti
+- `docs/testing/test-report-phase-161-repeated-panel-label-style-constant-pack.md` (yeni)
+**Test:** 1587 toplam test, tsc temiz, vite build temiz
+**Dokunulmayan:** Görünüm, davranış, badge stilleri, backend, business logic, yeni feature
+
+---
+
 ## [2026-04-03] Phase 160 — Field/Row Label-Value Rendering Consistency Pack
 
 **Ne:** Detail panel bileşenlerinde Row ve Field label-value görsel dilinin hizalanması. 3 Row value span'e `overflowWrap: "anywhere"` eklendi (JobDetailPanel, JobOverviewPanel, VisibilityRuleDetailPanel). 2 Field label span'e `color: "#64748b"` + `fontSize: "0.8125rem"` eklendi (NewsBulletinDetailPanel, UsedNewsDetailPanel).

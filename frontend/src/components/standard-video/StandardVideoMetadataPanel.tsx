@@ -5,6 +5,8 @@ import type { MetadataFormValues } from "./StandardVideoMetadataForm";
 import { isBlank } from "../../lib/isBlank";
 
 const DASH = "—";
+const LABEL_TD: React.CSSProperties = { color: "#64748b", paddingRight: "1rem", paddingBottom: "0.375rem", whiteSpace: "nowrap" };
+const LABEL_TD_TOP: React.CSSProperties = { ...LABEL_TD, verticalAlign: "top" };
 
 interface Props {
   videoId: string;
@@ -218,18 +220,18 @@ export function StandardVideoMetadataPanel({
         <table style={{ fontSize: "0.8125rem", borderCollapse: "collapse", width: "100%" }}>
           <tbody>
             <tr>
-              <td style={{ color: "#64748b", paddingRight: "1rem", paddingBottom: "0.375rem", whiteSpace: "nowrap", verticalAlign: "top" }}>Başlık</td>
+              <td style={LABEL_TD_TOP}>Başlık</td>
               <td style={{ paddingBottom: "0.375rem", fontWeight: 500, wordBreak: "break-word", overflowWrap: "anywhere" }}>{metadata.title ?? DASH}</td>
             </tr>
             {metadata.description && (
               <tr>
-                <td style={{ color: "#64748b", paddingRight: "1rem", paddingBottom: "0.375rem", whiteSpace: "nowrap", verticalAlign: "top" }}>Açıklama</td>
+                <td style={LABEL_TD_TOP}>Açıklama</td>
                 <td style={{ paddingBottom: "0.375rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>{metadata.description}</td>
               </tr>
             )}
             {tags.length > 0 && (
               <tr>
-                <td style={{ color: "#64748b", paddingRight: "1rem", paddingBottom: "0.375rem", whiteSpace: "nowrap", verticalAlign: "top" }}>Etiketler</td>
+                <td style={LABEL_TD_TOP}>Etiketler</td>
                 <td style={{ paddingBottom: "0.375rem" }}>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: "0.25rem" }}>
                     {tags.map((tag, i) => (
@@ -251,31 +253,31 @@ export function StandardVideoMetadataPanel({
             )}
             {metadata.category && (
               <tr>
-                <td style={{ color: "#64748b", paddingRight: "1rem", paddingBottom: "0.375rem", whiteSpace: "nowrap" }}>Kategori</td>
+                <td style={LABEL_TD}>Kategori</td>
                 <td style={{ paddingBottom: "0.375rem" }}>{metadata.category}</td>
               </tr>
             )}
             {metadata.language && (
               <tr>
-                <td style={{ color: "#64748b", paddingRight: "1rem", paddingBottom: "0.375rem", whiteSpace: "nowrap" }}>Dil</td>
+                <td style={LABEL_TD}>Dil</td>
                 <td style={{ paddingBottom: "0.375rem" }}>{metadata.language}</td>
               </tr>
             )}
             <tr>
-              <td style={{ color: "#64748b", paddingRight: "1rem", paddingBottom: "0.375rem", whiteSpace: "nowrap" }}>Versiyon</td>
+              <td style={LABEL_TD}>Versiyon</td>
               <td style={{ paddingBottom: "0.375rem" }}>{metadata.version ?? DASH}</td>
             </tr>
             <tr>
-              <td style={{ color: "#64748b", paddingRight: "1rem", paddingBottom: "0.375rem", whiteSpace: "nowrap" }}>Kaynak</td>
+              <td style={LABEL_TD}>Kaynak</td>
               <td style={{ paddingBottom: "0.375rem" }}>{metadata.source_type ?? DASH}</td>
             </tr>
             <tr>
-              <td style={{ color: "#64748b", paddingRight: "1rem", paddingBottom: "0.375rem", whiteSpace: "nowrap" }}>Durum</td>
+              <td style={LABEL_TD}>Durum</td>
               <td style={{ paddingBottom: "0.375rem" }}>{metadata.generation_status ?? DASH}</td>
             </tr>
             {!isBlank(metadata.notes) && (
               <tr>
-                <td style={{ color: "#64748b", paddingRight: "1rem", paddingBottom: "0.375rem", whiteSpace: "nowrap", verticalAlign: "top" }}>Notlar</td>
+                <td style={LABEL_TD_TOP}>Notlar</td>
                 <td style={{ paddingBottom: "0.375rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>{metadata.notes}</td>
               </tr>
             )}

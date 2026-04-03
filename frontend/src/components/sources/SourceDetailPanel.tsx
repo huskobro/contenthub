@@ -6,6 +6,8 @@ import { formatDateTime } from "../../lib/formatDate";
 import { isBlank } from "../../lib/isBlank";
 import type { SourceCreatePayload } from "../../api/sourcesApi";
 
+const LABEL_SPAN: React.CSSProperties = { fontSize: "0.75rem", fontWeight: 600, color: "#64748b" };
+
 interface SourceDetailPanelProps {
   sourceId: string | null;
 }
@@ -14,7 +16,7 @@ function Field({ label, value }: { label: string; value: string | null }) {
   const blank = isBlank(value);
   return (
     <div style={{ marginBottom: "0.5rem" }}>
-      <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "#64748b" }}>{label}: </span>
+      <span style={LABEL_SPAN}>{label}: </span>
       <span style={{ fontSize: "0.875rem", color: blank ? "#94a3b8" : "#1e293b", wordBreak: "break-word", overflowWrap: "anywhere" }}>
         {blank ? "—" : value}
       </span>
@@ -25,7 +27,7 @@ function Field({ label, value }: { label: string; value: string | null }) {
 function UrlField({ label, value }: { label: string; value: string | null }) {
   return (
     <div style={{ marginBottom: "0.5rem" }}>
-      <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "#64748b" }}>{label}: </span>
+      <span style={LABEL_SPAN}>{label}: </span>
       {!isBlank(value) ? (
         <span style={{
           fontSize: "0.8rem", color: "#1e40af",

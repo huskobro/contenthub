@@ -7,6 +7,8 @@ import { formatDateTime } from "../../lib/formatDate";
 import { isBlank } from "../../lib/isBlank";
 import { JsonPreviewField } from "../shared/JsonPreviewField";
 
+const LABEL_SPAN: React.CSSProperties = { fontSize: "0.75rem", fontWeight: 600, color: "#64748b" };
+
 interface SourceScanDetailPanelProps {
   scanId: string | null;
 }
@@ -15,7 +17,7 @@ function Field({ label, value }: { label: string; value: string | number | null 
   const isEmpty = value === null || value === undefined || (typeof value === "string" && isBlank(value));
   return (
     <div style={{ marginBottom: "0.5rem" }}>
-      <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "#64748b" }}>{label}: </span>
+      <span style={LABEL_SPAN}>{label}: </span>
       <span style={{ fontSize: "0.875rem", color: isEmpty ? "#94a3b8" : "#1e293b", wordBreak: "break-word", overflowWrap: "anywhere" }}>
         {isEmpty ? "—" : String(value)}
       </span>

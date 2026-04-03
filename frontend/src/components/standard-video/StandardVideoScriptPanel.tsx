@@ -6,6 +6,7 @@ import { isBlank } from "../../lib/isBlank";
 
 const PREVIEW_LIMIT = 400;
 const DASH = "—";
+const LABEL_TD: React.CSSProperties = { color: "#64748b", paddingRight: "1rem", paddingBottom: "0.25rem" };
 
 interface Props {
   videoId: string;
@@ -164,20 +165,20 @@ export function StandardVideoScriptPanel({
           <table style={{ fontSize: "0.8125rem", borderCollapse: "collapse", marginBottom: "0.75rem" }}>
             <tbody>
               <tr>
-                <td style={{ color: "#64748b", paddingRight: "1rem", paddingBottom: "0.25rem" }}>Versiyon</td>
+                <td style={LABEL_TD}>Versiyon</td>
                 <td style={{ paddingBottom: "0.25rem" }}>{script.version ?? DASH}</td>
               </tr>
               <tr>
-                <td style={{ color: "#64748b", paddingRight: "1rem", paddingBottom: "0.25rem" }}>Kaynak</td>
+                <td style={LABEL_TD}>Kaynak</td>
                 <td style={{ paddingBottom: "0.25rem" }}>{script.source_type ?? DASH}</td>
               </tr>
               <tr>
-                <td style={{ color: "#64748b", paddingRight: "1rem", paddingBottom: "0.25rem" }}>Durum</td>
+                <td style={LABEL_TD}>Durum</td>
                 <td style={{ paddingBottom: "0.25rem" }}>{script.generation_status ?? DASH}</td>
               </tr>
               {!isBlank(script.notes) && (
                 <tr>
-                  <td style={{ color: "#64748b", paddingRight: "1rem", paddingBottom: "0.25rem" }}>Notlar</td>
+                  <td style={LABEL_TD}>Notlar</td>
                   <td style={{ paddingBottom: "0.25rem" }}>{script.notes}</td>
                 </tr>
               )}

@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 160 — Field/Row Label-Value Rendering Consistency Pack ✓ TAMAMLANDI
+Phase 161 — Repeated Panel Label Style Constant Pack ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Detail panel bileşenlerinde Row/Field label-value görsel dilini hizalama. Row value overflowWrap, Field label renk+font. 1587 toplam test.
+Aynı dosya içinde tekrar eden inline label style nesnelerini dosya başı const ile sadeleştirme. 1587 toplam test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 161: repeated panel label style constant pack: 6 dosyada LABEL_TD/LABEL_TD_TOP/LABEL_SPAN extraction, 27 inline style → const referansı, 1587 toplam (2026-04-03)
 - Phase 160: field/row label-value rendering consistency pack: 3 Row value overflowWrap fix, 2 Field label color+fontSize fix, 1587 toplam (2026-04-03)
 - Phase 159: helper return-type consistency call-site safety pack: formatDateTime default fallback null→"—", dönüş tipi string|null→string, 1 test güncelleme, 1587 toplam (2026-04-03)
 - Phase 158: repeated date fallback constant readability pack: 4 dosyada kalan inline "—" → DASH, 1587 toplam (2026-04-03)

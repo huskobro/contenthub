@@ -7,6 +7,7 @@ import { isBlank } from "../../lib/isBlank";
 import type { MetadataFormValues } from "./NewsBulletinMetadataForm";
 
 const DASH = "—";
+const LABEL_TD: React.CSSProperties = { color: "#64748b", paddingRight: "1rem", paddingBottom: "0.25rem" };
 
 interface Props {
   bulletinId: string;
@@ -131,40 +132,40 @@ export function NewsBulletinMetadataPanel({ bulletinId }: Props) {
         <table style={{ fontSize: "0.8125rem", borderCollapse: "collapse" }}>
           <tbody>
             <tr>
-              <td style={{ color: "#64748b", paddingRight: "1rem", paddingBottom: "0.25rem" }}>Başlık</td>
+              <td style={LABEL_TD}>Başlık</td>
               <td style={{ wordBreak: "break-word", overflowWrap: "anywhere" }}>{metadata.title ?? DASH}</td>
             </tr>
             <tr>
-              <td style={{ color: "#64748b", paddingRight: "1rem", paddingBottom: "0.25rem" }}>Açıklama</td>
+              <td style={LABEL_TD}>Açıklama</td>
               <td style={{ wordBreak: "break-word", overflowWrap: "anywhere" }}>{metadata.description ?? DASH}</td>
             </tr>
             <tr>
-              <td style={{ color: "#64748b", paddingRight: "1rem", paddingBottom: "0.25rem" }}>Etiketler</td>
+              <td style={LABEL_TD}>Etiketler</td>
               <td style={{ wordBreak: "break-all", overflowWrap: "anywhere" }}>{metadata.tags_json ?? DASH}</td>
             </tr>
             <tr>
-              <td style={{ color: "#64748b", paddingRight: "1rem", paddingBottom: "0.25rem" }}>Kategori</td>
+              <td style={LABEL_TD}>Kategori</td>
               <td>{metadata.category ?? DASH}</td>
             </tr>
             <tr>
-              <td style={{ color: "#64748b", paddingRight: "1rem", paddingBottom: "0.25rem" }}>Dil</td>
+              <td style={LABEL_TD}>Dil</td>
               <td>{metadata.language ?? DASH}</td>
             </tr>
             <tr>
-              <td style={{ color: "#64748b", paddingRight: "1rem", paddingBottom: "0.25rem" }}>Versiyon</td>
+              <td style={LABEL_TD}>Versiyon</td>
               <td>{metadata.version ?? DASH}</td>
             </tr>
             <tr>
-              <td style={{ color: "#64748b", paddingRight: "1rem", paddingBottom: "0.25rem" }}>Kaynak</td>
+              <td style={LABEL_TD}>Kaynak</td>
               <td>{metadata.source_type ?? DASH}</td>
             </tr>
             <tr>
-              <td style={{ color: "#64748b", paddingRight: "1rem", paddingBottom: "0.25rem" }}>Durum</td>
+              <td style={LABEL_TD}>Durum</td>
               <td>{metadata.generation_status ?? DASH}</td>
             </tr>
             {!isBlank(metadata.notes) && (
               <tr>
-                <td style={{ color: "#64748b", paddingRight: "1rem", paddingBottom: "0.25rem" }}>Notlar</td>
+                <td style={LABEL_TD}>Notlar</td>
                 <td style={{ wordBreak: "break-word", overflowWrap: "anywhere" }}>{metadata.notes}</td>
               </tr>
             )}
