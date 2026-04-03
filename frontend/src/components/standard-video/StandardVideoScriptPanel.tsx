@@ -8,6 +8,7 @@ const PREVIEW_LIMIT = 400;
 const DASH = "—";
 const LABEL_TD: React.CSSProperties = { color: "#64748b", paddingRight: "1rem", paddingBottom: "0.25rem" };
 const SECTION_STYLE: React.CSSProperties = { border: "1px solid #e2e8f0", borderRadius: "6px", padding: "1rem", marginBottom: "1.25rem" };
+const FORM_HEADING: React.CSSProperties = { margin: "0 0 1rem", fontSize: "0.9375rem", fontWeight: 600 };
 
 interface Props {
   videoId: string;
@@ -80,7 +81,7 @@ export function StandardVideoScriptPanel({
   if (mode === "create") {
     return (
       <div style={SECTION_STYLE}>
-        <h4 style={{ margin: "0 0 1rem", fontSize: "0.9375rem", fontWeight: 600 }}>Script Oluştur</h4>
+        <h4 style={FORM_HEADING}>Script Oluştur</h4>
         <StandardVideoScriptForm
           mode="create"
           isSubmitting={isCreating}
@@ -95,7 +96,7 @@ export function StandardVideoScriptPanel({
   if (mode === "edit") {
     return (
       <div style={SECTION_STYLE}>
-        <h4 style={{ margin: "0 0 1rem", fontSize: "0.9375rem", fontWeight: 600 }}>Script Düzenle</h4>
+        <h4 style={FORM_HEADING}>Script Düzenle</h4>
         <StandardVideoScriptForm
           mode="edit"
           initial={{

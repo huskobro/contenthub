@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 163 — Repeated Section/Container Style Constant Pack ✓ TAMAMLANDI
+Phase 164 — Repeated Heading/Text Style Constant Pack ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Panel/metadata/script bileşenlerindeki tekrar eden section wrapper ve container style nesnelerini dosya-seviyesi const'lara taşıma. 1587 toplam test.
+Panel bileşenlerindeki tekrar eden heading ve muted text style nesnelerini dosya-seviyesi const'lara taşıma. 1587 toplam test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 164: repeated heading/text style constant pack: 4 dosyada FORM_HEADING/MUTED extraction, 1587 toplam (2026-04-03)
 - Phase 163: repeated section/container style constant pack: 8 dosyada SECTION_STYLE/PANEL_BOX/SECTION_DIVIDER extraction, 1587 toplam (2026-04-03)
 - Phase 162: repeated table cell style constant pack: 12 tablo dosyasında TH_STYLE/TD_STYLE extraction, 1587 toplam (2026-04-03)
 - Phase 161: repeated panel label style constant pack: 6 dosyada LABEL_TD/LABEL_TD_TOP/LABEL_SPAN extraction, 27 inline style → const referansı, 1587 toplam (2026-04-03)

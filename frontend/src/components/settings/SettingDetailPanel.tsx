@@ -1,6 +1,7 @@
 import { useSettingDetail } from "../../hooks/useSettingDetail";
 
 const DASH = "—";
+const MUTED: React.CSSProperties = { color: "#94a3b8" };
 
 interface SettingDetailPanelProps {
   selectedId: string | null;
@@ -106,8 +107,8 @@ export function SettingDetailPanel({ selectedId }: SettingDetailPanelProps) {
       <Row label="read_only_for_user">
         <BoolBadge value={data.read_only_for_user} />
       </Row>
-      <Row label="module_scope">{data.module_scope ?? <em style={{ color: "#94a3b8" }}>—</em>}</Row>
-      <Row label="help_text">{data.help_text ?? <em style={{ color: "#94a3b8" }}>—</em>}</Row>
+      <Row label="module_scope">{data.module_scope ?? <em style={MUTED}>—</em>}</Row>
+      <Row label="help_text">{data.help_text ?? <em style={MUTED}>—</em>}</Row>
       <Row label="status">{data.status ?? DASH}</Row>
       <Row label="version">{data.version ?? DASH}</Row>
     </div>

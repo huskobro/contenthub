@@ -2,6 +2,20 @@
 
 ---
 
+## [2026-04-03] Phase 164 — Repeated Heading/Text Style Constant Pack
+
+**Ne:** Panel bileşenlerindeki tekrar eden heading ve muted text style nesnelerini dosya-seviyesi const'lara taşıma. FORM_HEADING (h4 create/edit başlıkları) ve MUTED (em dash fallback'leri).
+**Eklenen/değiştirilen dosyalar:**
+- `StandardVideoMetadataPanel.tsx`: FORM_HEADING, 2 h4
+- `StandardVideoScriptPanel.tsx`: FORM_HEADING, 2 h4
+- `VisibilityRuleDetailPanel.tsx`: MUTED, 4 em
+- `SettingDetailPanel.tsx`: MUTED, 2 em
+- `docs/testing/test-report-phase-164-repeated-heading-text-style-constant-pack.md` (yeni)
+**Test:** 1587 toplam test, tsc temiz, vite build temiz
+**Dokunulmayan:** Görünüm, davranış, badge stilleri, backend
+
+---
+
 ## [2026-04-03] Phase 163 — Repeated Section/Container Style Constant Pack
 
 **Ne:** Panel/metadata/script bileşenlerindeki tekrar eden section wrapper ve container style nesnelerini dosya-seviyesi const'lara taşıma. Component içi `sectionStyle`'lar dosya-seviyesine çıkarıldı.

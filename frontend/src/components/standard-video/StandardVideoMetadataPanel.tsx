@@ -8,6 +8,7 @@ const DASH = "—";
 const LABEL_TD: React.CSSProperties = { color: "#64748b", paddingRight: "1rem", paddingBottom: "0.375rem", whiteSpace: "nowrap" };
 const LABEL_TD_TOP: React.CSSProperties = { ...LABEL_TD, verticalAlign: "top" };
 const SECTION_STYLE: React.CSSProperties = { border: "1px solid #e2e8f0", borderRadius: "6px", padding: "1rem", marginBottom: "1.25rem" };
+const FORM_HEADING: React.CSSProperties = { margin: "0 0 1rem", fontSize: "0.9375rem", fontWeight: 600 };
 
 interface Props {
   videoId: string;
@@ -120,7 +121,7 @@ export function StandardVideoMetadataPanel({
   if (mode === "create") {
     return (
       <div style={SECTION_STYLE}>
-        <h4 style={{ margin: "0 0 1rem", fontSize: "0.9375rem", fontWeight: 600 }}>
+        <h4 style={FORM_HEADING}>
           Metadata Oluştur
         </h4>
         <StandardVideoMetadataForm
@@ -140,7 +141,7 @@ export function StandardVideoMetadataPanel({
   if (mode === "edit") {
     return (
       <div style={SECTION_STYLE}>
-        <h4 style={{ margin: "0 0 1rem", fontSize: "0.9375rem", fontWeight: 600 }}>
+        <h4 style={FORM_HEADING}>
           Metadata Düzenle
         </h4>
         <StandardVideoMetadataForm
