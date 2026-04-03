@@ -1,6 +1,8 @@
 import { useState } from "react";
 import type { NewsBulletinResponse } from "../../api/newsBulletinApi";
 
+const DASH = "—";
+
 export interface NewsBulletinFormValues {
   topic: string;
   title: string;
@@ -121,7 +123,7 @@ export function NewsBulletinForm({
           onChange={(e) => set("language", e.target.value)}
           style={{ display: "block", width: "100%", marginTop: "4px" }}
         >
-          <option value="">—</option>
+          <option value="">{DASH}</option>
           <option value="tr">tr</option>
           <option value="en">en</option>
         </select>
@@ -134,7 +136,7 @@ export function NewsBulletinForm({
           onChange={(e) => set("tone", e.target.value)}
           style={{ display: "block", width: "100%", marginTop: "4px" }}
         >
-          <option value="">—</option>
+          <option value="">{DASH}</option>
           <option value="formal">formal</option>
           <option value="casual">casual</option>
           <option value="urgent">urgent</option>
@@ -148,7 +150,7 @@ export function NewsBulletinForm({
           onChange={(e) => set("bulletin_style", e.target.value)}
           style={{ display: "block", width: "100%", marginTop: "4px" }}
         >
-          <option value="">—</option>
+          <option value="">{DASH}</option>
           <option value="studio">studio</option>
           <option value="futuristic">futuristic</option>
           <option value="traditional">traditional</option>
@@ -162,7 +164,7 @@ export function NewsBulletinForm({
           onChange={(e) => set("source_mode", e.target.value)}
           style={{ display: "block", width: "100%", marginTop: "4px" }}
         >
-          <option value="">—</option>
+          <option value="">{DASH}</option>
           <option value="manual">manual</option>
           <option value="curated">curated</option>
           <option value="auto">auto</option>

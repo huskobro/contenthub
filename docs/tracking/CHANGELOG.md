@@ -2,6 +2,17 @@
 
 ---
 
+## [2026-04-03] Phase 165 — Repeated Empty/Fallback String Constant Pack
+
+**Ne:** Bileşenlerde 3+ kez tekrar eden fallback string literal'lerini const ile extraction. Kapsamlı audit yapıldı; tek gerçek extraction fırsatı NewsBulletinForm.tsx'de bulundu.
+**Eklenen/değiştirilen dosyalar:**
+- `NewsBulletinForm.tsx`: `const DASH = "—"` eklendi, 4 JSX `—` text → `{DASH}`
+- `docs/testing/test-report-phase-165-repeated-empty-fallback-string-constant-pack.md` (yeni)
+**Test:** 1587 toplam test, tsc temiz, vite build temiz
+**Dokunulmayan:** Badge type string'leri, STYLES key'leri, 2-tekrarlı dosyalar (threshold altı)
+
+---
+
 ## [2026-04-03] Phase 164 — Repeated Heading/Text Style Constant Pack
 
 **Ne:** Panel bileşenlerindeki tekrar eden heading ve muted text style nesnelerini dosya-seviyesi const'lara taşıma. FORM_HEADING (h4 create/edit başlıkları) ve MUTED (em dash fallback'leri).

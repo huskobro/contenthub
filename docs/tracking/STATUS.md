@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 164 — Repeated Heading/Text Style Constant Pack ✓ TAMAMLANDI
+Phase 165 — Repeated Empty/Fallback String Constant Pack ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Panel bileşenlerindeki tekrar eden heading ve muted text style nesnelerini dosya-seviyesi const'lara taşıma. 1587 toplam test.
+Bileşenlerde tekrar eden empty/fallback string literal'lerini const ile extraction. NewsBulletinForm.tsx'de const DASH eklendi. 1587 toplam test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 165: repeated empty/fallback string constant pack: NewsBulletinForm.tsx'e const DASH eklendi, 4 JSX em-dash sadeleşti, 1587 toplam (2026-04-03)
 - Phase 164: repeated heading/text style constant pack: 4 dosyada FORM_HEADING/MUTED extraction, 1587 toplam (2026-04-03)
 - Phase 163: repeated section/container style constant pack: 8 dosyada SECTION_STYLE/PANEL_BOX/SECTION_DIVIDER extraction, 1587 toplam (2026-04-03)
 - Phase 162: repeated table cell style constant pack: 12 tablo dosyasında TH_STYLE/TD_STYLE extraction, 1587 toplam (2026-04-03)
