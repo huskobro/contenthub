@@ -1,10 +1,10 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 242 — Wizard / Onboarding — Provider / API Setup Step ✓ TAMAMLANDI (feature)
+Phase 243 — Wizard / Onboarding — Output / Workspace Path Setup Step ✓ TAMAMLANDI (feature)
 
 ## Mevcut Hedef
-Onboarding wizard'ina provider/API yapilandirma adimi eklendi. Welcome → Requirements (3 aksiyon) → Provider Setup → Completion → Uygulamaya Gecis zinciri calisiyor. 1636 toplam test.
+Onboarding wizard'ina calisma alani/cikti dizini yapilandirma adimi eklendi. Welcome → Requirements (3 aksiyon) → Provider Setup → Workspace Setup → Completion → Uygulamaya Gecis zinciri calisiyor. 1643 toplam test.
 
 ## Devam Eden
 — (devam eden calisma yok)
@@ -15,6 +15,7 @@ Onboarding wizard'ina provider/API yapilandirma adimi eklendi. Welcome → Requi
 - **ANA FAZ BAŞLADI:** Wizard / Onboarding (ürün geliştirme hattı)
 
 ## Son Tamamlananlar
+- Phase 243: onboarding output/workspace path setup step — workspace yapilandirma ekrani (workspace_root + output_dir), provider→workspace→completion zinciri, 7 yeni test, 1643 toplam (2026-04-03)
 - Phase 242: onboarding provider/API setup step — provider yapilandirma ekrani (TTS/LLM/YouTube API keys), requirements→provider-setup→completion zinciri, 7 yeni test, 1636 toplam (2026-04-03)
 - Phase 241: onboarding completion gate & continue flow — completion ekrani, requirements→completion→uygulamaya gecis zinciri, 7 yeni test, 1629 toplam (2026-04-03)
 - Phase 240: onboarding settings setup required action — requirements ekraninda ayar aksiyonu, OnboardingSettingsSetupScreen, createSetting API+hook, 7 yeni test, 1622 toplam (2026-04-03)

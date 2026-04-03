@@ -2,6 +2,20 @@
 
 ---
 
+## [2026-04-03] Phase 243 — Wizard / Onboarding — Output / Workspace Path Setup Step
+
+**Ne:** Onboarding wizard'ina calisma alani ve cikti dizini yapilandirma adimi eklendi. Provider setup sonrasi kullanici is artefaktlarinin (`workspace_root`) ve ciktilarin (`output_dir`) nereye yazilacagini belirleyebiliyor. Her iki ayar Settings tablosuna `group_name="workspace"` ile kaydedilir. Varsayilan degerler pre-filled (`workspace/jobs`, `workspace/exports`).
+**Sonuc:** Onboarding zinciri 8 adima genisletildi (welcome/requirements/source-setup/template-setup/settings-setup/provider-setup/workspace-setup/completion). Provider setup'in onComplete'i artik workspace-setup'a yonlendiriyor.
+**Eklenen dosyalar:**
+- `frontend/src/components/onboarding/OnboardingWorkspaceSetupScreen.tsx` (yeni)
+- `docs/testing/test-report-phase-243-onboarding-output-workspace-path-setup-step.md` (yeni)
+**Degistirilen dosyalar:**
+- `frontend/src/pages/OnboardingPage.tsx` (workspace-setup step, 8 adimli akis)
+- `frontend/src/tests/onboarding.smoke.test.tsx` (+7 yeni test, toplam 56)
+**Test:** 1643 toplam test (+7 yeni), tsc temiz, build temiz
+
+---
+
 ## [2026-04-03] Phase 242 — Wizard / Onboarding — Provider / API Setup Step
 
 **Ne:** Onboarding wizard'ina provider/API yapilandirma adimi eklendi. Requirements tamamlandiktan sonra kullanici TTS, LLM ve YouTube API anahtarlarini girebiliyor. En az bir anahtar zorunlu. Anahtarlar Settings tablosuna `group_name="providers"` ile kaydediliyor. Akis: Requirements → Provider Setup → Completion.

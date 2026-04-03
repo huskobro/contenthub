@@ -9,6 +9,7 @@ import { OnboardingTemplateSetupScreen } from "../components/onboarding/Onboardi
 import { OnboardingSettingsSetupScreen } from "../components/onboarding/OnboardingSettingsSetupScreen";
 import { OnboardingCompletionScreen } from "../components/onboarding/OnboardingCompletionScreen";
 import { OnboardingProviderSetupScreen } from "../components/onboarding/OnboardingProviderSetupScreen";
+import { OnboardingWorkspaceSetupScreen } from "../components/onboarding/OnboardingWorkspaceSetupScreen";
 import { OnboardingPage } from "../pages/OnboardingPage";
 import { AppEntryGate } from "../app/AppEntryGate";
 
@@ -476,6 +477,61 @@ describe("OnboardingPage provider-setup flow", () => {
     await screen.findByText("Provider / API Yapilandirmasi");
     fireEvent.click(screen.getByText("Iptal"));
     expect(await screen.findByText("Kurulum Durumu")).toBeDefined();
+  });
+});
+
+describe("OnboardingWorkspaceSetupScreen", () => {
+  it("renders workspace setup heading", () => {
+    window.fetch = mockFetch({});
+    wrap(<OnboardingWorkspaceSetupScreen onBack={vi.fn()} onComplete={vi.fn()} />);
+    expect(screen.getByText("Calisma Alani Yapilandirmasi")).toBeDefined();
+  });
+
+  it("renders Kaydet submit button", () => {
+    window.fetch = mockFetch({});
+    wrap(<OnboardingWorkspaceSetupScreen onBack={vi.fn()} onComplete={vi.fn()} />);
+    expect(screen.getByText("Kaydet")).toBeDefined();
+  });
+
+  it("renders both path sections", () => {
+    window.fetch = mockFetch({});
+    wrap(<OnboardingWorkspaceSetupScreen onBack={vi.fn()} onComplete={vi.fn()} />);
+    expect(screen.getByText("Is Artefaktlari")).toBeDefined();
+    expect(screen.getByText("Cikti Dizini")).toBeDefined();
+  });
+
+  it("calls onBack when Iptal is clicked", () => {
+    window.fetch = mockFetch({});
+    const onBack = vi.fn();
+    wrap(<OnboardingWorkspaceSetupScreen onBack={onBack} onComplete={vi.fn()} />);
+    fireEvent.click(screen.getByText("Iptal"));
+    expect(onBack).toHaveBeenCalledTimes(1);
+  });
+
+  it("shows validation error when workspace root is empty", () => {
+    window.fetch = mockFetch({});
+    wrap(<OnboardingWorkspaceSetupScreen onBack={vi.fn()} onComplete={vi.fn()} />);
+    const inputs = screen.getAllByRole("textbox");
+    fireEvent.change(inputs[0], { target: { value: "" } });
+    fireEvent.click(screen.getByText("Kaydet"));
+    expect(screen.getByText("Her iki klasor yolu da zorunludur.")).toBeDefined();
+  });
+});
+
+describe("OnboardingPage workspace-setup flow", () => {
+  it("renders workspace setup screen at workspace-setup step", () => {
+    window.fetch = mockFetch({});
+    wrap(<OnboardingWorkspaceSetupScreen onBack={vi.fn()} onComplete={vi.fn()} />);
+    expect(screen.getByText("Calisma Alani Yapilandirmasi")).toBeDefined();
+    expect(screen.getByText("Kaydet")).toBeDefined();
+  });
+
+  it("can go back from workspace-setup via Iptal", () => {
+    window.fetch = mockFetch({});
+    const onBack = vi.fn();
+    wrap(<OnboardingWorkspaceSetupScreen onBack={onBack} onComplete={vi.fn()} />);
+    fireEvent.click(screen.getByText("Iptal"));
+    expect(onBack).toHaveBeenCalledTimes(1);
   });
 });
 
