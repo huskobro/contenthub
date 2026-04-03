@@ -2,6 +2,21 @@
 
 ---
 
+## [2026-04-03] Phase 269–275 — Video Workflow Pack
+
+**Ne:** Standard Video workflow omurgasi oturdu. Phase 269: Create ekranina workflow baslangic aciklamasi ve testid eklendi. Phase 270-271: Detail ekranina uretim zinciri aciklamasi (Kayit → Script → Metadata → TTS → Altyazi → Kompozisyon) ve testid eklendi. Phase 272: TTS/Altyazi/Kompozisyon adimlari zincir referansinda gorunur kilindi. Phase 273: Job detail'e workflow takip notu ve testid eklendi. Phase 274: Detail/review/artifacts yuzeylerinin workflow ile baglantisi korundu. Phase 275: End-to-end dogrulama — tum giris noktalari, create, detail, job detail ve timeline zinciri calisiyor.
+**Sonuc:** Kullanici video uretim akisini baslatabilir, her adimi anlayabilir ve takip edebilir. Workflow create → detail (script + metadata) → job progress → timeline zinciri gorunur ve tutarli. Omurga oturdu; derin modul isleri (TTS/subtitle/composition pipeline, backend job entegrasyonu, review gate) ileride.
+**Degistirilen dosyalar:**
+- `frontend/src/pages/admin/StandardVideoCreatePage.tsx` (heading testid + workflow subtitle)
+- `frontend/src/pages/admin/StandardVideoDetailPage.tsx` (heading testid + workflow chain note)
+- `frontend/src/pages/admin/JobDetailPage.tsx` (heading testid + workflow tracking note)
+**Eklenen dosyalar:**
+- `frontend/src/tests/video-workflow-pack.smoke.test.tsx` (14 yeni test)
+- `docs/testing/test-report-phase-269-275-video-workflow-pack.md`
+**Test:** 1820 toplam test (+14 yeni), tsc temiz, build temiz
+
+---
+
 ## [2026-04-03] Phase 268 — Video Workflow Entry Map
 
 **Ne:** Video uretim akisina giden mevcut giris noktalarindaki copy/aciklama netligi arttirildi. Content entry Standart Video karti, admin overview "Yeni Video Olustur" quick link ve PostOnboardingHandoff aciklamasina "Ana uretim akisi" / "Video uretimi ana icerik akisinizdir" vurgusu eklendi. Admin overview quick link kartlarina `data-testid` eklendi.

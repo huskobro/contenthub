@@ -85,7 +85,7 @@ export function StandardVideoDetailPage() {
       </div>
 
       <div style={{ display: "flex", alignItems: "baseline", gap: "1rem", marginBottom: "0.25rem" }}>
-        <h2 style={{ margin: 0 }}>Standard Video Detayı</h2>
+        <h2 style={{ margin: 0 }} data-testid="sv-detail-heading">Standard Video Detayı</h2>
         {!editMode && (
           <button
             onClick={() => setEditMode(true)}
@@ -103,8 +103,21 @@ export function StandardVideoDetailPage() {
           </button>
         )}
       </div>
-      <p style={{ margin: "0 0 1.5rem", color: "#64748b", fontSize: "0.875rem" }}>
+      <p style={{ margin: "0 0 0.5rem", color: "#64748b", fontSize: "0.875rem" }}>
         {video.topic} — <code style={{ fontSize: "0.8125rem" }}>{video.id}</code>
+      </p>
+      <p
+        style={{
+          margin: "0 0 1.5rem",
+          fontSize: "0.8125rem",
+          color: "#94a3b8",
+          lineHeight: 1.5,
+          maxWidth: "640px",
+        }}
+        data-testid="sv-detail-workflow-chain"
+      >
+        Uretim zinciri: Kayit → Script → Metadata → TTS → Altyazi → Kompozisyon.
+        Asagidaki panellerden her adimi yonetebilirsiniz.
       </p>
 
       {editMode ? (

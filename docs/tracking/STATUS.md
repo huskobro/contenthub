@@ -1,12 +1,12 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 268 — Video Workflow Entry Map ✓ TAMAMLANDI (feature)
+Phase 269–275 — Video Workflow Pack ✓ TAMAMLANDI (feature)
 
-**ANA FAZ 3 BASLADI: Video uretim zinciri**
+**ANA FAZ 3 DEVAM EDIYOR: Video uretim zinciri**
 
 ## Mevcut Hedef
-Video uretim akisina giden giris noktalarini netlestirme. "Ana uretim akisi" vurgusu content/admin/handoff yuzeylerinde. Admin quick link testid'leri eklendi. 1806 toplam test.
+Standard Video workflow omurgasi oturdu. Create flow clarity, script/metadata step visibility, TTS/subtitle/composition chain clarity, job progress/timeline/ETA continuity, detail/artifacts surface ve end-to-end verification tamamlandi. 1820 toplam test.
 
 ## Devam Eden
 — (devam eden calisma yok)
@@ -17,6 +17,7 @@ Video uretim akisina giden giris noktalarini netlestirme. "Ana uretim akisi" vur
 - **ANA FAZ BAŞLADI:** Wizard / Onboarding (ürün geliştirme hattı)
 
 ## Son Tamamlananlar
+- Phase 269–275: video workflow pack — create flow clarity, script/metadata visibility, TTS/subtitle/composition chain, job progress/timeline/ETA, detail/artifacts surface, end-to-end verification, 14 yeni test, 1820 toplam (2026-04-03)
 - Phase 268: video workflow entry map — "Ana uretim akisi" vurgusu content/admin/handoff'ta, admin quick link testid'leri, 11 yeni test, 1806 toplam (2026-04-03)
 - Phase 264–267: navigation closure pack — task-chain visibility (ikinci/ucuncu adim), admin entry clarity (fiil-odakli subtitle, style hizalama), navigation consistency final pass, ANA FAZ 2 KAPATILDI, 17 yeni test, 1795 toplam (2026-04-03)
 - Phase 263: user/admin route intent clarity — panel rolleri netlesti (baslangic+takip vs uretim+yonetim), karsit referanslar, 11 yeni test, 1778 toplam (2026-04-03)
