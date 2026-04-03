@@ -4,7 +4,25 @@ interface VisibilityRuleDetailPanelProps {
   selectedId: string | null;
 }
 
-function BoolBadge({ value }: { value: boolean }) {
+function BoolBadge({ value }: { value: boolean | null | undefined }) {
+  if (value == null) {
+    return (
+      <span
+        style={{
+          display: "inline-block",
+          padding: "0.125rem 0.5rem",
+          borderRadius: "4px",
+          fontSize: "0.75rem",
+          fontWeight: 600,
+          background: "#f8fafc",
+          color: "#475569",
+          border: "1px solid #e2e8f0",
+        }}
+      >
+        —
+      </span>
+    );
+  }
   return (
     <span
       style={{

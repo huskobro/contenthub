@@ -2,6 +2,18 @@
 
 ---
 
+## [2026-04-03] Phase 154 — Boolean / Toggle / Flag Render Safety Pack
+
+**Ne:** Boolean/toggle/flag render yüzeylerinde null/undefined tristate koruması. BoolBadge bileşenine `value == null` guard eklendi, 10+ mevcut boolean yüzey doğrulandı (zaten güvenli), 25 structural guard test yazıldı.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/tests/boolean-toggle-flag-render-safety.smoke.test.tsx` (yeni — 25 structural guard test)
+- `SettingDetailPanel.tsx`: BoolBadge null/undefined tristate guard
+- `VisibilityRuleDetailPanel.tsx`: BoolBadge null/undefined tristate guard
+**Test:** 1560 toplam test (+25 yeni), tsc temiz, vite build temiz
+**Dokunulmayan:** Toggle UX redesign yok, badge stil değişikliği yok, label yeniden yazımı yok, backend yok, business logic yok
+
+---
+
 ## [2026-04-03] Phase 153 — Array / List Render Safety Pack
 
 **Ne:** Array/list render yüzeylerinde `.map()`, `.length`, `.join()` crash risklerine karşı `Array.isArray` guard eklendi. 2 step-list bileşeni düzeltildi, 5 mevcut JSON.parse null guard doğrulandı, 15 structural guard test yazıldı.

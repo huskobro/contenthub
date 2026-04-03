@@ -1,10 +1,10 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 153 — Array / List Render Safety Pack ✓ TAMAMLANDI
+Phase 154 — Boolean / Toggle / Flag Render Safety Pack ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Array/list render yüzeylerinde null/undefined crash koruması. 2 dosya fix, 15 yeni guard test. 1535 toplam test.
+Boolean/toggle/flag render yüzeylerinde null/undefined tristate koruması. 2 BoolBadge fix, 25 yeni guard test. 1560 toplam test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
