@@ -2,6 +2,19 @@
 
 ---
 
+## [2026-04-03] Phase 186 — Repeated Small Overflow/Wrap Style Constant Pack
+
+**Ne:** Bileşenlerde tekrar eden `{ wordBreak: "break-word", overflowWrap: "anywhere" }` inline style object'lerini dosya-seviyesi const'lara taşıma.
+**Eklenen/değiştirilen dosyalar:**
+- `NewsBulletinMetadataPanel.tsx`: `WRAP_WORD` const eklendi, 3× inline td style → const
+- `text-overflow-safety.smoke.test.tsx`: `NewsBulletinMetadataPanel title td` testi güncellendi (`WRAP_WORD` const referansını da kabul eder)
+- `docs/testing/test-report-phase-186-repeated-small-overflow-wrap-style-constant-pack.md` (yeni)
+**Atlanılan:** Diğer dosyalar — threshold altı
+**Test:** 1587 toplam test, tsc temiz, vite build temiz
+**Dokunulmayan:** Görünüm, davranış, badge stilleri, backend
+
+---
+
 ## [2026-04-03] Phase 185 — Repeated Small Cursor/Pointer Style Constant Pack
 
 **Ne:** Bileşenlerde tekrar eden `cursor: "pointer"` literal'larını dosya-seviyesi const'lara taşıma.

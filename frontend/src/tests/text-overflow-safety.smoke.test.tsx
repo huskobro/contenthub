@@ -92,8 +92,9 @@ describe("Inline text overflow safety", () => {
     const src = read("components/news-bulletin/NewsBulletinMetadataPanel.tsx");
     const line = src.split("\n").find((l) => l.includes("metadata.title") && l.includes("<td"));
     expect(line).toBeTruthy();
+    // Accept inline styles or extracted const (WRAP_WORD)
     expect(
-      line!.includes("wordBreak") || line!.includes("overflowWrap")
+      line!.includes("wordBreak") || line!.includes("overflowWrap") || line!.includes("WRAP_WORD")
     ).toBe(true);
   });
 });

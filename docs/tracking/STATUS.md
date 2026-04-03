@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 185 — Repeated Small Cursor/Pointer Style Constant Pack ✓ TAMAMLANDI
+Phase 186 — Repeated Small Overflow/Wrap Style Constant Pack ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Bileşenlerde tekrar eden cursor pointer literal audit. StandardVideoScriptPanel CURSOR_PTR×3. 1587 toplam test.
+Bileşenlerde tekrar eden overflow/wrap style object audit. NewsBulletinMetadataPanel WRAP_WORD×3. Test guard güncellendi. 1587 toplam test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 186: repeated small overflow/wrap style constant pack: WRAP_WORD extraction (NewsBulletinMetadataPanel×3), test guard güncellendi, 1587 toplam (2026-04-03)
 - Phase 185: repeated small cursor/pointer style constant pack: CURSOR_PTR extraction (StandardVideoScriptPanel×3), 1587 toplam (2026-04-03)
 - Phase 184: repeated small text align literal constant pack: kapsamlı audit, threshold altı (max 1× per dosya), hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 183: repeated small font weight constant pack: TH_CELL extraction (TemplateStyleLinksTable×6, NewsBulletinSelectedItemsPanel×5), 1587 toplam (2026-04-03)

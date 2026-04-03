@@ -7,6 +7,7 @@ import { isBlank } from "../../lib/isBlank";
 import type { MetadataFormValues } from "./NewsBulletinMetadataForm";
 
 const DASH = "—";
+const WRAP_WORD: React.CSSProperties = { wordBreak: "break-word", overflowWrap: "anywhere" };
 const LABEL_TD: React.CSSProperties = { color: "#64748b", paddingRight: "1rem", paddingBottom: "0.25rem" };
 const SECTION_STYLE: React.CSSProperties = { border: "1px solid #e2e8f0", borderRadius: "6px", padding: "1rem", marginTop: "1rem" };
 
@@ -128,11 +129,11 @@ export function NewsBulletinMetadataPanel({ bulletinId }: Props) {
           <tbody>
             <tr>
               <td style={LABEL_TD}>Başlık</td>
-              <td style={{ wordBreak: "break-word", overflowWrap: "anywhere" }}>{metadata.title ?? DASH}</td>
+              <td style={WRAP_WORD}>{metadata.title ?? DASH}</td>
             </tr>
             <tr>
               <td style={LABEL_TD}>Açıklama</td>
-              <td style={{ wordBreak: "break-word", overflowWrap: "anywhere" }}>{metadata.description ?? DASH}</td>
+              <td style={WRAP_WORD}>{metadata.description ?? DASH}</td>
             </tr>
             <tr>
               <td style={LABEL_TD}>Etiketler</td>
@@ -161,7 +162,7 @@ export function NewsBulletinMetadataPanel({ bulletinId }: Props) {
             {!isBlank(metadata.notes) && (
               <tr>
                 <td style={LABEL_TD}>Notlar</td>
-                <td style={{ wordBreak: "break-word", overflowWrap: "anywhere" }}>{metadata.notes}</td>
+                <td style={WRAP_WORD}>{metadata.notes}</td>
               </tr>
             )}
           </tbody>
