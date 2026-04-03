@@ -57,6 +57,23 @@ const errorStyle: React.CSSProperties = {
   marginTop: "0.2rem",
 };
 
+const BTN_PRIMARY: React.CSSProperties = {
+  padding: "0.375rem 1rem",
+  fontSize: "0.875rem",
+  color: "#fff",
+  border: "none",
+  borderRadius: "4px",
+};
+
+const BTN_CANCEL: React.CSSProperties = {
+  padding: "0.375rem 1rem",
+  fontSize: "0.875rem",
+  background: "#f1f5f9",
+  color: "#475569",
+  border: `1px solid ${BORDER_COLOR}`,
+  borderRadius: "4px",
+};
+
 export function StyleBlueprintForm({
   mode,
   initial,
@@ -213,15 +230,7 @@ export function StyleBlueprintForm({
         <button
           type="submit"
           disabled={isSubmitting}
-          style={{
-            padding: "0.375rem 1rem",
-            fontSize: "0.875rem",
-            background: isSubmitting ? "#93c5fd" : "#3b82f6",
-            color: "#fff",
-            border: "none",
-            borderRadius: "4px",
-            cursor: isSubmitting ? "not-allowed" : "pointer",
-          }}
+          style={{ ...BTN_PRIMARY, background: isSubmitting ? "#93c5fd" : "#3b82f6", cursor: isSubmitting ? "not-allowed" : "pointer" }}
         >
           {isSubmitting ? "Kaydediliyor..." : (submitLabel ?? (mode === "create" ? "Oluştur" : "Kaydet"))}
         </button>
@@ -229,15 +238,7 @@ export function StyleBlueprintForm({
           type="button"
           onClick={onCancel}
           disabled={isSubmitting}
-          style={{
-            padding: "0.375rem 1rem",
-            fontSize: "0.875rem",
-            background: "#f1f5f9",
-            color: "#475569",
-            border: `1px solid ${BORDER_COLOR}`,
-            borderRadius: "4px",
-            cursor: isSubmitting ? "not-allowed" : "pointer",
-          }}
+          style={{ ...BTN_CANCEL, cursor: isSubmitting ? "not-allowed" : "pointer" }}
         >
           İptal
         </button>

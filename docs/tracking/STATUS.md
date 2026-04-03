@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 166 — Repeated Neutral Color Literal Constant Pack ✓ TAMAMLANDI
+Phase 167 — Repeated Form Button Style Constant Pack ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Form ve panel bileşenlerinde 4+ tekrarlı bare color literal'lerini const ile extraction. BORDER_COLOR + MUTED_TEXT eklendi. 1587 toplam test.
+Form bileşenlerindeki save/cancel button inline style bloklarını BTN_PRIMARY/BTN_CANCEL const'larına çıkarma. 9 form dosyası güncellendi. 1587 toplam test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 167: repeated form button style constant pack: 9 form dosyasında BTN_PRIMARY/BTN_CANCEL extraction, 1587 toplam (2026-04-03)
 - Phase 166: repeated neutral color literal constant pack: 4 dosyada BORDER_COLOR/MUTED_TEXT extraction, 1587 toplam (2026-04-03)
 - Phase 165: repeated empty/fallback string constant pack: NewsBulletinForm.tsx'e const DASH eklendi, 4 JSX em-dash sadeleşti, 1587 toplam (2026-04-03)
 - Phase 164: repeated heading/text style constant pack: 4 dosyada FORM_HEADING/MUTED extraction, 1587 toplam (2026-04-03)

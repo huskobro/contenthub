@@ -46,6 +46,25 @@ const ROW_STYLE: React.CSSProperties = {
   marginBottom: "0.875rem",
 };
 
+const BTN_PRIMARY: React.CSSProperties = {
+  padding: "0.5rem 1.25rem",
+  fontSize: "0.875rem",
+  background: "#3b82f6",
+  color: "#fff",
+  border: "none",
+  borderRadius: "4px",
+};
+
+const BTN_CANCEL: React.CSSProperties = {
+  padding: "0.5rem 1.25rem",
+  fontSize: "0.875rem",
+  background: "transparent",
+  color: "#64748b",
+  border: "1px solid #cbd5e1",
+  borderRadius: "4px",
+  cursor: "pointer",
+};
+
 function toStr(v: string | null | undefined): string {
   return v ?? "";
 }
@@ -223,16 +242,7 @@ export function StandardVideoForm({
         <button
           type="submit"
           disabled={isSubmitting}
-          style={{
-            padding: "0.5rem 1.25rem",
-            fontSize: "0.875rem",
-            background: "#3b82f6",
-            color: "#fff",
-            border: "none",
-            borderRadius: "4px",
-            cursor: isSubmitting ? "not-allowed" : "pointer",
-            opacity: isSubmitting ? 0.7 : 1,
-          }}
+          style={{ ...BTN_PRIMARY, cursor: isSubmitting ? "not-allowed" : "pointer", opacity: isSubmitting ? 0.7 : 1 }}
         >
           {isSubmitting ? "Kaydediliyor..." : submitLabel}
         </button>
@@ -240,15 +250,7 @@ export function StandardVideoForm({
           <button
             type="button"
             onClick={onCancel}
-            style={{
-              padding: "0.5rem 1.25rem",
-              fontSize: "0.875rem",
-              background: "transparent",
-              color: "#64748b",
-              border: "1px solid #cbd5e1",
-              borderRadius: "4px",
-              cursor: "pointer",
-            }}
+            style={BTN_CANCEL}
           >
             İptal
           </button>

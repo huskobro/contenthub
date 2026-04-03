@@ -2,6 +2,19 @@
 
 ---
 
+## [2026-04-03] Phase 167 — Repeated Form Button Style Constant Pack
+
+**Ne:** Form bileşenlerindeki save/cancel button inline style bloklarını dosya-seviyesi BTN_PRIMARY + BTN_CANCEL const'larına taşıma. İki pattern grubu: küçük (0.375rem) ve büyük (0.5rem) butonlar.
+**Eklenen/değiştirilen dosyalar:**
+- `NewsItemForm.tsx`, `UsedNewsForm.tsx`, `TemplateStyleLinkForm.tsx`: BTN_PRIMARY + BTN_CANCEL (Pattern A)
+- `TemplateForm.tsx`, `SourceScanForm.tsx`, `StyleBlueprintForm.tsx`: BTN_PRIMARY + BTN_CANCEL (Pattern A, BORDER_COLOR entegreli)
+- `StandardVideoForm.tsx`, `StandardVideoMetadataForm.tsx`, `StandardVideoScriptForm.tsx`: BTN_PRIMARY + BTN_CANCEL (Pattern B)
+- `docs/testing/test-report-phase-167-repeated-form-button-style-constant-pack.md` (yeni)
+**Test:** 1587 toplam test, tsc temiz, vite build temiz
+**Dokunulmayan:** Görünüm, davranış, SourceForm (farklı palette), NewsBulletin form'ları (style yok)
+
+---
+
 ## [2026-04-03] Phase 166 — Repeated Neutral Color Literal Constant Pack
 
 **Ne:** Form ve panel bileşenlerinde 4+ tekrarlı bare color literal'lerini dosya-seviyesi const'lara taşıma. `BORDER_COLOR` (#e2e8f0) ve `MUTED_TEXT` (#64748b) eklendi.
