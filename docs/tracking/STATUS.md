@@ -1,10 +1,10 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 260 — User Panel Route Landing Consistency Pass ✓ TAMAMLANDI (feature)
+Phase 261 — User Panel Cross-Link Recovery Pass ✓ TAMAMLANDI (feature)
 
 ## Mevcut Hedef
-Uc user route arasinda heading/subtitle/card/note yapisal tutarlilik hizalandi. SUBTITLE margin/maxWidth/style, CARD transition tutarli. 1749 toplam test.
+Content→publish ve publish→content cross-link recovery baglantilari eklendi. Sidebar'a bagimli kalmadan section'lar arasi toparlayici akis guclendi. 1757 toplam test.
 
 ## Devam Eden
 — (devam eden calisma yok)
@@ -15,6 +15,7 @@ Uc user route arasinda heading/subtitle/card/note yapisal tutarlilik hizalandi. 
 - **ANA FAZ BAŞLADI:** Wizard / Onboarding (ürün geliştirme hattı)
 
 ## Son Tamamlananlar
+- Phase 261: user panel cross-link recovery — content→publish ve publish→content cross-link, sidebar'siz section gecisi, 8 yeni test, 1757 toplam (2026-04-03)
 - Phase 260: user panel route landing consistency — SUBTITLE margin/maxWidth hizalama, CARD transition ekleme, 12 yeni test, 1749 toplam (2026-04-03)
 - Phase 259: user panel section transition clarity — hub akis aciklamasi, "Ilk adim/Sonraki adim" kart desc, content→yayin ve yayin←icerik referanslari, 8 yeni test, 1737 toplam (2026-04-03)
 - Phase 258: user panel navigation state clarity — section kimlikleri (Baslangic/Icerik uretim/Yayin dagitim merkezi), subtitle stili tutarliligi, typo fix, 9 yeni test, 1729 toplam (2026-04-03)

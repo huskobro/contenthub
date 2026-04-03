@@ -2,6 +2,19 @@
 
 ---
 
+## [2026-04-03] Phase 261 — User Panel Cross-Link Recovery Pass
+
+**Ne:** Content ve publish yuzeylerinde sidebar'a bagimli kalmadan section'lar arasi toparlayici cross-link recovery baglantilari eklendi. Content sayfasinda "Yayin ekranina gecebilirsiniz" linki, publish sayfasinda "Icerik ekraninden baslayabilirsiniz" linki eklendi. Dashboard'a degisiklik yapilmadi (hub kartlari yeterli).
+**Sonuc:** Kullanici yanlis bolumde olsa bile sayfa icinden dogru sonraki adima kolayca gecebiliyor. Section'lar arasi akis sidebar'dan bagimsiz olarak da calisiyor. User panel daha "akisi olan" bir urun yuzeyine donustu.
+**Degistirilen dosyalar:**
+- `frontend/src/pages/UserContentEntryPage.tsx` (CROSSLINK const + publish cross-link)
+- `frontend/src/pages/UserPublishEntryPage.tsx` (CROSSLINK const + content cross-link)
+**Eklenen dosyalar:**
+- `frontend/src/tests/user-cross-link-recovery.smoke.test.tsx` (8 yeni test)
+**Test:** 1757 toplam test (+8 yeni), tsc temiz, build temiz
+
+---
+
 ## [2026-04-03] Phase 260 — User Panel Route Landing Consistency Pass
 
 **Ne:** Uc user route (/user, /user/content, /user/publish) arasindaki yapisal tutarlilik hizalandi. Dashboard SUBTITLE margin "0 0 1.25rem"→"0 0 1.5rem" (content/publish ile esit). Publish CARD style'a `transition: "border-color 0.15s"` eklendi (content ile esit). Content SUBTITLE'a `maxWidth: "720px"` eklendi (zaten baslangicta yapilmisti). Her route'un landing yapisini dogrulayan 12 yeni test eklendi.

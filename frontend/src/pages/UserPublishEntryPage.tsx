@@ -71,6 +71,23 @@ const NOTE: React.CSSProperties = {
   maxWidth: "720px",
 };
 
+const CROSSLINK: React.CSSProperties = {
+  marginTop: "1rem",
+  fontSize: "0.8125rem",
+  color: "#64748b",
+  maxWidth: "720px",
+};
+
+const CROSSLINK_BTN: React.CSSProperties = {
+  cursor: "pointer",
+  color: "#2563eb",
+  fontWeight: 600,
+  background: "none",
+  border: "none",
+  padding: 0,
+  fontSize: "inherit",
+};
+
 const PUBLISH_ENTRIES = [
   {
     icon: "I",
@@ -137,6 +154,18 @@ export function UserPublishEntryPage() {
         olusturun. Tamamlanan icerikler buradaki yayin alanlarina duser.
         Yayin islemleri su an yonetim panelinde yurutulmektedir ve sectiginiz
         alan sizi ilgili yonetim ekranina yonlendirecektir.
+      </div>
+
+      <div style={CROSSLINK} data-testid="publish-crosslink-area">
+        Henuz icerik uretmediseniz once{" "}
+        <button
+          style={CROSSLINK_BTN}
+          onClick={() => navigate("/user/content")}
+          data-testid="publish-to-content-crosslink"
+        >
+          Icerik ekraninden baslayabilirsiniz
+        </button>
+        .
       </div>
     </div>
   );
