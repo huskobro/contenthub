@@ -2,6 +2,16 @@
 
 ---
 
+## [2026-04-03] Phase 180 — Repeated Small Loading/Busy Text Constant Pack
+
+**Ne:** Tüm bileşenlerde tekrar eden loading/busy text literal ("Yükleniyor...", "Kaydediliyor...") kapsamlı audit'i.
+**Sonuç:** Aynı dosya içinde threshold 3+ sağlayan yeni dosya bulunamadı. StandardVideoArtifactsPanel 2× "Yükleniyor..." (threshold altı). Form dosyalarında 1× "Kaydediliyor..." per dosya. Dosya değişikliği yapılmadı.
+**Eklenen/değiştirilen dosyalar:**
+- `docs/testing/test-report-phase-180-repeated-small-loading-busy-text-constant-pack.md` (yeni — audit belgesi)
+**Test:** 1587 toplam test, tsc temiz
+
+---
+
 ## [2026-04-03] Phase 179 — Repeated Small Status Text Constant Pack
 
 **Ne:** Tüm bileşenlerde tekrar eden status/info text literal ve style bloklarının kapsamlı audit'i.

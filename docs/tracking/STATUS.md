@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 179 — Repeated Small Status Text Constant Pack ✓ TAMAMLANDI (audit-only)
+Phase 180 — Repeated Small Loading/Busy Text Constant Pack ✓ TAMAMLANDI (audit-only)
 
 ## Mevcut Hedef
-Tüm bileşenlerde tekrar eden status/info text literal ve style pattern audit. Threshold 3+ sağlayan yeni dosya bulunamadı. 1587 toplam test.
+Tüm bileşenlerde tekrar eden loading/busy text literal ("Yükleniyor...", "Kaydediliyor...") audit. Threshold 3+ sağlayan yeni dosya bulunamadı. 1587 toplam test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 180: repeated small loading/busy text constant pack: kapsamlı audit, threshold altı (max 2× per dosya), hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 179: repeated small status text constant pack: kapsamlı audit, threshold altı (max 2× per dosya), hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 178: repeated small monospace/code style constant pack: kapsamlı audit, threshold altı (max 2× per dosya), hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 177: repeated small panel meta text constant pack: kapsamlı audit, threshold altı (max 2× per dosya), hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
