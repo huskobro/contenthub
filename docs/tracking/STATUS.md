@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 152 — Numeric / Count / Ratio Display Safety Pack ✓ TAMAMLANDI
+Phase 153 — Array / List Render Safety Pack ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Sayısal alanlarda NaN/Infinity/undefined sızıntı koruması. 17 dosya, safeNumber helper, 33 yeni guard test. 1520 toplam test.
+Array/list render yüzeylerinde null/undefined crash koruması. 2 dosya fix, 15 yeni guard test. 1535 toplam test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 153: array list render safety pack: 2 steps array guard (JobTimelinePanel, JobStepsList), Array.isArray + safeSteps pattern, 15 yeni guard test, 1535 toplam (2026-04-03)
 - Phase 152: numeric count ratio display safety pack: 7 summary count guard, 2 table version guard, 5 detail panel Number() guard, 6 form isFinite guard, safeNumber helper, 33 yeni guard test, 1520 toplam (2026-04-03)
 - Phase 151: badge enum status unknown-value safety pack: 62 badge style lookup neutral fallback, 76 badge label text null fallback (70 level + 6 status), 236 yeni guard test, 1487 toplam (2026-04-03)
 - Phase 150: required field assumption safety pack: 30 property null fallback (9 tablo + 2 detail panel), version numeric fallback, 42 yeni guard test, badge stilleri korundu, 1251 toplam (2026-04-03)

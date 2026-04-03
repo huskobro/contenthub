@@ -2,6 +2,18 @@
 
 ---
 
+## [2026-04-03] Phase 153 — Array / List Render Safety Pack
+
+**Ne:** Array/list render yüzeylerinde `.map()`, `.length`, `.join()` crash risklerine karşı `Array.isArray` guard eklendi. 2 step-list bileşeni düzeltildi, 5 mevcut JSON.parse null guard doğrulandı, 15 structural guard test yazıldı.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/tests/array-list-render-safety.smoke.test.tsx` (yeni — 15 structural guard test)
+- `JobTimelinePanel.tsx`: `Array.isArray` guard + `safeSteps` pattern
+- `JobStepsList.tsx`: `Array.isArray` guard + `safeSteps` pattern
+**Test:** 1535 toplam test (+15 yeni), tsc temiz, vite build temiz
+**Dokunulmayan:** List UX redesign yok, chips/tags yok, sorting/reordering yok, backend yok, business logic yok
+
+---
+
 ## [2026-04-03] Phase 152 — Numeric / Count / Ratio Display Safety Pack
 
 **Ne:** Sayısal alanlarda NaN/Infinity/undefined sızıntı koruması. Summary count display'lerde, table version interpolation'larda, detail panel Number() dönüşümlerinde ve form validation'larda isFinite/isNaN guard eklendi.

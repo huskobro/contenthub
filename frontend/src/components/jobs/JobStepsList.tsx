@@ -6,13 +6,14 @@ interface JobStepsListProps {
 }
 
 export function JobStepsList({ steps }: JobStepsListProps) {
-  if (steps.length === 0) {
+  const safeSteps = Array.isArray(steps) ? steps : [];
+  if (safeSteps.length === 0) {
     return <p style={{ color: "#94a3b8", fontSize: "0.875rem" }}>Henüz step yok.</p>;
   }
 
   return (
     <div style={{ marginTop: "0.5rem" }}>
-      {steps.map((s) => (
+      {safeSteps.map((s) => (
         <div
           key={s.id}
           style={{

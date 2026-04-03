@@ -14,6 +14,7 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export function JobTimelinePanel({ steps }: JobTimelinePanelProps) {
+  const safeSteps = Array.isArray(steps) ? steps : [];
   return (
     <div
       style={{
@@ -25,19 +26,19 @@ export function JobTimelinePanel({ steps }: JobTimelinePanelProps) {
       }}
     >
       <h3 style={{ margin: "0 0 0.75rem", fontSize: "1rem" }}>Timeline</h3>
-      {steps.length === 0 ? (
+      {safeSteps.length === 0 ? (
         <p style={{ color: "#94a3b8", fontSize: "0.875rem", margin: 0 }}>Henüz step yok.</p>
       ) : (
         <div>
-          {steps.map((s, idx) => (
+          {safeSteps.map((s, idx) => (
             <div
               key={s.id}
               style={{
                 display: "flex",
                 gap: "1rem",
-                paddingBottom: idx < steps.length - 1 ? "0.75rem" : 0,
-                marginBottom: idx < steps.length - 1 ? "0.75rem" : 0,
-                borderBottom: idx < steps.length - 1 ? "1px solid #f1f5f9" : "none",
+                paddingBottom: idx < safeSteps.length - 1 ? "0.75rem" : 0,
+                marginBottom: idx < safeSteps.length - 1 ? "0.75rem" : 0,
+                borderBottom: idx < safeSteps.length - 1 ? "1px solid #f1f5f9" : "none",
               }}
             >
               <div
