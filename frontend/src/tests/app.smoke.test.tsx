@@ -65,15 +65,19 @@ describe("Panel shell smoke tests", () => {
     expect(screen.getByText("Yonetim Paneli")).toBeDefined();
   });
 
-  it("header shows panel switch button", () => {
+  it("header shows panel switch button with destination clarity", () => {
     renderAt("/user");
-    expect(screen.getByTestId("header-panel-switch")).toBeDefined();
-    expect(screen.getByTestId("header-panel-switch").textContent).toBe("Yonetim Paneli");
+    const btn = screen.getByTestId("header-panel-switch");
+    expect(btn).toBeDefined();
+    expect(btn.textContent).toBe("Yonetim Paneline Gec");
+    expect(btn.getAttribute("title")).toBe("Yonetim paneline gecis yapin");
   });
 
-  it("admin header shows switch to user panel", () => {
+  it("admin header shows switch to user panel with destination clarity", () => {
     renderAt("/admin");
-    expect(screen.getByTestId("header-panel-switch").textContent).toBe("Kullanici Paneli");
+    const btn = screen.getByTestId("header-panel-switch");
+    expect(btn.textContent).toBe("Kullanici Paneline Gec");
+    expect(btn.getAttribute("title")).toBe("Kullanici paneline gecis yapin");
   });
 
   it("admin sidebar shows section headers", () => {

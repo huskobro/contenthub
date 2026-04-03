@@ -1,10 +1,10 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 261 — User Panel Cross-Link Recovery Pass ✓ TAMAMLANDI (feature)
+Phase 262 — Panel Switch Destination Clarity Pass ✓ TAMAMLANDI (feature)
 
 ## Mevcut Hedef
-Content→publish ve publish→content cross-link recovery baglantilari eklendi. Sidebar'a bagimli kalmadan section'lar arasi toparlayici akis guclendi. 1757 toplam test.
+Header panel switch copy'si fiil iceren yonlu metne donustu ("X Gec"). Title ve aria-label eklendi. Panel gecisi daha bilinçli bir hareket gibi hissediliyor. 1767 toplam test.
 
 ## Devam Eden
 — (devam eden calisma yok)
@@ -15,6 +15,7 @@ Content→publish ve publish→content cross-link recovery baglantilari eklendi.
 - **ANA FAZ BAŞLADI:** Wizard / Onboarding (ürün geliştirme hattı)
 
 ## Son Tamamlananlar
+- Phase 262: panel switch destination clarity — switch copy "X Gec" fiili, title+aria-label, 10 yeni test, 1767 toplam (2026-04-03)
 - Phase 261: user panel cross-link recovery — content→publish ve publish→content cross-link, sidebar'siz section gecisi, 8 yeni test, 1757 toplam (2026-04-03)
 - Phase 260: user panel route landing consistency — SUBTITLE margin/maxWidth hizalama, CARD transition ekleme, 12 yeni test, 1749 toplam (2026-04-03)
 - Phase 259: user panel section transition clarity — hub akis aciklamasi, "Ilk adim/Sonraki adim" kart desc, content→yayin ve yayin←icerik referanslari, 8 yeni test, 1737 toplam (2026-04-03)

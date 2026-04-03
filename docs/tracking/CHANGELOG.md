@@ -2,6 +2,19 @@
 
 ---
 
+## [2026-04-03] Phase 262 — Panel Switch Destination Clarity Pass
+
+**Ne:** Header panel switch butonunun copy'si salt panel isminden fiil iceren yonlu metne donusturuldu. "Yonetim Paneli" → "Yonetim Paneline Gec", "Kullanici Paneli" → "Kullanici Paneline Gec". Ayrica title ve aria-label ile erisilebilirlik ve hover ipucu eklendi. CTA kalip sistemiyle uyumlu yeni "X Gec" gecis kalibi olusturuldu.
+**Sonuc:** Kullanici panel switch'e bastiginda nereye gidecegini hemen anliyor. Buton sadece hedef ismi degil, bir eylem ifade ediyor. Panel gecisi daha bilinçli bir hareket gibi hissediliyor.
+**Degistirilen dosyalar:**
+- `frontend/src/components/layout/AppHeader.tsx` (switchLabel fiil, switchTitle, title + aria-label)
+- `frontend/src/tests/app.smoke.test.tsx` (switch text + title dogrulamalari)
+**Eklenen dosyalar:**
+- `frontend/src/tests/panel-switch-destination-clarity.smoke.test.tsx` (10 yeni test)
+**Test:** 1767 toplam test (+10 yeni), tsc temiz, build temiz
+
+---
+
 ## [2026-04-03] Phase 261 — User Panel Cross-Link Recovery Pass
 
 **Ne:** Content ve publish yuzeylerinde sidebar'a bagimli kalmadan section'lar arasi toparlayici cross-link recovery baglantilari eklendi. Content sayfasinda "Yayin ekranina gecebilirsiniz" linki, publish sayfasinda "Icerik ekraninden baslayabilirsiniz" linki eklendi. Dashboard'a degisiklik yapilmadi (hub kartlari yeterli).

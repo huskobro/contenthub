@@ -4,9 +4,19 @@ interface AppHeaderProps {
   area: "Admin" | "User";
 }
 
-const AREA_LABELS: Record<string, { label: string; switchLabel: string; switchTo: string }> = {
-  Admin: { label: "Yonetim Paneli", switchLabel: "Kullanici Paneli", switchTo: "/user" },
-  User: { label: "Kullanici Paneli", switchLabel: "Yonetim Paneli", switchTo: "/admin" },
+const AREA_LABELS: Record<string, { label: string; switchLabel: string; switchTo: string; switchTitle: string }> = {
+  Admin: {
+    label: "Yonetim Paneli",
+    switchLabel: "Kullanici Paneline Gec",
+    switchTo: "/user",
+    switchTitle: "Kullanici paneline gecis yapin",
+  },
+  User: {
+    label: "Kullanici Paneli",
+    switchLabel: "Yonetim Paneline Gec",
+    switchTo: "/admin",
+    switchTitle: "Yonetim paneline gecis yapin",
+  },
 };
 
 export function AppHeader({ area }: AppHeaderProps) {
@@ -32,6 +42,8 @@ export function AppHeader({ area }: AppHeaderProps) {
       <button
         onClick={() => navigate(config.switchTo)}
         data-testid="header-panel-switch"
+        title={config.switchTitle}
+        aria-label={config.switchTitle}
         style={{
           padding: "0.25rem 0.75rem",
           fontSize: "0.75rem",
