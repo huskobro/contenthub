@@ -31,6 +31,7 @@ import { NewsItemCreatePage } from "../pages/admin/NewsItemCreatePage";
 import { TemplateStyleLinksRegistryPage } from "../pages/admin/TemplateStyleLinksRegistryPage";
 import { TemplateStyleLinkCreatePage } from "../pages/admin/TemplateStyleLinkCreatePage";
 import { ContentLibraryPage } from "../pages/admin/ContentLibraryPage";
+import { AssetLibraryPage } from "../pages/admin/AssetLibraryPage";
 import { AnalyticsOverviewPage } from "../pages/admin/AnalyticsOverviewPage";
 import { AnalyticsContentPage } from "../pages/admin/AnalyticsContentPage";
 import { AnalyticsOperationsPage } from "../pages/admin/AnalyticsOperationsPage";
@@ -73,6 +74,7 @@ export const router = createBrowserRouter([
       { path: "template-style-links/new", element: <TemplateStyleLinkCreatePage /> },
       { path: "template-style-links", element: <TemplateStyleLinksRegistryPage /> },
       { path: "library", element: <ContentLibraryPage /> },
+      { path: "assets", element: <AssetLibraryPage /> },
       { path: "analytics", element: <AnalyticsOverviewPage /> },
       { path: "analytics/content", element: <AnalyticsContentPage /> },
       { path: "analytics/operations", element: <AnalyticsOperationsPage /> },

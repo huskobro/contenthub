@@ -2,6 +2,22 @@
 
 ---
 
+## [2026-04-03] Asset Library / Media Resource Management Pack
+
+**Ne:** Asset Library / media resource management omurgasi oturdu. Giris yüzeyi: AdminOverviewPage'e "Varlik Kutuphanesi" quick link eklendi, AdminLayout sidebar'a nav item eklendi, release readiness checklist'e "Varlik Kutuphanesi Omurga hazir" eklendi, deferred note'dan "asset library" ifadesi kaldirildi. Yeni sayfa: AssetLibraryPage (`/admin/assets`) — heading/subtitle/workflow note, 8 asset turu (muzik/font/gorsel/video_klip/overlay/alt_yazi_stili/thumbnail_referans/marka_varligi), 5 tur grubu, aktif arama + tur filtresi, disabled sort (deferred), 6 placeholder asset kaydı, satir tiklamasiyla detail panel (ad/tur/durum/kaynak/notlar/reuse-context/preview-safety), global preview/reference safety notu.
+**Sonuc:** Asset Library yüzeyleri urun icinde baslatilabilir, anlasilir ve dogrulanabilir. Omurga oturdu. Gercek media ingestion, binary preview, dosya upload ve drag-drop atama akisi backend entegrasyonu ileride.
+**Degistirilen dosyalar:**
+- `frontend/src/pages/AdminOverviewPage.tsx` (quick-link-assets, readiness-assets, deferred note guncelleme)
+- `frontend/src/app/router.tsx` (assets route + import)
+- `frontend/src/app/layouts/AdminLayout.tsx` (Varlik Kutuphanesi nav item)
+**Eklenen dosyalar:**
+- `frontend/src/pages/admin/AssetLibraryPage.tsx`
+- `frontend/src/tests/asset-library-media-resource-management-pack.smoke.test.tsx` (50 yeni test)
+- `docs/testing/test-report-asset-library-media-resource-management-pack.md`
+**Test:** 2100 toplam test (+50 yeni), tsc temiz, build temiz
+
+---
+
 ## [2026-04-03] Phase 318–321 — Final UX / Release Readiness Pack
 
 **Ne:** Final UX / release readiness omurgasi oturdu. Phase 318: Tum deferred/disabled notlar "backend entegrasyonu" kalibina standardize edildi — "ilerideki fazlarda" ve "backend aktif olunca" ifadeleri kaldirildi (ContentLibraryPage, JobDetailPage, AnalyticsOverviewPage, AnalyticsContentPage, AnalyticsOperationsPage, StandardVideoDetailPage). Phase 319: Cross-module UX koheransi — AdminOverviewPage heading testid + workflow note ("Yonetim zinciri") eklendi, UserDashboardPage/UserContentEntryPage/UserPublishEntryPage heading testid'leri eklendi. Phase 320: Release readiness checklist — AdminOverviewPage'e "Urun Hazirlik Durumu" section eklendi (8 alan: Icerik Uretimi, Yayin Akisi, Is Motoru, Sablon Sistemi, Haber Modulu, Ayarlar ve Gorunurluk, Analytics ve Raporlama, Icerik Kutuphanesi — hepsi "Omurga hazir"). Phase 321: Uctan uca dogrulama.

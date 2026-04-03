@@ -49,6 +49,12 @@ const QUICK_LINKS = [
     testId: "quick-link-library",
   },
   {
+    title: "Varlik Kutuphanesi",
+    desc: "Muzik, font, gorsel, overlay ve diger uretim varliklarini yonet",
+    to: "/admin/assets",
+    testId: "quick-link-assets",
+  },
+  {
     title: "Yeni Video Olustur",
     desc: "Ana uretim akisi: standart video icerigi olusturmaya basla",
     to: "/admin/standard-videos/new",
@@ -163,6 +169,7 @@ export function AdminOverviewPage() {
             { area: "Ayarlar ve Gorunurluk", status: "Omurga hazir", detail: "Governance, section gruplama ve kontrol zinciri gorünur", testId: "readiness-settings" },
             { area: "Analytics ve Raporlama", status: "Omurga hazir", detail: "Metrik kartlari ve rapor zincirleri gorünur, backend verisi bekliyor", testId: "readiness-analytics" },
             { area: "Icerik Kutuphanesi", status: "Omurga hazir", detail: "Birlesik liste, filtre yuzeyi ve detay baglantisi mevcut", testId: "readiness-library" },
+            { area: "Varlik Kutuphanesi", status: "Omurga hazir", detail: "Varlik kayit, tur gruplama, filtre/arama, detay ve reuse baglami mevcut", testId: "readiness-assets" },
           ].map((item) => (
             <div
               key={item.area}
@@ -188,8 +195,8 @@ export function AdminOverviewPage() {
           style={{ margin: "0.75rem 0 0", fontSize: "0.6875rem", color: "#cbd5e1" }}
           data-testid="release-readiness-deferred-note"
         >
-          Derin backend entegrasyonu, gercek metrik verisi, asset library ve
-          kapsamli gorsel modernizasyon ayri fazlarda ele alinacaktir.
+          Derin backend entegrasyonu, gercek metrik verisi ve kapsamli gorsel
+          modernizasyon ayri fazlarda ele alinacaktir.
         </p>
       </div>
     </div>

@@ -11,6 +11,7 @@ const ADMIN_NAV = [
   { label: "Isler", to: "/admin/jobs" },
   { label: "Icerik Uretimi", section: true },
   { label: "Icerik Kutuphanesi", to: "/admin/library" },
+  { label: "Varlik Kutuphanesi", to: "/admin/assets" },
   { label: "Standart Video", to: "/admin/standard-videos" },
   { label: "Sablonlar", to: "/admin/templates" },
   { label: "Stil Sablonlari", to: "/admin/style-blueprints" },
