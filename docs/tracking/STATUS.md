@@ -1,10 +1,10 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 254 — User Flow / Navigation — User to Admin Task Continuity Strip ✓ TAMAMLANDI (feature)
+Phase 255 — Admin to User Return Landing Clarity ✓ TAMAMLANDI (feature)
 
 ## Mevcut Hedef
-Admin tarafinda continuity strip eklendi: kullaniciya yonetim panelinde oldugunu soyler, kullanici paneline donus linki sunar. 1704 toplam test.
+User dashboard'da context note eklendi: admin'den donen kullaniciya "kullanici panelindesin" mesaji ve mevcut aksiyonlari gosterir. 1712 toplam test.
 
 ## Devam Eden
 — (devam eden calisma yok)
@@ -15,6 +15,7 @@ Admin tarafinda continuity strip eklendi: kullaniciya yonetim panelinde oldugunu
 - **ANA FAZ BAŞLADI:** Wizard / Onboarding (ürün geliştirme hattı)
 
 ## Son Tamamlananlar
+- Phase 255: admin to user return landing clarity — dashboard context note, kullanici paneli yon bilgisi, handoff/hub ile uyumlu, 8 yeni test, 1712 toplam (2026-04-03)
 - Phase 254: user to admin task continuity strip — AdminContinuityStrip, yonetim paneli bilgi bandi, kullanici paneline donus linki, 7 yeni test, 1704 toplam (2026-04-03)
 - Phase 253: user dashboard primary action hub — DashboardActionHub, Icerik/Yayin/Yonetim Paneli hizli erisim kartlari, handoff ile uyumlu, 8 yeni test, 1697 toplam (2026-04-03)
 - Phase 252: user flow / navigation publish entry surface — UserPublishEntryPage, /user/publish route, Isler + Standart Videolar + Haber Bultenleri kartlari, sidebar link aktif, 10 yeni test, 1689 toplam (2026-04-03)

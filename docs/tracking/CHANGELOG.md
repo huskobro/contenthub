@@ -2,6 +2,18 @@
 
 ---
 
+## [2026-04-03] Phase 255 — Admin to User Return Landing Clarity
+
+**Ne:** Admin yuzeyinden user paneline donen kullanici icin landing netligi artirildi. UserDashboardPage'e onboarding tamamlanmis kullanicilar icin context note eklendi: "Kullanici panelindesiniz. Icerik olusturma, yayin takibi ve yonetim paneline gecis islemlerinizi buradan yonetebilirsiniz." Mevcut handoff ve action hub ile uyumlu calisir.
+**Sonuc:** Admin → user donusu artik sadece route degisimi degil, anlamli bir urun gecisi. Kullanici nerede oldugunu ve ne yapabilecegini net goruyor. Iki yonlu continuity tamamlandi.
+**Degistirilen dosyalar:**
+- `frontend/src/pages/UserDashboardPage.tsx` (context note eklendi)
+**Eklenen dosyalar:**
+- `frontend/src/tests/admin-to-user-return-clarity.smoke.test.tsx` (8 yeni test)
+**Test:** 1712 toplam test (+8 yeni), tsc temiz, build temiz
+
+---
+
 ## [2026-04-03] Phase 254 — User Flow / Navigation — User to Admin Task Continuity Strip
 
 **Ne:** User panelden admin yüzeylerine gecen kullanici icin kopukluk hissini azaltan continuity strip eklendi. AdminContinuityStrip component'i admin layout'a entegre edildi. Tum admin sayfalarinda header altinda hafif mavi bilgi bandi gorunur: "Yonetim panelinde islem yapiyorsunuz" mesaji ve "Kullanici Paneline Don" link butonu.
