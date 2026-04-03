@@ -116,7 +116,28 @@ const SECONDARY_BTN: React.CSSProperties = {
   textAlign: "center",
 };
 
-function RequirementRow({ item }: { item: SetupRequirementItem }) {
+const ACTION_BTN: React.CSSProperties = {
+  padding: "0.25rem 0.625rem",
+  fontSize: "0.75rem",
+  fontWeight: 600,
+  color: "#1e40af",
+  background: "#dbeafe",
+  border: "1px solid #93c5fd",
+  borderRadius: "4px",
+  cursor: "pointer",
+  whiteSpace: "nowrap",
+  flexShrink: 0,
+};
+
+function RequirementRow({
+  item,
+  onAction,
+  actionLabel,
+}: {
+  item: SetupRequirementItem;
+  onAction?: () => void;
+  actionLabel?: string;
+}) {
   const isCompleted = item.status === "completed";
   return (
     <div
@@ -140,15 +161,21 @@ function RequirementRow({ item }: { item: SetupRequirementItem }) {
         <p style={REQ_DESC}>{item.description}</p>
         {isCompleted && item.detail && <p style={REQ_DETAIL}>{item.detail}</p>}
       </div>
+      {!isCompleted && onAction && (
+        <button style={ACTION_BTN} onClick={onAction}>
+          {actionLabel ?? "Ekle"}
+        </button>
+      )}
     </div>
   );
 }
 
 interface Props {
   onBack?: () => void;
+  onSourceSetup?: () => void;
 }
 
-export function OnboardingRequirementsScreen({ onBack }: Props) {
+export function OnboardingRequirementsScreen({ onBack, onSourceSetup }: Props) {
   const { data, isLoading, isError } = useSetupRequirements();
   const completeMutation = useCompleteOnboarding();
   const navigate = useNavigate();
@@ -197,7 +224,12 @@ export function OnboardingRequirementsScreen({ onBack }: Props) {
 
         <div style={REQ_LIST}>
           {data.requirements.map((req) => (
-            <RequirementRow key={req.key} item={req} />
+            <RequirementRow
+              key={req.key}
+              item={req}
+              onAction={req.key === "sources" ? onSourceSetup : undefined}
+              actionLabel={req.key === "sources" ? "Kaynak Ekle" : undefined}
+            />
           ))}
         </div>
 

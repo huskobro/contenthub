@@ -4,6 +4,7 @@ import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { OnboardingWelcomeScreen } from "../components/onboarding/OnboardingWelcomeScreen";
 import { OnboardingRequirementsScreen } from "../components/onboarding/OnboardingRequirementsScreen";
+import { OnboardingSourceSetupScreen } from "../components/onboarding/OnboardingSourceSetupScreen";
 import { OnboardingPage } from "../pages/OnboardingPage";
 import { AppEntryGate } from "../app/AppEntryGate";
 
@@ -18,6 +19,15 @@ const MOCK_REQUIREMENTS = {
   all_completed: false,
   requirements: [
     { key: "sources", title: "Haber Kaynagi Ekle", description: "En az bir kaynak ekleyin.", status: "completed", detail: "3 aktif kaynak" },
+    { key: "templates", title: "Sablon Olustur", description: "En az bir sablon olusturun.", status: "missing", detail: null },
+    { key: "settings", title: "Sistem Ayarlari", description: "Ayarlari yapilandirin.", status: "missing", detail: null },
+  ],
+};
+
+const MOCK_REQUIREMENTS_SOURCES_MISSING = {
+  all_completed: false,
+  requirements: [
+    { key: "sources", title: "Haber Kaynagi Ekle", description: "En az bir kaynak ekleyin.", status: "missing", detail: null },
     { key: "templates", title: "Sablon Olustur", description: "En az bir sablon olusturun.", status: "missing", detail: null },
     { key: "settings", title: "Sistem Ayarlari", description: "Ayarlari yapilandirin.", status: "missing", detail: null },
   ],
@@ -149,6 +159,71 @@ describe("OnboardingPage step flow", () => {
     expect(await screen.findByText("Kurulum Durumu")).toBeDefined();
     fireEvent.click(screen.getByText("Geri Don"));
     expect(screen.getByText("ContentHub'a Hosgeldiniz")).toBeDefined();
+  });
+});
+
+describe("OnboardingRequirementsScreen action buttons", () => {
+  it("shows Kaynak Ekle button for missing sources requirement", async () => {
+    window.fetch = mockFetch(MOCK_REQUIREMENTS_SOURCES_MISSING);
+    const onSourceSetup = vi.fn();
+    wrap(<OnboardingRequirementsScreen onSourceSetup={onSourceSetup} />);
+    const btn = await screen.findByText("Kaynak Ekle");
+    expect(btn).toBeDefined();
+    fireEvent.click(btn);
+    expect(onSourceSetup).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not show Kaynak Ekle when sources requirement is completed", async () => {
+    window.fetch = mockFetch(MOCK_REQUIREMENTS_ALL_DONE);
+    wrap(<OnboardingRequirementsScreen />);
+    await screen.findByText("Kurulumu Tamamla");
+    expect(screen.queryByText("Kaynak Ekle")).toBeNull();
+  });
+});
+
+describe("OnboardingSourceSetupScreen", () => {
+  it("renders source setup heading", () => {
+    window.fetch = mockFetch({});
+    const onBack = vi.fn();
+    const onComplete = vi.fn();
+    wrap(<OnboardingSourceSetupScreen onBack={onBack} onComplete={onComplete} />);
+    expect(screen.getByText("Haber Kaynagi Ekle")).toBeDefined();
+  });
+
+  it("renders source form with Kaynagi Ekle submit button", () => {
+    window.fetch = mockFetch({});
+    wrap(<OnboardingSourceSetupScreen onBack={vi.fn()} onComplete={vi.fn()} />);
+    expect(screen.getByText("Kaynagi Ekle")).toBeDefined();
+  });
+
+  it("calls onBack when cancel is clicked", () => {
+    window.fetch = mockFetch({});
+    const onBack = vi.fn();
+    wrap(<OnboardingSourceSetupScreen onBack={onBack} onComplete={vi.fn()} />);
+    fireEvent.click(screen.getByText("İptal"));
+    expect(onBack).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("OnboardingPage source-setup flow", () => {
+  it("transitions from requirements to source-setup on Kaynak Ekle click", async () => {
+    window.fetch = mockFetch(MOCK_REQUIREMENTS_SOURCES_MISSING);
+    wrap(<OnboardingPage />);
+    fireEvent.click(screen.getByText("Kurulumu Baslat"));
+    const btn = await screen.findByText("Kaynak Ekle");
+    fireEvent.click(btn);
+    expect(await screen.findByText("Kaynagi Ekle")).toBeDefined();
+  });
+
+  it("can go back from source-setup to requirements", async () => {
+    window.fetch = mockFetch(MOCK_REQUIREMENTS_SOURCES_MISSING);
+    wrap(<OnboardingPage />);
+    fireEvent.click(screen.getByText("Kurulumu Baslat"));
+    const btn = await screen.findByText("Kaynak Ekle");
+    fireEvent.click(btn);
+    await screen.findByText("Kaynagi Ekle");
+    fireEvent.click(screen.getByText("İptal"));
+    expect(await screen.findByText("Kurulum Durumu")).toBeDefined();
   });
 });
 
