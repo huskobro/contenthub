@@ -2,6 +2,16 @@
 
 ---
 
+## [2026-04-03] Phase 205 — Repeated Small List/Marker/Bullet Text Constant Pack
+
+**Ne:** Bileşenlerde tekrar eden marker/bullet/separator text literal değerlerinin kapsamlı audit'i.
+**Sonuç:** "—" max 2× per dosya, diğer marker'lar kullanılmıyor. Threshold karşılanmadı. Dosya değişikliği yapılmadı.
+**Eklenen/değiştirilen dosyalar:**
+- `docs/testing/test-report-phase-205-repeated-small-list-marker-bullet-text-constant-pack.md` (yeni — audit belgesi)
+**Test:** 1587 toplam test, tsc temiz
+
+---
+
 ## [2026-04-03] Phase 204 — Repeated Small position/zIndex Literal Constant Pack
 
 **Ne:** Bileşenlerde tekrar eden position/zIndex literal değerlerinin kapsamlı audit'i.

@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 204 — Repeated Small position/zIndex Literal Constant Pack ✓ TAMAMLANDI (audit-only)
+Phase 205 — Repeated Small List/Marker/Bullet Text Constant Pack ✓ TAMAMLANDI (audit-only)
 
 ## Mevcut Hedef
-position/zIndex literal audit. Bu property'ler codebase'de kullanılmıyor. Hiçbir dosya değiştirilmedi. 1587 toplam test.
+marker/bullet/separator text literal audit. "—" yaygın ama max 2× per dosya. Diğer marker'lar kullanılmıyor. Hiçbir dosya değiştirilmedi. 1587 toplam test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 205: repeated small list/marker/bullet text constant pack: kapsamlı audit, threshold karşılanmadı, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 204: repeated small position/zIndex literal constant pack: kapsamlı audit, kullanım yok, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 203: repeated small text-decoration literal constant pack: kapsamlı audit, threshold karşılanmadı, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 202: repeated small outline/boxShadow literal constant pack: kapsamlı audit, kullanım yok, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
