@@ -2,6 +2,16 @@
 
 ---
 
+## [2026-04-03] Phase 215 — Repeated Small disabled/busy Button Readability Pack
+
+**Ne:** Form/panel bileşenlerinde tekrar eden disabled/busy button pattern'larının kapsamlı audit'i.
+**Sonuç:** disabled={isSubmitting} max 2× per dosya. Threshold altı. Dosya değişikliği yapılmadı.
+**Eklenen dosyalar:**
+- `docs/testing/test-report-phase-215-repeated-small-disabled-busy-button-readability-pack.md` (yeni — audit belgesi)
+**Test:** 1587 toplam test, tsc temiz
+
+---
+
 ## [2026-04-03] Phase 214 — Repeated Small edit/view Mode Readability Pack
 
 **Ne:** Panel/form bileşenlerinde mode==="edit" ve mode==="view" pattern'larının kapsamlı audit'i.

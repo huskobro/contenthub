@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 214 — Repeated Small edit/view Mode Readability Pack ✓ TAMAMLANDI (audit-only)
+Phase 215 — Repeated Small disabled/busy Button Readability Pack ✓ TAMAMLANDI (audit-only)
 
 ## Mevcut Hedef
-edit/view mode check audit. Panel dosyalarında mode==="edit"/"view" birer kez kullanılıyor. Threshold altı. Hiçbir dosya değiştirilmedi. 1587 toplam test.
+disabled/busy button readability audit. disabled={isSubmitting} max 2× per dosya. Threshold altı. Hiçbir dosya değiştirilmedi. 1587 toplam test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 215: repeated small disabled/busy button readability pack: kapsamlı audit, threshold altı (max 2×), hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 214: repeated small edit/view mode readability pack: kapsamlı audit, threshold altı, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 213: repeated small boolean prop readability pack: 4 dosyada const isCreate eklendi, 12 satır değiştirildi, 1587 toplam (2026-04-03)
 - Phase 212: repeated small .join()/separator array render pattern pack: kapsamlı audit, threshold karşılanmadı, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
