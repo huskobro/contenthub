@@ -12,7 +12,7 @@ interface Props {
 }
 
 export function StyleBlueprintPublicationOutcomeBadge({ level }: Props) {
-  const s = STYLES[level];
+  const s = STYLES[level] ?? { bg: "#f8fafc", color: "#475569", border: "#e2e8f0" };
   return (
     <span
       style={{
@@ -25,7 +25,7 @@ export function StyleBlueprintPublicationOutcomeBadge({ level }: Props) {
         whiteSpace: "nowrap",
       }}
     >
-      {level}
+      {level ?? "—"}
     </span>
   );
 }

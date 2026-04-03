@@ -11,7 +11,7 @@ const STYLES: Record<InputQualityLevel, { background: string; color: string }> =
 };
 
 export function UsedNewsInputQualityBadge({ level }: Props) {
-  const style = STYLES[level];
+  const style = STYLES[level] ?? { bg: "#f8fafc", color: "#475569", border: "#e2e8f0" };
   return (
     <span
       style={{
@@ -24,7 +24,7 @@ export function UsedNewsInputQualityBadge({ level }: Props) {
         color: style.color,
       }}
     >
-      {level}
+      {level ?? "—"}
     </span>
   );
 }

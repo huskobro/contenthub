@@ -30,7 +30,7 @@ export function NewsBulletinSelectedNewsQualityBadge({ level, detail }: Props) {
         gap: "1px",
       }}
     >
-      <span>{level}</span>
+      <span>{level ?? "—"}</span>
       {detail && (
         <span style={{ fontSize: "0.65rem", fontWeight: 400, opacity: 0.8 }}>{detail}</span>
       )}

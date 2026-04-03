@@ -26,7 +26,7 @@ export function UsedNewsTargetResolutionBadge({ level }: Props) {
         whiteSpace: "nowrap",
       }}
     >
-      {level}
+      {level ?? "—"}
     </span>
   );
 }

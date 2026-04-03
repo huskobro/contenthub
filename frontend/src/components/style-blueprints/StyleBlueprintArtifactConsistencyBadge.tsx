@@ -26,7 +26,7 @@ export function StyleBlueprintArtifactConsistencyBadge({ level }: Props) {
         whiteSpace: "nowrap",
       }}
     >
-      {level}
+      {level ?? "—"}
     </span>
   );
 }

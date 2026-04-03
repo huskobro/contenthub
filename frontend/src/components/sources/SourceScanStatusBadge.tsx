@@ -30,7 +30,7 @@ export function SourceScanStatusBadge({ status, scanCount }: Props) {
             ...statusStyle(status),
           }}
         >
-          {status}
+          {status ?? "—"}
         </span>
       )}
       {typeof scanCount === "number" && (

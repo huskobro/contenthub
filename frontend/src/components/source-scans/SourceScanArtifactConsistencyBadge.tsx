@@ -26,7 +26,7 @@ export function SourceScanArtifactConsistencyBadge({ level }: Props) {
         whiteSpace: "nowrap",
       }}
     >
-      {level}
+      {level ?? "—"}
     </span>
   );
 }

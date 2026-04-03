@@ -27,7 +27,7 @@ export function NewsItemPublicationLineageBadge({ level }: Props) {
         whiteSpace: "nowrap",
       }}
     >
-      {level}
+      {level ?? "—"}
     </span>
   );
 }

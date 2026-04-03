@@ -27,7 +27,7 @@ export function JobPublicationOutcomeBadge({ level }: Props) {
         whiteSpace: "nowrap",
       }}
     >
-      {level}
+      {level ?? "—"}
     </span>
   );
 }

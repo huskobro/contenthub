@@ -16,7 +16,7 @@ interface Props {
 }
 
 export function StandardVideoPublicationSignalBadge({ level }: Props) {
-  const s = styles[level];
+  const s = styles[level] ?? { bg: "#f8fafc", color: "#475569", border: "#e2e8f0" };
   return (
     <span
       style={{
@@ -30,7 +30,7 @@ export function StandardVideoPublicationSignalBadge({ level }: Props) {
         whiteSpace: "nowrap",
       }}
     >
-      {level}
+      {level ?? "—"}
     </span>
   );
 }

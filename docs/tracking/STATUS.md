@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 150 — Required Field Assumption Safety Pack ✓ TAMAMLANDI
+Phase 151 — Badge Enum / Status Unknown-Value Safety Pack ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Required kabul edilen text/enum/id alanlarında null fallback koruması. 30 property render, 11 dosya, 42 yeni guard test. 1251 toplam test.
+Badge bileşenlerinde bilinmeyen enum/status değerleri için style lookup fallback ve label text null fallback koruması. 76 badge dosyası, 236 yeni guard test. 1487 toplam test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 151: badge enum status unknown-value safety pack: 62 badge style lookup neutral fallback, 76 badge label text null fallback (70 level + 6 status), 236 yeni guard test, 1487 toplam (2026-04-03)
 - Phase 150: required field assumption safety pack: 30 property null fallback (9 tablo + 2 detail panel), version numeric fallback, 42 yeni guard test, badge stilleri korundu, 1251 toplam (2026-04-03)
 - Phase 149: clipboard copy surface safety text export hygiene pack: 13 property null fallback, 3 content block null-safe length, 4 overflowWrap fix, safeJsonPretty whitespace guard, 25 yeni guard test, badge stilleri korundu, 1209 toplam (2026-04-03)
 - Phase 148: url link surface safety external target hygiene pack: anchor null guard fix, rel="noopener noreferrer" fix, UrlField overflowWrap, 13 yeni guard test, badge stilleri korundu, 1184 toplam (2026-04-03)

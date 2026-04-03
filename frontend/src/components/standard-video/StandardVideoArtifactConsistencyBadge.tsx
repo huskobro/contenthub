@@ -26,7 +26,7 @@ export function StandardVideoArtifactConsistencyBadge({ level }: Props) {
         whiteSpace: "nowrap",
       }}
     >
-      {level}
+      {level ?? "—"}
     </span>
   );
 }

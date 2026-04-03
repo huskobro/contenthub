@@ -26,7 +26,7 @@ export function TemplateArtifactConsistencyBadge({ level }: Props) {
         whiteSpace: "nowrap",
       }}
     >
-      {level}
+      {level ?? "—"}
     </span>
   );
 }

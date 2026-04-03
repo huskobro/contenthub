@@ -26,7 +26,7 @@ export function NewsItemUsedNewsLinkageBadge({ level }: Props) {
         whiteSpace: "nowrap",
       }}
     >
-      {level}
+      {level ?? "—"}
     </span>
   );
 }

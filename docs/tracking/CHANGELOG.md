@@ -2,6 +2,18 @@
 
 ---
 
+## [2026-04-03] Phase 151 — Badge Enum / Status Unknown-Value Safety Pack
+
+**Ne:** Badge bileşenlerinde bilinmeyen enum/status değerleri için iki katmanlı koruma: (1) style map lookup'larda neutral fallback (`?? { bg: "#f8fafc", ... }`), (2) label text render'larda null fallback (`{level ?? "—"}`, `{status ?? "—"}`).
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/tests/badge-unknown-value-safety.smoke.test.tsx` (yeni — 236 structural guard test)
+- 76 badge bileşeni: label text null fallback (70 level + 6 status)
+- 62 badge bileşeni: style lookup neutral fallback (14'ü zaten named-key fallback kullanıyordu)
+**Test:** 1487 toplam test (+236 yeni), tsc temiz, vite build temiz
+**Dokunulmayan:** Badge renk/stil değerleri değiştirilmedi, enum type tanımları değiştirilmedi, backend yok, business logic yok
+
+---
+
 ## [2026-04-03] Phase 150 — Required Field Assumption Safety Pack
 
 **Ne:** Required kabul edilen text/enum/id alanlarında null fallback koruması. 9 registry tablo ve 2 detail panelde toplam 30 property render'a `?? "—"` veya `?? 0` fallback eklendi.

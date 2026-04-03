@@ -14,7 +14,7 @@ interface Props {
 }
 
 export function SourceLinkedNewsStatusBadge({ status }: Props) {
-  const s = styles[status];
+  const s = styles[status] ?? { bg: "#f8fafc", color: "#475569", border: "#e2e8f0" };
   return (
     <span
       style={{
@@ -28,7 +28,7 @@ export function SourceLinkedNewsStatusBadge({ status }: Props) {
         whiteSpace: "nowrap",
       }}
     >
-      {status}
+      {status ?? "—"}
     </span>
   );
 }
