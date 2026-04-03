@@ -2,6 +2,16 @@
 
 ---
 
+## [2026-04-03] Phase 178 — Repeated Small Monospace/Code Style Constant Pack
+
+**Ne:** Tüm panel/detail/preview bileşenlerinde tekrar eden monospace/code-like inline style bloklarının kapsamlı audit'i.
+**Sonuç:** Aynı dosya içinde threshold 3+ sağlayan yeni dosya bulunamadı. TemplateForm ve StyleBlueprintForm zaten JSON_TEXTAREA const'a sahip. TemplateStyleLinksTable 2× aynı stil (threshold altı). Dosya değişikliği yapılmadı.
+**Eklenen/değiştirilen dosyalar:**
+- `docs/testing/test-report-phase-178-repeated-small-monospace-code-style-constant-pack.md` (yeni — audit belgesi)
+**Test:** 1587 toplam test, tsc temiz
+
+---
+
 ## [2026-04-03] Phase 177 — Repeated Small Panel Meta Text Constant Pack
 
 **Ne:** Tüm detail/overview/panel bileşenlerinde tekrar eden muted/meta text inline style bloklarının kapsamlı audit'i.
