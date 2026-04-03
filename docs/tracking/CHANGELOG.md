@@ -2,6 +2,18 @@
 
 ---
 
+## [2026-04-03] Phase 170 — Repeated Action Row Style Constant Pack
+
+**Ne:** Form bileşenlerindeki tekrar eden flex container / action row style bloklarını dosya-seviyesi const'lara taşıma.
+**Eklenen/değiştirilen dosyalar:**
+- `StandardVideoMetadataForm.tsx`: `PAIR_ROW` (2×) + `FLEX_1` (4×) extraction
+- `StandardVideoScriptForm.tsx`: `PAIR_ROW` (1×) + `FLEX_1` (2×) extraction (MetadataForm ile tutarlılık)
+- `docs/testing/test-report-phase-170-repeated-action-row-style-constant-pack.md` (yeni)
+**Test:** 1587 toplam test, tsc temiz, vite build temiz
+**Dokunulmayan:** Görünüm, davranış, badge stilleri, backend
+
+---
+
 ## [2026-04-03] Phase 169 — Repeated Form Section Heading Constant Pack
 
 **Ne:** Form ve panel bileşenlerindeki tekrar eden section heading metin ve style bloklarının audit'i.

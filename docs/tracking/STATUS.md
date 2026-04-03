@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 169 — Repeated Form Section Heading Constant Pack ✓ TAMAMLANDI
+Phase 170 — Repeated Action Row Style Constant Pack ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Form ve panel bileşenlerindeki tekrar eden section heading metin/style bloklarını const ile extraction. Audit yapıldı, threshold 3+ sağlanamadı, dosya değişikliği yapılmadı. 1587 toplam test.
+Panel/form bileşenlerindeki tekrar eden action row flex container style bloklarını const ile extraction. StandardVideoMetadataForm + ScriptForm güncellendi. 1587 toplam test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 170: repeated action row style constant pack: PAIR_ROW + FLEX_1 extraction (MetadataForm 4+2, ScriptForm 2+1), 1587 toplam (2026-04-03)
 - Phase 169: repeated form section heading constant pack: kapsamlı audit, threshold altı (max 2 tekrar per dosya), hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 168: repeated action button text constant pack: kapsamlı audit, threshold altı (max 2 tekrar), hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 167: repeated form button style constant pack: 9 form dosyasında BTN_PRIMARY/BTN_CANCEL extraction, 1587 toplam (2026-04-03)

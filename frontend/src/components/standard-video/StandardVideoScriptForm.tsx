@@ -20,6 +20,10 @@ const LABEL_STYLE: React.CSSProperties = {
 
 const ROW_STYLE: React.CSSProperties = { marginBottom: "0.875rem" };
 
+const PAIR_ROW: React.CSSProperties = { display: "flex", gap: "1rem", marginBottom: "0.875rem" };
+
+const FLEX_1: React.CSSProperties = { flex: 1 };
+
 const BTN_PRIMARY: React.CSSProperties = {
   padding: "0.5rem 1.25rem",
   fontSize: "0.875rem",
@@ -107,8 +111,8 @@ export function StandardVideoScriptForm({
         )}
       </div>
 
-      <div style={{ display: "flex", gap: "1rem", marginBottom: "0.875rem" }}>
-        <div style={{ flex: 1 }}>
+      <div style={PAIR_ROW}>
+        <div style={FLEX_1}>
           <label style={LABEL_STYLE}>Kaynak Tipi</label>
           <select
             style={FIELD_STYLE}
@@ -120,7 +124,7 @@ export function StandardVideoScriptForm({
             ))}
           </select>
         </div>
-        <div style={{ flex: 1 }}>
+        <div style={FLEX_1}>
           <label style={LABEL_STYLE}>Üretim Durumu</label>
           <select
             style={FIELD_STYLE}
