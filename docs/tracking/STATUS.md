@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 178 — Repeated Small Monospace/Code Style Constant Pack ✓ TAMAMLANDI (audit-only)
+Phase 179 — Repeated Small Status Text Constant Pack ✓ TAMAMLANDI (audit-only)
 
 ## Mevcut Hedef
-Tüm panel/detail/preview bileşenlerinde tekrar eden monospace/code-like style pattern audit. Threshold 3+ sağlayan yeni dosya bulunamadı. 1587 toplam test.
+Tüm bileşenlerde tekrar eden status/info text literal ve style pattern audit. Threshold 3+ sağlayan yeni dosya bulunamadı. 1587 toplam test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 179: repeated small status text constant pack: kapsamlı audit, threshold altı (max 2× per dosya), hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 178: repeated small monospace/code style constant pack: kapsamlı audit, threshold altı (max 2× per dosya), hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 177: repeated small panel meta text constant pack: kapsamlı audit, threshold altı (max 2× per dosya), hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 176: repeated small form help text style constant pack: kapsamlı audit, threshold altı (max 2× per dosya), hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
