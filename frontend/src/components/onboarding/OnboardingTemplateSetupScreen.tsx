@@ -89,6 +89,7 @@ export function OnboardingTemplateSetupScreen({ onBack, onComplete }: Props) {
           isSubmitting={createMutation.isPending}
           submitError={submitError}
           submitLabel="Sablonu Olustur"
+          cancelLabel="Geri Don"
         />
       </div>
     </div>

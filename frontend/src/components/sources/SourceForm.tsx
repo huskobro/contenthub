@@ -40,6 +40,7 @@ interface SourceFormProps {
   isPending: boolean;
   submitError: string | null;
   submitLabel?: string;
+  cancelLabel?: string;
 }
 
 export function SourceForm({
@@ -49,6 +50,7 @@ export function SourceForm({
   isPending,
   submitError,
   submitLabel = "Kaydet",
+  cancelLabel = "İptal",
 }: SourceFormProps) {
   const [name, setName] = useState(initial?.name ?? "");
   const [sourceType, setSourceType] = useState(initial?.source_type ?? "rss");
@@ -208,7 +210,7 @@ export function SourceForm({
             fontSize: "0.875rem",
           }}
         >
-          İptal
+          {cancelLabel}
         </button>
       </div>
     </form>

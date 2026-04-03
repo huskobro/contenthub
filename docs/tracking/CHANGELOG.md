@@ -2,6 +2,27 @@
 
 ---
 
+## [2026-04-03] Phase 249 — Onboarding Flow Polish & Step Coherence Pass
+
+**Ne:** Onboarding zincirinin urun seviyesinde tutarliligini saglayan polish gecisi yapildi. Feature card'lari Turkce'ye cevirildi. "Simdilik Atla" → "Sonra Tamamla" (onboarding'i tamamlamamis olarak birakir). "Devam Et" → "Sonra Tamamla" (gri). Tum alt setup ekranlarinda "Iptal" → "Geri Don". Provider/workspace CTA "Kaydet" → "Ayarlari Kaydet". Completion checklist 3'ten 5 ogeye genisletildi. Review "Geri Don" artik workspace-setup yerine requirements'a donuyor.
+**Sonuc:** Onboarding akisi tutarli, Turkce, net CTA'larla urun seviyesinde bitirmis hissi veriyor. Kullanici her adimda neden orada oldugunu ve ne yaptigini anliyor.
+**Degistirilen dosyalar:**
+- `frontend/src/components/onboarding/OnboardingWelcomeScreen.tsx` (Turkce cards, skip davranisi)
+- `frontend/src/components/onboarding/OnboardingRequirementsScreen.tsx` (Sonra Tamamla)
+- `frontend/src/components/onboarding/OnboardingProviderSetupScreen.tsx` (Ayarlari Kaydet, Geri Don)
+- `frontend/src/components/onboarding/OnboardingWorkspaceSetupScreen.tsx` (Ayarlari Kaydet, Geri Don)
+- `frontend/src/components/onboarding/OnboardingSettingsSetupScreen.tsx` (Geri Don)
+- `frontend/src/components/onboarding/OnboardingSourceSetupScreen.tsx` (cancelLabel)
+- `frontend/src/components/onboarding/OnboardingTemplateSetupScreen.tsx` (cancelLabel)
+- `frontend/src/components/onboarding/OnboardingCompletionScreen.tsx` (+2 checklist)
+- `frontend/src/pages/OnboardingPage.tsx` (review back → requirements)
+- `frontend/src/components/sources/SourceForm.tsx` (cancelLabel prop)
+- `frontend/src/components/templates/TemplateForm.tsx` (cancelLabel prop)
+- `frontend/src/tests/onboarding.smoke.test.tsx` (tum metin referanslari guncellendi)
+**Test:** 1667 toplam test, tsc temiz, build temiz
+
+---
+
 ## [2026-04-03] Phase 248 — Post-Onboarding First Landing & User Handoff Flow
 
 **Ne:** Onboarding tamamlandiktan sonra kullanicinin /user yuzeyinde bos ekranla karsilasmasini engelleyen handoff deneyimi eklendi. PostOnboardingHandoff component'i "Sistem Hazir" gostergesi, "Ilk Iceriginizi Olusturun" basligi, ana CTA (Yeni Icerik Olustur → /admin/standard-videos/new) ve ikincil CTA (Yonetim Paneli → /admin) icerir. UserDashboardPage artik useOnboardingStatus ile durumu kontrol eder.

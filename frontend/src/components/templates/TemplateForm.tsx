@@ -23,6 +23,7 @@ interface TemplateFormProps {
   onSubmit: (values: TemplateFormValues) => void;
   onCancel: () => void;
   submitLabel?: string;
+  cancelLabel?: string;
 }
 
 
@@ -92,6 +93,7 @@ export function TemplateForm({
   onSubmit,
   onCancel,
   submitLabel,
+  cancelLabel = "İptal",
 }: TemplateFormProps) {
   const [values, setValues] = useState<TemplateFormValues>({
     name: initial?.name ?? "",
@@ -274,7 +276,7 @@ export function TemplateForm({
           disabled={isSubmitting}
           style={{ ...BTN_CANCEL, cursor: isSubmitting ? "not-allowed" : "pointer" }}
         >
-          İptal
+          {cancelLabel}
         </button>
       </div>
     </form>

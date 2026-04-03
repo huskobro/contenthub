@@ -113,9 +113,9 @@ describe("OnboardingWelcomeScreen", () => {
   it("renders all three feature cards", () => {
     window.fetch = mockFetch({ onboarding_required: true, completed_at: null });
     wrap(<OnboardingWelcomeScreen />);
-    expect(screen.getByText("Modular Content Production")).toBeDefined();
-    expect(screen.getByText("Full Operations Visibility")).toBeDefined();
-    expect(screen.getByText("Publish & Analyze")).toBeDefined();
+    expect(screen.getByText("Modular Icerik Uretimi")).toBeDefined();
+    expect(screen.getByText("Tam Operasyon Gorunurlugu")).toBeDefined();
+    expect(screen.getByText("Yayin ve Analiz")).toBeDefined();
   });
 
   it("renders the primary CTA button", () => {
@@ -127,7 +127,7 @@ describe("OnboardingWelcomeScreen", () => {
   it("renders the skip button", () => {
     window.fetch = mockFetch({ onboarding_required: true, completed_at: null });
     wrap(<OnboardingWelcomeScreen />);
-    expect(screen.getByText("Simdilik Atla")).toBeDefined();
+    expect(screen.getByText("Sonra Tamamla")).toBeDefined();
   });
 });
 
@@ -158,10 +158,10 @@ describe("OnboardingRequirementsScreen", () => {
     expect(await screen.findByText("Kurulumu Tamamla")).toBeDefined();
   });
 
-  it("shows Devam Et when not all done", async () => {
+  it("shows Sonra Tamamla when not all done", async () => {
     window.fetch = mockFetch(MOCK_REQUIREMENTS);
     wrap(<OnboardingRequirementsScreen />);
-    expect(await screen.findByText("Devam Et")).toBeDefined();
+    expect(await screen.findByText("Sonra Tamamla")).toBeDefined();
   });
 });
 
@@ -223,7 +223,7 @@ describe("OnboardingSourceSetupScreen", () => {
     window.fetch = mockFetch({});
     const onBack = vi.fn();
     wrap(<OnboardingSourceSetupScreen onBack={onBack} onComplete={vi.fn()} />);
-    fireEvent.click(screen.getByText("İptal"));
+    fireEvent.click(screen.getByText("Geri Don"));
     expect(onBack).toHaveBeenCalledTimes(1);
   });
 });
@@ -245,7 +245,7 @@ describe("OnboardingPage source-setup flow", () => {
     const btn = await screen.findByText("Kaynak Ekle");
     fireEvent.click(btn);
     await screen.findByText("Kaynagi Ekle");
-    fireEvent.click(screen.getByText("İptal"));
+    fireEvent.click(screen.getByText("Geri Don"));
     expect(await screen.findByText("Kurulum Durumu")).toBeDefined();
   });
 });
@@ -286,7 +286,7 @@ describe("OnboardingTemplateSetupScreen", () => {
     window.fetch = mockFetch({});
     const onBack = vi.fn();
     wrap(<OnboardingTemplateSetupScreen onBack={onBack} onComplete={vi.fn()} />);
-    fireEvent.click(screen.getByText("İptal"));
+    fireEvent.click(screen.getByText("Geri Don"));
     expect(onBack).toHaveBeenCalledTimes(1);
   });
 });
@@ -308,7 +308,7 @@ describe("OnboardingPage template-setup flow", () => {
     const btn = await screen.findByText("Sablon Ekle");
     fireEvent.click(btn);
     await screen.findByText("Sablonu Olustur");
-    fireEvent.click(screen.getByText("İptal"));
+    fireEvent.click(screen.getByText("Geri Don"));
     expect(await screen.findByText("Kurulum Durumu")).toBeDefined();
   });
 });
@@ -349,7 +349,7 @@ describe("OnboardingSettingsSetupScreen", () => {
     window.fetch = mockFetch({});
     const onBack = vi.fn();
     wrap(<OnboardingSettingsSetupScreen onBack={onBack} onComplete={vi.fn()} />);
-    fireEvent.click(screen.getByText("Iptal"));
+    fireEvent.click(screen.getByText("Geri Don"));
     expect(onBack).toHaveBeenCalledTimes(1);
   });
 });
@@ -372,7 +372,7 @@ describe("OnboardingPage settings-setup flow", () => {
     const btn = await screen.findByText("Ayar Ekle");
     fireEvent.click(btn);
     await screen.findByText("Ayari Kaydet");
-    fireEvent.click(screen.getByText("Iptal"));
+    fireEvent.click(screen.getByText("Geri Don"));
     expect(await screen.findByText("Kurulum Durumu")).toBeDefined();
   });
 });
@@ -423,18 +423,18 @@ describe("OnboardingPage completion flow", () => {
     window.fetch = mockFetch(MOCK_REQUIREMENTS);
     wrap(<OnboardingPage />);
     fireEvent.click(screen.getByText("Kurulumu Baslat"));
-    await screen.findByText("Devam Et");
+    await screen.findByText("Sonra Tamamla");
     expect(screen.queryByText("Kurulum Tamamlandi")).toBeNull();
   });
 
-  it("can go back from provider-setup to requirements via Iptal", async () => {
+  it("can go back from provider-setup to requirements via Geri Don", async () => {
     window.fetch = mockFetch(MOCK_REQUIREMENTS_ALL_DONE);
     wrap(<OnboardingPage />);
     fireEvent.click(screen.getByText("Kurulumu Baslat"));
     const btn = await screen.findByText("Kurulumu Tamamla");
     fireEvent.click(btn);
     await screen.findByText("Provider / API Yapilandirmasi");
-    fireEvent.click(screen.getByText("Iptal"));
+    fireEvent.click(screen.getByText("Geri Don"));
     expect(await screen.findByText("Kurulum Durumu")).toBeDefined();
   });
 });
@@ -468,7 +468,7 @@ describe("OnboardingPage completion gate (end-to-end)", () => {
   it("requirements screen blocks completion when not all done", async () => {
     window.fetch = mockFetch(MOCK_REQUIREMENTS);
     wrap(<OnboardingRequirementsScreen />);
-    await screen.findByText("Devam Et");
+    await screen.findByText("Sonra Tamamla");
     expect(screen.queryByText("Kurulumu Tamamla")).toBeNull();
   });
 
@@ -476,7 +476,7 @@ describe("OnboardingPage completion gate (end-to-end)", () => {
     window.fetch = mockFetch(MOCK_REQUIREMENTS_ALL_DONE);
     wrap(<OnboardingRequirementsScreen />);
     expect(await screen.findByText("Kurulumu Tamamla")).toBeDefined();
-    expect(screen.queryByText("Devam Et")).toBeNull();
+    expect(screen.queryByText("Sonra Tamamla")).toBeNull();
   });
 
   it("review screen Kurulumu Tamamla triggers completion step", async () => {
@@ -499,10 +499,10 @@ describe("OnboardingProviderSetupScreen", () => {
     expect(screen.getByText("Provider / API Yapilandirmasi")).toBeDefined();
   });
 
-  it("renders Kaydet submit button", () => {
+  it("renders Ayarlari Kaydet submit button", () => {
     window.fetch = mockFetch({});
     wrap(<OnboardingProviderSetupScreen onBack={vi.fn()} onComplete={vi.fn()} />);
-    expect(screen.getByText("Kaydet")).toBeDefined();
+    expect(screen.getByText("Ayarlari Kaydet")).toBeDefined();
   });
 
   it("renders all three API key sections", () => {
@@ -513,18 +513,18 @@ describe("OnboardingProviderSetupScreen", () => {
     expect(screen.getByText("YouTube")).toBeDefined();
   });
 
-  it("calls onBack when Iptal is clicked", () => {
+  it("calls onBack when Geri Don is clicked", () => {
     window.fetch = mockFetch({});
     const onBack = vi.fn();
     wrap(<OnboardingProviderSetupScreen onBack={onBack} onComplete={vi.fn()} />);
-    fireEvent.click(screen.getByText("Iptal"));
+    fireEvent.click(screen.getByText("Geri Don"));
     expect(onBack).toHaveBeenCalledTimes(1);
   });
 
   it("shows validation error when submitting with all empty fields", async () => {
     window.fetch = mockFetch({});
     wrap(<OnboardingProviderSetupScreen onBack={vi.fn()} onComplete={vi.fn()} />);
-    fireEvent.click(screen.getByText("Kaydet"));
+    fireEvent.click(screen.getByText("Ayarlari Kaydet"));
     expect(await screen.findByText("En az bir provider API anahtari girin.")).toBeDefined();
   });
 });
@@ -546,7 +546,7 @@ describe("OnboardingPage provider-setup flow", () => {
     const btn = await screen.findByText("Kurulumu Tamamla");
     fireEvent.click(btn);
     await screen.findByText("Provider / API Yapilandirmasi");
-    fireEvent.click(screen.getByText("Iptal"));
+    fireEvent.click(screen.getByText("Geri Don"));
     expect(await screen.findByText("Kurulum Durumu")).toBeDefined();
   });
 });
@@ -558,10 +558,10 @@ describe("OnboardingWorkspaceSetupScreen", () => {
     expect(screen.getByText("Calisma Alani Yapilandirmasi")).toBeDefined();
   });
 
-  it("renders Kaydet submit button", () => {
+  it("renders Ayarlari Kaydet submit button", () => {
     window.fetch = mockFetch({});
     wrap(<OnboardingWorkspaceSetupScreen onBack={vi.fn()} onComplete={vi.fn()} />);
-    expect(screen.getByText("Kaydet")).toBeDefined();
+    expect(screen.getByText("Ayarlari Kaydet")).toBeDefined();
   });
 
   it("renders both path sections", () => {
@@ -571,11 +571,11 @@ describe("OnboardingWorkspaceSetupScreen", () => {
     expect(screen.getByText("Cikti Dizini")).toBeDefined();
   });
 
-  it("calls onBack when Iptal is clicked", () => {
+  it("calls onBack when Geri Don is clicked", () => {
     window.fetch = mockFetch({});
     const onBack = vi.fn();
     wrap(<OnboardingWorkspaceSetupScreen onBack={onBack} onComplete={vi.fn()} />);
-    fireEvent.click(screen.getByText("Iptal"));
+    fireEvent.click(screen.getByText("Geri Don"));
     expect(onBack).toHaveBeenCalledTimes(1);
   });
 
@@ -584,7 +584,7 @@ describe("OnboardingWorkspaceSetupScreen", () => {
     wrap(<OnboardingWorkspaceSetupScreen onBack={vi.fn()} onComplete={vi.fn()} />);
     const inputs = screen.getAllByRole("textbox");
     fireEvent.change(inputs[0], { target: { value: "" } });
-    fireEvent.click(screen.getByText("Kaydet"));
+    fireEvent.click(screen.getByText("Ayarlari Kaydet"));
     expect(screen.getByText("Her iki klasor yolu da zorunludur.")).toBeDefined();
   });
 });
@@ -594,14 +594,14 @@ describe("OnboardingPage workspace-setup flow", () => {
     window.fetch = mockFetch({});
     wrap(<OnboardingWorkspaceSetupScreen onBack={vi.fn()} onComplete={vi.fn()} />);
     expect(screen.getByText("Calisma Alani Yapilandirmasi")).toBeDefined();
-    expect(screen.getByText("Kaydet")).toBeDefined();
+    expect(screen.getByText("Ayarlari Kaydet")).toBeDefined();
   });
 
-  it("can go back from workspace-setup via Iptal", () => {
+  it("can go back from workspace-setup via Geri Don", () => {
     window.fetch = mockFetch({});
     const onBack = vi.fn();
     wrap(<OnboardingWorkspaceSetupScreen onBack={onBack} onComplete={vi.fn()} />);
-    fireEvent.click(screen.getByText("Iptal"));
+    fireEvent.click(screen.getByText("Geri Don"));
     expect(onBack).toHaveBeenCalledTimes(1);
   });
 });

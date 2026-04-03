@@ -213,7 +213,7 @@ export function OnboardingSettingsSetupScreen({ onBack, onComplete }: Props) {
                 fontSize: "0.875rem",
               }}
             >
-              Iptal
+              Geri Don
             </button>
           </div>
         </form>

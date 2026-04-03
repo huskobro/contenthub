@@ -80,7 +80,7 @@ export function OnboardingPage() {
   if (step === "review") {
     return (
       <OnboardingReviewSummaryScreen
-        onBack={() => setStep("workspace-setup")}
+        onBack={() => setStep("requirements")}
         onComplete={() => setStep("completion")}
       />
     );

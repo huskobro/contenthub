@@ -1,10 +1,10 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 248 — Post-Onboarding First Landing & User Handoff Flow ✓ TAMAMLANDI (feature)
+Phase 249 — Onboarding Flow Polish & Step Coherence Pass ✓ TAMAMLANDI (feature)
 
 ## Mevcut Hedef
-Onboarding sonrasi kullanicinin /user yuzeyinde net bir handoff deneyimi goruyor. "Sistem Hazir" gostergesi, "Ilk Iceriginizi Olusturun" basligi, ana CTA (Yeni Icerik Olustur) ve ikincil CTA (Yonetim Paneli) ile kullanici bos ekranda birakilmiyor. 1667 toplam test.
+Onboarding zinciri urun seviyesinde parlatildi. Tum ekranlarda Turkce dil tutarliligi, CTA netligi, geri donus mantigi ve completion checklist tamligi saglandi. 1667 toplam test.
 
 ## Devam Eden
 — (devam eden calisma yok)
@@ -15,6 +15,7 @@ Onboarding sonrasi kullanicinin /user yuzeyinde net bir handoff deneyimi goruyor
 - **ANA FAZ BAŞLADI:** Wizard / Onboarding (ürün geliştirme hattı)
 
 ## Son Tamamlananlar
+- Phase 249: onboarding flow polish & step coherence pass — Turkce dil tutarliligi, CTA netligi, geri donus mantigi, completion checklist genisletildi, 1667 toplam (2026-04-03)
 - Phase 248: post-onboarding first landing & user handoff flow — PostOnboardingHandoff component, UserDashboardPage entegrasyonu, ana/ikincil CTA, 7 yeni test, 1667 toplam (2026-04-03)
 - Phase 247: onboarding completion gate & ready-to-enter flow — end-to-end zincir testleri (completion/mutation/requirements bloklama/review gecisi), 5 yeni test, 1660 toplam (2026-04-03)
 - Phase 246: duplicate — Phase 240 ile ayni, degisiklik yok (2026-04-03)

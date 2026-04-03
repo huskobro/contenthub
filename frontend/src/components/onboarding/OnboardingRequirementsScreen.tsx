@@ -250,8 +250,8 @@ export function OnboardingRequirementsScreen({ onBack, onSourceSetup, onTemplate
             Kurulumu Tamamla
           </button>
         ) : (
-          <button style={PRIMARY_BTN} onClick={() => navigate("/user")}>
-            Devam Et
+          <button style={{ ...PRIMARY_BTN, background: "#64748b" }} onClick={() => navigate("/user")}>
+            Sonra Tamamla
           </button>
         )}
 

@@ -115,20 +115,20 @@ const FEATURES_DATA = [
   {
     bg: "#2563eb",
     label: "1",
-    title: "Modular Content Production",
-    desc: "Create standard videos, news bulletins, and more with guided wizard workflows.",
+    title: "Modular Icerik Uretimi",
+    desc: "Standart video, haber bulteni ve daha fazlasini adim adim rehberli akislarla olusturun.",
   },
   {
     bg: "#7c3aed",
     label: "2",
-    title: "Full Operations Visibility",
-    desc: "Track every job, step, and artifact with real-time timelines and ETA.",
+    title: "Tam Operasyon Gorunurlugu",
+    desc: "Her isi, adimi ve artefakti gercek zamanli zaman cizelgeleri ve ETA ile takip edin.",
   },
   {
     bg: "#059669",
     label: "3",
-    title: "Publish & Analyze",
-    desc: "Publish to platforms, review analytics, and optimize your content pipeline.",
+    title: "Yayin ve Analiz",
+    desc: "Platformlara yayinlayin, analizleri inceleyin ve icerik hattinizi optimize edin.",
   },
 ];
 
@@ -151,9 +151,7 @@ export function OnboardingWelcomeScreen({ onNext }: WelcomeProps = {}) {
   }
 
   function handleSkip() {
-    completeMutation.mutate(undefined, {
-      onSuccess: () => navigate("/user"),
-    });
+    navigate("/user");
   }
 
   return (
@@ -196,9 +194,8 @@ export function OnboardingWelcomeScreen({ onNext }: WelcomeProps = {}) {
         <button
           style={SECONDARY_BTN}
           onClick={handleSkip}
-          disabled={completeMutation.isPending}
         >
-          Simdilik Atla
+          Sonra Tamamla
         </button>
       </div>
     </div>

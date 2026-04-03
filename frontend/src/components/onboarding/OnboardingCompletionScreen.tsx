@@ -142,6 +142,14 @@ export function OnboardingCompletionScreen({ onBack }: Props) {
             <span style={CHECK_ICON}>{"\u2713"}</span>
             Sistem ayarlari tanimlandi
           </li>
+          <li style={CHECK_ITEM}>
+            <span style={CHECK_ICON}>{"\u2713"}</span>
+            Provider / API ayarlari yapilandirildi
+          </li>
+          <li style={CHECK_ITEM}>
+            <span style={CHECK_ICON}>{"\u2713"}</span>
+            Calisma alani tanimlandi
+          </li>
         </ul>
 
         <button style={PRIMARY_BTN} onClick={handleContinue}>

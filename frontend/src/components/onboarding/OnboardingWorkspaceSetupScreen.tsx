@@ -194,7 +194,7 @@ export function OnboardingWorkspaceSetupScreen({ onBack, onComplete }: Props) {
                 fontSize: "0.875rem",
               }}
             >
-              {saving ? "Kaydediliyor..." : "Kaydet"}
+              {saving ? "Kaydediliyor..." : "Ayarlari Kaydet"}
             </button>
             <button
               type="button"
@@ -209,7 +209,7 @@ export function OnboardingWorkspaceSetupScreen({ onBack, onComplete }: Props) {
                 fontSize: "0.875rem",
               }}
             >
-              Iptal
+              Geri Don
             </button>
           </div>
         </form>
