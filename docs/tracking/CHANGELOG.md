@@ -2,6 +2,16 @@
 
 ---
 
+## [2026-04-03] Phase 214 — Repeated Small edit/view Mode Readability Pack
+
+**Ne:** Panel/form bileşenlerinde mode==="edit" ve mode==="view" pattern'larının kapsamlı audit'i.
+**Sonuç:** Panel dosyalarında her mode değeri birer kez kullanılıyor. Threshold altı. Phase 213'te mode==="create" zaten ele alındı. Dosya değişikliği yapılmadı.
+**Eklenen dosyalar:**
+- `docs/testing/test-report-phase-214-repeated-small-edit-view-mode-readability-pack.md` (yeni — audit belgesi)
+**Test:** 1587 toplam test, tsc temiz
+
+---
+
 ## [2026-04-03] Phase 213 — Repeated Small Boolean Prop Readability Pack
 
 **Ne:** Form bileşenlerinde tekrar eden `mode === "create"` pattern'larını `const isCreate` const'larına çıkarma.

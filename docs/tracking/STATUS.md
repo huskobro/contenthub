@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 213 — Repeated Small Boolean Prop Readability Pack ✓ TAMAMLANDI
+Phase 214 — Repeated Small edit/view Mode Readability Pack ✓ TAMAMLANDI (audit-only)
 
 ## Mevcut Hedef
-boolean prop readability audit. mode === "create" 4 dosyada 3×. const isCreate eklendi. 1587 toplam test.
+edit/view mode check audit. Panel dosyalarında mode==="edit"/"view" birer kez kullanılıyor. Threshold altı. Hiçbir dosya değiştirilmedi. 1587 toplam test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 214: repeated small edit/view mode readability pack: kapsamlı audit, threshold altı, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 213: repeated small boolean prop readability pack: 4 dosyada const isCreate eklendi, 12 satır değiştirildi, 1587 toplam (2026-04-03)
 - Phase 212: repeated small .join()/separator array render pattern pack: kapsamlı audit, threshold karşılanmadı, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 211: repeated small nullish-coalescing readability pack: kapsamlı audit, ?? "" standart kullanım, extraction değer katmıyor, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
