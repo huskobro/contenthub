@@ -6,6 +6,7 @@ import { OnboardingWelcomeScreen } from "../components/onboarding/OnboardingWelc
 import { OnboardingRequirementsScreen } from "../components/onboarding/OnboardingRequirementsScreen";
 import { OnboardingSourceSetupScreen } from "../components/onboarding/OnboardingSourceSetupScreen";
 import { OnboardingTemplateSetupScreen } from "../components/onboarding/OnboardingTemplateSetupScreen";
+import { OnboardingSettingsSetupScreen } from "../components/onboarding/OnboardingSettingsSetupScreen";
 import { OnboardingPage } from "../pages/OnboardingPage";
 import { AppEntryGate } from "../app/AppEntryGate";
 
@@ -287,6 +288,70 @@ describe("OnboardingPage template-setup flow", () => {
     fireEvent.click(btn);
     await screen.findByText("Sablonu Olustur");
     fireEvent.click(screen.getByText("İptal"));
+    expect(await screen.findByText("Kurulum Durumu")).toBeDefined();
+  });
+});
+
+describe("OnboardingRequirementsScreen settings action buttons", () => {
+  it("shows Ayar Ekle button for missing settings requirement", async () => {
+    window.fetch = mockFetch(MOCK_REQUIREMENTS);
+    const onSettingsSetup = vi.fn();
+    wrap(<OnboardingRequirementsScreen onSettingsSetup={onSettingsSetup} />);
+    const btn = await screen.findByText("Ayar Ekle");
+    expect(btn).toBeDefined();
+    fireEvent.click(btn);
+    expect(onSettingsSetup).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not show Ayar Ekle when settings requirement is completed", async () => {
+    window.fetch = mockFetch(MOCK_REQUIREMENTS_ALL_DONE);
+    wrap(<OnboardingRequirementsScreen />);
+    await screen.findByText("Kurulumu Tamamla");
+    expect(screen.queryByText("Ayar Ekle")).toBeNull();
+  });
+});
+
+describe("OnboardingSettingsSetupScreen", () => {
+  it("renders settings setup heading", () => {
+    window.fetch = mockFetch({});
+    wrap(<OnboardingSettingsSetupScreen onBack={vi.fn()} onComplete={vi.fn()} />);
+    expect(screen.getByText("Sistem Ayari Ekle")).toBeDefined();
+  });
+
+  it("renders settings form with Ayari Kaydet submit button", () => {
+    window.fetch = mockFetch({});
+    wrap(<OnboardingSettingsSetupScreen onBack={vi.fn()} onComplete={vi.fn()} />);
+    expect(screen.getByText("Ayari Kaydet")).toBeDefined();
+  });
+
+  it("calls onBack when cancel is clicked", () => {
+    window.fetch = mockFetch({});
+    const onBack = vi.fn();
+    wrap(<OnboardingSettingsSetupScreen onBack={onBack} onComplete={vi.fn()} />);
+    fireEvent.click(screen.getByText("Iptal"));
+    expect(onBack).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("OnboardingPage settings-setup flow", () => {
+  it("transitions from requirements to settings-setup on Ayar Ekle click", async () => {
+    window.fetch = mockFetch(MOCK_REQUIREMENTS);
+    wrap(<OnboardingPage />);
+    fireEvent.click(screen.getByText("Kurulumu Baslat"));
+    const btn = await screen.findByText("Ayar Ekle");
+    fireEvent.click(btn);
+    expect(await screen.findByText("Sistem Ayari Ekle")).toBeDefined();
+    expect(screen.getByText("Ayari Kaydet")).toBeDefined();
+  });
+
+  it("can go back from settings-setup to requirements", async () => {
+    window.fetch = mockFetch(MOCK_REQUIREMENTS);
+    wrap(<OnboardingPage />);
+    fireEvent.click(screen.getByText("Kurulumu Baslat"));
+    const btn = await screen.findByText("Ayar Ekle");
+    fireEvent.click(btn);
+    await screen.findByText("Ayari Kaydet");
+    fireEvent.click(screen.getByText("Iptal"));
     expect(await screen.findByText("Kurulum Durumu")).toBeDefined();
   });
 });

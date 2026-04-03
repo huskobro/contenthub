@@ -174,9 +174,10 @@ interface Props {
   onBack?: () => void;
   onSourceSetup?: () => void;
   onTemplateSetup?: () => void;
+  onSettingsSetup?: () => void;
 }
 
-export function OnboardingRequirementsScreen({ onBack, onSourceSetup, onTemplateSetup }: Props) {
+export function OnboardingRequirementsScreen({ onBack, onSourceSetup, onTemplateSetup, onSettingsSetup }: Props) {
   const { data, isLoading, isError } = useSetupRequirements();
   const completeMutation = useCompleteOnboarding();
   const navigate = useNavigate();
@@ -233,6 +234,9 @@ export function OnboardingRequirementsScreen({ onBack, onSourceSetup, onTemplate
             } else if (req.key === "templates") {
               onAction = onTemplateSetup;
               actionLabel = "Sablon Ekle";
+            } else if (req.key === "settings") {
+              onAction = onSettingsSetup;
+              actionLabel = "Ayar Ekle";
             }
             return (
               <RequirementRow

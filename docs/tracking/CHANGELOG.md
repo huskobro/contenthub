@@ -2,6 +2,23 @@
 
 ---
 
+## [2026-04-03] Phase 240 — Onboarding Settings Setup Required Action
+
+**Ne:** Onboarding requirements ekranindaki son eksik "Sistem Ayarlari" maddesine "Ayar Ekle" aksiyon butonu eklendi. Onboarding icinde minimal sistem ayari ekleme formu olusturuldu. `createSetting` API fonksiyonu ve `useCreateSetting` hook'u eklendi (mevcut admin panelinde settings create formu yoktu).
+**Sonuc:** Requirements → "Ayar Ekle" → ayar formu → POST /api/v1/settings → basarili → requirements'a donus. Artik onboarding zincirindeki uc zorunlu requirement'in ucunde de (source + template + settings) aksiyon butonu calisiyor. OnboardingPage step state 5 adima genisletildi.
+**Eklenen dosyalar:**
+- `frontend/src/components/onboarding/OnboardingSettingsSetupScreen.tsx` (yeni)
+- `frontend/src/hooks/useCreateSetting.ts` (yeni)
+- `docs/testing/test-report-phase-240-onboarding-settings-setup-action.md` (yeni)
+**Degistirilen dosyalar:**
+- `frontend/src/api/settingsApi.ts` (SettingCreatePayload + createSetting)
+- `frontend/src/components/onboarding/OnboardingRequirementsScreen.tsx` (settings aksiyon butonu, onSettingsSetup prop)
+- `frontend/src/pages/OnboardingPage.tsx` (settings-setup step)
+- `frontend/src/tests/onboarding.smoke.test.tsx` (+7 yeni test, toplam 35)
+**Test:** 1622 toplam test (+7 yeni), tsc temiz, build temiz
+
+---
+
 ## [2026-04-03] Phase 239 — Onboarding Template Setup Required Action
 
 **Ne:** Onboarding requirements ekranindaki "Sablon Olustur" maddesine "Sablon Ekle" aksiyon butonu eklendi. Butona tiklandiginda onboarding icinde sablon olusturma formu aciliyor. Mevcut TemplateForm komponenti ve useCreateTemplate hook'u tekrar kullaniliyor.
