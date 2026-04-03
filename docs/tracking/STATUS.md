@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 203 — Repeated Small text-decoration Literal Constant Pack ✓ TAMAMLANDI (audit-only)
+Phase 204 — Repeated Small position/zIndex Literal Constant Pack ✓ TAMAMLANDI (audit-only)
 
 ## Mevcut Hedef
-textDecoration literal audit. Sadece AppSidebar.tsx'de 1 kullanım var. Threshold karşılanmadı. Hiçbir dosya değiştirilmedi. 1587 toplam test.
+position/zIndex literal audit. Bu property'ler codebase'de kullanılmıyor. Hiçbir dosya değiştirilmedi. 1587 toplam test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 204: repeated small position/zIndex literal constant pack: kapsamlı audit, kullanım yok, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 203: repeated small text-decoration literal constant pack: kapsamlı audit, threshold karşılanmadı, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 202: repeated small outline/boxShadow literal constant pack: kapsamlı audit, kullanım yok, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 201: repeated small transition/animation literal constant pack: kapsamlı audit, kullanım yok, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
