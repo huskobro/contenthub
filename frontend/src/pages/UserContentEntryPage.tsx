@@ -121,9 +121,11 @@ export function UserContentEntryPage() {
         ))}
       </div>
 
-      <div style={NOTE}>
-        Icerik olusturma akislari yonetim panelinde calismaktadir. Sectiginiz
-        tur sizi ilgili olusturma ekranina yonlendirecektir.
+      <div style={NOTE} data-testid="content-first-use-note">
+        Henuz icerik olusturmadiyseniz, yukaridaki turlerden birini secerek
+        ilk iceriginizi baslatabilirsiniz. Icerik olusturma akislari yonetim
+        panelinde calismaktadir ve sectiginiz tur sizi ilgili olusturma
+        ekranina yonlendirecektir.
       </div>
     </div>
   );

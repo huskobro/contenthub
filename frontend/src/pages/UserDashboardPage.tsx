@@ -29,9 +29,14 @@ export function UserDashboardPage() {
           <DashboardActionHub />
         </>
       ) : (
-        <p style={{ color: "#475569", fontSize: "0.9375rem", lineHeight: 1.6 }}>
-          ContentHub'a hosgeldiniz. Kurulumu tamamladiktan sonra buradan icerik
-          uretmeye ve yayinlamaya baslayabilirsiniz.
+        <p
+          style={{ color: "#475569", fontSize: "0.9375rem", lineHeight: 1.6, maxWidth: "720px" }}
+          data-testid="dashboard-onboarding-pending-note"
+        >
+          ContentHub'a hosgeldiniz. Sistemi kullanmaya baslamak icin once
+          kurulum adimlarini tamamlayin. Kurulum tamamlandiktan sonra bu
+          ekrandan icerik olusturma, yayin takibi ve yonetim paneline
+          erisim islemlerinizi yonetebilirsiniz.
         </p>
       )}
     </div>

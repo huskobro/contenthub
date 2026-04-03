@@ -131,9 +131,11 @@ export function UserPublishEntryPage() {
         ))}
       </div>
 
-      <div style={NOTE}>
-        Yayin islemleri su an yonetim panelinde yurutulmektedir.
-        Sectiginiz alan sizi ilgili yonetim ekranina yonlendirecektir.
+      <div style={NOTE} data-testid="publish-first-use-note">
+        Henuz yayin sureci baslamadiysa, once Icerik ekranindan bir icerik
+        olusturun. Tamamlanan icerikler buradaki yayin alanlarina duser.
+        Yayin islemleri su an yonetim panelinde yurutulmektedir ve sectiginiz
+        alan sizi ilgili yonetim ekranina yonlendirecektir.
       </div>
     </div>
   );

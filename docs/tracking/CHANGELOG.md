@@ -2,6 +2,20 @@
 
 ---
 
+## [2026-04-03] Phase 256 — User Panel Empty/No-Action State Clarity Pass
+
+**Ne:** User panel yuzeylerine first-use/empty-state yonlendirme metinleri eklendi. Dashboard onboarding-pending mesaji aksiyonel hale getirildi ("kurulum adimlarini tamamlayin"). Content entry note'a "ilk iceriginizi baslatabilirsiniz" yonlendirmesi eklendi. Publish entry note'a "once Icerik ekranindan bir icerik olusturun" icerik→yayin akisi aciklamasi eklendi.
+**Sonuc:** Kullanici user panelde ilk gelisinde veya henuz veri/is yokken ne yapacagini anlayabiliyor. Bos ekran hissi azaldi, her yuzey kullaniciyi eyleme yonlendiriyor.
+**Degistirilen dosyalar:**
+- `frontend/src/pages/UserDashboardPage.tsx` (pending note guncellendi, testid eklendi)
+- `frontend/src/pages/UserContentEntryPage.tsx` (first-use note guncellendi, testid eklendi)
+- `frontend/src/pages/UserPublishEntryPage.tsx` (first-use note guncellendi, testid eklendi)
+**Eklenen dosyalar:**
+- `frontend/src/tests/user-panel-empty-state-clarity.smoke.test.tsx` (8 yeni test)
+**Test:** 1720 toplam test (+8 yeni), tsc temiz, build temiz
+
+---
+
 ## [2026-04-03] Phase 255 — Admin to User Return Landing Clarity
 
 **Ne:** Admin yuzeyinden user paneline donen kullanici icin landing netligi artirildi. UserDashboardPage'e onboarding tamamlanmis kullanicilar icin context note eklendi: "Kullanici panelindesiniz. Icerik olusturma, yayin takibi ve yonetim paneline gecis islemlerinizi buradan yonetebilirsiniz." Mevcut handoff ve action hub ile uyumlu calisir.

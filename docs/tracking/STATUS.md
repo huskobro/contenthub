@@ -1,10 +1,10 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 255 — Admin to User Return Landing Clarity ✓ TAMAMLANDI (feature)
+Phase 256 — User Panel Empty/No-Action State Clarity Pass ✓ TAMAMLANDI (feature)
 
 ## Mevcut Hedef
-User dashboard'da context note eklendi: admin'den donen kullaniciya "kullanici panelindesin" mesaji ve mevcut aksiyonlari gosterir. 1712 toplam test.
+User panel yuzeylerine first-use/empty-state yonlendirme metinleri eklendi: dashboard pending note, content first-use note, publish first-use note. 1720 toplam test.
 
 ## Devam Eden
 — (devam eden calisma yok)
@@ -15,6 +15,7 @@ User dashboard'da context note eklendi: admin'den donen kullaniciya "kullanici p
 - **ANA FAZ BAŞLADI:** Wizard / Onboarding (ürün geliştirme hattı)
 
 ## Son Tamamlananlar
+- Phase 256: user panel empty/no-action state clarity — dashboard pending note, content first-use note, publish first-use note, 8 yeni test, 1720 toplam (2026-04-03)
 - Phase 255: admin to user return landing clarity — dashboard context note, kullanici paneli yon bilgisi, handoff/hub ile uyumlu, 8 yeni test, 1712 toplam (2026-04-03)
 - Phase 254: user to admin task continuity strip — AdminContinuityStrip, yonetim paneli bilgi bandi, kullanici paneline donus linki, 7 yeni test, 1704 toplam (2026-04-03)
 - Phase 253: user dashboard primary action hub — DashboardActionHub, Icerik/Yayin/Yonetim Paneli hizli erisim kartlari, handoff ile uyumlu, 8 yeni test, 1697 toplam (2026-04-03)
