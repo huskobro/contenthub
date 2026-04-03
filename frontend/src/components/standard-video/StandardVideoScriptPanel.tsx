@@ -7,6 +7,7 @@ import { isBlank } from "../../lib/isBlank";
 const PREVIEW_LIMIT = 400;
 const DASH = "—";
 const LABEL_TD: React.CSSProperties = { color: "#64748b", paddingRight: "1rem", paddingBottom: "0.25rem" };
+const SECTION_STYLE: React.CSSProperties = { border: "1px solid #e2e8f0", borderRadius: "6px", padding: "1rem", marginBottom: "1.25rem" };
 
 interface Props {
   videoId: string;
@@ -59,16 +60,10 @@ export function StandardVideoScriptPanel({
     setMode("view");
   }
 
-  const sectionStyle: React.CSSProperties = {
-    border: "1px solid #e2e8f0",
-    borderRadius: "6px",
-    padding: "1rem",
-    marginBottom: "1.25rem",
-  };
 
   if (isLoading) {
     return (
-      <div style={sectionStyle}>
+      <div style={SECTION_STYLE}>
         <p style={{ color: "#64748b", margin: 0 }}>Script yükleniyor...</p>
       </div>
     );
@@ -76,7 +71,7 @@ export function StandardVideoScriptPanel({
 
   if (isError) {
     return (
-      <div style={sectionStyle}>
+      <div style={SECTION_STYLE}>
         <p style={{ color: "#dc2626", margin: 0 }}>Script yüklenirken hata oluştu.</p>
       </div>
     );
@@ -84,7 +79,7 @@ export function StandardVideoScriptPanel({
 
   if (mode === "create") {
     return (
-      <div style={sectionStyle}>
+      <div style={SECTION_STYLE}>
         <h4 style={{ margin: "0 0 1rem", fontSize: "0.9375rem", fontWeight: 600 }}>Script Oluştur</h4>
         <StandardVideoScriptForm
           mode="create"
@@ -99,7 +94,7 @@ export function StandardVideoScriptPanel({
 
   if (mode === "edit") {
     return (
-      <div style={sectionStyle}>
+      <div style={SECTION_STYLE}>
         <h4 style={{ margin: "0 0 1rem", fontSize: "0.9375rem", fontWeight: 600 }}>Script Düzenle</h4>
         <StandardVideoScriptForm
           mode="edit"
@@ -120,7 +115,7 @@ export function StandardVideoScriptPanel({
 
   // view mode
   return (
-    <div style={sectionStyle}>
+    <div style={SECTION_STYLE}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
         <h4 style={{ margin: 0, fontSize: "0.9375rem", fontWeight: 600 }}>Script</h4>
         {script ? (

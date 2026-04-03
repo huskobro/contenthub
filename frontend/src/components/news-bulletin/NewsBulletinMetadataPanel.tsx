@@ -8,6 +8,7 @@ import type { MetadataFormValues } from "./NewsBulletinMetadataForm";
 
 const DASH = "—";
 const LABEL_TD: React.CSSProperties = { color: "#64748b", paddingRight: "1rem", paddingBottom: "0.25rem" };
+const SECTION_STYLE: React.CSSProperties = { border: "1px solid #e2e8f0", borderRadius: "6px", padding: "1rem", marginTop: "1rem" };
 
 interface Props {
   bulletinId: string;
@@ -19,12 +20,6 @@ export function NewsBulletinMetadataPanel({ bulletinId }: Props) {
   const updateMutation = useUpdateNewsBulletinMetadata(bulletinId);
   const [mode, setMode] = useState<"view" | "create" | "edit">("view");
 
-  const sectionStyle: React.CSSProperties = {
-    border: "1px solid #e2e8f0",
-    borderRadius: "6px",
-    padding: "1rem",
-    marginTop: "1rem",
-  };
 
   function handleCreate(values: MetadataFormValues) {
     createMutation.mutate(
@@ -60,7 +55,7 @@ export function NewsBulletinMetadataPanel({ bulletinId }: Props) {
 
   if (isLoading) {
     return (
-      <div style={sectionStyle}>
+      <div style={SECTION_STYLE}>
         <p style={{ color: "#64748b", margin: 0 }}>Metadata yükleniyor...</p>
       </div>
     );
@@ -68,7 +63,7 @@ export function NewsBulletinMetadataPanel({ bulletinId }: Props) {
 
   if (isError) {
     return (
-      <div style={sectionStyle}>
+      <div style={SECTION_STYLE}>
         <p style={{ color: "#dc2626", margin: 0 }}>Metadata yüklenirken hata oluştu.</p>
       </div>
     );
@@ -76,7 +71,7 @@ export function NewsBulletinMetadataPanel({ bulletinId }: Props) {
 
   if (mode === "create") {
     return (
-      <div style={sectionStyle}>
+      <div style={SECTION_STYLE}>
         <h4 style={{ margin: "0 0 1rem" }}>Metadata Oluştur</h4>
         <NewsBulletinMetadataForm
           mode="create"
@@ -91,7 +86,7 @@ export function NewsBulletinMetadataPanel({ bulletinId }: Props) {
 
   if (mode === "edit") {
     return (
-      <div style={sectionStyle}>
+      <div style={SECTION_STYLE}>
         <h4 style={{ margin: "0 0 1rem" }}>Metadata Düzenle</h4>
         <NewsBulletinMetadataForm
           mode="edit"
@@ -116,7 +111,7 @@ export function NewsBulletinMetadataPanel({ bulletinId }: Props) {
 
   // view mode
   return (
-    <div style={sectionStyle}>
+    <div style={SECTION_STYLE}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
         <h4 style={{ margin: 0 }}>Metadata</h4>
         {metadata ? (

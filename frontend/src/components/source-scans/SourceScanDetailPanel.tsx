@@ -8,6 +8,8 @@ import { isBlank } from "../../lib/isBlank";
 import { JsonPreviewField } from "../shared/JsonPreviewField";
 
 const LABEL_SPAN: React.CSSProperties = { fontSize: "0.75rem", fontWeight: 600, color: "#64748b" };
+const PANEL_BOX: React.CSSProperties = { padding: "1.25rem", border: "1px solid #e2e8f0", borderRadius: "6px", background: "#fff" };
+const SECTION_DIVIDER: React.CSSProperties = { marginTop: "0.75rem", borderTop: "1px solid #f1f5f9", paddingTop: "0.75rem" };
 
 interface SourceScanDetailPanelProps {
   scanId: string | null;
@@ -68,7 +70,7 @@ export function SourceScanDetailPanel({ scanId }: SourceScanDetailPanelProps) {
     }
 
     return (
-      <div style={{ padding: "1.25rem", border: "1px solid #e2e8f0", borderRadius: "6px", background: "#fff" }}>
+      <div style={PANEL_BOX}>
         <h3 style={{ margin: "0 0 1rem", fontSize: "1rem", color: "#1e293b" }}>Scan Düzenle</h3>
         <SourceScanForm
           mode="edit"
@@ -84,7 +86,7 @@ export function SourceScanDetailPanel({ scanId }: SourceScanDetailPanelProps) {
   }
 
   return (
-    <div style={{ padding: "1.25rem", border: "1px solid #e2e8f0", borderRadius: "6px", background: "#fff" }}>
+    <div style={PANEL_BOX}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
         <h3 style={{ margin: 0, fontSize: "1rem", color: "#1e293b" }}>Scan Detayı</h3>
         <button
@@ -117,12 +119,12 @@ export function SourceScanDetailPanel({ scanId }: SourceScanDetailPanelProps) {
         </div>
       )}
 
-      <div style={{ marginTop: "0.75rem", borderTop: "1px solid #f1f5f9", paddingTop: "0.75rem" }}>
+      <div style={SECTION_DIVIDER}>
         <Field label="Started" value={formatDateTime(scan.started_at)} />
         <Field label="Finished" value={formatDateTime(scan.finished_at)} />
       </div>
 
-      <div style={{ marginTop: "0.75rem", borderTop: "1px solid #f1f5f9", paddingTop: "0.75rem" }}>
+      <div style={SECTION_DIVIDER}>
         <JsonPreviewField label="raw_result_preview_json" value={scan.raw_result_preview_json} />
       </div>
 
@@ -132,7 +134,7 @@ export function SourceScanDetailPanel({ scanId }: SourceScanDetailPanelProps) {
         </div>
       )}
 
-      <div style={{ marginTop: "0.75rem", borderTop: "1px solid #f1f5f9", paddingTop: "0.75rem" }}>
+      <div style={SECTION_DIVIDER}>
         <Field label="Created" value={formatDateTime(scan.created_at)} />
         <Field label="Updated" value={formatDateTime(scan.updated_at)} />
       </div>

@@ -7,6 +7,7 @@ import { isBlank } from "../../lib/isBlank";
 const DASH = "—";
 const LABEL_TD: React.CSSProperties = { color: "#64748b", paddingRight: "1rem", paddingBottom: "0.375rem", whiteSpace: "nowrap" };
 const LABEL_TD_TOP: React.CSSProperties = { ...LABEL_TD, verticalAlign: "top" };
+const SECTION_STYLE: React.CSSProperties = { border: "1px solid #e2e8f0", borderRadius: "6px", padding: "1rem", marginBottom: "1.25rem" };
 
 interface Props {
   videoId: string;
@@ -99,16 +100,10 @@ export function StandardVideoMetadataPanel({
 }: Props) {
   const [mode, setMode] = useState<"view" | "create" | "edit">("view");
 
-  const sectionStyle: React.CSSProperties = {
-    border: "1px solid #e2e8f0",
-    borderRadius: "6px",
-    padding: "1rem",
-    marginBottom: "1.25rem",
-  };
 
   if (isLoading) {
     return (
-      <div style={sectionStyle}>
+      <div style={SECTION_STYLE}>
         <p style={{ color: "#64748b", margin: 0 }}>Metadata yükleniyor...</p>
       </div>
     );
@@ -116,7 +111,7 @@ export function StandardVideoMetadataPanel({
 
   if (isError) {
     return (
-      <div style={sectionStyle}>
+      <div style={SECTION_STYLE}>
         <p style={{ color: "#dc2626", margin: 0 }}>Metadata yüklenirken hata oluştu.</p>
       </div>
     );
@@ -124,7 +119,7 @@ export function StandardVideoMetadataPanel({
 
   if (mode === "create") {
     return (
-      <div style={sectionStyle}>
+      <div style={SECTION_STYLE}>
         <h4 style={{ margin: "0 0 1rem", fontSize: "0.9375rem", fontWeight: 600 }}>
           Metadata Oluştur
         </h4>
@@ -144,7 +139,7 @@ export function StandardVideoMetadataPanel({
 
   if (mode === "edit") {
     return (
-      <div style={sectionStyle}>
+      <div style={SECTION_STYLE}>
         <h4 style={{ margin: "0 0 1rem", fontSize: "0.9375rem", fontWeight: 600 }}>
           Metadata Düzenle
         </h4>
@@ -176,7 +171,7 @@ export function StandardVideoMetadataPanel({
   const tags = parseTags(metadata?.tags_json);
 
   return (
-    <div style={sectionStyle}>
+    <div style={SECTION_STYLE}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
         <h4 style={{ margin: 0, fontSize: "0.9375rem", fontWeight: 600 }}>Metadata</h4>
         {metadata ? (

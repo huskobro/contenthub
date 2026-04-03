@@ -6,6 +6,9 @@ import { formatDateTime } from "../../lib/formatDate";
 import { JsonPreviewField } from "../shared/JsonPreviewField";
 import type { StyleBlueprintFormValues } from "./StyleBlueprintForm";
 
+const PANEL_BOX: React.CSSProperties = { padding: "1.25rem", border: "1px solid #e2e8f0", borderRadius: "6px", background: "#fff" };
+const SECTION_DIVIDER: React.CSSProperties = { marginTop: "0.75rem", borderTop: "1px solid #f1f5f9", paddingTop: "0.75rem" };
+
 interface StyleBlueprintDetailPanelProps {
   blueprintId: string | null;
 }
@@ -70,7 +73,7 @@ export function StyleBlueprintDetailPanel({ blueprintId }: StyleBlueprintDetailP
     }
 
     return (
-      <div style={{ padding: "1.25rem", border: "1px solid #e2e8f0", borderRadius: "6px", background: "#fff" }}>
+      <div style={PANEL_BOX}>
         <h3 style={{ margin: "0 0 1rem", fontSize: "1rem", color: "#1e293b" }}>Blueprint Düzenle</h3>
         <StyleBlueprintForm
           mode="edit"
@@ -86,7 +89,7 @@ export function StyleBlueprintDetailPanel({ blueprintId }: StyleBlueprintDetailP
   }
 
   return (
-    <div style={{ padding: "1.25rem", border: "1px solid #e2e8f0", borderRadius: "6px", background: "#fff" }}>
+    <div style={PANEL_BOX}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
         <h3 style={{ margin: 0, fontSize: "1rem", color: "#1e293b" }}>{blueprint.name}</h3>
         <button
@@ -119,7 +122,7 @@ export function StyleBlueprintDetailPanel({ blueprintId }: StyleBlueprintDetailP
         <JsonPreviewField label="preview_strategy_json" value={blueprint.preview_strategy_json} />
       </div>
 
-      <div style={{ marginTop: "0.75rem", borderTop: "1px solid #f1f5f9", paddingTop: "0.75rem" }}>
+      <div style={SECTION_DIVIDER}>
         <Field label="Created" value={formatDateTime(blueprint.created_at)} />
         <Field label="Updated" value={formatDateTime(blueprint.updated_at)} />
       </div>

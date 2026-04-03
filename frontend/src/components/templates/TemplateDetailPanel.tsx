@@ -7,6 +7,9 @@ import { formatDateTime } from "../../lib/formatDate";
 import { isBlank } from "../../lib/isBlank";
 import { JsonPreviewField } from "../shared/JsonPreviewField";
 
+const PANEL_BOX: React.CSSProperties = { padding: "1.25rem", border: "1px solid #e2e8f0", borderRadius: "6px", background: "#fff" };
+const SECTION_DIVIDER: React.CSSProperties = { marginTop: "0.75rem", borderTop: "1px solid #f1f5f9", paddingTop: "0.75rem" };
+
 interface TemplateDetailPanelProps {
   templateId: string | null;
 }
@@ -87,12 +90,7 @@ export function TemplateDetailPanel({ templateId }: TemplateDetailPanelProps) {
 
     return (
       <div
-        style={{
-          padding: "1.25rem",
-          border: "1px solid #e2e8f0",
-          borderRadius: "6px",
-          background: "#fff",
-        }}
+        style={PANEL_BOX}
       >
         <h3 style={{ margin: "0 0 1rem", fontSize: "1rem", color: "#1e293b" }}>Düzenle</h3>
         <TemplateForm
@@ -148,7 +146,7 @@ export function TemplateDetailPanel({ templateId }: TemplateDetailPanelProps) {
         <JsonPreviewField label="publish_profile_json" value={template.publish_profile_json} />
       </div>
 
-      <div style={{ marginTop: "0.75rem", borderTop: "1px solid #f1f5f9", paddingTop: "0.75rem" }}>
+      <div style={SECTION_DIVIDER}>
         <Field label="Created" value={formatDateTime(template.created_at)} />
         <Field label="Updated" value={formatDateTime(template.updated_at)} />
       </div>
