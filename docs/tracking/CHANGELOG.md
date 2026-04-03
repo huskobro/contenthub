@@ -2,6 +2,16 @@
 
 ---
 
+## [2026-04-03] Phase 232 — Repeated Small Table Cell Content Readability Pack
+
+**Ne:** Table bileşenlerinde tekrar eden küçük hücre içerik pattern'larının kapsamlı audit'i.
+**Sonuç:** TH_STYLE/TD_STYLE/DASH tüm tablolarda zaten extracted. wordBreak inline style max 2× per dosya. Aynı hücre bloğu 3+ tekrar eden dosya yok. Dosya değişikliği yapılmadı.
+**Eklenen dosyalar:**
+- `docs/testing/test-report-phase-232-repeated-small-table-cell-content-readability-pack.md` (yeni — audit belgesi)
+**Test:** 1587 toplam test, tsc temiz
+
+---
+
 ## [2026-04-03] Phase 231 — Repeated Small Form Validation Readability Pack
 
 **Ne:** Form bileşenlerinde tekrar eden küçük validation pattern'larının kapsamlı audit'i.

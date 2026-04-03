@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 231 — Repeated Small Form Validation Readability Pack ✓ TAMAMLANDI (audit-only)
+Phase 232 — Repeated Small Table Cell Content Readability Pack ✓ TAMAMLANDI (audit-only)
 
 ## Mevcut Hedef
-Form validation pattern audit. Per-field if(!x.trim()) max 2×. validateJson() 3× farklı argümanlar. Extraction değer katmıyor. Hiçbir dosya değiştirilmedi. 1587 toplam test.
+Table cell content audit. TH_STYLE/TD_STYLE/DASH zaten extracted. wordBreak inline style max 2×. Aynı hücre bloğu 3+ tekrar yok. Hiçbir dosya değiştirilmedi. 1587 toplam test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 232: repeated small table cell content readability pack: kapsamlı audit, style const'lar mevcut, wordBreak max 2×, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 231: repeated small form validation readability pack: kapsamlı audit, per-field validation farklı, threshold karşılanmadı, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 230: repeated small label/heading text readability pack: kapsamlı audit, tam string tekrar yok, DASH const mevcut, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 229: repeated small setter/update call readability pack: kapsamlı audit, per-field standart, farklı argümanlar, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
