@@ -125,7 +125,7 @@ export function AnalyticsContentPage() {
           Modul bazli verimlilik karari icin bu dagilimi kullanabilirsiniz.
         </p>
         <p style={{ fontSize: "0.8125rem", color: "#94a3b8" }}>
-          <em>Modul dagilim verileri analytics backend aktif olunca gorunecektir.</em>
+          <em data-testid="module-distribution-deferred">Modul dagilim verileri backend entegrasyonu ile gorunecektir.</em>
         </p>
       </div>
     </div>

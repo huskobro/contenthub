@@ -133,8 +133,7 @@ export function JobDetailPage() {
           style={{ margin: "0.75rem 0 0", fontSize: "0.6875rem", color: "#cbd5e1" }}
           data-testid="job-actions-disabled-note"
         >
-          Operasyonel aksiyonlar ilerideki fazlarda backend entegrasyonu ile
-          etkinlestirilecektir.
+          Operasyonel aksiyonlar backend entegrasyonu ile etkinlestirilecektir.
         </p>
       </div>
     </div>

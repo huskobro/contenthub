@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useStandardVideosList } from "../../hooks/useStandardVideosList";
 import { useNewsBulletinsList } from "../../hooks/useNewsBulletinsList";
 
@@ -103,9 +103,11 @@ interface ContentRow {
   status: string;
   createdAt: string;
   detailLink: string;
+  detailState?: unknown;
 }
 
 export function ContentLibraryPage() {
+  const navigate = useNavigate();
   const { data: videos, isLoading: vLoading } = useStandardVideosList();
   const { data: bulletins, isLoading: bLoading } = useNewsBulletinsList();
 
@@ -137,6 +139,7 @@ export function ContentLibraryPage() {
         status: b.status ?? "draft",
         createdAt: b.created_at,
         detailLink: `/admin/news-bulletins`,
+        detailState: { selectedId: b.id },
       });
     }
   }
@@ -228,7 +231,7 @@ export function ContentLibraryPage() {
           </div>
         </div>
         <p style={{ margin: 0, fontSize: "0.6875rem", color: "#cbd5e1" }} data-testid="library-filter-disabled-note">
-          Filtre ve arama islevleri ilerideki fazlarda etkinlestirilecektir.
+          Filtre ve arama islevleri backend entegrasyonu ile etkinlestirilecektir.
         </p>
       </div>
 
@@ -277,12 +280,20 @@ export function ContentLibraryPage() {
                   </td>
                   <td style={TD}>{formatDate(row.createdAt)}</td>
                   <td style={TD}>
-                    <Link
-                      to={row.detailLink}
-                      style={{ color: "#3b82f6", fontSize: "0.8125rem", textDecoration: "none" }}
+                    <button
+                      onClick={() => navigate(row.detailLink, row.detailState ? { state: row.detailState } : undefined)}
+                      style={{
+                        color: "#3b82f6",
+                        fontSize: "0.8125rem",
+                        background: "none",
+                        border: "none",
+                        padding: 0,
+                        cursor: "pointer",
+                        textDecoration: "none",
+                      }}
                     >
                       Detay Goruntule →
-                    </Link>
+                    </button>
                   </td>
                 </tr>
               ))}

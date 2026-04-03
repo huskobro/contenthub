@@ -249,7 +249,7 @@ describe("Library/Gallery/Content Management Pack (Phase 299-304)", () => {
 
     it("disabled note is shown", () => {
       renderAdmin("/admin/library");
-      expect(screen.getByTestId("library-filter-disabled-note").textContent).toContain("ilerideki fazlarda");
+      expect(screen.getByTestId("library-filter-disabled-note").textContent).toContain("backend entegrasyonu");
     });
   });
 

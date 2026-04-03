@@ -137,7 +137,7 @@ export function StandardVideoDetailPage() {
         data-testid="sv-detail-manage-note"
       >
         Bu kaydi duzenleyebilir veya bilgilerini referans alarak yeni bir icerik
-        olusturabilirsiniz. Klonlama ilerideki fazlarda eklenecektir.
+        olusturabilirsiniz. Klonlama backend entegrasyonu ile eklenecektir.
       </p>
 
       {editMode ? (

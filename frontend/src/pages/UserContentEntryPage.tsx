@@ -114,7 +114,7 @@ export function UserContentEntryPage() {
 
   return (
     <div>
-      <h2>Icerik</h2>
+      <h2 data-testid="content-heading">Icerik</h2>
       <p style={SUBTITLE} data-testid="content-section-subtitle">
         Icerik uretim merkezi. Gorev zincirinizin ikinci adimi: bir tur
         secerek yeni icerik olusturma akisina baslayabilirsiniz. Tamamlanan

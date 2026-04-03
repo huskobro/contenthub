@@ -161,7 +161,7 @@ export function AnalyticsOperationsPage() {
           hangisinde daha fazla sorun var gorunur.
         </p>
         <p style={{ fontSize: "0.8125rem", color: "#94a3b8" }}>
-          <em>Kaynak etki verileri analytics backend aktif olunca gorunecektir.</em>
+          <em data-testid="source-impact-deferred">Kaynak etki verileri backend entegrasyonu ile gorunecektir.</em>
         </p>
       </div>
     </div>

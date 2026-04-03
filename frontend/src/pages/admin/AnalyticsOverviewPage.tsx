@@ -262,7 +262,7 @@ export function AnalyticsOverviewPage() {
           </div>
         </div>
         <p style={{ margin: "0.5rem 0 0", fontSize: "0.6875rem", color: "#cbd5e1" }} data-testid="filter-disabled-note">
-          Filtreler analytics backend aktif olunca etkinlesecektir.
+          Filtreler backend entegrasyonu ile etkinlestirilecektir.
         </p>
       </div>
 

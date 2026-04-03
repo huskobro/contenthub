@@ -83,7 +83,7 @@ describe("Panel shell smoke tests", () => {
   it("admin sidebar shows section headers", () => {
     renderAt("/admin");
     expect(screen.getByText("Sistem")).toBeDefined();
-    expect(screen.getByText("Icerik Uretimi")).toBeDefined();
+    expect(screen.getAllByText("Icerik Uretimi").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText("Haber")).toBeDefined();
   });
 

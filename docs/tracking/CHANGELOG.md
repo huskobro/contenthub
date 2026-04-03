@@ -2,6 +2,31 @@
 
 ---
 
+## [2026-04-03] Phase 318–321 — Final UX / Release Readiness Pack
+
+**Ne:** Final UX / release readiness omurgasi oturdu. Phase 318: Tum deferred/disabled notlar "backend entegrasyonu" kalibina standardize edildi — "ilerideki fazlarda" ve "backend aktif olunca" ifadeleri kaldirildi (ContentLibraryPage, JobDetailPage, AnalyticsOverviewPage, AnalyticsContentPage, AnalyticsOperationsPage, StandardVideoDetailPage). Phase 319: Cross-module UX koheransi — AdminOverviewPage heading testid + workflow note ("Yonetim zinciri") eklendi, UserDashboardPage/UserContentEntryPage/UserPublishEntryPage heading testid'leri eklendi. Phase 320: Release readiness checklist — AdminOverviewPage'e "Urun Hazirlik Durumu" section eklendi (8 alan: Icerik Uretimi, Yayin Akisi, Is Motoru, Sablon Sistemi, Haber Modulu, Ayarlar ve Gorunurluk, Analytics ve Raporlama, Icerik Kutuphanesi — hepsi "Omurga hazir"). Phase 321: Uctan uca dogrulama.
+**Sonuc:** Deferred notlar urun genelinde tutarli. Cross-module heading/subtitle/workflow/testid kaliplari hizali. Release readiness yuzeyi admin overview'da gorulur. Omurga oturdu; gercek backend entegrasyonu, asset library, gorsel modernizasyon ileride.
+**Degistirilen dosyalar:**
+- `frontend/src/pages/AdminOverviewPage.tsx` (heading testid, workflow note, release readiness section)
+- `frontend/src/pages/UserDashboardPage.tsx` (heading testid)
+- `frontend/src/pages/UserContentEntryPage.tsx` (heading testid)
+- `frontend/src/pages/UserPublishEntryPage.tsx` (heading testid)
+- `frontend/src/pages/admin/ContentLibraryPage.tsx` (disabled note standardizasyonu)
+- `frontend/src/pages/admin/JobDetailPage.tsx` (disabled note standardizasyonu)
+- `frontend/src/pages/admin/AnalyticsOverviewPage.tsx` (disabled note standardizasyonu)
+- `frontend/src/pages/admin/AnalyticsContentPage.tsx` (deferred note standardizasyonu + testid)
+- `frontend/src/pages/admin/AnalyticsOperationsPage.tsx` (deferred note standardizasyonu + testid)
+- `frontend/src/pages/admin/StandardVideoDetailPage.tsx` (deferred note standardizasyonu)
+- `frontend/src/tests/app.smoke.test.tsx` (multiple element fix)
+- `frontend/src/tests/youtube-analytics-pack.smoke.test.tsx` (referans guncelleme)
+- `frontend/src/tests/library-gallery-content-management-pack.smoke.test.tsx` (referans guncelleme)
+**Eklenen dosyalar:**
+- `frontend/src/tests/final-ux-release-readiness-pack.smoke.test.tsx` (32 yeni test)
+- `docs/testing/test-report-phase-318-321-final-ux-release-readiness-pack.md`
+**Test:** 2050 toplam test (+32 yeni), tsc temiz, build temiz
+
+---
+
 ## [2026-04-03] Phase 314–317 — Reporting / Business Intelligence Pack
 
 **Ne:** Reporting / business intelligence omurgasi oturdu. Phase 314: AdminOverviewPage analytics quick link desc guncellendi (raporlama + karar destek), AnalyticsOverviewPage subtitle ve workflow note genisledi (Raporlama zinciri), analytics-reporting-distinction notu eklendi (canli metrikler vs ozetleyici gorunum), sub-nav kartlari genisledi. Phase 315: AnalyticsOperationsPage subtitle genisledi (operasyonel saglik raporu), workflow note yeniden yazildi (Operasyonel rapor zinciri: Is Basari Orani → Retry/Hata → Provider Sagligi → Kaynak Etkisi → Karar Noktasi). Phase 316: AnalyticsContentPage subtitle genisledi (kullanim/performans ozeti), workflow note yeniden yazildi (Kullanim/performans rapor zinciri: Modul Dagilimi → Icerik Uretim → Yayin Basarisi → Sablon/Kaynak Etkisi → Verimlilik Ozeti), modul dagilimi notu verimlilik karari konteksti, kanal ozeti karar destek gorunumu. Phase 317: Uctan uca dogrulama.

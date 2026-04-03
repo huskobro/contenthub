@@ -18,7 +18,7 @@ export function UserDashboardPage() {
 
   return (
     <div>
-      <h2>Anasayfa</h2>
+      <h2 data-testid="dashboard-heading">Anasayfa</h2>
       {onboardingCompleted ? (
         <>
           <p style={SUBTITLE} data-testid="dashboard-context-note">

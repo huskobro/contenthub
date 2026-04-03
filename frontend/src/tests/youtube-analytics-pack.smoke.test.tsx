@@ -231,7 +231,7 @@ describe("YouTube Analytics Pack (Phase 293-298)", () => {
 
     it("filter disabled note is shown", () => {
       renderAt("/admin/analytics");
-      expect(screen.getByTestId("filter-disabled-note").textContent).toContain("backend aktif olunca");
+      expect(screen.getByTestId("filter-disabled-note").textContent).toContain("backend entegrasyonu");
     });
   });
 

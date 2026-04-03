@@ -97,13 +97,19 @@ export function AdminOverviewPage() {
 
   return (
     <div>
-      <h2>Genel Bakis</h2>
+      <h2 data-testid="admin-overview-heading">Genel Bakis</h2>
       <div style={SECTION}>
         <p style={SUBTITLE} data-testid="admin-overview-subtitle">
           Uretim ve yonetim merkezi. Buradan icerik olusturabilir, kaynaklari
           yonetebilir, sablonlari duzenleyebilir, uretim islerini takip
           edebilir ve sistem ayarlarini yapilandirabilirsiniz. Baslangic
           ve takip islemleri icin kullanici panelini kullanabilirsiniz.
+        </p>
+        <p
+          style={{ margin: "-0.5rem 0 0", fontSize: "0.75rem", color: "#94a3b8", lineHeight: 1.4 }}
+          data-testid="admin-overview-workflow-note"
+        >
+          Yonetim zinciri: Icerik Olusturma → Sablon/Stil Yonetimi → Kaynak Yonetimi → Is Takibi → Yayin → Analytics.
         </p>
       </div>
 
@@ -130,6 +136,61 @@ export function AdminOverviewPage() {
             </div>
           ))}
         </div>
+      </div>
+
+      {/* Phase 320 — Release Readiness Checklist */}
+      <div style={SECTION} data-testid="release-readiness-section">
+        <h3
+          style={{ margin: "0 0 0.25rem", fontSize: "1rem", fontWeight: 600, color: "#1e293b" }}
+          data-testid="release-readiness-heading"
+        >
+          Urun Hazirlik Durumu
+        </h3>
+        <p
+          style={{ margin: "0 0 0.75rem", fontSize: "0.75rem", color: "#94a3b8", lineHeight: 1.4 }}
+          data-testid="release-readiness-note"
+        >
+          Ana urun alanlarinin mevcut durumu. Omurga yuzeyler oturmus, derin
+          entegrasyon bekleyen alanlar asagida belirtilmistir.
+        </p>
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+          {[
+            { area: "Icerik Uretimi", status: "Omurga hazir", detail: "Video ve bulten olusturma akislari calisiyor", testId: "readiness-content" },
+            { area: "Yayin Akisi", status: "Omurga hazir", detail: "YouTube yayin zinciri gorunur, backend entegrasyonu bekliyor", testId: "readiness-publish" },
+            { area: "Is Motoru", status: "Omurga hazir", detail: "Job/step/timeline/ETA gorunur, retry/cancel/skip bilgi paneli mevcut", testId: "readiness-jobs" },
+            { area: "Sablon Sistemi", status: "Omurga hazir", detail: "Template/style/blueprint kayit ve baglanti yonetimi calisiyor", testId: "readiness-templates" },
+            { area: "Haber Modulu", status: "Omurga hazir", detail: "Kaynak, tarama, haber, dedupe akislari calisiyor", testId: "readiness-news" },
+            { area: "Ayarlar ve Gorunurluk", status: "Omurga hazir", detail: "Governance, section gruplama ve kontrol zinciri gorünur", testId: "readiness-settings" },
+            { area: "Analytics ve Raporlama", status: "Omurga hazir", detail: "Metrik kartlari ve rapor zincirleri gorünur, backend verisi bekliyor", testId: "readiness-analytics" },
+            { area: "Icerik Kutuphanesi", status: "Omurga hazir", detail: "Birlesik liste, filtre yuzeyi ve detay baglantisi mevcut", testId: "readiness-library" },
+          ].map((item) => (
+            <div
+              key={item.area}
+              style={{
+                display: "flex",
+                alignItems: "baseline",
+                gap: "0.75rem",
+                padding: "0.5rem 0.75rem",
+                background: "#fff",
+                border: "1px solid #e2e8f0",
+                borderRadius: "6px",
+                fontSize: "0.75rem",
+              }}
+              data-testid={item.testId}
+            >
+              <span style={{ color: "#166534", fontWeight: 600, flexShrink: 0 }}>{item.status}</span>
+              <span style={{ color: "#0f172a", fontWeight: 600, flexShrink: 0, minWidth: "140px" }}>{item.area}</span>
+              <span style={{ color: "#64748b" }}>{item.detail}</span>
+            </div>
+          ))}
+        </div>
+        <p
+          style={{ margin: "0.75rem 0 0", fontSize: "0.6875rem", color: "#cbd5e1" }}
+          data-testid="release-readiness-deferred-note"
+        >
+          Derin backend entegrasyonu, gercek metrik verisi, asset library ve
+          kapsamli gorsel modernizasyon ayri fazlarda ele alinacaktir.
+        </p>
       </div>
     </div>
   );

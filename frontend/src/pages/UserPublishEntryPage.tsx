@@ -123,7 +123,7 @@ export function UserPublishEntryPage() {
 
   return (
     <div>
-      <h2>Yayin</h2>
+      <h2 data-testid="publish-heading">Yayin</h2>
       <p style={SUBTITLE} data-testid="publish-section-subtitle">
         Yayin ve dagitim merkezi. Gorev zincirinizin ucuncu adimi: Icerik
         ekraninda olusturulan iceriklerinizin yayin durumunu buradan takip
