@@ -2,6 +2,16 @@
 
 ---
 
+## [2026-04-03] Phase 231 — Repeated Small Form Validation Readability Pack
+
+**Ne:** Form bileşenlerinde tekrar eden küçük validation pattern'larının kapsamlı audit'i.
+**Sonuç:** Per-field if(!x.trim()) max 2×. validateJson() 3× farklı JSON field argümanları. Extraction değer katmıyor. Dosya değişikliği yapılmadı.
+**Eklenen dosyalar:**
+- `docs/testing/test-report-phase-231-repeated-small-form-validation-readability-pack.md` (yeni — audit belgesi)
+**Test:** 1587 toplam test, tsc temiz
+
+---
+
 ## [2026-04-03] Phase 230 — Repeated Small Label/Heading Text Readability Pack
 
 **Ne:** Panel/form/detail bileşenlerinde tekrar eden label/heading text string'lerinin kapsamlı audit'i.
