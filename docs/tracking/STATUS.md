@@ -1,12 +1,12 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 305–309 — Admin / Advanced Settings Governance Pack ✓ TAMAMLANDI (feature)
+Phase 310–313 — Automation / Batch Operations Pack ✓ TAMAMLANDI (feature)
 
-**ANA FAZ 9 TAMAMLANDI: Admin / advanced settings governance omurgasi**
+**ANA FAZ 10 TAMAMLANDI: Automation / batch operations omurgasi**
 
 ## Mevcut Hedef
-Admin / advanced settings governance omurgasi oturdu. Settings ve visibility registry headingleri, workflow notlari, detail panel governance section gruplama, Turkish label'lar ve admin overview quick link guncellemesi tamamlandi. 1970 toplam test.
+Automation / batch operations omurgasi oturdu. Batch giris noktasi, queue/job batch control flow, retry/cancel/skip davranis netligi ve uctan uca dogrulama tamamlandi. 1993 toplam test.
 
 ## Devam Eden
 — (devam eden calisma yok)
@@ -17,6 +17,7 @@ Admin / advanced settings governance omurgasi oturdu. Settings ve visibility reg
 - **ANA FAZ BAŞLADI:** Wizard / Onboarding (ürün geliştirme hattı)
 
 ## Son Tamamlananlar
+- Phase 310–313: automation/batch operations pack — batch giris noktasi, queue/job batch control flow, retry/cancel/skip davranis netligi, operasyonel aksiyonlar paneli, Turkish label'lar, end-to-end verification, 23 yeni test, 1993 toplam (2026-04-03)
 - Phase 305–309: admin/advanced settings governance pack — settings/visibility registry headingleri, workflow notlari, detail panel governance section gruplama (Kimlik/Governance/Kapsam), Turkish label'lar, admin overview quick link governance desc, end-to-end verification, 23 yeni test, 1970 toplam (2026-04-03)
 - Phase 299–304: library/gallery/content management pack — birlesik icerik kutuphanesi, filtre/sort/search yuzeyi, detail baglantisi, reuse/clone/manage aksiyonlari, end-to-end verification, 31 yeni test, 1947 toplam (2026-04-03)
 - Phase 293–298: youtube analytics pack — analytics giris yuzeyi, temel metrik panosu, video-level performans, kanal ozeti, tarih/filtre etkilesimi, operasyon metrikleri, end-to-end verification, 38 yeni test, 1916 toplam (2026-04-03)

@@ -19,7 +19,20 @@ export function JobsRegistryPage() {
       </h2>
       <p
         style={{
-          margin: "0 0 0.5rem",
+          margin: "0.25rem 0 0.5rem",
+          fontSize: "0.8125rem",
+          color: "#94a3b8",
+          lineHeight: 1.5,
+          maxWidth: "640px",
+        }}
+        data-testid="jobs-registry-subtitle"
+      >
+        Sistemdeki tum uretim islerinin listesi, kuyruk durumu ve toplu
+        operasyon gorunumu. Isler tekil veya toplu olarak izlenebilir.
+      </p>
+      <p
+        style={{
+          margin: "0 0 1rem",
           fontSize: "0.8125rem",
           color: "#94a3b8",
           lineHeight: 1.5,
@@ -27,9 +40,10 @@ export function JobsRegistryPage() {
         }}
         data-testid="jobs-registry-workflow-note"
       >
-        Uretim islerini ve yayin hazirligini buradan takip edebilirsiniz.
-        Tamamlanan isler yayin adimina hazir hale gelir. Yayin durumu,
-        sonuc ve hata bilgileri is detayinda gorunur.
+        Is akis zinciri: Olusturma → Kuyruga Alma → Adim Isleme →
+        Tamamlama/Hata → Yayin Hazirligi. Bir ise tiklayarak detay
+        sayfasinda retry, cancel veya skip gibi operasyonel aksiyonlarin
+        durumunu gorebilirsiniz.
       </p>
 
       {isLoading && <p style={{ color: "#64748b" }}>Yükleniyor...</p>}

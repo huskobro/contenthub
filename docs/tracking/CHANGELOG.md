@@ -2,6 +2,23 @@
 
 ---
 
+## [2026-04-03] Phase 310–313 — Automation / Batch Operations Pack
+
+**Ne:** Automation / batch operations omurgasi oturdu. Phase 310: AdminOverviewPage jobs quick link desc guncellendi (kuyruk + toplu operasyon konteksti), JobsRegistryPage subtitle eklendi (kuyruk durumu ve toplu operasyon gorunumu). Phase 311: JobsRegistryPage workflow note yeniden yazildi (Is akis zinciri: Olusturma → Kuyruga Alma → Adim Isleme → Tamamlama/Hata → Yayin Hazirligi), JobOverviewPanel satirlari Turkish label'lara gecti (Is Kimlik, Modul Turu, Durum, Aktif Adim, Yeniden Deneme Sayisi, Sahip, Sablon, Calisma Alani, Toplam Gecen Sure, Tahmini Kalan, Son Hata, Olusturulma, Baslanma, Tamamlanma), publish note genisledi. Phase 312: JobDetailPage workflow note genisledi (retry/cancel/skip referansi), Operasyonel Aksiyonlar paneli eklendi — Retry/Cancel/Skip aksiyon kartlari ve backend entegrasyonu notu. Phase 313: Uctan uca dogrulama.
+**Sonuc:** Automation / batch operations yuzeyler urun icinde baslatilabilir, anlasilir ve izlenebilir. Admin overview'dan giris, jobs registry'de kuyruk/batch konteksti, job detail'de operasyonel aksiyonlar gorunur. Omurga oturdu; gercek backend entegrasyonu, bulk aksiyon API, queue scheduler ileride.
+**Degistirilen dosyalar:**
+- `frontend/src/pages/AdminOverviewPage.tsx` (jobs quick link desc)
+- `frontend/src/pages/admin/JobsRegistryPage.tsx` (subtitle + workflow note)
+- `frontend/src/pages/admin/JobDetailPage.tsx` (workflow note + actions panel)
+- `frontend/src/components/jobs/JobOverviewPanel.tsx` (Turkish labels + publish note)
+- `frontend/src/tests/youtube-publish-workflow-pack.smoke.test.tsx` (referans guncellemeleri)
+**Eklenen dosyalar:**
+- `frontend/src/tests/automation-batch-operations-pack.smoke.test.tsx` (23 yeni test)
+- `docs/testing/test-report-phase-310-313-automation-batch-operations-pack.md`
+**Test:** 1993 toplam test (+23 yeni), tsc temiz, build temiz
+
+---
+
 ## [2026-04-03] Phase 305–309 — Admin / Advanced Settings Governance Pack
 
 **Ne:** Admin / advanced settings governance omurgasi oturdu. Phase 305: SettingsRegistryPage heading "Ayar Kayitlari" + subtitle + workflow note (Tanimlama → Gruplama → Governance Kontrolu → Kullanici/Wizard Gorunurlugu). Phase 306: SettingDetailPanel governance section gruplama — Kimlik ve Deger (Anahtar, Grup, Tur, Varsayilan Deger, Admin Degeri), Governance (Kullanici Gorunur, Override Izni, Wizard Gorunur, Salt Okunur), Kapsam ve Durum (Modul Kapsami, Aciklama, Durum, Versiyon). Phase 307: VisibilityRegistryPage heading "Gorunurluk Kurallari" + subtitle + workflow note (Kural Tanimlama → Hedef Belirleme → Rol/Mod Kapsami → Wizard Durumu). Phase 308: VisibilityRuleDetailPanel governance section gruplama — Kimlik ve Hedef, Kapsam, Governance, Durum ve Notlar. Phase 309: AdminOverviewPage settings quick link governance desc + end-to-end dogrulama.

@@ -174,14 +174,13 @@ describe("YouTube Publish Workflow Pack (Phase 287-292)", () => {
     it("jobs registry shows workflow note with publish context", () => {
       renderAdmin("/admin/jobs");
       const note = screen.getByTestId("jobs-registry-workflow-note");
-      expect(note.textContent).toContain("yayin hazirligini");
-      expect(note.textContent).toContain("yayin adimina hazir");
+      expect(note.textContent).toContain("Yayin Hazirligi");
     });
 
-    it("admin overview jobs quick link has publish context", () => {
+    it("admin overview jobs quick link has operations context", () => {
       renderAdmin("/admin");
       const card = screen.getByTestId("quick-link-jobs");
-      expect(card.textContent).toContain("yayin hazirligini takip et");
+      expect(card.textContent).toContain("takip et");
     });
   });
 

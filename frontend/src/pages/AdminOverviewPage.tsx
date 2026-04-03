@@ -68,7 +68,7 @@ const QUICK_LINKS = [
   },
   {
     title: "Isler",
-    desc: "Uretim islerini ve yayin hazirligini takip et",
+    desc: "Uretim islerini, kuyruk durumunu ve toplu operasyonlari takip et",
     to: "/admin/jobs",
     testId: "quick-link-jobs",
   },

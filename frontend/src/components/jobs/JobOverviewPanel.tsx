@@ -41,30 +41,30 @@ export function JobOverviewPanel({ job }: JobOverviewPanelProps) {
         data-testid="job-overview-publish-note"
       >
         Isin tamamlanma durumu yayin hazirligini belirler. Basarili isler
-        yayin adimina gecebilir.
+        yayin adimina gecebilir. Kuyruk durumu ve retry bilgisi asagida gorunur.
       </p>
-      <Row label="id"><code style={{ fontSize: "0.75rem" }}>{job.id}</code></Row>
-      <Row label="module_type">{job.module_type}</Row>
-      <Row label="status">{job.status}</Row>
-      <Row label="current_step_key">{job.current_step_key ?? em}</Row>
-      <Row label="retry_count">{job.retry_count}</Row>
-      <Row label="owner_id">{job.owner_id ?? em}</Row>
-      <Row label="template_id">{job.template_id ?? em}</Row>
-      <Row label="workspace_path">{job.workspace_path ?? em}</Row>
-      <Row label="elapsed_total">
+      <Row label="Is Kimlik"><code style={{ fontSize: "0.75rem" }}>{job.id}</code></Row>
+      <Row label="Modul Turu">{job.module_type}</Row>
+      <Row label="Durum">{job.status}</Row>
+      <Row label="Aktif Adim">{job.current_step_key ?? em}</Row>
+      <Row label="Yeniden Deneme Sayisi">{job.retry_count}</Row>
+      <Row label="Sahip">{job.owner_id ?? em}</Row>
+      <Row label="Sablon">{job.template_id ?? em}</Row>
+      <Row label="Calisma Alani">{job.workspace_path ?? em}</Row>
+      <Row label="Toplam Gecen Sure">
         <DurationBadge seconds={job.elapsed_total_seconds} />
       </Row>
-      <Row label="estimated_remaining">
+      <Row label="Tahmini Kalan">
         <DurationBadge seconds={job.estimated_remaining_seconds} approximate />
       </Row>
-      <Row label="last_error">
+      <Row label="Son Hata">
         {job.last_error ? (
           <span style={{ color: "#dc2626" }}>{job.last_error}</span>
         ) : em}
       </Row>
-      <Row label="created_at">{formatDateISO(job.created_at, em)}</Row>
-      <Row label="started_at">{formatDateISO(job.started_at, em)}</Row>
-      <Row label="finished_at">{formatDateISO(job.finished_at, em)}</Row>
+      <Row label="Olusturulma">{formatDateISO(job.created_at, em)}</Row>
+      <Row label="Baslanma">{formatDateISO(job.started_at, em)}</Row>
+      <Row label="Tamamlanma">{formatDateISO(job.finished_at, em)}</Row>
     </div>
   );
 }
