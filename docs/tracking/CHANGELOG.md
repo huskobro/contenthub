@@ -2,6 +2,16 @@
 
 ---
 
+## [2026-04-03] Phase 217 — Repeated Small CSSProperties Type Annotation Readability Pack
+
+**Ne:** Bileşenlerde kısmen typed/kısmen untyped style const karışıklığının kapsamlı audit'i.
+**Sonuç:** 39 dosya React.CSSProperties kullanıyor, tamamı tutarlı şekilde typed. Karışık annotation dosyası yok. Dosya değişikliği yapılmadı.
+**Eklenen dosyalar:**
+- `docs/testing/test-report-phase-217-repeated-small-cssproperties-type-annotation-readability-pack.md` (yeni — audit belgesi)
+**Test:** 1587 toplam test, tsc temiz
+
+---
+
 ## [2026-04-03] Phase 216 — Repeated Small title/subject/name Text Readability Pack
 
 **Ne:** Bileşenlerde tekrar eden item.title, item.label, item.name gibi text accessor pattern'larının kapsamlı audit'i.

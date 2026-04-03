@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 216 — Repeated Small title/subject/name Text Readability Pack ✓ TAMAMLANDI (audit-only)
+Phase 217 — Repeated Small CSSProperties Type Annotation Readability Pack ✓ TAMAMLANDI (audit-only)
 
 ## Mevcut Hedef
-title/label/name accessor audit. item.title ve item.label loop variable property access — dosya-seviyesi const uygunsuz, extraction değer katmıyor. Hiçbir dosya değiştirilmedi. 1587 toplam test.
+CSSProperties type annotation audit. 39 dosya React.CSSProperties kullanıyor, tamamı tutarlı şekilde typed. Kısmen typed/untyped dosya yok. Hiçbir dosya değiştirilmedi. 1587 toplam test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 217: repeated small CSSProperties type annotation readability pack: kapsamlı audit, 39 dosya zaten tutarlı, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 216: repeated small title/subject/name text readability pack: kapsamlı audit, loop variable property access, dosya-seviyesi const uygunsuz, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 215: repeated small disabled/busy button readability pack: kapsamlı audit, threshold altı (max 2×), hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 214: repeated small edit/view mode readability pack: kapsamlı audit, threshold altı, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
