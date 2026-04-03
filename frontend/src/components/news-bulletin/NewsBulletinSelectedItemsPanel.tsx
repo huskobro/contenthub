@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { formatDateShort } from "../../lib/formatDate";
 import { useNewsBulletinSelectedItems } from "../../hooks/useNewsBulletinSelectedItems";
 import { useCreateNewsBulletinSelectedItem } from "../../hooks/useCreateNewsBulletinSelectedItem";
 import { useUpdateNewsBulletinSelectedItem } from "../../hooks/useUpdateNewsBulletinSelectedItem";
@@ -170,7 +171,7 @@ export function NewsBulletinSelectedItemsPanel({ bulletinId }: Props) {
                   )}
                 </td>
                 <td style={{ padding: "0.25rem 0.5rem", color: "#94a3b8" }}>
-                  {item.created_at ? new Date(item.created_at).toLocaleDateString() : "—"}
+                  {formatDateShort(item.created_at)}
                 </td>
                 <td style={{ padding: "0.25rem 0.5rem" }}>
                   <button

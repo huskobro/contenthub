@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 144 — Form Surface Empty/Null State Safety Pack ✓ TAMAMLANDI
+Phase 145 — List/Detail/Form Date Formatting Safety Unification Pack ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-14 form bileşeninde null/empty safety: 2 version null guard, 1 published_at String() coercion, 11 form zaten güvenli. 4 yeni guard test. Badge stilleri korundu. 1099 toplam test.
+Paylaşılan tarih helper kütüphanesi (formatDate.ts) oluşturuldu, 23 dosyada inline tarih pattern'leri helper'larla değiştirildi, SourceScanSummary'ye eksik Invalid Date guard eklendi, 19 yeni guard test. 1118 toplam test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 145: list detail form date formatting safety unification pack: 4 helper (formatDateTime, formatDateShort, formatDateISO, normalizeDateForInput), 23 dosya güncellendi, SourceScanSummary Invalid Date guard eklendi, 19 yeni guard test, badge stilleri korundu, 1118 toplam (2026-04-03)
 - Phase 144: form surface empty null state safety pack: 2 version String(null) guard, 1 published_at String() coercion, 11 form zaten güvenli, 4 yeni guard test, badge stilleri korundu, 1099 toplam (2026-04-03)
 - Phase 143: detail panel empty null state safety pack: 9 panel tarih ternary guard, 2 Job panel .slice() crash fix, 4 form handler .trim() null coalescing (22 alan), 2 yeni guard test, badge stilleri korundu, 1095 toplam (2026-04-03)
 - Phase 142: registry empty null state safety pack: 9 tarih alanı Invalid Date koruması, Jobs created_at crash fix, 3 summary NaN guard, 2 string typeof guard, badge stilleri korundu, 1093 toplam (2026-04-03)

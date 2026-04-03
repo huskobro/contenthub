@@ -3,6 +3,7 @@ import { useSourceScanDetail } from "../../hooks/useSourceScanDetail";
 import { useUpdateSourceScan } from "../../hooks/useUpdateSourceScan";
 import { SourceScanForm } from "./SourceScanForm";
 import type { SourceScanFormValues } from "./SourceScanForm";
+import { formatDateTime } from "../../lib/formatDate";
 
 interface SourceScanDetailPanelProps {
   scanId: string | null;
@@ -136,8 +137,8 @@ export function SourceScanDetailPanel({ scanId }: SourceScanDetailPanelProps) {
       )}
 
       <div style={{ marginTop: "0.75rem", borderTop: "1px solid #f1f5f9", paddingTop: "0.75rem" }}>
-        <Field label="Started" value={scan.started_at ? new Date(scan.started_at).toLocaleString() : null} />
-        <Field label="Finished" value={scan.finished_at ? new Date(scan.finished_at).toLocaleString() : null} />
+        <Field label="Started" value={formatDateTime(scan.started_at)} />
+        <Field label="Finished" value={formatDateTime(scan.finished_at)} />
       </div>
 
       <div style={{ marginTop: "0.75rem", borderTop: "1px solid #f1f5f9", paddingTop: "0.75rem" }}>
@@ -151,8 +152,8 @@ export function SourceScanDetailPanel({ scanId }: SourceScanDetailPanelProps) {
       )}
 
       <div style={{ marginTop: "0.75rem", borderTop: "1px solid #f1f5f9", paddingTop: "0.75rem" }}>
-        <Field label="Created" value={scan.created_at ? new Date(scan.created_at).toLocaleString() : null} />
-        <Field label="Updated" value={scan.updated_at ? new Date(scan.updated_at).toLocaleString() : null} />
+        <Field label="Created" value={formatDateTime(scan.created_at)} />
+        <Field label="Updated" value={formatDateTime(scan.updated_at)} />
       </div>
     </div>
   );

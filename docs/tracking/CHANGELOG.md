@@ -2,6 +2,24 @@
 
 ---
 
+## [2026-04-03] Phase 145 — List/Detail/Form Date Formatting Safety Unification Pack
+
+**Ne:** Paylaşılan tarih helper kütüphanesi oluşturuldu ve tüm inline tarih pattern'leri (5 farklı pattern) bu helper'larla değiştirildi. 23 dosya güncellendi.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/lib/formatDate.ts` (yeni — 4 helper: formatDateTime, formatDateShort, formatDateISO, normalizeDateForInput)
+- `frontend/src/tests/date-formatting-safety.smoke.test.tsx` (yeni — 19 guard test)
+- 9 detail panel (formatDateTime import + usage)
+- 2 job panel (formatDateISO import + usage)
+- 8 registry table (formatDateShort/formatDateISO/formatDateTime import + usage)
+- 3 sub-panel/picker (formatDateShort import + usage)
+- 1 form (normalizeDateForInput import + usage)
+- `docs/testing/test-report-phase-145-list-detail-form-date-formatting-safety-unification-pack.md` (yeni)
+**Önemli fix:** SourceScanSummary.tsx'de eksik Invalid Date guard eklendi — önceden geçersiz tarihte crash riski vardı.
+**Korunan:** Badge stilleri, görsel çıktı, fallback değerleri. Bilgi kaybı sıfır.
+**Test:** 1118 toplam (+19 yeni), tsc temiz, build temiz.
+
+---
+
 ## [2026-04-03] Phase 144 — Form Surface Empty/Null State Safety Pack
 
 **Ne:** 14 form bileşeninde null/undefined/empty state render ve input güvenliği denetimi ve güçlendirmesi.

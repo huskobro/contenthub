@@ -1,5 +1,6 @@
 import type { StandardVideoResponse } from "../../api/standardVideoApi";
 import { formatDuration } from "../../lib/formatDuration";
+import { formatDateTime } from "../../lib/formatDate";
 
 interface Props {
   video: StandardVideoResponse;
@@ -60,8 +61,8 @@ export function StandardVideoOverviewPanel({ video }: Props) {
           <Row label="Altyazı Stili" value={video.subtitle_style} />
           <Row label="Durum" value={video.status} />
           <Row label="Job ID" value={video.job_id} />
-          <Row label="Oluşturulma" value={video.created_at ? new Date(video.created_at).toLocaleString("tr-TR") : "—"} />
-          <Row label="Güncelleme" value={video.updated_at ? new Date(video.updated_at).toLocaleString("tr-TR") : "—"} />
+          <Row label="Oluşturulma" value={formatDateTime(video.created_at, "—")} />
+          <Row label="Güncelleme" value={formatDateTime(video.updated_at, "—")} />
         </tbody>
       </table>
     </div>

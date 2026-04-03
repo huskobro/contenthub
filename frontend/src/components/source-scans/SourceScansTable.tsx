@@ -1,4 +1,5 @@
 import type { SourceScanResponse } from "../../api/sourceScansApi";
+import { formatDateShort } from "../../lib/formatDate";
 import { SourceScanExecutionSummary } from "./SourceScanExecutionSummary";
 import { SourceScanSourceSummary } from "./SourceScanSourceSummary";
 import { SourceScanResultRichnessSummary } from "./SourceScanResultRichnessSummary";
@@ -146,7 +147,7 @@ export function SourceScansTable({ scans, selectedId, onSelect }: SourceScansTab
               </td>
               {/* Zaman */}
               <td style={{ padding: "0.5rem 0.75rem", color: "#94a3b8", fontSize: "0.8rem" }}>
-                {scan.created_at ? new Date(scan.created_at).toLocaleDateString() : "—"}
+                {formatDateShort(scan.created_at)}
               </td>
             </tr>
           );

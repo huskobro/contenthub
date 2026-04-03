@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useStyleBlueprintDetail } from "../../hooks/useStyleBlueprintDetail";
 import { useUpdateStyleBlueprint } from "../../hooks/useUpdateStyleBlueprint";
 import { StyleBlueprintForm } from "./StyleBlueprintForm";
+import { formatDateTime } from "../../lib/formatDate";
 import type { StyleBlueprintFormValues } from "./StyleBlueprintForm";
 
 interface StyleBlueprintDetailPanelProps {
@@ -142,8 +143,8 @@ export function StyleBlueprintDetailPanel({ blueprintId }: StyleBlueprintDetailP
       </div>
 
       <div style={{ marginTop: "0.75rem", borderTop: "1px solid #f1f5f9", paddingTop: "0.75rem" }}>
-        <Field label="Created" value={blueprint.created_at ? new Date(blueprint.created_at).toLocaleString() : null} />
-        <Field label="Updated" value={blueprint.updated_at ? new Date(blueprint.updated_at).toLocaleString() : null} />
+        <Field label="Created" value={formatDateTime(blueprint.created_at)} />
+        <Field label="Updated" value={formatDateTime(blueprint.updated_at)} />
       </div>
     </div>
   );

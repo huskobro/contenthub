@@ -1,4 +1,5 @@
 import type { NewsItemResponse } from "../../api/newsItemsApi";
+import { formatDateShort } from "../../lib/formatDate";
 import { NewsItemUsageSummary } from "./NewsItemUsageSummary";
 import { NewsItemReadinessSummary } from "./NewsItemReadinessSummary";
 import { NewsItemSourceSummary } from "./NewsItemSourceSummary";
@@ -185,7 +186,7 @@ export function NewsItemsTable({ items, selectedId, onSelect }: Props) {
               </td>
               {/* Zaman */}
               <td style={{ padding: "0.5rem 0.75rem", color: "#94a3b8", fontSize: "0.8rem" }}>
-                {item.created_at ? new Date(item.created_at).toLocaleDateString() : "—"}
+                {formatDateShort(item.created_at)}
               </td>
             </tr>
           );

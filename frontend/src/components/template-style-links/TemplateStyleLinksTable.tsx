@@ -1,4 +1,5 @@
 import type { TemplateStyleLinkResponse } from "../../api/templateStyleLinksApi";
+import { formatDateShort } from "../../lib/formatDate";
 import { TemplateStyleLinkReadinessSummary } from "./TemplateStyleLinkReadinessSummary";
 
 interface TemplateStyleLinksTableProps {
@@ -83,7 +84,7 @@ export function TemplateStyleLinksTable({
               />
             </td>
             <td style={{ padding: "0.5rem 0.75rem", color: "#64748b", fontSize: "0.8rem" }}>
-              {link.created_at ? new Date(link.created_at).toLocaleDateString() : "—"}
+              {formatDateShort(link.created_at)}
             </td>
           </tr>
         ))}

@@ -3,6 +3,7 @@ import { useUsedNewsDetail } from "../../hooks/useUsedNewsDetail";
 import { useUpdateUsedNews } from "../../hooks/useUpdateUsedNews";
 import { UsedNewsForm } from "./UsedNewsForm";
 import type { UsedNewsFormValues } from "./UsedNewsForm";
+import { formatDateTime } from "../../lib/formatDate";
 
 interface Props {
   selectedId: string | null;
@@ -90,8 +91,8 @@ export function UsedNewsDetailPanel({ selectedId }: Props) {
       <Field label="Target Module" value={data.target_module} />
       <Field label="Target Entity ID" value={data.target_entity_id} />
       <Field label="Notes" value={data.notes} />
-      <Field label="Created" value={data.created_at ? new Date(data.created_at).toLocaleString() : null} />
-      <Field label="Updated" value={data.updated_at ? new Date(data.updated_at).toLocaleString() : null} />
+      <Field label="Created" value={formatDateTime(data.created_at)} />
+      <Field label="Updated" value={formatDateTime(data.updated_at)} />
     </div>
   );
 }

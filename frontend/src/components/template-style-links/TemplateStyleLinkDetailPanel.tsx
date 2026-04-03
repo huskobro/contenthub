@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useTemplateStyleLinkDetail } from "../../hooks/useTemplateStyleLinkDetail";
 import { useUpdateTemplateStyleLink } from "../../hooks/useUpdateTemplateStyleLink";
 import { TemplateStyleLinkForm } from "./TemplateStyleLinkForm";
+import { formatDateTime } from "../../lib/formatDate";
 import type { TemplateStyleLinkFormValues } from "./TemplateStyleLinkForm";
 
 interface TemplateStyleLinkDetailPanelProps {
@@ -103,8 +104,8 @@ export function TemplateStyleLinkDetailPanel({ linkId }: TemplateStyleLinkDetail
       <Field label="Notes" value={link.notes} />
 
       <div style={{ marginTop: "0.75rem", borderTop: "1px solid #f1f5f9", paddingTop: "0.75rem" }}>
-        <Field label="Created" value={link.created_at ? new Date(link.created_at).toLocaleString() : null} />
-        <Field label="Updated" value={link.updated_at ? new Date(link.updated_at).toLocaleString() : null} />
+        <Field label="Created" value={formatDateTime(link.created_at)} />
+        <Field label="Updated" value={formatDateTime(link.updated_at)} />
       </div>
     </div>
   );

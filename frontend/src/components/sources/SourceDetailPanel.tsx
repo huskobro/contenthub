@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useSourceDetail } from "../../hooks/useSourceDetail";
 import { useUpdateSource } from "../../hooks/useUpdateSource";
 import { SourceForm } from "./SourceForm";
+import { formatDateTime } from "../../lib/formatDate";
 import type { SourceCreatePayload } from "../../api/sourcesApi";
 
 interface SourceDetailPanelProps {
@@ -132,8 +133,8 @@ export function SourceDetailPanel({ sourceId }: SourceDetailPanelProps) {
       )}
 
       <div style={{ marginTop: "0.75rem", borderTop: "1px solid #f1f5f9", paddingTop: "0.75rem" }}>
-        <Field label="Created" value={source.created_at ? new Date(source.created_at).toLocaleString() : null} />
-        <Field label="Updated" value={source.updated_at ? new Date(source.updated_at).toLocaleString() : null} />
+        <Field label="Created" value={formatDateTime(source.created_at)} />
+        <Field label="Updated" value={formatDateTime(source.updated_at)} />
       </div>
     </div>
   );

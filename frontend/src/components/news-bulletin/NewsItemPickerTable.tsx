@@ -1,4 +1,5 @@
 import type { NewsItemResponse } from "../../api/newsItemsApi";
+import { formatDateShort } from "../../lib/formatDate";
 
 interface Props {
   items: NewsItemResponse[];
@@ -32,7 +33,7 @@ export function NewsItemPickerTable({ items, onSelect }: Props) {
             <td style={{ padding: "0.375rem 0.5rem", color: "#64748b" }}>{item.category ?? "—"}</td>
             <td style={{ padding: "0.375rem 0.5rem", color: "#64748b" }}>{item.language ?? "—"}</td>
             <td style={{ padding: "0.375rem 0.5rem", color: "#94a3b8" }}>
-              {item.published_at ? new Date(item.published_at).toLocaleDateString() : "—"}
+              {formatDateShort(item.published_at)}
             </td>
             <td style={{ padding: "0.375rem 0.5rem" }}>
               <button

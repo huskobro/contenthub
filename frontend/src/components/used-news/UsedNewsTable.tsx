@@ -1,4 +1,5 @@
 import type { UsedNewsResponse } from "../../api/usedNewsApi";
+import { formatDateShort } from "../../lib/formatDate";
 import { UsedNewsStateSummary } from "./UsedNewsStateSummary";
 import { UsedNewsSourceContextSummary } from "./UsedNewsSourceContextSummary";
 import { UsedNewsPublicationLinkageSummary } from "./UsedNewsPublicationLinkageSummary";
@@ -127,7 +128,7 @@ export function UsedNewsTable({ records, selectedId, onSelect }: Props) {
             </td>
             {/* Zaman */}
             <td style={{ padding: "0.5rem 0.75rem", color: "#94a3b8", fontSize: "0.8rem" }}>
-              {record.created_at ? new Date(record.created_at).toLocaleDateString() : "—"}
+              {formatDateShort(record.created_at)}
             </td>
           </tr>
         ))}

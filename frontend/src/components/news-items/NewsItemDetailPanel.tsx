@@ -3,6 +3,7 @@ import { useNewsItemDetail } from "../../hooks/useNewsItemDetail";
 import { useUpdateNewsItem } from "../../hooks/useUpdateNewsItem";
 import { NewsItemForm } from "./NewsItemForm";
 import type { NewsItemFormValues } from "./NewsItemForm";
+import { formatDateTime } from "../../lib/formatDate";
 
 interface Props {
   selectedId: string | null;
@@ -95,11 +96,11 @@ export function NewsItemDetailPanel({ selectedId }: Props) {
       <Field label="Scan ID" value={data.source_scan_id} />
       <Field label="Dil" value={data.language} />
       <Field label="Kategori" value={data.category} />
-      <Field label="Yayınlanma" value={data.published_at ? new Date(data.published_at).toLocaleString() : null} />
+      <Field label="Yayınlanma" value={formatDateTime(data.published_at)} />
       {data.summary && <Field label="Özet" value={data.summary} />}
       <Field label="Dedupe Key" value={data.dedupe_key} />
-      <Field label="Created" value={data.created_at ? new Date(data.created_at).toLocaleString() : null} />
-      <Field label="Updated" value={data.updated_at ? new Date(data.updated_at).toLocaleString() : null} />
+      <Field label="Created" value={formatDateTime(data.created_at)} />
+      <Field label="Updated" value={formatDateTime(data.updated_at)} />
     </div>
   );
 }

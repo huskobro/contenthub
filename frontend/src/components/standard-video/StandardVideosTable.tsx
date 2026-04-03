@@ -1,5 +1,6 @@
 import type { StandardVideoResponse } from "../../api/standardVideoApi";
 import { formatDuration } from "../../lib/formatDuration";
+import { formatDateTime } from "../../lib/formatDate";
 import { StandardVideoReadinessSummary } from "./StandardVideoReadinessSummary";
 import { StandardVideoArtifactSummary } from "./StandardVideoArtifactSummary";
 import { StandardVideoPublicationSignalSummary } from "./StandardVideoPublicationSignalSummary";
@@ -142,7 +143,7 @@ export function StandardVideosTable({ videos, selectedId, onSelect }: Props) {
             </td>
             {/* Zaman */}
             <td style={{ padding: "0.5rem 0.75rem", color: "#94a3b8" }}>
-              {v.created_at ? new Date(v.created_at).toLocaleString("tr-TR") : "—"}
+              {formatDateTime(v.created_at, "—")}
             </td>
           </tr>
         ))}

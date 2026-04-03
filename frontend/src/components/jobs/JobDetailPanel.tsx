@@ -1,6 +1,7 @@
 import { useJobDetail } from "../../hooks/useJobDetail";
 import { JobStepsList } from "./JobStepsList";
 import { DurationBadge } from "./DurationBadge";
+import { formatDateISO } from "../../lib/formatDate";
 
 interface JobDetailPanelProps {
   selectedId: string | null;
@@ -66,13 +67,9 @@ export function JobDetailPanel({ selectedId }: JobDetailPanelProps) {
       <Row label="estimated_remaining_seconds">
         <DurationBadge seconds={data.estimated_remaining_seconds} approximate />
       </Row>
-      <Row label="created_at">{data.created_at ? data.created_at.slice(0, 19).replace("T", " ") : em}</Row>
-      <Row label="started_at">
-        {data.started_at ? data.started_at.slice(0, 19).replace("T", " ") : em}
-      </Row>
-      <Row label="finished_at">
-        {data.finished_at ? data.finished_at.slice(0, 19).replace("T", " ") : em}
-      </Row>
+      <Row label="created_at">{formatDateISO(data.created_at, em)}</Row>
+      <Row label="started_at">{formatDateISO(data.started_at, em)}</Row>
+      <Row label="finished_at">{formatDateISO(data.finished_at, em)}</Row>
 
       <h4 style={{ margin: "1rem 0 0.5rem", fontSize: "0.9375rem" }}>Steps</h4>
       <JobStepsList steps={data.steps} />

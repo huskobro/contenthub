@@ -1,5 +1,6 @@
 import type { JobResponse } from "../../api/jobsApi";
 import { formatDuration } from "../../lib/formatDuration";
+import { formatDateISO } from "../../lib/formatDate";
 import { JobContextSummary } from "./JobContextSummary";
 import { JobActionabilitySummary } from "./JobActionabilitySummary";
 import { JobOutputRichnessSummary } from "./JobOutputRichnessSummary";
@@ -141,7 +142,7 @@ export function JobsTable({ jobs, selectedId, onSelect }: JobsTableProps) {
             </td>
             {/* Zaman */}
             <td style={{ padding: "0.5rem 0.75rem", fontSize: "0.8125rem", color: "#64748b" }}>
-              {j.created_at ? j.created_at.slice(0, 19).replace("T", " ") : "—"}
+              {formatDateISO(j.created_at)}
             </td>
           </tr>
         ))}

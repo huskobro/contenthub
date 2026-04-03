@@ -1,4 +1,5 @@
 import type { NewsBulletinResponse } from "../../api/newsBulletinApi";
+import { formatDateShort } from "../../lib/formatDate";
 import { NewsBulletinArtifactSummary } from "./NewsBulletinArtifactSummary";
 import { NewsBulletinSelectedNewsSummary } from "./NewsBulletinSelectedNewsSummary";
 import { NewsBulletinReadinessSummary } from "./NewsBulletinReadinessSummary";
@@ -156,7 +157,7 @@ export function NewsBulletinsTable({ bulletins, selectedId, onSelect }: Props) {
             </td>
             {/* Zaman */}
             <td style={{ padding: "0.5rem 0.75rem", color: "#94a3b8" }}>
-              {b.created_at ? new Date(b.created_at).toLocaleDateString() : "—"}
+              {formatDateShort(b.created_at)}
             </td>
           </tr>
         ))}
