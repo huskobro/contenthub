@@ -8,7 +8,8 @@ interface TemplateStyleLinksTableProps {
   onSelect: (id: string) => void;
 }
 
-const TH_CELL: React.CSSProperties = { textAlign: "left", padding: "0.5rem 0.75rem", fontWeight: 600, color: "#475569" };
+const TD_PAD = "0.5rem 0.75rem";
+const TH_CELL: React.CSSProperties = { textAlign: "left", padding: TD_PAD, fontWeight: 600, color: "#475569" };
 
 const STATUS_COLORS: Record<string, string> = {
   active: "#16a34a",
@@ -56,16 +57,16 @@ export function TemplateStyleLinksTable({
               borderBottom: "1px solid #f1f5f9",
             }}
           >
-            <td style={{ padding: "0.5rem 0.75rem", color: "#1e293b", fontFamily: "monospace", fontSize: "0.8rem" }}>
+            <td style={{ padding: TD_PAD, color: "#1e293b", fontFamily: "monospace", fontSize: "0.8rem" }}>
               {link.template_id.slice(0, 8)}…
             </td>
-            <td style={{ padding: "0.5rem 0.75rem", color: "#1e293b", fontFamily: "monospace", fontSize: "0.8rem" }}>
+            <td style={{ padding: TD_PAD, color: "#1e293b", fontFamily: "monospace", fontSize: "0.8rem" }}>
               {link.style_blueprint_id.slice(0, 8)}…
             </td>
-            <td style={{ padding: "0.5rem 0.75rem", color: "#475569" }}>
+            <td style={{ padding: TD_PAD, color: "#475569" }}>
               {link.link_role ?? "—"}
             </td>
-            <td style={{ padding: "0.5rem 0.75rem" }}>
+            <td style={{ padding: TD_PAD }}>
               <span style={{
                 padding: "0.125rem 0.5rem",
                 borderRadius: "999px",
@@ -77,7 +78,7 @@ export function TemplateStyleLinksTable({
                 {link.status ?? "—"}
               </span>
             </td>
-            <td style={{ padding: "0.5rem 0.75rem" }}>
+            <td style={{ padding: TD_PAD }}>
               <TemplateStyleLinkReadinessSummary
                 status={link.status}
                 linkRole={link.link_role}
@@ -85,7 +86,7 @@ export function TemplateStyleLinksTable({
                 styleBlueprintId={link.style_blueprint_id}
               />
             </td>
-            <td style={{ padding: "0.5rem 0.75rem", color: "#64748b", fontSize: "0.8rem" }}>
+            <td style={{ padding: TD_PAD, color: "#64748b", fontSize: "0.8rem" }}>
               {formatDateShort(link.created_at)}
             </td>
           </tr>

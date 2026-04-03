@@ -2,6 +2,20 @@
 
 ---
 
+## [2026-04-03] Phase 187 — Repeated Small Margin/Padding Literal Constant Pack
+
+**Ne:** Bileşenlerde tekrar eden margin/padding literal değerlerini dosya-seviyesi const'lara taşıma.
+**Eklenen/değiştirilen dosyalar:**
+- `StandardVideoMetadataPanel.tsx`: `PAD_B_SM = "0.375rem"` eklendi, 10× inline → const (LABEL_TD + 9 td)
+- `StandardVideoScriptPanel.tsx`: `PAD_B_XS = "0.25rem"` eklendi, 5× inline → const (LABEL_TD + 4 td)
+- `TemplateStyleLinksTable.tsx`: `TD_PAD = "0.5rem 0.75rem"` eklendi, 7× inline → const (TH_CELL + 6 td)
+- `docs/testing/test-report-phase-187-repeated-small-margin-padding-literal-constant-pack.md` (yeni)
+**Atlanılan:** TD_STYLE zaten olan tablo dosyaları; diğerleri threshold altı
+**Test:** 1587 toplam test, tsc temiz, vite build temiz
+**Dokunulmayan:** Görünüm, davranış, badge stilleri, backend
+
+---
+
 ## [2026-04-03] Phase 186 — Repeated Small Overflow/Wrap Style Constant Pack
 
 **Ne:** Bileşenlerde tekrar eden `{ wordBreak: "break-word", overflowWrap: "anywhere" }` inline style object'lerini dosya-seviyesi const'lara taşıma.

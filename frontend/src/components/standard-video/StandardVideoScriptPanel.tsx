@@ -6,7 +6,8 @@ import { isBlank } from "../../lib/isBlank";
 
 const PREVIEW_LIMIT = 400;
 const DASH = "—";
-const LABEL_TD: React.CSSProperties = { color: "#64748b", paddingRight: "1rem", paddingBottom: "0.25rem" };
+const PAD_B_XS = "0.25rem";
+const LABEL_TD: React.CSSProperties = { color: "#64748b", paddingRight: "1rem", paddingBottom: PAD_B_XS };
 const SECTION_STYLE: React.CSSProperties = { border: "1px solid #e2e8f0", borderRadius: "6px", padding: "1rem", marginBottom: "1.25rem" };
 const FORM_HEADING: React.CSSProperties = { margin: "0 0 1rem", fontSize: "0.9375rem", fontWeight: 600 };
 const RADIUS_XS = "4px";
@@ -164,20 +165,20 @@ export function StandardVideoScriptPanel({
             <tbody>
               <tr>
                 <td style={LABEL_TD}>Versiyon</td>
-                <td style={{ paddingBottom: "0.25rem" }}>{script.version ?? DASH}</td>
+                <td style={{ paddingBottom: PAD_B_XS }}>{script.version ?? DASH}</td>
               </tr>
               <tr>
                 <td style={LABEL_TD}>Kaynak</td>
-                <td style={{ paddingBottom: "0.25rem" }}>{script.source_type ?? DASH}</td>
+                <td style={{ paddingBottom: PAD_B_XS }}>{script.source_type ?? DASH}</td>
               </tr>
               <tr>
                 <td style={LABEL_TD}>Durum</td>
-                <td style={{ paddingBottom: "0.25rem" }}>{script.generation_status ?? DASH}</td>
+                <td style={{ paddingBottom: PAD_B_XS }}>{script.generation_status ?? DASH}</td>
               </tr>
               {!isBlank(script.notes) && (
                 <tr>
                   <td style={LABEL_TD}>Notlar</td>
-                  <td style={{ paddingBottom: "0.25rem" }}>{script.notes}</td>
+                  <td style={{ paddingBottom: PAD_B_XS }}>{script.notes}</td>
                 </tr>
               )}
             </tbody>

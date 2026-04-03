@@ -5,7 +5,8 @@ import type { MetadataFormValues } from "./StandardVideoMetadataForm";
 import { isBlank } from "../../lib/isBlank";
 
 const DASH = "—";
-const LABEL_TD: React.CSSProperties = { color: "#64748b", paddingRight: "1rem", paddingBottom: "0.375rem", whiteSpace: "nowrap" };
+const PAD_B_SM = "0.375rem";
+const LABEL_TD: React.CSSProperties = { color: "#64748b", paddingRight: "1rem", paddingBottom: PAD_B_SM, whiteSpace: "nowrap" };
 const LABEL_TD_TOP: React.CSSProperties = { ...LABEL_TD, verticalAlign: "top" };
 const SECTION_STYLE: React.CSSProperties = { border: "1px solid #e2e8f0", borderRadius: "6px", padding: "1rem", marginBottom: "1.25rem" };
 const FORM_HEADING: React.CSSProperties = { margin: "0 0 1rem", fontSize: "0.9375rem", fontWeight: 600 };
@@ -217,18 +218,18 @@ export function StandardVideoMetadataPanel({
           <tbody>
             <tr>
               <td style={LABEL_TD_TOP}>Başlık</td>
-              <td style={{ paddingBottom: "0.375rem", fontWeight: 500, wordBreak: "break-word", overflowWrap: "anywhere" }}>{metadata.title ?? DASH}</td>
+              <td style={{ paddingBottom: PAD_B_SM, fontWeight: 500, wordBreak: "break-word", overflowWrap: "anywhere" }}>{metadata.title ?? DASH}</td>
             </tr>
             {metadata.description && (
               <tr>
                 <td style={LABEL_TD_TOP}>Açıklama</td>
-                <td style={{ paddingBottom: "0.375rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>{metadata.description}</td>
+                <td style={{ paddingBottom: PAD_B_SM, wordBreak: "break-word", overflowWrap: "anywhere" }}>{metadata.description}</td>
               </tr>
             )}
             {tags.length > 0 && (
               <tr>
                 <td style={LABEL_TD_TOP}>Etiketler</td>
-                <td style={{ paddingBottom: "0.375rem" }}>
+                <td style={{ paddingBottom: PAD_B_SM }}>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: "0.25rem" }}>
                     {tags.map((tag, i) => (
                       <span
@@ -250,31 +251,31 @@ export function StandardVideoMetadataPanel({
             {metadata.category && (
               <tr>
                 <td style={LABEL_TD}>Kategori</td>
-                <td style={{ paddingBottom: "0.375rem" }}>{metadata.category}</td>
+                <td style={{ paddingBottom: PAD_B_SM }}>{metadata.category}</td>
               </tr>
             )}
             {metadata.language && (
               <tr>
                 <td style={LABEL_TD}>Dil</td>
-                <td style={{ paddingBottom: "0.375rem" }}>{metadata.language}</td>
+                <td style={{ paddingBottom: PAD_B_SM }}>{metadata.language}</td>
               </tr>
             )}
             <tr>
               <td style={LABEL_TD}>Versiyon</td>
-              <td style={{ paddingBottom: "0.375rem" }}>{metadata.version ?? DASH}</td>
+              <td style={{ paddingBottom: PAD_B_SM }}>{metadata.version ?? DASH}</td>
             </tr>
             <tr>
               <td style={LABEL_TD}>Kaynak</td>
-              <td style={{ paddingBottom: "0.375rem" }}>{metadata.source_type ?? DASH}</td>
+              <td style={{ paddingBottom: PAD_B_SM }}>{metadata.source_type ?? DASH}</td>
             </tr>
             <tr>
               <td style={LABEL_TD}>Durum</td>
-              <td style={{ paddingBottom: "0.375rem" }}>{metadata.generation_status ?? DASH}</td>
+              <td style={{ paddingBottom: PAD_B_SM }}>{metadata.generation_status ?? DASH}</td>
             </tr>
             {!isBlank(metadata.notes) && (
               <tr>
                 <td style={LABEL_TD_TOP}>Notlar</td>
-                <td style={{ paddingBottom: "0.375rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>{metadata.notes}</td>
+                <td style={{ paddingBottom: PAD_B_SM, wordBreak: "break-word", overflowWrap: "anywhere" }}>{metadata.notes}</td>
               </tr>
             )}
           </tbody>

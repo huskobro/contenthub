@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 186 — Repeated Small Overflow/Wrap Style Constant Pack ✓ TAMAMLANDI
+Phase 187 — Repeated Small Margin/Padding Literal Constant Pack ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Bileşenlerde tekrar eden overflow/wrap style object audit. NewsBulletinMetadataPanel WRAP_WORD×3. Test guard güncellendi. 1587 toplam test.
+Bileşenlerde tekrar eden margin/padding literal audit. PAD_B_SM (MetadataPanel×10), PAD_B_XS (ScriptPanel×5), TD_PAD (TemplateStyleLinksTable×7). 1587 toplam test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 187: repeated small margin/padding literal constant pack: PAD_B_SM + PAD_B_XS + TD_PAD extraction (3 dosya, toplam 22 değişim), 1587 toplam (2026-04-03)
 - Phase 186: repeated small overflow/wrap style constant pack: WRAP_WORD extraction (NewsBulletinMetadataPanel×3), test guard güncellendi, 1587 toplam (2026-04-03)
 - Phase 185: repeated small cursor/pointer style constant pack: CURSOR_PTR extraction (StandardVideoScriptPanel×3), 1587 toplam (2026-04-03)
 - Phase 184: repeated small text align literal constant pack: kapsamlı audit, threshold altı (max 1× per dosya), hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
