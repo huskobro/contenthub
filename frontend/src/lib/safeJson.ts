@@ -8,7 +8,7 @@ export function safeJsonPretty(
   value: string | null | undefined,
   fallback: string = "—",
 ): string {
-  if (!value) return fallback;
+  if (!value || !value.trim()) return fallback;
   try {
     return JSON.stringify(JSON.parse(value), null, 2);
   } catch {

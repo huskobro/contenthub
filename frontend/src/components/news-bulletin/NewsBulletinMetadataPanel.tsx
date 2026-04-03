@@ -149,7 +149,7 @@ export function NewsBulletinMetadataPanel({ bulletinId }: Props) {
             </tr>
             <tr>
               <td style={{ color: "#64748b", paddingRight: "1rem", paddingBottom: "0.25rem" }}>Versiyon</td>
-              <td>{metadata.version}</td>
+              <td>{metadata.version ?? "—"}</td>
             </tr>
             <tr>
               <td style={{ color: "#64748b", paddingRight: "1rem", paddingBottom: "0.25rem" }}>Kaynak</td>
@@ -157,7 +157,7 @@ export function NewsBulletinMetadataPanel({ bulletinId }: Props) {
             </tr>
             <tr>
               <td style={{ color: "#64748b", paddingRight: "1rem", paddingBottom: "0.25rem" }}>Durum</td>
-              <td>{metadata.generation_status}</td>
+              <td>{metadata.generation_status ?? "—"}</td>
             </tr>
             {metadata.notes && (
               <tr>

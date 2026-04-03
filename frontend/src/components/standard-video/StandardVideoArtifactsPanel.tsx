@@ -86,13 +86,15 @@ export function StandardVideoArtifactsPanel({
                   fontSize: "0.8125rem",
                   color: "#334155",
                   whiteSpace: "pre-wrap",
+                  wordBreak: "break-word",
+                  overflowWrap: "anywhere",
                   maxHeight: "120px",
                   overflow: "hidden",
                 }}
               >
-                {script.content.length > 300
-                  ? script.content.slice(0, 300) + "…"
-                  : script.content}
+                {(script.content ?? "").length > 300
+                  ? (script.content ?? "").slice(0, 300) + "…"
+                  : (script.content ?? "—")}
               </div>
             </div>
           </div>

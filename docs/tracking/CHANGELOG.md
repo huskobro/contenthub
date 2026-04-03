@@ -2,6 +2,24 @@
 
 ---
 
+## [2026-04-03] Phase 149 — Clipboard / Copy Surface Safety & Text Export Hygiene Pack
+
+**Ne:** Kopyalanabilir text yüzeylerinde null/undefined sızıntı koruması. Script, metadata, artifacts panellerinde 13 property'ye `?? "—"` fallback eklendi. Content block'larda null-safe length check. overflowWrap eklendi. safeJsonPretty whitespace-only string guard eklendi.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/tests/clipboard-text-hygiene.smoke.test.tsx` (yeni — 25 structural guard test)
+- `StandardVideoScriptPanel.tsx` (3 null fallback, content null-safe, overflowWrap)
+- `NewsBulletinScriptPanel.tsx` (2 null fallback, content null-safe, overflowWrap)
+- `StandardVideoMetadataPanel.tsx` (4 null fallback)
+- `NewsBulletinMetadataPanel.tsx` (2 null fallback)
+- `StandardVideoArtifactsPanel.tsx` (content null-safe, wordBreak + overflowWrap)
+- `JsonPreviewField.tsx` (overflowWrap eklendi)
+- `safeJson.ts` (whitespace-only string guard)
+- `text-overflow-safety.smoke.test.tsx` (metadata.title pattern fix)
+**Test:** 1209 toplam test (+25 yeni), tsc temiz, vite build temiz
+**Dokunulmayan:** Copy button yok, export format yok, badge stilleri korundu, backend değişiklik yok
+
+---
+
 ## [2026-04-03] Phase 148 — URL / Link Surface Safety & External Target Hygiene Pack
 
 **Ne:** URL/link yüzeylerinde güvenlik denetimi ve düzeltme. Anchor null guard, rel attribute fix, UrlField overflowWrap eklendi.

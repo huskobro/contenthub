@@ -121,7 +121,7 @@ export function NewsBulletinScriptPanel({ bulletinId }: Props) {
             <tbody>
               <tr>
                 <td style={{ color: "#64748b", paddingRight: "1rem", paddingBottom: "0.25rem" }}>Versiyon</td>
-                <td>{script.version}</td>
+                <td>{script.version ?? "—"}</td>
               </tr>
               <tr>
                 <td style={{ color: "#64748b", paddingRight: "1rem", paddingBottom: "0.25rem" }}>Kaynak</td>
@@ -129,7 +129,7 @@ export function NewsBulletinScriptPanel({ bulletinId }: Props) {
               </tr>
               <tr>
                 <td style={{ color: "#64748b", paddingRight: "1rem", paddingBottom: "0.25rem" }}>Durum</td>
-                <td>{script.generation_status}</td>
+                <td>{script.generation_status ?? "—"}</td>
               </tr>
               {script.notes && (
                 <tr>
@@ -139,12 +139,12 @@ export function NewsBulletinScriptPanel({ bulletinId }: Props) {
               )}
             </tbody>
           </table>
-          <div style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: "4px", padding: "0.75rem", fontSize: "0.8125rem", whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
-            {showFull || script.content.length <= PREVIEW_LIMIT
-              ? script.content
-              : script.content.slice(0, PREVIEW_LIMIT) + "..."}
+          <div style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: "4px", padding: "0.75rem", fontSize: "0.8125rem", whiteSpace: "pre-wrap", wordBreak: "break-word", overflowWrap: "anywhere" }}>
+            {showFull || (script.content ?? "").length <= PREVIEW_LIMIT
+              ? (script.content ?? "—")
+              : (script.content ?? "").slice(0, PREVIEW_LIMIT) + "..."}
           </div>
-          {script.content.length > PREVIEW_LIMIT && (
+          {(script.content ?? "").length > PREVIEW_LIMIT && (
             <button onClick={() => setShowFull((v) => !v)} style={{ marginTop: "0.5rem", background: "none", border: "none", color: "#3b82f6", cursor: "pointer", padding: 0 }}>
               {showFull ? "Daha az göster" : "Tamamını göster"}
             </button>

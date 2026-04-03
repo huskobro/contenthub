@@ -216,7 +216,7 @@ export function StandardVideoMetadataPanel({
           <tbody>
             <tr>
               <td style={{ color: "#64748b", paddingRight: "1rem", paddingBottom: "0.375rem", whiteSpace: "nowrap", verticalAlign: "top" }}>Başlık</td>
-              <td style={{ paddingBottom: "0.375rem", fontWeight: 500, wordBreak: "break-word", overflowWrap: "anywhere" }}>{metadata.title}</td>
+              <td style={{ paddingBottom: "0.375rem", fontWeight: 500, wordBreak: "break-word", overflowWrap: "anywhere" }}>{metadata.title ?? "—"}</td>
             </tr>
             {metadata.description && (
               <tr>
@@ -260,15 +260,15 @@ export function StandardVideoMetadataPanel({
             )}
             <tr>
               <td style={{ color: "#64748b", paddingRight: "1rem", paddingBottom: "0.375rem", whiteSpace: "nowrap" }}>Versiyon</td>
-              <td style={{ paddingBottom: "0.375rem" }}>{metadata.version}</td>
+              <td style={{ paddingBottom: "0.375rem" }}>{metadata.version ?? "—"}</td>
             </tr>
             <tr>
               <td style={{ color: "#64748b", paddingRight: "1rem", paddingBottom: "0.375rem", whiteSpace: "nowrap" }}>Kaynak</td>
-              <td style={{ paddingBottom: "0.375rem" }}>{metadata.source_type}</td>
+              <td style={{ paddingBottom: "0.375rem" }}>{metadata.source_type ?? "—"}</td>
             </tr>
             <tr>
               <td style={{ color: "#64748b", paddingRight: "1rem", paddingBottom: "0.375rem", whiteSpace: "nowrap" }}>Durum</td>
-              <td style={{ paddingBottom: "0.375rem" }}>{metadata.generation_status}</td>
+              <td style={{ paddingBottom: "0.375rem" }}>{metadata.generation_status ?? "—"}</td>
             </tr>
             {metadata.notes && (
               <tr>

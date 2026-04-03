@@ -70,7 +70,7 @@ describe("Inline text overflow safety", () => {
 
   it("StandardVideoMetadataPanel title td has overflow protection", () => {
     const src = read("components/standard-video/StandardVideoMetadataPanel.tsx");
-    const idx = src.indexOf("metadata.title}");
+    const idx = src.indexOf("metadata.title");
     expect(idx).toBeGreaterThan(0);
     const block = src.slice(Math.max(0, idx - 150), idx + 30);
     expect(

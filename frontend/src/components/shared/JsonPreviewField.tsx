@@ -35,6 +35,7 @@ export function JsonPreviewField({ label, value }: JsonPreviewFieldProps) {
           maxHeight: "120px",
           whiteSpace: "pre-wrap",
           wordBreak: "break-all",
+          overflowWrap: "anywhere",
         }}
       >
         {safeJsonPretty(value)}

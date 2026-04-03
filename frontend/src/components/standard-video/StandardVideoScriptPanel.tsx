@@ -163,15 +163,15 @@ export function StandardVideoScriptPanel({
             <tbody>
               <tr>
                 <td style={{ color: "#64748b", paddingRight: "1rem", paddingBottom: "0.25rem" }}>Versiyon</td>
-                <td style={{ paddingBottom: "0.25rem" }}>{script.version}</td>
+                <td style={{ paddingBottom: "0.25rem" }}>{script.version ?? "—"}</td>
               </tr>
               <tr>
                 <td style={{ color: "#64748b", paddingRight: "1rem", paddingBottom: "0.25rem" }}>Kaynak</td>
-                <td style={{ paddingBottom: "0.25rem" }}>{script.source_type}</td>
+                <td style={{ paddingBottom: "0.25rem" }}>{script.source_type ?? "—"}</td>
               </tr>
               <tr>
                 <td style={{ color: "#64748b", paddingRight: "1rem", paddingBottom: "0.25rem" }}>Durum</td>
-                <td style={{ paddingBottom: "0.25rem" }}>{script.generation_status}</td>
+                <td style={{ paddingBottom: "0.25rem" }}>{script.generation_status ?? "—"}</td>
               </tr>
               {script.notes && (
                 <tr>
@@ -190,13 +190,14 @@ export function StandardVideoScriptPanel({
               fontSize: "0.8125rem",
               whiteSpace: "pre-wrap",
               wordBreak: "break-word",
+              overflowWrap: "anywhere",
             }}
           >
-            {showFull || script.content.length <= PREVIEW_LIMIT
-              ? script.content
-              : script.content.slice(0, PREVIEW_LIMIT) + "..."}
+            {showFull || (script.content ?? "").length <= PREVIEW_LIMIT
+              ? (script.content ?? "—")
+              : (script.content ?? "").slice(0, PREVIEW_LIMIT) + "..."}
           </div>
-          {script.content.length > PREVIEW_LIMIT && (
+          {(script.content ?? "").length > PREVIEW_LIMIT && (
             <button
               onClick={() => setShowFull((v) => !v)}
               style={{
