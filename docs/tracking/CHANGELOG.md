@@ -2,6 +2,27 @@
 
 ---
 
+## [2026-04-04] Phase 1.1 — Execution Contract Katmanı
+
+**Ne:** Integration Plan Ana Faz 1 (Execution Foundation + SSE Pack) — Alt Faz 1.1 tamamlandı. `backend/app/contracts/` paketi oluşturuldu. Execution motoruna geçmeden önce tüm sözleşmeler tek, çelişkisiz ve testli şekilde tanımlandı: JobStatus/JobStepStatus enum'ları, ArtifactKind/Scope/Durability, ProviderKind/TraceStatus, RetryDisposition, ReviewStateStatus, SSEEventType. JobStateMachine ve StepStateMachine geçiş matrisleri yazıldı ve her geçersiz transition ValueError fırlatıyor. ArtifactRecord, ProviderTrace, RetryHistory, ReviewState Pydantic schema'ları oluşturuldu. SSEEnvelope + 10 payload schema + SSE_PAYLOAD_MAP hazır. WorkspaceLayout (final/preview/tmp/logs/execution) path derivation ve ensure_dirs() yazıldı. Frontend TypeScript mirror (frontend/src/types/execution.ts) eklendi — backend enum'ları ile 1:1 eşleşme. 94 yeni test, tümü geçiyor.
+**Sonuç:** Execution contract katmanı oturdu. Executor, pipeline runner, SSE hub, workspace manager, analytics, publish ve review gate bu contract üstüne refactor gerektirmeden inşa edilebilir. Gerçek implementasyon (executor, SSE transport, step runner) kasıtlı olarak bu adıma dahil edilmedi.
+**Eklenen dosyalar:**
+- `backend/app/contracts/__init__.py`
+- `backend/app/contracts/enums.py`
+- `backend/app/contracts/state_machine.py`
+- `backend/app/contracts/artifacts.py`
+- `backend/app/contracts/provider_trace.py`
+- `backend/app/contracts/retry_history.py`
+- `backend/app/contracts/review_state.py`
+- `backend/app/contracts/sse_events.py`
+- `backend/app/contracts/workspace.py`
+- `frontend/src/types/execution.ts`
+- `backend/tests/test_execution_contracts.py` (94 yeni test)
+- `docs/testing/test-report-phase-1.1-execution-contract.md`
+**Test:** 94 yeni test PASSED, 289 toplam backend test PASSED, tsc temiz
+
+---
+
 ## [2026-04-03] Asset Library / Media Resource Management Pack
 
 **Ne:** Asset Library / media resource management omurgasi oturdu. Giris yüzeyi: AdminOverviewPage'e "Varlik Kutuphanesi" quick link eklendi, AdminLayout sidebar'a nav item eklendi, release readiness checklist'e "Varlik Kutuphanesi Omurga hazir" eklendi, deferred note'dan "asset library" ifadesi kaldirildi. Yeni sayfa: AssetLibraryPage (`/admin/assets`) — heading/subtitle/workflow note, 8 asset turu (muzik/font/gorsel/video_klip/overlay/alt_yazi_stili/thumbnail_referans/marka_varligi), 5 tur grubu, aktif arama + tur filtresi, disabled sort (deferred), 6 placeholder asset kaydı, satir tiklamasiyla detail panel (ad/tur/durum/kaynak/notlar/reuse-context/preview-safety), global preview/reference safety notu.

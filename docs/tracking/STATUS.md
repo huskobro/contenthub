@@ -1,12 +1,12 @@
 # DURUM
 
 ## Mevcut Faz
-Asset Library / Media Resource Management Pack ✓ TAMAMLANDI (feature)
+Integration Plan — Ana Faz 1: Execution Foundation + SSE Pack
 
-**ANA FAZ 13 TAMAMLANDI: Asset Library / media resource management omurgasi**
+**Phase 1.1 TAMAMLANDI: Execution Contract Katmanı**
 
 ## Mevcut Hedef
-Asset Library omurgasi oturdu. Giris noktasi, registry/list/gallery, type grouping, filter/sort/search, detail view, reuse/pick/attach baglami ve preview/reference safety zinciri kuruldu. 2100 toplam test.
+Execution contract katmanı oturdu. Job/Step lifecycle, Artifact, ProviderTrace, RetryHistory, ReviewState, SSE event ve Workspace sözleşmeleri tanımlandı. State machine transition matrisleri yazıldı ve test edildi. 94 yeni test, 289 toplam backend test. TypeScript mirror frontend'e eklendi. Bir sonraki adım: Phase 1.2 — Job State Machine (executor entegrasyonu).
 
 ## Devam Eden
 — (devam eden calisma yok)
@@ -17,6 +17,7 @@ Asset Library omurgasi oturdu. Giris noktasi, registry/list/gallery, type groupi
 - **ANA FAZ BAŞLADI:** Wizard / Onboarding (ürün geliştirme hattı)
 
 ## Son Tamamlananlar
+- Phase 1.1 Execution Contract Katmanı — contracts/ paketi (enums, state_machine, artifacts, provider_trace, retry_history, review_state, sse_events, workspace), frontend/src/types/execution.ts mirror, 94 yeni test, 289 toplam backend test, tsc temiz (2026-04-04)
 - Asset Library / Media Resource Management Pack — asset library giris yüzeyi (quick link + sidebar + readiness checklist), AssetLibraryPage (varlik kayit/tur gruplama/filtre/arama/detay/reuse/preview safety), 50 yeni test, 2100 toplam (2026-04-03)
 - Phase 318–321: final UX / release readiness pack — deferred/disabled note standardizasyonu (backend entegrasyonu kalibi), cross-module heading/subtitle/workflow testid koheransi, release readiness checklist yuzeyi (8 alan, Omurga hazir), end-to-end verification, 32 yeni test, 2050 toplam (2026-04-03)
 - Phase 314–317: reporting/business intelligence pack — reporting giris noktasi, analytics/raporlama ayrimi, operasyonel rapor zinciri, kullanim/performans rapor zinciri, karar destek konteksti, end-to-end verification, 25 yeni test, 2018 toplam (2026-04-03)
