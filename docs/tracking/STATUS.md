@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 172 — Repeated Input/Textarea Style Constant Pack ✓ TAMAMLANDI
+Phase 173 — Repeated Form Label Style Constant Pack ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Form bileşenlerindeki tekrar eden input/textarea style bloklarını const ile extraction. TemplateForm JSON_TEXTAREA×3, StyleBlueprintForm JSON_TEXTAREA×map, SourceScanForm TEXTAREA×2. 1587 toplam test.
+Form bileşenlerindeki tekrar eden required-field span style bloklarını const ile extraction. TemplateForm REQ_MARK×3, UsedNewsForm REQ_MARK×3. 1587 toplam test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 173: repeated form label style constant pack: REQ_MARK extraction (TemplateForm×3, UsedNewsForm×3), 1587 toplam (2026-04-03)
 - Phase 172: repeated input/textarea style constant pack: JSON_TEXTAREA + TEXTAREA extraction (3 dosya), 1587 toplam (2026-04-03)
 - Phase 171 — Repeated Simple Layout Constant Pack ✓ TAMAMLANDI
 

@@ -47,6 +47,8 @@ const errorStyle: React.CSSProperties = {
   marginTop: "0.2rem",
 };
 
+const REQ_MARK: React.CSSProperties = { color: "#dc2626" };
+
 const BTN_PRIMARY: React.CSSProperties = {
   padding: "0.375rem 1rem",
   fontSize: "0.875rem",
@@ -110,7 +112,7 @@ export function UsedNewsForm({
       {mode === "create" && (
         <div style={fieldStyle}>
           <label style={labelStyle}>
-            News Item ID <span style={{ color: "#dc2626" }}>*</span>
+            News Item ID <span style={REQ_MARK}>*</span>
           </label>
           <input
             style={{ ...inputStyle, borderColor: errors.news_item_id ? "#dc2626" : "#e2e8f0" }}
@@ -124,7 +126,7 @@ export function UsedNewsForm({
 
       <div style={fieldStyle}>
         <label style={labelStyle}>
-          Usage Type <span style={{ color: "#dc2626" }}>*</span>
+          Usage Type <span style={REQ_MARK}>*</span>
         </label>
         <input
           style={{ ...inputStyle, borderColor: errors.usage_type ? "#dc2626" : "#e2e8f0" }}
@@ -137,7 +139,7 @@ export function UsedNewsForm({
 
       <div style={fieldStyle}>
         <label style={labelStyle}>
-          Target Module <span style={{ color: "#dc2626" }}>*</span>
+          Target Module <span style={REQ_MARK}>*</span>
         </label>
         <input
           style={{ ...inputStyle, borderColor: errors.target_module ? "#dc2626" : "#e2e8f0" }}

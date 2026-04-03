@@ -2,6 +2,19 @@
 
 ---
 
+## [2026-04-03] Phase 173 — Repeated Form Label Style Constant Pack
+
+**Ne:** Form bileşenlerindeki tekrar eden required-field span style bloklarını dosya-seviyesi const'lara taşıma.
+**Eklenen/değiştirilen dosyalar:**
+- `TemplateForm.tsx`: `REQ_MARK` eklendi, 3× `style={{ color: "#dc2626" }}` → `style={REQ_MARK}`
+- `UsedNewsForm.tsx`: `REQ_MARK` eklendi, 3× → `style={REQ_MARK}`
+- `docs/testing/test-report-phase-173-repeated-form-label-style-constant-pack.md` (yeni)
+**Atlanılan:** `StandardVideoForm.tsx` — 1× span + 2× farklı style nesnesi, threshold altı
+**Test:** 1587 toplam test, tsc temiz, vite build temiz
+**Dokunulmayan:** Görünüm, davranış, badge stilleri, backend
+
+---
+
 ## [2026-04-03] Phase 172 — Repeated Input/Textarea Style Constant Pack
 
 **Ne:** Form bileşenlerindeki tekrar eden textarea/input style bloklarını dosya-seviyesi const'lara taşıma.

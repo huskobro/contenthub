@@ -64,6 +64,8 @@ const JSON_TEXTAREA: React.CSSProperties = {
   fontSize: "0.8rem",
 };
 
+const REQ_MARK: React.CSSProperties = { color: "#dc2626" };
+
 const BTN_PRIMARY: React.CSSProperties = {
   padding: "0.375rem 1rem",
   fontSize: "0.875rem",
@@ -142,7 +144,7 @@ export function TemplateForm({
     <form onSubmit={handleSubmit} noValidate>
       <div style={fieldStyle}>
         <label style={labelStyle}>
-          Ad <span style={{ color: "#dc2626" }}>*</span>
+          Ad <span style={REQ_MARK}>*</span>
         </label>
         <input
           style={{ ...inputStyle, borderColor: errors.name ? "#dc2626" : BORDER_COLOR }}
@@ -155,7 +157,7 @@ export function TemplateForm({
 
       <div style={fieldStyle}>
         <label style={labelStyle}>
-          Template Type <span style={{ color: "#dc2626" }}>*</span>
+          Template Type <span style={REQ_MARK}>*</span>
         </label>
         <select style={inputStyle} value={values.template_type} onChange={(e) => set("template_type", e.target.value)}>
           <option value="style">style</option>
@@ -167,7 +169,7 @@ export function TemplateForm({
 
       <div style={fieldStyle}>
         <label style={labelStyle}>
-          Owner Scope <span style={{ color: "#dc2626" }}>*</span>
+          Owner Scope <span style={REQ_MARK}>*</span>
         </label>
         <select style={inputStyle} value={values.owner_scope} onChange={(e) => set("owner_scope", e.target.value)}>
           <option value="system">system</option>
