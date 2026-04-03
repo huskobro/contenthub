@@ -2,6 +2,16 @@
 
 ---
 
+## [2026-04-03] Phase 184 — Repeated Small Text Align Literal Constant Pack
+
+**Ne:** Tüm bileşenlerde tekrar eden `textAlign` literal'larının kapsamlı audit'i.
+**Sonuç:** Her dosyada max 1× — threshold altı. Dosya değişikliği yapılmadı.
+**Eklenen/değiştirilen dosyalar:**
+- `docs/testing/test-report-phase-184-repeated-small-text-align-literal-constant-pack.md` (yeni — audit belgesi)
+**Test:** 1587 toplam test, tsc temiz
+
+---
+
 ## [2026-04-03] Phase 183 — Repeated Small Font Weight Constant Pack
 
 **Ne:** Bileşenlerde tekrar eden `fontWeight` literal içeren th style object'lerini dosya-seviyesi const'lara taşıma.
