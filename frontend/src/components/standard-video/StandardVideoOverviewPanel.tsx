@@ -1,12 +1,14 @@
 import type { StandardVideoResponse } from "../../api/standardVideoApi";
 import { formatDuration } from "../../lib/formatDuration";
 import { formatDateTime } from "../../lib/formatDate";
+import { isBlank } from "../../lib/isBlank";
 
 interface Props {
   video: StandardVideoResponse;
 }
 
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
+  const display = typeof value === "string" && isBlank(value) ? "—" : (value ?? "—");
   return (
     <tr>
       <td
@@ -21,7 +23,7 @@ function Row({ label, value }: { label: string; value: React.ReactNode }) {
       >
         {label}
       </td>
-      <td style={{ padding: "0.375rem 0.75rem", fontSize: "0.875rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>{value ?? "—"}</td>
+      <td style={{ padding: "0.375rem 0.75rem", fontSize: "0.875rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>{display}</td>
     </tr>
   );
 }

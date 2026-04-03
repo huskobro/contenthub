@@ -3,6 +3,7 @@ import { useSourceDetail } from "../../hooks/useSourceDetail";
 import { useUpdateSource } from "../../hooks/useUpdateSource";
 import { SourceForm } from "./SourceForm";
 import { formatDateTime } from "../../lib/formatDate";
+import { isBlank } from "../../lib/isBlank";
 import type { SourceCreatePayload } from "../../api/sourcesApi";
 
 interface SourceDetailPanelProps {
@@ -10,11 +11,12 @@ interface SourceDetailPanelProps {
 }
 
 function Field({ label, value }: { label: string; value: string | null }) {
+  const blank = isBlank(value);
   return (
     <div style={{ marginBottom: "0.5rem" }}>
       <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "#64748b" }}>{label}: </span>
-      <span style={{ fontSize: "0.875rem", color: value ? "#1e293b" : "#94a3b8", wordBreak: "break-word", overflowWrap: "anywhere" }}>
-        {value ?? "—"}
+      <span style={{ fontSize: "0.875rem", color: blank ? "#94a3b8" : "#1e293b", wordBreak: "break-word", overflowWrap: "anywhere" }}>
+        {blank ? "—" : value}
       </span>
     </div>
   );
@@ -24,7 +26,7 @@ function UrlField({ label, value }: { label: string; value: string | null }) {
   return (
     <div style={{ marginBottom: "0.5rem" }}>
       <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "#64748b" }}>{label}: </span>
-      {value ? (
+      {!isBlank(value) ? (
         <span style={{
           fontSize: "0.8rem", color: "#1e40af",
           wordBreak: "break-all", overflowWrap: "anywhere", fontFamily: "monospace",
@@ -126,7 +128,7 @@ export function SourceDetailPanel({ sourceId }: SourceDetailPanelProps) {
         <UrlField label="API Endpoint" value={source.api_endpoint} />
       </div>
 
-      {source.notes && (
+      {!isBlank(source.notes) && (
         <div style={{ marginTop: "0.75rem", borderTop: "1px solid #f1f5f9", paddingTop: "0.75rem" }}>
           <Field label="Notes" value={source.notes} />
         </div>

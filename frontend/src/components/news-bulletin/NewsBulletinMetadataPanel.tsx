@@ -3,6 +3,7 @@ import { useNewsBulletinMetadata } from "../../hooks/useNewsBulletinMetadata";
 import { useCreateNewsBulletinMetadata } from "../../hooks/useCreateNewsBulletinMetadata";
 import { useUpdateNewsBulletinMetadata } from "../../hooks/useUpdateNewsBulletinMetadata";
 import { NewsBulletinMetadataForm } from "./NewsBulletinMetadataForm";
+import { isBlank } from "../../lib/isBlank";
 import type { MetadataFormValues } from "./NewsBulletinMetadataForm";
 
 interface Props {
@@ -159,7 +160,7 @@ export function NewsBulletinMetadataPanel({ bulletinId }: Props) {
               <td style={{ color: "#64748b", paddingRight: "1rem", paddingBottom: "0.25rem" }}>Durum</td>
               <td>{metadata.generation_status ?? "—"}</td>
             </tr>
-            {metadata.notes && (
+            {!isBlank(metadata.notes) && (
               <tr>
                 <td style={{ color: "#64748b", paddingRight: "1rem", paddingBottom: "0.25rem" }}>Notlar</td>
                 <td style={{ wordBreak: "break-word", overflowWrap: "anywhere" }}>{metadata.notes}</td>

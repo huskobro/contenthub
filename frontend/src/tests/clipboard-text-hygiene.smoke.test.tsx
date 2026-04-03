@@ -162,7 +162,7 @@ describe("No raw null/undefined text leaks in copyable panels", () => {
           // Check if this line is inside a conditional render block (e.g., {field && (...)}
           // by scanning back a few lines for the && guard
           const context = lines.slice(Math.max(0, i - 3), i + 1).join("\n");
-          const isGuarded = /\.\w+\s*&&\s*\(/.test(context);
+          const isGuarded = /\.\w+\s*&&\s*\(/.test(context) || /!isBlank\(/.test(context);
           if (!isGuarded) {
             throw new Error(
               `${file}:${i + 1} renders property without null fallback: ${line.trim()}`

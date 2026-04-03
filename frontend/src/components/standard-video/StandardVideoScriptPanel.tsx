@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { StandardVideoScriptResponse } from "../../api/standardVideoApi";
 import { StandardVideoScriptForm } from "./StandardVideoScriptForm";
 import type { ScriptFormValues } from "./StandardVideoScriptForm";
+import { isBlank } from "../../lib/isBlank";
 
 const PREVIEW_LIMIT = 400;
 
@@ -173,7 +174,7 @@ export function StandardVideoScriptPanel({
                 <td style={{ color: "#64748b", paddingRight: "1rem", paddingBottom: "0.25rem" }}>Durum</td>
                 <td style={{ paddingBottom: "0.25rem" }}>{script.generation_status ?? "—"}</td>
               </tr>
-              {script.notes && (
+              {!isBlank(script.notes) && (
                 <tr>
                   <td style={{ color: "#64748b", paddingRight: "1rem", paddingBottom: "0.25rem" }}>Notlar</td>
                   <td style={{ paddingBottom: "0.25rem" }}>{script.notes}</td>
@@ -193,8 +194,10 @@ export function StandardVideoScriptPanel({
               overflowWrap: "anywhere",
             }}
           >
-            {showFull || (script.content ?? "").length <= PREVIEW_LIMIT
-              ? (script.content ?? "—")
+            {isBlank(script.content)
+              ? "—"
+              : showFull || (script.content ?? "").length <= PREVIEW_LIMIT
+              ? script.content
               : (script.content ?? "").slice(0, PREVIEW_LIMIT) + "..."}
           </div>
           {(script.content ?? "").length > PREVIEW_LIMIT && (

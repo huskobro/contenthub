@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { StandardVideoMetadataResponse } from "../../api/standardVideoApi";
 import { StandardVideoMetadataForm } from "./StandardVideoMetadataForm";
 import type { MetadataFormValues } from "./StandardVideoMetadataForm";
+import { isBlank } from "../../lib/isBlank";
 
 interface Props {
   videoId: string;
@@ -270,7 +271,7 @@ export function StandardVideoMetadataPanel({
               <td style={{ color: "#64748b", paddingRight: "1rem", paddingBottom: "0.375rem", whiteSpace: "nowrap" }}>Durum</td>
               <td style={{ paddingBottom: "0.375rem" }}>{metadata.generation_status ?? "—"}</td>
             </tr>
-            {metadata.notes && (
+            {!isBlank(metadata.notes) && (
               <tr>
                 <td style={{ color: "#64748b", paddingRight: "1rem", paddingBottom: "0.375rem", whiteSpace: "nowrap", verticalAlign: "top" }}>Notlar</td>
                 <td style={{ paddingBottom: "0.375rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>{metadata.notes}</td>

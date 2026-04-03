@@ -2,6 +2,19 @@
 
 ---
 
+## [2026-04-03] Phase 155 — String Normalization & Whitespace Safety Pack
+
+**Ne:** String/whitespace render yüzeylerinde blank-aware fallback koruması. Shared `isBlank()` helper oluşturuldu. 4 detail panel Field, 1 overview Row, 1 UrlField, 7 conditional notes render, 3 script content display whitespace-safe hale getirildi.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/lib/isBlank.ts` (yeni — shared whitespace-aware blank check helper)
+- `frontend/src/tests/string-normalization-whitespace-safety.smoke.test.tsx` (yeni — 27 structural guard test)
+- 10 bileşen: isBlank guard eklendi
+- 2 mevcut test: isBlank pattern kabul güncellendi
+**Test:** 1587 toplam test (+27 yeni), tsc temiz, vite build temiz
+**Dokunulmayan:** Typography/padding redesign yok, agresif trim yok, backend yok, business logic yok
+
+---
+
 ## [2026-04-03] Phase 154 — Boolean / Toggle / Flag Render Safety Pack
 
 **Ne:** Boolean/toggle/flag render yüzeylerinde null/undefined tristate koruması. BoolBadge bileşenine `value == null` guard eklendi, 10+ mevcut boolean yüzey doğrulandı (zaten güvenli), 25 structural guard test yazıldı.

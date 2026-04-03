@@ -4,16 +4,18 @@ import { useUpdateNewsItem } from "../../hooks/useUpdateNewsItem";
 import { NewsItemForm } from "./NewsItemForm";
 import type { NewsItemFormValues } from "./NewsItemForm";
 import { formatDateTime } from "../../lib/formatDate";
+import { isBlank } from "../../lib/isBlank";
 
 interface Props {
   selectedId: string | null;
 }
 
 function Field({ label, value }: { label: string; value: React.ReactNode }) {
+  const display = typeof value === "string" && isBlank(value) ? "—" : (value ?? "—");
   return (
     <div style={{ marginBottom: "8px" }}>
       <span style={{ fontWeight: 600, marginRight: "8px", color: "#64748b", fontSize: "0.8125rem" }}>{label}:</span>
-      <span style={{ fontSize: "0.875rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>{value ?? "—"}</span>
+      <span style={{ fontSize: "0.875rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>{display}</span>
     </div>
   );
 }
@@ -97,7 +99,7 @@ export function NewsItemDetailPanel({ selectedId }: Props) {
       <Field label="Dil" value={data.language} />
       <Field label="Kategori" value={data.category} />
       <Field label="Yayınlanma" value={formatDateTime(data.published_at)} />
-      {data.summary && <Field label="Özet" value={data.summary} />}
+      {!isBlank(data.summary) && <Field label="Özet" value={data.summary} />}
       <Field label="Dedupe Key" value={data.dedupe_key} />
       <Field label="Created" value={formatDateTime(data.created_at)} />
       <Field label="Updated" value={formatDateTime(data.updated_at)} />

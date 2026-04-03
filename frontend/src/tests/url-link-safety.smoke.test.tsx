@@ -69,8 +69,8 @@ describe("UrlField safety", () => {
     const urlFieldFn = src.match(/function UrlField[\s\S]*?return[\s\S]*?<\/div>\s*\);?\s*\}/);
     expect(urlFieldFn).toBeTruthy();
     const code = urlFieldFn![0];
-    // Should check value before rendering
-    expect(code.includes("value ?") || code.includes("value?")).toBe(true);
+    // Should check value before rendering (either ternary or isBlank guard)
+    expect(code.includes("value ?") || code.includes("value?") || code.includes("!isBlank(value)")).toBe(true);
   });
 
   it("SourceDetailPanel UrlField has wordBreak overflow protection", () => {

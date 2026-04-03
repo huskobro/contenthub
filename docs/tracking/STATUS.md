@@ -1,10 +1,10 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 154 — Boolean / Toggle / Flag Render Safety Pack ✓ TAMAMLANDI
+Phase 155 — String Normalization & Whitespace Safety Pack ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-Boolean/toggle/flag render yüzeylerinde null/undefined tristate koruması. 2 BoolBadge fix, 25 yeni guard test. 1560 toplam test.
+String/whitespace render yüzeylerinde blank-aware fallback koruması. isBlank helper, 10 bileşen fix, 27 yeni guard test. 1587 toplam test.
 
 ## Devam Eden
 — (devam eden çalışma yok)

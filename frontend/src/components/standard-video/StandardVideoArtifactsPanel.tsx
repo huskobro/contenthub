@@ -2,6 +2,7 @@ import type {
   StandardVideoScriptResponse,
   StandardVideoMetadataResponse,
 } from "../../api/standardVideoApi";
+import { isBlank } from "../../lib/isBlank";
 
 interface Props {
   scriptLoading: boolean;
@@ -92,9 +93,11 @@ export function StandardVideoArtifactsPanel({
                   overflow: "hidden",
                 }}
               >
-                {(script.content ?? "").length > 300
+                {isBlank(script.content)
+                  ? "—"
+                  : (script.content ?? "").length > 300
                   ? (script.content ?? "").slice(0, 300) + "…"
-                  : (script.content ?? "—")}
+                  : script.content}
               </div>
             </div>
           </div>

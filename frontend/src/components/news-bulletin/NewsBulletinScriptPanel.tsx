@@ -3,6 +3,7 @@ import { useNewsBulletinScript } from "../../hooks/useNewsBulletinScript";
 import { useCreateNewsBulletinScript } from "../../hooks/useCreateNewsBulletinScript";
 import { useUpdateNewsBulletinScript } from "../../hooks/useUpdateNewsBulletinScript";
 import { NewsBulletinScriptForm } from "./NewsBulletinScriptForm";
+import { isBlank } from "../../lib/isBlank";
 import type { ScriptFormValues } from "./NewsBulletinScriptForm";
 
 interface Props {
@@ -131,7 +132,7 @@ export function NewsBulletinScriptPanel({ bulletinId }: Props) {
                 <td style={{ color: "#64748b", paddingRight: "1rem", paddingBottom: "0.25rem" }}>Durum</td>
                 <td>{script.generation_status ?? "—"}</td>
               </tr>
-              {script.notes && (
+              {!isBlank(script.notes) && (
                 <tr>
                   <td style={{ color: "#64748b", paddingRight: "1rem", paddingBottom: "0.25rem" }}>Notlar</td>
                   <td>{script.notes}</td>
@@ -140,8 +141,10 @@ export function NewsBulletinScriptPanel({ bulletinId }: Props) {
             </tbody>
           </table>
           <div style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: "4px", padding: "0.75rem", fontSize: "0.8125rem", whiteSpace: "pre-wrap", wordBreak: "break-word", overflowWrap: "anywhere" }}>
-            {showFull || (script.content ?? "").length <= PREVIEW_LIMIT
-              ? (script.content ?? "—")
+            {isBlank(script.content)
+              ? "—"
+              : showFull || (script.content ?? "").length <= PREVIEW_LIMIT
+              ? script.content
               : (script.content ?? "").slice(0, PREVIEW_LIMIT) + "..."}
           </div>
           {(script.content ?? "").length > PREVIEW_LIMIT && (

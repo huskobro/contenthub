@@ -4,6 +4,7 @@ import { useUpdateSourceScan } from "../../hooks/useUpdateSourceScan";
 import { SourceScanForm } from "./SourceScanForm";
 import type { SourceScanFormValues } from "./SourceScanForm";
 import { formatDateTime } from "../../lib/formatDate";
+import { isBlank } from "../../lib/isBlank";
 import { JsonPreviewField } from "../shared/JsonPreviewField";
 
 interface SourceScanDetailPanelProps {
@@ -11,11 +12,12 @@ interface SourceScanDetailPanelProps {
 }
 
 function Field({ label, value }: { label: string; value: string | number | null }) {
+  const isEmpty = value === null || value === undefined || (typeof value === "string" && isBlank(value));
   return (
     <div style={{ marginBottom: "0.5rem" }}>
       <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "#64748b" }}>{label}: </span>
-      <span style={{ fontSize: "0.875rem", color: value !== null && value !== undefined ? "#1e293b" : "#94a3b8", wordBreak: "break-word", overflowWrap: "anywhere" }}>
-        {value !== null && value !== undefined ? String(value) : "—"}
+      <span style={{ fontSize: "0.875rem", color: isEmpty ? "#94a3b8" : "#1e293b", wordBreak: "break-word", overflowWrap: "anywhere" }}>
+        {isEmpty ? "—" : String(value)}
       </span>
     </div>
   );
@@ -122,7 +124,7 @@ export function SourceScanDetailPanel({ scanId }: SourceScanDetailPanelProps) {
         <JsonPreviewField label="raw_result_preview_json" value={scan.raw_result_preview_json} />
       </div>
 
-      {scan.notes && (
+      {!isBlank(scan.notes) && (
         <div style={{ marginTop: "0.5rem", borderTop: "1px solid #f1f5f9", paddingTop: "0.5rem" }}>
           <Field label="Notes" value={scan.notes} />
         </div>
