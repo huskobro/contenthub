@@ -77,7 +77,7 @@ export function TemplateForm({
     module_scope: initial?.module_scope ?? "",
     description: initial?.description ?? "",
     status: initial?.status ?? "draft",
-    version: initial ? String(initial.version) : "1",
+    version: initial ? String(initial.version ?? 1) : "1",
     style_profile_json: initial?.style_profile_json ?? "",
     content_rules_json: initial?.content_rules_json ?? "",
     publish_profile_json: initial?.publish_profile_json ?? "",

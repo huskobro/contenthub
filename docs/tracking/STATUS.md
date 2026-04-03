@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 143 — Detail Panel Empty/Null State Safety Pack ✓ TAMAMLANDI
+Phase 144 — Form Surface Empty/Null State Safety Pack ✓ TAMAMLANDI
 
 ## Mevcut Hedef
-11 detail panel bileşeninde null/empty safety: 9 tarih güvenliği, 2 .slice() crash fix, 4 form handler .trim() null safety. Badge stilleri korundu. 1095 toplam test.
+14 form bileşeninde null/empty safety: 2 version null guard, 1 published_at String() coercion, 11 form zaten güvenli. 4 yeni guard test. Badge stilleri korundu. 1099 toplam test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 144: form surface empty null state safety pack: 2 version String(null) guard, 1 published_at String() coercion, 11 form zaten güvenli, 4 yeni guard test, badge stilleri korundu, 1099 toplam (2026-04-03)
 - Phase 143: detail panel empty null state safety pack: 9 panel tarih ternary guard, 2 Job panel .slice() crash fix, 4 form handler .trim() null coalescing (22 alan), 2 yeni guard test, badge stilleri korundu, 1095 toplam (2026-04-03)
 - Phase 142: registry empty null state safety pack: 9 tarih alanı Invalid Date koruması, Jobs created_at crash fix, 3 summary NaN guard, 2 string typeof guard, badge stilleri korundu, 1093 toplam (2026-04-03)
 - Phase 141: registry density overflow safety pack: overflow-x wrapper (9 tablo), Jobs header background/border/padding fix, StandardVideo header background fix, NewsBulletin fontSize fix, badge stilleri korundu, 1093 toplam (2026-04-03)

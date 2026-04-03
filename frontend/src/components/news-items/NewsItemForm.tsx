@@ -67,7 +67,7 @@ export function NewsItemForm({
     summary: initial?.summary ?? "",
     language: initial?.language ?? "",
     category: initial?.category ?? "",
-    published_at: initial?.published_at ? initial.published_at.slice(0, 16) : "",
+    published_at: initial?.published_at ? String(initial.published_at).slice(0, 16) : "",
     dedupe_key: initial?.dedupe_key ?? "",
   });
 

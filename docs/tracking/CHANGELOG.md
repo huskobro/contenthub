@@ -2,6 +2,20 @@
 
 ---
 
+## [2026-04-03] Phase 144 — Form Surface Empty/Null State Safety Pack
+
+**Ne:** 14 form bileşeninde null/undefined/empty state render ve input güvenliği denetimi ve güçlendirmesi.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/templates/TemplateForm.tsx` (version null guard: String(initial.version ?? 1))
+- `frontend/src/components/style-blueprints/StyleBlueprintForm.tsx` (version null guard: String(initial.version ?? 1))
+- `frontend/src/components/news-items/NewsItemForm.tsx` (published_at String() coercion)
+- `frontend/src/tests/form-null-safety.smoke.test.tsx` (yeni — 4 guard test)
+- `docs/testing/test-report-phase-144-form-surface-empty-null-state-safety-pack.md` (yeni)
+**Korunan:** Badge stilleri, form UX, validation kuralları, business logic. Bilgi kaybı sıfır.
+**Test:** 1099 toplam (+4 yeni), tsc temiz, build temiz.
+
+---
+
 ## [2026-04-03] Phase 143 — Detail Panel Empty/Null State Safety Pack
 
 **Ne:** 11 detail panel bileşeninde null/undefined/empty state render ve form handler güvenliği.

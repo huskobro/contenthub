@@ -75,7 +75,7 @@ export function StyleBlueprintForm({
     name: initial?.name ?? "",
     module_scope: initial?.module_scope ?? "",
     status: initial?.status ?? "draft",
-    version: initial ? String(initial.version) : "1",
+    version: initial ? String(initial.version ?? 1) : "1",
     visual_rules_json: initial?.visual_rules_json ?? "",
     motion_rules_json: initial?.motion_rules_json ?? "",
     layout_rules_json: initial?.layout_rules_json ?? "",
