@@ -4,6 +4,8 @@ import type {
 } from "../../api/standardVideoApi";
 import { isBlank } from "../../lib/isBlank";
 
+const FONT_SM = "0.875rem";
+
 interface Props {
   scriptLoading: boolean;
   scriptError: boolean;
@@ -30,7 +32,7 @@ function SectionCard({ title, children }: { title: string; children: React.React
           background: "#f8fafc",
           borderBottom: "1px solid #e2e8f0",
           fontWeight: 600,
-          fontSize: "0.875rem",
+          fontSize: FONT_SM,
         }}
       >
         {title}

@@ -2,6 +2,20 @@
 
 ---
 
+## [2026-04-03] Phase 182 — Repeated Small Font Size Literal Constant Pack
+
+**Ne:** Bileşenlerde tekrar eden `fontSize` literal'larını dosya-seviyesi const'lara taşıma.
+**Eklenen/değiştirilen dosyalar:**
+- `StandardVideoArtifactsPanel.tsx`: `FONT_SM = "0.875rem"` eklendi, 8× inline → const
+- `SourceScanDetailPanel.tsx`: `FONT_SM = "0.875rem"` eklendi, 3× inline → const
+- `SourceDetailPanel.tsx`: `FONT_SM = "0.875rem"` eklendi, 3× inline → const
+- `docs/testing/test-report-phase-182-repeated-small-font-size-literal-constant-pack.md` (yeni)
+**Atlanılan:** Form dosyaları (const tanımlarda — inline değil), diğerleri max 2× threshold altı
+**Test:** 1587 toplam test, tsc temiz, vite build temiz
+**Dokunulmayan:** Görünüm, davranış, badge stilleri, backend
+
+---
+
 ## [2026-04-03] Phase 181 — Repeated Small Border Radius Constant Pack
 
 **Ne:** Bileşenlerde tekrar eden `borderRadius` literal'larını dosya-seviyesi const'lara taşıma.

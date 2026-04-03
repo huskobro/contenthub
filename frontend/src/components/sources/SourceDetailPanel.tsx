@@ -6,6 +6,7 @@ import { formatDateTime } from "../../lib/formatDate";
 import { isBlank } from "../../lib/isBlank";
 import type { SourceCreatePayload } from "../../api/sourcesApi";
 
+const FONT_SM = "0.875rem";
 const LABEL_SPAN: React.CSSProperties = { fontSize: "0.75rem", fontWeight: 600, color: "#64748b" };
 const PANEL_BOX: React.CSSProperties = { padding: "1.25rem", border: "1px solid #e2e8f0", borderRadius: "6px", background: "#fff" };
 const SECTION_DIVIDER: React.CSSProperties = { marginTop: "0.75rem", borderTop: "1px solid #f1f5f9", paddingTop: "0.75rem" };
@@ -19,7 +20,7 @@ function Field({ label, value }: { label: string; value: string | null }) {
   return (
     <div style={{ marginBottom: "0.5rem" }}>
       <span style={LABEL_SPAN}>{label}: </span>
-      <span style={{ fontSize: "0.875rem", color: blank ? "#94a3b8" : "#1e293b", wordBreak: "break-word", overflowWrap: "anywhere" }}>
+      <span style={{ fontSize: FONT_SM, color: blank ? "#94a3b8" : "#1e293b", wordBreak: "break-word", overflowWrap: "anywhere" }}>
         {blank ? "—" : value}
       </span>
     </div>
@@ -38,7 +39,7 @@ function UrlField({ label, value }: { label: string; value: string | null }) {
           {value}
         </span>
       ) : (
-        <span style={{ fontSize: "0.875rem", color: "#94a3b8" }}>—</span>
+        <span style={{ fontSize: FONT_SM, color: "#94a3b8" }}>—</span>
       )}
     </div>
   );
@@ -59,7 +60,7 @@ export function SourceDetailPanel({ sourceId }: SourceDetailPanelProps) {
   if (!sourceId) {
     return (
       <div style={{
-        padding: "2rem", color: "#94a3b8", fontSize: "0.875rem",
+        padding: "2rem", color: "#94a3b8", fontSize: FONT_SM,
         textAlign: "center", border: "1px dashed #e2e8f0", borderRadius: "6px",
       }}>
         Bir source seçin.
