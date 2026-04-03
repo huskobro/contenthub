@@ -2,6 +2,16 @@
 
 ---
 
+## [2026-04-03] Phase 211 — Repeated Small Nullish-Coalescing Readability Pack
+
+**Ne:** Form/panel bileşenlerinde tekrar eden nullish-coalescing fallback pattern'larının kapsamlı audit'i.
+**Sonuç:** ?? "" 17 dosyada 4-9× kullanılıyor ama const extraction okunabilirliği artırmıyor. Dosya değişikliği yapılmadı.
+**Eklenen/değiştirilen dosyalar:**
+- `docs/testing/test-report-phase-211-repeated-small-nullish-coalescing-readability-pack.md` (yeni — audit belgesi)
+**Test:** 1587 toplam test, tsc temiz
+
+---
+
 ## [2026-04-03] Phase 210 — Repeated Small Loading/Error/Fallback Render Pattern Pack
 
 **Ne:** Panel/form bileşenlerinde tekrar eden loading/error/fallback render pattern'larının kapsamlı audit'i.
