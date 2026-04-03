@@ -86,9 +86,10 @@ export function PostOnboardingHandoff() {
 
       <h3 style={HEADING}>Ilk Iceriginizi Olusturun</h3>
       <p style={DESC}>
-        Kurulumunuz tamamlandi. Asagidaki seceneklerle ilk video iceriginizi
-        olusturabilir veya yonetim paneline giderek kaynak, sablon ve
-        diger ayarlari yonetebilirsiniz.
+        Kurulumunuz tamamlandi. Video uretimi ana icerik akisinizdir.
+        Asagidaki seceneklerle ilk standart video iceriginizi olusturabilir
+        veya yonetim paneline giderek kaynak, sablon ve diger ayarlari
+        yonetebilirsiniz.
       </p>
 
       <div style={ACTIONS}>

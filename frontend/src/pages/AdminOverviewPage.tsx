@@ -44,33 +44,39 @@ const CARD_DESC: React.CSSProperties = {
 const QUICK_LINKS = [
   {
     title: "Yeni Video Olustur",
-    desc: "Standart video icerigi uretmeye basla",
+    desc: "Ana uretim akisi: standart video icerigi olusturmaya basla",
     to: "/admin/standard-videos/new",
+    testId: "quick-link-new-video",
   },
   {
     title: "Kaynaklar",
     desc: "Haber kaynaklarini yonet ve tara",
     to: "/admin/sources",
+    testId: "quick-link-sources",
   },
   {
     title: "Sablonlar",
     desc: "Icerik ve stil sablonlarini duzenle",
     to: "/admin/templates",
+    testId: "quick-link-templates",
   },
   {
     title: "Isler",
     desc: "Uretim islerini takip et",
     to: "/admin/jobs",
+    testId: "quick-link-jobs",
   },
   {
     title: "Ayarlar",
     desc: "Sistem yapilandirmasini yonet",
     to: "/admin/settings",
+    testId: "quick-link-settings",
   },
   {
     title: "Haber Bultenleri",
     desc: "Bulten icerigi olustur ve yonet",
     to: "/admin/news-bulletins",
+    testId: "quick-link-news-bulletins",
   },
 ];
 
@@ -105,6 +111,7 @@ export function AdminOverviewPage() {
               role="button"
               tabIndex={0}
               onKeyDown={(e) => e.key === "Enter" && navigate(link.to)}
+              data-testid={link.testId}
             >
               <p style={CARD_TITLE}>{link.title}</p>
               <p style={CARD_DESC}>{link.desc}</p>

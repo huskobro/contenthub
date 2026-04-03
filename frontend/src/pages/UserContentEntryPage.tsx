@@ -93,7 +93,7 @@ const CONTENT_TYPES = [
     icon: "V",
     iconBg: "#2563eb",
     title: "Standart Video",
-    desc: "Konu, baslik ve icerik bilgilerini girerek yeni bir video icerigi olusturun. Uretim hattinda otomatik olarak islenir.",
+    desc: "Ana uretim akisi: konu, baslik ve icerik bilgilerini girerek standart video uretimini baslatin. Uretim hattinda otomatik olarak islenir.",
     cta: "Yeni Video Olustur",
     to: "/admin/standard-videos/new",
     testId: "content-entry-standard-video",

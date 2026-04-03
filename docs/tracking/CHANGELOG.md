@@ -2,6 +2,20 @@
 
 ---
 
+## [2026-04-03] Phase 268 — Video Workflow Entry Map
+
+**Ne:** Video uretim akisina giden mevcut giris noktalarindaki copy/aciklama netligi arttirildi. Content entry Standart Video karti, admin overview "Yeni Video Olustur" quick link ve PostOnboardingHandoff aciklamasina "Ana uretim akisi" / "Video uretimi ana icerik akisinizdir" vurgusu eklendi. Admin overview quick link kartlarina `data-testid` eklendi.
+**Sonuc:** Kullanici "video uretimine nereden baslarim?" sorusunu daha az soruyor. Dort ana giris noktasi (handoff, hub, content entry, admin quick access) video uretimini ana akis olarak konumlandiriyor.
+**Degistirilen dosyalar:**
+- `frontend/src/pages/UserContentEntryPage.tsx` (video kart desc)
+- `frontend/src/pages/AdminOverviewPage.tsx` (video quick link desc + tum quick link testid'ler)
+- `frontend/src/components/dashboard/PostOnboardingHandoff.tsx` (video uretimi vurgusu)
+**Eklenen dosyalar:**
+- `frontend/src/tests/video-workflow-entry-map.smoke.test.tsx` (11 yeni test)
+**Test:** 1806 toplam test (+11 yeni), tsc temiz, build temiz
+
+---
+
 ## [2026-04-03] Phase 264–267 — Navigation Closure Pack (ANA FAZ 2 KAPANIŞI)
 
 **Ne:** Ana Faz 2'nin kalan navigation bosluklari tek pakette kapatildi. Phase 264: content/publish subtitle'lara gorev zinciri pozisyonu eklendi ("ikinci adim" / "ucuncu adim"). Phase 265: admin overview subtitle fiil-odakli hale getirildi, SUBTITLE style maxWidth/margin ve CARD borderRadius/transition user ile hizalandi, quick access heading testid eklendi. Phase 266: tum navigation yuzeylerinde tutarlilik kontrol edildi, bariz bosluk bulunmadi. Phase 267: Ana Faz 2 resmi olarak kapatildi.
