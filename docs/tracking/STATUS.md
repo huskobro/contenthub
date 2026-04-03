@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 215 — Repeated Small disabled/busy Button Readability Pack ✓ TAMAMLANDI (audit-only)
+Phase 216 — Repeated Small title/subject/name Text Readability Pack ✓ TAMAMLANDI (audit-only)
 
 ## Mevcut Hedef
-disabled/busy button readability audit. disabled={isSubmitting} max 2× per dosya. Threshold altı. Hiçbir dosya değiştirilmedi. 1587 toplam test.
+title/label/name accessor audit. item.title ve item.label loop variable property access — dosya-seviyesi const uygunsuz, extraction değer katmıyor. Hiçbir dosya değiştirilmedi. 1587 toplam test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 216: repeated small title/subject/name text readability pack: kapsamlı audit, loop variable property access, dosya-seviyesi const uygunsuz, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 215: repeated small disabled/busy button readability pack: kapsamlı audit, threshold altı (max 2×), hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 214: repeated small edit/view mode readability pack: kapsamlı audit, threshold altı, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 213: repeated small boolean prop readability pack: 4 dosyada const isCreate eklendi, 12 satır değiştirildi, 1587 toplam (2026-04-03)

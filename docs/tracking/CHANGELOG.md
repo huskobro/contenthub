@@ -2,6 +2,16 @@
 
 ---
 
+## [2026-04-03] Phase 216 — Repeated Small title/subject/name Text Readability Pack
+
+**Ne:** Bileşenlerde tekrar eden item.title, item.label, item.name gibi text accessor pattern'larının kapsamlı audit'i.
+**Sonuç:** item.title (NewsItemsTable 7×, NewsItemPickerTable 3×) ve item.label (AppSidebar 3×) loop variable property access. Dosya-seviyesi const semantik olarak uygunsuz. Extraction değer katmıyor. Dosya değişikliği yapılmadı.
+**Eklenen dosyalar:**
+- `docs/testing/test-report-phase-216-repeated-small-title-subject-name-readability-pack.md` (yeni — audit belgesi)
+**Test:** 1587 toplam test, tsc temiz
+
+---
+
 ## [2026-04-03] Phase 215 — Repeated Small disabled/busy Button Readability Pack
 
 **Ne:** Form/panel bileşenlerinde tekrar eden disabled/busy button pattern'larının kapsamlı audit'i.
