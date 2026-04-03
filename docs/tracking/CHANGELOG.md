@@ -2,6 +2,27 @@
 
 ---
 
+## [2026-04-03] Phase 299–304 — Library / Gallery / Content Management Pack
+
+**Ne:** Library / gallery / content management omurgasi oturdu. Phase 299: ContentLibraryPage olusturuldu, AdminOverviewPage'e library quick link, sidebar'a Icerik Kutuphanesi linki, UserContentEntryPage'e library crosslink eklendi. Phase 300: Birlesik icerik listesi — standard video + news bulletin ayni tabloda, status badge, tarih siralamasi, bos durum mesaji. Phase 301: Filtre ve Arama section'i — search input, icerik turu select, durum select, siralama select (disabled, backend bekleniyor). Phase 302: StandardVideoRegistryPage heading "Standart Video Kayitlari" + testid + workflow note, StandardVideoDetailPage'e library back-link ve manage note eklendi. Phase 303: Icerik Yonetim Aksiyonlari section'i — duzenleme, yeniden kullanma, klonlama aksiyonlari gorunur. Phase 304: End-to-end dogrulama.
+**Sonuc:** Library / content management yuzeyler urun icinde baslatilabilir, anlasilir ve izlenebilir. Admin overview'dan giris, sidebar'dan navigasyon, birlesik icerik listesi, detay baglantisi ve yonetim aksiyonlari gorunur. Omurga oturdu; filtre etkinlestirme, klonlama API, gallery mod, bulk operations ileride.
+**Degistirilen dosyalar:**
+- `frontend/src/app/router.tsx` (library route)
+- `frontend/src/app/layouts/AdminLayout.tsx` (sidebar library link)
+- `frontend/src/pages/AdminOverviewPage.tsx` (library quick link)
+- `frontend/src/pages/admin/StandardVideoRegistryPage.tsx` (heading testid + workflow note)
+- `frontend/src/pages/admin/StandardVideoDetailPage.tsx` (library back-link + manage note)
+- `frontend/src/pages/UserContentEntryPage.tsx` (library crosslink)
+- `frontend/src/components/layout/AppSidebar.tsx` (duplicate key fix)
+- `frontend/src/tests/standard-video-registry.smoke.test.tsx` (heading referansi guncelleme)
+**Eklenen dosyalar:**
+- `frontend/src/pages/admin/ContentLibraryPage.tsx`
+- `frontend/src/tests/library-gallery-content-management-pack.smoke.test.tsx` (31 yeni test)
+- `docs/testing/test-report-phase-299-304-library-gallery-content-management-pack.md`
+**Test:** 1947 toplam test (+31 yeni), tsc temiz, build temiz
+
+---
+
 ## [2026-04-03] Phase 293–298 — YouTube Analytics Pack
 
 **Ne:** YouTube analytics omurgasi oturdu. Phase 293: AdminOverviewPage'e analytics quick link, AdminLayout sidebar'a Analytics section ve link, AnalyticsOverviewPage olusturuldu (heading, subtitle, workflow zinciri). Phase 294: Temel Metrikler section'i — 6 metrik karti (yayin sayisi, basarisiz yayin, is basari orani, ort. uretim suresi, retry orani, provider hata orani). Phase 295: AnalyticsContentPage — video performans tablosu, modul dagilimi, standard video referansi. Phase 296: Kanal Ozeti — 3 metrik karti (toplam icerik, aktif moduller, sablon etkisi), video-level/kanal-level ayrimi. Phase 297: Filtre ve Tarih Araligi — date inputlari, modul select, devre disi notu. Phase 298: AnalyticsOperationsPage — is performansi, provider sagligi, kaynak etkisi; end-to-end dogrulama.

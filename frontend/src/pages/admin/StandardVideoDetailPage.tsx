@@ -75,12 +75,19 @@ export function StandardVideoDetailPage() {
 
   return (
     <div>
-      <div style={{ marginBottom: "1rem" }}>
+      <div style={{ marginBottom: "1rem", display: "flex", gap: "1rem" }}>
         <Link
           to="/admin/standard-videos"
           style={{ fontSize: "0.875rem", color: "#3b82f6", textDecoration: "none" }}
         >
-          ← Standard Video listesine dön
+          ← Video listesine don
+        </Link>
+        <Link
+          to="/admin/library"
+          style={{ fontSize: "0.875rem", color: "#64748b", textDecoration: "none" }}
+          data-testid="sv-detail-library-link"
+        >
+          Kutuphanaye don
         </Link>
       </div>
 
@@ -119,6 +126,18 @@ export function StandardVideoDetailPage() {
         Uretim zinciri: Kayit → Script → Metadata → TTS → Altyazi → Kompozisyon.
         Asagidaki panellerden her adimi yonetebilirsiniz. Tum adimlar
         tamamlandiginda yayin sureci baslatilabilir.
+      </p>
+      <p
+        style={{
+          margin: "-1rem 0 1.5rem",
+          fontSize: "0.75rem",
+          color: "#cbd5e1",
+          maxWidth: "640px",
+        }}
+        data-testid="sv-detail-manage-note"
+      >
+        Bu kaydi duzenleyebilir veya bilgilerini referans alarak yeni bir icerik
+        olusturabilirsiniz. Klonlama ilerideki fazlarda eklenecektir.
       </p>
 
       {editMode ? (

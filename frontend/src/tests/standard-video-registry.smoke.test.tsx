@@ -69,7 +69,7 @@ beforeEach(() => {
 describe("Standard Video Registry smoke tests", () => {
   it("renders the page heading", () => {
     renderRegistry(mockFetch(MOCK_VIDEOS));
-    expect(screen.getByRole("heading", { name: "Standard Video Registry" })).toBeDefined();
+    expect(screen.getByRole("heading", { name: "Standart Video Kayitlari" })).toBeDefined();
   });
 
   it("shows loading state", () => {

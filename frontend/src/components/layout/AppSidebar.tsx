@@ -22,8 +22,8 @@ export function AppSidebar({ items }: AppSidebarProps) {
       }}
     >
       <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
-        {items.map((item) => (
-          <li key={item.label}>
+        {items.map((item, idx) => (
+          <li key={item.to ?? `section-${idx}`}>
             {item.section ? (
               <div
                 style={{

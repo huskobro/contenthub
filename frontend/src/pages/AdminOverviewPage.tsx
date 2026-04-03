@@ -43,6 +43,12 @@ const CARD_DESC: React.CSSProperties = {
 
 const QUICK_LINKS = [
   {
+    title: "Icerik Kutuphanesi",
+    desc: "Tum icerik kayitlarini tek yuzeyden goruntuleyip yonetin",
+    to: "/admin/library",
+    testId: "quick-link-library",
+  },
+  {
     title: "Yeni Video Olustur",
     desc: "Ana uretim akisi: standart video icerigi olusturmaya basla",
     to: "/admin/standard-videos/new",

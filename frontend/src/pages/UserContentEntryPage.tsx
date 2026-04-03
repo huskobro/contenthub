@@ -156,6 +156,14 @@ export function UserContentEntryPage() {
         >
           Yayin ekranina gecebilirsiniz
         </button>
+        . Mevcut iceriklerinizi goruntulemek icin{" "}
+        <button
+          style={CROSSLINK_BTN}
+          onClick={() => navigate("/admin/library")}
+          data-testid="content-to-library-crosslink"
+        >
+          Icerik Kutuphanesine gidin
+        </button>
         .
       </div>
     </div>
