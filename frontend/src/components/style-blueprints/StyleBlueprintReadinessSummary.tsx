@@ -31,7 +31,7 @@ export function computeStyleBlueprintReadiness(
     previewStrategyJson,
   ];
 
-  const filledCount = fields.filter((f) => f != null && f.trim() !== "").length;
+  const filledCount = fields.filter((f) => typeof f === "string" && f.trim() !== "").length;
 
   if (filledCount === 0) return "Başlangıç";
   if (filledCount === 1) return "Taslak";
@@ -68,7 +68,7 @@ export function StyleBlueprintReadinessSummary({
     thumbnailRulesJson,
     previewStrategyJson,
   ];
-  const filledCount = fields.filter((f) => f != null && f.trim() !== "").length;
+  const filledCount = fields.filter((f) => typeof f === "string" && f.trim() !== "").length;
   const detail = `${filledCount}/6 alan dolu`;
 
   return (

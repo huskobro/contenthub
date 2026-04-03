@@ -141,7 +141,7 @@ export function StyleBlueprintsTable({ blueprints, selectedId, onSelect }: Style
             </td>
             {/* Zaman */}
             <td style={{ padding: "0.5rem 0.75rem", color: "#94a3b8", fontSize: "0.8rem" }}>
-              {new Date(bp.created_at).toLocaleDateString()}
+              {bp.created_at ? new Date(bp.created_at).toLocaleDateString() : "—"}
             </td>
           </tr>
         ))}

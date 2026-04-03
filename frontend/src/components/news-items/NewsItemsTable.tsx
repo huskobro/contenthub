@@ -185,7 +185,7 @@ export function NewsItemsTable({ items, selectedId, onSelect }: Props) {
               </td>
               {/* Zaman */}
               <td style={{ padding: "0.5rem 0.75rem", color: "#94a3b8", fontSize: "0.8rem" }}>
-                {new Date(item.created_at).toLocaleDateString()}
+                {item.created_at ? new Date(item.created_at).toLocaleDateString() : "—"}
               </td>
             </tr>
           );

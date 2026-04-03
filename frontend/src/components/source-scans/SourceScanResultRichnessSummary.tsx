@@ -42,7 +42,7 @@ export function SourceScanResultRichnessSummary({
     <div style={{ display: "flex", flexDirection: "column", gap: "0.2rem" }}>
       <SourceScanResultRichnessBadge level={level} />
       <span style={{ fontSize: "0.7rem", color: "#94a3b8" }}>
-        {resultCount != null ? `${resultCount} sonuç` : "sonuç bilinmiyor"}
+        {resultCount != null && !isNaN(resultCount) && isFinite(resultCount) ? `${resultCount} sonuç` : "sonuç bilinmiyor"}
       </span>
     </div>
   );

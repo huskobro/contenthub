@@ -29,9 +29,13 @@ function buildDetail(
   selectedNewsCount: number | null | undefined,
 ): string | undefined {
   if (!selectedNewsCount || selectedNewsCount <= 0) return undefined;
-  const complete = completeCount ?? 0;
-  const partial = partialCount ?? 0;
-  const weak = weakCount ?? 0;
+  const safeCount = (n: number | null | undefined): number => {
+    const v = n ?? 0;
+    return typeof v === "number" && !isNaN(v) && isFinite(v) ? v : 0;
+  };
+  const complete = safeCount(completeCount);
+  const partial = safeCount(partialCount);
+  const weak = safeCount(weakCount);
   const parts: string[] = [];
   if (complete > 0) parts.push(`${complete} güçlü`);
   if (partial > 0) parts.push(`${partial} kısmi`);

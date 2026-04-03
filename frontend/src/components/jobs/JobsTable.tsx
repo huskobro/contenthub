@@ -141,7 +141,7 @@ export function JobsTable({ jobs, selectedId, onSelect }: JobsTableProps) {
             </td>
             {/* Zaman */}
             <td style={{ padding: "0.5rem 0.75rem", fontSize: "0.8125rem", color: "#64748b" }}>
-              {j.created_at.slice(0, 19).replace("T", " ")}
+              {j.created_at ? j.created_at.slice(0, 19).replace("T", " ") : "—"}
             </td>
           </tr>
         ))}

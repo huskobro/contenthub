@@ -127,7 +127,7 @@ export function UsedNewsTable({ records, selectedId, onSelect }: Props) {
             </td>
             {/* Zaman */}
             <td style={{ padding: "0.5rem 0.75rem", color: "#94a3b8", fontSize: "0.8rem" }}>
-              {new Date(record.created_at).toLocaleDateString()}
+              {record.created_at ? new Date(record.created_at).toLocaleDateString() : "—"}
             </td>
           </tr>
         ))}

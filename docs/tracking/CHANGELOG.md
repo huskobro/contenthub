@@ -2,6 +2,29 @@
 
 ---
 
+## [2026-04-03] Phase 142 — Registry Empty/Null State Safety Pack
+
+**Ne:** 9 registry tablosu ve summary bileşenlerinde null/undefined/empty state render güvenliği.
+**Eklenen/değiştirilen dosyalar:**
+- `frontend/src/components/jobs/JobsTable.tsx` (created_at null crash guard)
+- `frontend/src/components/source-scans/SourceScansTable.tsx` (created_at Invalid Date guard)
+- `frontend/src/components/news-items/NewsItemsTable.tsx` (created_at Invalid Date guard)
+- `frontend/src/components/used-news/UsedNewsTable.tsx` (created_at Invalid Date guard)
+- `frontend/src/components/style-blueprints/StyleBlueprintsTable.tsx` (created_at Invalid Date guard)
+- `frontend/src/components/standard-video/StandardVideosTable.tsx` (created_at Invalid Date guard)
+- `frontend/src/components/news-bulletin/NewsBulletinsTable.tsx` (created_at Invalid Date guard)
+- `frontend/src/components/template-style-links/TemplateStyleLinksTable.tsx` (created_at Invalid Date guard)
+- `frontend/src/components/news-bulletin/NewsBulletinSelectedItemsPanel.tsx` (created_at Invalid Date guard)
+- `frontend/src/components/news-bulletin/NewsBulletinSelectedNewsQualitySummary.tsx` (NaN/Infinity count guard)
+- `frontend/src/components/news-bulletin/NewsBulletinSourceCoverageSummary.tsx` (NaN count guard)
+- `frontend/src/components/source-scans/SourceScanResultRichnessSummary.tsx` (NaN/Infinity count guard)
+- `frontend/src/components/style-blueprints/StyleBlueprintReadinessSummary.tsx` (typeof string guard)
+- `docs/testing/test-report-phase-142-registry-empty-null-state-safety-pack.md` (yeni)
+**Korunan:** Badge stilleri, summary mantığı, tüm sütunlar, business logic. Bilgi kaybı sıfır.
+**Test:** 1093 toplam, tsc temiz.
+
+---
+
 ## [2026-04-03] Phase 141 — Registry Density & Overflow Safety Pack
 
 **Ne:** 9 registry tablosunda yoğunluk ve taşma güvenliği standardizasyonu.

@@ -83,7 +83,7 @@ export function TemplateStyleLinksTable({
               />
             </td>
             <td style={{ padding: "0.5rem 0.75rem", color: "#64748b", fontSize: "0.8rem" }}>
-              {new Date(link.created_at).toLocaleDateString()}
+              {link.created_at ? new Date(link.created_at).toLocaleDateString() : "—"}
             </td>
           </tr>
         ))}

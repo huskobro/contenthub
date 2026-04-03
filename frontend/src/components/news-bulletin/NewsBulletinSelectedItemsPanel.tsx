@@ -170,7 +170,7 @@ export function NewsBulletinSelectedItemsPanel({ bulletinId }: Props) {
                   )}
                 </td>
                 <td style={{ padding: "0.25rem 0.5rem", color: "#94a3b8" }}>
-                  {new Date(item.created_at).toLocaleDateString()}
+                  {item.created_at ? new Date(item.created_at).toLocaleDateString() : "—"}
                 </td>
                 <td style={{ padding: "0.25rem 0.5rem" }}>
                   <button

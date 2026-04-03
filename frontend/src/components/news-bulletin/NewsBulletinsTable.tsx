@@ -156,7 +156,7 @@ export function NewsBulletinsTable({ bulletins, selectedId, onSelect }: Props) {
             </td>
             {/* Zaman */}
             <td style={{ padding: "0.5rem 0.75rem", color: "#94a3b8" }}>
-              {new Date(b.created_at).toLocaleDateString()}
+              {b.created_at ? new Date(b.created_at).toLocaleDateString() : "—"}
             </td>
           </tr>
         ))}

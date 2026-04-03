@@ -146,7 +146,7 @@ export function SourceScansTable({ scans, selectedId, onSelect }: SourceScansTab
               </td>
               {/* Zaman */}
               <td style={{ padding: "0.5rem 0.75rem", color: "#94a3b8", fontSize: "0.8rem" }}>
-                {new Date(scan.created_at).toLocaleDateString()}
+                {scan.created_at ? new Date(scan.created_at).toLocaleDateString() : "—"}
               </td>
             </tr>
           );

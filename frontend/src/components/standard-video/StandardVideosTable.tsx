@@ -142,7 +142,7 @@ export function StandardVideosTable({ videos, selectedId, onSelect }: Props) {
             </td>
             {/* Zaman */}
             <td style={{ padding: "0.5rem 0.75rem", color: "#94a3b8" }}>
-              {new Date(v.created_at).toLocaleString("tr-TR")}
+              {v.created_at ? new Date(v.created_at).toLocaleString("tr-TR") : "—"}
             </td>
           </tr>
         ))}

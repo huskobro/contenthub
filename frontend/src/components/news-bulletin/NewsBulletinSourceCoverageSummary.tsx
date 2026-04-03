@@ -28,7 +28,7 @@ export function NewsBulletinSourceCoverageSummary({
   const level = computeNewsBulletinSourceCoverage(selectedNewsCount, selectedNewsSourceCount, hasMissingSource);
 
   const detail =
-    (selectedNewsSourceCount ?? 0) > 0
+    (selectedNewsSourceCount ?? 0) > 0 && !isNaN(selectedNewsSourceCount ?? 0)
       ? `${selectedNewsSourceCount} kaynak${hasMissingSource ? " • eksik var" : ""}`
       : selectedNewsCount && selectedNewsCount > 0
       ? "kaynak bilgisi yok"
