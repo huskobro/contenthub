@@ -2,6 +2,17 @@
 
 ---
 
+## [2026-04-03] Phase 168 — Repeated Action Button Text Constant Pack
+
+**Ne:** Form ve panel bileşenlerindeki tekrar eden action button text literal'ları kapsamlı audit ile tarandı.
+**Sonuç:** Threshold 3+ sağlanamadı. Tüm dosyalarda max 2 tekrar. Dosya değişikliği yapılmadı.
+**Eklenen/değiştirilen dosyalar:**
+- `docs/testing/test-report-phase-168-repeated-action-button-text-constant-pack.md` (yeni — audit belgesi)
+**Test:** 1587 toplam test, tsc temiz, vite build temiz
+**Dokunulmayan:** Tüm bileşen dosyaları — hiçbiri değiştirilmedi
+
+---
+
 ## [2026-04-03] Phase 167 — Repeated Form Button Style Constant Pack
 
 **Ne:** Form bileşenlerindeki save/cancel button inline style bloklarını dosya-seviyesi BTN_PRIMARY + BTN_CANCEL const'larına taşıma. İki pattern grubu: küçük (0.375rem) ve büyük (0.5rem) butonlar.
