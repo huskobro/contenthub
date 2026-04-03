@@ -1,7 +1,17 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 194 — Repeated Small Helper Function Name/Const Readability Pack ✓ TAMAMLANDI
+Phase 195 — Repeated Small Border Literal Constant Pack ✓ TAMAMLANDI
+
+## Mevcut Hedef
+Border literal audit. BORDER = "1px solid #e2e8f0" (3 dosya: TemplateStyleLinkDetailPanel×3, TemplateDetailPanel×3, StandardVideoArtifactsPanel×3). 1587 toplam test.
+
+## Devam Eden
+— (devam eden çalışma yok)
+
+## Son Tamamlananlar
+- Phase 195: repeated small border literal constant pack: BORDER extraction (3 dosya, toplam 9 değişim), 1587 toplam (2026-04-03)
+- Phase 194 — Repeated Small Helper Function Name/Const Readability Pack ✓ TAMAMLANDI
 
 ## Mevcut Hedef
 Const/helper sıralama ve yerleşim audit. StandardVideoScriptPanel primitive→style sırası düzeltildi, TemplateForm REQ_MARK errorStyle yanına taşındı. 1587 toplam test.

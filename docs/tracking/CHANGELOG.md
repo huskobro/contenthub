@@ -2,6 +2,20 @@
 
 ---
 
+## [2026-04-03] Phase 195 — Repeated Small Border Literal Constant Pack
+
+**Ne:** Bileşenlerde tekrar eden border literal değerlerini dosya-seviyesi const'lara taşıma.
+**Eklenen/değiştirilen dosyalar:**
+- `TemplateStyleLinkDetailPanel.tsx`: `BORDER = "1px solid #e2e8f0"` eklendi, 3× inline → const
+- `TemplateDetailPanel.tsx`: `BORDER = "1px solid #e2e8f0"` eklendi, 3× (PANEL_BOX + 2 inline) → const
+- `StandardVideoArtifactsPanel.tsx`: `BORDER = "1px solid #e2e8f0"` eklendi, 3× inline → const
+- `docs/testing/test-report-phase-195-repeated-small-border-literal-constant-pack.md` (yeni)
+**Atlanılan:** Diğer dosyalar threshold altı
+**Test:** 1587 toplam test, tsc temiz, vite build temiz
+**Dokunulmayan:** Görünüm, davranış, badge stilleri, backend
+
+---
+
 ## [2026-04-03] Phase 194 — Repeated Small Helper Function Name/Const Readability Pack
 
 **Ne:** Son fazlarda çok const eklenen bileşenlerde const/helper sıralama ve yerleşim iyileştirmesi.

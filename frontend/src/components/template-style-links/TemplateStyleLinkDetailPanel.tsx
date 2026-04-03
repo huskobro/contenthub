@@ -7,6 +7,7 @@ import type { TemplateStyleLinkFormValues } from "./TemplateStyleLinkForm";
 
 const RADIUS_SM = "6px";
 const COLOR_DARK = "#1e293b";
+const BORDER = "1px solid #e2e8f0";
 
 interface TemplateStyleLinkDetailPanelProps {
   linkId: string | null;
@@ -64,7 +65,7 @@ export function TemplateStyleLinkDetailPanel({ linkId }: TemplateStyleLinkDetail
     }
 
     return (
-      <div style={{ padding: "1.25rem", border: "1px solid #e2e8f0", borderRadius: RADIUS_SM, background: "#fff" }}>
+      <div style={{ padding: "1.25rem", border: BORDER, borderRadius: RADIUS_SM, background: "#fff" }}>
         <h3 style={{ margin: "0 0 1rem", fontSize: "1rem", color: COLOR_DARK }}>Link Düzenle</h3>
         <TemplateStyleLinkForm
           mode="edit"
@@ -80,7 +81,7 @@ export function TemplateStyleLinkDetailPanel({ linkId }: TemplateStyleLinkDetail
   }
 
   return (
-    <div style={{ padding: "1.25rem", border: "1px solid #e2e8f0", borderRadius: RADIUS_SM, background: "#fff" }}>
+    <div style={{ padding: "1.25rem", border: BORDER, borderRadius: RADIUS_SM, background: "#fff" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
         <h3 style={{ margin: 0, fontSize: "1rem", color: COLOR_DARK }}>Template Style Link Detayı</h3>
         <button
@@ -90,7 +91,7 @@ export function TemplateStyleLinkDetailPanel({ linkId }: TemplateStyleLinkDetail
             fontSize: "0.8rem",
             background: "#f1f5f9",
             color: "#475569",
-            border: "1px solid #e2e8f0",
+            border: BORDER,
             borderRadius: "4px",
             cursor: "pointer",
           }}

@@ -5,6 +5,7 @@ import type {
 import { isBlank } from "../../lib/isBlank";
 
 const FONT_SM = "0.875rem";
+const BORDER = "1px solid #e2e8f0";
 
 interface Props {
   scriptLoading: boolean;
@@ -19,7 +20,7 @@ function SectionCard({ title, children }: { title: string; children: React.React
   return (
     <div
       style={{
-        border: "1px solid #e2e8f0",
+        border: BORDER,
         borderRadius: "6px",
         background: "#fff",
         marginBottom: "1.25rem",
@@ -30,7 +31,7 @@ function SectionCard({ title, children }: { title: string; children: React.React
         style={{
           padding: "0.625rem 0.75rem",
           background: "#f8fafc",
-          borderBottom: "1px solid #e2e8f0",
+          borderBottom: BORDER,
           fontWeight: 600,
           fontSize: FONT_SM,
         }}
@@ -83,7 +84,7 @@ export function StandardVideoArtifactsPanel({
               <div
                 style={{
                   background: "#f8fafc",
-                  border: "1px solid #e2e8f0",
+                  border: BORDER,
                   borderRadius: "4px",
                   padding: "0.5rem 0.75rem",
                   fontSize: "0.8125rem",

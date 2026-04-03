@@ -8,7 +8,8 @@ import { isBlank } from "../../lib/isBlank";
 import { JsonPreviewField } from "../shared/JsonPreviewField";
 
 const COLOR_DARK = "#1e293b";
-const PANEL_BOX: React.CSSProperties = { padding: "1.25rem", border: "1px solid #e2e8f0", borderRadius: "6px", background: "#fff" };
+const BORDER = "1px solid #e2e8f0";
+const PANEL_BOX: React.CSSProperties = { padding: "1.25rem", border: BORDER, borderRadius: "6px", background: "#fff" };
 const SECTION_DIVIDER: React.CSSProperties = { marginTop: "0.75rem", borderTop: "1px solid #f1f5f9", paddingTop: "0.75rem" };
 
 interface TemplateDetailPanelProps {
@@ -111,7 +112,7 @@ export function TemplateDetailPanel({ templateId }: TemplateDetailPanelProps) {
     <div
       style={{
         padding: "1.25rem",
-        border: "1px solid #e2e8f0",
+        border: BORDER,
         borderRadius: "6px",
         background: "#fff",
       }}
@@ -125,7 +126,7 @@ export function TemplateDetailPanel({ templateId }: TemplateDetailPanelProps) {
             fontSize: "0.8rem",
             background: "#f1f5f9",
             color: "#475569",
-            border: "1px solid #e2e8f0",
+            border: BORDER,
             borderRadius: "4px",
             cursor: "pointer",
           }}
