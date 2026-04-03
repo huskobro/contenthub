@@ -2,6 +2,18 @@
 
 ---
 
+## [2026-04-03] Phase 185 — Repeated Small Cursor/Pointer Style Constant Pack
+
+**Ne:** Bileşenlerde tekrar eden `cursor: "pointer"` literal'larını dosya-seviyesi const'lara taşıma.
+**Eklenen/değiştirilen dosyalar:**
+- `StandardVideoScriptPanel.tsx`: `CURSOR_PTR = "pointer"` eklendi, 3× inline → const
+- `docs/testing/test-report-phase-185-repeated-small-cursor-pointer-style-constant-pack.md` (yeni)
+**Atlanılan:** Form dosyaları (2× ternary içinde, threshold altı), MetadataPanel (2× threshold altı)
+**Test:** 1587 toplam test, tsc temiz, vite build temiz
+**Dokunulmayan:** Görünüm, davranış, badge stilleri, backend
+
+---
+
 ## [2026-04-03] Phase 184 — Repeated Small Text Align Literal Constant Pack
 
 **Ne:** Tüm bileşenlerde tekrar eden `textAlign` literal'larının kapsamlı audit'i.

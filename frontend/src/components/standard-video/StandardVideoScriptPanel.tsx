@@ -10,6 +10,7 @@ const LABEL_TD: React.CSSProperties = { color: "#64748b", paddingRight: "1rem", 
 const SECTION_STYLE: React.CSSProperties = { border: "1px solid #e2e8f0", borderRadius: "6px", padding: "1rem", marginBottom: "1.25rem" };
 const FORM_HEADING: React.CSSProperties = { margin: "0 0 1rem", fontSize: "0.9375rem", fontWeight: 600 };
 const RADIUS_XS = "4px";
+const CURSOR_PTR = "pointer";
 
 interface Props {
   videoId: string;
@@ -130,7 +131,7 @@ export function StandardVideoScriptPanel({
               color: "#3b82f6",
               border: "1px solid #3b82f6",
               borderRadius: RADIUS_XS,
-              cursor: "pointer",
+              cursor: CURSOR_PTR,
             }}
           >
             Düzenle
@@ -145,7 +146,7 @@ export function StandardVideoScriptPanel({
               color: "#fff",
               border: "none",
               borderRadius: RADIUS_XS,
-              cursor: "pointer",
+              cursor: CURSOR_PTR,
             }}
           >
             + Script Ekle
@@ -208,7 +209,7 @@ export function StandardVideoScriptPanel({
                 background: "none",
                 border: "none",
                 color: "#3b82f6",
-                cursor: "pointer",
+                cursor: CURSOR_PTR,
                 padding: 0,
               }}
             >
