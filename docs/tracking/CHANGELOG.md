@@ -2,6 +2,16 @@
 
 ---
 
+## [2026-04-03] Phase 207 — Repeated Small Inline Number Formatting Constant Pack
+
+**Ne:** Bileşenlerde tekrar eden inline number formatting pattern'larının kapsamlı audit'i.
+**Sonuç:** ?? 0 ve Number() pattern'ları farklı argümanlarla kullanılıyor — const extraction okunabilirliği artırmıyor. Dosya değişikliği yapılmadı.
+**Eklenen/değiştirilen dosyalar:**
+- `docs/testing/test-report-phase-207-repeated-small-inline-number-formatting-constant-pack.md` (yeni — audit belgesi)
+**Test:** 1587 toplam test, tsc temiz
+
+---
+
 ## [2026-04-03] Phase 206 — Repeated Small Boolean/Ternary Label Text Constant Pack
 
 **Ne:** Bileşenlerde tekrar eden boolean/ternary label text literal değerlerinin kapsamlı audit'i.

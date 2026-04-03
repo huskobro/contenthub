@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 206 — Repeated Small Boolean/Ternary Label Text Constant Pack ✓ TAMAMLANDI (audit-only)
+Phase 207 — Repeated Small Inline Number Formatting Constant Pack ✓ TAMAMLANDI (audit-only)
 
 ## Mevcut Hedef
-boolean/ternary label text audit. Hiçbir dosyada aynı label 3+ kez tekrarlanmıyor. Hiçbir dosya değiştirilmedi. 1587 toplam test.
+inline number formatting audit. ?? 0 ve Number() pattern'ları farklı argümanlarla — extraction okunabilirliği artırmıyor. Hiçbir dosya değiştirilmedi. 1587 toplam test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 207: repeated small inline number formatting constant pack: kapsamlı audit, extraction değer katmıyor, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 206: repeated small boolean/ternary label text constant pack: kapsamlı audit, threshold karşılanmadı, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 205: repeated small list/marker/bullet text constant pack: kapsamlı audit, threshold karşılanmadı, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 204: repeated small position/zIndex literal constant pack: kapsamlı audit, kullanım yok, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
