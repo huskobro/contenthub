@@ -2,6 +2,16 @@
 
 ---
 
+## [2026-04-03] Phase 177 — Repeated Small Panel Meta Text Constant Pack
+
+**Ne:** Tüm detail/overview/panel bileşenlerinde tekrar eden muted/meta text inline style bloklarının kapsamlı audit'i.
+**Sonuç:** Aynı dosya içinde threshold 3+ sağlayan yeni dosya bulunamadı. SettingDetailPanel ve VisibilityRuleDetailPanel zaten MUTED const'a sahip. Kalan dosyalarda max 2× inline. Dosya değişikliği yapılmadı.
+**Eklenen/değiştirilen dosyalar:**
+- `docs/testing/test-report-phase-177-repeated-small-panel-meta-text-constant-pack.md` (yeni — audit belgesi)
+**Test:** 1587 toplam test, tsc temiz
+
+---
+
 ## [2026-04-03] Phase 176 — Repeated Small Form Help Text Style Constant Pack
 
 **Ne:** Tüm form ve panel bileşenlerinde tekrar eden help text / muted text inline style bloklarının kapsamlı audit'i.

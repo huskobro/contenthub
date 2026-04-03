@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 176 — Repeated Small Form Help Text Style Constant Pack ✓ TAMAMLANDI (audit-only)
+Phase 177 — Repeated Small Panel Meta Text Constant Pack ✓ TAMAMLANDI (audit-only)
 
 ## Mevcut Hedef
-Tüm form ve panel bileşenlerinde tekrar eden help text / muted text style pattern audit. Threshold 3+ sağlayan yeni dosya bulunamadı. 1587 toplam test.
+Tüm detail/overview/panel bileşenlerinde tekrar eden muted/meta text style pattern audit. Threshold 3+ sağlayan yeni dosya bulunamadı. 1587 toplam test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 177: repeated small panel meta text constant pack: kapsamlı audit, threshold altı (max 2× per dosya), hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 176: repeated small form help text style constant pack: kapsamlı audit, threshold altı (max 2× per dosya), hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 175: repeated small panel divider constant pack: kapsamlı audit, threshold altı (max 1× per dosya), hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 174: repeated required mark constant pack: kapsamlı audit, threshold altı (max 2 tekrar kalan dosyalarda), hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
