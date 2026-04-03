@@ -20,3 +20,24 @@ export async function completeOnboarding(): Promise<OnboardingStatusResponse> {
   }
   return res.json();
 }
+
+export interface SetupRequirementItem {
+  key: string;
+  title: string;
+  description: string;
+  status: "completed" | "missing";
+  detail: string | null;
+}
+
+export interface SetupRequirementsResponse {
+  all_completed: boolean;
+  requirements: SetupRequirementItem[];
+}
+
+export async function fetchSetupRequirements(): Promise<SetupRequirementsResponse> {
+  const res = await fetch(`${BASE_URL}/requirements`);
+  if (!res.ok) {
+    throw new Error(`Failed to fetch setup requirements: ${res.status}`);
+  }
+  return res.json();
+}

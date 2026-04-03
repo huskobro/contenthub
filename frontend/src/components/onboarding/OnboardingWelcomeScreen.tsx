@@ -132,14 +132,22 @@ const FEATURES_DATA = [
   },
 ];
 
-export function OnboardingWelcomeScreen() {
+interface WelcomeProps {
+  onNext?: () => void;
+}
+
+export function OnboardingWelcomeScreen({ onNext }: WelcomeProps = {}) {
   const navigate = useNavigate();
   const completeMutation = useCompleteOnboarding();
 
   function handleStart() {
-    completeMutation.mutate(undefined, {
-      onSuccess: () => navigate("/user"),
-    });
+    if (onNext) {
+      onNext();
+    } else {
+      completeMutation.mutate(undefined, {
+        onSuccess: () => navigate("/user"),
+      });
+    }
   }
 
   function handleSkip() {

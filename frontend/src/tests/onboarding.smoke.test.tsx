@@ -1,8 +1,10 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { OnboardingWelcomeScreen } from "../components/onboarding/OnboardingWelcomeScreen";
+import { OnboardingRequirementsScreen } from "../components/onboarding/OnboardingRequirementsScreen";
+import { OnboardingPage } from "../pages/OnboardingPage";
 import { AppEntryGate } from "../app/AppEntryGate";
 
 function mockFetch(data: unknown) {
@@ -12,7 +14,25 @@ function mockFetch(data: unknown) {
   }) as unknown as typeof window.fetch;
 }
 
-function renderWelcome() {
+const MOCK_REQUIREMENTS = {
+  all_completed: false,
+  requirements: [
+    { key: "sources", title: "Haber Kaynagi Ekle", description: "En az bir kaynak ekleyin.", status: "completed", detail: "3 aktif kaynak" },
+    { key: "templates", title: "Sablon Olustur", description: "En az bir sablon olusturun.", status: "missing", detail: null },
+    { key: "settings", title: "Sistem Ayarlari", description: "Ayarlari yapilandirin.", status: "missing", detail: null },
+  ],
+};
+
+const MOCK_REQUIREMENTS_ALL_DONE = {
+  all_completed: true,
+  requirements: [
+    { key: "sources", title: "Haber Kaynagi Ekle", description: "desc", status: "completed", detail: "3 aktif kaynak" },
+    { key: "templates", title: "Sablon Olustur", description: "desc", status: "completed", detail: "2 aktif sablon" },
+    { key: "settings", title: "Sistem Ayarlari", description: "desc", status: "completed", detail: "10 ayar" },
+  ],
+};
+
+function wrap(element: React.ReactElement) {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   });
@@ -20,7 +40,8 @@ function renderWelcome() {
     <QueryClientProvider client={queryClient}>
       <MemoryRouter initialEntries={["/onboarding"]}>
         <Routes>
-          <Route path="/onboarding" element={<OnboardingWelcomeScreen />} />
+          <Route path="/onboarding" element={element} />
+          <Route path="/user" element={<div data-testid="user-dashboard">User</div>} />
         </Routes>
       </MemoryRouter>
     </QueryClientProvider>
@@ -52,13 +73,13 @@ beforeEach(() => {
 describe("OnboardingWelcomeScreen", () => {
   it("renders the welcome heading", () => {
     window.fetch = mockFetch({ onboarding_required: true, completed_at: null });
-    renderWelcome();
+    wrap(<OnboardingWelcomeScreen />);
     expect(screen.getByText("ContentHub'a Hosgeldiniz")).toBeDefined();
   });
 
   it("renders all three feature cards", () => {
     window.fetch = mockFetch({ onboarding_required: true, completed_at: null });
-    renderWelcome();
+    wrap(<OnboardingWelcomeScreen />);
     expect(screen.getByText("Modular Content Production")).toBeDefined();
     expect(screen.getByText("Full Operations Visibility")).toBeDefined();
     expect(screen.getByText("Publish & Analyze")).toBeDefined();
@@ -66,14 +87,68 @@ describe("OnboardingWelcomeScreen", () => {
 
   it("renders the primary CTA button", () => {
     window.fetch = mockFetch({ onboarding_required: true, completed_at: null });
-    renderWelcome();
+    wrap(<OnboardingWelcomeScreen />);
     expect(screen.getByText("Kurulumu Baslat")).toBeDefined();
   });
 
   it("renders the skip button", () => {
     window.fetch = mockFetch({ onboarding_required: true, completed_at: null });
-    renderWelcome();
+    wrap(<OnboardingWelcomeScreen />);
     expect(screen.getByText("Simdilik Atla")).toBeDefined();
+  });
+});
+
+describe("OnboardingRequirementsScreen", () => {
+  it("renders requirement items", async () => {
+    window.fetch = mockFetch(MOCK_REQUIREMENTS);
+    wrap(<OnboardingRequirementsScreen />);
+    expect(await screen.findByText("Haber Kaynagi Ekle")).toBeDefined();
+    expect(screen.getByText("Sablon Olustur")).toBeDefined();
+    expect(screen.getByText("Sistem Ayarlari")).toBeDefined();
+  });
+
+  it("shows completed count", async () => {
+    window.fetch = mockFetch(MOCK_REQUIREMENTS);
+    wrap(<OnboardingRequirementsScreen />);
+    expect(await screen.findByText(/1\/3 tamamlandi/)).toBeDefined();
+  });
+
+  it("shows detail for completed items", async () => {
+    window.fetch = mockFetch(MOCK_REQUIREMENTS);
+    wrap(<OnboardingRequirementsScreen />);
+    expect(await screen.findByText("3 aktif kaynak")).toBeDefined();
+  });
+
+  it("shows Kurulumu Tamamla when all done", async () => {
+    window.fetch = mockFetch(MOCK_REQUIREMENTS_ALL_DONE);
+    wrap(<OnboardingRequirementsScreen />);
+    expect(await screen.findByText("Kurulumu Tamamla")).toBeDefined();
+  });
+
+  it("shows Devam Et when not all done", async () => {
+    window.fetch = mockFetch(MOCK_REQUIREMENTS);
+    wrap(<OnboardingRequirementsScreen />);
+    expect(await screen.findByText("Devam Et")).toBeDefined();
+  });
+});
+
+describe("OnboardingPage step flow", () => {
+  it("starts with welcome and transitions to requirements on CTA click", async () => {
+    window.fetch = mockFetch(MOCK_REQUIREMENTS);
+    wrap(<OnboardingPage />);
+    expect(screen.getByText("ContentHub'a Hosgeldiniz")).toBeDefined();
+    fireEvent.click(screen.getByText("Kurulumu Baslat"));
+    expect(await screen.findByText("Kurulum Durumu")).toBeDefined();
+    expect(screen.getByText("Haber Kaynagi Ekle")).toBeDefined();
+  });
+
+  it("can go back from requirements to welcome", async () => {
+    window.fetch = mockFetch(MOCK_REQUIREMENTS);
+    wrap(<OnboardingPage />);
+    fireEvent.click(screen.getByText("Kurulumu Baslat"));
+    expect(await screen.findByText("Kurulum Durumu")).toBeDefined();
+    fireEvent.click(screen.getByText("Geri Don"));
+    expect(screen.getByText("ContentHub'a Hosgeldiniz")).toBeDefined();
   });
 });
 

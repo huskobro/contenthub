@@ -2,6 +2,24 @@
 
 ---
 
+## [2026-04-03] Phase 237 — Onboarding Setup Requirements Screen
+
+**Ne:** Onboarding akisinda welcome screen'den sonra gelen setup requirements ekrani. Backend `GET /onboarding/requirements` endpoint'i gercek domain verisine dayanarak 3 zorunlu kurulum maddesini kontrol ediyor (sources, templates, settings). Frontend requirements ekrani checklist seklinde gosteriyor.
+**Sonuc:** Welcome → Requirements step akisi kuruldu. Tamamlanmis maddeler yesil, eksik maddeler sari gorunuyor. Tum maddeler tamam ise "Kurulumu Tamamla", degilse "Devam Et" CTA gosteriliyor.
+**Eklenen dosyalar:**
+- `frontend/src/components/onboarding/OnboardingRequirementsScreen.tsx` (yeni)
+- `frontend/src/hooks/useSetupRequirements.ts` (yeni)
+- `docs/testing/test-report-phase-237-onboarding-setup-requirements-screen.md` (yeni)
+**Degistirilen dosyalar:**
+- `backend/app/onboarding/schemas.py`, `service.py`, `router.py` (requirements endpoint)
+- `frontend/src/api/onboardingApi.ts` (requirements API)
+- `frontend/src/components/onboarding/OnboardingWelcomeScreen.tsx` (onNext prop)
+- `frontend/src/pages/OnboardingPage.tsx` (step state yonetimi)
+- `frontend/src/tests/onboarding.smoke.test.tsx` (+7 yeni test, toplam 14)
+**Test:** 1601 toplam test (+7 yeni), tsc temiz, build temiz
+
+---
+
 ## [2026-04-03] Phase 236 — Onboarding App Entry Gate & Welcome Screen
 
 **Ne:** Ürün ana fazı: onboarding entry gate ve welcome screen. Backend onboarding API (app_state tablosu kullanarak), frontend entry gate component, profesyonel welcome screen, route wiring.

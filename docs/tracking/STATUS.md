@@ -1,10 +1,10 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 236 — Onboarding App Entry Gate & Welcome Screen ✓ TAMAMLANDI (feature)
+Phase 237 — Onboarding Setup Requirements Screen ✓ TAMAMLANDI (feature)
 
 ## Mevcut Hedef
-Onboarding entry gate ve welcome screen eklendi. Backend onboarding API (app_state tablosu), frontend entry gate, welcome screen, 7 yeni test. 1594 toplam test.
+Onboarding requirements ekrani eklendi. Backend requirements endpoint (gercek domain verisi), welcome → requirements step akisi, 7 yeni test. 1601 toplam test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
@@ -15,6 +15,7 @@ Onboarding entry gate ve welcome screen eklendi. Backend onboarding API (app_sta
 - **ANA FAZ BAŞLADI:** Wizard / Onboarding (ürün geliştirme hattı)
 
 ## Son Tamamlananlar
+- Phase 237: onboarding setup requirements screen — backend requirements endpoint, frontend requirements ekrani, welcome→requirements akisi, 7 yeni test, 1601 toplam (2026-04-03)
 - Phase 236: onboarding app entry gate & welcome screen — backend API, frontend gate, welcome screen, 7 test, 1594 toplam (2026-04-03)
 - Phase 235: hygiene closure & product pivot gate — kapanış doğrulaması, baseline stabil, 1587 toplam (2026-04-03)
 - Phase 234: repeated small detail field/row call-site readability pack: audit-only, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
