@@ -1,10 +1,10 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 259 — User Panel Section Transition Clarity Pass ✓ TAMAMLANDI (feature)
+Phase 260 — User Panel Route Landing Consistency Pass ✓ TAMAMLANDI (feature)
 
 ## Mevcut Hedef
-Section'lar arasi akis duygusu guclendirildi: "once icerik, sonra yayin" mantigi hub/content/publish yuzeylerinde gorunur. 1737 toplam test.
+Uc user route arasinda heading/subtitle/card/note yapisal tutarlilik hizalandi. SUBTITLE margin/maxWidth/style, CARD transition tutarli. 1749 toplam test.
 
 ## Devam Eden
 — (devam eden calisma yok)
@@ -15,6 +15,7 @@ Section'lar arasi akis duygusu guclendirildi: "once icerik, sonra yayin" mantigi
 - **ANA FAZ BAŞLADI:** Wizard / Onboarding (ürün geliştirme hattı)
 
 ## Son Tamamlananlar
+- Phase 260: user panel route landing consistency — SUBTITLE margin/maxWidth hizalama, CARD transition ekleme, 12 yeni test, 1749 toplam (2026-04-03)
 - Phase 259: user panel section transition clarity — hub akis aciklamasi, "Ilk adim/Sonraki adim" kart desc, content→yayin ve yayin←icerik referanslari, 8 yeni test, 1737 toplam (2026-04-03)
 - Phase 258: user panel navigation state clarity — section kimlikleri (Baslangic/Icerik uretim/Yayin dagitim merkezi), subtitle stili tutarliligi, typo fix, 9 yeni test, 1729 toplam (2026-04-03)
 - Phase 257: cross-surface CTA consistency pass — handoff/hub CTA dili hizalandi, "Yeni Icerik Olustur"→"Yeni Video Olustur", "Panele Git"→"Yonetim Paneline Git", 1720 toplam (2026-04-03)

@@ -5,6 +5,7 @@ const SUBTITLE: React.CSSProperties = {
   fontSize: "0.9375rem",
   color: "#475569",
   lineHeight: 1.6,
+  maxWidth: "720px",
 };
 
 const GRID: React.CSSProperties = {

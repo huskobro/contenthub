@@ -2,6 +2,20 @@
 
 ---
 
+## [2026-04-03] Phase 260 — User Panel Route Landing Consistency Pass
+
+**Ne:** Uc user route (/user, /user/content, /user/publish) arasindaki yapisal tutarlilik hizalandi. Dashboard SUBTITLE margin "0 0 1.25rem"→"0 0 1.5rem" (content/publish ile esit). Publish CARD style'a `transition: "border-color 0.15s"` eklendi (content ile esit). Content SUBTITLE'a `maxWidth: "720px"` eklendi (zaten baslangicta yapilmisti). Her route'un landing yapisini dogrulayan 12 yeni test eklendi.
+**Sonuc:** Uc user yuzeyi style tutarliligini koruyor. Heading → subtitle → cards → note sirasi her route'da esit. CARD hover animasyonu content/publish arasindan farki kalkmis.
+**Degistirilen dosyalar:**
+- `frontend/src/pages/UserDashboardPage.tsx` (SUBTITLE margin)
+- `frontend/src/pages/UserPublishEntryPage.tsx` (CARD transition)
+- `frontend/src/pages/UserContentEntryPage.tsx` (SUBTITLE maxWidth)
+**Eklenen dosyalar:**
+- `frontend/src/tests/user-route-landing-consistency.smoke.test.tsx` (12 yeni test)
+**Test:** 1749 toplam test (+12 yeni), tsc temiz, build temiz
+
+---
+
 ## [2026-04-03] Phase 259 — User Panel Section Transition Clarity Pass
 
 **Ne:** User panel section'lari arasindaki gecis duygusunu guclendiren copy iyilestirmeleri yapildi. Dashboard action hub aciklamasi akis sirasi veriyor: "Once icerik olusturun, ardindan yayin surecini takip edin." Hub kartlarinda "Ilk adim" (Icerik) ve "Sonraki adim" (Yayin) vurgusu eklendi. Content subtitle'a "Tamamlanan icerikler Yayin ekraninda takip edilebilir" referansi, publish subtitle'a "Icerik ekraninda olusturulan" kaynak referansi eklendi.

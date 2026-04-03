@@ -21,6 +21,7 @@ const CARD: React.CSSProperties = {
   border: "1px solid #e2e8f0",
   borderRadius: "10px",
   cursor: "pointer",
+  transition: "border-color 0.15s",
 };
 
 const CARD_ICON: React.CSSProperties = {

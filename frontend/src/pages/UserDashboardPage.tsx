@@ -3,7 +3,7 @@ import { PostOnboardingHandoff } from "../components/dashboard/PostOnboardingHan
 import { DashboardActionHub } from "../components/dashboard/DashboardActionHub";
 
 const SUBTITLE: React.CSSProperties = {
-  margin: "0 0 1.25rem",
+  margin: "0 0 1.5rem",
   fontSize: "0.9375rem",
   color: "#475569",
   lineHeight: 1.6,
