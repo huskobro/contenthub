@@ -2,6 +2,17 @@
 
 ---
 
+## [2026-04-03] Phase 169 — Repeated Form Section Heading Constant Pack
+
+**Ne:** Form ve panel bileşenlerindeki tekrar eden section heading metin ve style bloklarının audit'i.
+**Sonuç:** Threshold 3+ sağlanamadı. NewsBulletin panel h4'leri 2×, detail panel h3'leri 1× per dosya. Dosya değişikliği yapılmadı.
+**Eklenen/değiştirilen dosyalar:**
+- `docs/testing/test-report-phase-169-repeated-form-section-heading-constant-pack.md` (yeni — audit belgesi)
+**Test:** 1587 toplam test, tsc temiz, vite build temiz
+**Dokunulmayan:** Tüm bileşen dosyaları
+
+---
+
 ## [2026-04-03] Phase 168 — Repeated Action Button Text Constant Pack
 
 **Ne:** Form ve panel bileşenlerindeki tekrar eden action button text literal'ları kapsamlı audit ile tarandı.
