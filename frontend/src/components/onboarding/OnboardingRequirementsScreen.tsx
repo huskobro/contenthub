@@ -1,5 +1,4 @@
 import { useSetupRequirements } from "../../hooks/useSetupRequirements";
-import { useCompleteOnboarding } from "../../hooks/useCompleteOnboarding";
 import { useNavigate } from "react-router-dom";
 import type { SetupRequirementItem } from "../../api/onboardingApi";
 
@@ -175,18 +174,12 @@ interface Props {
   onSourceSetup?: () => void;
   onTemplateSetup?: () => void;
   onSettingsSetup?: () => void;
+  onComplete?: () => void;
 }
 
-export function OnboardingRequirementsScreen({ onBack, onSourceSetup, onTemplateSetup, onSettingsSetup }: Props) {
+export function OnboardingRequirementsScreen({ onBack, onSourceSetup, onTemplateSetup, onSettingsSetup, onComplete }: Props) {
   const { data, isLoading, isError } = useSetupRequirements();
-  const completeMutation = useCompleteOnboarding();
   const navigate = useNavigate();
-
-  function handleContinue() {
-    completeMutation.mutate(undefined, {
-      onSuccess: () => navigate("/user"),
-    });
-  }
 
   if (isLoading) {
     return (
@@ -252,10 +245,9 @@ export function OnboardingRequirementsScreen({ onBack, onSourceSetup, onTemplate
         {data.all_completed ? (
           <button
             style={PRIMARY_BTN}
-            onClick={handleContinue}
-            disabled={completeMutation.isPending}
+            onClick={onComplete ?? (() => navigate("/user"))}
           >
-            {completeMutation.isPending ? "Hazirlaniyor..." : "Kurulumu Tamamla"}
+            Kurulumu Tamamla
           </button>
         ) : (
           <button style={PRIMARY_BTN} onClick={() => navigate("/user")}>

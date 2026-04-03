@@ -2,6 +2,21 @@
 
 ---
 
+## [2026-04-03] Phase 241 — Onboarding Completion Gate & Continue to App Flow
+
+**Ne:** Onboarding wizard'inin tamamlanma ekrani eklendi. Tum requirements tamamlandiginda kullaniciya "Kurulum Tamamlandi" ekrani gosteriliyor. Completion screen otomatik olarak `POST /onboarding/complete` cagiriyor ve "Uygulamaya Basla" CTA ile normal uygulama akisina yonlendiriyor.
+**Sonuc:** Onboarding wizard'inin ilk calisir versiyonu tamamlandi: Welcome → Requirements (source/template/settings aksiyonlari) → Completion → Uygulamaya Gecis. Requirements screen'den `useCompleteOnboarding` dependency kaldirildi, completion screen'e tasindi.
+**Eklenen dosyalar:**
+- `frontend/src/components/onboarding/OnboardingCompletionScreen.tsx` (yeni)
+- `docs/testing/test-report-phase-241-onboarding-completion-gate-and-continue-flow.md` (yeni)
+**Degistirilen dosyalar:**
+- `frontend/src/components/onboarding/OnboardingRequirementsScreen.tsx` (onComplete prop, useCompleteOnboarding kaldirildi)
+- `frontend/src/pages/OnboardingPage.tsx` (completion step, 6 adimli akis)
+- `frontend/src/tests/onboarding.smoke.test.tsx` (+7 yeni test, toplam 42)
+**Test:** 1629 toplam test (+7 yeni), tsc temiz, build temiz
+
+---
+
 ## [2026-04-03] Phase 240 — Onboarding Settings Setup Required Action
 
 **Ne:** Onboarding requirements ekranindaki son eksik "Sistem Ayarlari" maddesine "Ayar Ekle" aksiyon butonu eklendi. Onboarding icinde minimal sistem ayari ekleme formu olusturuldu. `createSetting` API fonksiyonu ve `useCreateSetting` hook'u eklendi (mevcut admin panelinde settings create formu yoktu).

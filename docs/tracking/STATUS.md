@@ -1,10 +1,10 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 240 — Onboarding Settings Setup Required Action ✓ TAMAMLANDI (feature)
+Phase 241 — Onboarding Completion Gate & Continue to App Flow ✓ TAMAMLANDI (feature)
 
 ## Mevcut Hedef
-Onboarding requirements ekraninda uc zorunlu requirement'in ucunde de aksiyon butonu calisiyor (source + template + settings). 1622 toplam test.
+Onboarding wizard'inin ilk calisir versiyonu tamamlandi. Welcome → Requirements (3 aksiyon) → Completion → Uygulamaya Gecis zinciri calisiyor. 1629 toplam test.
 
 ## Devam Eden
 — (devam eden calisma yok)
@@ -15,6 +15,7 @@ Onboarding requirements ekraninda uc zorunlu requirement'in ucunde de aksiyon bu
 - **ANA FAZ BAŞLADI:** Wizard / Onboarding (ürün geliştirme hattı)
 
 ## Son Tamamlananlar
+- Phase 241: onboarding completion gate & continue flow — completion ekrani, requirements→completion→uygulamaya gecis zinciri, 7 yeni test, 1629 toplam (2026-04-03)
 - Phase 240: onboarding settings setup required action — requirements ekraninda ayar aksiyonu, OnboardingSettingsSetupScreen, createSetting API+hook, 7 yeni test, 1622 toplam (2026-04-03)
 - Phase 239: onboarding template setup required action — requirements ekraninda sablon aksiyonu, OnboardingTemplateSetupScreen, mevcut TemplateForm tekrar kullanimi, 7 yeni test, 1615 toplam (2026-04-03)
 - Phase 238: onboarding source setup first required action — requirements ekraninda kaynak aksiyonu, OnboardingSourceSetupScreen, mevcut SourceForm tekrar kullanimi, 7 yeni test, 1608 toplam (2026-04-03)

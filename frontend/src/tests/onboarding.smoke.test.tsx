@@ -7,6 +7,7 @@ import { OnboardingRequirementsScreen } from "../components/onboarding/Onboardin
 import { OnboardingSourceSetupScreen } from "../components/onboarding/OnboardingSourceSetupScreen";
 import { OnboardingTemplateSetupScreen } from "../components/onboarding/OnboardingTemplateSetupScreen";
 import { OnboardingSettingsSetupScreen } from "../components/onboarding/OnboardingSettingsSetupScreen";
+import { OnboardingCompletionScreen } from "../components/onboarding/OnboardingCompletionScreen";
 import { OnboardingPage } from "../pages/OnboardingPage";
 import { AppEntryGate } from "../app/AppEntryGate";
 
@@ -352,6 +353,69 @@ describe("OnboardingPage settings-setup flow", () => {
     fireEvent.click(btn);
     await screen.findByText("Ayari Kaydet");
     fireEvent.click(screen.getByText("Iptal"));
+    expect(await screen.findByText("Kurulum Durumu")).toBeDefined();
+  });
+});
+
+describe("OnboardingCompletionScreen", () => {
+  it("renders completion heading", () => {
+    window.fetch = mockFetch({});
+    wrap(<OnboardingCompletionScreen />);
+    expect(screen.getByText("Kurulum Tamamlandi")).toBeDefined();
+  });
+
+  it("renders Uygulamaya Basla CTA", () => {
+    window.fetch = mockFetch({});
+    wrap(<OnboardingCompletionScreen />);
+    expect(screen.getByText("Uygulamaya Basla")).toBeDefined();
+  });
+
+  it("renders three checklist items", () => {
+    window.fetch = mockFetch({});
+    wrap(<OnboardingCompletionScreen />);
+    expect(screen.getByText("Haber kaynaklari yapilandirildi")).toBeDefined();
+    expect(screen.getByText("Sablonlar olusturuldu")).toBeDefined();
+    expect(screen.getByText("Sistem ayarlari tanimlandi")).toBeDefined();
+  });
+
+  it("renders back button when onBack is provided", () => {
+    window.fetch = mockFetch({});
+    const onBack = vi.fn();
+    wrap(<OnboardingCompletionScreen onBack={onBack} />);
+    const btn = screen.getByText("Gereksinimleri Gozden Gecir");
+    expect(btn).toBeDefined();
+    fireEvent.click(btn);
+    expect(onBack).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("OnboardingPage completion flow", () => {
+  it("shows completion screen when all requirements done and Kurulumu Tamamla clicked", async () => {
+    window.fetch = mockFetch(MOCK_REQUIREMENTS_ALL_DONE);
+    wrap(<OnboardingPage />);
+    fireEvent.click(screen.getByText("Kurulumu Baslat"));
+    const btn = await screen.findByText("Kurulumu Tamamla");
+    fireEvent.click(btn);
+    expect(await screen.findByText("Kurulum Tamamlandi")).toBeDefined();
+    expect(screen.getByText("Uygulamaya Basla")).toBeDefined();
+  });
+
+  it("does not show completion when requirements are not all done", async () => {
+    window.fetch = mockFetch(MOCK_REQUIREMENTS);
+    wrap(<OnboardingPage />);
+    fireEvent.click(screen.getByText("Kurulumu Baslat"));
+    await screen.findByText("Devam Et");
+    expect(screen.queryByText("Kurulum Tamamlandi")).toBeNull();
+  });
+
+  it("can go back from completion to requirements", async () => {
+    window.fetch = mockFetch(MOCK_REQUIREMENTS_ALL_DONE);
+    wrap(<OnboardingPage />);
+    fireEvent.click(screen.getByText("Kurulumu Baslat"));
+    const btn = await screen.findByText("Kurulumu Tamamla");
+    fireEvent.click(btn);
+    await screen.findByText("Kurulum Tamamlandi");
+    fireEvent.click(screen.getByText("Gereksinimleri Gozden Gecir"));
     expect(await screen.findByText("Kurulum Durumu")).toBeDefined();
   });
 });
