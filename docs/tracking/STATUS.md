@@ -1,7 +1,17 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 196 — Repeated textTransform/letterSpacing Literal Constant Pack ✓ TAMAMLANDI (audit-only)
+Phase 197 — Repeated Opacity Literal Constant Pack ✓ TAMAMLANDI (audit-only)
+
+## Mevcut Hedef
+opacity literal audit. Hiçbir dosyada 3+ kullanım yok. Hiçbir dosya değiştirilmedi. 1587 toplam test.
+
+## Devam Eden
+— (devam eden çalışma yok)
+
+## Son Tamamlananlar
+- Phase 197: repeated opacity literal constant pack: kapsamlı audit, kullanım yok/threshold altı, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
+- Phase 196 — Repeated textTransform/letterSpacing Literal Constant Pack ✓ TAMAMLANDI (audit-only)
 
 ## Mevcut Hedef
 textTransform/letterSpacing literal audit. Bu property'ler codebase'de kullanılmıyor. Hiçbir dosya değiştirilmedi. 1587 toplam test.

@@ -2,6 +2,16 @@
 
 ---
 
+## [2026-04-03] Phase 197 — Repeated Opacity Literal Constant Pack
+
+**Ne:** Bileşenlerde tekrar eden opacity literal değerlerinin kapsamlı audit'i.
+**Sonuç:** Hiçbir dosyada 3+ opacity kullanımı yok. Dosya değişikliği yapılmadı.
+**Eklenen/değiştirilen dosyalar:**
+- `docs/testing/test-report-phase-197-repeated-opacity-literal-constant-pack.md` (yeni — audit belgesi)
+**Test:** 1587 toplam test, tsc temiz
+
+---
+
 ## [2026-04-03] Phase 196 — Repeated textTransform/letterSpacing Literal Constant Pack
 
 **Ne:** Bileşenlerde tekrar eden textTransform/letterSpacing literal değerlerinin kapsamlı audit'i.
