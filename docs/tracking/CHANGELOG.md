@@ -2,6 +2,29 @@
 
 ---
 
+## [2026-04-03] Phase 282–286 — Template / Style / Blueprint Pack
+
+**Ne:** Template / Style / Blueprint sistemi omurgasi oturdu. Phase 282: Admin overview quick link, templates/style blueprints/links registry heading'leri, workflow note'lari ve button copy'leri guncellendi. Phase 283: Template create page'e workflow subtitle eklendi, detail panele workflow note eklendi. Phase 284: Style blueprint create'e farkli rolunu anlatan subtitle eklendi, detail panele gorsel/yapisal kural notu eklendi. Phase 285: Template-style link create'e baglanti amacini anlatan subtitle eklendi, detail panele workflow note eklendi. Phase 286: End-to-end dogrulama — tum giris noktalari, registry, create, detail panelleri calisiyor.
+**Sonuc:** Template/Style/Blueprint sistemi urun icinde baslatilabilir, anlasilir ve izlenebilir. Admin overview'dan giris, sidebar'dan navigasyon, create ekranlarinda workflow rolu, detail panellerinde uretim hattindaki yeri gorunur. Omurga oturdu; preview-first UX, AI-assisted style variants, version locking ve analytics ileride.
+**Degistirilen dosyalar:**
+- `frontend/src/pages/admin/TemplateCreatePage.tsx` (heading testid + workflow subtitle)
+- `frontend/src/pages/admin/TemplatesRegistryPage.tsx` (heading testid + workflow note + button)
+- `frontend/src/pages/admin/StyleBlueprintCreatePage.tsx` (heading testid + workflow subtitle)
+- `frontend/src/pages/admin/StyleBlueprintsRegistryPage.tsx` (heading testid + workflow note + button)
+- `frontend/src/pages/admin/TemplateStyleLinkCreatePage.tsx` (heading testid + workflow subtitle)
+- `frontend/src/pages/admin/TemplateStyleLinksRegistryPage.tsx` (heading testid + workflow note + button)
+- `frontend/src/pages/AdminOverviewPage.tsx` (templates quick link desc)
+- `frontend/src/components/templates/TemplateDetailPanel.tsx` (heading testid + workflow note)
+- `frontend/src/components/style-blueprints/StyleBlueprintDetailPanel.tsx` (heading testid + workflow note)
+- `frontend/src/components/template-style-links/TemplateStyleLinkDetailPanel.tsx` (heading testid + workflow note)
+- 6 mevcut test dosyasi (testid + button guncelleme)
+**Eklenen dosyalar:**
+- `frontend/src/tests/template-style-blueprint-pack.smoke.test.tsx` (23 yeni test)
+- `docs/testing/test-report-phase-282-286-template-style-blueprint-pack.md`
+**Test:** 1861 toplam test (+23 yeni), tsc temiz, build temiz
+
+---
+
 ## [2026-04-03] Phase 276–281 — News Workflow Pack
 
 **Ne:** News workflow omurgasi oturdu. Phase 276: Giris noktalarinda (user content entry, admin quick access, post-onboarding handoff) haber bulteni "ikinci uretim akisi" olarak konumlandirildi. Create page'e workflow intro subtitle ve zincir aciklamasi eklendi. Registry page heading ve workflow notu guncellendi. Phase 277: Workflow zinciri (Kaynak Tarama → Haber Secimi → Bulten Kaydi → Script → Metadata → Uretim) create ve detail yuzeylerinde gorunur kilindi. Phase 278: Selected items paneline kurasyon notu eklendi. Phase 279: Script paneline generation notu eklendi. Phase 280: Metadata paneline context notu eklendi, detail panel workflow zinciri guncellendi. Phase 281: End-to-end dogrulama — tum giris noktalari, create, registry, detail, curation, script, metadata zinciri calisiyor.

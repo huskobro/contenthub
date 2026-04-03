@@ -51,7 +51,7 @@ beforeEach(() => {
 describe("StyleBlueprint form smoke tests", () => {
   it("renders the create page heading", () => {
     makeRouter(vi.fn().mockResolvedValue({ ok: true, status: 200, json: () => Promise.resolve(MOCK_BLUEPRINT) }));
-    expect(screen.getByRole("heading", { name: "Yeni Style Blueprint" })).toBeDefined();
+    expect(screen.getByTestId("sb-create-heading")).toBeDefined();
   });
 
   it("shows name required error on empty submit", async () => {
@@ -102,7 +102,7 @@ describe("StyleBlueprint form smoke tests", () => {
       "/admin/style-blueprints"
     );
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: "Yeni" })).toBeDefined();
+      expect(screen.getByRole("button", { name: "+ Yeni Blueprint Olustur" })).toBeDefined();
     });
   });
 

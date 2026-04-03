@@ -15,7 +15,12 @@ export function StyleBlueprintsRegistryPage() {
   return (
     <div>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.25rem" }}>
-        <h2 style={{ margin: 0 }}>Style Blueprints Registry</h2>
+        <h2
+          style={{ margin: 0, fontSize: "1.125rem", fontWeight: 600 }}
+          data-testid="sb-registry-heading"
+        >
+          Style Blueprint Kayitlari
+        </h2>
         <button
           onClick={() => navigate("/admin/style-blueprints/new")}
           style={{
@@ -28,11 +33,22 @@ export function StyleBlueprintsRegistryPage() {
             cursor: "pointer",
           }}
         >
-          Yeni
+          + Yeni Blueprint Olustur
         </button>
       </div>
-      <p style={{ margin: "0 0 1.25rem", color: "#64748b", fontSize: "0.875rem" }}>
-        Admin tarafından yönetilen style blueprint kayıtları. Detay için bir blueprint seçin.
+      <p
+        style={{
+          margin: "0 0 1.25rem",
+          fontSize: "0.8125rem",
+          color: "#94a3b8",
+          lineHeight: 1.5,
+          maxWidth: "640px",
+        }}
+        data-testid="sb-registry-workflow-note"
+      >
+        Style blueprint'ler gorsel ve yapisal kurallari tanimlar. Template'lerden
+        farkli olarak blueprint'ler gorsel kimlik, hareket, layout ve altyazi
+        kurallarina odaklanir. Bir blueprint secerek detay ve kurallarini gorebilirsiniz.
       </p>
 
       <div style={{ display: "flex", gap: "1.5rem", alignItems: "flex-start" }}>

@@ -56,7 +56,7 @@ const QUICK_LINKS = [
   },
   {
     title: "Sablonlar",
-    desc: "Icerik ve stil sablonlarini duzenle",
+    desc: "Uretim hattinin yapi taslari: icerik, stil ve yayin sablonlarini yonet",
     to: "/admin/templates",
     testId: "quick-link-templates",
   },

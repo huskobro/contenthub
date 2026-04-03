@@ -55,7 +55,7 @@ beforeEach(() => {
 describe("TemplateForm / Create page smoke tests", () => {
   it("renders the create page heading", () => {
     renderCreatePage(mockFetch([]));
-    expect(screen.getByRole("heading", { name: "Yeni Template" })).toBeDefined();
+    expect(screen.getByTestId("tpl-create-heading")).toBeDefined();
   });
 
   it("shows the name field", () => {
@@ -155,7 +155,7 @@ describe("TemplateForm / Create page smoke tests", () => {
         <RouterProvider router={testRouter} />
       </QueryClientProvider>
     );
-    expect(screen.getByRole("button", { name: "+ Yeni Template" })).toBeDefined();
+    expect(screen.getByRole("button", { name: "+ Yeni Sablon Olustur" })).toBeDefined();
   });
 
   it("edit mode opens when Düzenle is clicked in detail panel", async () => {

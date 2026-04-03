@@ -32,9 +32,26 @@ export function StyleBlueprintCreatePage() {
 
   return (
     <div style={{ maxWidth: "600px" }}>
-      <h2 style={{ margin: "0 0 0.25rem" }}>Yeni Style Blueprint</h2>
-      <p style={{ margin: "0 0 1.25rem", color: "#64748b", fontSize: "0.875rem" }}>
-        Yeni bir style blueprint oluştur.
+      <h2
+        style={{ margin: "0 0 0.5rem", fontSize: "1.125rem", fontWeight: 600 }}
+        data-testid="sb-create-heading"
+      >
+        Yeni Style Blueprint
+      </h2>
+      <p
+        style={{
+          margin: "0 0 1.25rem",
+          fontSize: "0.875rem",
+          color: "#64748b",
+          lineHeight: 1.6,
+          maxWidth: "640px",
+        }}
+        data-testid="sb-create-subtitle"
+      >
+        Style blueprint gorsel ve yapisal kurallari tanimlar. Gorsel kimlik,
+        hareket stili, layout yonu, altyazi stili ve kucuk resim yonu gibi
+        kurallari belirleyerek uretim ciktisinin gorsel yonunu kontrol edin.
+        Blueprint'ler sablonlarla iliskilendirilerek kullanilir.
       </p>
       <StyleBlueprintForm
         mode="create"

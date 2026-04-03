@@ -83,7 +83,7 @@ export function TemplateStyleLinkDetailPanel({ linkId }: TemplateStyleLinkDetail
   return (
     <div style={{ padding: "1.25rem", border: BORDER, borderRadius: RADIUS_SM, background: "#fff" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
-        <h3 style={{ margin: 0, fontSize: "1rem", color: COLOR_DARK }}>Template Style Link Detayı</h3>
+        <h3 style={{ margin: 0, fontSize: "1rem", color: COLOR_DARK }} data-testid="tsl-detail-heading">Sablon-Stil Baglanti Detayi</h3>
         <button
           onClick={() => setEditing(true)}
           style={{
@@ -99,6 +99,18 @@ export function TemplateStyleLinkDetailPanel({ linkId }: TemplateStyleLinkDetail
           Düzenle
         </button>
       </div>
+      <p
+        style={{
+          margin: "0 0 1rem",
+          fontSize: "0.8125rem",
+          color: "#94a3b8",
+          lineHeight: 1.5,
+        }}
+        data-testid="tsl-detail-workflow-note"
+      >
+        Bu baglanti sablonun hangi style blueprint kurallariyla calisacagini
+        belirler. Rol ve durum bilgisi asagida gorulur.
+      </p>
 
       <Field label="ID" value={link.id} />
       <Field label="Template ID" value={link.template_id} />

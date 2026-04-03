@@ -26,9 +26,25 @@ export function TemplateStyleLinkCreatePage() {
 
   return (
     <div style={{ maxWidth: "600px" }}>
-      <h2 style={{ margin: "0 0 0.25rem" }}>Yeni Template Style Link</h2>
-      <p style={{ margin: "0 0 1.25rem", color: "#64748b", fontSize: "0.875rem" }}>
-        Template ile Style Blueprint arasında yeni bir bağlantı oluştur.
+      <h2
+        style={{ margin: "0 0 0.5rem", fontSize: "1.125rem", fontWeight: 600 }}
+        data-testid="tsl-create-heading"
+      >
+        Yeni Sablon-Stil Baglantisi
+      </h2>
+      <p
+        style={{
+          margin: "0 0 1.25rem",
+          fontSize: "0.875rem",
+          color: "#64748b",
+          lineHeight: 1.6,
+          maxWidth: "640px",
+        }}
+        data-testid="tsl-create-subtitle"
+      >
+        Bir sablon ile style blueprint arasinda baglanti olusturun. Bu baglanti
+        sablonun hangi gorsel kurallarla calisacagini belirler. Birincil, yedek
+        veya deneysel rol atayabilirsiniz.
       </p>
       <TemplateStyleLinkForm
         mode="create"

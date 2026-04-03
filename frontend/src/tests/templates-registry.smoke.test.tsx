@@ -70,7 +70,7 @@ beforeEach(() => {
 describe("Templates Registry smoke tests", () => {
   it("renders the page heading", () => {
     renderRegistry(mockFetch(MOCK_TEMPLATES));
-    expect(screen.getByRole("heading", { name: "Templates Registry" })).toBeDefined();
+    expect(screen.getByTestId("tpl-registry-heading")).toBeDefined();
   });
 
   it("shows loading state", () => {

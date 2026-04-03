@@ -117,8 +117,8 @@ export function TemplateDetailPanel({ templateId }: TemplateDetailPanelProps) {
         background: "#fff",
       }}
     >
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1rem" }}>
-        <h3 style={{ margin: 0, fontSize: "1rem", color: COLOR_DARK }}>{template.name}</h3>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0.5rem" }}>
+        <h3 style={{ margin: 0, fontSize: "1rem", color: COLOR_DARK }} data-testid="tpl-detail-heading">{template.name}</h3>
         <button
           onClick={() => setEditMode(true)}
           style={{
@@ -134,6 +134,18 @@ export function TemplateDetailPanel({ templateId }: TemplateDetailPanelProps) {
           Düzenle
         </button>
       </div>
+      <p
+        style={{
+          margin: "0 0 1rem",
+          fontSize: "0.8125rem",
+          color: "#94a3b8",
+          lineHeight: 1.5,
+        }}
+        data-testid="tpl-detail-workflow-note"
+      >
+        Bu sablon uretim hattinda kullanilacak yapi tasidir. Style blueprint
+        baglantilari ile gorsel kurallar belirlenir.
+      </p>
 
       <Field label="Type" value={template.template_type} />
       <Field label="Owner Scope" value={template.owner_scope} />

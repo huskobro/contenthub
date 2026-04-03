@@ -45,7 +45,7 @@ beforeEach(() => {
 describe("TemplateStyleLink form smoke tests", () => {
   it("renders the create page heading", () => {
     makeRouter(vi.fn().mockResolvedValue({ ok: true, status: 200, json: () => Promise.resolve(MOCK_LINK) }));
-    expect(screen.getByRole("heading", { name: "Yeni Template Style Link" })).toBeDefined();
+    expect(screen.getByTestId("tsl-create-heading")).toBeDefined();
   });
 
   it("shows template_id required error on empty submit", async () => {
@@ -82,7 +82,7 @@ describe("TemplateStyleLink form smoke tests", () => {
       "/admin/template-style-links"
     );
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: "Yeni" })).toBeDefined();
+      expect(screen.getByRole("button", { name: "+ Yeni Baglanti Olustur" })).toBeDefined();
     });
   });
 

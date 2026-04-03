@@ -46,7 +46,7 @@ beforeEach(() => {
 describe("Template Style Links Registry smoke tests", () => {
   it("renders the page heading", () => {
     renderPage(mockFetch([]));
-    expect(screen.getByRole("heading", { name: "Template Style Links" })).toBeDefined();
+    expect(screen.getByTestId("tsl-registry-heading")).toBeDefined();
   });
 
   it("shows loading state", () => {
@@ -86,7 +86,7 @@ describe("Template Style Links Registry smoke tests", () => {
   it("shows no detail panel when nothing is selected", async () => {
     renderPage(mockFetch([]));
     await waitFor(() => {
-      expect(screen.queryByText("Template Style Link Detayı")).toBeNull();
+      expect(screen.queryByTestId("tsl-detail-heading")).toBeNull();
     });
   });
 
@@ -113,7 +113,7 @@ describe("Template Style Links Registry smoke tests", () => {
     await waitFor(() => expect(screen.getByText("primary")).toBeDefined());
     await user.click(screen.getByText("primary"));
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Template Style Link Detayı" })).toBeDefined();
+      expect(screen.getByTestId("tsl-detail-heading")).toBeDefined();
     });
   });
 });

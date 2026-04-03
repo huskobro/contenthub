@@ -1,12 +1,12 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 276–281 — News Workflow Pack ✓ TAMAMLANDI (feature)
+Phase 282–286 — Template / Style / Blueprint Pack ✓ TAMAMLANDI (feature)
 
-**ANA FAZ 4 BASLADI: News workflow omurgasi**
+**ANA FAZ 5 BASLADI: Template / Style / Blueprint sistemi omurgasi**
 
 ## Mevcut Hedef
-News workflow omurgasi oturdu. Entry surface, source/intake clarity, news item selection/curation, bulletin draft generation continuity, detail/review/output clarity ve end-to-end verification tamamlandi. 1838 toplam test.
+Template / Style / Blueprint sistemi omurgasi oturdu. Entry clarity, template create/edit workflow, style blueprint flow, template-style iliski gorunurlugu ve end-to-end verification tamamlandi. 1861 toplam test.
 
 ## Devam Eden
 — (devam eden calisma yok)
@@ -17,6 +17,7 @@ News workflow omurgasi oturdu. Entry surface, source/intake clarity, news item s
 - **ANA FAZ BAŞLADI:** Wizard / Onboarding (ürün geliştirme hattı)
 
 ## Son Tamamlananlar
+- Phase 282–286: template/style/blueprint pack — entry clarity, template create/edit workflow, style blueprint flow, template-style link visibility, end-to-end verification, 23 yeni test, 1861 toplam (2026-04-03)
 - Phase 276–281: news workflow pack — entry surface, source/intake clarity, selection/curation, draft generation continuity, detail/review/output clarity, end-to-end verification, 18 yeni test, 1838 toplam (2026-04-03)
 - Phase 269–275: video workflow pack — create flow clarity, script/metadata visibility, TTS/subtitle/composition chain, job progress/timeline/ETA, detail/artifacts surface, end-to-end verification, 14 yeni test, 1820 toplam (2026-04-03)
 - Phase 268: video workflow entry map — "Ana uretim akisi" vurgusu content/admin/handoff'ta, admin quick link testid'leri, 11 yeni test, 1806 toplam (2026-04-03)

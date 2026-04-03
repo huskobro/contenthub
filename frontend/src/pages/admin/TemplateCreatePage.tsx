@@ -31,9 +31,26 @@ export function TemplateCreatePage() {
 
   return (
     <div style={{ maxWidth: "600px" }}>
-      <h2 style={{ margin: "0 0 0.25rem" }}>Yeni Template</h2>
-      <p style={{ margin: "0 0 1.25rem", color: "#64748b", fontSize: "0.875rem" }}>
-        Yeni bir template oluştur.
+      <h2
+        style={{ margin: "0 0 0.5rem", fontSize: "1.125rem", fontWeight: 600 }}
+        data-testid="tpl-create-heading"
+      >
+        Yeni Sablon
+      </h2>
+      <p
+        style={{
+          margin: "0 0 1.25rem",
+          fontSize: "0.875rem",
+          color: "#64748b",
+          lineHeight: 1.6,
+          maxWidth: "640px",
+        }}
+        data-testid="tpl-create-subtitle"
+      >
+        Sablon yapilandirma akisinin baslangic noktasi. Icerik, stil veya yayin
+        sablonu olusturarak uretim hattinda kullanilacak yapi taslarini tanimlayin.
+        Sablonlar style blueprint'lerle iliskilendirilerek gorsel ve yapisal
+        kurallar belirlenir.
       </p>
       <TemplateForm
         mode="create"

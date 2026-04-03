@@ -70,7 +70,7 @@ beforeEach(() => {
 describe("Style Blueprints Registry smoke tests", () => {
   it("renders the page heading", () => {
     renderRegistry(mockFetch(MOCK_BLUEPRINTS));
-    expect(screen.getByRole("heading", { name: "Style Blueprints Registry" })).toBeDefined();
+    expect(screen.getByTestId("sb-registry-heading")).toBeDefined();
   });
 
   it("shows loading state", () => {

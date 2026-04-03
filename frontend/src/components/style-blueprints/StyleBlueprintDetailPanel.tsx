@@ -91,8 +91,8 @@ export function StyleBlueprintDetailPanel({ blueprintId }: StyleBlueprintDetailP
 
   return (
     <div style={PANEL_BOX}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
-        <h3 style={{ margin: 0, fontSize: "1rem", color: COLOR_DARK }}>{blueprint.name}</h3>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem" }}>
+        <h3 style={{ margin: 0, fontSize: "1rem", color: COLOR_DARK }} data-testid="sb-detail-heading">{blueprint.name}</h3>
         <button
           onClick={() => setEditing(true)}
           style={{
@@ -108,6 +108,18 @@ export function StyleBlueprintDetailPanel({ blueprintId }: StyleBlueprintDetailP
           Düzenle
         </button>
       </div>
+      <p
+        style={{
+          margin: "0 0 1rem",
+          fontSize: "0.8125rem",
+          color: "#94a3b8",
+          lineHeight: 1.5,
+        }}
+        data-testid="sb-detail-workflow-note"
+      >
+        Bu blueprint gorsel ve yapisal kurallari tanimlar. Sablonlarla
+        iliskilendirilerek uretim ciktisinin gorsel yonunu belirler.
+      </p>
 
       <Field label="Module Scope" value={blueprint.module_scope} />
       <Field label="Status" value={blueprint.status} />
