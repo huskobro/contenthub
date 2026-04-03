@@ -1,15 +1,16 @@
 # DURUM
 
 ## Mevcut Faz
-Phase 224 — Repeated Small Early Return / Guard Clause Readability Pack ✓ TAMAMLANDI (audit-only)
+Phase 225 — Repeated Small JSX Fragment/Wrapper Readability Pack ✓ TAMAMLANDI (audit-only)
 
 ## Mevcut Hedef
-Early return/guard clause audit. 3+ kullanan dosyalar Summary kategorisi (kapsam dışı). Detail/Panel dosyalarında max 2×, farklı koşullar. Hiçbir dosya değiştirilmedi. 1587 toplam test.
+JSX fragment/wrapper audit. React.Fragment kullanımı yok. Çoklu return() kullanımlar farklı conditional path. SECTION_STYLE zaten extracted. Hiçbir dosya değiştirilmedi. 1587 toplam test.
 
 ## Devam Eden
 — (devam eden çalışma yok)
 
 ## Son Tamamlananlar
+- Phase 225: repeated small JSX fragment/wrapper readability pack: kapsamlı audit, fragment yok, çoklu return farklı conditional path, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 224: repeated small early return/guard clause readability pack: kapsamlı audit, 3+ olan dosyalar summary kapsam dışı, detail/panel max 2×, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 223: repeated small function parameter naming/destructuring readability pack: kapsamlı audit, tüm imzalar tutarlı, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
 - Phase 222: repeated small local variable naming readability pack: kapsamlı audit, standart React idiom, threshold karşılanmadı, hiçbir dosya değiştirilmedi, 1587 toplam (2026-04-03)
