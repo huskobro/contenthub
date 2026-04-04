@@ -1,29 +1,31 @@
 # DURUM
 
 ## Mevcut Faz
-Kiln Build — M2: Standard Video Real Pipeline Pack
+Kiln Build — M3: Provider Registry + Fallback Pack
 
-**M2 TAMAMLANDI — 6/6 chunk APPROVED, 591 test geçiyor**
+**M3-C1 TAMAMLANDI — 606 test geçiyor**
 
 ## Mevcut Durum (2026-04-04)
-M2 tüm chunk'ları tamamlandı ve GitHub'a pushlandı. Backend artık gerçek bir video pipeline'ına sahip:
-- LLM (kie.ai / Gemini 2.5 Flash) ile senaryo + metadata üretimi
-- edge-tts ile ses üretimi (language-aware: TR→AhmetNeural, EN→ChristopherNeural)
-- Pexels + Pixabay fallback ile görsel toplama
-- SRT altyazı üretimi (kümülatif zamanlama)
-- Remotion composition props üretimi (props_ready — gerçek render M3+)
-- Job dispatcher + step initializer + artifact listing endpoint'leri
+M3-C1 tamamlandı. Provider çözümleme tek resmi yol: `ProviderRegistry`.
 
-**Gerçek durum**: Backend pipeline çalışır — `POST /api/v1/jobs` ile job yaratılıp dispatch edilebilir. Frontend wizard entegrasyonu henüz yapılmadı. Remotion render subprocess'i henüz yok (composition_props.json hazır).
+**M3-C1 değişiklikleri:**
+- `ProviderCapability` enum (LLM/TTS/VISUALS) — string literal kalmadı
+- `ProviderRegistry` — capability bazlı kayıt, get_primary, get_chain, admin default seam
+- `resolve_and_invoke` — fallback zinciri + trace zenginleştirme (resolution_role, resolved_by)
+- `_build_executor` geçici köprüsü kaldırıldı — dispatcher artık registry üzerinden çözümlüyor
+- `VisualsStepExecutor` provider-agnostic — `providers: list[BaseProvider]` alıyor
+- `main.py` — `_providers` dict kaldırıldı, `provider_registry` singleton kullanıma alındı
+- 15 yeni M3-C1 testi + M2 testleri yeni imzaya uyarlandı
+
+**Sonraki**: M3-C2 — İkinci LLM + TTS provider (OpenAI GPT-4o-mini + ElevenLabs), registry ile çözümleme.
 
 ## Sonraki Milestone
-**M3: Provider Registry + Fallback Pack**
-- Provider registry servisi (capability bazlı çözümleme)
-- LLM + TTS fallback
-- Admin panel: provider sağlık durumu, maliyet takibi
+**M3 devam: Provider Registry + Fallback Pack**
+- M3-C2: İkinci LLM + TTS provider
+- M3-C3: Admin panel — provider sağlık durumu, maliyet takibi, settings registry bağlantısı
 
 ## Devam Eden
-— (M2 tamamlandı, M3 başlamadı)
+M3-C2 bekliyor.
 
 ## Hygiene Hattı Kapanış Durumu
 - **KAPATILDI:** Mikro readability faz zinciri Phase 235 ile resmen kapatıldı.
@@ -31,6 +33,7 @@ M2 tüm chunk'ları tamamlandı ve GitHub'a pushlandı. Backend artık gerçek b
 - **ANA FAZ BAŞLADI:** Wizard / Onboarding (ürün geliştirme hattı)
 
 ## Son Tamamlananlar
+- **M3-C1 Provider Registry** — ProviderCapability enum, ProviderRegistry (kayıt/çözümleme/admin seam), resolve_and_invoke (fallback+trace), _build_executor kaldırıldı, VisualsStepExecutor provider-agnostic, 15 yeni test, 606 toplam (2026-04-04)
 - **M2-C6 Full Stack Integration** — JobDispatcher (orchestration), step_initializer.py, POST /api/v1/jobs, GET /jobs/{id}/artifacts, asyncio.create_task GC koruması, 11 yeni test, 591 toplam (2026-04-04)
 - **M2-C5 Subtitle + Composition** — SubtitleStepExecutor (SRT), CompositionStepExecutor (props_ready), composition_map.py güvenli mapping, executors/ pakete bölündü, 22 yeni test, 580 toplam (2026-04-04)
 - **M2-C4 TTS + Visuals** — TTSStepExecutor, VisualsStepExecutor (Pexels→Pixabay fallback), voice_map.py, artifact_check idempotency, 16 yeni test, 558 toplam (2026-04-04)

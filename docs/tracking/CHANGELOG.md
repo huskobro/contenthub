@@ -2,6 +2,24 @@
 
 ---
 
+## [2026-04-04] M3-C1 — Provider Registry
+
+**Ne:** `ProviderCapability` enum (LLM/TTS/VISUALS), `ProviderRegistry` (kayıt/get_primary/get_chain/admin default seam), `resolve_and_invoke` helper (fallback zinciri + trace zenginleştirme), `_build_executor` geçici köprüsü kaldırıldı, `VisualsStepExecutor` provider-agnostic (`providers: list[BaseProvider]`), `main.py` `_providers` dict kaldırıldı — `provider_registry` singleton kullanıma alındı.
+
+**Sistem davranışı:** Provider çözümleme tek resmi yol: `ProviderRegistry.get_primary()` ve `get_chain()`. Dispatcher artık provider detaylarından bağımsız — registry üzerinden capability bazlı çözümlüyor. Fallback zinciri `resolve_and_invoke` ile orchestrate ediliyor; trace'e `resolution_role` ve `resolved_by` ekleniyor.
+
+**Mimari:**
+- `capability.py` — sadece enum (20 satır)
+- `registry.py` — kayıt, çözümleme, admin seam (~120 satır)
+- `resolution.py` — invoke + fallback + trace (~70 satır)
+- `dispatcher.py` — net kod azaldı (_build_executor kaldırıldı, registry'ye delege edildi)
+
+**Kısıtlar:** Admin default seam bellekte tutuluyor (settings registry yok). M3-C3'te settings registry ile bağlanacak.
+
+**Test:** 15 yeni test, 606 toplam. Geriye dönük uyumluluk: M2 testleri yeni imzaya uyarlandı, tüm suite yeşil.
+
+---
+
 ## [2026-04-04] M2-C6 — Full Stack Integration (M2 Tamamlandı)
 
 **Ne:** JobDispatcher (orchestration), step_initializer.py, POST /api/v1/jobs endpoint güncellendi (InputNormalizer→create_job→init_steps→dispatch akışı), GET /jobs/{id}/artifacts endpoint'i eklendi. asyncio.create_task GC koruması eklendi (_background_tasks set + done_callback). dispatcher.py, step_initializer.py, router.py sorumluluk ayrımı korundu.
