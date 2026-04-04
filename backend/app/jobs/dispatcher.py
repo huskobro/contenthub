@@ -21,6 +21,8 @@ M3-C1: _build_executor geçici köprüsü kaldırıldı.
        JobDispatcher artık providers dict değil ProviderRegistry alıyor.
 M3-C2: LLM/TTS executor'ları registry zincirini alıyor (get_primary → get_chain).
        resolve_and_invoke executor içinden çağrılır — fallback zinciri tam aktif.
+M4-C1: SubtitleStepExecutor registry alıyor.
+       WHISPER provider kayıtlıysa kelime-düzeyi timing; yoksa cursor-tabanlı timing.
 """
 
 import asyncio
@@ -61,7 +63,10 @@ def _build_executor_from_registry(
       → registry zincirini alır; resolve_and_invoke executor içinden çağrılır.
     VISUALS gerektiren executor'lar: VisualsStepExecutor
       → registry zincirini alır; executor sahne başına kendi fallback döngüsünü çalıştırır.
-    Provider gerektirmeyen executor'lar: SubtitleStepExecutor, CompositionStepExecutor
+    WHISPER gerektiren executor'lar: SubtitleStepExecutor
+      → registry alır; Whisper provider kayıtlıysa kelime-düzeyi timing kullanır,
+        yoksa cursor-tabanlı timing'e otomatik düşer (M4-C1).
+    Provider gerektirmeyen executor'lar: CompositionStepExecutor
 
     Args:
         executor_class: Executor'ın sınıf nesnesi.
@@ -86,7 +91,11 @@ def _build_executor_from_registry(
         visuals_chain = registry.get_chain(ProviderCapability.VISUALS)
         return VisualsStepExecutor(providers=visuals_chain)
 
-    # Provider gerektirmeyen executor'lar (SubtitleStepExecutor, CompositionStepExecutor)
+    if executor_class is SubtitleStepExecutor:
+        # Whisper provider kayıtlıysa kelime-düzeyi timing aktif olur; yoksa cursor-tabanlı.
+        return SubtitleStepExecutor(registry=registry)
+
+    # Provider gerektirmeyen executor'lar (CompositionStepExecutor)
     return executor_class()
 
 

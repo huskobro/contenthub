@@ -1,0 +1,1 @@
+"""Whisper transkripsiyon provider paketi."""

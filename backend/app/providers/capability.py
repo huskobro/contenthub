@@ -17,3 +17,4 @@ class ProviderCapability(str, Enum):
     LLM = "llm"
     TTS = "tts"
     VISUALS = "visuals"
+    WHISPER = "whisper"
