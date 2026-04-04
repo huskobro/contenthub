@@ -3,10 +3,10 @@
 ## Mevcut Faz
 Integration Plan — Ana Faz 1: Execution Foundation + SSE Pack
 
-**Phase 1.1 TAMAMLANDI: Execution Contract Katmanı**
+**Phase 1.2 TAMAMLANDI (Codex 5.4 review bekleniyor): State Machine Enforcement**
 
 ## Mevcut Hedef
-Execution contract katmanı oturdu. Job/Step lifecycle, Artifact, ProviderTrace, RetryHistory, ReviewState, SSE event ve Workspace sözleşmeleri tanımlandı. State machine transition matrisleri yazıldı ve test edildi. 94 yeni test, 289 toplam backend test. TypeScript mirror frontend'e eklendi. Bir sonraki adım: Phase 1.2 — Job State Machine (executor entegrasyonu).
+State machine enforcement service katmanına bağlandı. transition_job_status + transition_step_status tek resmi geçiş yolu olarak kuruldu. Side effect kuralları deterministic (timestamps, error, retry_count, log append, artifact replace). 68 yeni test, 357 toplam backend test. Codex 5.4 review temizlendikten sonra push yapılacak.
 
 ## Devam Eden
 — (devam eden calisma yok)
@@ -17,6 +17,7 @@ Execution contract katmanı oturdu. Job/Step lifecycle, Artifact, ProviderTrace,
 - **ANA FAZ BAŞLADI:** Wizard / Onboarding (ürün geliştirme hattı)
 
 ## Son Tamamlananlar
+- Phase 1.2 State Machine Enforcement — transition_job_status + transition_step_status service entegrasyonu, InvalidTransitionError/JobNotFoundError/StepNotFoundError exception modeli, side-effect kuralları (timestamp/error/retry_count/log/artifact), 68 yeni test, 357 toplam backend test, tsc temiz (2026-04-04) [Codex review bekleniyor]
 - Phase 1.1 Execution Contract Katmanı — contracts/ paketi (enums, state_machine, artifacts, provider_trace, retry_history, review_state, sse_events, workspace), frontend/src/types/execution.ts mirror, 94 yeni test, 289 toplam backend test, tsc temiz (2026-04-04)
 - Asset Library / Media Resource Management Pack — asset library giris yüzeyi (quick link + sidebar + readiness checklist), AssetLibraryPage (varlik kayit/tur gruplama/filtre/arama/detay/reuse/preview safety), 50 yeni test, 2100 toplam (2026-04-03)
 - Phase 318–321: final UX / release readiness pack — deferred/disabled note standardizasyonu (backend entegrasyonu kalibi), cross-module heading/subtitle/workflow testid koheransi, release readiness checklist yuzeyi (8 alan, Omurga hazir), end-to-end verification, 32 yeni test, 2050 toplam (2026-04-03)

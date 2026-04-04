@@ -2,6 +2,20 @@
 
 ---
 
+## [2026-04-04] Phase 1.2 — State Machine Enforcement
+
+**Ne:** Integration Plan Ana Faz 1 Alt Faz 1.2 tamamlandı. Phase 1.1'de tanımlanan state machine contracts service katmanına bağlandı. `backend/app/jobs/exceptions.py` eklendi (JobEngineError, JobNotFoundError, StepNotFoundError, InvalidTransitionError). `backend/app/jobs/service.py` genişletildi: `validate_job_transition`, `validate_step_transition` (saf validasyon, DB yok); `transition_job_status`, `transition_step_status` (validate + canonical side effects + persist); `is_job_terminal`, `is_step_terminal`, `allowed_next_job_statuses`, `allowed_next_step_statuses`, `get_job_step` eklendi. Side effect kuralları deterministic: started_at sadece ilk running'de set edilir; finished_at terminal geçişlerde set edilir; last_error failed'da set, running/retrying/completed/cancelled'da cleared; log_text append-only; artifact_refs_json replace (sağlanırsa); retry_count sadece retrying'de artar. 68 yeni test, 357 toplam backend test PASSED, tsc temiz.
+**Sonuç:** Job ve JobStep status değişikliği artık tek resmi path üzerinden geçiyor. Executor, pipeline runner, retry/recovery bu enforcement üstüne oturabilir. Gerçek executor/pipeline/SSE kasıtlı olarak dahil edilmedi.
+**Eklenen dosyalar:**
+- `backend/app/jobs/exceptions.py`
+- `backend/tests/test_job_transitions.py` (68 yeni test)
+- `docs/testing/test-report-phase-1.2-state-machine-enforcement.md`
+**Değiştirilen dosyalar:**
+- `backend/app/jobs/service.py` (Phase 1.2 transition enforcement eklendi)
+**Test:** 68 yeni test PASSED, 357 toplam backend test PASSED, tsc temiz
+
+---
+
 ## [2026-04-04] Phase 1.1 — Execution Contract Katmanı
 
 **Ne:** Integration Plan Ana Faz 1 (Execution Foundation + SSE Pack) — Alt Faz 1.1 tamamlandı. `backend/app/contracts/` paketi oluşturuldu. Execution motoruna geçmeden önce tüm sözleşmeler tek, çelişkisiz ve testli şekilde tanımlandı: JobStatus/JobStepStatus enum'ları, ArtifactKind/Scope/Durability, ProviderKind/TraceStatus, RetryDisposition, ReviewStateStatus, SSEEventType. JobStateMachine ve StepStateMachine geçiş matrisleri yazıldı ve her geçersiz transition ValueError fırlatıyor. ArtifactRecord, ProviderTrace, RetryHistory, ReviewState Pydantic schema'ları oluşturuldu. SSEEnvelope + 10 payload schema + SSE_PAYLOAD_MAP hazır. WorkspaceLayout (final/preview/tmp/logs/execution) path derivation ve ensure_dirs() yazıldı. Frontend TypeScript mirror (frontend/src/types/execution.ts) eklendi — backend enum'ları ile 1:1 eşleşme. 94 yeni test, tümü geçiyor.
