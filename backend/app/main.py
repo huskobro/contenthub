@@ -1,11 +1,12 @@
 """
 ContentHub FastAPI application entry point.
 
-Lifespan handler (Phase M1-C4):
+Lifespan handler (Phase M1-C4 / M2-C1):
   1. Create DB tables (dev/test convenience).
   2. Run startup recovery scanner — marks any stale running jobs as failed
      BEFORE the server begins accepting requests (P-008 / C-07).
-  3. Yield — server is now live.
+  3. Register content modules in module_registry (M2-C1).
+  4. Yield — server is now live.
 """
 
 import logging
@@ -18,6 +19,8 @@ from app.core.logging import setup_logging
 from app.api.router import api_router
 from app.db.session import AsyncSessionLocal, create_tables
 from app.jobs.recovery import run_startup_recovery
+from app.modules.registry import module_registry
+from app.modules.standard_video.definition import STANDARD_VIDEO_MODULE
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +33,7 @@ async def lifespan(app: FastAPI):
     Startup:
       - Ensure tables exist (development / test convenience path).
       - Run startup recovery before accepting any requests (P-008).
+      - Register content modules in module_registry (M2-C1).
 
     Shutdown:
       - Nothing required at this phase.
@@ -48,6 +52,10 @@ async def lifespan(app: FastAPI):
             )
         else:
             logger.info("Startup recovery: no stale jobs detected.")
+
+    # İçerik modüllerini kayıt defterine ekle (M2-C1)
+    module_registry.register(STANDARD_VIDEO_MODULE)
+    logger.info("Modül kaydedildi: %s", STANDARD_VIDEO_MODULE.module_id)
 
     yield
     # Shutdown — nothing to do at this phase
