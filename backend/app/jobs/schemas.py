@@ -60,6 +60,46 @@ class JobCreate(BaseModel):
     workspace_path: Optional[str] = None
 
 
+# Desteklenen dil kodları — wizard/API yoluyla job yaratılırken kullanılır
+_SUPPORTED_LANGUAGES = {"tr", "en", "de", "fr", "es", "ar", "ja", "zh", "ru", "pt"}
+
+
+class JobCreateRequest(BaseModel):
+    """
+    Wizard veya API üzerinden job yaratmak için kullanıcıya açık istek şeması (M2-C6).
+
+    Bu şema router'ın HTTP katmanında kullanılır; InputNormalizer ile valide edilir,
+    ardından service.create_job için JobCreate'e dönüştürülür.
+
+    Alanlar:
+        module_id        : Hedef modülün kimliği (örn. 'standard_video').
+        topic            : Video konusu — senaryo üretiminin ana girdisi.
+        language         : ISO 639-1 dil kodu; desteklenen kodlardan biri olmalı.
+        duration_seconds : Hedef video süresi saniye cinsinden.
+    """
+
+    module_id: str
+    topic: str
+    language: str = "tr"
+    duration_seconds: int = 60
+
+    @classmethod
+    def __get_validators__(cls):
+        yield cls._validate
+
+    @classmethod
+    def _validate(cls, v):
+        return v
+
+    def model_post_init(self, __context) -> None:
+        """Dil kodunu doğrula — desteklenmiyorsa ValueError fırlat."""
+        if self.language not in _SUPPORTED_LANGUAGES:
+            raise ValueError(
+                f"Desteklenmeyen dil kodu: {self.language!r}. "
+                f"Geçerli kodlar: {sorted(_SUPPORTED_LANGUAGES)}"
+            )
+
+
 class JobResponse(BaseModel):
     id: str
     module_type: str

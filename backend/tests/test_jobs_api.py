@@ -19,9 +19,19 @@ BASE = "/api/v1/jobs"
 
 
 def _payload(**overrides) -> dict:
+    """
+    M2-C6 sonrası POST /jobs payloadı: module_id + topic zorunlu.
+    module_type uyumluluk adı olarak overrides ile geçersiz kılınabilir.
+    """
     base = {
-        "module_type": "standard_video",
+        "module_id": "standard_video",
+        "topic": "Test konusu",
+        "language": "tr",
+        "duration_seconds": 60,
     }
+    # Eski testlerdeki module_type alanını module_id'ye dönüştür
+    if "module_type" in overrides:
+        base["module_id"] = overrides.pop("module_type")
     base.update(overrides)
     return base
 
@@ -55,7 +65,8 @@ async def test_create_job(client: AsyncClient):
     assert body["module_type"] == "standard_video"
     assert body["status"] == "queued"
     assert body["retry_count"] == 0
-    assert body["steps"] == []
+    # M2-C6: adımlar artık job yaratılırken oluşturuluyor
+    assert isinstance(body["steps"], list)
     assert "id" in body
     assert "created_at" in body
 
@@ -132,5 +143,6 @@ async def test_get_job_not_found(client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_create_job_missing_module_type_rejected(client: AsyncClient):
+    """M2-C6: module_id ve topic zorunlu alanlar — eksik payload 422 döndürmeli."""
     response = await client.post(BASE, json={})
     assert response.status_code == 422

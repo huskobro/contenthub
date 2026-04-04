@@ -1,14 +1,15 @@
 """
 ContentHub FastAPI application entry point.
 
-Lifespan handler (Phase M1-C4 / M2-C2):
+Lifespan handler (Phase M1-C4 / M2-C6):
   1. Create DB tables (dev/test convenience).
   2. Run startup recovery scanner — marks any stale running jobs as failed
      BEFORE the server begins accepting requests (P-008 / C-07).
   3. Register content modules in module_registry (M2-C1).
   4. Register provider instances in _providers dict (M2-C2).
      NOT: M3'te ModuleRegistry'ye entegre edilecek.
-  5. Yield — server is now live.
+  5. JobDispatcher oluştur ve app.state'e bağla (M2-C6).
+  6. Yield — server is now live.
 """
 
 import logging
@@ -19,8 +20,9 @@ from fastapi import FastAPI
 from app.core.config import settings
 from app.core.logging import setup_logging
 from app.api.router import api_router
-from app.db.session import AsyncSessionLocal, create_tables
+from app.db.session import AsyncSessionLocal, AsyncSessionLocal as _session_factory, create_tables
 from app.jobs.recovery import run_startup_recovery
+from app.jobs.dispatcher import JobDispatcher
 from app.modules.registry import module_registry
 from app.modules.standard_video.definition import STANDARD_VIDEO_MODULE
 from app.providers.base import BaseProvider
@@ -28,6 +30,7 @@ from app.providers.llm.kie_ai_provider import KieAiProvider
 from app.providers.tts.edge_tts_provider import EdgeTTSProvider
 from app.providers.visuals.pexels_provider import PexelsProvider
 from app.providers.visuals.pixabay_provider import PixabayProvider
+from app.sse.bus import event_bus
 
 logger = logging.getLogger(__name__)
 
@@ -45,6 +48,7 @@ async def lifespan(app: FastAPI):
       - Run startup recovery before accepting any requests (P-008).
       - Register content modules in module_registry (M2-C1).
       - Provider örneklerini _providers dict'ine kaydet (M2-C2).
+      - JobDispatcher oluştur ve app.state'e bağla (M2-C6).
 
     Shutdown:
       - Nothing required at this phase.
@@ -78,6 +82,16 @@ async def lifespan(app: FastAPI):
         "Provider'lar kaydedildi: %s",
         list(_providers.keys()),
     )
+
+    # JobDispatcher oluştur ve app.state'e bağla (M2-C6)
+    # Router'lar app.state.job_dispatcher üzerinden erişir
+    app.state.job_dispatcher = JobDispatcher(
+        db_session_factory=_session_factory,
+        module_registry=module_registry,
+        event_bus=event_bus,
+        providers=_providers,
+    )
+    logger.info("JobDispatcher app.state'e bağlandı.")
 
     yield
     # Shutdown — nothing to do at this phase
