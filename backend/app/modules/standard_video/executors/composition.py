@@ -25,6 +25,7 @@ from app.db.models import Job, JobStep
 from app.jobs.executor import StepExecutor
 from app.jobs.exceptions import StepExecutionError
 from app.modules.standard_video.composition_map import get_composition_id
+from app.modules.standard_video.subtitle_presets import get_preset_for_composition
 
 from ._helpers import (
     _resolve_artifact_path,
@@ -190,6 +191,12 @@ class CompositionStepExecutor(StepExecutor):
 
         total_duration = sum(s.get("duration_seconds", 0.0) for s in props_scenes)
         subtitles_srt = subtitle_metadata.get("srt_path")
+        word_timing_path = subtitle_metadata.get("word_timing_path")
+        timing_mode = subtitle_metadata.get("timing_mode", "cursor")
+
+        # Job input'tan subtitle_style_preset alınır; yoksa varsayılan kullanılır
+        subtitle_style_preset_id: str | None = raw_input.get("subtitle_style_preset")
+        subtitle_style = get_preset_for_composition(subtitle_style_preset_id)
 
         start_time = time.monotonic()
 
@@ -202,6 +209,9 @@ class CompositionStepExecutor(StepExecutor):
                 "title": metadata_data.get("title", script_data.get("topic", "")),
                 "scenes": props_scenes,
                 "subtitles_srt": subtitles_srt,
+                "word_timing_path": word_timing_path,
+                "timing_mode": timing_mode,
+                "subtitle_style": subtitle_style,
                 "total_duration_seconds": round(total_duration, 3),
                 "language": language,
                 "metadata": {
@@ -241,12 +251,16 @@ class CompositionStepExecutor(StepExecutor):
             "composition_id": composition_id,
             "render_status": "props_ready",
             "scenes_included": len(props_scenes),
+            "subtitle_style_preset": subtitle_style["preset_id"],
+            "timing_mode": timing_mode,
             "provider": {
                 "provider_id": "composition_props_builder",
                 "language": language,
                 "composition_id": composition_id,
                 "scenes_included": len(props_scenes),
                 "render_status": "props_ready",
+                "subtitle_style_preset": subtitle_style["preset_id"],
+                "timing_mode": timing_mode,
                 "latency_ms": latency_ms,
             },
             "step": self.step_key(),
