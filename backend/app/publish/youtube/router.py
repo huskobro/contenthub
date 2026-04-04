@@ -43,11 +43,6 @@ _token_store = YouTubeTokenStore()
 # Request / Response şemaları (bu router'a özel, küçük, local)
 # ---------------------------------------------------------------------------
 
-class AuthUrlRequest(BaseModel):
-    client_id: str
-    redirect_uri: str
-
-
 class AuthUrlResponse(BaseModel):
     auth_url: str
 
