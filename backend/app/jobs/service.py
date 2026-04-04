@@ -394,6 +394,22 @@ async def transition_step_status(
 # Convenience query helpers (used by executor in Phase 1.3+)
 # ---------------------------------------------------------------------------
 
+async def update_job_heartbeat(db: AsyncSession, job_id: str) -> None:
+    """
+    Update heartbeat_at to now for the given job.
+
+    Called periodically by PipelineRunner at step boundaries so the startup
+    recovery scanner can distinguish a healthy running job from a crashed one.
+    This is a data field update, not a state transition — it does NOT go
+    through the state-machine gateway.
+    """
+    job = await get_job(db, job_id)
+    if job is None:
+        return
+    job.heartbeat_at = _now()
+    await db.commit()
+
+
 def is_job_terminal(status: str) -> bool:
     """Return True if the given job status has no outgoing transitions."""
     return JobStateMachine.is_terminal(status)
