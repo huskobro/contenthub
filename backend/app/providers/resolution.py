@@ -1,18 +1,23 @@
 """
-Provider çözümleme ve invoke yardımcısı (M3-C1 / M3-C2).
+Provider çözümleme ve invoke yardımcısı (M3-C1 / M3-C2 / M3-C3).
 
 Registry üzerinden capability çözümler, invoke eder ve trace'i zenginleştirir.
 Primary başarısızsa fallback zincirini dener.
 
 Sorumluluk sınırı:
-  - Bu dosya: invoke + fallback mantığı + trace zenginleştirme
-  - registry.py: kayıt ve çözümleme
+  - Bu dosya: invoke + fallback mantığı + trace zenginleştirme + health kaydı
+  - registry.py: kayıt, çözümleme, health state tutma
   - dispatcher.py: orchestration
 
 M3-C2 değişiklikleri:
   - NonRetryableProviderError → fallback yapılmaz, direkt fırlatılır.
   - httpx.TimeoutException ve httpx.ConnectError → fallback yapılır.
   - trace'e 'fallback_from' alanı eklendi (primary provider_id'yi içerir).
+
+M3-C3 değişiklikleri:
+  - Her invoke sonrası registry.record_outcome() çağrılır (başarı/hata).
+  - Gecikme süresi ölçülür ve trace'e 'latency_ms' olarak eklenir (normalde
+    provider kendi trace'ine yazar, ama burada de üst seviye ölçüm yapılır).
 
 Fallback kuralları:
   FALLBACK YAPILIR:
@@ -24,12 +29,10 @@ Fallback kuralları:
     - NonRetryableProviderError ve alt sınıfları:
         - InputValidationError  (yanlış girdi — fallback da aynı hatayı alır)
         - ConfigurationError    (API key yok — tüm provider'lar etkilenir)
-
-M3-C3 notu: Provider health check ve maliyet takibi buraya veya ayrı bir
-            middleware'e eklenecek; capability-specific mantık eklenmeyecek.
 """
 
 import logging
+import time
 
 import httpx
 
@@ -89,8 +92,18 @@ async def resolve_and_invoke(
         if i == 0:
             primary_provider_id = provider.provider_id()
 
+        t_start = time.monotonic()
         try:
             output = await provider.invoke(input_data)
+            latency_ms = int((time.monotonic() - t_start) * 1000)
+
+            # Health kaydı — başarılı
+            registry.record_outcome(
+                capability=capability,
+                provider_id=provider.provider_id(),
+                success=True,
+                latency_ms=latency_ms,
+            )
 
             # Trace zenginleştirme — non-breaking
             output.trace["resolution_role"] = rol
@@ -102,11 +115,27 @@ async def resolve_and_invoke(
             return output
 
         except NonRetryableProviderError:
-            # Geri dönüşü olmayan hata — fallback yapma, direkt ilet
+            # Geri dönüşü olmayan hata — health kaydet, fallback yapma, direkt ilet
+            latency_ms = int((time.monotonic() - t_start) * 1000)
+            registry.record_outcome(
+                capability=capability,
+                provider_id=provider.provider_id(),
+                success=False,
+                latency_ms=latency_ms,
+                error_message="NonRetryableProviderError — fallback yapılmadı",
+            )
             raise
 
         except (ProviderInvokeError, httpx.TimeoutException, httpx.ConnectError) as hata:
-            # Geçici veya ağ hatası — fallback'e geç
+            # Geçici veya ağ hatası — health kaydet, fallback'e geç
+            latency_ms = int((time.monotonic() - t_start) * 1000)
+            registry.record_outcome(
+                capability=capability,
+                provider_id=provider.provider_id(),
+                success=False,
+                latency_ms=latency_ms,
+                error_message=str(hata),
+            )
             son_hata = hata
             logger.warning(
                 "resolve_and_invoke: provider başarısız [%s=%s, rol=%s]: %s",

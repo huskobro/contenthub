@@ -101,6 +101,16 @@ class KieAiProvider(BaseProvider):
             temperature=temperature,
         )
 
+        input_tokens = kullanim.get("prompt_tokens", 0)
+        output_tokens = kullanim.get("completion_tokens", 0)
+
+        # Maliyet tahmini seam (M3-C3) — Gemini 2.5 Flash yaklaşık fiyatı.
+        # Gerçek fatura kie.ai dashboard'dan alınır; bu tahmin izleme amaçlıdır.
+        # Fiyat: input $0.075 / 1M token, output $0.30 / 1M token (2026 yaklaşımı).
+        cost_estimate_usd = round(
+            (input_tokens * 0.075 + output_tokens * 0.30) / 1_000_000, 8
+        )
+
         return ProviderOutput(
             result={
                 "content": icerik,
@@ -109,9 +119,10 @@ class KieAiProvider(BaseProvider):
             trace={
                 "provider_id": self.provider_id(),
                 "model": _DEFAULT_MODEL,
-                "input_tokens": kullanim.get("prompt_tokens", 0),
-                "output_tokens": kullanim.get("completion_tokens", 0),
+                "input_tokens": input_tokens,
+                "output_tokens": output_tokens,
                 "latency_ms": gecikme_ms,
+                "cost_estimate_usd": cost_estimate_usd,
             },
             provider_id=self.provider_id(),
         )

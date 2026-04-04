@@ -265,13 +265,31 @@ async def test_dispatch_creates_background_task(
     )
 
     with patch("app.jobs.dispatcher.PipelineRunner") as MockRunner:
+        import asyncio as _asyncio
         mock_runner_instance = MagicMock()
         mock_runner_instance.run = AsyncMock(return_value=None)
         MockRunner.return_value = mock_runner_instance
 
-        with patch("asyncio.create_task") as mock_create_task:
+        # dispatch() sonrası task referansını yakalamak için create_task'ı spy'lıyoruz.
+        # Gerçek create_task çağrılır — coroutine await edilir, warning oluşmaz.
+        created_tasks: list = []
+        real_create_task = _asyncio.create_task
+
+        def spy_create_task(coro, **kwargs):
+            task = real_create_task(coro, **kwargs)
+            created_tasks.append(task)
+            return task
+
+        with patch("asyncio.create_task", side_effect=spy_create_task):
             await dispatcher.dispatch(job.id)
-            assert mock_create_task.called, "asyncio.create_task() hiç çağrılmadı"
+
+        # Tüm oluşturulan task'ların tamamlanmasını bekle
+        if created_tasks:
+            await _asyncio.gather(*created_tasks, return_exceptions=True)
+
+        assert len(created_tasks) >= 1, "asyncio.create_task() hiç çağrılmadı"
+        assert MockRunner.called, "PipelineRunner() oluşturulmadı"
+        assert mock_runner_instance.run.called, "PipelineRunner.run() çağrılmadı"
 
 
 # ===========================================================================

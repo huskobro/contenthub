@@ -2,6 +2,40 @@
 
 ---
 
+## [2026-04-04] M3-C3 — Provider Health, Admin Surface, Cost Seam
+
+**Ne:**
+- `registry.py` — `ProviderEntry`'ye 5 runtime health alanı (invoke_count, error_count,
+  last_error, last_used_at UTC datetime, last_latency_ms). `record_outcome(capability, provider_id,
+  success, latency_ms, error_message)` metodu; `get_health_snapshot()` → capability bazlı JSON.
+- `resolution.py` — Her invoke sonrası `registry.record_outcome()` çağrılır. Başarı: last_used_at
+  ve latency güncellenir. Hata: error_count + last_error. time.monotonic ile gecikme ölçümü.
+- `kie_ai_provider.py` — trace'e `cost_estimate_usd` alanı eklendi. Token bazlı yaklaşım:
+  input $0.075/1M + output $0.30/1M. Gerçek fatura kie.ai dashboard'dan; bu tahmin izleme seam'i.
+- `providers/router.py` — YENİ admin endpoint'ler:
+    - GET  /providers → capabilities snapshot + defaults
+    - POST /providers/default → admin varsayılan provider seçimi
+    - POST /providers/{id}/enable → provider'ı etkinleştir
+    - POST /providers/{id}/disable → provider'ı devre dışı bırak
+- `api/router.py` — providers_router dahil edildi.
+- `test_m2_c6_dispatcher_integration.py` — background task warning düzeltmesi:
+  asyncio.create_task spy pattern + gather. 1 residual warning mock framework internal'dan geliyor
+  (unittest.mock.py:2245) — bloklayıcı değil.
+
+**Sistem davranışı:** Her provider invoke'u sonrası health state otomatik güncellenir.
+Admin, GET /providers ile tüm provider'ların durumunu görebilir; POST /providers/default ile
+runtime'da varsayılan seçebilir; enable/disable ile zincirden çıkarabilir.
+
+**Kısıtlar / Borç:**
+- Health state bellekte: sunucu yeniden başlatıldığında sıfırlanır (kalıcılık M4+).
+- cost_estimate_usd tahmin: gerçek fatura değil, izleme seam'i.
+- Default seam hâlâ bellekte (settings DB bağlantısı M4+).
+
+**Test:** 18 yeni test, 644 toplam.
+**Warnings:** 1 known-nonblocking (mock framework internal, uygulama kodu değil).
+
+---
+
 ## [2026-04-04] M3-C2 — İkinci Provider + Fallback Trigger + Runtime Bağlantısı
 
 **Ne (ilk commit):**

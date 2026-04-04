@@ -3,37 +3,34 @@
 ## Mevcut Faz
 Kiln Build — M3: Provider Registry + Fallback Pack
 
-**M3-C2 TAMAMLANDI (düzeltme dahil) — 626 test geçiyor**
+**M3-C3 TAMAMLANDI — 644 test geçiyor**
 
 ## Mevcut Durum (2026-04-04)
-M3-C2 tamamlandı ve düzeltme commit'i uygulandı. İkinci LLM ve TTS provider kaydedildi,
-fallback trigger kuralları netleştirildi, provider trace zenginleştirildi.
+M3-C3 tamamlandı. Provider runtime health takibi, admin surface endpoint'leri,
+cost estimate seam ve background task warning düzeltmesi uygulandı.
 
-**M3-C2 temel değişiklikleri:**
-- `_openai_compat_base.py` — OpenAI uyumlu HTTP çağrısı paylaşılan base
-- `openai_compat_provider.py` — parametrik OpenAI uyumlu LLM provider
-- `system_tts_provider.py` — noop TTS fallback stub (test seam, üretim değil)
-- `KieAiProvider` — `_openai_compat_base` kullanıyor (kod tekrarı kaldırıldı)
-- `exceptions.py` — `NonRetryableProviderError`, `InputValidationError`, `ConfigurationError`
-- `resolution.py` — NonRetryableProviderError direkt; fallback_from trace alanı
-- `config.py` / `main.py` / `.env.example` — openai_api_key, ikinci provider kayıtları
+**M3-C3 değişiklikleri:**
+- `registry.py` — `ProviderEntry`'ye runtime health alanları (invoke_count, error_count,
+  last_error, last_used_at, last_latency_ms); `record_outcome()` metodu; `get_health_snapshot()`
+- `resolution.py` — Her invoke sonrası `record_outcome()` çağrısı (başarı/hata); `time.monotonic` gecikme ölçümü
+- `kie_ai_provider.py` — trace'e `cost_estimate_usd` seam eklendi (token bazlı yaklaşım)
+- `providers/router.py` — YENİ: GET /providers, POST /providers/default,
+  POST /providers/{id}/enable, POST /providers/{id}/disable
+- `api/router.py` — providers_router dahil edildi
+- `test_m2_c6_dispatcher_integration.py` — background task warning düzeltmesi
+  (asyncio.create_task spy + gather → mock framework'te 1 residual warning kaldı)
+- 18 yeni test (test_m3_c3_provider_health.py), 644 toplam
 
-**M3-C2 düzeltme (aynı turda):**
-- `ScriptStepExecutor`, `MetadataStepExecutor`, `TTSStepExecutor` → artık `registry` alıyor
-- `resolve_and_invoke` executor içinden çağrılıyor — LLM/TTS fallback tam aktif
-- `_build_executor_from_registry` → `get_primary()` yerine `registry` inject
-- 7 test dosyası güncellendi — eski `llm_provider=` / `tts_provider=` imzaları kaldırıldı
-- 626/626 test geçiyor
+**Warnings durumu:**
+- 1 known-nonblocking warning: `unittest.mock.py:2245` `RuntimeWarning` —
+  mock framework internal, uygulamanın kendi kodu değil. Bloklayıcı değil.
 
-**Fallback aktiflik durumu (M3-C2 sonrası):**
-- LLM fallback: AKTİF — `resolve_and_invoke` üzerinden, OpenAICompatProvider zincirde
-- TTS fallback: AKTİF — `resolve_and_invoke` üzerinden, SystemTTSProvider zincirde
-- VISUALS fallback: AKTİF — VisualsStepExecutor kendi döngüsünde (Pexels→Pixabay)
+**Fallback aktiflik durumu (M3-C3 sonrası — değişmedi):**
+- LLM: AKTİF — resolve_and_invoke, KieAI→OpenAICompat
+- TTS: AKTİF — resolve_and_invoke, EdgeTTS→SystemTTS
+- VISUALS: AKTİF — VisualsStepExecutor kendi döngüsünde
 
-NOT: `resolve_and_invoke` ve VisualsStepExecutor döngüsü farklı mekanizma kullanıyor
-(bilinçli fark — visuals sahne bazında çalışır, LLM/TTS iş bazında).
-
-**Sonraki**: M3-C3 — Provider sağlık durumu, maliyet takibi, settings registry bağlantısı.
+**Sonraki**: M4 — İçerik üretim hattı doğrulama, gerçek LLM/TTS pipeline testi.
 
 ## Sonraki Milestone
 **M3 devam: Provider Registry + Fallback Pack**
@@ -48,6 +45,8 @@ M3-C3 bekliyor.
 - **ANA FAZ BAŞLADI:** Wizard / Onboarding (ürün geliştirme hattı)
 
 ## Son Tamamlananlar
+- **M3-C3 Provider Health + Admin Surface + Cost Seam** — ProviderEntry runtime health fields, record_outcome (resolution.py), get_health_snapshot(), admin provider router (GET/POST), cost_estimate_usd seam (KieAI), background task warning düzeltmesi, 18 yeni test, 644 toplam (2026-04-04)
+- **M3-C2 İkinci Provider + Runtime Fallback** — OpenAICompatProvider, SystemTTSProvider, NonRetryableProviderError hiyerarşisi, resolve_and_invoke executor bağlantısı, 626 toplam (2026-04-04)
 - **M3-C1 Provider Registry** — ProviderCapability enum, ProviderRegistry (kayıt/çözümleme/admin seam), resolve_and_invoke (fallback+trace), _build_executor kaldırıldı, VisualsStepExecutor provider-agnostic, 15 yeni test, 606 toplam (2026-04-04)
 - **M2-C6 Full Stack Integration** — JobDispatcher (orchestration), step_initializer.py, POST /api/v1/jobs, GET /jobs/{id}/artifacts, asyncio.create_task GC koruması, 11 yeni test, 591 toplam (2026-04-04)
 - **M2-C5 Subtitle + Composition** — SubtitleStepExecutor (SRT), CompositionStepExecutor (props_ready), composition_map.py güvenli mapping, executors/ pakete bölündü, 22 yeni test, 580 toplam (2026-04-04)
