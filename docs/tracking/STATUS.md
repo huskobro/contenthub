@@ -20,7 +20,7 @@ M7-C4 tamamlandı:
 - `HTTP_422_UNPROCESSABLE_ENTITY` deprecation uyarısı giderildi
 - publish log boundary: `append_platform_event()` tek yol korundu — yeni endpointler bu boundary'yi bozmadı
 - publish step 7. adım olma durumu korundu — yeni testler 6-step varsayımı getirmedi
-- 24/24 M7-C4 + 955/955 full suite, 0 regression, 4 non-blocking test altyapısı uyarısı (bkz. Known Warnings)
+- 24/24 M7-C4 + 955/955 full suite, 0 regression, 3 kategori / 1–7 non-blocking test altyapısı uyarısı (sayı non-deterministic; bkz. Known Warnings)
 
 M7-C3 tamamlandı (hardening pass dahil):
 - `PublishStepExecutor` — upload + activate zincirini servis katmanına bağlar
@@ -93,11 +93,21 @@ M4 üç chunk ile tamamlandı:
 - VISUALS: AKTİF — VisualsStepExecutor kendi döngüsünde (bilinçli fark)
 - WHISPER: DEGRADED MODE — Whisper yoksa cursor-tabanlı timing; zincir değil, degrade
 
-**Known Warnings (non-blocking backlog):**
-- **W-01** `unittest.mock.py` `RuntimeWarning: coroutine '_run_pipeline' was never awaited` — `test_m2_c6_dispatcher_integration.py::test_dispatch_creates_background_task`. Mock framework, `asyncio.create_task` ile wrap edilmiş coroutine'i await etmiyor. Uygulama kodu değil, test mock kurulumu seviyesi. Kaynak: Python mock framework internal.
-- **W-02–W-06** `aiosqlite.core.py:102` `ResourceWarning: Connection deleted before being closed` — `test_m5_c1_rss_scan_engine.py` içinde birden fazla test. aiosqlite bağlantısı `async with` / `.close()` olmadan GC'ye düşüyor. Test teardown pattern sorunu; production bağlantı yönetimini etkilemiyor.
-- Toplam: 7 uyarı (run'a göre 4–7 arasında değişiyor), 0 blocking. Uygulama davranışı etkilenmiyor.
-- **Backlog:** W-01 → test_m2_c6 mock kurulumunu `AsyncMock` + `create_task` spy yerine daha temiz bir pattern'e taşı. W-02–W-06 → test_m5_c1 içinde `aiosqlite` bağlantılarını `async with` bloğuyla kapat. Önerilen faz: M8 (Hardening) veya dedicated test infrastructure cleanup.
+**Known Warnings (non-blocking backlog) — 3 kategori, 1–7 toplam (non-deterministic):**
+
+Uyarı sayısı her run'da farklı çıkar — thread teardown ve GC zamanlaması nedeniyle. Kategori sayısı sabittir: 3.
+
+- **W-01** `RuntimeWarning: coroutine '_run_pipeline' was never awaited`
+  Kaynak: `unittest.mock.py` veya `asyncio/base_events.py` — `test_m2_c6_dispatcher_integration.py::test_dispatch_creates_background_task`. Mock framework `asyncio.create_task` ile oluşturulan coroutine'i await etmiyor. Test mock kurulumu seviyesi; uygulama kodu değil. Her run'da tam olarak 1 kez görülür.
+
+- **W-02** `PytestUnhandledThreadExceptionWarning: Exception in thread _connection_worker_thread`
+  Kaynak: `_pytest/threadexception.py` — aiosqlite arka plan worker thread'i test teardown sırasında exception üretiyor. Run'a göre 0–4 arası görülür (non-deterministic). Test teardown zamanlaması; production thread yönetimini etkilemiyor.
+
+- **W-03** `ResourceWarning: Connection deleted before being closed`
+  Kaynak: `aiosqlite/core.py:102` — `test_m5_c1_rss_scan_engine.py`. aiosqlite bağlantısı `async with` / `.close()` olmadan GC'ye düşüyor. Run'a göre 0–6 arası görülür (non-deterministic). Test teardown pattern sorunu; production bağlantı yönetimini etkilemiyor.
+
+Tüm kategoriler test altyapısı / framework seviyesi. 0 blocking. Uygulama davranışı etkilenmiyor.
+**Backlog (Önerilen faz: M8 Hardening):** W-01 → test_m2_c6 mock pattern'ini `AsyncMock` + proper await ile düzelt. W-02+W-03 → test_m5_c1 aiosqlite bağlantılarını `async with` bloğuna al.
 
 **M3-C3 değişiklikleri:**
 - `registry.py` — `ProviderEntry`'ye runtime health alanları (invoke_count, error_count,
