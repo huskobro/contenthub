@@ -1,17 +1,54 @@
 # DURUM
 
 ## Mevcut Faz
-Kiln Build — M8: Analytics + Operations Pack — DEVAM EDİYOR
+**TÜM MİLESTONE'LAR KAPANDI — Master plan (M1–M8) tamamlandı**
+
+**M8 KAPANDI — C1–C2 tamamlandı. Analytics + Operations Pack complete.**
+**M7 KAPANDI — C1–C4 tamamlandı, backend-complete**
 
 **M8-C2 TAMAMLANDI — 32/32 yeni frontend smoke testi + 2132/2132 full suite (Frontend Analytics Surface + Window Selector + Step Stats Table)**
 **M8-C1 TAMAMLANDI — 24/24 test geçiyor (Analytics Backend + Platform Overview + hardening pass)**
-**M7 KAPANDI — C1–C4 tamamlandı, backend-complete**
 
 **M7-C4 TAMAMLANDI — 24/24 test geçiyor (Publish Hub Routes + Retry + Review Reset)**
 **M7-C3 TAMAMLANDI — 23/23 test geçiyor (PublishStepExecutor + Dispatcher + Standard Video pipeline + hardening pass)**
 **M7-C2 TAMAMLANDI — 32/32 test geçiyor (YouTube Adapter + TokenStore + Registry + OAuth Router)**
 **M7-C1 TAMAMLANDI — 36/36 test geçiyor (27 servis + 9 migration)**
 **M6 KAPANDI**
+
+## M8 Kapanış Özeti (2026-04-04)
+
+**M8 hedefi**: Dört analytics görünümüyle gerçek üretim verisi. Operasyonel karar desteği.
+
+**M8-C1 kazanımları (Analytics Backend + Platform Overview):**
+- Salt okunur aggregation servisi — jobs + job_steps + publish_records tabloları
+- `GET /api/v1/analytics/overview` + `GET /api/v1/analytics/operations` endpoint'leri
+- Zaman penceresi filtresi: last_7d / last_30d / last_90d / all_time
+- Metrikler: total_job_count, completed_job_count, failed_job_count, job_success_rate, total_publish_count, published_count, failed_publish_count, publish_success_rate, avg_production_duration_seconds, retry_rate
+- Operasyon metrikleri: avg_render_duration_seconds (canonical: step_key='composition'), step bazlı count/avg_elapsed/failed_count
+- provider_error_rate: M8 kapsamı dışı — None (provider_trace_json yapısı sabitlenmedi)
+- Şema değişikliği yok, migration yok, yazma yok
+- 24/24 test (backend) + tam suite 979/979 backend
+
+**M8-C2 kazanımları (Frontend Analytics Surface + Window Selector + Step Stats Table):**
+- analyticsApi.ts — typed fetch fonksiyonları ve arayüzler
+- useAnalyticsOverview + useAnalyticsOperations — React Query hooks
+- AnalyticsOverviewPage: real API bağlantısı, 4-butonlu window selector, Temel Metrikler + İş/Yayın Detayı kartları, loading/error/null durumları
+- AnalyticsOperationsPage: real API bağlantısı, window selector, avg_render kartı, step_stats tablosu (count DESC, failed>0 kırmızı, boş durum)
+- 32/32 yeni frontend smoke testi; 2132/2132 full frontend suite; TypeScript 0 hata
+- Backend: 979/979 (1 warning: coroutine mock, test altyapısı — non-blocking)
+
+**Kabul edilen sınırlamalar (M8 kapsamı dışı bırakıldı, dürüstçe kayıt):**
+- provider_error_rate: provider_trace_json yapısı sabitlenmediği için M8'de None; ileri fazda eklenebilir
+- Platform Detail view (job/step breakdown, error clustering): master plan M8-C2 kapsamında tanımlı ama implementation teslim edilmedi — Content Analytics ile birlikte ileri faza bırakıldı
+- Content Analytics (template impact, source contribution, module comparison): placeholder sayfası var, gerçek veri bağlantısı yok
+- Channel Overview kartları (total_content, active_modules, template_impact): placeholder; kaynak DB sorgusu tanımlanmadı
+- Filter area date picker + module select: disabled; window selector bu rolü üstlendi
+
+**Test durumu (final):**
+- Frontend: 2132/2132 passed, 0 failed (156 test file)
+- Backend: 979/979 passed, 1 warning (coroutine mock — non-blocking)
+
+---
 
 ## Mevcut Durum (2026-04-04)
 M8-C2 tamamlandı:

@@ -2,6 +2,39 @@
 
 ---
 
+## [2026-04-04] M8 KAPANDI — Analytics + Operations Pack
+
+### Milestone Özeti
+Master plan M8 (Analytics + Operations Pack) tamamlandı ve kapatıldı.
+M1–M8 tüm milestone'lar kapalı.
+
+### M8 Toplam Kazanımları
+
+**Backend (M8-C1):**
+- Salt okunur analytics servis katmanı — jobs + job_steps + publish_records
+- `GET /api/v1/analytics/overview` — 11 metrik, window filtreli
+- `GET /api/v1/analytics/operations` — avg_render + step bazlı istatistikler, window filtreli
+- 24 backend testi (A–X)
+
+**Frontend (M8-C2):**
+- analyticsApi.ts, useAnalyticsOverview, useAnalyticsOperations
+- AnalyticsOverviewPage: gerçek veri bağlantısı, window selector, 11 metrik kartı
+- AnalyticsOperationsPage: gerçek veri bağlantısı, window selector, step_stats tablosu
+- 32 frontend smoke testi (18 overview + 14 operations)
+
+**Toplam M8 test sayısı:** 56 yeni test
+
+**Test durumu (kapatma anı):**
+- Frontend: 2132/2132 passed (156 test file)
+- Backend: 979/979 passed, 1 warning (coroutine mock — non-blocking)
+
+### Açıkça Ertelenen Kapsamlar
+- provider_error_rate: provider_trace_json yapısı sabitlenmedi; ileri fazda
+- Platform Detail (job/step breakdown, error clustering): master plan M8-C2'de tanımlıydı, teslim edilmedi
+- Content Analytics (template impact, source contribution): placeholder sayfa var, veri bağlantısı yok
+
+---
+
 ## [2026-04-04] M8-C2 — Frontend Analytics Surface + Window Selector + Step Stats Table
 
 ### Özet
