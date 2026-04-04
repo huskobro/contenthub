@@ -304,7 +304,7 @@ def test_publish_no_subscribers():
 # ---------------------------------------------------------------------------
 
 class _SuccessExecutor(StepExecutor):
-    def step_type(self) -> str:
+    def step_key(self) -> str:
         return "script"
 
     async def execute(self, job: Job, step: JobStep) -> dict:
@@ -378,7 +378,7 @@ async def test_pipeline_works_without_event_bus():
 # ---------------------------------------------------------------------------
 
 class _FailingExecutor(StepExecutor):
-    def step_type(self) -> str:
+    def step_key(self) -> str:
         return "script"
 
     async def execute(self, job: Job, step: JobStep) -> dict:

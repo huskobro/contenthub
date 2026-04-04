@@ -11,7 +11,7 @@ Contract:
 
 Usage:
     class ScriptStepExecutor(StepExecutor):
-        def step_type(self) -> str:
+        def step_key(self) -> str:
             return "script"
 
         async def execute(self, job: Job, step: JobStep) -> dict:
@@ -47,6 +47,11 @@ class StepExecutor(ABC):
         ...
 
     @abstractmethod
-    def step_type(self) -> str:
-        """Return the step type string this executor handles (e.g. 'script')."""
+    def step_key(self) -> str:
+        """Return the step_key string this executor handles (e.g. 'script').
+
+        This must match the step_key value stored on JobStep rows that this
+        executor is responsible for. PipelineRunner uses this value as the
+        lookup key when building the executors registry.
+        """
         ...

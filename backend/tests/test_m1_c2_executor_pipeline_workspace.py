@@ -76,11 +76,11 @@ async def _create_step(
 class _OkExecutor(StepExecutor):
     """Always succeeds and returns a minimal result dict."""
 
-    def __init__(self, step_type_name: str):
-        self._step_type_name = step_type_name
+    def __init__(self, step_key_name: str):
+        self._step_key_name = step_key_name
 
-    def step_type(self) -> str:
-        return self._step_type_name
+    def step_key(self) -> str:
+        return self._step_key_name
 
     async def execute(self, job: Job, step: JobStep) -> dict:
         return {"status": "ok", "step": step.step_key}
@@ -89,11 +89,11 @@ class _OkExecutor(StepExecutor):
 class _FailExecutor(StepExecutor):
     """Always raises StepExecutionError."""
 
-    def __init__(self, step_type_name: str):
-        self._step_type_name = step_type_name
+    def __init__(self, step_key_name: str):
+        self._step_key_name = step_key_name
 
-    def step_type(self) -> str:
-        return self._step_type_name
+    def step_key(self) -> str:
+        return self._step_key_name
 
     async def execute(self, job: Job, step: JobStep) -> dict:
         raise StepExecutionError(step.step_key, "simulated failure")
@@ -218,9 +218,9 @@ class TestStepExecutorABC:
         with pytest.raises(TypeError):
             StepExecutor()  # type: ignore[abstract]
 
-    def test_concrete_subclass_returns_step_type(self):
+    def test_concrete_subclass_returns_step_key(self):
         ex = _OkExecutor("script")
-        assert ex.step_type() == "script"
+        assert ex.step_key() == "script"
 
     async def test_concrete_subclass_execute_returns_dict(self):
         ex = _OkExecutor("script")
@@ -312,7 +312,7 @@ class TestPipelineRunnerHappyPath:
         class _TrackingExecutor(StepExecutor):
             def __init__(self, name):
                 self._name = name
-            def step_type(self):
+            def step_key(self):
                 return self._name
             async def execute(self, job, step):
                 execution_order.append(step.step_key)
@@ -374,7 +374,7 @@ class TestPipelineRunnerStepFailure:
 
         class _TrackOk(StepExecutor):
             def __init__(self, name): self._name = name
-            def step_type(self): return self._name
+            def step_key(self): return self._name
             async def execute(self, job, step):
                 ran_steps.append(step.step_key)
                 return {}

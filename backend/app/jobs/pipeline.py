@@ -54,7 +54,7 @@ class PipelineRunner:
 
     Args:
         db         : async DB session owned by the caller
-        executors  : mapping of step_type → StepExecutor instance
+        executors  : mapping of step_key → StepExecutor instance
     """
 
     def __init__(
