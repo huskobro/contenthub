@@ -31,6 +31,7 @@ from app.jobs.exceptions import StepExecutionError
 from app.modules.language import SupportedLanguage
 from app.modules.standard_video.executors import TTSStepExecutor, VisualsStepExecutor
 from app.providers.base import ProviderOutput
+from app.providers.registry import ProviderRegistry
 
 
 # ---------------------------------------------------------------------------
@@ -98,6 +99,27 @@ def _make_tts_provider(duration_seconds: float = 5.0) -> MagicMock:
     mock = MagicMock()
     mock.invoke = AsyncMock(side_effect=fake_invoke)
     return mock
+
+
+def _make_mock_registry() -> MagicMock:
+    """ProviderRegistry mock'u döndürür — TTSStepExecutor için."""
+    return MagicMock(spec=ProviderRegistry)
+
+
+def _make_tts_patch(tts_mock: MagicMock):
+    """
+    resolve_and_invoke'u patch etmek için context manager döndürür.
+
+    resolve_and_invoke(registry, capability, input_data) imzasını sararak
+    tts_mock.invoke(input_data) çağrısına dönüştürür.
+    """
+    async def _side_effect(registry, capability, input_data):
+        return await tts_mock.invoke(input_data)
+
+    return patch(
+        "app.modules.standard_video.executors.tts.resolve_and_invoke",
+        new=AsyncMock(side_effect=_side_effect),
+    )
 
 
 def _make_pexels_provider(success: bool = True) -> MagicMock:
@@ -177,7 +199,7 @@ class TestTTSStepExecutor:
 
     @pytest.mark.asyncio
     async def test_edge_tts_communicate_cagrilir(self):
-        """edge_tts.Communicate doğru voice ile çağrılıyor mu."""
+        """resolve_and_invoke doğru voice ile çağrılıyor mu."""
         with tempfile.TemporaryDirectory() as tmpdir:
             job_id = "test-tts-1"
             workspace_root = str(Path(tmpdir) / job_id)
@@ -186,18 +208,19 @@ class TestTTSStepExecutor:
             ])
 
             tts_mock = _make_tts_provider()
-            executor = TTSStepExecutor(tts_provider=tts_mock)
             job = _make_job(job_id, workspace_root, language="tr")
             step = _make_step()
 
-            await executor.execute(job, step)
+            with _make_tts_patch(tts_mock) as mock_resolve:
+                executor = TTSStepExecutor(registry=_make_mock_registry())
+                await executor.execute(job, step)
 
-            # Invoke çağrıldı mı
-            assert tts_mock.invoke.call_count == 1
-            call_args = tts_mock.invoke.call_args[0][0]
-            assert call_args["text"] == "Merhaba dünya."
-            # Ses TR için AhmetNeural olmalı
-            assert call_args["voice"] == "tr-TR-AhmetNeural"
+                # resolve_and_invoke çağrıldı mı
+                assert mock_resolve.call_count == 1
+                call_input = mock_resolve.call_args[0][2]
+                assert call_input["text"] == "Merhaba dünya."
+                # Ses TR için AhmetNeural olmalı
+                assert call_input["voice"] == "tr-TR-AhmetNeural"
 
     @pytest.mark.asyncio
     async def test_tr_dil_ahmet_neural_kullanir(self):
@@ -210,11 +233,12 @@ class TestTTSStepExecutor:
             ])
 
             tts_mock = _make_tts_provider()
-            executor = TTSStepExecutor(tts_provider=tts_mock)
             job = _make_job(job_id, workspace_root, language="tr")
             step = _make_step()
 
-            result = await executor.execute(job, step)
+            with _make_tts_patch(tts_mock):
+                executor = TTSStepExecutor(registry=_make_mock_registry())
+                result = await executor.execute(job, step)
 
             assert result["voice"] == "tr-TR-AhmetNeural"
             assert result["language"] == "tr"
@@ -230,11 +254,12 @@ class TestTTSStepExecutor:
             ])
 
             tts_mock = _make_tts_provider()
-            executor = TTSStepExecutor(tts_provider=tts_mock)
             job = _make_job(job_id, workspace_root, language="en")
             step = _make_step()
 
-            result = await executor.execute(job, step)
+            with _make_tts_patch(tts_mock):
+                executor = TTSStepExecutor(registry=_make_mock_registry())
+                result = await executor.execute(job, step)
 
             assert result["voice"] == "en-US-ChristopherNeural"
             assert result["language"] == "en"
@@ -251,11 +276,12 @@ class TestTTSStepExecutor:
             ])
 
             tts_mock = _make_tts_provider(duration_seconds=4.0)
-            executor = TTSStepExecutor(tts_provider=tts_mock)
             job = _make_job(job_id, workspace_root, language="tr")
             step = _make_step()
 
-            result = await executor.execute(job, step)
+            with _make_tts_patch(tts_mock):
+                executor = TTSStepExecutor(registry=_make_mock_registry())
+                result = await executor.execute(job, step)
 
             # Manifest dosyasını oku ve doğrula
             manifest_path = Path(workspace_root) / "artifacts" / "audio_manifest.json"
@@ -270,7 +296,7 @@ class TestTTSStepExecutor:
 
     @pytest.mark.asyncio
     async def test_artifact_check_manifest_varsa_tekrar_calismaz(self):
-        """audio_manifest.json varsa TTS provider çağrılmaz."""
+        """audio_manifest.json varsa resolve_and_invoke çağrılmaz."""
         with tempfile.TemporaryDirectory() as tmpdir:
             job_id = "test-tts-idempotent"
             workspace_root = str(Path(tmpdir) / job_id)
@@ -293,14 +319,15 @@ class TestTTSStepExecutor:
             )
 
             tts_mock = _make_tts_provider()
-            executor = TTSStepExecutor(tts_provider=tts_mock)
             job = _make_job(job_id, workspace_root, language="tr")
             step = _make_step()
 
-            result = await executor.execute(job, step)
+            with _make_tts_patch(tts_mock) as mock_resolve:
+                executor = TTSStepExecutor(registry=_make_mock_registry())
+                result = await executor.execute(job, step)
 
-            # TTS provider çağrılmamış olmalı
-            assert tts_mock.invoke.call_count == 0
+                # resolve_and_invoke çağrılmamış olmalı (artifact_check erken döndü)
+                assert mock_resolve.call_count == 0
             assert result.get("skipped") is True
 
 
@@ -503,11 +530,12 @@ class TestProviderTraceLanguage:
             ])
 
             tts_mock = _make_tts_provider()
-            executor = TTSStepExecutor(tts_provider=tts_mock)
             job = _make_job(job_id, workspace_root, language="tr")
             step = _make_step()
 
-            result = await executor.execute(job, step)
+            with _make_tts_patch(tts_mock):
+                executor = TTSStepExecutor(registry=_make_mock_registry())
+                result = await executor.execute(job, step)
 
             assert "provider" in result
             assert "language" in result["provider"]

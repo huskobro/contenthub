@@ -215,11 +215,12 @@ async def test_dispatch_builds_executors_with_correct_providers(
     assert "composition" in executors, "composition executor eksik"
 
     # Provider inject kontrolü — registry üzerinden
-    assert executors["script"]._llm is providers["llm"], "script executor yanlış llm_provider aldı"
-    assert executors["tts"]._tts is providers["tts"], "tts executor yanlış tts_provider aldı"
+    # M3-C2: script/metadata/tts executor'ları artık _llm/_tts değil _registry tutuyor
+    assert executors["script"]._registry is registry, "script executor yanlış registry aldı"
+    assert executors["metadata"]._registry is registry, "metadata executor yanlış registry aldı"
+    assert executors["tts"]._registry is registry, "tts executor yanlış registry aldı"
     assert executors["visuals"]._providers[0] is providers["visuals_primary"], "visuals executor yanlış primary aldı"
     assert executors["visuals"]._providers[1] is providers["visuals_fallback"], "visuals executor yanlış fallback aldı"
-    assert executors["metadata"]._llm is providers["llm"], "metadata executor yanlış llm_provider aldı"
 
 
 # ===========================================================================

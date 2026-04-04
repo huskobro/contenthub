@@ -1,10 +1,15 @@
 """
 Ses üretimi (TTS) adımı executor'ı (TTSStepExecutor).
 
-Her sahne için narration metni → EdgeTTS → ses dosyası üretir.
+Her sahne için narration metni → resolve_and_invoke(TTS) → ses dosyası üretir.
 artifact_check idempotency tipi: audio_manifest.json varsa adımı atlar.
 
 Ses süresi: karakter sayısı / 15 yaklaşımı (gerçek ölçüm M4'te Whisper ile).
+
+M3-C2: tts_provider → registry alıyor.
+       resolve_and_invoke üzerinden fallback zinciri tam aktif.
+       EdgeTTS başarısız → SystemTTSProvider (noop stub) fallback olarak devreye girer.
+       NOT: SystemTTSProvider üretim için değildir; test/zincir doğrulama amaçlıdır.
 """
 
 from __future__ import annotations
@@ -17,6 +22,9 @@ from pathlib import Path
 from app.db.models import Job, JobStep
 from app.jobs.executor import StepExecutor
 from app.jobs.exceptions import StepExecutionError
+from app.providers.capability import ProviderCapability
+from app.providers.registry import ProviderRegistry
+from app.providers.resolution import resolve_and_invoke
 
 from ._helpers import _resolve_artifact_path, _write_artifact, _read_artifact
 
@@ -25,20 +33,21 @@ logger = logging.getLogger(__name__)
 
 class TTSStepExecutor(StepExecutor):
     """
-    Ses üretimi (TTS) adımı executor'ı (M2-C4).
+    Ses üretimi (TTS) adımı executor'ı (M2-C4 / M3-C2).
 
-    Her sahne için narration metni → EdgeTTS → ses dosyası üretir.
+    Her sahne için narration metni → resolve_and_invoke(TTS) → ses dosyası üretir.
     artifact_check idempotency tipi: audio_manifest.json varsa adımı atlar.
 
     Ses süresi: karakter sayısı / 15 yaklaşımı (gerçek ölçüm M4'te Whisper ile).
+    resolve_and_invoke üzerinden primary TTS çağrılır; başarısızsa fallback zinciri denenir.
     """
 
-    def __init__(self, tts_provider) -> None:
+    def __init__(self, registry: ProviderRegistry) -> None:
         """
         Args:
-            tts_provider: EdgeTTSProvider (veya test mock'u).
+            registry: Provider kayıt defteri — resolve_and_invoke bu registry ile çağrılır.
         """
-        self._tts = tts_provider
+        self._registry = registry
 
     def step_key(self) -> str:
         """Bu executor'ın sorumlu olduğu adım anahtarı."""
@@ -150,11 +159,15 @@ class TTSStepExecutor(StepExecutor):
             relative_path = f"artifacts/audio/{audio_filename}"
 
             try:
-                output = await self._tts.invoke({
-                    "text": narration,
-                    "voice": voice,
-                    "output_path": str(audio_path),
-                })
+                output = await resolve_and_invoke(
+                    self._registry,
+                    ProviderCapability.TTS,
+                    {
+                        "text": narration,
+                        "voice": voice,
+                        "output_path": str(audio_path),
+                    },
+                )
             except Exception as err:
                 raise StepExecutionError(
                     self.step_key(),

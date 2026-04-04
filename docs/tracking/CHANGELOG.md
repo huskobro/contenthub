@@ -2,31 +2,48 @@
 
 ---
 
-## [2026-04-04] M3-C2 — İkinci Provider + Fallback Trigger
+## [2026-04-04] M3-C2 — İkinci Provider + Fallback Trigger + Runtime Bağlantısı
 
-**Ne:**
-- `_openai_compat_base.py` — OpenAI uyumlu HTTP çağrısı paylaşılan helper (`openai_compat_chat_completions`). httpx.Timeout/Connect hataları ProviderInvokeError'a dönüştürülüyor.
-- `openai_compat_provider.py` — `OpenAICompatProvider` (base_url/api_key/model parametrik). provider_id formatı: `openai_compat_{model}`. OpenAI, Groq, Ollama vb. aynı sınıfla kullanılabilir.
-- `system_tts_provider.py` — `SystemTTSProvider` noop stub (provider_id: `noop_tts_fallback`). Gerçek ses üretmez, boş MP3 yazar. Yalnızca fallback zinciri testleri için; üretim kullanımı değil.
-- `KieAiProvider` refactored — `_openai_compat_base` kullanıyor; kod tekrarı kaldırıldı.
-- `exceptions.py` — `NonRetryableProviderError(ProviderInvokeError)`, `InputValidationError`, `ConfigurationError` eklendi.
-- `resolution.py` — NonRetryableProviderError yakalanamaz, direkt iletilir. httpx.TimeoutException ve httpx.ConnectError fallback tetikler. Fallback başarılı olduğunda trace'e `fallback_from: "<primary_id>"` eklendi.
-- `config.py` — `openai_api_key: str = ""` eklendi.
-- `main.py` — LLM fallback (key varsa `openai_compat_gpt-4o-mini`), TTS fallback (her zaman `noop_tts_fallback`) kaydedildi.
-- `.env.example` — `CONTENTHUB_OPENAI_API_KEY=` eklendi.
+**Ne (ilk commit):**
+- `_openai_compat_base.py` — OpenAI uyumlu HTTP çağrısı paylaşılan helper
+- `openai_compat_provider.py` — `OpenAICompatProvider` (base_url/api_key/model parametrik)
+- `system_tts_provider.py` — `SystemTTSProvider` noop stub (test seam, üretim değil)
+- `KieAiProvider` — `_openai_compat_base` kullanıyor (kod tekrarı kaldırıldı)
+- `exceptions.py` — `NonRetryableProviderError`, `InputValidationError`, `ConfigurationError`
+- `resolution.py` — NonRetryableProviderError direkt; `fallback_from` trace alanı
+- `config.py` / `main.py` / `.env.example` — openai_api_key, ikinci provider kayıtları
 
-**Sistem davranışı:** Primary LLM veya TTS başarısız olduğunda fallback zinciri devreye girer. NonRetryableProviderError (girdi hatası, yapılandırma hatası) fallback yapmaz — zinciri durdurur. Trace'de `resolution_role: "fallback"` ve `fallback_from: "<primary>"` alanları bulunur.
+**Ne (düzeltme commit — aynı tur):**
+
+Teslim raporunda tespit edildi: LLM ve TTS executor'ları `resolve_and_invoke` kullanmıyordu —
+fallback teorik olarak vardı ama pratikte çalışmıyordu. Aynı turda düzeltildi:
+
+- `ScriptStepExecutor` — `llm_provider` → `registry: ProviderRegistry`; invoke `resolve_and_invoke` üzerinden
+- `MetadataStepExecutor` — aynı
+- `TTSStepExecutor` — `tts_provider` → `registry: ProviderRegistry`; her sahne için `resolve_and_invoke`
+- `dispatcher.py` — `get_primary()` yerine `registry` inject; docstring güncellendi
+- 7 test dosyası güncellendi (test_m2_c1, test_m2_c3, test_m2_c4, test_m2_c6, test_m3_c1, test_m3_c2) — `resolve_and_invoke` patch stratejisi
+
+**Fallback aktiflik durumu (M3-C2 sonrası):**
+- LLM: AKTİF — `resolve_and_invoke(registry, LLM, input)` → KieAI primary, OpenAICompat fallback
+- TTS: AKTİF — `resolve_and_invoke(registry, TTS, input)` → EdgeTTS primary, SystemTTS fallback
+- VISUALS: AKTİF — VisualsStepExecutor kendi döngüsünde (Pexels→Pixabay, sahne bazında)
+
+NOTE: LLM/TTS `resolve_and_invoke` kullanır; VISUALS executor kendi döngüsünü çalıştırır.
+Bu farklı mekanizma bilinçlidir: visuals sahne bazında çalışır (sahne başına farklı provider olabilir),
+LLM/TTS job bazında çalışır.
 
 **Mimari kısıtlar korundu:**
-- `resolution.py` capability-specific mantık almadı.
-- Registry tek otorite olarak kaldı — dispatcher değişmedi.
-- KieAiProvider ile OpenAICompatProvider arasında kod tekrarı yok (`_openai_compat_base` paylaşımlı).
+- `resolution.py` capability-specific mantık almadı
+- Registry tek otorite — dispatcher kaynak kodu değişmedi
+- KieAI ve OpenAICompat arasında kod tekrarı yok
 
 **Kısıtlar / Borç:**
-- `SystemTTSProvider` üretim için tasarlanmamıştır. Gerçek ikincil TTS gerekirken ElevenLabs/Azure/Coqui entegre edilmeli.
-- `openai_api_key` boşsa LLM fallback kaydedilmez — bu kasıtlı davranış.
+- `SystemTTSProvider` üretim için tasarlanmamış; gerçek ses üretmez
+- `openai_api_key` boşsa LLM fallback kaydedilmez (kasıtlı)
+- `_build_executor_from_registry` if-zinciri 4 dal — 3. modülde refactor noktası olacak
 
-**Test:** 20 yeni test, 626 toplam. test_m2_c2 patch hedefleri `_openai_compat_base`'e güncellendi.
+**Test:** 626/626 geçiyor. 20 yeni M3-C2 testi + 7 dosyada imza uyarlaması.
 
 ---
 

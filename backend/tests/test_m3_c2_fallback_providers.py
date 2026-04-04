@@ -271,7 +271,11 @@ async def test_primary_llm_fail_fallback_llm_kullaniliyor():
 # ---------------------------------------------------------------------------
 
 def test_build_executor_from_registry_iki_llm_varken():
-    """_build_executor_from_registry iki LLM kayıtlı iken hâlâ sadece primary'yi inject eder."""
+    """_build_executor_from_registry iki LLM kayıtlı iken registry'nin tamamını inject eder.
+
+    M3-C2: executor artık tek provider değil registry'yi tutuyor.
+    resolve_and_invoke executor içinden çağrılır ve primary→fallback zincirini yönetir.
+    """
     from app.modules.standard_video.executors import ScriptStepExecutor
 
     registry = ProviderRegistry()
@@ -283,8 +287,10 @@ def test_build_executor_from_registry_iki_llm_varken():
 
     executor = _build_executor_from_registry(ScriptStepExecutor, registry)
     assert isinstance(executor, ScriptStepExecutor)
-    # Primary inject ediliyor
-    assert executor._llm is primary_llm
+    # M3-C2: executor registry'nin tamamını tutuyor — fallback zinciri resolve_and_invoke'a devredildi
+    assert executor._registry is registry
+    # Registry'de iki LLM provider kayıtlı
+    assert len(registry.get_chain(ProviderCapability.LLM)) == 2
 
 
 # ---------------------------------------------------------------------------

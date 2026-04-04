@@ -302,19 +302,22 @@ class TestStubExecutors:
     def test_script_executor_step_key(self):
         """ScriptStepExecutor 'script' step_key döndürmeli."""
         from unittest.mock import MagicMock
-        executor = ScriptStepExecutor(llm_provider=MagicMock())
+        from app.providers.registry import ProviderRegistry
+        executor = ScriptStepExecutor(registry=MagicMock(spec=ProviderRegistry))
         assert executor.step_key() == "script"
 
     def test_metadata_executor_step_key(self):
         """MetadataStepExecutor 'metadata' step_key döndürmeli."""
         from unittest.mock import MagicMock
-        executor = MetadataStepExecutor(llm_provider=MagicMock())
+        from app.providers.registry import ProviderRegistry
+        executor = MetadataStepExecutor(registry=MagicMock(spec=ProviderRegistry))
         assert executor.step_key() == "metadata"
 
     def test_tts_executor_step_key(self):
-        """TTSStepExecutor 'tts' step_key döndürmeli — provider mock ile."""
+        """TTSStepExecutor 'tts' step_key döndürmeli — registry mock ile."""
         from unittest.mock import MagicMock
-        executor = TTSStepExecutor(tts_provider=MagicMock())
+        from app.providers.registry import ProviderRegistry
+        executor = TTSStepExecutor(registry=MagicMock(spec=ProviderRegistry))
         assert executor.step_key() == "tts"
 
     def test_visuals_executor_step_key(self):
@@ -336,10 +339,12 @@ class TestStubExecutors:
     def test_tum_executor_step_keyleri_benzersiz(self):
         """Tüm executor step_key değerleri benzersiz olmalıdır."""
         from unittest.mock import MagicMock
+        from app.providers.registry import ProviderRegistry
+        mock_reg = MagicMock(spec=ProviderRegistry)
         executors = [
-            ScriptStepExecutor(llm_provider=MagicMock()),
-            MetadataStepExecutor(llm_provider=MagicMock()),
-            TTSStepExecutor(tts_provider=MagicMock()),
+            ScriptStepExecutor(registry=mock_reg),
+            MetadataStepExecutor(registry=mock_reg),
+            TTSStepExecutor(registry=mock_reg),
             VisualsStepExecutor(providers=[MagicMock(), MagicMock()]),
             SubtitleStepExecutor(),
             CompositionStepExecutor(),

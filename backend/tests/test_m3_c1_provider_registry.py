@@ -250,7 +250,8 @@ def test_dispatcher_script_executor_registry_uzerinden():
 
     executor = _build_executor_from_registry(ScriptStepExecutor, registry)
     assert isinstance(executor, ScriptStepExecutor)
-    assert executor._llm is llm
+    # M3-C2: executor artık _llm değil _registry tutuyor
+    assert executor._registry is registry
 
 
 # ---------------------------------------------------------------------------

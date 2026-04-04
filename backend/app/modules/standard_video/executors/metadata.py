@@ -1,7 +1,10 @@
 """
 Metadata adımı executor'ı (MetadataStepExecutor).
 
-Script artifact → LLM prompt → KieAiProvider → metadata.json artifact.
+Script artifact → LLM prompt → resolve_and_invoke(LLM) → metadata.json artifact.
+
+M3-C2: llm_provider → registry alıyor.
+       resolve_and_invoke üzerinden fallback zinciri tam aktif.
 """
 
 from __future__ import annotations
@@ -12,6 +15,9 @@ import logging
 from app.db.models import Job, JobStep
 from app.jobs.executor import StepExecutor
 from app.jobs.exceptions import StepExecutionError
+from app.providers.capability import ProviderCapability
+from app.providers.registry import ProviderRegistry
+from app.providers.resolution import resolve_and_invoke
 
 from ._helpers import _strip_markdown_json, _write_artifact, _read_artifact
 
@@ -22,15 +28,17 @@ class MetadataStepExecutor(StepExecutor):
     """
     Metadata adımı executor'ı.
 
-    Script artifact → LLM prompt → KieAiProvider → metadata.json artifact.
+    Script artifact → LLM prompt → resolve_and_invoke(LLM) → metadata.json artifact.
+
+    resolve_and_invoke üzerinden primary LLM çağrılır; başarısızsa fallback zinciri denenir.
     """
 
-    def __init__(self, llm_provider) -> None:
+    def __init__(self, registry: ProviderRegistry) -> None:
         """
         Args:
-            llm_provider: BaseProvider instance (KieAiProvider veya mock).
+            registry: Provider kayıt defteri — resolve_and_invoke bu registry ile çağrılır.
         """
-        self._llm = llm_provider
+        self._registry = registry
 
     def step_key(self) -> str:
         """Bu executor'ın sorumlu olduğu adım anahtarı."""
@@ -61,7 +69,6 @@ class MetadataStepExecutor(StepExecutor):
         """
         from app.modules.step_context import StepExecutionContext
         from app.modules.prompt_builder import build_metadata_prompt
-        from app.providers.base import ProviderOutput
 
         raw_input_str = getattr(job, "input_data_json", None) or "{}"
         try:
@@ -105,7 +112,11 @@ class MetadataStepExecutor(StepExecutor):
         )
 
         try:
-            output: ProviderOutput = await self._llm.invoke({"messages": messages})
+            output = await resolve_and_invoke(
+                self._registry,
+                ProviderCapability.LLM,
+                {"messages": messages},
+            )
         except Exception as err:
             raise StepExecutionError(self.step_key(), f"LLM çağrısı başarısız: {err}")
 

@@ -20,7 +20,7 @@ Test kapsamı:
 import json
 import tempfile
 from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
@@ -34,6 +34,7 @@ from app.modules.step_context import StepExecutionContext
 from app.modules.prompt_builder import build_script_prompt, build_metadata_prompt
 from app.modules.standard_video.executors import ScriptStepExecutor, MetadataStepExecutor
 from app.providers.base import ProviderOutput
+from app.providers.registry import ProviderRegistry
 
 
 # ===========================================================================
@@ -236,6 +237,28 @@ def _make_mock_llm(response_dict: dict) -> AsyncMock:
     return mock_provider
 
 
+def _make_resolve_output(response_dict: dict) -> ProviderOutput:
+    """resolve_and_invoke patch'i için ProviderOutput döndürür."""
+    return ProviderOutput(
+        result={"content": json.dumps(response_dict), "finish_reason": "stop"},
+        trace={
+            "provider_id": "mock_llm",
+            "model": "mock-model",
+            "input_tokens": 100,
+            "output_tokens": 200,
+            "latency_ms": 50,
+            "resolution_role": "primary",
+            "resolved_by": "provider_registry",
+        },
+        provider_id="mock_llm",
+    )
+
+
+def _make_mock_registry() -> MagicMock:
+    """ProviderRegistry mock'u oluşturur."""
+    return MagicMock(spec=ProviderRegistry)
+
+
 def _make_mock_job(job_id: str, workspace_root: str, input_data: dict) -> MagicMock:
     """Job ORM mock'u oluşturur."""
     job = MagicMock()
@@ -254,7 +277,7 @@ def _make_mock_step(step_key: str) -> MagicMock:
 
 @pytest.mark.asyncio
 async def test_script_executor_calls_llm_with_correct_format():
-    """Test 9: ScriptStepExecutor LLM'i doğru mesaj formatıyla çağırır."""
+    """Test 9: ScriptStepExecutor resolve_and_invoke'u doğru input ile çağırır."""
     script_response = {
         "title": "Test Senaryosu",
         "scenes": [
@@ -263,7 +286,7 @@ async def test_script_executor_calls_llm_with_correct_format():
         "total_duration_seconds": 60,
         "language": "tr",
     }
-    mock_llm = _make_mock_llm(script_response)
+    resolve_output = _make_resolve_output(script_response)
 
     with tempfile.TemporaryDirectory() as tmp_dir:
         workspace_root = str(Path(tmp_dir) / "test_job")
@@ -276,14 +299,19 @@ async def test_script_executor_calls_llm_with_correct_format():
         )
         step = _make_mock_step("script")
 
-        executor = ScriptStepExecutor(llm_provider=mock_llm)
-        result = await executor.execute(job, step)
+        with patch(
+            "app.modules.standard_video.executors.script.resolve_and_invoke",
+            new=AsyncMock(return_value=resolve_output),
+        ) as mock_resolve:
+            executor = ScriptStepExecutor(registry=_make_mock_registry())
+            result = await executor.execute(job, step)
 
-        # LLM çağrıldı mı?
-        mock_llm.invoke.assert_called_once()
-        call_args = mock_llm.invoke.call_args[0][0]
-        assert "messages" in call_args
-        assert len(call_args["messages"]) == 2
+            # resolve_and_invoke çağrıldı mı?
+            mock_resolve.assert_called_once()
+            call_args = mock_resolve.call_args[0]
+            # input_data["messages"] kontrolü
+            assert "messages" in call_args[2]
+            assert len(call_args[2]["messages"]) == 2
 
         # Sonuç doğru alanları içeriyor mu?
         assert result["step"] == "script"
@@ -304,7 +332,7 @@ async def test_script_executor_artifact_written_with_language():
         "total_duration_seconds": 60,
         "language": "tr",
     }
-    mock_llm = _make_mock_llm(script_response)
+    resolve_output = _make_resolve_output(script_response)
 
     with tempfile.TemporaryDirectory() as tmp_dir:
         workspace_root = str(Path(tmp_dir) / "lang_test_job")
@@ -316,8 +344,12 @@ async def test_script_executor_artifact_written_with_language():
         )
         step = _make_mock_step("script")
 
-        executor = ScriptStepExecutor(llm_provider=mock_llm)
-        result = await executor.execute(job, step)
+        with patch(
+            "app.modules.standard_video.executors.script.resolve_and_invoke",
+            new=AsyncMock(return_value=resolve_output),
+        ):
+            executor = ScriptStepExecutor(registry=_make_mock_registry())
+            result = await executor.execute(job, step)
 
         # Artifact dosyası yazıldı mı?
         artifact_path = Path(result["artifact_path"])
@@ -338,7 +370,7 @@ async def test_script_executor_provider_trace_contains_language():
         "total_duration_seconds": 30,
         "language": "en",
     }
-    mock_llm = _make_mock_llm(script_response)
+    resolve_output = _make_resolve_output(script_response)
 
     with tempfile.TemporaryDirectory() as tmp_dir:
         workspace_root = str(Path(tmp_dir) / "trace_test_job")
@@ -350,8 +382,12 @@ async def test_script_executor_provider_trace_contains_language():
         )
         step = _make_mock_step("script")
 
-        executor = ScriptStepExecutor(llm_provider=mock_llm)
-        result = await executor.execute(job, step)
+        with patch(
+            "app.modules.standard_video.executors.script.resolve_and_invoke",
+            new=AsyncMock(return_value=resolve_output),
+        ):
+            executor = ScriptStepExecutor(registry=_make_mock_registry())
+            result = await executor.execute(job, step)
 
         # Provider trace'de language var mı?
         assert "language" in result
@@ -401,11 +437,16 @@ async def test_metadata_executor_reads_script_writes_metadata():
         )
         step = _make_mock_step("metadata")
 
-        executor = MetadataStepExecutor(llm_provider=mock_llm)
-        result = await executor.execute(job, step)
+        resolve_output = _make_resolve_output(metadata_response)
+        with patch(
+            "app.modules.standard_video.executors.metadata.resolve_and_invoke",
+            new=AsyncMock(return_value=resolve_output),
+        ) as mock_resolve:
+            executor = MetadataStepExecutor(registry=_make_mock_registry())
+            result = await executor.execute(job, step)
 
-        # LLM çağrıldı mı?
-        mock_llm.invoke.assert_called_once()
+            # resolve_and_invoke çağrıldı mı?
+            mock_resolve.assert_called_once()
 
         # Sonuç doğru mu?
         assert result["step"] == "metadata"
@@ -426,8 +467,6 @@ async def test_metadata_executor_raises_if_script_missing():
     """MetadataStepExecutor script artifact yoksa StepExecutionError fırlatır."""
     from app.jobs.exceptions import StepExecutionError
 
-    mock_llm = AsyncMock()  # Çağrılmamalı
-
     with tempfile.TemporaryDirectory() as tmp_dir:
         workspace_root = str(Path(tmp_dir) / "no_script_job")
         # artifacts dizini var ama script.json yok
@@ -439,21 +478,23 @@ async def test_metadata_executor_raises_if_script_missing():
         )
         step = _make_mock_step("metadata")
 
-        executor = MetadataStepExecutor(llm_provider=mock_llm)
-        with pytest.raises(StepExecutionError) as exc_info:
-            await executor.execute(job, step)
+        with patch(
+            "app.modules.standard_video.executors.metadata.resolve_and_invoke",
+            new=AsyncMock(),
+        ) as mock_resolve:
+            executor = MetadataStepExecutor(registry=_make_mock_registry())
+            with pytest.raises(StepExecutionError) as exc_info:
+                await executor.execute(job, step)
 
-        assert "Script artifact" in str(exc_info.value) or "script.json" in str(exc_info.value)
-        # LLM çağrılmadı
-        mock_llm.invoke.assert_not_called()
+            assert "Script artifact" in str(exc_info.value) or "script.json" in str(exc_info.value)
+            # resolve_and_invoke çağrılmadı — hata script eksikliğinden önce oluştu
+            mock_resolve.assert_not_called()
 
 
 @pytest.mark.asyncio
 async def test_script_executor_invalid_language_raises():
     """ScriptStepExecutor geçersiz dil → StepExecutionError (sessiz fallback yok)."""
     from app.jobs.exceptions import StepExecutionError
-
-    mock_llm = AsyncMock()  # Çağrılmamalı
 
     with tempfile.TemporaryDirectory() as tmp_dir:
         workspace_root = str(Path(tmp_dir) / "invalid_lang_job")
@@ -465,9 +506,13 @@ async def test_script_executor_invalid_language_raises():
         )
         step = _make_mock_step("script")
 
-        executor = ScriptStepExecutor(llm_provider=mock_llm)
-        with pytest.raises(StepExecutionError):
-            await executor.execute(job, step)
+        with patch(
+            "app.modules.standard_video.executors.script.resolve_and_invoke",
+            new=AsyncMock(),
+        ) as mock_resolve:
+            executor = ScriptStepExecutor(registry=_make_mock_registry())
+            with pytest.raises(StepExecutionError):
+                await executor.execute(job, step)
 
-        # LLM çağrılmadı — geçersiz dil erken yaklandı
-        mock_llm.invoke.assert_not_called()
+            # resolve_and_invoke çağrılmadı — geçersiz dil erken yaklandı
+            mock_resolve.assert_not_called()

@@ -1,5 +1,5 @@
 """
-Job Dispatcher (M2-C6 / M3-C1)
+Job Dispatcher (M2-C6 / M3-C1 / M3-C2)
 
 Job yaratıldıktan sonra pipeline'ı arka planda başlatır.
 Tüm orchestration mantığı burada toplanır — service.py'ye veya pipeline.py'ye sızmaz.
@@ -19,6 +19,8 @@ Bu dosyada YOKTUR:
 
 M3-C1: _build_executor geçici köprüsü kaldırıldı.
        JobDispatcher artık providers dict değil ProviderRegistry alıyor.
+M3-C2: LLM/TTS executor'ları registry zincirini alıyor (get_primary → get_chain).
+       resolve_and_invoke executor içinden çağrılır — fallback zinciri tam aktif.
 """
 
 import asyncio
@@ -54,8 +56,11 @@ def _build_executor_from_registry(
     Executor sınıfına göre registry'den provider çözümler ve instance döner.
 
     LLM gerektiren executor'lar: ScriptStepExecutor, MetadataStepExecutor
+      → registry zincirini alır; resolve_and_invoke executor içinden çağrılır.
     TTS gerektiren executor'lar: TTSStepExecutor
-    VISUALS gerektiren executor'lar: VisualsStepExecutor (zincir alır)
+      → registry zincirini alır; resolve_and_invoke executor içinden çağrılır.
+    VISUALS gerektiren executor'lar: VisualsStepExecutor
+      → registry zincirini alır; executor sahne başına kendi fallback döngüsünü çalıştırır.
     Provider gerektirmeyen executor'lar: SubtitleStepExecutor, CompositionStepExecutor
 
     Args:
@@ -67,15 +72,15 @@ def _build_executor_from_registry(
     """
     if executor_class is ScriptStepExecutor:
         return ScriptStepExecutor(
-            llm_provider=registry.get_primary(ProviderCapability.LLM)
+            registry=registry,
         )
     if executor_class is MetadataStepExecutor:
         return MetadataStepExecutor(
-            llm_provider=registry.get_primary(ProviderCapability.LLM)
+            registry=registry,
         )
     if executor_class is TTSStepExecutor:
         return TTSStepExecutor(
-            tts_provider=registry.get_primary(ProviderCapability.TTS)
+            registry=registry,
         )
     if executor_class is VisualsStepExecutor:
         visuals_chain = registry.get_chain(ProviderCapability.VISUALS)

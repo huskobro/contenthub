@@ -3,22 +3,35 @@
 ## Mevcut Faz
 Kiln Build — M3: Provider Registry + Fallback Pack
 
-**M3-C2 TAMAMLANDI — 626 test geçiyor**
+**M3-C2 TAMAMLANDI (düzeltme dahil) — 626 test geçiyor**
 
 ## Mevcut Durum (2026-04-04)
-M3-C2 tamamlandı. İkinci LLM ve TTS provider kaydedildi, fallback trigger kuralları netleştirildi, provider trace zenginleştirildi.
+M3-C2 tamamlandı ve düzeltme commit'i uygulandı. İkinci LLM ve TTS provider kaydedildi,
+fallback trigger kuralları netleştirildi, provider trace zenginleştirildi.
 
-**M3-C2 değişiklikleri:**
-- `_openai_compat_base.py` — OpenAI uyumlu HTTP çağrısı paylaşılan base (httpx, parse, hata dönüşümü)
-- `openai_compat_provider.py` — parametrik OpenAI uyumlu LLM provider (base_url/api_key/model)
-- `system_tts_provider.py` — noop TTS fallback stub (fallback zinciri testi için, üretim değil)
-- `KieAiProvider` refactored — `_openai_compat_base` kullanıyor (kod tekrarı kaldırıldı)
-- `exceptions.py` — `NonRetryableProviderError`, `InputValidationError`, `ConfigurationError` eklendi
-- `resolution.py` — NonRetryableProviderError direkt fırlatılır (fallback yapılmaz); httpx.Timeout/Connect da fallback'e girer; `fallback_from` trace alanı eklendi
-- `config.py` — `openai_api_key` alanı eklendi
-- `main.py` — ikinci LLM (key varsa) + ikinci TTS (her zaman) kaydedildi
-- `.env.example` — `CONTENTHUB_OPENAI_API_KEY` eklendi
-- 20 yeni M3-C2 testi, test_m2_c2 patch hedefleri güncellendi
+**M3-C2 temel değişiklikleri:**
+- `_openai_compat_base.py` — OpenAI uyumlu HTTP çağrısı paylaşılan base
+- `openai_compat_provider.py` — parametrik OpenAI uyumlu LLM provider
+- `system_tts_provider.py` — noop TTS fallback stub (test seam, üretim değil)
+- `KieAiProvider` — `_openai_compat_base` kullanıyor (kod tekrarı kaldırıldı)
+- `exceptions.py` — `NonRetryableProviderError`, `InputValidationError`, `ConfigurationError`
+- `resolution.py` — NonRetryableProviderError direkt; fallback_from trace alanı
+- `config.py` / `main.py` / `.env.example` — openai_api_key, ikinci provider kayıtları
+
+**M3-C2 düzeltme (aynı turda):**
+- `ScriptStepExecutor`, `MetadataStepExecutor`, `TTSStepExecutor` → artık `registry` alıyor
+- `resolve_and_invoke` executor içinden çağrılıyor — LLM/TTS fallback tam aktif
+- `_build_executor_from_registry` → `get_primary()` yerine `registry` inject
+- 7 test dosyası güncellendi — eski `llm_provider=` / `tts_provider=` imzaları kaldırıldı
+- 626/626 test geçiyor
+
+**Fallback aktiflik durumu (M3-C2 sonrası):**
+- LLM fallback: AKTİF — `resolve_and_invoke` üzerinden, OpenAICompatProvider zincirde
+- TTS fallback: AKTİF — `resolve_and_invoke` üzerinden, SystemTTSProvider zincirde
+- VISUALS fallback: AKTİF — VisualsStepExecutor kendi döngüsünde (Pexels→Pixabay)
+
+NOT: `resolve_and_invoke` ve VisualsStepExecutor döngüsü farklı mekanizma kullanıyor
+(bilinçli fark — visuals sahne bazında çalışır, LLM/TTS iş bazında).
 
 **Sonraki**: M3-C3 — Provider sağlık durumu, maliyet takibi, settings registry bağlantısı.
 
