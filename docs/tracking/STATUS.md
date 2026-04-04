@@ -1,9 +1,9 @@
 # DURUM
 
 ## Mevcut Faz
-Kiln Build — M5: News Ingestion + Bulletin Pipeline Pack — DEVAM EDİYOR
+Kiln Build — M5: News Ingestion + Bulletin Pipeline Pack — TAMAMLANDI
 
-**M5-C3 TAMAMLANDI — 770 test geçiyor**
+**M5 KAPANDİ — 770 test geçiyor**
 
 ## Mevcut Durum (2026-04-04)
 M5-C1, M5-C2 ve M5-C3 tamamlandı:
@@ -46,7 +46,7 @@ M4 üç chunk ile tamamlandı:
 - TTS: AKTİF — resolve_and_invoke, EdgeTTS→SystemTTS
 - VISUALS: AKTİF — VisualsStepExecutor kendi döngüsünde
 
-**Sonraki**: M5 kapanışı ve M6 planlaması.
+**Sonraki**: M6 — Remotion Render Pipeline + Preview Infrastructure.
 
 ## Sonraki Milestone
 **M3 devam: Provider Registry + Fallback Pack**

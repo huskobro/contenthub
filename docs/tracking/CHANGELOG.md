@@ -2,6 +2,132 @@
 
 ---
 
+## [2026-04-04] M5 KAPANIŞI — News Ingestion + Bulletin Pipeline Pack
+
+### Zincir tutarlılık denetimi
+
+**source → scan → dedupe → selectable → selection_confirmed → used zinciri tam ve tutarlı mı:**
+
+Evet. Her halka ayrı servis katmanında, açık sözleşmelerle bağlı:
+
+```
+NewsSource (kayıt)
+  └─ SourceScan (tarama kaydı, status: queued→running→completed|failed)
+       └─ scan_engine.execute_rss_scan()
+            ├─ hard dedupe: URL tam eşleşmesi → skipped_hard
+            ├─ soft dedupe: Jaccard başlık benzerliği → skipped_soft | followup_accepted
+            └─ NewsItem (status='new') ← tek atama noktası [M5-C1]
+                  │
+                  ├─ get_selectable_news_items() → status='new' olan kayıtlar
+                  │    (deduped = DB'de yok = bu listede yok)
+                  │
+                  ├─ NewsBulletinSelectedItem (seçim ilişkisi, NewsItem.status DEĞİŞMEZ)
+                  │
+                  ├─ confirm_selection() → bulletin.status='selection_confirmed'
+                  │    (NewsItem.status DEĞİŞMEZ)
+                  │
+                  └─ consume_news() → UsedNewsRegistry + NewsItem.status='used'
+                                       ← tek 'used' atama noktası [M5-C3]
+```
+
+### Semantik sınırlar
+
+| State | Kimin tarafından atanıyor | NewsItem.status değişiyor mu |
+|---|---|---|
+| `new` | `scan_engine` — ve sadece o | — (bu atama) |
+| `selected` | `NewsBulletinSelectedItem` ilişkisi | Hayır |
+| `selection_confirmed` | `confirm_selection()` → `NewsBulletin.status` | Hayır |
+| `used` | `consume_news()` — ve sadece o | Evet: new → used |
+
+`deduped` DB'de YOK — yalnızca `ScanExecuteResponse.dedupe_details`'te yaşar.
+Bu, "scan sonucu artifact" ile "kalıcı DB state" arasındaki sınırın net korunduğunu gösterir.
+
+### Dedupe görünmeyen item ile selectable item ayrımı
+
+**Dedupe kararı bastırılan item:**
+- scan sırasında DB'ye yazılmaz
+- `get_selectable_news_items()` bu item'ı göremez (DB'de yoktur)
+- `dedupe_details` listesinde reason + matched_item_id + similarity_score ile izlenebilir
+
+**follow-up accepted item (soft dedupe atlandı):**
+- DB'ye `status='new'` olarak yazılır
+- `get_selectable_news_items()` bu item'ı görür
+- `ScanDedupeDetail.followup_override=True` ile scan yanıtında kayıt altında
+
+**Selectable item (genel):**
+- `NewsItem.status == 'new'` — bu ve yalnızca bu koşul
+- Dedupe bypass'ı, follow-up acceptance veya başka mantık karıştırılmaz
+
+### Final risk değerlendirmesi
+
+**source-state semantics final risk: LOW**
+- SourceScan durumları izole ve temiz (queued→running→completed|failed)
+- NewsItem.status geçişleri tek noktaya bağlı (new sadece scan_engine, used sadece consume_news)
+- state karışmasını test 11, 22, 26, 27 kilit altında tutuyor
+
+**news-to-bulletin lineage clarity: MEDIUM**
+- scan → news_item → bulletin_selected_item → used_news_registry zinciri var
+- `NewsBulletinSelectedItem.selection_reason` editör notu taşıyor ama zorunlu değil
+- follow-up accepted item'ların otomatik etiketlenmesi yok (kasıtlı — editör sorumluluğu)
+- lineage tam otomatik izlenemez; admin panel görünürlüğü M6+ kapsamı
+- Bu "medium" kabul edilebilir: temel izlenebilirlik var, tam audit trail henüz değil
+
+**selection-to-consumption ambiguity: NONE**
+- `selected` = NewsBulletinSelectedItem kaydı (NewsItem.status değişmez)
+- `selection_confirmed` = bulletin kapısı geçildi (NewsItem.status yine değişmez)
+- `used/consumed` = consume_news() (tek geçiş, test 27)
+- Bu üç kavram kod ve testlerde açıkça ayrılmış
+
+**dedupe false-positive risk: LOW** (M5-C2'den miras)
+- SOFT_DEDUPE_THRESHOLD=0.65 kasıtlı yüksek, test 24 ile kilitli
+
+**used-news ambiguity risk: NONE**
+- UsedNewsRegistry sadece consume_news'ta yazılıyor
+- scan_engine ve confirm_selection dokunmuyor (test 26, 27, M5-C2 test 25)
+
+**preview-to-final confusion risk: NONE**
+- M5'te UI değişikliği yok
+
+### Warnings budget final durumu
+
+Toplam: 2 known-nonblocking warning, tümü framework/test altyapısı kaynaklı.
+
+| Warning | Kaynak | Uygulama kodu mu? |
+|---|---|---|
+| `RuntimeWarning: coroutine ... never awaited` | `unittest.mock.py:2245` | Hayır — mock framework |
+| `RuntimeError: Event loop is closed` | TestClient teardown | Hayır — async test infrastructure |
+
+`-W error::UserWarning` testi 770/770 geçiyor → uygulama kodu sıfır warning üretmiyor.
+
+### M6'ya devredilen omurga
+
+**Hazır:**
+- `ProviderRegistry` + `ProviderCapability` (LLM, TTS, VISUALS, WHISPER)
+- Standard Video pipeline: script→tts→subtitle(karaoke)→composition→visuals→metadata
+- `composition_props.json` sözleşmesi: subtitle_style + word_timing_path + timing_mode
+- `KaraokeSubtitle.tsx` + `subtitle-contracts.ts` Remotion placeholder (aktif edilmeyi bekliyor)
+- `SubtitleStylePicker` CSS preview UI
+- News pipeline: scan→dedupe→selectable→selected→confirmed→used zinciri
+- `UsedNewsRegistry` + `NewsBulletinSelectedItem` ilişki modeli
+
+**M6 için açık bırakılan:**
+- Remotion kurulumu ve KaraokeSubtitle aktif edilmesi
+- `renderStill` / `renderMedia` altyapısı (M6 genel preview infrastructure)
+- `openBrowser()` singleton
+- Bulletin `in_progress` → `done` geçişi
+- News lineage tam audit trail (admin panel)
+- Soft dedupe'de stopword ve semantik benzerlik (M6+ kapsamı)
+
+### Test sayısı özeti
+
+| Chunk | Yeni Test | Toplam |
+|---|---|---|
+| M5-C1 | 22 | 717 |
+| M5-C2 | 25 | 742 |
+| M5-C3 | 28 | 770 |
+
+---
+
 ## [2026-04-04] M5-C3 — Bulletin Pipeline + Editorial Gate
 
 **Ne:**
