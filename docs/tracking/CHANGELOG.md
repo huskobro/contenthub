@@ -2,6 +2,69 @@
 
 ---
 
+## [2026-04-04] M8-C1 — Analytics Backend + Platform Overview
+
+### Özet
+Analytics subsystem foundation. Mevcut tablolardan (jobs, job_steps, publish_records)
+salt okunur aggregation. Şema değişikliği yok, migration yok, yazma yok.
+
+### Yeni dosyalar
+- `backend/app/analytics/__init__.py`
+- `backend/app/analytics/service.py` — aggregation sorguları
+- `backend/app/analytics/schemas.py` — OverviewMetrics + OperationsMetrics + StepStat
+- `backend/app/analytics/router.py` — GET /overview + GET /operations
+- `backend/tests/test_m8_c1_analytics_backend.py` — 24 test (A–X)
+
+### Değiştirilen dosyalar
+- `backend/app/api/router.py` — analytics_router kaydedildi
+
+### Endpoint'ler
+- `GET /api/v1/analytics/overview` — platform genel metrikleri; window filtresi
+- `GET /api/v1/analytics/operations` — step süresi, render ortalaması; window filtresi
+
+### Desteklenen metrikler
+- total_job_count, completed_job_count, failed_job_count, job_success_rate
+- total_publish_count, published_count, failed_publish_count, publish_success_rate
+- avg_production_duration_seconds (job started_at → finished_at)
+- retry_rate (retry_count > 0 olan job oranı)
+- avg_render_duration_seconds (render step elapsed_seconds ortalaması)
+- step_stats: her step_key için count, avg_elapsed_seconds, failed_count
+
+### Desteklenmeyen metrikler (M8-C1)
+- provider_error_rate: provider_trace_json yapısı sabitlenmedi; güvenilir kaynak yok.
+  Her iki endpoint'te None döner. M8-C2 veya Hardening fazında ele alınacak.
+
+### Korunan sınırlar
+- Yalnızca SELECT; publish_service / job_service çağrılmadı
+- Şema / migration değişikliği yok
+- Tüm metrik kaynakları deterministic ve belgelenmiş
+
+### Test kapsamı (A–X)
+- A: dönüş yapısı şeması doğrulama
+- B–C: completed/failed job sayımı
+- D: job_success_rate aralık kontrolü
+- E: retry_rate hesaplama
+- F: avg_production_duration hesaplama
+- G: publish_records sayımı
+- H: publish_success_rate
+- I: window=last_7d eski kayıtları dışlar
+- J: window=all_time tüm zamanlar
+- K: operations boş durum yapısı
+- L: render step ortalama süresi
+- M: step_stats step_key'leri
+- N: step_stats failed_count
+- O: provider_error_rate=None (unsupported)
+- P: operations window filtresi
+- Q–U: route smoke testleri (overview/operations, window param, 400 bad window)
+- V: _cutoff geçersiz window ValueError
+- W–X: sıfır bölme koruması (retry_rate, job_success_rate)
+
+### Test sonuçları
+24/24 M8-C1 + 979/979 full suite, 0 regression.
+Warnings: 3 kategori, 1–7 non-deterministic (bkz. Known Warnings backlog).
+
+---
+
 ## [2026-04-04] M7-C4 — Publish Hub Routes + Retry + Review Reset
 
 ### Özet
