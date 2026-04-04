@@ -11,6 +11,38 @@ Visibility note:
 """
 
 from enum import Enum
+import enum
+
+
+# ---------------------------------------------------------------------------
+# Step idempotency classification (Phase M1-C1)
+# ---------------------------------------------------------------------------
+
+class StepIdempotencyType(str, enum.Enum):
+    """
+    Declares how a step should behave when re-entered after a failure or retry.
+
+    RE_EXECUTABLE    : The step is safe to re-run from scratch. No precondition
+                       checks needed — the executor can simply start it again.
+                       This is the default for most pipeline steps (script, TTS,
+                       metadata, render).
+
+    ARTIFACT_CHECK   : Before re-running, the executor checks whether the output
+                       artifact already exists (e.g. file present and non-empty).
+                       If the artifact exists, the step is skipped to avoid
+                       redundant expensive operations. Used for steps that
+                       produce large binary outputs (audio, video renders).
+
+    OPERATOR_CONFIRM : Re-entry requires an explicit operator action before the
+                       executor may proceed. Used for publish steps where
+                       re-publishing without human confirmation could cause
+                       duplicate platform posts or billing events.
+
+    [admin-visible]
+    """
+    RE_EXECUTABLE = "re_executable"
+    ARTIFACT_CHECK = "artifact_check"
+    OPERATOR_CONFIRM = "operator_confirm"
 
 
 # ---------------------------------------------------------------------------

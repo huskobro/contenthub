@@ -196,6 +196,9 @@ class Job(Base):
     estimated_remaining_seconds: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     workspace_path: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     last_error: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    heartbeat_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=_now
     )
@@ -235,6 +238,10 @@ class JobStep(Base):
     log_text: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     elapsed_seconds: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     last_error: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    idempotency_type: Mapped[str] = mapped_column(
+        String(50), nullable=False, default="re_executable"
+    )
+    provider_trace_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=_now
     )
