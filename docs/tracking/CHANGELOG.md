@@ -2,6 +2,102 @@
 
 ---
 
+## [2026-04-04] M4-C3 — Preview-First Subtitle Style Selection
+
+**Ne:**
+- `subtitle_presets.py` — strict helper vs boundary fallback ayrımı docstring'e eklendi.
+  `get_preset()` STRICT (bilinmeyen → ValueError); `get_preset_for_composition()` BOUNDARY FALLBACK
+  (bilinmeyen/None → varsayılan). İki davranış bilinçli ve kasıtlı olarak ayrılmış.
+- `router.py (standard-video)` — YENİ: `GET /modules/standard-video/subtitle-presets`
+  Tüm preset'leri is_default, timing_note, stil alanlarıyla döner.
+  `preview_scope: "subtitle_style_only"` — M4-C3 kapsam sınırı API yanıtında görünür.
+- `subtitle.py` — `registry=None` geçiş yolu açık teknik borç olarak docstring'e eklendi.
+  Production path temizlendi: tüm testler `registry=ProviderRegistry()` kullanıyor.
+  `registry=None` davranışsal olarak korunuyor ama yeni kodda kopyalanmayacak.
+- `SubtitleStylePicker.tsx` — YENİ: CSS tabanlı stil kartı UI. Remotion/PIL gerektirmez.
+  Karaoke örnek satırı (aktif kelime active_color ile); preset seçimi görsel.
+  `timingMode="cursor"`: form + kart seviyesinde degrade uyarısı.
+  Preview vs final ayrımı: "Önizleme — final video farklı görünebilir" etiketi.
+- `useSubtitlePresets.ts` — YENİ: React Query hook, staleTime: Infinity.
+- `StandardVideoForm.tsx` — Serbest text input → SubtitleStylePicker.
+- `test_m2_c5_subtitle_composition.py` — `SubtitleStepExecutor()` → `SubtitleStepExecutor(registry=ProviderRegistry())`.
+
+**Sistem davranışı:** Kullanıcı artık altyazı stilini kör konfigürasyon yerine görsel stil kartından seçer.
+Her kartın renklerini/fontlarını inline görür. Degrade mod (Whisper yok → cursor) form ve kart
+seviyesinde uyarıyla görünür kılınmıştır.
+
+**Kısıtlar / Borç:**
+- CSS preview → final Remotion çıktısı farklı görünebilir (UI'da açıkça belirtilmiş).
+- `registry=None` geçiş davranışı korunuyor — açık teknik borç, yeni kodda kopyalanmayacak.
+- PIL thumbnail endpoint tanımlanmadı — CSS preview bu milestone için yeterli.
+  Gerçek thumbnail M6 preview altyapısıyla birlikte gelebilir.
+- M6 genel preview altyapısına (renderStill, openBrowser singleton) sıfır sızma.
+
+**Test:** 13 yeni test, 695 toplam. 1 known-nonblocking warning (bütçe sabit).
+
+---
+
+## [2026-04-04] M4-C2 — Karaoke Rendering + Style Presets
+
+**Ne:**
+- `subtitle_presets.py` — YENİ: `SubtitlePreset` frozen dataclass + 5 preset:
+  clean_white, bold_yellow, minimal_dark, gradient_glow, outline_only.
+  `get_preset()` ValueError; `get_preset_for_composition()` boundary fallback → varsayılan.
+  Preset explosion koruması: yeni preset bu dosyadan geçmek zorunda.
+- `executors/composition.py` — `composition_props.json` props bölümüne eklendi:
+  `subtitle_style` (preset tam alanları), `word_timing_path`, `timing_mode`.
+  `subtitle_style_preset` job input'tan alınır; yoksa/geçersizse clean_white.
+  Return değeri ve provider trace'e subtitle_style_preset + timing_mode eklendi.
+- `renderer/src/shared/subtitle-contracts.ts` — YENİ: tip sözleşmeleri.
+  `WordTiming`, `SubtitleStylePreset`, `TimingMode`, `KaraokeRenderBehavior`.
+  `resolveKaraokeRenderBehavior()`: timing_mode → render davranışı.
+- `renderer/src/compositions/KaraokeSubtitle.tsx` — YENİ: karaoke component tanımı.
+  whisper_word → kelime highlight; whisper_segment → satır highlight;
+  cursor (degrade) → düz metin + console.warn.
+  Remotion M6'da kurulana kadar aktif edilemez.
+
+**Sistem davranışı:** `composition_props.json` artık subtitle rendering için tam bilgi taşıyor.
+timing_mode hattı: subtitle executor → subtitle_metadata.json → composition_props.json →
+renderer contract (subtitle-contracts.ts). Degrade mod composition trace'de görünür.
+
+**Kısıtlar / Borç:**
+- KaraokeSubtitle.tsx Remotion M6'da aktifleşecek; şu an contract-only.
+- Preset seçimi job input'tan geliyor (M4-C3'te UI eklendi).
+
+**Test:** 18 yeni test, 682 toplam. 1 known-nonblocking warning (bütçe sabit).
+
+---
+
+## [2026-04-04] M4-C1 — Whisper Entegrasyonu + Word Timing Data Modeli
+
+**Ne:**
+- `capability.py` — `ProviderCapability.WHISPER = "whisper"` eklendi.
+- `providers/whisper/local_whisper_provider.py` — YENİ: `LocalWhisperProvider`.
+  faster-whisper tabanlı, yerel çalışır, dış API yok.
+  `word_timestamps=True` ile kelime-düzeyi zaman damgaları.
+  Model önbellekleme: `_model_cache` dict, process ömrü boyunca.
+  Hata: ses yoksa `ProviderInvokeError`; faster-whisper kurulu değilse `ConfigurationError`.
+  Trace: provider_id, model_size, device, language, word_count, latency_ms.
+- `executors/subtitle.py` — YENİ: registry-aware (M4-C1 Whisper entegrasyonu).
+  `SubtitleStepExecutor(registry=None)` — registry opsiyonel, cursor fallback.
+  Whisper varsa: `whisper_word` (kelime highlight) veya `whisper_segment`.
+  `word_timing.json`: {version, timing_mode, language, words, word_count}.
+  Ses dosyası eksik / Whisper başarısız → sahne bazında cursor fallback, adım başarısız olmaz.
+  `_build_srt` alias → M2-C5 geriye uyum.
+- `jobs/dispatcher.py` — `SubtitleStepExecutor(registry=registry)` — artık no-args değil.
+
+**Sistem davranışı:** TTS ses dosyaları Whisper ile transkripte edilir. Her kelime için
+{word, start, end, probability, scene} veri üretilir. `word_timing.json` artifact kalıcıdır.
+Whisper yoksa step çökmez: cursor modda devam eder, `timing_mode: "cursor"` metadata'da görünür.
+
+**Kısıtlar / Borç:**
+- Whisper `faster-whisper` kurulumu gerektirir; yoksa `ConfigurationError` + cursor fallback.
+- `registry=None` geçiş yolu — M4-C3'te teknik borç olarak belgelendi.
+
+**Test:** 20 yeni test, 664 toplam. 1 known-nonblocking warning (bütçe sabit).
+
+---
+
 ## [2026-04-04] M3-C3 — Provider Health, Admin Surface, Cost Seam
 
 **Ne:**

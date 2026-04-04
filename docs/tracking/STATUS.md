@@ -1,13 +1,24 @@
 # DURUM
 
 ## Mevcut Faz
-Kiln Build — M3: Provider Registry + Fallback Pack
+Kiln Build — M4: Whisper Subtitle + Karaoke Pack — TAMAMLANDI
 
-**M3-C3 TAMAMLANDI — 644 test geçiyor**
+**M4 KAPANDİ — 695 test geçiyor**
 
 ## Mevcut Durum (2026-04-04)
-M3-C3 tamamlandı. Provider runtime health takibi, admin surface endpoint'leri,
-cost estimate seam ve background task warning düzeltmesi uygulandı.
+M4 üç chunk ile tamamlandı:
+- M4-C1: Whisper entegrasyonu + word timing data modeli (LocalWhisperProvider, word_timing.json, timing_mode hattı)
+- M4-C2: Karaoke rendering + style presets (SubtitlePreset dataclass, 5 preset, composition_props'a timing_mode/subtitle_style/word_timing_path)
+- M4-C3: Preview-first subtitle style selection (CSS stil kartı UI, /subtitle-presets endpoint, strict/boundary fallback ayrımı, registry=None teknik borç belgesi)
+
+**M4 sonrası fallback aktiflik durumu:**
+- LLM: AKTİF — resolve_and_invoke (M3-C2)
+- TTS: AKTİF — resolve_and_invoke (M3-C2)
+- VISUALS: AKTİF — VisualsStepExecutor kendi döngüsünde (bilinçli fark)
+- WHISPER: DEGRADED MODE — Whisper yoksa cursor-tabanlı timing; zincir değil, degrade
+
+**Warnings durumu:**
+- 1 known-nonblocking warning: `unittest.mock.py:2245` `RuntimeWarning` — mock framework internal. Bütçe sabit.
 
 **M3-C3 değişiklikleri:**
 - `registry.py` — `ProviderEntry`'ye runtime health alanları (invoke_count, error_count,
@@ -30,7 +41,7 @@ cost estimate seam ve background task warning düzeltmesi uygulandı.
 - TTS: AKTİF — resolve_and_invoke, EdgeTTS→SystemTTS
 - VISUALS: AKTİF — VisualsStepExecutor kendi döngüsünde
 
-**Sonraki**: M4 — İçerik üretim hattı doğrulama, gerçek LLM/TTS pipeline testi.
+**Sonraki**: M5 — News Ingestion + Bulletin Pipeline Pack.
 
 ## Sonraki Milestone
 **M3 devam: Provider Registry + Fallback Pack**
@@ -45,6 +56,9 @@ M3-C3 bekliyor.
 - **ANA FAZ BAŞLADI:** Wizard / Onboarding (ürün geliştirme hattı)
 
 ## Son Tamamlananlar
+- **M4-C3 Preview-First Subtitle Style Selection** — /subtitle-presets endpoint, SubtitleStylePicker CSS stil kartı UI, strict helper vs boundary fallback ayrımı, degrade mod etiketi (form+kart seviyesi), registry=None açık teknik borç belgesi, 13 yeni test, 695 toplam (2026-04-04)
+- **M4-C2 Karaoke Rendering + Style Presets** — SubtitlePreset frozen dataclass, 5 preset (clean_white→outline_only), composition_props'a subtitle_style+word_timing_path+timing_mode, KaraokeSubtitle.tsx (Remotion placeholder, M6'da aktif), subtitle-contracts.ts tip sözleşmeleri, 18 yeni test, 682 toplam (2026-04-04)
+- **M4-C1 Whisper Entegrasyonu + Word Timing Data Modeli** — ProviderCapability.WHISPER, LocalWhisperProvider (faster-whisper, model cache), SubtitleStepExecutor registry-aware (whisper_word/whisper_segment/cursor), word_timing.json artifact, _build_srt alias (geriye uyum), dispatcher SubtitleStepExecutor(registry=), 20 yeni test, 664 toplam (2026-04-04)
 - **M3-C3 Provider Health + Admin Surface + Cost Seam** — ProviderEntry runtime health fields, record_outcome (resolution.py), get_health_snapshot(), admin provider router (GET/POST), cost_estimate_usd seam (KieAI), background task warning düzeltmesi, 18 yeni test, 644 toplam (2026-04-04)
 - **M3-C2 İkinci Provider + Runtime Fallback** — OpenAICompatProvider, SystemTTSProvider, NonRetryableProviderError hiyerarşisi, resolve_and_invoke executor bağlantısı, 626 toplam (2026-04-04)
 - **M3-C1 Provider Registry** — ProviderCapability enum, ProviderRegistry (kayıt/çözümleme/admin seam), resolve_and_invoke (fallback+trace), _build_executor kaldırıldı, VisualsStepExecutor provider-agnostic, 15 yeni test, 606 toplam (2026-04-04)
