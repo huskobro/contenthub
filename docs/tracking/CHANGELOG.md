@@ -2,6 +2,114 @@
 
 ---
 
+## [2026-04-04] M6-C2 — word_timing Inline Yükleme + Dynamic Duration + renderStill Preview
+
+### Kapsam
+word_timing.json backend tarafında okunup wordTimings olarak inline geçirilmesi; calculateMetadata ile dinamik duration hesaplama; RenderStillExecutor + PreviewFrame composition ile preview/final ayrımı.
+
+### Değişen Dosyalar
+
+**renderer/src/compositions/StandardVideoComposition.tsx** (GÜNCELLENDİ)
+- `word_timing_path: string | null` prop'u kaldırıldı.
+- `wordTimings: WordTiming[]` inline prop eklendi.
+- Docstring: word_timing yükleme mimarisi belgelendi (backend okur, renderer fs'e dokunmaz).
+- Renderer saf React bileşeni kalır — fs okuma yok.
+
+**renderer/src/Root.tsx** (GÜNCELLENDİ)
+- `calculateMetadata` eklendi: `total_duration_seconds × FPS → durationInFrames`.
+- M6-C1'deki sabit `durationInFrames=1800` kaldırıldı.
+- `PreviewFrame` composition kayıtlandı (`durationInFrames=1`, `id="PreviewFrame"`).
+- `defaultProps.wordTimings = []` — `word_timing_path` kaldırıldı.
+
+**renderer/src/compositions/PreviewFrameComposition.tsx** (YENİ)
+- `PreviewFrameProps`: `scene_number, image_path, subtitle_style, sample_text`.
+- `PreviewFrameComposition`: tek kare, KaraokeSubtitle örnek metinle render.
+- Final render'dan ayrı composition — `id="PreviewFrame"`, `durationInFrames=1`.
+- M4-C3 CSS preview'dan ayrı: Remotion pixel output, tarayıcı CSS değil.
+
+**backend/app/modules/standard_video/executors/render.py** (GÜNCELLENDİ)
+- `_load_word_timings(word_timing_path)` eklendi: dosya okur, hatalarda graceful boş liste.
+- `_build_render_props(composition_props)` eklendi:
+  - `word_timing_path` kaldırılır, `wordTimings` inline eklenir.
+  - Diğer props alanları korunur.
+- `execute()`: `render_props.json` ayrı dosyaya yazılır (composition_props.json değil).
+- Sonuç: `timing_mode` + `word_timings_count` eklendi.
+- `composition_props.json` güncellemesi: `timing_mode_used` + `word_timings_count` eklendi.
+
+**backend/app/modules/standard_video/executors/render_still.py** (YENİ)
+- `RenderStillExecutor`, `step_key = "render_still"`.
+- `PREVIEW_COMPOSITION_ID = "PreviewFrame"`.
+- `execute()`: `preview_props.json` yazar, `preview_frame.jpg` üretir.
+- `composition_props.json` güncellemez — bağımsız preview akışı.
+- `_run_remotion_still()`: `npx remotion still` + `--frame 0`, `shell=False`, timeout=120s.
+
+**backend/app/modules/standard_video/executors/__init__.py** (GÜNCELLENDİ)
+- `RenderStillExecutor` eklendi.
+
+**backend/tests/test_m6_c2_render_word_timing.py** (YENİ)
+- 25 test — tümü geçiyor.
+
+### Mandatorî M6 Teslimat Alanları
+
+**word_timing_path nasıl yüklendi:**
+Backend `_load_word_timings(path)` → `word_timing.json` → `words` alanı çıkarılır → `WordTiming[]` array'i.
+Renderer'a `wordTimings` prop olarak inline geçirilir. Renderer fs okuma yapmaz.
+`word_timing_path` None veya dosya yoksa → boş liste, cursor (degrade) mod devrede.
+
+**dynamic duration hangi kaynaktan hesaplandı:**
+`composition_props.json → props.total_duration_seconds` (backend `CompositionStepExecutor` üretir).
+`Root.tsx calculateMetadata`: `Math.max(1, Math.round(totalSecs * FPS))`.
+M6-C1'deki sabit `durationInFrames=1800` tamamen kaldırıldı.
+
+**timing_mode renderer davranışına nasıl bağlandı:**
+`render_props.json → timing_mode` → `StandardVideoComposition → props.timing_mode` → `KaraokeSubtitle.timingMode`.
+`resolveKaraokeRenderBehavior(timingMode)` → `word_level_highlight / segment_level_highlight / degraded_mode`.
+cursor: wordTimings=[] + degrade mode. whisper_word: wordTimings populated + kelime highlight.
+
+**render contract'ta hangi alanlar eklendi/değişti:**
+  - `word_timing_path` → kaldırıldı (renderer props'tan)
+  - `wordTimings: WordTiming[]` → eklendi (inline)
+  - `composition_props.json → timing_mode_used` → eklendi (render sonrası audit)
+  - `composition_props.json → word_timings_count` → eklendi (render sonrası audit)
+  - `render_props.json` → YENİ artifact (renderer'a geçirilen temiz props)
+
+**preview yolu ile final render yolu nerede ayrılıyor:**
+  - `RenderStepExecutor` → `StandardVideo` composition → `output.mp4` → `composition_props.json` güncellenir
+  - `RenderStillExecutor` → `PreviewFrame` composition → `preview_frame.jpg` → `composition_props.json` güncellemez
+  - Preview: `RENDER_STILL_TIMEOUT_SECONDS=120` / Final: `RENDER_TIMEOUT_SECONDS=600`
+  - M4-C3 CSS preview: browser stil kartları, Remotion'a bağlı değil — ayrı yüzey, korundu
+
+**render-contract drift risk: düşük**
+`StandardVideoProps` tipi renderer'da tek otorite. `_build_render_props` backend → renderer dönüşümünü izole eder.
+Test 24 `render_props.json`'un `word_timing_path` içermediğini kilitler. Test 5 ve 7 dönüşüm doğruluğunu kilitler.
+
+**preview-scope confusion risk: yok**
+`PreviewFrame` ve `StandardVideo` ayrı composition ID, ayrı executor, ayrı çıktı dosyası.
+`composition_props.json` preview tarafından güncellenmez — test 18 kilitler.
+M4-C3 CSS preview ayrı yüzey, belgelenmiş.
+
+**render-runtime coupling risk: düşük**
+Tüm subprocess çağrıları `shell=False`, `asyncio.create_subprocess_exec`.
+`_build_render_props` pure fonksiyon — fs bağımlılığı yalnızca `_load_word_timings`.
+`_load_word_timings` graceful fallback: dosya yoksa/bozuksa boş liste, log, devam.
+
+**warnings status: known-nonblocking**
+1 warning: `unittest.mock.py:2245 RuntimeWarning` (mock framework internal). Değişmedi.
+
+### Teknik Borç
+- `PreviewFrame` composition şu an `image_path=null` → siyah arka plan. Gerçek sahne görseli M6-C3+ kapsamında.
+- `calculateMetadata` async fn imzası var ama props `as unknown as StandardVideoProps` cast gerektiriyor — Remotion v4 Zod-less kayıt için bilinen sınırlama.
+- `PREVIEW_COMPOSITION_ID` composition_map.py'e eklenmedi — M6-C3'te senkronize edilecek.
+
+### Test Sonuçları
+- M6-C2 testleri: 25/25 geçiyor
+- M6-C1 testleri: 20/20 geçiyor
+- Toplam: 815/815 geçiyor
+- TypeScript: `npx tsc --noEmit` temiz
+- Warnings: 1 (framework seviyesi — değişmedi)
+
+---
+
 ## [2026-04-04] M6-C1 — Remotion Render Pipeline Foundation
 
 ### Kapsam

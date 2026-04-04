@@ -1,24 +1,30 @@
 /**
- * StandardVideo composition bileşeni — M6-C1.
+ * StandardVideo composition bileşeni — M6-C2.
  *
  * composition_props.json'dan gelen props ile video render eder.
  * Güvenli composition mapping: composition_map.py içindeki "StandardVideo" ID ile eşleşir.
  *
  * Props kaynağı (tek ve resmi render sözleşmesi):
  *   backend/app/modules/standard_video/executors/composition.py → composition_props.json
+ *   backend RenderStepExecutor → word_timing.json okunur → wordTimings inline geçirilir
+ *
+ * word_timing yükleme mimarisi (M6-C2):
+ *   word_timing.json backend tarafında okunur (RenderStepExecutor.execute).
+ *   Renderer'a fs okuma yaptırılmaz — props olarak WordTiming[] array'i geçirilir.
+ *   Bu sayede renderer saf React bileşeni kalır.
  *
  * Sahne sırası:
- *   Her sahne, audio_path + image_path + narration içerir.
- *   duration_seconds → frame sayısına çevrilir (fps ile).
+ *   Her sahne, audio_path + image_path + duration_seconds içerir.
+ *   duration_seconds → frame sayısına çevrilir (fps ile, calculateMetadata tarafından).
  *
- * Altyazı rendering:
- *   timing_mode + subtitle_style → KaraokeSubtitle component'ına iletilir.
- *   word_timing_path var ise word timing verisi yüklenir (M6-C2+).
- *   Şu an: word_timing_path desteklenmez — cursor (degrade) mod kullanılır.
+ * Altyazı rendering (M6-C2):
+ *   timing_mode + subtitle_style + wordTimings → KaraokeSubtitle.
+ *   wordTimings boşsa cursor (degrade) mod — KaraokeSubtitle bu durumu bilir.
  *
  * M4-C3 preview ayrımı KORUNUR:
  *   Bu composition final render içindir.
  *   M4-C3 CSS preview ayrı bir yüzeydir ve bu dosyayla çakışmaz.
+ *   renderStill preview: PreviewFrameComposition ayrı composition ID ile kayıtlıdır.
  */
 
 import {
@@ -48,11 +54,23 @@ export interface SceneProps {
   duration_seconds: number;
 }
 
+/**
+ * StandardVideoProps — render sözleşmesinin tek tipi.
+ *
+ * word_timing_path M6-C1'de string prop olarak tanımlanmıştı.
+ * M6-C2'den itibaren backend bu dosyayı okur ve wordTimings olarak inline geçirir.
+ * word_timing_path bu tipten kaldırıldı — renderer fs okuma yapmaz.
+ *
+ * Backend sözleşmesi (composition_props.json → props):
+ *   word_timing_path  → backend okur, wordTimings prop'una dönüştürür
+ *   wordTimings       → bu tip — render-time kullanılan array
+ */
 export interface StandardVideoProps {
   title: string;
   scenes: SceneProps[];
   subtitles_srt: string | null;
-  word_timing_path: string | null;
+  /** Kelime zamanlama verisi — backend word_timing.json'dan okuyup inline geçirir. */
+  wordTimings: WordTiming[];
   timing_mode: TimingMode;
   subtitle_style: SubtitleStylePreset;
   total_duration_seconds: number;
@@ -99,7 +117,7 @@ function SceneComponent({ scene, subtitleProps }: SceneComponentProps) {
         <Audio src={scene.audio_path} />
       )}
 
-      {/* Altyazı katmanı */}
+      {/* Altyazı katmanı — wordTimings boşsa cursor degrade mod */}
       <KaraokeSubtitle
         wordTimings={subtitleProps.wordTimings}
         style={subtitleProps.style}
@@ -118,6 +136,7 @@ export function StandardVideoComposition(props: StandardVideoProps) {
   const { fps } = useVideoConfig();
   const {
     scenes,
+    wordTimings,
     subtitle_style,
     timing_mode,
     total_duration_seconds,
@@ -130,10 +149,6 @@ export function StandardVideoComposition(props: StandardVideoProps) {
     sceneOffsets.push(offset);
     offset += Math.round(scene.duration_seconds * fps);
   }
-
-  // word_timing_path M6-C2+ kapsamında yüklenecek.
-  // Şu an boş dizi — cursor (degrade) mod devrede.
-  const wordTimings: WordTiming[] = [];
 
   const subtitleProps = {
     wordTimings,

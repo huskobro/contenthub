@@ -1,8 +1,8 @@
 """
-Render adımı executor'ı (RenderStepExecutor) — M6-C1.
+Render adımı executor'ı (RenderStepExecutor) — M6-C2.
 
-composition_props.json'u okur ve Remotion CLI'ı subprocess olarak çağırarak
-gerçek video render işlemini gerçekleştirir.
+composition_props.json'u okur, word_timing.json'u yükler ve
+Remotion CLI'ı subprocess olarak çağırarak gerçek video render işlemini gerçekleştirir.
 
 Render sözleşmesi (değişmez):
   Giriş  : workspace/{job_id}/artifacts/composition_props.json
@@ -10,14 +10,27 @@ Render sözleşmesi (değişmez):
   Çıktı  : workspace/{job_id}/artifacts/output.mp4
              render_status="rendered" olarak güncellenir
 
+word_timing yükleme mimarisi (M6-C2):
+  Renderer saf React bileşenleridir — fs okuma yapmaz.
+  Backend (bu executor) word_timing_path'ı okur ve WordTiming[] array'ini
+  render_props.json içine inline yazarak Remotion'a geçirir.
+  Renderer StandardVideoComposition wordTimings prop'unu doğrudan kullanır.
+
+render_props.json:
+  composition_props.json → props alanının M6-C2 genişletilmiş hali.
+  Değişiklikler (M6-C1 → M6-C2):
+    - word_timing_path   : kaldırıldı (backend okuyup inline geçiriyor)
+    - wordTimings        : EKLENDİ — WordTiming[] array, inline veri
+  Sözleşme geriye uyumlu: composition.py çıktısı değişmedi,
+  render.py bu dönüşümü yapar.
+
+dynamic duration:
+  total_duration_seconds composition_props.json → props'tan alınır.
+  calculateMetadata (Root.tsx) bu değeri durationInFrames'e çevirir.
+
 Remotion CLI çağrısı:
   npx remotion render <giriş_noktası> <composition_id> <çıktı_yolu>
-  --props '<composition_props_json_inline>'
-
-Güvenli composition mapping (CLAUDE.md C-07):
-  composition_id composition_props.json'dan alınır.
-  Bu değer composition_map.py tarafından üretilmiştir — güvenlidir.
-  Dinamik veya AI üretimli composition ID'ye izin verilmez.
+  --props '<render_props.json yolu>'
 
 Subprocess güvenliği:
   Shell injection'a karşı: argümanlar liste olarak geçirilir, shell=False.
@@ -25,9 +38,8 @@ Subprocess güvenliği:
   stdout/stderr: loglanır.
 
 render_status geçişleri:
-  props_ready  → rendering (subprocess başladığında)
-  rendering    → rendered  (subprocess başarıyla tamamlandığında)
-  rendering    → failed    (subprocess hata verdiğinde)
+  props_ready  → rendered (subprocess başarıyla tamamlandığında)
+  props_ready  → failed   (subprocess hata verdiğinde)
 """
 
 from __future__ import annotations
@@ -53,20 +65,86 @@ from ._helpers import (
 logger = logging.getLogger(__name__)
 
 # Render subprocess zaman aşımı (saniye).
-# Uzun videolar için yeterli süre — production ortamında job input'tan alınabilir.
 RENDER_TIMEOUT_SECONDS: int = 600
 
 # renderer/ dizini — bu dosyaya göre göreli yol.
-# backend/app/modules/.../render.py → renderer/
+# backend/app/modules/standard_video/executors/render.py → ContentHub/ → renderer/
 _BACKEND_DIR = Path(__file__).resolve().parents[5]  # → ContentHub/
 _RENDERER_DIR = _BACKEND_DIR / "renderer"
 
 
+def _load_word_timings(word_timing_path: str | None) -> list[dict]:
+    """
+    word_timing_path dosyasından WordTiming listesini yükler.
+
+    word_timing_path None veya dosya yoksa boş liste döner.
+    Dosya bozuksa (JSON parse hatası) boş liste döner ve loglanır.
+    Renderer cursor (degrade) modda devam eder.
+
+    Returns:
+        list[dict]: WordTiming dict listesi — Renderer'a inline geçirilir.
+    """
+    if not word_timing_path:
+        return []
+
+    path = Path(word_timing_path)
+    if not path.exists():
+        logger.warning(
+            "RenderStepExecutor: word_timing_path bulunamadı, cursor mod devrede. "
+            "path=%s",
+            word_timing_path,
+        )
+        return []
+
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+        words = data.get("words", [])
+        logger.info(
+            "RenderStepExecutor: word_timing yüklendi. kelime_sayısı=%d timing_mode=%s",
+            len(words),
+            data.get("timing_mode", "?"),
+        )
+        return words
+    except (json.JSONDecodeError, OSError) as err:
+        logger.error(
+            "RenderStepExecutor: word_timing_path okunamadı, cursor mod devrede. "
+            "path=%s err=%s",
+            word_timing_path,
+            err,
+        )
+        return []
+
+
+def _build_render_props(composition_props: dict) -> dict:
+    """
+    composition_props.json → props alanından Remotion'a geçirilecek render_props oluşturur.
+
+    M6-C2 dönüşümleri:
+      - word_timing_path string prop'u kaldırılır.
+      - wordTimings: WordTiming[] inline olarak eklenir.
+
+    Bu fonksiyon composition.py çıktısını değiştirmez — sadece render katmanında dönüştürür.
+    Sözleşme uyumu: composition_props.json her zaman word_timing_path içerebilir (eski formatlar).
+
+    Returns:
+        dict: Renderer'a geçirilecek props dict.
+    """
+    props = dict(composition_props.get("props", {}))
+
+    # word_timing_path'ı yükle ve inline wordTimings'e dönüştür
+    word_timing_path: str | None = props.pop("word_timing_path", None)
+    word_timings = _load_word_timings(word_timing_path)
+    props["wordTimings"] = word_timings
+
+    return props
+
+
 class RenderStepExecutor(StepExecutor):
     """
-    Render adımı executor'ı — M6-C1.
+    Render adımı executor'ı — M6-C2.
 
     composition_props.json (render_status=props_ready) olmalı.
+    word_timing_path okunur, wordTimings inline eklenir.
     Remotion CLI subprocess olarak çağrılır.
     Çıktı: output.mp4 (artifacts/ altında).
     """
@@ -83,16 +161,19 @@ class RenderStepExecutor(StepExecutor):
           1. composition_props.json'u oku.
           2. render_status kontrol et (props_ready gerekli).
           3. output.mp4 zaten varsa idempotent dön.
-          4. Remotion subprocess'i başlat.
-          5. Tamamlanınca composition_props.json'u rendered olarak güncelle.
-          6. Sonuç döndür.
+          4. word_timing_path'ı yükle → wordTimings oluştur.
+          5. render_props.json'u yaz (Remotion'a geçirilecek props).
+          6. Remotion subprocess'i başlat.
+          7. Tamamlanınca composition_props.json'u rendered olarak güncelle.
+          8. Sonuç döndür.
 
         Args:
             job : Job ORM nesnesi.
             step: JobStep ORM nesnesi.
 
         Returns:
-            dict: output_path, composition_id, render_status, provider trace.
+            dict: output_path, composition_id, render_status,
+                  timing_mode, word_timings_count, provider trace.
 
         Raises:
             StepExecutionError: Zorunlu artifact eksikse veya render başarısız olursa.
@@ -161,16 +242,35 @@ class RenderStepExecutor(StepExecutor):
                 "step": self.step_key(),
             }
 
-        # props JSON'u geçici dosyaya yaz — subprocess'e iletilir
-        props_json_str = json.dumps(composition_props.get("props", {}), ensure_ascii=False)
-        props_path = _resolve_artifact_path(workspace_root, job.id, "composition_props.json")
+        # word_timing_path → wordTimings dönüşümü + render_props oluştur
+        render_props = _build_render_props(composition_props)
+        timing_mode = render_props.get("timing_mode", "cursor")
+        word_timings_count = len(render_props.get("wordTimings", []))
+
+        logger.info(
+            "RenderStepExecutor: render başlatılıyor. job=%s composition_id=%s "
+            "timing_mode=%s word_timings_count=%d total_duration_seconds=%.1f",
+            job.id,
+            composition_id,
+            timing_mode,
+            word_timings_count,
+            render_props.get("total_duration_seconds", 0.0),
+        )
+
+        # render_props.json'u artifacts/ altına yaz — Remotion'a --props ile geçirilir
+        render_props_path = _resolve_artifact_path(workspace_root, job.id, "render_props.json")
+        render_props_path.parent.mkdir(parents=True, exist_ok=True)
+        render_props_path.write_text(
+            json.dumps(render_props, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
 
         start_time = time.monotonic()
 
         # Remotion render subprocess
         render_result = await self._run_remotion_render(
             composition_id=composition_id,
-            props_path=str(props_path),
+            props_path=str(render_props_path),
             output_path=str(output_path),
             job_id=job.id,
         )
@@ -192,27 +292,35 @@ class RenderStepExecutor(StepExecutor):
         # composition_props.json'u rendered olarak güncelle
         composition_props["render_status"] = "rendered"
         composition_props["output_path"] = str(output_path)
+        composition_props["timing_mode_used"] = timing_mode
+        composition_props["word_timings_count"] = word_timings_count
         composition_props["updated_at"] = datetime.now(timezone.utc).isoformat()
         _write_artifact(workspace_root, job.id, "composition_props.json", composition_props)
 
         logger.info(
             "RenderStepExecutor: render tamamlandı. job=%s composition_id=%s "
-            "output=%s elapsed_ms=%d",
+            "output=%s elapsed_ms=%d timing_mode=%s word_timings=%d",
             job.id,
             composition_id,
             output_path,
             elapsed_ms,
+            timing_mode,
+            word_timings_count,
         )
 
         return {
             "output_path": str(output_path),
             "composition_id": composition_id,
             "render_status": "rendered",
+            "timing_mode": timing_mode,
+            "word_timings_count": word_timings_count,
             "provider": {
                 "provider_id": "remotion_cli",
                 "composition_id": composition_id,
                 "render_status": "rendered",
                 "output_path": str(output_path),
+                "timing_mode": timing_mode,
+                "word_timings_count": word_timings_count,
                 "latency_ms": elapsed_ms,
                 "returncode": render_result.get("returncode", 0),
             },
@@ -269,9 +377,9 @@ class RenderStepExecutor(StepExecutor):
         ]
 
         logger.info(
-            "RenderStepExecutor: subprocess başlatılıyor. job=%s args=%s",
+            "RenderStepExecutor: subprocess başlatılıyor. job=%s composition_id=%s",
             job_id,
-            " ".join(args),
+            composition_id,
         )
 
         try:
