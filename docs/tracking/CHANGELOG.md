@@ -2,6 +2,93 @@
 
 ---
 
+## [2026-04-04] M6-C1 — Remotion Render Pipeline Foundation
+
+### Kapsam
+Remotion'ın renderer/ dizinine kurulumu; StandardVideo composition kaydı; KaraokeSubtitle.tsx aktivasyonu; RenderStepExecutor (backend subprocess aracı).
+
+### Değişen Dosyalar
+
+**renderer/package.json** (YENİ)
+- Remotion v4 + React 18 bağımlılıkları tanımlandı.
+- `npm install` ile 191 paket kuruldu.
+
+**renderer/tsconfig.json** (YENİ)
+- TypeScript 5.3 yapılandırması — Remotion/React JSX için.
+
+**renderer/remotion.config.ts** (YENİ)
+- Giriş noktası: `src/Root.tsx`.
+- Video çıktı formatı: JPEG. Mevcut output üzerine yaz.
+
+**renderer/src/Root.tsx** (YENİ)
+- `RemotionRoot()` — tüm composition'ların kayıt noktası.
+- `StandardVideo` composition: `id="StandardVideo"`, fps=30, 1920×1080.
+- Güvenli tip: `as unknown as ComponentType<Record<string, unknown>>` — Zod kullanılmaz.
+- `defaultProps` tam tipli `StandardVideoProps`.
+
+**renderer/src/compositions/StandardVideoComposition.tsx** (YENİ)
+- `StandardVideoProps` tipi — `composition_props.json → props` ile 1:1 uyumlu.
+- Sahne döngüsü: her sahne `Sequence` + `Audio` + `Img` + `KaraokeSubtitle`.
+- `word_timing_path` M6-C2+ kapsamında yüklenecek — şu an boş dizi (cursor degrade modu).
+- M4-C3 CSS preview ayrımı korundu: bu composition final render içindir.
+
+**renderer/src/compositions/KaraokeSubtitle.tsx** (GÜNCELLENDİ)
+- Remotion import'ları uncomment edildi: `useCurrentFrame`, `useVideoConfig`.
+- `currentTime = 0` stub kaldırıldı; `frame / fps` aktif.
+- Docstring notları güncellendi (M6-C1 kurulumu tamamlandı).
+
+**backend/app/modules/standard_video/executors/render.py** (YENİ)
+- `RenderStepExecutor` — `step_key = "render"`.
+- `composition_props.json` (render_status=props_ready) gerektirir.
+- Subprocess: `asyncio.create_subprocess_exec` + `shell=False` (injection koruması).
+- Zaman aşımı: `RENDER_TIMEOUT_SECONDS = 600`.
+- `_run_remotion_render()`: node_modules kontrolü, npx bulunamadı → graceful hata.
+- Render durumu geçişleri: `props_ready → rendering → rendered | failed`.
+- `composition_props.json` render sonrası güncellenir: `output_path + updated_at`.
+- `_RENDERER_DIR`: backend'e göre `../renderer` olarak hesaplanır.
+
+**backend/app/modules/standard_video/executors/__init__.py** (GÜNCELLENDİ)
+- `RenderStepExecutor` eklendi.
+
+**backend/tests/test_m6_c1_render_executor.py** (YENİ)
+- 20 test — tümü geçiyor.
+- İdempotency, props_ready guard, subprocess mock, timeout, node_modules kontrolü,
+  sorumluluk ayrımı (UsedNewsRegistry import yok) dahil.
+
+### Mandatorî Teslimat Alanları (M6)
+
+**render-contract drift risk: düşük**
+Render sözleşmesi `composition_props.json` → `props` alanıdır. `StandardVideoProps` tipi
+hem `Root.tsx` hem de `StandardVideoComposition.tsx`'de referans alınır.
+`backend/composition.py` bu dosyayı üretir. Senkron kalması için test 12 (`composition_props`
+güncelleme) ve test 11 (sonuç yapısı) koruma sağlar. Yeni prop eklendiğinde
+hem backend hem renderer güncellenmeli — bu bilinçli iki taraflı değişiklik.
+
+**preview-scope confusion risk: yok**
+M4-C3 CSS preview ayrımı bozulmadı. `StandardVideoComposition.tsx` final render içindir.
+Stil kartları ve subtitle önizleme yüzeyi ayrı kalır. Docstring'de "M4-C3 preview ayrımı
+KORUNUR" notu açıkça belgelenmiştir.
+
+**render-runtime coupling risk: düşük**
+Backend subprocess `asyncio.create_subprocess_exec` ile `shell=False` — injection riski yok.
+Renderer dizini `_RENDERER_DIR` sabiti ile backend dosya ağacına göre hesaplanır.
+Node.js kurulu olmalı — bu `npm install` belgelendi, runtime bağımlılık kaydedildi.
+`npx komutu bulunamadı` hatası graceful yakalanır ve `StepExecutionError` fırlatır.
+
+### Teknik Borç
+- `word_timing_path` M6-C1'de işlenmedi — `StandardVideoComposition` boş `wordTimings=[]`
+  ile cursor (degrade) modda çalışır. M6-C2'de `word_timing.json` dosyası yüklenecek.
+- `durationInFrames=1800` Root.tsx'te sabit — `calculateMetadata` M6-C2+ kapsamında
+  composition_props'tan dinamik süre okuyacak.
+
+### Test Sonuçları
+- M6-C1 testleri: 20/20 geçiyor
+- Toplam test sayısı: 790/790 geçiyor
+- Warnings: 1 (framework seviyesi — değişmedi)
+- TypeScript: `npx tsc --noEmit` temiz geçiyor
+
+---
+
 ## [2026-04-04] M5 KAPANIŞI — News Ingestion + Bulletin Pipeline Pack
 
 ### Zincir tutarlılık denetimi

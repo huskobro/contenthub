@@ -14,6 +14,7 @@ Modüller:
     visuals.py     — VisualsStepExecutor
     subtitle.py    — SubtitleStepExecutor (M2-C5)
     composition.py — CompositionStepExecutor (M2-C5)
+    render.py      — RenderStepExecutor (M6-C1)
     _helpers.py    — Ortak yardımcı fonksiyonlar (dahili)
 """
 
@@ -23,6 +24,7 @@ from .tts import TTSStepExecutor
 from .visuals import VisualsStepExecutor
 from .subtitle import SubtitleStepExecutor
 from .composition import CompositionStepExecutor
+from .render import RenderStepExecutor
 
 __all__ = [
     "ScriptStepExecutor",
@@ -31,4 +33,5 @@ __all__ = [
     "VisualsStepExecutor",
     "SubtitleStepExecutor",
     "CompositionStepExecutor",
+    "RenderStepExecutor",
 ]

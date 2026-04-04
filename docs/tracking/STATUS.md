@@ -1,11 +1,14 @@
 # DURUM
 
 ## Mevcut Faz
-Kiln Build — M5: News Ingestion + Bulletin Pipeline Pack — TAMAMLANDI
+Kiln Build — M6: Remotion Render Pipeline + Preview Infrastructure — DEVAM EDİYOR
 
-**M5 KAPANDİ — 770 test geçiyor**
+**M6-C1 TAMAMLANDI — 790 test geçiyor**
 
 ## Mevcut Durum (2026-04-04)
+M6-C1 tamamlandı:
+- M6-C1: Remotion kurulumu + renderer paketi + RenderStepExecutor (render.py, StandardVideoComposition, KaraokeSubtitle aktif, composition_props.json → output.mp4 sözleşmesi)
+
 M5-C1, M5-C2 ve M5-C3 tamamlandı:
 - M5-C1: Source Registry + RSS Fetch + Normalization (feedparser, scan_engine.py, ScanExecuteResponse, hard dedupe, durum semantiği izolasyonu)
 - M5-C2: Scan Engine + Dedupe (dedupe_service.py, soft dedupe Jaccard, follow-up exception, dedupe_details açıklanabilirlik, sınır koruması)

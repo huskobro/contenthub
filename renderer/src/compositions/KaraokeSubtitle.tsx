@@ -5,14 +5,9 @@
  * word_timing.json artifact'ından gelen WordTiming verisini tüketir.
  *
  * KURULUM NOTU:
- *   Bu component Remotion paketine bağımlıdır.
- *   Remotion kurulumu M6 kapsamında yapılacaktır (Template + Blueprint sistemleri hazır olduğunda).
- *   Şu an bu dosya tip-güvenli contract ve render mantığını tanımlar;
- *   gerçek render için `npm install remotion @remotion/player` gerekir.
- *
- *   Remotion kurulana kadar: bu component import edilemez.
+ *   Remotion M6-C1 kapsamında kuruldu ve bu component aktif edildi.
  *   Render pipeline'ı `composition_props.json`'u üretir (render_status: "props_ready");
- *   gerçek render bu component aktif olduğunda çalışır.
+ *   RenderStepExecutor bu dosyayı içeren renderer paketini subprocess ile çağırır.
  *
  * Timing modu davranışı:
  *   whisper_word    → kelime bazında highlight (word.start ≤ currentTime < word.end)
@@ -26,8 +21,8 @@
  *   Tüm görsel kararlar preset katmanında alınır.
  */
 
-// Remotion M6'da kurulacak. Şimdilik tip tanımları yorum satırında:
-// import { useCurrentFrame, useVideoConfig, AbsoluteFill } from "remotion";
+// Remotion M6-C1 ile kuruldu — import'lar aktif edildi.
+import { useCurrentFrame, useVideoConfig } from "remotion";
 
 import type {
   WordTiming,
@@ -120,13 +115,10 @@ function findActiveSegmentText(
 export function KaraokeSubtitle(props: KaraokeSubtitleProps): JSX.Element {
   const { wordTimings, style, timingMode, totalDurationSeconds } = props;
 
-  // Remotion M6'da aktif edildiğinde bu satırlar uncomment edilecek:
-  // const frame = useCurrentFrame();
-  // const { fps } = useVideoConfig();
-  // const currentTime = frame / fps;
-
-  // Geçici stub — Remotion aktif olana kadar:
-  const currentTime = 0;
+  // Remotion M6-C1: aktif edildi.
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const currentTime = frame / fps;
 
   const behavior: KaraokeRenderBehavior = resolveKaraokeRenderBehavior(timingMode);
 
