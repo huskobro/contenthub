@@ -65,6 +65,46 @@ Warnings: 3 kategori, 1–7 non-deterministic (bkz. Known Warnings backlog).
 
 ---
 
+## [2026-04-04] M8-C1 Hardening Pass — Exact metrics, canonical render source, schema fix
+
+### Özet
+Provisional accept → strong accept geçişi. Üç hedef: test izolasyonu, exact assertions,
+avg_render canonical kaynağı sabitleme.
+
+### Değiştirilen dosyalar
+- `backend/app/analytics/service.py` — avg_render sorgusunu `step_key='render'`'dan `step_key='composition'`'a taşıdı; docstring güncellendi
+- `backend/app/analytics/schemas.py` — `provider_error_rate: None` → `Optional[float] = None`
+- `backend/tests/test_m8_c1_analytics_backend.py` — tamamen yeniden yazıldı (exact assertions, delta izolasyon stratejisi)
+
+### Test izolasyon stratejisi
+Her test `last_7d` penceresini kullanır ve sorgulama öncesi `base` değer alır.
+Kendi oluşturduğu kayıtlar için `created_at` UPDATE override (SQLAlchemy server default bypass).
+`_OLD` fixture (now - 120 days) ile eski veri kesinlikle pencere dışında kalır.
+Delta (after - before) tam olarak oluşturulan kayıt sayısına eşit.
+
+### Exact assertion geçişi (11 metrik)
+- total_job_count: `== base + N`
+- completed_job_count: `== base + N`
+- failed_job_count: `== base + N`
+- job_success_rate: formül doğrulaması `== round(expected_completed / expected_total, 4)`
+- retry_rate: formül doğrulaması `== round(expected_retried / expected_total, 4)`
+- avg_production_duration_seconds: `abs(actual - expected) < 1.0` (julianday precision)
+- total_publish_count: `== base + N`
+- published_count: `== base + N`
+- failed_publish_count: `== base + N`
+- publish_success_rate: formül doğrulaması
+- avg_render_duration_seconds: `abs(comp_avg - expected) < 0.1`
+
+### Canonical render metric
+`avg_render_duration_seconds` → `step_key='composition'`
+Standard video pipeline step_order=6. RenderStepExecutor.step_key='render'
+definition.py'de hiç bağlı değil. Kaynak service.py yorumunda belgelendi.
+
+### Test sonuçları
+24/24 M8-C1 + 979/979 full suite, 0 regression, 1 non-blocking warning.
+
+---
+
 ## [2026-04-04] M7-C4 — Publish Hub Routes + Retry + Review Reset
 
 ### Özet

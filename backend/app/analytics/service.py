@@ -163,16 +163,23 @@ async def get_operations_metrics(
 
     Döndürülen alanlar:
       window                        : zaman penceresi
-      avg_render_duration_seconds   : render step'lerin ortalama süresi
+      avg_render_duration_seconds   : composition step'lerin ortalama süresi.
+                                      Canonical kaynak: step_key='composition'
+                                      (standard_video pipeline step_order=6).
+                                      RenderStepExecutor.step_key='render' pipeline'a
+                                      bağlı değil; bu metrik için kullanılmaz.
       step_stats                    : step_key başına {count, avg_elapsed, failed_count}
-      provider_error_rate           : UNSUPPORTED — M8-C1'de kaynak yok (None)
+      provider_error_rate           : UNSUPPORTED — M8-C1'de kaynak yok (None).
+                                      provider_trace_json yapısı sabitlenmedi.
     """
     cut = _cutoff(window)
 
-    # --- Render step ortalama süresi ---
+    # --- Composition step ortalama süresi (canonical render proxy) ---
+    # standard_video pipeline'da render adımı 'composition' (step_order=6).
+    # RenderStepExecutor.step_key='render' pipeline'a bağlı değil.
     render_q = select(
         func.avg(JobStep.elapsed_seconds).label("avg_render"),
-    ).where(JobStep.step_key == "render")
+    ).where(JobStep.step_key == "composition")
     if cut is not None:
         render_q = render_q.where(JobStep.created_at >= cut)
 

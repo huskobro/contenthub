@@ -3,7 +3,7 @@
 ## Mevcut Faz
 Kiln Build — M8: Analytics + Operations Pack — DEVAM EDİYOR
 
-**M8-C1 TAMAMLANDI — 24/24 test geçiyor (Analytics Backend + Platform Overview)**
+**M8-C1 TAMAMLANDI — 24/24 test geçiyor (Analytics Backend + Platform Overview + hardening pass)**
 **M7 KAPANDI — C1–C4 tamamlandı, backend-complete**
 
 **M7-C4 TAMAMLANDI — 24/24 test geçiyor (Publish Hub Routes + Retry + Review Reset)**
@@ -13,17 +13,24 @@ Kiln Build — M8: Analytics + Operations Pack — DEVAM EDİYOR
 **M6 KAPANDI**
 
 ## Mevcut Durum (2026-04-04)
-M8-C1 tamamlandı:
+M8-C1 tamamlandı (hardening pass dahil):
 - `backend/app/analytics/service.py` — salt okunur aggregation; jobs + job_steps + publish_records
 - `backend/app/analytics/router.py` — GET /api/v1/analytics/overview + GET /api/v1/analytics/operations
 - `backend/app/analytics/schemas.py` — OverviewMetrics + OperationsMetrics Pydantic şemaları
 - Desteklenen metrikler: total_job_count, completed_job_count, failed_job_count, job_success_rate, total_publish_count, published_count, failed_publish_count, publish_success_rate, avg_production_duration_seconds, retry_rate
-- Operasyon metrikleri: avg_render_duration_seconds, step_key bazlı count/avg_elapsed/failed_count
+- Operasyon metrikleri: avg_render_duration_seconds (canonical: step_key='composition'), step_key bazlı count/avg_elapsed/failed_count
 - Zaman filtresi: last_7d / last_30d / last_90d / all_time
-- provider_error_rate: M8-C1'de UNSUPPORTED — provider_trace_json yapısı sabitlenmedi; None döner, belgelendi
+- provider_error_rate: M8-C1'de UNSUPPORTED — Optional[float]=None; provider_trace_json yapısı sabitlenmedi
 - Şema değişikliği yok, migration yok, yazma yok
 - publish_service / job_service katmanlarına dokunulmadı
 - 24/24 M8-C1 + 979/979 full suite, 0 regression, 3 kategori non-blocking warning (non-deterministic; bkz. Known Warnings)
+
+**M8-C1 Hardening Pass:**
+- Test izolasyon: created_at UPDATE override + last_7d penceresi ile shared DB'den exact delta alma
+- Tüm 11 metrik exact numeric assertion'a geçirildi (==); julianday precision için yalnızca ±1.0s tolerans
+- window=last_7d exact exclusion + window=all_time exact inclusion testleri
+- avg_render_duration_seconds canonical kaynağı: step_key='composition' (RenderStepExecutor.step_key='render' pipeline'a bağlı değil, service.py yorumu güncellendi)
+- provider_error_rate schema tipi düzeltildi: `Optional[float] = None`
 
 M7-C4 tamamlandı:
 - `retry_publish()` servis fonksiyonu: failed → publishing, RETRY log event, platform_video_id korunur

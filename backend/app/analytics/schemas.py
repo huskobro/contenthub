@@ -33,4 +33,4 @@ class OperationsMetrics(BaseModel):
     window: str
     avg_render_duration_seconds: Optional[float]
     step_stats: list[StepStat]
-    provider_error_rate: None  # M8-C1: desteklenmiyor
+    provider_error_rate: Optional[float] = None  # M8-C1: desteklenmiyor; provider_trace_json yapısı sabitlenmedi
