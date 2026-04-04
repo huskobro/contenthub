@@ -615,3 +615,128 @@ async def reset_to_draft(
     await session.commit()
     await session.refresh(record)
     return record
+
+
+async def retry_publish(
+    session: AsyncSession,
+    record_id: str,
+    actor_id: Optional[str] = None,
+    note: Optional[str] = None,
+) -> PublishRecord:
+    """
+    failed → publishing geçişi (retry).
+
+    Kısmi başarısızlık semantiği:
+      platform_video_id dolu ise (upload başarılı, activate başarısız)
+      bu bilgi korunur — upload tekrar çalışmaz.
+      Executor upload skip mantığını platform_video_id varlığına göre uygular.
+
+    Publish gate kuralı burada da uygulanır:
+      Yalnızca failed durumundaki kayıt retry edilebilir.
+      (failed, can_publish() == True durumlarından biridir)
+    """
+    record = await _get_record_or_404(session, record_id)
+
+    if not PublishStateMachine.can_publish(record.status):
+        raise PublishGateViolationError(
+            f"PublishRecord {record.id} retry edilemiyor. "
+            f"Mevcut durum: '{record.status}'. "
+            f"Retry yalnızca 'failed' durumundan başlatılabilir."
+        )
+
+    await _transition_status(
+        session=session,
+        record=record,
+        next_status=PublishStatus.PUBLISHING.value,
+        actor_type="user",
+        actor_id=actor_id,
+        note=note or "Retry başlatıldı.",
+    )
+    await _append_log(
+        session=session,
+        publish_record_id=record.id,
+        event_type=PublishLogEvent.RETRY,
+        actor_type="user",
+        actor_id=actor_id,
+        detail={"attempt_count": record.publish_attempt_count},
+        note=note,
+    )
+    await session.commit()
+    await session.refresh(record)
+    logger.info(
+        "PublishRecord %s retry başlatıldı (deneme=%d, platform_video_id=%s)",
+        record.id, record.publish_attempt_count, record.platform_video_id,
+    )
+    return record
+
+
+async def reset_review_for_artifact_change(
+    session: AsyncSession,
+    record_id: str,
+    artifact_description: Optional[str] = None,
+    actor_id: Optional[str] = None,
+) -> PublishRecord:
+    """
+    Onaylanmış kayıtta artifact değiştiğinde review gate'i sıfırlar.
+
+    Kural (master plan Review reset test):
+      Operatör bir job'u review gate'ten geçirdikten sonra herhangi bir
+      artifact yeniden üretilirse (script, metadata, render çıktısı vb.),
+      review gate otomatik olarak pending_review'a sıfırlanmalı; operatör
+      publish işlemine devam etmeden önce yeniden onay vermelidir.
+
+    Tetiklenebilecek durumlar: approved, scheduled.
+    draft, pending_review, publishing, published, failed, cancelled: bu
+    fonksiyon bu durumlarda işlem yapmaz (sıfırlanacak onay yoktur).
+
+    Yanıt: güncellenen PublishRecord.
+    """
+    record = await _get_record_or_404(session, record_id)
+
+    _RESETTABLE_STATES = {
+        PublishStatus.APPROVED.value,
+        PublishStatus.SCHEDULED.value,
+    }
+    if record.status not in _RESETTABLE_STATES:
+        # Sıfırlanacak bir onay yok — sessizce geçerli kaydı döndür
+        logger.debug(
+            "reset_review_for_artifact_change: %s durumu '%s' — sıfırlama atlandı.",
+            record.id, record.status,
+        )
+        return record
+
+    detail: dict = {"trigger": "artifact_changed"}
+    if artifact_description:
+        detail["artifact"] = artifact_description
+
+    # approved/scheduled → pending_review
+    await _transition_status(
+        session=session,
+        record=record,
+        next_status=PublishStatus.PENDING_REVIEW.value,
+        actor_type="system",
+        actor_id=actor_id or "system",
+        note="Artifact değiştiği için review gate sıfırlandı. Yeniden onay gerekli.",
+        detail=detail,
+    )
+    # Review alanlarını temizle
+    record.reviewer_id = None
+    record.reviewed_at = None
+    record.review_state = "pending"
+
+    await _append_log(
+        session=session,
+        publish_record_id=record.id,
+        event_type=PublishLogEvent.NOTE,
+        actor_type="system",
+        actor_id=actor_id or "system",
+        detail=detail,
+        note="Artifact değişikliği nedeniyle review gate yeniden açıldı.",
+    )
+    await session.commit()
+    await session.refresh(record)
+    logger.info(
+        "PublishRecord %s: artifact değişikliği nedeniyle review gate sıfırlandı (artifact=%s).",
+        record.id, artifact_description,
+    )
+    return record

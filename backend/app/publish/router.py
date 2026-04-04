@@ -39,6 +39,8 @@ from app.publish.schemas import (
     PublishTriggerRequest,
     CancelRequest,
     TransitionRequest,
+    RetryPublishRequest,
+    ArtifactChangedRequest,
 )
 
 router = APIRouter(prefix="/publish", tags=["publish"])
@@ -53,7 +55,7 @@ def _handle_invalid_transition(exc: Exception) -> HTTPException:
 
 
 def _handle_gate_violation(exc: Exception) -> HTTPException:
-    return HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc))
+    return HTTPException(status_code=422, detail=str(exc))
 
 
 # ---------------------------------------------------------------------------
@@ -258,6 +260,62 @@ async def reset_to_draft(
             record_id=record_id,
             actor_id=body.actor_id,
             note=body.note,
+        )
+    except PublishRecordNotFoundError as exc:
+        raise _handle_not_found(exc)
+    except (InvalidPublishTransitionError, PublishAlreadyTerminalError) as exc:
+        raise _handle_invalid_transition(exc)
+
+
+@router.post("/{record_id}/retry", response_model=PublishRecordRead)
+async def retry_publish(
+    record_id: str,
+    body: RetryPublishRequest,
+    session=Depends(get_db),
+):
+    """
+    Başarısız publish kaydı için yeniden deneme başlatır (failed → publishing).
+
+    Kısmi başarısızlık semantiği:
+      platform_video_id doluysa (upload tamamlandı, activate kırıldı)
+      upload tekrar çalışmaz — executor yalnızca activate adımını yürütür.
+    Publish gate kuralı: yalnızca 'failed' durumundaki kayıt retry edilebilir.
+    """
+    try:
+        return await service.retry_publish(
+            session=session,
+            record_id=record_id,
+            actor_id=body.actor_id,
+            note=body.note,
+        )
+    except PublishRecordNotFoundError as exc:
+        raise _handle_not_found(exc)
+    except PublishGateViolationError as exc:
+        raise _handle_gate_violation(exc)
+    except (InvalidPublishTransitionError, PublishAlreadyTerminalError) as exc:
+        raise _handle_invalid_transition(exc)
+
+
+@router.post("/{record_id}/reset-review", response_model=PublishRecordRead)
+async def reset_review_for_artifact_change(
+    record_id: str,
+    body: ArtifactChangedRequest,
+    session=Depends(get_db),
+):
+    """
+    Artifact değişikliği nedeniyle review gate'i sıfırlar.
+
+    Approved veya scheduled durumundaki kayıtlarda herhangi bir artifact
+    yeniden üretildiğinde çağrılır. Kayıt pending_review'a döner ve
+    operatörün yeniden onay vermesi gerekir.
+    Diğer durumlarda (draft, publishing, failed vb.) işlem yapılmaz.
+    """
+    try:
+        return await service.reset_review_for_artifact_change(
+            session=session,
+            record_id=record_id,
+            artifact_description=body.artifact_description,
+            actor_id=body.actor_id,
         )
     except PublishRecordNotFoundError as exc:
         raise _handle_not_found(exc)

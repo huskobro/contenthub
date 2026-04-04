@@ -3,12 +3,25 @@
 ## Mevcut Faz
 Kiln Build — M7: YouTube Publish v1 — DEVAM EDİYOR
 
+**M7-C4 TAMAMLANDI — 24/24 test geçiyor (Publish Hub Routes + Retry + Review Reset)**
 **M7-C3 TAMAMLANDI — 23/23 test geçiyor (PublishStepExecutor + Dispatcher + Standard Video pipeline + hardening pass)**
 **M7-C2 TAMAMLANDI — 32/32 test geçiyor (YouTube Adapter + TokenStore + Registry + OAuth Router)**
 **M7-C1 TAMAMLANDI — 36/36 test geçiyor (27 servis + 9 migration)**
 **M6 KAPANDI**
 
 ## Mevcut Durum (2026-04-04)
+M7-C4 tamamlandı:
+- `retry_publish()` servis fonksiyonu: failed → publishing, RETRY log event, platform_video_id korunur
+- `reset_review_for_artifact_change()` servis fonksiyonu: approved/scheduled → pending_review; reviewer_id + reviewed_at sıfırlanır; diğer durumlar sessizce atlanır
+- `POST /publish/{id}/retry` endpoint: publish gate uygulanır, yalnızca failed → 422 diğer durumlar
+- `POST /publish/{id}/reset-review` endpoint: artifact değişikliği bildirimi, 200 (noop-safe)
+- State machine: approved + scheduled durumlarına `pending_review` çıkışı eklendi (artifact reset için)
+- `RetryPublishRequest` + `ArtifactChangedRequest` şemaları eklendi
+- `HTTP_422_UNPROCESSABLE_ENTITY` deprecation uyarısı giderildi
+- publish log boundary: `append_platform_event()` tek yol korundu — yeni endpointler bu boundary'yi bozmadı
+- publish step 7. adım olma durumu korundu — yeni testler 6-step varsayımı getirmedi
+- 24/24 M7-C4 + 955/955 full suite, 0 regression
+
 M7-C3 tamamlandı (hardening pass dahil):
 - `PublishStepExecutor` — upload + activate zincirini servis katmanına bağlar
 - Her platform event (upload_completed, activate_completed, upload_failed, activate_failed) `PublishLog`'a executor üzerinden yazılır; adaptör log yazmaz

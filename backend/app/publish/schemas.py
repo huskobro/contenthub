@@ -122,3 +122,15 @@ class CancelRequest(BaseModel):
     """İptal isteği."""
     actor_id: Optional[str] = None
     note: Optional[str] = None
+
+
+class RetryPublishRequest(BaseModel):
+    """Retry isteği — failed → publishing."""
+    actor_id: Optional[str] = None
+    note: Optional[str] = None
+
+
+class ArtifactChangedRequest(BaseModel):
+    """Artifact değişikliği bildirimi — review gate sıfırlar."""
+    artifact_description: Optional[str] = None
+    actor_id: Optional[str] = None

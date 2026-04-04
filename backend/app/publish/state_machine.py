@@ -86,10 +86,12 @@ _PUBLISH_TRANSITIONS: Dict[PublishStatus, FrozenSet[PublishStatus]] = {
         PublishStatus.PUBLISHING,
         PublishStatus.SCHEDULED,
         PublishStatus.CANCELLED,
+        PublishStatus.PENDING_REVIEW,  # Artifact değişikliği → review gate sıfırlama
     }),
     PublishStatus.SCHEDULED: frozenset({
         PublishStatus.PUBLISHING,
         PublishStatus.CANCELLED,
+        PublishStatus.PENDING_REVIEW,  # Artifact değişikliği → review gate sıfırlama
     }),
     PublishStatus.PUBLISHING: frozenset({
         PublishStatus.PUBLISHED,

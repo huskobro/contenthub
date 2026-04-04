@@ -2,6 +2,55 @@
 
 ---
 
+## [2026-04-04] M7-C4 — Publish Hub Routes + Retry + Review Reset
+
+### Özet
+Publish Center REST katmanı tamamlandı. Retry (failed → publishing) ve artifact değişikliği
+sonrası review gate sıfırlama mekanizmaları implement edildi. 12 endpoint için kapsamlı
+route smoke testleri yazıldı.
+
+### Yeni dosyalar
+- `backend/tests/test_m7_c4_publish_hub_routes.py` — 24 test (A–X)
+
+### Değiştirilen dosyalar
+- `backend/app/publish/service.py` — `retry_publish()` + `reset_review_for_artifact_change()` eklendi
+- `backend/app/publish/schemas.py` — `RetryPublishRequest` + `ArtifactChangedRequest` eklendi
+- `backend/app/publish/router.py` — `POST /retry` + `POST /reset-review` endpoint'leri eklendi; deprecation uyarısı giderildi
+- `backend/app/publish/state_machine.py` — approved + scheduled → pending_review geçişi eklendi (artifact reset path)
+
+### Yeni endpoint'ler
+- `POST /api/v1/publish/{id}/retry` — failed → publishing; publish gate korunur; platform_video_id korunur
+- `POST /api/v1/publish/{id}/reset-review` — artifact değişikliği; approved/scheduled → pending_review; diğer durumlar noop
+
+### Korunan boundary'ler
+- publish log yazımı: `append_platform_event()` tek resmi yol — retry/reset-review endpoint'leri bu sınırı bozmadı
+- publish step 7. adım: yeni testler 6-step varsayımı getirmedi
+- review gate (Tier A): bypass yolu açılmadı; reset-review yalnızca approved/scheduled durumunu geri alır
+
+### Test kapsamı (A–X)
+- A: POST /publish/ → 201 draft
+- B: bilinmeyen job_id → 4xx/5xx
+- C–D: GET listeleme + filtre
+- E–F: GET detay + 404
+- G–H: GET logs + 404
+- I–J: submit → pending_review + 404
+- K–L: review approve + gate 422
+- M: schedule
+- N–O: trigger approved + gate 422 (draft)
+- P–Q: cancel + terminal 409
+- R: reset-to-draft
+- S: retry failed → publishing (attempt_count artar)
+- T: retry non-failed → 422
+- U: reset-review approved → pending_review
+- V: reset-review draft → noop 200
+- W: retry korunan platform_video_id (partial failure semantiği)
+- X: reset-review reviewer alanları sıfırlama
+
+### Test sonuçları
+24/24 M7-C4 + 955/955 full suite, 0 regression, 0 uyarı.
+
+---
+
 ## [2026-04-04] M7-C3 Hardening Pass — Audit trail sınırı, platform_url kaynağı, video_path DB çözümü
 
 ### Özet
