@@ -3,13 +3,13 @@
 ## Mevcut Faz
 Kiln Build — M7: YouTube Publish v1 — DEVAM EDİYOR
 
-**M7-C3 TAMAMLANDI — 20/20 test geçiyor (PublishStepExecutor + Dispatcher + Standard Video pipeline)**
+**M7-C3 TAMAMLANDI — 23/23 test geçiyor (PublishStepExecutor + Dispatcher + Standard Video pipeline + hardening pass)**
 **M7-C2 TAMAMLANDI — 32/32 test geçiyor (YouTube Adapter + TokenStore + Registry + OAuth Router)**
 **M7-C1 TAMAMLANDI — 36/36 test geçiyor (27 servis + 9 migration)**
 **M6 KAPANDI**
 
 ## Mevcut Durum (2026-04-04)
-M7-C3 tamamlandı:
+M7-C3 tamamlandı (hardening pass dahil):
 - `PublishStepExecutor` — upload + activate zincirini servis katmanına bağlar
 - Her platform event (upload_completed, activate_completed, upload_failed, activate_failed) `PublishLog`'a executor üzerinden yazılır; adaptör log yazmaz
 - OPERATOR_CONFIRM idempotency: kayıt zaten 'published' ise upload/activate çağrılmaz
@@ -22,7 +22,13 @@ M7-C3 tamamlandı:
 - review-to-publish boundary risk: YOK — executor boundary korunuyor
 - partial-failure recovery: TAMAMLANDI — ara kayıt + upload skip garantisi
 - audit-trail completeness: TAMAMLANDI — her platform event denetim izine yazılıyor
-- 20/20 test + 928/928 full suite, 0 regression
+- 23/23 test + 931/931 full suite, 0 regression
+
+**M7-C3 Hardening Pass (3 düzeltme):**
+1. `_log_platform_event()` artık doğrudan `PublishLog()` ORM nesnesi oluşturmuyor; `publish_service.append_platform_event()` çağrıyor — audit trail sınırı servis katmanında
+2. `mark_published()` çağrısında `platform_url` artık sabit string değil; `adapter.activate()` sonucundaki `PublishAdapterResult.platform_url` kullanılıyor
+3. `_resolve_video_path()` async yapıldı; step 4 gerçekten DB'den `JobStep(step_key="render").provider_trace_json["output_path"]` okuyor — docstring ile implementasyon eşleşti
+- `publish_service.append_platform_event()` yeni public fonksiyon eklendi (`_append_log` wrapper)
 
 M7-C2 tamamlandı:
 - `YouTubeAdapter` — upload() + activate() zinciri, resumable upload, partial failure semantiği

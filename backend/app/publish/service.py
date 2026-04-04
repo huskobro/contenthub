@@ -248,6 +248,43 @@ async def get_publish_logs(
 
 
 # ---------------------------------------------------------------------------
+# Public log yardımcısı (executor tarafından çağrılır)
+# ---------------------------------------------------------------------------
+
+async def append_platform_event(
+    session: AsyncSession,
+    publish_record_id: str,
+    event: str,
+    detail: Optional[dict] = None,
+    actor_id: Optional[str] = "publish_executor",
+) -> None:
+    """
+    Platform event'i PublishLog'a yazar.
+
+    Executor bu fonksiyonu çağırır — doğrudan ORM yazmak yerine.
+    Bu garantiye uyulursa audit trail tamamen servis katmanından geçer.
+
+    commit() çağırmaz; çağıran commit sorumluluğunu taşır.
+    Yazma hatası kritik değil — uyarı loglanır ama exception fırlatılmaz.
+    """
+    try:
+        await _append_log(
+            session=session,
+            publish_record_id=publish_record_id,
+            event_type=PublishLogEvent.PLATFORM_EVENT,
+            actor_type="system",
+            actor_id=actor_id,
+            detail={"event": event, **(detail or {})},
+        )
+        await session.flush()
+    except Exception as exc:
+        logger.warning(
+            "append_platform_event: log yazılamadı (event=%s, record=%s): %s",
+            event, publish_record_id, exc,
+        )
+
+
+# ---------------------------------------------------------------------------
 # Durum geçiş aksiyonları
 # ---------------------------------------------------------------------------
 

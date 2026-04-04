@@ -2,6 +2,36 @@
 
 ---
 
+## [2026-04-04] M7-C3 Hardening Pass — Audit trail sınırı, platform_url kaynağı, video_path DB çözümü
+
+### Özet
+M7-C3 hardening/finalization pass. Yeni feature yok; 3 zorunlu düzeltme.
+
+### Değiştirilen dosyalar
+- `backend/app/publish/executor.py` — 3 düzeltme (bkz. aşağıda)
+- `backend/app/publish/service.py` — `append_platform_event()` yeni public fonksiyon eklendi
+- `backend/tests/test_m7_c3_publish_executor.py` — 3 yeni test eklendi (U, V, W)
+
+### Düzeltme 1 — Audit trail sınırı servis katmanında
+**Sorun:** `_log_platform_event()` doğrudan `PublishLog()` ORM nesnesi oluşturuyordu — servis katmanı bypass ediliyordu.
+**Düzeltme:** `publish_service.append_platform_event(session, publish_record_id, event, detail)` çağrısına dönüştürüldü. `service.py`'ye `append_platform_event()` public fonksiyon eklendi (`_append_log` wrapper).
+**Test:** U — `append_platform_event` service mock çağrısı doğrulandı.
+
+### Düzeltme 2 — platform_url adapter sonucundan gelir
+**Sorun:** `mark_published()` çağrısında `platform_url=f"https://www.youtube.com/watch?v={platform_video_id}"` sabit string üretiliyordu. Bu platform-spesifik format bilgisini executor'a sızdırıyor.
+**Düzeltme:** `_do_activate()` return type `PublishAdapterResult` yapıldı; `execute()` içinde `activate_result.platform_url` kullanılıyor.
+**Test:** V — `mark_published` çağrısındaki `platform_url` adapter result URL'sine eşit olduğu doğrulandı.
+
+### Düzeltme 3 — video_path DB render step çözümü
+**Sorun:** `_resolve_video_path()` docstring'i "render step provider_trace_json → output_path" DB sorgusunu tanımlıyordu; implementasyon yalnızca JSON alanlarına bakıyordu.
+**Düzeltme:** Method `async` yapıldı. Step 4 eklendi: `select(JobStep).where(job_id==job.id, step_key=="render")` sorgusu yapılır; `provider_trace_json["output_path"]` okunur.
+**Test:** W — render step provider_trace_json içinde output_path varsa döndürüldüğü doğrulandı.
+
+### Test sonuçları
+23/23 M7-C3 + 931/931 full suite, 0 regression.
+
+---
+
 ## [2026-04-04] M7-C3 — PublishStepExecutor + Dispatcher entegrasyonu + Standard Video publish step
 
 ### Özet

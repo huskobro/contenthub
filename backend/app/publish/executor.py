@@ -1,5 +1,5 @@
 """
-Publish Step Executor — M7-C3.
+Publish Step Executor — M7-C3 (hardening: M7-C3.1).
 
 PublishAdapter zincirini (upload + activate) servis katmanına bağlar.
 Job pipeline'ının "publish" step'i bu executor tarafından çalıştırılır.
@@ -8,25 +8,33 @@ Tasarım kuralları (M7):
   - Adaptör servis state'ine doğrudan dokunmaz.
     Tüm durum geçişleri service.mark_published / service.mark_failed üzerinden geçer.
   - Her platform event (upload başarısı, activate başarısı, hata) PublishLog'a
-    servis katmanı üzerinden yazılır — adaptör log yazmaz.
+    publish_service.append_platform_event() üzerinden yazılır.
+    Executor doğrudan ORM (PublishLog()) yaratmaz; audit trail tamamen
+    servis katmanından geçer.
   - Partial failure semantiği korunur:
-    upload başarılı → platform_video_id kaydedilir (ara_kayit via _save_upload_result)
+    upload başarılı → platform_video_id kaydedilir (_save_upload_result)
     activate başarısız → platform_video_id korunur; yalnızca activate retry edilebilir.
   - OPERATOR_CONFIRM idempotency:
     PublishRecord zaten 'published' durumundaysa step tekrar çalıştırılmaz.
     Bu kontrol executor içinde yapılır; pipeline'ın re-entry'sini güvenli kılar.
-  - Executor, PublishRecord'u job.input_data_json veya step.artifact_refs_json üzerinden
+  - Executor, PublishRecord'u step.artifact_refs_json veya job.input_data_json üzerinden
     bulur: "publish_record_id" key'i.
 
-Video dosyası çözümü:
-  "video_path" önce step.artifact_refs_json içinde aranır.
-  Bulunamazsa job'ın önceki "render" step'inin provider_trace_json'ından
-  "output_path" okunur.
+Video dosyası çözümü (öncelik sırası):
+  1. step.artifact_refs_json → "video_path"
+  2. job.input_data_json    → "video_path"
+  3. job.input_data_json    → "render_output_path"
+  4. DB'den "render" step'inin provider_trace_json → "output_path"
+     (DB erişimi async; session üzerinden çekilir)
+
+platform_url kaynağı:
+  mark_published() çağrısında platform_url, adapter.activate() sonucundan
+  gelen result.platform_url kullanılır. Sabit string üretilmez.
 
 Hata yönetimi:
   retryable=True  → StepExecutionError(retryable=True) — pipeline retry edebilir
   retryable=False → StepExecutionError(retryable=False) — operatör müdahalesi gerekir
-  Her hata self._log_platform_event() ile denetim izine yazılır.
+  Her hata _log_platform_event() ile denetim izine yazılır.
 """
 
 import json
@@ -37,12 +45,12 @@ from typing import Optional
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models import Job, JobStep, PublishRecord, PublishLog
+from app.db.models import Job, JobStep, PublishRecord
 from app.jobs.executor import StepExecutor
 from app.jobs.exceptions import StepExecutionError
 from app.publish import service as publish_service
-from app.publish.adapter import PublishAdapterError
-from app.publish.enums import PublishStatus, PublishLogEvent
+from app.publish.adapter import PublishAdapterError, PublishAdapterResult
+from app.publish.enums import PublishStatus
 from app.publish.registry import publish_adapter_registry, PublishAdapterNotRegisteredError
 
 logger = logging.getLogger(__name__)
@@ -138,14 +146,14 @@ class PublishStepExecutor(StepExecutor):
                 retryable=False,
             ) from exc
 
-        # 5. Video dosyasını bul
-        video_path = self._resolve_video_path(job, step)
+        # 5. Video dosyasını bul (DB erişimi içerebilir — await gerekli)
+        video_path = await self._resolve_video_path(job, step)
         if not video_path:
             raise StepExecutionError(
                 "publish",
                 "Video dosyası yolu bulunamadı. "
-                "step.artifact_refs_json veya render step provider_trace_json içinde "
-                "'video_path' veya 'output_path' gerekli.",
+                "step.artifact_refs_json['video_path'], job.input_data_json['video_path'/'render_output_path'] "
+                "veya render step provider_trace_json['output_path'] gerekli.",
                 retryable=False,
             )
 
@@ -153,11 +161,10 @@ class PublishStepExecutor(StepExecutor):
         payload = self._resolve_payload(record)
 
         # 7. Upload zinciri
-        upload_completed = False
-        platform_video_id: Optional[str] = record.platform_video_id  # önceki upload varsa koru
-
         # Upload kısmını yalnızca platform_video_id henüz yoksa çalıştır.
         # Bu, partial failure durumunda upload tekrarını engeller.
+        platform_video_id: Optional[str] = record.platform_video_id  # önceki upload varsa koru
+
         if not platform_video_id:
             platform_video_id = await self._do_upload(
                 publish_record_id=publish_record_id,
@@ -175,9 +182,9 @@ class PublishStepExecutor(StepExecutor):
             )
             upload_completed = True  # önceki run'da tamamlandı
 
-        # 8. Activate zinciri
+        # 8. Activate zinciri — gerçek platform_url döner
         scheduled_at: Optional[datetime] = record.scheduled_at
-        await self._do_activate(
+        activate_result = await self._do_activate(
             publish_record_id=publish_record_id,
             platform_video_id=platform_video_id,
             adapter=adapter,
@@ -185,14 +192,18 @@ class PublishStepExecutor(StepExecutor):
             job_id=job.id,
         )
 
-        # 9. mark_published servis çağrısı
+        # 9. mark_published — platform_url adapter.activate() sonucundan gelir (sabit string değil)
+        platform_url = activate_result.platform_url
         try:
             updated = await publish_service.mark_published(
                 session=self._db,
                 record_id=publish_record_id,
                 platform_video_id=platform_video_id,
-                platform_url=f"https://www.youtube.com/watch?v={platform_video_id}",
-                result_json=json.dumps({"platform_video_id": platform_video_id}),
+                platform_url=platform_url,
+                result_json=json.dumps({
+                    "platform_video_id": platform_video_id,
+                    "platform_url": platform_url,
+                }),
                 actor_id="system",
                 note="PublishStepExecutor: yayınlama tamamlandı.",
             )
@@ -240,7 +251,6 @@ class PublishStepExecutor(StepExecutor):
                 payload=payload,
             )
         except PublishAdapterError as exc:
-            # Upload hatası: denetim izine yaz
             await self._log_platform_event(
                 publish_record_id=publish_record_id,
                 event="upload_failed",
@@ -250,7 +260,6 @@ class PublishStepExecutor(StepExecutor):
                     "retryable": exc.retryable,
                 },
             )
-            # mark_failed — publishing → failed geçişi
             await self._mark_failed_safe(
                 publish_record_id=publish_record_id,
                 error_message=str(exc),
@@ -262,7 +271,6 @@ class PublishStepExecutor(StepExecutor):
                 retryable=exc.retryable,
             ) from exc
 
-        # Upload başarılı: ara sonucu denetim izine yaz
         platform_video_id = result.platform_video_id
         await self._log_platform_event(
             publish_record_id=publish_record_id,
@@ -270,7 +278,7 @@ class PublishStepExecutor(StepExecutor):
             detail={"platform_video_id": platform_video_id},
         )
 
-        # platform_video_id'yi doğrudan PublishRecord'a yaz
+        # platform_video_id'yi PublishRecord'a yaz
         # (activate henüz yapılmadı — partial failure için ara kayıt)
         await self._save_upload_result(
             publish_record_id=publish_record_id,
@@ -294,9 +302,13 @@ class PublishStepExecutor(StepExecutor):
         adapter,
         scheduled_at: Optional[datetime],
         job_id: str,
-    ) -> None:
+    ) -> PublishAdapterResult:
         """
         Adaptör activate() çağrısını yapar.
+
+        Returns:
+            PublishAdapterResult — platform_url dahil gerçek adapter sonucu.
+            Çağıran bu sonucu mark_published()'a geçirmelidir.
 
         Başarısız olunca denetim izine yazar, mark_failed çağırır,
         StepExecutionError fırlatır.
@@ -342,9 +354,10 @@ class PublishStepExecutor(StepExecutor):
             "PublishStepExecutor activate tamamlandı: video_id=%s url=%s publish_record_id=%s job=%s",
             platform_video_id, result.platform_url, publish_record_id, job_id,
         )
+        return result
 
     # ---------------------------------------------------------------------------
-    # Yardımcı: platform event log (servis katmanı üzerinden)
+    # Yardımcı: platform event log — servis katmanı üzerinden
     # ---------------------------------------------------------------------------
 
     async def _log_platform_event(
@@ -354,26 +367,17 @@ class PublishStepExecutor(StepExecutor):
         detail: Optional[dict] = None,
     ) -> None:
         """
-        Platform event'i PublishLog'a servis katmanının _append_log()'u üzerinden yazar.
+        Platform event'i PublishLog'a publish_service.append_platform_event() üzerinden yazar.
 
-        Adaptör bu fonksiyonu çağırmaz — audit merkezi executor/service tarafındadır.
+        Executor doğrudan PublishLog ORM nesnesi yaratmaz.
+        Audit trail tamamen servis katmanından geçer.
         """
-        try:
-            log_entry = PublishLog(
-                publish_record_id=publish_record_id,
-                event_type=PublishLogEvent.PLATFORM_EVENT.value,
-                actor_type="system",
-                actor_id="publish_executor",
-                detail_json=json.dumps({"event": event, **(detail or {})}, ensure_ascii=False),
-            )
-            self._db.add(log_entry)
-            await self._db.flush()
-        except Exception as exc:
-            # Denetim izi yazma hatası kritik değil — log at, devam et
-            logger.warning(
-                "PublishStepExecutor: platform_event log yazılamadı (event=%s, record=%s): %s",
-                event, publish_record_id, exc,
-            )
+        await publish_service.append_platform_event(
+            session=self._db,
+            publish_record_id=publish_record_id,
+            event=event,
+            detail=detail,
+        )
 
     # ---------------------------------------------------------------------------
     # Yardımcı: upload sonrası ara kayıt (partial failure için)
@@ -416,8 +420,7 @@ class PublishStepExecutor(StepExecutor):
         """
         publishing → failed geçişi için mark_failed çağırır.
 
-        Kayıt henüz 'publishing' durumunda değilse (başka executor veya
-        test senaryosu) hatayı yutmak yerine sadece uyarı loglar.
+        Kayıt henüz 'publishing' durumunda değilse uyarı loglar, exception fırlatmaz.
         """
         try:
             await publish_service.mark_failed(
@@ -441,7 +444,7 @@ class PublishStepExecutor(StepExecutor):
     def _resolve_publish_record_id(self, job: Job, step: JobStep) -> Optional[str]:
         """
         publish_record_id'yi şu kaynaklardan sırayla arar:
-          1. step.artifact_refs_json (pipeline'ın bu adıma özel payload'ı)
+          1. step.artifact_refs_json
           2. job.input_data_json
         """
         for source in (step.artifact_refs_json, job.input_data_json):
@@ -455,13 +458,19 @@ class PublishStepExecutor(StepExecutor):
                 continue
         return None
 
-    def _resolve_video_path(self, job: Job, step: JobStep) -> Optional[str]:
+    async def _resolve_video_path(self, job: Job, step: JobStep) -> Optional[str]:
         """
         Video dosyası yolunu şu kaynaklardan sırayla arar:
+
           1. step.artifact_refs_json → "video_path"
-          2. job.input_data_json → "video_path"
-          3. job steps'teki "render" step'inin provider_trace_json → "output_path"
+          2. job.input_data_json    → "video_path"
+          3. job.input_data_json    → "render_output_path"
+          4. DB'den "render" step'inin provider_trace_json → "output_path"
+             (PipelineRunner render step'ini tamamlamış; trace'de output_path vardır)
+
+        4. adım gerçek DB erişimi yapar; bu yüzden method async'tir.
         """
+        # 1–3: JSON kaynaklarından ara
         for source in (step.artifact_refs_json, job.input_data_json):
             if not source:
                 continue
@@ -470,18 +479,29 @@ class PublishStepExecutor(StepExecutor):
                 if isinstance(data, dict):
                     if "video_path" in data:
                         return data["video_path"]
+                    if "render_output_path" in data:
+                        return data["render_output_path"]
             except (json.JSONDecodeError, TypeError):
                 continue
 
-        # Render step trace'inden bul (job.steps eager load edilmemiş olabilir)
-        # Bu durum için job.input_data_json'da da "render_output_path" aranır
+        # 4: DB'den render step'ini çek
         try:
-            if job.input_data_json:
-                data = json.loads(job.input_data_json)
-                if isinstance(data, dict) and "render_output_path" in data:
-                    return data["render_output_path"]
-        except (json.JSONDecodeError, TypeError):
-            pass
+            result = await self._db.execute(
+                select(JobStep).where(
+                    JobStep.job_id == job.id,
+                    JobStep.step_key == "render",
+                )
+            )
+            render_step = result.scalar_one_or_none()
+            if render_step and render_step.provider_trace_json:
+                trace = json.loads(render_step.provider_trace_json)
+                if isinstance(trace, dict) and "output_path" in trace:
+                    return trace["output_path"]
+        except Exception as exc:
+            logger.warning(
+                "PublishStepExecutor: render step trace okunamadı (job=%s): %s",
+                job.id, exc,
+            )
 
         return None
 

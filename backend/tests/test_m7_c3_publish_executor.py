@@ -22,6 +22,9 @@ Kapsam:
   R  — _build_executor_from_registry: PublishStepExecutor + pipeline_db=None → ValueError
   S  — payload_json yoksa minimal defaults kullanılır
   T  — scheduled_at dolu kayıt → activate scheduled_at ile çağrılır
+  U  — Hardening: audit log executor'dan doğrudan ORM değil, servis üzerinden (append_platform_event)
+  V  — Hardening: platform_url adapter.activate() sonucundan gelir, sabit string değil
+  W  — Hardening: video_path DB'deki render step provider_trace_json → output_path'ten okunur
 
 Test izolasyonu:
   - Gerçek DB yok: SQLite in-memory (conftest pattern)
@@ -846,3 +849,167 @@ async def test_t_activate_with_scheduled_at(db):
     # activate scheduled_at ile çağrılmış olmalı
     activate_call_kwargs = adapter.activate.call_args.kwargs
     assert activate_call_kwargs.get("scheduled_at") == scheduled
+
+
+# ===========================================================================
+# U — Hardening: audit log executor'dan doğrudan ORM değil, servis üzerinden
+# ===========================================================================
+
+@pytest.mark.asyncio
+async def test_u_audit_log_via_service_not_orm(db):
+    """
+    _log_platform_event, publish_service.append_platform_event() çağırmalı.
+    Executor doğrudan PublishLog() ORM nesnesi yaratmamalı.
+    """
+    job = await _create_job(db)
+    record = await _create_publish_record(db, job.id)
+    step = await _create_step(
+        db, job.id,
+        artifact_refs_json=json.dumps({
+            "publish_record_id": record.id,
+            "video_path": "/tmp/test.mp4",
+        })
+    )
+
+    adapter = _mock_adapter()
+    mock_registry = MagicMock()
+    mock_registry.get = MagicMock(return_value=adapter)
+
+    executor = PublishStepExecutor(db=db)
+    append_calls = []
+
+    async def mock_append_platform_event(session, publish_record_id, event, detail=None, actor_id=None):
+        append_calls.append({"event": event, "publish_record_id": publish_record_id})
+
+    with patch("app.publish.executor.publish_adapter_registry", mock_registry):
+        with patch(
+            "app.publish.executor.publish_service.append_platform_event",
+            side_effect=mock_append_platform_event,
+        ):
+            with patch("app.publish.executor.publish_service.mark_published", new_callable=AsyncMock) as mock_mark:
+                mock_mark.return_value = MagicMock(
+                    platform_video_id="vid_u",
+                    platform_url="https://www.youtube.com/watch?v=vid_u",
+                )
+                with patch("app.publish.executor.publish_service.get_publish_record", new_callable=AsyncMock) as mock_get:
+                    mock_get.return_value = MagicMock(
+                        id=record.id,
+                        status="publishing",
+                        platform=record.platform,
+                        platform_video_id=None,
+                        scheduled_at=None,
+                        payload_json=record.payload_json,
+                    )
+                    await executor.execute(job, step)
+
+    event_names = [c["event"] for c in append_calls]
+    assert "upload_completed" in event_names
+    assert "activate_completed" in event_names
+    # Doğrudan PublishLog ORM nesnesi oluşturulmadı — append_platform_event çağrıldı
+    assert len(append_calls) >= 2
+
+
+# ===========================================================================
+# V — Hardening: platform_url adapter.activate() sonucundan gelir (sabit değil)
+# ===========================================================================
+
+@pytest.mark.asyncio
+async def test_v_platform_url_from_adapter_result(db):
+    """
+    mark_published çağrısında platform_url, adapter.activate() sonucundan
+    alınmalı — sabit string üretilmemeli.
+    """
+    job = await _create_job(db)
+    record = await _create_publish_record(db, job.id)
+    step = await _create_step(
+        db, job.id,
+        artifact_refs_json=json.dumps({
+            "publish_record_id": record.id,
+            "video_path": "/tmp/test.mp4",
+        })
+    )
+
+    # Adapter activate() farklı bir URL döndürüyor
+    real_platform_url = "https://www.youtube.com/watch?v=real_video_from_adapter"
+    adapter = _mock_adapter(
+        activate_result=PublishAdapterResult(
+            success=True,
+            platform_video_id="real_video_from_adapter",
+            platform_url=real_platform_url,
+        )
+    )
+    mock_registry = MagicMock()
+    mock_registry.get = MagicMock(return_value=adapter)
+
+    executor = PublishStepExecutor(db=db)
+    mark_published_kwargs = {}
+
+    async def capture_mark_published(**kwargs):
+        mark_published_kwargs.update(kwargs)
+        return MagicMock(
+            platform_video_id="real_video_from_adapter",
+            platform_url=real_platform_url,
+        )
+
+    with patch("app.publish.executor.publish_adapter_registry", mock_registry):
+        with patch("app.publish.executor.publish_service.append_platform_event", new_callable=AsyncMock):
+            with patch(
+                "app.publish.executor.publish_service.mark_published",
+                side_effect=capture_mark_published,
+            ):
+                with patch("app.publish.executor.publish_service.get_publish_record", new_callable=AsyncMock) as mock_get:
+                    mock_get.return_value = MagicMock(
+                        id=record.id,
+                        status="publishing",
+                        platform=record.platform,
+                        platform_video_id=None,
+                        scheduled_at=None,
+                        payload_json=record.payload_json,
+                    )
+                    result = await executor.execute(job, step)
+
+    # mark_published'a geçilen platform_url adapter sonucundan gelmeli
+    assert mark_published_kwargs.get("platform_url") == real_platform_url
+    # Sabit "https://www.youtube.com/watch?v=" + video_id formatı olmamalı (hardcoded değil)
+    assert result["platform_url"] == real_platform_url
+
+
+# ===========================================================================
+# W — Hardening: video_path DB'deki render step provider_trace_json'dan okunur
+# ===========================================================================
+
+@pytest.mark.asyncio
+async def test_w_video_path_from_render_step_trace(db):
+    """
+    step.artifact_refs_json ve job.input_data_json'da video_path yoksa,
+    executor DB'deki 'render' step'inin provider_trace_json → output_path'i kullanmalı.
+    """
+    job = await _create_job(db)
+    record = await _create_publish_record(db, job.id)
+
+    # Render step'ini DB'ye yaz (provider_trace_json'da output_path var)
+    render_step = JobStep(
+        job_id=job.id,
+        step_key="render",
+        step_order=6,
+        status="completed",
+        idempotency_type="artifact_check",
+        provider_trace_json=json.dumps({"output_path": "/workspace/job-001/output.mp4"}),
+    )
+    db.add(render_step)
+    await db.flush()
+
+    # Publish step: artifact_refs_json'da yalnızca publish_record_id, video_path YOK
+    step = await _create_step(
+        db, job.id,
+        artifact_refs_json=json.dumps({"publish_record_id": record.id})
+    )
+
+    adapter = _mock_adapter()
+    mock_registry = MagicMock()
+    mock_registry.get = MagicMock(return_value=adapter)
+
+    executor = PublishStepExecutor(db=db)
+    resolved_path = await executor._resolve_video_path(job, step)
+
+    assert resolved_path == "/workspace/job-001/output.mp4"
