@@ -1,5 +1,7 @@
 import { useState } from "react";
 import type { StandardVideoResponse } from "../../api/standardVideoApi";
+import { SubtitleStylePicker } from "./SubtitleStylePicker";
+import { useSubtitlePresets } from "../../hooks/useSubtitlePresets";
 
 export interface StandardVideoFormValues {
   topic: string;
@@ -78,6 +80,8 @@ export function StandardVideoForm({
   onCancel,
   submitLabel = "Kaydet",
 }: Props) {
+  const { data: presetsData, isLoading: presetsLoading, error: presetsError } = useSubtitlePresets();
+
   const [values, setValues] = useState<StandardVideoFormValues>({
     topic: toStr(initial?.topic),
     title: toStr(initial?.title),
@@ -209,12 +213,12 @@ export function StandardVideoForm({
       </div>
 
       <div style={ROW_STYLE}>
-        <label style={LABEL_STYLE}>Altyazı Stili</label>
-        <input
-          style={FIELD_STYLE}
+        <SubtitleStylePicker
           value={values.subtitle_style}
-          onChange={(e) => set("subtitle_style", e.target.value)}
-          placeholder="örn. standard, bold, news"
+          onChange={(presetId) => set("subtitle_style", presetId)}
+          presets={presetsData?.presets ?? []}
+          loading={presetsLoading}
+          error={presetsError instanceof Error ? presetsError.message : (presetsError ? String(presetsError) : null)}
         />
       </div>
 

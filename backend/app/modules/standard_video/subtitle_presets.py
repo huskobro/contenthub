@@ -1,5 +1,5 @@
 """
-Altyazı stil preset tanımları — M4-C2.
+Altyazı stil preset tanımları — M4-C2 / M4-C3.
 
 Karaoke rendering için kullanılacak kontrollü stil listesi.
 Yeni preset eklemek için bu dosyayı güncelle ve kod incelemesinden geçir.
@@ -8,13 +8,25 @@ AI tarafından dinamik stil üretilemez (CLAUDE.md C-07).
 Preset'ler composition_props.json içinde subtitle_style alanına yazılır.
 Remotion component bu string'i okuyarak doğru stil uygular.
 
+--- Strict helper vs boundary fallback ayrımı (M4-C3) ---
+
+get_preset(preset_id) → STRICT: Bilinmeyen ID → ValueError fırlatır.
+  Çağıranın bilinçli olarak geçerli bir ID verdiği düşük seviyeli kod için.
+  Kullanım: test, doğrulama, preset detay endpoint'i.
+
+get_preset_for_composition(preset_id) → BOUNDARY FALLBACK:
+  None veya bilinmeyen ID → varsayılan preset (DEFAULT_PRESET_ID) döner.
+  Kullanım: composition adımı gibi harici inputu işleyen sınırlar.
+  Gerekçe: Job input alanı kullanıcı tarafından girilebilir;
+           bilinmeyen bir preset_id ile composition adımının çökmesi kabul edilemez.
+
+Bu iki davranış bilinçli ve kasıtlıdır. Birbirinin yerine kullanılmaz.
+
 Timing modları ve stil uyumluluğu:
   - whisper_word  : Karaoke highlight tam kelime-düzeyi zamanlama ile çalışır.
   - whisper_segment: Segment highlight — kelime vurgusu sınırlıdır.
-  - cursor        : Tam zamanlaması yok; highlight görseli degrade modda
-                    çalışır (satır highlight kullanılır, kelime highlight değil).
-
-Bu ayrım operatöre ve kullanıcıya yansıtılmalıdır.
+  - cursor        : Tam zamanlaması yok; highlight görseli degrade modda çalışır.
+                    Kullanıcıya açıkça "sınırlı zamanlama" olarak yansıtılır.
 """
 
 from __future__ import annotations

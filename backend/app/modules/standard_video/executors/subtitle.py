@@ -184,7 +184,14 @@ class SubtitleStepExecutor(StepExecutor):
         """
         Args:
             registry: Provider kayıt defteri. Whisper provider'ı çözümlemek için kullanılır.
-                      None ise cursor-tabanlı timing kullanılır.
+
+        Geçiş notu (M4-C3 kararı):
+            registry=None kabul edilmeye devam eder; cursor-tabanlı timing kullanılır.
+            Bu imza yeni kodda kopyalanmamalıdır.
+            Yeni executor veya test kodu her zaman açık bir ProviderRegistry geçirmelidir.
+            Dispatcher zaten registry=registry geçiriyor (M4-C1'den itibaren).
+            Teknik borç: Gelecekte registry zorunlu hale getirilebilir;
+            şimdilik geriye uyumluluk için None kabul ediliyor.
         """
         self._registry = registry
 

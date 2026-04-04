@@ -33,6 +33,7 @@ from app.modules.standard_video.executors.subtitle import (
     _build_srt,
     _seconds_to_srt_time,
 )
+from app.providers.registry import ProviderRegistry
 from app.modules.standard_video.executors.composition import CompositionStepExecutor
 from app.modules.standard_video.composition_map import get_composition_id, COMPOSITION_MAP
 
@@ -225,7 +226,7 @@ async def test_subtitle_executor_srt_uretiliyor():
 
         job = _make_job(tmpdir)
         step = _make_step()
-        executor = SubtitleStepExecutor()
+        executor = SubtitleStepExecutor(registry=ProviderRegistry())
 
         result = await executor.execute(job, step)
 
@@ -255,7 +256,7 @@ async def test_subtitle_executor_zamanlamalar_kumulatif():
 
         job = _make_job(tmpdir)
         step = _make_step()
-        executor = SubtitleStepExecutor()
+        executor = SubtitleStepExecutor(registry=ProviderRegistry())
         result = await executor.execute(job, step)
 
         srt_content = Path(result["artifact_path"]).read_text(encoding="utf-8")
@@ -284,7 +285,7 @@ async def test_subtitle_executor_metadata_language_field():
 
         job = _make_job(tmpdir, language="tr")
         step = _make_step()
-        executor = SubtitleStepExecutor()
+        executor = SubtitleStepExecutor(registry=ProviderRegistry())
         await executor.execute(job, step)
 
         metadata_path = artifacts_dir / "subtitle_metadata.json"
@@ -313,7 +314,7 @@ async def test_subtitle_executor_artifact_check_atla():
 
         job = _make_job(tmpdir)
         step = _make_step()
-        executor = SubtitleStepExecutor()
+        executor = SubtitleStepExecutor(registry=ProviderRegistry())
         result = await executor.execute(job, step)
 
         assert result.get("skipped") is True
@@ -339,7 +340,7 @@ async def test_subtitle_executor_provider_trace_language():
 
         job = _make_job(tmpdir)
         step = _make_step()
-        executor = SubtitleStepExecutor()
+        executor = SubtitleStepExecutor(registry=ProviderRegistry())
         result = await executor.execute(job, step)
 
         trace = result.get("provider", {})
