@@ -643,7 +643,6 @@ class VisualsStepExecutor(StepExecutor):
             StepExecutionError: Script artifact eksikse veya tüm sahneler başarısızsa.
         """
         from app.modules.step_context import StepExecutionContext
-        import httpx
 
         # Job input'u oku
         raw_input_str = getattr(job, "input_data_json", None) or "{}"
