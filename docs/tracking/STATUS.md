@@ -20,7 +20,7 @@ M7-C4 tamamlandı:
 - `HTTP_422_UNPROCESSABLE_ENTITY` deprecation uyarısı giderildi
 - publish log boundary: `append_platform_event()` tek yol korundu — yeni endpointler bu boundary'yi bozmadı
 - publish step 7. adım olma durumu korundu — yeni testler 6-step varsayımı getirmedi
-- 24/24 M7-C4 + 955/955 full suite, 0 regression
+- 24/24 M7-C4 + 955/955 full suite, 0 regression, 4 non-blocking test altyapısı uyarısı (bkz. Known Warnings)
 
 M7-C3 tamamlandı (hardening pass dahil):
 - `PublishStepExecutor` — upload + activate zincirini servis katmanına bağlar
@@ -93,8 +93,11 @@ M4 üç chunk ile tamamlandı:
 - VISUALS: AKTİF — VisualsStepExecutor kendi döngüsünde (bilinçli fark)
 - WHISPER: DEGRADED MODE — Whisper yoksa cursor-tabanlı timing; zincir değil, degrade
 
-**Warnings durumu:**
-- 2 known-nonblocking warnings: `unittest.mock.py:2245` `RuntimeWarning` (mock framework internal) + `RuntimeError: Event loop is closed` (TestClient teardown pattern, framework seviyesi). Her ikisi de bloklayıcı değil. Bütçe büyüdü ama tümü framework/test altyapısı kaynaklı.
+**Known Warnings (non-blocking backlog):**
+- **W-01** `unittest.mock.py` `RuntimeWarning: coroutine '_run_pipeline' was never awaited` — `test_m2_c6_dispatcher_integration.py::test_dispatch_creates_background_task`. Mock framework, `asyncio.create_task` ile wrap edilmiş coroutine'i await etmiyor. Uygulama kodu değil, test mock kurulumu seviyesi. Kaynak: Python mock framework internal.
+- **W-02–W-06** `aiosqlite.core.py:102` `ResourceWarning: Connection deleted before being closed` — `test_m5_c1_rss_scan_engine.py` içinde birden fazla test. aiosqlite bağlantısı `async with` / `.close()` olmadan GC'ye düşüyor. Test teardown pattern sorunu; production bağlantı yönetimini etkilemiyor.
+- Toplam: 7 uyarı (run'a göre 4–7 arasında değişiyor), 0 blocking. Uygulama davranışı etkilenmiyor.
+- **Backlog:** W-01 → test_m2_c6 mock kurulumunu `AsyncMock` + `create_task` spy yerine daha temiz bir pattern'e taşı. W-02–W-06 → test_m5_c1 içinde `aiosqlite` bağlantılarını `async with` bloğuyla kapat. Önerilen faz: M8 (Hardening) veya dedicated test infrastructure cleanup.
 
 **M3-C3 değişiklikleri:**
 - `registry.py` — `ProviderEntry`'ye runtime health alanları (invoke_count, error_count,

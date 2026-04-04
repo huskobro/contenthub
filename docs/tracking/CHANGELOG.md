@@ -47,7 +47,11 @@ route smoke testleri yazıldı.
 - X: reset-review reviewer alanları sıfırlama
 
 ### Test sonuçları
-24/24 M7-C4 + 955/955 full suite, 0 regression, 0 uyarı.
+24/24 M7-C4 + 955/955 full suite, 0 regression.
+4 non-blocking test altyapısı uyarısı (publish feature davranışını etkilemiyor):
+- W-01: `unittest.mock.py` `RuntimeWarning: coroutine '_run_pipeline' was never awaited` — `test_m2_c6_dispatcher_integration.py`. Mock framework'te awaited olmayan coroutine; test mock kurulumu seviyesi.
+- W-02–W-04: `aiosqlite.core.py:102` `ResourceWarning: Connection deleted before being closed` — `test_m5_c1_rss_scan_engine.py`. Test teardown'da `async with` olmadan bağlantı GC'ye düşüyor; production bağlantı yönetimini etkilemiyor.
+Backlog kaydı: `test_m2_c6` mock pattern iyileştirmesi + `test_m5_c1` bağlantı teardown düzeltmesi — Önerilen faz: M8 Hardening.
 
 ---
 
