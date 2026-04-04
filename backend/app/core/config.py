@@ -22,6 +22,9 @@ class Settings(BaseSettings):
     kie_ai_api_key: str = ""
     pexels_api_key: str = ""
     pixabay_api_key: str = ""
+    # M3-C2: İkinci LLM provider (OpenAI uyumlu fallback)
+    # Boşsa fallback LLM kaydedilmez (main.py'de kontrol edilir)
+    openai_api_key: str = ""
 
     @property
     def database_url(self) -> str:

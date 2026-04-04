@@ -70,7 +70,7 @@ class TestKieAiProvider:
         mock_istemci.__aenter__ = AsyncMock(return_value=mock_istemci)
         mock_istemci.__aexit__ = AsyncMock(return_value=False)
 
-        with patch("app.providers.llm.kie_ai_provider.httpx.AsyncClient", return_value=mock_istemci):
+        with patch("app.providers.llm._openai_compat_base.httpx.AsyncClient", return_value=mock_istemci):
             cikti = await provider.invoke({
                 "messages": [{"role": "user", "content": "Merhaba"}],
             })
@@ -101,7 +101,7 @@ class TestKieAiProvider:
         mock_istemci.__aenter__ = AsyncMock(return_value=mock_istemci)
         mock_istemci.__aexit__ = AsyncMock(return_value=False)
 
-        with patch("app.providers.llm.kie_ai_provider.httpx.AsyncClient", return_value=mock_istemci):
+        with patch("app.providers.llm._openai_compat_base.httpx.AsyncClient", return_value=mock_istemci):
             await provider.invoke({"messages": [{"role": "user", "content": "test"}]})
 
         # Çağrı yapılan URL kontrol edilir
@@ -127,7 +127,7 @@ class TestKieAiProvider:
         mock_istemci.__aenter__ = AsyncMock(return_value=mock_istemci)
         mock_istemci.__aexit__ = AsyncMock(return_value=False)
 
-        with patch("app.providers.llm.kie_ai_provider.httpx.AsyncClient", return_value=mock_istemci):
+        with patch("app.providers.llm._openai_compat_base.httpx.AsyncClient", return_value=mock_istemci):
             await provider.invoke({"messages": [{"role": "user", "content": "t"}]})
 
         gonderilen_basliklar = mock_istemci.post.call_args[1]["headers"]
@@ -147,7 +147,7 @@ class TestKieAiProvider:
         mock_istemci.__aenter__ = AsyncMock(return_value=mock_istemci)
         mock_istemci.__aexit__ = AsyncMock(return_value=False)
 
-        with patch("app.providers.llm.kie_ai_provider.httpx.AsyncClient", return_value=mock_istemci):
+        with patch("app.providers.llm._openai_compat_base.httpx.AsyncClient", return_value=mock_istemci):
             with pytest.raises(ProviderInvokeError) as exc_info:
                 await provider.invoke({"messages": [{"role": "user", "content": "t"}]})
 
@@ -183,7 +183,7 @@ class TestKieAiProvider:
         mock_istemci.__aenter__ = AsyncMock(return_value=mock_istemci)
         mock_istemci.__aexit__ = AsyncMock(return_value=False)
 
-        with patch("app.providers.llm.kie_ai_provider.httpx.AsyncClient", return_value=mock_istemci):
+        with patch("app.providers.llm._openai_compat_base.httpx.AsyncClient", return_value=mock_istemci):
             await provider.invoke({
                 "system_prompt": "Sen bir yardımcısın.",
                 "messages": [{"role": "user", "content": "Merhaba"}],

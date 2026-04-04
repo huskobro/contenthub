@@ -2,6 +2,34 @@
 
 ---
 
+## [2026-04-04] M3-C2 — İkinci Provider + Fallback Trigger
+
+**Ne:**
+- `_openai_compat_base.py` — OpenAI uyumlu HTTP çağrısı paylaşılan helper (`openai_compat_chat_completions`). httpx.Timeout/Connect hataları ProviderInvokeError'a dönüştürülüyor.
+- `openai_compat_provider.py` — `OpenAICompatProvider` (base_url/api_key/model parametrik). provider_id formatı: `openai_compat_{model}`. OpenAI, Groq, Ollama vb. aynı sınıfla kullanılabilir.
+- `system_tts_provider.py` — `SystemTTSProvider` noop stub (provider_id: `noop_tts_fallback`). Gerçek ses üretmez, boş MP3 yazar. Yalnızca fallback zinciri testleri için; üretim kullanımı değil.
+- `KieAiProvider` refactored — `_openai_compat_base` kullanıyor; kod tekrarı kaldırıldı.
+- `exceptions.py` — `NonRetryableProviderError(ProviderInvokeError)`, `InputValidationError`, `ConfigurationError` eklendi.
+- `resolution.py` — NonRetryableProviderError yakalanamaz, direkt iletilir. httpx.TimeoutException ve httpx.ConnectError fallback tetikler. Fallback başarılı olduğunda trace'e `fallback_from: "<primary_id>"` eklendi.
+- `config.py` — `openai_api_key: str = ""` eklendi.
+- `main.py` — LLM fallback (key varsa `openai_compat_gpt-4o-mini`), TTS fallback (her zaman `noop_tts_fallback`) kaydedildi.
+- `.env.example` — `CONTENTHUB_OPENAI_API_KEY=` eklendi.
+
+**Sistem davranışı:** Primary LLM veya TTS başarısız olduğunda fallback zinciri devreye girer. NonRetryableProviderError (girdi hatası, yapılandırma hatası) fallback yapmaz — zinciri durdurur. Trace'de `resolution_role: "fallback"` ve `fallback_from: "<primary>"` alanları bulunur.
+
+**Mimari kısıtlar korundu:**
+- `resolution.py` capability-specific mantık almadı.
+- Registry tek otorite olarak kaldı — dispatcher değişmedi.
+- KieAiProvider ile OpenAICompatProvider arasında kod tekrarı yok (`_openai_compat_base` paylaşımlı).
+
+**Kısıtlar / Borç:**
+- `SystemTTSProvider` üretim için tasarlanmamıştır. Gerçek ikincil TTS gerekirken ElevenLabs/Azure/Coqui entegre edilmeli.
+- `openai_api_key` boşsa LLM fallback kaydedilmez — bu kasıtlı davranış.
+
+**Test:** 20 yeni test, 626 toplam. test_m2_c2 patch hedefleri `_openai_compat_base`'e güncellendi.
+
+---
+
 ## [2026-04-04] M3-C1 — Provider Registry
 
 **Ne:** `ProviderCapability` enum (LLM/TTS/VISUALS), `ProviderRegistry` (kayıt/get_primary/get_chain/admin default seam), `resolve_and_invoke` helper (fallback zinciri + trace zenginleştirme), `_build_executor` geçici köprüsü kaldırıldı, `VisualsStepExecutor` provider-agnostic (`providers: list[BaseProvider]`), `main.py` `_providers` dict kaldırıldı — `provider_registry` singleton kullanıma alındı.

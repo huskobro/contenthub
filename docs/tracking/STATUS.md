@@ -3,29 +3,31 @@
 ## Mevcut Faz
 Kiln Build — M3: Provider Registry + Fallback Pack
 
-**M3-C1 TAMAMLANDI — 606 test geçiyor**
+**M3-C2 TAMAMLANDI — 626 test geçiyor**
 
 ## Mevcut Durum (2026-04-04)
-M3-C1 tamamlandı. Provider çözümleme tek resmi yol: `ProviderRegistry`.
+M3-C2 tamamlandı. İkinci LLM ve TTS provider kaydedildi, fallback trigger kuralları netleştirildi, provider trace zenginleştirildi.
 
-**M3-C1 değişiklikleri:**
-- `ProviderCapability` enum (LLM/TTS/VISUALS) — string literal kalmadı
-- `ProviderRegistry` — capability bazlı kayıt, get_primary, get_chain, admin default seam
-- `resolve_and_invoke` — fallback zinciri + trace zenginleştirme (resolution_role, resolved_by)
-- `_build_executor` geçici köprüsü kaldırıldı — dispatcher artık registry üzerinden çözümlüyor
-- `VisualsStepExecutor` provider-agnostic — `providers: list[BaseProvider]` alıyor
-- `main.py` — `_providers` dict kaldırıldı, `provider_registry` singleton kullanıma alındı
-- 15 yeni M3-C1 testi + M2 testleri yeni imzaya uyarlandı
+**M3-C2 değişiklikleri:**
+- `_openai_compat_base.py` — OpenAI uyumlu HTTP çağrısı paylaşılan base (httpx, parse, hata dönüşümü)
+- `openai_compat_provider.py` — parametrik OpenAI uyumlu LLM provider (base_url/api_key/model)
+- `system_tts_provider.py` — noop TTS fallback stub (fallback zinciri testi için, üretim değil)
+- `KieAiProvider` refactored — `_openai_compat_base` kullanıyor (kod tekrarı kaldırıldı)
+- `exceptions.py` — `NonRetryableProviderError`, `InputValidationError`, `ConfigurationError` eklendi
+- `resolution.py` — NonRetryableProviderError direkt fırlatılır (fallback yapılmaz); httpx.Timeout/Connect da fallback'e girer; `fallback_from` trace alanı eklendi
+- `config.py` — `openai_api_key` alanı eklendi
+- `main.py` — ikinci LLM (key varsa) + ikinci TTS (her zaman) kaydedildi
+- `.env.example` — `CONTENTHUB_OPENAI_API_KEY` eklendi
+- 20 yeni M3-C2 testi, test_m2_c2 patch hedefleri güncellendi
 
-**Sonraki**: M3-C2 — İkinci LLM + TTS provider (OpenAI GPT-4o-mini + ElevenLabs), registry ile çözümleme.
+**Sonraki**: M3-C3 — Provider sağlık durumu, maliyet takibi, settings registry bağlantısı.
 
 ## Sonraki Milestone
 **M3 devam: Provider Registry + Fallback Pack**
-- M3-C2: İkinci LLM + TTS provider
 - M3-C3: Admin panel — provider sağlık durumu, maliyet takibi, settings registry bağlantısı
 
 ## Devam Eden
-M3-C2 bekliyor.
+M3-C3 bekliyor.
 
 ## Hygiene Hattı Kapanış Durumu
 - **KAPATILDI:** Mikro readability faz zinciri Phase 235 ile resmen kapatıldı.

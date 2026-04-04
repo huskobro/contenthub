@@ -1,18 +1,21 @@
 """
-kie.ai LLM Provider (M2-C2 / M3-C2)
+OpenAI Uyumlu Generic LLM Provider (M3-C2)
 
-kie.ai üzerinden Gemini 2.5 Flash modeline erişim sağlar.
-kie.ai, OpenAI uyumlu API sunmaktadır; base_url değiştirilerek kullanılır.
+Herhangi bir OpenAI uyumlu API'ye bağlanır:
+  - OpenAI (api.openai.com)
+  - Groq (api.groq.com/openai)
+  - Together AI
+  - Ollama (http://localhost:11434/v1)
+  - vb.
 
 HTTP çağrısı ve yanıt ayrıştırma _openai_compat_base.py üzerinden yapılır;
-bu dosyada yalnızca kie.ai'ye özgü yapılandırma ve provider kimliği yer alır.
+bu dosyada yalnızca provider kimliği, yapılandırma ve BaseProvider arayüzü yer alır.
 
-Referanslar:
-- kie.ai API: https://kie.ai/api — OpenAI uyumlu /v1/chat/completions
-- Model: gemini-2.5-flash
+UYARI: API anahtarı koda GÖMÜLMEMELİDİR.
+       Anahtarlar yalnızca app.core.config.settings üzerinden iletilir.
 
-UYARI: Bu dosyaya API anahtarı GÖMÜLMEMELİDİR.
-       Anahtarlar yalnızca app.core.config.settings üzerinden okunur.
+M3-C3 notu: Settings registry aktif olduğunda base_url ve model buradan
+            yerine settings.provider_configs["openai_compat"] üzerinden gelebilir.
 """
 
 import logging
@@ -24,34 +27,49 @@ from app.providers.llm._openai_compat_base import openai_compat_chat_completions
 
 logger = logging.getLogger(__name__)
 
-# kie.ai OpenAI uyumlu endpoint
-_KIE_AI_BASE_URL = "https://kie.ai/api/v1"
-_DEFAULT_MODEL = "gemini-2.5-flash"
-_DEFAULT_TEMPERATURE = 0.7
+_VARSAYILAN_MODEL = "gpt-4o-mini"
+_VARSAYILAN_TEMPERATURE = 0.7
 
 
-class KieAiProvider(BaseProvider):
+class OpenAICompatProvider(BaseProvider):
     """
-    kie.ai üzerinden Gemini 2.5 Flash LLM provider'ı.
+    Parametrik OpenAI uyumlu LLM provider.
 
-    kie.ai, OpenAI uyumlu API sunduğundan /v1/chat/completions endpoint'i
-    kullanılır. HTTP çağrısı _openai_compat_base.py üzerinden yapılır.
-    API anahtarı constructor üzerinden alınır — koda gömülmez.
+    Aynı base provider kodu farklı API'lere yönlendirilebilir;
+    sadece base_url, api_key ve model parametreleri değişir.
     """
 
-    def __init__(self, api_key: str) -> None:
+    def __init__(
+        self,
+        api_key: str,
+        base_url: str = "https://api.openai.com/v1",
+        model: str = _VARSAYILAN_MODEL,
+    ) -> None:
         """
         Args:
-            api_key: kie.ai API anahtarı. app.core.config.settings üzerinden
-                     iletilmeli, koda gömülmemelidir.
+            api_key  : Bearer token. settings üzerinden iletilmeli.
+            base_url : API temel URL (sonunda / olmadan).
+                       Varsayılan: OpenAI resmi endpoint'i.
+            model    : Kullanılacak model adı.
+                       Varsayılan: 'gpt-4o-mini'.
         """
         if not api_key:
-            logger.warning("KieAiProvider: API anahtarı boş — gerçek çağrılar başarısız olacak.")
+            logger.warning(
+                "OpenAICompatProvider [%s]: API anahtarı boş — gerçek çağrılar başarısız olacak.",
+                model,
+            )
         self._api_key = api_key
+        self._base_url = base_url.rstrip("/")
+        self._model = model
 
     def provider_id(self) -> str:
-        """Provider'ın benzersiz kimliği."""
-        return "kie_ai_gemini_flash"
+        """
+        Provider'ın benzersiz kimliği.
+
+        Format: 'openai_compat_{model}' — birden fazla model kaydına
+        izin verir (örn: openai_compat_gpt-4o-mini, openai_compat_llama3).
+        """
+        return f"openai_compat_{self._model}"
 
     def capability(self) -> ProviderCapability:
         """Provider yeteneği."""
@@ -59,7 +77,7 @@ class KieAiProvider(BaseProvider):
 
     async def invoke(self, input_data: dict) -> ProviderOutput:
         """
-        kie.ai Gemini 2.5 Flash modelini çağırır.
+        OpenAI uyumlu API'yi çağırır.
 
         Args:
             input_data: Şu alanları destekler:
@@ -73,14 +91,14 @@ class KieAiProvider(BaseProvider):
                   - content (str): Model yanıtı.
                   - finish_reason (str): Bitme nedeni.
                 trace içerir:
-                  - provider_id, model, input_tokens, output_tokens, latency_ms.
+                  - provider_id, model, base_url, input_tokens, output_tokens, latency_ms.
 
         Raises:
             ProviderInvokeError: API çağrısı başarısız olduğunda.
         """
         messages: list[dict] = list(input_data.get("messages", []))
         system_prompt: str | None = input_data.get("system_prompt")
-        temperature: float = float(input_data.get("temperature", _DEFAULT_TEMPERATURE))
+        temperature: float = float(input_data.get("temperature", _VARSAYILAN_TEMPERATURE))
 
         if not messages and not system_prompt:
             raise ProviderInvokeError(
@@ -94,9 +112,9 @@ class KieAiProvider(BaseProvider):
 
         icerik, bitis_nedeni, kullanim, gecikme_ms = await openai_compat_chat_completions(
             provider_id=self.provider_id(),
-            base_url=_KIE_AI_BASE_URL,
+            base_url=self._base_url,
             api_key=self._api_key,
-            model=_DEFAULT_MODEL,
+            model=self._model,
             messages=messages,
             temperature=temperature,
         )
@@ -108,7 +126,8 @@ class KieAiProvider(BaseProvider):
             },
             trace={
                 "provider_id": self.provider_id(),
-                "model": _DEFAULT_MODEL,
+                "model": self._model,
+                "base_url": self._base_url,
                 "input_tokens": kullanim.get("prompt_tokens", 0),
                 "output_tokens": kullanim.get("completion_tokens", 0),
                 "latency_ms": gecikme_ms,
