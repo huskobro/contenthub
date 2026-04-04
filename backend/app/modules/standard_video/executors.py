@@ -1,8 +1,9 @@
 """
-Standard Video Executor'ları (M2-C3)
+Standard Video Executor'ları (M2-C4)
 
-Script ve Metadata adımları gerçek LLM implementasyonuyla dolduruldu.
-Diğer adımlar (tts, visuals, subtitle, composition) stub olarak kalmaktadır.
+Script ve Metadata adımları gerçek LLM implementasyonuyla dolduruldu (M2-C3).
+TTS ve Visuals adımları gerçek implementasyonla dolduruldu (M2-C4).
+Subtitle ve Composition stub olarak kalmaktadır (M2-C5, M2-C6).
 
 Pipeline adım sırası: script → metadata → tts → visuals → subtitle → composition
 """
@@ -11,6 +12,8 @@ from __future__ import annotations
 
 import json
 import logging
+import shutil
+import time
 from pathlib import Path
 from typing import Optional
 
@@ -292,6 +295,26 @@ class MetadataStepExecutor(StepExecutor):
 # Yardımcı fonksiyonlar
 # ---------------------------------------------------------------------------
 
+def _resolve_artifact_path(workspace_root: str, job_id: str, filename: str) -> Path:
+    """
+    Artifact dosyasının tam Path nesnesini döner.
+
+    workspace_root boşsa geçici dizin kullanır.
+    Dosyayı oluşturmaz — yalnızca yolu hesaplar.
+    """
+    if workspace_root:
+        return Path(workspace_root) / "artifacts" / filename
+    else:
+        import tempfile
+        return (
+            Path(tempfile.gettempdir())
+            / "contenthub_workspace"
+            / job_id
+            / "artifacts"
+            / filename
+        )
+
+
 def _strip_markdown_json(content: str) -> str:
     """
     LLM yanıtından markdown code block işaretlerini kaldırır.
@@ -374,11 +397,20 @@ def _read_artifact(
 
 class TTSStepExecutor(StepExecutor):
     """
-    Ses üretimi (TTS) adımı stub executor'ı.
+    Ses üretimi (TTS) adımı executor'ı (M2-C4).
 
-    Gerçek davranış (M2-C4): Anlatım segmentleri → TTS provider aracılığıyla
-    ses dosyaları. artifact_check idempotency tipi geçerlidir.
+    Her sahne için narration metni → EdgeTTS → ses dosyası üretir.
+    artifact_check idempotency tipi: audio_manifest.json varsa adımı atlar.
+
+    Ses süresi: karakter sayısı / 15 yaklaşımı (gerçek ölçüm M4'te Whisper ile).
     """
+
+    def __init__(self, tts_provider) -> None:
+        """
+        Args:
+            tts_provider: EdgeTTSProvider (veya test mock'u).
+        """
+        self._tts = tts_provider
 
     def step_key(self) -> str:
         """Bu executor'ın sorumlu olduğu adım anahtarı."""
@@ -386,19 +418,202 @@ class TTSStepExecutor(StepExecutor):
 
     async def execute(self, job: Job, step: JobStep) -> dict:
         """
-        Stub implementasyon — gerçek ses üretmez.
-        M2-C4'te TTS provider çağrısıyla değiştirilecek.
+        TTS adımını çalıştırır.
+
+        Adımlar:
+          1. artifact_check — audio_manifest.json varsa erken dön.
+          2. Job input'undan StepExecutionContext oluştur, dili çöz.
+          3. script.json artifact'ını oku.
+          4. Her sahne için narration metni → EdgeTTS → scene_N.mp3 yaz.
+          5. audio_manifest.json artifact'ını yaz.
+          6. Provider trace ile sonuç dön.
+
+        Args:
+            job : Job ORM nesnesi.
+            step: JobStep ORM nesnesi.
+
+        Returns:
+            dict: artifact_path, language, voice, scene_count, provider trace.
+
+        Raises:
+            StepExecutionError: Script artifact eksikse veya TTS hatası oluştuğunda.
         """
-        return {"status": "stub", "step": self.step_key()}
+        from app.modules.step_context import StepExecutionContext
+        from app.providers.tts.voice_map import get_voice
+        import app.jobs.workspace as workspace
+
+        # Job input'u oku
+        raw_input_str = getattr(job, "input_data_json", None) or "{}"
+        try:
+            raw_input: dict = json.loads(raw_input_str)
+        except (json.JSONDecodeError, TypeError) as err:
+            raise StepExecutionError(
+                self.step_key(),
+                f"Job input_data_json geçersiz JSON: {err}",
+            )
+
+        # Context oluştur — dil ve workspace_root için
+        try:
+            ctx = StepExecutionContext.from_job_input(
+                job_id=job.id,
+                module_id="standard_video",
+                raw_input=raw_input,
+            )
+        except Exception as err:
+            raise StepExecutionError(
+                self.step_key(),
+                f"StepExecutionContext oluşturulamadı: {err}",
+            )
+
+        workspace_root = ctx.workspace_root or (
+            str(job.workspace_path) if getattr(job, "workspace_path", None) else ""
+        )
+
+        # artifact_check: manifest zaten varsa adımı atla
+        manifest_path = _resolve_artifact_path(workspace_root, job.id, "audio_manifest.json")
+        if manifest_path.exists():
+            logger.info(
+                "TTSStepExecutor: audio_manifest.json mevcut, adım atlanıyor. job=%s", job.id
+            )
+            existing = json.loads(manifest_path.read_text(encoding="utf-8"))
+            return {
+                "artifact_path": str(manifest_path),
+                "language": existing.get("language"),
+                "voice": existing.get("voice"),
+                "scene_count": len(existing.get("scenes", [])),
+                "skipped": True,
+                "step": self.step_key(),
+            }
+
+        # Script artifact'ını oku
+        script_data = _read_artifact(workspace_root, job.id, "script.json")
+        if script_data is None:
+            raise StepExecutionError(
+                self.step_key(),
+                f"Script artifact bulunamadı: job={job.id}. Script adımı önce tamamlanmış olmalı.",
+            )
+
+        scenes: list[dict] = script_data.get("scenes", [])
+        if not scenes:
+            raise StepExecutionError(
+                self.step_key(),
+                "Script artifact'ında sahne bulunamadı.",
+            )
+
+        voice = get_voice(ctx.language)
+
+        # Ses çıktı dizini hazırla
+        audio_dir = _resolve_artifact_path(workspace_root, job.id, "audio").parent / "audio"
+        audio_dir.mkdir(parents=True, exist_ok=True)
+
+        manifest_scenes: list[dict] = []
+        total_chars = 0
+        total_duration = 0.0
+        start_time = time.monotonic()
+
+        for i, scene in enumerate(scenes, start=1):
+            narration: str = scene.get("narration", "").strip()
+            if not narration:
+                # Narration yoksa bu sahneyi boş kaydet
+                manifest_scenes.append({
+                    "scene_number": i,
+                    "audio_path": None,
+                    "narration": "",
+                    "duration_seconds": 0.0,
+                })
+                continue
+
+            audio_filename = f"scene_{i}.mp3"
+            audio_path = audio_dir / audio_filename
+            relative_path = f"artifacts/audio/{audio_filename}"
+
+            try:
+                output = await self._tts.invoke({
+                    "text": narration,
+                    "voice": voice,
+                    "output_path": str(audio_path),
+                })
+            except Exception as err:
+                raise StepExecutionError(
+                    self.step_key(),
+                    f"Sahne {i} için TTS başarısız: {err}",
+                )
+
+            duration = output.result.get("duration_seconds", round(len(narration) / 15.0, 2))
+            total_chars += len(narration)
+            total_duration += duration
+
+            manifest_scenes.append({
+                "scene_number": i,
+                "audio_path": relative_path,
+                "narration": narration,
+                "duration_seconds": duration,
+            })
+
+        latency_ms = int((time.monotonic() - start_time) * 1000)
+
+        manifest_data = {
+            "scenes": manifest_scenes,
+            "total_duration_seconds": round(total_duration, 2),
+            "voice": voice,
+            "language": ctx.language.value,
+        }
+
+        artifact_path = _write_artifact(
+            workspace_root=workspace_root,
+            job_id=job.id,
+            filename="audio_manifest.json",
+            data=manifest_data,
+        )
+
+        logger.info(
+            "TTSStepExecutor: job=%s dil=%s ses=%s sahne=%d toplam_sure=%.1fs artifact=%s",
+            job.id,
+            ctx.language.value,
+            voice,
+            len(scenes),
+            total_duration,
+            artifact_path,
+        )
+
+        return {
+            "artifact_path": artifact_path,
+            "language": ctx.language.value,
+            "voice": voice,
+            "scene_count": len(scenes),
+            "provider": {
+                "provider_id": "edge_tts",
+                "voice": voice,
+                "language": ctx.language.value,
+                "scene_count": len(scenes),
+                "total_chars": total_chars,
+                "estimated_duration_seconds": round(total_duration, 2),
+                "latency_ms": latency_ms,
+            },
+            "step": self.step_key(),
+        }
 
 
 class VisualsStepExecutor(StepExecutor):
     """
-    Görsel toplama adımı stub executor'ı.
+    Görsel toplama adımı executor'ı (M2-C4).
 
-    Gerçek davranış (M2-C4): Görsel ipuçları → görsel provider aracılığıyla
-    medya indirme. artifact_check idempotency tipi geçerlidir.
+    Her sahne için visual_cue → Pexels araması yapar.
+    Pexels boş veya hatalıysa Pixabay'e fallback yapar.
+    artifact_check idempotency tipi: visuals_manifest.json varsa adımı atlar.
+
+    Kısmi başarı kabul edilir: bazı sahneler null olabilir.
+    Tüm sahneler başarısızsa StepExecutionError fırlatılır.
     """
+
+    def __init__(self, pexels_provider, pixabay_provider) -> None:
+        """
+        Args:
+            pexels_provider : PexelsProvider (veya test mock'u).
+            pixabay_provider: PixabayProvider (veya test mock'u).
+        """
+        self._pexels = pexels_provider
+        self._pixabay = pixabay_provider
 
     def step_key(self) -> str:
         """Bu executor'ın sorumlu olduğu adım anahtarı."""
@@ -406,10 +621,240 @@ class VisualsStepExecutor(StepExecutor):
 
     async def execute(self, job: Job, step: JobStep) -> dict:
         """
-        Stub implementasyon — gerçek görsel indirme yapmaz.
-        M2-C4'te görsel provider çağrısıyla değiştirilecek.
+        Visuals adımını çalıştırır.
+
+        Adımlar:
+          1. artifact_check — visuals_manifest.json varsa erken dön.
+          2. Job input'undan StepExecutionContext oluştur.
+          3. script.json artifact'ından visual_cue alanlarını oku.
+          4. Her sahne için Pexels ara → bulamazsa Pixabay fallback.
+          5. Görseli scene_N.jpg olarak kaydet.
+          6. visuals_manifest.json artifact'ını yaz.
+          7. Tüm sahneler başarısızsa StepExecutionError fırlat.
+
+        Args:
+            job : Job ORM nesnesi.
+            step: JobStep ORM nesnesi.
+
+        Returns:
+            dict: artifact_path, language, scene_count, provider trace.
+
+        Raises:
+            StepExecutionError: Script artifact eksikse veya tüm sahneler başarısızsa.
         """
-        return {"status": "stub", "step": self.step_key()}
+        from app.modules.step_context import StepExecutionContext
+        import httpx
+
+        # Job input'u oku
+        raw_input_str = getattr(job, "input_data_json", None) or "{}"
+        try:
+            raw_input: dict = json.loads(raw_input_str)
+        except (json.JSONDecodeError, TypeError) as err:
+            raise StepExecutionError(
+                self.step_key(),
+                f"Job input_data_json geçersiz JSON: {err}",
+            )
+
+        # Context oluştur
+        try:
+            ctx = StepExecutionContext.from_job_input(
+                job_id=job.id,
+                module_id="standard_video",
+                raw_input=raw_input,
+            )
+        except Exception as err:
+            raise StepExecutionError(
+                self.step_key(),
+                f"StepExecutionContext oluşturulamadı: {err}",
+            )
+
+        workspace_root = ctx.workspace_root or (
+            str(job.workspace_path) if getattr(job, "workspace_path", None) else ""
+        )
+
+        # artifact_check: manifest zaten varsa adımı atla
+        manifest_path = _resolve_artifact_path(workspace_root, job.id, "visuals_manifest.json")
+        if manifest_path.exists():
+            logger.info(
+                "VisualsStepExecutor: visuals_manifest.json mevcut, adım atlanıyor. job=%s", job.id
+            )
+            existing = json.loads(manifest_path.read_text(encoding="utf-8"))
+            return {
+                "artifact_path": str(manifest_path),
+                "language": existing.get("language"),
+                "scene_count": len(existing.get("scenes", [])),
+                "skipped": True,
+                "step": self.step_key(),
+            }
+
+        # Script artifact'ını oku
+        script_data = _read_artifact(workspace_root, job.id, "script.json")
+        if script_data is None:
+            raise StepExecutionError(
+                self.step_key(),
+                f"Script artifact bulunamadı: job={job.id}. Script adımı önce tamamlanmış olmalı.",
+            )
+
+        scenes: list[dict] = script_data.get("scenes", [])
+        if not scenes:
+            raise StepExecutionError(
+                self.step_key(),
+                "Script artifact'ında sahne bulunamadı.",
+            )
+
+        # Görsel çıktı dizini
+        visuals_dir = _resolve_artifact_path(workspace_root, job.id, "visuals").parent / "visuals"
+        visuals_dir.mkdir(parents=True, exist_ok=True)
+
+        manifest_scenes: list[dict] = []
+        pexels_hits = 0
+        pixabay_hits = 0
+        not_found = 0
+        start_time = time.monotonic()
+
+        for i, scene in enumerate(scenes, start=1):
+            visual_cue: str = scene.get("visual_cue", "").strip()
+            if not visual_cue:
+                # visual_cue yoksa bu sahneyi boş kaydet
+                manifest_scenes.append({
+                    "scene_number": i,
+                    "image_path": None,
+                    "query": "",
+                    "source": "no_cue",
+                    "photographer": None,
+                    "original_url": None,
+                })
+                not_found += 1
+                continue
+
+            image_filename = f"scene_{i}.jpg"
+            image_path = visuals_dir / image_filename
+            relative_path = f"artifacts/visuals/{image_filename}"
+
+            # Pexels'i önce dene
+            found = False
+            source = "not_found"
+            photographer = None
+            original_url = None
+
+            try:
+                pexels_output = await self._pexels.invoke({
+                    "query": visual_cue,
+                    "count": 1,
+                    "output_dir": str(visuals_dir),
+                })
+                pexels_assets: list[dict] = pexels_output.result.get("assets", [])
+                if pexels_assets:
+                    # Provider kendi dizinine kaydetti, scene_N.jpg olarak yeniden adlandır
+                    src_path = Path(pexels_assets[0]["local_path"])
+                    if src_path.exists() and src_path != image_path:
+                        shutil.move(str(src_path), str(image_path))
+                    photographer = pexels_assets[0].get("photographer", "")
+                    original_url = pexels_assets[0].get("url", "")
+                    source = "pexels"
+                    pexels_hits += 1
+                    found = True
+            except Exception as pexels_err:
+                logger.warning(
+                    "VisualsStepExecutor: Sahne %d Pexels hatası: %s", i, pexels_err
+                )
+
+            # Pexels başarısızsa Pixabay fallback
+            if not found:
+                try:
+                    pixabay_output = await self._pixabay.invoke({
+                        "query": visual_cue,
+                        "count": 1,
+                        "output_dir": str(visuals_dir),
+                    })
+                    pixabay_assets: list[dict] = pixabay_output.result.get("assets", [])
+                    if pixabay_assets:
+                        src_path = Path(pixabay_assets[0]["local_path"])
+                        if src_path.exists() and src_path != image_path:
+                            shutil.move(str(src_path), str(image_path))
+                        photographer = pixabay_assets[0].get("author", "")
+                        original_url = pixabay_assets[0].get("url", "")
+                        source = "pixabay"
+                        pixabay_hits += 1
+                        found = True
+                except Exception as pixabay_err:
+                    logger.warning(
+                        "VisualsStepExecutor: Sahne %d Pixabay hatası: %s", i, pixabay_err
+                    )
+
+            if not found:
+                not_found += 1
+                manifest_scenes.append({
+                    "scene_number": i,
+                    "image_path": None,
+                    "query": visual_cue,
+                    "source": "not_found",
+                    "photographer": None,
+                    "original_url": None,
+                })
+            else:
+                manifest_scenes.append({
+                    "scene_number": i,
+                    "image_path": relative_path,
+                    "query": visual_cue,
+                    "source": source,
+                    "photographer": photographer,
+                    "original_url": original_url,
+                })
+
+        latency_ms = int((time.monotonic() - start_time) * 1000)
+        total_downloaded = pexels_hits + pixabay_hits
+
+        # Tüm sahneler başarısızsa hata fırlat
+        if total_downloaded == 0:
+            raise StepExecutionError(
+                self.step_key(),
+                f"Tüm sahneler için görsel bulunamadı: job={job.id}, "
+                f"sahne_sayısı={len(scenes)}",
+            )
+
+        manifest_data = {
+            "scenes": manifest_scenes,
+            "total_downloaded": total_downloaded,
+            "language": ctx.language.value,
+        }
+
+        artifact_path = _write_artifact(
+            workspace_root=workspace_root,
+            job_id=job.id,
+            filename="visuals_manifest.json",
+            data=manifest_data,
+        )
+
+        logger.info(
+            "VisualsStepExecutor: job=%s dil=%s sahne=%d indirilen=%d (pexels=%d pixabay=%d) "
+            "bulunamayan=%d artifact=%s",
+            job.id,
+            ctx.language.value,
+            len(scenes),
+            total_downloaded,
+            pexels_hits,
+            pixabay_hits,
+            not_found,
+            artifact_path,
+        )
+
+        return {
+            "artifact_path": artifact_path,
+            "language": ctx.language.value,
+            "scene_count": len(scenes),
+            "provider": {
+                "provider_id": "pexels+pixabay_fallback",
+                "language": ctx.language.value,
+                "scenes_requested": len(scenes),
+                "scenes_found": total_downloaded,
+                "scenes_not_found": not_found,
+                "pexels_hits": pexels_hits,
+                "pixabay_hits": pixabay_hits,
+                "latency_ms": latency_ms,
+            },
+            "step": self.step_key(),
+        }
 
 
 class SubtitleStepExecutor(StepExecutor):
