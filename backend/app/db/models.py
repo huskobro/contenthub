@@ -23,7 +23,11 @@ Domain models (Phase 12+):
 Domain models (Phase 13+):
   - standard_video_metadata: publish metadata artifact per standard video
 
-Remaining domain models (templates, sources, publish, analytics)
+Domain models (Phase M7+):
+  - publish_records: Publish Center — birincil publish kayıt objesi
+  - publish_logs: Publish Center — denetim izi; her olay ayrı satır
+
+Remaining domain models (analytics)
 will be added in later phases as their subsystems are built.
 """
 
@@ -823,4 +827,133 @@ class TemplateStyleLink(Base):
     )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=_now, onupdate=_now
+    )
+
+
+class PublishRecord(Base):
+    """
+    Publish Center — Birincil publish kayıt objesi (Phase M7).
+
+    Her publish girişimi ayrı bir kayıt olarak tutulur.
+    Durum makinesi publish/publish/state_machine.py içinde tanımlıdır.
+    Tüm durum geçişleri PublishStateMachine üzerinden geçmek zorundadır.
+
+    İzolasyon notu (M7 kuralı):
+      Bu kayıt content/editorial state'i temsil etmez.
+      StandardVideo veya NewsBulletin objesinin durumunu DEĞİŞTİRMEZ.
+      Publish sonucu yalnızca bu tabloya ve PublishLog'a yazılır.
+
+    Publish gate kuralı (M7):
+      Yayınlama yalnızca approved veya scheduled durumundan başlayabilir.
+      pending_review veya draft durumundan doğrudan yayınlama yasaktır.
+      Bu kural PublishStateMachine.can_publish() ile zorlanır.
+
+    Kısmi başarısızlık semantiği:
+      publishing → failed: platform zinciri kırıldı, retry mümkün.
+      Her retry, aynı PublishRecord üzerinde yeni bir publish_attempt_count
+      artışıyla tekrar publishing durumuna geçer. Her deneme PublishLog'a kaydedilir.
+
+    Alanlar:
+      job_id             : üretim işinin ID'si (jobs tablosu, zorunlu)
+      content_ref_type   : içerik türü (e.g. 'standard_video', 'news_bulletin')
+      content_ref_id     : içerik kaydının ID'si (FK değil; tip bağımsız)
+      platform           : hedef platform (e.g. 'youtube')
+      status             : mevcut publish durumu (PublishStatus değerleri)
+      review_state       : review kararı (e.g. 'pending', 'approved', 'rejected')
+      reviewer_id        : review kararı veren kullanıcı ID'si (nullable)
+      reviewed_at        : review kararı zamanı (nullable)
+      scheduled_at       : zamanlanan yayın zamanı (nullable)
+      published_at       : başarılı publish zamanı (nullable)
+      platform_video_id  : platform'un atadığı video ID'si (nullable; upload sonrası)
+      platform_url       : yayınlanan videonun platform URL'i (nullable)
+      publish_attempt_count : toplam publish deneme sayısı
+      last_error         : son başarısızlık özeti (nullable)
+      payload_json       : publish payload snapshot'ı (title, description, tags, vb.)
+      result_json        : platform'dan gelen son yanıt özeti (nullable)
+      notes              : operatör notu (nullable)
+    """
+
+    __tablename__ = "publish_records"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    job_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("jobs.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    content_ref_type: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
+    content_ref_id: Mapped[str] = mapped_column(String(36), nullable=False, index=True)
+    platform: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
+    status: Mapped[str] = mapped_column(
+        String(50), nullable=False, default="draft", index=True
+    )
+    review_state: Mapped[str] = mapped_column(
+        String(50), nullable=False, default="pending"
+    )
+    reviewer_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True)
+    reviewed_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    scheduled_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    published_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    platform_video_id: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    platform_url: Mapped[Optional[str]] = mapped_column(String(1000), nullable=True)
+    publish_attempt_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    last_error: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    payload_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    result_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now, onupdate=_now
+    )
+
+
+class PublishLog(Base):
+    """
+    Publish Center — Denetim izi (Phase M7).
+
+    Her anlamlı publish olayı için append-only log satırı.
+    Hiçbir satır silinemez veya güncellenemez — salt denetim kaydıdır.
+    created_at + event_type + actor kombinasyonu tam denetlenebilirlik sağlar.
+
+    Kural:
+      Her durum geçişi, her review kararı, her platform olayı ve her
+      retry girişimi ayrı bir PublishLog satırı oluşturur.
+      "Denetim izi" boşluğu olmamalıdır.
+
+    Alanlar:
+      publish_record_id : FK to publish_records.id (CASCADE)
+      event_type        : olay türü (PublishLogEvent değerleri)
+      actor_type        : 'user', 'admin', 'system'
+      actor_id          : olay sahibi ID (nullable)
+      from_status       : geçiş öncesi durum (nullable; state_transition olayları için)
+      to_status         : geçiş sonrası durum (nullable; state_transition olayları için)
+      detail_json       : olaya özel ek veriler (platform yanıtı, hata detayı, vb.)
+      note              : kısa açıklama (nullable)
+      created_at        : olay zamanı (UTC)
+    """
+
+    __tablename__ = "publish_logs"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    publish_record_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("publish_records.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    event_type: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
+    actor_type: Mapped[str] = mapped_column(String(50), nullable=False)
+    actor_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True)
+    from_status: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    to_status: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    detail_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
+    note: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now
     )

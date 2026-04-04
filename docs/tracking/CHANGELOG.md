@@ -2,6 +2,103 @@
 
 ---
 
+## [2026-04-04] M7-C1 — Publish Center State Machine + DB Models + Core Service
+
+### Özet
+Publish Center altyapısı M7-C1 ile kuruldu. YouTube Publish v1 zincirinin
+durum makinesi, denetim izi, review gate ve publish gate katmanları implement edildi.
+
+### Yeni dosyalar
+- `backend/app/publish/__init__.py` — paket
+- `backend/app/publish/enums.py` — PublishStatus, PublishPlatform, PublishLogEvent
+- `backend/app/publish/state_machine.py` — PublishStateMachine (9 durum, tam matris)
+- `backend/app/publish/exceptions.py` — PublishRecordNotFoundError, InvalidPublishTransitionError, PublishGateViolationError, PublishAlreadyTerminalError, ReviewGateViolationError
+- `backend/app/publish/schemas.py` — PublishRecordCreate/Read/Summary, PublishLogRead, ReviewActionRequest, ScheduleRequest, PublishTriggerRequest, CancelRequest, TransitionRequest
+- `backend/app/publish/adapter.py` — PublishAdapter soyut taban, PublishAdapterResult, PublishAdapterError
+- `backend/app/publish/service.py` — CRUD + tüm durum geçiş aksiyonları
+- `backend/app/publish/router.py` — /publish/* 10 endpoint
+- `backend/tests/test_m7_c1_publish_state_machine.py` — 26 test
+
+### Değiştirilen dosyalar
+- `backend/app/db/models.py` — PublishRecord + PublishLog modelleri eklendi
+- `backend/app/api/router.py` — publish_router kayıt edildi
+
+### Durum makinesi
+```
+draft
+  ↓ submit_for_review()
+pending_review
+  ↓ review_action(approve)    ↓ review_action(reject)
+approved                   review_rejected
+  ↓ trigger_publish()           ↓ reset_to_draft()
+  ↓ schedule_publish()        draft (döngü)
+scheduled
+  ↓ trigger_publish()
+publishing
+  ↓ mark_published()    ↓ mark_failed()
+published [terminal]   failed
+                         ↓ trigger_publish() [retry]
+                       publishing → published
+```
+
+### Publish gate kuralı (M7 taahhüdü)
+`PublishStateMachine.can_publish()`:
+- **İzin verilen**: approved, scheduled, failed (retry)
+- **Yasak**: draft, pending_review, review_rejected, publishing, published, cancelled
+- `trigger_publish()` gate kontrolü yapar → `PublishGateViolationError`
+
+### Review gate izolasyonu
+`review_action()` kaydı `approved` durumuna geçirir.
+**Yayınlamayı başlatmaz.** Publish için `trigger_publish()` ayrıca çağrılır.
+
+### Editorial izolasyon
+PublishRecord → StandardVideo veya NewsBulletin tabloları değişmez.
+Publish sonucu yalnızca `publish_records` + `publish_logs`'a yazılır.
+
+### Kısmi başarısızlık semantiği
+`publishing → failed → trigger_publish() → publishing` zinciri desteklenir.
+Her deneme `publish_attempt_count` artırır + `PublishLog`'a olay yazar.
+
+### Denetim izi kuralı
+Her durum geçişi, her review kararı, her publish girişimi → ayrı `PublishLog` satırı.
+Sessiz güncelleme yasak: `_append_log()` her kritik aksiyonda çağrılır.
+
+### Test sonuçları
+```
+26/26 PASSED
+A) Legal transitions accepted
+B) Illegal transitions raise ValueError
+C) Terminal states identified
+D) can_publish() gate rule
+E) allowed_next()
+F-G) create_publish_record + log
+H) submit_for_review
+I-K) review_action (approve/reject/invalid)
+L) trigger_publish approved→publishing
+M-N) PublishGateViolationError from draft/pending_review
+O) mark_published
+P) mark_failed
+Q) Retry failed→publishing
+R) cancel_publish
+S) Terminal state blocks transitions
+T) reset_to_draft
+U-V) schedule_publish + scheduled→publishing
+W) Audit trail completeness
+X) list filter by job_id
+Y) Editorial isolation
+Z) Review gate isolation
+```
+
+### M7-C1 Mandatory Delivery Fields
+| Alan | Değer |
+|---|---|
+| publish-state ambiguity risk | **none** — 9 durum, geçiş matrisi eksiksiz, terminal durumlar açık |
+| review-to-publish boundary risk | **none** — review_action ≠ trigger_publish; gate PublishStateMachine.can_publish() ile zorlanıyor |
+| partial-failure recovery clarity | **none** — failed→publishing retry zinciri test edildi; publish_attempt_count izleniyor; her deneme loglanıyor |
+| audit-trail completeness risk | **none** — sessiz güncelleme _append_log() garantisi; oluşturma + her geçiş + review + publish girişimi + platform olayı kaydediliyor |
+
+---
+
 ## [2026-04-04] M6 KAPANIŞI — Remotion Render Pipeline + Preview Infrastructure
 
 ### Render spine tutarlılık denetimi

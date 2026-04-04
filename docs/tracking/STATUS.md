@@ -1,11 +1,26 @@
 # DURUM
 
 ## Mevcut Faz
-Kiln Build — M6: Remotion Render Pipeline + Preview Infrastructure — TAMAMLANDI
+Kiln Build — M7: YouTube Publish v1 — DEVAM EDİYOR
 
-**M6 KAPANDI — 840 test geçiyor**
+**M7-C1 TAMAMLANDI — 26/26 test geçiyor**
+**M6 KAPANDI**
 
 ## Mevcut Durum (2026-04-04)
+M7-C1 tamamlandı:
+- M7-C1: Publish Center — State Machine + DB Models + Core Service + REST Router
+  - `publish_records` + `publish_logs` tabloları oluşturuldu (models.py)
+  - `PublishStateMachine` — 9 durum, tüm geçişler zorlanıyor
+  - `can_publish()` publish gate kuralı — draft/pending_review'dan doğrudan publish yasak
+  - `PublishAdapter` soyut taban — upload() + activate() zinciri tanımlandı (M7-C2 implement eder)
+  - Servis katmanı: create/list/get, submit_for_review, review_action, trigger_publish, mark_published, mark_failed, cancel_publish, reset_to_draft, schedule_publish
+  - Her aksiyon `PublishLog`'a olay yazar — sessiz güncelleme yasak
+  - Router: /publish/* prefix, 10 endpoint
+  - Publish gate: trigger_publish() → approved/scheduled/failed'dan başlayabilir
+  - Review gate izolasyonu: review_action onaylar fakat publish başlatmaz
+  - Editorial izolasyon: StandardVideo/NewsBulletin tabloları değişmez
+  - 26/26 test geçiyor
+
 M6-C1 + M6-C2 + M6-C3 tamamlandı:
 - M6-C1: Remotion kurulumu + renderer paketi + RenderStepExecutor foundation
 - M6-C2: word_timing inline yükleme, dynamic duration, RenderStillExecutor + PreviewFrame
