@@ -1,0 +1,145 @@
+"""
+Metadata adımı executor'ı (MetadataStepExecutor).
+
+Script artifact → LLM prompt → KieAiProvider → metadata.json artifact.
+"""
+
+from __future__ import annotations
+
+import json
+import logging
+
+from app.db.models import Job, JobStep
+from app.jobs.executor import StepExecutor
+from app.jobs.exceptions import StepExecutionError
+
+from ._helpers import _strip_markdown_json, _write_artifact, _read_artifact
+
+logger = logging.getLogger(__name__)
+
+
+class MetadataStepExecutor(StepExecutor):
+    """
+    Metadata adımı executor'ı.
+
+    Script artifact → LLM prompt → KieAiProvider → metadata.json artifact.
+    """
+
+    def __init__(self, llm_provider) -> None:
+        """
+        Args:
+            llm_provider: BaseProvider instance (KieAiProvider veya mock).
+        """
+        self._llm = llm_provider
+
+    def step_key(self) -> str:
+        """Bu executor'ın sorumlu olduğu adım anahtarı."""
+        return "metadata"
+
+    async def execute(self, job: Job, step: JobStep) -> dict:
+        """
+        Metadata adımını çalıştırır.
+
+        Adımlar:
+          1. Job input_data_json'dan dil resolve edilir.
+          2. workspace/artifacts/script.json okunur.
+          3. build_metadata_prompt ile LLM mesajları hazırlanır.
+          4. KieAiProvider.invoke() çağrılır.
+          5. Yanıt JSON parse edilir.
+          6. workspace/artifacts/metadata.json dosyasına yazılır.
+          7. Provider trace ile birlikte sonuç döner.
+
+        Args:
+            job : Job ORM nesnesi.
+            step: JobStep ORM nesnesi.
+
+        Returns:
+            dict: artifact_path, language, provider trace.
+
+        Raises:
+            StepExecutionError: Script artifact eksikse veya LLM hatası oluştuğunda.
+        """
+        from app.modules.step_context import StepExecutionContext
+        from app.modules.prompt_builder import build_metadata_prompt
+        from app.providers.base import ProviderOutput
+
+        raw_input_str = getattr(job, "input_data_json", None) or "{}"
+        try:
+            raw_input: dict = json.loads(raw_input_str)
+        except (json.JSONDecodeError, TypeError) as err:
+            raise StepExecutionError(
+                self.step_key(),
+                f"Job input_data_json geçersiz JSON: {err}",
+            )
+
+        try:
+            ctx = StepExecutionContext.from_job_input(
+                job_id=job.id,
+                module_id="standard_video",
+                raw_input=raw_input,
+            )
+        except Exception as err:
+            raise StepExecutionError(
+                self.step_key(),
+                f"StepExecutionContext oluşturulamadı: {err}",
+            )
+
+        workspace_root = ctx.workspace_root or (
+            str(job.workspace_path) if job.workspace_path else ""
+        )
+        script_data = _read_artifact(
+            workspace_root=workspace_root,
+            job_id=job.id,
+            filename="script.json",
+        )
+        if script_data is None:
+            raise StepExecutionError(
+                self.step_key(),
+                f"Script artifact bulunamadı: job={job.id}. "
+                "Script adımı önce tamamlanmış olmalı.",
+            )
+
+        messages = build_metadata_prompt(
+            script=script_data,
+            language=ctx.language,
+        )
+
+        try:
+            output: ProviderOutput = await self._llm.invoke({"messages": messages})
+        except Exception as err:
+            raise StepExecutionError(self.step_key(), f"LLM çağrısı başarısız: {err}")
+
+        raw_content: str = output.result.get("content", "")
+
+        cleaned = _strip_markdown_json(raw_content)
+        try:
+            metadata_data: dict = json.loads(cleaned)
+        except json.JSONDecodeError as err:
+            raise StepExecutionError(
+                self.step_key(),
+                f"LLM yanıtı geçerli JSON değil: {err}. "
+                f"Ham yanıt (ilk 300 karakter): {raw_content[:300]}",
+            )
+
+        metadata_data["language"] = ctx.language.value
+
+        artifact_path = _write_artifact(
+            workspace_root=workspace_root,
+            job_id=job.id,
+            filename="metadata.json",
+            data=metadata_data,
+        )
+
+        logger.info(
+            "MetadataStepExecutor: job=%s dil=%s artifact=%s",
+            job.id,
+            ctx.language.value,
+            artifact_path,
+        )
+
+        return {
+            "artifact_path": artifact_path,
+            "language": ctx.language.value,
+            "provider": output.trace,
+            "step": self.step_key(),
+        }

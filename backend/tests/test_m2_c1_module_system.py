@@ -289,11 +289,14 @@ class TestStandardVideoModule:
 # ---------------------------------------------------------------------------
 
 class TestStubExecutors:
-    """Executor'ların doğru step_key döndürmesi ve stub davranışlarının kontrolü.
+    """Executor'ların doğru step_key döndürmesi kontrolü.
 
-    M2-C3 sonrası: ScriptStepExecutor ve MetadataStepExecutor artık llm_provider
-    argümanı gerektiriyor. Stub executor'lar (tts, visuals, subtitle, composition)
-    argümansız çalışmaya devam ediyor.
+    M2-C3 sonrası: ScriptStepExecutor ve MetadataStepExecutor llm_provider argümanı gerektirir.
+    M2-C4 sonrası: TTSStepExecutor tts_provider, VisualsStepExecutor pexels+pixabay_provider gerektirir.
+    M2-C5 sonrası: SubtitleStepExecutor ve CompositionStepExecutor artık gerçek implementasyondur,
+    argümansız örnekleme desteklenir (provider gerektirmez).
+
+    Stub davranış testleri kaldırıldı — executor'lar artık gerçek implementasyondur.
     """
 
     def test_script_executor_step_key(self):
@@ -309,13 +312,15 @@ class TestStubExecutors:
         assert executor.step_key() == "metadata"
 
     def test_tts_executor_step_key(self):
-        """TTSStepExecutor 'tts' step_key döndürmeli."""
-        executor = TTSStepExecutor()
+        """TTSStepExecutor 'tts' step_key döndürmeli — provider mock ile."""
+        from unittest.mock import MagicMock
+        executor = TTSStepExecutor(tts_provider=MagicMock())
         assert executor.step_key() == "tts"
 
     def test_visuals_executor_step_key(self):
-        """VisualsStepExecutor 'visuals' step_key döndürmeli."""
-        executor = VisualsStepExecutor()
+        """VisualsStepExecutor 'visuals' step_key döndürmeli — provider mock ile."""
+        from unittest.mock import MagicMock
+        executor = VisualsStepExecutor(pexels_provider=MagicMock(), pixabay_provider=MagicMock())
         assert executor.step_key() == "visuals"
 
     def test_subtitle_executor_step_key(self):
@@ -328,26 +333,27 @@ class TestStubExecutors:
         executor = CompositionStepExecutor()
         assert executor.step_key() == "composition"
 
-    @pytest.mark.asyncio
-    async def test_stub_executor_tts_execute_dict_dondurur(self):
-        """TTS stub executor, execute() çağrısında dict döndürmeli."""
-        executor = TTSStepExecutor()
-        sonuc = await executor.execute(job=None, step=None)
-        assert isinstance(sonuc, dict)
-        assert sonuc.get("status") == "stub"
-        assert sonuc.get("step") == "tts"
-
-    @pytest.mark.asyncio
-    async def test_tum_stub_executorlar_dogru_step_key_ile_donus_yapar(self):
-        """Stub executor'lar (tts, visuals, subtitle, composition) kendi step_key'lerini döndürmeli."""
+    def test_tum_executor_step_keyleri_benzersiz(self):
+        """Tüm executor step_key değerleri benzersiz olmalıdır."""
+        from unittest.mock import MagicMock
         executors = [
-            TTSStepExecutor(),
-            VisualsStepExecutor(),
+            ScriptStepExecutor(llm_provider=MagicMock()),
+            MetadataStepExecutor(llm_provider=MagicMock()),
+            TTSStepExecutor(tts_provider=MagicMock()),
+            VisualsStepExecutor(pexels_provider=MagicMock(), pixabay_provider=MagicMock()),
             SubtitleStepExecutor(),
             CompositionStepExecutor(),
         ]
-        for executor in executors:
-            sonuc = await executor.execute(job=None, step=None)
-            assert sonuc["step"] == executor.step_key(), (
-                f"{executor.__class__.__name__} yanlış step döndürdü: {sonuc['step']}"
-            )
+        keys = [e.step_key() for e in executors]
+        assert len(keys) == len(set(keys)), "Duplicate step_key bulundu"
+
+    @pytest.mark.asyncio
+    async def test_subtitle_composition_step_key_dondurur(self):
+        """
+        SubtitleStepExecutor ve CompositionStepExecutor kendi step_key'lerini döndürmeli.
+        Gerçek execute() çağrısı yapmadan sadece step_key doğrulanır.
+        """
+        subtitle = SubtitleStepExecutor()
+        composition = CompositionStepExecutor()
+        assert subtitle.step_key() == "subtitle"
+        assert composition.step_key() == "composition"
