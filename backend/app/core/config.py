@@ -18,6 +18,11 @@ class Settings(BaseSettings):
     # Data directory — SQLite DB and artifacts live here.
     data_dir: Path = Path("data")
 
+    # Provider API anahtarları — .env dosyasından okunur, koda gömülmez
+    kie_ai_api_key: str = ""
+    pexels_api_key: str = ""
+    pixabay_api_key: str = ""
+
     @property
     def database_url(self) -> str:
         db_path = self.data_dir / "contenthub.db"

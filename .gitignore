@@ -27,6 +27,7 @@ out/
 # Environment and secrets
 .env
 .env.*
+!.env.example
 *.pem
 token.json
 credentials.json
