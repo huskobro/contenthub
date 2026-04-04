@@ -1,18 +1,21 @@
 """
-Tests — M7-C1: Publish Center State Machine + DB Models + Core Service
+Tests — M7-C1 (rev: review-gate fix): Publish Center State Machine + DB Models + Core Service
 
 Kapsam:
   A)  PublishStateMachine — yasal geçişler kabul edilir
   B)  PublishStateMachine — yasak geçişler ValueError fırlatır
+       + draft → approved yasak (Tier A review gate)
+       + draft → scheduled yasak (Tier A review gate)
   C)  PublishStateMachine — terminal durumlar belirlenir
   D)  PublishStateMachine — can_publish() doğru gate kuralını uygular
-  E)  PublishStateMachine — allowed_next() doğru listeyi döndürür
+  E)  PublishStateMachine — allowed_next() draft için YALNIZCA pending_review + cancelled döner
   F)  create_publish_record — kayıt draft durumunda oluşur
   G)  create_publish_record — oluşturma olayı PublishLog'a yazılır
   H)  submit_for_review — draft → pending_review geçişi + log
   I)  review_action (approve) — pending_review → approved + review_state güncellenir
   J)  review_action (reject)  — pending_review → review_rejected + review_state güncellenir
   K)  review_action — geçersiz karar ValueError fırlatır
+  K2) review_action — pending_review olmayan durumdan ReviewGateViolationError
   L)  trigger_publish — approved → publishing, publish_attempt_count artar
   M)  trigger_publish — draft durumundan PublishGateViolationError
   N)  trigger_publish — pending_review durumundan PublishGateViolationError
@@ -22,12 +25,12 @@ Kapsam:
   R)  cancel_publish — draft → cancelled (terminal)
   S)  cancel_publish — terminal durumdan PublishAlreadyTerminalError
   T)  reset_to_draft — review_rejected → draft, review_state sıfırlanır
-  U)  schedule_publish — approved → scheduled, scheduled_at kaydedilir
+  U)  schedule_publish — approved → scheduled, scheduled_at UTC normalize edilir
   V)  schedule_publish → trigger_publish — scheduled → publishing
   W)  get_publish_logs — tüm olaylar denetim izinde görünür
   X)  list_publish_records — job_id filtresi çalışır
-  Y)  PublishRecord → PublishLog izolasyonu: editorial state değişmez
-  Z)  review_gate_isolation: /review endpoint kayıt onaylar fakat publish başlatmaz
+  Y)  PublishRecord → editorial izolasyon: StandardVideo state değişmez
+  Z)  review_gate_isolation: review_action onaylar fakat publish başlatmaz
 """
 
 import pytest
@@ -42,6 +45,7 @@ from app.publish.exceptions import (
     InvalidPublishTransitionError,
     PublishGateViolationError,
     PublishAlreadyTerminalError,
+    ReviewGateViolationError,
 )
 from app.publish.schemas import PublishRecordCreate
 from app.publish.state_machine import PublishStateMachine
@@ -86,12 +90,13 @@ async def _create_record(session, **kwargs) -> PublishRecord:
 
 @pytest.mark.asyncio
 async def test_a_legal_transitions_accepted():
-    """Yasal geçiş çiftleri ValueError fırlatmaz."""
+    """Yasal geçiş çiftleri ValueError fırlatmaz.
+
+    Tier A review gate aktif: draft → yalnızca pending_review veya cancelled.
+    """
     legal = [
-        ("draft", "pending_review"),
-        ("draft", "approved"),
-        ("draft", "scheduled"),
-        ("draft", "cancelled"),
+        ("draft", "pending_review"),      # Review gate başlatma
+        ("draft", "cancelled"),            # Publish öncesi iptal
         ("pending_review", "approved"),
         ("pending_review", "review_rejected"),
         ("pending_review", "cancelled"),
@@ -118,14 +123,27 @@ async def test_a_legal_transitions_accepted():
 
 @pytest.mark.asyncio
 async def test_b_illegal_transitions_raise_value_error():
-    """Yasak geçiş çiftleri ValueError fırlatır."""
+    """Yasak geçiş çiftleri ValueError fırlatır.
+
+    Tier A review gate geçişleri dahil:
+      draft → approved YASAK (review gate bypass)
+      draft → scheduled YASAK (review gate bypass)
+      draft → publishing YASAK
+    """
     illegal = [
-        ("draft", "publishing"),       # Onay atlanıyor
+        # Tier A review gate bypass — bu üç geçiş master plan ihlali
+        ("draft", "approved"),
+        ("draft", "scheduled"),
+        ("draft", "publishing"),
         ("draft", "published"),
-        ("pending_review", "publishing"),  # Review kararı atlanıyor
+        # Review kararı atlanıyor
+        ("pending_review", "publishing"),
         ("pending_review", "published"),
+        ("pending_review", "scheduled"),
         ("review_rejected", "publishing"),
-        ("published", "draft"),         # Terminal → geri döndürme yok
+        ("review_rejected", "approved"),
+        # Terminal → geri döndürme yok
+        ("published", "draft"),
         ("published", "cancelled"),
         ("cancelled", "draft"),
         ("cancelled", "publishing"),
@@ -170,14 +188,18 @@ async def test_d_can_publish_gate_rule():
 
 @pytest.mark.asyncio
 async def test_e_allowed_next():
-    """draft durumundan izin verilen geçişler doğru döner."""
+    """draft durumundan izin verilen geçişler YALNIZCA pending_review ve cancelled."""
     allowed = set(PublishStateMachine.allowed_next("draft"))
+    # Zorunlu
     assert "pending_review" in allowed
-    assert "approved" in allowed
     assert "cancelled" in allowed
-    # Doğrudan publishing yasak
+    # Tier A review gate — bu geçişler YASAK
+    assert "approved" not in allowed, "draft → approved Tier A review gate ihlali"
+    assert "scheduled" not in allowed, "draft → scheduled Tier A review gate ihlali"
     assert "publishing" not in allowed
     assert "published" not in allowed
+    # draft'tan YALNIZCA 2 geçiş var
+    assert len(allowed) == 2, f"draft'tan beklenen 2 geçiş, alınan {len(allowed)}: {allowed}"
 
 
 # ---------------------------------------------------------------------------
@@ -289,6 +311,30 @@ async def test_k_review_invalid_decision():
                 session=session,
                 record_id=record.id,
                 decision="maybe",
+            )
+
+
+# ---------------------------------------------------------------------------
+# K2) review_action — pending_review olmayan durumdan ReviewGateViolationError
+# ---------------------------------------------------------------------------
+
+@pytest.mark.asyncio
+async def test_k2_review_action_wrong_status_raises_review_gate_error():
+    """
+    pending_review dışı bir durumda review_action çağrısı ReviewGateViolationError fırlatır.
+
+    Review gate kuralı: yalnızca pending_review durumundaki kayıta review kararı verilebilir.
+    Örneğin draft durumunda review_action çağrısı yasak.
+    """
+    async with AsyncSessionLocal() as session:
+        record = await _create_record(session)
+        # Kayıt draft durumunda — review_action çağrısı yasak
+        assert record.status == PublishStatus.DRAFT.value
+        with pytest.raises(ReviewGateViolationError):
+            await service.review_action(
+                session=session,
+                record_id=record.id,
+                decision="approve",
             )
 
 
@@ -462,21 +508,54 @@ async def test_t_reset_to_draft():
 
 @pytest.mark.asyncio
 async def test_u_schedule_publish():
-    """schedule_publish: approved → scheduled, scheduled_at kaydedilir."""
+    """
+    schedule_publish: approved → scheduled, scheduled_at UTC normalize edilir.
+
+    Servis katmanı scheduled_at'ı UTC'ye normalize eder.
+    SQLite timezone-naive saklarsa UTC olarak kabul edilir.
+    Test workaround yoktur — normalizasyon service.py'de yapılır.
+    """
     async with AsyncSessionLocal() as session:
         record = await _create_record(session)
         await service.submit_for_review(session=session, record_id=record.id)
         await service.review_action(session=session, record_id=record.id, decision="approve")
-        future = datetime(2030, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
+
+        future_utc = datetime(2030, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
         scheduled = await service.schedule_publish(
-            session=session, record_id=record.id, scheduled_at=future
+            session=session, record_id=record.id, scheduled_at=future_utc
         )
         assert scheduled.status == PublishStatus.SCHEDULED.value
-        # SQLite timezone-naive datetime döndürür; UTC değerlerini karşılaştır
+
+        # Servis UTC normalize eder. SQLite naive döndürse de UTC anlamına gelir.
+        # scheduled_at değeri UTC ile eşit olmalı (tzinfo farkı tolere edilir).
         stored = scheduled.scheduled_at
-        if stored is not None and stored.tzinfo is None:
+        assert stored is not None
+        # SQLite naive döndürürse UTC aware'e çevir karşılaştırma için
+        if stored.tzinfo is None:
             stored = stored.replace(tzinfo=timezone.utc)
-        assert stored == future
+        assert stored == future_utc, (
+            f"scheduled_at UTC uyuşmazlığı: stored={stored}, beklenen={future_utc}"
+        )
+
+    # Timezone-naive input da doğru normalize edilmeli
+    async with AsyncSessionLocal() as session:
+        record2 = await _create_record(session)
+        await service.submit_for_review(session=session, record_id=record2.id)
+        await service.review_action(session=session, record_id=record2.id, decision="approve")
+
+        # Naive datetime gönder — servis UTC'ye çevirmeli
+        naive_future = datetime(2030, 6, 15, 9, 30, 0)  # tzinfo=None
+        scheduled2 = await service.schedule_publish(
+            session=session, record_id=record2.id, scheduled_at=naive_future
+        )
+        stored2 = scheduled2.scheduled_at
+        assert stored2 is not None
+        if stored2.tzinfo is None:
+            stored2 = stored2.replace(tzinfo=timezone.utc)
+        expected2 = naive_future.replace(tzinfo=timezone.utc)
+        assert stored2 == expected2, (
+            f"Naive input UTC normalizasyon hatası: stored={stored2}, beklenen={expected2}"
+        )
 
 
 # ---------------------------------------------------------------------------

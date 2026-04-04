@@ -3,23 +3,24 @@
 ## Mevcut Faz
 Kiln Build — M7: YouTube Publish v1 — DEVAM EDİYOR
 
-**M7-C1 TAMAMLANDI — 26/26 test geçiyor**
+**M7-C1 TAMAMLANDI (review-gate fix) — 27/27 test geçiyor**
 **M6 KAPANDI**
 
 ## Mevcut Durum (2026-04-04)
-M7-C1 tamamlandı:
-- M7-C1: Publish Center — State Machine + DB Models + Core Service + REST Router
-  - `publish_records` + `publish_logs` tabloları oluşturuldu (models.py)
-  - `PublishStateMachine` — 9 durum, tüm geçişler zorlanıyor
-  - `can_publish()` publish gate kuralı — draft/pending_review'dan doğrudan publish yasak
-  - `PublishAdapter` soyut taban — upload() + activate() zinciri tanımlandı (M7-C2 implement eder)
-  - Servis katmanı: create/list/get, submit_for_review, review_action, trigger_publish, mark_published, mark_failed, cancel_publish, reset_to_draft, schedule_publish
-  - Her aksiyon `PublishLog`'a olay yazar — sessiz güncelleme yasak
-  - Router: /publish/* prefix, 10 endpoint
-  - Publish gate: trigger_publish() → approved/scheduled/failed'dan başlayabilir
-  - Review gate izolasyonu: review_action onaylar fakat publish başlatmaz
+M7-C1 tamamlandı (review-gate fix + alembic migration):
+- M7-C1: Publish Center — State Machine + DB Models + Alembic Migration + Core Service + REST Router
+  - `publish_records` + `publish_logs` tabloları (models.py + alembic migration c1a2b3d4e5f6)
+  - `PublishStateMachine` — 9 durum, Tier A review gate zorunlu, bypass edilemez
+    - draft → approved YASAK; draft → scheduled YASAK
+    - Zorunlu akış: draft → pending_review → approved → [scheduled →] publishing → published
+  - `review_action()` — yalnızca pending_review durumunda çağrılabilir; başka durumdan ReviewGateViolationError
+  - `can_publish()` publish gate — approved/scheduled/failed dışından yasak
+  - `schedule_publish()` — scheduled_at UTC normalize edilir (servis katmanında, test workaround yok)
+  - `PublishAdapter` soyut taban — upload() + activate() zinciri (M7-C2 implement eder)
+  - Servis: 10 fonksiyon, her aksiyon PublishLog'a yazar — sessiz güncelleme yasak
+  - Router: /publish/* 10 endpoint, ReviewGateViolationError → HTTP 422
   - Editorial izolasyon: StandardVideo/NewsBulletin tabloları değişmez
-  - 26/26 test geçiyor
+  - 27/27 test geçiyor
 
 M6-C1 + M6-C2 + M6-C3 tamamlandı:
 - M6-C1: Remotion kurulumu + renderer paketi + RenderStepExecutor foundation

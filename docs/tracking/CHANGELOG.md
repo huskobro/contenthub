@@ -2,7 +2,7 @@
 
 ---
 
-## [2026-04-04] M7-C1 — Publish Center State Machine + DB Models + Core Service
+## [2026-04-04] M7-C1 (rev: review-gate fix) — Publish Center State Machine + DB Models + Core Service
 
 ### Özet
 Publish Center altyapısı M7-C1 ile kuruldu. YouTube Publish v1 zincirinin
@@ -89,13 +89,25 @@ Y) Editorial isolation
 Z) Review gate isolation
 ```
 
-### M7-C1 Mandatory Delivery Fields
+### Düzeltmeler (review-gate fix)
+1. **Tier A review gate zorlandı**: `draft → approved` ve `draft → scheduled` geçişleri state machine'den kaldırıldı. Artık draft'tan yalnızca `pending_review` veya `cancelled` geçişi yasal.
+2. **ReviewGateViolationError aktifleştirildi**: `review_action()` servis fonksiyonu, `pending_review` dışı durumdan çağrılırsa `ReviewGateViolationError` fırlatır. Router HTTP 422 döndürür.
+3. **Alembic migration eklendi**: `c1a2b3d4e5f6_m7_c1_add_publish_records_and_logs.py` — `publish_records` + `publish_logs` tabloları, FK kısıtları, index'ler. `alembic upgrade head` başarıyla çalışıyor.
+4. **scheduled_at UTC normalize edildi**: `schedule_publish()` servis fonksiyonu naive datetime'ı UTC aware'e dönüştürür. Test workaround kaldırıldı.
+
+### Zorunlu akış (Tier A — bypass edilemez)
+```
+draft → pending_review → approved → [scheduled →] publishing → published
+                      ↘ review_rejected → draft (düzeltme döngüsü)
+```
+
+### M7-C1 Mandatory Delivery Fields (güncellenmiş)
 | Alan | Değer |
 |---|---|
-| publish-state ambiguity risk | **none** — 9 durum, geçiş matrisi eksiksiz, terminal durumlar açık |
-| review-to-publish boundary risk | **none** — review_action ≠ trigger_publish; gate PublishStateMachine.can_publish() ile zorlanıyor |
-| partial-failure recovery clarity | **none** — failed→publishing retry zinciri test edildi; publish_attempt_count izleniyor; her deneme loglanıyor |
-| audit-trail completeness risk | **none** — sessiz güncelleme _append_log() garantisi; oluşturma + her geçiş + review + publish girişimi + platform olayı kaydediliyor |
+| review-gate bypass risk | **none** — draft → approved/scheduled geçişleri state machine'de YASAK; test B + E kilitler; review_action() pending_review guard eklendi (test K2) |
+| migration completeness | **none** — alembic migration c1a2b3d4e5f6 mevcut; upgrade + stamp doğrulandı; boş DB'de SQL sözdizimi doğrulandı |
+| timezone consistency | **none** — scheduled_at service.py'de UTC normalize edilir; naive input test edildi (test U); workaround kaldırıldı |
+| audit-trail completeness risk | **none** — _append_log() garantisi; oluşturma + her geçiş + review + publish girişimi + platform olayı; test W doğruladı |
 
 ---
 

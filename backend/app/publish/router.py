@@ -27,6 +27,7 @@ from app.publish.exceptions import (
     InvalidPublishTransitionError,
     PublishGateViolationError,
     PublishAlreadyTerminalError,
+    ReviewGateViolationError,
 )
 from app.publish.schemas import (
     PublishRecordCreate,
@@ -170,6 +171,8 @@ async def review_action(
         )
     except PublishRecordNotFoundError as exc:
         raise _handle_not_found(exc)
+    except ReviewGateViolationError as exc:
+        raise _handle_gate_violation(exc)
     except (InvalidPublishTransitionError, PublishAlreadyTerminalError, ValueError) as exc:
         raise _handle_invalid_transition(exc)
 

@@ -35,6 +35,7 @@ from app.publish.exceptions import (
     InvalidPublishTransitionError,
     PublishGateViolationError,
     PublishAlreadyTerminalError,
+    ReviewGateViolationError,
 )
 from app.publish.schemas import PublishRecordCreate
 from app.publish.state_machine import PublishStateMachine
@@ -294,6 +295,15 @@ async def review_action(
     """
     record = await _get_record_or_404(session, record_id)
 
+    # Review gate kuralı: yalnızca pending_review durumundaki kayıta review kararı verilir.
+    # draft, approved veya başka bir durumdan review_action çağrısı yasaktır.
+    if record.status != PublishStatus.PENDING_REVIEW.value:
+        raise ReviewGateViolationError(
+            f"PublishRecord {record.id} review gate'i geçemiyor. "
+            f"Mevcut durum: '{record.status}'. "
+            f"Review kararı yalnızca pending_review durumundaki kayıtlara verilebilir."
+        )
+
     if decision == "approve":
         next_status = PublishStatus.APPROVED.value
         review_state = "approved"
@@ -339,7 +349,19 @@ async def schedule_publish(
 ) -> PublishRecord:
     """
     approved → scheduled geçişi. Publish zamanını ayarlar.
+
+    Timezone normalizasyonu:
+      scheduled_at her zaman UTC'ye normalize edilerek saklanır.
+      Timezone-naive datetime gelirse UTC olarak yorumlanır ve
+      UTC-aware datetime'a dönüştürülür. Bu davranış servis katmanında
+      zorlanır; test veya çağıran kod workaround yapmamalıdır.
     """
+    # UTC normalizasyonu — naive datetime'ı UTC-aware'e dönüştür
+    if scheduled_at.tzinfo is None:
+        scheduled_at = scheduled_at.replace(tzinfo=timezone.utc)
+    else:
+        scheduled_at = scheduled_at.astimezone(timezone.utc)
+
     record = await _get_record_or_404(session, record_id)
     record.scheduled_at = scheduled_at
     await _transition_status(

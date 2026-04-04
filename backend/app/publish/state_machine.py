@@ -1,16 +1,21 @@
 """
-Publish Center Durum Makinesi — M7-C1.
+Publish Center Durum Makinesi — M7-C1 (rev: review-gate fix).
 
 PublishRecord durum geçişlerini ve izin verilen hareketleri tanımlar.
 Her geçiş bu modülden geçmek zorundadır — doğrudan ORM atama yasaktır.
 
+Zorunlu akış (Tier A review gate — bypass edilemez):
+  draft → pending_review → approved �� [scheduled →] publishing → published
+
+  draft'tan doğrudan approved veya scheduled GEÇİŞİ YASAKTIR.
+  Review gate, master plan gereği Tier A kural — atlanamaz.
+
 Durum tanımları:
   draft           : Kullanıcı publish kaydı oluşturdu, henüz review başlatılmadı.
                     Gerekli: job_id, content_ref
-                    Opsiyonel: tüm platform alanları
+                    İzin verilen sonraki durum: YALNIZCA pending_review veya cancelled.
 
   pending_review  : Review gate açıldı; operatör onayı bekleniyor.
-                    İlk transit: draft → pending_review
                     Bu durumdaki kayıt YAYINLANAMAZ.
 
   review_rejected : Operatör kaydı reddetti.
@@ -18,10 +23,11 @@ Durum tanımları:
                     Yayınlama: yasak.
 
   approved        : Operatör onayladı; publish işlemi başlatılabilir.
+                    YALNIZCA pending_review → approved geçişiyle ulaşılabilir.
                     Bu durum "publish yetkisi verildi" anlamına gelir.
-                    Yayınlama: henüz başlamadı.
 
   scheduled       : Publish ilerleyen bir zamana planlandı.
+                    YALNIZCA approved → scheduled geçişiyle ulaşılabilir.
                     Yayınlama başlamadı; iptal edilebilir.
 
   publishing      : Platform'a upload/activate zinciri aktif.
@@ -37,10 +43,8 @@ Durum tanımları:
                     Terminal durum.
 
 Publish gate kuralı (M7):
-  Yayınlama yalnızca approved veya scheduled durumundan başlayabilir.
-  pending_review veya draft durumundan doğrudan yayınlama YASAK.
-  Bu kural bu modülde zorlandığı için servis/router katmanı ayrıca
-  kontrol etmek zorunda değildir.
+  Yayınlama yalnızca approved, scheduled veya failed (retry) durumundan başlayabilir.
+  draft veya pending_review durumundan doğrudan yayınlama YASAK.
 
 Kısmi başarısızlık semantiği (M7):
   publishing → failed   : platform upload/activate zinciri kırıldı
@@ -63,10 +67,10 @@ from app.publish.enums import PublishStatus
 # ---------------------------------------------------------------------------
 
 _PUBLISH_TRANSITIONS: Dict[PublishStatus, FrozenSet[PublishStatus]] = {
+    # draft'tan YALNIZCA pending_review veya cancelled'a geçilebilir.
+    # draft → approved ve draft → scheduled YASAK (Tier A review gate ihlali).
     PublishStatus.DRAFT: frozenset({
         PublishStatus.PENDING_REVIEW,
-        PublishStatus.APPROVED,       # Doğrudan onay (review gate atlanabilir)
-        PublishStatus.SCHEDULED,      # Doğrudan zamanlama (review atlanmış sayılır)
         PublishStatus.CANCELLED,
     }),
     PublishStatus.PENDING_REVIEW: frozenset({
