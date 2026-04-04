@@ -3,8 +3,9 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
-from .schemas import ScanCreate, ScanUpdate, ScanResponse
+from .schemas import ScanCreate, ScanUpdate, ScanResponse, ScanExecuteResponse
 from . import service
+from .scan_engine import execute_rss_scan
 
 router = APIRouter(prefix="/source-scans", tags=["source-scans"])
 
@@ -40,3 +41,31 @@ async def update_scan(
     if scan is None:
         raise HTTPException(status_code=404, detail="Scan not found")
     return scan
+
+
+@router.post("/{scan_id}/execute", response_model=ScanExecuteResponse)
+async def execute_scan(scan_id: str, db: AsyncSession = Depends(get_db)):
+    """
+    Tarama kaydını gerçek zamanlı olarak çalıştırır.
+
+    Yalnızca source_type='rss' desteklenir.
+    Tarama senkron olarak tamamlanır; sonuç doğrudan döner.
+    SourceScan.status: queued → running → completed | failed
+    NewsItem kayıtları status='new' ile oluşturulur.
+    """
+    scan = await service.get_scan(db, scan_id)
+    if scan is None:
+        raise HTTPException(status_code=404, detail="Scan not found")
+
+    if scan.status not in ("queued",):
+        raise HTTPException(
+            status_code=409,
+            detail=f"Tarama çalıştırılamaz: mevcut durum '{scan.status}'. Yalnızca 'queued' taramalar çalıştırılabilir.",
+        )
+
+    try:
+        result = await execute_rss_scan(db, scan_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc))
+
+    return ScanExecuteResponse(**result)

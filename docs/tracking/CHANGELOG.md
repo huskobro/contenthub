@@ -2,6 +2,56 @@
 
 ---
 
+## [2026-04-04] M5-C1 — Source Registry + RSS Fetch + Normalization
+
+**Ne:**
+- `backend/app/source_scans/scan_engine.py` — YENİ: Gerçek RSS tarama motoru.
+  `execute_rss_scan(db, scan_id)` → feedparser ile RSS çekimi, entry normalizasyonu,
+  hard dedupe (URL lowercase), NewsItem batch yazımı, SourceScan durum geçişleri.
+  `normalize_entry()` — url/title zorunlu; eksikse None (atlanır).
+  `_parse_published_at()` — published_parsed veya updated_parsed.
+  `_build_dedupe_key()` — url.strip().lower().
+  `_load_existing_urls()` — DB'deki mevcut URL'leri yükler.
+  Hata yönetimi: feedparser hata → failed; DB yazma hata → rollback + failed.
+- `backend/app/source_scans/router.py` — `POST /source-scans/{scan_id}/execute` YENİ endpoint.
+  Yalnızca `status="queued"` taramalar çalıştırılabilir; diğerleri 409 döner.
+  Senkron çalışır — sonuç doğrudan döner.
+- `backend/app/source_scans/schemas.py` — `ScanExecuteResponse` YENİ şema.
+  scan_id, status, fetched_count, new_count, skipped_dedupe, skipped_invalid, error_summary.
+- `backend/pyproject.toml` — `feedparser>=6.0.0` bağımlılığa eklendi.
+
+**Durum semantiği (önemli):**
+- `SourceScan.status`: `queued` → `running` → `completed` | `failed`
+  Bu geçişler yalnızca scan_engine içinde yapılır.
+- `NewsItem.status`: Tarama motoru SADECE `"new"` atar. `"used"`, `"reviewed"`, `"ignored"`
+  geçişleri ayrı iş akışlarına aittir — tarama motoru hiçbir zaman bunları atamaz.
+  Bu bir sözleşme, test 22 ile belgelenmiştir.
+
+**Hard dedupe:**
+  URL tam eşleşmesi (strip+lowercase). Aynı URL farklı case ile gelirse de yakalanır.
+  `dedupe_key = url.strip().lower()` — NewsItem.dedupe_key olarak saklanır.
+  Soft dedupe (başlık benzerliği) M5-C2 kapsamındadır; bu chunk'ta yok.
+
+**Kısıtlar / Borç:**
+- Yalnızca `source_type="rss"` desteklenir; `manual_url` ve `api` açık hata döner.
+- Tarama senkron — büyük feed'lerde yanıt gecikmesi oluşabilir. Async kuyruğa alma M5-C2+ kapsamı.
+- `feedparser` boş entry listesi veya ağ hatası durumunda `result` döner ama `status="failed"`.
+- Soft dedupe (başlık benzerliği) yok — bu durum bilinçli olarak belgelenmiştir.
+
+**Risk değerlendirmesi (M5 zorunlu alanlar):**
+- source-state semantics risk: **LOW** — SourceScan durumları temiz (queued→running→completed/failed).
+  NewsItem.status="new" garantisi test 22 ile kilitlenmiş.
+- dedupe false-positive risk: **LOW** — Hard dedupe sadece tam URL eşleşmesi yapar; yanlış pozitif
+  yoktur (yanlış negatif olabilir: farklı URL ama aynı haber — bu M5-C2 soft dedupe kapsamı).
+- used-news ambiguity risk: **NONE** — Tarama motoru "used" kavramıyla hiçbir şekilde temas etmez.
+  UsedNewsRegistry ayrı bir iş akışı; scan_engine.py bunu import bile etmez.
+- preview-to-final confusion risk: **NONE** — Bu chunk'ta UI değişikliği yok.
+- warnings status: **none** — Yeni warning eklenmedi, mevcut budget sabit (1 known-nonblocking).
+
+**Test:** 22 yeni test, 717 toplam.
+
+---
+
 ## [2026-04-04] M4-C3 — Preview-First Subtitle Style Selection
 
 **Ne:**

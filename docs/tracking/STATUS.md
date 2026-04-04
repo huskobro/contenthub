@@ -1,11 +1,14 @@
 # DURUM
 
 ## Mevcut Faz
-Kiln Build — M4: Whisper Subtitle + Karaoke Pack — TAMAMLANDI
+Kiln Build — M5: News Ingestion + Bulletin Pipeline Pack — DEVAM EDİYOR
 
-**M4 KAPANDİ — 695 test geçiyor**
+**M5-C1 TAMAMLANDI — 717 test geçiyor**
 
 ## Mevcut Durum (2026-04-04)
+M5-C1 tamamlandı:
+- M5-C1: Source Registry + RSS Fetch + Normalization (feedparser, scan_engine.py, ScanExecuteResponse, hard dedupe, durum semantiği izolasyonu)
+
 M4 üç chunk ile tamamlandı:
 - M4-C1: Whisper entegrasyonu + word timing data modeli (LocalWhisperProvider, word_timing.json, timing_mode hattı)
 - M4-C2: Karaoke rendering + style presets (SubtitlePreset dataclass, 5 preset, composition_props'a timing_mode/subtitle_style/word_timing_path)
@@ -41,7 +44,7 @@ M4 üç chunk ile tamamlandı:
 - TTS: AKTİF — resolve_and_invoke, EdgeTTS→SystemTTS
 - VISUALS: AKTİF — VisualsStepExecutor kendi döngüsünde
 
-**Sonraki**: M5 — News Ingestion + Bulletin Pipeline Pack.
+**Sonraki**: M5-C2 — Scan Engine + Dedupe (soft dedupe v1, used news registry bağlantısı).
 
 ## Sonraki Milestone
 **M3 devam: Provider Registry + Fallback Pack**
@@ -56,6 +59,7 @@ M3-C3 bekliyor.
 - **ANA FAZ BAŞLADI:** Wizard / Onboarding (ürün geliştirme hattı)
 
 ## Son Tamamlananlar
+- **M5-C1 Source Registry + RSS Fetch + Normalization** — scan_engine.py (execute_rss_scan), feedparser entegrasyonu, hard dedupe (URL lowercase), ScanExecuteResponse, POST /source-scans/{id}/execute endpoint, NewsItem.status="new" garantisi (tarama motoru asla 'used' atamaz), 22 yeni test, 717 toplam (2026-04-04)
 - **M4-C3 Preview-First Subtitle Style Selection** — /subtitle-presets endpoint, SubtitleStylePicker CSS stil kartı UI, strict helper vs boundary fallback ayrımı, degrade mod etiketi (form+kart seviyesi), registry=None açık teknik borç belgesi, 13 yeni test, 695 toplam (2026-04-04)
 - **M4-C2 Karaoke Rendering + Style Presets** — SubtitlePreset frozen dataclass, 5 preset (clean_white→outline_only), composition_props'a subtitle_style+word_timing_path+timing_mode, KaraokeSubtitle.tsx (Remotion placeholder, M6'da aktif), subtitle-contracts.ts tip sözleşmeleri, 18 yeni test, 682 toplam (2026-04-04)
 - **M4-C1 Whisper Entegrasyonu + Word Timing Data Modeli** — ProviderCapability.WHISPER, LocalWhisperProvider (faster-whisper, model cache), SubtitleStepExecutor registry-aware (whisper_word/whisper_segment/cursor), word_timing.json artifact, _build_srt alias (geriye uyum), dispatcher SubtitleStepExecutor(registry=), 20 yeni test, 664 toplam (2026-04-04)

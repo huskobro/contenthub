@@ -76,3 +76,23 @@ class ScanResponse(BaseModel):
     used_news_count_from_scan: int = 0
 
     model_config = {"from_attributes": True}
+
+
+class ScanExecuteResponse(BaseModel):
+    """
+    POST /source-scans/{scan_id}/execute yanıt şeması.
+
+    fetched_count  : feed'den gelen toplam entry sayısı
+    new_count      : veritabanına yazılan yeni NewsItem sayısı
+    skipped_dedupe : URL çakışması nedeniyle atlanan entry sayısı
+    skipped_invalid: url veya title eksik nedeniyle atlanan entry sayısı
+    error_summary  : başarısız olursa kısa hata özeti, başarılı ise None
+    """
+
+    scan_id: str
+    status: str
+    fetched_count: int
+    new_count: int
+    skipped_dedupe: int
+    skipped_invalid: int
+    error_summary: Optional[str] = None
