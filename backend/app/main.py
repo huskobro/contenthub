@@ -1,13 +1,12 @@
 """
 ContentHub FastAPI application entry point.
 
-Lifespan handler (Phase M1-C4 / M2-C6):
+Lifespan handler (Phase M1-C4 / M2-C6 / M3-C1):
   1. Create DB tables (dev/test convenience).
   2. Run startup recovery scanner — marks any stale running jobs as failed
      BEFORE the server begins accepting requests (P-008 / C-07).
   3. Register content modules in module_registry (M2-C1).
-  4. Register provider instances in _providers dict (M2-C2).
-     NOT: M3'te ModuleRegistry'ye entegre edilecek.
+  4. Provider örneklerini provider_registry'ye kaydet (M3-C1).
   5. JobDispatcher oluştur ve app.state'e bağla (M2-C6).
   6. Yield — server is now live.
 """
@@ -25,17 +24,15 @@ from app.jobs.recovery import run_startup_recovery
 from app.jobs.dispatcher import JobDispatcher
 from app.modules.registry import module_registry
 from app.modules.standard_video.definition import STANDARD_VIDEO_MODULE
-from app.providers.base import BaseProvider
+from app.providers.capability import ProviderCapability
 from app.providers.llm.kie_ai_provider import KieAiProvider
 from app.providers.tts.edge_tts_provider import EdgeTTSProvider
 from app.providers.visuals.pexels_provider import PexelsProvider
 from app.providers.visuals.pixabay_provider import PixabayProvider
+from app.providers.registry import provider_registry
 from app.sse.bus import event_bus
 
 logger = logging.getLogger(__name__)
-
-# Geçici provider erişimi — M3'te ModuleRegistry'ye entegre edilecek
-_providers: dict[str, BaseProvider] = {}
 
 
 @asynccontextmanager
@@ -72,24 +69,43 @@ async def lifespan(app: FastAPI):
     module_registry.register(STANDARD_VIDEO_MODULE)
     logger.info("Modül kaydedildi: %s", STANDARD_VIDEO_MODULE.module_id)
 
-    # Provider örneklerini kaydet (M2-C2)
-    # NOT: M3'te gerçek ModuleRegistry/ProviderRegistry'ye taşınacak
-    _providers["llm"] = KieAiProvider(api_key=settings.kie_ai_api_key)
-    _providers["tts"] = EdgeTTSProvider()
-    _providers["visuals_primary"] = PexelsProvider(api_key=settings.pexels_api_key)
-    _providers["visuals_fallback"] = PixabayProvider(api_key=settings.pixabay_api_key)
+    # Provider örneklerini provider_registry'ye kaydet (M3-C1)
+    provider_registry.register(
+        KieAiProvider(api_key=settings.kie_ai_api_key),
+        ProviderCapability.LLM,
+        is_primary=True,
+        priority=0,
+    )
+    provider_registry.register(
+        EdgeTTSProvider(),
+        ProviderCapability.TTS,
+        is_primary=True,
+        priority=0,
+    )
+    provider_registry.register(
+        PexelsProvider(api_key=settings.pexels_api_key),
+        ProviderCapability.VISUALS,
+        is_primary=True,
+        priority=0,
+    )
+    provider_registry.register(
+        PixabayProvider(api_key=settings.pixabay_api_key),
+        ProviderCapability.VISUALS,
+        is_primary=False,
+        priority=1,
+    )
     logger.info(
-        "Provider'lar kaydedildi: %s",
-        list(_providers.keys()),
+        "Provider'lar provider_registry'ye kaydedildi: capabilities=%s",
+        [cap.value for cap in provider_registry.list_all().keys()],
     )
 
-    # JobDispatcher oluştur ve app.state'e bağla (M2-C6)
+    # JobDispatcher oluştur ve app.state'e bağla (M2-C6 / M3-C1)
     # Router'lar app.state.job_dispatcher üzerinden erişir
     app.state.job_dispatcher = JobDispatcher(
         db_session_factory=_session_factory,
         module_registry=module_registry,
         event_bus=event_bus,
-        providers=_providers,
+        registry=provider_registry,
     )
     logger.info("JobDispatcher app.state'e bağlandı.")
 

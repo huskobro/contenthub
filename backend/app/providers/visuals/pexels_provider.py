@@ -18,6 +18,7 @@ import logging
 import httpx
 
 from app.providers.base import BaseProvider, ProviderOutput
+from app.providers.capability import ProviderCapability
 from app.providers.exceptions import ProviderInvokeError
 
 logger = logging.getLogger(__name__)
@@ -48,9 +49,9 @@ class PexelsProvider(BaseProvider):
         """Provider'ın benzersiz kimliği."""
         return "pexels"
 
-    def capability(self) -> str:
+    def capability(self) -> ProviderCapability:
         """Provider yeteneği."""
-        return "visuals"
+        return ProviderCapability.VISUALS
 
     async def invoke(self, input_data: dict) -> ProviderOutput:
         """

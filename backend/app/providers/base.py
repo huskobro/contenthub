@@ -1,5 +1,5 @@
 """
-Provider Temel Arayüzü (M2-C1)
+Provider Temel Arayüzü (M2-C1 / M3-C1)
 
 Tüm dış hizmet entegrasyonları (LLM, TTS, görsel, yayın) bu arayüzü uygular.
 P-009 kuralı gereği hiçbir servis kodu doğrudan httpx çağrısı yapamaz — her
@@ -7,10 +7,14 @@ dış çağrı bir BaseProvider alt sınıfı üzerinden geçmelidir.
 
 Bu dosya yalnızca arayüzü tanımlar. Provider kaydı ve yedek/sağlık yönetimi
 M3 kapsamındadır ve buraya eklenmemelidir.
+
+M3-C1: capability() dönüş tipi str'den ProviderCapability'e güncellendi.
 """
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+
+from app.providers.capability import ProviderCapability
 
 
 @dataclass
@@ -67,10 +71,10 @@ class BaseProvider(ABC):
         ...
 
     @abstractmethod
-    def capability(self) -> str:
+    def capability(self) -> ProviderCapability:
         """
         Provider'ın yeteneğini döndürür.
 
-        Örnek: 'llm', 'tts', 'visuals', 'publish'
+        Örnek: ProviderCapability.LLM, ProviderCapability.TTS, ProviderCapability.VISUALS
         """
         ...

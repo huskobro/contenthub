@@ -36,6 +36,8 @@ from app.modules.registry import ModuleRegistry
 from app.modules.standard_video.definition import STANDARD_VIDEO_MODULE
 from app.modules.input_normalizer import InputNormalizer
 from app.modules.exceptions import ModuleNotFoundError
+from app.providers.capability import ProviderCapability
+from app.providers.registry import ProviderRegistry
 
 
 # ---------------------------------------------------------------------------
@@ -97,13 +99,45 @@ def isolated_workspace(tmp_path):
 # ---------------------------------------------------------------------------
 
 def _make_providers():
-    """Dispatcher testleri için minimal mock provider dict."""
+    """Dispatcher testleri için minimal mock provider dict (geriye dönük uyumluluk için korunur)."""
     return {
         "llm": MagicMock(name="llm_provider"),
         "tts": MagicMock(name="tts_provider"),
         "visuals_primary": MagicMock(name="pexels_provider"),
         "visuals_fallback": MagicMock(name="pixabay_provider"),
     }
+
+
+def _make_registry() -> tuple[ProviderRegistry, dict]:
+    """
+    Dispatcher testleri için ProviderRegistry ve mock provider'ları döner.
+    Tuple: (registry, providers_dict) — providers_dict assertion'lar için.
+    """
+    providers = _make_providers()
+    registry = ProviderRegistry()
+
+    llm_mock = providers["llm"]
+    llm_mock.provider_id = MagicMock(return_value="llm_mock")
+    llm_mock.capability = MagicMock(return_value=ProviderCapability.LLM)
+
+    tts_mock = providers["tts"]
+    tts_mock.provider_id = MagicMock(return_value="tts_mock")
+    tts_mock.capability = MagicMock(return_value=ProviderCapability.TTS)
+
+    pexels_mock = providers["visuals_primary"]
+    pexels_mock.provider_id = MagicMock(return_value="pexels_mock")
+    pexels_mock.capability = MagicMock(return_value=ProviderCapability.VISUALS)
+
+    pixabay_mock = providers["visuals_fallback"]
+    pixabay_mock.provider_id = MagicMock(return_value="pixabay_mock")
+    pixabay_mock.capability = MagicMock(return_value=ProviderCapability.VISUALS)
+
+    registry.register(llm_mock, ProviderCapability.LLM, is_primary=True, priority=0)
+    registry.register(tts_mock, ProviderCapability.TTS, is_primary=True, priority=0)
+    registry.register(pexels_mock, ProviderCapability.VISUALS, is_primary=True, priority=0)
+    registry.register(pixabay_mock, ProviderCapability.VISUALS, is_primary=False, priority=1)
+
+    return registry, providers
 
 
 # ===========================================================================
@@ -116,10 +150,10 @@ async def test_dispatch_builds_executors_with_correct_providers(
 ):
     """
     dispatch() çağrısında ScriptStepExecutor llm_provider ile,
-    TTSStepExecutor tts_provider ile, VisualsStepExecutor pexels+pixabay ile
+    TTSStepExecutor tts_provider ile, VisualsStepExecutor provider zinciri ile
     oluşturulmalı. asyncio.create_task tetiklenmeli.
     """
-    providers = _make_providers()
+    registry, providers = _make_registry()
     event_bus = MagicMock()
 
     # Job oluştur
@@ -150,10 +184,8 @@ async def test_dispatch_builds_executors_with_correct_providers(
         db_session_factory=db_session_factory,
         module_registry=test_registry,
         event_bus=event_bus,
-        providers=providers,
+        registry=registry,
     )
-
-    captured_executors: dict = {}
 
     async def fake_run(job_id: str) -> None:
         """Pipeline run'ı yakalamak için stub."""
@@ -182,11 +214,11 @@ async def test_dispatch_builds_executors_with_correct_providers(
     assert "subtitle" in executors, "subtitle executor eksik"
     assert "composition" in executors, "composition executor eksik"
 
-    # Provider inject kontrolü
+    # Provider inject kontrolü — registry üzerinden
     assert executors["script"]._llm is providers["llm"], "script executor yanlış llm_provider aldı"
     assert executors["tts"]._tts is providers["tts"], "tts executor yanlış tts_provider aldı"
-    assert executors["visuals"]._pexels is providers["visuals_primary"], "visuals executor yanlış pexels_provider aldı"
-    assert executors["visuals"]._pixabay is providers["visuals_fallback"], "visuals executor yanlış pixabay_provider aldı"
+    assert executors["visuals"]._providers[0] is providers["visuals_primary"], "visuals executor yanlış primary aldı"
+    assert executors["visuals"]._providers[1] is providers["visuals_fallback"], "visuals executor yanlış fallback aldı"
     assert executors["metadata"]._llm is providers["llm"], "metadata executor yanlış llm_provider aldı"
 
 
@@ -201,7 +233,7 @@ async def test_dispatch_creates_background_task(
     """
     dispatch() PipelineRunner.run'ı asyncio.create_task ile arka planda çalıştırmalı.
     """
-    providers = _make_providers()
+    registry, providers = _make_registry()
     event_bus = MagicMock()
 
     from app.jobs.schemas import JobCreate
@@ -228,7 +260,7 @@ async def test_dispatch_creates_background_task(
         db_session_factory=db_session_factory,
         module_registry=test_registry,
         event_bus=event_bus,
-        providers=providers,
+        registry=registry,
     )
 
     with patch("app.jobs.dispatcher.PipelineRunner") as MockRunner:

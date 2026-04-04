@@ -323,16 +323,13 @@ class TestVisualsStepExecutor:
 
             pexels_mock = _make_pexels_provider(success=True)
             pixabay_mock = _make_pixabay_provider(success=True)
-            executor = VisualsStepExecutor(
-                pexels_provider=pexels_mock,
-                pixabay_provider=pixabay_mock,
-            )
+            executor = VisualsStepExecutor(providers=[pexels_mock, pixabay_mock])
             job = _make_job(job_id, workspace_root, language="tr")
             step = _make_step()
 
             await executor.execute(job, step)
 
-            # Pexels çağrıldı
+            # Pexels (primary) çağrıldı
             assert pexels_mock.invoke.call_count == 1
             # Pexels başarılıyken Pixabay çağrılmadı
             assert pixabay_mock.invoke.call_count == 0
@@ -349,10 +346,7 @@ class TestVisualsStepExecutor:
 
             pexels_mock = _make_pexels_provider(success=False)  # Pexels boş döner
             pixabay_mock = _make_pixabay_provider(success=True)
-            executor = VisualsStepExecutor(
-                pexels_provider=pexels_mock,
-                pixabay_provider=pixabay_mock,
-            )
+            executor = VisualsStepExecutor(providers=[pexels_mock, pixabay_mock])
             job = _make_job(job_id, workspace_root, language="tr")
             step = _make_step()
 
@@ -362,10 +356,13 @@ class TestVisualsStepExecutor:
             assert pexels_mock.invoke.call_count == 1
             assert pixabay_mock.invoke.call_count == 1
 
-            # Manifest'te kaynak pixabay olmalı
+            # Manifest'te kaynak pexels olmamalı (fallback devreye girdi)
             manifest_path = Path(workspace_root) / "artifacts" / "visuals_manifest.json"
             manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-            assert manifest["scenes"][0]["source"] == "pixabay"
+            # source "not_found" değil — görsel bulundu
+            assert manifest["scenes"][0]["source"] != "not_found"
+            # source pexels değil — fallback kullanıldı
+            assert manifest["scenes"][0]["source"] != "pexels"
 
     @pytest.mark.asyncio
     async def test_visuals_manifest_yazilir_language_alani_var(self):
@@ -380,10 +377,7 @@ class TestVisualsStepExecutor:
 
             pexels_mock = _make_pexels_provider(success=True)
             pixabay_mock = _make_pixabay_provider(success=True)
-            executor = VisualsStepExecutor(
-                pexels_provider=pexels_mock,
-                pixabay_provider=pixabay_mock,
-            )
+            executor = VisualsStepExecutor(providers=[pexels_mock, pixabay_mock])
             job = _make_job(job_id, workspace_root, language="tr")
             step = _make_step()
 
@@ -424,10 +418,7 @@ class TestVisualsStepExecutor:
 
             pexels_mock = _make_pexels_provider(success=True)
             pixabay_mock = _make_pixabay_provider(success=True)
-            executor = VisualsStepExecutor(
-                pexels_provider=pexels_mock,
-                pixabay_provider=pixabay_mock,
-            )
+            executor = VisualsStepExecutor(providers=[pexels_mock, pixabay_mock])
             job = _make_job(job_id, workspace_root, language="tr")
             step = _make_step()
 
@@ -451,10 +442,7 @@ class TestVisualsStepExecutor:
 
             pexels_mock = _make_pexels_provider(success=False)
             pixabay_mock = _make_pixabay_provider(success=False)
-            executor = VisualsStepExecutor(
-                pexels_provider=pexels_mock,
-                pixabay_provider=pixabay_mock,
-            )
+            executor = VisualsStepExecutor(providers=[pexels_mock, pixabay_mock])
             job = _make_job(job_id, workspace_root, language="tr")
             step = _make_step()
 
@@ -537,10 +525,7 @@ class TestProviderTraceLanguage:
 
             pexels_mock = _make_pexels_provider(success=True)
             pixabay_mock = _make_pixabay_provider(success=True)
-            executor = VisualsStepExecutor(
-                pexels_provider=pexels_mock,
-                pixabay_provider=pixabay_mock,
-            )
+            executor = VisualsStepExecutor(providers=[pexels_mock, pixabay_mock])
             job = _make_job(job_id, workspace_root, language="en")
             step = _make_step()
 

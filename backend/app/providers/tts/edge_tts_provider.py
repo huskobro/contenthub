@@ -15,6 +15,7 @@ import time
 import logging
 
 from app.providers.base import BaseProvider, ProviderOutput
+from app.providers.capability import ProviderCapability
 from app.providers.exceptions import ProviderInvokeError
 
 logger = logging.getLogger(__name__)
@@ -33,9 +34,9 @@ class EdgeTTSProvider(BaseProvider):
         """Provider'ın benzersiz kimliği."""
         return "edge_tts"
 
-    def capability(self) -> str:
+    def capability(self) -> ProviderCapability:
         """Provider yeteneği."""
-        return "tts"
+        return ProviderCapability.TTS
 
     async def invoke(self, input_data: dict) -> ProviderOutput:
         """

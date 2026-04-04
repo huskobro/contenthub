@@ -320,7 +320,7 @@ class TestStubExecutors:
     def test_visuals_executor_step_key(self):
         """VisualsStepExecutor 'visuals' step_key döndürmeli — provider mock ile."""
         from unittest.mock import MagicMock
-        executor = VisualsStepExecutor(pexels_provider=MagicMock(), pixabay_provider=MagicMock())
+        executor = VisualsStepExecutor(providers=[MagicMock(), MagicMock()])
         assert executor.step_key() == "visuals"
 
     def test_subtitle_executor_step_key(self):
@@ -340,7 +340,7 @@ class TestStubExecutors:
             ScriptStepExecutor(llm_provider=MagicMock()),
             MetadataStepExecutor(llm_provider=MagicMock()),
             TTSStepExecutor(tts_provider=MagicMock()),
-            VisualsStepExecutor(pexels_provider=MagicMock(), pixabay_provider=MagicMock()),
+            VisualsStepExecutor(providers=[MagicMock(), MagicMock()]),
             SubtitleStepExecutor(),
             CompositionStepExecutor(),
         ]

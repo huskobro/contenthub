@@ -1,12 +1,13 @@
 """
-Job Dispatcher (M2-C6)
+Job Dispatcher (M2-C6 / M3-C1)
 
 Job yaratıldıktan sonra pipeline'ı arka planda başlatır.
 Tüm orchestration mantığı burada toplanır — service.py'ye veya pipeline.py'ye sızmaz.
 
 Sorumluluğu:
   - Job ve modül tanımını alır
-  - Her adım için ilgili executor instance'ını oluşturur (provider inject)
+  - ProviderRegistry üzerinden her adım için ilgili provider'ı çözümler
+  - Her adım için ilgili executor instance'ını oluşturur
   - PipelineRunner'ı kurar
   - asyncio.create_task ile pipeline'ı arka planda çalıştırır
 
@@ -14,18 +15,15 @@ Bu dosyada YOKTUR:
   - DB CRUD işlemleri (service.py)
   - Adım döngüsü / state machine (pipeline.py)
   - HTTP request/response (router.py)
+  - Provider kayıt mantığı (providers/registry.py)
 
-SONRAKİ CHUNK NOTU:
-  M3 kapsamında executor oluşturma mantığı ModuleRegistry + ProviderRegistry
-  entegrasyonuyla daha deklaratif hale getirilecek. Şu an executor_class'a
-  bakarak provider inject ediliyor; bu geçici bir köprüdür.
+M3-C1: _build_executor geçici köprüsü kaldırıldı.
+       JobDispatcher artık providers dict değil ProviderRegistry alıyor.
 """
 
 import asyncio
 import logging
 from typing import TYPE_CHECKING
-
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.jobs import service
 from app.jobs.executor import StepExecutor
@@ -39,6 +37,8 @@ from app.modules.standard_video.executors import (
     SubtitleStepExecutor,
     CompositionStepExecutor,
 )
+from app.providers.capability import ProviderCapability
+from app.providers.registry import ProviderRegistry
 
 if TYPE_CHECKING:
     from app.sse.bus import EventBus
@@ -46,32 +46,41 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-def _build_executor(executor_class: type, providers: dict) -> StepExecutor:
+def _build_executor_from_registry(
+    executor_class: type,
+    registry: ProviderRegistry,
+) -> StepExecutor:
     """
-    Executor sınıfına bakarak doğru provider'ları inject eder ve instance döner.
+    Executor sınıfına göre registry'den provider çözümler ve instance döner.
 
-    Bilinmeyen executor sınıfları için no-arg çağrı denenir.
-    Bu, SubtitleStepExecutor ve CompositionStepExecutor gibi provider'sız
-    executor'lar için geçerlidir.
+    LLM gerektiren executor'lar: ScriptStepExecutor, MetadataStepExecutor
+    TTS gerektiren executor'lar: TTSStepExecutor
+    VISUALS gerektiren executor'lar: VisualsStepExecutor (zincir alır)
+    Provider gerektirmeyen executor'lar: SubtitleStepExecutor, CompositionStepExecutor
 
     Args:
         executor_class: Executor'ın sınıf nesnesi.
-        providers     : Provider kimliği → instance mapping.
+        registry      : Kayıtlı provider'ları içeren registry.
 
     Returns:
         Executor instance'ı.
     """
     if executor_class is ScriptStepExecutor:
-        return ScriptStepExecutor(llm_provider=providers["llm"])
-    if executor_class is MetadataStepExecutor:
-        return MetadataStepExecutor(llm_provider=providers["llm"])
-    if executor_class is TTSStepExecutor:
-        return TTSStepExecutor(tts_provider=providers["tts"])
-    if executor_class is VisualsStepExecutor:
-        return VisualsStepExecutor(
-            pexels_provider=providers["visuals_primary"],
-            pixabay_provider=providers["visuals_fallback"],
+        return ScriptStepExecutor(
+            llm_provider=registry.get_primary(ProviderCapability.LLM)
         )
+    if executor_class is MetadataStepExecutor:
+        return MetadataStepExecutor(
+            llm_provider=registry.get_primary(ProviderCapability.LLM)
+        )
+    if executor_class is TTSStepExecutor:
+        return TTSStepExecutor(
+            tts_provider=registry.get_primary(ProviderCapability.TTS)
+        )
+    if executor_class is VisualsStepExecutor:
+        visuals_chain = registry.get_chain(ProviderCapability.VISUALS)
+        return VisualsStepExecutor(providers=visuals_chain)
+
     # Provider gerektirmeyen executor'lar (SubtitleStepExecutor, CompositionStepExecutor)
     return executor_class()
 
@@ -89,19 +98,19 @@ class JobDispatcher:
         db_session_factory,
         module_registry: ModuleRegistry,
         event_bus: "EventBus | None",
-        providers: dict,
+        registry: ProviderRegistry,
     ) -> None:
         """
         Args:
             db_session_factory: Yeni async DB session üretmek için factory.
             module_registry   : Modül tanımlarını içeren registry.
             event_bus         : SSE event bus (None ise event yayınlanmaz).
-            providers         : Provider kimliği → instance mapping.
+            registry          : Provider kayıt defteri.
         """
         self._session_factory = db_session_factory
-        self._registry = module_registry
+        self._module_registry = module_registry
         self._event_bus = event_bus
-        self._providers = providers
+        self._provider_registry = registry
         # Arka plan görevlerini tutan set — GC'den koruması için referans tutulur.
         # Görev tamamlanınca kendini setten çıkarır.
         self._background_tasks: set[asyncio.Task] = set()
@@ -113,7 +122,7 @@ class JobDispatcher:
         Adımlar:
           1. Job'u alır ve module_id'yi öğrenir.
           2. module_registry'den adım tanımlarını alır.
-          3. Her adım için executor instance'ı oluşturur.
+          3. Her adım için provider_registry üzerinden executor instance'ı oluşturur.
           4. PipelineRunner kurar.
           5. asyncio.create_task ile pipeline'ı arka planda çalıştırır.
 
@@ -121,8 +130,6 @@ class JobDispatcher:
             job_id: Çalıştırılacak job'un kimliği.
         """
         # Kısa süreli okuma için oturum aç; context manager yerine manuel close kullan.
-        # SQLAlchemy 2.0.x + Python 3.13 uyumluluk notu: async with session pattern,
-        # asyncio.shield + create_task kombinasyonunda hata verebilir; manuel yönetim daha güvenli.
         db = self._session_factory()
         try:
             job = await service.get_job(db, job_id)
@@ -135,7 +142,7 @@ class JobDispatcher:
 
         module_id = job.module_type
 
-        step_definitions = self._registry.get_steps(module_id)
+        step_definitions = self._module_registry.get_steps(module_id)
         if not step_definitions:
             logger.warning(
                 "JobDispatcher: modül için adım tanımı bulunamadı, dispatch iptal. "
@@ -145,10 +152,13 @@ class JobDispatcher:
             )
             return
 
-        # Her adım için executor oluştur
+        # Her adım için provider_registry üzerinden executor oluştur
         executors: dict[str, StepExecutor] = {}
         for step_def in step_definitions:
-            executor = _build_executor(step_def.executor_class, self._providers)
+            executor = _build_executor_from_registry(
+                step_def.executor_class,
+                self._provider_registry,
+            )
             executors[step_def.step_key] = executor
 
         logger.info(
@@ -158,7 +168,6 @@ class JobDispatcher:
         )
 
         # Pipeline için yeni bir DB oturumu aç; runner bu oturumu pipeline boyunca kullanır.
-        # Oturum, pipeline tamamlandığında ya da hata aldığında kapatılır.
         pipeline_db = self._session_factory()
         runner = PipelineRunner(
             db=pipeline_db,
@@ -173,7 +182,6 @@ class JobDispatcher:
                 await pipeline_db.close()
 
         # Task referansı set'te tutulur — GC'den korunmak için.
-        # Görev tamamlanınca kendini set'ten çıkarır.
         task = asyncio.create_task(_run_pipeline())
         self._background_tasks.add(task)
         task.add_done_callback(self._background_tasks.discard)
