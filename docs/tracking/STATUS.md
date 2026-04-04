@@ -3,13 +3,15 @@
 ## Mevcut Faz
 Kiln Build — M7: YouTube Publish v1 — DEVAM EDİYOR
 
-**M7-C1 TAMAMLANDI (review-gate fix) — 27/27 test geçiyor**
+**M7-C1 TAMAMLANDI (review-gate fix + migration verified) — 36/36 test geçiyor (27 servis + 9 migration)**
 **M6 KAPANDI**
 
 ## Mevcut Durum (2026-04-04)
-M7-C1 tamamlandı (review-gate fix + alembic migration):
+M7-C1 tamamlandı (review-gate fix + migration verified):
 - M7-C1: Publish Center — State Machine + DB Models + Alembic Migration + Core Service + REST Router
   - `publish_records` + `publish_logs` tabloları (models.py + alembic migration c1a2b3d4e5f6)
+  - Alembic migration fresh-DB doğrulaması: boş DB üzerinde `alembic upgrade head` çalıştırıldı
+    (create_all veya stamp YOK); `downgrade -1` da test edildi; 9 migration testi geçiyor
   - `PublishStateMachine` — 9 durum, Tier A review gate zorunlu, bypass edilemez
     - draft → approved YASAK; draft → scheduled YASAK
     - Zorunlu akış: draft → pending_review → approved → [scheduled →] publishing → published
@@ -20,7 +22,7 @@ M7-C1 tamamlandı (review-gate fix + alembic migration):
   - Servis: 10 fonksiyon, her aksiyon PublishLog'a yazar — sessiz güncelleme yasak
   - Router: /publish/* 10 endpoint, ReviewGateViolationError → HTTP 422
   - Editorial izolasyon: StandardVideo/NewsBulletin tabloları değişmez
-  - 27/27 test geçiyor
+  - 36/36 test geçiyor (27 servis + 9 migration)
 
 M6-C1 + M6-C2 + M6-C3 tamamlandı:
 - M6-C1: Remotion kurulumu + renderer paketi + RenderStepExecutor foundation

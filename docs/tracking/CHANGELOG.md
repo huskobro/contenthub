@@ -101,11 +101,24 @@ draft → pending_review → approved → [scheduled →] publishing → publish
                       ↘ review_rejected → draft (düzeltme döngüsü)
 ```
 
-### M7-C1 Mandatory Delivery Fields (güncellenmiş)
+### Fresh-DB Migration Doğrulaması
+```
+Yöntem  : CONTENTHUB_DATA_DIR geçici dizine yönlendirildi
+Komut   : alembic upgrade head (boş DB — create_all veya stamp YOK)
+Sonuç   : 21 migration çalıştı, c1a2b3d4e5f6'ya kadar başarılı
+Tablolar: publish_records (20 sütun, FK → jobs) + publish_logs (10 sütun, FK → publish_records)
+Version : alembic_version = c1a2b3d4e5f6 ✓
+Downgrade: alembic downgrade -1 → publish_records + publish_logs kaldırıldı, b1c2d3e4f5a6'ya döndü ✓
+Test dosyası: tests/test_m7_c1_migration_fresh_db.py (9 test)
+```
+
+**"alembic upgrade head çalışıyor" ifadesi fresh-DB koşudan sonra onaylandı.**
+
+### M7-C1 Mandatory Delivery Fields (final)
 | Alan | Değer |
 |---|---|
 | review-gate bypass risk | **none** — draft → approved/scheduled geçişleri state machine'de YASAK; test B + E kilitler; review_action() pending_review guard eklendi (test K2) |
-| migration completeness | **none** — alembic migration c1a2b3d4e5f6 mevcut; upgrade + stamp doğrulandı; boş DB'de SQL sözdizimi doğrulandı |
+| migration completeness | **none** — fresh (boş) DB üzerinde `alembic upgrade head` + `downgrade -1` doğrulandı; 9 migration testi; create_all veya stamp KULLANILMADI |
 | timezone consistency | **none** — scheduled_at service.py'de UTC normalize edilir; naive input test edildi (test U); workaround kaldırıldı |
 | audit-trail completeness risk | **none** — _append_log() garantisi; oluşturma + her geçiş + review + publish girişimi + platform olayı; test W doğruladı |
 
