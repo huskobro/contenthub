@@ -289,16 +289,23 @@ class TestStandardVideoModule:
 # ---------------------------------------------------------------------------
 
 class TestStubExecutors:
-    """Stub executor'ların doğru step_key döndürmesi ve execute metodunun çalışması."""
+    """Executor'ların doğru step_key döndürmesi ve stub davranışlarının kontrolü.
+
+    M2-C3 sonrası: ScriptStepExecutor ve MetadataStepExecutor artık llm_provider
+    argümanı gerektiriyor. Stub executor'lar (tts, visuals, subtitle, composition)
+    argümansız çalışmaya devam ediyor.
+    """
 
     def test_script_executor_step_key(self):
         """ScriptStepExecutor 'script' step_key döndürmeli."""
-        executor = ScriptStepExecutor()
+        from unittest.mock import MagicMock
+        executor = ScriptStepExecutor(llm_provider=MagicMock())
         assert executor.step_key() == "script"
 
     def test_metadata_executor_step_key(self):
         """MetadataStepExecutor 'metadata' step_key döndürmeli."""
-        executor = MetadataStepExecutor()
+        from unittest.mock import MagicMock
+        executor = MetadataStepExecutor(llm_provider=MagicMock())
         assert executor.step_key() == "metadata"
 
     def test_tts_executor_step_key(self):
@@ -322,20 +329,18 @@ class TestStubExecutors:
         assert executor.step_key() == "composition"
 
     @pytest.mark.asyncio
-    async def test_stub_executor_execute_dict_dondurur(self):
-        """Her stub executor, execute() çağrısında dict döndürmeli."""
-        executor = ScriptStepExecutor()
+    async def test_stub_executor_tts_execute_dict_dondurur(self):
+        """TTS stub executor, execute() çağrısında dict döndürmeli."""
+        executor = TTSStepExecutor()
         sonuc = await executor.execute(job=None, step=None)
         assert isinstance(sonuc, dict)
         assert sonuc.get("status") == "stub"
-        assert sonuc.get("step") == "script"
+        assert sonuc.get("step") == "tts"
 
     @pytest.mark.asyncio
     async def test_tum_stub_executorlar_dogru_step_key_ile_donus_yapar(self):
-        """Tüm stub executor'lar execute() sonucunda kendi step_key'lerini döndürmeli."""
+        """Stub executor'lar (tts, visuals, subtitle, composition) kendi step_key'lerini döndürmeli."""
         executors = [
-            ScriptStepExecutor(),
-            MetadataStepExecutor(),
             TTSStepExecutor(),
             VisualsStepExecutor(),
             SubtitleStepExecutor(),

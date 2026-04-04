@@ -190,6 +190,7 @@ class Job(Base):
     owner_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True)
     template_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True)
     source_context_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    input_data_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     current_step_key: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     retry_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     elapsed_total_seconds: Mapped[Optional[float]] = mapped_column(Float, nullable=True)

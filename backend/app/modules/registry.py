@@ -9,6 +9,8 @@ Bu dosya yalnızca kayıt ve sorgulama mantığını içerir.
 Provider kaydı, sağlık yönetimi ve yedek mantığı M3 kapsamındadır.
 """
 
+from __future__ import annotations
+
 from app.modules.base import ModuleDefinition, StepDefinition
 
 

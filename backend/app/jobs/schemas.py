@@ -56,6 +56,7 @@ class JobCreate(BaseModel):
     owner_id: Optional[str] = None
     template_id: Optional[str] = None
     source_context_json: Optional[str] = None
+    input_data_json: Optional[str] = None
     workspace_path: Optional[str] = None
 
 

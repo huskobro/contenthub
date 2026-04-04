@@ -10,6 +10,8 @@ Covers:
   - schemas.py: elapsed_seconds and eta_seconds computed fields on JobResponse
 """
 
+from __future__ import annotations
+
 import pytest
 from datetime import datetime, timedelta, timezone
 from unittest.mock import AsyncMock, MagicMock, patch

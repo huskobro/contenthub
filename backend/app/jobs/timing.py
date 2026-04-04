@@ -5,7 +5,10 @@ All functions are pure — no DB access, no side effects.
 Timezone-aware: naive datetimes are normalised to UTC before any arithmetic.
 """
 
+from __future__ import annotations
+
 from datetime import datetime, timezone
+from typing import Optional
 
 
 def _to_utc(dt: datetime) -> datetime:
@@ -15,7 +18,7 @@ def _to_utc(dt: datetime) -> datetime:
     return dt.astimezone(timezone.utc)
 
 
-def elapsed_seconds(started_at: datetime | None) -> float | None:
+def elapsed_seconds(started_at: Optional[datetime]) -> Optional[float]:
     """
     Return elapsed wall-clock seconds since *started_at*.
 
@@ -52,7 +55,7 @@ def format_elapsed(seconds: float) -> str:
 def estimate_remaining_seconds(
     elapsed: float,
     progress_fraction: float,
-) -> float | None:
+) -> Optional[float]:
     """
     Simple linear ETA estimate.
 

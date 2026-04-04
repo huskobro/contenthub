@@ -109,6 +109,7 @@ async def create_job(db: AsyncSession, payload: JobCreate) -> Job:
         owner_id=payload.owner_id,
         template_id=payload.template_id,
         source_context_json=payload.source_context_json,
+        input_data_json=payload.input_data_json,
         workspace_path=payload.workspace_path,
         status="queued",
         retry_count=0,
