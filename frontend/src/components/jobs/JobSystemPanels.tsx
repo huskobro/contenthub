@@ -16,17 +16,17 @@ function SystemCard({ title, children }: { title: string; children: React.ReactN
 }
 
 export function JobSystemPanels() {
-  const notice = (
-    <p style={{ margin: 0, color: "#64748b", fontSize: "0.875rem" }}>
-      Bu veri henüz backend tarafından sağlanmıyor.
+  const deferred = (milestone: string) => (
+    <p style={{ margin: 0, color: "#94a3b8", fontSize: "0.75rem" }}>
+      {milestone} milestone'unda aktif edilecektir.
     </p>
   );
 
   return (
     <div>
-      <SystemCard title="Logs">{notice}</SystemCard>
-      <SystemCard title="Artifacts">{notice}</SystemCard>
-      <SystemCard title="Provider Trace">{notice}</SystemCard>
+      <SystemCard title="Logs">{deferred("M12")}</SystemCard>
+      <SystemCard title="Artifacts">{deferred("M12")}</SystemCard>
+      <SystemCard title="Provider Trace">{deferred("M12")}</SystemCard>
     </div>
   );
 }

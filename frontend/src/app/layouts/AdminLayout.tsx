@@ -18,6 +18,7 @@ const ADMIN_NAV = [
   { label: "Sablon-Stil Baglantilari", to: "/admin/template-style-links" },
   { label: "Analytics", section: true },
   { label: "Analytics", to: "/admin/analytics" },
+  { label: "YouTube Analytics", to: "/admin/analytics/youtube" },
   { label: "Haber", section: true },
   { label: "Kaynaklar", to: "/admin/sources" },
   { label: "Kaynak Taramalari", to: "/admin/source-scans" },

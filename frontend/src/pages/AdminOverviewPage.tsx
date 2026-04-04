@@ -162,14 +162,14 @@ export function AdminOverviewPage() {
         <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
           {[
             { area: "Icerik Uretimi", status: "Omurga hazir", detail: "Video ve bulten olusturma akislari calisiyor", testId: "readiness-content" },
-            { area: "Yayin Akisi", status: "Omurga hazir", detail: "YouTube yayin zinciri gorunur, backend entegrasyonu bekliyor", testId: "readiness-publish" },
-            { area: "Is Motoru", status: "Omurga hazir", detail: "Job/step/timeline/ETA gorunur, retry/cancel/skip bilgi paneli mevcut", testId: "readiness-jobs" },
-            { area: "Sablon Sistemi", status: "Omurga hazir", detail: "Template/style/blueprint kayit ve baglanti yonetimi calisiyor", testId: "readiness-templates" },
+            { area: "Yayin Akisi", status: "Omurga hazir", detail: "YouTube OAuth + yayin zinciri calisiyor", testId: "readiness-publish" },
+            { area: "Is Motoru", status: "Omurga hazir", detail: "Job/step/timeline/ETA gorunur, operasyonel aksiyonlar M14'te", testId: "readiness-jobs" },
+            { area: "Sablon Sistemi", status: "CRUD hazir", detail: "Template/style/blueprint kayit yonetimi calisiyor, runtime baglantisi M11'de", testId: "readiness-templates" },
             { area: "Haber Modulu", status: "Omurga hazir", detail: "Kaynak, tarama, haber, dedupe akislari calisiyor", testId: "readiness-news" },
-            { area: "Ayarlar ve Gorunurluk", status: "Omurga hazir", detail: "Governance, section gruplama ve kontrol zinciri gorünur", testId: "readiness-settings" },
-            { area: "Analytics ve Raporlama", status: "Omurga hazir", detail: "Metrik kartlari ve rapor zincirleri gorünur, backend verisi bekliyor", testId: "readiness-analytics" },
-            { area: "Icerik Kutuphanesi", status: "Omurga hazir", detail: "Birlesik liste, filtre yuzeyi ve detay baglantisi mevcut", testId: "readiness-library" },
-            { area: "Varlik Kutuphanesi", status: "Omurga hazir", detail: "Varlik kayit, tur gruplama, filtre/arama, detay ve reuse baglami mevcut", testId: "readiness-assets" },
+            { area: "Ayarlar ve Gorunurluk", status: "M9 aktif", detail: "Credential yonetimi, runtime wiring ve tab yapisi aktif", testId: "readiness-settings" },
+            { area: "Analytics ve Raporlama", status: "Omurga hazir", detail: "Platform metrikleri calisiyor, YouTube Analytics temeli eklendi", testId: "readiness-analytics" },
+            { area: "Icerik Kutuphanesi", status: "Omurga hazir", detail: "Birlesik icerik listesi mevcut, filtreleme bekliyor", testId: "readiness-library" },
+            { area: "Varlik Kutuphanesi", status: "Bekliyor", detail: "Backend asset altyapisi henuz mevcut degil", testId: "readiness-assets" },
           ].map((item) => (
             <div
               key={item.area}

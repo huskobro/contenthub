@@ -505,12 +505,11 @@ describe("OnboardingProviderSetupScreen", () => {
     expect(screen.getByText("Ayarlari Kaydet")).toBeDefined();
   });
 
-  it("renders all three API key sections", () => {
+  it("renders API key section labels", () => {
     window.fetch = mockFetch({});
     wrap(<OnboardingProviderSetupScreen onBack={vi.fn()} onComplete={vi.fn()} />);
-    expect(screen.getByText("TTS (Seslendirme)")).toBeDefined();
     expect(screen.getByText("LLM (Dil Modeli)")).toBeDefined();
-    expect(screen.getByText("YouTube")).toBeDefined();
+    expect(screen.getByText("Gorsel Servisler")).toBeDefined();
   });
 
   it("calls onBack when Geri Don is clicked", () => {

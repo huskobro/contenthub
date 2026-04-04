@@ -227,29 +227,19 @@ describe("Library/Gallery/Content Management Pack (Phase 299-304)", () => {
       expect(screen.getByTestId("library-filter-note").textContent).toContain("filtreleyebilirsiniz");
     });
 
-    it("search input exists", () => {
+    it("filters deferred element is shown instead of individual inputs", () => {
       renderAdmin("/admin/library");
-      expect(screen.getByTestId("library-search-input")).toBeDefined();
+      const deferred = screen.getByTestId("library-filters-deferred");
+      expect(deferred).toBeDefined();
+      expect(deferred.textContent).toContain("backend entegrasyonu");
     });
 
-    it("type filter exists", () => {
+    it("individual filter inputs are not present (deferred)", () => {
       renderAdmin("/admin/library");
-      expect(screen.getByTestId("library-type-filter")).toBeDefined();
-    });
-
-    it("status filter exists", () => {
-      renderAdmin("/admin/library");
-      expect(screen.getByTestId("library-status-filter")).toBeDefined();
-    });
-
-    it("sort select exists", () => {
-      renderAdmin("/admin/library");
-      expect(screen.getByTestId("library-sort-select")).toBeDefined();
-    });
-
-    it("disabled note is shown", () => {
-      renderAdmin("/admin/library");
-      expect(screen.getByTestId("library-filter-disabled-note").textContent).toContain("backend entegrasyonu");
+      expect(screen.queryByTestId("library-search-input")).toBeNull();
+      expect(screen.queryByTestId("library-type-filter")).toBeNull();
+      expect(screen.queryByTestId("library-status-filter")).toBeNull();
+      expect(screen.queryByTestId("library-sort-select")).toBeNull();
     });
   });
 

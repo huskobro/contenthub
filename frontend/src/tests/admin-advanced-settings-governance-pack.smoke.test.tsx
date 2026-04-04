@@ -104,29 +104,44 @@ beforeEach(() => {
 
 describe("Phase 305 — Settings Registry heading and workflow note", () => {
   it("renders heading with testid settings-registry-heading", async () => {
-    window.fetch = mockFetch(() => MOCK_SETTINGS);
+    window.fetch = mockSettingsFetch();
     renderAt("/admin/settings");
     expect(screen.getByTestId("settings-registry-heading")).toBeDefined();
-    expect(screen.getByTestId("settings-registry-heading").textContent).toBe("Ayar Kayitlari");
+    expect(screen.getByTestId("settings-registry-heading").textContent).toBe("Ayarlar");
+  });
+
+  it("renders credentials tab by default", async () => {
+    window.fetch = mockSettingsFetch();
+    renderAt("/admin/settings");
+    const tab = screen.getByTestId("settings-tab-credentials");
+    expect(tab).toBeDefined();
+    expect(tab.textContent).toBe("Kimlik Bilgileri ve Entegrasyonlar");
+  });
+
+  it("renders registry tab button", async () => {
+    window.fetch = mockSettingsFetch();
+    renderAt("/admin/settings");
+    const tab = screen.getByTestId("settings-tab-registry");
+    expect(tab).toBeDefined();
+    expect(tab.textContent).toBe("Ayar Kayitlari");
   });
 
   it("renders subtitle with testid settings-registry-subtitle", async () => {
-    window.fetch = mockFetch(() => MOCK_SETTINGS);
+    window.fetch = mockSettingsFetch();
     renderAt("/admin/settings");
     const subtitle = screen.getByTestId("settings-registry-subtitle");
     expect(subtitle).toBeDefined();
-    expect(subtitle.textContent).toContain("governance");
+    // Default tab is credentials — subtitle reflects credentials tab description
+    expect(subtitle.textContent).toContain("API anahtarlari");
   });
 
-  it("renders workflow note with testid settings-registry-workflow-note", async () => {
-    window.fetch = mockFetch(() => MOCK_SETTINGS);
+  it("subtitle changes to governance text after switching to registry tab", async () => {
+    window.fetch = mockSettingsFetch();
     renderAt("/admin/settings");
-    const note = screen.getByTestId("settings-registry-workflow-note");
-    expect(note).toBeDefined();
-    expect(note.textContent).toContain("Tanimlama");
-    expect(note.textContent).toContain("Gruplama");
-    expect(note.textContent).toContain("Governance Kontrolu");
-    expect(note.textContent).toContain("Gorunurluk");
+    const user = userEvent.setup();
+    await user.click(screen.getByTestId("settings-tab-registry"));
+    const subtitle = screen.getByTestId("settings-registry-subtitle");
+    expect(subtitle.textContent).toContain("governance");
   });
 });
 
@@ -134,19 +149,27 @@ describe("Phase 305 — Settings Registry heading and workflow note", () => {
 /*  Phase 306 — Setting Detail Panel governance sections               */
 /* ------------------------------------------------------------------ */
 
+/* Helper: settings mock that also serves empty array for credentials endpoint */
+function mockSettingsFetch(settingDetailOverride?: unknown) {
+  return mockFetch((url: string) => {
+    if (url.includes("/credentials")) return [];
+    if (settingDetailOverride && url.match(/\/settings\/[^/]+$/)) return settingDetailOverride;
+    return MOCK_SETTINGS;
+  });
+}
+
 describe("Phase 306 — Setting Detail Panel governance sections", () => {
   it("shows detail heading with testid when a setting is selected", async () => {
-    window.fetch = mockFetch((url) => {
-      if (url.includes("/settings/")) return MOCK_SETTINGS[0];
-      return MOCK_SETTINGS;
-    });
+    window.fetch = mockSettingsFetch(MOCK_SETTINGS[0]);
     renderAt("/admin/settings");
+
+    const user = userEvent.setup();
+    await user.click(screen.getByTestId("settings-tab-registry"));
 
     await waitFor(() => {
       expect(screen.getByText("app.name")).toBeDefined();
     });
 
-    const user = userEvent.setup();
     await user.click(screen.getByText("app.name"));
 
     await waitFor(() => {
@@ -156,17 +179,16 @@ describe("Phase 306 — Setting Detail Panel governance sections", () => {
   });
 
   it("shows detail note with testid", async () => {
-    window.fetch = mockFetch((url) => {
-      if (url.includes("/settings/")) return MOCK_SETTINGS[0];
-      return MOCK_SETTINGS;
-    });
+    window.fetch = mockSettingsFetch(MOCK_SETTINGS[0]);
     renderAt("/admin/settings");
+
+    const user = userEvent.setup();
+    await user.click(screen.getByTestId("settings-tab-registry"));
 
     await waitFor(() => {
       expect(screen.getByText("app.name")).toBeDefined();
     });
 
-    const user = userEvent.setup();
     await user.click(screen.getByText("app.name"));
 
     await waitFor(() => {
@@ -175,17 +197,16 @@ describe("Phase 306 — Setting Detail Panel governance sections", () => {
   });
 
   it("shows identity section heading with testid", async () => {
-    window.fetch = mockFetch((url) => {
-      if (url.includes("/settings/")) return MOCK_SETTINGS[0];
-      return MOCK_SETTINGS;
-    });
+    window.fetch = mockSettingsFetch(MOCK_SETTINGS[0]);
     renderAt("/admin/settings");
+
+    const user = userEvent.setup();
+    await user.click(screen.getByTestId("settings-tab-registry"));
 
     await waitFor(() => {
       expect(screen.getByText("app.name")).toBeDefined();
     });
 
-    const user = userEvent.setup();
     await user.click(screen.getByText("app.name"));
 
     await waitFor(() => {
@@ -195,17 +216,16 @@ describe("Phase 306 — Setting Detail Panel governance sections", () => {
   });
 
   it("shows governance section heading with testid", async () => {
-    window.fetch = mockFetch((url) => {
-      if (url.includes("/settings/")) return MOCK_SETTINGS[0];
-      return MOCK_SETTINGS;
-    });
+    window.fetch = mockSettingsFetch(MOCK_SETTINGS[0]);
     renderAt("/admin/settings");
+
+    const user = userEvent.setup();
+    await user.click(screen.getByTestId("settings-tab-registry"));
 
     await waitFor(() => {
       expect(screen.getByText("app.name")).toBeDefined();
     });
 
-    const user = userEvent.setup();
     await user.click(screen.getByText("app.name"));
 
     await waitFor(() => {
@@ -215,17 +235,16 @@ describe("Phase 306 — Setting Detail Panel governance sections", () => {
   });
 
   it("shows scope section heading with testid", async () => {
-    window.fetch = mockFetch((url) => {
-      if (url.includes("/settings/")) return MOCK_SETTINGS[0];
-      return MOCK_SETTINGS;
-    });
+    window.fetch = mockSettingsFetch(MOCK_SETTINGS[0]);
     renderAt("/admin/settings");
+
+    const user = userEvent.setup();
+    await user.click(screen.getByTestId("settings-tab-registry"));
 
     await waitFor(() => {
       expect(screen.getByText("app.name")).toBeDefined();
     });
 
-    const user = userEvent.setup();
     await user.click(screen.getByText("app.name"));
 
     await waitFor(() => {
@@ -235,17 +254,16 @@ describe("Phase 306 — Setting Detail Panel governance sections", () => {
   });
 
   it("shows Turkish governance labels (Kullanici Gorunur, Override Izni, Wizard Gorunur, Salt Okunur)", async () => {
-    window.fetch = mockFetch((url) => {
-      if (url.includes("/settings/")) return MOCK_SETTINGS[0];
-      return MOCK_SETTINGS;
-    });
+    window.fetch = mockSettingsFetch(MOCK_SETTINGS[0]);
     renderAt("/admin/settings");
+
+    const user = userEvent.setup();
+    await user.click(screen.getByTestId("settings-tab-registry"));
 
     await waitFor(() => {
       expect(screen.getByText("app.name")).toBeDefined();
     });
 
-    const user = userEvent.setup();
     await user.click(screen.getByText("app.name"));
 
     await waitFor(() => {
@@ -257,17 +275,16 @@ describe("Phase 306 — Setting Detail Panel governance sections", () => {
   });
 
   it("shows Turkish identity labels (Anahtar, Grup, Tur, Varsayilan Deger, Admin Degeri)", async () => {
-    window.fetch = mockFetch((url) => {
-      if (url.includes("/settings/")) return MOCK_SETTINGS[0];
-      return MOCK_SETTINGS;
-    });
+    window.fetch = mockSettingsFetch(MOCK_SETTINGS[0]);
     renderAt("/admin/settings");
+
+    const user = userEvent.setup();
+    await user.click(screen.getByTestId("settings-tab-registry"));
 
     await waitFor(() => {
       expect(screen.getByText("app.name")).toBeDefined();
     });
 
-    const user = userEvent.setup();
     await user.click(screen.getByText("app.name"));
 
     await waitFor(() => {
@@ -280,17 +297,16 @@ describe("Phase 306 — Setting Detail Panel governance sections", () => {
   });
 
   it("renders BoolBadge values for governance fields", async () => {
-    window.fetch = mockFetch((url) => {
-      if (url.includes("/settings/")) return MOCK_SETTINGS[0];
-      return MOCK_SETTINGS;
-    });
+    window.fetch = mockSettingsFetch(MOCK_SETTINGS[0]);
     renderAt("/admin/settings");
+
+    const user = userEvent.setup();
+    await user.click(screen.getByTestId("settings-tab-registry"));
 
     await waitFor(() => {
       expect(screen.getByText("app.name")).toBeDefined();
     });
 
-    const user = userEvent.setup();
     await user.click(screen.getByText("app.name"));
 
     await waitFor(() => {

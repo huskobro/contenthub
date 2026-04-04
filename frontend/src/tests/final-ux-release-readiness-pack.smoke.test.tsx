@@ -121,9 +121,9 @@ beforeEach(() => {
 /* ------------------------------------------------------------------ */
 
 describe("Phase 318 — Deferred/disabled note standardization", () => {
-  it("library filter disabled note uses standard 'backend entegrasyonu' wording", () => {
+  it("library filter deferred element uses standard 'backend entegrasyonu' wording", () => {
     renderAdmin("/admin/library");
-    const note = screen.getByTestId("library-filter-disabled-note");
+    const note = screen.getByTestId("library-filters-deferred");
     expect(note.textContent).toContain("backend entegrasyonu");
     expect(note.textContent).not.toContain("ilerideki fazlarda");
   });
@@ -149,11 +149,11 @@ describe("Phase 318 — Deferred/disabled note standardization", () => {
     expect(note.textContent).not.toContain("backend aktif olunca");
   });
 
-  it("job detail actions disabled note uses standard wording", async () => {
+  it("job detail actions panel uses deferred wording", async () => {
     renderAdmin("/admin/jobs/test-123");
-    const note = await waitFor(() => screen.getByTestId("job-actions-disabled-note"));
-    expect(note.textContent).toContain("backend entegrasyonu");
-    expect(note.textContent).not.toContain("ilerideki fazlarda");
+    const panel = await waitFor(() => screen.getByTestId("job-actions-panel"));
+    expect(panel.textContent).toContain("M14");
+    expect(panel.textContent).not.toContain("ilerideki fazlarda");
   });
 
   it("standard video detail manage note uses standard wording", async () => {
@@ -285,16 +285,21 @@ describe("Phase 320 — Release readiness checklist", () => {
     expect(screen.getByTestId("readiness-library")).toBeDefined();
   });
 
-  it("all readiness items show 'Omurga hazir' status", () => {
+  it("most readiness items show 'Omurga hazir' status (except assets which is Bekliyor)", () => {
     renderAdmin("/admin");
     const ids = [
       "readiness-content", "readiness-publish", "readiness-jobs",
-      "readiness-templates", "readiness-news", "readiness-settings",
-      "readiness-analytics", "readiness-library",
+      "readiness-news", "readiness-analytics", "readiness-library",
     ];
     ids.forEach((id) => {
       expect(screen.getByTestId(id).textContent).toContain("Omurga hazir");
     });
+  });
+
+  it("readiness-assets has Bekliyor status", () => {
+    renderAdmin("/admin");
+    const item = screen.getByTestId("readiness-assets");
+    expect(item.textContent).toContain("Bekliyor");
   });
 
   it("deferred note mentions backend entegrasyonu", () => {

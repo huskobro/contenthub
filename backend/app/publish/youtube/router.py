@@ -26,11 +26,14 @@ Yetkilendirme akışı:
 import logging
 from typing import Optional
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.db.session import get_db
 from app.publish.youtube.token_store import YouTubeTokenStore
 from app.publish.youtube.errors import YouTubeAuthError
+from app.settings.credential_resolver import resolve_credential
 
 logger = logging.getLogger(__name__)
 
@@ -48,8 +51,8 @@ class AuthUrlResponse(BaseModel):
 
 
 class AuthCallbackRequest(BaseModel):
-    client_id: str
-    client_secret: str
+    client_id: Optional[str] = None
+    client_secret: Optional[str] = None
     code: str
     redirect_uri: str
 
@@ -70,18 +73,28 @@ class TokenStatusResponse(BaseModel):
 
 @router.get("/auth-url", response_model=AuthUrlResponse)
 async def get_auth_url(
-    client_id: str,
     redirect_uri: str,
+    client_id: Optional[str] = None,
+    db: AsyncSession = Depends(get_db),
 ):
     """
     Google OAuth2 yetkilendirme URL'i döndürür.
 
-    Admin bu URL'i browser'da açarak Google onay sayfasına gider.
-    Onay sonrası Google, redirect_uri'ye authorization code ile döner.
+    client_id query param olarak verilebilir (geriye uyumluluk).
+    Verilmezse credential resolver uzerinden DB -> .env'den okunur.
     """
+    resolved_client_id = client_id
+    if not resolved_client_id:
+        resolved_client_id = await resolve_credential("credential.youtube_client_id", db)
+    if not resolved_client_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="YouTube client_id bulunamadi. Query param olarak girin veya credential ayarlarindan kaydedin.",
+        )
+
     try:
         auth_url = _token_store.get_auth_url(
-            client_id=client_id,
+            client_id=resolved_client_id,
             redirect_uri=redirect_uri,
         )
     except Exception as exc:
@@ -94,7 +107,10 @@ async def get_auth_url(
 
 
 @router.post("/auth-callback", response_model=AuthCallbackResponse)
-async def auth_callback(body: AuthCallbackRequest):
+async def auth_callback(
+    body: AuthCallbackRequest,
+    db: AsyncSession = Depends(get_db),
+):
     """
     Authorization code'u access + refresh token ile takas eder ve kaydeder.
 
@@ -102,21 +118,40 @@ async def auth_callback(body: AuthCallbackRequest):
     admin panel tarafından çağrılır.
 
     Body:
-        client_id     : Google API Console client ID
-        client_secret : Google API Console client secret
+        client_id     : Google API Console client ID (opsiyonel — DB'den okunabilir)
+        client_secret : Google API Console client secret (opsiyonel — DB'den okunabilir)
         code          : OAuth2 authorization code
         redirect_uri  : /auth-url'de kullanılan aynı redirect URI
     """
+    # Credential resolver ile client_id/secret cozumle (body -> DB -> .env)
+    resolved_client_id = body.client_id
+    if not resolved_client_id:
+        resolved_client_id = await resolve_credential("credential.youtube_client_id", db)
+    if not resolved_client_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="YouTube client_id bulunamadi.",
+        )
+
+    resolved_client_secret = body.client_secret
+    if not resolved_client_secret:
+        resolved_client_secret = await resolve_credential("credential.youtube_client_secret", db)
+    if not resolved_client_secret:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="YouTube client_secret bulunamadi.",
+        )
+
     try:
         token_data = await _token_store.exchange_code_for_tokens(
-            client_id=body.client_id,
-            client_secret=body.client_secret,
+            client_id=resolved_client_id,
+            client_secret=resolved_client_secret,
             code=body.code,
             redirect_uri=body.redirect_uri,
         )
         _token_store.save_from_auth_response(
-            client_id=body.client_id,
-            client_secret=body.client_secret,
+            client_id=resolved_client_id,
+            client_secret=resolved_client_secret,
             auth_response=token_data,
         )
     except YouTubeAuthError as exc:
@@ -154,6 +189,81 @@ async def token_status():
             "Admin panelinden /publish/youtube/auth-url akışını tamamlayın."
         )
     return TokenStatusResponse(has_credentials=has_creds, message=message)
+
+
+class ChannelInfoResponse(BaseModel):
+    connected: bool
+    channel_id: Optional[str] = None
+    channel_title: Optional[str] = None
+    thumbnail_url: Optional[str] = None
+    subscriber_count: Optional[str] = None
+    video_count: Optional[str] = None
+    message: str = ""
+
+
+@router.get("/channel-info", response_model=ChannelInfoResponse)
+async def get_channel_info():
+    """
+    Bağlı YouTube kanalının temel bilgilerini döndürür.
+
+    OAuth token yoksa connected=False döner.
+    Token varsa YouTube Data API'den kanal bilgisi çeker.
+    """
+    if not _token_store.has_credentials():
+        return ChannelInfoResponse(
+            connected=False,
+            message="YouTube OAuth2 credential bulunamadı.",
+        )
+
+    try:
+        access_token = await _token_store.get_access_token()
+    except YouTubeAuthError as exc:
+        return ChannelInfoResponse(
+            connected=False,
+            message=f"Token alınamadı: {exc}",
+        )
+
+    import httpx
+    try:
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            resp = await client.get(
+                "https://www.googleapis.com/youtube/v3/channels",
+                params={
+                    "part": "snippet,statistics",
+                    "mine": "true",
+                },
+                headers={"Authorization": f"Bearer {access_token}"},
+            )
+        if resp.status_code != 200:
+            return ChannelInfoResponse(
+                connected=True,
+                message=f"YouTube API hatası: HTTP {resp.status_code}",
+            )
+        data = resp.json()
+        items = data.get("items", [])
+        if not items:
+            return ChannelInfoResponse(
+                connected=True,
+                message="Bağlı kanal bulunamadı.",
+            )
+        ch = items[0]
+        snippet = ch.get("snippet", {})
+        stats = ch.get("statistics", {})
+        return ChannelInfoResponse(
+            connected=True,
+            channel_id=ch.get("id"),
+            channel_title=snippet.get("title"),
+            thumbnail_url=snippet.get("thumbnails", {}).get("default", {}).get("url"),
+            subscriber_count=stats.get("subscriberCount"),
+            video_count=stats.get("videoCount"),
+            message="Kanal bilgisi başarıyla alındı.",
+        )
+    except Exception as exc:
+        logger.error("YouTube channel-info hatası: %s", exc)
+        return ChannelInfoResponse(
+            connected=True,
+            message=f"Kanal bilgisi alınamadı: {exc}",
+        )
 
 
 @router.delete("/revoke", status_code=status.HTTP_204_NO_CONTENT)

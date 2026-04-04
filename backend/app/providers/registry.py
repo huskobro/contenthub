@@ -147,6 +147,38 @@ class ProviderRegistry:
         return {cap: list(entries) for cap, entries in self._entries.items()}
 
     # ------------------------------------------------------------------
+    # Provider degistirme — M9-A (credential guncelleme sonrasi)
+    # ------------------------------------------------------------------
+
+    def replace_provider(
+        self,
+        capability: ProviderCapability,
+        provider_id: str,
+        new_provider: BaseProvider,
+    ) -> bool:
+        """
+        Mevcut bir provider'i yeni instance ile degistirir.
+
+        Credential guncelleme sonrasi provider yeniden olusturuldiginda kullanilir.
+        Health sayaclari sifirlanir.
+
+        Returns:
+            True: degistirme basarili.
+            False: belirtilen provider_id bulunamadi.
+        """
+        entries = self._entries.get(capability, [])
+        for entry in entries:
+            if entry.provider.provider_id() == provider_id:
+                entry.provider = new_provider
+                entry.invoke_count = 0
+                entry.error_count = 0
+                entry.last_error = None
+                entry.last_used_at = None
+                entry.last_latency_ms = None
+                return True
+        return False
+
+    # ------------------------------------------------------------------
     # Runtime health kaydı — M3-C3
     # ------------------------------------------------------------------
 

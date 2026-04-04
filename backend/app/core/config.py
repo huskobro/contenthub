@@ -26,6 +26,10 @@ class Settings(BaseSettings):
     # Boşsa fallback LLM kaydedilmez (main.py'de kontrol edilir)
     openai_api_key: str = ""
 
+    # M9-A: YouTube OAuth2 client credentials (opsiyonel .env desteği)
+    youtube_client_id: str = ""
+    youtube_client_secret: str = ""
+
     @property
     def database_url(self) -> str:
         db_path = self.data_dir / "contenthub.db"

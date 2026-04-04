@@ -35,6 +35,7 @@ import { AssetLibraryPage } from "../pages/admin/AssetLibraryPage";
 import { AnalyticsOverviewPage } from "../pages/admin/AnalyticsOverviewPage";
 import { AnalyticsContentPage } from "../pages/admin/AnalyticsContentPage";
 import { AnalyticsOperationsPage } from "../pages/admin/AnalyticsOperationsPage";
+import { YouTubeAnalyticsPage } from "../pages/admin/YouTubeAnalyticsPage";
 
 export const router = createBrowserRouter([
   {
@@ -78,6 +79,7 @@ export const router = createBrowserRouter([
       { path: "analytics", element: <AnalyticsOverviewPage /> },
       { path: "analytics/content", element: <AnalyticsContentPage /> },
       { path: "analytics/operations", element: <AnalyticsOperationsPage /> },
+      { path: "analytics/youtube", element: <YouTubeAnalyticsPage /> },
     ],
   },
   {

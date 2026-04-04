@@ -57,6 +57,17 @@ function mockFetch(data: unknown, status = 200) {
   });
 }
 
+/* Smarter mock: returns [] for credentials endpoint, data for everything else */
+function mockFetchUrl(data: unknown, status = 200) {
+  return vi.fn((url: string) =>
+    Promise.resolve({
+      ok: status >= 200 && status < 300,
+      status,
+      json: () => Promise.resolve(url.includes("/credentials") ? [] : data),
+    })
+  ) as unknown as typeof window.fetch;
+}
+
 function renderSettings(fetchFn: typeof window.fetch) {
   window.fetch = fetchFn;
 
@@ -93,11 +104,11 @@ beforeEach(() => {
 
 describe("Settings Registry smoke tests", () => {
   it("renders the settings page at /admin/settings", async () => {
-    renderSettings(mockFetch(MOCK_SETTINGS));
-    expect(screen.getByRole("heading", { name: "Ayar Kayitlari" })).toBeDefined();
+    renderSettings(mockFetchUrl(MOCK_SETTINGS));
+    expect(screen.getByRole("heading", { name: "Ayarlar" })).toBeDefined();
   });
 
-  it("shows loading state", () => {
+  it("shows loading state on registry tab", async () => {
     // fetch that never resolves
     window.fetch = vi.fn().mockReturnValue(new Promise(() => {}));
     const queryClient = new QueryClient({
@@ -117,45 +128,54 @@ describe("Settings Registry smoke tests", () => {
         <RouterProvider router={testRouter} />
       </QueryClientProvider>
     );
-    expect(screen.getByText("Yükleniyor...")).toBeDefined();
+    // Switch to the registry tab to trigger loading indicator
+    const user = userEvent.setup();
+    await user.click(screen.getByTestId("settings-tab-registry"));
+    expect(screen.getByText("Yukleniyor...")).toBeDefined();
   });
 
-  it("displays settings list after data loads", async () => {
-    renderSettings(mockFetch(MOCK_SETTINGS));
+  it("displays settings list after switching to registry tab and data loads", async () => {
+    renderSettings(mockFetchUrl(MOCK_SETTINGS));
+    const user = userEvent.setup();
+    await user.click(screen.getByTestId("settings-tab-registry"));
     await waitFor(() => {
       expect(screen.getByText("app.name")).toBeDefined();
       expect(screen.getByText("video.quality")).toBeDefined();
     });
   });
 
-  it("shows detail panel placeholder when no setting selected", async () => {
-    renderSettings(mockFetch(MOCK_SETTINGS));
+  it("shows detail panel placeholder when no setting selected (registry tab)", async () => {
+    renderSettings(mockFetchUrl(MOCK_SETTINGS));
+    const user = userEvent.setup();
+    await user.click(screen.getByTestId("settings-tab-registry"));
     await waitFor(() => {
       expect(screen.getByText("app.name")).toBeDefined();
     });
     expect(screen.getByText("Detay görmek için bir ayar seçin.")).toBeDefined();
   });
 
-  it("shows detail panel when a setting is selected", async () => {
-    const detailFetch = vi.fn()
-      .mockResolvedValueOnce({
+  it("shows detail panel when a setting is selected (registry tab)", async () => {
+    const detailFetch = vi.fn((url: string) =>
+      Promise.resolve({
         ok: true,
         status: 200,
-        json: () => Promise.resolve(MOCK_SETTINGS),
+        json: () => {
+          if (url.includes("/credentials")) return Promise.resolve([]);
+          if (url.match(/\/settings\/[^/]+$/)) return Promise.resolve(MOCK_SETTINGS[0]);
+          return Promise.resolve(MOCK_SETTINGS);
+        },
       })
-      .mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: () => Promise.resolve(MOCK_SETTINGS[0]),
-      });
+    ) as unknown as typeof window.fetch;
 
     renderSettings(detailFetch);
+
+    const user = userEvent.setup();
+    await user.click(screen.getByTestId("settings-tab-registry"));
 
     await waitFor(() => {
       expect(screen.getByText("app.name")).toBeDefined();
     });
 
-    const user = userEvent.setup();
     await user.click(screen.getByText("app.name"));
 
     await waitFor(() => {

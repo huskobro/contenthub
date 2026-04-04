@@ -185,54 +185,19 @@ export function ContentLibraryPage() {
           Icerik kayitlarini tur, durum veya metin aramasiyla filtreleyebilirsiniz.
           Filtreler asagidaki listeyi etkiler.
         </p>
-        <div style={FILTER_ROW}>
-          <div>
-            <label style={{ display: "block", fontSize: "0.75rem", color: "#64748b", marginBottom: "0.25rem" }}>
-              Arama
-            </label>
-            <input
-              type="text"
-              placeholder="Baslik veya konu ara..."
-              disabled
-              style={{ ...FILTER_INPUT, minWidth: "200px" }}
-              data-testid="library-search-input"
-            />
-          </div>
-          <div>
-            <label style={{ display: "block", fontSize: "0.75rem", color: "#64748b", marginBottom: "0.25rem" }}>
-              Icerik Turu
-            </label>
-            <select disabled style={FILTER_SELECT} data-testid="library-type-filter">
-              <option>Tumu</option>
-              <option>Standart Video</option>
-              <option>Haber Bulteni</option>
-            </select>
-          </div>
-          <div>
-            <label style={{ display: "block", fontSize: "0.75rem", color: "#64748b", marginBottom: "0.25rem" }}>
-              Durum
-            </label>
-            <select disabled style={FILTER_SELECT} data-testid="library-status-filter">
-              <option>Tumu</option>
-              <option>draft</option>
-              <option>ready</option>
-              <option>failed</option>
-            </select>
-          </div>
-          <div>
-            <label style={{ display: "block", fontSize: "0.75rem", color: "#64748b", marginBottom: "0.25rem" }}>
-              Siralama
-            </label>
-            <select disabled style={FILTER_SELECT} data-testid="library-sort-select">
-              <option>En yeni</option>
-              <option>En eski</option>
-              <option>A-Z</option>
-            </select>
-          </div>
+        <div
+          style={{
+            ...FILTER_ROW,
+            opacity: 0.5,
+            pointerEvents: "none",
+            position: "relative",
+          }}
+          data-testid="library-filters-deferred"
+        >
+          <span style={{ fontSize: "0.75rem", color: "#94a3b8" }}>
+            Filtre ve arama islevleri icerik kutuphanesi backend entegrasyonu ile aktif edilecektir.
+          </span>
         </div>
-        <p style={{ margin: 0, fontSize: "0.6875rem", color: "#cbd5e1" }} data-testid="library-filter-disabled-note">
-          Filtre ve arama islevleri backend entegrasyonu ile etkinlestirilecektir.
-        </p>
       </div>
 
       {/* Phase 300 — Content List */}

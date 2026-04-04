@@ -1,14 +1,15 @@
 """
 ContentHub FastAPI application entry point.
 
-Lifespan handler (Phase M1-C4 / M2-C6 / M3-C1 / M3-C2):
+Lifespan handler (Phase M1-C4 / M2-C6 / M3-C1 / M3-C2 / M9-A):
   1. Create DB tables (dev/test convenience).
   2. Run startup recovery scanner — marks any stale running jobs as failed
      BEFORE the server begins accepting requests (P-008 / C-07).
   3. Register content modules in module_registry (M2-C1).
-  4. Provider örneklerini provider_registry'ye kaydet (M3-C1 / M3-C2).
-  5. JobDispatcher oluştur ve app.state'e bağla (M2-C6).
-  6. Yield — server is now live.
+  4. Resolve credentials from DB → .env (M9-A).
+  5. Provider örneklerini provider_registry'ye kaydet (M3-C1 / M3-C2).
+  6. JobDispatcher oluştur ve app.state'e bağla (M2-C6).
+  7. Yield — server is now live.
 """
 
 import logging
@@ -32,6 +33,7 @@ from app.providers.tts.system_tts_provider import SystemTTSProvider
 from app.providers.visuals.pexels_provider import PexelsProvider
 from app.providers.visuals.pixabay_provider import PixabayProvider
 from app.providers.registry import provider_registry
+from app.settings.credential_resolver import resolve_credential
 from app.sse.bus import event_bus
 
 logger = logging.getLogger(__name__)
@@ -71,27 +73,35 @@ async def lifespan(app: FastAPI):
     module_registry.register(STANDARD_VIDEO_MODULE)
     logger.info("Modül kaydedildi: %s", STANDARD_VIDEO_MODULE.module_id)
 
-    # Provider örneklerini provider_registry'ye kaydet (M3-C1 / M3-C2)
+    # Credential çözümleme — DB değerleri .env üzerinde önceliklidir (M9-A)
+    async with AsyncSessionLocal() as cred_db:
+        kie_ai_key = await resolve_credential("credential.kie_ai_api_key", cred_db) or settings.kie_ai_api_key
+        openai_key = await resolve_credential("credential.openai_api_key", cred_db) or settings.openai_api_key
+        pexels_key = await resolve_credential("credential.pexels_api_key", cred_db) or settings.pexels_api_key
+        pixabay_key = await resolve_credential("credential.pixabay_api_key", cred_db) or settings.pixabay_api_key
+    logger.info("Credential çözümleme tamamlandı (M9-A).")
+
+    # Provider örneklerini provider_registry'ye kaydet (M3-C1 / M3-C2 / M9-A)
 
     # LLM — primary: kie.ai Gemini 2.5 Flash
     provider_registry.register(
-        KieAiProvider(api_key=settings.kie_ai_api_key),
+        KieAiProvider(api_key=kie_ai_key),
         ProviderCapability.LLM,
         is_primary=True,
         priority=0,
     )
     # LLM — fallback: OpenAI uyumlu generic (M3-C2)
     # API key yoksa kaydedilmez; fallback zincirine girmiyor
-    if settings.openai_api_key:
+    if openai_key:
         provider_registry.register(
-            OpenAICompatProvider(api_key=settings.openai_api_key, model="gpt-4o-mini"),
+            OpenAICompatProvider(api_key=openai_key, model="gpt-4o-mini"),
             ProviderCapability.LLM,
             is_primary=False,
             priority=1,
         )
         logger.info("LLM fallback kaydedildi: openai_compat_gpt-4o-mini")
     else:
-        logger.info("CONTENTHUB_OPENAI_API_KEY boş — LLM fallback kaydedilmedi.")
+        logger.info("OpenAI API key boş — LLM fallback kaydedilmedi.")
 
     # TTS — primary: Microsoft Edge TTS
     provider_registry.register(
@@ -111,13 +121,13 @@ async def lifespan(app: FastAPI):
 
     # VISUALS — primary: Pexels, fallback: Pixabay
     provider_registry.register(
-        PexelsProvider(api_key=settings.pexels_api_key),
+        PexelsProvider(api_key=pexels_key),
         ProviderCapability.VISUALS,
         is_primary=True,
         priority=0,
     )
     provider_registry.register(
-        PixabayProvider(api_key=settings.pixabay_api_key),
+        PixabayProvider(api_key=pixabay_key),
         ProviderCapability.VISUALS,
         is_primary=False,
         priority=1,

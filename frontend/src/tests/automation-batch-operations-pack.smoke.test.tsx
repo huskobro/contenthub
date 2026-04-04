@@ -229,63 +229,35 @@ describe("Phase 312 — Retry/cancel/skip behavior clarity", () => {
     });
   });
 
-  it("actions panel has heading", async () => {
+  it("actions panel mentions M14 milestone deferral", async () => {
     window.fetch = mockFetch(() => MOCK_JOB_DETAIL);
     renderAt("/admin/jobs/j2");
     await waitFor(() => {
-      expect(screen.getByTestId("job-actions-heading")).toBeDefined();
-      expect(screen.getByTestId("job-actions-heading").textContent).toBe("Operasyonel Aksiyonlar");
+      const panel = screen.getByTestId("job-actions-panel");
+      expect(panel.textContent).toContain("M14");
     });
   });
 
-  it("actions panel has note describing purpose", async () => {
+  it("actions panel mentions Retry, Cancel, Skip by name", async () => {
     window.fetch = mockFetch(() => MOCK_JOB_DETAIL);
     renderAt("/admin/jobs/j2");
     await waitFor(() => {
-      expect(screen.getByTestId("job-actions-note")).toBeDefined();
+      const panel = screen.getByTestId("job-actions-panel");
+      expect(panel.textContent).toContain("Retry");
+      expect(panel.textContent).toContain("Cancel");
+      expect(panel.textContent).toContain("Skip");
     });
   });
 
-  it("actions panel has retry action card", async () => {
+  it("individual action cards are deferred (no action-retry testid)", async () => {
     window.fetch = mockFetch(() => MOCK_JOB_DETAIL);
     renderAt("/admin/jobs/j2");
     await waitFor(() => {
-      const card = screen.getByTestId("action-retry");
-      expect(card).toBeDefined();
-      expect(card.textContent).toContain("Retry");
-      expect(card.textContent).toContain("yeniden baslatir");
+      expect(screen.getByTestId("job-actions-panel")).toBeDefined();
     });
-  });
-
-  it("actions panel has cancel action card", async () => {
-    window.fetch = mockFetch(() => MOCK_JOB_DETAIL);
-    renderAt("/admin/jobs/j2");
-    await waitFor(() => {
-      const card = screen.getByTestId("action-cancel");
-      expect(card).toBeDefined();
-      expect(card.textContent).toContain("Cancel");
-      expect(card.textContent).toContain("iptal");
-    });
-  });
-
-  it("actions panel has skip action card", async () => {
-    window.fetch = mockFetch(() => MOCK_JOB_DETAIL);
-    renderAt("/admin/jobs/j2");
-    await waitFor(() => {
-      const card = screen.getByTestId("action-skip");
-      expect(card).toBeDefined();
-      expect(card.textContent).toContain("Skip");
-      expect(card.textContent).toContain("atlayarak");
-    });
-  });
-
-  it("actions panel has disabled note about future backend integration", async () => {
-    window.fetch = mockFetch(() => MOCK_JOB_DETAIL);
-    renderAt("/admin/jobs/j2");
-    await waitFor(() => {
-      expect(screen.getByTestId("job-actions-disabled-note")).toBeDefined();
-      expect(screen.getByTestId("job-actions-disabled-note").textContent).toContain("backend entegrasyonu");
-    });
+    expect(screen.queryByTestId("action-retry")).toBeNull();
+    expect(screen.queryByTestId("action-cancel")).toBeNull();
+    expect(screen.queryByTestId("action-skip")).toBeNull();
   });
 });
 
@@ -310,7 +282,7 @@ describe("Phase 313 — Batch operations end-to-end verification", () => {
     expect(screen.getByTestId("jobs-registry-workflow-note")).toBeDefined();
   });
 
-  it("job detail chain: heading + workflow note + overview + actions all present", async () => {
+  it("job detail chain: heading + workflow note + overview + actions panel all present", async () => {
     window.fetch = mockFetch(() => MOCK_JOB_DETAIL);
     renderAt("/admin/jobs/j2");
     await waitFor(() => {

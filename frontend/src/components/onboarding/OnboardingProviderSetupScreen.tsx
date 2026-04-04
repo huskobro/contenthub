@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useCreateSetting } from "../../hooks/useCreateSetting";
+import { useSaveCredential } from "../../hooks/useCredentials";
 import { useQueryClient } from "@tanstack/react-query";
 
 const CONTAINER: React.CSSProperties = {
@@ -83,12 +83,12 @@ interface Props {
 }
 
 export function OnboardingProviderSetupScreen({ onBack, onComplete }: Props) {
-  const createMutation = useCreateSetting();
+  const saveMutation = useSaveCredential();
   const queryClient = useQueryClient();
 
-  const [ttsApiKey, setTtsApiKey] = useState("");
-  const [llmApiKey, setLlmApiKey] = useState("");
-  const [youtubeApiKey, setYoutubeApiKey] = useState("");
+  const [kieAiKey, setKieAiKey] = useState("");
+  const [openaiKey, setOpenaiKey] = useState("");
+  const [pexelsKey, setPexelsKey] = useState("");
   const [saving, setSaving] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -98,51 +98,31 @@ export function OnboardingProviderSetupScreen({ onBack, onComplete }: Props) {
     setValidationError(null);
     setSubmitError(null);
 
-    if (!ttsApiKey.trim() && !llmApiKey.trim() && !youtubeApiKey.trim()) {
+    if (!kieAiKey.trim() && !openaiKey.trim() && !pexelsKey.trim()) {
       setValidationError("En az bir provider API anahtari girin.");
       return;
     }
 
     setSaving(true);
 
-    const settingsToCreate: { key: string; admin_value_json: string; help_text: string }[] = [];
+    const credentialsToSave: { key: string; value: string }[] = [];
 
-    if (ttsApiKey.trim()) {
-      settingsToCreate.push({
-        key: "tts_api_key",
-        admin_value_json: JSON.stringify(ttsApiKey.trim()),
-        help_text: "TTS (Text-to-Speech) provider API anahtari",
-      });
+    if (kieAiKey.trim()) {
+      credentialsToSave.push({ key: "credential.kie_ai_api_key", value: kieAiKey.trim() });
     }
-    if (llmApiKey.trim()) {
-      settingsToCreate.push({
-        key: "llm_api_key",
-        admin_value_json: JSON.stringify(llmApiKey.trim()),
-        help_text: "LLM (Dil Modeli) provider API anahtari",
-      });
+    if (openaiKey.trim()) {
+      credentialsToSave.push({ key: "credential.openai_api_key", value: openaiKey.trim() });
     }
-    if (youtubeApiKey.trim()) {
-      settingsToCreate.push({
-        key: "youtube_api_key",
-        admin_value_json: JSON.stringify(youtubeApiKey.trim()),
-        help_text: "YouTube Data API anahtari",
-      });
+    if (pexelsKey.trim()) {
+      credentialsToSave.push({ key: "credential.pexels_api_key", value: pexelsKey.trim() });
     }
 
     try {
-      for (const setting of settingsToCreate) {
-        await createMutation.mutateAsync({
-          key: setting.key,
-          group_name: "providers",
-          type: "string",
-          admin_value_json: setting.admin_value_json,
-          status: "active",
-          help_text: setting.help_text,
-          visible_to_user: false,
-          read_only_for_user: true,
-        });
+      for (const cred of credentialsToSave) {
+        await saveMutation.mutateAsync(cred);
       }
       queryClient.invalidateQueries({ queryKey: ["setup-requirements"] });
+      queryClient.invalidateQueries({ queryKey: ["credentials"] });
       queryClient.invalidateQueries({ queryKey: ["settings"] });
       onComplete();
     } catch (err) {
@@ -162,46 +142,44 @@ export function OnboardingProviderSetupScreen({ onBack, onComplete }: Props) {
         </p>
 
         <form onSubmit={handleSubmit}>
-          <div style={SECTION_LABEL}>TTS (Seslendirme)</div>
-          <div style={fieldStyle}>
-            <label style={labelStyle}>TTS API Anahtari</label>
-            <input
-              style={inputStyle}
-              type="password"
-              value={ttsApiKey}
-              onChange={(e) => setTtsApiKey(e.target.value)}
-              placeholder="sk-..."
-              autoComplete="off"
-            />
-            <div style={helpStyle}>ElevenLabs veya benzeri TTS servisi API anahtari</div>
-          </div>
-
           <div style={SECTION_LABEL}>LLM (Dil Modeli)</div>
           <div style={fieldStyle}>
-            <label style={labelStyle}>LLM API Anahtari</label>
+            <label style={labelStyle}>Kie.ai API Anahtari (Gemini)</label>
             <input
               style={inputStyle}
               type="password"
-              value={llmApiKey}
-              onChange={(e) => setLlmApiKey(e.target.value)}
-              placeholder="sk-..."
-              autoComplete="off"
-            />
-            <div style={helpStyle}>OpenAI veya benzeri LLM servisi API anahtari</div>
-          </div>
-
-          <div style={SECTION_LABEL}>YouTube</div>
-          <div style={fieldStyle}>
-            <label style={labelStyle}>YouTube API Anahtari</label>
-            <input
-              style={inputStyle}
-              type="password"
-              value={youtubeApiKey}
-              onChange={(e) => setYoutubeApiKey(e.target.value)}
+              value={kieAiKey}
+              onChange={(e) => setKieAiKey(e.target.value)}
               placeholder="AIza..."
               autoComplete="off"
             />
-            <div style={helpStyle}>YouTube Data API v3 anahtari (yayinlama icin)</div>
+            <div style={helpStyle}>Kie.ai uzerinden Gemini LLM erisimi icin API anahtari</div>
+          </div>
+          <div style={fieldStyle}>
+            <label style={labelStyle}>OpenAI API Anahtari (Fallback)</label>
+            <input
+              style={inputStyle}
+              type="password"
+              value={openaiKey}
+              onChange={(e) => setOpenaiKey(e.target.value)}
+              placeholder="sk-..."
+              autoComplete="off"
+            />
+            <div style={helpStyle}>OpenAI uyumlu LLM fallback icin API anahtari. Bos birakilirsa fallback devre disi kalir.</div>
+          </div>
+
+          <div style={SECTION_LABEL}>Gorsel Servisler</div>
+          <div style={fieldStyle}>
+            <label style={labelStyle}>Pexels API Anahtari</label>
+            <input
+              style={inputStyle}
+              type="password"
+              value={pexelsKey}
+              onChange={(e) => setPexelsKey(e.target.value)}
+              placeholder="..."
+              autoComplete="off"
+            />
+            <div style={helpStyle}>Pexels gorsel arama ve indirme API anahtari</div>
           </div>
 
           {validationError && <p style={errorStyle}>{validationError}</p>}
