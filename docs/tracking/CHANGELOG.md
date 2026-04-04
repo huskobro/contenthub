@@ -2,6 +2,60 @@
 
 ---
 
+## [2026-04-04] M7-C2 — YouTube Adapter v1 + TokenStore + Registry + OAuth Router
+
+### Özet
+YouTube Publish adaptörü, OAuth2 token yönetimi, adaptör kayıt defteri ve
+admin OAuth akışı için HTTP endpoint'leri implement edildi.
+
+### Yeni dosyalar
+- `backend/app/publish/youtube/__init__.py` — paket
+- `backend/app/publish/youtube/errors.py` — 6 hata sınıfı (retryable bayrakları)
+- `backend/app/publish/youtube/token_store.py` — OAuth2 credential saklama + refresh
+- `backend/app/publish/youtube/adapter.py` — YouTubeAdapter (upload + activate)
+- `backend/app/publish/registry.py` — PublishAdapterRegistry singleton
+- `backend/app/publish/youtube/router.py` — GET /auth-url, POST /auth-callback, GET /status, DELETE /revoke
+- `backend/tests/test_m7_c2_youtube_adapter.py` — 32 test (A–AF)
+
+### Değiştirilen dosyalar
+- `backend/app/api/router.py` — youtube_oauth_router kayıt edildi
+
+### Upload/activate zinciri
+```
+upload()   → video private olarak yüklenir → platform_video_id döner
+activate() → video public/scheduled yapılır → platform_url döner
+
+Partial failure:
+  upload başarılı + activate başarısız → platform_video_id korunur
+  Retry: yalnızca activate çalıştırılır (upload tekrarlanmaz)
+```
+
+### Hata sınıflandırması (retryable)
+| Hata | retryable |
+|------|-----------|
+| YouTubeAuthError | False |
+| YouTubeQuotaExceededError | False |
+| YouTubeVideoNotFoundError | False |
+| YouTubeRateLimitError | True |
+| YouTubeUploadError (default) | True |
+| YouTubeActivateError (default) | True |
+
+### M7 zorunlu alanları
+- publish-state ambiguity risk: YOK
+- review-to-publish boundary risk: YOK (M7-C1'den)
+- partial-failure recovery clarity: AÇIK (platform_video_id korunur)
+- audit-trail completeness risk: DÜŞÜK — M7-C3'te servis katmanı bağlanacak
+
+### Test sonuçları
+32/32 geçti (A–AF). Gerçek HTTP çağrısı yok; httpx.AsyncClient mock inject.
+
+### Bilinen kısıtlamalar
+- OAuth endpoint'leri MVP'de admin-only değil — MVP scope içinde kabul edildi
+- Token dosyası credential içeriyor; data/ dizini .gitignore'da olmalı (belgelendi)
+- M7-C3'te PublishStepExecutor adaptörü bağlayacak ve servis katmanı audit log yazacak
+
+---
+
 ## [2026-04-04] M7-C1 (rev: review-gate fix) — Publish Center State Machine + DB Models + Core Service
 
 ### Özet

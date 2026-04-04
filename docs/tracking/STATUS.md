@@ -3,10 +3,23 @@
 ## Mevcut Faz
 Kiln Build — M7: YouTube Publish v1 — DEVAM EDİYOR
 
-**M7-C1 TAMAMLANDI (review-gate fix + migration verified) — 36/36 test geçiyor (27 servis + 9 migration)**
+**M7-C2 TAMAMLANDI — 32/32 test geçiyor (YouTube Adapter + TokenStore + Registry + OAuth Router)**
+**M7-C1 TAMAMLANDI — 36/36 test geçiyor (27 servis + 9 migration)**
 **M6 KAPANDI**
 
 ## Mevcut Durum (2026-04-04)
+M7-C2 tamamlandı:
+- `YouTubeAdapter` — upload() + activate() zinciri, resumable upload, partial failure semantiği
+- `YouTubeTokenStore` — OAuth2 credential saklama, auto-refresh, exchange_code_for_tokens
+- `PublishAdapterRegistry` — platform name → adapter lookup, singleton
+- `app/publish/youtube/router.py` — GET /auth-url, POST /auth-callback, GET /status, DELETE /revoke
+- 6 platform-spesifik hata sınıfı, retryable bayrakları doğru
+- 32/32 test (A–AF): registry, token store, adapter upload/activate, OAuth router
+- publish-state ambiguity risk: YOK — upload/activate ayrı adım, platform_video_id upload sonrası kaydedilir
+- review-to-publish boundary risk: YOK — M7-C1'den devreden; adaptör service katmanını çağırmaz
+- partial-failure recovery: AÇIK — upload başarılıysa platform_video_id korunur, yalnızca activate retry edilir
+- audit-trail completeness risk: DÜŞÜK — adaptör log yazmaz (servis katmanı yazar, M7-C3'te bağlanacak)
+
 M7-C1 tamamlandı (review-gate fix + migration verified):
 - M7-C1: Publish Center — State Machine + DB Models + Alembic Migration + Core Service + REST Router
   - `publish_records` + `publish_logs` tabloları (models.py + alembic migration c1a2b3d4e5f6)
