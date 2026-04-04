@@ -44,7 +44,7 @@ async def lifespan(app: FastAPI):
       - Ensure tables exist (development / test convenience path).
       - Run startup recovery before accepting any requests (P-008).
       - Register content modules in module_registry (M2-C1).
-      - Provider örneklerini _providers dict'ine kaydet (M2-C2).
+      - Provider örneklerini provider_registry'e kaydet (M3-C1).
       - JobDispatcher oluştur ve app.state'e bağla (M2-C6).
 
     Shutdown:
