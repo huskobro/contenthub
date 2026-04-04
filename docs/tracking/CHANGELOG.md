@@ -2,6 +2,69 @@
 
 ---
 
+## [2026-04-04] M5-C3 — Bulletin Pipeline + Editorial Gate
+
+**Ne:**
+- `backend/app/modules/news_bulletin/editorial_gate.py` — YENİ: Editorial seçim kapısı ve tüketim servisi.
+  `confirm_selection()` — editorial insan onay kapısı.
+  `consume_news()` — "used state ne zaman kazanılıyor" sorusunun tek ve net yanıtı.
+  `get_selectable_news_items()` — status='new' item listesi, dedupe-aware.
+  `ConfirmSelectionResult`, `ConsumeNewsResult` dataclass'ları.
+  Durum sabitleri: `BULLETIN_STATUS_DRAFT/SELECTION_CONFIRMED/IN_PROGRESS/DONE`.
+- `backend/app/modules/news_bulletin/router.py` — 3 yeni endpoint:
+  `POST /{id}/confirm-selection` — editorial gate geçişi.
+  `POST /{id}/consume-news` — haber tüketimi.
+  `GET /{id}/selectable-news` — seçime uygun haberler.
+
+**selected state ne zaman oluşuyor:**
+  `POST /selected-news` ile `NewsBulletinSelectedItem` kaydı yazıldığında.
+  NewsItem.status DEĞİŞMEZ. "selected" DB state'e çevrilmez.
+
+**used/consumed state ne zaman oluşuyor:**
+  `consume_news()` çağrıldığında — tek ve net geçiş noktası.
+  `UsedNewsRegistry` kaydı yazılır + `NewsItem.status = "used"` atanır.
+  Başka hiçbir yol (scan_engine, confirm_selection) bu geçişi yapmaz.
+  Test 11, 26, 27 ile üç katmanda kilitlenmiş.
+
+**bulletin create flow hangi item seti üzerinden çalışıyor:**
+  1. `get_selectable_news_items()` → status='new' item'lar listelenir.
+  2. Editör `POST /selected-news` ile seçim yapar.
+  3. `confirm_selection()` → bulletin 'selection_confirmed' olur, NewsItem dokunulmaz.
+  4. `consume_news()` → 'used' atanır, UsedNewsRegistry yazılır.
+
+**deduped item ile selectable item sınırı nasıl korunuyor:**
+  Dedupe kararları scan-time artifact — DB'ye yazılmayan item bu listede olmaz.
+  `get_selectable_news_items()` yalnızca mevcut DB kayıtlarına bakar.
+  follow-up accepted item (DB'ye 'new' olarak yazılmış) listede görünür — bu kasıtlı.
+  Test 20 bu davranışı belgeler.
+
+**follow-up accepted item'lar sonradan nasıl işaretleniyor:**
+  `NewsBulletinSelectedItem.selection_reason` alanında editörün notu olarak saklanır.
+  Otomatik işaretleme yapılmaz — editorial sorumluluğundadır.
+  Bu bilinçli bir karardır: otomatik işaretleme false-positive riski ile karışır.
+
+**editorial gate nerede başlıyor, nerede bitiyor:**
+  Başlangıç: Editörün `POST /selected-news` ile item eklemesi.
+  Kapı geçişi: `confirm_selection()` — bulletin 'selection_confirmed' olur.
+               Koşul: en az 1 item + bulletin 'draft' durumunda.
+  Bitiş: `consume_news()` — 'used' state kazanılır, bulletin 'in_progress' olur.
+
+**Kısıtlar / Borç:**
+  - Bulletin 'in_progress' → 'done' geçişi bu chunk'ta yok (M5+ kapsamı).
+  - selection_reason otomatik doldurulmuyor — editörün manuel notu bekleniyor.
+  - UI entegrasyonu bu chunk'ta yok — backend sözleşme hazır.
+
+**Risk değerlendirmesi:**
+- source-state semantics risk: **LOW** — state zinciri net, geçişler izole.
+- dedupe false-positive risk: **LOW** (M5-C2'den miras, değişmedi).
+- used-news ambiguity risk: **NONE** — "used" tek noktada yazılıyor, test 27 ile kilitli.
+- preview-to-final confusion risk: **NONE** — UI değişikliği yok.
+- warnings status: **known-nonblocking** — 2 framework seviyesi warning (mock + event loop), uygulama kodu değil.
+
+**Test:** 28 yeni test, 770 toplam.
+
+---
+
 ## [2026-04-04] M5-C2 — Scan Engine + Dedupe
 
 **Ne:**

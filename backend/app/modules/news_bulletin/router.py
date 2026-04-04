@@ -1,5 +1,6 @@
-from typing import List
-from fastapi import APIRouter, Depends, HTTPException
+from typing import List, Optional
+from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -12,6 +13,53 @@ from .schemas import (
     NewsBulletinSelectedItemWithEnforcementResponse,
 )
 from . import service
+from .editorial_gate import (
+    confirm_selection,
+    consume_news,
+    get_selectable_news_items,
+    ConfirmSelectionResult,
+    ConsumeNewsResult,
+)
+
+
+class ConfirmSelectionResponse(BaseModel):
+    """
+    POST /{id}/confirm-selection yanıt şeması.
+
+    confirmed_count: onaylanan seçili item sayısı
+    warning_items  : UsedNewsRegistry'de zaten kayıtlı item ID listesi
+                     Uyarı — bloklamaz. Editorial editör bilgilendirme amaçlı.
+    """
+    success: bool
+    bulletin_id: str
+    confirmed_count: int
+    warning_items: list[str] = []
+    error: Optional[str] = None
+
+
+class ConsumeNewsResponse(BaseModel):
+    """
+    POST /{id}/consume-news yanıt şeması.
+
+    consumed_count: UsedNewsRegistry'ye yazılan, NewsItem.status='used' atanan sayı
+    already_used  : zaten 'used' olan, atlanılan item ID listesi
+    """
+    success: bool
+    bulletin_id: str
+    consumed_count: int
+    already_used: list[str] = []
+    error: Optional[str] = None
+
+
+class SelectableNewsItemResponse(BaseModel):
+    """Seçime uygun haber item'ı."""
+    id: str
+    title: str
+    url: str
+    summary: Optional[str]
+    source_id: Optional[str]
+    published_at: Optional[str]
+    language: Optional[str]
 
 router = APIRouter(prefix="/modules/news-bulletin", tags=["news-bulletin"])
 
@@ -133,3 +181,85 @@ async def update_bulletin_selected_item(
     if result is None:
         raise HTTPException(status_code=404, detail="Selected item not found")
     return result
+
+
+@router.post("/{item_id}/confirm-selection", response_model=ConfirmSelectionResponse)
+async def confirm_bulletin_selection(
+    item_id: str, db: AsyncSession = Depends(get_db)
+):
+    """
+    Editorial seçim onay kapısı.
+
+    Bulletin 'draft' durumunda olmalı ve en az bir seçili haber içermeli.
+    Başarı: Bulletin.status = 'selection_confirmed'.
+    NewsItem.status DEĞİŞMEZ — seçim state'e çevrilmez.
+    warning_items: daha önce kullanılmış haberler (uyarı, bloklamaz).
+    """
+    result: ConfirmSelectionResult = await confirm_selection(db, item_id)
+    if not result.success:
+        status_code = 404 if "bulunamadı" in (result.error or "") else 409
+        raise HTTPException(status_code=status_code, detail=result.error)
+    return ConfirmSelectionResponse(
+        success=result.success,
+        bulletin_id=result.bulletin_id,
+        confirmed_count=result.confirmed_count,
+        warning_items=result.warning_items,
+    )
+
+
+@router.post("/{item_id}/consume-news", response_model=ConsumeNewsResponse)
+async def consume_bulletin_news(
+    item_id: str, db: AsyncSession = Depends(get_db)
+):
+    """
+    Haber tüketim işlemi — 'used' state tam burada kazanılır.
+
+    Yalnızca 'selection_confirmed' bulletinlerde çalışır.
+    Her seçili haber için:
+      - UsedNewsRegistry kaydı yazılır.
+      - NewsItem.status = 'used' atanır.
+    Bulletin.status = 'in_progress' geçişi yapılır.
+    already_used: zaten 'used' olan haberler (atlandı).
+    """
+    result: ConsumeNewsResult = await consume_news(db, item_id)
+    if not result.success:
+        status_code = 404 if "bulunamadı" in (result.error or "") else 409
+        raise HTTPException(status_code=status_code, detail=result.error)
+    return ConsumeNewsResponse(
+        success=result.success,
+        bulletin_id=result.bulletin_id,
+        consumed_count=result.consumed_count,
+        already_used=result.already_used,
+    )
+
+
+@router.get("/{item_id}/selectable-news", response_model=List[SelectableNewsItemResponse])
+async def list_selectable_news(
+    item_id: str,
+    source_id: Optional[str] = Query(None),
+    language: Optional[str] = Query(None),
+    limit: int = Query(100, ge=1, le=500),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Seçime uygun haberler — status='new' olan NewsItem kayıtları.
+
+    deduped item bu listede yoktur (scan sırasında DB'ye yazılmamıştır).
+    follow-up accepted item'lar bu listede görünür (status='new' ile yazılmıştır).
+    """
+    bulletin = await service.get_news_bulletin(db, item_id)
+    if bulletin is None:
+        raise HTTPException(status_code=404, detail="News bulletin not found")
+    items = await get_selectable_news_items(db, source_id=source_id, language=language, limit=limit)
+    return [
+        SelectableNewsItemResponse(
+            id=i["id"],
+            title=i["title"],
+            url=i["url"],
+            summary=i["summary"],
+            source_id=i["source_id"],
+            published_at=str(i["published_at"]) if i["published_at"] else None,
+            language=i["language"],
+        )
+        for i in items
+    ]
