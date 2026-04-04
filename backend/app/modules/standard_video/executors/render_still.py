@@ -1,5 +1,5 @@
 """
-renderStill executor'ı (RenderStillExecutor) — M6-C2.
+renderStill executor'ı (RenderStillExecutor) — M6-C3.
 
 Tek kare JPEG önizleme üretir — "PreviewFrame" composition kullanılır.
 Final render'dan TAMAMEN AYRI bir yol — composition ID, çıktı formatı ve amaç farklı.
@@ -14,10 +14,11 @@ Render sözleşmesi:
   Çıktı  : workspace/{job_id}/artifacts/preview_frame.jpg
   Durum  : composition_props.json güncellenmez — bağımsız preview akışı
 
-PreviewFrame composition:
-  composition_map.py: "PreviewFrame" → Root.tsx'te kayıtlı
-  durationInFrames=1 → tek kare
-  frame=0 → output.jpg
+composition ID kaynağı (M6-C3):
+  PREVIEW_COMPOSITION_ID artık bu dosyada string sabit olarak tanımlanmaz.
+  composition_map.get_preview_composition_id("standard_video_preview") → "PreviewFrame".
+  Bu, Root.tsx kayıt tablosu ile backend'in tek noktada senkron kalmasını sağlar.
+  Modül seviyesinde import edilen sabit (PREVIEW_COMPOSITION_ID), map'ten türetilir.
 
 Subprocess güvenliği:
   shell=False, args liste olarak geçirilir.
@@ -35,6 +36,7 @@ from pathlib import Path
 from app.jobs.executor import StepExecutor
 from app.jobs.exceptions import StepExecutionError
 from app.db.models import Job, JobStep
+from app.modules.standard_video.composition_map import get_preview_composition_id
 
 from ._helpers import _resolve_artifact_path
 
@@ -47,8 +49,9 @@ RENDER_STILL_TIMEOUT_SECONDS: int = 120
 _BACKEND_DIR = Path(__file__).resolve().parents[5]
 _RENDERER_DIR = _BACKEND_DIR / "renderer"
 
-# PreviewFrame composition ID — Root.tsx ve composition_map.py ile senkronize
-PREVIEW_COMPOSITION_ID = "PreviewFrame"
+# Preview composition ID — composition_map.py üzerinden türetilir.
+# String sabit bu dosyada tanımlanmaz; tek otorite composition_map.py.
+PREVIEW_COMPOSITION_ID: str = get_preview_composition_id("standard_video_preview")
 
 
 class RenderStillExecutor(StepExecutor):

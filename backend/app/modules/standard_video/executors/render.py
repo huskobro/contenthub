@@ -1,32 +1,45 @@
 """
-Render adımı executor'ı (RenderStepExecutor) — M6-C2.
+Render adımı executor'ı (RenderStepExecutor) — M6-C3.
 
 composition_props.json'u okur, word_timing.json'u yükler ve
 Remotion CLI'ı subprocess olarak çağırarak gerçek video render işlemini gerçekleştirir.
 
-Render sözleşmesi (değişmez):
-  Giriş  : workspace/{job_id}/artifacts/composition_props.json
-             render_status="props_ready" olan dosya
-  Çıktı  : workspace/{job_id}/artifacts/output.mp4
-             render_status="rendered" olarak güncellenir
+--------------------------------------------------------------------
+Artifact rolleri (M6-C3 resmi sınır):
+
+  composition_props.json — KANONİK SÖZLEŞME
+    - backend/app/modules/standard_video/executors/composition.py üretir
+    - render_status="props_ready" → "rendered" geçişi bu dosyada izlenir
+    - word_timing_path ham referans olarak burada yaşar
+    - Bu dosya hiçbir zaman render_props.json'un içeriğiyle değiştirilmez
+    - Denetim izi, iş durumu ve pipeline input bu dosyadan okunur
+
+  render_props.json — RUNTIME SNAPSHOT (Remotion'a özel)
+    - render.py execute() tarafından, her render öncesi üretilir
+    - composition_props.json → props alanı + M6-C2 dönüşümleri:
+        word_timing_path → wordTimings (inline array)
+    - Remotion --props argümanı bu dosyayı gösterir
+    - Bu dosya geçici operasyonel snapshot'tır; hiçbir zaman
+      composition_props.json yerine kaynakça kullanılmaz
+    - Üzerine yazılabilir, silinebilir — canonical değil
+
+Bu iki dosya arasındaki sınır bir kural değil, bir mimari garantidir.
+--------------------------------------------------------------------
+
+duration fallback davranışı (M6-C3):
+  Authoritative kaynak: composition_props.json → props.total_duration_seconds
+  Üretici: CompositionStepExecutor (composition.py)
+  Eksik/sıfır: fallback = 60.0 saniye, WARNING log ile açıkça bildirilir
+  Bozuk (negatif): fallback = 60.0 saniye, WARNING log
+  "Sessiz fallback yok" kuralı: her fallback durumu loglanır ve
+  sonuç dict'inde "duration_fallback_used: true" olarak işaretlenir.
+  Preview duration: composition_props.json'a bağlı değil — PreviewFrame sabit 1 kare.
 
 word_timing yükleme mimarisi (M6-C2):
   Renderer saf React bileşenleridir — fs okuma yapmaz.
   Backend (bu executor) word_timing_path'ı okur ve WordTiming[] array'ini
   render_props.json içine inline yazarak Remotion'a geçirir.
   Renderer StandardVideoComposition wordTimings prop'unu doğrudan kullanır.
-
-render_props.json:
-  composition_props.json → props alanının M6-C2 genişletilmiş hali.
-  Değişiklikler (M6-C1 → M6-C2):
-    - word_timing_path   : kaldırıldı (backend okuyup inline geçiriyor)
-    - wordTimings        : EKLENDİ — WordTiming[] array, inline veri
-  Sözleşme geriye uyumlu: composition.py çıktısı değişmedi,
-  render.py bu dönüşümü yapar.
-
-dynamic duration:
-  total_duration_seconds composition_props.json → props'tan alınır.
-  calculateMetadata (Root.tsx) bu değeri durationInFrames'e çevirir.
 
 Remotion CLI çağrısı:
   npx remotion render <giriş_noktası> <composition_id> <çıktı_yolu>
@@ -247,14 +260,34 @@ class RenderStepExecutor(StepExecutor):
         timing_mode = render_props.get("timing_mode", "cursor")
         word_timings_count = len(render_props.get("wordTimings", []))
 
+        # Duration fallback kontrolü — sessiz fallback yok (M6-C3 kuralı).
+        # Authoritative kaynak: composition_props.json → props.total_duration_seconds
+        # Üretici: CompositionStepExecutor
+        duration_fallback_used = False
+        raw_duration = render_props.get("total_duration_seconds")
+        _DURATION_FALLBACK_SECONDS = 60.0
+        if not isinstance(raw_duration, (int, float)) or raw_duration <= 0:
+            logger.warning(
+                "RenderStepExecutor: total_duration_seconds geçersiz veya eksik "
+                "(değer=%r). Fallback=%ss kullanılıyor. job=%s "
+                "Bu durum CompositionStepExecutor çıktısında bir soruna işaret edebilir.",
+                raw_duration,
+                _DURATION_FALLBACK_SECONDS,
+                job.id,
+            )
+            render_props["total_duration_seconds"] = _DURATION_FALLBACK_SECONDS
+            duration_fallback_used = True
+
         logger.info(
             "RenderStepExecutor: render başlatılıyor. job=%s composition_id=%s "
-            "timing_mode=%s word_timings_count=%d total_duration_seconds=%.1f",
+            "timing_mode=%s word_timings_count=%d total_duration_seconds=%.1f "
+            "duration_fallback_used=%s",
             job.id,
             composition_id,
             timing_mode,
             word_timings_count,
             render_props.get("total_duration_seconds", 0.0),
+            duration_fallback_used,
         )
 
         # render_props.json'u artifacts/ altına yaz — Remotion'a --props ile geçirilir
@@ -294,18 +327,21 @@ class RenderStepExecutor(StepExecutor):
         composition_props["output_path"] = str(output_path)
         composition_props["timing_mode_used"] = timing_mode
         composition_props["word_timings_count"] = word_timings_count
+        composition_props["duration_fallback_used"] = duration_fallback_used
         composition_props["updated_at"] = datetime.now(timezone.utc).isoformat()
         _write_artifact(workspace_root, job.id, "composition_props.json", composition_props)
 
         logger.info(
             "RenderStepExecutor: render tamamlandı. job=%s composition_id=%s "
-            "output=%s elapsed_ms=%d timing_mode=%s word_timings=%d",
+            "output=%s elapsed_ms=%d timing_mode=%s word_timings=%d "
+            "duration_fallback_used=%s",
             job.id,
             composition_id,
             output_path,
             elapsed_ms,
             timing_mode,
             word_timings_count,
+            duration_fallback_used,
         )
 
         return {
@@ -314,6 +350,7 @@ class RenderStepExecutor(StepExecutor):
             "render_status": "rendered",
             "timing_mode": timing_mode,
             "word_timings_count": word_timings_count,
+            "duration_fallback_used": duration_fallback_used,
             "provider": {
                 "provider_id": "remotion_cli",
                 "composition_id": composition_id,
@@ -321,6 +358,7 @@ class RenderStepExecutor(StepExecutor):
                 "output_path": str(output_path),
                 "timing_mode": timing_mode,
                 "word_timings_count": word_timings_count,
+                "duration_fallback_used": duration_fallback_used,
                 "latency_ms": elapsed_ms,
                 "returncode": render_result.get("returncode", 0),
             },

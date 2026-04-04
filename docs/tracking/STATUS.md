@@ -3,12 +3,13 @@
 ## Mevcut Faz
 Kiln Build — M6: Remotion Render Pipeline + Preview Infrastructure — DEVAM EDİYOR
 
-**M6-C2 TAMAMLANDI — 815 test geçiyor**
+**M6-C3 TAMAMLANDI — 840 test geçiyor**
 
 ## Mevcut Durum (2026-04-04)
-M6-C1 + M6-C2 tamamlandı:
+M6-C1 + M6-C2 + M6-C3 tamamlandı:
 - M6-C1: Remotion kurulumu + renderer paketi + RenderStepExecutor foundation
-- M6-C2: word_timing inline yükleme, dynamic duration (calculateMetadata), RenderStillExecutor (PreviewFrame composition), preview/final ayrımı
+- M6-C2: word_timing inline yükleme, dynamic duration, RenderStillExecutor + PreviewFrame
+- M6-C3: composition_map senkronu (PreviewFrame), artifact rolleri (canonical vs snapshot), duration fallback açıklık, as unknown cast audit
 
 M5-C1, M5-C2 ve M5-C3 tamamlandı:
 - M5-C1: Source Registry + RSS Fetch + Normalization (feedparser, scan_engine.py, ScanExecuteResponse, hard dedupe, durum semantiği izolasyonu)

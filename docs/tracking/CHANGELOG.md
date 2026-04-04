@@ -2,6 +2,95 @@
 
 ---
 
+## [2026-04-04] M6-C3 — Composition Map Senkronu + Artifact Rolleri + Duration Fallback
+
+### Kapsam
+PreviewFrame composition_map.py'e kayıt; composition_props.json vs render_props.json resmi rol ayrımı; duration fallback açık log; as unknown cast audit.
+
+### Değişen Dosyalar
+
+**backend/app/modules/standard_video/composition_map.py** (GÜNCELLENDİ)
+- `PREVIEW_COMPOSITION_MAP` eklendi: `{"standard_video_preview": "PreviewFrame"}`.
+- `get_preview_composition_id(preview_context)` eklendi — RenderStillExecutor için.
+- `get_all_composition_ids()` eklendi — Root.tsx doğrulama ve test için.
+- Senkron kuralı belgelendi: Root.tsx içindeki her id bu dosyada olmalı.
+
+**backend/app/modules/standard_video/executors/render_still.py** (GÜNCELLENDİ)
+- `PREVIEW_COMPOSITION_ID` artık string sabit değil; `get_preview_composition_id()` çağrısından türetilir.
+- Import: `from app.modules.standard_video.composition_map import get_preview_composition_id`.
+- Docstring: composition ID kaynağı belgesi eklendi.
+
+**backend/app/modules/standard_video/executors/render.py** (GÜNCELLENDİ)
+- Docstring: `composition_props.json` (kanonik) vs `render_props.json` (runtime snapshot) ayrımı belgelendi.
+- Duration fallback: `total_duration_seconds` eksik/sıfır/negatif → fallback=60s + WARNING log.
+- `duration_fallback_used: bool` sonuç dict, provider trace ve `composition_props.json` güncellemesine eklendi.
+
+**renderer/src/Root.tsx** (GÜNCELLENDİ)
+- Docstring: composition_map.py senkronu ve as unknown cast audit sayısı belgelendi.
+- `calculateMetadata` duration fallback: geçersiz duration → `console.warn` + fallback=60s.
+- Sessiz fallback yok: hem backend hem renderer fallback durumu loglar.
+
+**backend/tests/test_m6_c3_composition_map_sync.py** (YENİ)
+- 25 test — tümü geçiyor.
+
+### Mandatorî M6-C3 Teslimat Alanları
+
+**composition_props.json ile render_props.json arasındaki resmi rol farkı:**
+- `composition_props.json` = KANONİK SÖZLEŞME. CompositionStepExecutor üretir. Pipeline durumu, denetim izi, word_timing_path ham referansı burada yaşar. Render executor bu dosyayı render_status geçişi için günceller; içeriğini değiştirmez.
+- `render_props.json` = RUNTIME SNAPSHOT. RenderStepExecutor her render öncesi üretir. `word_timing_path` → `wordTimings[]` dönüşümü burada yapılır. Remotion `--props` bu dosyayı gösterir. Geçici, üzerine yazılabilir — canonical değil.
+- Test 14 `render_props.json`'un `job_id` içermediğini kilitler (composition_props'un alanları).
+
+**preview composition mapping nasıl senkronize edildi:**
+- `composition_map.PREVIEW_COMPOSITION_MAP["standard_video_preview"] = "PreviewFrame"` — tek otorite.
+- `render_still.py` `PREVIEW_COMPOSITION_ID` bu map'ten modül yüklemesinde türetilir.
+- Test 5 ve 7 bu bağı kilitler: test 5 değer eşitliğini, test 7 string sabit olmadığını doğrular.
+- Root.tsx dokümanı bu map ile senkronize olduğunu belirtir.
+
+**dynamic duration authoritative kaynakları:**
+- Tek kaynak: `composition_props.json → props.total_duration_seconds` (CompositionStepExecutor üretir).
+- Backend: geçersiz → `duration_fallback_used=True` + WARNING log.
+- Renderer: geçersiz → `console.warn` + fallback=60s.
+- Preview duration: composition_props.json'a bağlı değil — `PreviewFrame` sabit 1 kare.
+
+**preview ve final executor davranış farkları:**
+| Özellik                   | RenderStepExecutor | RenderStillExecutor |
+|---------------------------|-------------------|---------------------|
+| Composition ID            | StandardVideo      | PreviewFrame        |
+| Çıktı                     | output.mp4         | preview_frame.jpg   |
+| composition_props güncelleme | Evet (render_status) | Hayır           |
+| Timeout                   | 600s               | 120s                |
+| render_props.json üretir  | Evet               | Hayır (preview_props.json) |
+| word_timing yükleme       | Evet               | Hayır               |
+| duration fallback         | Evet, WARNING log  | N/A (sabit 1 kare)  |
+
+**inline word timings payload büyüme riski — şu an:**
+Şu an düşük: tipik video 50-200 kelime × ~50 byte = 2.5-10KB JSON payload.
+Watchlist kriterleri: sahne sayısı > 50, kelime sayısı > 500, preview vs final payload farkı. Bu eşikler aşılırsa ayrı word_timing endpoint veya lazy loading düşünülmeli.
+
+**render-contract drift risk: düşük**
+composition_map.py tek otorite. Test 4, 5, 17, 18 senkronu kilitler. render_props.json üretim fonksiyonu izole.
+
+**preview-scope confusion risk: yok**
+Test 16 RenderStillExecutor'ın composition_props.json okumadığını kilitler. Test 18 ID çakışması yok.
+
+**render-runtime coupling risk: düşük**
+Değişmedi. shell=False, graceful fallback, timeout disiplini korundu.
+
+**warnings status: known-nonblocking**
+1 warning: mock framework internal. Değişmedi.
+
+### Teknik Borç
+- `calculateMetadata` hâlâ `as unknown as StandardVideoProps` cast gerektiriyor — Remotion v4 Zod-less sınırlama. Localized, yayılmıyor.
+- `PREVIEW_COMPOSITION_MAP` henüz tek entry — gelecekte modül başına preview eklenirse key convention belgelenecek.
+
+### Test Sonuçları
+- M6-C3 testleri: 25/25 geçiyor
+- Toplam: 840/840 geçiyor
+- TypeScript: temiz
+- Warnings: 1 (framework seviyesi — değişmedi)
+
+---
+
 ## [2026-04-04] M6-C2 — word_timing Inline Yükleme + Dynamic Duration + renderStill Preview
 
 ### Kapsam

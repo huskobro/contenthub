@@ -1,18 +1,29 @@
 /**
- * Remotion composition kayıt kökü — M6-C2.
+ * Remotion composition kayıt kökü — M6-C3.
  *
  * Tüm composition'lar burada kayıt edilir.
  * Güvenli composition mapping kuralı: yeni composition eklemek için
  * bu dosyaya açık kayıt yapılmalı ve composition_map.py ile senkronize tutulmalıdır.
  *
- * Mevcut composition'lar:
+ * Mevcut composition'lar (composition_map.py ile senkron — M6-C3):
  *   StandardVideo     — standard_video modülü için (final render)
- *   PreviewFrame      — renderStill preview için (final render'dan ayrı, M6-C2)
+ *                       composition_map.COMPOSITION_MAP["standard_video"]
+ *   PreviewFrame      — renderStill preview için (final render'dan ayrı)
+ *                       composition_map.PREVIEW_COMPOSITION_MAP["standard_video_preview"]
  *
- * Dynamic duration (M6-C2):
- *   calculateMetadata: total_duration_seconds × fps → durationInFrames.
- *   M6-C1'deki sabit 1800 frame kaldırıldı.
- *   Kaynak: composition_props.json → props.total_duration_seconds (backend üretir).
+ * Dynamic duration (M6-C2, M6-C3 fallback belgesi):
+ *   Authoritative kaynak: render_props.json → total_duration_seconds
+ *   Üretici: backend CompositionStepExecutor
+ *   Fallback: total_duration_seconds eksik/sıfır/negatif → 60 saniye.
+ *   Backend tarafı bu durumu WARNING log + duration_fallback_used=true ile bildirir.
+ *   Renderer tarafı: props null/undefined → 60 saniye (console.warn ile bildirilir).
+ *   Sessiz fallback yok: hem backend hem renderer fallback durumu loglar.
+ *
+ * as unknown cast (M6-C3 audit):
+ *   Bu dosyada 5 gerçek cast var (2 component + 2 defaultProps + 1 calculateMetadata).
+ *   Remotion v4 Zod-less kayıt için gerekli sınırlama — yayılmamalı.
+ *   Yeni composition eklemek 2 cast daha gerektirir (component + defaultProps).
+ *   Bu sayı artarsa alarm verilmeli.
  *
  * Zod şema kullanılmaz — props doğrudan TypeScript tipi ile tanımlanır.
  */
@@ -99,10 +110,23 @@ export function RemotionRoot() {
           defaultStandardVideoProps as unknown as Record<string, unknown>
         }
         calculateMetadata={async ({ props }) => {
-          // total_duration_seconds props'tan — backend composition.py üretir.
-          // Kaynak: composition_props.json → props.total_duration_seconds
+          // Authoritative kaynak: render_props.json → total_duration_seconds
+          // Üretici: backend CompositionStepExecutor
+          // Fallback: eksik/sıfır/negatif → 60 saniye + console.warn
           const typed = props as unknown as StandardVideoProps;
-          const totalSecs = typed.total_duration_seconds ?? 60;
+          const raw = typed.total_duration_seconds;
+          const FALLBACK_SECS = 60;
+          let totalSecs: number;
+          if (typeof raw !== "number" || raw <= 0) {
+            console.warn(
+              `[Root.tsx] total_duration_seconds geçersiz (${raw}). ` +
+              `Fallback=${FALLBACK_SECS}s kullanılıyor. ` +
+              `Bu durum backend composition artifact sorununa işaret edebilir.`
+            );
+            totalSecs = FALLBACK_SECS;
+          } else {
+            totalSecs = raw;
+          }
           const durationInFrames = Math.max(1, Math.round(totalSecs * FPS));
           return { durationInFrames };
         }}
