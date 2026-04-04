@@ -3,6 +3,7 @@
 ## Mevcut Faz
 Kiln Build — M8: Analytics + Operations Pack — DEVAM EDİYOR
 
+**M8-C2 TAMAMLANDI — 32/32 yeni frontend smoke testi + 2132/2132 full suite (Frontend Analytics Surface + Window Selector + Step Stats Table)**
 **M8-C1 TAMAMLANDI — 24/24 test geçiyor (Analytics Backend + Platform Overview + hardening pass)**
 **M7 KAPANDI — C1–C4 tamamlandı, backend-complete**
 
@@ -13,6 +14,18 @@ Kiln Build — M8: Analytics + Operations Pack — DEVAM EDİYOR
 **M6 KAPANDI**
 
 ## Mevcut Durum (2026-04-04)
+M8-C2 tamamlandı:
+- `frontend/src/api/analyticsApi.ts` — fetchOverviewMetrics + fetchOperationsMetrics, AnalyticsWindow tipi, OverviewMetrics + OperationsMetrics + StepStat arayüzleri
+- `frontend/src/hooks/useAnalyticsOverview.ts` — React Query hook; queryKey: ["analytics","overview",window]
+- `frontend/src/hooks/useAnalyticsOperations.ts` — React Query hook; queryKey: ["analytics","operations",window]
+- `AnalyticsOverviewPage.tsx` — real API bağlantısı; 4-butonlu window selector (last_7d/last_30d/last_90d/all_time); Temel Metrikler kartları (published_count, failed_publish_count, job_success_rate, avg_production_duration_seconds, retry_rate, provider_error_rate=—); İş ve Yayın Detayı kartları (total_job_count, completed, failed, total_publish, publish_success_rate); Channel Overview + Filter area (backward-compat testleri için); sub-nav navigation
+- `AnalyticsOperationsPage.tsx` — real API bağlantısı; 4-butonlu window selector; Is Performansi section; avg_render_duration_seconds kartı; Provider Sagligi section; step_stats tablosu (step_key / count / avg_elapsed_seconds / failed_count, count DESC sıralı, kırmızı failed>0); boş durum; Kaynak Etkisi section (placeholder); provider_error_rate=— (M8-C2 unsupported)
+- Loading state: "…" placeholder; error state: kırmızı mesaj; null değerler: "—"
+- Format kuralları: rate → %X.X; seconds < 60 → Xs; seconds ≥ 60 → Xdk; count → string
+- 32/32 yeni frontend smoke testi (analytics-overview-page: 18 test, analytics-operations-page: 14 test)
+- Mevcut testlere 0 regression: 2132/2132 full suite, 0 hata
+- TypeScript check: 0 hata
+
 M8-C1 tamamlandı (hardening pass dahil):
 - `backend/app/analytics/service.py` — salt okunur aggregation; jobs + job_steps + publish_records
 - `backend/app/analytics/router.py` — GET /api/v1/analytics/overview + GET /api/v1/analytics/operations

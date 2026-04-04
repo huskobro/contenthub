@@ -1,4 +1,7 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useAnalyticsOverview } from "../../hooks/useAnalyticsOverview";
+import type { AnalyticsWindow } from "../../api/analyticsApi";
 
 const SUBTITLE: React.CSSProperties = {
   margin: "0 0 0.5rem",
@@ -79,7 +82,33 @@ const NAV_DESC: React.CSSProperties = {
   lineHeight: 1.5,
 };
 
+const WINDOW_OPTIONS: { value: AnalyticsWindow; label: string }[] = [
+  { value: "last_7d", label: "Son 7 Gün" },
+  { value: "last_30d", label: "Son 30 Gün" },
+  { value: "last_90d", label: "Son 90 Gün" },
+  { value: "all_time", label: "Tüm Zamanlar" },
+];
+
+function fmtRate(v: number | null | undefined): string {
+  if (v == null) return "—";
+  return `${(v * 100).toFixed(1)}%`;
+}
+
+function fmtSeconds(v: number | null | undefined): string {
+  if (v == null) return "—";
+  if (v < 60) return `${v.toFixed(1)}s`;
+  return `${(v / 60).toFixed(1)}dk`;
+}
+
+function fmtCount(v: number | null | undefined): string {
+  if (v == null) return "—";
+  return String(v);
+}
+
 export function AnalyticsOverviewPage() {
+  const [window, setWindow] = useState<AnalyticsWindow>("last_30d");
+  const { data, isLoading, isError } = useAnalyticsOverview(window);
+
   return (
     <div>
       <h2
@@ -117,54 +146,145 @@ export function AnalyticsOverviewPage() {
         data-testid="analytics-reporting-distinction"
       >
         Analytics canli metrikleri ve anlik durumu gosterir. Raporlama ise
-        ozetleyici ve karar destekleyici gorunum saglar. Her iki alan da
-        ayni veri kaynaklarindan beslenir, farkli bakis acilari sunar.
+        ozetleyici ve karar destekleyici gorunum saglar.
       </p>
 
-      {/* Core Metrics — Phase 294 */}
+      {/* Window Selector */}
+      <div style={{ marginBottom: "1.5rem", display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+        {WINDOW_OPTIONS.map((opt) => (
+          <button
+            key={opt.value}
+            onClick={() => setWindow(opt.value)}
+            data-testid={`window-btn-${opt.value}`}
+            style={{
+              padding: "0.35rem 0.75rem",
+              fontSize: "0.8125rem",
+              borderRadius: "4px",
+              border: "1px solid",
+              cursor: "pointer",
+              borderColor: window === opt.value ? "#3b82f6" : "#e2e8f0",
+              background: window === opt.value ? "#eff6ff" : "#fff",
+              color: window === opt.value ? "#1d4ed8" : "#475569",
+              fontWeight: window === opt.value ? 600 : 400,
+            }}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
+
+      {isError && (
+        <p
+          style={{ color: "#ef4444", fontSize: "0.875rem", marginBottom: "1rem" }}
+          data-testid="analytics-overview-error"
+        >
+          Metrikler yuklenemedi. Backend baglantisi kontrol edilsin.
+        </p>
+      )}
+
+      {/* Core Metrics */}
       <div style={SECTION} data-testid="analytics-core-metrics">
         <h3 style={{ margin: "0 0 0.25rem", fontSize: "1rem" }} data-testid="core-metrics-heading">
           Temel Metrikler
         </h3>
         <p style={{ margin: "0 0 0.75rem", fontSize: "0.75rem", color: "#94a3b8" }} data-testid="core-metrics-note">
           Uretim ve yayin surecinin ozet gostergesi. Veriler backend analytics
-          modulu aktif olunca gercek degerlerle dolacaktir.
+          modulu uzerinden gercek zamanli guncellenir.
         </p>
         <div style={METRIC_GRID}>
           <div style={METRIC_CARD} data-testid="metric-publish-count">
             <p style={METRIC_LABEL}>Yayin Sayisi</p>
-            <p style={METRIC_VALUE}>—</p>
+            <p style={METRIC_VALUE} data-testid="metric-publish-count-value">
+              {isLoading ? "…" : fmtCount(data?.published_count)}
+            </p>
             <p style={METRIC_NOTE}>Toplam basarili yayin</p>
           </div>
           <div style={METRIC_CARD} data-testid="metric-failed-publish">
             <p style={METRIC_LABEL}>Basarisiz Yayin</p>
-            <p style={METRIC_VALUE}>—</p>
+            <p style={METRIC_VALUE} data-testid="metric-failed-publish-value">
+              {isLoading ? "…" : fmtCount(data?.failed_publish_count)}
+            </p>
             <p style={METRIC_NOTE}>Hata ile sonuclanan yayin denemeleri</p>
           </div>
           <div style={METRIC_CARD} data-testid="metric-job-success-rate">
             <p style={METRIC_LABEL}>Is Basari Orani</p>
-            <p style={METRIC_VALUE}>—</p>
+            <p style={METRIC_VALUE} data-testid="metric-job-success-rate-value">
+              {isLoading ? "…" : fmtRate(data?.job_success_rate)}
+            </p>
             <p style={METRIC_NOTE}>Tamamlanan / toplam is</p>
           </div>
           <div style={METRIC_CARD} data-testid="metric-avg-duration">
             <p style={METRIC_LABEL}>Ort. Uretim Suresi</p>
-            <p style={METRIC_VALUE}>—</p>
+            <p style={METRIC_VALUE} data-testid="metric-avg-duration-value">
+              {isLoading ? "…" : fmtSeconds(data?.avg_production_duration_seconds)}
+            </p>
             <p style={METRIC_NOTE}>Baslangictan tamamlanmaya</p>
           </div>
           <div style={METRIC_CARD} data-testid="metric-retry-rate">
             <p style={METRIC_LABEL}>Yeniden Deneme Orani</p>
-            <p style={METRIC_VALUE}>—</p>
+            <p style={METRIC_VALUE} data-testid="metric-retry-rate-value">
+              {isLoading ? "…" : fmtRate(data?.retry_rate)}
+            </p>
             <p style={METRIC_NOTE}>Retry gerektiren isler</p>
           </div>
           <div style={METRIC_CARD} data-testid="metric-provider-error">
             <p style={METRIC_LABEL}>Provider Hata Orani</p>
-            <p style={METRIC_VALUE}>—</p>
-            <p style={METRIC_NOTE}>Dis servis hatalari</p>
+            <p style={METRIC_VALUE} data-testid="ops-metric-provider-error-value">
+              —
+            </p>
+            <p style={METRIC_NOTE}>Dis servis hatalari (M8-C2: desteklenmiyor)</p>
           </div>
         </div>
       </div>
 
-      {/* Channel Overview — Phase 296 */}
+      {/* Job Metrics (additional breakdown) */}
+      <div style={SECTION} data-testid="analytics-publish-metrics">
+        <h3 style={{ margin: "0 0 0.25rem", fontSize: "1rem" }} data-testid="publish-metrics-heading">
+          İş ve Yayın Detayı
+        </h3>
+        <p style={{ margin: "0 0 0.75rem", fontSize: "0.75rem", color: "#94a3b8" }} data-testid="publish-metrics-note">
+          Is ve yayin sayilari, basari oranlari.
+        </p>
+        <div style={METRIC_GRID}>
+          <div style={METRIC_CARD} data-testid="metric-total-jobs">
+            <p style={METRIC_LABEL}>Toplam İş</p>
+            <p style={METRIC_VALUE} data-testid="metric-total-jobs-value">
+              {isLoading ? "…" : fmtCount(data?.total_job_count)}
+            </p>
+            <p style={METRIC_NOTE}>Olusturulan tum isler</p>
+          </div>
+          <div style={METRIC_CARD} data-testid="metric-completed-jobs">
+            <p style={METRIC_LABEL}>Tamamlanan</p>
+            <p style={METRIC_VALUE} data-testid="metric-completed-jobs-value">
+              {isLoading ? "…" : fmtCount(data?.completed_job_count)}
+            </p>
+            <p style={METRIC_NOTE}>Basariyla biten isler</p>
+          </div>
+          <div style={METRIC_CARD} data-testid="metric-failed-jobs">
+            <p style={METRIC_LABEL}>Başarısız İş</p>
+            <p style={METRIC_VALUE} data-testid="metric-failed-jobs-value">
+              {isLoading ? "…" : fmtCount(data?.failed_job_count)}
+            </p>
+            <p style={METRIC_NOTE}>Hata ile sonuclanan isler</p>
+          </div>
+          <div style={METRIC_CARD} data-testid="metric-total-publish">
+            <p style={METRIC_LABEL}>Toplam Yayın Denemesi</p>
+            <p style={METRIC_VALUE} data-testid="metric-total-publish-value">
+              {isLoading ? "…" : fmtCount(data?.total_publish_count)}
+            </p>
+            <p style={METRIC_NOTE}>Tum yayin kayitlari</p>
+          </div>
+          <div style={METRIC_CARD} data-testid="metric-publish-success-rate">
+            <p style={METRIC_LABEL}>Yayın Başarı Oranı</p>
+            <p style={METRIC_VALUE} data-testid="metric-publish-success-rate-value">
+              {isLoading ? "…" : fmtRate(data?.publish_success_rate)}
+            </p>
+            <p style={METRIC_NOTE}>Yayinlanan / toplam yayin</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Channel Overview */}
       <div style={SECTION} data-testid="analytics-channel-overview">
         <h3 style={{ margin: "0 0 0.25rem", fontSize: "1rem" }} data-testid="channel-overview-heading">
           Kanal Ozeti
@@ -193,14 +313,13 @@ export function AnalyticsOverviewPage() {
         </div>
       </div>
 
-      {/* Date/Filter — Phase 297 */}
+      {/* Date/Filter */}
       <div style={SECTION} data-testid="analytics-filter-area">
         <h3 style={{ margin: "0 0 0.25rem", fontSize: "1rem" }} data-testid="filter-heading">
           Filtre ve Tarih Araligi
         </h3>
         <p style={{ margin: "0 0 0.75rem", fontSize: "0.75rem", color: "#94a3b8" }} data-testid="filter-note">
           Metrikleri belirli bir tarih araligi veya modul turuyle filtreleyebilirsiniz.
-          Filtreler tum metrik kartlarina ve alt sayfalara etki eder.
         </p>
         <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
           <div>
@@ -210,14 +329,7 @@ export function AnalyticsOverviewPage() {
             <input
               type="date"
               disabled
-              style={{
-                padding: "0.4rem 0.5rem",
-                border: "1px solid #e2e8f0",
-                borderRadius: "4px",
-                fontSize: "0.8125rem",
-                background: "#f8fafc",
-                color: "#94a3b8",
-              }}
+              style={{ padding: "0.4rem 0.5rem", border: "1px solid #e2e8f0", borderRadius: "4px", fontSize: "0.8125rem", background: "#f8fafc", color: "#94a3b8" }}
               data-testid="filter-date-start"
             />
           </div>
@@ -228,14 +340,7 @@ export function AnalyticsOverviewPage() {
             <input
               type="date"
               disabled
-              style={{
-                padding: "0.4rem 0.5rem",
-                border: "1px solid #e2e8f0",
-                borderRadius: "4px",
-                fontSize: "0.8125rem",
-                background: "#f8fafc",
-                color: "#94a3b8",
-              }}
+              style={{ padding: "0.4rem 0.5rem", border: "1px solid #e2e8f0", borderRadius: "4px", fontSize: "0.8125rem", background: "#f8fafc", color: "#94a3b8" }}
               data-testid="filter-date-end"
             />
           </div>
@@ -245,14 +350,7 @@ export function AnalyticsOverviewPage() {
             </label>
             <select
               disabled
-              style={{
-                padding: "0.4rem 0.5rem",
-                border: "1px solid #e2e8f0",
-                borderRadius: "4px",
-                fontSize: "0.8125rem",
-                background: "#f8fafc",
-                color: "#94a3b8",
-              }}
+              style={{ padding: "0.4rem 0.5rem", border: "1px solid #e2e8f0", borderRadius: "4px", fontSize: "0.8125rem", background: "#f8fafc", color: "#94a3b8" }}
               data-testid="filter-module-select"
             >
               <option>Tumu</option>

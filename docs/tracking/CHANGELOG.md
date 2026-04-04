@@ -2,6 +2,48 @@
 
 ---
 
+## [2026-04-04] M8-C2 — Frontend Analytics Surface + Window Selector + Step Stats Table
+
+### Özet
+AnalyticsOverviewPage ve AnalyticsOperationsPage, M8-C1 REST API'ye bağlandı.
+Placeholder "—" değerleri kaldırıldı; window seçici (last_7d/last_30d/last_90d/all_time) aktif hale getirildi.
+Operations sayfasına step_stats tablosu eklendi.
+
+### Yeni dosyalar
+- `frontend/src/api/analyticsApi.ts` — fetchOverviewMetrics + fetchOperationsMetrics; AnalyticsWindow tipi; OverviewMetrics + OperationsMetrics + StepStat arayüzleri
+- `frontend/src/hooks/useAnalyticsOverview.ts` — React Query; staleTime 30s
+- `frontend/src/hooks/useAnalyticsOperations.ts` — React Query; staleTime 30s
+- `frontend/src/tests/analytics-overview-page.smoke.test.tsx` — 18 test (A–R)
+- `frontend/src/tests/analytics-operations-page.smoke.test.tsx` — 14 test (A–N)
+
+### Değiştirilen dosyalar
+- `frontend/src/pages/admin/AnalyticsOverviewPage.tsx` — real API; window selector; 6 Temel Metrik + 5 İş/Yayın kartı; Channel Overview + Filter area (backward-compat); sub-nav
+- `frontend/src/pages/admin/AnalyticsOperationsPage.tsx` — real API; window selector; avg_render kartı; step_stats tablosu (count DESC, failed >0 kırmızı); boş durum; Provider + Kaynak Etkisi sections
+
+### Format kuralları
+- rate (0–1): `%X.X` formatı
+- seconds < 60: `Xs`
+- seconds ≥ 60: `Xdk`
+- count: sayı string
+- null/undefined: `—`
+
+### Test sonuçları
+- 32/32 yeni test geçiyor (analytics-overview: 18, analytics-operations: 14)
+- 2132/2132 full suite — 0 regression
+- TypeScript: 0 hata
+
+### Tasarım kararları
+- provider_error_rate: `—` — M8-C2'de unsupported; M8-C1 backend de None döner
+- Channel Overview + Filter area kartları backward-compat için saklandı (Phase 296–297 testleri)
+- window seçici local state (Zustand değil) — tek sayfa kapsamlı, paylaşılmıyor
+
+### Bilinen sınırlamalar
+- Channel Overview kartları (total_content, active_modules, template_impact): placeholder; M8-C3+ kapsam
+- Filter area date picker ve module select: disabled; window selector bu rolleri üstlendi
+- Operations sayfası Is Performansi kartları (total, completed, failed): placeholder; veri Operations API'de yok
+
+---
+
 ## [2026-04-04] M8-C1 — Analytics Backend + Platform Overview
 
 ### Özet
