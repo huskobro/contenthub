@@ -2,6 +2,41 @@
 
 ---
 
+## [2026-04-04] M7-C3 — PublishStepExecutor + Dispatcher entegrasyonu + Standard Video publish step
+
+### Özet
+YouTube Publish zincirini (upload + activate) servis katmanına bağlayan executor implement edildi.
+Audit trail tamamlandı. OPERATOR_CONFIRM idempotency, partial failure ve retryable semantiği eklendi.
+
+### Yeni dosyalar
+- `backend/app/publish/executor.py` — PublishStepExecutor
+
+### Değiştirilen dosyalar
+- `backend/app/jobs/exceptions.py` — StepExecutionError'a retryable eklendi
+- `backend/app/jobs/dispatcher.py` — PublishStepExecutor için pipeline_db inject desteği
+- `backend/app/modules/standard_video/definition.py` — publish step (step_order=7, operator_confirm)
+- `backend/tests/test_m2_c1_module_system.py` — step sayısı 6→7, anahtarlara publish eklendi
+- `backend/tests/test_m2_c6_dispatcher_integration.py` — step sayısı ve key set güncellendi
+- `backend/tests/test_m7_c3_publish_executor.py` — 20 test (A–T)
+
+### Tasarım garantileri
+- Adaptör servis state'ine dokunmaz (mark_published/mark_failed servis katmanı üzerinden)
+- Audit trail executor/service tarafında: her platform event → PublishLog PLATFORM_EVENT kaydı
+- Partial failure: upload başarılı → platform_video_id ara kaydedilir → activate başarısız = upload tekrarlanmaz
+- OPERATOR_CONFIRM idempotency: status=='published' ise step atlanır
+- retryable semantiği: YouTubeAuthError/QuotaExceeded/NotFound → retryable=False; diğerleri → True
+
+### M7 zorunlu alanları (final)
+- publish-state ambiguity risk: YOK
+- review-to-publish boundary risk: YOK
+- partial-failure recovery clarity: TAMAMLANDI
+- audit-trail completeness: TAMAMLANDI
+
+### Test sonuçları
+20/20 M7-C3 + 928/928 full suite geçti. 0 regression.
+
+---
+
 ## [2026-04-04] M7-C2 — YouTube Adapter v1 + TokenStore + Registry + OAuth Router
 
 ### Özet

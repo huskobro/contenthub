@@ -316,7 +316,7 @@ async def test_create_job_initializes_steps(db_session, test_registry):
     await initialize_job_steps(db_session, job.id, "standard_video", test_registry)
 
     steps = await service.get_job_steps(db_session, job.id)
-    assert len(steps) == 6, f"6 adım bekleniyor, {len(steps)} bulundu"
+    assert len(steps) == 7, f"7 adım bekleniyor, {len(steps)} bulundu"
 
     step_map = {s.step_key: s for s in steps}
     expected = [
@@ -433,7 +433,7 @@ async def test_post_jobs_valid_payload_creates_job_and_steps(isolated_workspace)
     data = response.json()
     assert data["status"] == "queued", f"Beklenen status=queued, gelen: {data['status']}"
     assert data["module_type"] == "standard_video"
-    assert len(data.get("steps", [])) == 6, f"6 adım bekleniyor, gelen: {len(data.get('steps', []))}"
+    assert len(data.get("steps", [])) == 7, f"7 adım bekleniyor, gelen: {len(data.get('steps', []))}"
 
 
 # ===========================================================================
@@ -505,11 +505,11 @@ async def test_get_job_returns_steps(isolated_workspace):
     assert get_resp.status_code == 200, get_resp.text
     data = get_resp.json()
     assert "steps" in data, "steps alanı eksik"
-    assert len(data["steps"]) == 6, f"6 adım bekleniyor, gelen: {len(data['steps'])}"
+    assert len(data["steps"]) == 7, f"7 adım bekleniyor, gelen: {len(data['steps'])}"
 
     # step_key'leri doğrula
     step_keys = {s["step_key"] for s in data["steps"]}
-    expected_keys = {"script", "metadata", "tts", "visuals", "subtitle", "composition"}
+    expected_keys = {"script", "metadata", "tts", "visuals", "subtitle", "composition", "publish"}
     assert step_keys == expected_keys, f"Beklenen adım anahtarları: {expected_keys}, gelen: {step_keys}"
 
 

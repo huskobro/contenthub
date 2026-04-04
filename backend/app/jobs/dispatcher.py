@@ -43,6 +43,7 @@ from app.modules.standard_video.executors import (
 )
 from app.providers.capability import ProviderCapability
 from app.providers.registry import ProviderRegistry
+from app.publish.executor import PublishStepExecutor
 
 if TYPE_CHECKING:
     from app.sse.bus import EventBus
@@ -53,6 +54,7 @@ logger = logging.getLogger(__name__)
 def _build_executor_from_registry(
     executor_class: type,
     registry: ProviderRegistry,
+    pipeline_db=None,
 ) -> StepExecutor:
     """
     Executor sınıfına göre registry'den provider çözümler ve instance döner.
@@ -66,11 +68,14 @@ def _build_executor_from_registry(
     WHISPER gerektiren executor'lar: SubtitleStepExecutor
       → registry alır; Whisper provider kayıtlıysa kelime-düzeyi timing kullanır,
         yoksa cursor-tabanlı timing'e otomatik düşer (M4-C1).
+    Publish gerektiren executor'lar: PublishStepExecutor
+      → pipeline_db session alır; publish_adapter_registry üzerinden adaptöre erişir.
     Provider gerektirmeyen executor'lar: CompositionStepExecutor
 
     Args:
         executor_class: Executor'ın sınıf nesnesi.
         registry      : Kayıtlı provider'ları içeren registry.
+        pipeline_db   : AsyncSession — PublishStepExecutor için zorunlu.
 
     Returns:
         Executor instance'ı.
@@ -94,6 +99,13 @@ def _build_executor_from_registry(
     if executor_class is SubtitleStepExecutor:
         # Whisper provider kayıtlıysa kelime-düzeyi timing aktif olur; yoksa cursor-tabanlı.
         return SubtitleStepExecutor(registry=registry)
+
+    if executor_class is PublishStepExecutor:
+        if pipeline_db is None:
+            raise ValueError(
+                "PublishStepExecutor için pipeline_db (AsyncSession) gereklidir."
+            )
+        return PublishStepExecutor(db=pipeline_db)
 
     # Provider gerektirmeyen executor'lar (CompositionStepExecutor)
     return executor_class()
@@ -166,12 +178,16 @@ class JobDispatcher:
             )
             return
 
+        # Pipeline için yeni bir DB oturumu aç; runner ve PublishStepExecutor bu oturumu kullanır.
+        pipeline_db = self._session_factory()
+
         # Her adım için provider_registry üzerinden executor oluştur
         executors: dict[str, StepExecutor] = {}
         for step_def in step_definitions:
             executor = _build_executor_from_registry(
                 step_def.executor_class,
                 self._provider_registry,
+                pipeline_db=pipeline_db,
             )
             executors[step_def.step_key] = executor
 
@@ -180,9 +196,6 @@ class JobDispatcher:
             job_id,
             list(executors.keys()),
         )
-
-        # Pipeline için yeni bir DB oturumu aç; runner bu oturumu pipeline boyunca kullanır.
-        pipeline_db = self._session_factory()
         runner = PipelineRunner(
             db=pipeline_db,
             executors=executors,

@@ -3,11 +3,27 @@
 ## Mevcut Faz
 Kiln Build — M7: YouTube Publish v1 — DEVAM EDİYOR
 
+**M7-C3 TAMAMLANDI — 20/20 test geçiyor (PublishStepExecutor + Dispatcher + Standard Video pipeline)**
 **M7-C2 TAMAMLANDI — 32/32 test geçiyor (YouTube Adapter + TokenStore + Registry + OAuth Router)**
 **M7-C1 TAMAMLANDI — 36/36 test geçiyor (27 servis + 9 migration)**
 **M6 KAPANDI**
 
 ## Mevcut Durum (2026-04-04)
+M7-C3 tamamlandı:
+- `PublishStepExecutor` — upload + activate zincirini servis katmanına bağlar
+- Her platform event (upload_completed, activate_completed, upload_failed, activate_failed) `PublishLog`'a executor üzerinden yazılır; adaptör log yazmaz
+- OPERATOR_CONFIRM idempotency: kayıt zaten 'published' ise upload/activate çağrılmaz
+- Partial failure: upload başarılı → `platform_video_id` ara kaydedilir; activate başarısız → upload tekrarlanmaz
+- `platform_video_id` dolu kayıtta upload atlanır, yalnızca activate çalışır
+- `StepExecutionError.retryable` eklendi — retryable=True/False semantiği pipeline'a taşındı
+- `_build_executor_from_registry`: `PublishStepExecutor` için `pipeline_db` inject
+- Standard Video pipeline: `publish` step (step_order=7, operator_confirm) eklendi
+- publish-state ambiguity risk: YOK
+- review-to-publish boundary risk: YOK — executor boundary korunuyor
+- partial-failure recovery: TAMAMLANDI — ara kayıt + upload skip garantisi
+- audit-trail completeness: TAMAMLANDI — her platform event denetim izine yazılıyor
+- 20/20 test + 928/928 full suite, 0 regression
+
 M7-C2 tamamlandı:
 - `YouTubeAdapter` — upload() + activate() zinciri, resumable upload, partial failure semantiği
 - `YouTubeTokenStore` — OAuth2 credential saklama, auto-refresh, exchange_code_for_tokens

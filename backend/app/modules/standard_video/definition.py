@@ -1,5 +1,5 @@
 """
-Standard Video Modül Tanımı (M2-C1)
+Standard Video Modül Tanımı (M2-C1, güncellendi M7-C3)
 
 standard_video içerik modülünü tanımlar.
 Global module_registry'e kaydı main.py lifespan handler'ında yapılır.
@@ -11,8 +11,13 @@ Pipeline adımları (sırasıyla):
   4. visuals     — Görsel ipuçları → Medya indirme (görsel provider)
   5. subtitle    — Ses → SRT / kelime hizalaması (Whisper)
   6. composition — Tüm varlıklar → Video render (Remotion)
+  7. publish     — Render çıktısı → Platform yayını (YouTube, operator_confirm)
 
-Executor sınıfları şu an stub (M2-C2+ ile gerçek içerikle doldurulacak).
+operator_confirm semantiği (M7-C3):
+  publish step'i operator_confirm tipindedir.
+  PublishRecord'un trigger_publish() ile 'publishing' durumuna geçirilmesi
+  ve publish_record_id'nin step payload'ına yazılması operatör aksiyonudur.
+  Executor bu kontrolü yapar: PublishRecord zaten 'published' ise adım atlanır.
 """
 
 from app.modules.base import ModuleDefinition, StepDefinition
@@ -24,6 +29,7 @@ from app.modules.standard_video.executors import (
     SubtitleStepExecutor,
     CompositionStepExecutor,
 )
+from app.publish.executor import PublishStepExecutor
 
 # Standard Video modülünün tam tanımı
 STANDARD_VIDEO_MODULE = ModuleDefinition(
@@ -77,6 +83,19 @@ STANDARD_VIDEO_MODULE = ModuleDefinition(
             executor_class=CompositionStepExecutor,
             display_name="Kompozisyon",
             description="Tüm varlıkları birleştirerek final video dosyasını render eder.",
+        ),
+        StepDefinition(
+            step_key="publish",
+            step_order=7,
+            idempotency_type="operator_confirm",
+            executor_class=PublishStepExecutor,
+            display_name="Yayın",
+            description=(
+                "Render çıktısını platforma yükler (upload + activate). "
+                "Operatör, PublishRecord'u 'publishing' durumuna geçirip "
+                "publish_record_id'yi step payload'ına yazarak bu adımı başlatır. "
+                "Zaten 'published' ise adım atlanır (idempotent)."
+            ),
         ),
     ],
     input_schema={

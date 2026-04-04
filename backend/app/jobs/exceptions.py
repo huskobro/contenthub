@@ -56,11 +56,15 @@ class StepExecutionError(JobEngineError):
     Attributes:
         step_key  : the step that failed
         reason    : human-readable failure description
+        retryable : True if the error is transient and a retry may succeed.
+                    False if operator intervention is required (e.g. auth error).
+                    Default: True (conservative — unknown errors assumed transient).
     """
 
-    def __init__(self, step_key: str, reason: str) -> None:
+    def __init__(self, step_key: str, reason: str, retryable: bool = True) -> None:
         self.step_key = step_key
         self.reason = reason
+        self.retryable = retryable
         super().__init__(f"Step execution failed [{step_key!r}]: {reason}")
 
 
