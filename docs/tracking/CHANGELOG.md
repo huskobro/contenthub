@@ -2,6 +2,82 @@
 
 ---
 
+## [2026-04-04] M5-C2 — Scan Engine + Dedupe
+
+**Ne:**
+- `backend/app/source_scans/dedupe_service.py` — YENİ: İki katmanlı dedupe servisi.
+  `normalize_title()` — küçük harf, noktalama temizleme, boşluk sıkıştırma.
+  `title_similarity()` — Jaccard token örtüşmesi (0.0–1.0).
+  `evaluate_entry()` — tek entry için dedupe kararı: hard → soft → accepted sırası.
+  `build_dedupe_context()` — existing_items listesinden url_map + title_map.
+  `DedupeDecision` dataclass — reason, is_suppressed, followup_override, matched_item_id, similarity_score.
+  `SOFT_DEDUPE_THRESHOLD = 0.65` — test 24 ile kilitli.
+- `backend/app/source_scans/scan_engine.py` — dedupe_service entegrasyonu.
+  `execute_rss_scan()` artık `allow_followup` parametresi alıyor.
+  `_load_existing_items()` — hard + soft için id/url/title yüklüyor.
+  Sayaçlar ayrıştırıldı: `skipped_hard`, `skipped_soft`, `followup_accepted`.
+  `dedupe_details` listesi yanıta eklendi — bastırılan/override kararlar.
+- `backend/app/source_scans/router.py` — `ScanExecuteRequest` yeni istek gövdesi.
+  `allow_followup: bool = False` — varsayılan: soft dedupe aktif.
+- `backend/app/source_scans/schemas.py` — `ScanDedupeDetail` ve `ScanExecuteResponse` genişletmesi.
+
+**Hard dedupe tam olarak hangi alanlara dayanıyor:**
+  `NewsItem.url` — strip().lower() normalleştirmesi.
+  `existing_url_map[norm_url]` → `NewsItem.id` eşleşmesi.
+  allow_followup=True ile ATLANAMAZ. Her zaman çalışır.
+
+**Soft dedupe hangi sinyalleri kullanıyor:**
+  `NewsItem.title` — `normalize_title()` ile küçük harf + noktalama temizlendi.
+  Jaccard benzerliği: len(tokens_a ∩ tokens_b) / len(tokens_a ∪ tokens_b).
+  Eşik: 0.65 (yüksek tutulmuş — false positive maliyeti yüksek).
+  allow_followup=True ile ATLANIR.
+
+**Follow-up exception ne zaman devreye giriyor:**
+  `allow_followup=True` → soft dedupe değerlendirmesi atlanır.
+  Hard dedupe korunur — aynı URL kesinlikle yazılmaz.
+  Yanıtta `followup_override=True` kararlar `dedupe_details`'te görünür.
+  Kullanım senaryosu: önceki taramada görülmüş konunun takip haberi.
+
+**Dedupe kararı açıklanabilir mi:**
+  Evet. Her `ScanDedupeDetail` şunu içerir:
+  - reason: "hard_url_match" | "soft_title_match" | kabul "accepted"
+  - is_suppressed, followup_override
+  - matched_item_id: hangi mevcut item'a çarptı
+  - similarity_score: 0.0–1.0
+  "accepted" kararlar yanıtta yer almaz (gürültüyü azaltmak için).
+
+**Dedupe yüzünden görünmeyen item'lar nasıl izleniyor:**
+  `ScanExecuteResponse.dedupe_details` listesi — her bastırılan entry için açık kayıt.
+  `skipped_hard`, `skipped_soft` sayaçları — toplam görünürlük kaybı izlenebilir.
+  `raw_result_preview_json` (SourceScan) — kalıcı özet.
+  NewsItem.status değişmez — mevcut "new" item'lar dokunulmaz.
+
+**`new` / `deduped` / `used` semantik sınırları:**
+  - `new`: scan engine tarafından atanır — "henüz işlenmemiş, seçilmemiş"
+  - `deduped`: DB'de YOKTUR. Yalnızca scan yanıtında yaşayan geçici etiket.
+  - `used`: UsedNewsRegistry ve üst editorial akışının konusu — scan engine dokunmaz.
+  Bu sınır test 20, 21, 25 ile kilitlenmiştir.
+
+**Kısıtlar / Borç:**
+  - Soft dedupe Jaccard tabanlı — semantik benzerlik (embedding) M6+ kapsamı.
+  - Başlık normalizasyonu Türkçe stopword'leri ayırt etmiyor.
+  - Soft dedupe yalnızca aynı source_id içindeki item'larla karşılaştırıyor.
+    Çapraz kaynak dedupe M5-C2 dışındadır.
+  - allow_followup granülerlik: tüm soft'u atlar, tek entry için değil.
+
+**Risk değerlendirmesi:**
+- source-state semantics risk: **LOW** — SourceScan/NewsItem sınırı korunuyor.
+- dedupe false-positive risk: **LOW** — SOFT_DEDUPE_THRESHOLD=0.65 kasıtlı yüksek.
+  Test 24 ile sabitleniyor; değiştirmek için bilinçli karar gerekiyor.
+- used-news ambiguity risk: **NONE** — dedupe_service UsedNewsRegistry'ye hiç dokunmuyor.
+  Test 25 import-level koruması.
+- preview-to-final confusion risk: **NONE** — UI değişikliği yok.
+- warnings status: **none** — Bütçe sabit (1 known-nonblocking).
+
+**Test:** 25 yeni test, 742 toplam.
+
+---
+
 ## [2026-04-04] M5-C1 — Source Registry + RSS Fetch + Normalization
 
 **Ne:**

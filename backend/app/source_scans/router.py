@@ -1,11 +1,24 @@
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
 from .schemas import ScanCreate, ScanUpdate, ScanResponse, ScanExecuteResponse
 from . import service
 from .scan_engine import execute_rss_scan
+
+
+class ScanExecuteRequest(BaseModel):
+    """
+    POST /source-scans/{scan_id}/execute istek gövdesi.
+
+    allow_followup: True → soft dedupe atlanır; hard dedupe korunur.
+                   Önceki taramada görülmüş benzer başlıklı haberlerin
+                   follow-up takibi için kullanılır.
+                   Varsayılan: False (soft dedupe aktif).
+    """
+    allow_followup: bool = False
 
 router = APIRouter(prefix="/source-scans", tags=["source-scans"])
 
@@ -44,7 +57,11 @@ async def update_scan(
 
 
 @router.post("/{scan_id}/execute", response_model=ScanExecuteResponse)
-async def execute_scan(scan_id: str, db: AsyncSession = Depends(get_db)):
+async def execute_scan(
+    scan_id: str,
+    payload: ScanExecuteRequest = ScanExecuteRequest(),
+    db: AsyncSession = Depends(get_db),
+):
     """
     Tarama kaydını gerçek zamanlı olarak çalıştırır.
 
@@ -52,6 +69,9 @@ async def execute_scan(scan_id: str, db: AsyncSession = Depends(get_db)):
     Tarama senkron olarak tamamlanır; sonuç doğrudan döner.
     SourceScan.status: queued → running → completed | failed
     NewsItem kayıtları status='new' ile oluşturulur.
+
+    allow_followup=True: soft dedupe atlanır (hard dedupe korunur).
+    Yanıtta dedupe_details: bastırılan ve follow-up kabul edilen kararlar.
     """
     scan = await service.get_scan(db, scan_id)
     if scan is None:
@@ -64,7 +84,7 @@ async def execute_scan(scan_id: str, db: AsyncSession = Depends(get_db)):
         )
 
     try:
-        result = await execute_rss_scan(db, scan_id)
+        result = await execute_rss_scan(db, scan_id, allow_followup=payload.allow_followup)
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc))
 

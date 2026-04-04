@@ -78,15 +78,41 @@ class ScanResponse(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class ScanDedupeDetail(BaseModel):
+    """
+    Tek bir dedupe kararının açıklanabilir kaydı.
+
+    Semantik: Bu nesne yalnızca scan yanıtında yaşar.
+    NewsItem.status değiştirilmez; "deduped" kalıcı bir durum değildir.
+
+    reason          : "hard_url_match" | "soft_title_match" | "accepted"
+    is_suppressed   : True → bu entry veritabanına yazılmadı
+    followup_override: True → soft eşleşme vardı ama allow_followup ile geçildi
+    matched_item_id : eşleşen NewsItem.id (suppressed ise)
+    similarity_score: 0.0–1.0 (soft için Jaccard skoru; hard için 1.0)
+    """
+    reason: str
+    is_suppressed: bool
+    followup_override: bool
+    entry_url: str
+    entry_title: str
+    matched_item_id: Optional[str] = None
+    similarity_score: float = 0.0
+
+
 class ScanExecuteResponse(BaseModel):
     """
-    POST /source-scans/{scan_id}/execute yanıt şeması.
+    POST /source-scans/{scan_id}/execute yanıt şeması — M5-C2 genişletmesi.
 
-    fetched_count  : feed'den gelen toplam entry sayısı
-    new_count      : veritabanına yazılan yeni NewsItem sayısı
-    skipped_dedupe : URL çakışması nedeniyle atlanan entry sayısı
-    skipped_invalid: url veya title eksik nedeniyle atlanan entry sayısı
-    error_summary  : başarısız olursa kısa hata özeti, başarılı ise None
+    fetched_count    : feed'den gelen toplam entry sayısı
+    new_count        : veritabanına yazılan yeni NewsItem sayısı
+    skipped_dedupe   : hard + soft toplam bastırılan
+    skipped_hard     : yalnızca hard dedupe (URL eşleşmesi) bastırılan
+    skipped_soft     : yalnızca soft dedupe (başlık benzerliği) bastırılan
+    followup_accepted: soft eşleşme vardı ama allow_followup ile yazıldı
+    skipped_invalid  : url veya title eksik nedeniyle atlanan entry sayısı
+    error_summary    : başarısız olursa kısa hata özeti, başarılı ise None
+    dedupe_details   : bastırılan ve followup_override kararların açıklanabilir listesi
     """
 
     scan_id: str
@@ -94,5 +120,9 @@ class ScanExecuteResponse(BaseModel):
     fetched_count: int
     new_count: int
     skipped_dedupe: int
+    skipped_hard: int = 0
+    skipped_soft: int = 0
+    followup_accepted: int = 0
     skipped_invalid: int
     error_summary: Optional[str] = None
+    dedupe_details: list[ScanDedupeDetail] = []

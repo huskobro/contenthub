@@ -3,11 +3,12 @@
 ## Mevcut Faz
 Kiln Build — M5: News Ingestion + Bulletin Pipeline Pack — DEVAM EDİYOR
 
-**M5-C1 TAMAMLANDI — 717 test geçiyor**
+**M5-C2 TAMAMLANDI — 742 test geçiyor**
 
 ## Mevcut Durum (2026-04-04)
-M5-C1 tamamlandı:
+M5-C1 ve M5-C2 tamamlandı:
 - M5-C1: Source Registry + RSS Fetch + Normalization (feedparser, scan_engine.py, ScanExecuteResponse, hard dedupe, durum semantiği izolasyonu)
+- M5-C2: Scan Engine + Dedupe (dedupe_service.py, soft dedupe Jaccard, follow-up exception, dedupe_details açıklanabilirlik, sınır koruması)
 
 M4 üç chunk ile tamamlandı:
 - M4-C1: Whisper entegrasyonu + word timing data modeli (LocalWhisperProvider, word_timing.json, timing_mode hattı)
@@ -44,7 +45,7 @@ M4 üç chunk ile tamamlandı:
 - TTS: AKTİF — resolve_and_invoke, EdgeTTS→SystemTTS
 - VISUALS: AKTİF — VisualsStepExecutor kendi döngüsünde
 
-**Sonraki**: M5-C2 — Scan Engine + Dedupe (soft dedupe v1, used news registry bağlantısı).
+**Sonraki**: M5-C3 — Bulletin Pipeline + UI Integration.
 
 ## Sonraki Milestone
 **M3 devam: Provider Registry + Fallback Pack**
@@ -59,6 +60,7 @@ M3-C3 bekliyor.
 - **ANA FAZ BAŞLADI:** Wizard / Onboarding (ürün geliştirme hattı)
 
 ## Son Tamamlananlar
+- **M5-C2 Scan Engine + Dedupe** — dedupe_service.py (Jaccard başlık benzerliği, SOFT_DEDUPE_THRESHOLD=0.65), follow-up exception (allow_followup=True), dedupe_details açıklanabilirlik listesi, skipped_hard/skipped_soft/followup_accepted ayrımı, UsedNewsRegistry sınır koruması (test 25), 25 yeni test, 742 toplam (2026-04-04)
 - **M5-C1 Source Registry + RSS Fetch + Normalization** — scan_engine.py (execute_rss_scan), feedparser entegrasyonu, hard dedupe (URL lowercase), ScanExecuteResponse, POST /source-scans/{id}/execute endpoint, NewsItem.status="new" garantisi (tarama motoru asla 'used' atamaz), 22 yeni test, 717 toplam (2026-04-04)
 - **M4-C3 Preview-First Subtitle Style Selection** — /subtitle-presets endpoint, SubtitleStylePicker CSS stil kartı UI, strict helper vs boundary fallback ayrımı, degrade mod etiketi (form+kart seviyesi), registry=None açık teknik borç belgesi, 13 yeni test, 695 toplam (2026-04-04)
 - **M4-C2 Karaoke Rendering + Style Presets** — SubtitlePreset frozen dataclass, 5 preset (clean_white→outline_only), composition_props'a subtitle_style+word_timing_path+timing_mode, KaraokeSubtitle.tsx (Remotion placeholder, M6'da aktif), subtitle-contracts.ts tip sözleşmeleri, 18 yeni test, 682 toplam (2026-04-04)

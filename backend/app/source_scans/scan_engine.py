@@ -1,23 +1,35 @@
 """
-Kaynak Tarama Motoru — M5-C1
+Kaynak Tarama Motoru — M5-C1 (hard dedupe), M5-C2 (soft dedupe + follow-up exception)
 
 RSS kaynaklarını feedparser ile gerçek zamanlı çeker, normalize eder ve
 NewsItem kayıtları olarak veritabanına yazar.
 
-Durum semantiği (önemli):
+Durum semantiği (değişmez):
   SourceScan.status  : 'queued' → 'running' → 'completed' | 'failed'
   NewsItem.status    : her zaman 'new' olarak başlar — tarama motoru asla
-                       'used', 'reviewed' veya 'ignored' ataması yapmaz.
+                       'used', 'reviewed', 'ignored' veya 'deduped' ataması yapmaz.
                        Bu geçişler ayrı iş akışlarına aittir.
 
-Hard dedupe:
-  NewsItem.url alanı üzerinden tam eşleşme kontrolü.
-  Aynı URL varsa kayıt oluşturulmaz; dedupe_key = url olarak atanır.
-  Soft dedupe (başlık benzerliği) M5-C2 kapsamındadır.
+Dedupe katmanları:
+  Hard dedupe (M5-C1):
+    URL tam eşleşmesi (strip+lowercase).
+    allow_followup ile atlanamaz — her zaman çalışır.
+
+  Soft dedupe (M5-C2):
+    Başlık benzerliği (Jaccard token örtüşmesi ≥ SOFT_DEDUPE_THRESHOLD).
+    allow_followup=True ile atlanabilir (follow-up exception).
+    "deduped" kararı yalnızca yanıt içindeki dedupe_details'ta yaşar — DB'de saklanmaz.
+
+Follow-up exception:
+  allow_followup=True → soft dedupe atlanır; hard dedupe korunur.
+  Bu, önceki taramada görülmüş benzer başlıklı haberlerin takibini mümkün kılar.
+
+UsedNewsRegistry sınırı:
+  Bu modül UsedNewsRegistry'yi import etmez, okumaz veya yazmaz.
+  "used" kararı editorial / bulletin akışının konusudur.
 
 Kapsam:
   Yalnızca source_type='rss' desteklenir.
-  'manual_url' ve 'api' kaynak türleri bu motorda çalışmaz; açık hata döner.
 """
 
 from __future__ import annotations
@@ -31,6 +43,11 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import NewsSource, NewsItem, SourceScan
+from app.source_scans.dedupe_service import (
+    build_dedupe_context,
+    evaluate_entry,
+    DedupeDecision,
+)
 
 try:
     import feedparser  # type: ignore
@@ -80,15 +97,13 @@ def _parse_published_at(entry: object) -> Optional[datetime]:
 def _build_dedupe_key(url: str) -> str:
     """
     Hard dedupe anahtarı: URL'nin küçük harfli, boşluksuz hali.
-    Soft dedupe (M5-C2) için ek alan ayrılmış değil — bu fonksiyon
-    yalnızca hard dedupe içindir.
     """
     return url.strip().lower()
 
 
 def normalize_entry(
     entry: object,
-    source: NewsSource,
+    source: object,
     scan_id: str,
 ) -> Optional[dict]:
     """
@@ -105,13 +120,11 @@ def normalize_entry(
     if not title:
         return None
 
-    # summary: önce summary, yoksa description dene
     summary_raw = getattr(entry, "summary", None) or getattr(entry, "description", None)
     summary = _safe_str(summary_raw, max_length=0)
 
     published_at = _parse_published_at(entry)
 
-    # Ham veri izi — yalnızca küçük bir önizleme saklanır
     raw_preview: dict = {}
     for key in ("id", "link", "title", "published"):
         val = getattr(entry, key, None)
@@ -119,14 +132,14 @@ def normalize_entry(
             raw_preview[key] = str(val)[:200]
 
     return {
-        "source_id": source.id,
+        "source_id": getattr(source, "id"),
         "source_scan_id": scan_id,
         "title": title,
         "url": url,
         "summary": summary,
         "published_at": published_at,
-        "language": source.language,
-        "category": source.category,
+        "language": getattr(source, "language", None),
+        "category": getattr(source, "category", None),
         "status": "new",
         "dedupe_key": _build_dedupe_key(url),
         "raw_payload_json": json.dumps(raw_preview, ensure_ascii=False),
@@ -134,18 +147,22 @@ def normalize_entry(
 
 
 # ---------------------------------------------------------------------------
-# Mevcut URL seti — hard dedupe kontrolü
+# DB yardımcıları
 # ---------------------------------------------------------------------------
 
-async def _load_existing_urls(db: AsyncSession, source_id: str) -> set[str]:
+async def _load_existing_items(db: AsyncSession, source_id: str) -> list[dict]:
     """
-    Bu kaynağa ait mevcut tüm NewsItem URL'lerini yükler.
-    Hard dedupe için kullanılır.
+    Bu kaynağa ait mevcut tüm NewsItem kayıtlarının id/url/title üçlüsünü yükler.
+    Hard + soft dedupe için kullanılır.
     """
     rows = await db.execute(
-        select(NewsItem.url).where(NewsItem.source_id == source_id)
+        select(NewsItem.id, NewsItem.url, NewsItem.title)
+        .where(NewsItem.source_id == source_id)
     )
-    return {row[0].strip().lower() for row in rows.all() if row[0]}
+    return [
+        {"id": row[0], "url": row[1] or "", "title": row[2] or ""}
+        for row in rows.all()
+    ]
 
 
 # ---------------------------------------------------------------------------
@@ -155,9 +172,16 @@ async def _load_existing_urls(db: AsyncSession, source_id: str) -> set[str]:
 async def execute_rss_scan(
     db: AsyncSession,
     scan_id: str,
+    allow_followup: bool = False,
 ) -> dict:
     """
     RSS taramasını gerçek zamanlı olarak çalıştırır.
+
+    Parametreler:
+      scan_id        : SourceScan.id
+      allow_followup : True → soft dedupe atlanır; hard dedupe korunur.
+                       Önceki taramada görülmüş benzer başlıklı haberlerin
+                       takibi için kullanılır (follow-up exception).
 
     Adımlar:
       1. SourceScan ve NewsSource kayıtlarını yükle.
@@ -165,20 +189,29 @@ async def execute_rss_scan(
       3. SourceScan.status = 'running' yap.
       4. feedparser ile feed'i çek.
       5. Her entry'yi normalize et.
-      6. Hard dedupe: mevcut URL'lerle karşılaştır.
+      6. Dedupe: hard (her zaman) + soft (allow_followup=False ise).
       7. Yeni NewsItem kayıtlarını oluştur.
       8. SourceScan.status = 'completed' | 'failed' yap.
 
     Döner:
       {
-        "scan_id": str,
-        "status": "completed" | "failed",
-        "fetched_count": int,       # feed'den gelen toplam entry sayısı
-        "new_count": int,           # veritabanına yazılan yeni kayıt sayısı
-        "skipped_dedupe": int,      # URL çakışması nedeniyle atlanan
-        "skipped_invalid": int,     # url/title eksik nedeniyle atlanan
-        "error_summary": str | None,
+        "scan_id"          : str,
+        "status"           : "completed" | "failed",
+        "fetched_count"    : int,
+        "new_count"        : int,
+        "skipped_dedupe"   : int,   # hard + soft toplam bastırılan
+        "skipped_hard"     : int,   # yalnızca hard dedupe bastırılan
+        "skipped_soft"     : int,   # yalnızca soft dedupe bastırılan
+        "followup_accepted": int,   # soft eşleşme vardı ama allow_followup ile yazıldı
+        "skipped_invalid"  : int,
+        "error_summary"    : str | None,
+        "dedupe_details"   : list[dict],  # her bastırılan entry için açıklanabilir karar
       }
+
+    dedupe_details semantiği:
+      - Yalnızca is_suppressed=True veya followup_override=True olan kararları içerir.
+      - "accepted" kararlar dahil edilmez (gürültüyü azaltmak için).
+      - NewsItem.status değiştirilmez — bu liste yalnızca scan yanıtında yaşar.
     """
     # -- Kayıtları yükle --
     scan = await db.get(SourceScan, scan_id)
@@ -193,29 +226,13 @@ async def execute_rss_scan(
     if source.source_type != "rss":
         err = f"Desteklenmeyen kaynak türü: '{source.source_type}'. Yalnızca 'rss' desteklenir."
         await _mark_failed(db, scan, err)
-        return {
-            "scan_id": scan_id,
-            "status": "failed",
-            "fetched_count": 0,
-            "new_count": 0,
-            "skipped_dedupe": 0,
-            "skipped_invalid": 0,
-            "error_summary": err,
-        }
+        return _failed_result(scan_id, err)
 
     # -- feed_url zorunlu --
     if not source.feed_url:
         err = "Kaynak feed_url alanı boş — RSS taraması yapılamaz."
         await _mark_failed(db, scan, err)
-        return {
-            "scan_id": scan_id,
-            "status": "failed",
-            "fetched_count": 0,
-            "new_count": 0,
-            "skipped_dedupe": 0,
-            "skipped_invalid": 0,
-            "error_summary": err,
-        }
+        return _failed_result(scan_id, err)
 
     # -- Running durumuna geç --
     now = datetime.now(tz=timezone.utc)
@@ -233,26 +250,22 @@ async def execute_rss_scan(
         err = f"feedparser hatası: {exc}"
         logger.error("RSS taraması başarısız [scan_id=%s]: %s", scan_id, err)
         await _mark_failed(db, scan, err)
-        return {
-            "scan_id": scan_id,
-            "status": "failed",
-            "fetched_count": 0,
-            "new_count": 0,
-            "skipped_dedupe": 0,
-            "skipped_invalid": 0,
-            "error_summary": err,
-        }
+        return _failed_result(scan_id, err)
 
     entries = getattr(feed, "entries", []) or []
     fetched_count = len(entries)
 
-    # -- Mevcut URL'leri yükle (hard dedupe) --
-    existing_urls = await _load_existing_urls(db, source.id)
+    # -- Mevcut item'ları yükle (hard + soft dedupe) --
+    existing_items = await _load_existing_items(db, source.id)
+    dedupe_context = build_dedupe_context(existing_items, allow_followup=allow_followup)
 
     # -- Entry'leri işle --
     new_count = 0
-    skipped_dedupe = 0
+    skipped_hard = 0
+    skipped_soft = 0
+    followup_accepted = 0
     skipped_invalid = 0
+    dedupe_details: list[dict] = []
 
     for entry in entries:
         normalized = normalize_entry(entry, source, scan_id)
@@ -260,10 +273,23 @@ async def execute_rss_scan(
             skipped_invalid += 1
             continue
 
-        url_key = _build_dedupe_key(normalized["url"])
-        if url_key in existing_urls:
-            skipped_dedupe += 1
+        decision: DedupeDecision = evaluate_entry(
+            url=normalized["url"],
+            title=normalized["title"],
+            context=dedupe_context,
+        )
+
+        if decision.is_suppressed:
+            if decision.reason == "hard_url_match":
+                skipped_hard += 1
+            else:
+                skipped_soft += 1
+            dedupe_details.append(_decision_to_dict(decision))
             continue
+
+        if decision.followup_override:
+            followup_accepted += 1
+            dedupe_details.append(_decision_to_dict(decision))
 
         # Yeni kayıt oluştur
         item = NewsItem(
@@ -280,7 +306,10 @@ async def execute_rss_scan(
             raw_payload_json=normalized["raw_payload_json"],
         )
         db.add(item)
-        existing_urls.add(url_key)  # Bu oturumdaki çakışmaları da yakala
+
+        # Bu oturumda oluşturulan entry'leri dedupe context'e ekle
+        norm_url = normalized["url"].strip().lower()
+        dedupe_context.existing_url_map[norm_url] = "pending"
         new_count += 1
 
     # -- DB'ye yaz --
@@ -291,17 +320,10 @@ async def execute_rss_scan(
         logger.error("SourceScan DB yazma başarısız [scan_id=%s]: %s", scan_id, err)
         await db.rollback()
         await _mark_failed(db, scan, err)
-        return {
-            "scan_id": scan_id,
-            "status": "failed",
-            "fetched_count": fetched_count,
-            "new_count": 0,
-            "skipped_dedupe": skipped_dedupe,
-            "skipped_invalid": skipped_invalid,
-            "error_summary": err,
-        }
+        return _failed_result(scan_id, err, fetched_count, skipped_hard + skipped_soft, skipped_invalid)
 
     # -- Completed olarak işaretle --
+    skipped_dedupe = skipped_hard + skipped_soft
     finished_at = datetime.now(tz=timezone.utc)
     scan.status = "completed"
     scan.finished_at = finished_at
@@ -309,15 +331,17 @@ async def execute_rss_scan(
     preview = {
         "fetched": fetched_count,
         "new": new_count,
-        "skipped_dedupe": skipped_dedupe,
+        "skipped_hard": skipped_hard,
+        "skipped_soft": skipped_soft,
+        "followup_accepted": followup_accepted,
         "skipped_invalid": skipped_invalid,
     }
     scan.raw_result_preview_json = json.dumps(preview, ensure_ascii=False)
     await db.commit()
 
     logger.info(
-        "RSS tarama tamamlandı [scan_id=%s] fetched=%d new=%d dedupe=%d invalid=%d",
-        scan_id, fetched_count, new_count, skipped_dedupe, skipped_invalid,
+        "RSS tarama tamamlandı [scan_id=%s] fetched=%d new=%d hard=%d soft=%d followup=%d invalid=%d",
+        scan_id, fetched_count, new_count, skipped_hard, skipped_soft, followup_accepted, skipped_invalid,
     )
 
     return {
@@ -326,8 +350,48 @@ async def execute_rss_scan(
         "fetched_count": fetched_count,
         "new_count": new_count,
         "skipped_dedupe": skipped_dedupe,
+        "skipped_hard": skipped_hard,
+        "skipped_soft": skipped_soft,
+        "followup_accepted": followup_accepted,
         "skipped_invalid": skipped_invalid,
         "error_summary": None,
+        "dedupe_details": dedupe_details,
+    }
+
+
+def _decision_to_dict(d: DedupeDecision) -> dict:
+    """DedupeDecision → API yanıtı dict."""
+    return {
+        "reason": d.reason,
+        "is_suppressed": d.is_suppressed,
+        "followup_override": d.followup_override,
+        "entry_url": d.entry_url,
+        "entry_title": d.entry_title,
+        "matched_item_id": d.matched_item_id,
+        "similarity_score": round(d.similarity_score, 4),
+    }
+
+
+def _failed_result(
+    scan_id: str,
+    error_summary: str,
+    fetched_count: int = 0,
+    skipped_dedupe: int = 0,
+    skipped_invalid: int = 0,
+) -> dict:
+    """Başarısız tarama yanıtı oluşturur."""
+    return {
+        "scan_id": scan_id,
+        "status": "failed",
+        "fetched_count": fetched_count,
+        "new_count": 0,
+        "skipped_dedupe": skipped_dedupe,
+        "skipped_hard": 0,
+        "skipped_soft": 0,
+        "followup_accepted": 0,
+        "skipped_invalid": skipped_invalid,
+        "error_summary": error_summary,
+        "dedupe_details": [],
     }
 
 
