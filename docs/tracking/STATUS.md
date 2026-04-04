@@ -1,9 +1,9 @@
 # DURUM
 
 ## Mevcut Faz
-Kiln Build — M6: Remotion Render Pipeline + Preview Infrastructure — DEVAM EDİYOR
+Kiln Build — M6: Remotion Render Pipeline + Preview Infrastructure — TAMAMLANDI
 
-**M6-C3 TAMAMLANDI — 840 test geçiyor**
+**M6 KAPANDI — 840 test geçiyor**
 
 ## Mevcut Durum (2026-04-04)
 M6-C1 + M6-C2 + M6-C3 tamamlandı:

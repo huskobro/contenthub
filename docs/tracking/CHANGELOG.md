@@ -2,6 +2,163 @@
 
 ---
 
+## [2026-04-04] M6 KAPANIŞI — Remotion Render Pipeline + Preview Infrastructure
+
+### Render spine tutarlılık denetimi
+
+**M6-C1/C2/C3 birlikte tutarlı bir render spine kurdu mu:**
+
+Evet. Üç chunk birbirini tamamlıyor; aralarında sözleşme kırılması yok.
+
+```
+composition_props.json  (KANONİK — CompositionStepExecutor üretir)
+  render_status: "props_ready"
+  composition_id: composition_map.py'den → "StandardVideo"
+  props:
+    word_timing_path: "/path/word_timing.json"   ← ham referans burada kalır
+    timing_mode: "whisper_word" | "cursor"
+    total_duration_seconds: 30.0                 ← authoritative duration kaynağı
+    subtitle_style: {...}
+    scenes: [...]
+
+         │
+         ▼ RenderStepExecutor.execute()
+         
+render_props.json  (RUNTIME SNAPSHOT — her render öncesi üretilir)
+  word_timing_path: KALDIRILDI
+  wordTimings: [{scene,word,start,end,...}]      ← inline, backend okuyup dönüştürdü
+  total_duration_seconds: 30.0                   ← geçersizse fallback=60s + WARNING
+  ...diğer props değişmeden
+
+         │
+         ▼ npx remotion render ... --props render_props.json
+         
+StandardVideoComposition (renderer — saf React, fs okuma yok)
+  wordTimings props'tan gelir
+  timing_mode → KaraokeSubtitle.timingMode
+  total_duration_seconds → calculateMetadata → durationInFrames
+
+         │
+         ▼ output.mp4
+
+AYRI YOL:
+
+render_still.py → RenderStillExecutor
+  composition_id: composition_map.get_preview_composition_id("standard_video_preview")
+  preview_props.json → Remotion --props
+  PreviewFrameComposition → renderStill → preview_frame.jpg
+  (composition_props.json güncellenmez — bağımsız preview akışı)
+```
+
+### composition_map.py tek otorite — nerelerde kullanılıyor
+
+| Kullanım noktası | Fonksiyon | Döner |
+|---|---|---|
+| `executors/composition.py` | `get_composition_id("standard_video")` | `"StandardVideo"` |
+| `executors/render.py` | composition_props.json'dan alır (composition.py üretmişti) | — |
+| `executors/render_still.py` | `get_preview_composition_id("standard_video_preview")` | `"PreviewFrame"` |
+| `renderer/src/Root.tsx` | `id="StandardVideo"`, `id="PreviewFrame"` (senkron, test 4 kilitler) | — |
+
+Stray hardcoded `"StandardVideo"` veya `"PreviewFrame"` string'i: **sıfır** (yalnızca yorum satırları).
+
+### composition_props.json vs render_props.json resmi sınır
+
+| Özellik | composition_props.json | render_props.json |
+|---|---|---|
+| Üretici | CompositionStepExecutor | RenderStepExecutor |
+| Kalıcı mı? | Evet — pipeline audit trail | Hayır — her render öncesi üzerine yazılır |
+| word_timing_path | Var (ham referans) | Yok (wordTimings inline) |
+| job_id | Var | Yok |
+| render_status | Var | Yok |
+| Remotion `--props` | Hayır | Evet |
+| Kanonik mı? | Evet | Hayır |
+
+### Duration fallback final davranışı
+
+**Kaç yerde fallback olabilir:** 2 nokta.
+1. Backend `render.py` — `total_duration_seconds` eksik/sıfır/negatif → `60.0s`, `WARNING` log, `duration_fallback_used=True` sonuç+provider+composition_props.
+2. Renderer `Root.tsx` `calculateMetadata` — aynı koşul → `console.warn`, fallback=60s.
+
+**Trace/log/artifact görünürlüğü:**
+- `composition_props.json` → `duration_fallback_used: true` (denetlenebilir)
+- `RenderStepExecutor` WARNING log satırı (job log'da görünür)
+- Renderer `console.warn` (Remotion render output'unda görünür)
+
+**Preview ve final aynı fallback kuralını kullanıyor mu:**
+Hayır — `RenderStillExecutor` duration hesabı yapmaz. `PreviewFrame` sabit `durationInFrames=1`. Preview için duration fallback mevcut değil; bu doğru davranış.
+
+### Preview ve final render yollarının net ayrımı
+
+```
+Final render (RenderStepExecutor):
+  composition_id: "StandardVideo"   ← composition_map.COMPOSITION_MAP
+  çıktı: output.mp4
+  composition_props.json güncellenir (render_status: rendered)
+  timeout: 600s
+  word_timing yükleme: evet
+  duration fallback: evet
+
+Preview render (RenderStillExecutor):
+  composition_id: "PreviewFrame"    ← composition_map.PREVIEW_COMPOSITION_MAP
+  çıktı: preview_frame.jpg
+  composition_props.json güncellenmez
+  timeout: 120s
+  word_timing yükleme: hayır
+  duration fallback: N/A (sabit 1 kare)
+```
+
+### Zorunlu kapatış alanları
+
+**render-contract drift risk: düşük**
+composition_map.py tek otorite; 4 kullanım noktası test ile kilitli.
+render_props.json her render öncesi taze üretilir — drift birikemez.
+StandardVideoProps tipi renderer'da tek tip tanımı; M6-C2 word_timing_path→wordTimings dönüşümü izole.
+
+**preview-scope confusion risk: yok**
+M4-C3 CSS preview, M6-C2 renderStill, M6-C1 final render üç ayrı yüzey.
+RenderStillExecutor composition_props.json okumaz — test 16 kilitler.
+Farklı composition ID, farklı executor, farklı çıktı formatı, farklı timeout.
+
+**render-runtime coupling risk: düşük**
+shell=False, asyncio subprocess, timeout disiplini üç executor'da tutarlı.
+_RENDERER_DIR sabit hesaplanıyor, node_modules kontrolü var.
+npx bulunamazsa graceful hata; renderer/ yoksa graceful hata.
+
+**warnings budget: known-nonblocking**
+840 test, 1 warning (mock framework internal). M6 boyunca hiç artmadı.
+
+**composition-id authority risk: yok**
+Stray string yok. composition_map.py her kullanım noktasının tek kaynağı.
+Test 7 render_still.py'de hardcoded string olmadığını kilitler.
+Test 18 final/preview ID çakışmasının olmadığını kilitler.
+
+**duration-fallback ambiguity: düşük**
+Fallback oluştuğu her yerde WARNING log + `duration_fallback_used=True` artifact.
+"Normal durum" gibi görünmez. Test 8-10 ve 22 kilitler.
+Preview ayrı: sabit 1 kare, duration sorusu yok.
+
+**runtime-snapshot misuse risk: düşük**
+render_props.json sözleşmesi docstring ve test 14 ile kilitli:
+  - `job_id` içermiyor → kanonisi değil olduğu açık
+  - her render öncesi üzerine yazılıyor → geçici
+  - Remotion'a özgü dönüşümler burada izole
+Hiçbir yeni logic yalnızca render_props.json üzerine inşa edilmedi.
+
+### Teknik Borç (M7+ scope)
+- `as unknown` cast: Root.tsx'te 5 gerçek cast — Remotion v4 Zod-less sınırlama; localized, yayılmamış
+- `word_timing_path` hâlâ `composition_props.json → props`'ta string olarak tutuluyor — bu bilinçli: kanonik kaynak ham referansı korur; render.py dönüşüm yapar
+- `PREVIEW_COMPOSITION_MAP` tek entry — ilerleyen modüller için convention belgelenmiş (key: `{module}_preview`)
+- openBrowser singleton (M6 başında planlanan) implement edilmedi — Remotion Studio erişimi için ayrı chunk gerekiyor; şu an bloklayıcı değil
+
+### M6 Test Sayıları
+- M6-C1: 20 test
+- M6-C2: 25 test
+- M6-C3: 25 test
+- **M6 toplam ek: 70 test**
+- **Genel toplam: 840/840 geçiyor**
+
+---
+
 ## [2026-04-04] M6-C3 — Composition Map Senkronu + Artifact Rolleri + Duration Fallback
 
 ### Kapsam
