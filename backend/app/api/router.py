@@ -13,6 +13,7 @@ from app.used_news.router import router as used_news_router
 from app.modules.news_bulletin.router import router as news_bulletin_router
 from app.modules.template_style_links.router import router as template_style_links_router
 from app.onboarding.router import router as onboarding_router
+from app.sse.router import router as sse_router
 
 api_router = APIRouter()
 api_router.include_router(health.router, tags=["health"])
@@ -29,3 +30,4 @@ api_router.include_router(used_news_router)
 api_router.include_router(news_bulletin_router)
 api_router.include_router(template_style_links_router)
 api_router.include_router(onboarding_router)
+api_router.include_router(sse_router)

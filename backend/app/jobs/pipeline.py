@@ -26,6 +26,7 @@ service.transition_step_status per P-001.
 import json
 import logging
 from datetime import datetime, timezone
+from typing import Optional, TYPE_CHECKING
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -36,6 +37,9 @@ from app.jobs.exceptions import (
     JobNotFoundError,
     StepExecutionError,
 )
+
+if TYPE_CHECKING:
+    from app.sse.bus import EventBus
 
 logger = logging.getLogger(__name__)
 
@@ -57,9 +61,11 @@ class PipelineRunner:
         self,
         db: AsyncSession,
         executors: dict[str, StepExecutor],
+        event_bus: Optional["EventBus"] = None,
     ) -> None:
         self._db = db
         self._executors = executors
+        self._event_bus = event_bus
 
     async def run(self, job_id: str) -> None:
         """
@@ -77,6 +83,8 @@ class PipelineRunner:
         job = await service.transition_job_status(
             self._db, job_id, "running"
         )
+        if self._event_bus is not None:
+            self._event_bus.publish_job_update(job_id, "running", job.current_step_key)
         await self._update_heartbeat(job_id)
 
         # Fetch steps ordered by step_order ascending
@@ -94,11 +102,15 @@ class PipelineRunner:
                     "failed",
                     last_error=f"Step '{step.step_key}' failed.",
                 )
+                if self._event_bus is not None:
+                    self._event_bus.publish_job_update(job_id, "failed", step.step_key)
                 await self._update_heartbeat(job_id)
                 return
 
         # All steps complete
         await service.transition_job_status(self._db, job_id, "completed")
+        if self._event_bus is not None:
+            self._event_bus.publish_job_update(job_id, "completed", None)
         await self._update_heartbeat(job_id)
 
     async def _run_step(self, job: Job, step: JobStep) -> bool:
@@ -116,6 +128,8 @@ class PipelineRunner:
         step = await service.transition_step_status(
             self._db, job.id, step_key, "running"
         )
+        if self._event_bus is not None:
+            self._event_bus.publish_step_update(job.id, step_key, "running")
         await self._update_heartbeat(job.id)
 
         # Update job's current_step_key pointer directly — this is a data field
@@ -134,6 +148,8 @@ class PipelineRunner:
                 "failed",
                 last_error=error_msg,
             )
+            if self._event_bus is not None:
+                self._event_bus.publish_step_update(job.id, step_key, "failed")
             return False
 
         try:
@@ -149,6 +165,8 @@ class PipelineRunner:
                 "failed",
                 last_error=str(exc),
             )
+            if self._event_bus is not None:
+                self._event_bus.publish_step_update(job.id, step_key, "failed")
             return False
         except Exception as exc:
             # Unexpected exception — wrap and fail the step
@@ -161,6 +179,8 @@ class PipelineRunner:
                 "failed",
                 last_error=error_msg,
             )
+            if self._event_bus is not None:
+                self._event_bus.publish_step_update(job.id, step_key, "failed")
             return False
 
         # Store result as provider_trace_json and transition to completed
@@ -172,6 +192,8 @@ class PipelineRunner:
             "completed",
             artifact_refs_json=trace_json,
         )
+        if self._event_bus is not None:
+            self._event_bus.publish_step_update(job.id, step_key, "completed")
         # Also persist provider_trace_json on the step directly via a targeted update
         await self._store_provider_trace(job.id, step_key, trace_json)
         await self._update_heartbeat(job.id)
