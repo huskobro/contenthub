@@ -1,15 +1,29 @@
 # DURUM
 
 ## Mevcut Faz
-Integration Plan — Ana Faz 1: Execution Foundation + SSE Pack
+Kiln Build — M2: Standard Video Real Pipeline Pack
 
-**Phase 1.2 TAMAMLANDI (Codex 5.4 review bekleniyor): State Machine Enforcement**
+**M2 TAMAMLANDI — 6/6 chunk APPROVED, 591 test geçiyor**
 
-## Mevcut Hedef
-State machine enforcement service katmanına bağlandı. transition_job_status + transition_step_status tek resmi geçiş yolu olarak kuruldu. Side effect kuralları deterministic (timestamps, error, retry_count, log append, artifact replace). 68 yeni test, 357 toplam backend test. Codex 5.4 review temizlendikten sonra push yapılacak.
+## Mevcut Durum (2026-04-04)
+M2 tüm chunk'ları tamamlandı ve GitHub'a pushlandı. Backend artık gerçek bir video pipeline'ına sahip:
+- LLM (kie.ai / Gemini 2.5 Flash) ile senaryo + metadata üretimi
+- edge-tts ile ses üretimi (language-aware: TR→AhmetNeural, EN→ChristopherNeural)
+- Pexels + Pixabay fallback ile görsel toplama
+- SRT altyazı üretimi (kümülatif zamanlama)
+- Remotion composition props üretimi (props_ready — gerçek render M3+)
+- Job dispatcher + step initializer + artifact listing endpoint'leri
+
+**Gerçek durum**: Backend pipeline çalışır — `POST /api/v1/jobs` ile job yaratılıp dispatch edilebilir. Frontend wizard entegrasyonu henüz yapılmadı. Remotion render subprocess'i henüz yok (composition_props.json hazır).
+
+## Sonraki Milestone
+**M3: Provider Registry + Fallback Pack**
+- Provider registry servisi (capability bazlı çözümleme)
+- LLM + TTS fallback
+- Admin panel: provider sağlık durumu, maliyet takibi
 
 ## Devam Eden
-— (devam eden calisma yok)
+— (M2 tamamlandı, M3 başlamadı)
 
 ## Hygiene Hattı Kapanış Durumu
 - **KAPATILDI:** Mikro readability faz zinciri Phase 235 ile resmen kapatıldı.
@@ -17,6 +31,13 @@ State machine enforcement service katmanına bağlandı. transition_job_status +
 - **ANA FAZ BAŞLADI:** Wizard / Onboarding (ürün geliştirme hattı)
 
 ## Son Tamamlananlar
+- **M2-C6 Full Stack Integration** — JobDispatcher (orchestration), step_initializer.py, POST /api/v1/jobs, GET /jobs/{id}/artifacts, asyncio.create_task GC koruması, 11 yeni test, 591 toplam (2026-04-04)
+- **M2-C5 Subtitle + Composition** — SubtitleStepExecutor (SRT), CompositionStepExecutor (props_ready), composition_map.py güvenli mapping, executors/ pakete bölündü, 22 yeni test, 580 toplam (2026-04-04)
+- **M2-C4 TTS + Visuals** — TTSStepExecutor, VisualsStepExecutor (Pexels→Pixabay fallback), voice_map.py, artifact_check idempotency, 16 yeni test, 558 toplam (2026-04-04)
+- **M2-C3 Language-Aware Script + Metadata** — language.py (SupportedLanguage enum, resolve_language), step_context.py, prompt_builder.py (TR/EN talimat blokları), ScriptStepExecutor + MetadataStepExecutor gerçek LLM impl, 20 yeni test, 542 toplam (2026-04-04)
+- **M2-C2 Provider Implementations** — KieAiProvider (Gemini 2.5 Flash), EdgeTTSProvider, PexelsProvider, PixabayProvider, .env güvenlik, 30 yeni test, 522 toplam (2026-04-04)
+- **M2-C1 Modül Sistemi** — BaseProvider ABC, ModuleRegistry, ModuleDefinition/StepDefinition, standard_video stub executor'ları, InputNormalizer, 33 yeni test, 492 toplam (2026-04-04)
+- **M1 (4 chunk)** — Job engine foundation: StepIdempotencyType, PipelineRunner, EventBus/SSE, timing/recovery, lifespan handler, 459 toplam (2026-04-04)
 - Phase 1.2 State Machine Enforcement — transition_job_status + transition_step_status service entegrasyonu, InvalidTransitionError/JobNotFoundError/StepNotFoundError exception modeli, side-effect kuralları (timestamp/error/retry_count/log/artifact), 68 yeni test, 357 toplam backend test, tsc temiz (2026-04-04) [Codex review bekleniyor]
 - Phase 1.1 Execution Contract Katmanı — contracts/ paketi (enums, state_machine, artifacts, provider_trace, retry_history, review_state, sse_events, workspace), frontend/src/types/execution.ts mirror, 94 yeni test, 289 toplam backend test, tsc temiz (2026-04-04)
 - Asset Library / Media Resource Management Pack — asset library giris yüzeyi (quick link + sidebar + readiness checklist), AssetLibraryPage (varlik kayit/tur gruplama/filtre/arama/detay/reuse/preview safety), 50 yeni test, 2100 toplam (2026-04-03)

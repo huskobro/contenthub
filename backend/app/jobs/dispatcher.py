@@ -102,6 +102,9 @@ class JobDispatcher:
         self._registry = module_registry
         self._event_bus = event_bus
         self._providers = providers
+        # Arka plan görevlerini tutan set — GC'den koruması için referans tutulur.
+        # Görev tamamlanınca kendini setten çıkarır.
+        self._background_tasks: set[asyncio.Task] = set()
 
     async def dispatch(self, job_id: str) -> None:
         """
@@ -169,7 +172,10 @@ class JobDispatcher:
             finally:
                 await pipeline_db.close()
 
-        # Pipeline arka planda çalışır; create_task dönüşü awaited değil
-        asyncio.create_task(_run_pipeline())
+        # Task referansı set'te tutulur — GC'den korunmak için.
+        # Görev tamamlanınca kendini set'ten çıkarır.
+        task = asyncio.create_task(_run_pipeline())
+        self._background_tasks.add(task)
+        task.add_done_callback(self._background_tasks.discard)
 
         logger.info("JobDispatcher: pipeline arka plan görevi başlatıldı. job_id=%s", job_id)

@@ -2,6 +2,92 @@
 
 ---
 
+## [2026-04-04] M2-C6 — Full Stack Integration (M2 Tamamlandı)
+
+**Ne:** JobDispatcher (orchestration), step_initializer.py, POST /api/v1/jobs endpoint güncellendi (InputNormalizer→create_job→init_steps→dispatch akışı), GET /jobs/{id}/artifacts endpoint'i eklendi. asyncio.create_task GC koruması eklendi (_background_tasks set + done_callback). dispatcher.py, step_initializer.py, router.py sorumluluk ayrımı korundu.
+**Sistem davranışı:** `POST /api/v1/jobs` çağrısı artık gerçek pipeline'ı tetikliyor. Job yaratılınca modül tanımından adımlar otomatik oluşturuluyor, workspace dizini başlatılıyor, pipeline arka planda çalışıyor.
+**Mimari:** dispatcher.py = orchestration only; step_initializer.py = step setup only; service.py büyümedi.
+**Test:** 11 yeni test, 591 toplam. GC fix push öncesi temizlendi (review'da tespit edildi).
+
+---
+
+## [2026-04-04] M2-C5 — Subtitle + Composition (+ executors paketi)
+
+**Ne:** SubtitleStepExecutor (script+audio→SRT, kümülatif zamanlama), CompositionStepExecutor (tüm artifact'lar→composition_props.json, render_status=props_ready), composition_map.py (güvenli static mapping, C-07 uyumu). executors.py → executors/ paketine bölündü (script/metadata/tts/visuals/subtitle/composition/_helpers).
+**Sistem davranışı:** Pipeline tüm 6 adımı çalıştırıyor. Composition adımı video render etmiyor (props_ready); gerçek Remotion render M3+ kapsamı.
+**Mimari:** AI render kodu üretemiyor — composition_id statik map'ten geliyor. executor dosyaları artık her biri ~150-280 satır, tek sorumluluk.
+**Test:** 22 yeni test, 580 toplam.
+
+---
+
+## [2026-04-04] M2-C4 — TTS + Visuals Adımları
+
+**Ne:** TTSStepExecutor (edge-tts, language-aware: TR→AhmetNeural/EN→ChristopherNeural, audio_manifest.json), VisualsStepExecutor (Pexels önce, Pexels boşsa Pixabay fallback, visuals_manifest.json), voice_map.py (merkezi ses eşleştirmesi), artifact_check idempotency her iki executor'da.
+**Sistem davranışı:** TTS ve görsel adımları gerçek provider'larla çalışıyor. Kısmi başarı kabul ediliyor (bazı sahneler null), tamamen başarısız → StepExecutionError.
+**Mimari:** VOICE_MAP SupportedLanguage enum'u key olarak kullanıyor — magic string yok.
+**Test:** 16 yeni test, 558 toplam. Push öncesi dead import (httpx) temizlendi.
+
+---
+
+## [2026-04-04] M2-C3 — Language-Aware Script + Metadata Adımları
+
+**Ne:** language.py (SupportedLanguage enum, resolve_language, UnsupportedLanguageError), step_context.py (StepExecutionContext frozen dataclass), prompt_builder.py (TR/EN için ayrı talimat blokları, LANGUAGE_INSTRUCTIONS merkezi dict), ScriptStepExecutor + MetadataStepExecutor gerçek LLM implementasyonu (kie.ai / Gemini 2.5 Flash). Job.input_data_json alanı + Alembic migration.
+**Sistem davranışı:** Script ve metadata adımları language input'una göre doğal dil üretiyor. Geçersiz dil → UnsupportedLanguageError, sessiz fallback yok.
+**Mimari:** Dil davranışı hiçbir katmanda hardcode değil — input→context→prompt_builder zinciri üzerinden akıyor.
+**Test:** 20 yeni test, 542 toplam. Python 3.9 uyumluluk fix'leri eklendi.
+
+---
+
+## [2026-04-04] M2-C2 — Gerçek Provider Implementasyonları
+
+**Ne:** KieAiProvider (kie.ai OpenAI-uyumlu API, Gemini 2.5 Flash), EdgeTTSProvider (edge-tts, API key gerektirmez), PexelsProvider, PixabayProvider. .env + pydantic-settings ile güvenli config. API key'ler kaynak koda gömülmedi.
+**Sistem davranışı:** Gerçek LLM, TTS ve görsel provider'ları mevcut. Provider abstract interface (BaseProvider) üzerinden çağrılıyor.
+**Güvenlik:** .env .gitignore'da korumalı. CONTENTHUB_ prefix ile env değişkenleri.
+**Test:** 30 yeni test (mock-tabanlı, gerçek API çağrısı yok), 522 toplam.
+
+---
+
+## [2026-04-04] M2-C1 — Modül Sistemi ve Provider Interface
+
+**Ne:** BaseProvider ABC + ProviderOutput dataclass, provider exceptions (ProviderError/InvokeError/NotFoundError), ModuleDefinition/StepDefinition dataclass'ları, ModuleRegistry singleton, standard_video modülü (6 stub executor), InputNormalizer (required alan kontrolü + default doldurma).
+**Sistem davranışı:** Modül sistemi kuruldu. standard_video modülü lifespan'da kayıtlı. Pipeline adımları modül tanımından türetilebilir hale geldi.
+**Mimari:** BaseProvider interface M3+ fallback/registry altyapısının seam noktası.
+**Test:** 33 yeni test, 492 toplam.
+
+---
+
+## [2026-04-04] M1-C4 — Timing ve Startup Recovery
+
+**Ne:** timing.py (elapsed_seconds, format_elapsed, estimate_remaining_seconds, step_progress_fraction — pure functions), recovery.py (run_startup_recovery: stale running job'ları failed olarak işaretler), main.py lifespan handler (recovery startup'ta blocks), update_job_heartbeat, schema computed fields (elapsed_seconds, eta_seconds).
+**Sistem davranışı:** Sunucu yeniden başladığında yarım kalan job'lar tespit edilip failed yapılıyor. Job/step response'unda anlık elapsed_seconds mevcut.
+**Test:** 40 yeni test, 459 toplam.
+
+---
+
+## [2026-04-04] M1-C3 — SSE Infrastructure
+
+**Ne:** EventBus (per-subscriber asyncio.Queue, sentinel disconnect pattern), GET /api/sse/jobs/{job_id} SSE endpoint (StreamingResponse), PipelineRunner SSE entegrasyonu (optional event_bus inject).
+**Sistem davranışı:** Pipeline çalışırken job/step state değişimleri SSE üzerinden yayınlanıyor. Frontend React Query bunları dinleyerek cache invalidation yapabilir.
+**Test:** 12 yeni test, bu milestone içinde 43 geçiyor.
+
+---
+
+## [2026-04-04] M1-C2 — Executor + Pipeline Runner + Workspace
+
+**Ne:** workspace.py (per-job dizin yapısı: artifacts/preview/tmp), StepExecutor ABC (step_key() metodu), PipelineRunner (sequential step execution, P-001 gateway uyumu, heartbeat), gateway functions (start/complete/fail job+step), timezone fix (SQLite naive datetime).
+**Sistem davranışı:** Job'lar pipeline üzerinden adım adım çalıştırılabiliyor. Tüm state geçişleri gateway üzerinden geçiyor.
+**Test:** 31 yeni test. step_type→step_key rename fix (review'da tespit edildi).
+
+---
+
+## [2026-04-04] M1-C1 — Contracts Extension
+
+**Ne:** StepIdempotencyType enum (RE_EXECUTABLE/ARTIFACT_CHECK/OPERATOR_CONFIRM), Job.heartbeat_at, JobStep.idempotency_type + provider_trace_json, Alembic migration a3f1c2d4e5b6.
+**Sistem davranışı:** Step'ler artık idempotency sınıfına sahip. Heartbeat crash recovery için izlenebilir.
+**Test:** 19 yeni test, 94/94 Phase 1.1+1.2 regresyon testi geçiyor.
+
+---
+
 ## [2026-04-04] Phase 1.2 — State Machine Enforcement
 
 **Ne:** Integration Plan Ana Faz 1 Alt Faz 1.2 tamamlandı. Phase 1.1'de tanımlanan state machine contracts service katmanına bağlandı. `backend/app/jobs/exceptions.py` eklendi (JobEngineError, JobNotFoundError, StepNotFoundError, InvalidTransitionError). `backend/app/jobs/service.py` genişletildi: `validate_job_transition`, `validate_step_transition` (saf validasyon, DB yok); `transition_job_status`, `transition_step_status` (validate + canonical side effects + persist); `is_job_terminal`, `is_step_terminal`, `allowed_next_job_statuses`, `allowed_next_step_statuses`, `get_job_step` eklendi. Side effect kuralları deterministic: started_at sadece ilk running'de set edilir; finished_at terminal geçişlerde set edilir; last_error failed'da set, running/retrying/completed/cancelled'da cleared; log_text append-only; artifact_refs_json replace (sağlanırsa); retry_count sadece retrying'de artar. 68 yeni test, 357 toplam backend test PASSED, tsc temiz.
