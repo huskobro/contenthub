@@ -1,6 +1,7 @@
 import { Outlet } from "react-router-dom";
 import { AppHeader } from "../../components/layout/AppHeader";
 import { AppSidebar } from "../../components/layout/AppSidebar";
+import { ToastContainer } from "../../components/design-system/Toast";
 
 const USER_NAV = [
   { label: "Anasayfa", to: "/user" },
@@ -11,6 +12,7 @@ const USER_NAV = [
 export function UserLayout() {
   return (
     <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+      <ToastContainer />
       <AppHeader area="User" />
       <div style={{ display: "flex", flex: 1 }}>
         <AppSidebar items={USER_NAV} />

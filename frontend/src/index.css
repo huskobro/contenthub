@@ -66,3 +66,31 @@ button {
   background: #dbe4ff;
   color: #212529;
 }
+
+/* ---------------------------------------------------------------------------
+   Wave 1 — Animation Keyframes
+   --------------------------------------------------------------------------- */
+
+/* Sheet slide-in from right */
+@keyframes sheetSlideIn {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+
+/* Sheet/QuickLook backdrop fade */
+@keyframes sheetFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* QuickLook scale-in */
+@keyframes quicklookScaleIn {
+  from { opacity: 0; transform: translate(-50%, -50%) scale(0.95); }
+  to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+/* Toast slide-in from top-right */
+@keyframes toastSlideIn {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}

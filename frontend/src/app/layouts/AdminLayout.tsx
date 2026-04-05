@@ -2,6 +2,7 @@ import { Outlet } from "react-router-dom";
 import { AppHeader } from "../../components/layout/AppHeader";
 import { AppSidebar } from "../../components/layout/AppSidebar";
 import { AdminContinuityStrip } from "../../components/layout/AdminContinuityStrip";
+import { ToastContainer } from "../../components/design-system/Toast";
 import { useVisibility } from "../../hooks/useVisibility";
 import { colors, layout } from "../../components/design-system/tokens";
 
@@ -65,6 +66,9 @@ export function AdminLayout() {
 
   return (
     <div style={{ display: "flex", minHeight: "100vh" }}>
+      {/* Toast notifications */}
+      <ToastContainer />
+
       {/* Dark sidebar on the left */}
       <AppSidebar items={filteredNav} />
 
