@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { generateCSSVariables, resolveTokens } from "../../components/design-system/themeEngine";
-import { DEFAULT_THEME, EXAMPLE_WARM_EARTH_THEME } from "../../components/design-system/themeContract";
+import { DEFAULT_THEME, VOID_TERMINAL_THEME, EXAMPLE_WARM_EARTH_THEME } from "../../components/design-system/themeContract";
 
 describe("generateCSSVariables", () => {
   it("generates CSS variables from default theme", () => {
@@ -25,6 +25,16 @@ describe("generateCSSVariables", () => {
     expect(vars["--ch-font-body"]).toContain("DM Sans");
     expect(vars["--ch-brand-500"]).toBe("#d4882a");
     expect(vars["--ch-neutral-900"]).toBe("#252119");
+  });
+
+  it("generates dark variables for void terminal theme", () => {
+    const vars = generateCSSVariables(VOID_TERMINAL_THEME);
+    expect(vars["--ch-font-body"]).toContain("Outfit");
+    expect(vars["--ch-font-mono"]).toContain("IBM Plex Mono");
+    expect(vars["--ch-brand-500"]).toBe("#2dd55b");
+    expect(vars["--ch-surface-page"]).toBe("#0a0a0c");
+    expect(vars["--ch-neutral-900"]).toBe("#dddff0");
+    expect(vars["--ch-focus"]).toBe("#2dd55b");
   });
 
   it("includes all typography size variables", () => {
@@ -62,5 +72,14 @@ describe("resolveTokens", () => {
     const tokens = resolveTokens(EXAMPLE_WARM_EARTH_THEME);
     expect(tokens.colors.brand[600]).toBe("#b87022");
     expect(tokens.typography.fontFamily).toContain("DM Sans");
+  });
+
+  it("resolves dark tokens for void terminal theme", () => {
+    const tokens = resolveTokens(VOID_TERMINAL_THEME);
+    expect(tokens.colors.brand[500]).toBe("#2dd55b");
+    expect(tokens.colors.surface.page).toBe("#0a0a0c");
+    expect(tokens.typography.fontFamily).toContain("Outfit");
+    expect(tokens.typography.monoFamily).toContain("IBM Plex Mono");
+    expect(tokens.radius.sm).toBe("3px");
   });
 });

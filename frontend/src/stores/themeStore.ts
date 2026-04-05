@@ -12,6 +12,7 @@ import { create } from "zustand";
 import {
   type ThemeManifest,
   DEFAULT_THEME,
+  VOID_TERMINAL_THEME,
   EXAMPLE_WARM_EARTH_THEME,
   validateThemeManifest,
   type ThemeValidationError,
@@ -28,7 +29,7 @@ const STORAGE_KEY_CUSTOM = "contenthub:custom-themes";
 // Built-in themes (cannot be deleted)
 // ---------------------------------------------------------------------------
 
-const BUILTIN_THEMES: ThemeManifest[] = [DEFAULT_THEME, EXAMPLE_WARM_EARTH_THEME];
+const BUILTIN_THEMES: ThemeManifest[] = [DEFAULT_THEME, VOID_TERMINAL_THEME, EXAMPLE_WARM_EARTH_THEME];
 
 // ---------------------------------------------------------------------------
 // Helpers

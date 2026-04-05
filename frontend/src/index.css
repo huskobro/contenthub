@@ -1,9 +1,9 @@
-/* ContentHub — Global Styles (M24 + Wave 1 Final) */
+/* ContentHub — Global Styles (M24 + Wave 1 Final + Void Terminal) */
 /*
  * Font imports are managed by the ThemeEngine dynamically.
- * This static import is the default fallback.
+ * Static imports below cover ALL built-in themes for instant rendering.
  */
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Geist+Mono:wght@400;500&family=Outfit:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&display=swap');
 
 *,
 *::before,
@@ -25,9 +25,10 @@ body {
   line-height: 1.5;
   color: var(--ch-neutral-900, #212529);
   background: var(--ch-surface-page, #f8f9fb);
+  transition: background 0.3s ease, color 0.3s ease;
 }
 
-/* Scrollbar styling */
+/* Scrollbar styling — theme-aware */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -72,7 +73,7 @@ button {
 }
 
 /* ---------------------------------------------------------------------------
-   Typography refinements — Plus Jakarta Sans character
+   Typography refinements
    --------------------------------------------------------------------------- */
 
 /* Tighter heading letter-spacing for premium feel */
@@ -91,6 +92,43 @@ td {
 /* Sidebar subtle grain texture overlay */
 nav[style*="sidebar"] {
   position: relative;
+}
+
+/* ---------------------------------------------------------------------------
+   Void Terminal — Dark theme ambient glow effects (CSS-only, no JS needed)
+   These use CSS variables and only activate when Void Terminal colors are set.
+   --------------------------------------------------------------------------- */
+
+/* Neon glow on focus for dark themes */
+body[style*="rgb(10, 10, 12)"] :focus-visible,
+body[style*="#0a0a0c"] :focus-visible {
+  outline: 1px solid var(--ch-focus, #2dd55b);
+  outline-offset: 1px;
+  box-shadow: 0 0 8px rgba(45, 213, 91, 0.15);
+}
+
+/* Scanline texture for Void Terminal (ultra-subtle) */
+body[style*="rgb(10, 10, 12)"]::after,
+body[style*="#0a0a0c"]::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(255, 255, 255, 0.008) 2px,
+    rgba(255, 255, 255, 0.008) 4px
+  );
+  mix-blend-mode: overlay;
+}
+
+/* Ambient glow on command palette input in dark mode */
+body[style*="rgb(10, 10, 12)"] [data-testid="command-palette-input"]::placeholder,
+body[style*="#0a0a0c"] [data-testid="command-palette-input"]::placeholder {
+  color: var(--ch-neutral-500, #555668);
 }
 
 /* ---------------------------------------------------------------------------
@@ -133,7 +171,21 @@ nav[style*="sidebar"] {
   50%      { opacity: 0.4; }
 }
 
-/* Command Palette — placeholder color override */
+/* Command Palette — placeholder color override (light themes) */
 [data-testid="command-palette-input"]::placeholder {
-  color: #ced4da; /* neutral[400] */
+  color: var(--ch-neutral-400, #ced4da);
+}
+
+/* ---------------------------------------------------------------------------
+   Void Terminal — Neon glow keyframe for brand accent pulsing
+   --------------------------------------------------------------------------- */
+
+@keyframes neonPulse {
+  0%, 100% { box-shadow: 0 0 4px rgba(45, 213, 91, 0.1); }
+  50%      { box-shadow: 0 0 12px rgba(45, 213, 91, 0.2); }
+}
+
+@keyframes terminalBlink {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0; }
 }

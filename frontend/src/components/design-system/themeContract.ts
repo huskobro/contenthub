@@ -474,6 +474,96 @@ export function validateThemeManifest(manifest: unknown): ThemeValidationError[]
 // Example: Alternative theme for AI reference
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Built-in Theme: "Void Terminal" — Dark-first control room aesthetic
+// ---------------------------------------------------------------------------
+
+export const VOID_TERMINAL_THEME: ThemeManifest = {
+  id: "void-terminal",
+  name: "Void Terminal",
+  description: "Koyu, keskin, kontrol odasi estetiginde bir arayuz. Bloomberg Terminal + Linear App ilhamli, neon vurgularla.",
+  author: "system",
+  version: "1.0.0",
+  tone: ["dark", "sharp", "terminal", "editorial", "control-room"],
+
+  typography: {
+    heading: {
+      family: "Outfit",
+      stack: "'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+    },
+    body: {
+      family: "Outfit",
+      stack: "'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+    },
+    mono: {
+      family: "IBM Plex Mono",
+      stack: "'IBM Plex Mono', 'SF Mono', 'Fira Code', monospace",
+    },
+    size: {
+      xs: "0.6875rem", sm: "0.75rem", base: "0.8125rem", md: "0.875rem",
+      lg: "1rem", xl: "1.125rem", "2xl": "1.5rem", "3xl": "2.25rem",
+    },
+    weight: { normal: 300, medium: 400, semibold: 500, bold: 600 },
+    lineHeight: { tight: 1.2, normal: 1.5, relaxed: 1.65 },
+    letterSpacing: { tight: "-0.03em", normal: "-0.01em", wide: "0.12em" },
+  },
+
+  colors: {
+    brand: {
+      50: "#0d1f12", 100: "#0f2d16", 200: "#134d22", 300: "#1a7a35",
+      400: "#22a84a", 500: "#2dd55b", 600: "#4ae775", 700: "#7cf0a0",
+      800: "#adf7c5", 900: "#d8fce4",
+    },
+    neutral: {
+      0: "#0a0a0c", 25: "#0e0e11", 50: "#121216", 100: "#18181d",
+      200: "#1f2027", 300: "#2a2b33", 400: "#3d3e4a", 500: "#555668",
+      600: "#70728a", 700: "#9496b0", 800: "#b8bad4", 900: "#dddff0",
+      950: "#f0f1fa",
+    },
+    success: { light: "#0d2818", base: "#2dd55b", dark: "#22a84a", text: "#7cf0a0" },
+    warning: { light: "#2a1f08", base: "#ffb224", dark: "#f5a623", text: "#ffd580" },
+    error: { light: "#2d0c0e", base: "#f5424e", dark: "#e5383b", text: "#ff8a8f" },
+    info: { light: "#0c1929", base: "#3b82f6", dark: "#2563eb", text: "#93bbfd" },
+    surface: {
+      page: "#0a0a0c", card: "#121216", elevated: "#18181d",
+      inset: "#0e0e11", sidebar: "#0a0a0c", sidebarHover: "#18181d",
+      sidebarActive: "#1f2027",
+    },
+    border: { subtle: "#1f2027", default: "#2a2b33", strong: "#3d3e4a" },
+    focus: "#2dd55b",
+    chart: ["#2dd55b", "#3b82f6", "#ffb224", "#f5424e", "#a855f7", "#ec4899", "#06b6d4"],
+  },
+
+  spacing: {
+    0: "0", 1: "0.25rem", 2: "0.5rem", 3: "0.75rem", 4: "1rem",
+    5: "1.25rem", 6: "1.5rem", 8: "2rem", 10: "2.5rem", 12: "3rem", 16: "4rem",
+  },
+
+  radius: { sm: "3px", md: "4px", lg: "6px", xl: "8px", full: "9999px" },
+
+  shadow: {
+    xs: "0 1px 2px rgba(0,0,0,0.4), 0 0 1px rgba(45,213,91,0.05)",
+    sm: "0 2px 4px rgba(0,0,0,0.5), 0 0 1px rgba(45,213,91,0.08)",
+    md: "0 4px 12px rgba(0,0,0,0.6), 0 0 2px rgba(45,213,91,0.06)",
+    lg: "0 8px 24px rgba(0,0,0,0.7), 0 0 4px rgba(45,213,91,0.05)",
+    xl: "0 16px 48px rgba(0,0,0,0.8), 0 0 8px rgba(45,213,91,0.04)",
+    "2xl": "0 24px 64px rgba(0,0,0,0.9), 0 0 16px rgba(45,213,91,0.06)",
+  },
+
+  motion: { fast: "80ms", normal: "140ms", slow: "220ms", easing: "cubic-bezier(0.16, 1, 0.3, 1)" },
+
+  layout: {
+    sidebarWidth: "220px", sidebarCollapsedWidth: "52px",
+    headerHeight: "44px", pageMaxWidth: "1400px", pagePadding: "1.5rem",
+  },
+
+  density: "compact",
+};
+
+// ---------------------------------------------------------------------------
+// Example: Alternative theme for AI reference
+// ---------------------------------------------------------------------------
+
 export const EXAMPLE_WARM_EARTH_THEME: ThemeManifest = {
   id: "warm-earth",
   name: "Warm Earth",
