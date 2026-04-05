@@ -1,5 +1,6 @@
 import { useParams } from "react-router-dom";
 import { useJobDetail } from "../../hooks/useJobDetail";
+import { useSSE } from "../../hooks/useSSE";
 import { JobOverviewPanel } from "../../components/jobs/JobOverviewPanel";
 import { JobTimelinePanel } from "../../components/jobs/JobTimelinePanel";
 import { JobSystemPanels } from "../../components/jobs/JobSystemPanels";
@@ -13,6 +14,14 @@ import {
 export function JobDetailPage() {
   const { jobId } = useParams<{ jobId: string }>();
   const { data: job, isLoading, isError, error } = useJobDetail(jobId ?? null);
+
+  // SSE live updates — active only for running/queued jobs
+  const isActiveJob = !!job && ["queued", "running", "processing", "retrying"].includes(job.status);
+  useSSE({
+    url: `/api/v1/jobs/${jobId}/events`,
+    enabled: !!jobId && isActiveJob,
+    invalidateKeys: [["job", jobId ?? ""]],
+  });
 
   if (isLoading) {
     return (

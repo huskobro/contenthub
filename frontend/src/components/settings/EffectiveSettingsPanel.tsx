@@ -16,6 +16,7 @@ import {
   useSettingsGroups,
   useUpdateSettingValue,
 } from "../../hooks/useEffectiveSettings";
+import { useToast } from "../../hooks/useToast";
 import type { EffectiveSetting, GroupSummary } from "../../api/effectiveSettingsApi";
 
 // ---------------------------------------------------------------------------
@@ -181,6 +182,7 @@ function SettingRow({ setting }: { setting: EffectiveSetting }) {
   const [inputValue, setInputValue] = useState("");
   const [feedback, setFeedback] = useState<string | null>(null);
   const updateMutation = useUpdateSettingValue();
+  const toast = useToast();
 
   // Credential key'leri icin bu panelden duzenleme yapilmaz
   const isCredential = setting.key.startsWith("credential.");
@@ -205,9 +207,12 @@ function SettingRow({ setting }: { setting: EffectiveSetting }) {
           setEditing(false);
           setInputValue("");
           setFeedback("Kaydedildi.");
+          toast.success(`${setting.label} kaydedildi.`);
         },
         onError: (err) => {
-          setFeedback(err instanceof Error ? err.message : "Kayit hatasi.");
+          const msg = err instanceof Error ? err.message : "Kayit hatasi.";
+          setFeedback(msg);
+          toast.error(`${setting.label}: ${msg}`);
         },
       },
     );

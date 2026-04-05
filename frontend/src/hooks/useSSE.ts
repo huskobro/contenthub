@@ -88,6 +88,11 @@ export function useSSE({
       return;
     }
 
+    // Guard: EventSource not available in test environments (jsdom)
+    if (typeof EventSource === "undefined") {
+      return;
+    }
+
     function connect() {
       const source = new EventSource(url);
       sourceRef.current = source;
