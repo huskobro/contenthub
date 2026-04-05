@@ -19,6 +19,7 @@ from app.publish.router import router as publish_router
 from app.publish.youtube.router import router as youtube_oauth_router
 from app.analytics.router import router as analytics_router
 from app.audit.router import router as audit_logs_router
+from app.assets.router import router as assets_router
 
 api_router = APIRouter()
 api_router.include_router(health.router, tags=["health"])
@@ -41,3 +42,4 @@ api_router.include_router(publish_router)
 api_router.include_router(youtube_oauth_router)
 api_router.include_router(analytics_router)
 api_router.include_router(audit_logs_router)
+api_router.include_router(assets_router)

@@ -40,13 +40,6 @@ const TD: React.CSSProperties = {
   color: "#334155",
 };
 
-const FILTER_ROW: React.CSSProperties = {
-  display: "flex",
-  gap: "0.75rem",
-  flexWrap: "wrap",
-  marginBottom: "1rem",
-};
-
 const FILTER_INPUT: React.CSSProperties = {
   padding: "0.4rem 0.5rem",
   border: "1px solid #e2e8f0",
@@ -110,22 +103,44 @@ interface ContentRow {
 export function ContentLibraryPage() {
   const navigate = useNavigate();
 
-  // Filter state
+  // Filter state — backend-side
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState<"" | "standard_video" | "news_bulletin">("");
   const [statusFilter, setStatusFilter] = useState("");
 
-  const { data: videos, isLoading: vLoading } = useStandardVideosList();
-  const { data: bulletins, isLoading: bLoading } = useNewsBulletinsList();
+  // Backend'e search ve status gondererek server-side filtreleme yap
+  const svParams = {
+    search: searchQuery || undefined,
+    status: statusFilter || undefined,
+    limit: 200,
+    offset: 0,
+  };
+  const nbParams = {
+    search: searchQuery || undefined,
+    status: statusFilter || undefined,
+    limit: 200,
+    offset: 0,
+  };
+
+  // Tur filtresi: sadece ilgili hook'u calistir
+  const skipVideos = typeFilter === "news_bulletin";
+  const skipBulletins = typeFilter === "standard_video";
+
+  const { data: videos, isLoading: vLoading } = useStandardVideosList(
+    skipVideos ? { limit: 0 } : svParams,
+  );
+  const { data: bulletins, isLoading: bLoading } = useNewsBulletinsList(
+    skipBulletins ? { limit: 0 } : nbParams,
+  );
 
   const isLoading = vLoading || bLoading;
 
-  const allRows: ContentRow[] = useMemo(() => {
-    const rows: ContentRow[] = [];
+  const rows: ContentRow[] = useMemo(() => {
+    const result: ContentRow[] = [];
 
-    if (videos) {
+    if (!skipVideos && videos) {
       for (const v of videos) {
-        rows.push({
+        result.push({
           id: v.id,
           type: "standard_video",
           typeLabel: "Standart Video",
@@ -137,9 +152,9 @@ export function ContentLibraryPage() {
       }
     }
 
-    if (bulletins) {
+    if (!skipBulletins && bulletins) {
       for (const b of bulletins) {
-        rows.push({
+        result.push({
           id: b.id,
           type: "news_bulletin",
           typeLabel: "Haber Bulteni",
@@ -152,35 +167,17 @@ export function ContentLibraryPage() {
       }
     }
 
-    rows.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    return rows;
-  }, [videos, bulletins]);
-
-  // Apply client-side filters
-  const filteredRows = useMemo(() => {
-    let result = allRows;
-
-    if (typeFilter) {
-      result = result.filter((r) => r.type === typeFilter);
-    }
-
-    if (statusFilter) {
-      result = result.filter((r) => r.status === statusFilter);
-    }
-
-    if (searchQuery.trim()) {
-      const q = searchQuery.trim().toLowerCase();
-      result = result.filter((r) => r.title.toLowerCase().includes(q));
-    }
-
+    result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     return result;
-  }, [allRows, typeFilter, statusFilter, searchQuery]);
+  }, [videos, bulletins, skipVideos, skipBulletins]);
 
-  // Collect unique statuses for filter dropdown
-  const availableStatuses = useMemo(() => {
-    const set = new Set(allRows.map((r) => r.status));
-    return Array.from(set).sort();
-  }, [allRows]);
+  const handleClearFilters = () => {
+    setSearchQuery("");
+    setTypeFilter("");
+    setStatusFilter("");
+  };
+
+  const hasActiveFilters = !!(searchQuery || typeFilter || statusFilter);
 
   return (
     <div>
@@ -209,7 +206,7 @@ export function ContentLibraryPage() {
         ve yonetim aksiyonlarini baslatabilirsiniz.
       </p>
 
-      {/* Filter/Sort/Search — M18-C aktif */}
+      {/* Filter/Sort/Search — M19-C backend-side */}
       <div style={SECTION} data-testid="library-filter-area">
         <h3 style={{ margin: "0 0 0.25rem", fontSize: "1rem" }} data-testid="library-filter-heading">
           Filtre ve Arama
@@ -219,12 +216,12 @@ export function ContentLibraryPage() {
           data-testid="library-filter-note"
         >
           Icerik kayitlarini tur, durum veya metin aramasiyla filtreleyebilirsiniz.
-          Filtreler asagidaki listeyi etkiler.
+          Filtreler backend tarafinda uygulanir.
         </p>
-        <div style={FILTER_ROW} data-testid="library-filters-active">
+        <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", marginBottom: hasActiveFilters ? "0.5rem" : 0 }} data-testid="library-filters-active">
           <input
             type="text"
-            placeholder="Baslik ara..."
+            placeholder="Baslik/konu ara..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             style={{ ...FILTER_INPUT, minWidth: "180px" }}
@@ -247,19 +244,14 @@ export function ContentLibraryPage() {
             data-testid="library-status-filter"
           >
             <option value="">Tum Durumlar</option>
-            {availableStatuses.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
+            <option value="draft">draft</option>
+            <option value="ready">ready</option>
+            <option value="failed">failed</option>
+            <option value="processing">processing</option>
           </select>
-          {(searchQuery || typeFilter || statusFilter) && (
+          {hasActiveFilters && (
             <button
-              onClick={() => {
-                setSearchQuery("");
-                setTypeFilter("");
-                setStatusFilter("");
-              }}
+              onClick={handleClearFilters}
               style={{
                 padding: "0.4rem 0.75rem",
                 border: "1px solid #e2e8f0",
@@ -275,9 +267,9 @@ export function ContentLibraryPage() {
             </button>
           )}
         </div>
-        {(searchQuery || typeFilter || statusFilter) && (
+        {hasActiveFilters && (
           <p style={{ fontSize: "0.6875rem", color: "#94a3b8", margin: "0" }} data-testid="library-filter-summary">
-            {filteredRows.length} / {allRows.length} kayit gosteriliyor
+            {rows.length} kayit gosteriliyor
           </p>
         )}
       </div>
@@ -297,15 +289,15 @@ export function ContentLibraryPage() {
 
         {isLoading && <p style={{ color: "#64748b" }}>Yukleniyor...</p>}
 
-        {!isLoading && filteredRows.length === 0 && (
+        {!isLoading && rows.length === 0 && (
           <p style={{ color: "#94a3b8", fontSize: "0.8125rem" }} data-testid="library-empty-state">
-            {allRows.length === 0
-              ? "Henuz icerik kaydi bulunmuyor. Icerik olusturma ekranindan yeni bir icerik baslatabilirsiniz."
-              : "Filtrelere uygun icerik kaydi bulunamadi."}
+            {hasActiveFilters
+              ? "Filtrelere uygun icerik kaydi bulunamadi."
+              : "Henuz icerik kaydi bulunmuyor. Icerik olusturma ekranindan yeni bir icerik baslatabilirsiniz."}
           </p>
         )}
 
-        {!isLoading && filteredRows.length > 0 && (
+        {!isLoading && rows.length > 0 && (
           <table style={TABLE} data-testid="library-table">
             <thead>
               <tr>
@@ -317,7 +309,7 @@ export function ContentLibraryPage() {
               </tr>
             </thead>
             <tbody>
-              {filteredRows.map((row) => (
+              {rows.map((row) => (
                 <tr key={`${row.type}-${row.id}`}>
                   <td style={TD}>{row.title}</td>
                   <td style={TD}>{row.typeLabel}</td>

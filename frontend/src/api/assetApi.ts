@@ -1,0 +1,47 @@
+const BASE_URL = "/api/v1/assets";
+
+export interface AssetItem {
+  id: string;
+  name: string;
+  asset_type: string;
+  source_kind: string;
+  file_path: string;
+  size_bytes: number;
+  mime_ext: string;
+  job_id: string | null;
+  module_type: string | null;
+  discovered_at: string | null;
+}
+
+export interface AssetListResponse {
+  total: number;
+  offset: number;
+  limit: number;
+  items: AssetItem[];
+}
+
+export interface AssetListParams {
+  asset_type?: string;
+  search?: string;
+  job_id?: string;
+  limit?: number;
+  offset?: number;
+}
+
+export async function fetchAssets(params?: AssetListParams): Promise<AssetListResponse> {
+  const url = new URL(BASE_URL, globalThis.location?.origin ?? "http://localhost");
+  if (params?.asset_type) url.searchParams.set("asset_type", params.asset_type);
+  if (params?.search) url.searchParams.set("search", params.search);
+  if (params?.job_id) url.searchParams.set("job_id", params.job_id);
+  if (params?.limit !== undefined) url.searchParams.set("limit", String(params.limit));
+  if (params?.offset !== undefined) url.searchParams.set("offset", String(params.offset));
+  const res = await fetch(url.pathname + url.search);
+  if (!res.ok) throw new Error(`Failed to fetch assets: ${res.status}`);
+  return res.json();
+}
+
+export async function fetchAssetById(assetId: string): Promise<AssetItem> {
+  const res = await fetch(`${BASE_URL}/${assetId}`);
+  if (!res.ok) throw new Error(`Failed to fetch asset ${assetId}: ${res.status}`);
+  return res.json();
+}

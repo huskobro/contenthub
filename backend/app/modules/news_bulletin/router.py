@@ -65,8 +65,16 @@ router = APIRouter(prefix="/modules/news-bulletin", tags=["news-bulletin"])
 
 
 @router.get("", response_model=List[NewsBulletinResponse])
-async def list_news_bulletins(db: AsyncSession = Depends(get_db)):
-    return await service.list_news_bulletins_with_artifacts(db)
+async def list_news_bulletins(
+    status: Optional[str] = Query(None, description="Durum filtresi"),
+    search: Optional[str] = Query(None, description="Baslik/konu arama (case-insensitive)"),
+    limit: int = Query(100, ge=1, le=500, description="Sayfalama limiti"),
+    offset: int = Query(0, ge=0, description="Sayfalama offset'i"),
+    db: AsyncSession = Depends(get_db),
+):
+    return await service.list_news_bulletins_with_artifacts(
+        db, status=status, search=search, limit=limit, offset=offset,
+    )
 
 
 @router.get("/{item_id}", response_model=NewsBulletinResponse)

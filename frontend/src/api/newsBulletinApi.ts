@@ -272,8 +272,22 @@ export async function updateNewsBulletinSelectedItem(
   return resp.json();
 }
 
-export async function fetchNewsBulletins(): Promise<NewsBulletinResponse[]> {
-  const resp = await fetch(BASE_URL);
+export interface NewsBulletinListParams {
+  status?: string;
+  search?: string;
+  limit?: number;
+  offset?: number;
+}
+
+export async function fetchNewsBulletins(
+  params?: NewsBulletinListParams,
+): Promise<NewsBulletinResponse[]> {
+  const url = new URL(BASE_URL, globalThis.location?.origin ?? "http://localhost");
+  if (params?.status) url.searchParams.set("status", params.status);
+  if (params?.search) url.searchParams.set("search", params.search);
+  if (params?.limit !== undefined) url.searchParams.set("limit", String(params.limit));
+  if (params?.offset !== undefined) url.searchParams.set("offset", String(params.offset));
+  const resp = await fetch(url.pathname + url.search);
   if (!resp.ok) throw new Error(`Failed to fetch news bulletins: ${resp.status}`);
   return resp.json();
 }

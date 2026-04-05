@@ -19,10 +19,19 @@ from app.modules.standard_video.schemas import (
 async def list_standard_videos(
     db: AsyncSession,
     status: Optional[str] = None,
+    search: Optional[str] = None,
+    limit: int = 100,
+    offset: int = 0,
 ) -> list[StandardVideo]:
     stmt = select(StandardVideo).order_by(StandardVideo.created_at.desc())
     if status:
         stmt = stmt.where(StandardVideo.status == status)
+    if search:
+        pattern = f"%{search}%"
+        stmt = stmt.where(
+            StandardVideo.title.ilike(pattern) | StandardVideo.topic.ilike(pattern)
+        )
+    stmt = stmt.limit(limit).offset(offset)
     result = await db.execute(stmt)
     return list(result.scalars().all())
 
@@ -30,8 +39,11 @@ async def list_standard_videos(
 async def list_standard_videos_with_artifact_summary(
     db: AsyncSession,
     status: Optional[str] = None,
+    search: Optional[str] = None,
+    limit: int = 100,
+    offset: int = 0,
 ) -> list[StandardVideoResponse]:
-    videos = await list_standard_videos(db, status=status)
+    videos = await list_standard_videos(db, status=status, search=search, limit=limit, offset=offset)
     result = []
     for v in videos:
         script_row = await db.execute(

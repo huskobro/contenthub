@@ -201,8 +201,8 @@ export function AdminOverviewPage() {
             { area: "Haber Modulu", status: "M11 aktif", detail: "Kaynak, tarama, haber, dedupe akislari calisiyor; soft dedupe esigi ayarlardan okunuyor", testId: "readiness-news" },
             { area: "Ayarlar ve Gorunurluk", status: "M12 aktif", detail: "Settings resolver (19/19 wired), visibility guard 9 admin router'da aktif, audit log calisiyor", testId: "readiness-settings" },
             { area: "Analytics ve Raporlama", status: "M18 aktif", detail: "Platform, operasyon, kaynak, kanal ve icerik analytics gercek SQL aggregation ile calisiyor", testId: "readiness-analytics" },
-            { area: "Icerik Kutuphanesi", status: "M18 aktif", detail: "Birlesik icerik listesi, tur/durum/arama filtreleri aktif", testId: "readiness-library" },
-            { area: "Varlik Kutuphanesi", status: "Desteklenmiyor", detail: "Backend asset altyapisi mevcut degil, bu alan henuz desteklenmiyor", testId: "readiness-assets" },
+            { area: "Icerik Kutuphanesi", status: "M19 aktif", detail: "Birlesik icerik listesi, backend-side search/status/pagination filtreleri aktif", testId: "readiness-library" },
+            { area: "Varlik Kutuphanesi", status: "M19 aktif", detail: "Workspace disk taramasi ile gercek asset index, filtre ve sayfalama aktif", testId: "readiness-assets" },
           ].map((item) => (
             <div
               key={item.area}

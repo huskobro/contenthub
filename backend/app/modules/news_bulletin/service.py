@@ -40,19 +40,36 @@ async def get_used_news_enforcement(
     }
 
 
-async def list_news_bulletins(db: AsyncSession) -> List[NewsBulletin]:
-    result = await db.execute(
-        select(NewsBulletin).order_by(NewsBulletin.created_at.desc())
-    )
+async def list_news_bulletins(
+    db: AsyncSession,
+    status: Optional[str] = None,
+    search: Optional[str] = None,
+    limit: int = 100,
+    offset: int = 0,
+) -> List[NewsBulletin]:
+    stmt = select(NewsBulletin).order_by(NewsBulletin.created_at.desc())
+    if status:
+        stmt = stmt.where(NewsBulletin.status == status)
+    if search:
+        pattern = f"%{search}%"
+        stmt = stmt.where(
+            NewsBulletin.title.ilike(pattern) | NewsBulletin.topic.ilike(pattern)
+        )
+    stmt = stmt.limit(limit).offset(offset)
+    result = await db.execute(stmt)
     return list(result.scalars().all())
 
 
 async def list_news_bulletins_with_artifacts(
     db: AsyncSession,
+    status: Optional[str] = None,
+    search: Optional[str] = None,
+    limit: int = 100,
+    offset: int = 0,
 ) -> List[NewsBulletinResponse]:
     """Return bulletin list enriched with has_script, has_metadata, selected_news_count, and warning aggregate."""
     from sqlalchemy import func as sqlfunc
-    bulletins = await list_news_bulletins(db)
+    bulletins = await list_news_bulletins(db, status=status, search=search, limit=limit, offset=offset)
     result = []
     for b in bulletins:
         script_row = await db.execute(

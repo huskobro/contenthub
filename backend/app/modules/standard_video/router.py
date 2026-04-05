@@ -70,12 +70,17 @@ async def list_subtitle_presets() -> dict:
     }
 
 
-@router.get("", response_model=list[StandardVideoResponse])
+@router.get("")
 async def list_standard_videos(
-    status: Optional[str] = Query(None),
+    status: Optional[str] = Query(None, description="Durum filtresi"),
+    search: Optional[str] = Query(None, description="Baslik/konu arama (case-insensitive)"),
+    limit: int = Query(100, ge=1, le=500, description="Sayfalama limiti"),
+    offset: int = Query(0, ge=0, description="Sayfalama offset'i"),
     db: AsyncSession = Depends(get_db),
-) -> list[StandardVideoResponse]:
-    return await service.list_standard_videos_with_artifact_summary(db, status=status)
+):
+    return await service.list_standard_videos_with_artifact_summary(
+        db, status=status, search=search, limit=limit, offset=offset,
+    )
 
 
 @router.get("/{item_id}", response_model=StandardVideoResponse)
