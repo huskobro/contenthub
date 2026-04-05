@@ -38,8 +38,18 @@ export interface Command {
   description?: string;
   /** If set, command is only visible when this visibility key allows it */
   visibilityKey?: string;
+  /** If set, command only appears when currentRoute matches one of these routes */
+  contextRoutes?: string[];
   /** Execute the command */
   action: () => void;
+}
+
+// ---------------------------------------------------------------------------
+// Context types
+// ---------------------------------------------------------------------------
+
+export interface CommandPaletteContext {
+  currentRoute: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -55,6 +65,8 @@ interface CommandPaletteState {
   selectedIndex: number;
   /** Registered commands (source of truth) */
   commands: Command[];
+  /** Current context (route, etc.) for contextual filtering */
+  context: CommandPaletteContext;
 
   // -- Actions --
   open: () => void;
@@ -62,6 +74,7 @@ interface CommandPaletteState {
   toggle: () => void;
   setQuery: (q: string) => void;
   setSelectedIndex: (i: number) => void;
+  setContext: (ctx: CommandPaletteContext) => void;
   registerCommands: (cmds: Command[]) => void;
   unregisterCommands: (ids: string[]) => void;
   /** Execute the currently selected command and close */
@@ -88,13 +101,26 @@ function normalizeForSearch(text: string): string {
     .replace(/ö/g, "o");
 }
 
-export function filterCommands(commands: Command[], query: string): Command[] {
-  if (!query.trim()) return commands;
+export function filterCommands(
+  commands: Command[],
+  query: string,
+  context?: CommandPaletteContext
+): Command[] {
+  // First filter by context routes
+  let filtered = commands;
+  if (context) {
+    filtered = commands.filter((cmd) => {
+      if (!cmd.contextRoutes || cmd.contextRoutes.length === 0) return true;
+      return cmd.contextRoutes.some((route) => context.currentRoute.startsWith(route));
+    });
+  }
+
+  if (!query.trim()) return filtered;
 
   const normalized = normalizeForSearch(query);
   const terms = normalized.split(/\s+/).filter(Boolean);
 
-  return commands.filter((cmd) => {
+  return filtered.filter((cmd) => {
     const searchable = normalizeForSearch(
       [cmd.label, cmd.description, ...(cmd.keywords || [])].filter(Boolean).join(" ")
     );
@@ -111,6 +137,7 @@ export const useCommandPaletteStore = create<CommandPaletteState>((set, get) => 
   query: "",
   selectedIndex: 0,
   commands: [],
+  context: { currentRoute: "/" },
 
   open: () => set({ isOpen: true, query: "", selectedIndex: 0 }),
   close: () => set({ isOpen: false, query: "", selectedIndex: 0 }),
@@ -125,6 +152,7 @@ export const useCommandPaletteStore = create<CommandPaletteState>((set, get) => 
 
   setQuery: (q) => set({ query: q, selectedIndex: 0 }),
   setSelectedIndex: (i) => set({ selectedIndex: i }),
+  setContext: (ctx) => set({ context: ctx }),
 
   registerCommands: (cmds) =>
     set((state) => {
@@ -143,8 +171,8 @@ export const useCommandPaletteStore = create<CommandPaletteState>((set, get) => 
     })),
 
   executeSelected: () => {
-    const { commands, query, selectedIndex } = get();
-    const filtered = filterCommands(commands, query);
+    const { commands, query, selectedIndex, context } = get();
+    const filtered = filterCommands(commands, query, context);
     const cmd = filtered[selectedIndex];
     if (cmd) {
       cmd.action();

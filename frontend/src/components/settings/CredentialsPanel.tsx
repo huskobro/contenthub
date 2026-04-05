@@ -9,43 +9,44 @@ import {
 } from "../../hooks/useCredentials";
 import { useReadOnly } from "../visibility/ReadOnlyGuard";
 import { getYouTubeAuthUrl, type CredentialStatus } from "../../api/credentialsApi";
-import { colors, radius, typography } from "../design-system/tokens";
+import { colors, radius, typography, spacing, shadow, transition } from "../design-system/tokens";
 
 // ---------------------------------------------------------------------------
-// Styles
+// Styles — fully tokenized
 // ---------------------------------------------------------------------------
 
 const SECTION: React.CSSProperties = {
-  marginBottom: "1.5rem",
+  marginBottom: spacing[6],
 };
 
 const SECTION_TITLE: React.CSSProperties = {
   fontSize: typography.size.base,
-  fontWeight: 600,
+  fontWeight: typography.weight.semibold,
   color: colors.neutral[800],
-  marginBottom: "0.75rem",
-  paddingBottom: "0.375rem",
+  marginBottom: spacing[3],
+  paddingBottom: spacing[2],
   borderBottom: `1px solid ${colors.border.subtle}`,
 };
 
 const CARD: React.CSSProperties = {
   border: `1px solid ${colors.border.subtle}`,
   borderRadius: radius.lg,
-  padding: "1rem",
-  marginBottom: "0.75rem",
-  background: colors.neutral[0],
+  padding: spacing[4],
+  marginBottom: spacing[3],
+  background: colors.surface.card,
+  boxShadow: shadow.xs,
 };
 
 const ROW: React.CSSProperties = {
   display: "flex",
   alignItems: "center",
-  gap: "0.75rem",
+  gap: spacing[3],
   flexWrap: "wrap",
 };
 
 const LABEL: React.CSSProperties = {
   fontSize: typography.size.base,
-  fontWeight: 600,
+  fontWeight: typography.weight.semibold,
   color: colors.neutral[900],
   minWidth: "160px",
 };
@@ -53,57 +54,64 @@ const LABEL: React.CSSProperties = {
 const HELP: React.CSSProperties = {
   fontSize: typography.size.xs,
   color: colors.neutral[500],
-  marginTop: "0.25rem",
-  lineHeight: 1.4,
+  marginTop: spacing[1],
+  lineHeight: typography.lineHeight.normal,
 };
 
 const MASKED: React.CSSProperties = {
   fontSize: typography.size.base,
   color: colors.neutral[600],
-  fontFamily: "monospace",
+  fontFamily: typography.monoFamily,
   letterSpacing: "0.5px",
 };
 
 const INPUT: React.CSSProperties = {
   flex: 1,
   minWidth: "200px",
-  padding: "0.375rem 0.5rem",
+  padding: `${spacing[1]} ${spacing[2]}`,
   border: `1px solid ${colors.border.default}`,
   borderRadius: radius.sm,
   fontSize: typography.size.base,
+  fontFamily: typography.fontFamily,
   boxSizing: "border-box",
+  outline: "none",
+  transition: `border-color ${transition.fast}`,
 };
 
 const BTN_PRIMARY: React.CSSProperties = {
-  padding: "0.3rem 0.75rem",
-  background: colors.brand[700],
+  padding: `${spacing[1]} ${spacing[3]}`,
+  background: colors.brand[600],
   color: colors.neutral[0],
   border: "none",
-  borderRadius: radius.sm,
+  borderRadius: radius.md,
   cursor: "pointer",
   fontSize: typography.size.sm,
-  fontWeight: 500,
+  fontWeight: typography.weight.medium,
+  transition: `opacity ${transition.fast}`,
 };
 
 const BTN_SECONDARY: React.CSSProperties = {
-  padding: "0.3rem 0.75rem",
+  padding: `${spacing[1]} ${spacing[3]}`,
   background: "transparent",
   color: colors.neutral[600],
   border: `1px solid ${colors.border.default}`,
-  borderRadius: radius.sm,
+  borderRadius: radius.md,
   cursor: "pointer",
   fontSize: typography.size.sm,
+  fontWeight: typography.weight.medium,
+  transition: `background ${transition.fast}`,
 };
 
 const BTN_DANGER: React.CSSProperties = {
-  padding: "0.3rem 0.75rem",
+  padding: `${spacing[1]} ${spacing[3]}`,
   background: colors.error.base,
   color: colors.neutral[0],
   border: "none",
-  borderRadius: radius.sm,
+  borderRadius: radius.md,
   cursor: "pointer",
   fontSize: typography.size.sm,
-  fontWeight: 500,
+  fontWeight: typography.weight.medium,
+  transition: `opacity ${transition.fast}`,
 };
 
 // ---------------------------------------------------------------------------
@@ -127,7 +135,7 @@ function StatusBadge({ status }: { status: string }) {
         padding: "0.125rem 0.5rem",
         borderRadius: radius.full,
         fontSize: typography.size.xs,
-        fontWeight: 600,
+        fontWeight: typography.weight.semibold,
         background: s.bg,
         color: s.fg,
       }}
@@ -150,8 +158,8 @@ function SourceBadge({ source }: { source: string }) {
         display: "inline-block",
         padding: "0.1rem 0.375rem",
         borderRadius: radius.sm,
-        fontSize: "0.625rem",
-        fontWeight: 500,
+        fontSize: typography.size.xs,
+        fontWeight: typography.weight.medium,
         background: colors.neutral[100],
         color: colors.neutral[600],
       }}
@@ -225,7 +233,7 @@ function CredentialRow({ cred }: { cred: CredentialStatus }) {
         <StatusBadge status={cred.status} />
         <SourceBadge source={cred.source} />
         {cred.updated_at && (
-          <span style={{ fontSize: "0.625rem", color: colors.neutral[500] }}>
+          <span style={{ fontSize: typography.size.xs, color: colors.neutral[500] }}>
             {new Date(cred.updated_at).toLocaleString("tr-TR")}
           </span>
         )}
@@ -235,13 +243,13 @@ function CredentialRow({ cred }: { cred: CredentialStatus }) {
 
       {/* Current masked value */}
       {cred.masked_value && !editing && (
-        <div style={{ marginTop: "0.5rem" }}>
+        <div style={{ marginTop: spacing[2] }}>
           <span style={MASKED}>{cred.masked_value}</span>
         </div>
       )}
 
       {/* Action bar */}
-      <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem", alignItems: "center" }}>
+      <div style={{ display: "flex", gap: spacing[2], marginTop: spacing[2], alignItems: "center" }}>
         {editing ? (
           <>
             <input
@@ -286,7 +294,7 @@ function CredentialRow({ cred }: { cred: CredentialStatus }) {
       {feedback && (
         <div
           style={{
-            marginTop: "0.375rem",
+            marginTop: spacing[1],
             fontSize: typography.size.sm,
             color: feedback.type === "success" ? colors.success.text : colors.error.base,
           }}
@@ -354,9 +362,9 @@ function YouTubeConnectionSection() {
           style={{
             display: "flex",
             alignItems: "center",
-            gap: "0.75rem",
-            marginTop: "0.75rem",
-            padding: "0.625rem",
+            gap: spacing[3],
+            marginTop: spacing[3],
+            padding: spacing[3],
             background: colors.success.light,
             borderRadius: radius.md,
             border: `1px solid ${colors.success.light}`,
@@ -370,7 +378,7 @@ function YouTubeConnectionSection() {
             />
           )}
           <div>
-            <div style={{ fontSize: typography.size.base, fontWeight: 600, color: colors.success.text }}>
+            <div style={{ fontSize: typography.size.base, fontWeight: typography.weight.semibold, color: colors.success.text }}>
               {channelInfo.channel_title}
             </div>
             <div style={{ fontSize: typography.size.xs, color: colors.neutral[600] }}>
@@ -382,7 +390,7 @@ function YouTubeConnectionSection() {
         </div>
       )}
 
-      <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem", alignItems: "center" }}>
+      <div style={{ display: "flex", gap: spacing[2], marginTop: spacing[2], alignItems: "center" }}>
         {ytStatus?.has_credentials ? (
           <>
             <span style={{ fontSize: typography.size.sm, color: colors.success.text }}>
@@ -404,13 +412,13 @@ function YouTubeConnectionSection() {
       </div>
 
       {connectError && (
-        <div style={{ marginTop: "0.375rem", fontSize: typography.size.sm, color: colors.error.base }}>
+        <div style={{ marginTop: spacing[1], fontSize: typography.size.sm, color: colors.error.base }}>
           {connectError}
         </div>
       )}
 
       {revokeMutation.isSuccess && (
-        <div style={{ marginTop: "0.375rem", fontSize: typography.size.sm, color: colors.success.text }}>
+        <div style={{ marginTop: spacing[1], fontSize: typography.size.sm, color: colors.success.text }}>
           Baglanti basariyla kesildi.
         </div>
       )}

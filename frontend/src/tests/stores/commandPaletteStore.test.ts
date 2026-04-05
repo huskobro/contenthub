@@ -102,6 +102,44 @@ describe("commandPaletteStore", () => {
   });
 });
 
+describe("commandPaletteStore context", () => {
+  beforeEach(() => {
+    useCommandPaletteStore.setState({
+      isOpen: false,
+      query: "",
+      selectedIndex: 0,
+      commands: [],
+      context: { currentRoute: "/" },
+    });
+  });
+
+  it("has default context with root route", () => {
+    expect(useCommandPaletteStore.getState().context.currentRoute).toBe("/");
+  });
+
+  it("setContext updates current route", () => {
+    useCommandPaletteStore.getState().setContext({ currentRoute: "/admin/jobs" });
+    expect(useCommandPaletteStore.getState().context.currentRoute).toBe("/admin/jobs");
+  });
+
+  it("executeSelected uses context for filtering", () => {
+    const globalAction = vi.fn();
+    const contextAction = vi.fn();
+    useCommandPaletteStore.getState().registerCommands([
+      makeCmd({ id: "global", label: "Global", action: globalAction }),
+      makeCmd({ id: "ctx-jobs", label: "Jobs Only", action: contextAction, contextRoutes: ["/admin/jobs"] }),
+    ]);
+    useCommandPaletteStore.getState().setContext({ currentRoute: "/admin/settings" });
+    useCommandPaletteStore.getState().open();
+    // With context on /admin/settings, ctx-jobs should be filtered out
+    // Only global should be at index 0
+    useCommandPaletteStore.getState().setSelectedIndex(0);
+    useCommandPaletteStore.getState().executeSelected();
+    expect(globalAction).toHaveBeenCalledOnce();
+    expect(contextAction).not.toHaveBeenCalled();
+  });
+});
+
 describe("filterCommands", () => {
   const commands: Command[] = [
     makeCmd({ id: "nav-settings", label: "Ayarlar", keywords: ["settings", "config"] }),
@@ -149,5 +187,48 @@ describe("filterCommands", () => {
   it("returns empty array when nothing matches", () => {
     const result = filterCommands(commands, "nonexistent xyz");
     expect(result).toHaveLength(0);
+  });
+
+  it("filters by context route when context provided", () => {
+    const cmds: Command[] = [
+      makeCmd({ id: "global", label: "Global" }),
+      makeCmd({ id: "jobs-only", label: "Jobs Filter", contextRoutes: ["/admin/jobs"] }),
+      makeCmd({ id: "settings-only", label: "Settings Focus", contextRoutes: ["/admin/settings"] }),
+    ];
+    const ctx = { currentRoute: "/admin/jobs" };
+    const result = filterCommands(cmds, "", ctx);
+    expect(result).toHaveLength(2); // global + jobs-only
+    expect(result.map((c) => c.id)).toContain("global");
+    expect(result.map((c) => c.id)).toContain("jobs-only");
+    expect(result.map((c) => c.id)).not.toContain("settings-only");
+  });
+
+  it("shows all commands without context", () => {
+    const cmds: Command[] = [
+      makeCmd({ id: "global", label: "Global" }),
+      makeCmd({ id: "jobs-only", label: "Jobs Filter", contextRoutes: ["/admin/jobs"] }),
+    ];
+    const result = filterCommands(cmds, "");
+    expect(result).toHaveLength(2);
+  });
+
+  it("context route uses startsWith matching", () => {
+    const cmds: Command[] = [
+      makeCmd({ id: "ctx", label: "Ctx", contextRoutes: ["/admin/jobs"] }),
+    ];
+    const ctx = { currentRoute: "/admin/jobs/abc123" };
+    const result = filterCommands(cmds, "", ctx);
+    expect(result).toHaveLength(1);
+  });
+
+  it("context filter combined with search query", () => {
+    const cmds: Command[] = [
+      makeCmd({ id: "global-settings", label: "Ayarlar" }),
+      makeCmd({ id: "ctx-filter", label: "Hatali Filtre", contextRoutes: ["/admin/jobs"] }),
+    ];
+    const ctx = { currentRoute: "/admin/jobs" };
+    const result = filterCommands(cmds, "hatali", ctx);
+    expect(result).toHaveLength(1);
+    expect(result[0].id).toBe("ctx-filter");
   });
 });

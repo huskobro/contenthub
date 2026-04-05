@@ -15,6 +15,7 @@ async def list_templates(
     owner_scope: Optional[str] = None,
     module_scope: Optional[str] = None,
     status: Optional[str] = None,
+    search: Optional[str] = None,
 ) -> List[Template]:
     stmt = select(Template).order_by(Template.created_at.desc())
     if template_type is not None:
@@ -25,6 +26,9 @@ async def list_templates(
         stmt = stmt.where(Template.module_scope == module_scope)
     if status is not None:
         stmt = stmt.where(Template.status == status)
+    if search:
+        pattern = f"%{search}%"
+        stmt = stmt.where(Template.name.ilike(pattern))
     result = await db.execute(stmt)
     return list(result.scalars().all())
 
@@ -75,6 +79,7 @@ async def list_templates_with_style_link_summary(
     owner_scope: Optional[str] = None,
     module_scope: Optional[str] = None,
     status: Optional[str] = None,
+    search: Optional[str] = None,
 ) -> List[TemplateResponse]:
     templates = await list_templates(
         db,
@@ -82,6 +87,7 @@ async def list_templates_with_style_link_summary(
         owner_scope=owner_scope,
         module_scope=module_scope,
         status=status,
+        search=search,
     )
     result = []
     for t in templates:

@@ -11,6 +11,7 @@ async def list_sources(
     source_type: Optional[str] = None,
     status: Optional[str] = None,
     scan_mode: Optional[str] = None,
+    search: Optional[str] = None,
 ) -> List[NewsSource]:
     q = select(NewsSource).order_by(NewsSource.created_at.desc())
     if source_type is not None:
@@ -19,6 +20,9 @@ async def list_sources(
         q = q.where(NewsSource.status == status)
     if scan_mode is not None:
         q = q.where(NewsSource.scan_mode == scan_mode)
+    if search:
+        pattern = f"%{search}%"
+        q = q.where(NewsSource.name.ilike(pattern))
     result = await db.execute(q)
     return list(result.scalars().all())
 
@@ -28,10 +32,11 @@ async def list_sources_with_scan_summary(
     source_type: Optional[str] = None,
     status: Optional[str] = None,
     scan_mode: Optional[str] = None,
+    search: Optional[str] = None,
 ) -> List[SourceResponse]:
     """Return source list enriched with scan_count, last_scan_status, last_scan_finished_at."""
     from sqlalchemy import func as sqlfunc
-    sources = await list_sources(db, source_type=source_type, status=status, scan_mode=scan_mode)
+    sources = await list_sources(db, source_type=source_type, status=status, scan_mode=scan_mode, search=search)
     result = []
     for s in sources:
         count_row = await db.execute(

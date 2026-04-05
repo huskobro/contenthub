@@ -10,12 +10,16 @@ async def list_style_blueprints(
     db: AsyncSession,
     module_scope: Optional[str] = None,
     status: Optional[str] = None,
+    search: Optional[str] = None,
 ) -> List[StyleBlueprint]:
     q = select(StyleBlueprint).order_by(StyleBlueprint.created_at.desc())
     if module_scope is not None:
         q = q.where(StyleBlueprint.module_scope == module_scope)
     if status is not None:
         q = q.where(StyleBlueprint.status == status)
+    if search:
+        pattern = f"%{search}%"
+        q = q.where(StyleBlueprint.name.ilike(pattern))
     result = await db.execute(q)
     return list(result.scalars().all())
 

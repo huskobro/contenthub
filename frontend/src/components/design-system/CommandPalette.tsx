@@ -1,20 +1,37 @@
 /**
- * Command Palette — Wave 2 / M25
+ * Command Palette — Wave 2 / M25 + Contextual & Discovery enhancements
  *
  * Cmd+K / Ctrl+K triggered overlay with real search + navigation.
  * - Keyboard-first: arrow keys, enter, escape
  * - Visibility-aware: commands with visibilityKey are filtered
+ * - Context-aware: commands with contextRoutes only show on matching routes
+ * - Discovery: server-backed search results when query is 2+ chars
  * - Focus trapped inside palette when open
  * - Integrates with keyboard scope stack and dismiss stack
  */
 
 import React, { useEffect, useRef, useCallback, useMemo } from "react";
 import { createPortal } from "react-dom";
-import { useCommandPaletteStore, filterCommands, type Command, type CommandCategory } from "../../stores/commandPaletteStore";
+import { useNavigate } from "react-router-dom";
+import {
+  useCommandPaletteStore,
+  filterCommands,
+  type Command,
+  type CommandCategory,
+} from "../../stores/commandPaletteStore";
 import { useKeyboardStore } from "../../stores/keyboardStore";
 import { useVisibility } from "../../hooks/useVisibility";
 import { useDismissStack } from "../../hooks/useDismissStack";
-import { colors, typography, spacing, radius, shadow, transition, zIndex } from "./tokens";
+import { useDiscoverySearch } from "../../hooks/useDiscoverySearch";
+import {
+  colors,
+  typography,
+  spacing,
+  radius,
+  shadow,
+  transition,
+  zIndex,
+} from "./tokens";
 
 // ---------------------------------------------------------------------------
 // Scope ID
@@ -34,19 +51,25 @@ const CATEGORY_LABELS: Record<CommandCategory, string> = {
   theme: "Tema",
 };
 
-const CATEGORY_ORDER: CommandCategory[] = ["action", "navigation", "settings", "theme", "search"];
+const CATEGORY_ORDER: CommandCategory[] = [
+  "action",
+  "navigation",
+  "settings",
+  "theme",
+  "search",
+];
+
+// ---------------------------------------------------------------------------
+// Discovery group label (not a CommandCategory)
+// ---------------------------------------------------------------------------
+
+const DISCOVERY_GROUP_LABEL = "Bulunan Kayitlar";
 
 // ---------------------------------------------------------------------------
 // Visibility-aware command filter hook
 // ---------------------------------------------------------------------------
 
 function useVisibilityFilteredCommands(commands: Command[]): Command[] {
-  // Collect unique visibility keys
-  const visibilityKeys = useMemo(
-    () => [...new Set(commands.filter((c) => c.visibilityKey).map((c) => c.visibilityKey!))],
-    [commands]
-  );
-
   // Query visibility for each key (unconditional hooks — stable count via useMemo)
   const vis_settings = useVisibility("panel:settings");
   const vis_visibility = useVisibility("panel:visibility");
@@ -54,13 +77,22 @@ function useVisibilityFilteredCommands(commands: Command[]): Command[] {
   const vis_analytics = useVisibility("panel:analytics");
   const vis_sources = useVisibility("panel:sources");
 
-  const visMap: Record<string, boolean> = useMemo(() => ({
-    "panel:settings": vis_settings.visible,
-    "panel:visibility": vis_visibility.visible,
-    "panel:templates": vis_templates.visible,
-    "panel:analytics": vis_analytics.visible,
-    "panel:sources": vis_sources.visible,
-  }), [vis_settings.visible, vis_visibility.visible, vis_templates.visible, vis_analytics.visible, vis_sources.visible]);
+  const visMap: Record<string, boolean> = useMemo(
+    () => ({
+      "panel:settings": vis_settings.visible,
+      "panel:visibility": vis_visibility.visible,
+      "panel:templates": vis_templates.visible,
+      "panel:analytics": vis_analytics.visible,
+      "panel:sources": vis_sources.visible,
+    }),
+    [
+      vis_settings.visible,
+      vis_visibility.visible,
+      vis_templates.visible,
+      vis_analytics.visible,
+      vis_sources.visible,
+    ]
+  );
 
   return useMemo(
     () =>
@@ -77,7 +109,7 @@ function useVisibilityFilteredCommands(commands: Command[]): Command[] {
 // ---------------------------------------------------------------------------
 
 interface CommandGroup {
-  category: CommandCategory;
+  category: CommandCategory | "discovery";
   label: string;
   commands: Command[];
 }
@@ -91,13 +123,11 @@ function groupCommands(commands: Command[]): CommandGroup[] {
     groups.set(cmd.category, existing);
   }
 
-  return CATEGORY_ORDER
-    .filter((cat) => groups.has(cat))
-    .map((cat) => ({
-      category: cat,
-      label: CATEGORY_LABELS[cat],
-      commands: groups.get(cat)!,
-    }));
+  return CATEGORY_ORDER.filter((cat) => groups.has(cat)).map((cat) => ({
+    category: cat,
+    label: CATEGORY_LABELS[cat],
+    commands: groups.get(cat)!,
+  }));
 }
 
 // ---------------------------------------------------------------------------
@@ -105,23 +135,62 @@ function groupCommands(commands: Command[]): CommandGroup[] {
 // ---------------------------------------------------------------------------
 
 export function CommandPalette() {
-  const { isOpen, query, selectedIndex, commands, close, setQuery, setSelectedIndex, executeSelected } =
-    useCommandPaletteStore();
+  const {
+    isOpen,
+    query,
+    selectedIndex,
+    commands,
+    context,
+    close,
+    setQuery,
+    setSelectedIndex,
+    executeSelected,
+  } = useCommandPaletteStore();
 
+  const navigate = useNavigate();
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
+
+  // Discovery search (debounced, 2+ chars)
+  const { discoveryCommands, isLoading: discoveryLoading, hasSearched: discoverySearched } =
+    useDiscoverySearch(query, navigate);
 
   // Filter by visibility
   const visibleCommands = useVisibilityFilteredCommands(commands);
 
-  // Filter by search query
-  const filtered = useMemo(() => filterCommands(visibleCommands, query), [visibleCommands, query]);
+  // Filter by search query + context
+  const filtered = useMemo(
+    () => filterCommands(visibleCommands, query, context),
+    [visibleCommands, query, context]
+  );
 
-  // Group for display
-  const groups = useMemo(() => groupCommands(filtered), [filtered]);
+  // Group static commands for display
+  const staticGroups = useMemo(() => groupCommands(filtered), [filtered]);
+
+  // Build discovery group (only when query >= 2 chars)
+  const showDiscovery = query.trim().length >= 2;
+  const discoveryGroup: CommandGroup | null = useMemo(() => {
+    if (!showDiscovery || discoveryCommands.length === 0) return null;
+    return {
+      category: "discovery" as const,
+      label: DISCOVERY_GROUP_LABEL,
+      commands: discoveryCommands,
+    };
+  }, [showDiscovery, discoveryCommands]);
+
+  // All groups: discovery at top, then static
+  const allGroups = useMemo(() => {
+    const groups: CommandGroup[] = [];
+    if (discoveryGroup) groups.push(discoveryGroup);
+    groups.push(...staticGroups);
+    return groups;
+  }, [discoveryGroup, staticGroups]);
 
   // Flat list for index tracking
-  const flatList = useMemo(() => groups.flatMap((g) => g.commands), [groups]);
+  const flatList = useMemo(
+    () => allGroups.flatMap((g) => g.commands),
+    [allGroups]
+  );
 
   // Keyboard scope
   useEffect(() => {
@@ -141,7 +210,6 @@ export function CommandPalette() {
   // Auto-focus input
   useEffect(() => {
     if (isOpen && inputRef.current) {
-      // Small delay to let portal render
       requestAnimationFrame(() => inputRef.current?.focus());
     }
   }, [isOpen]);
@@ -149,7 +217,9 @@ export function CommandPalette() {
   // Scroll selected into view
   useEffect(() => {
     if (!listRef.current) return;
-    const selected = listRef.current.querySelector(`[data-palette-index="${selectedIndex}"]`);
+    const selected = listRef.current.querySelector(
+      `[data-palette-index="${selectedIndex}"]`
+    );
     if (selected) {
       selected.scrollIntoView({ block: "nearest" });
     }
@@ -169,21 +239,21 @@ export function CommandPalette() {
           break;
         case "Enter":
           e.preventDefault();
-          if (flatList.length > 0) {
-            executeSelected();
+          if (flatList.length > 0 && flatList[selectedIndex]) {
+            flatList[selectedIndex].action();
+            close();
           }
           break;
-        // ESC is handled by useDismissStack — no duplication needed
+        // ESC is handled by useDismissStack
         case "Tab":
-          // Trap focus inside palette
           e.preventDefault();
           break;
       }
     },
-    [selectedIndex, flatList.length, setSelectedIndex, executeSelected, close]
+    [selectedIndex, flatList, setSelectedIndex, close]
   );
 
-  // Precompute index map: command id → flat index
+  // Precompute index map: command id -> flat index
   const indexMap = useMemo(() => {
     const map = new Map<string, number>();
     flatList.forEach((cmd, i) => map.set(cmd.id, i));
@@ -250,7 +320,15 @@ export function CommandPalette() {
             gap: spacing[2],
           }}
         >
-          <span style={{ color: colors.neutral[400], fontSize: typography.size.lg, flexShrink: 0 }}>⌘</span>
+          <span
+            style={{
+              color: colors.neutral[400],
+              fontSize: typography.size.lg,
+              flexShrink: 0,
+            }}
+          >
+            {discoveryLoading ? "⏳" : "⌘"}
+          </span>
           <input
             ref={inputRef}
             type="text"
@@ -299,7 +377,8 @@ export function CommandPalette() {
           aria-label="Komutlar"
           data-testid="command-palette-list"
         >
-          {flatList.length === 0 && (
+          {/* Empty state — only show when no static results AND discovery finished with nothing */}
+          {flatList.length === 0 && !discoveryLoading && (
             <div
               style={{
                 padding: `${spacing[6]} ${spacing[4]}`,
@@ -309,18 +388,38 @@ export function CommandPalette() {
               }}
               data-testid="command-palette-empty"
             >
-              Sonuc bulunamadi.
+              {showDiscovery && discoverySearched
+                ? "Sonuc bulunamadi."
+                : "Sonuc bulunamadi."}
             </div>
           )}
 
-          {groups.map((group) => (
+          {/* Discovery loading indicator */}
+          {showDiscovery && discoveryLoading && flatList.length === 0 && (
+            <div
+              style={{
+                padding: `${spacing[4]} ${spacing[4]}`,
+                textAlign: "center",
+                color: colors.neutral[400],
+                fontSize: typography.size.sm,
+              }}
+              data-testid="command-palette-discovery-loading"
+            >
+              Aranıyor...
+            </div>
+          )}
+
+          {allGroups.map((group) => (
             <div key={group.category}>
               <div
                 style={{
                   padding: `${spacing[2]} ${spacing[4]} ${spacing[1]}`,
                   fontSize: typography.size.xs,
                   fontWeight: typography.weight.semibold,
-                  color: colors.neutral[500],
+                  color:
+                    group.category === "discovery"
+                      ? colors.brand[600]
+                      : colors.neutral[500],
                   textTransform: "uppercase",
                   letterSpacing: "0.05em",
                 }}
@@ -330,15 +429,17 @@ export function CommandPalette() {
               {group.commands.map((cmd) => {
                 const itemIndex = indexMap.get(cmd.id) ?? 0;
                 const isSelected = selectedIndex === itemIndex;
+                const isDiscovery = group.category === "discovery";
                 return (
                   <CommandItem
                     key={cmd.id}
                     command={cmd}
                     isSelected={isSelected}
                     index={itemIndex}
+                    isDiscovery={isDiscovery}
                     onSelect={() => {
-                      setSelectedIndex(itemIndex);
-                      useCommandPaletteStore.getState().executeCommand(cmd.id);
+                      cmd.action();
+                      close();
                     }}
                     onHover={() => setSelectedIndex(itemIndex)}
                   />
@@ -370,7 +471,6 @@ export function CommandPalette() {
           </span>
         </div>
       </div>
-
     </div>,
     document.body
   );
@@ -384,11 +484,25 @@ interface CommandItemProps {
   command: Command;
   isSelected: boolean;
   index: number;
+  isDiscovery?: boolean;
   onSelect: () => void;
   onHover: () => void;
 }
 
-function CommandItem({ command, isSelected, index, onSelect, onHover }: CommandItemProps) {
+function CommandItem({
+  command,
+  isSelected,
+  index,
+  isDiscovery,
+  onSelect,
+  onHover,
+}: CommandItemProps) {
+  // For discovery items, show status badge if keywords contain a status
+  const statusBadge =
+    isDiscovery && command.keywords && command.keywords.length > 1
+      ? command.keywords[1]
+      : null;
+
   return (
     <div
       role="option"
@@ -408,7 +522,14 @@ function CommandItem({ command, isSelected, index, onSelect, onHover }: CommandI
       data-testid={`command-palette-item-${command.id}`}
     >
       {command.icon && (
-        <span style={{ fontSize: typography.size.md, flexShrink: 0, width: "1.5rem", textAlign: "center" }}>
+        <span
+          style={{
+            fontSize: typography.size.md,
+            flexShrink: 0,
+            width: "1.5rem",
+            textAlign: "center",
+          }}
+        >
           {command.icon}
         </span>
       )}
@@ -417,7 +538,9 @@ function CommandItem({ command, isSelected, index, onSelect, onHover }: CommandI
           style={{
             fontSize: typography.size.base,
             color: isSelected ? colors.brand[700] : colors.neutral[800],
-            fontWeight: isSelected ? typography.weight.medium : typography.weight.normal,
+            fontWeight: isSelected
+              ? typography.weight.medium
+              : typography.weight.normal,
             lineHeight: typography.lineHeight.tight,
             overflow: "hidden",
             textOverflow: "ellipsis",
@@ -441,6 +564,22 @@ function CommandItem({ command, isSelected, index, onSelect, onHover }: CommandI
           </div>
         )}
       </div>
+      {/* Status badge for discovery results */}
+      {statusBadge && (
+        <span
+          style={{
+            fontSize: typography.size.xs,
+            color: colors.neutral[600],
+            background: colors.neutral[100],
+            padding: "0.1rem 0.4rem",
+            borderRadius: radius.sm,
+            flexShrink: 0,
+          }}
+        >
+          {statusBadge}
+        </span>
+      )}
+      {/* Category badge */}
       <span
         style={{
           fontSize: typography.size.xs,
@@ -452,7 +591,7 @@ function CommandItem({ command, isSelected, index, onSelect, onHover }: CommandI
           textTransform: "capitalize",
         }}
       >
-        {CATEGORY_LABELS[command.category]}
+        {isDiscovery ? "Sonuc" : CATEGORY_LABELS[command.category]}
       </span>
     </div>
   );

@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Outlet, useNavigate } from "react-router-dom";
+import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { AppHeader } from "../../components/layout/AppHeader";
 import { AppSidebar } from "../../components/layout/AppSidebar";
 import { AdminContinuityStrip } from "../../components/layout/AdminContinuityStrip";
@@ -9,6 +9,7 @@ import { CommandPalette } from "../../components/design-system/CommandPalette";
 import { useCommandPaletteShortcut } from "../../hooks/useCommandPaletteShortcut";
 import { useCommandPaletteStore } from "../../stores/commandPaletteStore";
 import { buildAdminNavigationCommands, buildAdminActionCommands } from "../../commands/adminCommands";
+import { buildContextualCommands } from "../../commands/contextualCommands";
 import { useVisibility } from "../../hooks/useVisibility";
 import { colors, layout } from "../../components/design-system/tokens";
 
@@ -72,15 +73,22 @@ function useAdminNavFiltered(): AdminNavItem[] {
 export function AdminLayout() {
   const filteredNav = useAdminNavFiltered();
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Register command palette shortcut (Cmd+K / Ctrl+K)
   useCommandPaletteShortcut();
 
-  // Register admin commands on mount
+  // Update command palette context on route change
+  useEffect(() => {
+    useCommandPaletteStore.getState().setContext({ currentRoute: location.pathname });
+  }, [location.pathname]);
+
+  // Register admin commands + contextual commands on mount
   useEffect(() => {
     const navCmds = buildAdminNavigationCommands(navigate);
     const actionCmds = buildAdminActionCommands(navigate);
-    const allCmds = [...navCmds, ...actionCmds];
+    const ctxCmds = buildContextualCommands(navigate);
+    const allCmds = [...navCmds, ...actionCmds, ...ctxCmds];
     useCommandPaletteStore.getState().registerCommands(allCmds);
 
     return () => {

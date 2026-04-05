@@ -18,6 +18,7 @@ async def list_templates(
     owner_scope: Optional[str] = Query(None),
     module_scope: Optional[str] = Query(None),
     status: Optional[str] = Query(None),
+    search: Optional[str] = Query(None, description="Template adında arama (case-insensitive)"),
     db: AsyncSession = Depends(get_db),
 ):
     return await service.list_templates_with_style_link_summary(
@@ -26,6 +27,7 @@ async def list_templates(
         owner_scope=owner_scope,
         module_scope=module_scope,
         status=status,
+        search=search,
     )
 
 

@@ -67,12 +67,18 @@ async def list_jobs(
     db: AsyncSession,
     status: Optional[str] = None,
     module_type: Optional[str] = None,
+    search: Optional[str] = None,
 ) -> list[Job]:
     stmt = select(Job).order_by(Job.created_at.desc())
     if status:
         stmt = stmt.where(Job.status == status)
     if module_type:
         stmt = stmt.where(Job.module_type == module_type)
+    if search:
+        pattern = f"%{search}%"
+        stmt = stmt.where(
+            Job.module_type.ilike(pattern) | Job.id.ilike(pattern)
+        )
     result = await db.execute(stmt)
     return list(result.scalars().all())
 

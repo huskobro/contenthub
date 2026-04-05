@@ -7,7 +7,7 @@ import {
   cloneNewsBulletin,
   ContentLibraryItem,
 } from "../../api/contentLibraryApi";
-import { colors, typography, spacing } from "../../components/design-system/tokens";
+import { colors, typography, spacing, radius } from "../../components/design-system/tokens";
 import {
   PageShell,
   SectionShell,
@@ -373,7 +373,7 @@ export function ContentLibraryPage() {
               padding: `${spacing[4]} ${spacing[5]}`,
               background: colors.surface.card,
               border: `1px solid ${colors.border.subtle}`,
-              borderRadius: "8px",
+              borderRadius: radius.lg,
             }}
             data-testid="action-edit"
           >
@@ -389,7 +389,7 @@ export function ContentLibraryPage() {
               padding: `${spacing[4]} ${spacing[5]}`,
               background: colors.surface.card,
               border: `1px solid ${colors.border.subtle}`,
-              borderRadius: "8px",
+              borderRadius: radius.lg,
             }}
             data-testid="action-reuse"
           >
@@ -405,7 +405,7 @@ export function ContentLibraryPage() {
               padding: `${spacing[4]} ${spacing[5]}`,
               background: colors.surface.card,
               border: `1px solid ${colors.border.subtle}`,
-              borderRadius: "8px",
+              borderRadius: radius.lg,
             }}
             data-testid="action-clone"
           >

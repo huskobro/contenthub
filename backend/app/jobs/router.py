@@ -55,10 +55,11 @@ _SKIPPABLE_STEPS = frozenset({
 async def list_jobs(
     status: Optional[str] = Query(None),
     module_type: Optional[str] = Query(None),
+    search: Optional[str] = Query(None, description="module_type veya id üzerinde arama (case-insensitive)"),
     db: AsyncSession = Depends(get_db),
 ):
-    """İş listesini döndürür. status ve module_type ile filtrelenebilir."""
-    jobs = await service.list_jobs(db, status=status, module_type=module_type)
+    """İş listesini döndürür. status, module_type ve search ile filtrelenebilir."""
+    jobs = await service.list_jobs(db, status=status, module_type=module_type, search=search)
     result = []
     for job in jobs:
         steps = await service.get_job_steps(db, job.id)

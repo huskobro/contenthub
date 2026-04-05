@@ -15,9 +15,10 @@ router = APIRouter(prefix="/style-blueprints", tags=["style-blueprints"], depend
 async def list_blueprints(
     module_scope: Optional[str] = Query(None),
     status: Optional[str] = Query(None),
+    search: Optional[str] = Query(None, description="Blueprint adında arama (case-insensitive)"),
     db: AsyncSession = Depends(get_db),
 ):
-    return await service.list_style_blueprints(db, module_scope=module_scope, status=status)
+    return await service.list_style_blueprints(db, module_scope=module_scope, status=status, search=search)
 
 
 @router.get("/{blueprint_id}", response_model=StyleBlueprintResponse)

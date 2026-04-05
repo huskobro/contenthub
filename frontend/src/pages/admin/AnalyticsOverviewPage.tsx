@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { useAnalyticsOverview } from "../../hooks/useAnalyticsOverview";
 import { useChannelOverview } from "../../hooks/useChannelOverview";
 import type { AnalyticsWindow } from "../../api/analyticsApi";
-import { colors, spacing, typography } from "../../components/design-system/tokens";
+import { colors, spacing, typography, radius } from "../../components/design-system/tokens";
 import {
   PageShell,
   SectionShell,
@@ -51,7 +51,7 @@ const NAV_CARD: React.CSSProperties = {
   padding: `${spacing[4]} ${spacing[5]}`,
   background: colors.surface.card,
   border: `1px solid ${colors.border.subtle}`,
-  borderRadius: "8px",
+  borderRadius: radius.lg,
   textDecoration: "none",
   color: "inherit",
   transition: "border-color 180ms ease",
