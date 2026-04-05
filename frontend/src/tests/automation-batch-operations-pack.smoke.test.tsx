@@ -57,6 +57,7 @@ const MOCK_JOBS: JobResponse[] = [
         step_order: 1,
         status: "failed",
         artifact_refs_json: null,
+        provider_trace_json: null,
         log_text: null,
         elapsed_seconds: 90,
         last_error: "TTS provider timeout",

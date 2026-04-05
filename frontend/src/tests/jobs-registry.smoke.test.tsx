@@ -53,6 +53,7 @@ const MOCK_JOBS: JobResponse[] = [
         step_order: 1,
         status: "running",
         artifact_refs_json: null,
+        provider_trace_json: null,
         log_text: null,
         elapsed_seconds: 30.0,
         last_error: null,

@@ -19,6 +19,7 @@ from app.providers.capability import ProviderCapability
 from app.providers.registry import ProviderRegistry
 from app.providers.resolution import resolve_and_invoke
 
+from app.providers.trace_helper import build_provider_trace
 from ._helpers import _strip_markdown_json, _write_artifact
 
 logger = logging.getLogger(__name__)
@@ -164,11 +165,24 @@ class ScriptStepExecutor(StepExecutor):
             artifact_path,
         )
 
+        trace_info = build_provider_trace(
+            provider_name=output.trace.get("provider_id", "unknown"),
+            provider_kind="llm",
+            step_key=self.step_key(),
+            success=True,
+            latency_ms=output.trace.get("latency_ms", 0),
+            model=output.trace.get("model"),
+            input_tokens=output.trace.get("input_tokens"),
+            output_tokens=output.trace.get("output_tokens"),
+            extra={"resolution_role": output.trace.get("resolution_role")},
+        )
+
         result = {
             "artifact_path": artifact_path,
             "language": ctx.language.value,
             "scene_count": scene_count,
             "provider": output.trace,
+            "provider_trace": trace_info,
             "step": self.step_key(),
         }
         if template_info is not None:

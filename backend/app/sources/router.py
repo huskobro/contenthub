@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
+from app.audit.service import write_audit_log
 from app.visibility.dependencies import require_visible
 from .schemas import SourceCreate, SourceUpdate, SourceResponse
 from . import service
@@ -30,7 +31,9 @@ async def get_source(source_id: str, db: AsyncSession = Depends(get_db)):
 
 @router.post("", response_model=SourceResponse, status_code=201)
 async def create_source(payload: SourceCreate, db: AsyncSession = Depends(get_db)):
-    return await service.create_source(db, payload)
+    result = await service.create_source(db, payload)
+    await write_audit_log(db, action="source.create", entity_type="source", entity_id=str(result.id))
+    return result
 
 
 @router.patch("/{source_id}", response_model=SourceResponse)
@@ -40,4 +43,5 @@ async def update_source(
     source = await service.update_source(db, source_id, payload)
     if source is None:
         raise HTTPException(status_code=404, detail="Source not found")
+    await write_audit_log(db, action="source.update", entity_type="source", entity_id=source_id)
     return source

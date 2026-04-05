@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
+from app.audit.service import write_audit_log
 from app.visibility.dependencies import require_visible
 from .schemas import TemplateCreate, TemplateResponse, TemplateUpdate
 from . import service
@@ -38,7 +39,9 @@ async def get_template(template_id: str, db: AsyncSession = Depends(get_db)):
 
 @router.post("", response_model=TemplateResponse, status_code=201)
 async def create_template(payload: TemplateCreate, db: AsyncSession = Depends(get_db)):
-    return await service.create_template(db, payload)
+    result = await service.create_template(db, payload)
+    await write_audit_log(db, action="template.create", entity_type="template", entity_id=str(result.id))
+    return result
 
 
 @router.patch("/{template_id}", response_model=TemplateResponse)
@@ -48,4 +51,5 @@ async def update_template(
     template = await service.update_template(db, template_id, payload)
     if template is None:
         raise HTTPException(status_code=404, detail="Template not found")
+    await write_audit_log(db, action="template.update", entity_type="template", entity_id=template_id)
     return template

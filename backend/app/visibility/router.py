@@ -18,6 +18,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
+from app.audit.service import write_audit_log
 from app.visibility import service
 from app.visibility.dependencies import require_visible
 from app.visibility.schemas import (
@@ -74,6 +75,7 @@ async def create_rule(
     db: AsyncSession = Depends(get_db),
 ) -> VisibilityRuleResponse:
     row = await service.create_rule(db, payload)
+    await write_audit_log(db, action="visibility_rule.create", entity_type="visibility_rule", entity_id=str(row.id))
     return VisibilityRuleResponse.model_validate(row)
 
 
@@ -84,4 +86,5 @@ async def update_rule(
     db: AsyncSession = Depends(get_db),
 ) -> VisibilityRuleResponse:
     row = await service.update_rule(db, rule_id, payload)
+    await write_audit_log(db, action="visibility_rule.update", entity_type="visibility_rule", entity_id=rule_id)
     return VisibilityRuleResponse.model_validate(row)

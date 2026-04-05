@@ -32,6 +32,17 @@ const MOCK_JOB: JobResponse = {
       step_order: 1,
       status: "running",
       artifact_refs_json: null,
+      provider_trace_json: JSON.stringify({
+        provider_trace: {
+          provider_name: "openai",
+          provider_kind: "llm",
+          model: "gpt-4o",
+          success: true,
+          latency_ms: 2340,
+          input_tokens: 500,
+          output_tokens: 1200,
+        },
+      }),
       log_text: null,
       elapsed_seconds: 90,
       last_error: null,

@@ -58,7 +58,7 @@ export function JobDetailPage() {
 
       <JobOverviewPanel job={job} />
       <JobTimelinePanel steps={job.steps} />
-      <JobSystemPanels />
+      <JobSystemPanels steps={job.steps} />
 
       {/* Job actions — deferred to M14 */}
       <div

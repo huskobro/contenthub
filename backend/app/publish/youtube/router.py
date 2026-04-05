@@ -35,6 +35,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
+from app.audit.service import write_audit_log
 from app.publish.youtube.token_store import YouTubeTokenStore
 from app.publish.youtube.errors import YouTubeAuthError
 from app.settings.credential_resolver import resolve_credential
@@ -169,6 +170,8 @@ async def auth_callback(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Token exchange hatası: {exc}",
         )
+
+    await write_audit_log(db, action="youtube.auth_callback", entity_type="youtube_oauth")
 
     return AuthCallbackResponse(
         status="ok",
@@ -494,7 +497,7 @@ async def get_video_stats_trend(video_id: str, db: AsyncSession = Depends(get_db
 
 
 @router.delete("/revoke", status_code=status.HTTP_204_NO_CONTENT)
-async def revoke_credentials():
+async def revoke_credentials(db: AsyncSession = Depends(get_db)):
     """
     YouTube token dosyasını siler.
 
@@ -508,4 +511,5 @@ async def revoke_credentials():
     if token_path.exists():
         token_path.unlink()
         logger.info("YouTube token dosyası silindi: %s", token_path)
+    await write_audit_log(db, action="youtube.revoke", entity_type="youtube_oauth")
     # Dosya yoksa sessizce başarılı döner (idempotent)

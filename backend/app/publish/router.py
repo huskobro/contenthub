@@ -21,6 +21,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from app.db.session import get_db
+from app.audit.service import write_audit_log
 from app.visibility.dependencies import require_visible
 from app.publish import service
 from app.publish.exceptions import (
@@ -70,6 +71,7 @@ async def create_publish_record(
 ):
     """Yeni publish kaydı oluşturur (draft durumunda başlar)."""
     record = await service.create_publish_record(session=session, data=body)
+    await write_audit_log(session, action="publish.create", entity_type="publish_record", entity_id=str(record.id))
     return record
 
 
@@ -139,12 +141,14 @@ async def submit_for_review(
 ):
     """Draft kaydını review'a gönderir."""
     try:
-        return await service.submit_for_review(
+        result = await service.submit_for_review(
             session=session,
             record_id=record_id,
             actor_id=body.actor_id,
             note=body.note,
         )
+        await write_audit_log(session, action="publish.submit", entity_type="publish_record", entity_id=record_id)
+        return result
     except PublishRecordNotFoundError as exc:
         raise _handle_not_found(exc)
     except (InvalidPublishTransitionError, PublishAlreadyTerminalError) as exc:
@@ -165,13 +169,15 @@ async def review_action(
       Yayınlama başlatmaz — bunun için /trigger kullanılır.
     """
     try:
-        return await service.review_action(
+        result = await service.review_action(
             session=session,
             record_id=record_id,
             decision=body.decision,
             reviewer_id=body.reviewer_id,
             note=body.note,
         )
+        await write_audit_log(session, action="publish.review", entity_type="publish_record", entity_id=record_id, details={"decision": body.decision})
+        return result
     except PublishRecordNotFoundError as exc:
         raise _handle_not_found(exc)
     except ReviewGateViolationError as exc:
@@ -188,12 +194,14 @@ async def schedule_publish(
 ):
     """Approved kaydı için publish zamanlaması ayarlar."""
     try:
-        return await service.schedule_publish(
+        result = await service.schedule_publish(
             session=session,
             record_id=record_id,
             scheduled_at=body.scheduled_at,
             note=body.note,
         )
+        await write_audit_log(session, action="publish.schedule", entity_type="publish_record", entity_id=record_id)
+        return result
     except PublishRecordNotFoundError as exc:
         raise _handle_not_found(exc)
     except (InvalidPublishTransitionError, PublishAlreadyTerminalError) as exc:
@@ -214,12 +222,14 @@ async def trigger_publish(
       422 döner.
     """
     try:
-        return await service.trigger_publish(
+        result = await service.trigger_publish(
             session=session,
             record_id=record_id,
             actor_id=body.actor_id,
             note=body.note,
         )
+        await write_audit_log(session, action="publish.trigger", entity_type="publish_record", entity_id=record_id)
+        return result
     except PublishRecordNotFoundError as exc:
         raise _handle_not_found(exc)
     except PublishGateViolationError as exc:
@@ -236,12 +246,14 @@ async def cancel_publish(
 ):
     """Publish kaydını iptal eder."""
     try:
-        return await service.cancel_publish(
+        result = await service.cancel_publish(
             session=session,
             record_id=record_id,
             actor_id=body.actor_id,
             note=body.note,
         )
+        await write_audit_log(session, action="publish.cancel", entity_type="publish_record", entity_id=record_id)
+        return result
     except PublishRecordNotFoundError as exc:
         raise _handle_not_found(exc)
     except (InvalidPublishTransitionError, PublishAlreadyTerminalError) as exc:
@@ -256,12 +268,14 @@ async def reset_to_draft(
 ):
     """Review reddedilen kaydı düzeltme için draft'a döndürür."""
     try:
-        return await service.reset_to_draft(
+        result = await service.reset_to_draft(
             session=session,
             record_id=record_id,
             actor_id=body.actor_id,
             note=body.note,
         )
+        await write_audit_log(session, action="publish.reset_to_draft", entity_type="publish_record", entity_id=record_id)
+        return result
     except PublishRecordNotFoundError as exc:
         raise _handle_not_found(exc)
     except (InvalidPublishTransitionError, PublishAlreadyTerminalError) as exc:
@@ -283,12 +297,14 @@ async def retry_publish(
     Publish gate kuralı: yalnızca 'failed' durumundaki kayıt retry edilebilir.
     """
     try:
-        return await service.retry_publish(
+        result = await service.retry_publish(
             session=session,
             record_id=record_id,
             actor_id=body.actor_id,
             note=body.note,
         )
+        await write_audit_log(session, action="publish.retry", entity_type="publish_record", entity_id=record_id)
+        return result
     except PublishRecordNotFoundError as exc:
         raise _handle_not_found(exc)
     except PublishGateViolationError as exc:
@@ -312,12 +328,14 @@ async def reset_review_for_artifact_change(
     Diğer durumlarda (draft, publishing, failed vb.) işlem yapılmaz.
     """
     try:
-        return await service.reset_review_for_artifact_change(
+        result = await service.reset_review_for_artifact_change(
             session=session,
             record_id=record_id,
             artifact_description=body.artifact_description,
             actor_id=body.actor_id,
         )
+        await write_audit_log(session, action="publish.reset_review", entity_type="publish_record", entity_id=record_id)
+        return result
     except PublishRecordNotFoundError as exc:
         raise _handle_not_found(exc)
     except (InvalidPublishTransitionError, PublishAlreadyTerminalError) as exc:

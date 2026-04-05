@@ -25,6 +25,7 @@ from app.jobs.executor import StepExecutor
 from app.jobs.exceptions import StepExecutionError
 from app.providers.base import BaseProvider
 
+from app.providers.trace_helper import build_provider_trace
 from ._helpers import _resolve_artifact_path, _write_artifact, _read_artifact
 
 logger = logging.getLogger(__name__)
@@ -273,6 +274,15 @@ class VisualsStepExecutor(StepExecutor):
             artifact_path,
         )
 
+        trace_info = build_provider_trace(
+            provider_name=",".join(str(p.provider_id()) for p in self._providers),
+            provider_kind="visuals",
+            step_key=self.step_key(),
+            success=True,
+            latency_ms=latency_ms,
+            extra={"provider_hits": provider_hits, "scenes_found": total_downloaded, "scenes_not_found": not_found},
+        )
+
         result = {
             "artifact_path": artifact_path,
             "language": ctx.language.value,
@@ -287,6 +297,7 @@ class VisualsStepExecutor(StepExecutor):
                 "latency_ms": latency_ms,
                 "image_style_applied": image_style_prefix,
             },
+            "provider_trace": trace_info,
             "step": self.step_key(),
         }
         if template_info is not None:

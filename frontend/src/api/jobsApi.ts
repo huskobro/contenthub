@@ -7,6 +7,7 @@ export interface JobStepResponse {
   step_order: number;
   status: string;
   artifact_refs_json: string | null;
+  provider_trace_json: string | null;
   log_text: string | null;
   elapsed_seconds: number | null;
   last_error: string | null;

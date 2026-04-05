@@ -26,6 +26,7 @@ from app.providers.capability import ProviderCapability
 from app.providers.registry import ProviderRegistry
 from app.providers.resolution import resolve_and_invoke
 
+from app.providers.trace_helper import build_provider_trace
 from ._helpers import _resolve_artifact_path, _write_artifact, _read_artifact
 
 logger = logging.getLogger(__name__)
@@ -236,6 +237,15 @@ class TTSStepExecutor(StepExecutor):
             artifact_path,
         )
 
+        trace_info = build_provider_trace(
+            provider_name="edge_tts",
+            provider_kind="tts",
+            step_key=self.step_key(),
+            success=True,
+            latency_ms=latency_ms,
+            extra={"voice": voice, "total_chars": total_chars, "scene_count": len(scenes)},
+        )
+
         result = {
             "artifact_path": artifact_path,
             "language": ctx.language.value,
@@ -250,6 +260,7 @@ class TTSStepExecutor(StepExecutor):
                 "estimated_duration_seconds": round(total_duration, 2),
                 "latency_ms": latency_ms,
             },
+            "provider_trace": trace_info,
             "step": self.step_key(),
         }
         if template_info:

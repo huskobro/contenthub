@@ -18,6 +18,7 @@ class JobStepResponse(BaseModel):
     step_order: int
     status: str
     artifact_refs_json: Optional[str] = None
+    provider_trace_json: Optional[str] = None
     log_text: Optional[str] = None
     elapsed_seconds: Optional[float] = None
     last_error: Optional[str] = None

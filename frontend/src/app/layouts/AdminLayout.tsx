@@ -17,6 +17,7 @@ const ADMIN_NAV: AdminNavItem[] = [
   { label: "Ayarlar", to: "/admin/settings", visibilityKey: "panel:settings" },
   { label: "Gorunurluk", to: "/admin/visibility", visibilityKey: "panel:visibility" },
   { label: "Isler", to: "/admin/jobs" },
+  { label: "Audit Log", to: "/admin/audit-logs" },
   { label: "Icerik Uretimi", section: true },
   { label: "Icerik Kutuphanesi", to: "/admin/library" },
   { label: "Varlik Kutuphanesi", to: "/admin/assets" },

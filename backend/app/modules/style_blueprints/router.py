@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
+from app.audit.service import write_audit_log
 from app.visibility.dependencies import require_visible
 from .schemas import StyleBlueprintCreate, StyleBlueprintUpdate, StyleBlueprintResponse
 from . import service
@@ -31,7 +32,9 @@ async def get_blueprint(blueprint_id: str, db: AsyncSession = Depends(get_db)):
 async def create_blueprint(
     payload: StyleBlueprintCreate, db: AsyncSession = Depends(get_db)
 ):
-    return await service.create_style_blueprint(db, payload)
+    result = await service.create_style_blueprint(db, payload)
+    await write_audit_log(db, action="style_blueprint.create", entity_type="style_blueprint", entity_id=str(result.id))
+    return result
 
 
 @router.patch("/{blueprint_id}", response_model=StyleBlueprintResponse)
@@ -43,4 +46,5 @@ async def update_blueprint(
     blueprint = await service.update_style_blueprint(db, blueprint_id, payload)
     if blueprint is None:
         raise HTTPException(status_code=404, detail="Style blueprint not found")
+    await write_audit_log(db, action="style_blueprint.update", entity_type="style_blueprint", entity_id=blueprint_id)
     return blueprint
