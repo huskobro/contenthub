@@ -20,9 +20,14 @@ import {
   ActionButton,
   StatusBadge,
   Pagination,
-  FeedbackBanner,
   Mono,
 } from "../../components/design-system/primitives";
+import { Sheet } from "../../components/design-system/Sheet";
+import { QuickLook, useQuickLookTrigger } from "../../components/design-system/QuickLook";
+import { ConfirmAction } from "../../components/design-system/ConfirmAction";
+import { AssetQuickLookContent } from "../../components/quicklook/AssetQuickLookContent";
+import { useScopedKeyboardNavigation } from "../../hooks/useScopedKeyboardNavigation";
+import { useToast } from "../../hooks/useToast";
 
 const ASSET_TYPE_OPTIONS = [
   { value: "", label: "Tum Turler" },
@@ -73,6 +78,7 @@ const PAGE_SIZE = 50;
 
 export function AssetLibraryPage() {
   const queryClient = useQueryClient();
+  const toast = useToast();
   const [typeFilter, setTypeFilter] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [offset, setOffset] = useState(0);
@@ -81,8 +87,9 @@ export function AssetLibraryPage() {
   const [refreshing, setRefreshing] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [revealData, setRevealData] = useState<AssetRevealResponse | null>(null);
-  const [actionFeedback, setActionFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  const [revealSheetOpen, setRevealSheetOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [quickLookOpen, setQuickLookOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data, isLoading, isError } = useAssetList({
@@ -95,49 +102,62 @@ export function AssetLibraryPage() {
   const total = data?.total ?? 0;
   const items = data?.items ?? [];
 
-  const showFeedback = useCallback((type: "success" | "error", message: string) => {
-    setActionFeedback({ type, message });
-    setTimeout(() => setActionFeedback(null), 4000);
-  }, []);
+  // Keyboard navigation
+  const { activeIndex, handleKeyDown } = useScopedKeyboardNavigation({
+    scopeId: "asset-library-table",
+    scopeLabel: "Asset Library",
+    itemCount: items.length,
+    onSelect: (i) => {
+      if (items[i]) setQuickLookOpen(true);
+    },
+    enabled: !quickLookOpen && !revealSheetOpen,
+  });
+
+  // QuickLook trigger (Space)
+  useQuickLookTrigger({
+    enabled: items.length > 0 && !quickLookOpen && !revealSheetOpen,
+    onToggle: () => setQuickLookOpen(true),
+    scopeId: "asset-library-table",
+  });
+
+  const activeItem = items[activeIndex] ?? null;
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
       const result = await refreshAssets();
       queryClient.invalidateQueries({ queryKey: ["assets"] });
-      showFeedback("success", result.message);
-    } catch (err) {
-      showFeedback("error", "Yenileme basarisiz oldu.");
+      toast.success(result.message);
+    } catch {
+      toast.error("Yenileme basarisiz oldu.");
     } finally {
       setRefreshing(false);
     }
-  }, [queryClient, showFeedback]);
+  }, [queryClient, toast]);
 
   const handleDelete = useCallback(async (item: AssetItem) => {
-    if (!window.confirm(`"${item.name}" dosyasini silmek istediginize emin misiniz? Bu islem geri alinamaz.`)) {
-      return;
-    }
     setDeletingId(item.id);
     try {
       const result = await deleteAsset(item.id);
       queryClient.invalidateQueries({ queryKey: ["assets"] });
-      showFeedback("success", result.message);
+      toast.success(result.message);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Silme basarisiz oldu.";
-      showFeedback("error", msg);
+      toast.error(msg);
     } finally {
       setDeletingId(null);
     }
-  }, [queryClient, showFeedback]);
+  }, [queryClient, toast]);
 
   const handleReveal = useCallback(async (item: AssetItem) => {
     try {
       const result = await revealAsset(item.id);
       setRevealData(result);
+      setRevealSheetOpen(true);
     } catch {
-      showFeedback("error", "Konum bilgisi alinamadi.");
+      toast.error("Konum bilgisi alinamadi.");
     }
-  }, [showFeedback]);
+  }, [toast]);
 
   const handleUpload = useCallback(async () => {
     const file = fileInputRef.current?.files?.[0];
@@ -146,15 +166,15 @@ export function AssetLibraryPage() {
     try {
       const result = await uploadAsset(file);
       queryClient.invalidateQueries({ queryKey: ["assets"] });
-      showFeedback("success", result.message || `"${result.name}" basariyla yuklendi.`);
+      toast.success(result.message || `"${result.name}" basariyla yuklendi.`);
       if (fileInputRef.current) fileInputRef.current.value = "";
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Dosya yukleme basarisiz oldu.";
-      showFeedback("error", msg);
+      toast.error(msg);
     } finally {
       setUploading(false);
     }
-  }, [queryClient, showFeedback]);
+  }, [queryClient, toast]);
 
   const columns = [
     {
@@ -228,19 +248,15 @@ export function AssetLibraryPage() {
           >
             Konum
           </ActionButton>
-          <ActionButton
+          <ConfirmAction
+            label="Sil"
+            confirmLabel="Evet, Sil"
+            onConfirm={() => handleDelete(item)}
             variant="danger"
             size="sm"
-            loading={deletingId === item.id}
-            onClick={(e) => {
-              e.stopPropagation();
-              handleDelete(item);
-            }}
-            title="Sil"
-            data-testid={`asset-delete-${item.id}`}
-          >
-            Sil
-          </ActionButton>
+            disabled={deletingId === item.id}
+            testId={`asset-delete-${item.id}`}
+          />
         </div>
       ),
     },
@@ -263,47 +279,6 @@ export function AssetLibraryPage() {
         </ActionButton>
       }
     >
-      {/* Action feedback */}
-      {actionFeedback && (
-        <FeedbackBanner
-          type={actionFeedback.type}
-          message={actionFeedback.message}
-          testId="asset-action-feedback"
-        />
-      )}
-
-      {/* Reveal panel */}
-      {revealData && (
-        <SectionShell
-          title="Konum Bilgisi"
-          testId="asset-reveal-panel"
-          actions={
-            <ActionButton
-              variant="secondary"
-              size="sm"
-              onClick={() => setRevealData(null)}
-              data-testid="asset-reveal-close"
-            >
-              Kapat
-            </ActionButton>
-          }
-        >
-          <div style={{ fontSize: typography.size.sm, color: colors.neutral[800] }}>
-            <p style={{ margin: `${spacing[1]} 0` }}>
-              <strong>Dosya:</strong>{" "}
-              <Mono>{revealData.absolute_path}</Mono>
-            </p>
-            <p style={{ margin: `${spacing[1]} 0` }}>
-              <strong>Dizin:</strong>{" "}
-              <Mono>{revealData.directory}</Mono>
-            </p>
-            <p style={{ margin: `${spacing[1]} 0` }}>
-              <strong>Durum:</strong> {revealData.exists ? "Mevcut" : "Bulunamadi"}
-            </p>
-          </div>
-        </SectionShell>
-      )}
-
       {/* Upload area */}
       <SectionShell title="Dosya Yukle" description="Workspace'e yeni bir dosya yukleyin. Maks. 100 MB. Calistirilabilir dosyalar engellenir." testId="asset-upload-area">
         <div data-testid="asset-upload-heading" style={{ display: "none" }}>Dosya Yukle</div>
@@ -372,50 +347,99 @@ export function AssetLibraryPage() {
       </SectionShell>
 
       {/* Data table */}
-      <SectionShell
-        flush
-        title="Varlik Listesi"
-        description={`Toplam: ${total}`}
-        testId="asset-list-section"
+      <div onKeyDown={handleKeyDown} tabIndex={0} style={{ outline: "none" }}>
+        <SectionShell
+          flush
+          title="Varlik Listesi"
+          description={`Toplam: ${total}`}
+          testId="asset-list-section"
+        >
+          <span data-testid="asset-total-count" style={{ display: "none" }}>Toplam: {total}</span>
+          {!isLoading && !isError && items.length === 0 ? (
+            <div
+              style={{ textAlign: "center", padding: `${spacing[8]} ${spacing[4]}`, color: colors.neutral[500] }}
+              data-testid="asset-library-empty-state"
+            >
+              <p style={{ margin: 0, fontSize: typography.size.md }}>
+                {total === 0 && !searchQuery && !typeFilter
+                  ? "Workspace dizinlerinde henuz artifact veya preview dosyasi bulunmuyor."
+                  : "Filtrelere uygun varlik bulunamadi."}
+              </p>
+            </div>
+          ) : (
+            <DataTable<AssetItem>
+              columns={columns}
+              data={items}
+              keyFn={(item) => item.id}
+              loading={isLoading}
+              error={isError}
+              errorMessage="Varliklar yuklenirken hata olustu."
+              emptyMessage={
+                total === 0 && !searchQuery && !typeFilter
+                  ? "Workspace dizinlerinde henuz artifact veya preview dosyasi bulunmuyor."
+                  : "Filtrelere uygun varlik bulunamadi."
+              }
+              testId="asset-table"
+            />
+          )}
+          <div data-testid="asset-pagination">
+            <Pagination
+              offset={offset}
+              limit={PAGE_SIZE}
+              total={total}
+              onPrev={() => setOffset(Math.max(0, offset - PAGE_SIZE))}
+              onNext={() => setOffset(offset + PAGE_SIZE)}
+            />
+          </div>
+        </SectionShell>
+      </div>
+
+      {/* Reveal Sheet */}
+      <Sheet
+        open={revealSheetOpen && !!revealData}
+        onClose={() => setRevealSheetOpen(false)}
+        title="Konum Bilgisi"
+        testId="asset-reveal-sheet"
+        width="440px"
       >
-        <span data-testid="asset-total-count" style={{ display: "none" }}>Toplam: {total}</span>
-        {!isLoading && !isError && items.length === 0 ? (
-          <div
-            style={{ textAlign: "center", padding: `${spacing[8]} ${spacing[4]}`, color: colors.neutral[500] }}
-            data-testid="asset-library-empty-state"
-          >
-            <p style={{ margin: 0, fontSize: typography.size.md }}>
-              {total === 0 && !searchQuery && !typeFilter
-                ? "Workspace dizinlerinde henuz artifact veya preview dosyasi bulunmuyor."
-                : "Filtrelere uygun varlik bulunamadi."}
+        {revealData && (
+          <div style={{ fontSize: typography.size.sm, color: colors.neutral[800] }}>
+            <p style={{ margin: `${spacing[1]} 0` }}>
+              <strong>Dosya:</strong>{" "}
+              <Mono>{revealData.absolute_path}</Mono>
+            </p>
+            <p style={{ margin: `${spacing[1]} 0` }}>
+              <strong>Dizin:</strong>{" "}
+              <Mono>{revealData.directory}</Mono>
+            </p>
+            <p style={{ margin: `${spacing[1]} 0` }}>
+              <strong>Durum:</strong> {revealData.exists ? "Mevcut" : "Bulunamadi"}
             </p>
           </div>
-        ) : (
-          <DataTable<AssetItem>
-            columns={columns}
-            data={items}
-            keyFn={(item) => item.id}
-            loading={isLoading}
-            error={isError}
-            errorMessage="Varliklar yuklenirken hata olustu."
-            emptyMessage={
-              total === 0 && !searchQuery && !typeFilter
-                ? "Workspace dizinlerinde henuz artifact veya preview dosyasi bulunmuyor."
-                : "Filtrelere uygun varlik bulunamadi."
-            }
-            testId="asset-table"
+        )}
+      </Sheet>
+
+      {/* QuickLook */}
+      <QuickLook
+        open={quickLookOpen}
+        onClose={() => setQuickLookOpen(false)}
+        title="Varlik On Izleme"
+        testId="asset-quicklook"
+      >
+        {activeItem && (
+          <AssetQuickLookContent
+            item={activeItem}
+            onReveal={() => {
+              setQuickLookOpen(false);
+              handleReveal(activeItem);
+            }}
+            onDelete={() => {
+              setQuickLookOpen(false);
+              handleDelete(activeItem);
+            }}
           />
         )}
-        <div data-testid="asset-pagination">
-          <Pagination
-            offset={offset}
-            limit={PAGE_SIZE}
-            total={total}
-            onPrev={() => setOffset(Math.max(0, offset - PAGE_SIZE))}
-            onNext={() => setOffset(offset + PAGE_SIZE)}
-          />
-        </div>
-      </SectionShell>
+      </QuickLook>
     </PageShell>
   );
 }

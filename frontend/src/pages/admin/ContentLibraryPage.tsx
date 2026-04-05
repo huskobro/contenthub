@@ -18,8 +18,11 @@ import {
   ActionButton,
   StatusBadge,
   Pagination,
-  FeedbackBanner,
 } from "../../components/design-system/primitives";
+import { QuickLook, useQuickLookTrigger } from "../../components/design-system/QuickLook";
+import { ContentQuickLookContent } from "../../components/quicklook/ContentQuickLookContent";
+import { useScopedKeyboardNavigation } from "../../hooks/useScopedKeyboardNavigation";
+import { useToast } from "../../hooks/useToast";
 
 function formatDate(iso: string) {
   try {
@@ -38,6 +41,7 @@ const PAGE_SIZE = 50;
 export function ContentLibraryPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const toast = useToast();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState<"" | "standard_video" | "news_bulletin">("");
@@ -46,12 +50,9 @@ export function ContentLibraryPage() {
 
   // Clone state
   const [cloningId, setCloningId] = useState<string | null>(null);
-  const [actionFeedback, setActionFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
-  const showFeedback = useCallback((type: "success" | "error", message: string) => {
-    setActionFeedback({ type, message });
-    setTimeout(() => setActionFeedback(null), 4000);
-  }, []);
+  // QuickLook state
+  const [quickLookOpen, setQuickLookOpen] = useState(false);
 
   // Unified backend endpoint
   const { data, isLoading, isError } = useContentLibrary({
@@ -74,10 +75,29 @@ export function ContentLibraryPage() {
     setOffset(0);
   };
 
+  // Keyboard navigation
+  const { activeIndex, handleKeyDown } = useScopedKeyboardNavigation({
+    scopeId: "content-library-table",
+    scopeLabel: "Content Library",
+    itemCount: items.length,
+    onSelect: (i) => {
+      if (items[i]) {
+        setQuickLookOpen(true);
+      }
+    },
+    enabled: !quickLookOpen,
+  });
+
+  // QuickLook trigger (Space)
+  useQuickLookTrigger({
+    enabled: items.length > 0 && !quickLookOpen,
+    onToggle: () => setQuickLookOpen(true),
+    scopeId: "content-library-table",
+  });
+
+  const activeItem = items[activeIndex] ?? null;
+
   const handleClone = useCallback(async (item: ContentLibraryItem) => {
-    if (!window.confirm(`"${item.title || item.topic}" kaydini klonlamak istiyor musunuz? Yeni bir draft kopya olusturulacak.`)) {
-      return;
-    }
     setCloningId(item.id);
     try {
       let cloneResult: { id: string };
@@ -87,8 +107,7 @@ export function ContentLibraryPage() {
         cloneResult = await cloneNewsBulletin(item.id) as { id: string };
       }
       queryClient.invalidateQueries({ queryKey: ["content-library"] });
-      showFeedback("success", `"${item.title || item.topic}" basariyla klonlandi. Yeni kayda yonlendiriliyorsunuz...`);
-      // M22-E: Clone sonrasi navigasyon
+      toast.success(`"${item.title || item.topic}" basariyla klonlandi.`);
       setTimeout(() => {
         if (item.content_type === "standard_video") {
           navigate(`/admin/standard-videos/${cloneResult.id}`);
@@ -98,11 +117,11 @@ export function ContentLibraryPage() {
       }, 800);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Klonlama basarisiz oldu.";
-      showFeedback("error", msg);
+      toast.error(msg);
     } finally {
       setCloningId(null);
     }
-  }, [queryClient, showFeedback, navigate]);
+  }, [queryClient, toast, navigate]);
 
   function detailLink(item: ContentLibraryItem): { path: string; state?: unknown } {
     if (item.content_type === "standard_video") {
@@ -221,16 +240,8 @@ export function ContentLibraryPage() {
       >
         Icerik yonetim zinciri: Olusturma &rarr; Uretim &rarr; Detay Yonetimi &rarr; Yayin.
         Backend tarafinda birlesik sorgu ile tum icerik turleri tek tabloda sunulur.
+        ↑↓ ile gezin, Space ile on izleme, Enter ile detay.
       </p>
-
-      {/* Action feedback */}
-      {actionFeedback && (
-        <FeedbackBanner
-          type={actionFeedback.type}
-          message={actionFeedback.message}
-          testId="library-action-feedback"
-        />
-      )}
 
       {/* Filter/Sort/Search */}
       <SectionShell title="Filtre ve Arama" description="Icerik kayitlarini tur, durum veya metin aramasiyla filtreleyebilirsiniz. Filtreleme backend tarafinda yapilir." testId="library-filter-area">
@@ -292,51 +303,54 @@ export function ContentLibraryPage() {
       </SectionShell>
 
       {/* Content List */}
-      <SectionShell
-        flush
-        title="Icerik Kayitlari"
-        description={`Tum modul turlerini birlesik olarak goruntuleyebilirsiniz. Toplam: ${total}`}
-        testId="library-content-list"
-      >
-        <div data-testid="library-list-heading" style={{ display: "none" }}>Icerik Kayitlari</div>
-        <div data-testid="library-list-note" style={{ display: "none" }}>Tum modul turlerini birlesik olarak goruntuleyebilirsiniz.</div>
-        <span data-testid="library-total-count" style={{ display: "none" }}>Toplam: {total}</span>
-        {!isLoading && !isError && items.length === 0 ? (
-          <div
-            style={{ textAlign: "center", padding: `${spacing[8]} ${spacing[4]}`, color: colors.neutral[500] }}
-            data-testid="library-empty-state"
-          >
-            <p style={{ margin: 0, fontSize: typography.size.md }}>
-              {hasActiveFilters
-                ? "Filtrelere uygun icerik kaydi bulunamadi."
-                : "Henuz icerik kaydi bulunmuyor. Icerik olusturma ekranindan yeni bir icerik baslatabilirsiniz."}
-            </p>
-          </div>
-        ) : (
-          <DataTable<ContentLibraryItem>
-            columns={columns}
-            data={items}
-            keyFn={(item) => `${item.content_type}-${item.id}`}
-            loading={isLoading}
-            error={isError}
-            errorMessage="Icerik kayitlari yuklenirken hata olustu."
-            emptyMessage={
-              hasActiveFilters
-                ? "Filtrelere uygun icerik kaydi bulunamadi."
-                : "Henuz icerik kaydi bulunmuyor. Icerik olusturma ekranindan yeni bir icerik baslatabilirsiniz."
-            }
-            testId="library-table"
+      <div onKeyDown={handleKeyDown} tabIndex={0} style={{ outline: "none" }}>
+        <SectionShell
+          flush
+          title="Icerik Kayitlari"
+          description={`Tum modul turlerini birlesik olarak goruntuleyebilirsiniz. Toplam: ${total}`}
+          testId="library-content-list"
+        >
+          <div data-testid="library-list-heading" style={{ display: "none" }}>Icerik Kayitlari</div>
+          <div data-testid="library-list-note" style={{ display: "none" }}>Tum modul turlerini birlesik olarak goruntuleyebilirsiniz.</div>
+          <span data-testid="library-total-count" style={{ display: "none" }}>Toplam: {total}</span>
+          {!isLoading && !isError && items.length === 0 ? (
+            <div
+              style={{ textAlign: "center", padding: `${spacing[8]} ${spacing[4]}`, color: colors.neutral[500] }}
+              data-testid="library-empty-state"
+            >
+              <p style={{ margin: 0, fontSize: typography.size.md }}>
+                {hasActiveFilters
+                  ? "Filtrelere uygun icerik kaydi bulunamadi."
+                  : "Henuz icerik kaydi bulunmuyor. Icerik olusturma ekranindan yeni bir icerik baslatabilirsiniz."}
+              </p>
+            </div>
+          ) : (
+            <DataTable<ContentLibraryItem>
+              columns={columns}
+              data={items}
+              keyFn={(item) => `${item.content_type}-${item.id}`}
+              loading={isLoading}
+              error={isError}
+              errorMessage="Icerik kayitlari yuklenirken hata olustu."
+              emptyMessage={
+                hasActiveFilters
+                  ? "Filtrelere uygun icerik kaydi bulunamadi."
+                  : "Henuz icerik kaydi bulunmuyor. Icerik olusturma ekranindan yeni bir icerik baslatabilirsiniz."
+              }
+              testId="library-table"
+            />
+          )}
+          <Pagination
+            offset={offset}
+            limit={PAGE_SIZE}
+            total={total}
+            onPrev={() => setOffset(Math.max(0, offset - PAGE_SIZE))}
+            onNext={() => setOffset(offset + PAGE_SIZE)}
+            testId="library-pagination"
           />
-        )}
-        <Pagination
-          offset={offset}
-          limit={PAGE_SIZE}
-          total={total}
-          onPrev={() => setOffset(Math.max(0, offset - PAGE_SIZE))}
-          onNext={() => setOffset(offset + PAGE_SIZE)}
-          testId="library-pagination"
-        />
-      </SectionShell>
+        </SectionShell>
+      </div>
+
       {/* Actions Area */}
       <SectionShell
         title="Icerik Yonetim Aksiyonlari"
@@ -396,6 +410,29 @@ export function ContentLibraryPage() {
           </div>
         </div>
       </SectionShell>
+
+      {/* QuickLook */}
+      <QuickLook
+        open={quickLookOpen}
+        onClose={() => setQuickLookOpen(false)}
+        title="Icerik On Izleme"
+        testId="content-quicklook"
+      >
+        {activeItem && (
+          <ContentQuickLookContent
+            item={activeItem}
+            onNavigate={() => {
+              setQuickLookOpen(false);
+              const link = detailLink(activeItem);
+              navigate(link.path, link.state ? { state: link.state } : undefined);
+            }}
+            onClone={() => {
+              setQuickLookOpen(false);
+              handleClone(activeItem);
+            }}
+          />
+        )}
+      </QuickLook>
     </PageShell>
   );
 }
