@@ -23,6 +23,28 @@ export interface Toast {
 }
 
 // ---------------------------------------------------------------------------
+// LocalStorage helpers
+// ---------------------------------------------------------------------------
+
+const SIDEBAR_KEY = "contenthub:sidebar-collapsed";
+
+function loadSidebarState(): boolean {
+  try {
+    return localStorage.getItem(SIDEBAR_KEY) === "true";
+  } catch {
+    return false;
+  }
+}
+
+function saveSidebarState(collapsed: boolean): void {
+  try {
+    localStorage.setItem(SIDEBAR_KEY, String(collapsed));
+  } catch {
+    // silently fail
+  }
+}
+
+// ---------------------------------------------------------------------------
 // UI State
 // ---------------------------------------------------------------------------
 
@@ -45,10 +67,17 @@ interface UIState {
 let toastCounter = 0;
 
 export const useUIStore = create<UIState>((set, get) => ({
-  // -- Sidebar --
-  sidebarCollapsed: false,
-  toggleSidebar: () => set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
-  setSidebarCollapsed: (collapsed) => set({ sidebarCollapsed: collapsed }),
+  // -- Sidebar (persisted to localStorage) --
+  sidebarCollapsed: loadSidebarState(),
+  toggleSidebar: () => set((s) => {
+    const next = !s.sidebarCollapsed;
+    saveSidebarState(next);
+    return { sidebarCollapsed: next };
+  }),
+  setSidebarCollapsed: (collapsed) => {
+    saveSidebarState(collapsed);
+    set({ sidebarCollapsed: collapsed });
+  },
 
   // -- Toast queue --
   toasts: [],

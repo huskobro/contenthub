@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { useContentLibrary } from "../../hooks/useContentLibrary";
@@ -22,6 +22,7 @@ import {
 import { QuickLook, useQuickLookTrigger } from "../../components/design-system/QuickLook";
 import { ContentQuickLookContent } from "../../components/quicklook/ContentQuickLookContent";
 import { useScopedKeyboardNavigation } from "../../hooks/useScopedKeyboardNavigation";
+import { useSearchFocus } from "../../hooks/useSearchFocus";
 import { useToast } from "../../hooks/useToast";
 
 function formatDate(iso: string) {
@@ -53,6 +54,9 @@ export function ContentLibraryPage() {
 
   // QuickLook state
   const [quickLookOpen, setQuickLookOpen] = useState(false);
+
+  // Search focus ref
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Unified backend endpoint
   const { data, isLoading, isError } = useContentLibrary({
@@ -94,6 +98,9 @@ export function ContentLibraryPage() {
     onToggle: () => setQuickLookOpen(true),
     scopeId: "content-library-table",
   });
+
+  // "/" search focus
+  useSearchFocus(searchInputRef, { enabled: !quickLookOpen });
 
   const activeItem = items[activeIndex] ?? null;
 
@@ -249,8 +256,9 @@ export function ContentLibraryPage() {
         <div data-testid="library-filter-note" style={{ display: "none" }}>Icerik kayitlarini tur, durum veya metin aramasiyla filtreleyebilirsiniz. Filtreleme backend tarafinda yapilir.</div>
         <FilterBar testId="library-filters-active">
           <FilterInput
+            ref={searchInputRef}
             type="text"
-            placeholder="Baslik/konu ara..."
+            placeholder="Baslik/konu ara... ( / )"
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);

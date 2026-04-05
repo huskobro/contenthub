@@ -1,146 +1,80 @@
 /**
- * ContentHub Design System — M24
+ * ContentHub Design System — Tokens (M24 + Wave 1 Final)
  *
  * Single source of truth for all visual tokens.
  * Every component should import from here instead of hardcoding values.
+ *
+ * These values are derived from the active theme via themeContract.ts.
+ * When the theme changes, the theme engine applies CSS variables to :root
+ * and these static exports serve as the default (Obsidian Slate) values.
+ *
+ * For runtime theme-awareness in inline styles, components use these tokens.
+ * The theme engine ensures CSS variables match, so both approaches stay in sync.
  */
 
+import { DEFAULT_THEME } from "./themeContract";
+
 // ---------------------------------------------------------------------------
-// Color Palette — "Obsidian Slate" theme
+// Color Palette — derived from active theme (default: "Obsidian Slate")
 // ---------------------------------------------------------------------------
 
 export const colors = {
   // Primary brand
-  brand: {
-    50: "#f0f4ff",
-    100: "#dbe4ff",
-    200: "#bac8ff",
-    300: "#91a7ff",
-    400: "#748ffc",
-    500: "#5c7cfa",
-    600: "#4c6ef5",
-    700: "#4263eb",
-    800: "#3b5bdb",
-    900: "#364fc7",
-  },
+  brand: { ...DEFAULT_THEME.colors.brand },
 
   // Neutral — the backbone
-  neutral: {
-    0: "#ffffff",
-    25: "#fcfcfd",
-    50: "#f8f9fb",
-    100: "#f1f3f5",
-    200: "#e9ecef",
-    300: "#dee2e6",
-    400: "#ced4da",
-    500: "#adb5bd",
-    600: "#868e96",
-    700: "#495057",
-    800: "#343a40",
-    900: "#212529",
-    950: "#141517",
-  },
+  neutral: { ...DEFAULT_THEME.colors.neutral },
 
   // Semantic
-  success: { light: "#d3f9d8", base: "#37b24d", dark: "#2b8a3e", text: "#1b5e20" },
-  warning: { light: "#fff3bf", base: "#f59f00", dark: "#e67700", text: "#7c4a00" },
-  error: { light: "#ffe3e3", base: "#f03e3e", dark: "#c92a2a", text: "#921515" },
-  info: { light: "#d0ebff", base: "#339af0", dark: "#1c7ed6", text: "#0c4a7e" },
+  success: { ...DEFAULT_THEME.colors.success },
+  warning: { ...DEFAULT_THEME.colors.warning },
+  error: { ...DEFAULT_THEME.colors.error },
+  info: { ...DEFAULT_THEME.colors.info },
 
   // Surface accents
-  surface: {
-    page: "#f8f9fb",
-    card: "#ffffff",
-    elevated: "#ffffff",
-    inset: "#f1f3f5",
-    sidebar: "#1a1b1e",
-    sidebarHover: "#25262b",
-    sidebarActive: "#2c2e33",
-  },
+  surface: { ...DEFAULT_THEME.colors.surface },
 
   // Borders
-  border: {
-    subtle: "#e9ecef",
-    default: "#dee2e6",
-    strong: "#ced4da",
-  },
+  border: { ...DEFAULT_THEME.colors.border },
+
+  // Focus
+  focus: DEFAULT_THEME.colors.focus,
 } as const;
 
 // ---------------------------------------------------------------------------
-// Typography
+// Typography — derived from active theme
 // ---------------------------------------------------------------------------
 
 export const typography = {
-  fontFamily:
-    "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-  monoFamily: "'JetBrains Mono', 'SF Mono', 'Fira Code', monospace",
+  fontFamily: DEFAULT_THEME.typography.body.stack,
+  headingFamily: DEFAULT_THEME.typography.heading.stack,
+  monoFamily: DEFAULT_THEME.typography.mono.stack,
 
-  size: {
-    xs: "0.6875rem",   // 11px
-    sm: "0.75rem",     // 12px
-    base: "0.8125rem", // 13px
-    md: "0.875rem",    // 14px
-    lg: "1rem",        // 16px
-    xl: "1.125rem",    // 18px
-    "2xl": "1.375rem", // 22px
-    "3xl": "1.75rem",  // 28px
-  },
+  size: { ...DEFAULT_THEME.typography.size },
 
-  weight: {
-    normal: 400,
-    medium: 500,
-    semibold: 600,
-    bold: 700,
-  },
+  weight: { ...DEFAULT_THEME.typography.weight },
 
-  lineHeight: {
-    tight: 1.25,
-    normal: 1.5,
-    relaxed: 1.625,
-  },
+  lineHeight: { ...DEFAULT_THEME.typography.lineHeight },
 } as const;
 
 // ---------------------------------------------------------------------------
-// Spacing & Sizing
+// Spacing & Sizing — derived from active theme
 // ---------------------------------------------------------------------------
 
-export const spacing = {
-  0: "0",
-  1: "0.25rem",  // 4px
-  2: "0.5rem",   // 8px
-  3: "0.75rem",  // 12px
-  4: "1rem",     // 16px
-  5: "1.25rem",  // 20px
-  6: "1.5rem",   // 24px
-  8: "2rem",     // 32px
-  10: "2.5rem",  // 40px
-  12: "3rem",    // 48px
-  16: "4rem",    // 64px
-} as const;
+export const spacing = { ...DEFAULT_THEME.spacing } as const;
 
-export const radius = {
-  sm: "4px",
-  md: "6px",
-  lg: "8px",
-  xl: "12px",
-  full: "9999px",
-} as const;
+export const radius = { ...DEFAULT_THEME.radius } as const;
 
-export const shadow = {
-  xs: "0 1px 2px rgba(0,0,0,0.04)",
-  sm: "0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)",
-  md: "0 4px 6px -1px rgba(0,0,0,0.06), 0 2px 4px -2px rgba(0,0,0,0.04)",
-  lg: "0 10px 15px -3px rgba(0,0,0,0.06), 0 4px 6px -4px rgba(0,0,0,0.04)",
-} as const;
+export const shadow = { ...DEFAULT_THEME.shadow } as const;
 
 // ---------------------------------------------------------------------------
-// Transitions
+// Transitions — derived from active theme
 // ---------------------------------------------------------------------------
 
 export const transition = {
-  fast: "120ms ease",
-  normal: "180ms ease",
-  slow: "280ms ease",
+  fast: `${DEFAULT_THEME.motion.fast} ${DEFAULT_THEME.motion.easing}`,
+  normal: `${DEFAULT_THEME.motion.normal} ${DEFAULT_THEME.motion.easing}`,
+  slow: `${DEFAULT_THEME.motion.slow} ${DEFAULT_THEME.motion.easing}`,
 } as const;
 
 // ---------------------------------------------------------------------------
@@ -156,16 +90,10 @@ export const zIndex = {
 } as const;
 
 // ---------------------------------------------------------------------------
-// Layout constants
+// Layout constants — derived from active theme
 // ---------------------------------------------------------------------------
 
-export const layout = {
-  sidebarWidth: "240px",
-  sidebarCollapsedWidth: "56px",
-  headerHeight: "52px",
-  pageMaxWidth: "1280px",
-  pagePadding: "1.5rem",
-} as const;
+export const layout = { ...DEFAULT_THEME.layout } as const;
 
 // ---------------------------------------------------------------------------
 // Status badge styles — centralized for all subsystems

@@ -38,6 +38,7 @@ import { AnalyticsOperationsPage } from "../pages/admin/AnalyticsOperationsPage"
 import { YouTubeAnalyticsPage } from "../pages/admin/YouTubeAnalyticsPage";
 import { YouTubeCallbackPage } from "../pages/admin/YouTubeCallbackPage";
 import { AuditLogPage } from "../pages/admin/AuditLogPage";
+import { ThemeRegistryPage } from "../pages/admin/ThemeRegistryPage";
 import { VisibilityGuard } from "../components/visibility/VisibilityGuard";
 
 export const router = createBrowserRouter([
@@ -84,6 +85,7 @@ export const router = createBrowserRouter([
       { path: "analytics/operations", element: <VisibilityGuard targetKey="panel:analytics"><AnalyticsOperationsPage /></VisibilityGuard> },
       { path: "analytics/youtube", element: <VisibilityGuard targetKey="panel:analytics"><YouTubeAnalyticsPage /></VisibilityGuard> },
       { path: "audit-logs", element: <VisibilityGuard targetKey="panel:audit-logs"><AuditLogPage /></VisibilityGuard> },
+      { path: "themes", element: <ThemeRegistryPage /> },
       { path: "settings/youtube-callback", element: <YouTubeCallbackPage /> },
     ],
   },

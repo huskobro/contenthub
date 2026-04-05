@@ -1,67 +1,65 @@
 import { useState } from "react";
 import { useYouTubeStatus, useYouTubeChannelInfo, useYouTubeVideoStats, useVideoStatsTrend } from "../../hooks/useCredentials";
-
-const CONTAINER: React.CSSProperties = {
-  maxWidth: "800px",
-};
+import { PageShell } from "../../components/design-system/primitives";
+import { colors, typography, spacing, radius } from "../../components/design-system/tokens";
 
 const CARD: React.CSSProperties = {
-  border: "1px solid #e2e8f0",
-  borderRadius: "8px",
+  border: `1px solid ${colors.border.default}`,
+  borderRadius: radius.lg,
   padding: "1.25rem",
-  marginBottom: "1rem",
-  background: "#fff",
+  marginBottom: spacing[4],
+  background: colors.surface.card,
 };
 
 const STAT_ROW: React.CSSProperties = {
   display: "flex",
-  gap: "1rem",
+  gap: spacing[4],
   flexWrap: "wrap",
-  marginTop: "0.75rem",
+  marginTop: spacing[3],
 };
 
 const STAT_CARD: React.CSSProperties = {
   flex: "1 1 140px",
-  border: "1px solid #e2e8f0",
-  borderRadius: "6px",
-  padding: "0.75rem",
-  background: "#fafbfc",
+  border: `1px solid ${colors.border.default}`,
+  borderRadius: radius.md,
+  padding: spacing[3],
+  background: colors.neutral[50],
   textAlign: "center",
 };
 
 const STAT_VALUE: React.CSSProperties = {
   fontSize: "1.25rem",
-  fontWeight: 700,
-  color: "#1e293b",
+  fontWeight: typography.weight.bold,
+  color: colors.neutral[900],
 };
 
 const STAT_LABEL: React.CSSProperties = {
-  fontSize: "0.6875rem",
-  color: "#94a3b8",
+  fontSize: typography.size.xs,
+  color: colors.neutral[500],
   marginTop: "0.125rem",
 };
 
 const TABLE_STYLE: React.CSSProperties = {
   width: "100%",
   borderCollapse: "collapse",
-  fontSize: "0.8125rem",
+  fontSize: typography.size.base,
 };
 
 const TH_STYLE: React.CSSProperties = {
   textAlign: "left",
-  padding: "0.5rem 0.75rem",
-  borderBottom: "2px solid #e2e8f0",
-  fontSize: "0.6875rem",
-  fontWeight: 600,
-  color: "#64748b",
+  padding: `${spacing[2]} ${spacing[3]}`,
+  borderBottom: `2px solid ${colors.border.default}`,
+  fontSize: typography.size.xs,
+  fontWeight: typography.weight.semibold,
+  color: colors.neutral[600],
   textTransform: "uppercase",
   letterSpacing: "0.05em",
 };
 
 const TD_STYLE: React.CSSProperties = {
-  padding: "0.5rem 0.75rem",
-  borderBottom: "1px solid #f1f5f9",
-  color: "#334155",
+  padding: `${spacing[2]} ${spacing[3]}`,
+  borderBottom: `1px solid ${colors.neutral[100]}`,
+  color: colors.neutral[700],
 };
 
 const TD_NUM: React.CSSProperties = {
@@ -93,25 +91,12 @@ export function YouTubeAnalyticsPage() {
   const isConnected = ytStatus?.has_credentials === true;
 
   return (
-    <div style={CONTAINER}>
-      <h2
-        style={{ margin: "0 0 0.25rem", fontSize: "1.125rem", fontWeight: 600 }}
-      >
-        YouTube Analytics
-      </h2>
-      <p
-        style={{
-          margin: "0.25rem 0 1rem",
-          fontSize: "0.8125rem",
-          color: "#94a3b8",
-          lineHeight: 1.5,
-        }}
-      >
-        Bagli YouTube kanalinin temel bilgileri ve yayin istatistikleri.
-      </p>
-
+    <PageShell
+      title="YouTube Analytics"
+      subtitle="Bagli YouTube kanalinin temel bilgileri ve yayin istatistikleri."
+    >
       {isLoading && (
-        <p style={{ color: "#64748b", fontSize: "0.8125rem" }}>Yukleniyor...</p>
+        <p style={{ color: colors.neutral[600], fontSize: typography.size.base }}>Yukleniyor...</p>
       )}
 
       {/* Not connected state */}
@@ -123,14 +108,14 @@ export function YouTubeAnalyticsPage() {
               padding: "2rem 1rem",
             }}
           >
-            <p style={{ fontSize: "0.875rem", color: "#475569", margin: "0 0 0.5rem" }}>
+            <p style={{ fontSize: typography.size.md, color: colors.neutral[700], margin: "0 0 0.5rem" }}>
               YouTube hesabi bagli degil.
             </p>
-            <p style={{ fontSize: "0.75rem", color: "#94a3b8", margin: 0, maxWidth: "400px", marginInline: "auto" }}>
+            <p style={{ fontSize: typography.size.sm, color: colors.neutral[500], margin: 0, maxWidth: "400px", marginInline: "auto" }}>
               YouTube Analytics goruntulemek icin once{" "}
               <a
                 href="/admin/settings"
-                style={{ color: "#1e40af", textDecoration: "underline" }}
+                style={{ color: colors.brand[800], textDecoration: "underline" }}
               >
                 Ayarlar &gt; Kimlik Bilgileri
               </a>{" "}
@@ -145,7 +130,7 @@ export function YouTubeAnalyticsPage() {
         <>
           {/* Channel summary */}
           <div style={CARD}>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: spacing[3] }}>
               {channelInfo?.thumbnail_url && (
                 <img
                   src={channelInfo.thumbnail_url}
@@ -154,11 +139,11 @@ export function YouTubeAnalyticsPage() {
                 />
               )}
               <div>
-                <div style={{ fontSize: "0.9375rem", fontWeight: 600, color: "#1e293b" }}>
+                <div style={{ fontSize: "0.9375rem", fontWeight: typography.weight.semibold, color: colors.neutral[900] }}>
                   {channelInfo?.channel_title ?? "Kanal bilgisi yukleniyor..."}
                 </div>
                 {channelInfo?.channel_id && (
-                  <div style={{ fontSize: "0.6875rem", color: "#94a3b8", fontFamily: "monospace" }}>
+                  <div style={{ fontSize: typography.size.xs, color: colors.neutral[500], fontFamily: typography.monoFamily }}>
                     {channelInfo.channel_id}
                   </div>
                 )}
@@ -187,23 +172,23 @@ export function YouTubeAnalyticsPage() {
 
           {/* Video Stats Summary */}
           <div style={CARD}>
-            <div style={{ fontSize: "0.8125rem", fontWeight: 600, color: "#334155", marginBottom: "0.5rem" }}>
+            <div style={{ fontSize: typography.size.base, fontWeight: typography.weight.semibold, color: colors.neutral[700], marginBottom: spacing[2] }}>
               ContentHub Yayinlari — Istatistikler
             </div>
 
             {statsLoading && (
-              <p style={{ fontSize: "0.75rem", color: "#64748b" }}>Video istatistikleri yukleniyor...</p>
+              <p style={{ fontSize: typography.size.sm, color: colors.neutral[600] }}>Video istatistikleri yukleniyor...</p>
             )}
 
             {statsError && (
               <div
                 style={{
-                  padding: "0.5rem 0.75rem",
-                  background: "#fef2f2",
-                  borderRadius: "4px",
-                  border: "1px solid #fecaca",
-                  fontSize: "0.75rem",
-                  color: "#991b1b",
+                  padding: `${spacing[2]} ${spacing[3]}`,
+                  background: colors.error.light,
+                  borderRadius: radius.sm,
+                  border: `1px solid ${colors.error.base}`,
+                  fontSize: typography.size.sm,
+                  color: colors.error.text,
                 }}
               >
                 YouTube API hatasi: {statsError instanceof Error ? statsError.message : "Bilinmeyen hata"}
@@ -211,7 +196,7 @@ export function YouTubeAnalyticsPage() {
             )}
 
             {!statsLoading && !statsError && videoStats && videoStats.video_count === 0 && (
-              <p style={{ fontSize: "0.75rem", color: "#94a3b8", margin: 0 }}>
+              <p style={{ fontSize: typography.size.sm, color: colors.neutral[500], margin: 0 }}>
                 Henuz YouTube'a yayinlanmis video bulunmuyor.
               </p>
             )}
@@ -239,7 +224,7 @@ export function YouTubeAnalyticsPage() {
                 </div>
 
                 {/* Video table */}
-                <div style={{ marginTop: "1rem", overflowX: "auto" }}>
+                <div style={{ marginTop: spacing[4], overflowX: "auto" }}>
                   <table style={TABLE_STYLE}>
                     <thead>
                       <tr>
@@ -258,7 +243,7 @@ export function YouTubeAnalyticsPage() {
                           )}
                           style={{
                             cursor: "pointer",
-                            background: selectedVideoId === v.video_id ? "#f0f4ff" : undefined,
+                            background: selectedVideoId === v.video_id ? colors.info.light : undefined,
                           }}
                         >
                           <td style={TD_STYLE}>
@@ -266,12 +251,12 @@ export function YouTubeAnalyticsPage() {
                               href={`https://www.youtube.com/watch?v=${v.video_id}`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              style={{ color: "#1e40af", textDecoration: "none" }}
+                              style={{ color: colors.brand[800], textDecoration: "none" }}
                             >
                               {v.title || v.video_id}
                             </a>
                             {v.published_at && (
-                              <div style={{ fontSize: "0.625rem", color: "#94a3b8", marginTop: "0.125rem" }}>
+                              <div style={{ fontSize: "0.625rem", color: colors.neutral[500], marginTop: "0.125rem" }}>
                                 {new Date(v.published_at).toLocaleDateString("tr-TR")}
                               </div>
                             )}
@@ -291,17 +276,17 @@ export function YouTubeAnalyticsPage() {
           {/* Video Trend Section (M14-C) */}
           {selectedVideoId && (
             <div style={CARD} data-testid="yt-video-trend-section">
-              <div style={{ fontSize: "0.8125rem", fontWeight: 600, color: "#334155", marginBottom: "0.5rem" }}>
+              <div style={{ fontSize: typography.size.base, fontWeight: typography.weight.semibold, color: colors.neutral[700], marginBottom: spacing[2] }}>
                 Zaman Serisi — {trendData?.title ?? selectedVideoId}
               </div>
 
               {trendLoading && (
-                <p style={{ fontSize: "0.75rem", color: "#64748b" }}>Trend verisi yukleniyor...</p>
+                <p style={{ fontSize: typography.size.sm, color: colors.neutral[600] }}>Trend verisi yukleniyor...</p>
               )}
 
               {!trendLoading && (!trendData || trendData.snapshots.length === 0) && (
                 <p
-                  style={{ fontSize: "0.75rem", color: "#94a3b8", margin: 0 }}
+                  style={{ fontSize: typography.size.sm, color: colors.neutral[500], margin: 0 }}
                   data-testid="yt-trend-empty"
                 >
                   Henuz snapshot verisi bulunmuyor. Video istatistikleri her sorgulamada otomatik kaydedilir.
@@ -342,12 +327,12 @@ export function YouTubeAnalyticsPage() {
           {/* Scope limitation note (M14-C) */}
           <div
             style={{
-              padding: "0.75rem 1rem",
-              background: "#fffbeb",
-              borderRadius: "6px",
-              border: "1px solid #fde68a",
-              fontSize: "0.6875rem",
-              color: "#92400e",
+              padding: `${spacing[3]} ${spacing[4]}`,
+              background: colors.warning.light,
+              borderRadius: radius.md,
+              border: `1px solid ${colors.warning.base}`,
+              fontSize: typography.size.xs,
+              color: colors.warning.text,
               lineHeight: 1.6,
             }}
             data-testid="yt-scope-note"
@@ -358,6 +343,6 @@ export function YouTubeAnalyticsPage() {
           </div>
         </>
       )}
-    </div>
+    </PageShell>
   );
 }

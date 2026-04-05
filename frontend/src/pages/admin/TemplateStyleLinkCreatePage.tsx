@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useCreateTemplateStyleLink } from "../../hooks/useCreateTemplateStyleLink";
 import { TemplateStyleLinkForm } from "../../components/template-style-links/TemplateStyleLinkForm";
 import type { TemplateStyleLinkFormValues } from "../../components/template-style-links/TemplateStyleLinkForm";
+import { colors, typography } from "../../components/design-system/tokens";
 
 export function TemplateStyleLinkCreatePage() {
   const navigate = useNavigate();
@@ -27,7 +28,7 @@ export function TemplateStyleLinkCreatePage() {
   return (
     <div style={{ maxWidth: "600px" }}>
       <h2
-        style={{ margin: "0 0 0.5rem", fontSize: "1.125rem", fontWeight: 600 }}
+        style={{ margin: "0 0 0.5rem", fontSize: typography.size.xl, fontWeight: typography.weight.semibold }}
         data-testid="tsl-create-heading"
       >
         Yeni Sablon-Stil Baglantisi
@@ -35,8 +36,8 @@ export function TemplateStyleLinkCreatePage() {
       <p
         style={{
           margin: "0 0 1.25rem",
-          fontSize: "0.875rem",
-          color: "#64748b",
+          fontSize: typography.size.md,
+          color: colors.neutral[600],
           lineHeight: 1.6,
           maxWidth: "640px",
         }}

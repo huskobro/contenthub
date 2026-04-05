@@ -18,9 +18,10 @@ export function JobDetailPage() {
   // SSE live updates — active only for running/queued jobs
   const isActiveJob = !!job && ["queued", "running", "processing", "retrying"].includes(job.status);
   useSSE({
-    url: `/api/v1/jobs/${jobId}/events`,
+    url: `/api/v1/sse/jobs/${jobId}`,
     enabled: !!jobId && isActiveJob,
     invalidateKeys: [["job", jobId ?? ""]],
+    eventTypes: ["job:status_changed", "job:step_changed"],
   });
 
   if (isLoading) {

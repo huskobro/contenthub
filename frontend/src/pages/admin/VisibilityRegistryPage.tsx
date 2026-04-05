@@ -3,6 +3,8 @@ import { useVisibilityRulesList } from "../../hooks/useVisibilityRulesList";
 import { VisibilityRulesTable } from "../../components/visibility/VisibilityRulesTable";
 import { VisibilityRuleDetailPanel } from "../../components/visibility/VisibilityRuleDetailPanel";
 import { ReadOnlyGuard } from "../../components/visibility/ReadOnlyGuard";
+import { PageShell } from "../../components/design-system/primitives";
+import { colors, typography, spacing, radius } from "../../components/design-system/tokens";
 
 export function VisibilityRegistryPage() {
   const { data: rules, isLoading, isError, error } = useVisibilityRulesList();
@@ -10,18 +12,12 @@ export function VisibilityRegistryPage() {
 
   return (
     <ReadOnlyGuard targetKey="panel:visibility">
-    <div>
-      <h2
-        style={{ margin: "0 0 0.25rem", fontSize: "1.125rem", fontWeight: 600 }}
-        data-testid="visibility-registry-heading"
-      >
-        Gorunurluk Kurallari
-      </h2>
+    <PageShell title="Gorunurluk Kurallari" testId="visibility-registry">
       <p
         style={{
-          margin: "0.25rem 0 0.5rem",
-          fontSize: "0.8125rem",
-          color: "#94a3b8",
+          margin: `${spacing[1]} 0 ${spacing[2]}`,
+          fontSize: typography.size.base,
+          color: colors.neutral[500],
           lineHeight: 1.5,
           maxWidth: "640px",
         }}
@@ -32,29 +28,29 @@ export function VisibilityRegistryPage() {
       </p>
       <p
         style={{
-          margin: "0 0 1rem",
-          fontSize: "0.8125rem",
-          color: "#94a3b8",
+          margin: `0 0 ${spacing[4]}`,
+          fontSize: typography.size.base,
+          color: colors.neutral[500],
           lineHeight: 1.5,
           maxWidth: "640px",
         }}
         data-testid="visibility-registry-workflow-note"
       >
-        Gorunurluk kontrol zinciri: Kural Tanimlama → Hedef Belirleme →
-        Rol/Mod Kapsami → Gorünür/Salt-Okunur/Wizard Durumu. Bir kural
+        Gorunurluk kontrol zinciri: Kural Tanimlama &rarr; Hedef Belirleme &rarr;
+        Rol/Mod Kapsami &rarr; Gorünür/Salt-Okunur/Wizard Durumu. Bir kural
         sectiginizde detay panelinde governance durumunu gorebilirsiniz.
         Ayar duzeyinde governance icin Ayarlar sayfasini kullanin.
       </p>
 
-      {isLoading && <p style={{ color: "#64748b" }}>Yükleniyor...</p>}
+      {isLoading && <p style={{ color: colors.neutral[600] }}>Yükleniyor...</p>}
       {isError && (
-        <p style={{ color: "#dc2626" }}>
+        <p style={{ color: colors.error.base }}>
           Hata: {error instanceof Error ? error.message : "Bilinmeyen hata"}
         </p>
       )}
 
       {rules && (
-        <div style={{ display: "flex", gap: "1.5rem", alignItems: "flex-start" }}>
+        <div style={{ display: "flex", gap: spacing[6], alignItems: "flex-start" }}>
           <div style={{ flex: 2, minWidth: 0 }}>
             <VisibilityRulesTable
               rules={rules}
@@ -66,16 +62,16 @@ export function VisibilityRegistryPage() {
             style={{
               flex: 1,
               minWidth: "280px",
-              border: "1px solid #e2e8f0",
-              borderRadius: "6px",
-              background: "#fafbfc",
+              border: `1px solid ${colors.border.default}`,
+              borderRadius: radius.md,
+              background: colors.neutral[50],
             }}
           >
             <VisibilityRuleDetailPanel selectedId={selectedId} />
           </div>
         </div>
       )}
-    </div>
+    </PageShell>
     </ReadOnlyGuard>
   );
 }

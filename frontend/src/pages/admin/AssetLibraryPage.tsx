@@ -27,6 +27,7 @@ import { QuickLook, useQuickLookTrigger } from "../../components/design-system/Q
 import { ConfirmAction } from "../../components/design-system/ConfirmAction";
 import { AssetQuickLookContent } from "../../components/quicklook/AssetQuickLookContent";
 import { useScopedKeyboardNavigation } from "../../hooks/useScopedKeyboardNavigation";
+import { useSearchFocus } from "../../hooks/useSearchFocus";
 import { useToast } from "../../hooks/useToast";
 
 const ASSET_TYPE_OPTIONS = [
@@ -91,6 +92,7 @@ export function AssetLibraryPage() {
   const [uploading, setUploading] = useState(false);
   const [quickLookOpen, setQuickLookOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const { data, isLoading, isError } = useAssetList({
     asset_type: typeFilter || undefined,
@@ -119,6 +121,9 @@ export function AssetLibraryPage() {
     onToggle: () => setQuickLookOpen(true),
     scopeId: "asset-library-table",
   });
+
+  // "/" search focus
+  useSearchFocus(searchInputRef, { enabled: !quickLookOpen && !revealSheetOpen });
 
   const activeItem = items[activeIndex] ?? null;
 
@@ -306,8 +311,9 @@ export function AssetLibraryPage() {
       <SectionShell title="Filtre ve Arama" testId="asset-filter-area">
         <FilterBar testId="asset-filters-active">
           <FilterInput
+            ref={searchInputRef}
             type="text"
-            placeholder="Dosya adi ara..."
+            placeholder="Dosya adi ara... ( / )"
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);

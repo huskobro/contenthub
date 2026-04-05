@@ -1,4 +1,8 @@
-/* ContentHub — Global Styles (M24) */
+/* ContentHub — Global Styles (M24 + Wave 1 Final) */
+/*
+ * Font imports are managed by the ThemeEngine dynamically.
+ * This static import is the default fallback.
+ */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
 *,
@@ -16,11 +20,11 @@ html {
 }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: var(--ch-font-body, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
   font-size: 0.875rem;
   line-height: 1.5;
-  color: #212529;
-  background: #f8f9fb;
+  color: var(--ch-neutral-900, #212529);
+  background: var(--ch-surface-page, #f8f9fb);
 }
 
 /* Scrollbar styling */
@@ -32,16 +36,16 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #ced4da;
+  background: var(--ch-neutral-400, #ced4da);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #adb5bd;
+  background: var(--ch-neutral-500, #adb5bd);
 }
 
-/* Focus styles */
+/* Focus styles — theme-aware */
 :focus-visible {
-  outline: 2px solid #4c6ef5;
+  outline: 2px solid var(--ch-focus, #4c6ef5);
   outline-offset: 2px;
 }
 
@@ -61,10 +65,10 @@ button {
   font-family: inherit;
 }
 
-/* Selection */
+/* Selection — theme-aware */
 ::selection {
-  background: #dbe4ff;
-  color: #212529;
+  background: var(--ch-brand-100, #dbe4ff);
+  color: var(--ch-neutral-900, #212529);
 }
 
 /* ---------------------------------------------------------------------------

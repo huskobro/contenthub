@@ -7,9 +7,11 @@
  *   - Wired/Deferred durumu
  *   - wired_to bilgisi
  *   - Admin degeri girme/degistirme
+ *
+ * Wave 1 Final: design-system tokens, useAutoSave, useSearchFocus integrated.
  */
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useReadOnly } from "../visibility/ReadOnlyGuard";
 import {
   useEffectiveSettings,
@@ -17,6 +19,9 @@ import {
   useUpdateSettingValue,
 } from "../../hooks/useEffectiveSettings";
 import { useToast } from "../../hooks/useToast";
+import { useAutoSave } from "../../hooks/useAutoSave";
+import { useSearchFocus } from "../../hooks/useSearchFocus";
+import { colors, typography, spacing, radius } from "../../components/design-system/tokens";
 import type { EffectiveSetting, GroupSummary } from "../../api/effectiveSettingsApi";
 
 // ---------------------------------------------------------------------------
@@ -24,107 +29,144 @@ import type { EffectiveSetting, GroupSummary } from "../../api/effectiveSettings
 // ---------------------------------------------------------------------------
 
 const GROUP_SECTION: React.CSSProperties = {
-  marginBottom: "1.5rem",
+  marginBottom: spacing[6],
 };
 
 const GROUP_HEADER: React.CSSProperties = {
   display: "flex",
   alignItems: "center",
-  gap: "0.75rem",
-  fontSize: "0.8125rem",
-  fontWeight: 600,
-  color: "#334155",
-  marginBottom: "0.75rem",
-  paddingBottom: "0.375rem",
-  borderBottom: "1px solid #e2e8f0",
+  gap: spacing[3],
+  fontSize: typography.size.base,
+  fontWeight: typography.weight.semibold,
+  color: colors.neutral[700],
+  marginBottom: spacing[3],
+  paddingBottom: spacing[2],
+  borderBottom: `1px solid ${colors.border.default}`,
 };
 
 const CARD: React.CSSProperties = {
-  border: "1px solid #e2e8f0",
-  borderRadius: "8px",
-  padding: "0.75rem 1rem",
-  marginBottom: "0.5rem",
-  background: "#fff",
+  border: `1px solid ${colors.border.default}`,
+  borderRadius: radius.lg,
+  padding: `${spacing[3]} ${spacing[4]}`,
+  marginBottom: spacing[2],
+  background: colors.surface.card,
 };
 
 const KEY_ROW: React.CSSProperties = {
   display: "flex",
   alignItems: "center",
-  gap: "0.5rem",
+  gap: spacing[2],
   flexWrap: "wrap",
 };
 
 const KEY_LABEL: React.CSSProperties = {
-  fontSize: "0.8125rem",
-  fontWeight: 600,
-  color: "#1e293b",
+  fontSize: typography.size.base,
+  fontWeight: typography.weight.semibold,
+  color: colors.neutral[900],
 };
 
 const HELP_TEXT: React.CSSProperties = {
-  fontSize: "0.6875rem",
-  color: "#94a3b8",
-  marginTop: "0.125rem",
-  lineHeight: 1.4,
+  fontSize: typography.size.xs,
+  color: colors.neutral[500],
+  marginTop: spacing[1],
+  lineHeight: typography.lineHeight.tight,
 };
 
 const VALUE_ROW: React.CSSProperties = {
   display: "flex",
   alignItems: "center",
-  gap: "0.5rem",
-  marginTop: "0.375rem",
+  gap: spacing[2],
+  marginTop: spacing[2],
   flexWrap: "wrap",
 };
 
 const VALUE_DISPLAY: React.CSSProperties = {
-  fontSize: "0.8125rem",
-  color: "#475569",
-  fontFamily: "monospace",
-  background: "#f8fafc",
-  padding: "0.125rem 0.375rem",
-  borderRadius: "3px",
-  border: "1px solid #e2e8f0",
+  fontSize: typography.size.base,
+  color: colors.neutral[700],
+  fontFamily: typography.monoFamily,
+  background: colors.neutral[25],
+  padding: `${spacing[1]} ${spacing[2]}`,
+  borderRadius: radius.sm,
+  border: `1px solid ${colors.border.default}`,
 };
 
 const INPUT: React.CSSProperties = {
   flex: 1,
   minWidth: "180px",
-  padding: "0.3rem 0.5rem",
-  border: "1px solid #cbd5e1",
-  borderRadius: "4px",
-  fontSize: "0.8125rem",
+  padding: `${spacing[1]} ${spacing[2]}`,
+  border: `1px solid ${colors.neutral[400]}`,
+  borderRadius: radius.sm,
+  fontSize: typography.size.base,
   boxSizing: "border-box" as const,
 };
 
 const BTN_SM: React.CSSProperties = {
-  padding: "0.2rem 0.5rem",
-  fontSize: "0.6875rem",
-  borderRadius: "4px",
+  padding: `${spacing[1]} ${spacing[2]}`,
+  fontSize: typography.size.xs,
+  borderRadius: radius.sm,
   cursor: "pointer",
-  fontWeight: 500,
+  fontWeight: typography.weight.medium,
 };
+
+// ---------------------------------------------------------------------------
+// Auto-save status indicator
+// ---------------------------------------------------------------------------
+
+function AutoSaveStatus({
+  isDirty,
+  isSaving,
+  error,
+}: {
+  isDirty: boolean;
+  isSaving: boolean;
+  error: string | null;
+}) {
+  if (error) {
+    return (
+      <span style={{ fontSize: typography.size.xs, color: colors.error.dark }}>
+        Hata
+      </span>
+    );
+  }
+  if (isSaving) {
+    return (
+      <span style={{ fontSize: typography.size.xs, color: colors.warning.text }}>
+        Kaydediliyor...
+      </span>
+    );
+  }
+  if (isDirty) {
+    return (
+      <span style={{ fontSize: typography.size.xs, color: colors.neutral[500] }}>
+        Kaydedilmedi
+      </span>
+    );
+  }
+  return null;
+}
 
 // ---------------------------------------------------------------------------
 // Badge components
 // ---------------------------------------------------------------------------
 
 function SourceBadge({ source }: { source: string }) {
-  const colors: Record<string, { bg: string; fg: string }> = {
-    admin: { bg: "#dbeafe", fg: "#1e40af" },
-    default: { bg: "#f1f5f9", fg: "#475569" },
-    env: { bg: "#fef9c3", fg: "#854d0e" },
-    builtin: { bg: "#f3e8ff", fg: "#7c3aed" },
-    missing: { bg: "#fef2f2", fg: "#991b1b" },
+  const badgeColors: Record<string, { bg: string; fg: string }> = {
+    admin: { bg: colors.info.light, fg: colors.brand[800] },
+    default: { bg: colors.neutral[100], fg: colors.neutral[700] },
+    env: { bg: colors.warning.light, fg: colors.warning.text },
+    builtin: { bg: "#f3e8ff", fg: colors.brand[700] },
+    missing: { bg: colors.error.light, fg: colors.error.text },
   };
-  const c = colors[source] ?? colors.missing;
+  const c = badgeColors[source] ?? badgeColors.missing;
 
   return (
     <span
       style={{
         display: "inline-block",
-        padding: "0.1rem 0.375rem",
-        borderRadius: "9999px",
-        fontSize: "0.625rem",
-        fontWeight: 600,
+        padding: `${spacing[1]} ${spacing[2]}`,
+        borderRadius: radius.full,
+        fontSize: typography.size.xs,
+        fontWeight: typography.weight.semibold,
         background: c.bg,
         color: c.fg,
       }}
@@ -140,12 +182,12 @@ function WiredBadge({ wired }: { wired: boolean }) {
     <span
       style={{
         display: "inline-block",
-        padding: "0.1rem 0.375rem",
-        borderRadius: "4px",
-        fontSize: "0.625rem",
-        fontWeight: 600,
-        background: wired ? "#dcfce7" : "#fef9c3",
-        color: wired ? "#166534" : "#854d0e",
+        padding: `${spacing[1]} ${spacing[2]}`,
+        borderRadius: radius.sm,
+        fontSize: typography.size.xs,
+        fontWeight: typography.weight.semibold,
+        background: wired ? colors.success.light : colors.warning.light,
+        color: wired ? colors.success.text : colors.warning.text,
       }}
       data-testid={wired ? "badge-wired" : "badge-deferred"}
     >
@@ -159,11 +201,11 @@ function GroupCountBadge({ count, color }: { count: number; color: string }) {
     <span
       style={{
         display: "inline-block",
-        padding: "0.1rem 0.375rem",
-        borderRadius: "9999px",
-        fontSize: "0.625rem",
-        fontWeight: 500,
-        background: "#f1f5f9",
+        padding: `${spacing[1]} ${spacing[2]}`,
+        borderRadius: radius.full,
+        fontSize: typography.size.xs,
+        fontWeight: typography.weight.medium,
+        background: colors.neutral[100],
         color,
       }}
     >
@@ -186,6 +228,47 @@ function SettingRow({ setting }: { setting: EffectiveSetting }) {
 
   // Credential key'leri icin bu panelden duzenleme yapilmaz
   const isCredential = setting.key.startsWith("credential.");
+  const isSecret = setting.is_secret;
+
+  // Auto-save for non-credential, non-secret settings
+  const autoSaveEnabled = editing && !isCredential && !isSecret;
+  const fieldType = setting.type === "integer" || setting.type === "float" ? "number" : "text";
+
+  const autoSave = useAutoSave<string>({
+    fieldType: fieldType as "text" | "number",
+    value: inputValue,
+    onSave: async (val: string) => {
+      if (val.trim() === "") return;
+
+      let value: unknown = val.trim();
+      if (setting.type === "integer") value = parseInt(val, 10);
+      else if (setting.type === "float") value = parseFloat(val);
+      else if (setting.type === "boolean") value = val.toLowerCase() === "true";
+      else if (setting.type === "json") {
+        try { value = JSON.parse(val); } catch { /* keep as string */ }
+      }
+
+      return new Promise<void>((resolve, reject) => {
+        updateMutation.mutate(
+          { key: setting.key, value },
+          {
+            onSuccess: () => {
+              setFeedback("Kaydedildi.");
+              toast.success(`${setting.label} kaydedildi.`);
+              resolve();
+            },
+            onError: (err) => {
+              const msg = err instanceof Error ? err.message : "Kayit hatasi.";
+              setFeedback(msg);
+              toast.error(`${setting.label}: ${msg}`);
+              reject(new Error(msg));
+            },
+          },
+        );
+      });
+    },
+    enabled: autoSaveEnabled,
+  });
 
   function handleSave() {
     if (inputValue.trim() === "") return;
@@ -229,7 +312,7 @@ function SettingRow({ setting }: { setting: EffectiveSetting }) {
         <SourceBadge source={setting.source} />
         <WiredBadge wired={setting.wired} />
         {setting.module_scope && (
-          <span style={{ fontSize: "0.625rem", color: "#64748b", fontStyle: "italic" }}>
+          <span style={{ fontSize: typography.size.xs, color: colors.neutral[600], fontStyle: "italic" }}>
             [{setting.module_scope}]
           </span>
         )}
@@ -238,7 +321,7 @@ function SettingRow({ setting }: { setting: EffectiveSetting }) {
       {setting.help_text && <div style={HELP_TEXT}>{setting.help_text}</div>}
 
       {setting.wired && setting.wired_to && (
-        <div style={{ fontSize: "0.625rem", color: "#7c3aed", marginTop: "0.125rem" }}>
+        <div style={{ fontSize: typography.size.xs, color: colors.brand[700], marginTop: spacing[1] }}>
           → {setting.wired_to}
         </div>
       )}
@@ -250,11 +333,18 @@ function SettingRow({ setting }: { setting: EffectiveSetting }) {
               {setting.is_secret && setting.source !== "missing" ? "●●●●" : displayValue}
             </span>
             {setting.source === "builtin" && (
-              <span style={{ fontSize: "0.625rem", color: "#94a3b8" }}>(varsayilan)</span>
+              <span style={{ fontSize: typography.size.xs, color: colors.neutral[500] }}>(varsayilan)</span>
             )}
             {!isCredential && (
               <button
-                style={{ ...BTN_SM, background: "transparent", color: "#64748b", border: "1px solid #cbd5e1", opacity: readOnly ? 0.5 : 1, cursor: readOnly ? "not-allowed" : "pointer" }}
+                style={{
+                  ...BTN_SM,
+                  background: "transparent",
+                  color: colors.neutral[600],
+                  border: `1px solid ${colors.neutral[400]}`,
+                  opacity: readOnly ? 0.5 : 1,
+                  cursor: readOnly ? "not-allowed" : "pointer",
+                }}
                 disabled={readOnly}
                 onClick={() => {
                   setEditing(true);
@@ -268,7 +358,7 @@ function SettingRow({ setting }: { setting: EffectiveSetting }) {
               </button>
             )}
             {isCredential && (
-              <span style={{ fontSize: "0.625rem", color: "#94a3b8" }}>
+              <span style={{ fontSize: typography.size.xs, color: colors.neutral[500] }}>
                 (Kimlik Bilgileri sekmesinden yonetilir)
               </span>
             )}
@@ -282,19 +372,27 @@ function SettingRow({ setting }: { setting: EffectiveSetting }) {
               type={setting.is_secret ? "password" : "text"}
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
+              onBlur={autoSaveEnabled ? autoSave.triggerSave : undefined}
               placeholder={`${setting.type} deger girin...`}
               autoComplete="off"
               onKeyDown={(e) => { if (e.key === "Enter") handleSave(); }}
             />
+            {autoSaveEnabled && (
+              <AutoSaveStatus
+                isDirty={autoSave.isDirty}
+                isSaving={autoSave.isSaving}
+                error={autoSave.error}
+              />
+            )}
             <button
-              style={{ ...BTN_SM, background: "#1e40af", color: "#fff", border: "none" }}
+              style={{ ...BTN_SM, background: colors.brand[800], color: colors.surface.card, border: "none" }}
               onClick={handleSave}
               disabled={updateMutation.isPending}
             >
               {updateMutation.isPending ? "..." : "Kaydet"}
             </button>
             <button
-              style={{ ...BTN_SM, background: "transparent", color: "#64748b", border: "1px solid #cbd5e1" }}
+              style={{ ...BTN_SM, background: "transparent", color: colors.neutral[600], border: `1px solid ${colors.neutral[400]}` }}
               onClick={() => { setEditing(false); setInputValue(""); setFeedback(null); }}
             >
               Iptal
@@ -304,7 +402,7 @@ function SettingRow({ setting }: { setting: EffectiveSetting }) {
       </div>
 
       {feedback && (
-        <div style={{ marginTop: "0.25rem", fontSize: "0.6875rem", color: feedback.includes("hata") ? "#dc2626" : "#166534" }}>
+        <div style={{ marginTop: spacing[1], fontSize: typography.size.xs, color: feedback.includes("hata") ? colors.error.dark : colors.success.text }}>
           {feedback}
         </div>
       )}
@@ -335,14 +433,14 @@ function GroupSection({
     <div style={GROUP_SECTION} data-testid={`settings-group-${group.group}`}>
       <div style={GROUP_HEADER}>
         <span>{GROUP_LABELS_MAP[group.group] ?? group.label}</span>
-        <GroupCountBadge count={group.total} color="#475569" />
+        <GroupCountBadge count={group.total} color={colors.neutral[700]} />
         {group.wired > 0 && (
-          <span style={{ fontSize: "0.625rem", color: "#166534" }}>
+          <span style={{ fontSize: typography.size.xs, color: colors.success.text }}>
             {group.wired} wired
           </span>
         )}
         {group.missing > 0 && (
-          <span style={{ fontSize: "0.625rem", color: "#991b1b" }}>
+          <span style={{ fontSize: typography.size.xs, color: colors.error.text }}>
             {group.missing} eksik
           </span>
         )}
@@ -363,6 +461,9 @@ export function EffectiveSettingsPanel() {
   const [wiredOnly, setWiredOnly] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
+  const searchRef = useRef<HTMLInputElement>(null);
+  useSearchFocus(searchRef);
+
   const { data: groups, isLoading: groupsLoading } = useSettingsGroups();
   const { data: settings, isLoading: settingsLoading, isError, error } =
     useEffectiveSettings({ group: filterGroup, wired_only: wiredOnly });
@@ -370,17 +471,17 @@ export function EffectiveSettingsPanel() {
   const isLoading = groupsLoading || settingsLoading;
 
   if (isLoading) {
-    return <p style={{ color: "#64748b", fontSize: "0.8125rem" }}>Yukleniyor...</p>;
+    return <p style={{ color: colors.neutral[600], fontSize: typography.size.base }}>Yukleniyor...</p>;
   }
   if (isError) {
     return (
-      <p style={{ color: "#dc2626", fontSize: "0.8125rem" }}>
+      <p style={{ color: colors.error.dark, fontSize: typography.size.base }}>
         Hata: {error instanceof Error ? error.message : "Bilinmeyen hata"}
       </p>
     );
   }
   if (!settings || settings.length === 0) {
-    return <p style={{ color: "#64748b", fontSize: "0.8125rem" }}>Tanimli ayar bulunamadi.</p>;
+    return <p style={{ color: colors.neutral[600], fontSize: typography.size.base }}>Tanimli ayar bulunamadi.</p>;
   }
 
   // Filter by search term
@@ -408,16 +509,17 @@ export function EffectiveSettingsPanel() {
       <div
         style={{
           display: "flex",
-          gap: "0.75rem",
-          marginBottom: "1rem",
+          gap: spacing[3],
+          marginBottom: spacing[4],
           alignItems: "center",
           flexWrap: "wrap",
         }}
       >
         <input
+          ref={searchRef}
           style={{ ...INPUT, flex: "none", width: "240px" }}
           type="text"
-          placeholder="Ayar ara..."
+          placeholder="Ayar ara... ( / )"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           data-testid="settings-search"
@@ -435,7 +537,7 @@ export function EffectiveSettingsPanel() {
             </option>
           ))}
         </select>
-        <label style={{ fontSize: "0.75rem", color: "#64748b", display: "flex", alignItems: "center", gap: "0.25rem" }}>
+        <label style={{ fontSize: typography.size.sm, color: colors.neutral[600], display: "flex", alignItems: "center", gap: spacing[1] }}>
           <input
             type="checkbox"
             checked={wiredOnly}
@@ -444,7 +546,7 @@ export function EffectiveSettingsPanel() {
           />
           Sadece Wired
         </label>
-        <span style={{ fontSize: "0.6875rem", color: "#94a3b8" }}>
+        <span style={{ fontSize: typography.size.xs, color: colors.neutral[500] }}>
           {filtered.length} / {settings.length} ayar
         </span>
       </div>

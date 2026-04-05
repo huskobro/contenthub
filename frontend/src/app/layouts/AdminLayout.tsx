@@ -3,6 +3,7 @@ import { AppHeader } from "../../components/layout/AppHeader";
 import { AppSidebar } from "../../components/layout/AppSidebar";
 import { AdminContinuityStrip } from "../../components/layout/AdminContinuityStrip";
 import { ToastContainer } from "../../components/design-system/Toast";
+import { ThemeProvider } from "../../components/design-system/ThemeProvider";
 import { useVisibility } from "../../hooks/useVisibility";
 import { colors, layout } from "../../components/design-system/tokens";
 
@@ -36,6 +37,8 @@ const ADMIN_NAV: AdminNavItem[] = [
   { label: "Haber Bultenleri", to: "/admin/news-bulletins" },
   { label: "Haber Ogeler", to: "/admin/news-items" },
   { label: "Kullanilan Haberler", to: "/admin/used-news" },
+  { label: "Gorunum", section: true },
+  { label: "Tema Yonetimi", to: "/admin/themes" },
 ];
 
 // Individual guard hooks — one per guarded panel.
@@ -65,35 +68,37 @@ export function AdminLayout() {
   const filteredNav = useAdminNavFiltered();
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh" }}>
-      {/* Toast notifications */}
-      <ToastContainer />
+    <ThemeProvider>
+      <div style={{ display: "flex", minHeight: "100vh" }}>
+        {/* Toast notifications */}
+        <ToastContainer />
 
-      {/* Dark sidebar on the left */}
-      <AppSidebar items={filteredNav} />
+        {/* Dark sidebar on the left */}
+        <AppSidebar items={filteredNav} />
 
-      {/* Right side: header + continuity strip + scrollable content */}
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          flex: 1,
-          minWidth: 0,
-        }}
-      >
-        <AppHeader area="Admin" />
-        <AdminContinuityStrip />
-        <main
+        {/* Right side: header + continuity strip + scrollable content */}
+        <div
           style={{
+            display: "flex",
+            flexDirection: "column",
             flex: 1,
-            padding: layout.pagePadding,
-            background: colors.surface.page,
-            overflowY: "auto",
+            minWidth: 0,
           }}
         >
-          <Outlet />
-        </main>
+          <AppHeader area="Admin" />
+          <AdminContinuityStrip />
+          <main
+            style={{
+              flex: 1,
+              padding: layout.pagePadding,
+              background: colors.surface.page,
+              overflowY: "auto",
+            }}
+          >
+            <Outlet />
+          </main>
+        </div>
       </div>
-    </div>
+    </ThemeProvider>
   );
 }

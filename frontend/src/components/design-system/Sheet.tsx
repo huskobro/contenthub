@@ -1,5 +1,5 @@
 /**
- * Sheet — Wave 1
+ * Sheet — Wave 1 Final
  *
  * Right-sliding detail panel with overlay backdrop.
  * Used for viewing item details without leaving the page context.
@@ -8,22 +8,13 @@
  * - Slide-in animation from right
  * - Backdrop overlay (click to close)
  * - ESC to close (via dismiss stack)
- * - Focus trap within panel
+ * - Full focus trap (Tab/Shift+Tab cycle within panel)
  * - Focus restore on close
  * - Keyboard scope management
- *
- * Usage:
- *   <Sheet
- *     open={isOpen}
- *     onClose={() => setOpen(false)}
- *     title="İş Detayı"
- *     width="420px"
- *   >
- *     <DetailContent />
- *   </Sheet>
+ * - Body scroll lock
  */
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useCallback } from "react";
 import { colors, typography, spacing, radius, shadow, transition, zIndex } from "./tokens";
 import { useDismissStack } from "../../hooks/useDismissStack";
 import { useFocusRestore } from "../../hooks/useFocusRestore";
@@ -37,6 +28,9 @@ interface SheetProps {
   width?: string;
   testId?: string;
 }
+
+const FOCUSABLE_SELECTOR =
+  'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 export function Sheet({ open, onClose, title, children, width = "420px", testId }: SheetProps) {
   const panelRef = useRef<HTMLDivElement>(null);
@@ -72,6 +66,37 @@ export function Sheet({ open, onClose, title, children, width = "420px", testId 
     }
   }, [open]);
 
+  // Focus trap: Tab/Shift+Tab cycle within panel
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key !== "Tab") return;
+    const panel = panelRef.current;
+    if (!panel) return;
+
+    const focusable = Array.from(panel.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR));
+    if (focusable.length === 0) {
+      e.preventDefault();
+      return;
+    }
+
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    const active = document.activeElement;
+
+    if (e.shiftKey) {
+      // Shift+Tab: if at first, wrap to last
+      if (active === first || active === panel) {
+        e.preventDefault();
+        last.focus();
+      }
+    } else {
+      // Tab: if at last, wrap to first
+      if (active === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+  }, []);
+
   if (!open) return null;
 
   return (
@@ -97,6 +122,7 @@ export function Sheet({ open, onClose, title, children, width = "420px", testId 
         aria-modal="true"
         aria-label={title || "Detail panel"}
         tabIndex={-1}
+        onKeyDown={handleKeyDown}
         style={{
           position: "fixed",
           top: 0,
@@ -132,6 +158,7 @@ export function Sheet({ open, onClose, title, children, width = "420px", testId 
                 fontSize: typography.size.lg,
                 fontWeight: typography.weight.semibold,
                 color: colors.neutral[900],
+                fontFamily: typography.headingFamily,
               }}
             >
               {title}

@@ -321,9 +321,12 @@ const inputBase: React.CSSProperties = {
   transition: `border-color ${transition.fast}`,
 };
 
-export function FilterInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
-  return <input {...props} style={{ ...inputBase, minWidth: "180px", ...props.style }} />;
-}
+export const FilterInput = React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement>>(
+  (props, ref) => {
+    return <input ref={ref} {...props} style={{ ...inputBase, minWidth: "180px", ...props.style }} />;
+  }
+);
+FilterInput.displayName = "FilterInput";
 
 export function FilterSelect(props: React.SelectHTMLAttributes<HTMLSelectElement>) {
   return <select {...props} style={{ ...inputBase, ...props.style }} />;

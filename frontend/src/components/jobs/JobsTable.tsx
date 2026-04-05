@@ -10,9 +10,10 @@ import { JobInputQualitySummary } from "./JobInputQualitySummary";
 import { JobTargetOutputConsistencySummary } from "./JobTargetOutputConsistencySummary";
 import { JobPublicationYieldSummary } from "./JobPublicationYieldSummary";
 import { JobInputSpecificitySummary } from "./JobInputSpecificitySummary";
+import { colors, typography, spacing } from "../design-system/tokens";
 
-const TH_STYLE: React.CSSProperties = { padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" };
-const TD_STYLE: React.CSSProperties = { padding: "0.5rem 0.75rem" };
+const TH_STYLE: React.CSSProperties = { padding: `${spacing[2]} ${spacing[3]}`, borderBottom: `1px solid ${colors.border.default}` };
+const TD_STYLE: React.CSSProperties = { padding: `${spacing[2]} ${spacing[3]}` };
 
 interface JobsTableProps {
   jobs: JobResponse[];
@@ -24,14 +25,14 @@ interface JobsTableProps {
 
 export function JobsTable({ jobs, selectedId, onSelect, activeIndex }: JobsTableProps) {
   if (jobs.length === 0) {
-    return <p style={{ color: "#64748b" }}>Henüz kayıtlı job yok.</p>;
+    return <p style={{ color: colors.neutral[600] }}>Henüz kayıtlı job yok.</p>;
   }
 
   return (
     <div style={{ overflowX: "auto" }}>
-    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.875rem" }}>
+    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: typography.size.md }}>
       <thead>
-        <tr style={{ background: "#f1f5f9", textAlign: "left" }}>
+        <tr style={{ background: colors.neutral[100], textAlign: "left" }}>
           <th style={TH_STYLE}>Modül</th>
           <th style={TH_STYLE}>Bağlam</th>
           <th style={TH_STYLE}>Durum</th>
@@ -60,15 +61,15 @@ export function JobsTable({ jobs, selectedId, onSelect, activeIndex }: JobsTable
             tabIndex={isActive ? 0 : -1}
             data-keyboard-active={isActive || undefined}
             style={{
-              borderBottom: "1px solid #f1f5f9",
+              borderBottom: `1px solid ${colors.neutral[100]}`,
               cursor: "pointer",
-              background: isSelected ? "#eff6ff" : isActive ? "#f8f9fb" : "transparent",
-              outline: isActive ? "2px solid #4c6ef540" : "none",
+              background: isSelected ? colors.info.light : isActive ? colors.neutral[50] : "transparent",
+              outline: isActive ? `2px solid ${colors.brand[500]}40` : "none",
               outlineOffset: "-2px",
             }}
           >
             {/* Kimlik & Durum */}
-            <td style={{ padding: "0.5rem 0.75rem", fontFamily: "monospace" }}>{j.module_type}</td>
+            <td style={{ padding: `${spacing[2]} ${spacing[3]}`, fontFamily: "monospace" }}>{j.module_type}</td>
             <td style={TD_STYLE}>
               <JobContextSummary moduleType={j.module_type} sourceContextJson={j.source_context_json} />
             </td>
@@ -83,10 +84,10 @@ export function JobsTable({ jobs, selectedId, onSelect, activeIndex }: JobsTable
               />
             </td>
             <td style={TD_STYLE}>
-              {j.current_step_key ?? <em style={{ color: "#94a3b8" }}>—</em>}
+              {j.current_step_key ?? <em style={{ color: colors.neutral[500] }}>—</em>}
             </td>
             <td style={TD_STYLE}>{j.retry_count}</td>
-            <td style={{ padding: "0.5rem 0.75rem", fontSize: "0.8125rem", color: "#64748b" }}>
+            <td style={{ padding: `${spacing[2]} ${spacing[3]}`, fontSize: typography.size.base, color: colors.neutral[600] }}>
               {formatDuration(j.elapsed_total_seconds)}
             </td>
             {/* Girdi Grubu */}
@@ -153,7 +154,7 @@ export function JobsTable({ jobs, selectedId, onSelect, activeIndex }: JobsTable
               />
             </td>
             {/* Zaman */}
-            <td style={{ padding: "0.5rem 0.75rem", fontSize: "0.8125rem", color: "#64748b" }}>
+            <td style={{ padding: `${spacing[2]} ${spacing[3]}`, fontSize: typography.size.base, color: colors.neutral[600] }}>
               {formatDateISO(j.created_at)}
             </td>
           </tr>
