@@ -36,6 +36,7 @@ import { AnalyticsOverviewPage } from "../pages/admin/AnalyticsOverviewPage";
 import { AnalyticsContentPage } from "../pages/admin/AnalyticsContentPage";
 import { AnalyticsOperationsPage } from "../pages/admin/AnalyticsOperationsPage";
 import { YouTubeAnalyticsPage } from "../pages/admin/YouTubeAnalyticsPage";
+import { YouTubeCallbackPage } from "../pages/admin/YouTubeCallbackPage";
 
 export const router = createBrowserRouter([
   {
@@ -80,6 +81,7 @@ export const router = createBrowserRouter([
       { path: "analytics/content", element: <AnalyticsContentPage /> },
       { path: "analytics/operations", element: <AnalyticsOperationsPage /> },
       { path: "analytics/youtube", element: <YouTubeAnalyticsPage /> },
+      { path: "settings/youtube-callback", element: <YouTubeCallbackPage /> },
     ],
   },
   {
