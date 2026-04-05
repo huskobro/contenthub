@@ -1,14 +1,16 @@
 """
-Asset Service — M19-A + M20-A.
+Asset Service — M19-A + M20-A + M21-A.
 
 Workspace dizinlerinden asset index uretir.
 M20-A: delete, reveal, refresh, allowed-actions operasyonlari.
+M21-A: upload operasyonu (gercek disk yazimi).
 
 Veri kaynagi: backend/workspace/{job_id}/artifacts/ ve preview/ dizinleri.
 DB'ye yazmaz, migration gerektirmez.
 """
 
 import logging
+import re
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional, Tuple, Union
@@ -115,6 +117,7 @@ async def list_assets(
         return {"total": 0, "offset": offset, "limit": limit, "items": []}
 
     # Hangi job dizinlerini tariyoruz?
+    # _uploads dizini de taranir (M21-A upload hedefi)
     if job_id:
         job_dirs = [job_id] if (ws_root / job_id).is_dir() else []
     else:
@@ -354,4 +357,153 @@ def get_allowed_actions(asset_id: str) -> Optional[dict]:
     return {
         "asset_id": asset_id,
         "actions": actions,
+    }
+
+
+# ── M21-A: Upload ─────────────────────────────────────────────
+
+# Upload icin izin verilen hedef dizin
+_UPLOAD_BUCKET = "_uploads"
+_UPLOAD_SUBDIR = "artifacts"
+
+# Dosya adi sanitization: sadece alfanumerik, tire, alt cizgi, nokta
+_SAFE_FILENAME_RE = re.compile(r'^[a-zA-Z0-9][a-zA-Z0-9._-]*$')
+
+# Yasakli uzantilar (guvenlik)
+_BLOCKED_EXTENSIONS = {
+    "exe", "bat", "cmd", "sh", "ps1", "msi", "dll", "so", "dylib",
+    "com", "scr", "pif", "vbs", "vbe", "js", "wsh", "wsf",
+}
+
+# Max dosya boyutu: 100 MB
+MAX_UPLOAD_SIZE = 100 * 1024 * 1024
+
+
+def _sanitize_filename(filename: str) -> Optional[str]:
+    """
+    Dosya adini guvenlik kontrollerinden gecirir.
+
+    Returns sanitized filename or None if invalid.
+    """
+    if not filename:
+        return None
+
+    # Strip path separators
+    filename = filename.replace("/", "").replace("\\", "")
+
+    # Hidden file kontrolu
+    if filename.startswith("."):
+        return None
+
+    # Safe character kontrolu
+    if not _SAFE_FILENAME_RE.match(filename):
+        return None
+
+    # Uzanti kontrolu
+    ext = filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
+    if ext in _BLOCKED_EXTENSIONS:
+        return None
+
+    # Makul uzunluk
+    if len(filename) > 255:
+        return None
+
+    return filename
+
+
+def _unique_filename(directory: Path, filename: str) -> str:
+    """
+    Eger dosya zaten varsa benzersiz isim uretir.
+
+    Ornek: test.json → test_1.json → test_2.json
+    """
+    target = directory / filename
+    if not target.exists():
+        return filename
+
+    base = filename.rsplit(".", 1)[0] if "." in filename else filename
+    ext = filename.rsplit(".", 1)[1] if "." in filename else ""
+
+    counter = 1
+    while True:
+        candidate = f"{base}_{counter}.{ext}" if ext else f"{base}_{counter}"
+        if not (directory / candidate).exists():
+            return candidate
+        counter += 1
+        if counter > 999:
+            # Guvenlik siniri
+            raise ValueError("Too many filename collisions")
+
+
+async def upload_asset(
+    filename: str,
+    content: bytes,
+    asset_type_hint: Optional[str] = None,
+) -> Optional[dict]:
+    """
+    Workspace'e yeni asset dosyasi yukler.
+
+    Hedef: workspace/_uploads/artifacts/{filename}
+
+    Guvenlik:
+      - Dosya adi sanitization
+      - Yasakli uzanti kontrolu
+      - Hidden file reddi
+      - Boyut siniri (100MB)
+      - Conflict durumunda benzersiz isim uretimi (sessiz overwrite yok)
+
+    Returns dict on success, None if validation fails.
+    """
+    # Dosya adi dogrulama
+    safe_name = _sanitize_filename(filename)
+    if safe_name is None:
+        return None
+
+    # Boyut kontrolu
+    if len(content) > MAX_UPLOAD_SIZE:
+        return None
+
+    # Bos dosya kontrolu
+    if len(content) == 0:
+        return None
+
+    ws_root = get_workspace_root()
+    upload_dir = ws_root / _UPLOAD_BUCKET / _UPLOAD_SUBDIR
+    upload_dir.mkdir(parents=True, exist_ok=True)
+
+    # Benzersiz isim uret (conflict varsa)
+    final_name = _unique_filename(upload_dir, safe_name)
+
+    target_path = upload_dir / final_name
+
+    # Path traversal son kontrolu
+    try:
+        resolved = target_path.resolve()
+        ws_resolved = ws_root.resolve()
+        if not str(resolved).startswith(str(ws_resolved)):
+            logger.warning("Upload path traversal blocked: %s", final_name)
+            return None
+    except (OSError, ValueError):
+        return None
+
+    # Diske yaz
+    try:
+        target_path.write_bytes(content)
+        logger.info("Asset uploaded: %s (%d bytes)", final_name, len(content))
+    except OSError as exc:
+        logger.error("Asset upload failed for %s: %s", final_name, exc)
+        raise
+
+    ext = final_name.rsplit(".", 1)[-1].lower() if "." in final_name else "bin"
+    determined_type = asset_type_hint if asset_type_hint else _classify_ext(ext)
+
+    asset_id = f"{_UPLOAD_BUCKET}/{_UPLOAD_SUBDIR}/{final_name}"
+
+    return {
+        "status": "uploaded",
+        "asset_id": asset_id,
+        "name": final_name,
+        "asset_type": determined_type,
+        "size_bytes": len(content),
+        "message": f"Asset yuklendi: {final_name} ({len(content)} byte)",
     }

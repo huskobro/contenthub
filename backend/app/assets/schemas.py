@@ -60,3 +60,16 @@ class AssetAllowedActionsResponse(BaseModel):
     """Bir asset icin izin verilen aksiyonlar."""
     asset_id: str
     actions: list[str]  # e.g. ["delete", "reveal", "refresh"]
+
+
+# ── M21-A: Upload schema ──────────────────────────────────────
+
+
+class AssetUploadResponse(BaseModel):
+    """Upload sonucu."""
+    status: str  # "uploaded"
+    asset_id: str
+    name: str
+    asset_type: str
+    size_bytes: int
+    message: str

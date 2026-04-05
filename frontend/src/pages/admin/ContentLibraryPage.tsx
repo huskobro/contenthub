@@ -1,7 +1,12 @@
-import { useState, useMemo } from "react";
+import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { useStandardVideosList } from "../../hooks/useStandardVideosList";
-import { useNewsBulletinsList } from "../../hooks/useNewsBulletinsList";
+import { useQueryClient } from "@tanstack/react-query";
+import { useContentLibrary } from "../../hooks/useContentLibrary";
+import {
+  cloneStandardVideo,
+  cloneNewsBulletin,
+  ContentLibraryItem,
+} from "../../api/contentLibraryApi";
 
 const SUBTITLE: React.CSSProperties = {
   margin: "0 0 0.5rem",
@@ -56,6 +61,16 @@ const FILTER_SELECT: React.CSSProperties = {
   background: "#fff",
 };
 
+const BTN: React.CSSProperties = {
+  padding: "0.25rem 0.5rem",
+  border: "1px solid #e2e8f0",
+  borderRadius: "4px",
+  background: "#fff",
+  cursor: "pointer",
+  fontSize: "0.6875rem",
+  color: "#475569",
+};
+
 const STATUS_BADGE: React.CSSProperties = {
   display: "inline-block",
   padding: "0.125rem 0.5rem",
@@ -89,95 +104,80 @@ function formatDate(iso: string) {
   }
 }
 
-interface ContentRow {
-  id: string;
-  type: "standard_video" | "news_bulletin";
-  typeLabel: string;
-  title: string;
-  status: string;
-  createdAt: string;
-  detailLink: string;
-  detailState?: unknown;
-}
+const PAGE_SIZE = 50;
 
 export function ContentLibraryPage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
-  // Filter state — backend-side
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState<"" | "standard_video" | "news_bulletin">("");
   const [statusFilter, setStatusFilter] = useState("");
+  const [offset, setOffset] = useState(0);
 
-  // Backend'e search ve status gondererek server-side filtreleme yap
-  const svParams = {
-    search: searchQuery || undefined,
+  // Clone state
+  const [cloningId, setCloningId] = useState<string | null>(null);
+  const [actionFeedback, setActionFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null);
+
+  const showFeedback = useCallback((type: "success" | "error", message: string) => {
+    setActionFeedback({ type, message });
+    setTimeout(() => setActionFeedback(null), 4000);
+  }, []);
+
+  // Unified backend endpoint
+  const { data, isLoading, isError } = useContentLibrary({
+    content_type: typeFilter || undefined,
     status: statusFilter || undefined,
-    limit: 200,
-    offset: 0,
-  };
-  const nbParams = {
     search: searchQuery || undefined,
-    status: statusFilter || undefined,
-    limit: 200,
-    offset: 0,
-  };
+    limit: PAGE_SIZE,
+    offset,
+  });
 
-  // Tur filtresi: sadece ilgili hook'u calistir
-  const skipVideos = typeFilter === "news_bulletin";
-  const skipBulletins = typeFilter === "standard_video";
+  const total = data?.total ?? 0;
+  const items = data?.items ?? [];
+  const hasNext = offset + PAGE_SIZE < total;
+  const hasPrev = offset > 0;
 
-  const { data: videos, isLoading: vLoading } = useStandardVideosList(
-    skipVideos ? { limit: 0 } : svParams,
-  );
-  const { data: bulletins, isLoading: bLoading } = useNewsBulletinsList(
-    skipBulletins ? { limit: 0 } : nbParams,
-  );
-
-  const isLoading = vLoading || bLoading;
-
-  const rows: ContentRow[] = useMemo(() => {
-    const result: ContentRow[] = [];
-
-    if (!skipVideos && videos) {
-      for (const v of videos) {
-        result.push({
-          id: v.id,
-          type: "standard_video",
-          typeLabel: "Standart Video",
-          title: v.title || v.topic || v.id,
-          status: v.status ?? "draft",
-          createdAt: v.created_at,
-          detailLink: `/admin/standard-videos/${v.id}`,
-        });
-      }
-    }
-
-    if (!skipBulletins && bulletins) {
-      for (const b of bulletins) {
-        result.push({
-          id: b.id,
-          type: "news_bulletin",
-          typeLabel: "Haber Bulteni",
-          title: b.title || b.topic || b.id,
-          status: b.status ?? "draft",
-          createdAt: b.created_at,
-          detailLink: `/admin/news-bulletins`,
-          detailState: { selectedId: b.id },
-        });
-      }
-    }
-
-    result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    return result;
-  }, [videos, bulletins, skipVideos, skipBulletins]);
+  const hasActiveFilters = !!(searchQuery || typeFilter || statusFilter);
 
   const handleClearFilters = () => {
     setSearchQuery("");
     setTypeFilter("");
     setStatusFilter("");
+    setOffset(0);
   };
 
-  const hasActiveFilters = !!(searchQuery || typeFilter || statusFilter);
+  const handleClone = useCallback(async (item: ContentLibraryItem) => {
+    if (!window.confirm(`"${item.title || item.topic}" kaydini klonlamak istiyor musunuz? Yeni bir draft kopya olusturulacak.`)) {
+      return;
+    }
+    setCloningId(item.id);
+    try {
+      if (item.content_type === "standard_video") {
+        await cloneStandardVideo(item.id);
+      } else {
+        await cloneNewsBulletin(item.id);
+      }
+      queryClient.invalidateQueries({ queryKey: ["content-library"] });
+      showFeedback("success", `"${item.title || item.topic}" basariyla klonlandi.`);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Klonlama basarisiz oldu.";
+      showFeedback("error", msg);
+    } finally {
+      setCloningId(null);
+    }
+  }, [queryClient, showFeedback]);
+
+  function detailLink(item: ContentLibraryItem): { path: string; state?: unknown } {
+    if (item.content_type === "standard_video") {
+      return { path: `/admin/standard-videos/${item.id}` };
+    }
+    return { path: `/admin/news-bulletins`, state: { selectedId: item.id } };
+  }
+
+  function typeLabel(ct: string): string {
+    return ct === "standard_video" ? "Standart Video" : "Haber Bulteni";
+  }
 
   return (
     <div>
@@ -206,7 +206,25 @@ export function ContentLibraryPage() {
         ve yonetim aksiyonlarini baslatabilirsiniz.
       </p>
 
-      {/* Filter/Sort/Search — M19-C backend-side */}
+      {/* Action feedback */}
+      {actionFeedback && (
+        <div
+          data-testid="library-action-feedback"
+          style={{
+            padding: "0.5rem 0.75rem",
+            marginBottom: "1rem",
+            borderRadius: "6px",
+            fontSize: "0.8125rem",
+            background: actionFeedback.type === "success" ? "#dcfce7" : "#fef2f2",
+            color: actionFeedback.type === "success" ? "#166534" : "#991b1b",
+            border: `1px solid ${actionFeedback.type === "success" ? "#bbf7d0" : "#fecaca"}`,
+          }}
+        >
+          {actionFeedback.message}
+        </div>
+      )}
+
+      {/* Filter/Sort/Search */}
       <div style={SECTION} data-testid="library-filter-area">
         <h3 style={{ margin: "0 0 0.25rem", fontSize: "1rem" }} data-testid="library-filter-heading">
           Filtre ve Arama
@@ -223,13 +241,19 @@ export function ContentLibraryPage() {
             type="text"
             placeholder="Baslik/konu ara..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setOffset(0);
+            }}
             style={{ ...FILTER_INPUT, minWidth: "180px" }}
             data-testid="library-search-input"
           />
           <select
             value={typeFilter}
-            onChange={(e) => setTypeFilter(e.target.value as typeof typeFilter)}
+            onChange={(e) => {
+              setTypeFilter(e.target.value as typeof typeFilter);
+              setOffset(0);
+            }}
             style={FILTER_SELECT}
             data-testid="library-type-filter"
           >
@@ -239,7 +263,10 @@ export function ContentLibraryPage() {
           </select>
           <select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
+            onChange={(e) => {
+              setStatusFilter(e.target.value);
+              setOffset(0);
+            }}
             style={FILTER_SELECT}
             data-testid="library-status-filter"
           >
@@ -269,27 +296,38 @@ export function ContentLibraryPage() {
         </div>
         {hasActiveFilters && (
           <p style={{ fontSize: "0.6875rem", color: "#94a3b8", margin: "0" }} data-testid="library-filter-summary">
-            {rows.length} kayit gosteriliyor
+            {total} kayit bulundu
           </p>
         )}
       </div>
 
       {/* Content List */}
       <div style={SECTION} data-testid="library-content-list">
-        <h3 style={{ margin: "0 0 0.25rem", fontSize: "1rem" }} data-testid="library-list-heading">
-          Icerik Kayitlari
-        </h3>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
+          <h3 style={{ margin: 0, fontSize: "1rem" }} data-testid="library-list-heading">
+            Icerik Kayitlari
+          </h3>
+          <span style={{ fontSize: "0.75rem", color: "#64748b" }} data-testid="library-total-count">
+            Toplam: {total}
+          </span>
+        </div>
         <p
           style={{ margin: "0 0 0.75rem", fontSize: "0.75rem", color: "#94a3b8" }}
           data-testid="library-list-note"
         >
           Tum icerik turlerini birlesik olarak goruntuler. Bir kayda tiklayarak
-          detay sayfasina gidebilirsiniz.
+          detay sayfasina gidebilir veya klonlayabilirsiniz.
         </p>
 
-        {isLoading && <p style={{ color: "#64748b" }}>Yukleniyor...</p>}
+        {isLoading && <p style={{ color: "#64748b" }} data-testid="library-loading">Yukleniyor...</p>}
 
-        {!isLoading && rows.length === 0 && (
+        {isError && (
+          <p style={{ color: "#dc2626", fontSize: "0.8125rem" }} data-testid="library-error">
+            Icerik kayitlari yuklenirken hata olustu.
+          </p>
+        )}
+
+        {!isLoading && !isError && items.length === 0 && (
           <p style={{ color: "#94a3b8", fontSize: "0.8125rem" }} data-testid="library-empty-state">
             {hasActiveFilters
               ? "Filtrelere uygun icerik kaydi bulunamadi."
@@ -297,48 +335,112 @@ export function ContentLibraryPage() {
           </p>
         )}
 
-        {!isLoading && rows.length > 0 && (
-          <table style={TABLE} data-testid="library-table">
-            <thead>
-              <tr>
-                <th style={TH}>Baslik</th>
-                <th style={TH}>Tur</th>
-                <th style={TH}>Durum</th>
-                <th style={TH}>Olusturulma</th>
-                <th style={TH}>Aksiyon</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row) => (
-                <tr key={`${row.type}-${row.id}`}>
-                  <td style={TD}>{row.title}</td>
-                  <td style={TD}>{row.typeLabel}</td>
-                  <td style={TD}>
-                    <span style={{ ...STATUS_BADGE, ...statusColor(row.status) }}>
-                      {row.status}
-                    </span>
-                  </td>
-                  <td style={TD}>{formatDate(row.createdAt)}</td>
-                  <td style={TD}>
-                    <button
-                      onClick={() => navigate(row.detailLink, row.detailState ? { state: row.detailState } : undefined)}
-                      style={{
-                        color: "#3b82f6",
-                        fontSize: "0.8125rem",
-                        background: "none",
-                        border: "none",
-                        padding: 0,
-                        cursor: "pointer",
-                        textDecoration: "none",
-                      }}
-                    >
-                      Detay Goruntule →
-                    </button>
-                  </td>
+        {!isLoading && !isError && items.length > 0 && (
+          <>
+            <table style={TABLE} data-testid="library-table">
+              <thead>
+                <tr>
+                  <th style={TH}>Baslik</th>
+                  <th style={TH}>Tur</th>
+                  <th style={TH}>Durum</th>
+                  <th style={TH}>Olusturulma</th>
+                  <th style={TH}>Aksiyonlar</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {items.map((item) => {
+                  const link = detailLink(item);
+                  return (
+                    <tr key={`${item.content_type}-${item.id}`}>
+                      <td style={TD}>{item.title || item.topic}</td>
+                      <td style={TD}>{typeLabel(item.content_type)}</td>
+                      <td style={TD}>
+                        <span style={{ ...STATUS_BADGE, ...statusColor(item.status) }}>
+                          {item.status}
+                        </span>
+                      </td>
+                      <td style={TD}>{formatDate(item.created_at)}</td>
+                      <td style={TD}>
+                        <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+                          <button
+                            onClick={() => navigate(link.path, link.state ? { state: link.state } : undefined)}
+                            style={{
+                              color: "#3b82f6",
+                              fontSize: "0.8125rem",
+                              background: "none",
+                              border: "none",
+                              padding: 0,
+                              cursor: "pointer",
+                              textDecoration: "none",
+                            }}
+                            data-testid={`library-detail-${item.id}`}
+                          >
+                            Detay
+                          </button>
+                          <button
+                            onClick={() => handleClone(item)}
+                            disabled={cloningId === item.id}
+                            style={{
+                              ...BTN,
+                              color: cloningId === item.id ? "#94a3b8" : "#7c3aed",
+                              borderColor: cloningId === item.id ? "#e2e8f0" : "#ddd6fe",
+                              cursor: cloningId === item.id ? "wait" : "pointer",
+                            }}
+                            data-testid={`library-clone-${item.id}`}
+                          >
+                            {cloningId === item.id ? "..." : "Klonla"}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+
+            {/* Pagination */}
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginTop: "0.75rem",
+                fontSize: "0.75rem",
+                color: "#64748b",
+              }}
+              data-testid="library-pagination"
+            >
+              <span>
+                {offset + 1}\u2013{Math.min(offset + PAGE_SIZE, total)} / {total}
+              </span>
+              <div style={{ display: "flex", gap: "0.5rem" }}>
+                <button
+                  disabled={!hasPrev}
+                  onClick={() => setOffset(Math.max(0, offset - PAGE_SIZE))}
+                  style={{
+                    ...BTN,
+                    cursor: hasPrev ? "pointer" : "not-allowed",
+                    opacity: hasPrev ? 1 : 0.4,
+                  }}
+                  data-testid="library-prev-page"
+                >
+                  Onceki
+                </button>
+                <button
+                  disabled={!hasNext}
+                  onClick={() => setOffset(offset + PAGE_SIZE)}
+                  style={{
+                    ...BTN,
+                    cursor: hasNext ? "pointer" : "not-allowed",
+                    opacity: hasNext ? 1 : 0.4,
+                  }}
+                  data-testid="library-next-page"
+                >
+                  Sonraki
+                </button>
+              </div>
+            </div>
+          </>
         )}
       </div>
 
@@ -352,8 +454,7 @@ export function ContentLibraryPage() {
           data-testid="library-actions-note"
         >
           Icerik kayitlari uzerinde duzenleme, yeniden kullanma ve klonlama
-          aksiyonlari detay sayfalarindan baslatilabilir. Bir kaydin detayina
-          giderek mevcut yonetim aksiyonlarini kullanabilirsiniz.
+          aksiyonlari bu sayfadan veya detay sayfalarindan baslatilabilir.
         </p>
         <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
           <div
@@ -393,7 +494,7 @@ export function ContentLibraryPage() {
             }}
             data-testid="action-clone"
           >
-            <strong>Klonlama:</strong> Mevcut bir kaydin tam kopyasini olusturarak bagimsiz bir icerik olarak devam ettirin.
+            <strong>Klonlama:</strong> Listeden veya detaydan "Klonla" butonuyla bagimsiz bir draft kopya olusturun.
           </div>
         </div>
       </div>

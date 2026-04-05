@@ -102,6 +102,18 @@ async def create_standard_video(
     return await service.create_standard_video(db, payload)
 
 
+@router.post("/{item_id}/clone", response_model=StandardVideoResponse, status_code=201)
+async def clone_standard_video(
+    item_id: str,
+    db: AsyncSession = Depends(get_db),
+) -> StandardVideoResponse:
+    """Mevcut bir Standard Video kaydini klonlar. Yeni bagimsiz draft kayit olusturur."""
+    clone = await service.clone_standard_video(db, item_id)
+    if clone is None:
+        raise HTTPException(status_code=404, detail="Source standard video not found")
+    return clone
+
+
 @router.patch("/{item_id}", response_model=StandardVideoResponse)
 async def update_standard_video(
     item_id: str,

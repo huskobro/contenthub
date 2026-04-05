@@ -1,22 +1,21 @@
 """
-Asset Router — M19-A + M20-A.
+Asset Router — M19-A + M20-A + M21-A.
 
-Asset index endpoint'leri + operasyon endpoint'leri.
-Veri kaynagi: workspace dizini disk taramasi.
-DB'ye yazmaz, migration gerektirmez.
+Asset index + operasyon + upload endpoint'leri.
 
 Endpoint'ler:
-  GET    /assets                    : Asset listesi (filtre + sayfalama)
-  POST   /assets/refresh            : Workspace disk taramasini yeniden tetikle
-  GET    /assets/{id}               : Tekil asset detayi
-  DELETE /assets/{id}               : Asset sil (kontrollü, güvenli)
-  POST   /assets/{id}/reveal        : Asset konum bilgisi dondur
-  GET    /assets/{id}/allowed-actions: Izin verilen aksiyonlar
+  GET    /assets                     : Asset listesi (filtre + sayfalama)
+  POST   /assets/upload              : Dosya yukle
+  POST   /assets/refresh             : Workspace taramasini yeniden tetikle
+  GET    /assets/{id}                : Tekil asset detayi
+  DELETE /assets/{id}                : Asset sil
+  POST   /assets/{id}/reveal         : Asset konum bilgisi
+  GET    /assets/{id}/allowed-actions : Izin verilen aksiyonlar
 """
 
 from typing import Optional
 
-from fastapi import APIRouter, Depends, Query, HTTPException
+from fastapi import APIRouter, Depends, Query, HTTPException, UploadFile, File, Form
 
 from app.db.session import get_db
 from app.assets import service
@@ -27,6 +26,7 @@ from app.assets.schemas import (
     AssetDeleteResponse,
     AssetRevealResponse,
     AssetAllowedActionsResponse,
+    AssetUploadResponse,
 )
 from app.audit.service import write_audit_log
 
@@ -58,6 +58,66 @@ async def list_assets(
         limit=limit,
         offset=offset,
     )
+
+
+@router.post("/upload", response_model=AssetUploadResponse)
+async def upload_asset(
+    file: UploadFile = File(..., description="Yuklenecek dosya"),
+    asset_type: Optional[str] = Form(None, description="Opsiyonel asset turu ipucu"),
+    session=Depends(get_db),
+):
+    """
+    Workspace'e yeni asset dosyasi yukler.
+
+    Hedef: workspace/_uploads/artifacts/{filename}
+    Guvenlik: dosya adi sanitization, yasakli uzanti, boyut siniri, conflict handling.
+    Sessiz overwrite yapmaz — ayni isimde dosya varsa benzersiz isim uretir.
+    """
+    if not file.filename:
+        raise HTTPException(status_code=400, detail="Dosya adi gerekli")
+
+    if asset_type and asset_type not in _VALID_ASSET_TYPES:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Gecersiz asset_type: '{asset_type}'. Gecerli degerler: {list(_VALID_ASSET_TYPES)}",
+        )
+
+    # Dosya icerigini oku
+    content = await file.read()
+
+    if len(content) == 0:
+        raise HTTPException(status_code=400, detail="Bos dosya yuklenemez")
+
+    if len(content) > service.MAX_UPLOAD_SIZE:
+        raise HTTPException(
+            status_code=413,
+            detail=f"Dosya boyutu siniri asildi (maks {service.MAX_UPLOAD_SIZE // (1024*1024)} MB)",
+        )
+
+    result = await service.upload_asset(
+        filename=file.filename,
+        content=content,
+        asset_type_hint=asset_type,
+    )
+
+    if result is None:
+        raise HTTPException(
+            status_code=400,
+            detail="Gecersiz dosya adi (yasakli karakter, uzanti veya hidden dosya)",
+        )
+
+    await write_audit_log(
+        db=session,
+        action="asset.upload",
+        entity_type="asset",
+        entity_id=result["asset_id"],
+        details={
+            "filename": result["name"],
+            "size_bytes": result["size_bytes"],
+            "asset_type": result["asset_type"],
+        },
+    )
+    return result
 
 
 @router.post("/refresh", response_model=AssetRefreshResponse)
@@ -101,11 +161,7 @@ async def reveal_asset(asset_id: str, session=Depends(get_db)):
 
 @router.delete("/{asset_id:path}", response_model=AssetDeleteResponse)
 async def delete_asset(asset_id: str, session=Depends(get_db)):
-    """
-    Workspace altindaki bir asset dosyasini siler.
-    Path traversal koruması aktif.
-    """
-    # Once dosya var mi kontrol et
+    """Workspace altindaki bir asset dosyasini siler."""
     validated = service._validate_asset_path(asset_id)
     if validated is None:
         raise HTTPException(status_code=400, detail="Gecersiz asset path (guvenlik reddi)")

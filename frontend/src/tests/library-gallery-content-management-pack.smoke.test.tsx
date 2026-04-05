@@ -46,6 +46,42 @@ const MOCK_BULLETINS = [
   },
 ];
 
+// M21-D: Unified content library response format
+const MOCK_UNIFIED_LIBRARY = {
+  total: 2,
+  offset: 0,
+  limit: 50,
+  items: [
+    {
+      id: "sv-lib-1",
+      content_type: "standard_video",
+      title: "Test Video Title",
+      topic: "Library Test Video",
+      status: "draft",
+      created_at: "2026-04-03T10:00:00Z",
+      has_script: false,
+      has_metadata: false,
+    },
+    {
+      id: "nb-lib-1",
+      content_type: "news_bulletin",
+      title: "Test Bulletin Title",
+      topic: "Library Test Bulletin",
+      status: "draft",
+      created_at: "2026-04-03T11:00:00Z",
+      has_script: false,
+      has_metadata: false,
+    },
+  ],
+};
+
+const MOCK_UNIFIED_EMPTY = {
+  total: 0,
+  offset: 0,
+  limit: 50,
+  items: [],
+};
+
 function mockFetch(handler: (url: string) => unknown) {
   return vi.fn((url: string) =>
     Promise.resolve({
@@ -153,7 +189,10 @@ describe("Library/Gallery/Content Management Pack (Phase 299-304)", () => {
 
   describe("Phase 300: content list/gallery view", () => {
     it("shows empty state when no content", async () => {
-      window.fetch = mockFetch(() => []);
+      window.fetch = mockFetch((url) => {
+        if (url.includes("content-library")) return MOCK_UNIFIED_EMPTY;
+        return [];
+      });
       renderAdmin("/admin/library");
       await waitFor(() => {
         expect(screen.getByTestId("library-empty-state")).toBeDefined();
@@ -162,6 +201,7 @@ describe("Library/Gallery/Content Management Pack (Phase 299-304)", () => {
 
     it("shows content list with videos and bulletins", async () => {
       window.fetch = mockFetch((url) => {
+        if (url.includes("content-library")) return MOCK_UNIFIED_LIBRARY;
         if (url.includes("/standard-video")) return MOCK_VIDEOS;
         if (url.includes("/news-bulletin")) return MOCK_BULLETINS;
         return [];
@@ -176,6 +216,7 @@ describe("Library/Gallery/Content Management Pack (Phase 299-304)", () => {
 
     it("shows content type labels in table", async () => {
       window.fetch = mockFetch((url) => {
+        if (url.includes("content-library")) return MOCK_UNIFIED_LIBRARY;
         if (url.includes("/standard-video")) return MOCK_VIDEOS;
         if (url.includes("/news-bulletin")) return MOCK_BULLETINS;
         return [];
@@ -189,7 +230,10 @@ describe("Library/Gallery/Content Management Pack (Phase 299-304)", () => {
     });
 
     it("library list has heading and note", () => {
-      window.fetch = mockFetch(() => []);
+      window.fetch = mockFetch((url) => {
+        if (url.includes("content-library")) return MOCK_UNIFIED_EMPTY;
+        return [];
+      });
       renderAdmin("/admin/library");
       expect(screen.getByTestId("library-list-heading").textContent).toContain("Icerik Kayitlari");
       expect(screen.getByTestId("library-list-note").textContent).toContain("birlesik olarak");
@@ -197,13 +241,14 @@ describe("Library/Gallery/Content Management Pack (Phase 299-304)", () => {
 
     it("shows detail link for each row", async () => {
       window.fetch = mockFetch((url) => {
+        if (url.includes("content-library")) return MOCK_UNIFIED_LIBRARY;
         if (url.includes("/standard-video")) return MOCK_VIDEOS;
         if (url.includes("/news-bulletin")) return MOCK_BULLETINS;
         return [];
       });
       renderAdmin("/admin/library");
       await waitFor(() => {
-        const links = screen.getAllByText("Detay Goruntule →");
+        const links = screen.getAllByText("Detay");
         expect(links.length).toBe(2);
       });
     });
@@ -320,6 +365,7 @@ describe("Library/Gallery/Content Management Pack (Phase 299-304)", () => {
   describe("Phase 304: library verification", () => {
     beforeEach(() => {
       window.fetch = mockFetch((url) => {
+        if (url.includes("content-library")) return MOCK_UNIFIED_LIBRARY;
         if (url.includes("/standard-video")) return MOCK_VIDEOS;
         if (url.includes("/news-bulletin")) return MOCK_BULLETINS;
         return [];

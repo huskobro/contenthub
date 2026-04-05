@@ -1,10 +1,11 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAssetList } from "../../hooks/useAssetList";
 import {
   refreshAssets,
   deleteAsset,
   revealAsset,
+  uploadAsset,
   AssetItem,
   AssetRevealResponse,
 } from "../../api/assetApi";
@@ -143,6 +144,8 @@ export function AssetLibraryPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [revealData, setRevealData] = useState<AssetRevealResponse | null>(null);
   const [actionFeedback, setActionFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data, isLoading, isError } = useAssetList({
     asset_type: typeFilter || undefined,
@@ -199,6 +202,23 @@ export function AssetLibraryPage() {
       showFeedback("error", "Konum bilgisi alinamadi.");
     }
   }, [showFeedback]);
+
+  const handleUpload = useCallback(async () => {
+    const file = fileInputRef.current?.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const result = await uploadAsset(file);
+      queryClient.invalidateQueries({ queryKey: ["assets"] });
+      showFeedback("success", result.message || `"${result.name}" basariyla yuklendi.`);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Dosya yukleme basarisiz oldu.";
+      showFeedback("error", msg);
+    } finally {
+      setUploading(false);
+    }
+  }, [queryClient, showFeedback]);
 
   return (
     <div>
@@ -280,6 +300,39 @@ export function AssetLibraryPage() {
           </div>
         </div>
       )}
+
+      {/* Upload area */}
+      <div style={SECTION} data-testid="asset-upload-area">
+        <h3 style={{ margin: "0 0 0.5rem", fontSize: "1rem" }} data-testid="asset-upload-heading">
+          Dosya Yukle
+        </h3>
+        <p style={{ margin: "0 0 0.75rem", fontSize: "0.75rem", color: "#94a3b8" }}>
+          Workspace&apos;e yeni bir dosya yukleyin. Maks. 100 MB. Calistirilabilir dosyalar engellenir.
+        </p>
+        <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+          <input
+            type="file"
+            ref={fileInputRef}
+            style={{ fontSize: "0.8125rem" }}
+            data-testid="asset-upload-input"
+            disabled={uploading}
+          />
+          <button
+            onClick={handleUpload}
+            disabled={uploading}
+            style={{
+              ...BTN,
+              fontWeight: 600,
+              color: uploading ? "#94a3b8" : "#2563eb",
+              borderColor: uploading ? "#e2e8f0" : "#bfdbfe",
+              cursor: uploading ? "wait" : "pointer",
+            }}
+            data-testid="asset-upload-btn"
+          >
+            {uploading ? "Yukleniyor..." : "Yukle"}
+          </button>
+        </div>
+      </div>
 
       {/* Filter area */}
       <div style={SECTION} data-testid="asset-filter-area">

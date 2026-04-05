@@ -6,35 +6,46 @@ import { AdminLayout } from "../app/layouts/AdminLayout";
 import { ContentLibraryPage } from "../pages/admin/ContentLibraryPage";
 
 /* ------------------------------------------------------------------ */
-/*  Mock data                                                          */
+/*  Mock data — unified content library response                       */
 /* ------------------------------------------------------------------ */
 
-const MOCK_VIDEOS = [
-  {
-    id: "sv-1",
-    title: "Test Video 1",
-    topic: "Test Topic",
-    status: "draft",
-    created_at: "2026-04-01T10:00:00Z",
-  },
-  {
-    id: "sv-2",
-    title: "Test Video 2",
-    topic: null,
-    status: "ready",
-    created_at: "2026-04-02T10:00:00Z",
-  },
-];
-
-const MOCK_BULLETINS = [
-  {
-    id: "nb-1",
-    title: "Test Bulletin 1",
-    topic: "News Topic",
-    status: "draft",
-    created_at: "2026-04-03T10:00:00Z",
-  },
-];
+const MOCK_UNIFIED_ITEMS = {
+  total: 3,
+  offset: 0,
+  limit: 50,
+  items: [
+    {
+      id: "sv-1",
+      content_type: "standard_video",
+      title: "Test Video 1",
+      topic: "Test Topic",
+      status: "draft",
+      created_at: "2026-04-01T10:00:00Z",
+      has_script: false,
+      has_metadata: false,
+    },
+    {
+      id: "sv-2",
+      content_type: "standard_video",
+      title: "Test Video 2",
+      topic: "Topic 2",
+      status: "ready",
+      created_at: "2026-04-02T10:00:00Z",
+      has_script: true,
+      has_metadata: true,
+    },
+    {
+      id: "nb-1",
+      content_type: "news_bulletin",
+      title: "Test Bulletin 1",
+      topic: "News Topic",
+      status: "draft",
+      created_at: "2026-04-03T10:00:00Z",
+      has_script: false,
+      has_metadata: false,
+    },
+  ],
+};
 
 /* ------------------------------------------------------------------ */
 /*  Helpers                                                            */
@@ -42,11 +53,11 @@ const MOCK_BULLETINS = [
 
 function renderLibrary() {
   window.fetch = vi.fn((url: string) => {
-    let data: unknown = [];
-    if (typeof url === "string" && url.includes("standard-video")) {
-      data = MOCK_VIDEOS;
-    } else if (typeof url === "string" && url.includes("news-bulletin")) {
-      data = MOCK_BULLETINS;
+    let data: unknown = {};
+    if (typeof url === "string" && url.includes("content-library")) {
+      data = MOCK_UNIFIED_ITEMS;
+    } else if (typeof url === "string" && url.includes("clone")) {
+      data = { id: "cloned-id" };
     }
     return Promise.resolve({
       ok: true,
@@ -80,7 +91,7 @@ beforeEach(() => {
 });
 
 /* ------------------------------------------------------------------ */
-/*  M20-C: Content Library Operations                                  */
+/*  M20-C: Content Library Operations (updated for M21-D unified)      */
 /* ------------------------------------------------------------------ */
 
 describe("M20-C: Content Library Operations", () => {
@@ -121,7 +132,6 @@ describe("M20-C: Content Library Operations", () => {
 
   it("library has clear filter button when filters active", () => {
     renderLibrary();
-    // Type a search query
     const input = screen.getByTestId("library-search-input") as HTMLInputElement;
     fireEvent.change(input, { target: { value: "test" } });
     expect(screen.getByTestId("library-filter-clear")).toBeDefined();
@@ -132,8 +142,8 @@ describe("M20-C: Content Library Operations", () => {
     await waitFor(() => {
       expect(screen.getByTestId("library-table")).toBeDefined();
     });
-    // All rows have a "Detay Goruntule" link
-    const detailLinks = screen.getAllByText("Detay Goruntule →");
+    // All rows have a "Detay" button
+    const detailLinks = screen.getAllByText("Detay");
     expect(detailLinks.length).toBe(3); // 2 videos + 1 bulletin
   });
 

@@ -92,6 +92,17 @@ async def create_news_bulletin(
     return await service.create_news_bulletin(db, payload)
 
 
+@router.post("/{item_id}/clone", response_model=NewsBulletinResponse, status_code=201)
+async def clone_news_bulletin(
+    item_id: str, db: AsyncSession = Depends(get_db)
+):
+    """Mevcut bir News Bulletin kaydini klonlar. Yeni bagimsiz draft kayit olusturur."""
+    clone = await service.clone_news_bulletin(db, item_id)
+    if clone is None:
+        raise HTTPException(status_code=404, detail="Source news bulletin not found")
+    return clone
+
+
 @router.patch("/{item_id}", response_model=NewsBulletinResponse)
 async def update_news_bulletin(
     item_id: str, payload: NewsBulletinUpdate, db: AsyncSession = Depends(get_db)

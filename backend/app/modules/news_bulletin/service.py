@@ -159,6 +159,41 @@ async def list_news_bulletins_with_artifacts(
     return result
 
 
+async def clone_news_bulletin(
+    db: AsyncSession, item_id: str
+) -> Optional[NewsBulletin]:
+    """
+    Mevcut bir News Bulletin kaydini klonlar.
+
+    Kopyalanan alanlar: topic, title, brief, target_duration_seconds,
+                        language, tone, bulletin_style, source_mode
+    Kopyalanmayan alanlar: id (yeni UUID), status (draft), job_id (None),
+                           selected_news_ids_json (None), created_at/updated_at (yeni)
+    Selected items, script, metadata kopyalanmaz — klonlanan kayit temiz draft olarak baslar.
+    """
+    source = await get_news_bulletin(db, item_id)
+    if source is None:
+        return None
+
+    clone = NewsBulletin(
+        topic=source.topic,
+        title=f"{source.title or source.topic} (kopya)" if source.title else f"{source.topic} (kopya)",
+        brief=source.brief,
+        target_duration_seconds=source.target_duration_seconds,
+        language=source.language,
+        tone=source.tone,
+        bulletin_style=source.bulletin_style,
+        source_mode=source.source_mode,
+        selected_news_ids_json=None,
+        status="draft",
+        job_id=None,
+    )
+    db.add(clone)
+    await db.commit()
+    await db.refresh(clone)
+    return clone
+
+
 async def get_news_bulletin(db: AsyncSession, item_id: str) -> Optional[NewsBulletin]:
     result = await db.execute(
         select(NewsBulletin).where(NewsBulletin.id == item_id)

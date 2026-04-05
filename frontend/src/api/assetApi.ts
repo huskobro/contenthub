@@ -100,3 +100,33 @@ export async function fetchAllowedActions(assetId: string): Promise<AssetAllowed
   if (!res.ok) throw new Error(`Failed to fetch allowed actions: ${res.status}`);
   return res.json();
 }
+
+// ── M21-A: Upload ───────────────────────────────────────────
+
+export interface AssetUploadResponse {
+  status: string;
+  asset_id: string;
+  name: string;
+  asset_type: string;
+  size_bytes: number;
+  message: string;
+}
+
+export async function uploadAsset(
+  file: File,
+  assetType?: string
+): Promise<AssetUploadResponse> {
+  const formData = new FormData();
+  formData.append("file", file);
+  if (assetType) formData.append("asset_type", assetType);
+
+  const res = await fetch(`${BASE_URL}/upload`, {
+    method: "POST",
+    body: formData,
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({ detail: "Yukleme hatasi" }));
+    throw new Error(body.detail || `Failed to upload asset: ${res.status}`);
+  }
+  return res.json();
+}

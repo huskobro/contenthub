@@ -149,11 +149,11 @@ describe("Asset Library Entry Surface", () => {
     expect(links.length).toBeGreaterThanOrEqual(1);
   });
 
-  it("admin overview release readiness includes Varlik Kutuphanesi with M20 aktif status", () => {
+  it("admin overview release readiness includes Varlik Kutuphanesi with M21 aktif status", () => {
     renderAdmin("/admin");
     const item = screen.getByTestId("readiness-assets");
     expect(item).toBeDefined();
-    expect(item.textContent).toContain("M20 aktif");
+    expect(item.textContent).toContain("M21 aktif");
     expect(item.textContent).toContain("Varlik Kutuphanesi");
   });
 });
@@ -282,10 +282,10 @@ describe("Asset Library Verification — Admin Overview", () => {
     expect(screen.getByTestId("readiness-assets")).toBeDefined();
   });
 
-  it("readiness-assets item shows M20 aktif not Desteklenmiyor", () => {
+  it("readiness-assets item shows M21 aktif not Desteklenmiyor", () => {
     renderAdmin("/admin");
     const item = screen.getByTestId("readiness-assets");
-    expect(item.textContent).toContain("M20 aktif");
+    expect(item.textContent).toContain("M21 aktif");
     expect(item.textContent).not.toContain("Desteklenmiyor");
   });
 

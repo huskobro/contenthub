@@ -97,6 +97,40 @@ async def create_standard_video(
     return item
 
 
+async def clone_standard_video(
+    db: AsyncSession, item_id: str
+) -> Optional[StandardVideo]:
+    """
+    Mevcut bir Standard Video kaydini klonlar.
+
+    Kopyalanan alanlar: topic, title, brief, target_duration_seconds, tone,
+                        language, visual_direction, subtitle_style
+    Kopyalanmayan alanlar: id (yeni UUID), status (draft), job_id (None),
+                           created_at/updated_at (yeni)
+    Script ve metadata kopyalanmaz — klonlanan kayit bos draft olarak baslar.
+    """
+    source = await get_standard_video(db, item_id)
+    if source is None:
+        return None
+
+    clone = StandardVideo(
+        topic=source.topic,
+        title=f"{source.title or source.topic} (kopya)" if source.title else f"{source.topic} (kopya)",
+        brief=source.brief,
+        target_duration_seconds=source.target_duration_seconds,
+        tone=source.tone,
+        language=source.language,
+        visual_direction=source.visual_direction,
+        subtitle_style=source.subtitle_style,
+        status="draft",
+        job_id=None,
+    )
+    db.add(clone)
+    await db.commit()
+    await db.refresh(clone)
+    return clone
+
+
 async def update_standard_video(
     db: AsyncSession, item_id: str, payload: StandardVideoUpdate
 ) -> Optional[StandardVideo]:
