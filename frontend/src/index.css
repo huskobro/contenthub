@@ -1,4 +1,9 @@
-/* ContentHub — Global Styles (M24 + Wave 1 Final + Void Terminal) */
+/* Tailwind CSS base layers */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ContentHub — Global Styles (M24 + Wave 1 Final + Tailwind Migration) */
 /*
  * Font imports are managed by the ThemeEngine dynamically.
  * Static imports below cover ALL built-in themes for instant rendering.
