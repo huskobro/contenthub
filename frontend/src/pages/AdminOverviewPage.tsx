@@ -164,10 +164,10 @@ export function AdminOverviewPage() {
             { area: "Icerik Uretimi", status: "Omurga hazir", detail: "Video ve bulten olusturma akislari calisiyor", testId: "readiness-content" },
             { area: "Yayin Akisi", status: "Omurga hazir", detail: "YouTube OAuth + yayin zinciri calisiyor", testId: "readiness-publish" },
             { area: "Is Motoru", status: "Omurga hazir", detail: "Job/step/timeline/ETA gorunur, operasyonel aksiyonlar M14'te", testId: "readiness-jobs" },
-            { area: "Sablon Sistemi", status: "CRUD hazir", detail: "Template/style/blueprint kayit yonetimi calisiyor, runtime baglantisi M11'de", testId: "readiness-templates" },
+            { area: "Sablon Sistemi", status: "CRUD hazir", detail: "Template/style/blueprint kayit yonetimi calisiyor, job runtime baglantisi yok", testId: "readiness-templates" },
             { area: "Haber Modulu", status: "Omurga hazir", detail: "Kaynak, tarama, haber, dedupe akislari calisiyor", testId: "readiness-news" },
-            { area: "Ayarlar ve Gorunurluk", status: "M9 aktif", detail: "Credential yonetimi, runtime wiring ve tab yapisi aktif", testId: "readiness-settings" },
-            { area: "Analytics ve Raporlama", status: "Omurga hazir", detail: "Platform metrikleri calisiyor, YouTube Analytics temeli eklendi", testId: "readiness-analytics" },
+            { area: "Ayarlar ve Gorunurluk", status: "M10 aktif", detail: "Settings resolver (7/19 wired), credential yonetimi, gorunurluk CRUD only (runtime guard yok)", testId: "readiness-settings" },
+            { area: "Analytics ve Raporlama", status: "Omurga hazir", detail: "Platform metrikleri gercek SQL, YouTube Analytics temeli eklendi", testId: "readiness-analytics" },
             { area: "Icerik Kutuphanesi", status: "Omurga hazir", detail: "Birlesik icerik listesi mevcut, filtreleme bekliyor", testId: "readiness-library" },
             { area: "Varlik Kutuphanesi", status: "Bekliyor", detail: "Backend asset altyapisi henuz mevcut degil", testId: "readiness-assets" },
           ].map((item) => (

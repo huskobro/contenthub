@@ -197,7 +197,8 @@ class TestExplain:
         # Source can be "builtin" (no DB row) or "default" (seed created row with default_value_json)
         assert result["source"] in ("builtin", "default")
         assert result["type"] == "float"
-        assert result["wired"] is True
+        # kie_temperature is DEFINED but not wired (provider uses own default)
+        assert result["wired"] is False
         assert result["wired_to"] != ""
         assert result["label"] != ""
 
@@ -374,7 +375,8 @@ class TestEffectiveAPI:
         assert data["key"] == "provider.llm.kie_temperature"
         assert data["source"] in ("builtin", "default", "admin")
         assert data["type"] == "float"
-        assert data["wired"] is True
+        # kie_temperature is DEFINED but not wired
+        assert data["wired"] is False
 
     @pytest.mark.asyncio
     async def test_get_effective_unknown_key(self, client: AsyncClient):
