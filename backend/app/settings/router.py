@@ -364,6 +364,25 @@ async def delete_setting(
     return SettingResponse.model_validate(row)
 
 
+@router.post("/{setting_id}/restore", response_model=SettingResponse)
+async def restore_setting(
+    setting_id: str,
+    db: AsyncSession = Depends(get_db),
+) -> SettingResponse:
+    """M23-D: Soft-delete edilmiş ayarı geri yükle (status → active)."""
+    row = await service.restore_setting(db, setting_id)
+    return SettingResponse.model_validate(row)
+
+
+@router.get("/{setting_id}/history")
+async def get_setting_history(
+    setting_id: str,
+    db: AsyncSession = Depends(get_db),
+):
+    """M23-D: Ayarın audit geçmişi."""
+    return await service.get_setting_history(db, setting_id)
+
+
 class BulkUpdateRequest(BaseModel):
     updates: List[dict]
 

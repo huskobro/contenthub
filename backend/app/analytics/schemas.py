@@ -41,12 +41,23 @@ class ProviderStat(BaseModel):
     total_output_tokens: Optional[int] = None
 
 
+class TraceDataQuality(BaseModel):
+    """M23-B: Analytics trace veri kalitesi metrikleri."""
+    total_traces: int = 0
+    empty_traces: int = 0
+    parse_errors: int = 0
+    invalid_structure: int = 0
+    unknown_provider_count: int = 0
+    valid_traces: int = 0
+
+
 class OperationsMetrics(BaseModel):
     window: str
     avg_render_duration_seconds: Optional[float]
     step_stats: list[StepStat]
     provider_error_rate: Optional[float] = None
     provider_stats: list[ProviderStat] = []
+    trace_data_quality: Optional[TraceDataQuality] = None
 
 
 # ---------------------------------------------------------------------------

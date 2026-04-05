@@ -120,6 +120,57 @@ async def delete_rule(db: AsyncSession, rule_id: str) -> VisibilityRule:
     return row
 
 
+async def restore_rule(db: AsyncSession, rule_id: str) -> VisibilityRule:
+    """
+    Soft-delete edilmiş kuralı geri yükle: status → active.
+    Zaten active olan kural 409 döner.
+    M23-D: Operasyonel tamamlama — silme geri alınabilir olmalı.
+    """
+    row = await get_rule(db, rule_id)
+    if row.status == "active":
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"VisibilityRule '{rule_id}' is already active.",
+        )
+    row.status = "active"
+    await db.commit()
+    await db.refresh(row)
+    await write_audit_log(
+        db, action="visibility.rule.restore",
+        entity_type="visibility_rule", entity_id=row.id,
+        details={"target_key": row.target_key, "restored": True},
+    )
+    logger.info("Visibility rule restored: %s (target=%s)", rule_id, row.target_key)
+    return row
+
+
+async def get_rule_history(db: AsyncSession, rule_id: str) -> list:
+    """
+    Bir visibility kuralının audit geçmişini döner.
+    M23-D: Change history — audit_logs tablosundan filtreleme.
+    """
+    from app.db.models import AuditLog
+    # Kural var mı kontrol et
+    await get_rule(db, rule_id)
+    stmt = (
+        select(AuditLog)
+        .where(AuditLog.entity_type == "visibility_rule")
+        .where(AuditLog.entity_id == rule_id)
+        .order_by(AuditLog.created_at.desc())
+    )
+    result = await db.execute(stmt)
+    rows = result.scalars().all()
+    return [
+        {
+            "id": r.id,
+            "action": r.action,
+            "details": r.details_json,
+            "created_at": str(r.created_at) if r.created_at else None,
+        }
+        for r in rows
+    ]
+
+
 async def bulk_update_status(
     db: AsyncSession,
     rule_ids: List[str],

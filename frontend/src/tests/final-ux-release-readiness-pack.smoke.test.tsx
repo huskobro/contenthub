@@ -306,19 +306,17 @@ describe("Phase 320 — Release readiness checklist", () => {
     omurgaIds.forEach((id) => {
       expect(screen.getByTestId(id).textContent).toContain("Omurga hazir");
     });
-    // Items at M11 aktif
-    const m11Ids = ["readiness-publish", "readiness-news"];
-    m11Ids.forEach((id) => {
-      expect(screen.getByTestId(id).textContent).toContain("M11 aktif");
-    });
-    // Items upgraded to M12 aktif
+    // Publish upgraded to M23
+    expect(screen.getByTestId("readiness-publish").textContent).toContain("M23 aktif");
+    // News still at M11
+    expect(screen.getByTestId("readiness-news").textContent).toContain("M11 aktif");
     // Templates still at M12
     expect(screen.getByTestId("readiness-templates").textContent).toContain("M12 aktif");
-    // Settings upgraded to M22
-    expect(screen.getByTestId("readiness-settings").textContent).toContain("M22 aktif");
-    // Items at M18 aktif
-    expect(screen.getByTestId("readiness-analytics").textContent).toContain("M18 aktif");
-    // Items upgraded to M22 aktif
+    // Settings upgraded to M23
+    expect(screen.getByTestId("readiness-settings").textContent).toContain("M23 aktif");
+    // Analytics upgraded to M23
+    expect(screen.getByTestId("readiness-analytics").textContent).toContain("M23 aktif");
+    // Library/assets at M22
     const m22Ids = ["readiness-library", "readiness-assets"];
     m22Ids.forEach((id) => {
       expect(screen.getByTestId(id).textContent).toContain("M22 aktif");

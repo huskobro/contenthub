@@ -31,8 +31,11 @@ Timing modları ve stil uyumluluğu:
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from typing import Literal
+
+logger = logging.getLogger(__name__)
 
 # Geçerli preset kimlik listesi — tip olarak da kullanılır
 SubtitleStyleId = Literal[
@@ -174,9 +177,18 @@ def get_preset_for_composition(preset_id: str | None) -> dict:
         dict: preset_id ve tüm stil alanları.
     """
     resolved = preset_id if preset_id in SUBTITLE_PRESETS else DEFAULT_PRESET_ID
+    preset_fallback_used = (preset_id is not None and preset_id != resolved)
+    if preset_fallback_used:
+        logger.warning(
+            "subtitle_presets: bilinmeyen preset_id=%r, varsayılan '%s' kullanılıyor.",
+            preset_id, DEFAULT_PRESET_ID,
+        )
+    elif preset_id is None:
+        logger.info("subtitle_presets: preset_id=None, varsayılan '%s' kullanılıyor.", DEFAULT_PRESET_ID)
     preset = SUBTITLE_PRESETS[resolved]
     return {
         "preset_id": preset.preset_id,
+        "preset_fallback_used": preset_fallback_used,
         "label": preset.label,
         "font_size": preset.font_size,
         "font_weight": preset.font_weight,

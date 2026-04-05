@@ -99,6 +99,25 @@ async def delete_rule(
     return VisibilityRuleResponse.model_validate(row)
 
 
+@router.post("/{rule_id}/restore", response_model=VisibilityRuleResponse, dependencies=[Depends(require_visible("panel:visibility"))])
+async def restore_rule(
+    rule_id: str,
+    db: AsyncSession = Depends(get_db),
+) -> VisibilityRuleResponse:
+    """M23-D: Soft-delete edilmiş kuralı geri yükle (status → active)."""
+    row = await service.restore_rule(db, rule_id)
+    return VisibilityRuleResponse.model_validate(row)
+
+
+@router.get("/{rule_id}/history", dependencies=[Depends(require_visible("panel:visibility"))])
+async def get_rule_history(
+    rule_id: str,
+    db: AsyncSession = Depends(get_db),
+):
+    """M23-D: Kuralın audit geçmişi."""
+    return await service.get_rule_history(db, rule_id)
+
+
 @router.post("/bulk-status", response_model=List[VisibilityRuleResponse], dependencies=[Depends(require_visible("panel:visibility"))])
 async def bulk_update_status(
     body: dict,

@@ -286,27 +286,45 @@ async def get_operations_metrics(
 
     trace_rows = (await session.execute(provider_trace_q)).all()
 
-    # Provider bazlı aggregation
+    # Provider bazlı aggregation — M23-B: gözlemlenebilir trace parsing
     provider_summary: dict[str, dict] = {}
+    _trace_total = len(trace_rows)
+    _trace_empty = 0
+    _trace_parse_errors = 0
+    _trace_invalid_structure = 0
+    _trace_unknown_provider = 0
+
     for row in trace_rows:
         trace_json = row.provider_trace_json
         if not trace_json:
+            _trace_empty += 1
             continue
         try:
             parsed = _json_loads(trace_json)
-        except Exception:
+        except Exception as exc:
+            _trace_parse_errors += 1
+            logger.warning(
+                "Analytics: provider_trace_json parse hatası (step_id=%s): %s",
+                getattr(row, "id", "?"), str(exc)[:120],
+            )
             continue
 
         # Trace, result dict'in içinde "provider_trace" altında olabilir
         trace = parsed.get("provider_trace", parsed) if isinstance(parsed, dict) else {}
         if not isinstance(trace, dict):
+            _trace_invalid_structure += 1
             continue
 
         pname = trace.get("provider_name", row.step_key)
+        pkind = trace.get("provider_kind")
+        if not pkind:
+            _trace_unknown_provider += 1
+            pkind = "unknown"
+
         if pname not in provider_summary:
             provider_summary[pname] = {
                 "provider_name": pname,
-                "provider_kind": trace.get("provider_kind", "unknown"),
+                "provider_kind": pkind,
                 "total_calls": 0,
                 "failed_calls": 0,
                 "total_latency_ms": 0.0,
@@ -365,12 +383,29 @@ async def get_operations_metrics(
             "total_output_tokens": s["total_output_tokens"] or None,
         })
 
+    # M23-B: Data quality metriği logu
+    if _trace_parse_errors or _trace_invalid_structure:
+        logger.warning(
+            "Analytics trace veri kalitesi: total=%d, empty=%d, parse_error=%d, "
+            "invalid_structure=%d, unknown_provider=%d",
+            _trace_total, _trace_empty, _trace_parse_errors,
+            _trace_invalid_structure, _trace_unknown_provider,
+        )
+
     return {
         "window": window,
         "avg_render_duration_seconds": avg_render,
         "step_stats": step_stats,
         "provider_error_rate": provider_error_rate,
         "provider_stats": provider_stats,
+        "trace_data_quality": {
+            "total_traces": _trace_total,
+            "empty_traces": _trace_empty,
+            "parse_errors": _trace_parse_errors,
+            "invalid_structure": _trace_invalid_structure,
+            "unknown_provider_count": _trace_unknown_provider,
+            "valid_traces": _trace_total - _trace_empty - _trace_parse_errors - _trace_invalid_structure,
+        },
     }
 
 

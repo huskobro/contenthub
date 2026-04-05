@@ -142,6 +142,58 @@ async def delete_setting(db: AsyncSession, setting_id: str) -> Setting:
     return row
 
 
+async def restore_setting(db: AsyncSession, setting_id: str) -> Setting:
+    """
+    Soft-delete edilmiş ayarı geri yükle: status → active.
+    Zaten active olan ayar 409 döner.
+    M23-D: Operasyonel tamamlama — silme geri alınabilir olmalı.
+    """
+    row = await get_setting(db, setting_id)
+    if row.status == "active":
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Setting '{setting_id}' is already active.",
+        )
+    old_status = row.status
+    row.status = "active"
+    row.version = row.version + 1
+    await db.commit()
+    await db.refresh(row)
+    await write_audit_log(
+        db, action="setting.restore",
+        entity_type="setting", entity_id=row.id,
+        details={"key": row.key, "old_status": old_status, "restored": True},
+    )
+    logger.info("Setting restored: %s (key=%s)", setting_id, row.key)
+    return row
+
+
+async def get_setting_history(db: AsyncSession, setting_id: str) -> list:
+    """
+    Bir ayarın audit geçmişini döner.
+    M23-D: Change history — audit_logs tablosundan filtreleme.
+    """
+    from app.db.models import AuditLog
+    await get_setting(db, setting_id)
+    stmt = (
+        select(AuditLog)
+        .where(AuditLog.entity_type == "setting")
+        .where(AuditLog.entity_id == setting_id)
+        .order_by(AuditLog.created_at.desc())
+    )
+    result = await db.execute(stmt)
+    rows = result.scalars().all()
+    return [
+        {
+            "id": r.id,
+            "action": r.action,
+            "details": r.details_json,
+            "created_at": str(r.created_at) if r.created_at else None,
+        }
+        for r in rows
+    ]
+
+
 async def bulk_update_admin_values(
     db: AsyncSession,
     updates: List[dict],

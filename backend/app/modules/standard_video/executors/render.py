@@ -351,6 +351,23 @@ class RenderStepExecutor(StepExecutor):
             duration_fallback_used,
         )
 
+        # M23-C: Degrade durumlarını açıkça kaydet
+        degradation_warnings = []
+        if timing_mode == "cursor" and word_timings_count == 0:
+            degradation_warnings.append(
+                "word_timing verisi yok veya okunamadı — cursor modda render edildi"
+            )
+        if duration_fallback_used:
+            degradation_warnings.append(
+                f"total_duration_seconds geçersiz — fallback ({_DURATION_FALLBACK_SECONDS}s) kullanıldı"
+            )
+
+        if degradation_warnings:
+            logger.warning(
+                "RenderStepExecutor: degrade uyarıları — job=%s warnings=%s",
+                job.id, degradation_warnings,
+            )
+
         return {
             "output_path": str(output_path),
             "composition_id": composition_id,
@@ -358,6 +375,7 @@ class RenderStepExecutor(StepExecutor):
             "timing_mode": timing_mode,
             "word_timings_count": word_timings_count,
             "duration_fallback_used": duration_fallback_used,
+            "degradation_warnings": degradation_warnings,
             "provider": {
                 "provider_id": "remotion_cli",
                 "composition_id": composition_id,
@@ -366,6 +384,7 @@ class RenderStepExecutor(StepExecutor):
                 "timing_mode": timing_mode,
                 "word_timings_count": word_timings_count,
                 "duration_fallback_used": duration_fallback_used,
+                "degradation_warnings": degradation_warnings,
                 "latency_ms": elapsed_ms,
                 "returncode": render_result.get("returncode", 0),
             },

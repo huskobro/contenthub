@@ -104,6 +104,9 @@ async def lifespan(app: FastAPI):
         pixabay_count = await resolve("provider.visuals.pixabay_default_count", cred_db)
         search_timeout = await resolve("provider.visuals.search_timeout_seconds", cred_db)
         yt_upload_timeout = await resolve("publish.youtube.upload_timeout_seconds", cred_db)
+        yt_default_category = await resolve("publish.youtube.default_category_id", cred_db)
+        yt_default_desc = await resolve("publish.youtube.default_description", cred_db)
+        yt_default_tags = await resolve("publish.youtube.default_tags", cred_db)
         whisper_model_size = await resolve("provider.whisper.model_size", cred_db)
     logger.info("Credential + ayar cozumleme tamamlandi (M9-A / M10-B / M11).")
 
@@ -172,12 +175,23 @@ async def lifespan(app: FastAPI):
         [cap.value for cap in provider_registry.list_all().keys()],
     )
 
-    # YouTube publish adaptörünü kaydet (M7-C2)
+    # YouTube publish adaptörünü kaydet (M7-C2 / M23-A metadata defaults)
+    yt_settings_defaults = {
+        "category_id": yt_default_category or "22",
+        "description": yt_default_desc or "",
+        "tags": yt_default_tags or "",
+    }
     publish_adapter_registry.register(
-        YouTubeAdapter(upload_timeout=yt_upload_timeout)
+        YouTubeAdapter(
+            upload_timeout=yt_upload_timeout,
+            settings_defaults=yt_settings_defaults,
+        )
     )
-    logger.info("YouTubeAdapter publish_adapter_registry'ye kaydedildi (upload_timeout=%.1f).",
-                yt_upload_timeout or 60.0)
+    logger.info(
+        "YouTubeAdapter publish_adapter_registry'ye kaydedildi "
+        "(upload_timeout=%.1f, default_category=%s).",
+        yt_upload_timeout or 60.0, yt_settings_defaults["category_id"],
+    )
 
     # JobDispatcher oluştur ve app.state'e bağla (M2-C6 / M3-C1)
     # Router'lar app.state.job_dispatcher üzerinden erişir

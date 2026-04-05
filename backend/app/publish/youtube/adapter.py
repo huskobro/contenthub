@@ -115,17 +115,21 @@ class YouTubeAdapter(PublishAdapter):
         token_store: Optional[YouTubeTokenStore] = None,
         http_client: Optional[httpx.AsyncClient] = None,
         upload_timeout: Optional[float] = None,
+        settings_defaults: Optional[dict] = None,
     ):
         """
         Args:
-            token_store    : OAuth2 token yönetimi. None ise varsayılan oluşturulur.
-            http_client    : Test için inject edilebilir. None ise yeni client oluşturulur.
-            upload_timeout : HTTP timeout (saniye). None ise 60.0 kullanılır.
-                             publish.youtube.upload_timeout_seconds ayarından çözümlenir.
+            token_store       : OAuth2 token yönetimi. None ise varsayılan oluşturulur.
+            http_client       : Test için inject edilebilir. None ise yeni client oluşturulur.
+            upload_timeout    : HTTP timeout (saniye). None ise 60.0 kullanılır.
+            settings_defaults : Runtime settings'ten çözülmüş YouTube metadata default'ları.
+                                Keys: category_id, description, tags
+                                M23-A: Hardcoded fallback yerine settings-aware default.
         """
         self._token_store = token_store or YouTubeTokenStore()
         self._http_client = http_client
         self._upload_timeout: float = upload_timeout or 60.0
+        self._settings_defaults: dict = settings_defaults or {}
 
     def _get_client(self) -> httpx.AsyncClient:
         if self._http_client is not None:
@@ -178,7 +182,7 @@ class YouTubeAdapter(PublishAdapter):
         access_token = await self._token_store.get_access_token()
         file_size = os.path.getsize(video_path)
 
-        # Metadata hazırlığı
+        # Metadata hazırlığı — M23-A: sessiz hardcoded fallback kaldırıldı
         title = payload.get("title")
         if not title:
             raise PublishAdapterError(
@@ -186,9 +190,41 @@ class YouTubeAdapter(PublishAdapter):
                 message="Yayın payload'ında 'title' alanı eksik. Adapter'a ulaşmadan önce doğrulanmış olmalıydı.",
                 retryable=False,
             )
-        description = payload.get("description", "")
-        tags = payload.get("tags", [])
-        category_id = str(payload.get("category_id", "22"))  # 22 = People & Blogs
+
+        # description/tags/category_id: payload → settings defaults → builtin
+        description = payload.get("description")
+        tags = payload.get("tags")
+        category_id = payload.get("category_id")
+
+        metadata_defaults_used = []
+
+        if description is None:
+            description = self._settings_defaults.get("description", "")
+            if description:
+                metadata_defaults_used.append(f"description=settings_default")
+            else:
+                metadata_defaults_used.append(f"description=empty")
+
+        if tags is None:
+            default_tags_str = self._settings_defaults.get("tags", "")
+            tags = [t.strip() for t in default_tags_str.split(",") if t.strip()] if default_tags_str else []
+            if tags:
+                metadata_defaults_used.append(f"tags=settings_default({len(tags)} adet)")
+            else:
+                metadata_defaults_used.append(f"tags=empty")
+
+        if category_id is None:
+            category_id = self._settings_defaults.get("category_id", "22")
+            metadata_defaults_used.append(f"category_id=settings_default({category_id})")
+
+        category_id = str(category_id)
+
+        if metadata_defaults_used:
+            logger.warning(
+                "YouTubeAdapter.upload: payload'da eksik metadata, "
+                "settings/builtin default kullanıldı: %s (publish_record_id=%s)",
+                ", ".join(metadata_defaults_used), publish_record_id,
+            )
 
         video_resource = {
             "snippet": {

@@ -446,6 +446,13 @@ async def trigger_publish(
     """
     record = await _get_record_or_404(session, record_id)
 
+    # M23-E: Duplicate publish koruması — publishing durumundaki kayıt tekrar tetiklenemez
+    if record.status == PublishStatus.PUBLISHING.value:
+        raise PublishGateViolationError(
+            f"PublishRecord {record.id} zaten 'publishing' durumunda. "
+            f"Duplicate trigger engellendi. Tamamlanmasını veya failed durumunu bekleyin."
+        )
+
     if not PublishStateMachine.can_publish(record.status):
         raise PublishGateViolationError(
             f"PublishRecord {record.id} publish gate'i geçemiyor. "
@@ -576,6 +583,13 @@ async def cancel_publish(
     Gerçek platform iptal işlemi adaptör katmanında ele alınır.
     """
     record = await _get_record_or_404(session, record_id)
+
+    # M23-E: Zaten iptal veya yayınlanmış kayıt tekrar iptal edilemez
+    if record.status == PublishStatus.CANCELLED.value:
+        raise PublishAlreadyTerminalError(
+            f"PublishRecord {record.id} zaten iptal edilmiş. Duplicate cancel engellendi."
+        )
+
     await _transition_status(
         session=session,
         record=record,

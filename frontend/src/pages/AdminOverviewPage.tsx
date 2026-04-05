@@ -195,12 +195,12 @@ export function AdminOverviewPage() {
         <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
           {[
             { area: "Icerik Uretimi", status: "Omurga hazir", detail: "Video ve bulten olusturma akislari calisiyor", testId: "readiness-content" },
-            { area: "Yayin Akisi", status: "M11 aktif", detail: "YouTube OAuth + yayin zinciri calisiyor, zamanlanmis yayin scheduler aktif, audit log calisiyor", testId: "readiness-publish" },
+            { area: "Yayin Akisi", status: "M23 aktif", detail: "YouTube OAuth + yayin zinciri, metadata hardening, settings-aware defaults, duplicate publish/cancel korumasi, scheduler audit", testId: "readiness-publish" },
             { area: "Is Motoru", status: "Omurga hazir", detail: "Job/step/timeline/ETA gorunur, operasyonel aksiyonlar M14'te", testId: "readiness-jobs" },
             { area: "Sablon Sistemi", status: "M12 aktif", detail: "Template/style context script, metadata, visuals ve composition step'lerinde tuketiliyor", testId: "readiness-templates" },
             { area: "Haber Modulu", status: "M11 aktif", detail: "Kaynak, tarama, haber, dedupe akislari calisiyor; soft dedupe esigi ayarlardan okunuyor", testId: "readiness-news" },
-            { area: "Ayarlar ve Gorunurluk", status: "M22 aktif", detail: "Settings delete/bulk ops, visibility delete/bulk, guvenli hata fallback, audit log zenginlestirmesi aktif", testId: "readiness-settings" },
-            { area: "Analytics ve Raporlama", status: "M18 aktif", detail: "Platform, operasyon, kaynak, kanal ve icerik analytics gercek SQL aggregation ile calisiyor", testId: "readiness-analytics" },
+            { area: "Ayarlar ve Gorunurluk", status: "M23 aktif", detail: "Settings/visibility CRUD, delete/restore/bulk ops, change history, guvenli hata fallback, audit log zenginlestirmesi aktif", testId: "readiness-settings" },
+            { area: "Analytics ve Raporlama", status: "M23 aktif", detail: "Platform, operasyon, kaynak, kanal ve icerik analytics gercek SQL aggregation, trace data quality metrikleri, parse error gozlemlenebilirligi", testId: "readiness-analytics" },
             { area: "Icerik Kutuphanesi", status: "M22 aktif", detail: "SQL UNION ALL birlesim, has_script/has_metadata gosterimi, klonlama + navigasyon, backend-side pagination", testId: "readiness-library" },
             { area: "Varlik Kutuphanesi", status: "M22 aktif", detail: "Workspace disk taramasi, dosya yukleme (201), filtre, sayfalama, silme, konum gosterme ve yenileme aktif", testId: "readiness-assets" },
           ].map((item) => (
