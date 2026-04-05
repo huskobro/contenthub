@@ -136,7 +136,7 @@ describe("Settings Registry smoke tests", () => {
     // Switch to the registry tab to trigger loading indicator
     const user = userEvent.setup();
     await user.click(screen.getByTestId("settings-tab-registry"));
-    expect(screen.getByText("Yukleniyor...")).toBeDefined();
+    expect(screen.getByText("Yükleniyor...")).toBeDefined();
   });
 
   it("displays settings list after switching to registry tab and data loads", async () => {
@@ -184,7 +184,7 @@ describe("Settings Registry smoke tests", () => {
     await user.click(screen.getByText("app.name"));
 
     await waitFor(() => {
-      expect(screen.getByText("Ayar Detayi")).toBeDefined();
+      expect(screen.getByText("Ayar Detayı")).toBeDefined();
       expect(screen.getByText("Uygulama adı")).toBeDefined();
     });
   });

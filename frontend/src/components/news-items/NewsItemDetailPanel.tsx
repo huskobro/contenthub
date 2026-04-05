@@ -5,6 +5,7 @@ import { NewsItemForm } from "./NewsItemForm";
 import type { NewsItemFormValues } from "./NewsItemForm";
 import { formatDateTime } from "../../lib/formatDate";
 import { isBlank } from "../../lib/isBlank";
+import { colors, radius, typography } from "../design-system/tokens";
 
 interface Props {
   selectedId: string | null;
@@ -14,8 +15,8 @@ function Field({ label, value }: { label: string; value: React.ReactNode }) {
   const display = typeof value === "string" && isBlank(value) ? "—" : (value ?? "—");
   return (
     <div style={{ marginBottom: "8px" }}>
-      <span style={{ fontWeight: 600, marginRight: "8px", color: "#64748b", fontSize: "0.8125rem" }}>{label}:</span>
-      <span style={{ fontSize: "0.875rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>{display}</span>
+      <span style={{ fontWeight: 600, marginRight: "8px", color: colors.neutral[600], fontSize: typography.size.base }}>{label}:</span>
+      <span style={{ fontSize: typography.size.md, wordBreak: "break-word", overflowWrap: "anywhere" }}>{display}</span>
     </div>
   );
 }
@@ -26,7 +27,7 @@ export function NewsItemDetailPanel({ selectedId }: Props) {
   const { mutate, isPending, error: updateError } = useUpdateNewsItem(selectedId ?? "");
 
   if (!selectedId) {
-    return <p style={{ color: "#94a3b8" }}>Bir news item seçin.</p>;
+    return <p style={{ color: colors.neutral[500] }}>Bir news item seçin.</p>;
   }
 
   if (isLoading) {
@@ -79,20 +80,20 @@ export function NewsItemDetailPanel({ selectedId }: Props) {
           onClick={() => setEditing(true)}
           style={{
             padding: "0.25rem 0.75rem",
-            fontSize: "0.8rem",
-            background: "#f1f5f9",
-            color: "#475569",
-            border: "1px solid #e2e8f0",
-            borderRadius: "4px",
+            fontSize: typography.size.base,
+            background: colors.neutral[100],
+            color: colors.neutral[700],
+            border: `1px solid ${colors.border.subtle}`,
+            borderRadius: radius.sm,
             cursor: "pointer",
           }}
         >
           Düzenle
         </button>
       </div>
-      <Field label="ID" value={<code style={{ fontSize: "0.75rem" }}>{data.id}</code>} />
+      <Field label="ID" value={<code style={{ fontSize: typography.size.sm }}>{data.id}</code>} />
       <Field label="Başlık" value={data.title} />
-      <Field label="URL" value={data.url ? <a href={data.url} target="_blank" rel="noopener noreferrer" style={{ fontSize: "0.8rem", wordBreak: "break-all" }}>{data.url}</a> : null} />
+      <Field label="URL" value={data.url ? <a href={data.url} target="_blank" rel="noopener noreferrer" style={{ fontSize: typography.size.base, wordBreak: "break-all" }}>{data.url}</a> : null} />
       <Field label="Status" value={data.status} />
       <Field label="Kaynak ID" value={data.source_id} />
       <Field label="Scan ID" value={data.source_scan_id} />

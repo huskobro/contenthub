@@ -2,19 +2,20 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useContentMetrics } from "../../hooks/useContentMetrics";
 import type { AnalyticsWindow } from "../../api/analyticsApi";
+import { colors, radius, typography } from "../../components/design-system/tokens";
 
 const SUBTITLE: React.CSSProperties = {
   margin: "0 0 0.5rem",
-  fontSize: "0.8125rem",
-  color: "#94a3b8",
+  fontSize: typography.size.base,
+  color: colors.neutral[500],
   lineHeight: 1.5,
   maxWidth: "640px",
 };
 
 const SECTION: React.CSSProperties = {
-  border: "1px solid #e2e8f0",
-  borderRadius: "6px",
-  background: "#fafbfc",
+  border: `1px solid ${colors.border.subtle}`,
+  borderRadius: radius.md,
+  background: colors.neutral[50],
   padding: "1rem",
   marginBottom: "1.5rem",
 };
@@ -22,29 +23,29 @@ const SECTION: React.CSSProperties = {
 const TABLE: React.CSSProperties = {
   width: "100%",
   borderCollapse: "collapse",
-  fontSize: "0.8125rem",
+  fontSize: typography.size.base,
 };
 
 const TH: React.CSSProperties = {
   textAlign: "left",
   padding: "0.5rem 0.75rem",
-  borderBottom: "2px solid #e2e8f0",
-  color: "#64748b",
+  borderBottom: `2px solid ${colors.border.subtle}`,
+  color: colors.neutral[600],
   fontWeight: 600,
-  fontSize: "0.75rem",
+  fontSize: typography.size.sm,
 };
 
 const TD: React.CSSProperties = {
   padding: "0.5rem 0.75rem",
-  borderBottom: "1px solid #f1f5f9",
-  color: "#334155",
+  borderBottom: `1px solid ${colors.neutral[100]}`,
+  color: colors.neutral[800],
 };
 
 const METRIC_CARD: React.CSSProperties = {
   padding: "0.75rem 1rem",
-  background: "#fff",
-  border: "1px solid #e2e8f0",
-  borderRadius: "6px",
+  background: colors.neutral[0],
+  border: `1px solid ${colors.border.subtle}`,
+  borderRadius: radius.md,
   textAlign: "center",
   minWidth: "140px",
 };
@@ -77,14 +78,14 @@ export function AnalyticsContentPage() {
       <div style={{ marginBottom: "1rem" }}>
         <Link
           to="/admin/analytics"
-          style={{ fontSize: "0.875rem", color: "#3b82f6", textDecoration: "none" }}
+          style={{ fontSize: typography.size.md, color: colors.brand[500], textDecoration: "none" }}
         >
           ← Analytics'e don
         </Link>
       </div>
 
       <h2
-        style={{ margin: "0 0 0.25rem", fontSize: "1.125rem", fontWeight: 600 }}
+        style={{ margin: "0 0 0.25rem", fontSize: typography.size.xl, fontWeight: 600 }}
         data-testid="analytics-content-heading"
       >
         Icerik Performansi
@@ -97,8 +98,8 @@ export function AnalyticsContentPage() {
       <p
         style={{
           margin: "0 0 1.5rem",
-          fontSize: "0.8125rem",
-          color: "#94a3b8",
+          fontSize: typography.size.base,
+          color: colors.neutral[500],
           lineHeight: 1.5,
           maxWidth: "640px",
         }}
@@ -112,7 +113,7 @@ export function AnalyticsContentPage() {
 
       {/* Window selector */}
       <div style={{ marginBottom: "1rem" }} data-testid="content-window-selector">
-        <label style={{ fontSize: "0.75rem", color: "#64748b", marginRight: "0.5rem" }}>
+        <label style={{ fontSize: typography.size.sm, color: colors.neutral[600], marginRight: "0.5rem" }}>
           Zaman Penceresi:
         </label>
         <select
@@ -120,10 +121,10 @@ export function AnalyticsContentPage() {
           onChange={(e) => setWindow(e.target.value as AnalyticsWindow)}
           style={{
             padding: "0.4rem 0.5rem",
-            border: "1px solid #e2e8f0",
-            borderRadius: "4px",
-            fontSize: "0.8125rem",
-            background: "#fff",
+            border: `1px solid ${colors.border.subtle}`,
+            borderRadius: radius.sm,
+            fontSize: typography.size.base,
+            background: colors.neutral[0],
           }}
           data-testid="content-window-select"
         >
@@ -136,11 +137,11 @@ export function AnalyticsContentPage() {
       </div>
 
       {isLoading && (
-        <p style={{ color: "#64748b", fontSize: "0.8125rem" }}>Yukleniyor...</p>
+        <p style={{ color: colors.neutral[600], fontSize: typography.size.base }}>Yükleniyor...</p>
       )}
 
       {isError && (
-        <p style={{ color: "#dc2626", fontSize: "0.8125rem" }} data-testid="content-error">
+        <p style={{ color: colors.error.base, fontSize: typography.size.base }} data-testid="content-error">
           Icerik metrikleri yuklenirken hata olustu.
         </p>
       )}
@@ -153,43 +154,43 @@ export function AnalyticsContentPage() {
             data-testid="content-summary-metrics"
           >
             <div style={METRIC_CARD} data-testid="metric-content-output">
-              <div style={{ fontSize: "1.25rem", fontWeight: 700, color: "#0f172a" }}>
+              <div style={{ fontSize: typography.size["2xl"], fontWeight: 700, color: colors.neutral[900] }}>
                 {data.content_output_count}
               </div>
-              <div style={{ fontSize: "0.6875rem", color: "#64748b" }}>Toplam Icerik</div>
+              <div style={{ fontSize: typography.size.xs, color: colors.neutral[600] }}>Toplam Icerik</div>
             </div>
             <div style={METRIC_CARD} data-testid="metric-published-content">
-              <div style={{ fontSize: "1.25rem", fontWeight: 700, color: "#166534" }}>
+              <div style={{ fontSize: typography.size["2xl"], fontWeight: 700, color: colors.success.text }}>
                 {data.published_content_count}
               </div>
-              <div style={{ fontSize: "0.6875rem", color: "#64748b" }}>Yayinlanan</div>
+              <div style={{ fontSize: typography.size.xs, color: colors.neutral[600] }}>Yayinlanan</div>
             </div>
             <div style={METRIC_CARD} data-testid="metric-avg-time-to-publish">
-              <div style={{ fontSize: "1.25rem", fontWeight: 700, color: "#0f172a" }}>
+              <div style={{ fontSize: typography.size["2xl"], fontWeight: 700, color: colors.neutral[900] }}>
                 {fmtDuration(data.avg_time_to_publish_seconds)}
               </div>
-              <div style={{ fontSize: "0.6875rem", color: "#64748b" }}>Ort. Yayina Kadar</div>
+              <div style={{ fontSize: typography.size.xs, color: colors.neutral[600] }}>Ort. Yayina Kadar</div>
             </div>
             <div style={METRIC_CARD} data-testid="metric-active-templates">
-              <div style={{ fontSize: "1.25rem", fontWeight: 700, color: "#0f172a" }}>
+              <div style={{ fontSize: typography.size["2xl"], fontWeight: 700, color: colors.neutral[900] }}>
                 {data.active_template_count}
               </div>
-              <div style={{ fontSize: "0.6875rem", color: "#64748b" }}>Aktif Sablon</div>
+              <div style={{ fontSize: typography.size.xs, color: colors.neutral[600] }}>Aktif Sablon</div>
             </div>
             <div style={METRIC_CARD} data-testid="metric-active-blueprints">
-              <div style={{ fontSize: "1.25rem", fontWeight: 700, color: "#0f172a" }}>
+              <div style={{ fontSize: typography.size["2xl"], fontWeight: 700, color: colors.neutral[900] }}>
                 {data.active_blueprint_count}
               </div>
-              <div style={{ fontSize: "0.6875rem", color: "#64748b" }}>Aktif Blueprint</div>
+              <div style={{ fontSize: typography.size.xs, color: colors.neutral[600] }}>Aktif Blueprint</div>
             </div>
           </div>
 
           {/* Content type breakdown */}
           <div style={SECTION} data-testid="content-type-breakdown">
-            <h3 style={{ margin: "0 0 0.25rem", fontSize: "1rem" }} data-testid="content-type-heading">
+            <h3 style={{ margin: "0 0 0.25rem", fontSize: typography.size.lg }} data-testid="content-type-heading">
               Icerik Tipi Kirilimi
             </h3>
-            <p style={{ margin: "0 0 0.75rem", fontSize: "0.75rem", color: "#94a3b8" }}>
+            <p style={{ margin: "0 0 0.75rem", fontSize: typography.size.sm, color: colors.neutral[500] }}>
               Uretilen iceriklerin tip bazli dagilimi.
             </p>
             <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
@@ -198,18 +199,18 @@ export function AnalyticsContentPage() {
                   key={ct.type}
                   style={{
                     padding: "0.5rem 1rem",
-                    background: "#fff",
-                    border: "1px solid #e2e8f0",
-                    borderRadius: "6px",
+                    background: colors.neutral[0],
+                    border: `1px solid ${colors.border.subtle}`,
+                    borderRadius: radius.md,
                     textAlign: "center",
                     minWidth: "120px",
                   }}
                   data-testid={`content-type-${ct.type}`}
                 >
-                  <div style={{ fontSize: "1.125rem", fontWeight: 700, color: "#0f172a" }}>
+                  <div style={{ fontSize: typography.size.xl, fontWeight: 700, color: colors.neutral[900] }}>
                     {ct.count}
                   </div>
-                  <div style={{ fontSize: "0.6875rem", color: "#64748b" }}>
+                  <div style={{ fontSize: typography.size.xs, color: colors.neutral[600] }}>
                     {ct.type === "standard_video" ? "Standart Video" : ct.type === "news_bulletin" ? "Haber Bulteni" : ct.type}
                   </div>
                 </div>
@@ -219,11 +220,11 @@ export function AnalyticsContentPage() {
 
           {/* Module distribution */}
           <div style={SECTION} data-testid="analytics-module-distribution">
-            <h3 style={{ margin: "0 0 0.25rem", fontSize: "1rem" }} data-testid="module-distribution-heading">
+            <h3 style={{ margin: "0 0 0.25rem", fontSize: typography.size.lg }} data-testid="module-distribution-heading">
               Modul Dagilimi
             </h3>
             <p
-              style={{ margin: "0 0 0.75rem", fontSize: "0.75rem", color: "#94a3b8" }}
+              style={{ margin: "0 0 0.75rem", fontSize: typography.size.sm, color: colors.neutral[500] }}
               data-testid="module-distribution-note"
             >
               Icerik uretiminin modullere gore dagilimi. Hangi modul daha yogun
@@ -231,8 +232,8 @@ export function AnalyticsContentPage() {
               Modul bazli verimlilik karari icin bu dagilimi kullanabilirsiniz.
             </p>
             {data.module_distribution.length === 0 ? (
-              <p style={{ fontSize: "0.8125rem", color: "#94a3b8" }}>
-                <em data-testid="module-distribution-empty">Henuz modul bazli is verisi bulunmuyor.</em>
+              <p style={{ fontSize: typography.size.base, color: colors.neutral[500] }}>
+                <em data-testid="module-distribution-empty">Henüz modul bazli is verisi bulunmuyor.</em>
               </p>
             ) : (
               <table style={TABLE} data-testid="module-distribution-table">

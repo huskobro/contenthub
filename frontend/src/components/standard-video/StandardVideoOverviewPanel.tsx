@@ -2,6 +2,7 @@ import type { StandardVideoResponse } from "../../api/standardVideoApi";
 import { formatDuration } from "../../lib/formatDuration";
 import { formatDateTime } from "../../lib/formatDate";
 import { isBlank } from "../../lib/isBlank";
+import { colors, radius, typography } from "../design-system/tokens";
 
 const DASH = "—";
 
@@ -16,16 +17,16 @@ function Row({ label, value }: { label: string; value: React.ReactNode }) {
       <td
         style={{
           padding: "0.375rem 0.75rem",
-          color: "#64748b",
+          color: colors.neutral[600],
           fontWeight: 500,
-          fontSize: "0.8125rem",
+          fontSize: typography.size.base,
           whiteSpace: "nowrap",
           verticalAlign: "top",
         }}
       >
         {label}
       </td>
-      <td style={{ padding: "0.375rem 0.75rem", fontSize: "0.875rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>{display}</td>
+      <td style={{ padding: "0.375rem 0.75rem", fontSize: typography.size.md, wordBreak: "break-word", overflowWrap: "anywhere" }}>{display}</td>
     </tr>
   );
 }
@@ -34,9 +35,9 @@ export function StandardVideoOverviewPanel({ video }: Props) {
   return (
     <div
       style={{
-        border: "1px solid #e2e8f0",
-        borderRadius: "6px",
-        background: "#fff",
+        border: `1px solid ${colors.border.subtle}`,
+        borderRadius: radius.md,
+        background: colors.neutral[0],
         marginBottom: "1.25rem",
         overflow: "hidden",
       }}
@@ -44,17 +45,17 @@ export function StandardVideoOverviewPanel({ video }: Props) {
       <div
         style={{
           padding: "0.625rem 0.75rem",
-          background: "#f8fafc",
-          borderBottom: "1px solid #e2e8f0",
+          background: colors.neutral[50],
+          borderBottom: `1px solid ${colors.border.subtle}`,
           fontWeight: 600,
-          fontSize: "0.875rem",
+          fontSize: typography.size.md,
         }}
       >
         Genel Bilgi
       </div>
       <table style={{ width: "100%", borderCollapse: "collapse" }}>
         <tbody>
-          <Row label="ID" value={<code style={{ fontSize: "0.8125rem" }}>{video.id}</code>} />
+          <Row label="ID" value={<code style={{ fontSize: typography.size.base }}>{video.id}</code>} />
           <Row label="Başlık" value={video.title} />
           <Row label="Konu" value={video.topic} />
           <Row label="Brief" value={video.brief} />

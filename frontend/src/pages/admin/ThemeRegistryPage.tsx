@@ -60,7 +60,7 @@ function ThemePreviewPanel({ theme }: { theme: ThemeManifest }) {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            color: "#fff",
+            color: colors.neutral[0],
             fontSize: t.typography.size.xs,
             fontWeight: t.typography.weight.bold,
             fontFamily: t.typography.body.stack,
@@ -140,7 +140,7 @@ function ThemePreviewPanel({ theme }: { theme: ThemeManifest }) {
               padding: `${spacing[2]} ${spacing[4]}`,
               borderRadius: t.radius.md,
               background: t.colors.brand[600],
-              color: "#fff",
+              color: colors.neutral[0],
               fontSize: t.typography.size.base,
               fontWeight: t.typography.weight.medium,
               fontFamily: t.typography.body.stack,
@@ -288,7 +288,7 @@ function ThemeCard({
                 style={{
                   width: "16px",
                   height: "16px",
-                  borderRadius: "3px",
+                  borderRadius: radius.sm,
                   background: c,
                 }}
               />

@@ -260,7 +260,7 @@ export function AuditLogPage() {
       <Sheet
         open={sheetOpen && !!selectedId}
         onClose={() => setSheetOpen(false)}
-        title="Kayit Detayi"
+        title="Kayit Detayı"
         testId="audit-sheet"
         width="500px"
       >

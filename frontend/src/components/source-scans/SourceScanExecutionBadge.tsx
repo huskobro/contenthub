@@ -1,3 +1,4 @@
+import { colors, radius, typography } from "../design-system/tokens";
 export type SourceScanExecutionLevel =
   | "Bekliyor"
   | "Tamamlandı"
@@ -6,11 +7,11 @@ export type SourceScanExecutionLevel =
   | "Belirsiz";
 
 const styles: Record<SourceScanExecutionLevel, { bg: string; color: string; border: string }> = {
-  "Bekliyor":      { bg: "#fef9c3", color: "#92400e", border: "#fde68a" },
-  "Tamamlandı":    { bg: "#f0fdf4", color: "#15803d", border: "#bbf7d0" },
-  "Sonuç üretti":  { bg: "#dcfce7", color: "#166534", border: "#86efac" },
-  "Hata aldı":     { bg: "#fee2e2", color: "#991b1b", border: "#fca5a5" },
-  "Belirsiz":      { bg: "#f1f5f9", color: "#94a3b8", border: "#cbd5e1" },
+  "Bekliyor":      { bg: colors.warning.light, color: colors.warning.text, border: colors.warning.light },
+  "Tamamlandı":    { bg: colors.success.light, color: colors.success.text, border: colors.success.light },
+  "Sonuç üretti":  { bg: colors.success.light, color: colors.success.text, border: colors.success.light },
+  "Hata aldı":     { bg: colors.error.light, color: colors.error.text, border: colors.error.light },
+  "Belirsiz":      { bg: colors.neutral[100], color: colors.neutral[500], border: colors.border.default },
 };
 
 interface Props {
@@ -18,14 +19,14 @@ interface Props {
 }
 
 export function SourceScanExecutionBadge({ level }: Props) {
-  const s = styles[level] ?? { bg: "#f8fafc", color: "#475569", border: "#e2e8f0" };
+  const s = styles[level] ?? { bg: colors.neutral[50], color: colors.neutral[700], border: colors.border.subtle };
   return (
     <span
       style={{
         display: "inline-block",
         padding: "0.1rem 0.45rem",
-        fontSize: "0.7rem",
-        borderRadius: "3px",
+        fontSize: typography.size.xs,
+        borderRadius: radius.sm,
         background: s.bg,
         color: s.color,
         border: `1px solid ${s.border}`,

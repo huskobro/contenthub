@@ -5,11 +5,12 @@ import { useUpdateNewsBulletinMetadata } from "../../hooks/useUpdateNewsBulletin
 import { NewsBulletinMetadataForm } from "./NewsBulletinMetadataForm";
 import { isBlank } from "../../lib/isBlank";
 import type { MetadataFormValues } from "./NewsBulletinMetadataForm";
+import { colors, radius, typography } from "../design-system/tokens";
 
 const DASH = "—";
 const WRAP_WORD: React.CSSProperties = { wordBreak: "break-word", overflowWrap: "anywhere" };
-const LABEL_TD: React.CSSProperties = { color: "#64748b", paddingRight: "1rem", paddingBottom: "0.25rem" };
-const SECTION_STYLE: React.CSSProperties = { border: "1px solid #e2e8f0", borderRadius: "6px", padding: "1rem", marginTop: "1rem" };
+const LABEL_TD: React.CSSProperties = { color: colors.neutral[600], paddingRight: "1rem", paddingBottom: "0.25rem" };
+const SECTION_STYLE: React.CSSProperties = { border: `1px solid ${colors.border.subtle}`, borderRadius: radius.md, padding: "1rem", marginTop: "1rem" };
 
 interface Props {
   bulletinId: string;
@@ -57,7 +58,7 @@ export function NewsBulletinMetadataPanel({ bulletinId }: Props) {
   if (isLoading) {
     return (
       <div style={SECTION_STYLE}>
-        <p style={{ color: "#64748b", margin: 0 }}>Metadata yükleniyor...</p>
+        <p style={{ color: colors.neutral[600], margin: 0 }}>Metadata yükleniyor...</p>
       </div>
     );
   }
@@ -65,7 +66,7 @@ export function NewsBulletinMetadataPanel({ bulletinId }: Props) {
   if (isError) {
     return (
       <div style={SECTION_STYLE}>
-        <p style={{ color: "#dc2626", margin: 0 }}>Metadata yüklenirken hata oluştu.</p>
+        <p style={{ color: colors.error.base, margin: 0 }}>Metadata yüklenirken hata oluştu.</p>
       </div>
     );
   }
@@ -124,8 +125,8 @@ export function NewsBulletinMetadataPanel({ bulletinId }: Props) {
       <p
         style={{
           margin: "0 0 0.75rem",
-          fontSize: "0.8125rem",
-          color: "#94a3b8",
+          fontSize: typography.size.base,
+          color: colors.neutral[500],
           lineHeight: 1.5,
         }}
         data-testid="nb-metadata-note"
@@ -135,9 +136,9 @@ export function NewsBulletinMetadataPanel({ bulletinId }: Props) {
       </p>
 
       {!metadata ? (
-        <p style={{ color: "#94a3b8", margin: 0 }}>Henüz metadata yok.</p>
+        <p style={{ color: colors.neutral[500], margin: 0 }}>Henüz metadata yok.</p>
       ) : (
-        <table style={{ fontSize: "0.8125rem", borderCollapse: "collapse" }}>
+        <table style={{ fontSize: typography.size.base, borderCollapse: "collapse" }}>
           <tbody>
             <tr>
               <td style={LABEL_TD}>Başlık</td>

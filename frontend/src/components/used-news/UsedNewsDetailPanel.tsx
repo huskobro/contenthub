@@ -4,6 +4,7 @@ import { useUpdateUsedNews } from "../../hooks/useUpdateUsedNews";
 import { UsedNewsForm } from "./UsedNewsForm";
 import type { UsedNewsFormValues } from "./UsedNewsForm";
 import { formatDateTime } from "../../lib/formatDate";
+import { colors, radius, typography } from "../design-system/tokens";
 
 interface Props {
   selectedId: string | null;
@@ -12,7 +13,7 @@ interface Props {
 function Field({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div style={{ marginBottom: "8px" }}>
-      <span style={{ fontWeight: 600, marginRight: "8px", color: "#64748b", fontSize: "0.8125rem" }}>{label}:</span>
+      <span style={{ fontWeight: 600, marginRight: "8px", color: colors.neutral[600], fontSize: typography.size.base }}>{label}:</span>
       <span style={{ wordBreak: "break-word", overflowWrap: "anywhere" }}>{value ?? "—"}</span>
     </div>
   );
@@ -73,11 +74,11 @@ export function UsedNewsDetailPanel({ selectedId }: Props) {
           onClick={() => setEditing(true)}
           style={{
             padding: "0.25rem 0.75rem",
-            fontSize: "0.8rem",
-            background: "#f1f5f9",
-            color: "#475569",
-            border: "1px solid #e2e8f0",
-            borderRadius: "4px",
+            fontSize: typography.size.base,
+            background: colors.neutral[100],
+            color: colors.neutral[700],
+            border: `1px solid ${colors.border.subtle}`,
+            borderRadius: radius.sm,
             cursor: "pointer",
           }}
         >

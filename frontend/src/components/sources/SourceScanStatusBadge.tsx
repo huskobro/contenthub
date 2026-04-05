@@ -1,19 +1,20 @@
+import { colors, radius, typography } from "../design-system/tokens";
 interface Props {
   status?: string | null;
   scanCount?: number;
 }
 
 function statusStyle(status: string): React.CSSProperties {
-  if (status === "completed") return { background: "#dcfce7", color: "#166534", border: "1px solid #bbf7d0" };
-  if (status === "failed") return { background: "#fee2e2", color: "#991b1b", border: "1px solid #fecaca" };
-  if (status === "running") return { background: "#e0f2fe", color: "#0369a1", border: "1px solid #bae6fd" };
-  return { background: "#f1f5f9", color: "#64748b", border: "1px solid #e2e8f0" };
+  if (status === "completed") return { background: colors.success.light, color: colors.success.text, border: `1px solid ${colors.success.light}` };
+  if (status === "failed") return { background: colors.error.light, color: colors.error.text, border: `1px solid ${colors.error.light}` };
+  if (status === "running") return { background: colors.info.light, color: colors.info.dark, border: `1px solid ${colors.info.light}` };
+  return { background: colors.neutral[100], color: colors.neutral[600], border: `1px solid ${colors.border.subtle}` };
 }
 
 export function SourceScanStatusBadge({ status, scanCount }: Props) {
   if (!status && (!scanCount || scanCount === 0)) {
     return (
-      <span style={{ fontSize: "0.7rem", color: "#94a3b8" }}>Scan yok</span>
+      <span style={{ fontSize: typography.size.xs, color: colors.neutral[500] }}>Scan yok</span>
     );
   }
 
@@ -24,8 +25,8 @@ export function SourceScanStatusBadge({ status, scanCount }: Props) {
           style={{
             display: "inline-block",
             padding: "0.1rem 0.35rem",
-            fontSize: "0.7rem",
-            borderRadius: "3px",
+            fontSize: typography.size.xs,
+            borderRadius: radius.sm,
             whiteSpace: "nowrap",
             ...statusStyle(status),
           }}
@@ -34,7 +35,7 @@ export function SourceScanStatusBadge({ status, scanCount }: Props) {
         </span>
       )}
       {typeof scanCount === "number" && (
-        <span style={{ fontSize: "0.7rem", color: "#94a3b8" }}>({scanCount}x)</span>
+        <span style={{ fontSize: typography.size.xs, color: colors.neutral[500] }}>({scanCount}x)</span>
       )}
     </div>
   );

@@ -1,3 +1,4 @@
+import { colors, typography } from "../design-system/tokens";
 import { useNavigate } from "react-router-dom";
 
 const SECTION: React.CSSProperties = {
@@ -7,15 +8,15 @@ const SECTION: React.CSSProperties = {
 
 const SECTION_HEADING: React.CSSProperties = {
   margin: "0 0 0.25rem",
-  fontSize: "1rem",
+  fontSize: typography.size.lg,
   fontWeight: 600,
-  color: "#0f172a",
+  color: colors.neutral[900],
 };
 
 const SECTION_DESC: React.CSSProperties = {
   margin: "0 0 1rem",
-  fontSize: "0.8125rem",
-  color: "#64748b",
+  fontSize: typography.size.base,
+  color: colors.neutral[600],
   lineHeight: 1.5,
 };
 
@@ -27,8 +28,8 @@ const GRID: React.CSSProperties = {
 
 const CARD: React.CSSProperties = {
   padding: "1rem 1.25rem",
-  background: "#fff",
-  border: "1px solid #e2e8f0",
+  background: colors.neutral[0],
+  border: `1px solid ${colors.border.subtle}`,
   borderRadius: "10px",
   cursor: "pointer",
 };
@@ -40,38 +41,38 @@ const CARD_ICON: React.CSSProperties = {
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
-  fontSize: "0.875rem",
+  fontSize: typography.size.md,
   fontWeight: 700,
-  color: "#fff",
+  color: colors.neutral[0],
   marginBottom: "0.5rem",
 };
 
 const CARD_TITLE: React.CSSProperties = {
   margin: "0 0 0.25rem",
-  fontSize: "0.875rem",
+  fontSize: typography.size.md,
   fontWeight: 600,
-  color: "#0f172a",
+  color: colors.neutral[900],
 };
 
 const CARD_DESC: React.CSSProperties = {
   margin: 0,
-  fontSize: "0.75rem",
-  color: "#64748b",
+  fontSize: typography.size.sm,
+  color: colors.neutral[600],
   lineHeight: 1.4,
 };
 
 const CARD_CTA: React.CSSProperties = {
   display: "inline-block",
   marginTop: "0.5rem",
-  fontSize: "0.75rem",
+  fontSize: typography.size.sm,
   fontWeight: 600,
-  color: "#2563eb",
+  color: colors.brand[600],
 };
 
 const HUB_ENTRIES = [
   {
     icon: "I",
-    iconBg: "#2563eb",
+    iconBg: colors.brand[600],
     title: "Icerik",
     desc: "Ilk adim: yeni icerik olusturun veya mevcut icerikleri inceleyin.",
     cta: "Icerige Git",
@@ -80,7 +81,7 @@ const HUB_ENTRIES = [
   },
   {
     icon: "Y",
-    iconBg: "#7c3aed",
+    iconBg: colors.brand[700],
     title: "Yayin",
     desc: "Sonraki adim: olusturulan iceriklerin yayin durumunu takip edin.",
     cta: "Yayina Git",
@@ -89,7 +90,7 @@ const HUB_ENTRIES = [
   },
   {
     icon: "P",
-    iconBg: "#059669",
+    iconBg: colors.success.dark,
     title: "Yonetim Paneli",
     desc: "Uretim ve yonetim merkezi: ayarlar, sablonlar, kaynaklar ve islemleri yonetin.",
     cta: "Yonetim Paneline Git",

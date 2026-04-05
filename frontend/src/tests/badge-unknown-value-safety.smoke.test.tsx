@@ -35,7 +35,7 @@ describe("Badge style lookup has fallback for unknown values", () => {
       const src = read(file);
       // Accept either: ?? { bg: ... } (inline neutral) OR ?? STYLES["..."] / ?? styles["..."] (named key fallback)
       const hasStyleFallback =
-        src.includes('?? { bg: "#f8fafc"') ||
+        src.includes('?? { bg: colors.neutral[50]') ||
         /\?\?\s*(?:styles|STYLES)\[/.test(src);
       expect(
         hasStyleFallback,

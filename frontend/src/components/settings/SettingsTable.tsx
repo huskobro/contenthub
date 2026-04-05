@@ -1,3 +1,4 @@
+import { colors, typography } from "../design-system/tokens";
 import type { SettingResponse } from "../../api/settingsApi";
 
 const DASH = "—";
@@ -12,13 +13,13 @@ interface SettingsTableProps {
 
 export function SettingsTable({ settings, selectedId, onSelect }: SettingsTableProps) {
   if (settings.length === 0) {
-    return <p style={{ color: "#64748b" }}>Henüz kayıtlı ayar yok.</p>;
+    return <p style={{ color: colors.neutral[600] }}>Henüz kayıtlı ayar yok.</p>;
   }
 
   return (
-    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.875rem" }}>
+    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: typography.size.md }}>
       <thead>
-        <tr style={{ borderBottom: "2px solid #e2e8f0", textAlign: "left" }}>
+        <tr style={{ borderBottom: `2px solid ${colors.border.subtle}`, textAlign: "left" }}>
           <th style={TD_STYLE}>key</th>
           <th style={TD_STYLE}>group_name</th>
           <th style={TD_STYLE}>type</th>
@@ -32,9 +33,9 @@ export function SettingsTable({ settings, selectedId, onSelect }: SettingsTableP
             key={s.id}
             onClick={() => onSelect(s.id)}
             style={{
-              borderBottom: "1px solid #f1f5f9",
+              borderBottom: `1px solid ${colors.neutral[100]}`,
               cursor: "pointer",
-              background: selectedId === s.id ? "#eff6ff" : "transparent",
+              background: selectedId === s.id ? colors.info.light : "transparent",
             }}
           >
             <td style={{ padding: "0.5rem", fontFamily: "monospace", wordBreak: "break-all", overflowWrap: "anywhere" }}>{s.key ?? DASH}</td>

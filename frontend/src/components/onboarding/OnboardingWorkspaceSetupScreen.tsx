@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useCreateSetting } from "../../hooks/useCreateSetting";
 import { useQueryClient } from "@tanstack/react-query";
+import { colors, radius, typography } from "../design-system/tokens";
 
 const CONTAINER: React.CSSProperties = {
   display: "flex",
@@ -8,15 +9,15 @@ const CONTAINER: React.CSSProperties = {
   alignItems: "center",
   justifyContent: "center",
   minHeight: "100vh",
-  background: "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)",
+  background: `linear-gradient(135deg, ${colors.neutral[50]} 0%, ${colors.border.subtle} 100%)`,
   padding: "2rem",
 };
 
 const CARD: React.CSSProperties = {
   maxWidth: "560px",
   width: "100%",
-  background: "#fff",
-  borderRadius: "12px",
+  background: colors.neutral[0],
+  borderRadius: radius.xl,
   boxShadow: "0 4px 24px rgba(0, 0, 0, 0.08)",
   padding: "2.5rem",
 };
@@ -25,14 +26,14 @@ const TITLE: React.CSSProperties = {
   margin: "0 0 0.375rem",
   fontSize: "1.5rem",
   fontWeight: 700,
-  color: "#0f172a",
+  color: colors.neutral[900],
   textAlign: "center",
 };
 
 const SUBTITLE: React.CSSProperties = {
   margin: "0 0 1.75rem",
-  fontSize: "0.9375rem",
-  color: "#475569",
+  fontSize: typography.size.lg,
+  color: colors.neutral[700],
   lineHeight: 1.6,
   textAlign: "center",
 };
@@ -40,41 +41,41 @@ const SUBTITLE: React.CSSProperties = {
 const inputStyle: React.CSSProperties = {
   width: "100%",
   padding: "0.375rem 0.5rem",
-  border: "1px solid #cbd5e1",
-  borderRadius: "4px",
-  fontSize: "0.875rem",
+  border: `1px solid ${colors.border.default}`,
+  borderRadius: radius.sm,
+  fontSize: typography.size.md,
   boxSizing: "border-box",
 };
 
 const labelStyle: React.CSSProperties = {
   display: "block",
-  fontSize: "0.75rem",
+  fontSize: typography.size.sm,
   fontWeight: 600,
-  color: "#64748b",
+  color: colors.neutral[600],
   marginBottom: "0.25rem",
 };
 
 const fieldStyle: React.CSSProperties = { marginBottom: "0.75rem" };
 
 const helpStyle: React.CSSProperties = {
-  fontSize: "0.6875rem",
-  color: "#94a3b8",
+  fontSize: typography.size.xs,
+  color: colors.neutral[500],
   marginTop: "0.125rem",
 };
 
 const errorStyle: React.CSSProperties = {
-  color: "#dc2626",
-  fontSize: "0.8rem",
+  color: colors.error.base,
+  fontSize: typography.size.base,
   marginTop: "0.25rem",
 };
 
 const SECTION_LABEL: React.CSSProperties = {
-  fontSize: "0.8125rem",
+  fontSize: typography.size.base,
   fontWeight: 600,
-  color: "#334155",
+  color: colors.neutral[800],
   marginBottom: "0.5rem",
   paddingBottom: "0.375rem",
-  borderBottom: "1px solid #f1f5f9",
+  borderBottom: `1px solid ${colors.neutral[100]}`,
 };
 
 interface Props {
@@ -186,12 +187,12 @@ export function OnboardingWorkspaceSetupScreen({ onBack, onComplete }: Props) {
               disabled={saving}
               style={{
                 padding: "0.375rem 1rem",
-                background: saving ? "#94a3b8" : "#1e40af",
-                color: "#fff",
+                background: saving ? colors.neutral[500] : colors.brand[700],
+                color: colors.neutral[0],
                 border: "none",
-                borderRadius: "4px",
+                borderRadius: radius.sm,
                 cursor: saving ? "not-allowed" : "pointer",
-                fontSize: "0.875rem",
+                fontSize: typography.size.md,
               }}
             >
               {saving ? "Kaydediliyor..." : "Ayarlari Kaydet"}
@@ -202,11 +203,11 @@ export function OnboardingWorkspaceSetupScreen({ onBack, onComplete }: Props) {
               style={{
                 padding: "0.375rem 1rem",
                 background: "transparent",
-                color: "#64748b",
-                border: "1px solid #cbd5e1",
-                borderRadius: "4px",
+                color: colors.neutral[600],
+                border: `1px solid ${colors.border.default}`,
+                borderRadius: radius.sm,
                 cursor: "pointer",
-                fontSize: "0.875rem",
+                fontSize: typography.size.md,
               }}
             >
               Geri Don

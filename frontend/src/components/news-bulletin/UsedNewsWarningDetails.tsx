@@ -1,3 +1,4 @@
+import { colors, radius, typography } from "../design-system/tokens";
 interface Props {
   usedNewsCount: number;
   lastUsageType?: string | null;
@@ -8,11 +9,11 @@ export function UsedNewsWarningDetails({ usedNewsCount, lastUsageType, lastTarge
   return (
     <div
       style={{
-        fontSize: "0.75rem",
-        color: "#78350f",
-        background: "#fffbeb",
-        border: "1px solid #fde68a",
-        borderRadius: "3px",
+        fontSize: typography.size.sm,
+        color: colors.warning.text,
+        background: colors.warning.light,
+        border: `1px solid ${colors.warning.light}`,
+        borderRadius: radius.sm,
         padding: "0.25rem 0.5rem",
         marginTop: "0.2rem",
       }}

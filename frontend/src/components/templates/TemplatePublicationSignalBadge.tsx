@@ -1,3 +1,4 @@
+import { colors, radius, typography } from "../design-system/tokens";
 export type TemplatePublicationSignalLevel =
   | "Başlangıç"
   | "Taslak"
@@ -6,11 +7,11 @@ export type TemplatePublicationSignalLevel =
   | "Yayına yakın";
 
 const styles: Record<TemplatePublicationSignalLevel, { bg: string; color: string; border: string }> = {
-  "Başlangıç":   { bg: "#f8fafc", color: "#94a3b8", border: "#cbd5e1" },
-  "Taslak":      { bg: "#fef9c3", color: "#854d0e", border: "#fde68a" },
-  "Bağlandı":    { bg: "#e0f2fe", color: "#0369a1", border: "#7dd3fc" },
-  "Kısmen hazır":{ bg: "#fff7ed", color: "#c2410c", border: "#fdba74" },
-  "Yayına yakın":{ bg: "#dcfce7", color: "#166534", border: "#86efac" },
+  "Başlangıç":   { bg: colors.neutral[50], color: colors.neutral[500], border: colors.border.default },
+  "Taslak":      { bg: colors.warning.light, color: colors.warning.text, border: colors.warning.light },
+  "Bağlandı":    { bg: colors.info.light, color: colors.info.dark, border: colors.info.light },
+  "Kısmen hazır":{ bg: colors.warning.light, color: colors.warning.text, border: colors.warning.light },
+  "Yayına yakın":{ bg: colors.success.light, color: colors.success.text, border: colors.success.light },
 };
 
 interface Props {
@@ -18,14 +19,14 @@ interface Props {
 }
 
 export function TemplatePublicationSignalBadge({ level }: Props) {
-  const s = styles[level] ?? { bg: "#f8fafc", color: "#475569", border: "#e2e8f0" };
+  const s = styles[level] ?? { bg: colors.neutral[50], color: colors.neutral[700], border: colors.border.subtle };
   return (
     <span
       style={{
         display: "inline-block",
         padding: "0.1rem 0.45rem",
-        fontSize: "0.7rem",
-        borderRadius: "3px",
+        fontSize: typography.size.xs,
+        borderRadius: radius.sm,
         background: s.bg,
         color: s.color,
         border: `1px solid ${s.border}`,

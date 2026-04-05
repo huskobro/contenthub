@@ -8,9 +8,10 @@ import { StyleBlueprintInputQualitySummary } from "./StyleBlueprintInputQualityS
 import { StyleBlueprintInputSpecificitySummary } from "./StyleBlueprintInputSpecificitySummary";
 import { StyleBlueprintTargetOutputConsistencySummary } from "./StyleBlueprintTargetOutputConsistencySummary";
 import { StyleBlueprintPublicationOutcomeSummary } from "./StyleBlueprintPublicationOutcomeSummary";
+import { colors, radius, typography } from "../design-system/tokens";
 
 const DASH = "—";
-const TH_STYLE: React.CSSProperties = { padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" };
+const TH_STYLE: React.CSSProperties = { padding: "0.5rem 0.75rem", borderBottom: `1px solid ${colors.border.subtle}` };
 const TD_STYLE: React.CSSProperties = { padding: "0.5rem 0.75rem" };
 
 interface StyleBlueprintsTableProps {
@@ -22,9 +23,9 @@ interface StyleBlueprintsTableProps {
 export function StyleBlueprintsTable({ blueprints, selectedId, onSelect }: StyleBlueprintsTableProps) {
   return (
     <div style={{ overflowX: "auto" }}>
-    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.875rem" }}>
+    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: typography.size.md }}>
       <thead>
-        <tr style={{ background: "#f1f5f9", textAlign: "left" }}>
+        <tr style={{ background: colors.neutral[100], textAlign: "left" }}>
           <th style={TH_STYLE}>Ad</th>
           <th style={TH_STYLE}>Modül</th>
           <th style={TH_STYLE}>Durum</th>
@@ -46,28 +47,28 @@ export function StyleBlueprintsTable({ blueprints, selectedId, onSelect }: Style
             onClick={() => onSelect(bp.id)}
             style={{
               cursor: "pointer",
-              background: selectedId === bp.id ? "#eff6ff" : "transparent",
-              borderBottom: "1px solid #f1f5f9",
+              background: selectedId === bp.id ? colors.info.light : "transparent",
+              borderBottom: `1px solid ${colors.neutral[100]}`,
             }}
           >
             {/* Kimlik & Durum */}
-            <td style={{ padding: "0.5rem 0.75rem", color: "#1e40af", fontWeight: selectedId === bp.id ? 600 : 400, wordBreak: "break-word", overflowWrap: "anywhere" }}>
+            <td style={{ padding: "0.5rem 0.75rem", color: colors.brand[700], fontWeight: selectedId === bp.id ? 600 : 400, wordBreak: "break-word", overflowWrap: "anywhere" }}>
               {bp.name ?? DASH}
             </td>
-            <td style={{ padding: "0.5rem 0.75rem", color: "#64748b" }}>{bp.module_scope ?? DASH}</td>
+            <td style={{ padding: "0.5rem 0.75rem", color: colors.neutral[600] }}>{bp.module_scope ?? DASH}</td>
             <td style={TD_STYLE}>
               <span style={{
                 display: "inline-block",
                 padding: "0.125rem 0.5rem",
-                borderRadius: "9999px",
-                fontSize: "0.75rem",
-                background: bp.status === "active" ? "#dcfce7" : "#f1f5f9",
-                color: bp.status === "active" ? "#166534" : "#475569",
+                borderRadius: radius.full,
+                fontSize: typography.size.sm,
+                background: bp.status === "active" ? colors.success.light : colors.neutral[100],
+                color: bp.status === "active" ? colors.success.text : colors.neutral[700],
               }}>
                 {bp.status ?? DASH}
               </span>
             </td>
-            <td style={{ padding: "0.5rem 0.75rem", color: "#64748b" }}>v{safeNumber(bp.version, 0)}</td>
+            <td style={{ padding: "0.5rem 0.75rem", color: colors.neutral[600] }}>v{safeNumber(bp.version, 0)}</td>
             {/* Hazırlık */}
             <td style={TD_STYLE}>
               <StyleBlueprintReadinessSummary
@@ -146,7 +147,7 @@ export function StyleBlueprintsTable({ blueprints, selectedId, onSelect }: Style
               />
             </td>
             {/* Zaman */}
-            <td style={{ padding: "0.5rem 0.75rem", color: "#94a3b8", fontSize: "0.8rem" }}>
+            <td style={{ padding: "0.5rem 0.75rem", color: colors.neutral[500], fontSize: typography.size.base }}>
               {formatDateShort(bp.created_at)}
             </td>
           </tr>

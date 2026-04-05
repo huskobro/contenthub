@@ -7,6 +7,7 @@ import { NewsBulletinScriptPanel } from "./NewsBulletinScriptPanel";
 import { NewsBulletinMetadataPanel } from "./NewsBulletinMetadataPanel";
 import { NewsBulletinSelectedItemsPanel } from "./NewsBulletinSelectedItemsPanel";
 import { formatDateTime } from "../../lib/formatDate";
+import { colors, typography } from "../design-system/tokens";
 
 interface Props {
   selectedId: string | null;
@@ -15,7 +16,7 @@ interface Props {
 function Field({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div style={{ marginBottom: "8px" }}>
-      <span style={{ fontWeight: 600, marginRight: "8px", color: "#64748b", fontSize: "0.8125rem" }}>{label}:</span>
+      <span style={{ fontWeight: 600, marginRight: "8px", color: colors.neutral[600], fontSize: typography.size.base }}>{label}:</span>
       <span style={{ wordBreak: "break-word", overflowWrap: "anywhere" }}>{value ?? "—"}</span>
     </div>
   );
@@ -82,14 +83,14 @@ export function NewsBulletinDetailPanel({ selectedId }: Props) {
   return (
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <h3 data-testid="nb-detail-heading">Haber Bulteni Detayi</h3>
+        <h3 data-testid="nb-detail-heading">Haber Bulteni Detayı</h3>
         <button onClick={() => setEditMode(true)}>Düzenle</button>
       </div>
       <p
         style={{
           margin: "0 0 1rem",
-          fontSize: "0.8125rem",
-          color: "#94a3b8",
+          fontSize: typography.size.base,
+          color: colors.neutral[500],
           lineHeight: 1.5,
         }}
         data-testid="nb-detail-workflow-chain"

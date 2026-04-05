@@ -73,16 +73,21 @@ export function SettingsRegistryPage() {
         {activeTab === "registry" && (
           <>
             {isLoading && (
-              <p style={{ color: colors.neutral[500], fontSize: typography.size.base }}>
-                Yukleniyor...
+              <p style={{ color: colors.neutral[500], fontSize: typography.size.base, padding: spacing[4] }}>
+                Yükleniyor...
               </p>
             )}
             {isError && (
-              <p style={{ color: colors.error.base, fontSize: typography.size.base }}>
+              <p style={{ color: colors.error.base, fontSize: typography.size.base, padding: spacing[4] }}>
                 Hata: {error instanceof Error ? error.message : "Bilinmeyen hata"}
               </p>
             )}
-            {settings && (
+            {!isLoading && !isError && settings && settings.length === 0 && (
+              <div style={{ textAlign: "center", padding: `${spacing[8]} ${spacing[4]}`, color: colors.neutral[500] }}>
+                <p style={{ margin: 0, fontSize: typography.size.md }}>Henüz kayıtlı ayar yok.</p>
+              </div>
+            )}
+            {settings && settings.length > 0 && (
               <div style={{ display: "flex", gap: spacing[5], alignItems: "flex-start" }}>
                 <div style={{ flex: 2, minWidth: 0 }}>
                   <SectionShell flush testId="settings-registry-table-section">

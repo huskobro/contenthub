@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useCreateTemplate } from "../../hooks/useCreateTemplate";
 import { TemplateForm } from "../../components/templates/TemplateForm";
 import type { TemplateFormValues } from "../../components/templates/TemplateForm";
+import { colors, typography } from "../../components/design-system/tokens";
 
 export function TemplateCreatePage() {
   const navigate = useNavigate();
@@ -32,7 +33,7 @@ export function TemplateCreatePage() {
   return (
     <div style={{ maxWidth: "600px" }}>
       <h2
-        style={{ margin: "0 0 0.5rem", fontSize: "1.125rem", fontWeight: 600 }}
+        style={{ margin: "0 0 0.5rem", fontSize: typography.size.xl, fontWeight: 600 }}
         data-testid="tpl-create-heading"
       >
         Yeni Sablon
@@ -40,8 +41,8 @@ export function TemplateCreatePage() {
       <p
         style={{
           margin: "0 0 1.25rem",
-          fontSize: "0.875rem",
-          color: "#64748b",
+          fontSize: typography.size.md,
+          color: colors.neutral[600],
           lineHeight: 1.6,
           maxWidth: "640px",
         }}

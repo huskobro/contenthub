@@ -186,7 +186,7 @@ describe("Phase 318 — Deferred/disabled note standardization", () => {
   it("library empty state is present when no items", async () => {
     renderAdmin("/admin/library");
     const empty = await waitFor(() => screen.getByTestId("library-empty-state"));
-    expect(empty.textContent).toContain("Henuz icerik kaydi bulunmuyor");
+    expect(empty.textContent).toContain("Henüz icerik kaydi bulunmuyor");
   });
 });
 
@@ -254,13 +254,13 @@ describe("Phase 319 — Cross-module UX coherence", () => {
     it("content page has first-use note", () => {
       renderUser("/user/content");
       const note = screen.getByTestId("content-first-use-note");
-      expect(note.textContent).toContain("Henuz icerik olusturmadiyseniz");
+      expect(note.textContent).toContain("Henüz icerik olusturmadiyseniz");
     });
 
     it("publish page has first-use note", () => {
       renderUser("/user/publish");
       const note = screen.getByTestId("publish-first-use-note");
-      expect(note.textContent).toContain("Henuz yayin sureci baslamadiysa");
+      expect(note.textContent).toContain("Henüz yayin sureci baslamadiysa");
     });
   });
 });

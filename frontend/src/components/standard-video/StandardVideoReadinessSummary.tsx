@@ -1,3 +1,4 @@
+import { colors } from "../design-system/tokens";
 import {
   StandardVideoReadinessBadge,
   StandardVideoReadinessLevel,
@@ -36,7 +37,7 @@ export function StandardVideoReadinessSummary({ topic, status }: Props) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "0.15rem" }}>
       <StandardVideoReadinessBadge level={level} />
-      <span style={{ fontSize: "0.68rem", color: "#94a3b8" }}>{detail}</span>
+      <span style={{ fontSize: "0.68rem", color: colors.neutral[500] }}>{detail}</span>
     </div>
   );
 }

@@ -15,6 +15,13 @@ import { useCreateStandardVideoScript } from "../../hooks/useCreateStandardVideo
 import { useUpdateStandardVideoScript } from "../../hooks/useUpdateStandardVideoScript";
 import { useCreateStandardVideoMetadata } from "../../hooks/useCreateStandardVideoMetadata";
 import { useUpdateStandardVideoMetadata } from "../../hooks/useUpdateStandardVideoMetadata";
+import { colors, typography, spacing } from "../../components/design-system/tokens";
+import {
+  PageShell,
+  SectionShell,
+  ActionButton,
+  Mono,
+} from "../../components/design-system/primitives";
 
 export function StandardVideoDetailPage() {
   const { itemId } = useParams<{ itemId: string }>();
@@ -58,80 +65,77 @@ export function StandardVideoDetailPage() {
   }
 
   if (isLoading) {
-    return <p style={{ color: "#64748b" }}>Yükleniyor...</p>;
+    return <p style={{ color: colors.neutral[500], fontSize: typography.size.base }}>Yükleniyor...</p>;
   }
 
   if (isError) {
     return (
-      <p style={{ color: "#dc2626" }}>
+      <p style={{ color: colors.error.base, fontSize: typography.size.base }}>
         Hata: {error instanceof Error ? error.message : "Bilinmeyen hata"}
       </p>
     );
   }
 
   if (!video) {
-    return <p style={{ color: "#64748b" }}>Kayıt bulunamadı.</p>;
+    return <p style={{ color: colors.neutral[500], fontSize: typography.size.base }}>Kayit bulunamadi.</p>;
   }
 
   return (
-    <div>
-      <div style={{ marginBottom: "1rem", display: "flex", gap: "1rem" }}>
-        <Link
-          to="/admin/standard-videos"
-          style={{ fontSize: "0.875rem", color: "#3b82f6", textDecoration: "none" }}
-        >
-          ← Video listesine don
-        </Link>
-        <Link
-          to="/admin/library"
-          style={{ fontSize: "0.875rem", color: "#64748b", textDecoration: "none" }}
-          data-testid="sv-detail-library-link"
-        >
-          Kutuphanaye don
-        </Link>
-      </div>
-
-      <div style={{ display: "flex", alignItems: "baseline", gap: "1rem", marginBottom: "0.25rem" }}>
-        <h2 style={{ margin: 0 }} data-testid="sv-detail-heading">Standard Video Detayı</h2>
-        {!editMode && (
-          <button
+    <PageShell
+      title="Standard Video Detayı"
+      testId="sv-detail"
+      breadcrumb={[
+        { label: "Kutuphanaye don", to: "/admin/library" },
+        { label: "Video listesi", to: "/admin/standard-videos" },
+        { label: video.topic || "Detay" },
+      ]}
+      actions={
+        !editMode ? (
+          <ActionButton
+            variant="secondary"
+            size="sm"
             onClick={() => setEditMode(true)}
-            style={{
-              fontSize: "0.8125rem",
-              padding: "0.25rem 0.75rem",
-              background: "transparent",
-              color: "#3b82f6",
-              border: "1px solid #3b82f6",
-              borderRadius: "4px",
-              cursor: "pointer",
-            }}
           >
             Düzenle
-          </button>
-        )}
-      </div>
-      <p style={{ margin: "0 0 0.5rem", color: "#64748b", fontSize: "0.875rem" }}>
-        {video.topic} — <code style={{ fontSize: "0.8125rem" }}>{video.id}</code>
+          </ActionButton>
+        ) : undefined
+      }
+    >
+      <a
+        href="/admin/library"
+        data-testid="sv-detail-library-link"
+        style={{
+          display: "inline-block",
+          marginBottom: spacing[2],
+          fontSize: typography.size.sm,
+          color: colors.brand[600],
+          textDecoration: "none",
+        }}
+      >
+        ← Kütüphaneye dön
+      </a>
+      <p style={{ margin: `0 0 ${spacing[2]}`, color: colors.neutral[600], fontSize: typography.size.sm }}>
+        {video.topic} — <Mono>{video.id}</Mono>
       </p>
       <p
         style={{
-          margin: "0 0 1.5rem",
-          fontSize: "0.8125rem",
-          color: "#94a3b8",
-          lineHeight: 1.5,
+          margin: `0 0 ${spacing[5]}`,
+          fontSize: typography.size.sm,
+          color: colors.neutral[500],
+          lineHeight: typography.lineHeight.normal,
           maxWidth: "640px",
         }}
         data-testid="sv-detail-workflow-chain"
       >
-        Uretim zinciri: Kayit → Script → Metadata → TTS → Altyazi → Kompozisyon.
+        Uretim zinciri: Kayit &rarr; Script &rarr; Metadata &rarr; TTS &rarr; Altyazi &rarr; Kompozisyon.
         Asagidaki panellerden her adimi yonetebilirsiniz. Tum adimlar
         tamamlandiginda yayin sureci baslatilabilir.
       </p>
       <p
         style={{
-          margin: "-1rem 0 1.5rem",
-          fontSize: "0.75rem",
-          color: "#cbd5e1",
+          margin: `0 0 ${spacing[5]}`,
+          fontSize: typography.size.xs,
+          color: colors.neutral[400],
           maxWidth: "640px",
         }}
         data-testid="sv-detail-manage-note"
@@ -141,8 +145,7 @@ export function StandardVideoDetailPage() {
       </p>
 
       {editMode ? (
-        <div>
-          <h3 style={{ fontSize: "1rem", fontWeight: 600, marginBottom: "1rem" }}>Kaydı Düzenle</h3>
+        <SectionShell title="Kaydi Düzenle" testId="sv-detail-edit-section">
           <StandardVideoForm
             initial={video}
             onSubmit={handleEditSubmit}
@@ -151,7 +154,7 @@ export function StandardVideoDetailPage() {
             onCancel={() => setEditMode(false)}
             submitLabel="Güncelle"
           />
-        </div>
+        </SectionShell>
       ) : (
         <>
           <StandardVideoOverviewPanel video={video} />
@@ -183,6 +186,6 @@ export function StandardVideoDetailPage() {
           />
         </>
       )}
-    </div>
+    </PageShell>
   );
 }

@@ -96,7 +96,7 @@ export function YouTubeAnalyticsPage() {
       subtitle="Bagli YouTube kanalinin temel bilgileri ve yayin istatistikleri."
     >
       {isLoading && (
-        <p style={{ color: colors.neutral[600], fontSize: typography.size.base }}>Yukleniyor...</p>
+        <p style={{ color: colors.neutral[600], fontSize: typography.size.base }}>Yükleniyor...</p>
       )}
 
       {/* Not connected state */}
@@ -197,7 +197,7 @@ export function YouTubeAnalyticsPage() {
 
             {!statsLoading && !statsError && videoStats && videoStats.video_count === 0 && (
               <p style={{ fontSize: typography.size.sm, color: colors.neutral[500], margin: 0 }}>
-                Henuz YouTube'a yayinlanmis video bulunmuyor.
+                Henüz YouTube'a yayinlanmis video bulunmuyor.
               </p>
             )}
 
@@ -289,7 +289,7 @@ export function YouTubeAnalyticsPage() {
                   style={{ fontSize: typography.size.sm, color: colors.neutral[500], margin: 0 }}
                   data-testid="yt-trend-empty"
                 >
-                  Henuz snapshot verisi bulunmuyor. Video istatistikleri her sorgulamada otomatik kaydedilir.
+                  Henüz snapshot verisi bulunmuyor. Video istatistikleri her sorgulamada otomatik kaydedilir.
                 </p>
               )}
 

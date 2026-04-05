@@ -1,3 +1,4 @@
+import { colors, radius, typography } from "../design-system/tokens";
 export type SourceReadinessLevel =
   | "Başlangıç"
   | "Yapılandı"
@@ -6,11 +7,11 @@ export type SourceReadinessLevel =
   | "Hazır";
 
 const styles: Record<SourceReadinessLevel, { bg: string; color: string; border: string }> = {
-  "Başlangıç":      { bg: "#f1f5f9", color: "#64748b", border: "#cbd5e1" },
-  "Yapılandı":      { bg: "#eff6ff", color: "#1d4ed8", border: "#bfdbfe" },
-  "Kısmen hazır":   { bg: "#fff7ed", color: "#c2410c", border: "#fed7aa" },
-  "Dikkat gerekli": { bg: "#fef2f2", color: "#b91c1c", border: "#fecaca" },
-  "Hazır":          { bg: "#dcfce7", color: "#166534", border: "#bbf7d0" },
+  "Başlangıç":      { bg: colors.neutral[100], color: colors.neutral[600], border: colors.border.default },
+  "Yapılandı":      { bg: colors.info.light, color: colors.info.dark, border: colors.info.light },
+  "Kısmen hazır":   { bg: colors.warning.light, color: colors.warning.text, border: colors.warning.light },
+  "Dikkat gerekli": { bg: colors.error.light, color: colors.error.text, border: colors.error.light },
+  "Hazır":          { bg: colors.success.light, color: colors.success.text, border: colors.success.light },
 };
 
 interface Props {
@@ -18,14 +19,14 @@ interface Props {
 }
 
 export function SourceReadinessBadge({ level }: Props) {
-  const s = styles[level] ?? { bg: "#f8fafc", color: "#475569", border: "#e2e8f0" };
+  const s = styles[level] ?? { bg: colors.neutral[50], color: colors.neutral[700], border: colors.border.subtle };
   return (
     <span
       style={{
         display: "inline-block",
         padding: "0.1rem 0.45rem",
-        fontSize: "0.7rem",
-        borderRadius: "3px",
+        fontSize: typography.size.xs,
+        borderRadius: radius.sm,
         background: s.bg,
         color: s.color,
         border: `1px solid ${s.border}`,

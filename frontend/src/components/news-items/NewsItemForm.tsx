@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { NewsItemResponse } from "../../api/newsItemsApi";
 import { normalizeDateForInput } from "../../lib/formatDate";
+import { colors, radius, typography } from "../design-system/tokens";
 
 export interface NewsItemFormValues {
   title: string;
@@ -24,21 +25,21 @@ interface NewsItemFormProps {
   submitLabel?: string;
 }
 
-const COLOR_ERR = "#dc2626";
+const COLOR_ERR = colors.error.base;
 const inputStyle: React.CSSProperties = {
   width: "100%",
   padding: "0.375rem 0.5rem",
-  fontSize: "0.875rem",
-  border: "1px solid #e2e8f0",
-  borderRadius: "4px",
+  fontSize: typography.size.md,
+  border: `1px solid ${colors.border.subtle}`,
+  borderRadius: radius.sm,
   boxSizing: "border-box",
 };
 
 const labelStyle: React.CSSProperties = {
   display: "block",
-  fontSize: "0.75rem",
+  fontSize: typography.size.sm,
   fontWeight: 600,
-  color: "#475569",
+  color: colors.neutral[700],
   marginBottom: "0.25rem",
 };
 
@@ -47,26 +48,26 @@ const fieldStyle: React.CSSProperties = {
 };
 
 const errorStyle: React.CSSProperties = {
-  fontSize: "0.75rem",
+  fontSize: typography.size.sm,
   color: COLOR_ERR,
   marginTop: "0.2rem",
 };
 
 const BTN_PRIMARY: React.CSSProperties = {
   padding: "0.375rem 1rem",
-  fontSize: "0.875rem",
-  color: "#fff",
+  fontSize: typography.size.md,
+  color: colors.neutral[0],
   border: "none",
-  borderRadius: "4px",
+  borderRadius: radius.sm,
 };
 
 const BTN_CANCEL: React.CSSProperties = {
   padding: "0.375rem 1rem",
-  fontSize: "0.875rem",
-  background: "#f1f5f9",
-  color: "#475569",
-  border: "1px solid #e2e8f0",
-  borderRadius: "4px",
+  fontSize: typography.size.md,
+  background: colors.neutral[100],
+  color: colors.neutral[700],
+  border: `1px solid ${colors.border.subtle}`,
+  borderRadius: radius.sm,
 };
 
 export function NewsItemForm({
@@ -117,7 +118,7 @@ export function NewsItemForm({
           Başlık <span style={{ color: COLOR_ERR }}>*</span>
         </label>
         <input
-          style={{ ...inputStyle, borderColor: errors.title ? COLOR_ERR : "#e2e8f0" }}
+          style={{ ...inputStyle, borderColor: errors.title ? COLOR_ERR : colors.border.subtle }}
           value={values.title}
           onChange={(e) => set("title", e.target.value)}
           placeholder="Haber başlığı"
@@ -130,7 +131,7 @@ export function NewsItemForm({
           URL <span style={{ color: COLOR_ERR }}>*</span>
         </label>
         <input
-          style={{ ...inputStyle, borderColor: errors.url ? COLOR_ERR : "#e2e8f0" }}
+          style={{ ...inputStyle, borderColor: errors.url ? COLOR_ERR : colors.border.subtle }}
           value={values.url}
           onChange={(e) => set("url", e.target.value)}
           placeholder="Haber URL'si"
@@ -210,14 +211,14 @@ export function NewsItemForm({
       </div>
 
       {submitError && (
-        <div style={{ color: COLOR_ERR, fontSize: "0.875rem", marginBottom: "0.75rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>{submitError}</div>
+        <div style={{ color: COLOR_ERR, fontSize: typography.size.md, marginBottom: "0.75rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>{submitError}</div>
       )}
 
       <div style={{ display: "flex", gap: "0.5rem" }}>
         <button
           type="submit"
           disabled={isSubmitting}
-          style={{ ...BTN_PRIMARY, background: isSubmitting ? "#93c5fd" : "#3b82f6", cursor: isSubmitting ? "not-allowed" : "pointer" }}
+          style={{ ...BTN_PRIMARY, background: isSubmitting ? colors.info.light : colors.brand[500], cursor: isSubmitting ? "not-allowed" : "pointer" }}
         >
           {isSubmitting ? "Kaydediliyor..." : (submitLabel ?? (mode === "create" ? "Oluştur" : "Kaydet"))}
         </button>

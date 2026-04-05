@@ -10,6 +10,7 @@ import { colors, spacing, typography } from "../../components/design-system/toke
 import {
   PageShell,
   SectionShell,
+  ActionButton,
 } from "../../components/design-system/primitives";
 import { useScopedKeyboardNavigation } from "../../hooks/useScopedKeyboardNavigation";
 
@@ -75,25 +76,29 @@ export function JobsRegistryPage() {
         Is akis zinciri: Olusturma &rarr; Kuyruga Alma &rarr; Adim Isleme &rarr; Tamamlama/Hata &rarr; Yayin Hazirligi. Bir ise tiklayarak detay sayfasinda retry, cancel veya skip gibi operasyonel aksiyonlarin durumunu gorebilirsiniz.
         ↑↓ ile gezin, Space ile on izleme, Enter ile detay panelini acin.
       </p>
-      {isLoading && <p style={{ color: "#64748b" }}>Yükleniyor...</p>}
-      {isError && (
-        <p style={{ color: "#dc2626" }}>
-          Hata: {error instanceof Error ? error.message : "Bilinmeyen hata"}
-        </p>
-      )}
-
-      {jobs && (
-        <div onKeyDown={handleKeyDown} tabIndex={0} style={{ outline: "none" }}>
-          <SectionShell testId="jobs-table-section">
+      <div onKeyDown={handleKeyDown} tabIndex={0} style={{ outline: "none" }}>
+        <SectionShell testId="jobs-table-section">
+          {isLoading && <p style={{ color: colors.neutral[500], fontSize: typography.size.base, padding: spacing[4] }}>Yükleniyor...</p>}
+          {isError && (
+            <p style={{ color: colors.error.base, fontSize: typography.size.base, padding: spacing[4] }}>
+              Hata: {error instanceof Error ? error.message : "Bilinmeyen hata"}
+            </p>
+          )}
+          {!isLoading && !isError && jobs && jobs.length === 0 && (
+            <div style={{ textAlign: "center", padding: `${spacing[8]} ${spacing[4]}`, color: colors.neutral[500] }}>
+              <p style={{ margin: 0, fontSize: typography.size.md }}>Henüz kayıtlı job yok.</p>
+            </div>
+          )}
+          {jobs && jobs.length > 0 && (
             <JobsTable
               jobs={jobs}
               selectedId={selectedId}
               onSelect={handleRowClick}
               activeIndex={activeIndex}
             />
-          </SectionShell>
-        </div>
-      )}
+          )}
+        </SectionShell>
+      </div>
 
       {/* Sheet — sağdan kayan detay paneli */}
       <Sheet
@@ -106,25 +111,14 @@ export function JobsRegistryPage() {
         <JobDetailPanel selectedId={selectedId} />
         {selectedId && (
           <div style={{ marginTop: spacing[4], borderTop: `1px solid ${colors.border.subtle}`, paddingTop: spacing[4] }}>
-            <button
+            <ActionButton
+              variant="primary"
+              size="sm"
               onClick={handleNavigateToDetail}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: spacing[2],
-                padding: `${spacing[2]} ${spacing[4]}`,
-                fontSize: typography.size.base,
-                fontWeight: typography.weight.medium,
-                color: colors.brand[600],
-                background: colors.brand[50],
-                border: `1px solid ${colors.brand[200]}`,
-                borderRadius: "6px",
-                cursor: "pointer",
-              }}
               data-testid="jobs-sheet-navigate"
             >
-              Detay Sayfasına Git →
-            </button>
+              Detay Sayfasina Git &rarr;
+            </ActionButton>
           </div>
         )}
       </Sheet>

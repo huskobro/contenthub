@@ -1,6 +1,7 @@
 import type { TemplateStyleLinkResponse } from "../../api/templateStyleLinksApi";
 import { formatDateShort } from "../../lib/formatDate";
 import { TemplateStyleLinkReadinessSummary } from "./TemplateStyleLinkReadinessSummary";
+import { colors, typography } from "../design-system/tokens";
 
 interface TemplateStyleLinksTableProps {
   links: TemplateStyleLinkResponse[];
@@ -9,12 +10,12 @@ interface TemplateStyleLinksTableProps {
 }
 
 const TD_PAD = "0.5rem 0.75rem";
-const TH_CELL: React.CSSProperties = { textAlign: "left", padding: TD_PAD, fontWeight: 600, color: "#475569" };
+const TH_CELL: React.CSSProperties = { textAlign: "left", padding: TD_PAD, fontWeight: 600, color: colors.neutral[700] };
 
 const STATUS_COLORS: Record<string, string> = {
-  active: "#16a34a",
-  inactive: "#64748b",
-  archived: "#94a3b8",
+  active: colors.success.base,
+  inactive: colors.neutral[600],
+  archived: colors.neutral[500],
 };
 
 export function TemplateStyleLinksTable({
@@ -23,9 +24,9 @@ export function TemplateStyleLinksTable({
   onSelect,
 }: TemplateStyleLinksTableProps) {
   return (
-    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.875rem" }}>
+    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: typography.size.md }}>
       <thead>
-        <tr style={{ background: "#f8fafc", borderBottom: "1px solid #e2e8f0" }}>
+        <tr style={{ background: colors.neutral[50], borderBottom: `1px solid ${colors.border.subtle}` }}>
           <th style={TH_CELL}>
             Template ID
           </th>
@@ -53,27 +54,27 @@ export function TemplateStyleLinksTable({
             onClick={() => onSelect(link.id)}
             style={{
               cursor: "pointer",
-              background: selectedId === link.id ? "#eff6ff" : "transparent",
-              borderBottom: "1px solid #f1f5f9",
+              background: selectedId === link.id ? colors.info.light : "transparent",
+              borderBottom: `1px solid ${colors.neutral[100]}`,
             }}
           >
-            <td style={{ padding: TD_PAD, color: "#1e293b", fontFamily: "monospace", fontSize: "0.8rem" }}>
+            <td style={{ padding: TD_PAD, color: colors.neutral[900], fontFamily: "monospace", fontSize: typography.size.base }}>
               {link.template_id.slice(0, 8)}…
             </td>
-            <td style={{ padding: TD_PAD, color: "#1e293b", fontFamily: "monospace", fontSize: "0.8rem" }}>
+            <td style={{ padding: TD_PAD, color: colors.neutral[900], fontFamily: "monospace", fontSize: typography.size.base }}>
               {link.style_blueprint_id.slice(0, 8)}…
             </td>
-            <td style={{ padding: TD_PAD, color: "#475569" }}>
+            <td style={{ padding: TD_PAD, color: colors.neutral[700] }}>
               {link.link_role ?? "—"}
             </td>
             <td style={{ padding: TD_PAD }}>
               <span style={{
                 padding: "0.125rem 0.5rem",
                 borderRadius: "999px",
-                fontSize: "0.75rem",
+                fontSize: typography.size.sm,
                 fontWeight: 600,
-                color: "#fff",
-                background: STATUS_COLORS[link.status] ?? "#94a3b8",
+                color: colors.neutral[0],
+                background: STATUS_COLORS[link.status] ?? colors.neutral[500],
               }}>
                 {link.status ?? "—"}
               </span>
@@ -86,7 +87,7 @@ export function TemplateStyleLinksTable({
                 styleBlueprintId={link.style_blueprint_id}
               />
             </td>
-            <td style={{ padding: TD_PAD, color: "#64748b", fontSize: "0.8rem" }}>
+            <td style={{ padding: TD_PAD, color: colors.neutral[600], fontSize: typography.size.base }}>
               {formatDateShort(link.created_at)}
             </td>
           </tr>

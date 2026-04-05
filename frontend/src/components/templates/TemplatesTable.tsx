@@ -8,9 +8,10 @@ import { TemplateInputQualitySummary } from "./TemplateInputQualitySummary";
 import { TemplateInputSpecificitySummary } from "./TemplateInputSpecificitySummary";
 import { TemplateTargetOutputConsistencySummary } from "./TemplateTargetOutputConsistencySummary";
 import { TemplatePublicationOutcomeSummary } from "./TemplatePublicationOutcomeSummary";
+import { colors, radius, typography } from "../design-system/tokens";
 
 const DASH = "—";
-const TH_STYLE: React.CSSProperties = { padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" };
+const TH_STYLE: React.CSSProperties = { padding: "0.5rem 0.75rem", borderBottom: `1px solid ${colors.border.subtle}` };
 const TD_STYLE: React.CSSProperties = { padding: "0.5rem 0.75rem" };
 
 interface TemplatesTableProps {
@@ -26,11 +27,11 @@ export function TemplatesTable({ templates, selectedId, onSelect }: TemplatesTab
       style={{
         width: "100%",
         borderCollapse: "collapse",
-        fontSize: "0.875rem",
+        fontSize: typography.size.md,
       }}
     >
       <thead>
-        <tr style={{ background: "#f1f5f9", textAlign: "left" }}>
+        <tr style={{ background: colors.neutral[100], textAlign: "left" }}>
           <th style={TH_STYLE}>Ad</th>
           <th style={TH_STYLE}>Tür</th>
           <th style={TH_STYLE}>Sahip</th>
@@ -54,32 +55,32 @@ export function TemplatesTable({ templates, selectedId, onSelect }: TemplatesTab
             onClick={() => onSelect(t.id)}
             style={{
               cursor: "pointer",
-              background: selectedId === t.id ? "#eff6ff" : "transparent",
-              borderBottom: "1px solid #f1f5f9",
+              background: selectedId === t.id ? colors.info.light : "transparent",
+              borderBottom: `1px solid ${colors.neutral[100]}`,
             }}
           >
             {/* Kimlik & Durum */}
-            <td style={{ padding: "0.5rem 0.75rem", color: "#1e40af", fontWeight: selectedId === t.id ? 600 : 400, wordBreak: "break-word", overflowWrap: "anywhere" }}>
+            <td style={{ padding: "0.5rem 0.75rem", color: colors.brand[700], fontWeight: selectedId === t.id ? 600 : 400, wordBreak: "break-word", overflowWrap: "anywhere" }}>
               {t.name ?? DASH}
             </td>
-            <td style={{ padding: "0.5rem 0.75rem", color: "#334155" }}>{t.template_type ?? DASH}</td>
-            <td style={{ padding: "0.5rem 0.75rem", color: "#334155" }}>{t.owner_scope ?? DASH}</td>
-            <td style={{ padding: "0.5rem 0.75rem", color: "#64748b" }}>{t.module_scope ?? DASH}</td>
+            <td style={{ padding: "0.5rem 0.75rem", color: colors.neutral[800] }}>{t.template_type ?? DASH}</td>
+            <td style={{ padding: "0.5rem 0.75rem", color: colors.neutral[800] }}>{t.owner_scope ?? DASH}</td>
+            <td style={{ padding: "0.5rem 0.75rem", color: colors.neutral[600] }}>{t.module_scope ?? DASH}</td>
             <td style={TD_STYLE}>
               <span
                 style={{
                   display: "inline-block",
                   padding: "0.125rem 0.5rem",
-                  borderRadius: "9999px",
-                  fontSize: "0.75rem",
-                  background: t.status === "active" ? "#dcfce7" : "#f1f5f9",
-                  color: t.status === "active" ? "#166534" : "#475569",
+                  borderRadius: radius.full,
+                  fontSize: typography.size.sm,
+                  background: t.status === "active" ? colors.success.light : colors.neutral[100],
+                  color: t.status === "active" ? colors.success.text : colors.neutral[700],
                 }}
               >
                 {t.status ?? DASH}
               </span>
             </td>
-            <td style={{ padding: "0.5rem 0.75rem", color: "#64748b" }}>v{safeNumber(t.version, 0)}</td>
+            <td style={{ padding: "0.5rem 0.75rem", color: colors.neutral[600] }}>v{safeNumber(t.version, 0)}</td>
             {/* Stil & Hazırlık */}
             <td style={TD_STYLE}>
               <TemplateStyleLinkSummary

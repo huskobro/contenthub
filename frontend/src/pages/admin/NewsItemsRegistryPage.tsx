@@ -3,8 +3,8 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useNewsItemsList } from "../../hooks/useNewsItemsList";
 import { NewsItemsTable } from "../../components/news-items/NewsItemsTable";
 import { NewsItemDetailPanel } from "../../components/news-items/NewsItemDetailPanel";
-import { PageShell } from "../../components/design-system/primitives";
-import { colors, typography, spacing, radius } from "../../components/design-system/tokens";
+import { PageShell, SectionShell, ActionButton } from "../../components/design-system/primitives";
+import { colors, typography, spacing } from "../../components/design-system/tokens";
 
 export function NewsItemsRegistryPage() {
   const location = useLocation();
@@ -17,37 +17,31 @@ export function NewsItemsRegistryPage() {
   return (
     <PageShell
       title="News Items"
+      testId="news-items-registry"
       actions={
-        <button
-          onClick={() => navigate("/admin/news-items/new")}
-          style={{
-            padding: `${spacing[1]} ${spacing[4]}`,
-            fontSize: typography.size.md,
-            background: colors.brand[600],
-            color: colors.neutral[0],
-            border: "none",
-            borderRadius: radius.sm,
-            cursor: "pointer",
-          }}
-        >
+        <ActionButton variant="primary" onClick={() => navigate("/admin/news-items/new")}>
           Yeni
-        </button>
+        </ActionButton>
       }
     >
       <div style={{ display: "flex", gap: spacing[6] }}>
         <div style={{ flex: 1 }}>
-          {isLoading && <p>Yükleniyor...</p>}
-          {isError && <p style={{ color: colors.error.base }}>Hata: kayıtlar yüklenemedi.</p>}
-          {!isLoading && !isError && items && items.length === 0 && (
-            <p style={{ color: colors.neutral[500] }}>Henüz haber kaydı yok.</p>
-          )}
-          {items && items.length > 0 && (
-            <NewsItemsTable
-              items={items}
-              selectedId={selectedId}
-              onSelect={setSelectedId}
-            />
-          )}
+          <SectionShell testId="news-items-table-section">
+            {isLoading && <p style={{ color: colors.neutral[500], fontSize: typography.size.base, padding: spacing[4] }}>Yükleniyor...</p>}
+            {isError && <p style={{ color: colors.error.base, fontSize: typography.size.base, padding: spacing[4] }}>Hata: kayıtlar yüklenemedi.</p>}
+            {!isLoading && !isError && items && items.length === 0 && (
+              <div style={{ textAlign: "center", padding: `${spacing[8]} ${spacing[4]}`, color: colors.neutral[500] }}>
+                <p style={{ margin: 0, fontSize: typography.size.md }}>Henüz haber kaydı yok.</p>
+              </div>
+            )}
+            {items && items.length > 0 && (
+              <NewsItemsTable
+                items={items}
+                selectedId={selectedId}
+                onSelect={setSelectedId}
+              />
+            )}
+          </SectionShell>
         </div>
 
         {selectedId && (

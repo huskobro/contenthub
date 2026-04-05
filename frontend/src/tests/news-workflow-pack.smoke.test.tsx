@@ -221,7 +221,7 @@ describe("News workflow pack (Phase 276-281)", () => {
     it("detail panel shows heading with testid", async () => {
       renderAt("/admin/news-bulletins", { selectedId: "nb-001" });
       expect(await screen.findByTestId("nb-detail-heading")).toBeDefined();
-      expect((await screen.findByTestId("nb-detail-heading")).textContent).toContain("Haber Bulteni Detayi");
+      expect((await screen.findByTestId("nb-detail-heading")).textContent).toContain("Haber Bulteni Detayı");
     });
 
     it("detail panel shows workflow chain description", async () => {

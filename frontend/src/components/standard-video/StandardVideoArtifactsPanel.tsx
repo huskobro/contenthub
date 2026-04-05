@@ -3,9 +3,10 @@ import type {
   StandardVideoMetadataResponse,
 } from "../../api/standardVideoApi";
 import { isBlank } from "../../lib/isBlank";
+import { colors, radius, typography } from "../design-system/tokens";
 
 const FONT_SM = "0.875rem";
-const BORDER = "1px solid #e2e8f0";
+const BORDER = `1px solid ${colors.border.subtle}`;
 
 interface Props {
   scriptLoading: boolean;
@@ -21,8 +22,8 @@ function SectionCard({ title, children }: { title: string; children: React.React
     <div
       style={{
         border: BORDER,
-        borderRadius: "6px",
-        background: "#fff",
+        borderRadius: radius.md,
+        background: colors.neutral[0],
         marginBottom: "1.25rem",
         overflow: "hidden",
       }}
@@ -30,7 +31,7 @@ function SectionCard({ title, children }: { title: string; children: React.React
       <div
         style={{
           padding: "0.625rem 0.75rem",
-          background: "#f8fafc",
+          background: colors.neutral[50],
           borderBottom: BORDER,
           fontWeight: 600,
           fontSize: FONT_SM,
@@ -45,8 +46,8 @@ function SectionCard({ title, children }: { title: string; children: React.React
 
 function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div style={{ display: "flex", gap: "0.5rem", marginBottom: "0.25rem", fontSize: "0.875rem" }}>
-      <span style={{ color: "#64748b", fontWeight: 500, minWidth: "120px" }}>{label}</span>
+    <div style={{ display: "flex", gap: "0.5rem", marginBottom: "0.25rem", fontSize: typography.size.md }}>
+      <span style={{ color: colors.neutral[600], fontWeight: 500, minWidth: "120px" }}>{label}</span>
       <span>{value ?? "—"}</span>
     </div>
   );
@@ -63,12 +64,12 @@ export function StandardVideoArtifactsPanel({
   return (
     <div>
       <SectionCard title="Script">
-        {scriptLoading && <p style={{ color: "#64748b", fontSize: "0.875rem" }}>Yükleniyor...</p>}
+        {scriptLoading && <p style={{ color: colors.neutral[600], fontSize: typography.size.md }}>Yükleniyor...</p>}
         {scriptError && (
-          <p style={{ color: "#dc2626", fontSize: "0.875rem" }}>Script yüklenirken hata oluştu.</p>
+          <p style={{ color: colors.error.base, fontSize: typography.size.md }}>Script yüklenirken hata oluştu.</p>
         )}
         {!scriptLoading && !scriptError && script === null && (
-          <p style={{ color: "#94a3b8", fontSize: "0.875rem" }}>
+          <p style={{ color: colors.neutral[500], fontSize: typography.size.md }}>
             Henüz script oluşturulmadı.
           </p>
         )}
@@ -78,17 +79,17 @@ export function StandardVideoArtifactsPanel({
             <InfoRow label="Kaynak Tipi" value={script.source_type} />
             <InfoRow label="Durum" value={script.generation_status} />
             <div style={{ marginTop: "0.75rem" }}>
-              <div style={{ color: "#64748b", fontWeight: 500, fontSize: "0.8125rem", marginBottom: "0.25rem" }}>
+              <div style={{ color: colors.neutral[600], fontWeight: 500, fontSize: typography.size.base, marginBottom: "0.25rem" }}>
                 İçerik Önizleme
               </div>
               <div
                 style={{
-                  background: "#f8fafc",
+                  background: colors.neutral[50],
                   border: BORDER,
-                  borderRadius: "4px",
+                  borderRadius: radius.sm,
                   padding: "0.5rem 0.75rem",
-                  fontSize: "0.8125rem",
-                  color: "#334155",
+                  fontSize: typography.size.base,
+                  color: colors.neutral[800],
                   whiteSpace: "pre-wrap",
                   wordBreak: "break-word",
                   overflowWrap: "anywhere",
@@ -108,12 +109,12 @@ export function StandardVideoArtifactsPanel({
       </SectionCard>
 
       <SectionCard title="Metadata">
-        {metadataLoading && <p style={{ color: "#64748b", fontSize: "0.875rem" }}>Yükleniyor...</p>}
+        {metadataLoading && <p style={{ color: colors.neutral[600], fontSize: typography.size.md }}>Yükleniyor...</p>}
         {metadataError && (
-          <p style={{ color: "#dc2626", fontSize: "0.875rem" }}>Metadata yüklenirken hata oluştu.</p>
+          <p style={{ color: colors.error.base, fontSize: typography.size.md }}>Metadata yüklenirken hata oluştu.</p>
         )}
         {!metadataLoading && !metadataError && metadata === null && (
-          <p style={{ color: "#94a3b8", fontSize: "0.875rem" }}>
+          <p style={{ color: colors.neutral[500], fontSize: typography.size.md }}>
             Henüz metadata oluşturulmadı.
           </p>
         )}
@@ -126,7 +127,7 @@ export function StandardVideoArtifactsPanel({
             <InfoRow label="Kaynak Tipi" value={metadata.source_type} />
             <InfoRow label="Durum" value={metadata.generation_status} />
             {metadata.tags_json && (
-              <InfoRow label="Etiketler" value={<code style={{ fontSize: "0.8rem", wordBreak: "break-all", overflowWrap: "anywhere" }}>{metadata.tags_json}</code>} />
+              <InfoRow label="Etiketler" value={<code style={{ fontSize: typography.size.base, wordBreak: "break-all", overflowWrap: "anywhere" }}>{metadata.tags_json}</code>} />
             )}
           </div>
         )}

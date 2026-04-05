@@ -1,3 +1,4 @@
+import { colors, radius, typography } from "../design-system/tokens";
 interface Props {
   count: number;
 }
@@ -8,11 +9,11 @@ export function NewsBulletinSelectedNewsCountBadge({ count }: Props) {
       style={{
         display: "inline-block",
         padding: "0.1rem 0.4rem",
-        fontSize: "0.7rem",
-        borderRadius: "3px",
-        background: count > 0 ? "#eff6ff" : "#f1f5f9",
-        color: count > 0 ? "#1d4ed8" : "#94a3b8",
-        border: `1px solid ${count > 0 ? "#bfdbfe" : "#e2e8f0"}`,
+        fontSize: typography.size.xs,
+        borderRadius: radius.sm,
+        background: count > 0 ? colors.info.light : colors.neutral[100],
+        color: count > 0 ? colors.info.dark : colors.neutral[500],
+        border: `1px solid ${count > 0 ? colors.info.light : colors.border.subtle}`,
         whiteSpace: "nowrap",
         minWidth: "1.5rem",
         textAlign: "center",

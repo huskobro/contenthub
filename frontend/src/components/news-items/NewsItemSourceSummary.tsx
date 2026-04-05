@@ -1,3 +1,4 @@
+import { colors } from "../design-system/tokens";
 import { NewsItemSourceStatusBadge, NewsItemSourceStatus } from "./NewsItemSourceStatusBadge";
 
 interface Props {
@@ -27,7 +28,7 @@ export function NewsItemSourceSummary({ sourceId, sourceName, sourceStatus }: Pr
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "0.15rem" }}>
       <NewsItemSourceStatusBadge status={status} />
-      <span style={{ fontSize: "0.68rem", color: "#94a3b8" }}>{detail}</span>
+      <span style={{ fontSize: "0.68rem", color: colors.neutral[500] }}>{detail}</span>
     </div>
   );
 }

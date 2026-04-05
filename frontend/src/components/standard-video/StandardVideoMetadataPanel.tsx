@@ -3,13 +3,14 @@ import type { StandardVideoMetadataResponse } from "../../api/standardVideoApi";
 import { StandardVideoMetadataForm } from "./StandardVideoMetadataForm";
 import type { MetadataFormValues } from "./StandardVideoMetadataForm";
 import { isBlank } from "../../lib/isBlank";
+import { colors, radius, typography } from "../design-system/tokens";
 
 const DASH = "—";
 const PAD_B_SM = "0.375rem";
-const LABEL_TD: React.CSSProperties = { color: "#64748b", paddingRight: "1rem", paddingBottom: PAD_B_SM, whiteSpace: "nowrap" };
+const LABEL_TD: React.CSSProperties = { color: colors.neutral[600], paddingRight: "1rem", paddingBottom: PAD_B_SM, whiteSpace: "nowrap" };
 const LABEL_TD_TOP: React.CSSProperties = { ...LABEL_TD, verticalAlign: "top" };
-const SECTION_STYLE: React.CSSProperties = { border: "1px solid #e2e8f0", borderRadius: "6px", padding: "1rem", marginBottom: "1.25rem" };
-const FORM_HEADING: React.CSSProperties = { margin: "0 0 1rem", fontSize: "0.9375rem", fontWeight: 600 };
+const SECTION_STYLE: React.CSSProperties = { border: `1px solid ${colors.border.subtle}`, borderRadius: radius.md, padding: "1rem", marginBottom: "1.25rem" };
+const FORM_HEADING: React.CSSProperties = { margin: "0 0 1rem", fontSize: typography.size.lg, fontWeight: 600 };
 
 interface Props {
   videoId: string;
@@ -106,7 +107,7 @@ export function StandardVideoMetadataPanel({
   if (isLoading) {
     return (
       <div style={SECTION_STYLE}>
-        <p style={{ color: "#64748b", margin: 0 }}>Metadata yükleniyor...</p>
+        <p style={{ color: colors.neutral[600], margin: 0 }}>Metadata yükleniyor...</p>
       </div>
     );
   }
@@ -114,7 +115,7 @@ export function StandardVideoMetadataPanel({
   if (isError) {
     return (
       <div style={SECTION_STYLE}>
-        <p style={{ color: "#dc2626", margin: 0 }}>Metadata yüklenirken hata oluştu.</p>
+        <p style={{ color: colors.error.base, margin: 0 }}>Metadata yüklenirken hata oluştu.</p>
       </div>
     );
   }
@@ -175,17 +176,17 @@ export function StandardVideoMetadataPanel({
   return (
     <div style={SECTION_STYLE}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
-        <h4 style={{ margin: 0, fontSize: "0.9375rem", fontWeight: 600 }}>Metadata</h4>
+        <h4 style={{ margin: 0, fontSize: typography.size.lg, fontWeight: 600 }}>Metadata</h4>
         {metadata ? (
           <button
             onClick={() => setMode("edit")}
             style={{
-              fontSize: "0.8125rem",
+              fontSize: typography.size.base,
               padding: "0.25rem 0.75rem",
               background: "transparent",
-              color: "#3b82f6",
-              border: "1px solid #3b82f6",
-              borderRadius: "4px",
+              color: colors.brand[500],
+              border: `1px solid ${colors.brand[500]}`,
+              borderRadius: radius.sm,
               cursor: "pointer",
             }}
           >
@@ -195,12 +196,12 @@ export function StandardVideoMetadataPanel({
           <button
             onClick={() => setMode("create")}
             style={{
-              fontSize: "0.8125rem",
+              fontSize: typography.size.base,
               padding: "0.25rem 0.75rem",
-              background: "#3b82f6",
-              color: "#fff",
+              background: colors.brand[500],
+              color: colors.neutral[0],
               border: "none",
-              borderRadius: "4px",
+              borderRadius: radius.sm,
               cursor: "pointer",
             }}
           >
@@ -210,11 +211,11 @@ export function StandardVideoMetadataPanel({
       </div>
 
       {!metadata ? (
-        <p style={{ color: "#94a3b8", fontSize: "0.875rem", margin: 0 }}>
+        <p style={{ color: colors.neutral[500], fontSize: typography.size.md, margin: 0 }}>
           Henüz metadata yok.
         </p>
       ) : (
-        <table style={{ fontSize: "0.8125rem", borderCollapse: "collapse", width: "100%" }}>
+        <table style={{ fontSize: typography.size.base, borderCollapse: "collapse", width: "100%" }}>
           <tbody>
             <tr>
               <td style={LABEL_TD_TOP}>Başlık</td>
@@ -235,10 +236,10 @@ export function StandardVideoMetadataPanel({
                       <span
                         key={i}
                         style={{
-                          background: "#e2e8f0",
-                          borderRadius: "3px",
+                          background: colors.border.subtle,
+                          borderRadius: radius.sm,
                           padding: "0.125rem 0.375rem",
-                          fontSize: "0.75rem",
+                          fontSize: typography.size.sm,
                         }}
                       >
                         {tag}

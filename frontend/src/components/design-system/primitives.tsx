@@ -235,7 +235,7 @@ export function DataTable<T>({
   columns, data, keyFn, onRowClick, selectedKey, emptyMessage, loading, error, errorMessage, testId, rowTestIdPrefix,
 }: DataTableProps<T>) {
   if (loading) {
-    return <p style={{ color: colors.neutral[500], fontSize: typography.size.base, padding: spacing[4] }}>Yukleniyor...</p>;
+    return <p style={{ color: colors.neutral[500], fontSize: typography.size.base, padding: spacing[4] }}>Yükleniyor...</p>;
   }
   if (error) {
     return <p style={{ color: colors.error.base, fontSize: typography.size.base, padding: spacing[4] }}>{errorMessage || "Veri yuklenirken hata olustu."}</p>;

@@ -7,11 +7,12 @@ import type { TemplateFormValues } from "./TemplateForm";
 import { formatDateTime } from "../../lib/formatDate";
 import { isBlank } from "../../lib/isBlank";
 import { JsonPreviewField } from "../shared/JsonPreviewField";
+import { colors, radius, typography } from "../design-system/tokens";
 
-const COLOR_DARK = "#1e293b";
-const BORDER = "1px solid #e2e8f0";
-const PANEL_BOX: React.CSSProperties = { padding: "1.25rem", border: BORDER, borderRadius: "6px", background: "#fff" };
-const SECTION_DIVIDER: React.CSSProperties = { marginTop: "0.75rem", borderTop: "1px solid #f1f5f9", paddingTop: "0.75rem" };
+const COLOR_DARK = colors.neutral[900];
+const BORDER = `1px solid ${colors.border.subtle}`;
+const PANEL_BOX: React.CSSProperties = { padding: "1.25rem", border: BORDER, borderRadius: radius.md, background: colors.neutral[0] };
+const SECTION_DIVIDER: React.CSSProperties = { marginTop: "0.75rem", borderTop: `1px solid ${colors.neutral[100]}`, paddingTop: "0.75rem" };
 
 interface TemplateDetailPanelProps {
   templateId: string | null;
@@ -21,8 +22,8 @@ function Field({ label, value }: { label: string; value: string | number | null 
   const isEmpty = value === null || value === undefined || (typeof value === "string" && isBlank(value));
   return (
     <div style={{ marginBottom: "0.5rem" }}>
-      <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "#64748b" }}>{label}: </span>
-      <span style={{ fontSize: "0.875rem", color: isEmpty ? "#94a3b8" : COLOR_DARK, wordBreak: "break-word", overflowWrap: "anywhere" }}>
+      <span style={{ fontSize: typography.size.sm, fontWeight: 600, color: colors.neutral[600] }}>{label}: </span>
+      <span style={{ fontSize: typography.size.md, color: isEmpty ? colors.neutral[500] : COLOR_DARK, wordBreak: "break-word", overflowWrap: "anywhere" }}>
         {isEmpty ? "—" : String(value)}
       </span>
     </div>
@@ -47,11 +48,11 @@ export function TemplateDetailPanel({ templateId }: TemplateDetailPanelProps) {
       <div
         style={{
           padding: "2rem",
-          color: "#94a3b8",
-          fontSize: "0.875rem",
+          color: colors.neutral[500],
+          fontSize: typography.size.md,
           textAlign: "center",
-          border: "1px dashed #e2e8f0",
-          borderRadius: "6px",
+          border: `1px dashed ${colors.border.subtle}`,
+          borderRadius: radius.md,
         }}
       >
         Bir template seçin.
@@ -60,12 +61,12 @@ export function TemplateDetailPanel({ templateId }: TemplateDetailPanelProps) {
   }
 
   if (isLoading) {
-    return <p style={{ color: "#64748b", padding: "1rem" }}>Yükleniyor...</p>;
+    return <p style={{ color: colors.neutral[600], padding: "1rem" }}>Yükleniyor...</p>;
   }
 
   if (isError) {
     return (
-      <p style={{ color: "#dc2626", padding: "1rem" }}>
+      <p style={{ color: colors.error.base, padding: "1rem" }}>
         Hata: {error instanceof Error ? error.message : "Bilinmeyen hata"}
       </p>
     );
@@ -96,7 +97,7 @@ export function TemplateDetailPanel({ templateId }: TemplateDetailPanelProps) {
       <div
         style={PANEL_BOX}
       >
-        <h3 style={{ margin: "0 0 1rem", fontSize: "1rem", color: COLOR_DARK }}>Düzenle</h3>
+        <h3 style={{ margin: "0 0 1rem", fontSize: typography.size.lg, color: COLOR_DARK }}>Düzenle</h3>
         <TemplateForm
           mode="edit"
           initial={template}
@@ -115,22 +116,22 @@ export function TemplateDetailPanel({ templateId }: TemplateDetailPanelProps) {
       style={{
         padding: "1.25rem",
         border: BORDER,
-        borderRadius: "6px",
-        background: "#fff",
+        borderRadius: radius.md,
+        background: colors.neutral[0],
       }}
     >
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0.5rem" }}>
-        <h3 style={{ margin: 0, fontSize: "1rem", color: COLOR_DARK }} data-testid="tpl-detail-heading">{template.name}</h3>
+        <h3 style={{ margin: 0, fontSize: typography.size.lg, color: COLOR_DARK }} data-testid="tpl-detail-heading">{template.name}</h3>
         <button
           onClick={() => setEditMode(true)}
           disabled={readOnly}
           style={{
             padding: "0.25rem 0.75rem",
-            fontSize: "0.8rem",
-            background: "#f1f5f9",
-            color: "#475569",
+            fontSize: typography.size.base,
+            background: colors.neutral[100],
+            color: colors.neutral[700],
             border: BORDER,
-            borderRadius: "4px",
+            borderRadius: radius.sm,
             cursor: readOnly ? "not-allowed" : "pointer",
             opacity: readOnly ? 0.5 : 1,
           }}
@@ -141,8 +142,8 @@ export function TemplateDetailPanel({ templateId }: TemplateDetailPanelProps) {
       <p
         style={{
           margin: "0 0 1rem",
-          fontSize: "0.8125rem",
-          color: "#94a3b8",
+          fontSize: typography.size.base,
+          color: colors.neutral[500],
           lineHeight: 1.5,
         }}
         data-testid="tpl-detail-workflow-note"
@@ -158,7 +159,7 @@ export function TemplateDetailPanel({ templateId }: TemplateDetailPanelProps) {
       <Field label="Version" value={template.version} />
       <Field label="Description" value={template.description} />
 
-      <div style={{ marginTop: "1rem", borderTop: "1px solid #f1f5f9", paddingTop: "1rem" }}>
+      <div style={{ marginTop: "1rem", borderTop: `1px solid ${colors.neutral[100]}`, paddingTop: "1rem" }}>
         <JsonPreviewField label="style_profile_json" value={template.style_profile_json} />
         <JsonPreviewField label="content_rules_json" value={template.content_rules_json} />
         <JsonPreviewField label="publish_profile_json" value={template.publish_profile_json} />

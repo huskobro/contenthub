@@ -1,6 +1,7 @@
 import { useSetupRequirements } from "../../hooks/useSetupRequirements";
 import { useNavigate } from "react-router-dom";
 import type { SetupRequirementItem } from "../../api/onboardingApi";
+import { colors, radius, typography } from "../design-system/tokens";
 
 const CONTAINER: React.CSSProperties = {
   display: "flex",
@@ -8,15 +9,15 @@ const CONTAINER: React.CSSProperties = {
   alignItems: "center",
   justifyContent: "center",
   minHeight: "100vh",
-  background: "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)",
+  background: `linear-gradient(135deg, ${colors.neutral[50]} 0%, ${colors.border.subtle} 100%)`,
   padding: "2rem",
 };
 
 const CARD: React.CSSProperties = {
   maxWidth: "560px",
   width: "100%",
-  background: "#fff",
-  borderRadius: "12px",
+  background: colors.neutral[0],
+  borderRadius: radius.xl,
   boxShadow: "0 4px 24px rgba(0, 0, 0, 0.08)",
   padding: "2.5rem",
 };
@@ -25,14 +26,14 @@ const TITLE: React.CSSProperties = {
   margin: "0 0 0.375rem",
   fontSize: "1.5rem",
   fontWeight: 700,
-  color: "#0f172a",
+  color: colors.neutral[900],
   textAlign: "center",
 };
 
 const SUBTITLE: React.CSSProperties = {
   margin: "0 0 1.75rem",
-  fontSize: "0.9375rem",
-  color: "#475569",
+  fontSize: typography.size.lg,
+  color: colors.neutral[700],
   lineHeight: 1.6,
   textAlign: "center",
 };
@@ -49,8 +50,8 @@ const REQ_CARD: React.CSSProperties = {
   alignItems: "center",
   gap: "0.75rem",
   padding: "0.875rem 1rem",
-  borderRadius: "8px",
-  border: "1px solid #e2e8f0",
+  borderRadius: radius.lg,
+  border: `1px solid ${colors.border.subtle}`,
 };
 
 const STATUS_ICON: React.CSSProperties = {
@@ -61,28 +62,28 @@ const STATUS_ICON: React.CSSProperties = {
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
-  fontSize: "0.8125rem",
+  fontSize: typography.size.base,
   fontWeight: 700,
 };
 
 const REQ_TITLE: React.CSSProperties = {
   margin: 0,
-  fontSize: "0.875rem",
+  fontSize: typography.size.md,
   fontWeight: 600,
-  color: "#1e293b",
+  color: colors.neutral[900],
 };
 
 const REQ_DESC: React.CSSProperties = {
   margin: "0.125rem 0 0",
-  fontSize: "0.8125rem",
-  color: "#64748b",
+  fontSize: typography.size.base,
+  color: colors.neutral[600],
   lineHeight: 1.4,
 };
 
 const REQ_DETAIL: React.CSSProperties = {
   margin: "0.25rem 0 0",
-  fontSize: "0.75rem",
-  color: "#059669",
+  fontSize: typography.size.sm,
+  color: colors.success.dark,
   fontWeight: 500,
 };
 
@@ -90,12 +91,12 @@ const PRIMARY_BTN: React.CSSProperties = {
   display: "block",
   width: "100%",
   padding: "0.75rem",
-  fontSize: "0.9375rem",
+  fontSize: typography.size.lg,
   fontWeight: 600,
-  color: "#fff",
-  background: "#2563eb",
+  color: colors.neutral[0],
+  background: colors.brand[600],
   border: "none",
-  borderRadius: "8px",
+  borderRadius: radius.lg,
   cursor: "pointer",
   textAlign: "center",
 };
@@ -104,12 +105,12 @@ const SECONDARY_BTN: React.CSSProperties = {
   display: "block",
   width: "100%",
   padding: "0.5rem",
-  fontSize: "0.8125rem",
+  fontSize: typography.size.base,
   fontWeight: 500,
-  color: "#64748b",
+  color: colors.neutral[600],
   background: "transparent",
-  border: "1px solid #e2e8f0",
-  borderRadius: "6px",
+  border: `1px solid ${colors.border.subtle}`,
+  borderRadius: radius.md,
   cursor: "pointer",
   marginTop: "0.5rem",
   textAlign: "center",
@@ -117,12 +118,12 @@ const SECONDARY_BTN: React.CSSProperties = {
 
 const ACTION_BTN: React.CSSProperties = {
   padding: "0.25rem 0.625rem",
-  fontSize: "0.75rem",
+  fontSize: typography.size.sm,
   fontWeight: 600,
-  color: "#1e40af",
-  background: "#dbeafe",
-  border: "1px solid #93c5fd",
-  borderRadius: "4px",
+  color: colors.brand[700],
+  background: colors.info.light,
+  border: `1px solid ${colors.info.light}`,
+  borderRadius: radius.sm,
   cursor: "pointer",
   whiteSpace: "nowrap",
   flexShrink: 0,
@@ -142,15 +143,15 @@ function RequirementRow({
     <div
       style={{
         ...REQ_CARD,
-        background: isCompleted ? "#f0fdf4" : "#fefce8",
-        borderColor: isCompleted ? "#bbf7d0" : "#fde68a",
+        background: isCompleted ? colors.success.light : colors.warning.light,
+        borderColor: isCompleted ? colors.success.light : colors.warning.light,
       }}
     >
       <div
         style={{
           ...STATUS_ICON,
-          background: isCompleted ? "#dcfce7" : "#fef9c3",
-          color: isCompleted ? "#166534" : "#92400e",
+          background: isCompleted ? colors.success.light : colors.warning.light,
+          color: isCompleted ? colors.success.text : colors.warning.text,
         }}
       >
         {isCompleted ? "\u2713" : "!"}
@@ -184,7 +185,7 @@ export function OnboardingRequirementsScreen({ onBack, onSourceSetup, onTemplate
   if (isLoading) {
     return (
       <div style={CONTAINER}>
-        <div style={{ color: "#64748b", fontSize: "0.9375rem" }}>Kontrol ediliyor...</div>
+        <div style={{ color: colors.neutral[600], fontSize: typography.size.lg }}>Kontrol ediliyor...</div>
       </div>
     );
   }
@@ -250,7 +251,7 @@ export function OnboardingRequirementsScreen({ onBack, onSourceSetup, onTemplate
             Kurulumu Tamamla
           </button>
         ) : (
-          <button style={{ ...PRIMARY_BTN, background: "#64748b" }} onClick={() => navigate("/user")}>
+          <button style={{ ...PRIMARY_BTN, background: colors.neutral[600] }} onClick={() => navigate("/user")}>
             Sonra Tamamla
           </button>
         )}

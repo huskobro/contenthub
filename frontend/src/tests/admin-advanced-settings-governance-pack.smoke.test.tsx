@@ -174,7 +174,7 @@ describe("Phase 306 — Setting Detail Panel governance sections", () => {
 
     await waitFor(() => {
       expect(screen.getByTestId("setting-detail-heading")).toBeDefined();
-      expect(screen.getByTestId("setting-detail-heading").textContent).toBe("Ayar Detayi");
+      expect(screen.getByTestId("setting-detail-heading").textContent).toBe("Ayar Detayı");
     });
   });
 
@@ -371,7 +371,7 @@ describe("Phase 308 — Visibility Detail Panel governance sections", () => {
 
     await waitFor(() => {
       expect(screen.getByTestId("visibility-detail-heading")).toBeDefined();
-      expect(screen.getByTestId("visibility-detail-heading").textContent).toBe("Kural Detayi");
+      expect(screen.getByTestId("visibility-detail-heading").textContent).toBe("Kural Detayı");
     });
   });
 

@@ -3,6 +3,8 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useStyleBlueprintsList } from "../../hooks/useStyleBlueprintsList";
 import { StyleBlueprintsTable } from "../../components/style-blueprints/StyleBlueprintsTable";
 import { StyleBlueprintDetailPanel } from "../../components/style-blueprints/StyleBlueprintDetailPanel";
+import { colors, spacing, typography } from "../../components/design-system/tokens";
+import { PageShell, SectionShell, ActionButton } from "../../components/design-system/primitives";
 
 export function StyleBlueprintsRegistryPage() {
   const location = useLocation();
@@ -13,35 +15,21 @@ export function StyleBlueprintsRegistryPage() {
   const { data: blueprints, isLoading, isError, error } = useStyleBlueprintsList();
 
   return (
-    <div>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.25rem" }}>
-        <h2
-          style={{ margin: 0, fontSize: "1.125rem", fontWeight: 600 }}
-          data-testid="sb-registry-heading"
-        >
-          Style Blueprint Kayitlari
-        </h2>
-        <button
-          onClick={() => navigate("/admin/style-blueprints/new")}
-          style={{
-            padding: "0.375rem 1rem",
-            fontSize: "0.875rem",
-            background: "#3b82f6",
-            color: "#fff",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer",
-          }}
-        >
+    <PageShell
+      title="Style Blueprint Kayitlari"
+      testId="sb-registry"
+      actions={
+        <ActionButton variant="primary" onClick={() => navigate("/admin/style-blueprints/new")}>
           + Yeni Blueprint Olustur
-        </button>
-      </div>
+        </ActionButton>
+      }
+    >
       <p
         style={{
-          margin: "0 0 1.25rem",
-          fontSize: "0.8125rem",
-          color: "#94a3b8",
-          lineHeight: 1.5,
+          margin: `0 0 ${spacing[5]}`,
+          fontSize: typography.size.base,
+          color: colors.neutral[500],
+          lineHeight: typography.lineHeight.normal,
           maxWidth: "640px",
         }}
         data-testid="sb-registry-workflow-note"
@@ -51,30 +39,34 @@ export function StyleBlueprintsRegistryPage() {
         kurallarina odaklanir. Bir blueprint secerek detay ve kurallarini gorebilirsiniz.
       </p>
 
-      <div style={{ display: "flex", gap: "1.5rem", alignItems: "flex-start" }}>
+      <div style={{ display: "flex", gap: spacing[6], alignItems: "flex-start" }}>
         <div style={{ flex: 2, minWidth: 0 }}>
-          {isLoading && <p style={{ color: "#64748b" }}>Yükleniyor...</p>}
-          {isError && (
-            <p style={{ color: "#dc2626" }}>
-              Hata: {error instanceof Error ? error.message : "Bilinmeyen hata"}
-            </p>
-          )}
-          {blueprints && blueprints.length === 0 && (
-            <p style={{ color: "#94a3b8", fontSize: "0.875rem" }}>Henüz style blueprint yok.</p>
-          )}
-          {blueprints && blueprints.length > 0 && (
-            <StyleBlueprintsTable
-              blueprints={blueprints}
-              selectedId={selectedId}
-              onSelect={setSelectedId}
-            />
-          )}
+          <SectionShell testId="sb-table-section">
+            {isLoading && <p style={{ color: colors.neutral[500], fontSize: typography.size.base, padding: spacing[4] }}>Yükleniyor...</p>}
+            {isError && (
+              <p style={{ color: colors.error.base, fontSize: typography.size.base, padding: spacing[4] }}>
+                Hata: {error instanceof Error ? error.message : "Bilinmeyen hata"}
+              </p>
+            )}
+            {blueprints && blueprints.length === 0 && (
+              <div style={{ textAlign: "center", padding: `${spacing[8]} ${spacing[4]}`, color: colors.neutral[500] }}>
+                <p style={{ margin: 0, fontSize: typography.size.md }}>Henüz style blueprint yok.</p>
+              </div>
+            )}
+            {blueprints && blueprints.length > 0 && (
+              <StyleBlueprintsTable
+                blueprints={blueprints}
+                selectedId={selectedId}
+                onSelect={setSelectedId}
+              />
+            )}
+          </SectionShell>
         </div>
 
         <div style={{ flex: 1, minWidth: "260px" }}>
           <StyleBlueprintDetailPanel blueprintId={selectedId} />
         </div>
       </div>
-    </div>
+    </PageShell>
   );
 }

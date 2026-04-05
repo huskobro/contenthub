@@ -1,17 +1,18 @@
 import type { JobStepResponse } from "../../api/jobsApi";
 import { formatDuration } from "../../lib/formatDuration";
 import { formatDateISO } from "../../lib/formatDate";
+import { colors, radius, typography } from "../design-system/tokens";
 
 interface JobTimelinePanelProps {
   steps: JobStepResponse[];
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  completed: "#166534",
-  running: "#1d4ed8",
-  failed: "#dc2626",
-  pending: "#64748b",
-  cancelled: "#92400e",
+  completed: colors.success.text,
+  running: colors.info.dark,
+  failed: colors.error.base,
+  pending: colors.neutral[600],
+  cancelled: colors.warning.text,
 };
 
 export function JobTimelinePanel({ steps }: JobTimelinePanelProps) {
@@ -19,16 +20,16 @@ export function JobTimelinePanel({ steps }: JobTimelinePanelProps) {
   return (
     <div
       style={{
-        border: "1px solid #e2e8f0",
-        borderRadius: "6px",
-        background: "#fafbfc",
+        border: `1px solid ${colors.border.subtle}`,
+        borderRadius: radius.md,
+        background: colors.neutral[50],
         padding: "1rem",
         marginBottom: "1.5rem",
       }}
     >
-      <h3 style={{ margin: "0 0 0.75rem", fontSize: "1rem" }}>Timeline</h3>
+      <h3 style={{ margin: "0 0 0.75rem", fontSize: typography.size.lg }}>Timeline</h3>
       {safeSteps.length === 0 ? (
-        <p style={{ color: "#94a3b8", fontSize: "0.875rem", margin: 0 }}>Henüz step yok.</p>
+        <p style={{ color: colors.neutral[500], fontSize: typography.size.md, margin: 0 }}>Henüz step yok.</p>
       ) : (
         <div>
           {safeSteps.map((s, idx) => (
@@ -39,7 +40,7 @@ export function JobTimelinePanel({ steps }: JobTimelinePanelProps) {
                 gap: "1rem",
                 paddingBottom: idx < safeSteps.length - 1 ? "0.75rem" : 0,
                 marginBottom: idx < safeSteps.length - 1 ? "0.75rem" : 0,
-                borderBottom: idx < safeSteps.length - 1 ? "1px solid #f1f5f9" : "none",
+                borderBottom: idx < safeSteps.length - 1 ? `1px solid ${colors.neutral[100]}` : "none",
               }}
             >
               <div
@@ -47,32 +48,32 @@ export function JobTimelinePanel({ steps }: JobTimelinePanelProps) {
                   width: "28px",
                   height: "28px",
                   borderRadius: "50%",
-                  background: "#e2e8f0",
+                  background: colors.border.subtle,
                   flexShrink: 0,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  fontSize: "0.75rem",
+                  fontSize: typography.size.sm,
                   fontWeight: 600,
-                  color: "#64748b",
+                  color: colors.neutral[600],
                 }}
               >
                 {s.step_order}
               </div>
               <div style={{ flex: 1 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.125rem" }}>
-                  <strong style={{ fontFamily: "monospace", fontSize: "0.875rem" }}>{s.step_key}</strong>
+                  <strong style={{ fontFamily: "monospace", fontSize: typography.size.md }}>{s.step_key}</strong>
                   <span
                     style={{
-                      fontSize: "0.75rem",
+                      fontSize: typography.size.sm,
                       fontWeight: 600,
-                      color: STATUS_COLORS[s.status] ?? "#64748b",
+                      color: STATUS_COLORS[s.status] ?? colors.neutral[600],
                     }}
                   >
                     {s.status}
                   </span>
                 </div>
-                <div style={{ fontSize: "0.8125rem", color: "#64748b" }}>
+                <div style={{ fontSize: typography.size.base, color: colors.neutral[600] }}>
                   elapsed: {formatDuration(s.elapsed_seconds)}
                   {s.started_at && (
                     <span style={{ marginLeft: "0.75rem" }}>
@@ -81,7 +82,7 @@ export function JobTimelinePanel({ steps }: JobTimelinePanelProps) {
                   )}
                 </div>
                 {s.last_error && (
-                  <div style={{ fontSize: "0.8125rem", color: "#dc2626", marginTop: "0.25rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>
+                  <div style={{ fontSize: typography.size.base, color: colors.error.base, marginTop: "0.25rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>
                     {s.last_error}
                   </div>
                 )}

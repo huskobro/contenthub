@@ -75,7 +75,7 @@ describe("Audit Log Page smoke tests", () => {
 
   it("shows loading state", () => {
     renderAuditPage(vi.fn().mockReturnValue(new Promise(() => {})));
-    expect(screen.getByText("Yukleniyor...")).toBeDefined();
+    expect(screen.getByText("Yükleniyor...")).toBeDefined();
   });
 
   it("renders audit log table with records", async () => {

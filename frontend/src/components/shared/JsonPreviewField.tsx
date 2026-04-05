@@ -1,3 +1,4 @@
+import { colors, radius, typography } from "../design-system/tokens";
 import { safeJsonPretty } from "../../lib/safeJson";
 
 interface JsonPreviewFieldProps {
@@ -10,27 +11,27 @@ export function JsonPreviewField({ label, value }: JsonPreviewFieldProps) {
   if (!value) {
     return (
       <div style={{ marginBottom: "0.75rem" }}>
-        <div style={{ fontSize: "0.75rem", fontWeight: 600, color: "#64748b", marginBottom: "0.25rem" }}>
+        <div style={{ fontSize: typography.size.sm, fontWeight: 600, color: colors.neutral[600], marginBottom: "0.25rem" }}>
           {label}
         </div>
-        <span style={{ color: "#94a3b8", fontSize: "0.875rem" }}>—</span>
+        <span style={{ color: colors.neutral[500], fontSize: typography.size.md }}>—</span>
       </div>
     );
   }
 
   return (
     <div style={{ marginBottom: "0.75rem" }}>
-      <div style={{ fontSize: "0.75rem", fontWeight: 600, color: "#64748b", marginBottom: "0.25rem" }}>
+      <div style={{ fontSize: typography.size.sm, fontWeight: 600, color: colors.neutral[600], marginBottom: "0.25rem" }}>
         {label}
       </div>
       <pre
         style={{
           margin: 0,
           padding: "0.5rem",
-          background: "#f8fafc",
-          border: "1px solid #e2e8f0",
-          borderRadius: "4px",
-          fontSize: "0.8rem",
+          background: colors.neutral[50],
+          border: `1px solid ${colors.border.subtle}`,
+          borderRadius: radius.sm,
+          fontSize: typography.size.base,
           overflowX: "auto",
           maxHeight: "120px",
           whiteSpace: "pre-wrap",

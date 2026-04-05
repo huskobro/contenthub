@@ -1,3 +1,4 @@
+import { colors, radius, typography } from "../design-system/tokens";
 interface Props {
   usageCount?: number;
 }
@@ -5,18 +6,18 @@ interface Props {
 export function NewsItemUsageBadge({ usageCount }: Props) {
   const count = usageCount ?? 0;
   if (count === 0) {
-    return <span style={{ fontSize: "0.7rem", color: "#94a3b8" }}>Kullanılmamış</span>;
+    return <span style={{ fontSize: typography.size.xs, color: colors.neutral[500] }}>Kullanılmamış</span>;
   }
   return (
     <span
       style={{
         display: "inline-block",
         padding: "0.1rem 0.4rem",
-        fontSize: "0.7rem",
-        borderRadius: "3px",
-        background: "#fef9c3",
-        color: "#92400e",
-        border: "1px solid #fde68a",
+        fontSize: typography.size.xs,
+        borderRadius: radius.sm,
+        background: colors.warning.light,
+        color: colors.warning.text,
+        border: `1px solid ${colors.warning.light}`,
         whiteSpace: "nowrap",
       }}
     >

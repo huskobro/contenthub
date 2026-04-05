@@ -1,3 +1,4 @@
+import { colors, radius, typography } from "../design-system/tokens";
 import type { JobStepResponse } from "../../api/jobsApi";
 
 interface ProviderTrace {
@@ -20,48 +21,48 @@ function SystemCard({ title, children }: { title: string; children: React.ReactN
   return (
     <div
       style={{
-        border: "1px solid #e2e8f0",
-        borderRadius: "6px",
-        background: "#fafbfc",
+        border: `1px solid ${colors.border.subtle}`,
+        borderRadius: radius.md,
+        background: colors.neutral[50],
         padding: "1rem",
         marginBottom: "1rem",
       }}
     >
-      <h4 style={{ margin: "0 0 0.5rem", fontSize: "0.9375rem", color: "#0f172a" }}>{title}</h4>
+      <h4 style={{ margin: "0 0 0.5rem", fontSize: typography.size.lg, color: colors.neutral[900] }}>{title}</h4>
       {children}
     </div>
   );
 }
 
 const LABEL: React.CSSProperties = {
-  color: "#64748b",
+  color: colors.neutral[600],
   fontWeight: 500,
-  fontSize: "0.75rem",
+  fontSize: typography.size.sm,
 };
 
 const VALUE: React.CSSProperties = {
-  fontSize: "0.8125rem",
-  color: "#1e293b",
+  fontSize: typography.size.base,
+  color: colors.neutral[900],
 };
 
 const SUCCESS_BADGE: React.CSSProperties = {
   display: "inline-block",
   padding: "0.1rem 0.375rem",
-  borderRadius: "4px",
-  fontSize: "0.6875rem",
+  borderRadius: radius.sm,
+  fontSize: typography.size.xs,
   fontWeight: 600,
-  background: "#dcfce7",
-  color: "#166534",
+  background: colors.success.light,
+  color: colors.success.text,
 };
 
 const FAIL_BADGE: React.CSSProperties = {
   display: "inline-block",
   padding: "0.1rem 0.375rem",
-  borderRadius: "4px",
-  fontSize: "0.6875rem",
+  borderRadius: radius.sm,
+  fontSize: typography.size.xs,
   fontWeight: 600,
-  background: "#fee2e2",
-  color: "#991b1b",
+  background: colors.error.light,
+  color: colors.error.text,
 };
 
 function parseTrace(json: string | null): ProviderTrace | null {
@@ -86,21 +87,21 @@ function ProviderTraceCard({ step, trace }: { step: JobStepResponse; trace: Prov
   return (
     <div
       style={{
-        border: "1px solid #e2e8f0",
-        borderRadius: "6px",
+        border: `1px solid ${colors.border.subtle}`,
+        borderRadius: radius.md,
         padding: "0.75rem",
         marginBottom: "0.5rem",
-        background: "#fff",
+        background: colors.neutral[0],
       }}
       data-testid={`provider-trace-${step.step_key}`}
     >
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.5rem" }}>
-        <strong style={{ fontFamily: "monospace", fontSize: "0.8125rem" }}>{step.step_key}</strong>
+        <strong style={{ fontFamily: "monospace", fontSize: typography.size.base }}>{step.step_key}</strong>
         <span style={trace.success ? SUCCESS_BADGE : FAIL_BADGE}>
           {trace.success ? "OK" : "FAIL"}
         </span>
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "140px 1fr", gap: "0.25rem 0.75rem", fontSize: "0.8125rem" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "140px 1fr", gap: "0.25rem 0.75rem", fontSize: typography.size.base }}>
         {trace.provider_name && (
           <>
             <span style={LABEL}>Provider:</span>
@@ -142,13 +143,13 @@ function ProviderTraceCard({ step, trace }: { step: JobStepResponse; trace: Prov
         {trace.error_type && (
           <>
             <span style={LABEL}>Hata Tipi:</span>
-            <span style={{ ...VALUE, color: "#dc2626" }}>{trace.error_type}</span>
+            <span style={{ ...VALUE, color: colors.error.base }}>{trace.error_type}</span>
           </>
         )}
         {trace.error_message && (
           <>
             <span style={LABEL}>Hata:</span>
-            <span style={{ ...VALUE, color: "#dc2626", wordBreak: "break-word" }}>{trace.error_message}</span>
+            <span style={{ ...VALUE, color: colors.error.base, wordBreak: "break-word" }}>{trace.error_message}</span>
           </>
         )}
       </div>
@@ -182,20 +183,20 @@ export function JobSystemPanels({ steps = [] }: JobSystemPanelsProps) {
     <div>
       <SystemCard title="Logs">
         {logSteps.length === 0 ? (
-          <p style={{ margin: 0, color: "#94a3b8", fontSize: "0.75rem" }}>
-            Henuz log kaydi yok.
+          <p style={{ margin: 0, color: colors.neutral[500], fontSize: typography.size.sm }}>
+            Henüz log kaydi yok.
           </p>
         ) : (
           logSteps.map((s) => (
             <div key={s.id} style={{ marginBottom: "0.5rem" }}>
-              <strong style={{ fontFamily: "monospace", fontSize: "0.8125rem" }}>{s.step_key}</strong>
+              <strong style={{ fontFamily: "monospace", fontSize: typography.size.base }}>{s.step_key}</strong>
               <pre
                 style={{
-                  background: "#1e293b",
-                  color: "#e2e8f0",
+                  background: colors.neutral[900],
+                  color: colors.border.subtle,
                   padding: "0.5rem",
-                  borderRadius: "4px",
-                  fontSize: "0.75rem",
+                  borderRadius: radius.sm,
+                  fontSize: typography.size.sm,
                   overflow: "auto",
                   maxHeight: "200px",
                   marginTop: "0.25rem",
@@ -210,8 +211,8 @@ export function JobSystemPanels({ steps = [] }: JobSystemPanelsProps) {
 
       <SystemCard title="Artifacts">
         {artifactSteps.length === 0 ? (
-          <p style={{ margin: 0, color: "#94a3b8", fontSize: "0.75rem" }}>
-            Henuz artifact yok.
+          <p style={{ margin: 0, color: colors.neutral[500], fontSize: typography.size.sm }}>
+            Henüz artifact yok.
           </p>
         ) : (
           artifactSteps.map((s) => {
@@ -219,14 +220,14 @@ export function JobSystemPanels({ steps = [] }: JobSystemPanelsProps) {
             try { parsed = JSON.parse(s.artifact_refs_json!); } catch { /* ignore */ }
             return (
               <div key={s.id} style={{ marginBottom: "0.5rem" }}>
-                <strong style={{ fontFamily: "monospace", fontSize: "0.8125rem" }}>{s.step_key}</strong>
+                <strong style={{ fontFamily: "monospace", fontSize: typography.size.base }}>{s.step_key}</strong>
                 <pre
                   style={{
-                    background: "#1e293b",
-                    color: "#e2e8f0",
+                    background: colors.neutral[900],
+                    color: colors.border.subtle,
                     padding: "0.5rem",
-                    borderRadius: "4px",
-                    fontSize: "0.75rem",
+                    borderRadius: radius.sm,
+                    fontSize: typography.size.sm,
                     overflow: "auto",
                     maxHeight: "200px",
                     marginTop: "0.25rem",
@@ -242,8 +243,8 @@ export function JobSystemPanels({ steps = [] }: JobSystemPanelsProps) {
 
       <SystemCard title="Provider Trace">
         {tracePairs.length === 0 ? (
-          <p style={{ margin: 0, color: "#94a3b8", fontSize: "0.75rem" }} data-testid="provider-trace-empty">
-            Henuz provider trace verisi yok.
+          <p style={{ margin: 0, color: colors.neutral[500], fontSize: typography.size.sm }} data-testid="provider-trace-empty">
+            Henüz provider trace verisi yok.
           </p>
         ) : (
           tracePairs.map(({ step, trace }) => (

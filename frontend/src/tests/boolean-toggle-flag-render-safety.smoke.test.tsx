@@ -31,8 +31,8 @@ describe("BoolBadge null/undefined guard", () => {
     it(`${path.basename(file)} BoolBadge renders neutral fallback for null`, () => {
       const src = read(file);
       // The null branch should have neutral background and "—" text
-      expect(src).toContain('#f8fafc');
-      expect(src).toContain('#475569');
+      expect(src).toContain('colors.neutral[50]');
+      expect(src).toContain('colors.neutral[700]');
     });
   }
 });

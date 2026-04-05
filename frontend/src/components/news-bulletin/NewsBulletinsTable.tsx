@@ -11,9 +11,10 @@ import { NewsBulletinArtifactConsistencySummary } from "./NewsBulletinArtifactCo
 import { NewsBulletinInputQualitySummary } from "./NewsBulletinInputQualitySummary";
 import { NewsBulletinInputSpecificitySummary } from "./NewsBulletinInputSpecificitySummary";
 import { NewsBulletinTargetOutputConsistencySummary } from "./NewsBulletinTargetOutputConsistencySummary";
+import { colors, typography } from "../design-system/tokens";
 
 const DASH = "—";
-const TH_STYLE: React.CSSProperties = { padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" };
+const TH_STYLE: React.CSSProperties = { padding: "0.5rem 0.75rem", borderBottom: `1px solid ${colors.border.subtle}` };
 const TD_STYLE: React.CSSProperties = { padding: "0.5rem 0.75rem" };
 
 interface Props {
@@ -29,9 +30,9 @@ export function NewsBulletinsTable({ bulletins, selectedId, onSelect }: Props) {
 
   return (
     <div style={{ overflowX: "auto" }}>
-    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.875rem" }}>
+    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: typography.size.md }}>
       <thead>
-        <tr style={{ background: "#f1f5f9", textAlign: "left" }}>
+        <tr style={{ background: colors.neutral[100], textAlign: "left" }}>
           {/* Kimlik & Durum */}
           <th style={TH_STYLE}>Başlık</th>
           <th style={TH_STYLE}>Konu</th>
@@ -65,7 +66,7 @@ export function NewsBulletinsTable({ bulletins, selectedId, onSelect }: Props) {
             onClick={() => onSelect(b.id)}
             style={{
               cursor: "pointer",
-              background: selectedId === b.id ? "#e8f0fe" : undefined,
+              background: selectedId === b.id ? colors.info.light : undefined,
             }}
           >
             {/* Kimlik & Durum */}
@@ -160,7 +161,7 @@ export function NewsBulletinsTable({ bulletins, selectedId, onSelect }: Props) {
               />
             </td>
             {/* Zaman */}
-            <td style={{ padding: "0.5rem 0.75rem", color: "#94a3b8" }}>
+            <td style={{ padding: "0.5rem 0.75rem", color: colors.neutral[500] }}>
               {formatDateShort(b.created_at)}
             </td>
           </tr>

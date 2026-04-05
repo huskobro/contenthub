@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useNewsBulletinsList } from "../../hooks/useNewsBulletinsList";
 import { NewsBulletinsTable } from "../../components/news-bulletin/NewsBulletinsTable";
 import { NewsBulletinDetailPanel } from "../../components/news-bulletin/NewsBulletinDetailPanel";
-import { PageShell } from "../../components/design-system/primitives";
+import { PageShell, SectionShell, ActionButton } from "../../components/design-system/primitives";
 import { colors, typography, spacing } from "../../components/design-system/tokens";
 
 export function NewsBulletinRegistryPage() {
@@ -18,9 +18,9 @@ export function NewsBulletinRegistryPage() {
       title="Haber Bulteni Kayitlari"
       testId="nb-registry"
       actions={
-        <button onClick={() => navigate("/admin/news-bulletins/new")}>
+        <ActionButton variant="primary" size="sm" onClick={() => navigate("/admin/news-bulletins/new")}>
           + Yeni Bulten Olustur
-        </button>
+        </ActionButton>
       }
     >
       <p
@@ -40,15 +40,22 @@ export function NewsBulletinRegistryPage() {
 
       <div style={{ display: "flex", gap: spacing[6], alignItems: "flex-start" }}>
         <div style={{ flex: 2 }}>
-          {isLoading && <p>Yükleniyor...</p>}
-          {isError && <p style={{ color: colors.error.base }}>Hata: liste yüklenemedi.</p>}
-          {data && (
-            <NewsBulletinsTable
-              bulletins={data}
-              selectedId={selectedId}
-              onSelect={setSelectedId}
-            />
-          )}
+          <SectionShell testId="nb-table-section">
+            {isLoading && <p style={{ color: colors.neutral[500], fontSize: typography.size.base, padding: spacing[4] }}>Yükleniyor...</p>}
+            {isError && <p style={{ color: colors.error.base, fontSize: typography.size.base, padding: spacing[4] }}>Hata: liste yüklenemedi.</p>}
+            {!isLoading && !isError && data && data.length === 0 && (
+              <div style={{ textAlign: "center", padding: `${spacing[8]} ${spacing[4]}`, color: colors.neutral[500] }}>
+                <p style={{ margin: 0, fontSize: typography.size.md }}>Henüz news bulletin kaydı yok.</p>
+              </div>
+            )}
+            {data && data.length > 0 && (
+              <NewsBulletinsTable
+                bulletins={data}
+                selectedId={selectedId}
+                onSelect={setSelectedId}
+              />
+            )}
+          </SectionShell>
         </div>
         <div style={{ flex: 1 }}>
           <NewsBulletinDetailPanel selectedId={selectedId} />

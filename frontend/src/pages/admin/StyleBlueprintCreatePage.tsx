@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useCreateStyleBlueprint } from "../../hooks/useCreateStyleBlueprint";
 import { StyleBlueprintForm } from "../../components/style-blueprints/StyleBlueprintForm";
 import type { StyleBlueprintFormValues } from "../../components/style-blueprints/StyleBlueprintForm";
+import { colors, typography } from "../../components/design-system/tokens";
 
 export function StyleBlueprintCreatePage() {
   const navigate = useNavigate();
@@ -33,7 +34,7 @@ export function StyleBlueprintCreatePage() {
   return (
     <div style={{ maxWidth: "600px" }}>
       <h2
-        style={{ margin: "0 0 0.5rem", fontSize: "1.125rem", fontWeight: 600 }}
+        style={{ margin: "0 0 0.5rem", fontSize: typography.size.xl, fontWeight: 600 }}
         data-testid="sb-create-heading"
       >
         Yeni Style Blueprint
@@ -41,8 +42,8 @@ export function StyleBlueprintCreatePage() {
       <p
         style={{
           margin: "0 0 1.25rem",
-          fontSize: "0.875rem",
-          color: "#64748b",
+          fontSize: typography.size.md,
+          color: colors.neutral[600],
           lineHeight: 1.6,
           maxWidth: "640px",
         }}

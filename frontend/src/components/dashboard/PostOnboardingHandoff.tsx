@@ -1,9 +1,10 @@
+import { colors, radius, typography } from "../design-system/tokens";
 import { useNavigate } from "react-router-dom";
 
 const CARD: React.CSSProperties = {
-  background: "#fff",
-  border: "1px solid #e2e8f0",
-  borderRadius: "12px",
+  background: colors.neutral[0],
+  border: `1px solid ${colors.border.subtle}`,
+  borderRadius: radius.xl,
   padding: "2rem",
   maxWidth: "560px",
 };
@@ -19,51 +20,51 @@ const STATUS_DOT: React.CSSProperties = {
   width: "10px",
   height: "10px",
   borderRadius: "50%",
-  background: "#16a34a",
+  background: colors.success.base,
   flexShrink: 0,
 };
 
 const STATUS_TEXT: React.CSSProperties = {
-  fontSize: "0.8125rem",
+  fontSize: typography.size.base,
   fontWeight: 600,
-  color: "#16a34a",
+  color: colors.success.base,
 };
 
 const HEADING: React.CSSProperties = {
   margin: "0 0 0.5rem",
-  fontSize: "1.25rem",
+  fontSize: typography.size["2xl"],
   fontWeight: 700,
-  color: "#0f172a",
+  color: colors.neutral[900],
 };
 
 const DESC: React.CSSProperties = {
   margin: "0 0 1.5rem",
-  fontSize: "0.875rem",
-  color: "#475569",
+  fontSize: typography.size.md,
+  color: colors.neutral[700],
   lineHeight: 1.6,
 };
 
 const PRIMARY_BTN: React.CSSProperties = {
   display: "inline-block",
   padding: "0.625rem 1.25rem",
-  fontSize: "0.875rem",
+  fontSize: typography.size.md,
   fontWeight: 600,
-  color: "#fff",
-  background: "#2563eb",
+  color: colors.neutral[0],
+  background: colors.brand[600],
   border: "none",
-  borderRadius: "8px",
+  borderRadius: radius.lg,
   cursor: "pointer",
 };
 
 const SECONDARY_BTN: React.CSSProperties = {
   display: "inline-block",
   padding: "0.625rem 1.25rem",
-  fontSize: "0.875rem",
+  fontSize: typography.size.md,
   fontWeight: 500,
-  color: "#475569",
+  color: colors.neutral[700],
   background: "transparent",
-  border: "1px solid #e2e8f0",
-  borderRadius: "8px",
+  border: `1px solid ${colors.border.subtle}`,
+  borderRadius: radius.lg,
   cursor: "pointer",
   marginLeft: "0.5rem",
 };

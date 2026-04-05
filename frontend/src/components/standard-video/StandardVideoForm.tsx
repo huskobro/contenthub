@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { StandardVideoResponse } from "../../api/standardVideoApi";
 import { SubtitleStylePicker } from "./SubtitleStylePicker";
 import { useSubtitlePresets } from "../../hooks/useSubtitlePresets";
+import { colors, radius, typography } from "../design-system/tokens";
 
 export interface StandardVideoFormValues {
   topic: string;
@@ -25,23 +26,23 @@ interface Props {
 }
 
 const STATUS_OPTIONS = ["draft", "script_ready", "metadata_ready", "ready", "failed"];
-const COLOR_ERR = "#dc2626";
+const COLOR_ERR = colors.error.base;
 
 const FIELD_STYLE: React.CSSProperties = {
   display: "block",
   width: "100%",
   padding: "0.375rem 0.5rem",
-  fontSize: "0.875rem",
-  border: "1px solid #cbd5e1",
-  borderRadius: "4px",
+  fontSize: typography.size.md,
+  border: `1px solid ${colors.border.default}`,
+  borderRadius: radius.sm,
   boxSizing: "border-box",
 };
 
 const LABEL_STYLE: React.CSSProperties = {
   display: "block",
-  fontSize: "0.8125rem",
+  fontSize: typography.size.base,
   fontWeight: 500,
-  color: "#475569",
+  color: colors.neutral[700],
   marginBottom: "0.25rem",
 };
 
@@ -51,20 +52,20 @@ const ROW_STYLE: React.CSSProperties = {
 
 const BTN_PRIMARY: React.CSSProperties = {
   padding: "0.5rem 1.25rem",
-  fontSize: "0.875rem",
-  background: "#3b82f6",
-  color: "#fff",
+  fontSize: typography.size.md,
+  background: colors.brand[500],
+  color: colors.neutral[0],
   border: "none",
-  borderRadius: "4px",
+  borderRadius: radius.sm,
 };
 
 const BTN_CANCEL: React.CSSProperties = {
   padding: "0.5rem 1.25rem",
-  fontSize: "0.875rem",
+  fontSize: typography.size.md,
   background: "transparent",
-  color: "#64748b",
-  border: "1px solid #cbd5e1",
-  borderRadius: "4px",
+  color: colors.neutral[600],
+  border: `1px solid ${colors.border.default}`,
+  borderRadius: radius.sm,
   cursor: "pointer",
 };
 
@@ -139,7 +140,7 @@ export function StandardVideoForm({
           placeholder="Videonun ana konusu"
         />
         {topicError && (
-          <p style={{ color: COLOR_ERR, fontSize: "0.8rem", margin: "0.25rem 0 0" }}>
+          <p style={{ color: COLOR_ERR, fontSize: typography.size.base, margin: "0.25rem 0 0" }}>
             {topicError}
           </p>
         )}
@@ -176,7 +177,7 @@ export function StandardVideoForm({
           placeholder="örn. 120"
         />
         {durationError && (
-          <p style={{ color: COLOR_ERR, fontSize: "0.8rem", margin: "0.25rem 0 0" }}>
+          <p style={{ color: COLOR_ERR, fontSize: typography.size.base, margin: "0.25rem 0 0" }}>
             {durationError}
           </p>
         )}
@@ -238,7 +239,7 @@ export function StandardVideoForm({
       </div>
 
       {submitError && (
-        <p style={{ color: COLOR_ERR, fontSize: "0.875rem", marginBottom: "0.75rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>
+        <p style={{ color: COLOR_ERR, fontSize: typography.size.md, marginBottom: "0.75rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>
           {submitError}
         </p>
       )}

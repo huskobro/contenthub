@@ -1,0 +1,472 @@
+/**
+ * Command Palette — Wave 2 / M25
+ *
+ * Cmd+K / Ctrl+K triggered overlay with real search + navigation.
+ * - Keyboard-first: arrow keys, enter, escape
+ * - Visibility-aware: commands with visibilityKey are filtered
+ * - Focus trapped inside palette when open
+ * - Integrates with keyboard scope stack and dismiss stack
+ */
+
+import React, { useEffect, useRef, useCallback, useMemo } from "react";
+import { createPortal } from "react-dom";
+import { useCommandPaletteStore, filterCommands, type Command, type CommandCategory } from "../../stores/commandPaletteStore";
+import { useKeyboardStore } from "../../stores/keyboardStore";
+import { useVisibility } from "../../hooks/useVisibility";
+import { useDismissStack } from "../../hooks/useDismissStack";
+import { colors, typography, spacing, radius, shadow, transition, zIndex } from "./tokens";
+
+// ---------------------------------------------------------------------------
+// Scope ID
+// ---------------------------------------------------------------------------
+
+const SCOPE_ID = "command-palette";
+
+// ---------------------------------------------------------------------------
+// Category labels
+// ---------------------------------------------------------------------------
+
+const CATEGORY_LABELS: Record<CommandCategory, string> = {
+  navigation: "Gezinti",
+  action: "Eylem",
+  search: "Arama",
+  settings: "Ayarlar",
+  theme: "Tema",
+};
+
+const CATEGORY_ORDER: CommandCategory[] = ["action", "navigation", "settings", "theme", "search"];
+
+// ---------------------------------------------------------------------------
+// Visibility-aware command filter hook
+// ---------------------------------------------------------------------------
+
+function useVisibilityFilteredCommands(commands: Command[]): Command[] {
+  // Collect unique visibility keys
+  const visibilityKeys = useMemo(
+    () => [...new Set(commands.filter((c) => c.visibilityKey).map((c) => c.visibilityKey!))],
+    [commands]
+  );
+
+  // Query visibility for each key (unconditional hooks — stable count via useMemo)
+  const vis_settings = useVisibility("panel:settings");
+  const vis_visibility = useVisibility("panel:visibility");
+  const vis_templates = useVisibility("panel:templates");
+  const vis_analytics = useVisibility("panel:analytics");
+  const vis_sources = useVisibility("panel:sources");
+
+  const visMap: Record<string, boolean> = useMemo(() => ({
+    "panel:settings": vis_settings.visible,
+    "panel:visibility": vis_visibility.visible,
+    "panel:templates": vis_templates.visible,
+    "panel:analytics": vis_analytics.visible,
+    "panel:sources": vis_sources.visible,
+  }), [vis_settings.visible, vis_visibility.visible, vis_templates.visible, vis_analytics.visible, vis_sources.visible]);
+
+  return useMemo(
+    () =>
+      commands.filter((cmd) => {
+        if (!cmd.visibilityKey) return true;
+        return visMap[cmd.visibilityKey] !== false;
+      }),
+    [commands, visMap]
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Group commands by category
+// ---------------------------------------------------------------------------
+
+interface CommandGroup {
+  category: CommandCategory;
+  label: string;
+  commands: Command[];
+}
+
+function groupCommands(commands: Command[]): CommandGroup[] {
+  const groups: Map<CommandCategory, Command[]> = new Map();
+
+  for (const cmd of commands) {
+    const existing = groups.get(cmd.category) || [];
+    existing.push(cmd);
+    groups.set(cmd.category, existing);
+  }
+
+  return CATEGORY_ORDER
+    .filter((cat) => groups.has(cat))
+    .map((cat) => ({
+      category: cat,
+      label: CATEGORY_LABELS[cat],
+      commands: groups.get(cat)!,
+    }));
+}
+
+// ---------------------------------------------------------------------------
+// Command Palette Component
+// ---------------------------------------------------------------------------
+
+export function CommandPalette() {
+  const { isOpen, query, selectedIndex, commands, close, setQuery, setSelectedIndex, executeSelected } =
+    useCommandPaletteStore();
+
+  const inputRef = useRef<HTMLInputElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+
+  // Filter by visibility
+  const visibleCommands = useVisibilityFilteredCommands(commands);
+
+  // Filter by search query
+  const filtered = useMemo(() => filterCommands(visibleCommands, query), [visibleCommands, query]);
+
+  // Group for display
+  const groups = useMemo(() => groupCommands(filtered), [filtered]);
+
+  // Flat list for index tracking
+  const flatList = useMemo(() => groups.flatMap((g) => g.commands), [groups]);
+
+  // Keyboard scope
+  useEffect(() => {
+    if (isOpen) {
+      useKeyboardStore.getState().pushScope({ id: SCOPE_ID, label: "Command Palette" });
+    } else {
+      useKeyboardStore.getState().popScope(SCOPE_ID);
+    }
+    return () => {
+      useKeyboardStore.getState().popScope(SCOPE_ID);
+    };
+  }, [isOpen]);
+
+  // Dismiss stack (ESC priority)
+  useDismissStack(SCOPE_ID, isOpen, close);
+
+  // Auto-focus input
+  useEffect(() => {
+    if (isOpen && inputRef.current) {
+      // Small delay to let portal render
+      requestAnimationFrame(() => inputRef.current?.focus());
+    }
+  }, [isOpen]);
+
+  // Scroll selected into view
+  useEffect(() => {
+    if (!listRef.current) return;
+    const selected = listRef.current.querySelector(`[data-palette-index="${selectedIndex}"]`);
+    if (selected) {
+      selected.scrollIntoView({ block: "nearest" });
+    }
+  }, [selectedIndex]);
+
+  // Keyboard handler
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      switch (e.key) {
+        case "ArrowDown":
+          e.preventDefault();
+          setSelectedIndex(Math.min(selectedIndex + 1, flatList.length - 1));
+          break;
+        case "ArrowUp":
+          e.preventDefault();
+          setSelectedIndex(Math.max(selectedIndex - 1, 0));
+          break;
+        case "Enter":
+          e.preventDefault();
+          if (flatList.length > 0) {
+            executeSelected();
+          }
+          break;
+        // ESC is handled by useDismissStack — no duplication needed
+        case "Tab":
+          // Trap focus inside palette
+          e.preventDefault();
+          break;
+      }
+    },
+    [selectedIndex, flatList.length, setSelectedIndex, executeSelected, close]
+  );
+
+  // Precompute index map: command id → flat index
+  const indexMap = useMemo(() => {
+    const map = new Map<string, number>();
+    flatList.forEach((cmd, i) => map.set(cmd.id, i));
+    return map;
+  }, [flatList]);
+
+  if (!isOpen) return null;
+
+  return createPortal(
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: zIndex.commandPalette,
+        display: "flex",
+        alignItems: "flex-start",
+        justifyContent: "center",
+        paddingTop: "min(20vh, 160px)",
+      }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) close();
+      }}
+      data-testid="command-palette-overlay"
+    >
+      {/* Backdrop */}
+      <div
+        style={{
+          position: "fixed",
+          inset: 0,
+          background: "rgba(0, 0, 0, 0.5)",
+          backdropFilter: "blur(2px)",
+        }}
+        onClick={close}
+      />
+
+      {/* Palette panel */}
+      <div
+        role="dialog"
+        aria-label="Komut Paleti"
+        aria-modal="true"
+        style={{
+          position: "relative",
+          width: "min(560px, 90vw)",
+          maxHeight: "min(480px, 70vh)",
+          display: "flex",
+          flexDirection: "column",
+          background: colors.surface.card,
+          border: `1px solid ${colors.border.default}`,
+          borderRadius: radius.lg,
+          boxShadow: shadow.lg,
+          overflow: "hidden",
+          animation: "palette-enter 120ms ease-out",
+        }}
+        onKeyDown={handleKeyDown}
+        data-testid="command-palette"
+      >
+        {/* Search input */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            padding: `${spacing[3]} ${spacing[4]}`,
+            borderBottom: `1px solid ${colors.border.subtle}`,
+            gap: spacing[2],
+          }}
+        >
+          <span style={{ color: colors.neutral[400], fontSize: typography.size.lg, flexShrink: 0 }}>⌘</span>
+          <input
+            ref={inputRef}
+            type="text"
+            placeholder="Komut veya sayfa ara..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            style={{
+              flex: 1,
+              border: "none",
+              outline: "none",
+              background: "transparent",
+              fontSize: typography.size.md,
+              color: colors.neutral[900],
+              fontFamily: typography.fontFamily,
+              lineHeight: typography.lineHeight.normal,
+            }}
+            data-testid="command-palette-input"
+            aria-label="Komut ara"
+            autoComplete="off"
+            spellCheck={false}
+          />
+          <kbd
+            style={{
+              fontSize: typography.size.xs,
+              color: colors.neutral[400],
+              background: colors.neutral[100],
+              padding: "0.1rem 0.4rem",
+              borderRadius: radius.sm,
+              border: `1px solid ${colors.border.subtle}`,
+              fontFamily: typography.monoFamily,
+            }}
+          >
+            ESC
+          </kbd>
+        </div>
+
+        {/* Command list */}
+        <div
+          ref={listRef}
+          style={{
+            flex: 1,
+            overflowY: "auto",
+            padding: `${spacing[2]} 0`,
+          }}
+          role="listbox"
+          aria-label="Komutlar"
+          data-testid="command-palette-list"
+        >
+          {flatList.length === 0 && (
+            <div
+              style={{
+                padding: `${spacing[6]} ${spacing[4]}`,
+                textAlign: "center",
+                color: colors.neutral[500],
+                fontSize: typography.size.sm,
+              }}
+              data-testid="command-palette-empty"
+            >
+              Sonuc bulunamadi.
+            </div>
+          )}
+
+          {groups.map((group) => (
+            <div key={group.category}>
+              <div
+                style={{
+                  padding: `${spacing[2]} ${spacing[4]} ${spacing[1]}`,
+                  fontSize: typography.size.xs,
+                  fontWeight: typography.weight.semibold,
+                  color: colors.neutral[500],
+                  textTransform: "uppercase",
+                  letterSpacing: "0.05em",
+                }}
+              >
+                {group.label}
+              </div>
+              {group.commands.map((cmd) => {
+                const itemIndex = indexMap.get(cmd.id) ?? 0;
+                const isSelected = selectedIndex === itemIndex;
+                return (
+                  <CommandItem
+                    key={cmd.id}
+                    command={cmd}
+                    isSelected={isSelected}
+                    index={itemIndex}
+                    onSelect={() => {
+                      setSelectedIndex(itemIndex);
+                      useCommandPaletteStore.getState().executeCommand(cmd.id);
+                    }}
+                    onHover={() => setSelectedIndex(itemIndex)}
+                  />
+                );
+              })}
+            </div>
+          ))}
+        </div>
+
+        {/* Footer hint */}
+        <div
+          style={{
+            padding: `${spacing[2]} ${spacing[4]}`,
+            borderTop: `1px solid ${colors.border.subtle}`,
+            display: "flex",
+            gap: spacing[3],
+            fontSize: typography.size.xs,
+            color: colors.neutral[400],
+          }}
+        >
+          <span>
+            <kbd style={kbdStyle}>↑↓</kbd> gezin
+          </span>
+          <span>
+            <kbd style={kbdStyle}>↵</kbd> calistir
+          </span>
+          <span>
+            <kbd style={kbdStyle}>esc</kbd> kapat
+          </span>
+        </div>
+      </div>
+
+    </div>,
+    document.body
+  );
+}
+
+// ---------------------------------------------------------------------------
+// CommandItem
+// ---------------------------------------------------------------------------
+
+interface CommandItemProps {
+  command: Command;
+  isSelected: boolean;
+  index: number;
+  onSelect: () => void;
+  onHover: () => void;
+}
+
+function CommandItem({ command, isSelected, index, onSelect, onHover }: CommandItemProps) {
+  return (
+    <div
+      role="option"
+      aria-selected={isSelected}
+      data-palette-index={index}
+      onClick={onSelect}
+      onMouseMove={onHover}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: spacing[3],
+        padding: `${spacing[2]} ${spacing[4]}`,
+        cursor: "pointer",
+        background: isSelected ? colors.brand[50] : "transparent",
+        transition: `background ${transition.fast}`,
+      }}
+      data-testid={`command-palette-item-${command.id}`}
+    >
+      {command.icon && (
+        <span style={{ fontSize: typography.size.md, flexShrink: 0, width: "1.5rem", textAlign: "center" }}>
+          {command.icon}
+        </span>
+      )}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div
+          style={{
+            fontSize: typography.size.base,
+            color: isSelected ? colors.brand[700] : colors.neutral[800],
+            fontWeight: isSelected ? typography.weight.medium : typography.weight.normal,
+            lineHeight: typography.lineHeight.tight,
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {command.label}
+        </div>
+        {command.description && (
+          <div
+            style={{
+              fontSize: typography.size.xs,
+              color: colors.neutral[500],
+              lineHeight: typography.lineHeight.normal,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {command.description}
+          </div>
+        )}
+      </div>
+      <span
+        style={{
+          fontSize: typography.size.xs,
+          color: colors.neutral[400],
+          background: colors.neutral[100],
+          padding: "0.1rem 0.4rem",
+          borderRadius: radius.sm,
+          flexShrink: 0,
+          textTransform: "capitalize",
+        }}
+      >
+        {CATEGORY_LABELS[command.category]}
+      </span>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Shared kbd style
+// ---------------------------------------------------------------------------
+
+const kbdStyle: React.CSSProperties = {
+  fontFamily: typography.monoFamily,
+  fontSize: typography.size.xs,
+  background: colors.neutral[100],
+  padding: "0.1rem 0.3rem",
+  borderRadius: radius.sm,
+  border: `1px solid ${colors.border.subtle}`,
+};

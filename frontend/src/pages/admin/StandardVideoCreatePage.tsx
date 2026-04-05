@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { StandardVideoForm } from "../../components/standard-video/StandardVideoForm";
 import type { StandardVideoFormValues } from "../../components/standard-video/StandardVideoForm";
 import { useCreateStandardVideo } from "../../hooks/useCreateStandardVideo";
+import { colors, typography } from "../../components/design-system/tokens";
 
 export function StandardVideoCreatePage() {
   const navigate = useNavigate();
@@ -30,7 +31,7 @@ export function StandardVideoCreatePage() {
   return (
     <div style={{ padding: "1.5rem" }}>
       <h2
-        style={{ fontSize: "1.125rem", fontWeight: 600, marginBottom: "0.5rem" }}
+        style={{ fontSize: typography.size.xl, fontWeight: 600, marginBottom: "0.5rem" }}
         data-testid="sv-create-heading"
       >
         Yeni Standard Video
@@ -38,8 +39,8 @@ export function StandardVideoCreatePage() {
       <p
         style={{
           margin: "0 0 1.25rem",
-          fontSize: "0.875rem",
-          color: "#64748b",
+          fontSize: typography.size.md,
+          color: colors.neutral[600],
           lineHeight: 1.6,
           maxWidth: "640px",
         }}

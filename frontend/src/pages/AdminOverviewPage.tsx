@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useVisibility } from "../hooks/useVisibility";
 import { useAnalyticsOverview } from "../hooks/useAnalyticsOverview";
-import { colors, spacing, typography } from "../components/design-system/tokens";
+import { colors, spacing, typography, radius, transition } from "../components/design-system/tokens";
 import {
   PageShell,
   SectionShell,
@@ -146,9 +146,9 @@ const QUICK_CARD: React.CSSProperties = {
   padding: `${spacing[4]} ${spacing[5]}`,
   background: colors.surface.card,
   border: `1px solid ${colors.border.subtle}`,
-  borderRadius: "8px",
+  borderRadius: radius.lg,
   cursor: "pointer",
-  transition: `border-color 180ms ease, box-shadow 180ms ease`,
+  transition: `border-color ${transition.fast}, box-shadow ${transition.fast}`,
 };
 
 const QUICK_CARD_TITLE: React.CSSProperties = {

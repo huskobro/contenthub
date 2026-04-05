@@ -1,3 +1,4 @@
+import { colors, radius, typography } from "../design-system/tokens";
 export type NewsItemReadinessLevel =
   | "Başlangıç"
   | "Ham kayıt"
@@ -7,12 +8,12 @@ export type NewsItemReadinessLevel =
   | "Kısmen hazır";
 
 const styles: Record<NewsItemReadinessLevel, { bg: string; color: string; border: string }> = {
-  "Başlangıç":         { bg: "#f1f5f9", color: "#64748b", border: "#cbd5e1" },
-  "Ham kayıt":         { bg: "#eff6ff", color: "#1d4ed8", border: "#bfdbfe" },
-  "Gözden geçirildi":  { bg: "#fef9c3", color: "#92400e", border: "#fde68a" },
-  "Kullanıldı":        { bg: "#dcfce7", color: "#166534", border: "#bbf7d0" },
-  "Hariç":             { bg: "#f1f5f9", color: "#94a3b8", border: "#e2e8f0" },
-  "Kısmen hazır":      { bg: "#fff7ed", color: "#c2410c", border: "#fed7aa" },
+  "Başlangıç":         { bg: colors.neutral[100], color: colors.neutral[600], border: colors.border.default },
+  "Ham kayıt":         { bg: colors.info.light, color: colors.info.dark, border: colors.info.light },
+  "Gözden geçirildi":  { bg: colors.warning.light, color: colors.warning.text, border: colors.warning.light },
+  "Kullanıldı":        { bg: colors.success.light, color: colors.success.text, border: colors.success.light },
+  "Hariç":             { bg: colors.neutral[100], color: colors.neutral[500], border: colors.border.subtle },
+  "Kısmen hazır":      { bg: colors.warning.light, color: colors.warning.text, border: colors.warning.light },
 };
 
 interface Props {
@@ -20,14 +21,14 @@ interface Props {
 }
 
 export function NewsItemReadinessBadge({ level }: Props) {
-  const s = styles[level] ?? { bg: "#f8fafc", color: "#475569", border: "#e2e8f0" };
+  const s = styles[level] ?? { bg: colors.neutral[50], color: colors.neutral[700], border: colors.border.subtle };
   return (
     <span
       style={{
         display: "inline-block",
         padding: "0.1rem 0.45rem",
-        fontSize: "0.7rem",
-        borderRadius: "3px",
+        fontSize: typography.size.xs,
+        borderRadius: radius.sm,
         background: s.bg,
         color: s.color,
         border: `1px solid ${s.border}`,

@@ -8,6 +8,8 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
+import { colors, radius, spacing, typography } from "../../components/design-system/tokens";
+import { ActionButton } from "../../components/design-system/primitives";
 
 export function YouTubeCallbackPage() {
   const [searchParams] = useSearchParams();
@@ -63,9 +65,9 @@ export function YouTubeCallbackPage() {
       });
   }, [searchParams, navigate]);
 
-  const bgColor = status === "success" ? "#f0fdf4" : status === "error" ? "#fef2f2" : "#f8fafc";
-  const textColor = status === "success" ? "#166534" : status === "error" ? "#991b1b" : "#475569";
-  const borderColor = status === "success" ? "#bbf7d0" : status === "error" ? "#fecaca" : "#e2e8f0";
+  const bgColor = status === "success" ? colors.success.light : status === "error" ? colors.error.light : colors.neutral[50];
+  const textColor = status === "success" ? colors.success.text : status === "error" ? colors.error.text : colors.neutral[700];
+  const borderColor = status === "success" ? colors.success.light : status === "error" ? colors.error.light : colors.border.subtle;
 
   return (
     <div
@@ -74,21 +76,21 @@ export function YouTubeCallbackPage() {
         justifyContent: "center",
         alignItems: "center",
         minHeight: "60vh",
-        padding: "2rem",
+        padding: spacing[8],
       }}
     >
       <div
         style={{
           maxWidth: "480px",
           width: "100%",
-          padding: "2rem",
-          borderRadius: "12px",
+          padding: spacing[8],
+          borderRadius: radius.xl,
           border: `1px solid ${borderColor}`,
           background: bgColor,
           textAlign: "center",
         }}
       >
-        <div style={{ fontSize: "2rem", marginBottom: "1rem" }}>
+        <div style={{ fontSize: typography.size["2xl"], marginBottom: spacing[4] }}>
           {status === "processing" && "⏳"}
           {status === "success" && "✅"}
           {status === "error" && "❌"}
@@ -96,10 +98,10 @@ export function YouTubeCallbackPage() {
 
         <h2
           style={{
-            fontSize: "1.125rem",
-            fontWeight: 600,
+            fontSize: typography.size.xl,
+            fontWeight: typography.weight.semibold,
             color: textColor,
-            marginBottom: "0.75rem",
+            marginBottom: spacing[3],
           }}
         >
           {status === "processing" && "YouTube Yetkilendirmesi"}
@@ -109,31 +111,23 @@ export function YouTubeCallbackPage() {
 
         <p
           style={{
-            fontSize: "0.875rem",
+            fontSize: typography.size.md,
             color: textColor,
-            lineHeight: 1.6,
+            lineHeight: typography.lineHeight.relaxed,
           }}
         >
           {message}
         </p>
 
         {status === "error" && (
-          <button
-            onClick={() => navigate("/admin/settings", { replace: true })}
-            style={{
-              marginTop: "1rem",
-              padding: "0.5rem 1.25rem",
-              background: "#1e40af",
-              color: "#fff",
-              border: "none",
-              borderRadius: "6px",
-              cursor: "pointer",
-              fontSize: "0.8125rem",
-              fontWeight: 500,
-            }}
-          >
-            Ayarlara Don
-          </button>
+          <div style={{ marginTop: spacing[4] }}>
+            <ActionButton
+              variant="primary"
+              onClick={() => navigate("/admin/settings", { replace: true })}
+            >
+              Ayarlara Don
+            </ActionButton>
+          </div>
         )}
       </div>
     </div>

@@ -1,3 +1,4 @@
+import { colors, radius, typography } from "../design-system/tokens";
 export type SourceConfigCoverageLevel =
   | "Feed tanımlı"
   | "Feed eksik"
@@ -8,13 +9,13 @@ export type SourceConfigCoverageLevel =
   | "Tür belirsiz";
 
 const styles: Record<SourceConfigCoverageLevel, { bg: string; color: string; border: string }> = {
-  "Feed tanımlı": { bg: "#dcfce7", color: "#166534", border: "#bbf7d0" },
-  "Feed eksik":   { bg: "#fef9c3", color: "#92400e", border: "#fde68a" },
-  "URL tanımlı":  { bg: "#dcfce7", color: "#166534", border: "#bbf7d0" },
-  "URL eksik":    { bg: "#fef9c3", color: "#92400e", border: "#fde68a" },
-  "API tanımlı":  { bg: "#dcfce7", color: "#166534", border: "#bbf7d0" },
-  "API eksik":    { bg: "#fef9c3", color: "#92400e", border: "#fde68a" },
-  "Tür belirsiz": { bg: "#f1f5f9", color: "#94a3b8", border: "#cbd5e1" },
+  "Feed tanımlı": { bg: colors.success.light, color: colors.success.text, border: colors.success.light },
+  "Feed eksik":   { bg: colors.warning.light, color: colors.warning.text, border: colors.warning.light },
+  "URL tanımlı":  { bg: colors.success.light, color: colors.success.text, border: colors.success.light },
+  "URL eksik":    { bg: colors.warning.light, color: colors.warning.text, border: colors.warning.light },
+  "API tanımlı":  { bg: colors.success.light, color: colors.success.text, border: colors.success.light },
+  "API eksik":    { bg: colors.warning.light, color: colors.warning.text, border: colors.warning.light },
+  "Tür belirsiz": { bg: colors.neutral[100], color: colors.neutral[500], border: colors.border.default },
 };
 
 interface Props {
@@ -22,14 +23,14 @@ interface Props {
 }
 
 export function SourceConfigCoverageBadge({ level }: Props) {
-  const s = styles[level] ?? { bg: "#f8fafc", color: "#475569", border: "#e2e8f0" };
+  const s = styles[level] ?? { bg: colors.neutral[50], color: colors.neutral[700], border: colors.border.subtle };
   return (
     <span
       style={{
         display: "inline-block",
         padding: "0.1rem 0.45rem",
-        fontSize: "0.7rem",
-        borderRadius: "3px",
+        fontSize: typography.size.xs,
+        borderRadius: radius.sm,
         background: s.bg,
         color: s.color,
         border: `1px solid ${s.border}`,

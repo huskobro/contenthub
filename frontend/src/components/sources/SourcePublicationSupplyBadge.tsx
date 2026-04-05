@@ -1,3 +1,4 @@
+import { colors, radius, typography } from "../design-system/tokens";
 export type SourcePublicationSupplyLevel =
   | "İçerik yok"
   | "Ham içerik"
@@ -6,11 +7,11 @@ export type SourcePublicationSupplyLevel =
   | "Bilinmiyor";
 
 const styles: Record<SourcePublicationSupplyLevel, { bg: string; color: string; border: string }> = {
-  "İçerik yok":           { bg: "#f8fafc", color: "#94a3b8", border: "#cbd5e1" },
-  "Ham içerik":           { bg: "#fef9c3", color: "#854d0e", border: "#fde68a" },
-  "Aday içerik var":      { bg: "#f0fdf4", color: "#15803d", border: "#bbf7d0" },
-  "Kullanılmış içerik var":{ bg: "#dbeafe", color: "#1e40af", border: "#93c5fd" },
-  "Bilinmiyor":           { bg: "#f1f5f9", color: "#64748b", border: "#e2e8f0" },
+  "İçerik yok":           { bg: colors.neutral[50], color: colors.neutral[500], border: colors.border.default },
+  "Ham içerik":           { bg: colors.warning.light, color: colors.warning.text, border: colors.warning.light },
+  "Aday içerik var":      { bg: colors.success.light, color: colors.success.text, border: colors.success.light },
+  "Kullanılmış içerik var":{ bg: colors.info.light, color: colors.brand[700], border: colors.info.light },
+  "Bilinmiyor":           { bg: colors.neutral[100], color: colors.neutral[600], border: colors.border.subtle },
 };
 
 interface Props {
@@ -18,14 +19,14 @@ interface Props {
 }
 
 export function SourcePublicationSupplyBadge({ level }: Props) {
-  const s = styles[level] ?? { bg: "#f8fafc", color: "#475569", border: "#e2e8f0" };
+  const s = styles[level] ?? { bg: colors.neutral[50], color: colors.neutral[700], border: colors.border.subtle };
   return (
     <span
       style={{
         display: "inline-block",
         padding: "0.1rem 0.45rem",
-        fontSize: "0.7rem",
-        borderRadius: "3px",
+        fontSize: typography.size.xs,
+        borderRadius: radius.sm,
         background: s.bg,
         color: s.color,
         border: `1px solid ${s.border}`,

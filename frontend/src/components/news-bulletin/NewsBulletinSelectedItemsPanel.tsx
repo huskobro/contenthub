@@ -9,8 +9,9 @@ import { UsedNewsWarningBadge } from "./UsedNewsWarningBadge";
 import { UsedNewsWarningDetails } from "./UsedNewsWarningDetails";
 import type { SelectedItemFormValues } from "./NewsBulletinSelectedItemForm";
 import type { NewsItemResponse } from "../../api/newsItemsApi";
+import { colors, radius, typography } from "../design-system/tokens";
 
-const MUTED_TEXT = "#64748b";
+const MUTED_TEXT = colors.neutral[600];
 const TH_CELL: React.CSSProperties = { textAlign: "left", padding: "0.25rem 0.5rem", color: MUTED_TEXT, fontWeight: 500 };
 
 interface Props {
@@ -26,8 +27,8 @@ export function NewsBulletinSelectedItemsPanel({ bulletinId }: Props) {
   const [pickerError, setPickerError] = useState<string | null>(null);
 
   const sectionStyle: React.CSSProperties = {
-    border: "1px solid #e2e8f0",
-    borderRadius: "6px",
+    border: `1px solid ${colors.border.subtle}`,
+    borderRadius: radius.md,
     padding: "1rem",
     marginTop: "1rem",
   };
@@ -86,7 +87,7 @@ export function NewsBulletinSelectedItemsPanel({ bulletinId }: Props) {
   if (isError) {
     return (
       <div style={sectionStyle}>
-        <p style={{ color: "#dc2626", margin: 0 }}>Selected news yüklenirken hata oluştu.</p>
+        <p style={{ color: colors.error.base, margin: 0 }}>Selected news yüklenirken hata oluştu.</p>
       </div>
     );
   }
@@ -137,8 +138,8 @@ export function NewsBulletinSelectedItemsPanel({ bulletinId }: Props) {
       <p
         style={{
           margin: "0 0 0.75rem",
-          fontSize: "0.8125rem",
-          color: "#94a3b8",
+          fontSize: typography.size.base,
+          color: colors.neutral[500],
           lineHeight: 1.5,
         }}
         data-testid="nb-selected-news-note"
@@ -154,11 +155,11 @@ export function NewsBulletinSelectedItemsPanel({ bulletinId }: Props) {
       />
 
       {!items || items.length === 0 ? (
-        <p style={{ color: "#94a3b8", margin: 0 }}>Henüz seçilmiş haber yok.</p>
+        <p style={{ color: colors.neutral[500], margin: 0 }}>Henüz seçilmiş haber yok.</p>
       ) : (
-        <table style={{ width: "100%", fontSize: "0.8125rem", borderCollapse: "collapse" }}>
+        <table style={{ width: "100%", fontSize: typography.size.base, borderCollapse: "collapse" }}>
           <thead>
-            <tr style={{ borderBottom: "1px solid #e2e8f0" }}>
+            <tr style={{ borderBottom: `1px solid ${colors.border.subtle}` }}>
               <th style={TH_CELL}>News Item ID</th>
               <th style={TH_CELL}>Sıra</th>
               <th style={TH_CELL}>Gerekçe</th>
@@ -169,8 +170,8 @@ export function NewsBulletinSelectedItemsPanel({ bulletinId }: Props) {
           </thead>
           <tbody>
             {items.map((item) => (
-              <tr key={item.id} style={{ borderBottom: "1px solid #f1f5f9" }}>
-                <td style={{ padding: "0.25rem 0.5rem", fontFamily: "monospace", fontSize: "0.75rem" }}>
+              <tr key={item.id} style={{ borderBottom: `1px solid ${colors.neutral[100]}` }}>
+                <td style={{ padding: "0.25rem 0.5rem", fontFamily: "monospace", fontSize: typography.size.sm }}>
                   {item.news_item_id}
                 </td>
                 <td style={{ padding: "0.25rem 0.5rem" }}>{item.sort_order}</td>
@@ -185,13 +186,13 @@ export function NewsBulletinSelectedItemsPanel({ bulletinId }: Props) {
                     />
                   )}
                 </td>
-                <td style={{ padding: "0.25rem 0.5rem", color: "#94a3b8" }}>
+                <td style={{ padding: "0.25rem 0.5rem", color: colors.neutral[500] }}>
                   {formatDateShort(item.created_at)}
                 </td>
                 <td style={{ padding: "0.25rem 0.5rem" }}>
                   <button
                     onClick={() => { setEditingId(item.id); setMode("edit"); }}
-                    style={{ fontSize: "0.75rem" }}
+                    style={{ fontSize: typography.size.sm }}
                   >
                     Düzenle
                   </button>

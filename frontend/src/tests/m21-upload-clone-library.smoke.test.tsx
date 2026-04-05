@@ -119,7 +119,7 @@ describe("M21-B: AssetLibraryPage Upload Surface", () => {
   it("renders upload area", () => {
     render(<AssetLibraryPage />);
     expect(screen.getByTestId("asset-upload-area")).toBeDefined();
-    expect(screen.getByTestId("asset-upload-heading").textContent).toContain("Dosya Yukle");
+    expect(screen.getByTestId("asset-upload-heading").textContent).toContain("Dosya Yükle");
   });
 
   it("renders file input", () => {
@@ -133,7 +133,7 @@ describe("M21-B: AssetLibraryPage Upload Surface", () => {
     render(<AssetLibraryPage />);
     const btn = screen.getByTestId("asset-upload-btn");
     expect(btn).toBeDefined();
-    expect(btn.textContent).toContain("Yukle");
+    expect(btn.textContent).toContain("Yükle");
   });
 
   it("upload button is not disabled by default", () => {

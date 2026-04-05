@@ -1,21 +1,22 @@
+import { colors, radius, typography } from "../design-system/tokens";
 import { useState } from "react";
 
-const COLOR_ERR = "#dc2626";
+const COLOR_ERR = colors.error.base;
 const FIELD_STYLE: React.CSSProperties = {
   display: "block",
   width: "100%",
   padding: "0.375rem 0.5rem",
-  fontSize: "0.875rem",
-  border: "1px solid #cbd5e1",
-  borderRadius: "4px",
+  fontSize: typography.size.md,
+  border: `1px solid ${colors.border.default}`,
+  borderRadius: radius.sm,
   boxSizing: "border-box",
 };
 
 const LABEL_STYLE: React.CSSProperties = {
   display: "block",
-  fontSize: "0.8125rem",
+  fontSize: typography.size.base,
   fontWeight: 500,
-  color: "#475569",
+  color: colors.neutral[700],
   marginBottom: "0.25rem",
 };
 
@@ -27,20 +28,20 @@ const FLEX_1: React.CSSProperties = { flex: 1 };
 
 const BTN_PRIMARY: React.CSSProperties = {
   padding: "0.5rem 1.25rem",
-  fontSize: "0.875rem",
-  background: "#3b82f6",
-  color: "#fff",
+  fontSize: typography.size.md,
+  background: colors.brand[500],
+  color: colors.neutral[0],
   border: "none",
-  borderRadius: "4px",
+  borderRadius: radius.sm,
 };
 
 const BTN_CANCEL: React.CSSProperties = {
   padding: "0.5rem 1.25rem",
-  fontSize: "0.875rem",
+  fontSize: typography.size.md,
   background: "transparent",
-  color: "#64748b",
-  border: "1px solid #cbd5e1",
-  borderRadius: "4px",
+  color: colors.neutral[600],
+  border: `1px solid ${colors.border.default}`,
+  borderRadius: radius.sm,
   cursor: "pointer",
 };
 
@@ -114,7 +115,7 @@ export function StandardVideoMetadataForm({
           placeholder="Video başlığı"
         />
         {titleError && (
-          <p style={{ color: COLOR_ERR, fontSize: "0.8rem", margin: "0.25rem 0 0" }}>
+          <p style={{ color: COLOR_ERR, fontSize: typography.size.base, margin: "0.25rem 0 0" }}>
             {titleError}
           </p>
         )}
@@ -133,7 +134,7 @@ export function StandardVideoMetadataForm({
       <div style={ROW_STYLE}>
         <label style={LABEL_STYLE}>
           Etiketler{" "}
-          <span style={{ fontSize: "0.75rem", color: "#94a3b8", fontWeight: 400 }}>
+          <span style={{ fontSize: typography.size.sm, color: colors.neutral[500], fontWeight: 400 }}>
             (virgülle ayır: etiket1, etiket2)
           </span>
         </label>
@@ -204,7 +205,7 @@ export function StandardVideoMetadataForm({
       </div>
 
       {submitError && (
-        <p style={{ color: COLOR_ERR, fontSize: "0.875rem", marginBottom: "0.75rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>
+        <p style={{ color: COLOR_ERR, fontSize: typography.size.md, marginBottom: "0.75rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>
           {submitError}
         </p>
       )}

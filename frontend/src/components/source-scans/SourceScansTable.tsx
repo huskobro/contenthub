@@ -9,8 +9,9 @@ import { SourceScanInputQualitySummary } from "./SourceScanInputQualitySummary";
 import { SourceScanTargetOutputConsistencySummary } from "./SourceScanTargetOutputConsistencySummary";
 import { SourceScanPublicationOutcomeSummary } from "./SourceScanPublicationOutcomeSummary";
 import { SourceScanInputSpecificitySummary } from "./SourceScanInputSpecificitySummary";
+import { colors, radius, typography } from "../design-system/tokens";
 
-const TH_STYLE: React.CSSProperties = { padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" };
+const TH_STYLE: React.CSSProperties = { padding: "0.5rem 0.75rem", borderBottom: `1px solid ${colors.border.subtle}` };
 const TD_STYLE: React.CSSProperties = { padding: "0.5rem 0.75rem" };
 
 interface SourceScansTableProps {
@@ -20,17 +21,17 @@ interface SourceScansTableProps {
 }
 
 const statusColors: Record<string, { bg: string; color: string }> = {
-  queued: { bg: "#fef9c3", color: "#854d0e" },
-  completed: { bg: "#dcfce7", color: "#166534" },
-  failed: { bg: "#fee2e2", color: "#991b1b" },
+  queued: { bg: colors.warning.light, color: colors.warning.text },
+  completed: { bg: colors.success.light, color: colors.success.text },
+  failed: { bg: colors.error.light, color: colors.error.text },
 };
 
 export function SourceScansTable({ scans, selectedId, onSelect }: SourceScansTableProps) {
   return (
     <div style={{ overflowX: "auto" }}>
-    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.875rem" }}>
+    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: typography.size.md }}>
       <thead>
-        <tr style={{ background: "#f1f5f9", textAlign: "left" }}>
+        <tr style={{ background: colors.neutral[100], textAlign: "left" }}>
           <th style={TH_STYLE}>Kaynak</th>
           <th style={TH_STYLE}>Tarama Modu</th>
           <th style={TH_STYLE}>Durum</th>
@@ -48,15 +49,15 @@ export function SourceScansTable({ scans, selectedId, onSelect }: SourceScansTab
       </thead>
       <tbody>
         {scans.map((scan) => {
-          const colors = statusColors[scan.status] ?? { bg: "#f1f5f9", color: "#475569" };
+          const statusClr = statusColors[scan.status] ?? { bg: colors.neutral[100], color: colors.neutral[700] };
           return (
             <tr
               key={scan.id}
               onClick={() => onSelect(scan.id)}
               style={{
                 cursor: "pointer",
-                background: selectedId === scan.id ? "#eff6ff" : "transparent",
-                borderBottom: "1px solid #f1f5f9",
+                background: selectedId === scan.id ? colors.info.light : "transparent",
+                borderBottom: `1px solid ${colors.neutral[100]}`,
               }}
             >
               {/* Kimlik & Durum */}
@@ -67,20 +68,20 @@ export function SourceScansTable({ scans, selectedId, onSelect }: SourceScansTab
                   sourceStatus={scan.source_status}
                 />
               </td>
-              <td style={{ padding: "0.5rem 0.75rem", color: "#64748b" }}>{scan.scan_mode}</td>
+              <td style={{ padding: "0.5rem 0.75rem", color: colors.neutral[600] }}>{scan.scan_mode}</td>
               <td style={TD_STYLE}>
                 <span style={{
                   display: "inline-block",
                   padding: "0.125rem 0.5rem",
-                  borderRadius: "9999px",
-                  fontSize: "0.75rem",
-                  background: colors.bg,
-                  color: colors.color,
+                  borderRadius: radius.full,
+                  fontSize: typography.size.sm,
+                  background: statusClr.bg,
+                  color: statusClr.color,
                 }}>
                   {scan.status}
                 </span>
               </td>
-              <td style={{ padding: "0.5rem 0.75rem", color: "#64748b" }}>
+              <td style={{ padding: "0.5rem 0.75rem", color: colors.neutral[600] }}>
                 {scan.result_count !== null ? scan.result_count : "—"}
               </td>
               {/* Çalışma & Çıktı */}
@@ -149,7 +150,7 @@ export function SourceScansTable({ scans, selectedId, onSelect }: SourceScansTab
                 />
               </td>
               {/* Zaman */}
-              <td style={{ padding: "0.5rem 0.75rem", color: "#94a3b8", fontSize: "0.8rem" }}>
+              <td style={{ padding: "0.5rem 0.75rem", color: colors.neutral[500], fontSize: typography.size.base }}>
                 {formatDateShort(scan.created_at)}
               </td>
             </tr>

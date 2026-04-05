@@ -154,7 +154,7 @@ function SourceBadge({ source }: { source: string }) {
     admin: { bg: colors.info.light, fg: colors.brand[800] },
     default: { bg: colors.neutral[100], fg: colors.neutral[700] },
     env: { bg: colors.warning.light, fg: colors.warning.text },
-    builtin: { bg: "#f3e8ff", fg: colors.brand[700] },
+    builtin: { bg: colors.brand[100], fg: colors.brand[700] },
     missing: { bg: colors.error.light, fg: colors.error.text },
   };
   const c = badgeColors[source] ?? badgeColors.missing;
@@ -471,7 +471,7 @@ export function EffectiveSettingsPanel() {
   const isLoading = groupsLoading || settingsLoading;
 
   if (isLoading) {
-    return <p style={{ color: colors.neutral[600], fontSize: typography.size.base }}>Yukleniyor...</p>;
+    return <p style={{ color: colors.neutral[600], fontSize: typography.size.base }}>Yükleniyor...</p>;
   }
   if (isError) {
     return (

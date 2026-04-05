@@ -9,9 +9,10 @@ import { SourceInputQualitySummary } from "./SourceInputQualitySummary";
 import { SourceInputSpecificitySummary } from "./SourceInputSpecificitySummary";
 import { SourceTargetOutputConsistencySummary } from "./SourceTargetOutputConsistencySummary";
 import { SourcePublicationOutcomeSummary } from "./SourcePublicationOutcomeSummary";
+import { colors, radius, typography } from "../design-system/tokens";
 
 const DASH = "—";
-const TH_STYLE: React.CSSProperties = { padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" };
+const TH_STYLE: React.CSSProperties = { padding: "0.5rem 0.75rem", borderBottom: `1px solid ${colors.border.subtle}` };
 const TD_STYLE: React.CSSProperties = { padding: "0.5rem 0.75rem" };
 
 interface SourcesTableProps {
@@ -23,9 +24,9 @@ interface SourcesTableProps {
 export function SourcesTable({ sources, selectedId, onSelect }: SourcesTableProps) {
   return (
     <div style={{ overflowX: "auto" }}>
-    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.875rem" }}>
+    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: typography.size.md }}>
       <thead>
-        <tr style={{ background: "#f1f5f9", textAlign: "left" }}>
+        <tr style={{ background: colors.neutral[100], textAlign: "left" }}>
           <th style={TH_STYLE}>Ad</th>
           <th style={TH_STYLE}>Tür</th>
           <th style={TH_STYLE}>Durum</th>
@@ -51,30 +52,30 @@ export function SourcesTable({ sources, selectedId, onSelect }: SourcesTableProp
             onClick={() => onSelect(src.id)}
             style={{
               cursor: "pointer",
-              background: selectedId === src.id ? "#eff6ff" : "transparent",
-              borderBottom: "1px solid #f1f5f9",
+              background: selectedId === src.id ? colors.info.light : "transparent",
+              borderBottom: `1px solid ${colors.neutral[100]}`,
             }}
           >
             {/* Kimlik */}
-            <td style={{ padding: "0.5rem 0.75rem", color: "#1e40af", fontWeight: selectedId === src.id ? 600 : 400, wordBreak: "break-word", overflowWrap: "anywhere" }}>
+            <td style={{ padding: "0.5rem 0.75rem", color: colors.brand[700], fontWeight: selectedId === src.id ? 600 : 400, wordBreak: "break-word", overflowWrap: "anywhere" }}>
               {src.name ?? DASH}
             </td>
-            <td style={{ padding: "0.5rem 0.75rem", color: "#64748b" }}>{src.source_type ?? DASH}</td>
+            <td style={{ padding: "0.5rem 0.75rem", color: colors.neutral[600] }}>{src.source_type ?? DASH}</td>
             <td style={TD_STYLE}>
               <span style={{
                 display: "inline-block",
                 padding: "0.125rem 0.5rem",
-                borderRadius: "9999px",
-                fontSize: "0.75rem",
-                background: src.status === "active" ? "#dcfce7" : "#f1f5f9",
-                color: src.status === "active" ? "#166534" : "#475569",
+                borderRadius: radius.full,
+                fontSize: typography.size.sm,
+                background: src.status === "active" ? colors.success.light : colors.neutral[100],
+                color: src.status === "active" ? colors.success.text : colors.neutral[700],
               }}>
                 {src.status ?? DASH}
               </span>
             </td>
-            <td style={{ padding: "0.5rem 0.75rem", color: "#64748b" }}>{src.trust_level ?? DASH}</td>
-            <td style={{ padding: "0.5rem 0.75rem", color: "#64748b" }}>{src.scan_mode ?? DASH}</td>
-            <td style={{ padding: "0.5rem 0.75rem", color: "#64748b" }}>{src.language ?? DASH}</td>
+            <td style={{ padding: "0.5rem 0.75rem", color: colors.neutral[600] }}>{src.trust_level ?? DASH}</td>
+            <td style={{ padding: "0.5rem 0.75rem", color: colors.neutral[600] }}>{src.scan_mode ?? DASH}</td>
+            <td style={{ padding: "0.5rem 0.75rem", color: colors.neutral[600] }}>{src.language ?? DASH}</td>
             {/* Tarama & Hazırlık */}
             <td style={TD_STYLE}>
               <SourceScanSummary

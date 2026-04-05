@@ -247,7 +247,7 @@ export function AnalyticsOverviewPage() {
 
       {/* Job & Publish Detail */}
       <SectionShell
-        title="Is ve Yayin Detayi"
+        title="Is ve Yayin Detayı"
         description="Is ve yayin sayilari, basari oranlari."
         testId="analytics-publish-metrics"
       >
@@ -352,7 +352,7 @@ export function AnalyticsOverviewPage() {
         </MetricGrid>
         {!channelLoading && yt && !yt.has_publish_history && (
           <p style={{ marginTop: spacing[3], fontSize: typography.size.base, color: colors.neutral[500] }} data-testid="channel-no-history">
-            Henuz YouTube uzerinde yayin gecmisi bulunmuyor.
+            Henüz YouTube uzerinde yayin gecmisi bulunmuyor.
           </p>
         )}
       </SectionShell>

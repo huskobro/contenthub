@@ -3,7 +3,7 @@ import { colors, typography, spacing, radius, transition } from "../components/d
 
 const SUBTITLE: React.CSSProperties = {
   margin: `0 0 ${spacing[6]}`,
-  fontSize: "0.9375rem",
+  fontSize: typography.size.lg,
   color: colors.neutral[700],
   lineHeight: 1.6,
   maxWidth: "720px",
@@ -32,7 +32,7 @@ const CARD_ICON: React.CSSProperties = {
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
-  fontSize: "1rem",
+  fontSize: typography.size.lg,
   fontWeight: typography.weight.bold,
   color: colors.neutral[0],
   marginBottom: spacing[3],
@@ -40,7 +40,7 @@ const CARD_ICON: React.CSSProperties = {
 
 const CARD_TITLE: React.CSSProperties = {
   margin: `0 0 ${spacing[1]}`,
-  fontSize: "0.9375rem",
+  fontSize: typography.size.lg,
   fontWeight: typography.weight.semibold,
   color: colors.neutral[950],
 };
@@ -110,7 +110,7 @@ const PUBLISH_ENTRIES = [
   },
   {
     icon: "H",
-    iconBg: "#7c3aed",
+    iconBg: colors.brand[700],
     title: "Haber Bultenleri",
     desc: "Derlenen haber bultenlerinin yayin hazirligini inceleyin. Script ve metadata tamamlandiginda yayin sureci baslatilabilir.",
     cta: "Bultenleri Goruntule",
@@ -163,14 +163,14 @@ export function UserPublishEntryPage() {
       </div>
 
       <div style={NOTE} data-testid="publish-first-use-note">
-        Henuz yayin sureci baslamadiysa, once Icerik ekranindan bir icerik
+        Henüz yayin sureci baslamadiysa, once Icerik ekranindan bir icerik
         olusturun. Tamamlanan icerikler buradaki yayin alanlarina duser.
         Yayin islemleri su an yonetim panelinde yurutulmektedir ve sectiginiz
         alan sizi ilgili yonetim ekranina yonlendirecektir.
       </div>
 
       <div style={CROSSLINK} data-testid="publish-crosslink-area">
-        Henuz icerik uretmediseniz once{" "}
+        Henüz icerik uretmediseniz once{" "}
         <button
           style={CROSSLINK_BTN}
           onClick={() => navigate("/user/content")}

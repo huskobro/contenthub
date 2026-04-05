@@ -432,7 +432,7 @@ export function AnalyticsOperationsPage() {
               data={sourceStats}
               keyFn={(s) => String(s.source_id)}
               loading={sourceLoading}
-              emptyMessage="Henuz tanimli haber kaynagi bulunmuyor."
+              emptyMessage="Henüz tanimli haber kaynagi bulunmuyor."
               testId="source-stats"
               rowTestIdPrefix="source-row"
             />

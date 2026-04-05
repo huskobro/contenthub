@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useCreateNewsBulletin } from "../../hooks/useCreateNewsBulletin";
 import { NewsBulletinForm } from "../../components/news-bulletin/NewsBulletinForm";
 import type { NewsBulletinFormValues } from "../../components/news-bulletin/NewsBulletinForm";
+import { colors, typography } from "../../components/design-system/tokens";
 
 export function NewsBulletinCreatePage() {
   const navigate = useNavigate();
@@ -33,7 +34,7 @@ export function NewsBulletinCreatePage() {
   return (
     <div style={{ padding: "1.5rem" }}>
       <h2
-        style={{ fontSize: "1.125rem", fontWeight: 600, marginBottom: "0.5rem" }}
+        style={{ fontSize: typography.size.xl, fontWeight: 600, marginBottom: "0.5rem" }}
         data-testid="nb-create-heading"
       >
         Yeni Haber Bulteni
@@ -41,8 +42,8 @@ export function NewsBulletinCreatePage() {
       <p
         style={{
           margin: "0 0 1.25rem",
-          fontSize: "0.875rem",
-          color: "#64748b",
+          fontSize: typography.size.md,
+          color: colors.neutral[600],
           lineHeight: 1.6,
           maxWidth: "640px",
         }}
@@ -55,8 +56,8 @@ export function NewsBulletinCreatePage() {
       <p
         style={{
           margin: "0 0 1.25rem",
-          fontSize: "0.8125rem",
-          color: "#94a3b8",
+          fontSize: typography.size.base,
+          color: colors.neutral[500],
           lineHeight: 1.5,
           maxWidth: "640px",
         }}

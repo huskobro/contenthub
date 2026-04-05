@@ -178,7 +178,7 @@ describe("Visibility Registry smoke tests", () => {
     await user.click(screen.getByText("user.email"));
 
     await waitFor(() => {
-      expect(screen.getByText("Kural Detayi")).toBeDefined();
+      expect(screen.getByText("Kural Detayı")).toBeDefined();
       expect(screen.getByText("Admin can see email")).toBeDefined();
     });
   });

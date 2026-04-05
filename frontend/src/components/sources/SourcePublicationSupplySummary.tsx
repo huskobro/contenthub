@@ -1,5 +1,6 @@
 import { SourcePublicationSupplyBadge } from "./SourcePublicationSupplyBadge";
 import type { SourcePublicationSupplyLevel } from "./SourcePublicationSupplyBadge";
+import { colors, typography } from "../design-system/tokens";
 
 export function computeSourcePublicationSupply(
   linkedNewsCount: number | null | undefined,
@@ -33,7 +34,7 @@ export function SourcePublicationSupplySummary({
     <div style={{ display: "flex", flexDirection: "column", gap: "0.2rem" }}>
       <SourcePublicationSupplyBadge level={level} />
       {(reviewed > 0 || used > 0) && (
-        <span style={{ fontSize: "0.7rem", color: "#94a3b8" }}>
+        <span style={{ fontSize: typography.size.xs, color: colors.neutral[500] }}>
           {reviewed > 0 ? `${reviewed} reviewed` : ""}
           {reviewed > 0 && used > 0 ? " • " : ""}
           {used > 0 ? `${used} used` : ""}

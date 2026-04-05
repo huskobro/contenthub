@@ -1,10 +1,11 @@
+import { colors, radius, typography } from "../design-system/tokens";
 import type { UsedNewsArtifactConsistencyLevel } from "./UsedNewsArtifactConsistencySummary";
 
 const STYLES: Record<UsedNewsArtifactConsistencyLevel, { bg: string; color: string }> = {
-  "Artifacts yok": { bg: "#f1f5f9", color: "#64748b" },
-  "Tek taraflı": { bg: "#fef9c3", color: "#854d0e" },
-  "Tutarsız": { bg: "#fee2e2", color: "#991b1b" },
-  "Dengeli": { bg: "#dcfce7", color: "#166534" },
+  "Artifacts yok": { bg: colors.neutral[100], color: colors.neutral[600] },
+  "Tek taraflı": { bg: colors.warning.light, color: colors.warning.text },
+  "Tutarsız": { bg: colors.error.light, color: colors.error.text },
+  "Dengeli": { bg: colors.success.light, color: colors.success.text },
 };
 
 interface Props {
@@ -12,14 +13,14 @@ interface Props {
 }
 
 export function UsedNewsArtifactConsistencyBadge({ level }: Props) {
-  const s = STYLES[level] ?? { bg: "#f8fafc", color: "#475569", border: "#e2e8f0" };
+  const s = STYLES[level] ?? { bg: colors.neutral[50], color: colors.neutral[700], border: colors.border.subtle };
   return (
     <span
       style={{
         display: "inline-block",
         padding: "0.125rem 0.5rem",
-        borderRadius: "9999px",
-        fontSize: "0.75rem",
+        borderRadius: radius.full,
+        fontSize: typography.size.sm,
         background: s.bg,
         color: s.color,
         whiteSpace: "nowrap",

@@ -8,8 +8,9 @@ import { UsedNewsArtifactConsistencySummary } from "./UsedNewsArtifactConsistenc
 import { UsedNewsInputQualitySummary } from "./UsedNewsInputQualitySummary";
 import { UsedNewsInputSpecificitySummary } from "./UsedNewsInputSpecificitySummary";
 import { UsedNewsTargetOutputConsistencySummary } from "./UsedNewsTargetOutputConsistencySummary";
+import { colors, typography } from "../design-system/tokens";
 
-const TH_STYLE: React.CSSProperties = { padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" };
+const TH_STYLE: React.CSSProperties = { padding: "0.5rem 0.75rem", borderBottom: `1px solid ${colors.border.subtle}` };
 const TD_STYLE: React.CSSProperties = { padding: "0.5rem 0.75rem" };
 
 interface Props {
@@ -21,9 +22,9 @@ interface Props {
 export function UsedNewsTable({ records, selectedId, onSelect }: Props) {
   return (
     <div style={{ overflowX: "auto" }}>
-    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.875rem" }}>
+    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: typography.size.md }}>
       <thead>
-        <tr style={{ background: "#f1f5f9", textAlign: "left" }}>
+        <tr style={{ background: colors.neutral[100], textAlign: "left" }}>
           <th style={TH_STYLE}>Haber ID</th>
           <th style={TH_STYLE}>Kullanım Tipi</th>
           <th style={TH_STYLE}>Durum</th>
@@ -46,15 +47,15 @@ export function UsedNewsTable({ records, selectedId, onSelect }: Props) {
             onClick={() => onSelect(record.id)}
             style={{
               cursor: "pointer",
-              background: selectedId === record.id ? "#eff6ff" : "transparent",
-              borderBottom: "1px solid #f1f5f9",
+              background: selectedId === record.id ? colors.info.light : "transparent",
+              borderBottom: `1px solid ${colors.neutral[100]}`,
             }}
           >
             {/* Kimlik & Durum */}
-            <td style={{ padding: "0.5rem 0.75rem", fontFamily: "monospace", fontSize: "0.8rem", color: "#1e40af", fontWeight: selectedId === record.id ? 600 : 400 }}>
+            <td style={{ padding: "0.5rem 0.75rem", fontFamily: "monospace", fontSize: typography.size.base, color: colors.brand[700], fontWeight: selectedId === record.id ? 600 : 400 }}>
               {record.news_item_id}
             </td>
-            <td style={{ padding: "0.5rem 0.75rem", color: "#64748b" }}>{record.usage_type}</td>
+            <td style={{ padding: "0.5rem 0.75rem", color: colors.neutral[600] }}>{record.usage_type}</td>
             <td style={TD_STYLE}>
               <UsedNewsStateSummary
                 usageType={record.usage_type}
@@ -91,8 +92,8 @@ export function UsedNewsTable({ records, selectedId, onSelect }: Props) {
               />
             </td>
             {/* Hedef Grubu */}
-            <td style={{ padding: "0.5rem 0.75rem", color: "#64748b" }}>{record.target_module}</td>
-            <td style={{ padding: "0.5rem 0.75rem", color: "#94a3b8", fontFamily: "monospace", fontSize: "0.8rem" }}>
+            <td style={{ padding: "0.5rem 0.75rem", color: colors.neutral[600] }}>{record.target_module}</td>
+            <td style={{ padding: "0.5rem 0.75rem", color: colors.neutral[500], fontFamily: "monospace", fontSize: typography.size.base }}>
               {record.target_entity_id ?? "—"}
             </td>
             <td style={TD_STYLE}>
@@ -130,7 +131,7 @@ export function UsedNewsTable({ records, selectedId, onSelect }: Props) {
               />
             </td>
             {/* Zaman */}
-            <td style={{ padding: "0.5rem 0.75rem", color: "#94a3b8", fontSize: "0.8rem" }}>
+            <td style={{ padding: "0.5rem 0.75rem", color: colors.neutral[500], fontSize: typography.size.base }}>
               {formatDateShort(record.created_at)}
             </td>
           </tr>

@@ -69,7 +69,7 @@ describe("User panel empty/first-use state clarity", () => {
       renderAt("/user/content");
       const note = screen.getByTestId("content-first-use-note");
       expect(note).toBeDefined();
-      expect(note.textContent).toContain("Henuz icerik olusturmadiyseniz");
+      expect(note.textContent).toContain("Henüz icerik olusturmadiyseniz");
       expect(note.textContent).toContain("ilk iceriginizi baslatabilirsiniz");
     });
 
@@ -89,7 +89,7 @@ describe("User panel empty/first-use state clarity", () => {
       renderAt("/user/publish");
       const note = screen.getByTestId("publish-first-use-note");
       expect(note).toBeDefined();
-      expect(note.textContent).toContain("Henuz yayin sureci baslamadiysa");
+      expect(note.textContent).toContain("Henüz yayin sureci baslamadiysa");
       expect(note.textContent).toContain("once Icerik ekranindan bir icerik olusturun");
     });
 

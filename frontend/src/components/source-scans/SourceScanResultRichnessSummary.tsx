@@ -1,5 +1,6 @@
 import { SourceScanResultRichnessBadge } from "./SourceScanResultRichnessBadge";
 import type { SourceScanResultRichnessLevel } from "./SourceScanResultRichnessBadge";
+import { colors, typography } from "../design-system/tokens";
 
 function isNonEmpty(val: string | null | undefined): boolean {
   return typeof val === "string" && val.trim().length > 0;
@@ -41,7 +42,7 @@ export function SourceScanResultRichnessSummary({
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "0.2rem" }}>
       <SourceScanResultRichnessBadge level={level} />
-      <span style={{ fontSize: "0.7rem", color: "#94a3b8" }}>
+      <span style={{ fontSize: typography.size.xs, color: colors.neutral[500] }}>
         {resultCount != null && !isNaN(resultCount) && isFinite(resultCount) ? `${resultCount} sonuç` : "sonuç bilinmiyor"}
       </span>
     </div>

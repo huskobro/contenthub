@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { StyleBlueprintResponse } from "../../api/styleBlueprintsApi";
 import { validateJson } from "../../lib/safeJson";
+import { colors, radius, typography } from "../design-system/tokens";
 
 export interface StyleBlueprintFormValues {
   name: string;
@@ -28,23 +29,23 @@ interface StyleBlueprintFormProps {
 
 
 
-const BORDER_COLOR = "#e2e8f0";
-const COLOR_ERR = "#dc2626";
+const BORDER_COLOR = colors.border.subtle;
+const COLOR_ERR = colors.error.base;
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
   padding: "0.375rem 0.5rem",
-  fontSize: "0.875rem",
+  fontSize: typography.size.md,
   border: `1px solid ${BORDER_COLOR}`,
-  borderRadius: "4px",
+  borderRadius: radius.sm,
   boxSizing: "border-box",
 };
 
 const labelStyle: React.CSSProperties = {
   display: "block",
-  fontSize: "0.75rem",
+  fontSize: typography.size.sm,
   fontWeight: 600,
-  color: "#475569",
+  color: colors.neutral[700],
   marginBottom: "0.25rem",
 };
 
@@ -53,7 +54,7 @@ const fieldStyle: React.CSSProperties = {
 };
 
 const errorStyle: React.CSSProperties = {
-  fontSize: "0.75rem",
+  fontSize: typography.size.sm,
   color: COLOR_ERR,
   marginTop: "0.2rem",
 };
@@ -63,24 +64,24 @@ const JSON_TEXTAREA: React.CSSProperties = {
   minHeight: "70px",
   resize: "vertical",
   fontFamily: "monospace",
-  fontSize: "0.8rem",
+  fontSize: typography.size.base,
 };
 
 const BTN_PRIMARY: React.CSSProperties = {
   padding: "0.375rem 1rem",
-  fontSize: "0.875rem",
-  color: "#fff",
+  fontSize: typography.size.md,
+  color: colors.neutral[0],
   border: "none",
-  borderRadius: "4px",
+  borderRadius: radius.sm,
 };
 
 const BTN_CANCEL: React.CSSProperties = {
   padding: "0.375rem 1rem",
-  fontSize: "0.875rem",
-  background: "#f1f5f9",
-  color: "#475569",
+  fontSize: typography.size.md,
+  background: colors.neutral[100],
+  color: colors.neutral[700],
   border: `1px solid ${BORDER_COLOR}`,
-  borderRadius: "4px",
+  borderRadius: radius.sm,
 };
 
 export function StyleBlueprintForm({
@@ -200,7 +201,7 @@ export function StyleBlueprintForm({
         />
       </div>
 
-      <div style={{ borderTop: "1px solid #f1f5f9", paddingTop: "0.75rem", marginTop: "0.25rem" }}>
+      <div style={{ borderTop: `1px solid ${colors.neutral[100]}`, paddingTop: "0.75rem", marginTop: "0.25rem" }}>
         {(
           [
             ["visual_rules_json", "visual_rules_json"],
@@ -225,14 +226,14 @@ export function StyleBlueprintForm({
       </div>
 
       {submitError && (
-        <div style={{ color: COLOR_ERR, fontSize: "0.875rem", marginBottom: "0.75rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>{submitError}</div>
+        <div style={{ color: COLOR_ERR, fontSize: typography.size.md, marginBottom: "0.75rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>{submitError}</div>
       )}
 
       <div style={{ display: "flex", gap: "0.5rem" }}>
         <button
           type="submit"
           disabled={isSubmitting}
-          style={{ ...BTN_PRIMARY, background: isSubmitting ? "#93c5fd" : "#3b82f6", cursor: isSubmitting ? "not-allowed" : "pointer" }}
+          style={{ ...BTN_PRIMARY, background: isSubmitting ? colors.info.light : colors.brand[500], cursor: isSubmitting ? "not-allowed" : "pointer" }}
         >
           {isSubmitting ? "Kaydediliyor..." : (submitLabel ?? (mode === "create" ? "Oluştur" : "Kaydet"))}
         </button>

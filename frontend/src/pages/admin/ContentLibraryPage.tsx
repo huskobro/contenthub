@@ -305,7 +305,7 @@ export function ContentLibraryPage() {
         </FilterBar>
         {hasActiveFilters && (
           <p style={{ fontSize: typography.size.xs, color: colors.neutral[500], margin: 0 }} data-testid="library-filter-summary">
-            {total} kayit bulundu
+            {total} kayıt bulundu
           </p>
         )}
       </SectionShell>
@@ -329,7 +329,7 @@ export function ContentLibraryPage() {
               <p style={{ margin: 0, fontSize: typography.size.md }}>
                 {hasActiveFilters
                   ? "Filtrelere uygun icerik kaydi bulunamadi."
-                  : "Henuz icerik kaydi bulunmuyor. Icerik olusturma ekranindan yeni bir icerik baslatabilirsiniz."}
+                  : "Henüz icerik kaydi bulunmuyor. Icerik olusturma ekranindan yeni bir icerik baslatabilirsiniz."}
               </p>
             </div>
           ) : (
@@ -343,7 +343,7 @@ export function ContentLibraryPage() {
               emptyMessage={
                 hasActiveFilters
                   ? "Filtrelere uygun icerik kaydi bulunamadi."
-                  : "Henuz icerik kaydi bulunmuyor. Icerik olusturma ekranindan yeni bir icerik baslatabilirsiniz."
+                  : "Henüz icerik kaydi bulunmuyor. Icerik olusturma ekranindan yeni bir icerik baslatabilirsiniz."
               }
               testId="library-table"
             />
@@ -378,7 +378,7 @@ export function ContentLibraryPage() {
             data-testid="action-edit"
           >
             <p style={{ margin: 0, fontWeight: typography.weight.semibold, color: colors.neutral[900], marginBottom: spacing[1] }}>
-              Duzenleme
+              Düzenleme
             </p>
             <p style={{ margin: 0, fontSize: typography.size.sm, color: colors.neutral[600] }}>
               Icerik detay sayfasindan baslik, konu ve diger alanlari duzenleyin.

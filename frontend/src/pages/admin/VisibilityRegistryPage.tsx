@@ -3,7 +3,7 @@ import { useVisibilityRulesList } from "../../hooks/useVisibilityRulesList";
 import { VisibilityRulesTable } from "../../components/visibility/VisibilityRulesTable";
 import { VisibilityRuleDetailPanel } from "../../components/visibility/VisibilityRuleDetailPanel";
 import { ReadOnlyGuard } from "../../components/visibility/ReadOnlyGuard";
-import { PageShell } from "../../components/design-system/primitives";
+import { PageShell, SectionShell } from "../../components/design-system/primitives";
 import { colors, typography, spacing, radius } from "../../components/design-system/tokens";
 
 export function VisibilityRegistryPage() {
@@ -42,35 +42,41 @@ export function VisibilityRegistryPage() {
         Ayar duzeyinde governance icin Ayarlar sayfasini kullanin.
       </p>
 
-      {isLoading && <p style={{ color: colors.neutral[600] }}>Yükleniyor...</p>}
-      {isError && (
-        <p style={{ color: colors.error.base }}>
-          Hata: {error instanceof Error ? error.message : "Bilinmeyen hata"}
-        </p>
-      )}
-
-      {rules && (
-        <div style={{ display: "flex", gap: spacing[6], alignItems: "flex-start" }}>
-          <div style={{ flex: 2, minWidth: 0 }}>
-            <VisibilityRulesTable
-              rules={rules}
-              selectedId={selectedId}
-              onSelect={setSelectedId}
-            />
-          </div>
-          <div
-            style={{
-              flex: 1,
-              minWidth: "280px",
-              border: `1px solid ${colors.border.default}`,
-              borderRadius: radius.md,
-              background: colors.neutral[50],
-            }}
-          >
-            <VisibilityRuleDetailPanel selectedId={selectedId} />
-          </div>
+      <div style={{ display: "flex", gap: spacing[6], alignItems: "flex-start" }}>
+        <div style={{ flex: 2, minWidth: 0 }}>
+          <SectionShell testId="visibility-table-section">
+            {isLoading && <p style={{ color: colors.neutral[500], fontSize: typography.size.base, padding: spacing[4] }}>Yükleniyor...</p>}
+            {isError && (
+              <p style={{ color: colors.error.base, fontSize: typography.size.base, padding: spacing[4] }}>
+                Hata: {error instanceof Error ? error.message : "Bilinmeyen hata"}
+              </p>
+            )}
+            {!isLoading && !isError && rules && rules.length === 0 && (
+              <div style={{ textAlign: "center", padding: `${spacing[8]} ${spacing[4]}`, color: colors.neutral[500] }}>
+                <p style={{ margin: 0, fontSize: typography.size.md }}>Henüz kayıtlı visibility rule yok.</p>
+              </div>
+            )}
+            {rules && rules.length > 0 && (
+              <VisibilityRulesTable
+                rules={rules}
+                selectedId={selectedId}
+                onSelect={setSelectedId}
+              />
+            )}
+          </SectionShell>
         </div>
-      )}
+        <div
+          style={{
+            flex: 1,
+            minWidth: "280px",
+            border: `1px solid ${colors.border.default}`,
+            borderRadius: radius.md,
+            background: colors.neutral[50],
+          }}
+        >
+          <VisibilityRuleDetailPanel selectedId={selectedId} />
+        </div>
+      </div>
     </PageShell>
     </ReadOnlyGuard>
   );

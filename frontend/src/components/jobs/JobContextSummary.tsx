@@ -1,3 +1,4 @@
+import { colors } from "../design-system/tokens";
 import { JobContextBadge } from "./JobContextBadge";
 
 interface Props {
@@ -25,7 +26,7 @@ export function JobContextSummary({ moduleType, sourceContextJson }: Props) {
     <div style={{ display: "flex", flexDirection: "column", gap: "0.15rem" }}>
       <JobContextBadge moduleType={moduleType} />
       {contextTitle && (
-        <span style={{ fontSize: "0.68rem", color: "#64748b" }}>{contextTitle}</span>
+        <span style={{ fontSize: "0.68rem", color: colors.neutral[600] }}>{contextTitle}</span>
       )}
     </div>
   );

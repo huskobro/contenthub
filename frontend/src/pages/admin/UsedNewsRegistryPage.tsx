@@ -3,8 +3,8 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useUsedNewsList } from "../../hooks/useUsedNewsList";
 import { UsedNewsTable } from "../../components/used-news/UsedNewsTable";
 import { UsedNewsDetailPanel } from "../../components/used-news/UsedNewsDetailPanel";
-import { PageShell } from "../../components/design-system/primitives";
-import { colors, typography, spacing, radius } from "../../components/design-system/tokens";
+import { PageShell, SectionShell, ActionButton } from "../../components/design-system/primitives";
+import { colors, typography, spacing } from "../../components/design-system/tokens";
 
 export function UsedNewsRegistryPage() {
   const { data: records, isLoading, isError } = useUsedNewsList();
@@ -23,38 +23,31 @@ export function UsedNewsRegistryPage() {
   return (
     <PageShell
       title="Used News Registry"
+      testId="used-news-registry"
       actions={
-        <button
-          onClick={() => navigate("/admin/used-news/new")}
-          style={{
-            padding: `${spacing[1]} ${spacing[4]}`,
-            fontSize: typography.size.md,
-            background: colors.brand[600],
-            color: colors.neutral[0],
-            border: "none",
-            borderRadius: radius.sm,
-            cursor: "pointer",
-            whiteSpace: "nowrap",
-          }}
-        >
+        <ActionButton variant="primary" onClick={() => navigate("/admin/used-news/new")}>
           + Yeni
-        </button>
+        </ActionButton>
       }
     >
       <div style={{ display: "flex", gap: spacing[6] }}>
         <div style={{ flex: 1 }}>
-          {isLoading && <p>Yükleniyor...</p>}
-          {isError && <p style={{ color: colors.error.base }}>Hata: kayıtlar yüklenemedi.</p>}
-          {!isLoading && !isError && records && records.length === 0 && (
-            <p style={{ color: colors.neutral[500] }}>Henüz kullanılmış haber kaydı yok.</p>
-          )}
-          {records && records.length > 0 && (
-            <UsedNewsTable
-              records={records}
-              selectedId={selectedId}
-              onSelect={setSelectedId}
-            />
-          )}
+          <SectionShell testId="used-news-table-section">
+            {isLoading && <p style={{ color: colors.neutral[500], fontSize: typography.size.base, padding: spacing[4] }}>Yükleniyor...</p>}
+            {isError && <p style={{ color: colors.error.base, fontSize: typography.size.base, padding: spacing[4] }}>Hata: kayıtlar yüklenemedi.</p>}
+            {!isLoading && !isError && records && records.length === 0 && (
+              <div style={{ textAlign: "center", padding: `${spacing[8]} ${spacing[4]}`, color: colors.neutral[500] }}>
+                <p style={{ margin: 0, fontSize: typography.size.md }}>Henüz kullanılmış haber kaydı yok.</p>
+              </div>
+            )}
+            {records && records.length > 0 && (
+              <UsedNewsTable
+                records={records}
+                selectedId={selectedId}
+                onSelect={setSelectedId}
+              />
+            )}
+          </SectionShell>
         </div>
 
         {selectedId && (

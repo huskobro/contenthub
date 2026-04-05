@@ -1,5 +1,6 @@
 import { useSetupRequirements } from "../../hooks/useSetupRequirements";
 import { useSettingsList } from "../../hooks/useSettingsList";
+import { colors, radius, typography } from "../design-system/tokens";
 
 const CONTAINER: React.CSSProperties = {
   display: "flex",
@@ -7,15 +8,15 @@ const CONTAINER: React.CSSProperties = {
   alignItems: "center",
   justifyContent: "center",
   minHeight: "100vh",
-  background: "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)",
+  background: `linear-gradient(135deg, ${colors.neutral[50]} 0%, ${colors.border.subtle} 100%)`,
   padding: "2rem",
 };
 
 const CARD: React.CSSProperties = {
   maxWidth: "560px",
   width: "100%",
-  background: "#fff",
-  borderRadius: "12px",
+  background: colors.neutral[0],
+  borderRadius: radius.xl,
   boxShadow: "0 4px 24px rgba(0, 0, 0, 0.08)",
   padding: "2.5rem",
 };
@@ -24,14 +25,14 @@ const TITLE: React.CSSProperties = {
   margin: "0 0 0.375rem",
   fontSize: "1.5rem",
   fontWeight: 700,
-  color: "#0f172a",
+  color: colors.neutral[900],
   textAlign: "center",
 };
 
 const SUBTITLE: React.CSSProperties = {
   margin: "0 0 1.75rem",
-  fontSize: "0.9375rem",
-  color: "#475569",
+  fontSize: typography.size.lg,
+  color: colors.neutral[700],
   lineHeight: 1.6,
   textAlign: "center",
 };
@@ -41,28 +42,28 @@ const ROW: React.CSSProperties = {
   justifyContent: "space-between",
   alignItems: "center",
   padding: "0.625rem 0",
-  borderBottom: "1px solid #f1f5f9",
+  borderBottom: `1px solid ${colors.neutral[100]}`,
 };
 
 const ROW_LABEL: React.CSSProperties = {
-  fontSize: "0.875rem",
+  fontSize: typography.size.md,
   fontWeight: 600,
-  color: "#334155",
+  color: colors.neutral[800],
 };
 
 const ROW_VALUE: React.CSSProperties = {
-  fontSize: "0.8125rem",
-  color: "#64748b",
+  fontSize: typography.size.base,
+  color: colors.neutral[600],
   textAlign: "right" as const,
 };
 
 const STATUS_OK: React.CSSProperties = {
-  color: "#16a34a",
+  color: colors.success.base,
   fontWeight: 600,
 };
 
 const STATUS_MISSING: React.CSSProperties = {
-  color: "#94a3b8",
+  color: colors.neutral[500],
   fontWeight: 500,
 };
 
@@ -83,7 +84,7 @@ export function OnboardingReviewSummaryScreen({ onBack, onComplete }: Props) {
     if (!req) return { status: "unknown", detail: "Bilinmiyor" };
     if (req.status === "completed" && req.detail) return { status: "ok", detail: req.detail };
     if (req.status === "completed") return { status: "ok", detail: "Tamamlandi" };
-    return { status: "missing", detail: "Henuz yapilandirilmadi" };
+    return { status: "missing", detail: "Henüz yapilandirilmadi" };
   }
 
   function getProviderSummary(): { status: string; detail: string } {
@@ -91,7 +92,7 @@ export function OnboardingReviewSummaryScreen({ onBack, onComplete }: Props) {
     const providerKeys = settings.filter(
       (s) => s.group_name === "providers" && s.status === "active" && s.admin_value_json !== "null"
     );
-    if (providerKeys.length === 0) return { status: "missing", detail: "Henuz yapilandirilmadi" };
+    if (providerKeys.length === 0) return { status: "missing", detail: "Henüz yapilandirilmadi" };
     const names = providerKeys.map((s) => s.key.replace(/_api_key$/, "").toUpperCase());
     return { status: "ok", detail: `${providerKeys.length} provider (${names.join(", ")})` };
   }
@@ -101,7 +102,7 @@ export function OnboardingReviewSummaryScreen({ onBack, onComplete }: Props) {
     const wsSettings = settings.filter(
       (s) => s.group_name === "workspace" && s.status === "active" && s.admin_value_json !== "null"
     );
-    if (wsSettings.length === 0) return { status: "missing", detail: "Henuz yapilandirilmadi" };
+    if (wsSettings.length === 0) return { status: "missing", detail: "Henüz yapilandirilmadi" };
     const paths = wsSettings.map((s) => {
       try {
         return JSON.parse(s.admin_value_json);
@@ -130,7 +131,7 @@ export function OnboardingReviewSummaryScreen({ onBack, onComplete }: Props) {
     return (
       <div style={CONTAINER}>
         <div style={CARD}>
-          <p style={{ textAlign: "center", color: "#64748b" }}>Yukleniyor...</p>
+          <p style={{ textAlign: "center", color: colors.neutral[600] }}>Yükleniyor...</p>
         </div>
       </div>
     );
@@ -162,12 +163,12 @@ export function OnboardingReviewSummaryScreen({ onBack, onComplete }: Props) {
             onClick={onComplete}
             style={{
               padding: "0.375rem 1rem",
-              background: "#1e40af",
-              color: "#fff",
+              background: colors.brand[700],
+              color: colors.neutral[0],
               border: "none",
-              borderRadius: "4px",
+              borderRadius: radius.sm,
               cursor: "pointer",
-              fontSize: "0.875rem",
+              fontSize: typography.size.md,
             }}
           >
             Kurulumu Tamamla
@@ -178,11 +179,11 @@ export function OnboardingReviewSummaryScreen({ onBack, onComplete }: Props) {
             style={{
               padding: "0.375rem 1rem",
               background: "transparent",
-              color: "#64748b",
-              border: "1px solid #cbd5e1",
-              borderRadius: "4px",
+              color: colors.neutral[600],
+              border: `1px solid ${colors.border.default}`,
+              borderRadius: radius.sm,
               cursor: "pointer",
-              fontSize: "0.875rem",
+              fontSize: typography.size.md,
             }}
           >
             Geri Don

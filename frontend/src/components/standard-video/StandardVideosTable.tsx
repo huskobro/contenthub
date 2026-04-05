@@ -8,9 +8,10 @@ import { StandardVideoInputQualitySummary } from "./StandardVideoInputQualitySum
 import { StandardVideoArtifactConsistencySummary } from "./StandardVideoArtifactConsistencySummary";
 import { StandardVideoInputSpecificitySummary } from "./StandardVideoInputSpecificitySummary";
 import { StandardVideoTargetOutputConsistencySummary } from "./StandardVideoTargetOutputConsistencySummary";
+import { colors, typography } from "../design-system/tokens";
 
 const DASH = "—";
-const TH_STYLE: React.CSSProperties = { padding: "0.5rem 0.75rem", borderBottom: "1px solid #e2e8f0" };
+const TH_STYLE: React.CSSProperties = { padding: "0.5rem 0.75rem", borderBottom: `1px solid ${colors.border.subtle}` };
 const TD_STYLE: React.CSSProperties = { padding: "0.5rem 0.75rem" };
 
 interface Props {
@@ -20,17 +21,17 @@ interface Props {
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  draft: "#64748b",
-  script_ready: "#2563eb",
-  metadata_ready: "#7c3aed",
-  ready: "#16a34a",
-  failed: "#dc2626",
+  draft: colors.neutral[600],
+  script_ready: colors.brand[600],
+  metadata_ready: colors.brand[700],
+  ready: colors.success.base,
+  failed: colors.error.base,
 };
 
 export function StandardVideosTable({ videos, selectedId, onSelect }: Props) {
   if (videos.length === 0) {
     return (
-      <p style={{ color: "#64748b", fontSize: "0.875rem" }}>
+      <p style={{ color: colors.neutral[600], fontSize: typography.size.md }}>
         Henüz kayıt yok.
       </p>
     );
@@ -38,9 +39,9 @@ export function StandardVideosTable({ videos, selectedId, onSelect }: Props) {
 
   return (
     <div style={{ overflowX: "auto" }}>
-    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.875rem" }}>
+    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: typography.size.md }}>
       <thead>
-        <tr style={{ background: "#f1f5f9", textAlign: "left" }}>
+        <tr style={{ background: colors.neutral[100], textAlign: "left" }}>
           {/* Kimlik & Durum */}
           <th style={TH_STYLE}>Başlık</th>
           <th style={TH_STYLE}>Konu</th>
@@ -69,8 +70,8 @@ export function StandardVideosTable({ videos, selectedId, onSelect }: Props) {
             onClick={() => onSelect(v.id)}
             style={{
               cursor: "pointer",
-              background: selectedId === v.id ? "#eff6ff" : "transparent",
-              borderBottom: "1px solid #f1f5f9",
+              background: selectedId === v.id ? colors.info.light : "transparent",
+              borderBottom: `1px solid ${colors.neutral[100]}`,
             }}
           >
             {/* Kimlik & Durum */}
@@ -79,7 +80,7 @@ export function StandardVideosTable({ videos, selectedId, onSelect }: Props) {
             <td style={TD_STYLE}>
               <span
                 style={{
-                  color: STATUS_COLORS[v.status] ?? "#64748b",
+                  color: STATUS_COLORS[v.status] ?? colors.neutral[600],
                   fontWeight: 500,
                 }}
               >
@@ -146,7 +147,7 @@ export function StandardVideosTable({ videos, selectedId, onSelect }: Props) {
               />
             </td>
             {/* Zaman */}
-            <td style={{ padding: "0.5rem 0.75rem", color: "#94a3b8" }}>
+            <td style={{ padding: "0.5rem 0.75rem", color: colors.neutral[500] }}>
               {formatDateTime(v.created_at, DASH)}
             </td>
           </tr>

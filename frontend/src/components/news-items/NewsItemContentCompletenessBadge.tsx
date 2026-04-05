@@ -1,12 +1,13 @@
+import { colors, radius, typography } from "../design-system/tokens";
 export type NewsItemCompletenessLevel =
   | "Eksik"
   | "Kısmi"
   | "Dolu";
 
 const styles: Record<NewsItemCompletenessLevel, { bg: string; color: string; border: string }> = {
-  "Eksik": { bg: "#fee2e2", color: "#991b1b", border: "#fecaca" },
-  "Kısmi": { bg: "#fef9c3", color: "#92400e", border: "#fde68a" },
-  "Dolu":  { bg: "#dcfce7", color: "#166534", border: "#bbf7d0" },
+  "Eksik": { bg: colors.error.light, color: colors.error.text, border: colors.error.light },
+  "Kısmi": { bg: colors.warning.light, color: colors.warning.text, border: colors.warning.light },
+  "Dolu":  { bg: colors.success.light, color: colors.success.text, border: colors.success.light },
 };
 
 interface Props {
@@ -14,14 +15,14 @@ interface Props {
 }
 
 export function NewsItemContentCompletenessBadge({ level }: Props) {
-  const s = styles[level] ?? { bg: "#f8fafc", color: "#475569", border: "#e2e8f0" };
+  const s = styles[level] ?? { bg: colors.neutral[50], color: colors.neutral[700], border: colors.border.subtle };
   return (
     <span
       style={{
         display: "inline-block",
         padding: "0.1rem 0.45rem",
-        fontSize: "0.7rem",
-        borderRadius: "3px",
+        fontSize: typography.size.xs,
+        borderRadius: radius.sm,
         background: s.bg,
         color: s.color,
         border: `1px solid ${s.border}`,

@@ -1,9 +1,14 @@
-import { Outlet } from "react-router-dom";
+import { useEffect } from "react";
+import { Outlet, useNavigate } from "react-router-dom";
 import { AppHeader } from "../../components/layout/AppHeader";
 import { AppSidebar } from "../../components/layout/AppSidebar";
 import { AdminContinuityStrip } from "../../components/layout/AdminContinuityStrip";
 import { ToastContainer } from "../../components/design-system/Toast";
 import { ThemeProvider } from "../../components/design-system/ThemeProvider";
+import { CommandPalette } from "../../components/design-system/CommandPalette";
+import { useCommandPaletteShortcut } from "../../hooks/useCommandPaletteShortcut";
+import { useCommandPaletteStore } from "../../stores/commandPaletteStore";
+import { buildAdminNavigationCommands, buildAdminActionCommands } from "../../commands/adminCommands";
 import { useVisibility } from "../../hooks/useVisibility";
 import { colors, layout } from "../../components/design-system/tokens";
 
@@ -66,12 +71,30 @@ function useAdminNavFiltered(): AdminNavItem[] {
 
 export function AdminLayout() {
   const filteredNav = useAdminNavFiltered();
+  const navigate = useNavigate();
+
+  // Register command palette shortcut (Cmd+K / Ctrl+K)
+  useCommandPaletteShortcut();
+
+  // Register admin commands on mount
+  useEffect(() => {
+    const navCmds = buildAdminNavigationCommands(navigate);
+    const actionCmds = buildAdminActionCommands(navigate);
+    const allCmds = [...navCmds, ...actionCmds];
+    useCommandPaletteStore.getState().registerCommands(allCmds);
+
+    return () => {
+      useCommandPaletteStore.getState().unregisterCommands(allCmds.map((c) => c.id));
+    };
+  }, [navigate]);
 
   return (
     <ThemeProvider>
       <div style={{ display: "flex", minHeight: "100vh" }}>
         {/* Toast notifications */}
         <ToastContainer />
+        {/* Command Palette overlay */}
+        <CommandPalette />
 
         {/* Dark sidebar on the left */}
         <AppSidebar items={filteredNav} />

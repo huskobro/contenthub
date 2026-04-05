@@ -285,8 +285,8 @@ export function AssetLibraryPage() {
       }
     >
       {/* Upload area */}
-      <SectionShell title="Dosya Yukle" description="Workspace'e yeni bir dosya yukleyin. Maks. 100 MB. Calistirilabilir dosyalar engellenir." testId="asset-upload-area">
-        <div data-testid="asset-upload-heading" style={{ display: "none" }}>Dosya Yukle</div>
+      <SectionShell title="Dosya Yükle" description="Workspace'e yeni bir dosya yükleyin. Maks. 100 MB. Calistirilabilir dosyalar engellenir." testId="asset-upload-area">
+        <div data-testid="asset-upload-heading" style={{ display: "none" }}>Dosya Yükle</div>
         <div style={{ display: "flex", gap: spacing[2], alignItems: "center" }}>
           <input
             type="file"
@@ -302,7 +302,7 @@ export function AssetLibraryPage() {
             onClick={handleUpload}
             data-testid="asset-upload-btn"
           >
-            {uploading ? "Yukleniyor..." : "Yukle"}
+            {uploading ? "Yükleniyor..." : "Yükle"}
           </ActionButton>
         </div>
       </SectionShell>

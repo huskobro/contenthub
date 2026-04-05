@@ -3,6 +3,8 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useSourceScansList } from "../../hooks/useSourceScansList";
 import { SourceScansTable } from "../../components/source-scans/SourceScansTable";
 import { SourceScanDetailPanel } from "../../components/source-scans/SourceScanDetailPanel";
+import { colors, spacing, typography } from "../../components/design-system/tokens";
+import { PageShell, SectionShell, ActionButton } from "../../components/design-system/primitives";
 
 export function SourceScansRegistryPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -19,50 +21,39 @@ export function SourceScansRegistryPage() {
   }, [location.state]);
 
   return (
-    <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1.25rem" }}>
-        <div>
-          <h2 style={{ margin: "0 0 0.25rem" }}>Source Scans Registry</h2>
-          <p style={{ margin: 0, color: "#64748b", fontSize: "0.875rem" }}>
-            Kaynak tarama kayıtlarının admin görünümü. Detay için bir kayıt seçin.
-          </p>
-        </div>
-        <button
-          onClick={() => navigate("/admin/source-scans/new")}
-          style={{
-            padding: "0.375rem 1rem",
-            fontSize: "0.875rem",
-            background: "#3b82f6",
-            color: "#fff",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer",
-            whiteSpace: "nowrap",
-          }}
-        >
+    <PageShell
+      title="Source Scans Registry"
+      subtitle="Kaynak tarama kayıtlarının admin görünümü. Detay için bir kayıt seçin."
+      testId="source-scans-registry"
+      actions={
+        <ActionButton variant="primary" onClick={() => navigate("/admin/source-scans/new")}>
           + Yeni
-        </button>
-      </div>
-
-      <div style={{ display: "flex", gap: "1.5rem", alignItems: "flex-start" }}>
+        </ActionButton>
+      }
+    >
+      <div style={{ display: "flex", gap: spacing[6], alignItems: "flex-start" }}>
         {/* List area */}
         <div style={{ flex: 2, minWidth: 0 }}>
-          {isLoading && <p style={{ color: "#64748b" }}>Yükleniyor...</p>}
-          {isError && (
-            <p style={{ color: "#dc2626" }}>
-              Hata: {error instanceof Error ? error.message : "Bilinmeyen hata"}
-            </p>
-          )}
-          {scans && scans.length === 0 && (
-            <p style={{ color: "#94a3b8", fontSize: "0.875rem" }}>Henüz scan kaydı yok.</p>
-          )}
-          {scans && scans.length > 0 && (
-            <SourceScansTable
-              scans={scans}
-              selectedId={selectedId}
-              onSelect={setSelectedId}
-            />
-          )}
+          <SectionShell testId="source-scans-table-section">
+            {isLoading && <p style={{ color: colors.neutral[500], fontSize: typography.size.base, padding: spacing[4] }}>Yükleniyor...</p>}
+            {isError && (
+              <p style={{ color: colors.error.base, fontSize: typography.size.base, padding: spacing[4] }}>
+                Hata: {error instanceof Error ? error.message : "Bilinmeyen hata"}
+              </p>
+            )}
+            {scans && scans.length === 0 && (
+              <div style={{ textAlign: "center", padding: `${spacing[8]} ${spacing[4]}`, color: colors.neutral[500] }}>
+                <p style={{ margin: 0, fontSize: typography.size.md }}>Henüz scan kaydı yok.</p>
+              </div>
+            )}
+            {scans && scans.length > 0 && (
+              <SourceScansTable
+                scans={scans}
+                selectedId={selectedId}
+                onSelect={setSelectedId}
+              />
+            )}
+          </SectionShell>
         </div>
 
         {/* Detail panel area */}
@@ -70,6 +61,6 @@ export function SourceScansRegistryPage() {
           <SourceScanDetailPanel scanId={selectedId} />
         </div>
       </div>
-    </div>
+    </PageShell>
   );
 }

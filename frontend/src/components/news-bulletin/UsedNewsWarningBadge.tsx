@@ -1,3 +1,4 @@
+import { colors, radius, typography } from "../design-system/tokens";
 interface Props {
   warning: boolean;
 }
@@ -10,11 +11,11 @@ export function UsedNewsWarningBadge({ warning }: Props) {
       style={{
         display: "inline-block",
         padding: "0.1rem 0.4rem",
-        fontSize: "0.7rem",
-        background: "#fef9c3",
-        color: "#92400e",
-        border: "1px solid #fde68a",
-        borderRadius: "3px",
+        fontSize: typography.size.xs,
+        background: colors.warning.light,
+        color: colors.warning.text,
+        border: `1px solid ${colors.warning.light}`,
+        borderRadius: radius.sm,
         marginLeft: "0.4rem",
         whiteSpace: "nowrap",
       }}

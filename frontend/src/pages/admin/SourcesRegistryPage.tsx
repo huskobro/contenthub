@@ -56,16 +56,16 @@ export function SourcesRegistryPage() {
       >
         <div onKeyDown={handleKeyDown} tabIndex={0} style={{ outline: "none" }}>
           <SectionShell testId="sources-table-section">
-            {isLoading && <p style={{ color: colors.neutral[500] }}>Yükleniyor...</p>}
+            {isLoading && <p style={{ color: colors.neutral[500], fontSize: typography.size.base, padding: spacing[4] }}>Yükleniyor...</p>}
             {isError && (
-              <p style={{ color: colors.error.base }}>
+              <p style={{ color: colors.error.base, fontSize: typography.size.base, padding: spacing[4] }}>
                 Hata: {error instanceof Error ? error.message : "Bilinmeyen hata"}
               </p>
             )}
             {sources && sources.length === 0 && (
-              <p style={{ color: colors.neutral[400], fontSize: typography.size.md, padding: spacing[4] }}>
-                Henüz source yok.
-              </p>
+              <div style={{ textAlign: "center", padding: `${spacing[8]} ${spacing[4]}`, color: colors.neutral[500] }}>
+                <p style={{ margin: 0, fontSize: typography.size.md }}>Henüz source yok.</p>
+              </div>
             )}
             {sources && sources.length > 0 && (
               <SourcesTable

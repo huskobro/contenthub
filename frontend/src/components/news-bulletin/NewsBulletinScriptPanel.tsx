@@ -5,10 +5,11 @@ import { useUpdateNewsBulletinScript } from "../../hooks/useUpdateNewsBulletinSc
 import { NewsBulletinScriptForm } from "./NewsBulletinScriptForm";
 import { isBlank } from "../../lib/isBlank";
 import type { ScriptFormValues } from "./NewsBulletinScriptForm";
+import { colors, radius, typography } from "../design-system/tokens";
 
 const DASH = "—";
-const LABEL_TD: React.CSSProperties = { color: "#64748b", paddingRight: "1rem", paddingBottom: "0.25rem" };
-const SECTION_STYLE: React.CSSProperties = { border: "1px solid #e2e8f0", borderRadius: "6px", padding: "1rem", marginTop: "1rem" };
+const LABEL_TD: React.CSSProperties = { color: colors.neutral[600], paddingRight: "1rem", paddingBottom: "0.25rem" };
+const SECTION_STYLE: React.CSSProperties = { border: `1px solid ${colors.border.subtle}`, borderRadius: radius.md, padding: "1rem", marginTop: "1rem" };
 
 interface Props {
   bulletinId: string;
@@ -51,7 +52,7 @@ export function NewsBulletinScriptPanel({ bulletinId }: Props) {
   if (isLoading) {
     return (
       <div style={SECTION_STYLE}>
-        <p style={{ color: "#64748b", margin: 0 }}>Script yükleniyor...</p>
+        <p style={{ color: colors.neutral[600], margin: 0 }}>Script yükleniyor...</p>
       </div>
     );
   }
@@ -59,7 +60,7 @@ export function NewsBulletinScriptPanel({ bulletinId }: Props) {
   if (isError) {
     return (
       <div style={SECTION_STYLE}>
-        <p style={{ color: "#dc2626", margin: 0 }}>Script yüklenirken hata oluştu.</p>
+        <p style={{ color: colors.error.base, margin: 0 }}>Script yüklenirken hata oluştu.</p>
       </div>
     );
   }
@@ -114,8 +115,8 @@ export function NewsBulletinScriptPanel({ bulletinId }: Props) {
       <p
         style={{
           margin: "0 0 0.75rem",
-          fontSize: "0.8125rem",
-          color: "#94a3b8",
+          fontSize: typography.size.base,
+          color: colors.neutral[500],
           lineHeight: 1.5,
         }}
         data-testid="nb-script-note"
@@ -125,10 +126,10 @@ export function NewsBulletinScriptPanel({ bulletinId }: Props) {
       </p>
 
       {!script ? (
-        <p style={{ color: "#94a3b8", margin: 0 }}>Henüz script yok.</p>
+        <p style={{ color: colors.neutral[500], margin: 0 }}>Henüz script yok.</p>
       ) : (
         <div>
-          <table style={{ fontSize: "0.8125rem", borderCollapse: "collapse", marginBottom: "0.75rem" }}>
+          <table style={{ fontSize: typography.size.base, borderCollapse: "collapse", marginBottom: "0.75rem" }}>
             <tbody>
               <tr>
                 <td style={LABEL_TD}>Versiyon</td>
@@ -150,7 +151,7 @@ export function NewsBulletinScriptPanel({ bulletinId }: Props) {
               )}
             </tbody>
           </table>
-          <div style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: "4px", padding: "0.75rem", fontSize: "0.8125rem", whiteSpace: "pre-wrap", wordBreak: "break-word", overflowWrap: "anywhere" }}>
+          <div style={{ background: colors.neutral[50], border: `1px solid ${colors.border.subtle}`, borderRadius: radius.sm, padding: "0.75rem", fontSize: typography.size.base, whiteSpace: "pre-wrap", wordBreak: "break-word", overflowWrap: "anywhere" }}>
             {isBlank(script.content)
               ? DASH
               : showFull || (script.content ?? "").length <= PREVIEW_LIMIT
@@ -158,7 +159,7 @@ export function NewsBulletinScriptPanel({ bulletinId }: Props) {
               : (script.content ?? "").slice(0, PREVIEW_LIMIT) + "..."}
           </div>
           {(script.content ?? "").length > PREVIEW_LIMIT && (
-            <button onClick={() => setShowFull((v) => !v)} style={{ marginTop: "0.5rem", background: "none", border: "none", color: "#3b82f6", cursor: "pointer", padding: 0 }}>
+            <button onClick={() => setShowFull((v) => !v)} style={{ marginTop: "0.5rem", background: "none", border: "none", color: colors.brand[500], cursor: "pointer", padding: 0 }}>
               {showFull ? "Daha az göster" : "Tamamını göster"}
             </button>
           )}

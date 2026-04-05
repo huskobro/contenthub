@@ -23,6 +23,7 @@
  */
 
 import { useEffect, useState } from "react";
+import { colors, radius, typography } from "../design-system/tokens";
 
 // Backend subtitle-contracts.ts ile uyumlu tip — drift guard
 export type SubtitlePresetId =
@@ -95,18 +96,18 @@ function SubtitleStyleCard({
   const isDegraded = timingMode === "cursor";
 
   const cardStyle: React.CSSProperties = {
-    border: isSelected ? "2px solid #3b82f6" : "2px solid #e2e8f0",
-    borderRadius: "8px",
+    border: isSelected ? `2px solid ${colors.brand[500]}` : `2px solid ${colors.border.subtle}`,
+    borderRadius: radius.lg,
     padding: "12px",
     cursor: "pointer",
-    background: isSelected ? "#eff6ff" : "#ffffff",
+    background: isSelected ? colors.info.light : colors.neutral[0],
     transition: "border-color 0.15s, background 0.15s",
     position: "relative",
   };
 
   const previewBoxStyle: React.CSSProperties = {
-    background: preset.background !== "none" ? preset.background : "#1e293b",
-    borderRadius: "4px",
+    background: preset.background !== "none" ? preset.background : colors.neutral[900],
+    borderRadius: radius.sm,
     padding: "8px 10px",
     marginBottom: "8px",
     minHeight: "40px",
@@ -125,28 +126,28 @@ function SubtitleStyleCard({
   };
 
   const labelStyle: React.CSSProperties = {
-    fontSize: "0.75rem",
+    fontSize: typography.size.sm,
     fontWeight: 600,
-    color: "#334155",
+    color: colors.neutral[800],
     marginBottom: "2px",
   };
 
   const defaultBadgeStyle: React.CSSProperties = {
     display: "inline-block",
     fontSize: "0.625rem",
-    background: "#dbeafe",
-    color: "#1d4ed8",
-    borderRadius: "3px",
+    background: colors.info.light,
+    color: colors.info.dark,
+    borderRadius: radius.sm,
     padding: "1px 5px",
     marginLeft: "6px",
     verticalAlign: "middle",
   };
 
   const degradedWarningStyle: React.CSSProperties = {
-    fontSize: "0.6875rem",
-    color: "#b45309",
-    background: "#fef3c7",
-    borderRadius: "3px",
+    fontSize: typography.size.xs,
+    color: colors.warning.text,
+    background: colors.warning.light,
+    borderRadius: radius.sm,
     padding: "2px 6px",
     marginTop: "4px",
     display: "flex",
@@ -161,7 +162,7 @@ function SubtitleStyleCard({
     width: "16px",
     height: "16px",
     borderRadius: "50%",
-    background: "#3b82f6",
+    background: colors.brand[500],
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
@@ -173,7 +174,7 @@ function SubtitleStyleCard({
     >
       {isSelected && (
         <div style={selectedMarkStyle}>
-          <span style={{ color: "#fff", fontSize: "10px", lineHeight: 1 }}>✓</span>
+          <span style={{ color: colors.neutral[0], fontSize: "10px", lineHeight: 1 }}>✓</span>
         </div>
       )}
 
@@ -202,7 +203,7 @@ function SubtitleStyleCard({
       </div>
 
       {/* Önizleme notu — preview vs final ayrımı */}
-      <div style={{ fontSize: "0.625rem", color: "#94a3b8", marginBottom: "2px" }}>
+      <div style={{ fontSize: "0.625rem", color: colors.neutral[500], marginBottom: "2px" }}>
         Önizleme — final video farklı görünebilir
       </div>
 
@@ -239,15 +240,15 @@ export function SubtitleStylePicker({
   };
 
   const sectionLabelStyle: React.CSSProperties = {
-    fontSize: "0.8125rem",
+    fontSize: typography.size.base,
     fontWeight: 500,
-    color: "#475569",
+    color: colors.neutral[700],
     marginBottom: "6px",
   };
 
   const scopeNoteStyle: React.CSSProperties = {
-    fontSize: "0.6875rem",
-    color: "#94a3b8",
+    fontSize: typography.size.xs,
+    color: colors.neutral[500],
     marginBottom: "8px",
     fontStyle: "italic",
   };
@@ -256,7 +257,7 @@ export function SubtitleStylePicker({
     return (
       <div>
         <div style={sectionLabelStyle}>Altyazı Stili</div>
-        <div style={{ color: "#94a3b8", fontSize: "0.8125rem" }}>Stiller yükleniyor…</div>
+        <div style={{ color: colors.neutral[500], fontSize: typography.size.base }}>Stiller yükleniyor…</div>
       </div>
     );
   }
@@ -265,7 +266,7 @@ export function SubtitleStylePicker({
     return (
       <div>
         <div style={sectionLabelStyle}>Altyazı Stili</div>
-        <div style={{ color: "#dc2626", fontSize: "0.8125rem" }}>
+        <div style={{ color: colors.error.base, fontSize: typography.size.base }}>
           Stiller yüklenemedi: {error}
         </div>
       </div>
@@ -283,13 +284,13 @@ export function SubtitleStylePicker({
       {/* Degrade mod uyarısı — genel, tüm kartların üzerinde */}
       {timingMode === "cursor" && (
         <div style={{
-          background: "#fef3c7",
-          border: "1px solid #f59e0b",
-          borderRadius: "4px",
+          background: colors.warning.light,
+          border: `1px solid ${colors.warning.base}`,
+          borderRadius: radius.sm,
           padding: "6px 10px",
           marginBottom: "8px",
-          fontSize: "0.8125rem",
-          color: "#92400e",
+          fontSize: typography.size.base,
+          color: colors.warning.text,
         }}>
           ⚠ Whisper entegrasyonu aktif değil — sınırlı zamanlama modu (cursor).
           Karaoke kelime highlight bu videoda çalışmayacak.

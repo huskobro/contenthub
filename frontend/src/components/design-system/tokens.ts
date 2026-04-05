@@ -86,6 +86,7 @@ export const zIndex = {
   header: 110,
   dropdown: 200,
   modal: 300,
+  commandPalette: 350,
   toast: 400,
 } as const;
 

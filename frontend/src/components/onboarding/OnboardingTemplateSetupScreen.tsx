@@ -2,6 +2,7 @@ import { TemplateForm } from "../templates/TemplateForm";
 import { useCreateTemplate } from "../../hooks/useCreateTemplate";
 import { useQueryClient } from "@tanstack/react-query";
 import type { TemplateFormValues } from "../templates/TemplateForm";
+import { colors, radius, typography } from "../design-system/tokens";
 
 const CONTAINER: React.CSSProperties = {
   display: "flex",
@@ -9,15 +10,15 @@ const CONTAINER: React.CSSProperties = {
   alignItems: "center",
   justifyContent: "center",
   minHeight: "100vh",
-  background: "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)",
+  background: `linear-gradient(135deg, ${colors.neutral[50]} 0%, ${colors.border.subtle} 100%)`,
   padding: "2rem",
 };
 
 const CARD: React.CSSProperties = {
   maxWidth: "560px",
   width: "100%",
-  background: "#fff",
-  borderRadius: "12px",
+  background: colors.neutral[0],
+  borderRadius: radius.xl,
   boxShadow: "0 4px 24px rgba(0, 0, 0, 0.08)",
   padding: "2.5rem",
 };
@@ -26,14 +27,14 @@ const TITLE: React.CSSProperties = {
   margin: "0 0 0.375rem",
   fontSize: "1.5rem",
   fontWeight: 700,
-  color: "#0f172a",
+  color: colors.neutral[900],
   textAlign: "center",
 };
 
 const SUBTITLE: React.CSSProperties = {
   margin: "0 0 1.75rem",
-  fontSize: "0.9375rem",
-  color: "#475569",
+  fontSize: typography.size.lg,
+  color: colors.neutral[700],
   lineHeight: 1.6,
   textAlign: "center",
 };

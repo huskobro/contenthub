@@ -1,3 +1,4 @@
+import { colors, radius, typography } from "../design-system/tokens";
 export type JobOutputRichnessLevel =
   | "Sorunlu"
   | "Zayıf bağlam"
@@ -5,10 +6,10 @@ export type JobOutputRichnessLevel =
   | "Zengin bağlam";
 
 const styles: Record<JobOutputRichnessLevel, { bg: string; color: string; border: string }> = {
-  "Sorunlu":     { bg: "#fee2e2", color: "#991b1b", border: "#fca5a5" },
-  "Zayıf bağlam":{ bg: "#f8fafc", color: "#94a3b8", border: "#cbd5e1" },
-  "Kısmi bağlam":{ bg: "#fef9c3", color: "#854d0e", border: "#fde68a" },
-  "Zengin bağlam":{ bg: "#dcfce7", color: "#166534", border: "#86efac" },
+  "Sorunlu":     { bg: colors.error.light, color: colors.error.text, border: colors.error.light },
+  "Zayıf bağlam":{ bg: colors.neutral[50], color: colors.neutral[500], border: colors.border.default },
+  "Kısmi bağlam":{ bg: colors.warning.light, color: colors.warning.text, border: colors.warning.light },
+  "Zengin bağlam":{ bg: colors.success.light, color: colors.success.text, border: colors.success.light },
 };
 
 interface Props {
@@ -16,14 +17,14 @@ interface Props {
 }
 
 export function JobOutputRichnessBadge({ level }: Props) {
-  const s = styles[level] ?? { bg: "#f8fafc", color: "#475569", border: "#e2e8f0" };
+  const s = styles[level] ?? { bg: colors.neutral[50], color: colors.neutral[700], border: colors.border.subtle };
   return (
     <span
       style={{
         display: "inline-block",
         padding: "0.1rem 0.45rem",
-        fontSize: "0.7rem",
-        borderRadius: "3px",
+        fontSize: typography.size.xs,
+        borderRadius: radius.sm,
         background: s.bg,
         color: s.color,
         border: `1px solid ${s.border}`,

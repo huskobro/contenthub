@@ -1,3 +1,4 @@
+import { colors, radius, typography } from "../design-system/tokens";
 export type TemplateStyleLinkReadinessLevel =
   | "Ana bağ"
   | "Yedek bağ"
@@ -8,13 +9,13 @@ export type TemplateStyleLinkReadinessLevel =
   | "Belirsiz";
 
 const styles: Record<TemplateStyleLinkReadinessLevel, { bg: string; color: string; border: string }> = {
-  "Ana bağ":   { bg: "#dcfce7", color: "#166534", border: "#bbf7d0" },
-  "Yedek bağ": { bg: "#eff6ff", color: "#1d4ed8", border: "#bfdbfe" },
-  "Deneysel":  { bg: "#fdf4ff", color: "#7e22ce", border: "#e9d5ff" },
-  "Aktif bağ": { bg: "#f0fdf4", color: "#15803d", border: "#bbf7d0" },
-  "Pasif":     { bg: "#f8fafc", color: "#475569", border: "#e2e8f0" },
-  "Arşiv":     { bg: "#f1f5f9", color: "#94a3b8", border: "#cbd5e1" },
-  "Belirsiz":  { bg: "#fef9c3", color: "#92400e", border: "#fde68a" },
+  "Ana bağ":   { bg: colors.success.light, color: colors.success.text, border: colors.success.light },
+  "Yedek bağ": { bg: colors.info.light, color: colors.info.dark, border: colors.info.light },
+  "Deneysel":  { bg: colors.brand[50], color: colors.brand[700], border: colors.brand[200] },
+  "Aktif bağ": { bg: colors.success.light, color: colors.success.text, border: colors.success.light },
+  "Pasif":     { bg: colors.neutral[50], color: colors.neutral[700], border: colors.border.subtle },
+  "Arşiv":     { bg: colors.neutral[100], color: colors.neutral[500], border: colors.border.default },
+  "Belirsiz":  { bg: colors.warning.light, color: colors.warning.text, border: colors.warning.light },
 };
 
 interface Props {
@@ -22,14 +23,14 @@ interface Props {
 }
 
 export function TemplateStyleLinkReadinessBadge({ level }: Props) {
-  const s = styles[level] ?? { bg: "#f8fafc", color: "#475569", border: "#e2e8f0" };
+  const s = styles[level] ?? { bg: colors.neutral[50], color: colors.neutral[700], border: colors.border.subtle };
   return (
     <span
       style={{
         display: "inline-block",
         padding: "0.1rem 0.45rem",
-        fontSize: "0.7rem",
-        borderRadius: "3px",
+        fontSize: typography.size.xs,
+        borderRadius: radius.sm,
         background: s.bg,
         color: s.color,
         border: `1px solid ${s.border}`,

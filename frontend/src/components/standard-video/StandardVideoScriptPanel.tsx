@@ -3,16 +3,17 @@ import type { StandardVideoScriptResponse } from "../../api/standardVideoApi";
 import { StandardVideoScriptForm } from "./StandardVideoScriptForm";
 import type { ScriptFormValues } from "./StandardVideoScriptForm";
 import { isBlank } from "../../lib/isBlank";
+import { colors, radius, typography } from "../design-system/tokens";
 
 const PREVIEW_LIMIT = 400;
 const DASH = "—";
 const PAD_B_XS = "0.25rem";
 const RADIUS_XS = "4px";
 const CURSOR_PTR = "pointer";
-const COLOR_BLUE = "#3b82f6";
-const LABEL_TD: React.CSSProperties = { color: "#64748b", paddingRight: "1rem", paddingBottom: PAD_B_XS };
-const SECTION_STYLE: React.CSSProperties = { border: "1px solid #e2e8f0", borderRadius: "6px", padding: "1rem", marginBottom: "1.25rem" };
-const FORM_HEADING: React.CSSProperties = { margin: "0 0 1rem", fontSize: "0.9375rem", fontWeight: 600 };
+const COLOR_BLUE = colors.brand[500];
+const LABEL_TD: React.CSSProperties = { color: colors.neutral[600], paddingRight: "1rem", paddingBottom: PAD_B_XS };
+const SECTION_STYLE: React.CSSProperties = { border: `1px solid ${colors.border.subtle}`, borderRadius: radius.md, padding: "1rem", marginBottom: "1.25rem" };
+const FORM_HEADING: React.CSSProperties = { margin: "0 0 1rem", fontSize: typography.size.lg, fontWeight: 600 };
 
 interface Props {
   videoId: string;
@@ -69,7 +70,7 @@ export function StandardVideoScriptPanel({
   if (isLoading) {
     return (
       <div style={SECTION_STYLE}>
-        <p style={{ color: "#64748b", margin: 0 }}>Script yükleniyor...</p>
+        <p style={{ color: colors.neutral[600], margin: 0 }}>Script yükleniyor...</p>
       </div>
     );
   }
@@ -77,7 +78,7 @@ export function StandardVideoScriptPanel({
   if (isError) {
     return (
       <div style={SECTION_STYLE}>
-        <p style={{ color: "#dc2626", margin: 0 }}>Script yüklenirken hata oluştu.</p>
+        <p style={{ color: colors.error.base, margin: 0 }}>Script yüklenirken hata oluştu.</p>
       </div>
     );
   }
@@ -122,16 +123,16 @@ export function StandardVideoScriptPanel({
   return (
     <div style={SECTION_STYLE}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
-        <h4 style={{ margin: 0, fontSize: "0.9375rem", fontWeight: 600 }}>Script</h4>
+        <h4 style={{ margin: 0, fontSize: typography.size.lg, fontWeight: 600 }}>Script</h4>
         {script ? (
           <button
             onClick={() => setMode("edit")}
             style={{
-              fontSize: "0.8125rem",
+              fontSize: typography.size.base,
               padding: "0.25rem 0.75rem",
               background: "transparent",
               color: COLOR_BLUE,
-              border: "1px solid #3b82f6",
+              border: `1px solid ${colors.brand[500]}`,
               borderRadius: RADIUS_XS,
               cursor: CURSOR_PTR,
             }}
@@ -142,10 +143,10 @@ export function StandardVideoScriptPanel({
           <button
             onClick={() => setMode("create")}
             style={{
-              fontSize: "0.8125rem",
+              fontSize: typography.size.base,
               padding: "0.25rem 0.75rem",
               background: COLOR_BLUE,
-              color: "#fff",
+              color: colors.neutral[0],
               border: "none",
               borderRadius: RADIUS_XS,
               cursor: CURSOR_PTR,
@@ -157,12 +158,12 @@ export function StandardVideoScriptPanel({
       </div>
 
       {!script ? (
-        <p style={{ color: "#94a3b8", fontSize: "0.875rem", margin: 0 }}>
+        <p style={{ color: colors.neutral[500], fontSize: typography.size.md, margin: 0 }}>
           Henüz script yok.
         </p>
       ) : (
         <div>
-          <table style={{ fontSize: "0.8125rem", borderCollapse: "collapse", marginBottom: "0.75rem" }}>
+          <table style={{ fontSize: typography.size.base, borderCollapse: "collapse", marginBottom: "0.75rem" }}>
             <tbody>
               <tr>
                 <td style={LABEL_TD}>Versiyon</td>
@@ -186,11 +187,11 @@ export function StandardVideoScriptPanel({
           </table>
           <div
             style={{
-              background: "#f8fafc",
-              border: "1px solid #e2e8f0",
+              background: colors.neutral[50],
+              border: `1px solid ${colors.border.subtle}`,
               borderRadius: RADIUS_XS,
               padding: "0.75rem",
-              fontSize: "0.8125rem",
+              fontSize: typography.size.base,
               whiteSpace: "pre-wrap",
               wordBreak: "break-word",
               overflowWrap: "anywhere",
@@ -207,7 +208,7 @@ export function StandardVideoScriptPanel({
               onClick={() => setShowFull((v) => !v)}
               style={{
                 marginTop: "0.5rem",
-                fontSize: "0.8125rem",
+                fontSize: typography.size.base,
                 background: "none",
                 border: "none",
                 color: COLOR_BLUE,

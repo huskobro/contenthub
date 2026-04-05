@@ -1,5 +1,6 @@
 import { Navigate } from "react-router-dom";
 import { useOnboardingStatus } from "../hooks/useOnboardingStatus";
+import { colors, typography } from "../components/design-system/tokens";
 
 /**
  * App entry gate: checks if onboarding is required.
@@ -19,11 +20,11 @@ export function AppEntryGate() {
           alignItems: "center",
           justifyContent: "center",
           minHeight: "100vh",
-          color: "#64748b",
-          fontSize: "0.9375rem",
+          color: colors.neutral[600],
+          fontSize: typography.size.lg,
         }}
       >
-        Yukleniyor...
+        Yükleniyor...
       </div>
     );
   }

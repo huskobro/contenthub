@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useCompleteOnboarding } from "../../hooks/useCompleteOnboarding";
+import { colors, radius, typography } from "../design-system/tokens";
 
 const CONTAINER: React.CSSProperties = {
   display: "flex",
@@ -7,15 +8,15 @@ const CONTAINER: React.CSSProperties = {
   alignItems: "center",
   justifyContent: "center",
   minHeight: "100vh",
-  background: "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)",
+  background: `linear-gradient(135deg, ${colors.neutral[50]} 0%, ${colors.border.subtle} 100%)`,
   padding: "2rem",
 };
 
 const CARD: React.CSSProperties = {
   maxWidth: "560px",
   width: "100%",
-  background: "#fff",
-  borderRadius: "12px",
+  background: colors.neutral[0],
+  borderRadius: radius.xl,
   boxShadow: "0 4px 24px rgba(0, 0, 0, 0.08)",
   padding: "3rem 2.5rem",
   textAlign: "center",
@@ -23,16 +24,16 @@ const CARD: React.CSSProperties = {
 
 const TITLE: React.CSSProperties = {
   margin: "0 0 0.5rem",
-  fontSize: "1.75rem",
+  fontSize: typography.size["3xl"],
   fontWeight: 700,
-  color: "#0f172a",
+  color: colors.neutral[900],
   letterSpacing: "-0.01em",
 };
 
 const SUBTITLE: React.CSSProperties = {
   margin: "0 0 2rem",
-  fontSize: "1rem",
-  color: "#475569",
+  fontSize: typography.size.lg,
+  color: colors.neutral[700],
   lineHeight: 1.6,
 };
 
@@ -49,22 +50,22 @@ const FEATURE_CARD: React.CSSProperties = {
   alignItems: "flex-start",
   gap: "0.75rem",
   padding: "0.875rem 1rem",
-  background: "#f8fafc",
-  borderRadius: "8px",
-  border: "1px solid #e2e8f0",
+  background: colors.neutral[50],
+  borderRadius: radius.lg,
+  border: `1px solid ${colors.border.subtle}`,
 };
 
 const FEATURE_ICON: React.CSSProperties = {
   flexShrink: 0,
   width: "32px",
   height: "32px",
-  borderRadius: "6px",
+  borderRadius: radius.md,
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
-  fontSize: "0.875rem",
+  fontSize: typography.size.md,
   fontWeight: 700,
-  color: "#fff",
+  color: colors.neutral[0],
 };
 
 const FEATURE_TEXT: React.CSSProperties = {
@@ -73,27 +74,27 @@ const FEATURE_TEXT: React.CSSProperties = {
 
 const FEATURE_TITLE: React.CSSProperties = {
   margin: 0,
-  fontSize: "0.875rem",
+  fontSize: typography.size.md,
   fontWeight: 600,
-  color: "#1e293b",
+  color: colors.neutral[900],
 };
 
 const FEATURE_DESC: React.CSSProperties = {
   margin: "0.125rem 0 0",
-  fontSize: "0.8125rem",
-  color: "#64748b",
+  fontSize: typography.size.base,
+  color: colors.neutral[600],
   lineHeight: 1.5,
 };
 
 const PRIMARY_BTN: React.CSSProperties = {
   display: "inline-block",
   padding: "0.75rem 2rem",
-  fontSize: "0.9375rem",
+  fontSize: typography.size.lg,
   fontWeight: 600,
-  color: "#fff",
-  background: "#2563eb",
+  color: colors.neutral[0],
+  background: colors.brand[600],
   border: "none",
-  borderRadius: "8px",
+  borderRadius: radius.lg,
   cursor: "pointer",
   transition: "background 0.15s",
 };
@@ -101,31 +102,31 @@ const PRIMARY_BTN: React.CSSProperties = {
 const SECONDARY_BTN: React.CSSProperties = {
   display: "inline-block",
   padding: "0.5rem 1.25rem",
-  fontSize: "0.8125rem",
+  fontSize: typography.size.base,
   fontWeight: 500,
-  color: "#64748b",
+  color: colors.neutral[600],
   background: "transparent",
-  border: "1px solid #e2e8f0",
-  borderRadius: "6px",
+  border: `1px solid ${colors.border.subtle}`,
+  borderRadius: radius.md,
   cursor: "pointer",
   marginTop: "0.75rem",
 };
 
 const FEATURES_DATA = [
   {
-    bg: "#2563eb",
+    bg: colors.brand[600],
     label: "1",
     title: "Modular Icerik Uretimi",
     desc: "Standart video, haber bulteni ve daha fazlasini adim adim rehberli akislarla olusturun.",
   },
   {
-    bg: "#7c3aed",
+    bg: colors.brand[700],
     label: "2",
     title: "Tam Operasyon Gorunurlugu",
     desc: "Her isi, adimi ve artefakti gercek zamanli zaman cizelgeleri ve ETA ile takip edin.",
   },
   {
-    bg: "#059669",
+    bg: colors.success.dark,
     label: "3",
     title: "Yayin ve Analiz",
     desc: "Platformlara yayinlayin, analizleri inceleyin ve icerik hattinizi optimize edin.",
@@ -180,10 +181,10 @@ export function OnboardingWelcomeScreen({ onNext }: WelcomeProps = {}) {
           onClick={handleStart}
           disabled={completeMutation.isPending}
           onMouseEnter={(e) => {
-            (e.target as HTMLButtonElement).style.background = "#1d4ed8";
+            (e.target as HTMLButtonElement).style.background = colors.info.dark;
           }}
           onMouseLeave={(e) => {
-            (e.target as HTMLButtonElement).style.background = "#2563eb";
+            (e.target as HTMLButtonElement).style.background = colors.brand[600];
           }}
         >
           {completeMutation.isPending ? "Hazirlaniyor..." : "Kurulumu Baslat"}

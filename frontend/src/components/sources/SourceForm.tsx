@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { SourceResponse, SourceCreatePayload } from "../../api/sourcesApi";
+import { colors, radius, typography } from "../design-system/tokens";
 
 const SOURCE_TYPES = ["rss", "manual_url", "api"];
 const TRUST_LEVELS = ["", "low", "medium", "high"];
@@ -9,25 +10,25 @@ const STATUSES = ["active", "paused", "archived"];
 const inputStyle: React.CSSProperties = {
   width: "100%",
   padding: "0.375rem 0.5rem",
-  border: "1px solid #cbd5e1",
-  borderRadius: "4px",
-  fontSize: "0.875rem",
+  border: `1px solid ${colors.border.default}`,
+  borderRadius: radius.sm,
+  fontSize: typography.size.md,
   boxSizing: "border-box",
 };
 
 const labelStyle: React.CSSProperties = {
   display: "block",
-  fontSize: "0.75rem",
+  fontSize: typography.size.sm,
   fontWeight: 600,
-  color: "#64748b",
+  color: colors.neutral[600],
   marginBottom: "0.25rem",
 };
 
 const fieldStyle: React.CSSProperties = { marginBottom: "0.75rem" };
 
 const errorStyle: React.CSSProperties = {
-  color: "#dc2626",
-  fontSize: "0.8rem",
+  color: colors.error.base,
+  fontSize: typography.size.base,
   marginTop: "0.25rem",
   wordBreak: "break-word",
   overflowWrap: "anywhere",
@@ -187,12 +188,12 @@ export function SourceForm({
           disabled={isPending}
           style={{
             padding: "0.375rem 1rem",
-            background: isPending ? "#94a3b8" : "#1e40af",
-            color: "#fff",
+            background: isPending ? colors.neutral[500] : colors.brand[700],
+            color: colors.neutral[0],
             border: "none",
-            borderRadius: "4px",
+            borderRadius: radius.sm,
             cursor: isPending ? "not-allowed" : "pointer",
-            fontSize: "0.875rem",
+            fontSize: typography.size.md,
           }}
         >
           {isPending ? "Kaydediliyor..." : submitLabel}
@@ -203,11 +204,11 @@ export function SourceForm({
           style={{
             padding: "0.375rem 1rem",
             background: "transparent",
-            color: "#64748b",
-            border: "1px solid #cbd5e1",
-            borderRadius: "4px",
+            color: colors.neutral[600],
+            border: `1px solid ${colors.border.default}`,
+            borderRadius: radius.sm,
             cursor: "pointer",
-            fontSize: "0.875rem",
+            fontSize: typography.size.md,
           }}
         >
           {cancelLabel}

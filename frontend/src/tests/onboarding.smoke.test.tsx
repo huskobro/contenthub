@@ -702,7 +702,7 @@ describe("AppEntryGate", () => {
   it("shows loading state initially", () => {
     window.fetch = vi.fn().mockReturnValue(new Promise(() => {})) as unknown as typeof window.fetch;
     renderGate(window.fetch);
-    expect(screen.getByText("Yukleniyor...")).toBeDefined();
+    expect(screen.getByText("Yükleniyor...")).toBeDefined();
   });
 
   it("redirects to /onboarding when onboarding is required", async () => {

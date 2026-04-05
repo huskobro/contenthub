@@ -1,5 +1,6 @@
 import { SourceReadinessBadge, SourceReadinessLevel } from "./SourceReadinessBadge";
 import { safeNumber } from "../../lib/safeNumber";
+import { colors } from "../design-system/tokens";
 
 interface Props {
   sourceType: string;
@@ -71,7 +72,7 @@ export function SourceReadinessSummary({
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "0.15rem" }}>
       <SourceReadinessBadge level={level} />
-      <span style={{ fontSize: "0.68rem", color: "#94a3b8" }}>{parts.join(" • ")}</span>
+      <span style={{ fontSize: "0.68rem", color: colors.neutral[500] }}>{parts.join(" • ")}</span>
     </div>
   );
 }

@@ -9,6 +9,7 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { JobResponse, AllowedActions } from "../../api/jobsApi";
 import { fetchAllowedActions, cancelJob, retryJob, skipStep } from "../../api/jobsApi";
+import { colors, radius, typography } from "../design-system/tokens";
 
 interface JobActionsPanelProps {
   job: JobResponse;
@@ -16,33 +17,33 @@ interface JobActionsPanelProps {
 
 const BTN: React.CSSProperties = {
   padding: "0.4rem 0.85rem",
-  fontSize: "0.8125rem",
+  fontSize: typography.size.base,
   fontWeight: 600,
-  borderRadius: "4px",
-  border: "1px solid #e2e8f0",
+  borderRadius: radius.sm,
+  border: `1px solid ${colors.border.subtle}`,
   cursor: "pointer",
   transition: "all 0.15s",
 };
 
 const BTN_DANGER: React.CSSProperties = {
   ...BTN,
-  background: "#fee2e2",
-  color: "#991b1b",
-  borderColor: "#fecaca",
+  background: colors.error.light,
+  color: colors.error.text,
+  borderColor: colors.error.light,
 };
 
 const BTN_PRIMARY: React.CSSProperties = {
   ...BTN,
-  background: "#dbeafe",
-  color: "#1e40af",
-  borderColor: "#bfdbfe",
+  background: colors.info.light,
+  color: colors.brand[700],
+  borderColor: colors.info.light,
 };
 
 const BTN_SECONDARY: React.CSSProperties = {
   ...BTN,
-  background: "#f1f5f9",
-  color: "#475569",
-  borderColor: "#e2e8f0",
+  background: colors.neutral[100],
+  color: colors.neutral[700],
+  borderColor: colors.border.subtle,
 };
 
 const DISABLED: React.CSSProperties = {
@@ -87,15 +88,15 @@ export function JobActionsPanel({ job }: JobActionsPanelProps) {
   return (
     <div
       style={{
-        border: "1px solid #e2e8f0",
-        borderRadius: "6px",
-        background: "#fafbfc",
+        border: `1px solid ${colors.border.subtle}`,
+        borderRadius: radius.md,
+        background: colors.neutral[50],
         padding: "0.75rem 1rem",
         marginBottom: "1rem",
       }}
       data-testid="job-actions-panel"
     >
-      <h4 style={{ margin: "0 0 0.5rem", fontSize: "0.9375rem", color: "#0f172a" }}>
+      <h4 style={{ margin: "0 0 0.5rem", fontSize: typography.size.lg, color: colors.neutral[900] }}>
         Operasyonel Aksiyonlar
       </h4>
 
@@ -136,18 +137,18 @@ export function JobActionsPanel({ job }: JobActionsPanelProps) {
 
       {/* Durum mesajlari */}
       {error && (
-        <p style={{ margin: "0.5rem 0 0", fontSize: "0.8125rem", color: "#dc2626" }} data-testid="action-error">
+        <p style={{ margin: "0.5rem 0 0", fontSize: typography.size.base, color: colors.error.base }} data-testid="action-error">
           Hata: {error}
         </p>
       )}
       {success && (
-        <p style={{ margin: "0.5rem 0 0", fontSize: "0.8125rem", color: "#166534" }} data-testid="action-success">
+        <p style={{ margin: "0.5rem 0 0", fontSize: typography.size.base, color: colors.success.text }} data-testid="action-success">
           {success}
         </p>
       )}
 
       {/* Durum bilgisi */}
-      <p style={{ margin: "0.5rem 0 0", fontSize: "0.6875rem", color: "#94a3b8" }}>
+      <p style={{ margin: "0.5rem 0 0", fontSize: typography.size.xs, color: colors.neutral[500] }}>
         Mevcut durum: <strong>{job.status}</strong>
         {!canCancel && !canRetry && skippableSteps.length === 0 && (
           <span> — bu durumda kullanilabilir aksiyon yok</span>

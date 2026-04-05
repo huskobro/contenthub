@@ -9,6 +9,7 @@ import {
 } from "../../hooks/useCredentials";
 import { useReadOnly } from "../visibility/ReadOnlyGuard";
 import { getYouTubeAuthUrl, type CredentialStatus } from "../../api/credentialsApi";
+import { colors, radius, typography } from "../design-system/tokens";
 
 // ---------------------------------------------------------------------------
 // Styles
@@ -19,20 +20,20 @@ const SECTION: React.CSSProperties = {
 };
 
 const SECTION_TITLE: React.CSSProperties = {
-  fontSize: "0.8125rem",
+  fontSize: typography.size.base,
   fontWeight: 600,
-  color: "#334155",
+  color: colors.neutral[800],
   marginBottom: "0.75rem",
   paddingBottom: "0.375rem",
-  borderBottom: "1px solid #e2e8f0",
+  borderBottom: `1px solid ${colors.border.subtle}`,
 };
 
 const CARD: React.CSSProperties = {
-  border: "1px solid #e2e8f0",
-  borderRadius: "8px",
+  border: `1px solid ${colors.border.subtle}`,
+  borderRadius: radius.lg,
   padding: "1rem",
   marginBottom: "0.75rem",
-  background: "#fff",
+  background: colors.neutral[0],
 };
 
 const ROW: React.CSSProperties = {
@@ -43,22 +44,22 @@ const ROW: React.CSSProperties = {
 };
 
 const LABEL: React.CSSProperties = {
-  fontSize: "0.8125rem",
+  fontSize: typography.size.base,
   fontWeight: 600,
-  color: "#1e293b",
+  color: colors.neutral[900],
   minWidth: "160px",
 };
 
 const HELP: React.CSSProperties = {
-  fontSize: "0.6875rem",
-  color: "#94a3b8",
+  fontSize: typography.size.xs,
+  color: colors.neutral[500],
   marginTop: "0.25rem",
   lineHeight: 1.4,
 };
 
 const MASKED: React.CSSProperties = {
-  fontSize: "0.8125rem",
-  color: "#64748b",
+  fontSize: typography.size.base,
+  color: colors.neutral[600],
   fontFamily: "monospace",
   letterSpacing: "0.5px",
 };
@@ -67,41 +68,41 @@ const INPUT: React.CSSProperties = {
   flex: 1,
   minWidth: "200px",
   padding: "0.375rem 0.5rem",
-  border: "1px solid #cbd5e1",
-  borderRadius: "4px",
-  fontSize: "0.8125rem",
+  border: `1px solid ${colors.border.default}`,
+  borderRadius: radius.sm,
+  fontSize: typography.size.base,
   boxSizing: "border-box",
 };
 
 const BTN_PRIMARY: React.CSSProperties = {
   padding: "0.3rem 0.75rem",
-  background: "#1e40af",
-  color: "#fff",
+  background: colors.brand[700],
+  color: colors.neutral[0],
   border: "none",
-  borderRadius: "4px",
+  borderRadius: radius.sm,
   cursor: "pointer",
-  fontSize: "0.75rem",
+  fontSize: typography.size.sm,
   fontWeight: 500,
 };
 
 const BTN_SECONDARY: React.CSSProperties = {
   padding: "0.3rem 0.75rem",
   background: "transparent",
-  color: "#64748b",
-  border: "1px solid #cbd5e1",
-  borderRadius: "4px",
+  color: colors.neutral[600],
+  border: `1px solid ${colors.border.default}`,
+  borderRadius: radius.sm,
   cursor: "pointer",
-  fontSize: "0.75rem",
+  fontSize: typography.size.sm,
 };
 
 const BTN_DANGER: React.CSSProperties = {
   padding: "0.3rem 0.75rem",
-  background: "#dc2626",
-  color: "#fff",
+  background: colors.error.base,
+  color: colors.neutral[0],
   border: "none",
-  borderRadius: "4px",
+  borderRadius: radius.sm,
   cursor: "pointer",
-  fontSize: "0.75rem",
+  fontSize: typography.size.sm,
   fontWeight: 500,
 };
 
@@ -111,21 +112,21 @@ const BTN_DANGER: React.CSSProperties = {
 
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, { bg: string; fg: string; label: string }> = {
-    configured: { bg: "#dcfce7", fg: "#166534", label: "Yapilandirildi" },
-    env_only: { bg: "#fef9c3", fg: "#854d0e", label: ".env" },
-    missing: { bg: "#fef2f2", fg: "#991b1b", label: "Eksik" },
-    invalid: { bg: "#fee2e2", fg: "#b91c1c", label: "Gecersiz" },
-    connected: { bg: "#dbeafe", fg: "#1e40af", label: "Bagli" },
+    configured: { bg: colors.success.light, fg: colors.success.text, label: "Yapilandirildi" },
+    env_only: { bg: colors.warning.light, fg: colors.warning.text, label: ".env" },
+    missing: { bg: colors.error.light, fg: colors.error.text, label: "Eksik" },
+    invalid: { bg: colors.error.light, fg: colors.error.text, label: "Gecersiz" },
+    connected: { bg: colors.info.light, fg: colors.brand[700], label: "Bagli" },
   };
-  const s = map[status] ?? { bg: "#f1f5f9", fg: "#475569", label: status };
+  const s = map[status] ?? { bg: colors.neutral[100], fg: colors.neutral[700], label: status };
 
   return (
     <span
       style={{
         display: "inline-block",
         padding: "0.125rem 0.5rem",
-        borderRadius: "9999px",
-        fontSize: "0.6875rem",
+        borderRadius: radius.full,
+        fontSize: typography.size.xs,
         fontWeight: 600,
         background: s.bg,
         color: s.fg,
@@ -148,11 +149,11 @@ function SourceBadge({ source }: { source: string }) {
       style={{
         display: "inline-block",
         padding: "0.1rem 0.375rem",
-        borderRadius: "4px",
+        borderRadius: radius.sm,
         fontSize: "0.625rem",
         fontWeight: 500,
-        background: "#f1f5f9",
-        color: "#64748b",
+        background: colors.neutral[100],
+        color: colors.neutral[600],
       }}
     >
       kaynak: {label}
@@ -224,7 +225,7 @@ function CredentialRow({ cred }: { cred: CredentialStatus }) {
         <StatusBadge status={cred.status} />
         <SourceBadge source={cred.source} />
         {cred.updated_at && (
-          <span style={{ fontSize: "0.625rem", color: "#94a3b8" }}>
+          <span style={{ fontSize: "0.625rem", color: colors.neutral[500] }}>
             {new Date(cred.updated_at).toLocaleString("tr-TR")}
           </span>
         )}
@@ -286,8 +287,8 @@ function CredentialRow({ cred }: { cred: CredentialStatus }) {
         <div
           style={{
             marginTop: "0.375rem",
-            fontSize: "0.75rem",
-            color: feedback.type === "success" ? "#166534" : "#dc2626",
+            fontSize: typography.size.sm,
+            color: feedback.type === "success" ? colors.success.text : colors.error.base,
           }}
         >
           {feedback.msg}
@@ -333,7 +334,7 @@ function YouTubeConnectionSection() {
       <div style={ROW}>
         <span style={LABEL}>YouTube Baglantisi</span>
         {isLoading && (
-          <span style={{ fontSize: "0.6875rem", color: "#94a3b8" }}>Kontrol ediliyor...</span>
+          <span style={{ fontSize: typography.size.xs, color: colors.neutral[500] }}>Kontrol ediliyor...</span>
         )}
         {!isLoading && !isError && ytStatus && (
           <StatusBadge status={ytStatus.has_credentials ? "connected" : "missing"} />
@@ -356,9 +357,9 @@ function YouTubeConnectionSection() {
             gap: "0.75rem",
             marginTop: "0.75rem",
             padding: "0.625rem",
-            background: "#f0fdf4",
-            borderRadius: "6px",
-            border: "1px solid #bbf7d0",
+            background: colors.success.light,
+            borderRadius: radius.md,
+            border: `1px solid ${colors.success.light}`,
           }}
         >
           {channelInfo.thumbnail_url && (
@@ -369,10 +370,10 @@ function YouTubeConnectionSection() {
             />
           )}
           <div>
-            <div style={{ fontSize: "0.8125rem", fontWeight: 600, color: "#166534" }}>
+            <div style={{ fontSize: typography.size.base, fontWeight: 600, color: colors.success.text }}>
               {channelInfo.channel_title}
             </div>
-            <div style={{ fontSize: "0.6875rem", color: "#64748b" }}>
+            <div style={{ fontSize: typography.size.xs, color: colors.neutral[600] }}>
               {channelInfo.subscriber_count && `${Number(channelInfo.subscriber_count).toLocaleString("tr-TR")} abone`}
               {channelInfo.subscriber_count && channelInfo.video_count && " · "}
               {channelInfo.video_count && `${Number(channelInfo.video_count).toLocaleString("tr-TR")} video`}
@@ -384,7 +385,7 @@ function YouTubeConnectionSection() {
       <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem", alignItems: "center" }}>
         {ytStatus?.has_credentials ? (
           <>
-            <span style={{ fontSize: "0.75rem", color: "#166534" }}>
+            <span style={{ fontSize: typography.size.sm, color: colors.success.text }}>
               OAuth token mevcut — yayinlama yapilabilir.
             </span>
             <button style={{ ...BTN_DANGER, opacity: readOnly ? 0.5 : 1, cursor: readOnly ? "not-allowed" : "pointer" }} onClick={handleDisconnect} disabled={readOnly || revokeMutation.isPending}>
@@ -403,13 +404,13 @@ function YouTubeConnectionSection() {
       </div>
 
       {connectError && (
-        <div style={{ marginTop: "0.375rem", fontSize: "0.75rem", color: "#dc2626" }}>
+        <div style={{ marginTop: "0.375rem", fontSize: typography.size.sm, color: colors.error.base }}>
           {connectError}
         </div>
       )}
 
       {revokeMutation.isSuccess && (
-        <div style={{ marginTop: "0.375rem", fontSize: "0.75rem", color: "#166534" }}>
+        <div style={{ marginTop: "0.375rem", fontSize: typography.size.sm, color: colors.success.text }}>
           Baglanti basariyla kesildi.
         </div>
       )}
@@ -433,17 +434,17 @@ export function CredentialsPanel() {
   const { data: credentials, isLoading, isError, error } = useCredentialsList();
 
   if (isLoading) {
-    return <p style={{ color: "#64748b", fontSize: "0.8125rem" }}>Yukleniyor...</p>;
+    return <p style={{ color: colors.neutral[600], fontSize: typography.size.base }}>Yükleniyor...</p>;
   }
   if (isError) {
     return (
-      <p style={{ color: "#dc2626", fontSize: "0.8125rem" }}>
+      <p style={{ color: colors.error.base, fontSize: typography.size.base }}>
         Hata: {error instanceof Error ? error.message : "Bilinmeyen hata"}
       </p>
     );
   }
   if (!credentials || credentials.length === 0) {
-    return <p style={{ color: "#64748b", fontSize: "0.8125rem" }}>Tanimli credential bulunamadi.</p>;
+    return <p style={{ color: colors.neutral[600], fontSize: typography.size.base }}>Tanimli credential bulunamadi.</p>;
   }
 
   // Group credentials by their group field
