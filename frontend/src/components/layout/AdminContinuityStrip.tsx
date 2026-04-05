@@ -1,40 +1,16 @@
 import { useNavigate } from "react-router-dom";
-import { colors, typography, spacing, transition } from "../../components/design-system/tokens";
 
 export function AdminContinuityStrip() {
   const navigate = useNavigate();
 
   return (
     <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        padding: `${spacing[1]} ${spacing[6]}`,
-        background: colors.brand[50],
-        borderBottom: `1px solid ${colors.brand[100]}`,
-        fontSize: typography.size.sm,
-        fontFamily: typography.fontFamily,
-        color: colors.brand[700],
-        lineHeight: typography.lineHeight.normal,
-        flexShrink: 0,
-      }}
+      className="flex items-center justify-between px-6 py-1 bg-brand-50 border-b border-brand-100 text-sm font-body text-brand-700 leading-normal shrink-0"
       data-testid="admin-continuity-strip"
     >
       <span>Uretim ve yonetim islemleri icin yonetim panelindeysiniz.</span>
       <button
-        style={{
-          fontSize: typography.size.sm,
-          fontWeight: typography.weight.semibold,
-          fontFamily: typography.fontFamily,
-          color: colors.brand[700],
-          background: "transparent",
-          border: "none",
-          cursor: "pointer",
-          padding: 0,
-          textDecoration: "underline",
-          transition: `color ${transition.fast}`,
-        }}
+        className="text-sm font-semibold font-body text-brand-700 bg-transparent border-none cursor-pointer p-0 underline transition-colors duration-fast hover:text-brand-900"
         onClick={() => navigate("/user")}
         data-testid="continuity-back-to-user"
       >
