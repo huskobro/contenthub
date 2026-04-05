@@ -73,13 +73,14 @@ describe("resolveVisibility", () => {
     expect(callUrl).toContain("mode=guided");
   });
 
-  it("returns safe defaults when API responds with error", async () => {
+  it("throws on API error instead of returning permissive defaults (M22-A)", async () => {
     window.fetch = vi.fn(() =>
       Promise.resolve({ ok: false, status: 500 }),
     ) as unknown as typeof window.fetch;
 
-    const result = await resolveVisibility("panel:settings");
-    expect(result).toEqual({ visible: true, read_only: false, wizard_visible: false });
+    await expect(resolveVisibility("panel:settings")).rejects.toThrow(
+      "Visibility resolution failed"
+    );
   });
 
   it("omits optional params when not provided", async () => {

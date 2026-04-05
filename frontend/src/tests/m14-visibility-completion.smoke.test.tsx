@@ -177,10 +177,10 @@ describe("M14-A: Page-level visibility guard", () => {
 
     renderWithRouter("/admin/settings", routes);
 
-    // Graceful degradation: visible defaults to true on error
+    // M22-A: Graceful degradation — visible defaults to true on error (retry=1 needs time)
     await waitFor(() => {
       expect(screen.getByTestId("settings-registry-heading")).toBeDefined();
-    });
+    }, { timeout: 5000 });
   });
 
   it("VisibilityGuard shows nothing while loading", () => {

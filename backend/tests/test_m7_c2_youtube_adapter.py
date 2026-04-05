@@ -445,7 +445,7 @@ async def test_p_adapter_upload_file_not_found(youtube_adapter):
         await youtube_adapter.upload(
             publish_record_id="pr-002",
             video_path="/nonexistent/video.mp4",
-            payload={},
+            payload={"title": "Test Video", "description": "test", "tags": []},
         )
     assert exc_info.value.retryable is False
 
@@ -468,7 +468,7 @@ async def test_q_adapter_upload_401(youtube_adapter, video_file):
         await youtube_adapter.upload(
             publish_record_id="pr-003",
             video_path=video_file,
-            payload={},
+            payload={"title": "Test Video", "description": "test", "tags": []},
         )
 
 
@@ -493,7 +493,7 @@ async def test_r_adapter_upload_quota_exceeded(youtube_adapter, video_file):
         await youtube_adapter.upload(
             publish_record_id="pr-004",
             video_path=video_file,
-            payload={},
+            payload={"title": "Test Video", "description": "test", "tags": []},
         )
 
 
@@ -518,7 +518,7 @@ async def test_s_adapter_upload_rate_limit(youtube_adapter, video_file):
         await youtube_adapter.upload(
             publish_record_id="pr-005",
             video_path=video_file,
-            payload={},
+            payload={"title": "Test Video", "description": "test", "tags": []},
         )
 
 
@@ -540,7 +540,7 @@ async def test_t_adapter_upload_init_500(youtube_adapter, video_file):
         await youtube_adapter.upload(
             publish_record_id="pr-006",
             video_path=video_file,
-            payload={},
+            payload={"title": "Test Video", "description": "test", "tags": []},
         )
 
 
@@ -565,7 +565,7 @@ async def test_u_adapter_upload_missing_location(youtube_adapter, video_file):
         await youtube_adapter.upload(
             publish_record_id="pr-007",
             video_path=video_file,
-            payload={},
+            payload={"title": "Test Video", "description": "test", "tags": []},
         )
     assert exc_info.value.retryable is False
 
@@ -596,7 +596,7 @@ async def test_v_adapter_upload_binary_500(youtube_adapter, video_file):
         await youtube_adapter.upload(
             publish_record_id="pr-008",
             video_path=video_file,
-            payload={},
+            payload={"title": "Test Video", "description": "test", "tags": []},
         )
 
 

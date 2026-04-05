@@ -4,21 +4,23 @@ Settings Registry service layer.
 Business logic lives here; routers call these functions and pass
 the AsyncSession in. No direct SQLAlchemy imports leak into routers.
 
-Supported operations (Phase 3 scope):
+Supported operations (M22-B complete):
   - list_settings    : all settings, optional group_name filter
   - get_setting      : single setting by id
   - create_setting   : insert new setting; raises 409 on duplicate key
   - update_setting   : partial update by id; raises 404 if missing
+  - delete_setting   : soft-delete (status → deleted) with audit (M22-B)
+  - bulk_update      : birden fazla ayarın admin_value_json'unu toplu güncelle (M22-B)
 
-Intentionally deferred:
-  - delete
-  - user override resolution
-  - visibility resolution
-  - caching
-  - audit log enrichment
-  - bulk operations
+Settings + Visibility ilişkisi:
+  Settings resolver ayar değerlerini çözümler (priority chain).
+  Visibility resolver erişim kurallarını çözümler (target_key + context).
+  İkisi bağımsız sorumluluklar; merge yerine composition kullanılır.
+  Settings paneline erişim visibility guard ile kontrol edilir.
 """
 
+import json
+import logging
 from typing import List, Optional
 
 from fastapi import HTTPException, status
@@ -27,7 +29,10 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import Setting
+from app.audit.service import write_audit_log
 from app.settings.schemas import SettingCreate, SettingUpdate
+
+logger = logging.getLogger(__name__)
 
 
 async def list_settings(
@@ -52,6 +57,12 @@ async def get_setting(db: AsyncSession, setting_id: str) -> Setting:
     return row
 
 
+async def get_setting_by_key(db: AsyncSession, key: str) -> Optional[Setting]:
+    """Anahtar ile ayar getir. Bulunamazsa None döner (404 atmaz)."""
+    result = await db.execute(select(Setting).where(Setting.key == key))
+    return result.scalar_one_or_none()
+
+
 async def create_setting(db: AsyncSession, payload: SettingCreate) -> Setting:
     row = Setting(**payload.model_dump())
     db.add(row)
@@ -64,6 +75,11 @@ async def create_setting(db: AsyncSession, payload: SettingCreate) -> Setting:
             status_code=status.HTTP_409_CONFLICT,
             detail=f"A setting with key '{payload.key}' already exists.",
         )
+    await write_audit_log(
+        db, action="setting.create",
+        entity_type="setting", entity_id=row.id,
+        details={"key": row.key, "group": row.group_name},
+    )
     return row
 
 
@@ -76,10 +92,96 @@ async def update_setting(
     changes = payload.model_dump(exclude_unset=True)
     if not changes:
         return row
+    old_version = row.version
     for field, value in changes.items():
         setattr(row, field, value)
     # Bump version on each update so callers can detect change
     row.version = row.version + 1
     await db.commit()
     await db.refresh(row)
+    await write_audit_log(
+        db, action="setting.update",
+        entity_type="setting", entity_id=row.id,
+        details={
+            "key": row.key,
+            "changed_fields": list(changes.keys()),
+            "old_version": old_version,
+            "new_version": row.version,
+        },
+    )
     return row
+
+
+async def delete_setting(db: AsyncSession, setting_id: str) -> Setting:
+    """
+    Soft-delete: status → deleted. Ayar silinmez, devre dışı bırakılır.
+    Settings resolver 'deleted' status'lu ayarları atlar.
+    Seed tarafından tekrar oluşturulmaz (key hâlâ DB'de).
+    """
+    row = await get_setting(db, setting_id)
+    if row.status == "deleted":
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Setting '{setting_id}' is already deleted.",
+        )
+    old_status = row.status
+    row.status = "deleted"
+    row.version = row.version + 1
+    await db.commit()
+    await db.refresh(row)
+    await write_audit_log(
+        db, action="setting.delete",
+        entity_type="setting", entity_id=row.id,
+        details={
+            "key": row.key,
+            "old_status": old_status,
+            "soft_delete": True,
+        },
+    )
+    logger.info("Setting soft-deleted: %s (key=%s)", setting_id, row.key)
+    return row
+
+
+async def bulk_update_admin_values(
+    db: AsyncSession,
+    updates: List[dict],
+) -> List[Setting]:
+    """
+    Toplu admin_value güncelleme.
+    updates: [{"key": "...", "value": ...}, ...]
+    Her ayar için admin_value_json güncellenir ve version artar.
+    """
+    if not updates:
+        return []
+
+    results = []
+    for item in updates:
+        key = item.get("key")
+        value = item.get("value")
+        if not key:
+            continue
+
+        row = await get_setting_by_key(db, key)
+        if row is None:
+            logger.warning("Bulk update: key '%s' not found, skipping", key)
+            continue
+
+        row.admin_value_json = json.dumps(value)
+        row.version = row.version + 1
+        results.append(row)
+
+    if results:
+        await db.commit()
+        for row in results:
+            await db.refresh(row)
+        await write_audit_log(
+            db, action="setting.bulk_update",
+            entity_type="setting", entity_id="bulk",
+            details={
+                "keys": [r.key for r in results],
+                "count": len(results),
+            },
+        )
+        logger.info("Settings bulk update: %d settings updated", len(results))
+
+    return results

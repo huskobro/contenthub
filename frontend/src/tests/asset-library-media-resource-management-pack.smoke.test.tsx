@@ -149,11 +149,11 @@ describe("Asset Library Entry Surface", () => {
     expect(links.length).toBeGreaterThanOrEqual(1);
   });
 
-  it("admin overview release readiness includes Varlik Kutuphanesi with M21 aktif status", () => {
+  it("admin overview release readiness includes Varlik Kutuphanesi with M22 aktif status", () => {
     renderAdmin("/admin");
     const item = screen.getByTestId("readiness-assets");
     expect(item).toBeDefined();
-    expect(item.textContent).toContain("M21 aktif");
+    expect(item.textContent).toContain("M22 aktif");
     expect(item.textContent).toContain("Varlik Kutuphanesi");
   });
 });
@@ -282,17 +282,18 @@ describe("Asset Library Verification — Admin Overview", () => {
     expect(screen.getByTestId("readiness-assets")).toBeDefined();
   });
 
-  it("readiness-assets item shows M21 aktif not Desteklenmiyor", () => {
+  it("readiness-assets item shows M22 aktif not Desteklenmiyor", () => {
     renderAdmin("/admin");
     const item = screen.getByTestId("readiness-assets");
-    expect(item.textContent).toContain("M21 aktif");
+    expect(item.textContent).toContain("M22 aktif");
     expect(item.textContent).not.toContain("Desteklenmiyor");
   });
 
-  it("readiness-assets item mentions operasyonlar", () => {
+  it("readiness-assets item mentions key operations (M22 updated)", () => {
     renderAdmin("/admin");
     const item = screen.getByTestId("readiness-assets");
-    expect(item.textContent).toContain("operasyonlari aktif");
+    expect(item.textContent).toContain("yukleme");
+    expect(item.textContent).toContain("aktif");
   });
 
   it("admin overview deferred note does not mention asset library", () => {

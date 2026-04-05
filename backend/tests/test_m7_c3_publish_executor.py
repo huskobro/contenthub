@@ -798,14 +798,15 @@ def test_r_build_executor_publish_no_db():
 # ===========================================================================
 
 def test_s_payload_defaults():
-    executor = PublishStepExecutor(db=MagicMock())
+    """M22-C: payload_json=None artık ValueError fırlatmalı (fake fallback kaldırıldı)."""
+    executor = PublishStepExecutor.__new__(PublishStepExecutor)
     record = MagicMock()
+    record.id = "test-record-s"
     record.payload_json = None
 
-    payload = executor._resolve_payload(record)
-    assert payload["title"] == "ContentHub Video"
-    assert "description" in payload
-    assert "tags" in payload
+    import pytest as _pytest
+    with _pytest.raises(ValueError, match="payload_json boş"):
+        executor._resolve_payload(record)
 
 
 # ===========================================================================

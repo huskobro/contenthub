@@ -3,22 +3,20 @@ Visibility Engine service layer.
 
 Business logic lives here; routers call these functions.
 
-Supported operations (Phase 4 scope):
+Supported operations:
   - list_rules   : all rules, optional filters by rule_type / module_scope / role_scope
   - get_rule     : single rule by id
   - create_rule  : insert new rule
   - update_rule  : partial update by id
+  - delete_rule  : soft-delete (status → inactive) with audit (M22-A)
+  - bulk_update_status : birden fazla kuralı aynı anda active/inactive yap (M22-A)
 
-Intentionally deferred:
-  - runtime visibility resolution (merge rules with requesting context)
-  - settings + visibility merge logic
-  - precedence / inheritance engine
-  - delete
-  - cache
-  - SSE invalidation
-  - bulk operations
+Runtime resolution: resolver.py (M11+M22-A)
+Settings merge: settings_resolver ayar değerlerini, visibility resolver erişim kurallarını
+  bağımsız olarak çözümler. İkisi farklı sorumluluklar; merge yerine composition kullanılır.
 """
 
+import logging
 from typing import List, Optional
 
 from fastapi import HTTPException, status
@@ -28,6 +26,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.models import VisibilityRule
 from app.audit.service import write_audit_log
 from app.visibility.schemas import VisibilityRuleCreate, VisibilityRuleUpdate
+
+logger = logging.getLogger(__name__)
 
 
 async def list_rules(
@@ -95,3 +95,73 @@ async def update_rule(
         details={"changed_fields": list(changes.keys())},
     )
     return row
+
+
+async def delete_rule(db: AsyncSession, rule_id: str) -> VisibilityRule:
+    """
+    Soft-delete: status → inactive. Kural silinmez, devre dışı bırakılır.
+    Resolver zaten sadece status='active' kuralları okur.
+    """
+    row = await get_rule(db, rule_id)
+    if row.status == "inactive":
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"VisibilityRule '{rule_id}' is already inactive.",
+        )
+    row.status = "inactive"
+    await db.commit()
+    await db.refresh(row)
+    await write_audit_log(
+        db, action="visibility.rule.delete",
+        entity_type="visibility_rule", entity_id=row.id,
+        details={"target_key": row.target_key, "soft_delete": True},
+    )
+    logger.info("Visibility rule soft-deleted: %s (target=%s)", rule_id, row.target_key)
+    return row
+
+
+async def bulk_update_status(
+    db: AsyncSession,
+    rule_ids: List[str],
+    new_status: str,
+) -> List[VisibilityRule]:
+    """
+    Birden fazla kuralın status alanını topluca günceller.
+    Geçerli status: 'active', 'inactive'.
+    """
+    if new_status not in ("active", "inactive"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Geçersiz status: '{new_status}'. Geçerli: active, inactive",
+        )
+    if not rule_ids:
+        return []
+
+    results = []
+    for rid in rule_ids:
+        result = await db.execute(
+            select(VisibilityRule).where(VisibilityRule.id == rid)
+        )
+        row = result.scalar_one_or_none()
+        if row is None:
+            continue
+        if row.status != new_status:
+            row.status = new_status
+            results.append(row)
+
+    if results:
+        await db.commit()
+        for row in results:
+            await db.refresh(row)
+        await write_audit_log(
+            db, action="visibility.rule.bulk_update",
+            entity_type="visibility_rule", entity_id="bulk",
+            details={
+                "rule_ids": [r.id for r in results],
+                "new_status": new_status,
+                "count": len(results),
+            },
+        )
+        logger.info("Visibility bulk status update: %d rules → %s", len(results), new_status)
+
+    return results

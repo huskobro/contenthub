@@ -60,7 +60,7 @@ async def list_assets(
     )
 
 
-@router.post("/upload", response_model=AssetUploadResponse)
+@router.post("/upload", response_model=AssetUploadResponse, status_code=201)
 async def upload_asset(
     file: UploadFile = File(..., description="Yuklenecek dosya"),
     asset_type: Optional[str] = Form(None, description="Opsiyonel asset turu ipucu"),

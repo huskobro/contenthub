@@ -38,7 +38,7 @@ from typing import Optional
 
 import httpx
 
-from app.publish.adapter import PublishAdapter, PublishAdapterResult
+from app.publish.adapter import PublishAdapter, PublishAdapterError, PublishAdapterResult
 from app.publish.enums import PublishPlatform
 from app.publish.youtube.errors import (
     YouTubeAuthError,
@@ -179,7 +179,13 @@ class YouTubeAdapter(PublishAdapter):
         file_size = os.path.getsize(video_path)
 
         # Metadata hazırlığı
-        title = payload.get("title", "ContentHub Video")
+        title = payload.get("title")
+        if not title:
+            raise PublishAdapterError(
+                error_code="MISSING_TITLE",
+                message="Yayın payload'ında 'title' alanı eksik. Adapter'a ulaşmadan önce doğrulanmış olmalıydı.",
+                retryable=False,
+            )
         description = payload.get("description", "")
         tags = payload.get("tags", [])
         category_id = str(payload.get("category_id", "22"))  # 22 = People & Blogs

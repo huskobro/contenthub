@@ -508,11 +508,29 @@ class PublishStepExecutor(StepExecutor):
     def _resolve_payload(self, record) -> dict:
         """
         Publish payload'ını PublishRecord.payload_json'dan okur.
-        Boşsa minimal defaults döner.
+
+        M22-C: Hardcoded fallback kaldırıldı. Payload boş veya bozuksa
+        hata fırlatılır — sessiz "başlık uydurma" yapılmaz.
+
+        Gerekçe: Metadata bozuksa sistem bunu gizlememeli.
+        Yayın zinciri açık hata ile durdurulmalı.
         """
-        if record.payload_json:
-            try:
-                return json.loads(record.payload_json)
-            except (json.JSONDecodeError, TypeError):
-                pass
-        return {"title": "ContentHub Video", "description": "", "tags": []}
+        if not record.payload_json:
+            raise ValueError(
+                f"PublishRecord {record.id}: payload_json boş. "
+                "Yayın için geçerli metadata (title, description) zorunludur."
+            )
+        try:
+            payload = json.loads(record.payload_json)
+        except (json.JSONDecodeError, TypeError) as exc:
+            raise ValueError(
+                f"PublishRecord {record.id}: payload_json parse edilemedi: {exc}"
+            ) from exc
+
+        # title zorunlu alan — boş string de kabul edilmez
+        if not payload.get("title"):
+            raise ValueError(
+                f"PublishRecord {record.id}: payload'da 'title' alanı eksik veya boş. "
+                "Yayın için geçerli bir başlık zorunludur."
+            )
+        return payload

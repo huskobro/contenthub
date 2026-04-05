@@ -1,15 +1,14 @@
 """
 Visibility Engine API router.
 
-Endpoints (Phase 4 scope + M11):
+Endpoints (Phase 4 + M11 + M22-A):
   GET    /visibility-rules                  — list all rules (optional filters)
+  GET    /visibility-rules/resolve          — runtime visibility resolution (M11)
   GET    /visibility-rules/{rule_id}        — fetch single rule by id
   POST   /visibility-rules                  — create new rule
   PATCH  /visibility-rules/{rule_id}        — partial update
-  GET    /visibility-rules/resolve          — runtime visibility resolution (M11)
-
-Intentionally absent:
-  DELETE, bulk operations, admin/user split surfaces.
+  DELETE /visibility-rules/{rule_id}        — soft-delete (M22-A)
+  POST   /visibility-rules/bulk-status      — bulk status update (M22-A)
 """
 
 from typing import List, Optional
@@ -88,3 +87,25 @@ async def update_rule(
     row = await service.update_rule(db, rule_id, payload)
     await write_audit_log(db, action="visibility_rule.update", entity_type="visibility_rule", entity_id=rule_id)
     return VisibilityRuleResponse.model_validate(row)
+
+
+@router.delete("/{rule_id}", response_model=VisibilityRuleResponse, dependencies=[Depends(require_visible("panel:visibility"))])
+async def delete_rule(
+    rule_id: str,
+    db: AsyncSession = Depends(get_db),
+) -> VisibilityRuleResponse:
+    """Soft-delete: kuralı inactive yapar. Resolver tarafından artık okunmaz."""
+    row = await service.delete_rule(db, rule_id)
+    return VisibilityRuleResponse.model_validate(row)
+
+
+@router.post("/bulk-status", response_model=List[VisibilityRuleResponse], dependencies=[Depends(require_visible("panel:visibility"))])
+async def bulk_update_status(
+    body: dict,
+    db: AsyncSession = Depends(get_db),
+) -> List[VisibilityRuleResponse]:
+    """Toplu status güncelleme. Body: { "rule_ids": [...], "status": "active"|"inactive" }"""
+    rule_ids = body.get("rule_ids", [])
+    new_status = body.get("status", "")
+    rows = await service.bulk_update_status(db, rule_ids, new_status)
+    return [VisibilityRuleResponse.model_validate(r) for r in rows]

@@ -38,7 +38,7 @@ async def test_upload_valid_file(client: AsyncClient):
     content = b"hello world test content"
     files = {"file": (fname, io.BytesIO(content), "text/plain")}
     r = await client.post(f"{BASE}/assets/upload", files=files)
-    assert r.status_code == 200
+    assert r.status_code == 201
     body = r.json()
     assert body["status"] == "uploaded"
     assert body["name"] == fname
@@ -83,7 +83,7 @@ async def test_upload_with_asset_type(client: AsyncClient):
     files = {"file": ("sample.mp3", io.BytesIO(b"audio data"), "audio/mpeg")}
     data = {"asset_type": "audio"}
     r = await client.post(f"{BASE}/assets/upload", files=files, data=data)
-    assert r.status_code == 200
+    assert r.status_code == 201
     body = r.json()
     assert body["asset_type"] == "audio"
 

@@ -19,8 +19,9 @@ Effective settings endpoints (M10-D):
   GET    /settings/groups                — group summary with counts
   PUT    /settings/effective/{key}       — update admin_value for a setting
 
-Intentionally absent:
-  DELETE, bulk operations, history, admin/user split surfaces.
+M22-B additions:
+  DELETE /settings/{setting_id}      — soft-delete (status → deleted)
+  POST   /settings/bulk-update       — bulk admin_value update
 """
 
 import json
@@ -351,3 +352,27 @@ async def update_setting(
 ) -> SettingResponse:
     row = await service.update_setting(db, setting_id, payload)
     return SettingResponse.model_validate(row)
+
+
+@router.delete("/{setting_id}", response_model=SettingResponse)
+async def delete_setting(
+    setting_id: str,
+    db: AsyncSession = Depends(get_db),
+) -> SettingResponse:
+    """Soft-delete: status → deleted. Ayar silinmez, devre dışı bırakılır."""
+    row = await service.delete_setting(db, setting_id)
+    return SettingResponse.model_validate(row)
+
+
+class BulkUpdateRequest(BaseModel):
+    updates: List[dict]
+
+
+@router.post("/bulk-update", response_model=List[SettingResponse])
+async def bulk_update_settings(
+    body: BulkUpdateRequest,
+    db: AsyncSession = Depends(get_db),
+) -> List[SettingResponse]:
+    """Toplu admin_value güncelleme. Body: { "updates": [{"key": "...", "value": ...}] }"""
+    rows = await service.bulk_update_admin_values(db, body.updates)
+    return [SettingResponse.model_validate(r) for r in rows]

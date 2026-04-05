@@ -153,20 +153,29 @@ export function ContentLibraryPage() {
     }
     setCloningId(item.id);
     try {
+      let cloneResult: { id: string };
       if (item.content_type === "standard_video") {
-        await cloneStandardVideo(item.id);
+        cloneResult = await cloneStandardVideo(item.id) as { id: string };
       } else {
-        await cloneNewsBulletin(item.id);
+        cloneResult = await cloneNewsBulletin(item.id) as { id: string };
       }
       queryClient.invalidateQueries({ queryKey: ["content-library"] });
-      showFeedback("success", `"${item.title || item.topic}" basariyla klonlandi.`);
+      showFeedback("success", `"${item.title || item.topic}" basariyla klonlandi. Yeni kayda yonlendiriliyorsunuz...`);
+      // M22-E: Clone sonrası navigasyon
+      setTimeout(() => {
+        if (item.content_type === "standard_video") {
+          navigate(`/admin/standard-videos/${cloneResult.id}`);
+        } else {
+          navigate("/admin/news-bulletins", { state: { selectedId: cloneResult.id } });
+        }
+      }, 800);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Klonlama basarisiz oldu.";
       showFeedback("error", msg);
     } finally {
       setCloningId(null);
     }
-  }, [queryClient, showFeedback]);
+  }, [queryClient, showFeedback, navigate]);
 
   function detailLink(item: ContentLibraryItem): { path: string; state?: unknown } {
     if (item.content_type === "standard_video") {
@@ -343,6 +352,7 @@ export function ContentLibraryPage() {
                   <th style={TH}>Baslik</th>
                   <th style={TH}>Tur</th>
                   <th style={TH}>Durum</th>
+                  <th style={TH}>Icerik</th>
                   <th style={TH}>Olusturulma</th>
                   <th style={TH}>Aksiyonlar</th>
                 </tr>
@@ -358,6 +368,23 @@ export function ContentLibraryPage() {
                         <span style={{ ...STATUS_BADGE, ...statusColor(item.status) }}>
                           {item.status}
                         </span>
+                      </td>
+                      <td style={TD}>
+                        <div style={{ display: "flex", gap: "0.25rem" }}>
+                          {item.has_script && (
+                            <span style={{ fontSize: "0.625rem", padding: "0.0625rem 0.375rem", borderRadius: "9999px", background: "#dbeafe", color: "#1e40af", fontWeight: 600 }} data-testid={`library-has-script-${item.id}`}>
+                              Script
+                            </span>
+                          )}
+                          {item.has_metadata && (
+                            <span style={{ fontSize: "0.625rem", padding: "0.0625rem 0.375rem", borderRadius: "9999px", background: "#dcfce7", color: "#166534", fontWeight: 600 }} data-testid={`library-has-metadata-${item.id}`}>
+                              Meta
+                            </span>
+                          )}
+                          {!item.has_script && !item.has_metadata && (
+                            <span style={{ fontSize: "0.625rem", color: "#cbd5e1" }}>\u2014</span>
+                          )}
+                        </div>
                       </td>
                       <td style={TD}>{formatDate(item.created_at)}</td>
                       <td style={TD}>

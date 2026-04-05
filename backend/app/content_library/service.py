@@ -1,23 +1,17 @@
 """
-Content Library Service — M21-D.
+Content Library Service — M21-D + M22-D hardened.
 
 Standard Video ve News Bulletin kayitlarini birlesik tek endpoint
 uzerinden sunar. Backend-side filtreleme, arama ve sayfalama.
+
+M22-D: SQL tarafinda UNION ALL ile birlesim, sort ve sayfalama.
+Eski Python-side merge/sort/paginate kaldirildi.
 """
 
-from typing import Optional, List
+from typing import Optional
 
-from sqlalchemy import select, union_all, literal_column, func as sqlfunc, case, text
+from sqlalchemy import text, func as sqlfunc
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from app.db.models import (
-    StandardVideo,
-    StandardVideoScript,
-    StandardVideoMetadata,
-    NewsBulletin,
-    NewsBulletinScript,
-    NewsBulletinMetadata,
-)
 
 
 async def list_content_library(
@@ -29,116 +23,114 @@ async def list_content_library(
     offset: int = 0,
 ) -> dict:
     """
-    Birlesik icerik kutuphanesi sorgulama.
+    Birlesik icerik kutuphanesi sorgulama — SQL UNION ALL.
 
-    İki modülü (standard_video + news_bulletin) UNION ALL ile birlestirir.
-    Tam backend-side filtreleme ve sayfalama.
-
-    Parameters:
-      content_type: "standard_video" veya "news_bulletin" (None = hepsi)
-      status: durum filtresi
-      search: baslik/konu arama (ilike)
-      limit: sayfalama limiti
-      offset: sayfalama offset'i
+    M22-D: Tum filtreleme, siralama ve sayfalama SQL tarafinda yapilir.
+    has_script ve has_metadata icin correlated subquery kullanilir.
     """
+
+    # Build WHERE clause fragments
+    where_clauses_sv = ["1=1"]
+    where_clauses_nb = ["1=1"]
+    params: dict = {}
+
+    if status:
+        where_clauses_sv.append("sv.status = :status")
+        where_clauses_nb.append("nb.status = :status")
+        params["status"] = status
+
+    if search:
+        where_clauses_sv.append("(sv.title LIKE :search_pattern OR sv.topic LIKE :search_pattern)")
+        where_clauses_nb.append("(nb.title LIKE :search_pattern OR nb.topic LIKE :search_pattern)")
+        params["search_pattern"] = f"%{search}%"
+
+    sv_where = " AND ".join(where_clauses_sv)
+    nb_where = " AND ".join(where_clauses_nb)
+
+    # SV subquery
+    sv_sql = f"""
+        SELECT
+            sv.id,
+            'standard_video' AS content_type,
+            sv.title,
+            sv.topic,
+            sv.status,
+            sv.created_at,
+            CASE WHEN EXISTS (
+                SELECT 1 FROM standard_video_scripts svs
+                WHERE svs.standard_video_id = sv.id
+            ) THEN 1 ELSE 0 END AS has_script,
+            CASE WHEN EXISTS (
+                SELECT 1 FROM standard_video_metadata svm
+                WHERE svm.standard_video_id = sv.id
+            ) THEN 1 ELSE 0 END AS has_metadata
+        FROM standard_videos sv
+        WHERE {sv_where}
+    """
+
+    # NB subquery
+    nb_sql = f"""
+        SELECT
+            nb.id,
+            'news_bulletin' AS content_type,
+            nb.title,
+            nb.topic,
+            nb.status,
+            nb.created_at,
+            CASE WHEN EXISTS (
+                SELECT 1 FROM news_bulletin_scripts nbs
+                WHERE nbs.news_bulletin_id = nb.id
+            ) THEN 1 ELSE 0 END AS has_script,
+            CASE WHEN EXISTS (
+                SELECT 1 FROM news_bulletin_metadata nbm
+                WHERE nbm.news_bulletin_id = nb.id
+            ) THEN 1 ELSE 0 END AS has_metadata
+        FROM news_bulletins nb
+        WHERE {nb_where}
+    """
+
+    # Conditional UNION based on content_type filter
+    # SQLite uyumlu: parantez yok, doğrudan UNION ALL
+    if content_type == "standard_video":
+        union_sql = sv_sql
+    elif content_type == "news_bulletin":
+        union_sql = nb_sql
+    else:
+        union_sql = f"{sv_sql} UNION ALL {nb_sql}"
+
+    # Count query
+    count_sql = f"SELECT COUNT(*) FROM ({union_sql})"
+    count_result = await db.execute(text(count_sql), params)
+    total = count_result.scalar() or 0
+
+    # Data query with sort and pagination
+    data_sql = f"""
+        SELECT * FROM ({union_sql})
+        ORDER BY created_at DESC
+        LIMIT :lim OFFSET :off
+    """
+    params["lim"] = limit
+    params["off"] = offset
+
+    data_result = await db.execute(text(data_sql), params)
+    rows = data_result.fetchall()
+
     items = []
-    total = 0
-
-    # Standard Video query
-    if content_type is None or content_type == "standard_video":
-        sv_stmt = select(StandardVideo).order_by(StandardVideo.created_at.desc())
-        if status:
-            sv_stmt = sv_stmt.where(StandardVideo.status == status)
-        if search:
-            pattern = f"%{search}%"
-            sv_stmt = sv_stmt.where(
-                StandardVideo.title.ilike(pattern) | StandardVideo.topic.ilike(pattern)
-            )
-
-        # Count
-        sv_count_stmt = select(sqlfunc.count()).select_from(sv_stmt.subquery())
-        sv_count = (await db.execute(sv_count_stmt)).scalar() or 0
-        total += sv_count
-
-        # Fetch — burada tum SV'leri aliyoruz
-        sv_rows = (await db.execute(sv_stmt)).scalars().all()
-
-        for v in sv_rows:
-            # has_script
-            script_row = await db.execute(
-                select(sqlfunc.count()).select_from(StandardVideoScript)
-                .where(StandardVideoScript.standard_video_id == v.id)
-            )
-            has_script = (script_row.scalar() or 0) > 0
-
-            # has_metadata
-            meta_row = await db.execute(
-                select(sqlfunc.count()).select_from(StandardVideoMetadata)
-                .where(StandardVideoMetadata.standard_video_id == v.id)
-            )
-            has_metadata = (meta_row.scalar() or 0) > 0
-
-            items.append({
-                "id": v.id,
-                "content_type": "standard_video",
-                "title": v.title,
-                "topic": v.topic,
-                "status": v.status,
-                "created_at": v.created_at.isoformat() if v.created_at else None,
-                "has_script": has_script,
-                "has_metadata": has_metadata,
-            })
-
-    # News Bulletin query
-    if content_type is None or content_type == "news_bulletin":
-        nb_stmt = select(NewsBulletin).order_by(NewsBulletin.created_at.desc())
-        if status:
-            nb_stmt = nb_stmt.where(NewsBulletin.status == status)
-        if search:
-            pattern = f"%{search}%"
-            nb_stmt = nb_stmt.where(
-                NewsBulletin.title.ilike(pattern) | NewsBulletin.topic.ilike(pattern)
-            )
-
-        nb_count_stmt = select(sqlfunc.count()).select_from(nb_stmt.subquery())
-        nb_count = (await db.execute(nb_count_stmt)).scalar() or 0
-        total += nb_count
-
-        nb_rows = (await db.execute(nb_stmt)).scalars().all()
-
-        for b in nb_rows:
-            script_row = await db.execute(
-                select(sqlfunc.count()).select_from(NewsBulletinScript)
-                .where(NewsBulletinScript.news_bulletin_id == b.id)
-            )
-            has_script = (script_row.scalar() or 0) > 0
-
-            meta_row = await db.execute(
-                select(sqlfunc.count()).select_from(NewsBulletinMetadata)
-                .where(NewsBulletinMetadata.news_bulletin_id == b.id)
-            )
-            has_metadata = (meta_row.scalar() or 0) > 0
-
-            items.append({
-                "id": b.id,
-                "content_type": "news_bulletin",
-                "title": b.title,
-                "topic": b.topic,
-                "status": b.status,
-                "created_at": b.created_at.isoformat() if b.created_at else None,
-                "has_script": has_script,
-                "has_metadata": has_metadata,
-            })
-
-    # Birlesik siralama (en yeni once)
-    items.sort(key=lambda x: x.get("created_at") or "", reverse=True)
-
-    # Backend-side sayfalama
-    paginated = items[offset:offset + limit]
+    for row in rows:
+        items.append({
+            "id": row[0],
+            "content_type": row[1],
+            "title": row[2],
+            "topic": row[3],
+            "status": row[4],
+            "created_at": str(row[5]) if row[5] else None,
+            "has_script": bool(row[6]),
+            "has_metadata": bool(row[7]),
+        })
 
     return {
         "total": total,
         "offset": offset,
         "limit": limit,
-        "items": paginated,
+        "items": items,
     }
