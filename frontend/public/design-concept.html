@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ContentHub — Ink & Wire Design Concept</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;1,9..144,400&family=Karla:wght@300;400;500;600&family=Victor+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+/* ========================================================================
+   INK & WIRE — Editorial gazette meets technical control surface
+   ======================================================================== */
+
+:root {
+  --ink: #1a1a1a;
+  --ink-soft: #3a3a3a;
+  --ink-muted: #6b6b6b;
+  --ink-ghost: #9e9e9e;
+  --paper: #f7f5f0;
+  --paper-warm: #efe9df;
+  --paper-inset: #eee8dd;
+  --red-ink: #c4362c;
+  --red-ink-soft: #d9564d;
+  --blue-link: #2855a0;
+  --blue-link-hover: #1a3d75;
+  --green-ok: #2d7a3a;
+  --amber-wait: #b8860b;
+  --rule: #d4cfc5;
+  --rule-strong: #a8a196;
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body: 'Karla', Helvetica, sans-serif;
+  --font-mono: 'Victor Mono', monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { font-size: 15px; -webkit-font-smoothing: antialiased; }
+
+body {
+  font-family: var(--font-body);
+  color: var(--ink);
+  background: var(--paper);
+  line-height: 1.55;
+  min-height: 100vh;
+}
+
+::selection { background: var(--red-ink); color: var(--paper); }
+
+/* ---- Scrollbar ---- */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--rule-strong); border-radius: 2px; }
+
+/* ========================================================================
+   TOP BAR — Thin, newspaper masthead style
+   ======================================================================== */
+
+.topbar {
+  display: flex;
+  align-items: center;
+  height: 42px;
+  padding: 0 24px;
+  border-bottom: 2px solid var(--ink);
+  background: var(--paper);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  gap: 0;
+}
+
+.topbar-brand {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+  margin-right: 28px;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.topbar-brand .dot {
+  width: 6px; height: 6px;
+  background: var(--red-ink);
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* Nav links — inline, newspaper column headers */
+.topbar-nav {
+  display: flex;
+  gap: 0;
+  height: 100%;
+  align-items: stretch;
+}
+
+.topbar-nav a {
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--ink-muted);
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: color 0.12s, border-color 0.12s;
+  white-space: nowrap;
+}
+
+.topbar-nav a:hover { color: var(--ink); }
+.topbar-nav a.active {
+  color: var(--ink);
+  border-bottom-color: var(--red-ink);
+  font-weight: 600;
+}
+
+/* Spacer */
+.topbar-spacer { flex: 1; }
+
+/* Search — inline, minimal */
+.topbar-search {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  font-size: 0.75rem;
+  color: var(--ink-ghost);
+  cursor: pointer;
+  transition: border-color 0.12s;
+  margin-right: 12px;
+}
+.topbar-search:hover { border-color: var(--ink-muted); color: var(--ink-muted); }
+.topbar-search kbd {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  background: var(--paper-inset);
+  padding: 1px 5px;
+  border-radius: 2px;
+  border: 1px solid var(--rule);
+  color: var(--ink-ghost);
+}
+
+/* Panel switch — tiny */
+.topbar-switch {
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--blue-link);
+  background: none;
+  border: 1px solid var(--blue-link);
+  border-radius: 2px;
+  padding: 3px 10px;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  transition: all 0.12s;
+}
+.topbar-switch:hover {
+  background: var(--blue-link);
+  color: var(--paper);
+}
+
+/* ========================================================================
+   EDITION BAR — Date + live status, newspaper style
+   ======================================================================== */
+
+.edition-bar {
+  display: flex;
+  align-items: center;
+  padding: 6px 24px;
+  border-bottom: 1px solid var(--rule);
+  font-size: 0.7rem;
+  color: var(--ink-ghost);
+  gap: 16px;
+  font-family: var(--font-mono);
+  font-style: italic;
+}
+
+.edition-bar .live-dot {
+  width: 5px; height: 5px;
+  background: var(--green-ok);
+  border-radius: 50%;
+  display: inline-block;
+  animation: livePulse 2s ease-in-out infinite;
+}
+
+@keyframes livePulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(45,122,58,0.3); }
+  50% { opacity: 0.7; box-shadow: 0 0 0 3px rgba(45,122,58,0); }
+}
+
+/* ========================================================================
+   MAIN LAYOUT — Newspaper column grid
+   ======================================================================== */
+
+.page-main {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 20px 24px;
+}
+
+/* Page headline — big editorial serif */
+.page-headline {
+  font-family: var(--font-display);
+  font-size: 2.1rem;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1.15;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+
+.page-lead {
+  font-size: 0.85rem;
+  color: var(--ink-muted);
+  max-width: 560px;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+/* ========================================================================
+   METRIC STRIP — Inline horizontal KPIs, newspaper ticker style
+   ======================================================================== */
+
+.metric-strip {
+  display: flex;
+  gap: 0;
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+.metric-item {
+  flex: 1;
+  padding: 10px 16px;
+  border-right: 1px solid var(--rule);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  transition: background 0.12s;
+}
+.metric-item:last-child { border-right: none; }
+.metric-item:hover { background: var(--paper-inset); }
+
+.metric-item .metric-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-ghost);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.metric-item .metric-value {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
+.metric-item .metric-note {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  color: var(--ink-ghost);
+  font-style: italic;
+}
+
+/* Color coded metric accents */
+.metric-item[data-accent="green"] .metric-value { color: var(--green-ok); }
+.metric-item[data-accent="red"] .metric-value { color: var(--red-ink); }
+.metric-item[data-accent="amber"] .metric-value { color: var(--amber-wait); }
+
+/* ========================================================================
+   CONTENT COLUMNS — Two-column gazette layout
+   ======================================================================== */
+
+.columns-2 {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 0;
+  border-top: 2px solid var(--ink);
+  padding-top: 16px;
+}
+
+.col-main { padding-right: 24px; border-right: 1px solid var(--rule); }
+.col-side { padding-left: 24px; }
+
+/* ========================================================================
+   SECTION — Newspaper section with rule + inline title
+   ======================================================================== */
+
+.section {
+  margin-bottom: 24px;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 6px;
+}
+
+.section-title {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.section-badge {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  background: var(--paper-inset);
+  color: var(--ink-muted);
+  padding: 1px 7px;
+  border-radius: 2px;
+  border: 1px solid var(--rule);
+  font-style: italic;
+}
+
+.section-action {
+  margin-left: auto;
+  font-size: 0.7rem;
+  color: var(--blue-link);
+  text-decoration: none;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: color 0.12s;
+}
+.section-action:hover { color: var(--blue-link-hover); text-decoration: underline; }
+
+/* ========================================================================
+   TABLE — Minimal gazette ledger
+   ======================================================================== */
+
+.ledger {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+}
+
+.ledger th {
+  text-align: left;
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-ghost);
+  font-weight: 500;
+  padding: 0 8px 6px 0;
+  border-bottom: 1px solid var(--rule-strong);
+  white-space: nowrap;
+}
+
+.ledger td {
+  padding: 7px 8px 7px 0;
+  border-bottom: 1px solid var(--rule);
+  color: var(--ink-soft);
+  vertical-align: middle;
+}
+
+.ledger tr:hover td { background: var(--paper-inset); }
+.ledger tr:last-child td { border-bottom: none; }
+
+/* Cell variants */
+.ledger .cell-title {
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.ledger .cell-mono {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--ink-muted);
+}
+
+.ledger .cell-link {
+  color: var(--blue-link);
+  text-decoration: none;
+  cursor: pointer;
+}
+.ledger .cell-link:hover { text-decoration: underline; }
+
+/* ========================================================================
+   STATUS PILLS — Tiny inline markers
+   ======================================================================== */
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.62rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 7px;
+  border-radius: 2px;
+  white-space: nowrap;
+}
+
+.pill::before {
+  content: "";
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.pill-ok { background: #e8f5e9; color: var(--green-ok); }
+.pill-ok::before { background: var(--green-ok); }
+.pill-warn { background: #fff8e1; color: var(--amber-wait); }
+.pill-warn::before { background: var(--amber-wait); }
+.pill-err { background: #fce4ec; color: var(--red-ink); }
+.pill-err::before { background: var(--red-ink); }
+.pill-neutral { background: var(--paper-inset); color: var(--ink-muted); }
+.pill-neutral::before { background: var(--ink-ghost); }
+.pill-info { background: #e3f2fd; color: var(--blue-link); }
+.pill-info::before { background: var(--blue-link); }
+
+/* ========================================================================
+   INLINE BUTTONS — Tiny, text-like
+   ======================================================================== */
+
+.btn-inline {
+  font-family: var(--font-body);
+  font-size: 0.68rem;
+  font-weight: 500;
+  padding: 3px 9px;
+  border-radius: 2px;
+  border: 1px solid var(--rule);
+  background: var(--paper);
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: all 0.1s;
+  white-space: nowrap;
+}
+.btn-inline:hover { border-color: var(--ink-muted); color: var(--ink); background: var(--paper-inset); }
+
+.btn-inline-primary {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+.btn-inline-primary:hover { background: var(--ink-soft); }
+
+.btn-inline-danger {
+  color: var(--red-ink);
+  border-color: var(--red-ink-soft);
+}
+.btn-inline-danger:hover { background: var(--red-ink); color: var(--paper); border-color: var(--red-ink); }
+
+/* ========================================================================
+   QUICK ACCESS — Compact link list with left accent
+   ======================================================================== */
+
+.quick-list {
+  list-style: none;
+}
+
+.quick-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--rule);
+  transition: padding-left 0.12s;
+  cursor: pointer;
+}
+.quick-item:last-child { border-bottom: none; }
+.quick-item:hover { padding-left: 4px; }
+
+.quick-item .qi-marker {
+  width: 3px;
+  height: 18px;
+  border-radius: 1px;
+  flex-shrink: 0;
+}
+
+.quick-item .qi-body { min-width: 0; flex: 1; }
+
+.quick-item .qi-title {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.quick-item .qi-desc {
+  font-size: 0.65rem;
+  color: var(--ink-ghost);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.quick-item .qi-arrow {
+  font-size: 0.75rem;
+  color: var(--rule-strong);
+  transition: color 0.12s, transform 0.12s;
+}
+.quick-item:hover .qi-arrow { color: var(--ink-muted); transform: translateX(2px); }
+
+/* ========================================================================
+   SIDEBAR SECTIONS (right column)
+   ======================================================================== */
+
+.sidebar-block {
+  margin-bottom: 20px;
+}
+
+.sidebar-block-title {
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--ink-ghost);
+  font-weight: 600;
+  margin-bottom: 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--rule);
+}
+
+/* Activity feed — compact */
+.feed-item {
+  display: flex;
+  gap: 8px;
+  padding: 5px 0;
+  border-bottom: 1px dotted var(--rule);
+  font-size: 0.72rem;
+  color: var(--ink-soft);
+  align-items: flex-start;
+}
+.feed-item:last-child { border-bottom: none; }
+
+.feed-time {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  color: var(--ink-ghost);
+  white-space: nowrap;
+  min-width: 44px;
+  font-style: italic;
+}
+
+.feed-text { line-height: 1.4; }
+.feed-text strong { font-weight: 600; color: var(--ink); }
+
+/* System health — inline progress bars */
+.health-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  font-size: 0.72rem;
+}
+
+.health-label {
+  min-width: 80px;
+  color: var(--ink-muted);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.health-bar {
+  flex: 1;
+  height: 4px;
+  background: var(--rule);
+  border-radius: 1px;
+  overflow: hidden;
+}
+
+.health-fill {
+  height: 100%;
+  border-radius: 1px;
+  transition: width 0.5s ease;
+}
+
+.health-value {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  color: var(--ink-ghost);
+  min-width: 32px;
+  text-align: right;
+  font-style: italic;
+}
+
+/* ========================================================================
+   FOOTER — Minimal edition mark
+   ======================================================================== */
+
+.page-footer {
+  margin-top: 32px;
+  padding: 10px 24px;
+  border-top: 2px solid var(--ink);
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.6rem;
+  color: var(--ink-ghost);
+  font-family: var(--font-mono);
+  font-style: italic;
+  max-width: 1320px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ========================================================================
+   ANIMATIONS — Staggered reveal on load
+   ======================================================================== */
+
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-in {
+  animation: fadeSlideUp 0.35s ease both;
+}
+
+.delay-1 { animation-delay: 0.05s; }
+.delay-2 { animation-delay: 0.1s; }
+.delay-3 { animation-delay: 0.15s; }
+.delay-4 { animation-delay: 0.2s; }
+.delay-5 { animation-delay: 0.25s; }
+
+/* ========================================================================
+   RESPONSIVE
+   ======================================================================== */
+
+@media (max-width: 900px) {
+  .columns-2 { grid-template-columns: 1fr; }
+  .col-main { padding-right: 0; border-right: none; padding-bottom: 20px; border-bottom: 1px solid var(--rule); }
+  .col-side { padding-left: 0; padding-top: 16px; }
+  .topbar-nav a { padding: 0 8px; font-size: 0.7rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== TOP BAR ===== -->
+<header class="topbar">
+  <div class="topbar-brand">
+    <span class="dot"></span>ContentHub
+  </div>
+
+  <nav class="topbar-nav">
+    <a href="#" class="active">Genel Bakis</a>
+    <a href="#">Icerik</a>
+    <a href="#">Isler</a>
+    <a href="#">Kaynaklar</a>
+    <a href="#">Sablonlar</a>
+    <a href="#">Analytics</a>
+    <a href="#">Ayarlar</a>
+  </nav>
+
+  <div class="topbar-spacer"></div>
+
+  <div class="topbar-search">
+    Ara veya komut... <kbd>⌘K</kbd>
+  </div>
+
+  <button class="topbar-switch">Kullanici Paneli &rarr;</button>
+</header>
+
+<!-- ===== EDITION BAR ===== -->
+<div class="edition-bar">
+  <span>6 Nisan 2026, Pazartesi</span>
+  <span>&middot;</span>
+  <span><span class="live-dot"></span> Sistem aktif</span>
+  <span>&middot;</span>
+  <span>Son guncelleme 2 dk once</span>
+</div>
+
+<!-- ===== MAIN ===== -->
+<main class="page-main">
+
+  <!-- Headline -->
+  <h1 class="page-headline animate-in delay-1">Genel Bakis</h1>
+  <p class="page-lead animate-in delay-2">
+    Uretim merkezi. Icerik olusturma, kaynak yonetimi, is takibi, yayin ve analiz buradan baslar.
+  </p>
+
+  <!-- Metric strip -->
+  <div class="metric-strip animate-in delay-2">
+    <div class="metric-item">
+      <span class="metric-label">Toplam Is</span>
+      <span class="metric-value">247</span>
+      <span class="metric-note">son 30 gun</span>
+    </div>
+    <div class="metric-item" data-accent="green">
+      <span class="metric-label">Basari Orani</span>
+      <span class="metric-value">94.2%</span>
+      <span class="metric-note">+2.1% onceki aya gore</span>
+    </div>
+    <div class="metric-item">
+      <span class="metric-label">Toplam Yayin</span>
+      <span class="metric-value">183</span>
+      <span class="metric-note">basarili yayin</span>
+    </div>
+    <div class="metric-item" data-accent="red">
+      <span class="metric-label">Basarisiz</span>
+      <span class="metric-value">6</span>
+      <span class="metric-note">hata ile sonuclanan</span>
+    </div>
+    <div class="metric-item" data-accent="amber">
+      <span class="metric-label">Kuyruk</span>
+      <span class="metric-value">12</span>
+      <span class="metric-note">bekleyen is</span>
+    </div>
+  </div>
+
+  <!-- Two-column layout -->
+  <div class="columns-2">
+
+    <!-- LEFT COLUMN: Main content -->
+    <div class="col-main">
+
+      <!-- Recent Jobs -->
+      <div class="section animate-in delay-3">
+        <div class="section-header">
+          <span class="section-title">Son Isler</span>
+          <span class="section-badge">12 aktif</span>
+          <a href="#" class="section-action">Tum isler &rarr;</a>
+        </div>
+        <table class="ledger">
+          <thead>
+            <tr>
+              <th>Is</th>
+              <th>Modul</th>
+              <th>Durum</th>
+              <th>Sure</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="cell-title"><a class="cell-link">Ekonomi Bulteni #42</a></td>
+              <td class="cell-mono">news_bulletin</td>
+              <td><span class="pill pill-ok">Tamamlandi</span></td>
+              <td class="cell-mono">4m 12s</td>
+              <td><button class="btn-inline">Detay</button></td>
+            </tr>
+            <tr>
+              <td class="cell-title"><a class="cell-link">Teknoloji Ozeti</a></td>
+              <td class="cell-mono">standard_video</td>
+              <td><span class="pill pill-warn">Render</span></td>
+              <td class="cell-mono">2m 38s</td>
+              <td><button class="btn-inline">Detay</button></td>
+            </tr>
+            <tr>
+              <td class="cell-title"><a class="cell-link">Spor Haberleri</a></td>
+              <td class="cell-mono">news_bulletin</td>
+              <td><span class="pill pill-ok">Tamamlandi</span></td>
+              <td class="cell-mono">3m 55s</td>
+              <td><button class="btn-inline">Detay</button></td>
+            </tr>
+            <tr>
+              <td class="cell-title"><a class="cell-link">Urun Inceleme: M4</a></td>
+              <td class="cell-mono">product_review</td>
+              <td><span class="pill pill-err">Hata</span></td>
+              <td class="cell-mono">1m 03s</td>
+              <td><button class="btn-inline btn-inline-danger">Yeniden</button></td>
+            </tr>
+            <tr>
+              <td class="cell-title"><a class="cell-link">Gunluk Brifing</a></td>
+              <td class="cell-mono">news_bulletin</td>
+              <td><span class="pill pill-info">Kuyrukta</span></td>
+              <td class="cell-mono">&mdash;</td>
+              <td><button class="btn-inline">Iptal</button></td>
+            </tr>
+            <tr>
+              <td class="cell-title"><a class="cell-link">Tutorial: React 20</a></td>
+              <td class="cell-mono">educational_video</td>
+              <td><span class="pill pill-warn">TTS</span></td>
+              <td class="cell-mono">1m 47s</td>
+              <td><button class="btn-inline">Detay</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Content Library -->
+      <div class="section animate-in delay-4">
+        <div class="section-header">
+          <span class="section-title">Icerik Kutuphanesi</span>
+          <span class="section-badge">324 kayit</span>
+          <a href="#" class="section-action">Kutuphanede goster &rarr;</a>
+        </div>
+        <table class="ledger">
+          <thead>
+            <tr>
+              <th>Baslik</th>
+              <th>Tur</th>
+              <th>Durum</th>
+              <th>Tarih</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="cell-title">Ekonomi Bulteni #42</td>
+              <td class="cell-mono">bulten</td>
+              <td><span class="pill pill-ok">Yayinda</span></td>
+              <td class="cell-mono">06.04</td>
+            </tr>
+            <tr>
+              <td class="cell-title">Yapay Zeka ve Gelecek</td>
+              <td class="cell-mono">video</td>
+              <td><span class="pill pill-neutral">Taslak</span></td>
+              <td class="cell-mono">05.04</td>
+            </tr>
+            <tr>
+              <td class="cell-title">Spor Gunlugu Mart</td>
+              <td class="cell-mono">bulten</td>
+              <td><span class="pill pill-ok">Yayinda</span></td>
+              <td class="cell-mono">04.04</td>
+            </tr>
+            <tr>
+              <td class="cell-title">M4 Pro Inceleme</td>
+              <td class="cell-mono">inceleme</td>
+              <td><span class="pill pill-warn">Isleniyor</span></td>
+              <td class="cell-mono">03.04</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+
+    <!-- RIGHT COLUMN: Sidebar info -->
+    <div class="col-side">
+
+      <!-- Quick Access -->
+      <div class="sidebar-block animate-in delay-3">
+        <div class="sidebar-block-title">Hizli Erisim</div>
+        <ul class="quick-list">
+          <li class="quick-item">
+            <div class="qi-marker" style="background: var(--green-ok)"></div>
+            <div class="qi-body">
+              <div class="qi-title">Yeni Video Olustur</div>
+              <div class="qi-desc">Standart video uretim akisi</div>
+            </div>
+            <span class="qi-arrow">&rsaquo;</span>
+          </li>
+          <li class="quick-item">
+            <div class="qi-marker" style="background: var(--blue-link)"></div>
+            <div class="qi-body">
+              <div class="qi-title">Haber Bulteni</div>
+              <div class="qi-desc">Yeni bulten olustur</div>
+            </div>
+            <span class="qi-arrow">&rsaquo;</span>
+          </li>
+          <li class="quick-item">
+            <div class="qi-marker" style="background: var(--amber-wait)"></div>
+            <div class="qi-body">
+              <div class="qi-title">Kaynaklar</div>
+              <div class="qi-desc">Haber kaynaklarini yonet</div>
+            </div>
+            <span class="qi-arrow">&rsaquo;</span>
+          </li>
+          <li class="quick-item">
+            <div class="qi-marker" style="background: var(--red-ink)"></div>
+            <div class="qi-body">
+              <div class="qi-title">Sablonlar</div>
+              <div class="qi-desc">Icerik ve stil sablonlari</div>
+            </div>
+            <span class="qi-arrow">&rsaquo;</span>
+          </li>
+          <li class="quick-item">
+            <div class="qi-marker" style="background: var(--ink-ghost)"></div>
+            <div class="qi-body">
+              <div class="qi-title">Varlik Kutuphanesi</div>
+              <div class="qi-desc">Muzik, gorsel, font</div>
+            </div>
+            <span class="qi-arrow">&rsaquo;</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Activity Feed -->
+      <div class="sidebar-block animate-in delay-4">
+        <div class="sidebar-block-title">Son Aktivite</div>
+        <div class="feed-item">
+          <span class="feed-time">14:23</span>
+          <span class="feed-text"><strong>Ekonomi Bulteni #42</strong> YouTube'a yayinlandi</span>
+        </div>
+        <div class="feed-item">
+          <span class="feed-time">14:19</span>
+          <span class="feed-text"><strong>Teknoloji Ozeti</strong> render asamasinda</span>
+        </div>
+        <div class="feed-item">
+          <span class="feed-time">13:55</span>
+          <span class="feed-text"><strong>Urun Inceleme: M4</strong> TTS hatasi — yeniden deneniyor</span>
+        </div>
+        <div class="feed-item">
+          <span class="feed-time">13:40</span>
+          <span class="feed-text">3 yeni haber kaynagi tarand</span>
+        </div>
+        <div class="feed-item">
+          <span class="feed-time">13:12</span>
+          <span class="feed-text"><strong>Spor Haberleri</strong> render tamamlandi</span>
+        </div>
+        <div class="feed-item">
+          <span class="feed-time">12:58</span>
+          <span class="feed-text">Ayarlar guncellendi: <em>tts_provider</em></span>
+        </div>
+      </div>
+
+      <!-- System Health -->
+      <div class="sidebar-block animate-in delay-5">
+        <div class="sidebar-block-title">Sistem Durumu</div>
+        <div class="health-item">
+          <span class="health-label">Is Motoru</span>
+          <div class="health-bar"><div class="health-fill" style="width: 94%; background: var(--green-ok)"></div></div>
+          <span class="health-value">94%</span>
+        </div>
+        <div class="health-item">
+          <span class="health-label">Render</span>
+          <div class="health-bar"><div class="health-fill" style="width: 87%; background: var(--green-ok)"></div></div>
+          <span class="health-value">87%</span>
+        </div>
+        <div class="health-item">
+          <span class="health-label">TTS</span>
+          <div class="health-bar"><div class="health-fill" style="width: 72%; background: var(--amber-wait)"></div></div>
+          <span class="health-value">72%</span>
+        </div>
+        <div class="health-item">
+          <span class="health-label">Yayin</span>
+          <div class="health-bar"><div class="health-fill" style="width: 98%; background: var(--green-ok)"></div></div>
+          <span class="health-value">98%</span>
+        </div>
+        <div class="health-item">
+          <span class="health-label">Depolama</span>
+          <div class="health-bar"><div class="health-fill" style="width: 41%; background: var(--blue-link)"></div></div>
+          <span class="health-value">41%</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</main>
+
+<!-- ===== FOOTER ===== -->
+<footer class="page-footer">
+  <span>ContentHub v1.0 &middot; Ink & Wire Edition</span>
+  <span>localhost:5173 &middot; SQLite WAL &middot; 324 icerik &middot; 247 is</span>
+</footer>
+
+</body>
+</html>
