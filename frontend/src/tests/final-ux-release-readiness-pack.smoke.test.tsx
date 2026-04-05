@@ -128,11 +128,10 @@ describe("Phase 318 — Deferred/disabled note standardization", () => {
     expect(note.textContent).not.toContain("ilerideki fazlarda");
   });
 
-  it("analytics overview filter disabled note uses standard wording", () => {
+  it("analytics overview filter section is active (M17-B)", () => {
     renderAdmin("/admin/analytics");
-    const note = screen.getByTestId("filter-disabled-note");
-    expect(note.textContent).toContain("backend entegrasyonu");
-    expect(note.textContent).not.toContain("backend aktif olunca");
+    const note = screen.getByTestId("filter-inactive-note");
+    expect(note.textContent).toContain("zaman penceresi");
   });
 
   it("analytics content module distribution deferred note uses standard wording", () => {
@@ -142,11 +141,11 @@ describe("Phase 318 — Deferred/disabled note standardization", () => {
     expect(note.textContent).not.toContain("backend aktif olunca");
   });
 
-  it("analytics operations source impact deferred note uses standard wording", () => {
+  it("analytics operations source impact shows real metrics (M17-A)", () => {
     renderAdmin("/admin/analytics/operations");
-    const note = screen.getByTestId("source-impact-deferred");
-    expect(note.textContent).toContain("backend entegrasyonu");
-    expect(note.textContent).not.toContain("backend aktif olunca");
+    const section = screen.getByTestId("analytics-source-impact");
+    expect(section).toBeDefined();
+    expect(screen.getByTestId("source-impact-heading").textContent).toContain("Kaynak Etkisi");
   });
 
   it("job detail actions panel shows operational actions", async () => {
@@ -366,8 +365,8 @@ describe("Phase 321 — Final UX end-to-end verification", () => {
     expect(page).not.toContain("ilerideki fazlarda");
   });
 
-  it("deferred notes across admin pages all use 'backend entegrasyonu' pattern", () => {
+  it("analytics overview filter section is present (M17-B)", () => {
     renderAdmin("/admin/analytics");
-    expect(screen.getByTestId("filter-disabled-note").textContent).toContain("backend entegrasyonu");
+    expect(screen.getByTestId("analytics-filter-area")).toBeDefined();
   });
 });

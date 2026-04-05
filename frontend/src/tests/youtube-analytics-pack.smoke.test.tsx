@@ -183,20 +183,20 @@ describe("YouTube Analytics Pack (Phase 293-298)", () => {
     it("channel overview heading and note exist", () => {
       renderAt("/admin/analytics");
       expect(screen.getByTestId("channel-overview-heading").textContent).toContain("Kanal Ozeti");
-      expect(screen.getByTestId("channel-overview-note").textContent).toContain("kanal duzeyinde");
+      expect(screen.getByTestId("channel-overview-note").textContent).toContain("YouTube");
     });
 
-    it("channel overview differentiates from video-level", () => {
+    it("channel overview shows YouTube publish metrics (M17-C)", () => {
       renderAt("/admin/analytics");
       const note = screen.getByTestId("channel-overview-note");
-      expect(note.textContent).toContain("Tek video performansindan farkli");
+      expect(note.textContent).toContain("yayin kanali");
     });
 
-    it("channel metrics cards exist", () => {
+    it("channel metrics cards exist (M17-C YouTube)", () => {
       renderAt("/admin/analytics");
-      expect(screen.getByTestId("metric-total-content")).toBeDefined();
-      expect(screen.getByTestId("metric-active-modules")).toBeDefined();
-      expect(screen.getByTestId("metric-template-impact")).toBeDefined();
+      expect(screen.getByTestId("metric-yt-total-publish")).toBeDefined();
+      expect(screen.getByTestId("metric-yt-published")).toBeDefined();
+      expect(screen.getByTestId("metric-yt-failed")).toBeDefined();
     });
   });
 
@@ -224,14 +224,9 @@ describe("YouTube Analytics Pack (Phase 293-298)", () => {
       expect(screen.getByTestId("filter-date-end")).toBeDefined();
     });
 
-    it("module select filter exists", () => {
+    it("filter inactive note is shown when no date range (M17-B)", () => {
       renderAt("/admin/analytics");
-      expect(screen.getByTestId("filter-module-select")).toBeDefined();
-    });
-
-    it("filter disabled note is shown", () => {
-      renderAt("/admin/analytics");
-      expect(screen.getByTestId("filter-disabled-note").textContent).toContain("backend entegrasyonu");
+      expect(screen.getByTestId("filter-inactive-note").textContent).toContain("zaman penceresi");
     });
   });
 

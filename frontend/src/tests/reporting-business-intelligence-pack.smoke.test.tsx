@@ -176,10 +176,10 @@ describe("Phase 316 — Usage/performance summary", () => {
     expect(note.textContent).toContain("verimlilik karari");
   });
 
-  it("analytics overview channel overview note mentions decision support", () => {
+  it("analytics overview channel overview note mentions YouTube (M17-C)", () => {
     renderAt("/admin/analytics");
     const note = screen.getByTestId("channel-overview-note");
-    expect(note.textContent).toContain("karar destek gorunumu");
+    expect(note.textContent).toContain("YouTube");
   });
 
   it("analytics overview core metrics section is present", () => {
@@ -198,11 +198,11 @@ describe("Phase 316 — Usage/performance summary", () => {
     expect(screen.getByTestId("metric-provider-error")).toBeDefined();
   });
 
-  it("analytics overview has channel overview cards", () => {
+  it("analytics overview has YouTube channel overview cards (M17-C)", () => {
     renderAt("/admin/analytics");
-    expect(screen.getByTestId("metric-total-content")).toBeDefined();
-    expect(screen.getByTestId("metric-active-modules")).toBeDefined();
-    expect(screen.getByTestId("metric-template-impact")).toBeDefined();
+    expect(screen.getByTestId("metric-yt-total-publish")).toBeDefined();
+    expect(screen.getByTestId("metric-yt-published")).toBeDefined();
+    expect(screen.getByTestId("metric-yt-failed")).toBeDefined();
   });
 });
 

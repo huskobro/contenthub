@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AnalyticsOverviewPage } from "../pages/admin/AnalyticsOverviewPage";
-import type { OverviewMetrics } from "../api/analyticsApi";
+import type { OverviewMetrics, ChannelOverviewMetrics } from "../api/analyticsApi";
 
 const MOCK_OVERVIEW: OverviewMetrics = {
   window: "last_30d",
@@ -17,6 +17,20 @@ const MOCK_OVERVIEW: OverviewMetrics = {
   publish_success_rate: 0.9333,
   avg_production_duration_seconds: 125.5,
   retry_rate: 0.0714,
+};
+
+const MOCK_CHANNEL: ChannelOverviewMetrics = {
+  window: "last_30d",
+  youtube: {
+    total_publish_attempts: 15,
+    published_count: 12,
+    failed_count: 2,
+    draft_count: 1,
+    in_progress_count: 0,
+    publish_success_rate: 0.8,
+    last_published_at: "2026-03-28T14:00:00",
+    has_publish_history: true,
+  },
 };
 
 const MOCK_OVERVIEW_EMPTY: OverviewMetrics = {
@@ -33,10 +47,26 @@ const MOCK_OVERVIEW_EMPTY: OverviewMetrics = {
   retry_rate: null,
 };
 
-function buildFetch(payload: OverviewMetrics) {
-  return vi.fn().mockResolvedValue({
-    ok: true,
-    json: async () => payload,
+const MOCK_CHANNEL_EMPTY: ChannelOverviewMetrics = {
+  window: "last_7d",
+  youtube: {
+    total_publish_attempts: 0,
+    published_count: 0,
+    failed_count: 0,
+    draft_count: 0,
+    in_progress_count: 0,
+    publish_success_rate: null,
+    last_published_at: null,
+    has_publish_history: false,
+  },
+};
+
+function buildFetch(overview: OverviewMetrics, channel: ChannelOverviewMetrics) {
+  return vi.fn().mockImplementation(async (url: string) => {
+    if (url.includes("/channel")) {
+      return { ok: true, json: async () => channel };
+    }
+    return { ok: true, json: async () => overview };
   });
 }
 
@@ -65,12 +95,12 @@ describe("AnalyticsOverviewPage smoke tests", () => {
   });
 
   it("A: renders heading", () => {
-    renderPage(buildFetch(MOCK_OVERVIEW));
+    renderPage(buildFetch(MOCK_OVERVIEW, MOCK_CHANNEL));
     expect(screen.getByTestId("analytics-overview-heading")).toBeTruthy();
   });
 
   it("B: renders window selector buttons", () => {
-    renderPage(buildFetch(MOCK_OVERVIEW));
+    renderPage(buildFetch(MOCK_OVERVIEW, MOCK_CHANNEL));
     expect(screen.getByTestId("window-btn-last_7d")).toBeTruthy();
     expect(screen.getByTestId("window-btn-last_30d")).toBeTruthy();
     expect(screen.getByTestId("window-btn-last_90d")).toBeTruthy();
@@ -78,85 +108,85 @@ describe("AnalyticsOverviewPage smoke tests", () => {
   });
 
   it("C: renders core metrics section", () => {
-    renderPage(buildFetch(MOCK_OVERVIEW));
+    renderPage(buildFetch(MOCK_OVERVIEW, MOCK_CHANNEL));
     expect(screen.getByTestId("analytics-core-metrics")).toBeTruthy();
   });
 
   it("D: renders publish metrics section", () => {
-    renderPage(buildFetch(MOCK_OVERVIEW));
+    renderPage(buildFetch(MOCK_OVERVIEW, MOCK_CHANNEL));
     expect(screen.getByTestId("analytics-publish-metrics")).toBeTruthy();
   });
 
   it("E: shows real total_job_count after load", async () => {
-    renderPage(buildFetch(MOCK_OVERVIEW));
+    renderPage(buildFetch(MOCK_OVERVIEW, MOCK_CHANNEL));
     await waitFor(() =>
       expect(screen.getByTestId("metric-total-jobs-value").textContent).toBe("42"),
     );
   });
 
   it("F: shows real completed_job_count after load", async () => {
-    renderPage(buildFetch(MOCK_OVERVIEW));
+    renderPage(buildFetch(MOCK_OVERVIEW, MOCK_CHANNEL));
     await waitFor(() =>
       expect(screen.getByTestId("metric-completed-jobs-value").textContent).toBe("38"),
     );
   });
 
   it("G: shows real failed_job_count after load", async () => {
-    renderPage(buildFetch(MOCK_OVERVIEW));
+    renderPage(buildFetch(MOCK_OVERVIEW, MOCK_CHANNEL));
     await waitFor(() =>
       expect(screen.getByTestId("metric-failed-jobs-value").textContent).toBe("4"),
     );
   });
 
   it("H: shows job_success_rate as percentage", async () => {
-    renderPage(buildFetch(MOCK_OVERVIEW));
+    renderPage(buildFetch(MOCK_OVERVIEW, MOCK_CHANNEL));
     await waitFor(() =>
       expect(screen.getByTestId("metric-job-success-rate-value").textContent).toBe("90.5%"),
     );
   });
 
   it("I: shows avg_production_duration_seconds formatted", async () => {
-    renderPage(buildFetch(MOCK_OVERVIEW));
+    renderPage(buildFetch(MOCK_OVERVIEW, MOCK_CHANNEL));
     await waitFor(() =>
       expect(screen.getByTestId("metric-avg-duration-value").textContent).toBe("2.1dk"),
     );
   });
 
   it("J: shows retry_rate as percentage", async () => {
-    renderPage(buildFetch(MOCK_OVERVIEW));
+    renderPage(buildFetch(MOCK_OVERVIEW, MOCK_CHANNEL));
     await waitFor(() =>
       expect(screen.getByTestId("metric-retry-rate-value").textContent).toBe("7.1%"),
     );
   });
 
   it("K: shows published_count after load", async () => {
-    renderPage(buildFetch(MOCK_OVERVIEW));
+    renderPage(buildFetch(MOCK_OVERVIEW, MOCK_CHANNEL));
     await waitFor(() =>
       expect(screen.getByTestId("metric-publish-count-value").textContent).toBe("28"),
     );
   });
 
   it("L: shows failed_publish_count after load", async () => {
-    renderPage(buildFetch(MOCK_OVERVIEW));
+    renderPage(buildFetch(MOCK_OVERVIEW, MOCK_CHANNEL));
     await waitFor(() =>
       expect(screen.getByTestId("metric-failed-publish-value").textContent).toBe("2"),
     );
   });
 
   it("M: shows publish_success_rate as percentage", async () => {
-    renderPage(buildFetch(MOCK_OVERVIEW));
+    renderPage(buildFetch(MOCK_OVERVIEW, MOCK_CHANNEL));
     await waitFor(() =>
       expect(screen.getByTestId("metric-publish-success-rate-value").textContent).toBe("93.3%"),
     );
   });
 
-  it("N: shows — for null metrics (empty data)", async () => {
-    renderPage(buildFetch(MOCK_OVERVIEW_EMPTY));
+  it("N: shows dash for null metrics (empty data)", async () => {
+    renderPage(buildFetch(MOCK_OVERVIEW_EMPTY, MOCK_CHANNEL_EMPTY));
     await waitFor(() =>
-      expect(screen.getByTestId("metric-job-success-rate-value").textContent).toBe("—"),
+      expect(screen.getByTestId("metric-job-success-rate-value").textContent).toBe("\u2014"),
     );
-    expect(screen.getByTestId("metric-avg-duration-value").textContent).toBe("—");
-    expect(screen.getByTestId("metric-retry-rate-value").textContent).toBe("—");
+    expect(screen.getByTestId("metric-avg-duration-value").textContent).toBe("\u2014");
+    expect(screen.getByTestId("metric-retry-rate-value").textContent).toBe("\u2014");
   });
 
   it("O: shows error state on fetch failure", async () => {
@@ -168,7 +198,7 @@ describe("AnalyticsOverviewPage smoke tests", () => {
   });
 
   it("P: window button click changes selected window (fetch called with new window)", async () => {
-    const fetchFn = buildFetch(MOCK_OVERVIEW);
+    const fetchFn = buildFetch(MOCK_OVERVIEW, MOCK_CHANNEL);
     renderPage(fetchFn);
     fireEvent.click(screen.getByTestId("window-btn-last_7d"));
     await waitFor(() => {
@@ -179,12 +209,46 @@ describe("AnalyticsOverviewPage smoke tests", () => {
   });
 
   it("Q: sub-nav link to operations page is present", () => {
-    renderPage(buildFetch(MOCK_OVERVIEW));
+    renderPage(buildFetch(MOCK_OVERVIEW, MOCK_CHANNEL));
     expect(screen.getByTestId("analytics-nav-operations")).toBeTruthy();
   });
 
   it("R: sub-nav link to content page is present", () => {
-    renderPage(buildFetch(MOCK_OVERVIEW));
+    renderPage(buildFetch(MOCK_OVERVIEW, MOCK_CHANNEL));
     expect(screen.getByTestId("analytics-nav-content")).toBeTruthy();
+  });
+
+  // M17 channel overview tests
+  it("S: renders channel overview section", () => {
+    renderPage(buildFetch(MOCK_OVERVIEW, MOCK_CHANNEL));
+    expect(screen.getByTestId("analytics-channel-overview")).toBeTruthy();
+  });
+
+  it("T: shows YouTube publish count from real data", async () => {
+    renderPage(buildFetch(MOCK_OVERVIEW, MOCK_CHANNEL));
+    await waitFor(() =>
+      expect(screen.getByTestId("metric-yt-total-publish-value").textContent).toBe("15"),
+    );
+  });
+
+  it("U: shows YouTube published count", async () => {
+    renderPage(buildFetch(MOCK_OVERVIEW, MOCK_CHANNEL));
+    await waitFor(() =>
+      expect(screen.getByTestId("metric-yt-published-value").textContent).toBe("12"),
+    );
+  });
+
+  // M17-B date range filter tests
+  it("V: date range inputs are enabled (not disabled)", () => {
+    renderPage(buildFetch(MOCK_OVERVIEW, MOCK_CHANNEL));
+    const startInput = screen.getByTestId("filter-date-start") as HTMLInputElement;
+    const endInput = screen.getByTestId("filter-date-end") as HTMLInputElement;
+    expect(startInput.disabled).toBe(false);
+    expect(endInput.disabled).toBe(false);
+  });
+
+  it("W: filter inactive note shown when no date range", () => {
+    renderPage(buildFetch(MOCK_OVERVIEW, MOCK_CHANNEL));
+    expect(screen.getByTestId("filter-inactive-note")).toBeTruthy();
   });
 });

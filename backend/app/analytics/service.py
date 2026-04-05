@@ -1,8 +1,8 @@
 """
-Analytics Servis Katmanı — M8-C1.
+Analytics Servis Katmanı — M8-C1, M16, M17.
 
-Mevcut tablolardan (jobs, job_steps, publish_records) salt okunur
-aggregation sorguları. Şema değişikliği yok, migration yok, yazma yok.
+Mevcut tablolardan salt okunur aggregation sorguları.
+Şema değişikliği yok, migration yok, yazma yok.
 
 Kural: Bu servis hiçbir zaman publish_service veya job_service
 fonksiyonlarını çağırmaz. Doğrudan SELECT sorgularıyla çalışır.
@@ -13,10 +13,25 @@ Zaman filtresi:
   last_90d : son 90 gün
   all_time : filtre yok
 
+Tarih aralığı (M17):
+  date_from / date_to : ISO datetime parametreleri ile kesin tarih aralığı.
+  Zaman penceresi (window) ile birlikte kullanılabilir; date_from/date_to
+  verilmişse window ignore edilir.
+
 Provider error rate (M11):
   provider_error_rate — provider-dependent step'lerin (script, metadata,
-  tts, visuals) başarısızlık oranı. Bu step'ler harici provider API'leri
-  kullanır; failed/total oranı provider error rate olarak raporlanır.
+  tts, visuals) başarısızlık oranı.
+
+Source impact (M17-A):
+  Kaynak (source) bazlı aggregation: toplam kaynak, aktif kaynak,
+  tarama sayısı, haber sayısı, kullanılan haber, bulletin sayısı.
+
+Channel overview (M17-C):
+  YouTube publish özet metrikleri: toplam publish, başarılı, başarısız,
+  bağlantı durumu.
+
+Provider cost model (M17-D):
+  Provider bazlı maliyet görünürlüğü: actual/estimated/unsupported.
 """
 
 import json as _json_module
@@ -29,7 +44,10 @@ _json_loads = _json_module.loads
 from sqlalchemy import select, func, case
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models import Job, JobStep, PublishRecord
+from app.db.models import (
+    Job, JobStep, PublishRecord,
+    NewsSource, SourceScan, NewsItem, UsedNewsRegistry, NewsBulletin,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -65,6 +83,8 @@ def _cutoff(window: str) -> Optional[datetime]:
 async def get_overview_metrics(
     session: AsyncSession,
     window: str = "all_time",
+    date_from: Optional[datetime] = None,
+    date_to: Optional[datetime] = None,
 ) -> dict:
     """
     Platform genel metrikleri.
@@ -81,8 +101,14 @@ async def get_overview_metrics(
       publish_success_rate         : published / total_publish (None if total=0)
       avg_production_duration_seconds : ortalama job süresi (started_at→finished_at)
       retry_rate                   : retry_count > 0 olan job oranı (None if total=0)
+
+    date_from/date_to verilmişse window cutoff'u yerine bunlar kullanılır.
     """
-    cut = _cutoff(window)
+    # date_from/date_to öncelikli; yoksa window cutoff
+    if date_from is not None or date_to is not None:
+        cut = None  # date_from/date_to kullanılacak
+    else:
+        cut = _cutoff(window)
 
     # --- Job metrikleri ---
     job_q = select(
@@ -101,8 +127,12 @@ async def get_overview_metrics(
             )
         ).label("avg_duration"),
     )
-    if cut is not None:
+    if date_from is not None:
+        job_q = job_q.where(Job.created_at >= date_from)
+    elif cut is not None:
         job_q = job_q.where(Job.created_at >= cut)
+    if date_to is not None:
+        job_q = job_q.where(Job.created_at <= date_to)
 
     job_row = (await session.execute(job_q)).one()
 
@@ -126,8 +156,12 @@ async def get_overview_metrics(
         func.sum(case((PublishRecord.status == "published", 1), else_=0)).label("published"),
         func.sum(case((PublishRecord.status == "failed", 1), else_=0)).label("failed"),
     )
-    if cut is not None:
+    if date_from is not None:
+        pub_q = pub_q.where(PublishRecord.created_at >= date_from)
+    elif cut is not None:
         pub_q = pub_q.where(PublishRecord.created_at >= cut)
+    if date_to is not None:
+        pub_q = pub_q.where(PublishRecord.created_at <= date_to)
 
     pub_row = (await session.execute(pub_q)).one()
 
@@ -336,4 +370,181 @@ async def get_operations_metrics(
         "step_stats": step_stats,
         "provider_error_rate": provider_error_rate,
         "provider_stats": provider_stats,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Source impact metrikleri (M17-A)
+# ---------------------------------------------------------------------------
+
+async def get_source_impact_metrics(
+    session: AsyncSession,
+    window: str = "all_time",
+) -> dict:
+    """
+    Kaynak bazlı etki metrikleri.
+
+    Döndürülen alanlar:
+      window              : zaman penceresi
+      total_sources       : toplam kaynak sayısı
+      active_sources      : status='active' kaynak sayısı
+      total_scans         : toplam tarama sayısı
+      successful_scans    : status='completed' tarama sayısı
+      total_news_items    : toplam haber öğesi sayısı
+      used_news_count     : kullanılan (used) haber sayısı
+      bulletin_count      : oluşturulan bulletin sayısı
+      source_stats        : kaynak bazlı detaylı istatistikler listesi
+    """
+    cut = _cutoff(window)
+
+    # --- Toplam kaynak ---
+    src_q = select(
+        func.count(NewsSource.id).label("total"),
+        func.sum(case((NewsSource.status == "active", 1), else_=0)).label("active"),
+    )
+    src_row = (await session.execute(src_q)).one()
+    total_sources = src_row.total or 0
+    active_sources = int(src_row.active or 0)
+
+    # --- Tarama metrikleri ---
+    scan_q = select(
+        func.count(SourceScan.id).label("total"),
+        func.sum(case((SourceScan.status == "completed", 1), else_=0)).label("completed"),
+    )
+    if cut is not None:
+        scan_q = scan_q.where(SourceScan.created_at >= cut)
+    scan_row = (await session.execute(scan_q)).one()
+    total_scans = scan_row.total or 0
+    successful_scans = int(scan_row.completed or 0)
+
+    # --- Haber öğeleri ---
+    news_q = select(func.count(NewsItem.id).label("total"))
+    if cut is not None:
+        news_q = news_q.where(NewsItem.created_at >= cut)
+    news_row = (await session.execute(news_q)).one()
+    total_news_items = news_row.total or 0
+
+    # --- Kullanılan haberler ---
+    used_q = select(func.count(UsedNewsRegistry.id).label("total"))
+    if cut is not None:
+        used_q = used_q.where(UsedNewsRegistry.created_at >= cut)
+    used_row = (await session.execute(used_q)).one()
+    used_news_count = used_row.total or 0
+
+    # --- Bulletin sayısı ---
+    bulletin_q = select(func.count(NewsBulletin.id).label("total"))
+    if cut is not None:
+        bulletin_q = bulletin_q.where(NewsBulletin.created_at >= cut)
+    bulletin_row = (await session.execute(bulletin_q)).one()
+    bulletin_count = bulletin_row.total or 0
+
+    # --- Kaynak bazlı detaylı istatistikler ---
+    # Her kaynak için: scan sayısı, haber sayısı, kullanılan haber sayısı
+    source_detail_q = (
+        select(
+            NewsSource.id,
+            NewsSource.name,
+            NewsSource.source_type,
+            NewsSource.status,
+            func.count(func.distinct(SourceScan.id)).label("scan_count"),
+            func.count(func.distinct(NewsItem.id)).label("news_count"),
+        )
+        .outerjoin(SourceScan, SourceScan.source_id == NewsSource.id)
+        .outerjoin(NewsItem, NewsItem.source_id == NewsSource.id)
+        .group_by(NewsSource.id)
+    )
+    source_rows = (await session.execute(source_detail_q)).all()
+
+    source_stats = []
+    for row in source_rows:
+        # Kullanılan haber sayısı bu kaynak üzerinden
+        used_from_source_q = (
+            select(func.count(UsedNewsRegistry.id))
+            .join(NewsItem, NewsItem.id == UsedNewsRegistry.news_item_id)
+            .where(NewsItem.source_id == row.id)
+        )
+        used_from_source = (await session.execute(used_from_source_q)).scalar() or 0
+
+        source_stats.append({
+            "source_id": row.id,
+            "source_name": row.name,
+            "source_type": row.source_type,
+            "status": row.status,
+            "scan_count": row.scan_count or 0,
+            "news_count": row.news_count or 0,
+            "used_news_count": used_from_source,
+        })
+
+    return {
+        "window": window,
+        "total_sources": total_sources,
+        "active_sources": active_sources,
+        "total_scans": total_scans,
+        "successful_scans": successful_scans,
+        "total_news_items": total_news_items,
+        "used_news_count": used_news_count,
+        "bulletin_count": bulletin_count,
+        "source_stats": source_stats,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Channel overview metrikleri (M17-C)
+# ---------------------------------------------------------------------------
+
+async def get_channel_overview_metrics(
+    session: AsyncSession,
+    window: str = "all_time",
+) -> dict:
+    """
+    Kanal bazlı yayın özet metrikleri.
+
+    YouTube publish kayıtlarından gerçek aggregation.
+    """
+    cut = _cutoff(window)
+
+    # YouTube publish kayıtları
+    yt_q = select(
+        func.count(PublishRecord.id).label("total"),
+        func.sum(case((PublishRecord.status == "published", 1), else_=0)).label("published"),
+        func.sum(case((PublishRecord.status == "failed", 1), else_=0)).label("failed"),
+        func.sum(case((PublishRecord.status == "draft", 1), else_=0)).label("draft"),
+        func.sum(
+            case(
+                (PublishRecord.status.in_(["pending_review", "approved", "scheduled", "publishing"]), 1),
+                else_=0,
+            )
+        ).label("in_progress"),
+        func.max(PublishRecord.published_at).label("last_published_at"),
+    ).where(PublishRecord.platform == "youtube")
+    if cut is not None:
+        yt_q = yt_q.where(PublishRecord.created_at >= cut)
+
+    yt_row = (await session.execute(yt_q)).one()
+
+    total_yt = yt_row.total or 0
+    published_yt = int(yt_row.published or 0)
+    failed_yt = int(yt_row.failed or 0)
+    draft_yt = int(yt_row.draft or 0)
+    in_progress_yt = int(yt_row.in_progress or 0)
+    last_published_at = str(yt_row.last_published_at) if yt_row.last_published_at else None
+
+    # Bağlantı durumu — credentials tablosundan değil, publish record varlığından çıkarılır
+    # Gerçek YouTube OAuth durumu frontend'de useYouTubeStatus ile kontrol edilir
+    has_publish_history = total_yt > 0
+
+    return {
+        "window": window,
+        "youtube": {
+            "total_publish_attempts": total_yt,
+            "published_count": published_yt,
+            "failed_count": failed_yt,
+            "draft_count": draft_yt,
+            "in_progress_count": in_progress_yt,
+            "publish_success_rate": (
+                round(published_yt / total_yt, 4) if total_yt > 0 else None
+            ),
+            "last_published_at": last_published_at,
+            "has_publish_history": has_publish_history,
+        },
     }

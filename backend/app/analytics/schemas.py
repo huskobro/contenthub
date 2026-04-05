@@ -1,5 +1,5 @@
 """
-Analytics Şemaları — M8-C1.
+Analytics Şemaları — M8-C1, M16, M17.
 
 Router yanıt tipleri için Pydantic modelleri.
 """
@@ -47,3 +47,49 @@ class OperationsMetrics(BaseModel):
     step_stats: list[StepStat]
     provider_error_rate: Optional[float] = None
     provider_stats: list[ProviderStat] = []
+
+
+# ---------------------------------------------------------------------------
+# Source Impact (M17-A)
+# ---------------------------------------------------------------------------
+
+class SourceStat(BaseModel):
+    source_id: str
+    source_name: str
+    source_type: str
+    status: str
+    scan_count: int
+    news_count: int
+    used_news_count: int
+
+
+class SourceImpactMetrics(BaseModel):
+    window: str
+    total_sources: int
+    active_sources: int
+    total_scans: int
+    successful_scans: int
+    total_news_items: int
+    used_news_count: int
+    bulletin_count: int
+    source_stats: list[SourceStat] = []
+
+
+# ---------------------------------------------------------------------------
+# Channel Overview (M17-C)
+# ---------------------------------------------------------------------------
+
+class YouTubeChannelMetrics(BaseModel):
+    total_publish_attempts: int
+    published_count: int
+    failed_count: int
+    draft_count: int
+    in_progress_count: int
+    publish_success_rate: Optional[float] = None
+    last_published_at: Optional[str] = None
+    has_publish_history: bool
+
+
+class ChannelOverviewMetrics(BaseModel):
+    window: str
+    youtube: YouTubeChannelMetrics
