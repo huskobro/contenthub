@@ -9,75 +9,20 @@ import {
   AssetItem,
   AssetRevealResponse,
 } from "../../api/assetApi";
-
-const SECTION: React.CSSProperties = {
-  border: "1px solid #e2e8f0",
-  borderRadius: "6px",
-  background: "#fafbfc",
-  padding: "1rem",
-  marginBottom: "1.5rem",
-};
-
-const TABLE: React.CSSProperties = {
-  width: "100%",
-  borderCollapse: "collapse",
-  fontSize: "0.8125rem",
-};
-
-const TH: React.CSSProperties = {
-  textAlign: "left",
-  padding: "0.5rem 0.75rem",
-  borderBottom: "2px solid #e2e8f0",
-  color: "#64748b",
-  fontWeight: 600,
-  fontSize: "0.75rem",
-};
-
-const TD: React.CSSProperties = {
-  padding: "0.5rem 0.75rem",
-  borderBottom: "1px solid #f1f5f9",
-  color: "#334155",
-};
-
-const FILTER_SELECT: React.CSSProperties = {
-  padding: "0.4rem 0.5rem",
-  border: "1px solid #e2e8f0",
-  borderRadius: "4px",
-  fontSize: "0.8125rem",
-  background: "#fff",
-};
-
-const FILTER_INPUT: React.CSSProperties = {
-  padding: "0.4rem 0.5rem",
-  border: "1px solid #e2e8f0",
-  borderRadius: "4px",
-  fontSize: "0.8125rem",
-  background: "#fff",
-};
-
-const TYPE_BADGE: React.CSSProperties = {
-  display: "inline-block",
-  padding: "0.125rem 0.5rem",
-  borderRadius: "9999px",
-  fontSize: "0.6875rem",
-  fontWeight: 600,
-};
-
-const BTN: React.CSSProperties = {
-  padding: "0.25rem 0.5rem",
-  border: "1px solid #e2e8f0",
-  borderRadius: "4px",
-  background: "#fff",
-  cursor: "pointer",
-  fontSize: "0.6875rem",
-  color: "#475569",
-};
-
-const BTN_DANGER: React.CSSProperties = {
-  ...BTN,
-  color: "#dc2626",
-  borderColor: "#fecaca",
-};
+import { colors, typography, spacing } from "../../components/design-system/tokens";
+import {
+  PageShell,
+  SectionShell,
+  DataTable,
+  FilterBar,
+  FilterInput,
+  FilterSelect,
+  ActionButton,
+  StatusBadge,
+  Pagination,
+  FeedbackBanner,
+  Mono,
+} from "../../components/design-system/primitives";
 
 const ASSET_TYPE_OPTIONS = [
   { value: "", label: "Tum Turler" },
@@ -91,22 +36,15 @@ const ASSET_TYPE_OPTIONS = [
   { value: "other", label: "Diger" },
 ];
 
-function typeColor(assetType: string): { background: string; color: string } {
+function typeColor(assetType: string): string {
   switch (assetType) {
-    case "audio":
-      return { background: "#dbeafe", color: "#1e40af" };
-    case "video":
-      return { background: "#ede9fe", color: "#5b21b6" };
-    case "image":
-      return { background: "#dcfce7", color: "#166534" };
-    case "data":
-      return { background: "#fef9c3", color: "#854d0e" };
-    case "text":
-      return { background: "#f1f5f9", color: "#475569" };
-    case "subtitle":
-      return { background: "#fce7f3", color: "#9d174d" };
-    default:
-      return { background: "#f1f5f9", color: "#475569" };
+    case "audio": return "info";
+    case "video": return "processing";
+    case "image": return "ready";
+    case "data": return "warning";
+    case "text": return "draft";
+    case "subtitle": return "review";
+    default: return "draft";
   }
 }
 
@@ -156,8 +94,6 @@ export function AssetLibraryPage() {
 
   const total = data?.total ?? 0;
   const items = data?.items ?? [];
-  const hasNext = offset + PAGE_SIZE < total;
-  const hasPrev = offset > 0;
 
   const showFeedback = useCallback((type: "success" | "error", message: string) => {
     setActionFeedback({ type, message });
@@ -220,143 +156,181 @@ export function AssetLibraryPage() {
     }
   }, [queryClient, showFeedback]);
 
-  return (
-    <div>
-      <h2
-        data-testid="asset-library-heading"
-        style={{ margin: "0 0 0.25rem", fontSize: "1.125rem", fontWeight: 600 }}
-      >
-        Varlik Kutuphanesi
-      </h2>
-      <p
-        style={{
-          margin: "0.25rem 0 1rem",
-          fontSize: "0.8125rem",
-          color: "#94a3b8",
-          lineHeight: 1.5,
-          maxWidth: "640px",
-        }}
-        data-testid="asset-library-subtitle"
-      >
-        Workspace dizinlerindeki artifact ve preview dosyalari otomatik olarak
-        taranir ve listelenir. Veri kaynagi: disk taramasi. Dosyalari
-        goruntuleyebilir, konum bilgisini alabilir veya silebilirsiniz.
-      </p>
+  const columns = [
+    {
+      key: "name",
+      header: "Dosya Adi",
+      render: (item: AssetItem) => (
+        <span>
+          <span style={{ fontWeight: typography.weight.medium }}>{item.name}</span>
+          <span style={{ fontSize: typography.size.xs, color: colors.neutral[500], marginLeft: spacing[2] }}>
+            .{item.mime_ext}
+          </span>
+        </span>
+      ),
+    },
+    {
+      key: "type",
+      header: "Tur",
+      render: (item: AssetItem) => (
+        <StatusBadge status={typeColor(item.asset_type)} label={item.asset_type} />
+      ),
+    },
+    {
+      key: "source",
+      header: "Kaynak",
+      render: (item: AssetItem) => (
+        <span style={{ fontSize: typography.size.sm, color: colors.neutral[600] }}>
+          {item.source_kind === "job_artifact" ? "Artifact" : "Preview"}
+        </span>
+      ),
+    },
+    {
+      key: "size",
+      header: "Boyut",
+      align: "right" as const,
+      render: (item: AssetItem) => (
+        <span style={{ fontVariantNumeric: "tabular-nums" }}>{formatBytes(item.size_bytes)}</span>
+      ),
+    },
+    {
+      key: "module",
+      header: "Modul",
+      render: (item: AssetItem) => (
+        <span style={{ fontSize: typography.size.sm, color: colors.neutral[600] }}>
+          {item.module_type || "\u2014"}
+        </span>
+      ),
+    },
+    {
+      key: "date",
+      header: "Tarih",
+      render: (item: AssetItem) => (
+        <span style={{ fontSize: typography.size.sm, color: colors.neutral[600] }}>
+          {formatDate(item.discovered_at)}
+        </span>
+      ),
+    },
+    {
+      key: "actions",
+      header: "Aksiyonlar",
+      render: (item: AssetItem) => (
+        <div style={{ display: "flex", gap: spacing[1] }} data-testid={`asset-actions-${item.id}`}>
+          <ActionButton
+            variant="secondary"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleReveal(item);
+            }}
+            title="Konum bilgisi"
+            data-testid={`asset-reveal-${item.id}`}
+          >
+            Konum
+          </ActionButton>
+          <ActionButton
+            variant="danger"
+            size="sm"
+            loading={deletingId === item.id}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDelete(item);
+            }}
+            title="Sil"
+            data-testid={`asset-delete-${item.id}`}
+          >
+            Sil
+          </ActionButton>
+        </div>
+      ),
+    },
+  ];
 
+  return (
+    <PageShell
+      title="Varlik Kutuphanesi"
+      subtitle="Workspace dizinlerindeki artifact ve preview dosyalari otomatik disk taramasi ile listelenir. Dosyalari goruntuleyebilir, konum bilgisini alabilir veya silebilirsiniz."
+      testId="asset-library"
+      actions={
+        <ActionButton
+          variant="secondary"
+          size="sm"
+          loading={refreshing}
+          onClick={handleRefresh}
+          data-testid="asset-refresh-btn"
+        >
+          {refreshing ? "Taraniyor..." : "Yenile"}
+        </ActionButton>
+      }
+    >
       {/* Action feedback */}
       {actionFeedback && (
-        <div
-          data-testid="asset-action-feedback"
-          style={{
-            padding: "0.5rem 0.75rem",
-            marginBottom: "1rem",
-            borderRadius: "6px",
-            fontSize: "0.8125rem",
-            background: actionFeedback.type === "success" ? "#dcfce7" : "#fef2f2",
-            color: actionFeedback.type === "success" ? "#166534" : "#991b1b",
-            border: `1px solid ${actionFeedback.type === "success" ? "#bbf7d0" : "#fecaca"}`,
-          }}
-        >
-          {actionFeedback.message}
-        </div>
+        <FeedbackBanner
+          type={actionFeedback.type}
+          message={actionFeedback.message}
+          testId="asset-action-feedback"
+        />
       )}
 
-      {/* Reveal modal */}
+      {/* Reveal panel */}
       {revealData && (
-        <div
-          data-testid="asset-reveal-panel"
-          style={{
-            ...SECTION,
-            background: "#eff6ff",
-            borderColor: "#bfdbfe",
-          }}
-        >
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem" }}>
-            <h3 style={{ margin: 0, fontSize: "0.875rem", fontWeight: 600 }}>Konum Bilgisi</h3>
-            <button
+        <SectionShell
+          title="Konum Bilgisi"
+          testId="asset-reveal-panel"
+          actions={
+            <ActionButton
+              variant="secondary"
+              size="sm"
               onClick={() => setRevealData(null)}
-              style={BTN}
               data-testid="asset-reveal-close"
             >
               Kapat
-            </button>
-          </div>
-          <div style={{ fontSize: "0.75rem", color: "#334155" }}>
-            <p style={{ margin: "0.25rem 0" }}>
+            </ActionButton>
+          }
+        >
+          <div style={{ fontSize: typography.size.sm, color: colors.neutral[800] }}>
+            <p style={{ margin: `${spacing[1]} 0` }}>
               <strong>Dosya:</strong>{" "}
-              <code style={{ background: "#e0f2fe", padding: "0.125rem 0.25rem", borderRadius: "3px" }}>
-                {revealData.absolute_path}
-              </code>
+              <Mono>{revealData.absolute_path}</Mono>
             </p>
-            <p style={{ margin: "0.25rem 0" }}>
+            <p style={{ margin: `${spacing[1]} 0` }}>
               <strong>Dizin:</strong>{" "}
-              <code style={{ background: "#e0f2fe", padding: "0.125rem 0.25rem", borderRadius: "3px" }}>
-                {revealData.directory}
-              </code>
+              <Mono>{revealData.directory}</Mono>
             </p>
-            <p style={{ margin: "0.25rem 0" }}>
+            <p style={{ margin: `${spacing[1]} 0` }}>
               <strong>Durum:</strong> {revealData.exists ? "Mevcut" : "Bulunamadi"}
             </p>
           </div>
-        </div>
+        </SectionShell>
       )}
 
       {/* Upload area */}
-      <div style={SECTION} data-testid="asset-upload-area">
-        <h3 style={{ margin: "0 0 0.5rem", fontSize: "1rem" }} data-testid="asset-upload-heading">
-          Dosya Yukle
-        </h3>
-        <p style={{ margin: "0 0 0.75rem", fontSize: "0.75rem", color: "#94a3b8" }}>
-          Workspace&apos;e yeni bir dosya yukleyin. Maks. 100 MB. Calistirilabilir dosyalar engellenir.
-        </p>
-        <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+      <SectionShell title="Dosya Yukle" description="Workspace'e yeni bir dosya yukleyin. Maks. 100 MB. Calistirilabilir dosyalar engellenir." testId="asset-upload-area">
+        <div data-testid="asset-upload-heading" style={{ display: "none" }}>Dosya Yukle</div>
+        <div style={{ display: "flex", gap: spacing[2], alignItems: "center" }}>
           <input
             type="file"
             ref={fileInputRef}
-            style={{ fontSize: "0.8125rem" }}
+            style={{ fontSize: typography.size.base }}
             data-testid="asset-upload-input"
             disabled={uploading}
           />
-          <button
+          <ActionButton
+            variant="primary"
+            size="sm"
+            loading={uploading}
             onClick={handleUpload}
-            disabled={uploading}
-            style={{
-              ...BTN,
-              fontWeight: 600,
-              color: uploading ? "#94a3b8" : "#2563eb",
-              borderColor: uploading ? "#e2e8f0" : "#bfdbfe",
-              cursor: uploading ? "wait" : "pointer",
-            }}
             data-testid="asset-upload-btn"
           >
             {uploading ? "Yukleniyor..." : "Yukle"}
-          </button>
+          </ActionButton>
         </div>
-      </div>
+      </SectionShell>
 
       {/* Filter area */}
-      <div style={SECTION} data-testid="asset-filter-area">
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem" }}>
-          <h3 style={{ margin: 0, fontSize: "1rem" }} data-testid="asset-filter-heading">
-            Filtre ve Arama
-          </h3>
-          <button
-            onClick={handleRefresh}
-            disabled={refreshing}
-            style={{
-              ...BTN,
-              fontWeight: 600,
-              color: refreshing ? "#94a3b8" : "#2563eb",
-              borderColor: refreshing ? "#e2e8f0" : "#bfdbfe",
-              cursor: refreshing ? "wait" : "pointer",
-            }}
-            data-testid="asset-refresh-btn"
-          >
-            {refreshing ? "Taraniyor..." : "Yenile"}
-          </button>
-        </div>
-        <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }} data-testid="asset-filters-active">
-          <input
+      <SectionShell title="Filtre ve Arama" testId="asset-filter-area">
+        <FilterBar testId="asset-filters-active">
+          <FilterInput
             type="text"
             placeholder="Dosya adi ara..."
             value={searchQuery}
@@ -364,16 +338,14 @@ export function AssetLibraryPage() {
               setSearchQuery(e.target.value);
               setOffset(0);
             }}
-            style={{ ...FILTER_INPUT, minWidth: "180px" }}
             data-testid="asset-search-input"
           />
-          <select
+          <FilterSelect
             value={typeFilter}
             onChange={(e) => {
               setTypeFilter(e.target.value);
               setOffset(0);
             }}
-            style={FILTER_SELECT}
             data-testid="asset-type-filter"
           >
             {ASSET_TYPE_OPTIONS.map((opt) => (
@@ -381,171 +353,69 @@ export function AssetLibraryPage() {
                 {opt.label}
               </option>
             ))}
-          </select>
+          </FilterSelect>
           {(searchQuery || typeFilter) && (
-            <button
+            <ActionButton
+              variant="secondary"
+              size="sm"
               onClick={() => {
                 setSearchQuery("");
                 setTypeFilter("");
                 setOffset(0);
               }}
-              style={BTN}
               data-testid="asset-filter-clear"
             >
               Temizle
-            </button>
+            </ActionButton>
           )}
-        </div>
-      </div>
+        </FilterBar>
+      </SectionShell>
 
-      {/* Loading / Error / Empty / Data */}
-      {isLoading && (
-        <p style={{ color: "#64748b", fontSize: "0.8125rem" }} data-testid="asset-loading">
-          Yukleniyor...
-        </p>
-      )}
-
-      {isError && (
-        <p style={{ color: "#dc2626", fontSize: "0.8125rem" }} data-testid="asset-error">
-          Varliklar yuklenirken hata olustu.
-        </p>
-      )}
-
-      {!isLoading && !isError && (
-        <div style={SECTION} data-testid="asset-list-section">
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
-            <h3 style={{ margin: 0, fontSize: "1rem" }} data-testid="asset-list-heading">
-              Varlik Listesi
-            </h3>
-            <span style={{ fontSize: "0.75rem", color: "#64748b" }} data-testid="asset-total-count">
-              Toplam: {total}
-            </span>
+      {/* Data table */}
+      <SectionShell
+        flush
+        title="Varlik Listesi"
+        description={`Toplam: ${total}`}
+        testId="asset-list-section"
+      >
+        <span data-testid="asset-total-count" style={{ display: "none" }}>Toplam: {total}</span>
+        {!isLoading && !isError && items.length === 0 ? (
+          <div
+            style={{ textAlign: "center", padding: `${spacing[8]} ${spacing[4]}`, color: colors.neutral[500] }}
+            data-testid="asset-library-empty-state"
+          >
+            <p style={{ margin: 0, fontSize: typography.size.md }}>
+              {total === 0 && !searchQuery && !typeFilter
+                ? "Workspace dizinlerinde henuz artifact veya preview dosyasi bulunmuyor."
+                : "Filtrelere uygun varlik bulunamadi."}
+            </p>
           </div>
-
-          {items.length === 0 ? (
-            <div data-testid="asset-library-empty-state" style={{ textAlign: "center", padding: "2rem 1rem" }}>
-              <p style={{ fontSize: "0.875rem", color: "#475569", margin: "0 0 0.5rem" }}>
-                {total === 0 && !searchQuery && !typeFilter
-                  ? "Workspace dizinlerinde henuz artifact veya preview dosyasi bulunmuyor."
-                  : "Filtrelere uygun varlik bulunamadi."}
-              </p>
-            </div>
-          ) : (
-            <>
-              <table style={TABLE} data-testid="asset-table">
-                <thead>
-                  <tr>
-                    <th style={TH}>Dosya Adi</th>
-                    <th style={TH}>Tur</th>
-                    <th style={TH}>Kaynak</th>
-                    <th style={TH}>Boyut</th>
-                    <th style={TH}>Modul</th>
-                    <th style={TH}>Tarih</th>
-                    <th style={TH}>Aksiyonlar</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {items.map((item) => (
-                    <tr key={item.id}>
-                      <td style={TD}>
-                        <span style={{ fontWeight: 500 }}>{item.name}</span>
-                        <span style={{ fontSize: "0.6875rem", color: "#94a3b8", marginLeft: "0.5rem" }}>
-                          .{item.mime_ext}
-                        </span>
-                      </td>
-                      <td style={TD}>
-                        <span style={{ ...TYPE_BADGE, ...typeColor(item.asset_type) }}>
-                          {item.asset_type}
-                        </span>
-                      </td>
-                      <td style={TD}>
-                        <span style={{ fontSize: "0.75rem", color: "#64748b" }}>
-                          {item.source_kind === "job_artifact" ? "Artifact" : "Preview"}
-                        </span>
-                      </td>
-                      <td style={TD}>{formatBytes(item.size_bytes)}</td>
-                      <td style={TD}>
-                        <span style={{ fontSize: "0.75rem", color: "#64748b" }}>
-                          {item.module_type || "\u2014"}
-                        </span>
-                      </td>
-                      <td style={TD}>{formatDate(item.discovered_at)}</td>
-                      <td style={TD}>
-                        <div style={{ display: "flex", gap: "0.25rem" }} data-testid={`asset-actions-${item.id}`}>
-                          <button
-                            onClick={() => handleReveal(item)}
-                            style={BTN}
-                            title="Konum bilgisi"
-                            data-testid={`asset-reveal-${item.id}`}
-                          >
-                            Konum
-                          </button>
-                          <button
-                            onClick={() => handleDelete(item)}
-                            disabled={deletingId === item.id}
-                            style={{
-                              ...BTN_DANGER,
-                              opacity: deletingId === item.id ? 0.5 : 1,
-                              cursor: deletingId === item.id ? "wait" : "pointer",
-                            }}
-                            title="Sil"
-                            data-testid={`asset-delete-${item.id}`}
-                          >
-                            {deletingId === item.id ? "..." : "Sil"}
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-
-              {/* Pagination */}
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  marginTop: "0.75rem",
-                  fontSize: "0.75rem",
-                  color: "#64748b",
-                }}
-                data-testid="asset-pagination"
-              >
-                <span>
-                  {offset + 1}–{Math.min(offset + PAGE_SIZE, total)} / {total}
-                </span>
-                <div style={{ display: "flex", gap: "0.5rem" }}>
-                  <button
-                    disabled={!hasPrev}
-                    onClick={() => setOffset(Math.max(0, offset - PAGE_SIZE))}
-                    style={{
-                      ...BTN,
-                      cursor: hasPrev ? "pointer" : "not-allowed",
-                      opacity: hasPrev ? 1 : 0.4,
-                    }}
-                    data-testid="asset-prev-page"
-                  >
-                    Onceki
-                  </button>
-                  <button
-                    disabled={!hasNext}
-                    onClick={() => setOffset(offset + PAGE_SIZE)}
-                    style={{
-                      ...BTN,
-                      cursor: hasNext ? "pointer" : "not-allowed",
-                      opacity: hasNext ? 1 : 0.4,
-                    }}
-                    data-testid="asset-next-page"
-                  >
-                    Sonraki
-                  </button>
-                </div>
-              </div>
-            </>
-          )}
+        ) : (
+          <DataTable<AssetItem>
+            columns={columns}
+            data={items}
+            keyFn={(item) => item.id}
+            loading={isLoading}
+            error={isError}
+            errorMessage="Varliklar yuklenirken hata olustu."
+            emptyMessage={
+              total === 0 && !searchQuery && !typeFilter
+                ? "Workspace dizinlerinde henuz artifact veya preview dosyasi bulunmuyor."
+                : "Filtrelere uygun varlik bulunamadi."
+            }
+            testId="asset-table"
+          />
+        )}
+        <div data-testid="asset-pagination">
+          <Pagination
+            offset={offset}
+            limit={PAGE_SIZE}
+            total={total}
+            onPrev={() => setOffset(Math.max(0, offset - PAGE_SIZE))}
+            onNext={() => setOffset(offset + PAGE_SIZE)}
+          />
         </div>
-      )}
-    </div>
+      </SectionShell>
+    </PageShell>
   );
 }

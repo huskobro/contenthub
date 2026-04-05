@@ -1,46 +1,18 @@
 import { useNavigate } from "react-router-dom";
 import { useVisibility } from "../hooks/useVisibility";
+import { useAnalyticsOverview } from "../hooks/useAnalyticsOverview";
+import { colors, spacing, typography } from "../components/design-system/tokens";
+import {
+  PageShell,
+  SectionShell,
+  MetricTile,
+  MetricGrid,
+  StatusBadge,
+} from "../components/design-system/primitives";
 
-const SECTION: React.CSSProperties = {
-  marginBottom: "1.5rem",
-};
-
-const SUBTITLE: React.CSSProperties = {
-  margin: "0 0 1.5rem",
-  fontSize: "0.9375rem",
-  color: "#475569",
-  lineHeight: 1.6,
-  maxWidth: "720px",
-};
-
-const GRID: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
-  gap: "0.75rem",
-};
-
-const CARD: React.CSSProperties = {
-  padding: "1rem 1.25rem",
-  background: "#fff",
-  border: "1px solid #e2e8f0",
-  borderRadius: "10px",
-  cursor: "pointer",
-  transition: "border-color 0.15s",
-};
-
-const CARD_TITLE: React.CSSProperties = {
-  margin: "0 0 0.25rem",
-  fontSize: "0.875rem",
-  fontWeight: 600,
-  color: "#0f172a",
-};
-
-const CARD_DESC: React.CSSProperties = {
-  margin: 0,
-  fontSize: "0.75rem",
-  color: "#64748b",
-  lineHeight: 1.5,
-};
+/* ------------------------------------------------------------------ */
+/* Quick-link definitions                                             */
+/* ------------------------------------------------------------------ */
 
 interface QuickLink {
   title: string;
@@ -111,6 +83,36 @@ const QUICK_LINKS: QuickLink[] = [
   },
 ];
 
+/* ------------------------------------------------------------------ */
+/* Release readiness items                                            */
+/* ------------------------------------------------------------------ */
+
+const READINESS_ITEMS = [
+  { area: "Icerik Uretimi", status: "active" as const, statusLabel: "Omurga hazir", detail: "Video ve bulten olusturma akislari calisiyor", testId: "readiness-content" },
+  { area: "Yayin Akisi", status: "active" as const, statusLabel: "M23 aktif", detail: "YouTube OAuth + yayin zinciri, metadata hardening, settings-aware defaults, duplicate publish/cancel korumasi, scheduler audit", testId: "readiness-publish" },
+  { area: "Is Motoru", status: "active" as const, statusLabel: "Omurga hazir", detail: "Job/step/timeline/ETA gorunur, operasyonel aksiyonlar M14'te", testId: "readiness-jobs" },
+  { area: "Sablon Sistemi", status: "active" as const, statusLabel: "M12 aktif", detail: "Template/style context script, metadata, visuals ve composition step'lerinde tuketiliyor", testId: "readiness-templates" },
+  { area: "Haber Modulu", status: "active" as const, statusLabel: "M11 aktif", detail: "Kaynak, tarama, haber, dedupe akislari calisiyor; soft dedupe esigi ayarlardan okunuyor", testId: "readiness-news" },
+  { area: "Ayarlar ve Gorunurluk", status: "active" as const, statusLabel: "M23 aktif", detail: "Settings/visibility CRUD, delete/restore/bulk ops, change history, guvenli hata fallback, audit log zenginlestirmesi aktif", testId: "readiness-settings" },
+  { area: "Analytics ve Raporlama", status: "active" as const, statusLabel: "M23 aktif", detail: "Platform, operasyon, kaynak, kanal ve icerik analytics gercek SQL aggregation, trace data quality metrikleri, parse error gozlemlenebilirligi", testId: "readiness-analytics" },
+  { area: "Icerik Kutuphanesi", status: "active" as const, statusLabel: "M22 aktif", detail: "SQL UNION ALL birlesim, has_script/has_metadata gosterimi, klonlama + navigasyon, backend-side pagination", testId: "readiness-library" },
+  { area: "Varlik Kutuphanesi", status: "active" as const, statusLabel: "M22 aktif", detail: "Workspace disk taramasi, dosya yukleme (201), filtre, sayfalama, silme, konum gosterme ve yenileme aktif", testId: "readiness-assets" },
+];
+
+/* ------------------------------------------------------------------ */
+/* Helpers                                                            */
+/* ------------------------------------------------------------------ */
+
+function fmtRate(v: number | null | undefined): string {
+  if (v == null) return "\u2014";
+  return `${(v * 100).toFixed(1)}%`;
+}
+
+function fmtCount(v: number | null | undefined): string {
+  if (v == null) return "\u2014";
+  return String(v);
+}
+
 function useFilteredQuickLinks(): QuickLink[] {
   const settings = useVisibility("panel:settings");
   const sources = useVisibility("panel:sources");
@@ -130,108 +132,176 @@ function useFilteredQuickLinks(): QuickLink[] {
   });
 }
 
+/* ------------------------------------------------------------------ */
+/* Styles (grid for quick-link cards)                                 */
+/* ------------------------------------------------------------------ */
+
+const CARD_GRID: React.CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "repeat(3, 1fr)",
+  gap: spacing[4],
+};
+
+const QUICK_CARD: React.CSSProperties = {
+  padding: `${spacing[4]} ${spacing[5]}`,
+  background: colors.surface.card,
+  border: `1px solid ${colors.border.subtle}`,
+  borderRadius: "8px",
+  cursor: "pointer",
+  transition: `border-color 180ms ease, box-shadow 180ms ease`,
+};
+
+const QUICK_CARD_TITLE: React.CSSProperties = {
+  margin: 0,
+  fontSize: typography.size.md,
+  fontWeight: typography.weight.semibold,
+  color: colors.neutral[900],
+  marginBottom: spacing[1],
+};
+
+const QUICK_CARD_DESC: React.CSSProperties = {
+  margin: 0,
+  fontSize: typography.size.sm,
+  color: colors.neutral[600],
+  lineHeight: typography.lineHeight.normal,
+};
+
+/* ------------------------------------------------------------------ */
+/* Readiness row style                                                */
+/* ------------------------------------------------------------------ */
+
+const READINESS_ROW: React.CSSProperties = {
+  display: "flex",
+  alignItems: "center",
+  gap: spacing[3],
+  padding: `${spacing[2]} ${spacing[3]}`,
+  borderBottom: `1px solid ${colors.border.subtle}`,
+  fontSize: typography.size.sm,
+};
+
+/* ------------------------------------------------------------------ */
+/* Component                                                          */
+/* ------------------------------------------------------------------ */
+
 export function AdminOverviewPage() {
   const navigate = useNavigate();
   const filteredLinks = useFilteredQuickLinks();
+  const { data, isLoading } = useAnalyticsOverview("last_30d");
 
   return (
-    <div>
-      <h2 data-testid="admin-overview-heading">Genel Bakis</h2>
-      <div style={SECTION}>
-        <p style={SUBTITLE} data-testid="admin-overview-subtitle">
-          Uretim ve yonetim merkezi. Buradan icerik olusturabilir, kaynaklari
-          yonetebilir, sablonlari duzenleyebilir, uretim islerini takip
-          edebilir ve sistem ayarlarini yapilandirabilirsiniz. Baslangic
-          ve takip islemleri icin kullanici panelini kullanabilirsiniz.
-        </p>
-        <p
-          style={{ margin: "-0.5rem 0 0", fontSize: "0.75rem", color: "#94a3b8", lineHeight: 1.4 }}
-          data-testid="admin-overview-workflow-note"
-        >
-          Yonetim zinciri: Icerik Olusturma → Sablon/Stil Yonetimi → Kaynak Yonetimi → Is Takibi → Yayin → Analytics.
-        </p>
-      </div>
+    <PageShell
+      title="Genel Bakis"
+      subtitle="Uretim ve yonetim merkezi. Buradan icerik olusturabilir, kaynaklari yonetebilir, sablonlari duzenleyebilir, uretim islerini takip edebilir ve sistem ayarlarini yapilandirabilirsiniz. Baslangic ve takip islemleri icin kullanici panelini kullanabilirsiniz."
+      testId="admin-overview"
+    >
+      <p
+        style={{
+          margin: `0 0 ${spacing[6]}`,
+          fontSize: typography.size.sm,
+          color: colors.neutral[500],
+          lineHeight: typography.lineHeight.normal,
+        }}
+        data-testid="admin-overview-workflow-note"
+      >
+        Yonetim zinciri: Icerik Olusturma &rarr; Sablon/Stil Yonetimi &rarr; Kaynak Yonetimi &rarr; Is Takibi &rarr; Yayin &rarr; Analytics.
+      </p>
 
-      <div style={SECTION}>
-        <h3
-          style={{ margin: "0 0 0.75rem", fontSize: "1rem", fontWeight: 600, color: "#1e293b" }}
-          data-testid="admin-quick-access-heading"
+      {/* Live Metric Tiles */}
+      <MetricGrid>
+        <MetricTile
+          label="Toplam Is"
+          value={isLoading ? "\u2026" : fmtCount(data?.total_job_count)}
+          note="Olusturulan tum isler"
+          loading={isLoading}
+          testId="overview-metric-total-jobs"
+          accentColor={colors.brand[500]}
+        />
+        <MetricTile
+          label="Basari Orani"
+          value={isLoading ? "\u2026" : fmtRate(data?.job_success_rate)}
+          note="Tamamlanan / toplam is"
+          loading={isLoading}
+          testId="overview-metric-success-rate"
+          accentColor={colors.success.base}
+        />
+        <MetricTile
+          label="Toplam Yayin"
+          value={isLoading ? "\u2026" : fmtCount(data?.published_count)}
+          note="Basarili yayin sayisi"
+          loading={isLoading}
+          testId="overview-metric-published"
+          accentColor={colors.info.base}
+        />
+        <MetricTile
+          label="Basarisiz"
+          value={isLoading ? "\u2026" : fmtCount(data?.failed_publish_count)}
+          note="Hata ile sonuclanan yayinlar"
+          loading={isLoading}
+          testId="overview-metric-failed"
+          accentColor={colors.error.base}
+        />
+      </MetricGrid>
+
+      {/* System Readiness */}
+      <SectionShell
+        title="Sistem Durumu"
+        description="Ana urun alanlarinin mevcut durumu. Omurga yuzeyler oturmus, derin entegrasyon bekleyen alanlar asagida belirtilmistir."
+        testId="release-readiness-section"
+      >
+        <div data-testid="release-readiness-heading" style={{ display: "none" }}>Urun Hazirlik Durumu</div>
+        <p
+          style={{ display: "none" }}
+          data-testid="release-readiness-note"
+        >Ana urun alanlarinin mevcut durumu. Omurga yuzeyler oturmus, derin entegrasyon bekleyen alanlar asagida belirtilmistir.</p>
+        <div>
+          {READINESS_ITEMS.map((item) => (
+            <div key={item.area} style={READINESS_ROW} data-testid={item.testId}>
+              <StatusBadge status={item.status} label={item.statusLabel} size="sm" />
+              <span style={{ fontWeight: typography.weight.semibold, color: colors.neutral[900], minWidth: "160px", flexShrink: 0 }}>
+                {item.area}
+              </span>
+              <span style={{ color: colors.neutral[600] }}>{item.detail}</span>
+            </div>
+          ))}
+        </div>
+        <p
+          style={{ margin: `${spacing[3]} 0 0`, fontSize: typography.size.xs, color: colors.neutral[400] }}
+          data-testid="release-readiness-deferred-note"
         >
-          Hizli Erisim
-        </h3>
-        <div style={GRID}>
+          Derin backend entegrasyonu, gercek metrik verisi ve kapsamli gorsel modernizasyon ayri fazlarda ele alinacaktir.
+        </p>
+      </SectionShell>
+
+      {/* Quick Access */}
+      <SectionShell
+        testId="admin-quick-access-section"
+      >
+        <h3 data-testid="admin-quick-access-heading" style={{ margin: 0, fontSize: typography.size.lg, fontWeight: typography.weight.semibold, color: colors.neutral[900], marginBottom: spacing[4] }}>Hizli Erisim</h3>
+        <div style={CARD_GRID}>
           {filteredLinks.map((link) => (
             <div
               key={link.to}
-              style={CARD}
+              style={QUICK_CARD}
               onClick={() => navigate(link.to)}
               role="button"
               tabIndex={0}
               onKeyDown={(e) => e.key === "Enter" && navigate(link.to)}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = colors.brand[300];
+                e.currentTarget.style.boxShadow = "0 2px 8px rgba(92,124,250,0.08)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = colors.border.subtle;
+                e.currentTarget.style.boxShadow = "none";
+              }}
               data-testid={link.testId}
             >
-              <p style={CARD_TITLE}>{link.title}</p>
-              <p style={CARD_DESC}>{link.desc}</p>
+              <p style={QUICK_CARD_TITLE}>{link.title}</p>
+              <p style={QUICK_CARD_DESC}>{link.desc}</p>
             </div>
           ))}
         </div>
-      </div>
-
-      {/* Phase 320 — Release Readiness Checklist */}
-      <div style={SECTION} data-testid="release-readiness-section">
-        <h3
-          style={{ margin: "0 0 0.25rem", fontSize: "1rem", fontWeight: 600, color: "#1e293b" }}
-          data-testid="release-readiness-heading"
-        >
-          Urun Hazirlik Durumu
-        </h3>
-        <p
-          style={{ margin: "0 0 0.75rem", fontSize: "0.75rem", color: "#94a3b8", lineHeight: 1.4 }}
-          data-testid="release-readiness-note"
-        >
-          Ana urun alanlarinin mevcut durumu. Omurga yuzeyler oturmus, derin
-          entegrasyon bekleyen alanlar asagida belirtilmistir.
-        </p>
-        <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-          {[
-            { area: "Icerik Uretimi", status: "Omurga hazir", detail: "Video ve bulten olusturma akislari calisiyor", testId: "readiness-content" },
-            { area: "Yayin Akisi", status: "M23 aktif", detail: "YouTube OAuth + yayin zinciri, metadata hardening, settings-aware defaults, duplicate publish/cancel korumasi, scheduler audit", testId: "readiness-publish" },
-            { area: "Is Motoru", status: "Omurga hazir", detail: "Job/step/timeline/ETA gorunur, operasyonel aksiyonlar M14'te", testId: "readiness-jobs" },
-            { area: "Sablon Sistemi", status: "M12 aktif", detail: "Template/style context script, metadata, visuals ve composition step'lerinde tuketiliyor", testId: "readiness-templates" },
-            { area: "Haber Modulu", status: "M11 aktif", detail: "Kaynak, tarama, haber, dedupe akislari calisiyor; soft dedupe esigi ayarlardan okunuyor", testId: "readiness-news" },
-            { area: "Ayarlar ve Gorunurluk", status: "M23 aktif", detail: "Settings/visibility CRUD, delete/restore/bulk ops, change history, guvenli hata fallback, audit log zenginlestirmesi aktif", testId: "readiness-settings" },
-            { area: "Analytics ve Raporlama", status: "M23 aktif", detail: "Platform, operasyon, kaynak, kanal ve icerik analytics gercek SQL aggregation, trace data quality metrikleri, parse error gozlemlenebilirligi", testId: "readiness-analytics" },
-            { area: "Icerik Kutuphanesi", status: "M22 aktif", detail: "SQL UNION ALL birlesim, has_script/has_metadata gosterimi, klonlama + navigasyon, backend-side pagination", testId: "readiness-library" },
-            { area: "Varlik Kutuphanesi", status: "M22 aktif", detail: "Workspace disk taramasi, dosya yukleme (201), filtre, sayfalama, silme, konum gosterme ve yenileme aktif", testId: "readiness-assets" },
-          ].map((item) => (
-            <div
-              key={item.area}
-              style={{
-                display: "flex",
-                alignItems: "baseline",
-                gap: "0.75rem",
-                padding: "0.5rem 0.75rem",
-                background: "#fff",
-                border: "1px solid #e2e8f0",
-                borderRadius: "6px",
-                fontSize: "0.75rem",
-              }}
-              data-testid={item.testId}
-            >
-              <span style={{ color: "#166534", fontWeight: 600, flexShrink: 0 }}>{item.status}</span>
-              <span style={{ color: "#0f172a", fontWeight: 600, flexShrink: 0, minWidth: "140px" }}>{item.area}</span>
-              <span style={{ color: "#64748b" }}>{item.detail}</span>
-            </div>
-          ))}
-        </div>
-        <p
-          style={{ margin: "0.75rem 0 0", fontSize: "0.6875rem", color: "#cbd5e1" }}
-          data-testid="release-readiness-deferred-note"
-        >
-          Derin backend entegrasyonu, gercek metrik verisi ve kapsamli gorsel
-          modernizasyon ayri fazlarda ele alinacaktir.
-        </p>
-      </div>
-    </div>
+      </SectionShell>
+    </PageShell>
   );
 }

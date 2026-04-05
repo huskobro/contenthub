@@ -3,6 +3,7 @@ import { AppHeader } from "../../components/layout/AppHeader";
 import { AppSidebar } from "../../components/layout/AppSidebar";
 import { AdminContinuityStrip } from "../../components/layout/AdminContinuityStrip";
 import { useVisibility } from "../../hooks/useVisibility";
+import { colors, layout } from "../../components/design-system/tokens";
 
 interface AdminNavItem {
   label: string;
@@ -63,12 +64,29 @@ export function AdminLayout() {
   const filteredNav = useAdminNavFiltered();
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-      <AppHeader area="Admin" />
-      <AdminContinuityStrip />
-      <div style={{ display: "flex", flex: 1 }}>
-        <AppSidebar items={filteredNav} />
-        <main style={{ flex: 1, padding: "1.5rem" }}>
+    <div style={{ display: "flex", minHeight: "100vh" }}>
+      {/* Dark sidebar on the left */}
+      <AppSidebar items={filteredNav} />
+
+      {/* Right side: header + continuity strip + scrollable content */}
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          flex: 1,
+          minWidth: 0,
+        }}
+      >
+        <AppHeader area="Admin" />
+        <AdminContinuityStrip />
+        <main
+          style={{
+            flex: 1,
+            padding: layout.pagePadding,
+            background: colors.surface.page,
+            overflowY: "auto",
+          }}
+        >
           <Outlet />
         </main>
       </div>

@@ -1,51 +1,61 @@
-import { useParams, Link } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useJobDetail } from "../../hooks/useJobDetail";
 import { JobOverviewPanel } from "../../components/jobs/JobOverviewPanel";
 import { JobTimelinePanel } from "../../components/jobs/JobTimelinePanel";
 import { JobSystemPanels } from "../../components/jobs/JobSystemPanels";
 import { JobActionsPanel } from "../../components/jobs/JobActionsPanel";
+import { colors, typography, spacing } from "../../components/design-system/tokens";
+import {
+  PageShell,
+  Mono,
+} from "../../components/design-system/primitives";
 
 export function JobDetailPage() {
   const { jobId } = useParams<{ jobId: string }>();
   const { data: job, isLoading, isError, error } = useJobDetail(jobId ?? null);
 
   if (isLoading) {
-    return <p style={{ color: "#64748b" }}>Yükleniyor...</p>;
+    return (
+      <PageShell title="Job Detayı" breadcrumb={[{ label: "Isler", to: "/admin/jobs" }, { label: "Detay" }]} testId="job-detail-loading">
+        <p style={{ color: colors.neutral[500] }}>Yükleniyor...</p>
+      </PageShell>
+    );
   }
 
   if (isError) {
     return (
-      <p style={{ color: "#dc2626" }}>
-        Hata: {error instanceof Error ? error.message : "Bilinmeyen hata"}
-      </p>
+      <PageShell title="Job Detayı" breadcrumb={[{ label: "Isler", to: "/admin/jobs" }, { label: "Detay" }]} testId="job-detail">
+        <p style={{ color: colors.error.base }}>
+          Hata: {error instanceof Error ? error.message : "Bilinmeyen hata"}
+        </p>
+      </PageShell>
     );
   }
 
   if (!job) {
-    return <p style={{ color: "#64748b" }}>Job bulunamadı.</p>;
+    return (
+      <PageShell title="Job Detayı" breadcrumb={[{ label: "Isler", to: "/admin/jobs" }, { label: "Detay" }]} testId="job-detail">
+        <p style={{ color: colors.neutral[500] }}>Job bulunamadi.</p>
+      </PageShell>
+    );
   }
 
   return (
-    <div>
-      <div style={{ marginBottom: "1rem" }}>
-        <Link
-          to="/admin/jobs"
-          style={{ fontSize: "0.875rem", color: "#3b82f6", textDecoration: "none" }}
-        >
-          ← Jobs listesine dön
-        </Link>
-      </div>
-
-      <h2 style={{ margin: "0 0 0.25rem" }} data-testid="job-detail-heading">Job Detayı</h2>
-      <p style={{ margin: "0 0 0.5rem", color: "#64748b", fontSize: "0.875rem" }}>
-        {job.module_type} — <code style={{ fontSize: "0.8125rem" }}>{job.id}</code>
+    <PageShell
+      title="Job Detayı"
+      subtitle={`Modul: ${job.module_type}`}
+      breadcrumb={[{ label: "Isler", to: "/admin/jobs" }, { label: "Detay" }]}
+      testId="job-detail"
+    >
+      <p style={{ margin: `0 0 ${spacing[2]}`, fontSize: typography.size.sm, color: colors.neutral[600] }}>
+        Job ID: <Mono>{job.id}</Mono>
       </p>
       <p
         style={{
-          margin: "0 0 1.5rem",
-          fontSize: "0.8125rem",
-          color: "#94a3b8",
-          lineHeight: 1.5,
+          margin: `0 0 ${spacing[5]}`,
+          fontSize: typography.size.base,
+          color: colors.neutral[500],
+          lineHeight: typography.lineHeight.normal,
           maxWidth: "640px",
         }}
         data-testid="job-detail-workflow-note"
@@ -60,8 +70,7 @@ export function JobDetailPage() {
       <JobOverviewPanel job={job} />
       <JobTimelinePanel steps={job.steps} />
       <JobSystemPanels steps={job.steps} />
-
       <JobActionsPanel job={job} />
-    </div>
+    </PageShell>
   );
 }

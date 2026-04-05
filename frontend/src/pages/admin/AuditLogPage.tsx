@@ -9,78 +9,20 @@
 import { useState } from "react";
 import { useAuditLogs, useAuditLogDetail } from "../../hooks/useAuditLogs";
 import type { AuditLogEntry } from "../../api/auditLogApi";
-
-// ---------------------------------------------------------------------------
-// Styles
-// ---------------------------------------------------------------------------
-
-const PAGE: React.CSSProperties = {
-  maxWidth: "1100px",
-};
-
-const FILTER_BAR: React.CSSProperties = {
-  display: "flex",
-  gap: "0.75rem",
-  marginBottom: "1rem",
-  alignItems: "center",
-  flexWrap: "wrap",
-};
-
-const INPUT: React.CSSProperties = {
-  padding: "0.3rem 0.5rem",
-  border: "1px solid #cbd5e1",
-  borderRadius: "4px",
-  fontSize: "0.8125rem",
-};
-
-const TABLE: React.CSSProperties = {
-  width: "100%",
-  borderCollapse: "collapse",
-  fontSize: "0.8125rem",
-};
-
-const TH: React.CSSProperties = {
-  textAlign: "left",
-  padding: "0.5rem 0.75rem",
-  borderBottom: "2px solid #e2e8f0",
-  color: "#475569",
-  fontWeight: 600,
-  fontSize: "0.75rem",
-};
-
-const TD: React.CSSProperties = {
-  padding: "0.5rem 0.75rem",
-  borderBottom: "1px solid #f1f5f9",
-  color: "#1e293b",
-};
-
-const ACTION_BADGE: React.CSSProperties = {
-  display: "inline-block",
-  padding: "0.1rem 0.375rem",
-  borderRadius: "4px",
-  fontSize: "0.6875rem",
-  fontWeight: 600,
-  background: "#dbeafe",
-  color: "#1e40af",
-};
-
-const DETAIL_PANEL: React.CSSProperties = {
-  marginTop: "1rem",
-  border: "1px solid #e2e8f0",
-  borderRadius: "8px",
-  padding: "1rem",
-  background: "#f8fafc",
-};
-
-const PRE: React.CSSProperties = {
-  background: "#1e293b",
-  color: "#e2e8f0",
-  padding: "0.75rem",
-  borderRadius: "6px",
-  fontSize: "0.75rem",
-  overflow: "auto",
-  maxHeight: "300px",
-};
+import { colors, typography, spacing } from "../../components/design-system/tokens";
+import {
+  PageShell,
+  SectionShell,
+  DataTable,
+  FilterBar,
+  FilterInput,
+  FilterSelect,
+  Pagination,
+  StatusBadge,
+  Mono,
+  DetailGrid,
+  CodeBlock,
+} from "../../components/design-system/primitives";
 
 // ---------------------------------------------------------------------------
 // Entity type labels
@@ -108,7 +50,7 @@ function DetailsDiff({ detailsJson }: { detailsJson: string }) {
   try {
     parsed = JSON.parse(detailsJson);
   } catch {
-    return <pre style={PRE}>{detailsJson}</pre>;
+    return <CodeBlock content={detailsJson} testId="audit-detail-json" />;
   }
 
   const oldValue = parsed.old_value ?? parsed.old ?? parsed.previous_value;
@@ -127,25 +69,39 @@ function DetailsDiff({ detailsJson }: { detailsJson: string }) {
     return (
       <div>
         {oldValue !== undefined && (
-          <div style={{ marginBottom: "0.5rem" }}>
-            <span style={{ fontSize: "0.75rem", color: "#dc2626", fontWeight: 600 }}>Onceki Deger:</span>
-            <pre style={{ ...PRE, borderLeft: "3px solid #fecaca" }}>
-              {typeof oldValue === "string" ? oldValue : JSON.stringify(oldValue, null, 2)}
-            </pre>
+          <div style={{ marginBottom: spacing[3] }}>
+            <span style={{ fontSize: typography.size.sm, color: colors.error.dark, fontWeight: typography.weight.semibold }}>
+              Onceki Deger:
+            </span>
+            <div style={{ marginTop: spacing[1] }}>
+              <CodeBlock
+                content={typeof oldValue === "string" ? oldValue : JSON.stringify(oldValue, null, 2)}
+                accentBorder={colors.error.light}
+              />
+            </div>
           </div>
         )}
         {newValue !== undefined && (
-          <div style={{ marginBottom: "0.5rem" }}>
-            <span style={{ fontSize: "0.75rem", color: "#166534", fontWeight: 600 }}>Yeni Deger:</span>
-            <pre style={{ ...PRE, borderLeft: "3px solid #bbf7d0" }}>
-              {typeof newValue === "string" ? newValue : JSON.stringify(newValue, null, 2)}
-            </pre>
+          <div style={{ marginBottom: spacing[3] }}>
+            <span style={{ fontSize: typography.size.sm, color: colors.success.dark, fontWeight: typography.weight.semibold }}>
+              Yeni Deger:
+            </span>
+            <div style={{ marginTop: spacing[1] }}>
+              <CodeBlock
+                content={typeof newValue === "string" ? newValue : JSON.stringify(newValue, null, 2)}
+                accentBorder={colors.success.light}
+              />
+            </div>
           </div>
         )}
         {Object.keys(remaining).length > 0 && (
           <div>
-            <span style={{ fontSize: "0.75rem", color: "#64748b", fontWeight: 500 }}>Ek Bilgi:</span>
-            <pre style={PRE}>{JSON.stringify(remaining, null, 2)}</pre>
+            <span style={{ fontSize: typography.size.sm, color: colors.neutral[500], fontWeight: typography.weight.medium }}>
+              Ek Bilgi:
+            </span>
+            <div style={{ marginTop: spacing[1] }}>
+              <CodeBlock content={JSON.stringify(remaining, null, 2)} />
+            </div>
           </div>
         )}
       </div>
@@ -153,8 +109,43 @@ function DetailsDiff({ detailsJson }: { detailsJson: string }) {
   }
 
   // old/new pattern yoksa tek JSON goster
-  return <pre style={PRE} data-testid="audit-detail-json">{JSON.stringify(parsed, null, 2)}</pre>;
+  return <CodeBlock content={JSON.stringify(parsed, null, 2)} testId="audit-detail-json" />;
 }
+
+// ---------------------------------------------------------------------------
+// Columns
+// ---------------------------------------------------------------------------
+
+const COLUMNS = [
+  {
+    key: "time",
+    header: "Zaman",
+    render: (entry: AuditLogEntry) =>
+      entry.created_at ? new Date(entry.created_at).toLocaleString("tr-TR") : "\u2014",
+  },
+  {
+    key: "action",
+    header: "Aksiyon",
+    render: (entry: AuditLogEntry) => <StatusBadge status="info" label={entry.action} />,
+  },
+  {
+    key: "entity_type",
+    header: "Varlik Tipi",
+    render: (entry: AuditLogEntry) =>
+      ENTITY_LABELS[entry.entity_type || ""] || entry.entity_type || "\u2014",
+  },
+  {
+    key: "entity_id",
+    header: "Varlik ID",
+    render: (entry: AuditLogEntry) =>
+      entry.entity_id ? <Mono>{entry.entity_id.substring(0, 12)}...</Mono> : "\u2014",
+  },
+  {
+    key: "actor",
+    header: "Aktor",
+    render: (entry: AuditLogEntry) => entry.actor_type,
+  },
+];
 
 // ---------------------------------------------------------------------------
 // Component
@@ -181,149 +172,112 @@ export function AuditLogPage() {
   const { data: detail } = useAuditLogDetail(selectedId);
 
   return (
-    <div style={PAGE}>
-      <h2 style={{ fontSize: "1.125rem", fontWeight: 700, color: "#0f172a", marginBottom: "1rem" }}>
-        Audit Log
-      </h2>
-
+    <PageShell title="Audit Log" testId="audit-log">
       {/* Filtreler */}
-      <div style={FILTER_BAR}>
-        <input
-          style={{ ...INPUT, width: "200px" }}
+      <FilterBar testId="audit-filter-bar">
+        <FilterInput
           type="text"
           placeholder="Aksiyon filtresi..."
           value={actionFilter}
           onChange={(e) => { setActionFilter(e.target.value); setPage(0); }}
+          style={{ width: "200px" }}
           data-testid="audit-action-filter"
         />
-        <select
-          style={{ ...INPUT, width: "180px" }}
+        <FilterSelect
           value={entityTypeFilter}
           onChange={(e) => { setEntityTypeFilter(e.target.value); setPage(0); }}
+          style={{ width: "180px" }}
           data-testid="audit-entity-type-filter"
         >
           <option value="">Tum Varlik Tipleri</option>
           {Object.entries(ENTITY_LABELS).map(([key, label]) => (
             <option key={key} value={key}>{label}</option>
           ))}
-        </select>
-        <input
-          style={{ ...INPUT, width: "150px" }}
+        </FilterSelect>
+        <FilterInput
           type="date"
           value={dateFrom}
           onChange={(e) => { setDateFrom(e.target.value); setPage(0); }}
+          style={{ width: "150px", minWidth: "150px" }}
           data-testid="audit-date-from"
         />
-        <span style={{ fontSize: "0.75rem", color: "#64748b" }}>—</span>
-        <input
-          style={{ ...INPUT, width: "150px" }}
+        <span style={{ fontSize: typography.size.sm, color: colors.neutral[500] }}>{"\u2014"}</span>
+        <FilterInput
           type="date"
           value={dateTo}
           onChange={(e) => { setDateTo(e.target.value); setPage(0); }}
+          style={{ width: "150px", minWidth: "150px" }}
           data-testid="audit-date-to"
         />
         {data && (
-          <span style={{ fontSize: "0.6875rem", color: "#94a3b8" }}>
+          <span style={{ fontSize: typography.size.xs, color: colors.neutral[500] }}>
             {data.total} kayit
           </span>
         )}
-      </div>
-
-      {/* Loading / Error */}
-      {isLoading && <p style={{ color: "#64748b", fontSize: "0.8125rem" }}>Yukleniyor...</p>}
-      {isError && (
-        <p style={{ color: "#dc2626", fontSize: "0.8125rem" }}>
-          Hata: {error instanceof Error ? error.message : "Bilinmeyen hata"}
-        </p>
-      )}
+      </FilterBar>
 
       {/* Tablo */}
-      {data && data.items.length > 0 && (
-        <>
-          <table style={TABLE} data-testid="audit-log-table">
-            <thead>
-              <tr>
-                <th style={TH}>Zaman</th>
-                <th style={TH}>Aksiyon</th>
-                <th style={TH}>Varlik Tipi</th>
-                <th style={TH}>Varlik ID</th>
-                <th style={TH}>Aktor</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.items.map((entry: AuditLogEntry) => (
-                <tr
-                  key={entry.id}
-                  style={{ cursor: "pointer", background: selectedId === entry.id ? "#eff6ff" : "transparent" }}
-                  onClick={() => setSelectedId(entry.id === selectedId ? null : entry.id)}
-                >
-                  <td style={TD}>
-                    {entry.created_at ? new Date(entry.created_at).toLocaleString("tr-TR") : "—"}
-                  </td>
-                  <td style={TD}>
-                    <span style={ACTION_BADGE}>{entry.action}</span>
-                  </td>
-                  <td style={TD}>{ENTITY_LABELS[entry.entity_type || ""] || entry.entity_type || "—"}</td>
-                  <td style={{ ...TD, fontFamily: "monospace", fontSize: "0.75rem" }}>
-                    {entry.entity_id ? entry.entity_id.substring(0, 12) + "..." : "—"}
-                  </td>
-                  <td style={TD}>{entry.actor_type}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-
-          {/* Sayfalama */}
-          <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.75rem", alignItems: "center" }}>
-            <button
-              style={{ ...INPUT, cursor: page > 0 ? "pointer" : "not-allowed", opacity: page > 0 ? 1 : 0.5 }}
-              disabled={page === 0}
-              onClick={() => setPage(p => Math.max(0, p - 1))}
-            >
-              Onceki
-            </button>
-            <span style={{ fontSize: "0.75rem", color: "#64748b" }}>
-              Sayfa {page + 1} / {Math.max(1, Math.ceil(data.total / limit))}
-            </span>
-            <button
-              style={{ ...INPUT, cursor: (page + 1) * limit < data.total ? "pointer" : "not-allowed", opacity: (page + 1) * limit < data.total ? 1 : 0.5 }}
-              disabled={(page + 1) * limit >= data.total}
-              onClick={() => setPage(p => p + 1)}
-            >
-              Sonraki
-            </button>
+      <SectionShell flush testId="audit-log-section">
+        {!isLoading && !isError && (data?.items ?? []).length === 0 ? (
+          <div
+            style={{ textAlign: "center", padding: `${spacing[8]} ${spacing[4]}`, color: colors.neutral[500] }}
+            data-testid="audit-empty"
+          >
+            <p style={{ margin: 0, fontSize: typography.size.md }}>Audit log kaydi bulunamadi.</p>
           </div>
-        </>
-      )}
-
-      {data && data.items.length === 0 && (
-        <p style={{ color: "#64748b", fontSize: "0.8125rem" }} data-testid="audit-empty">
-          Audit log kaydi bulunamadi.
-        </p>
-      )}
+        ) : (
+          <DataTable<AuditLogEntry>
+            columns={COLUMNS}
+            data={data?.items ?? []}
+            keyFn={(entry) => entry.id}
+            onRowClick={(entry) => setSelectedId(entry.id === selectedId ? null : entry.id)}
+            selectedKey={selectedId}
+            emptyMessage="Audit log kaydi bulunamadi."
+            loading={isLoading}
+            error={isError}
+            errorMessage={error instanceof Error ? `Hata: ${error.message}` : "Bilinmeyen hata"}
+            testId="audit-log-table"
+          />
+        )}
+        {data && (
+          <Pagination
+            offset={page * limit}
+            limit={limit}
+            total={data.total}
+            onPrev={() => setPage((p) => Math.max(0, p - 1))}
+            onNext={() => setPage((p) => p + 1)}
+            testId="audit-pagination"
+          />
+        )}
+      </SectionShell>
 
       {/* Detay Paneli */}
       {selectedId && detail && (
-        <div style={DETAIL_PANEL} data-testid="audit-detail-panel">
-          <h3 style={{ fontSize: "0.875rem", fontWeight: 600, marginBottom: "0.5rem" }}>
-            Kayit Detayi
-          </h3>
-          <div style={{ display: "grid", gridTemplateColumns: "120px 1fr", gap: "0.375rem", fontSize: "0.8125rem" }}>
-            <span style={{ color: "#64748b", fontWeight: 500 }}>Aksiyon:</span>
-            <span>{detail.action}</span>
-            <span style={{ color: "#64748b", fontWeight: 500 }}>Varlik:</span>
-            <span>{detail.entity_type} / {detail.entity_id || "—"}</span>
-            <span style={{ color: "#64748b", fontWeight: 500 }}>Aktor:</span>
-            <span>{detail.actor_type} / {detail.actor_id || "—"}</span>
-            <span style={{ color: "#64748b", fontWeight: 500 }}>Zaman:</span>
-            <span>{detail.created_at ? new Date(detail.created_at).toLocaleString("tr-TR") : "—"}</span>
+        <SectionShell title="Kayit Detayi" testId="audit-detail-panel">
+          <DetailGrid
+            items={[
+              { label: "Aksiyon", value: detail.action },
+              { label: "Varlik", value: `${detail.entity_type} / ${detail.entity_id || "\u2014"}` },
+              { label: "Aktor", value: `${detail.actor_type} / ${detail.actor_id || "\u2014"}` },
+              {
+                label: "Zaman",
+                value: detail.created_at
+                  ? new Date(detail.created_at).toLocaleString("tr-TR")
+                  : "\u2014",
+              },
+            ]}
+            testId="audit-detail-grid"
+          />
+          <div style={{ marginTop: spacing[4] }}>
+            <span style={{ fontSize: typography.size.sm, color: colors.neutral[500], fontWeight: typography.weight.medium }}>
+              Detay:
+            </span>
+            <div style={{ marginTop: spacing[2] }}>
+              <DetailsDiff detailsJson={detail.details_json} />
+            </div>
           </div>
-          <div style={{ marginTop: "0.75rem" }}>
-            <span style={{ fontSize: "0.75rem", color: "#64748b", fontWeight: 500 }}>Detay:</span>
-            <DetailsDiff detailsJson={detail.details_json} />
-          </div>
-        </div>
+        </SectionShell>
       )}
-    </div>
+    </PageShell>
   );
 }

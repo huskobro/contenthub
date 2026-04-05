@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { colors, typography, spacing, radius, transition, zIndex, layout } from "../../components/design-system/tokens";
 
 interface AppHeaderProps {
   area: "Admin" | "User";
@@ -28,31 +29,52 @@ export function AppHeader({ area }: AppHeaderProps) {
       style={{
         display: "flex",
         alignItems: "center",
-        gap: "1rem",
-        padding: "0.75rem 1.25rem",
-        borderBottom: "1px solid #e2e8f0",
-        background: "#fff",
+        height: layout.headerHeight,
+        padding: `0 ${spacing[6]}`,
+        borderBottom: `1px solid ${colors.border.subtle}`,
+        background: colors.surface.card,
+        zIndex: zIndex.header,
+        flexShrink: 0,
       }}
     >
-      <strong>ContentHub</strong>
-      <span style={{ color: "#64748b", fontSize: "0.875rem" }} data-testid="header-area-label">
+      <span
+        style={{
+          color: colors.neutral[600],
+          fontSize: typography.size.md,
+          fontWeight: typography.weight.medium,
+          fontFamily: typography.fontFamily,
+        }}
+        data-testid="header-area-label"
+      >
         {config.label}
       </span>
+
       <div style={{ flex: 1 }} />
+
       <button
         onClick={() => navigate(config.switchTo)}
         data-testid="header-panel-switch"
         title={config.switchTitle}
         aria-label={config.switchTitle}
         style={{
-          padding: "0.25rem 0.75rem",
-          fontSize: "0.75rem",
-          fontWeight: 500,
-          color: "#475569",
+          padding: `${spacing[1]} ${spacing[3]}`,
+          fontSize: typography.size.sm,
+          fontWeight: typography.weight.medium,
+          fontFamily: typography.fontFamily,
+          color: colors.neutral[600],
           background: "transparent",
-          border: "1px solid #e2e8f0",
-          borderRadius: "4px",
+          border: `1px solid ${colors.border.default}`,
+          borderRadius: radius.md,
           cursor: "pointer",
+          transition: `background ${transition.fast}, border-color ${transition.fast}`,
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = colors.neutral[50];
+          e.currentTarget.style.borderColor = colors.border.strong;
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = "transparent";
+          e.currentTarget.style.borderColor = colors.border.default;
         }}
       >
         {config.switchLabel}

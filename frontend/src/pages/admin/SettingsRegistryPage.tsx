@@ -5,6 +5,8 @@ import { SettingDetailPanel } from "../../components/settings/SettingDetailPanel
 import { CredentialsPanel } from "../../components/settings/CredentialsPanel";
 import { EffectiveSettingsPanel } from "../../components/settings/EffectiveSettingsPanel";
 import { ReadOnlyGuard } from "../../components/visibility/ReadOnlyGuard";
+import { colors, typography, spacing } from "../../components/design-system/tokens";
+import { PageShell, SectionShell, TabBar } from "../../components/design-system/primitives";
 
 type TabKey = "credentials" | "effective" | "registry";
 
@@ -29,27 +31,7 @@ const TAB_ITEMS: { key: TabKey; label: string; description: string }[] = [
   },
 ];
 
-const TAB_BAR: React.CSSProperties = {
-  display: "flex",
-  gap: "0",
-  borderBottom: "2px solid #e2e8f0",
-  marginBottom: "1rem",
-};
-
-function tabStyle(active: boolean): React.CSSProperties {
-  return {
-    padding: "0.5rem 1rem",
-    fontSize: "0.8125rem",
-    fontWeight: active ? 600 : 400,
-    color: active ? "#1e40af" : "#64748b",
-    background: "transparent",
-    border: "none",
-    borderBottom: active ? "2px solid #1e40af" : "2px solid transparent",
-    marginBottom: "-2px",
-    cursor: "pointer",
-    transition: "color 0.15s, border-color 0.15s",
-  };
-}
+const TABS = TAB_ITEMS.map(({ key, label }) => ({ key, label }));
 
 export function SettingsRegistryPage() {
   const [activeTab, setActiveTab] = useState<TabKey>("credentials");
@@ -60,80 +42,67 @@ export function SettingsRegistryPage() {
 
   return (
     <ReadOnlyGuard targetKey="panel:settings">
-    <div>
-      <h2
-        style={{ margin: "0 0 0.25rem", fontSize: "1.125rem", fontWeight: 600 }}
-        data-testid="settings-registry-heading"
-      >
-        Ayarlar
-      </h2>
+      <PageShell title="Ayarlar" testId="settings-registry">
+        {/* Tabs */}
+        <TabBar<TabKey>
+          tabs={TABS}
+          active={activeTab}
+          onChange={setActiveTab}
+          testId="settings-tab"
+        />
 
-      {/* Tabs */}
-      <div style={TAB_BAR}>
-        {TAB_ITEMS.map((tab) => (
-          <button
-            key={tab.key}
-            style={tabStyle(activeTab === tab.key)}
-            onClick={() => setActiveTab(tab.key)}
-            data-testid={`settings-tab-${tab.key}`}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+        {/* Tab description */}
+        <p
+          style={{
+            margin: `0 0 ${spacing[4]}`,
+            fontSize: typography.size.sm,
+            color: colors.neutral[500],
+            lineHeight: typography.lineHeight.normal,
+            maxWidth: "640px",
+          }}
+          data-testid="settings-registry-subtitle"
+        >
+          {currentTab.description}
+        </p>
 
-      {/* Tab description */}
-      <p
-        style={{
-          margin: "0 0 1rem",
-          fontSize: "0.8125rem",
-          color: "#94a3b8",
-          lineHeight: 1.5,
-          maxWidth: "640px",
-        }}
-        data-testid="settings-registry-subtitle"
-      >
-        {currentTab.description}
-      </p>
+        {/* Tab content */}
+        {activeTab === "credentials" && <CredentialsPanel />}
 
-      {/* Tab content */}
-      {activeTab === "credentials" && <CredentialsPanel />}
+        {activeTab === "effective" && <EffectiveSettingsPanel />}
 
-      {activeTab === "effective" && <EffectiveSettingsPanel />}
-
-      {activeTab === "registry" && (
-        <>
-          {isLoading && <p style={{ color: "#64748b" }}>Yukleniyor...</p>}
-          {isError && (
-            <p style={{ color: "#dc2626" }}>
-              Hata: {error instanceof Error ? error.message : "Bilinmeyen hata"}
-            </p>
-          )}
-          {settings && (
-            <div style={{ display: "flex", gap: "1.5rem", alignItems: "flex-start" }}>
-              <div style={{ flex: 2, minWidth: 0 }}>
-                <SettingsTable
-                  settings={settings}
-                  selectedId={selectedId}
-                  onSelect={setSelectedId}
-                />
+        {activeTab === "registry" && (
+          <>
+            {isLoading && (
+              <p style={{ color: colors.neutral[500], fontSize: typography.size.base }}>
+                Yukleniyor...
+              </p>
+            )}
+            {isError && (
+              <p style={{ color: colors.error.base, fontSize: typography.size.base }}>
+                Hata: {error instanceof Error ? error.message : "Bilinmeyen hata"}
+              </p>
+            )}
+            {settings && (
+              <div style={{ display: "flex", gap: spacing[5], alignItems: "flex-start" }}>
+                <div style={{ flex: 2, minWidth: 0 }}>
+                  <SectionShell flush testId="settings-registry-table-section">
+                    <SettingsTable
+                      settings={settings}
+                      selectedId={selectedId}
+                      onSelect={setSelectedId}
+                    />
+                  </SectionShell>
+                </div>
+                <div style={{ flex: 1, minWidth: "280px" }}>
+                  <SectionShell testId="settings-registry-detail-section">
+                    <SettingDetailPanel selectedId={selectedId} />
+                  </SectionShell>
+                </div>
               </div>
-              <div
-                style={{
-                  flex: 1,
-                  minWidth: "280px",
-                  border: "1px solid #e2e8f0",
-                  borderRadius: "6px",
-                  background: "#fafbfc",
-                }}
-              >
-                <SettingDetailPanel selectedId={selectedId} />
-              </div>
-            </div>
-          )}
-        </>
-      )}
-    </div>
+            )}
+          </>
+        )}
+      </PageShell>
     </ReadOnlyGuard>
   );
 }
