@@ -139,10 +139,11 @@ describe("Sources Registry smoke tests", () => {
     });
   });
 
-  it("shows no detail panel when nothing is selected", async () => {
+  it("detail panel is hidden (inside Sheet) until a source is clicked", async () => {
     renderRegistry(mockFetch(MOCK_SOURCES));
     await waitFor(() => {
-      expect(screen.getByText("Bir source seçin.")).toBeDefined();
+      // Sheet starts closed — detail placeholder is NOT visible
+      expect(screen.queryByTestId("sources-sheet")).toBeNull();
     });
   });
 

@@ -18,9 +18,11 @@ interface JobsTableProps {
   jobs: JobResponse[];
   selectedId: string | null;
   onSelect: (id: string) => void;
+  /** Index of keyboard-active row (for roving tabindex highlight). Optional. */
+  activeIndex?: number;
 }
 
-export function JobsTable({ jobs, selectedId, onSelect }: JobsTableProps) {
+export function JobsTable({ jobs, selectedId, onSelect, activeIndex }: JobsTableProps) {
   if (jobs.length === 0) {
     return <p style={{ color: "#64748b" }}>Henüz kayıtlı job yok.</p>;
   }
@@ -48,14 +50,21 @@ export function JobsTable({ jobs, selectedId, onSelect }: JobsTableProps) {
         </tr>
       </thead>
       <tbody>
-        {jobs.map((j) => (
+        {jobs.map((j, idx) => {
+          const isActive = activeIndex === idx;
+          const isSelected = selectedId === j.id;
+          return (
           <tr
             key={j.id}
             onClick={() => onSelect(j.id)}
+            tabIndex={isActive ? 0 : -1}
+            data-keyboard-active={isActive || undefined}
             style={{
               borderBottom: "1px solid #f1f5f9",
               cursor: "pointer",
-              background: selectedId === j.id ? "#eff6ff" : "transparent",
+              background: isSelected ? "#eff6ff" : isActive ? "#f8f9fb" : "transparent",
+              outline: isActive ? "2px solid #4c6ef540" : "none",
+              outlineOffset: "-2px",
             }}
           >
             {/* Kimlik & Durum */}
@@ -148,7 +157,8 @@ export function JobsTable({ jobs, selectedId, onSelect }: JobsTableProps) {
               {formatDateISO(j.created_at)}
             </td>
           </tr>
-        ))}
+          );
+        })}
       </tbody>
     </table>
     </div>

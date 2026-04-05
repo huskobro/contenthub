@@ -6,7 +6,7 @@
  * Detay paneli: secilen kaydin old/new JSON diff icerigini gosterir.
  */
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useAuditLogs, useAuditLogDetail } from "../../hooks/useAuditLogs";
 import type { AuditLogEntry } from "../../api/auditLogApi";
 import { colors, typography, spacing } from "../../components/design-system/tokens";
@@ -23,6 +23,7 @@ import {
   DetailGrid,
   CodeBlock,
 } from "../../components/design-system/primitives";
+import { Sheet } from "../../components/design-system/Sheet";
 
 // ---------------------------------------------------------------------------
 // Entity type labels
@@ -157,6 +158,7 @@ export function AuditLogPage() {
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
   const [page, setPage] = useState(0);
   const limit = 30;
 
@@ -230,7 +232,10 @@ export function AuditLogPage() {
             columns={COLUMNS}
             data={data?.items ?? []}
             keyFn={(entry) => entry.id}
-            onRowClick={(entry) => setSelectedId(entry.id === selectedId ? null : entry.id)}
+            onRowClick={(entry) => {
+              setSelectedId(entry.id === selectedId ? null : entry.id);
+              if (entry.id !== selectedId) setSheetOpen(true);
+            }}
             selectedKey={selectedId}
             emptyMessage="Audit log kaydi bulunamadi."
             loading={isLoading}
@@ -251,33 +256,41 @@ export function AuditLogPage() {
         )}
       </SectionShell>
 
-      {/* Detay Paneli */}
-      {selectedId && detail && (
-        <SectionShell title="Kayit Detayi" testId="audit-detail-panel">
-          <DetailGrid
-            items={[
-              { label: "Aksiyon", value: detail.action },
-              { label: "Varlik", value: `${detail.entity_type} / ${detail.entity_id || "\u2014"}` },
-              { label: "Aktor", value: `${detail.actor_type} / ${detail.actor_id || "\u2014"}` },
-              {
-                label: "Zaman",
-                value: detail.created_at
-                  ? new Date(detail.created_at).toLocaleString("tr-TR")
-                  : "\u2014",
-              },
-            ]}
-            testId="audit-detail-grid"
-          />
-          <div style={{ marginTop: spacing[4] }}>
-            <span style={{ fontSize: typography.size.sm, color: colors.neutral[500], fontWeight: typography.weight.medium }}>
-              Detay:
-            </span>
-            <div style={{ marginTop: spacing[2] }}>
-              <DetailsDiff detailsJson={detail.details_json} />
+      {/* Detay Paneli — Sheet */}
+      <Sheet
+        open={sheetOpen && !!selectedId}
+        onClose={() => setSheetOpen(false)}
+        title="Kayit Detayi"
+        testId="audit-sheet"
+        width="500px"
+      >
+        {detail && (
+          <>
+            <DetailGrid
+              items={[
+                { label: "Aksiyon", value: detail.action },
+                { label: "Varlik", value: `${detail.entity_type} / ${detail.entity_id || "\u2014"}` },
+                { label: "Aktor", value: `${detail.actor_type} / ${detail.actor_id || "\u2014"}` },
+                {
+                  label: "Zaman",
+                  value: detail.created_at
+                    ? new Date(detail.created_at).toLocaleString("tr-TR")
+                    : "\u2014",
+                },
+              ]}
+              testId="audit-detail-grid"
+            />
+            <div style={{ marginTop: spacing[4] }}>
+              <span style={{ fontSize: typography.size.sm, color: colors.neutral[500], fontWeight: typography.weight.medium }}>
+                Detay:
+              </span>
+              <div style={{ marginTop: spacing[2] }}>
+                <DetailsDiff detailsJson={detail.details_json} />
+              </div>
             </div>
-          </div>
-        </SectionShell>
-      )}
+          </>
+        )}
+      </Sheet>
     </PageShell>
   );
 }

@@ -137,12 +137,13 @@ describe("Jobs Registry smoke tests", () => {
     });
   });
 
-  it("shows detail panel placeholder when no job selected", async () => {
+  it("detail panel is hidden (inside Sheet) until a job is clicked", async () => {
     renderJobs(mockFetch(MOCK_JOBS));
     await waitFor(() => {
       expect(screen.getByText("standard_video")).toBeDefined();
     });
-    expect(screen.getByText("Detay görmek için bir job seçin.")).toBeDefined();
+    // Sheet starts closed — detail placeholder is NOT visible on page load
+    expect(screen.queryByText("Detay görmek için bir job seçin.")).toBeNull();
   });
 
   it("clicking a job row is possible (navigation to detail page)", async () => {

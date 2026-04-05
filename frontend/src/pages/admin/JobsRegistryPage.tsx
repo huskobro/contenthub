@@ -1,18 +1,57 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useJobsList } from "../../hooks/useJobsList";
 import { JobsTable } from "../../components/jobs/JobsTable";
 import { JobDetailPanel } from "../../components/jobs/JobDetailPanel";
+import { Sheet } from "../../components/design-system/Sheet";
 import { colors, spacing, typography } from "../../components/design-system/tokens";
 import {
   PageShell,
   SectionShell,
 } from "../../components/design-system/primitives";
+import { useScopedKeyboardNavigation } from "../../hooks/useScopedKeyboardNavigation";
 
 export function JobsRegistryPage() {
   const { data: jobs, isLoading, isError, error } = useJobsList();
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
   const navigate = useNavigate();
+
+  const jobList = jobs ?? [];
+
+  const handleSelect = useCallback(
+    (index: number) => {
+      if (jobList[index]) {
+        const id = jobList[index].id;
+        setSelectedId(id);
+        setSheetOpen(true);
+      }
+    },
+    [jobList]
+  );
+
+  const { activeIndex, handleKeyDown } = useScopedKeyboardNavigation({
+    scopeId: "jobs-table",
+    scopeLabel: "Jobs Table",
+    itemCount: jobList.length,
+    onSelect: handleSelect,
+    enabled: !sheetOpen,
+  });
+
+  const handleRowClick = useCallback(
+    (id: string) => {
+      setSelectedId(id);
+      setSheetOpen(true);
+    },
+    []
+  );
+
+  const handleNavigateToDetail = useCallback(
+    () => {
+      if (selectedId) navigate(`/admin/jobs/${selectedId}`);
+    },
+    [selectedId, navigate]
+  );
 
   return (
     <PageShell
@@ -31,26 +70,51 @@ export function JobsRegistryPage() {
       )}
 
       {jobs && (
-        <div style={{ display: "flex", gap: spacing[5], alignItems: "flex-start" }}>
-          <div style={{ flex: 2, minWidth: 0 }}>
-            <SectionShell testId="jobs-table-section">
-              <JobsTable
-                jobs={jobs}
-                selectedId={selectedId}
-                onSelect={(id) => {
-                  setSelectedId(id);
-                  navigate(`/admin/jobs/${id}`);
-                }}
-              />
-            </SectionShell>
-          </div>
-          <div style={{ flex: 1, minWidth: "280px" }}>
-            <SectionShell testId="jobs-detail-panel-section">
-              <JobDetailPanel selectedId={selectedId} />
-            </SectionShell>
-          </div>
+        <div onKeyDown={handleKeyDown} tabIndex={0} style={{ outline: "none" }}>
+          <SectionShell testId="jobs-table-section">
+            <JobsTable
+              jobs={jobs}
+              selectedId={selectedId}
+              onSelect={handleRowClick}
+              activeIndex={activeIndex}
+            />
+          </SectionShell>
         </div>
       )}
+
+      {/* Sheet — sağdan kayan detay paneli */}
+      <Sheet
+        open={sheetOpen}
+        onClose={() => setSheetOpen(false)}
+        title="İş Detayı"
+        testId="jobs-sheet"
+        width="480px"
+      >
+        <JobDetailPanel selectedId={selectedId} />
+        {selectedId && (
+          <div style={{ marginTop: spacing[4], borderTop: `1px solid ${colors.border.subtle}`, paddingTop: spacing[4] }}>
+            <button
+              onClick={handleNavigateToDetail}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: spacing[2],
+                padding: `${spacing[2]} ${spacing[4]}`,
+                fontSize: typography.size.base,
+                fontWeight: typography.weight.medium,
+                color: colors.brand[600],
+                background: colors.brand[50],
+                border: `1px solid ${colors.brand[200]}`,
+                borderRadius: "6px",
+                cursor: "pointer",
+              }}
+              data-testid="jobs-sheet-navigate"
+            >
+              Detay Sayfasına Git →
+            </button>
+          </div>
+        )}
+      </Sheet>
     </PageShell>
   );
 }

@@ -1,84 +1,106 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useTemplatesList } from "../../hooks/useTemplatesList";
 import { TemplatesTable } from "../../components/templates/TemplatesTable";
 import { TemplateDetailPanel } from "../../components/templates/TemplateDetailPanel";
 import { ReadOnlyGuard } from "../../components/visibility/ReadOnlyGuard";
+import { Sheet } from "../../components/design-system/Sheet";
+import { colors, spacing, typography } from "../../components/design-system/tokens";
+import { PageShell, SectionShell, ActionButton } from "../../components/design-system/primitives";
+import { useScopedKeyboardNavigation } from "../../hooks/useScopedKeyboardNavigation";
 
 export function TemplatesRegistryPage() {
   const location = useLocation();
   const initialSelected = (location.state as { selectedId?: string } | null)?.selectedId ?? null;
   const [selectedId, setSelectedId] = useState<string | null>(initialSelected);
+  const [sheetOpen, setSheetOpen] = useState(!!initialSelected);
   const navigate = useNavigate();
   const { data: templates, isLoading, isError, error } = useTemplatesList();
 
+  const templateList = templates ?? [];
+
+  const handleSelect = useCallback(
+    (index: number) => {
+      if (templateList[index]) {
+        setSelectedId(templateList[index].id);
+        setSheetOpen(true);
+      }
+    },
+    [templateList]
+  );
+
+  const { activeIndex, handleKeyDown } = useScopedKeyboardNavigation({
+    scopeId: "templates-table",
+    scopeLabel: "Templates Table",
+    itemCount: templateList.length,
+    onSelect: handleSelect,
+    enabled: !sheetOpen,
+  });
+
+  const handleRowSelect = useCallback((id: string) => {
+    setSelectedId(id);
+    setSheetOpen(true);
+  }, []);
+
   return (
     <ReadOnlyGuard targetKey="panel:templates">
-    <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0.25rem" }}>
-        <h2
-          style={{ margin: 0, fontSize: "1.125rem", fontWeight: 600 }}
-          data-testid="tpl-registry-heading"
-        >
-          Sablon Kayitlari
-        </h2>
-        <button
-          onClick={() => navigate("/admin/templates/new")}
+      <PageShell
+        title="Sablon Kayitlari"
+        testId="tpl-registry"
+        actions={
+          <ActionButton variant="primary" onClick={() => navigate("/admin/templates/new")}>
+            + Yeni Sablon Olustur
+          </ActionButton>
+        }
+      >
+        <p
+          data-testid="tpl-registry-workflow-note"
           style={{
-            padding: "0.375rem 1rem",
-            fontSize: "0.875rem",
-            background: "#3b82f6",
-            color: "#fff",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer",
+            margin: `0 0 ${spacing[5]}`,
+            fontSize: typography.size.base,
+            color: colors.neutral[500],
+            lineHeight: typography.lineHeight.normal,
+            maxWidth: "640px",
           }}
         >
-          + Yeni Sablon Olustur
-        </button>
-      </div>
-      <p
-        style={{
-          margin: "0 0 1.25rem",
-          fontSize: "0.8125rem",
-          color: "#94a3b8",
-          lineHeight: 1.5,
-          maxWidth: "640px",
-        }}
-        data-testid="tpl-registry-workflow-note"
-      >
-        Icerik, stil ve yayin sablonlarini buradan yonetebilirsiniz. Sablonlar
-        uretim hattinin yapi taslaridir. Bir sablon secerek detay, kural ve
-        style blueprint iliskilerini gorebilirsiniz.
-      </p>
+          Icerik, stil ve yayin sablonlarini buradan yonetebilirsiniz. Sablonlar
+          uretim hattinin yapi taslaridir. Bir sablon secerek detay, kural ve
+          style blueprint iliskilerini gorebilirsiniz. ↑↓ tuslariyla gezinip Enter ile detay panelini acabilirsiniz.
+        </p>
 
-      <div style={{ display: "flex", gap: "1.5rem", alignItems: "flex-start" }}>
-        {/* List area */}
-        <div style={{ flex: 2, minWidth: 0 }}>
-          {isLoading && <p style={{ color: "#64748b" }}>Yükleniyor...</p>}
-          {isError && (
-            <p style={{ color: "#dc2626" }}>
-              Hata: {error instanceof Error ? error.message : "Bilinmeyen hata"}
-            </p>
-          )}
-          {templates && templates.length === 0 && (
-            <p style={{ color: "#94a3b8", fontSize: "0.875rem" }}>Henüz template yok.</p>
-          )}
-          {templates && templates.length > 0 && (
-            <TemplatesTable
-              templates={templates}
-              selectedId={selectedId}
-              onSelect={setSelectedId}
-            />
-          )}
+        <div onKeyDown={handleKeyDown} tabIndex={0} style={{ outline: "none" }}>
+          <SectionShell testId="templates-table-section">
+            {isLoading && <p style={{ color: colors.neutral[500] }}>Yükleniyor...</p>}
+            {isError && (
+              <p style={{ color: colors.error.base }}>
+                Hata: {error instanceof Error ? error.message : "Bilinmeyen hata"}
+              </p>
+            )}
+            {templates && templates.length === 0 && (
+              <p style={{ color: colors.neutral[400], fontSize: typography.size.md, padding: spacing[4] }}>
+                Henüz template yok.
+              </p>
+            )}
+            {templates && templates.length > 0 && (
+              <TemplatesTable
+                templates={templates}
+                selectedId={selectedId}
+                onSelect={handleRowSelect}
+              />
+            )}
+          </SectionShell>
         </div>
 
-        {/* Detail panel area */}
-        <div style={{ flex: 1, minWidth: "260px" }}>
+        <Sheet
+          open={sheetOpen}
+          onClose={() => setSheetOpen(false)}
+          title="Sablon Detayı"
+          testId="templates-sheet"
+          width="440px"
+        >
           <TemplateDetailPanel templateId={selectedId} />
-        </div>
-      </div>
-    </div>
+        </Sheet>
+      </PageShell>
     </ReadOnlyGuard>
   );
 }
