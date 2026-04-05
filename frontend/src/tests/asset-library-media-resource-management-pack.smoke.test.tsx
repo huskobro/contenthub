@@ -49,20 +49,54 @@ const MOCK_ASSETS_EMPTY = {
   items: [],
 };
 
+const MOCK_REFRESH_RESPONSE = {
+  status: "ok",
+  total_scanned: 2,
+  message: "Workspace taramasi tamamlandi. 2 asset bulundu.",
+};
+
+const MOCK_DELETE_RESPONSE = {
+  status: "deleted",
+  asset_id: "job-1/artifacts/script.json",
+  message: "Asset silindi: script.json",
+};
+
+const MOCK_REVEAL_RESPONSE = {
+  asset_id: "job-1/artifacts/script.json",
+  absolute_path: "/workspace/job-1/artifacts/script.json",
+  directory: "/workspace/job-1/artifacts",
+  exists: true,
+};
+
 /* ------------------------------------------------------------------ */
 /*  Helpers                                                            */
 /* ------------------------------------------------------------------ */
 
 function renderAdmin(path: string, assetsData: unknown = MOCK_ASSETS_RESPONSE) {
-  window.fetch = vi.fn((url: string) =>
-    Promise.resolve({
+  window.fetch = vi.fn((url: string, opts?: RequestInit) => {
+    const method = opts?.method ?? "GET";
+    let data: unknown = assetsData;
+
+    if (method === "POST" && typeof url === "string" && url.includes("/refresh")) {
+      data = MOCK_REFRESH_RESPONSE;
+    } else if (method === "DELETE") {
+      data = MOCK_DELETE_RESPONSE;
+    } else if (method === "POST" && typeof url === "string" && url.includes("/reveal")) {
+      data = MOCK_REVEAL_RESPONSE;
+    } else if (typeof url === "string" && url.includes("/allowed-actions")) {
+      data = { asset_id: "test", actions: ["delete", "reveal", "refresh"] };
+    } else if (typeof url === "string" && url.includes("/assets")) {
+      data = assetsData;
+    } else {
+      data = [];
+    }
+
+    return Promise.resolve({
       ok: true,
       status: 200,
-      json: () => Promise.resolve(
-        url.includes("/assets") ? assetsData : []
-      ),
-    })
-  ) as unknown as typeof window.fetch;
+      json: () => Promise.resolve(data),
+    });
+  }) as unknown as typeof window.fetch;
 
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   const router = createMemoryRouter(
@@ -115,11 +149,11 @@ describe("Asset Library Entry Surface", () => {
     expect(links.length).toBeGreaterThanOrEqual(1);
   });
 
-  it("admin overview release readiness includes Varlik Kutuphanesi with M19 aktif status", () => {
+  it("admin overview release readiness includes Varlik Kutuphanesi with M20 aktif status", () => {
     renderAdmin("/admin");
     const item = screen.getByTestId("readiness-assets");
     expect(item).toBeDefined();
-    expect(item.textContent).toContain("M19 aktif");
+    expect(item.textContent).toContain("M20 aktif");
     expect(item.textContent).toContain("Varlik Kutuphanesi");
   });
 });
@@ -179,6 +213,42 @@ describe("Asset Library Real Data Rendering", () => {
 });
 
 /* ------------------------------------------------------------------ */
+/*  Asset Library — M20 Runtime Actions                                */
+/* ------------------------------------------------------------------ */
+
+describe("Asset Library M20 Runtime Actions", () => {
+  it("asset library has refresh button", () => {
+    renderAdmin("/admin/assets");
+    expect(screen.getByTestId("asset-refresh-btn")).toBeDefined();
+    expect(screen.getByTestId("asset-refresh-btn").textContent).toContain("Yenile");
+  });
+
+  it("asset table has Aksiyonlar column header", async () => {
+    renderAdmin("/admin/assets");
+    await waitFor(() => {
+      expect(screen.getByTestId("asset-table")).toBeDefined();
+    });
+    expect(screen.getByText("Aksiyonlar")).toBeDefined();
+  });
+
+  it("each asset row has action buttons", async () => {
+    renderAdmin("/admin/assets");
+    await waitFor(() => {
+      expect(screen.getByTestId("asset-table")).toBeDefined();
+    });
+    // First asset has reveal and delete buttons
+    expect(screen.getByTestId("asset-reveal-job-1/artifacts/script.json")).toBeDefined();
+    expect(screen.getByTestId("asset-delete-job-1/artifacts/script.json")).toBeDefined();
+  });
+
+  it("subtitle mentions silme capability", () => {
+    renderAdmin("/admin/assets");
+    const sub = screen.getByTestId("asset-library-subtitle");
+    expect(sub.textContent).toContain("silebilirsiniz");
+  });
+});
+
+/* ------------------------------------------------------------------ */
 /*  Asset Library — Empty State                                        */
 /* ------------------------------------------------------------------ */
 
@@ -212,17 +282,17 @@ describe("Asset Library Verification — Admin Overview", () => {
     expect(screen.getByTestId("readiness-assets")).toBeDefined();
   });
 
-  it("readiness-assets item shows M19 aktif not Desteklenmiyor", () => {
+  it("readiness-assets item shows M20 aktif not Desteklenmiyor", () => {
     renderAdmin("/admin");
     const item = screen.getByTestId("readiness-assets");
-    expect(item.textContent).toContain("M19 aktif");
+    expect(item.textContent).toContain("M20 aktif");
     expect(item.textContent).not.toContain("Desteklenmiyor");
   });
 
-  it("readiness-assets item mentions workspace disk taramasi", () => {
+  it("readiness-assets item mentions operasyonlar", () => {
     renderAdmin("/admin");
     const item = screen.getByTestId("readiness-assets");
-    expect(item.textContent).toContain("disk taramasi");
+    expect(item.textContent).toContain("operasyonlari aktif");
   });
 
   it("admin overview deferred note does not mention asset library", () => {

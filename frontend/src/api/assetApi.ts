@@ -45,3 +45,58 @@ export async function fetchAssetById(assetId: string): Promise<AssetItem> {
   if (!res.ok) throw new Error(`Failed to fetch asset ${assetId}: ${res.status}`);
   return res.json();
 }
+
+// ── M20-A: Operation interfaces ─────────────────────────────
+
+export interface AssetRefreshResponse {
+  status: string;
+  total_scanned: number;
+  message: string;
+}
+
+export interface AssetDeleteResponse {
+  status: string;
+  asset_id: string;
+  message: string;
+}
+
+export interface AssetRevealResponse {
+  asset_id: string;
+  absolute_path: string;
+  directory: string;
+  exists: boolean;
+}
+
+export interface AssetAllowedActionsResponse {
+  asset_id: string;
+  actions: string[];
+}
+
+// ── M20-A: Operation functions ──────────────────────────────
+
+export async function refreshAssets(): Promise<AssetRefreshResponse> {
+  const res = await fetch(`${BASE_URL}/refresh`, { method: "POST" });
+  if (!res.ok) throw new Error(`Failed to refresh assets: ${res.status}`);
+  return res.json();
+}
+
+export async function deleteAsset(assetId: string): Promise<AssetDeleteResponse> {
+  const res = await fetch(`${BASE_URL}/${assetId}`, { method: "DELETE" });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({ detail: "Silme hatasi" }));
+    throw new Error(body.detail || `Failed to delete asset: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function revealAsset(assetId: string): Promise<AssetRevealResponse> {
+  const res = await fetch(`${BASE_URL}/${assetId}/reveal`, { method: "POST" });
+  if (!res.ok) throw new Error(`Failed to reveal asset: ${res.status}`);
+  return res.json();
+}
+
+export async function fetchAllowedActions(assetId: string): Promise<AssetAllowedActionsResponse> {
+  const res = await fetch(`${BASE_URL}/${assetId}/allowed-actions`);
+  if (!res.ok) throw new Error(`Failed to fetch allowed actions: ${res.status}`);
+  return res.json();
+}

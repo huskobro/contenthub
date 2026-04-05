@@ -318,17 +318,17 @@ describe("Phase 320 — Release readiness checklist", () => {
     });
     // Items at M18 aktif
     expect(screen.getByTestId("readiness-analytics").textContent).toContain("M18 aktif");
-    // Items upgraded to M19 aktif
-    const m19Ids = ["readiness-library", "readiness-assets"];
-    m19Ids.forEach((id) => {
-      expect(screen.getByTestId(id).textContent).toContain("M19 aktif");
+    // Items upgraded to M20 aktif
+    const m20Ids = ["readiness-library", "readiness-assets"];
+    m20Ids.forEach((id) => {
+      expect(screen.getByTestId(id).textContent).toContain("M20 aktif");
     });
   });
 
-  it("readiness-assets has M19 aktif status", () => {
+  it("readiness-assets has M20 aktif status", () => {
     renderAdmin("/admin");
     const item = screen.getByTestId("readiness-assets");
-    expect(item.textContent).toContain("M19 aktif");
+    expect(item.textContent).toContain("M20 aktif");
   });
 
   it("deferred note mentions backend entegrasyonu", () => {

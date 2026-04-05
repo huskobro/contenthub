@@ -311,7 +311,7 @@ describe("Library/Gallery/Content Management Pack (Phase 299-304)", () => {
     it("clone action card exists", () => {
       renderAdmin("/admin/library");
       const clone = screen.getByTestId("action-clone");
-      expect(clone.textContent).toContain("Ilerideki fazlarda");
+      expect(clone.textContent).toContain("Klonlama");
     });
   });
 

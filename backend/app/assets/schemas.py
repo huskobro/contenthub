@@ -1,8 +1,8 @@
 """
-Asset Schemas — M19-A.
+Asset Schemas — M19-A + M20-A.
 
-Salt-okunur workspace disk taramasi ile uretilen asset index icin
-Pydantic modelleri.
+Workspace disk taramasi ile uretilen asset index icin Pydantic modelleri.
+M20-A: Operasyon schema'lari (delete, refresh, reveal, allowed-actions).
 """
 
 from typing import Optional
@@ -29,3 +29,34 @@ class AssetListResponse(BaseModel):
     offset: int
     limit: int
     items: list[AssetItem]
+
+
+# ── M20-A: Operation schemas ──────────────────────────────────
+
+
+class AssetRefreshResponse(BaseModel):
+    """Refresh sonucu."""
+    status: str  # "ok"
+    total_scanned: int
+    message: str
+
+
+class AssetDeleteResponse(BaseModel):
+    """Silme sonucu."""
+    status: str  # "deleted"
+    asset_id: str
+    message: str
+
+
+class AssetRevealResponse(BaseModel):
+    """Reveal sonucu — guvenli metadata."""
+    asset_id: str
+    absolute_path: str
+    directory: str
+    exists: bool
+
+
+class AssetAllowedActionsResponse(BaseModel):
+    """Bir asset icin izin verilen aksiyonlar."""
+    asset_id: str
+    actions: list[str]  # e.g. ["delete", "reveal", "refresh"]

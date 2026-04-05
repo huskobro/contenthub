@@ -393,7 +393,7 @@ export function ContentLibraryPage() {
             }}
             data-testid="action-clone"
           >
-            <strong>Klonlama:</strong> Ilerideki fazlarda klonlama aksiyonu eklenecektir.
+            <strong>Klonlama:</strong> Mevcut bir kaydin tam kopyasini olusturarak bagimsiz bir icerik olarak devam ettirin.
           </div>
         </div>
       </div>

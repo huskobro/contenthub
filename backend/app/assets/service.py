@@ -1,27 +1,17 @@
 """
-Asset Service — M19-A.
+Asset Service — M19-A + M20-A.
 
-Workspace dizinlerinden salt-okunur asset index uretir.
+Workspace dizinlerinden asset index uretir.
+M20-A: delete, reveal, refresh, allowed-actions operasyonlari.
+
 Veri kaynagi: backend/workspace/{job_id}/artifacts/ ve preview/ dizinleri.
 DB'ye yazmaz, migration gerektirmez.
-
-Her dosya icin:
-  - id: job_id + "/" + relative_path (deterministic, tekrarlanabilir)
-  - name: dosya adi
-  - asset_type: uzantiya gore siniflandirma
-  - source_kind: "job_artifact" veya "job_preview"
-  - file_path: workspace kok dizinine gore relative path
-  - size_bytes: dosya boyutu
-  - mime_ext: dosya uzantisi
-  - job_id: sahip job
-  - module_type: job'un module_type'i (DB'den)
-  - discovered_at: dosyanin modification zamani (ISO)
 """
 
 import logging
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Tuple, Union
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -221,4 +211,147 @@ async def get_asset_by_id(
         "job_id": job_id,
         "module_type": module_type,
         "discovered_at": mtime.isoformat(),
+    }
+
+
+# ── M20-A: Operations ─────────────────────────────────────────
+
+
+def _validate_asset_path(asset_id: str) -> Optional[Tuple[Path, str, str, str]]:
+    """
+    Asset ID'yi parse edip guvenlik kontrollerinden gecirir.
+
+    Path traversal koruması:
+      - subdir sadece "artifacts" veya "preview" olabilir
+      - filename icinde "/" veya ".." olamaz
+      - resolved path workspace root altinda olmak zorunda
+
+    Returns (file_path, job_id, subdir, filename) or None if invalid.
+    """
+    parts = asset_id.split("/", 2)
+    if len(parts) != 3:
+        return None
+
+    job_id, subdir, filename = parts
+
+    # Sadece izinli alt dizinler
+    if subdir not in ("artifacts", "preview"):
+        return None
+
+    # Filename guvenlik kontrolu
+    if "/" in filename or ".." in filename or filename.startswith("."):
+        return None
+
+    # Job ID guvenlik kontrolu
+    if ".." in job_id or "/" in job_id:
+        return None
+
+    ws_root = get_workspace_root()
+    file_path = ws_root / job_id / subdir / filename
+
+    # Path traversal son kontrolu: resolved path workspace altinda olmali
+    try:
+        resolved = file_path.resolve()
+        ws_resolved = ws_root.resolve()
+        if not str(resolved).startswith(str(ws_resolved)):
+            logger.warning("Path traversal attempt blocked: %s", asset_id)
+            return None
+    except (OSError, ValueError):
+        return None
+
+    return file_path, job_id, subdir, filename
+
+
+async def refresh_assets(session: AsyncSession) -> dict:
+    """
+    Workspace disk taramasini yeniden calistirir.
+    Gercek bir cache mekanizmasi yok (her list_assets() zaten diskten okur),
+    ama bu endpoint tum workspace'i tarayip toplam rakam dondurur.
+    """
+    result = await list_assets(session=session, limit=0, offset=0)
+    total = result["total"]
+    return {
+        "status": "ok",
+        "total_scanned": total,
+        "message": f"Workspace taramasi tamamlandi. {total} asset bulundu.",
+    }
+
+
+async def delete_asset(session: AsyncSession, asset_id: str) -> Optional[dict]:
+    """
+    Workspace altindaki bir asset dosyasini siler.
+
+    Guvenlik:
+      - Sadece workspace/job_id/(artifacts|preview)/filename seklinde path'ler
+      - Path traversal koruması aktif
+      - Dosya yoksa None doner (404)
+
+    Returns dict on success, None if asset not found.
+    """
+    validated = _validate_asset_path(asset_id)
+    if validated is None:
+        return None
+
+    file_path, job_id, subdir, filename = validated
+
+    if not file_path.exists() or not file_path.is_file():
+        return None
+
+    try:
+        file_path.unlink()
+        logger.info("Asset deleted: %s", asset_id)
+    except OSError as exc:
+        logger.error("Asset delete failed for %s: %s", asset_id, exc)
+        raise
+
+    return {
+        "status": "deleted",
+        "asset_id": asset_id,
+        "message": f"Asset silindi: {filename}",
+    }
+
+
+def reveal_asset(asset_id: str) -> Optional[dict]:
+    """
+    Asset'in bulundugu yolun guvenli metadata'sini dondurur.
+    Platform bagimsiz: klasor acma gibi bir OS islemi yapmaz,
+    sadece path bilgisini dondurur.
+    """
+    validated = _validate_asset_path(asset_id)
+    if validated is None:
+        return None
+
+    file_path, job_id, subdir, filename = validated
+    exists = file_path.exists() and file_path.is_file()
+
+    return {
+        "asset_id": asset_id,
+        "absolute_path": str(file_path.resolve()) if exists else str(file_path),
+        "directory": str(file_path.parent.resolve()) if exists else str(file_path.parent),
+        "exists": exists,
+    }
+
+
+def get_allowed_actions(asset_id: str) -> Optional[dict]:
+    """
+    Bu asset icin izin verilen aksiyonlari dondurur.
+
+    Kurallar:
+      - Gecerli path → delete, reveal, refresh her zaman mumkun
+      - Dosya yoksa sadece refresh mumkun
+    """
+    validated = _validate_asset_path(asset_id)
+    if validated is None:
+        return None
+
+    file_path, _, _, _ = validated
+    exists = file_path.exists() and file_path.is_file()
+
+    actions = ["refresh"]
+    if exists:
+        actions.extend(["delete", "reveal"])
+
+    return {
+        "asset_id": asset_id,
+        "actions": actions,
     }
