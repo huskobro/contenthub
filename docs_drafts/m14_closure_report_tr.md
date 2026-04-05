@@ -61,8 +61,8 @@ M14: Operational Truth Completion + Frontend Enforcement + YouTube Analytics Har
 - Pre-existing failure: **KAPANDI**
 
 ### Frontend
-- **2123 passed, 0 failed**
-- Yeni testler: 7 (visibility completion)
+- **2129 passed, 0 failed** (audit sonrasi guncelleme)
+- Yeni testler: 7 (visibility completion) + 6 (settings read_only audit) = **13 yeni test**
 - TypeScript: `tsc --noEmit` — 0 hata
 - 4 test mock uyumlulugu duzeltildi (ReadOnlyGuard visibility resolve cagrilari)
 
@@ -81,7 +81,7 @@ M14: Operational Truth Completion + Frontend Enforcement + YouTube Analytics Har
 ## Enforced Yeni Alanlar
 
 1. **Route-level visibility**: /admin/settings, /admin/visibility, /admin/templates, /admin/templates/new, /admin/sources, /admin/sources/new, /admin/analytics, /admin/analytics/content, /admin/analytics/operations, /admin/analytics/youtube
-2. **Read_only field enforcement**: Settings, Visibility, Sources, Templates detail panelleri
+2. **Read_only field enforcement**: SourceDetailPanel, TemplateDetailPanel, EffectiveSettingsPanel, CredentialsPanel (4 edit yuzeyi — SettingDetailPanel ve VisibilityRuleDetailPanel salt-okunurdur, enforcement gereksiz)
 3. **Wizard step filtreleme**: source-setup, template-setup, settings-setup
 4. **TTS voice override**: style_blueprint.motion_rules.voice_style → ses karakter
 
@@ -125,7 +125,7 @@ M14: Operational Truth Completion + Frontend Enforcement + YouTube Analytics Har
 
 ## Remaining Gaps (Durustce)
 
-1. **Read_only enforcement**: Settings ve Visibility detail panellerinde henuz uygulanmadi (SourceDetailPanel ve TemplateDetailPanel'de var)
+1. **Read_only enforcement**: ~~Settings ve Visibility detail panellerinde henuz uygulanmadi~~ **DUZELTILDI** (M14 closure audit). SettingDetailPanel ve VisibilityRuleDetailPanel salt-okunur goruntuleme panelleridir — edit yuzeyi yoktur, enforcement gereksizdir. Gercek edit yuzeyleri olan EffectiveSettingsPanel ve CredentialsPanel'e audit sirasinda useReadOnly() eklendi. Tum 4 edit yuzeyi (Source, Template, EffectiveSettings, Credentials) artik korunmaktadir.
 2. **Wizard step default**: `wizardVisible` default `false` — admin rule ile acilmasi gerekir; rule yoksa adimlar gizli
 3. **YouTube Analytics API**: Demographics, watch time, retention — ek OAuth scope gerektirir
 4. **Snapshot compaction**: Uzun vadede snapshot tablosu buyuyebilir — temizleme mekanizmasi gerekebilir

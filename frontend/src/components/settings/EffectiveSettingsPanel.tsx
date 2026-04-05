@@ -10,6 +10,7 @@
  */
 
 import { useState } from "react";
+import { useReadOnly } from "../visibility/ReadOnlyGuard";
 import {
   useEffectiveSettings,
   useSettingsGroups,
@@ -175,6 +176,7 @@ function GroupCountBadge({ count, color }: { count: number; color: string }) {
 // ---------------------------------------------------------------------------
 
 function SettingRow({ setting }: { setting: EffectiveSetting }) {
+  const readOnly = useReadOnly();
   const [editing, setEditing] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [feedback, setFeedback] = useState<string | null>(null);
@@ -247,7 +249,8 @@ function SettingRow({ setting }: { setting: EffectiveSetting }) {
             )}
             {!isCredential && (
               <button
-                style={{ ...BTN_SM, background: "transparent", color: "#64748b", border: "1px solid #cbd5e1" }}
+                style={{ ...BTN_SM, background: "transparent", color: "#64748b", border: "1px solid #cbd5e1", opacity: readOnly ? 0.5 : 1, cursor: readOnly ? "not-allowed" : "pointer" }}
+                disabled={readOnly}
                 onClick={() => {
                   setEditing(true);
                   // Pre-fill with current value if not secret

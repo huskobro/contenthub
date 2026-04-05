@@ -7,6 +7,7 @@ import {
   useYouTubeChannelInfo,
   useRevokeYouTube,
 } from "../../hooks/useCredentials";
+import { useReadOnly } from "../visibility/ReadOnlyGuard";
 import { getYouTubeAuthUrl, type CredentialStatus } from "../../api/credentialsApi";
 
 // ---------------------------------------------------------------------------
@@ -164,6 +165,7 @@ function SourceBadge({ source }: { source: string }) {
 // ---------------------------------------------------------------------------
 
 function CredentialRow({ cred }: { cred: CredentialStatus }) {
+  const readOnly = useReadOnly();
   const [editing, setEditing] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; msg: string } | null>(null);
@@ -263,7 +265,7 @@ function CredentialRow({ cred }: { cred: CredentialStatus }) {
           </>
         ) : (
           <>
-            <button style={BTN_SECONDARY} onClick={() => setEditing(true)}>
+            <button style={{ ...BTN_SECONDARY, opacity: readOnly ? 0.5 : 1, cursor: readOnly ? "not-allowed" : "pointer" }} disabled={readOnly} onClick={() => setEditing(true)}>
               {cred.status === "missing" ? "Ekle" : "Degistir"}
             </button>
             {cred.status !== "missing" && (
@@ -300,6 +302,7 @@ function CredentialRow({ cred }: { cred: CredentialStatus }) {
 // ---------------------------------------------------------------------------
 
 function YouTubeConnectionSection() {
+  const readOnly = useReadOnly();
   const { data: ytStatus, isLoading, isError } = useYouTubeStatus();
   const { data: channelInfo } = useYouTubeChannelInfo();
   const revokeMutation = useRevokeYouTube();
@@ -384,15 +387,15 @@ function YouTubeConnectionSection() {
             <span style={{ fontSize: "0.75rem", color: "#166534" }}>
               OAuth token mevcut — yayinlama yapilabilir.
             </span>
-            <button style={BTN_DANGER} onClick={handleDisconnect} disabled={revokeMutation.isPending}>
+            <button style={{ ...BTN_DANGER, opacity: readOnly ? 0.5 : 1, cursor: readOnly ? "not-allowed" : "pointer" }} onClick={handleDisconnect} disabled={readOnly || revokeMutation.isPending}>
               {revokeMutation.isPending ? "..." : "Baglantiyi Kes"}
             </button>
           </>
         ) : (
           <button
-            style={{ ...BTN_PRIMARY, opacity: connecting ? 0.6 : 1 }}
+            style={{ ...BTN_PRIMARY, opacity: (readOnly || connecting) ? 0.6 : 1, cursor: readOnly ? "not-allowed" : "pointer" }}
             onClick={handleConnect}
-            disabled={connecting}
+            disabled={readOnly || connecting}
           >
             {connecting ? "Yonlendiriliyor..." : "YouTube Baglantisi Baslat"}
           </button>
