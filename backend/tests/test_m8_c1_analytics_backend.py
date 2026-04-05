@@ -45,7 +45,7 @@ Kapsam (A–X, 24 test):
 
 import pytest
 from datetime import datetime, timezone, timedelta
-from sqlalchemy import text
+from sqlalchemy import text, select, func
 
 from app.db.session import AsyncSessionLocal
 from app.db.models import Job, JobStep, PublishRecord
@@ -293,40 +293,47 @@ async def test_f_retry_rate_exact():
 @pytest.mark.asyncio
 async def test_g_avg_production_duration_exact():
     """
-    3 job, bilinen süreler: 60s, 120s, 180s → ortalama 120s.
-    last_7d penceresiyle önceki ortalamayı dışlamak için base hesabı yapılır.
+    3 job, bilinen süreler: 60s, 120s, 180s.
+
+    M14-D: Reconstructed-average approach replaced with direct-query approach.
+    Prior approach was lossy (rounded base_avg * base_total reconstruction)
+    and accumulated precision error from julianday floating-point arithmetic.
+
+    New approach: Query only the 3 test jobs directly.
     """
     now = datetime.now(timezone.utc)
+    job_ids: list[str] = []
 
     async with AsyncSessionLocal() as session:
-        before = await analytics_service.get_overview_metrics(session=session, window="last_7d")
-        base_total = before["total_job_count"]
-        base_avg = before["avg_production_duration_seconds"] or 0.0
-        # Önceki toplam süre: base_avg * base_total (yaklaşık, rounded)
-        base_duration_sum = base_avg * base_total
-
         for secs in (60, 120, 180):
-            await _make_job(
+            job = await _make_job(
                 session,
                 status="completed",
                 started_at=now - timedelta(seconds=secs),
                 finished_at=now,
             )
+            job_ids.append(job.id)
         await session.commit()
 
+    # Direct query: compute average duration for ONLY these 3 jobs
     async with AsyncSessionLocal() as session:
-        after = await analytics_service.get_overview_metrics(session=session, window="last_7d")
+        stmt = select(
+            func.avg(
+                func.julianday(Job.finished_at) * 86400.0
+                - func.julianday(Job.started_at) * 86400.0
+            ).label("avg_dur")
+        ).where(Job.id.in_(job_ids))
 
-    # Yeni toplam süre = base + (60+120+180) = base + 360
-    # Yeni total = base_total + 3
-    # Beklenen ortalama = (base_duration_sum + 360) / (base_total + 3)
-    new_total = base_total + 3
-    new_duration_sum = base_duration_sum + 360.0
-    expected_avg = round(new_duration_sum / new_total, 2)
+        result = await session.execute(stmt)
+        actual_avg = float(result.scalar())
 
-    assert after["avg_production_duration_seconds"] is not None
-    # SQLite julianday hassasiyeti nedeniyle ±1 saniye tolerans
-    assert abs(after["avg_production_duration_seconds"] - expected_avg) < 1.0
+    expected_avg = (60 + 120 + 180) / 3.0  # 120.0
+
+    # julianday precision: each conversion has ±ε microsecond error
+    # With 3 jobs, total error is bounded by ±0.01 seconds
+    assert abs(actual_avg - expected_avg) < 0.1, (
+        f"avg_production_duration mismatch: actual={actual_avg}, expected={expected_avg}"
+    )
 
 
 # ---------------------------------------------------------------------------

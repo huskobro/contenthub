@@ -180,6 +180,13 @@ class SubtitleStepExecutor(StepExecutor):
          Genel preview altyapısı M6 kapsamındadır.
     """
 
+    # Template Context Decision (M14):
+    #   NON-CONSUMER — intentional.
+    #   Subtitle executor is a timing engine (SRT generation + Whisper transcription).
+    #   Style rules (font, color, size) are applied at composition time by
+    #   CompositionStepExecutor, which merges style_blueprint.subtitle_rules
+    #   into subtitle_style. This executor does not need template context.
+
     def __init__(self, registry: "ProviderRegistry | None" = None) -> None:
         """
         Args:

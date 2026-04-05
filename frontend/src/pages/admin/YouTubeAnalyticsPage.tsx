@@ -1,4 +1,5 @@
-import { useYouTubeStatus, useYouTubeChannelInfo, useYouTubeVideoStats } from "../../hooks/useCredentials";
+import { useState } from "react";
+import { useYouTubeStatus, useYouTubeChannelInfo, useYouTubeVideoStats, useVideoStatsTrend } from "../../hooks/useCredentials";
 
 const CONTAINER: React.CSSProperties = {
   maxWidth: "800px",
@@ -74,6 +75,8 @@ function fmtNum(n: number): string {
 }
 
 export function YouTubeAnalyticsPage() {
+  const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
+
   const { data: ytStatus, isLoading: statusLoading } = useYouTubeStatus();
   const { data: channelInfo, isLoading: channelLoading } = useYouTubeChannelInfo();
   const {
@@ -81,6 +84,10 @@ export function YouTubeAnalyticsPage() {
     isLoading: statsLoading,
     error: statsError,
   } = useYouTubeVideoStats();
+  const {
+    data: trendData,
+    isLoading: trendLoading,
+  } = useVideoStatsTrend(selectedVideoId);
 
   const isLoading = statusLoading || channelLoading;
   const isConnected = ytStatus?.has_credentials === true;
@@ -244,7 +251,16 @@ export function YouTubeAnalyticsPage() {
                     </thead>
                     <tbody>
                       {videoStats.videos.map((v) => (
-                        <tr key={v.video_id}>
+                        <tr
+                          key={v.video_id}
+                          onClick={() => setSelectedVideoId(
+                            selectedVideoId === v.video_id ? null : v.video_id
+                          )}
+                          style={{
+                            cursor: "pointer",
+                            background: selectedVideoId === v.video_id ? "#f0f4ff" : undefined,
+                          }}
+                        >
                           <td style={TD_STYLE}>
                             <a
                               href={`https://www.youtube.com/watch?v=${v.video_id}`}
@@ -270,6 +286,75 @@ export function YouTubeAnalyticsPage() {
                 </div>
               </>
             )}
+          </div>
+
+          {/* Video Trend Section (M14-C) */}
+          {selectedVideoId && (
+            <div style={CARD} data-testid="yt-video-trend-section">
+              <div style={{ fontSize: "0.8125rem", fontWeight: 600, color: "#334155", marginBottom: "0.5rem" }}>
+                Zaman Serisi — {trendData?.title ?? selectedVideoId}
+              </div>
+
+              {trendLoading && (
+                <p style={{ fontSize: "0.75rem", color: "#64748b" }}>Trend verisi yukleniyor...</p>
+              )}
+
+              {!trendLoading && (!trendData || trendData.snapshots.length === 0) && (
+                <p
+                  style={{ fontSize: "0.75rem", color: "#94a3b8", margin: 0 }}
+                  data-testid="yt-trend-empty"
+                >
+                  Henuz snapshot verisi bulunmuyor. Video istatistikleri her sorgulamada otomatik kaydedilir.
+                </p>
+              )}
+
+              {!trendLoading && trendData && trendData.snapshots.length > 0 && (
+                <div style={{ overflowX: "auto" }}>
+                  <table style={TABLE_STYLE} data-testid="yt-trend-table">
+                    <thead>
+                      <tr>
+                        <th style={TH_STYLE}>Tarih</th>
+                        <th style={{ ...TH_STYLE, textAlign: "right" }}>Goruntulenme</th>
+                        <th style={{ ...TH_STYLE, textAlign: "right" }}>Begeni</th>
+                        <th style={{ ...TH_STYLE, textAlign: "right" }}>Yorum</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {trendData.snapshots.map((s, idx) => (
+                        <tr key={idx}>
+                          <td style={TD_STYLE}>
+                            {s.snapshot_at
+                              ? new Date(s.snapshot_at).toLocaleString("tr-TR")
+                              : "\u2014"}
+                          </td>
+                          <td style={TD_NUM}>{fmtNum(s.view_count)}</td>
+                          <td style={TD_NUM}>{fmtNum(s.like_count)}</td>
+                          <td style={TD_NUM}>{fmtNum(s.comment_count)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Scope limitation note (M14-C) */}
+          <div
+            style={{
+              padding: "0.75rem 1rem",
+              background: "#fffbeb",
+              borderRadius: "6px",
+              border: "1px solid #fde68a",
+              fontSize: "0.6875rem",
+              color: "#92400e",
+              lineHeight: 1.6,
+            }}
+            data-testid="yt-scope-note"
+          >
+            Zaman serisi verileri yerel snapshot'lardan olusturulur. YouTube Analytics API
+            (demografik, izlenme suresi, elde tutma orani) icin ek OAuth scope gereklidir ve
+            su an aktif degildir.
           </div>
         </>
       )}

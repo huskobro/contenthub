@@ -67,6 +67,13 @@ class RenderStillExecutor(StepExecutor):
       - composition_props.json güncellenmez
     """
 
+    # Template Context Decision (M14):
+    #   NON-CONSUMER — intentional.
+    #   Preview props are constructed from job input + subtitle_presets.
+    #   Blueprint rules reach Remotion through composition_props.json,
+    #   not through render_still. This executor operates on preview scope
+    #   which is intentionally independent from template context.
+
     def step_key(self) -> str:
         """Bu executor'ın sorumlu olduğu adım anahtarı."""
         return "render_still"

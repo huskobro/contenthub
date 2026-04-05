@@ -131,13 +131,14 @@ describe("SourceForm / Create page smoke tests", () => {
   });
 
   it("edit mode opens when Düzenle is clicked in detail panel", async () => {
-    let callCount = 0;
-    window.fetch = vi.fn().mockImplementation(() => {
-      callCount++;
-      if (callCount === 1) {
-        return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve([MOCK_SOURCE]) });
+    window.fetch = vi.fn().mockImplementation((url: string) => {
+      if (String(url).includes("/visibility-rules/resolve")) {
+        return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve({ visible: true, read_only: false, wizard_visible: false }) });
       }
-      return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(MOCK_SOURCE) });
+      if (String(url).includes("/sources/src-1")) {
+        return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(MOCK_SOURCE) });
+      }
+      return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve([MOCK_SOURCE]) });
     });
     const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     const testRouter = createMemoryRouter(
@@ -160,13 +161,14 @@ describe("SourceForm / Create page smoke tests", () => {
   });
 
   it("cancel closes edit mode in detail panel", async () => {
-    let callCount = 0;
-    window.fetch = vi.fn().mockImplementation(() => {
-      callCount++;
-      if (callCount === 1) {
-        return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve([MOCK_SOURCE]) });
+    window.fetch = vi.fn().mockImplementation((url: string) => {
+      if (String(url).includes("/visibility-rules/resolve")) {
+        return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve({ visible: true, read_only: false, wizard_visible: false }) });
       }
-      return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(MOCK_SOURCE) });
+      if (String(url).includes("/sources/src-1")) {
+        return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(MOCK_SOURCE) });
+      }
+      return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve([MOCK_SOURCE]) });
     });
     const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     const testRouter = createMemoryRouter(
@@ -191,16 +193,14 @@ describe("SourceForm / Create page smoke tests", () => {
   });
 
   it("update mutation is called with PATCH on valid submit", async () => {
-    let callCount = 0;
-    const fetchMock = vi.fn().mockImplementation(() => {
-      callCount++;
-      if (callCount === 1) {
-        return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve([MOCK_SOURCE]) });
+    const fetchMock = vi.fn().mockImplementation((url: string) => {
+      if (String(url).includes("/visibility-rules/resolve")) {
+        return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve({ visible: true, read_only: false, wizard_visible: false }) });
       }
-      if (callCount === 2) {
+      if (String(url).includes("/sources/src-1")) {
         return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(MOCK_SOURCE) });
       }
-      return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(MOCK_SOURCE) });
+      return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve([MOCK_SOURCE]) });
     });
     window.fetch = fetchMock;
     const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });

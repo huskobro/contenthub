@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useSourcesList } from "../../hooks/useSourcesList";
 import { SourcesTable } from "../../components/sources/SourcesTable";
 import { SourceDetailPanel } from "../../components/sources/SourceDetailPanel";
+import { ReadOnlyGuard } from "../../components/visibility/ReadOnlyGuard";
 
 export function SourcesRegistryPage() {
   const location = useLocation();
@@ -12,6 +13,7 @@ export function SourcesRegistryPage() {
   const { data: sources, isLoading, isError, error } = useSourcesList();
 
   return (
+    <ReadOnlyGuard targetKey="panel:sources">
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.25rem" }}>
         <h2 style={{ margin: 0 }}>Sources Registry</h2>
@@ -61,5 +63,6 @@ export function SourcesRegistryPage() {
         </div>
       </div>
     </div>
+    </ReadOnlyGuard>
   );
 }

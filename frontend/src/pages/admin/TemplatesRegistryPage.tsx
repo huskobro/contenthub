@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useTemplatesList } from "../../hooks/useTemplatesList";
 import { TemplatesTable } from "../../components/templates/TemplatesTable";
 import { TemplateDetailPanel } from "../../components/templates/TemplateDetailPanel";
+import { ReadOnlyGuard } from "../../components/visibility/ReadOnlyGuard";
 
 export function TemplatesRegistryPage() {
   const location = useLocation();
@@ -12,6 +13,7 @@ export function TemplatesRegistryPage() {
   const { data: templates, isLoading, isError, error } = useTemplatesList();
 
   return (
+    <ReadOnlyGuard targetKey="panel:templates">
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0.25rem" }}>
         <h2
@@ -77,5 +79,6 @@ export function TemplatesRegistryPage() {
         </div>
       </div>
     </div>
+    </ReadOnlyGuard>
   );
 }

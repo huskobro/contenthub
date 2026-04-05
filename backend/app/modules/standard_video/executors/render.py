@@ -162,6 +162,13 @@ class RenderStepExecutor(StepExecutor):
     Çıktı: output.mp4 (artifacts/ altında).
     """
 
+    # Template Context Decision (M14):
+    #   NON-CONSUMER — intentional.
+    #   Composition props already incorporate blueprint data via
+    #   CompositionStepExecutor. This executor receives the fully-merged
+    #   composition_props.json and passes it to Remotion subprocess.
+    #   Adding template context here would duplicate what composition already did.
+
     def step_key(self) -> str:
         """Bu executor'ın sorumlu olduğu adım anahtarı."""
         return "render"

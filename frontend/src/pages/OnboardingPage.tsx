@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useOnboardingStatus } from "../hooks/useOnboardingStatus";
+import { useVisibility } from "../hooks/useVisibility";
 import { OnboardingWelcomeScreen } from "../components/onboarding/OnboardingWelcomeScreen";
 import { OnboardingRequirementsScreen } from "../components/onboarding/OnboardingRequirementsScreen";
 import { OnboardingSourceSetupScreen } from "../components/onboarding/OnboardingSourceSetupScreen";
@@ -26,6 +27,20 @@ export function OnboardingPage() {
   const { data: onboardingStatus, isLoading: statusLoading } = useOnboardingStatus();
   const [step, setStep] = useState<OnboardingStep>("welcome");
 
+  // Wizard-visible checks: if a wizard step is explicitly hidden by a backend rule,
+  // its sub-screen is skipped. Default (no rule / API error) shows the step.
+  const sourceSetupVis = useVisibility("wizard:source-setup");
+  const templateSetupVis = useVisibility("wizard:template-setup");
+  const settingsSetupVis = useVisibility("wizard:settings-setup");
+
+  // Helper: a wizard step is considered hidden only when the hook has loaded
+  // successfully AND the resolution explicitly says wizard_visible=false.
+  // The useVisibility hook defaults wizard_visible to false when data is absent,
+  // so we must also check isLoading to avoid hiding steps before data arrives.
+  function isWizardStepHidden(vis: typeof sourceSetupVis): boolean {
+    return !vis.isLoading && !vis.wizardVisible;
+  }
+
   // Bypass: if onboarding already completed, redirect to normal app.
   // While loading or on error, proceed with onboarding (safe default — no wrong redirect).
   if (!statusLoading && onboardingStatus && onboardingStatus.onboarding_required === false) {
@@ -33,6 +48,11 @@ export function OnboardingPage() {
   }
 
   if (step === "source-setup") {
+    // If wizard step is hidden by backend, skip back to requirements
+    if (isWizardStepHidden(sourceSetupVis)) {
+      setStep("requirements");
+      return null;
+    }
     return (
       <OnboardingSourceSetupScreen
         onBack={() => setStep("requirements")}
@@ -42,6 +62,10 @@ export function OnboardingPage() {
   }
 
   if (step === "template-setup") {
+    if (isWizardStepHidden(templateSetupVis)) {
+      setStep("requirements");
+      return null;
+    }
     return (
       <OnboardingTemplateSetupScreen
         onBack={() => setStep("requirements")}
@@ -51,6 +75,10 @@ export function OnboardingPage() {
   }
 
   if (step === "settings-setup") {
+    if (isWizardStepHidden(settingsSetupVis)) {
+      setStep("requirements");
+      return null;
+    }
     return (
       <OnboardingSettingsSetupScreen
         onBack={() => setStep("requirements")}
@@ -98,9 +126,9 @@ export function OnboardingPage() {
     return (
       <OnboardingRequirementsScreen
         onBack={() => setStep("welcome")}
-        onSourceSetup={() => setStep("source-setup")}
-        onTemplateSetup={() => setStep("template-setup")}
-        onSettingsSetup={() => setStep("settings-setup")}
+        onSourceSetup={!isWizardStepHidden(sourceSetupVis) ? () => setStep("source-setup") : undefined}
+        onTemplateSetup={!isWizardStepHidden(templateSetupVis) ? () => setStep("template-setup") : undefined}
+        onSettingsSetup={!isWizardStepHidden(settingsSetupVis) ? () => setStep("settings-setup") : undefined}
         onComplete={() => setStep("provider-setup")}
       />
     );

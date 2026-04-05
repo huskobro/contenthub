@@ -44,11 +44,22 @@ const MOCK_RULES: VisibilityRuleResponse[] = [
 ];
 
 function mockFetch(data: unknown, status = 200) {
-  return vi.fn().mockResolvedValue({
-    ok: status >= 200 && status < 300,
-    status,
-    json: () => Promise.resolve(data),
-  });
+  return vi.fn((url: string | URL | Request) => {
+    const urlStr = String(url);
+    // Handle visibility resolve requests (from AdminLayout + ReadOnlyGuard)
+    if (urlStr.includes("/visibility-rules/resolve")) {
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve({ visible: true, read_only: false, wizard_visible: false }),
+      });
+    }
+    return Promise.resolve({
+      ok: status >= 200 && status < 300,
+      status,
+      json: () => Promise.resolve(data),
+    });
+  }) as unknown as typeof window.fetch;
 }
 
 function renderVisibility(fetchFn: typeof window.fetch) {
@@ -130,17 +141,32 @@ describe("Visibility Registry smoke tests", () => {
   });
 
   it("shows detail panel when a rule is selected", async () => {
-    const detailFetch = vi.fn()
-      .mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        json: () => Promise.resolve(MOCK_RULES),
-      })
-      .mockResolvedValue({
+    let listCallDone = false;
+    const detailFetch = vi.fn((url: string | URL | Request) => {
+      const urlStr = String(url);
+      // Handle visibility resolve requests (from AdminLayout + ReadOnlyGuard)
+      if (urlStr.includes("/visibility-rules/resolve")) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: () => Promise.resolve({ visible: true, read_only: false, wizard_visible: false }),
+        });
+      }
+      // First non-resolve call returns the rules list, subsequent ones return detail
+      if (!listCallDone) {
+        listCallDone = true;
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: () => Promise.resolve(MOCK_RULES),
+        });
+      }
+      return Promise.resolve({
         ok: true,
         status: 200,
         json: () => Promise.resolve(MOCK_RULES[0]),
       });
+    }) as unknown as typeof window.fetch;
 
     renderVisibility(detailFetch);
 

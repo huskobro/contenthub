@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useTemplateDetail } from "../../hooks/useTemplateDetail";
 import { useUpdateTemplate } from "../../hooks/useUpdateTemplate";
+import { useReadOnly } from "../visibility/ReadOnlyGuard";
 import { TemplateForm } from "./TemplateForm";
 import type { TemplateFormValues } from "./TemplateForm";
 import { formatDateTime } from "../../lib/formatDate";
@@ -29,6 +30,7 @@ function Field({ label, value }: { label: string; value: string | number | null 
 }
 
 export function TemplateDetailPanel({ templateId }: TemplateDetailPanelProps) {
+  const readOnly = useReadOnly();
   const [editMode, setEditMode] = useState(false);
   const { data: template, isLoading, isError, error } = useTemplateDetail(templateId);
   const { mutate: updateTemplate, isPending: isUpdating, error: updateError } = useUpdateTemplate(templateId ?? "");
@@ -121,6 +123,7 @@ export function TemplateDetailPanel({ templateId }: TemplateDetailPanelProps) {
         <h3 style={{ margin: 0, fontSize: "1rem", color: COLOR_DARK }} data-testid="tpl-detail-heading">{template.name}</h3>
         <button
           onClick={() => setEditMode(true)}
+          disabled={readOnly}
           style={{
             padding: "0.25rem 0.75rem",
             fontSize: "0.8rem",
@@ -128,7 +131,8 @@ export function TemplateDetailPanel({ templateId }: TemplateDetailPanelProps) {
             color: "#475569",
             border: BORDER,
             borderRadius: "4px",
-            cursor: "pointer",
+            cursor: readOnly ? "not-allowed" : "pointer",
+            opacity: readOnly ? 0.5 : 1,
           }}
         >
           Düzenle

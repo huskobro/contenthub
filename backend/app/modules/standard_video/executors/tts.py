@@ -103,6 +103,23 @@ class TTSStepExecutor(StepExecutor):
             str(job.workspace_path) if getattr(job, "workspace_path", None) else ""
         )
 
+        # Template/Style Blueprint context (M14)
+        template_ctx = getattr(job, '_template_context', None)
+        template_info = None
+        voice_style_override = None
+        if isinstance(template_ctx, dict):
+            template_info = {
+                "template_id": template_ctx.get("template_id"),
+                "template_name": template_ctx.get("template_name"),
+                "template_version": template_ctx.get("template_version"),
+                "link_role": template_ctx.get("link_role"),
+            }
+            bp = template_ctx.get("style_blueprint")
+            if isinstance(bp, dict):
+                motion_rules = bp.get("motion_rules")
+                if isinstance(motion_rules, dict):
+                    voice_style_override = motion_rules.get("voice_style")
+
         # artifact_check: manifest zaten varsa adımı atla
         manifest_path = _resolve_artifact_path(workspace_root, job.id, "audio_manifest.json")
         if manifest_path.exists():
@@ -134,6 +151,14 @@ class TTSStepExecutor(StepExecutor):
             )
 
         voice = get_voice(ctx.language)
+
+        # Template voice_style override (M14)
+        if voice_style_override and isinstance(voice_style_override, str):
+            logger.info(
+                "TTSStepExecutor: voice_style_override from template context: %s → %s, job=%s",
+                voice, voice_style_override, job.id,
+            )
+            voice = voice_style_override
 
         audio_dir = _resolve_artifact_path(workspace_root, job.id, "audio").parent / "audio"
         audio_dir.mkdir(parents=True, exist_ok=True)
@@ -211,7 +236,7 @@ class TTSStepExecutor(StepExecutor):
             artifact_path,
         )
 
-        return {
+        result = {
             "artifact_path": artifact_path,
             "language": ctx.language.value,
             "voice": voice,
@@ -227,3 +252,7 @@ class TTSStepExecutor(StepExecutor):
             },
             "step": self.step_key(),
         }
+        if template_info:
+            result["template_info"] = template_info
+            result["voice_style_override_applied"] = voice_style_override is not None
+        return result

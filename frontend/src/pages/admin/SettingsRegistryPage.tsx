@@ -4,6 +4,7 @@ import { SettingsTable } from "../../components/settings/SettingsTable";
 import { SettingDetailPanel } from "../../components/settings/SettingDetailPanel";
 import { CredentialsPanel } from "../../components/settings/CredentialsPanel";
 import { EffectiveSettingsPanel } from "../../components/settings/EffectiveSettingsPanel";
+import { ReadOnlyGuard } from "../../components/visibility/ReadOnlyGuard";
 
 type TabKey = "credentials" | "effective" | "registry";
 
@@ -58,6 +59,7 @@ export function SettingsRegistryPage() {
   const currentTab = TAB_ITEMS.find((t) => t.key === activeTab)!;
 
   return (
+    <ReadOnlyGuard targetKey="panel:settings">
     <div>
       <h2
         style={{ margin: "0 0 0.25rem", fontSize: "1.125rem", fontWeight: 600 }}
@@ -132,5 +134,6 @@ export function SettingsRegistryPage() {
         </>
       )}
     </div>
+    </ReadOnlyGuard>
   );
 }

@@ -159,13 +159,14 @@ describe("TemplateForm / Create page smoke tests", () => {
   });
 
   it("edit mode opens when Düzenle is clicked in detail panel", async () => {
-    let callCount = 0;
-    window.fetch = vi.fn().mockImplementation(() => {
-      callCount++;
-      if (callCount === 1) {
-        return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve([MOCK_TEMPLATE]) });
+    window.fetch = vi.fn().mockImplementation((url: string) => {
+      if (String(url).includes("/visibility-rules/resolve")) {
+        return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve({ visible: true, read_only: false, wizard_visible: false }) });
       }
-      return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(MOCK_TEMPLATE) });
+      if (String(url).includes("/templates/tpl-1")) {
+        return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(MOCK_TEMPLATE) });
+      }
+      return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve([MOCK_TEMPLATE]) });
     });
     const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     const testRouter = createMemoryRouter(

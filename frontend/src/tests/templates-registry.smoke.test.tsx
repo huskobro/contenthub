@@ -40,11 +40,22 @@ const MOCK_TEMPLATES: TemplateResponse[] = [
 ];
 
 function mockFetch(data: unknown, status = 200) {
-  return vi.fn().mockResolvedValue({
-    ok: status >= 200 && status < 300,
-    status,
-    json: () => Promise.resolve(data),
-  });
+  return vi.fn((url: string | URL | Request) => {
+    const urlStr = String(url);
+    // Handle visibility resolve requests (from ReadOnlyGuard)
+    if (urlStr.includes("/visibility-rules/resolve")) {
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve({ visible: true, read_only: false, wizard_visible: false }),
+      });
+    }
+    return Promise.resolve({
+      ok: status >= 200 && status < 300,
+      status,
+      json: () => Promise.resolve(data),
+    });
+  }) as unknown as typeof window.fetch;
 }
 
 function renderRegistry(fetchFn: typeof window.fetch) {
@@ -140,11 +151,15 @@ describe("Templates Registry smoke tests", () => {
   });
 
   it("shows detail panel loading state after selection", async () => {
-    // First call returns list; second call (detail) never resolves
-    let callCount = 0;
-    window.fetch = vi.fn().mockImplementation(() => {
-      callCount++;
-      if (callCount === 1) {
+    // First non-resolve call returns list; subsequent calls (detail) never resolve
+    let listCallDone = false;
+    window.fetch = vi.fn((url: string | URL | Request) => {
+      const urlStr = String(url);
+      if (urlStr.includes("/visibility-rules/resolve")) {
+        return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve({ visible: true, read_only: false, wizard_visible: false }) });
+      }
+      if (!listCallDone) {
+        listCallDone = true;
         return Promise.resolve({
           ok: true,
           status: 200,
@@ -152,7 +167,7 @@ describe("Templates Registry smoke tests", () => {
         });
       }
       return new Promise(() => {}); // detail never resolves
-    });
+    }) as unknown as typeof window.fetch;
     const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     const testRouter = createMemoryRouter(
       [{ path: "/admin/templates", element: <TemplatesRegistryPage /> }],
@@ -175,11 +190,15 @@ describe("Templates Registry smoke tests", () => {
   });
 
   it("shows detail panel data after selecting a template", async () => {
-    // First call returns list; second call returns detail
-    let callCount = 0;
-    window.fetch = vi.fn().mockImplementation(() => {
-      callCount++;
-      if (callCount === 1) {
+    // First non-resolve call returns list; subsequent calls return detail
+    let listCallDone = false;
+    window.fetch = vi.fn((url: string | URL | Request) => {
+      const urlStr = String(url);
+      if (urlStr.includes("/visibility-rules/resolve")) {
+        return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve({ visible: true, read_only: false, wizard_visible: false }) });
+      }
+      if (!listCallDone) {
+        listCallDone = true;
         return Promise.resolve({
           ok: true,
           status: 200,
@@ -191,7 +210,7 @@ describe("Templates Registry smoke tests", () => {
         status: 200,
         json: () => Promise.resolve(MOCK_TEMPLATES[0]),
       });
-    });
+    }) as unknown as typeof window.fetch;
     const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     const testRouter = createMemoryRouter(
       [{ path: "/admin/templates", element: <TemplatesRegistryPage /> }],

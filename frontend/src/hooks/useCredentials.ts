@@ -6,6 +6,7 @@ import {
   fetchYouTubeStatus,
   fetchYouTubeChannelInfo,
   fetchYouTubeVideoStats,
+  fetchVideoStatsTrend,
   revokeYouTubeCredentials,
 } from "../api/credentialsApi";
 
@@ -53,6 +54,16 @@ export function useYouTubeVideoStats() {
     queryFn: fetchYouTubeVideoStats,
     retry: false,
     staleTime: 60_000,
+  });
+}
+
+export function useVideoStatsTrend(videoId: string | null) {
+  return useQuery({
+    queryKey: ["youtube-video-trend", videoId],
+    queryFn: () => fetchVideoStatsTrend(videoId!),
+    enabled: !!videoId,
+    staleTime: 60_000,
+    retry: false,
   });
 }
 

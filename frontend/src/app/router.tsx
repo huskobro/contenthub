@@ -37,6 +37,7 @@ import { AnalyticsContentPage } from "../pages/admin/AnalyticsContentPage";
 import { AnalyticsOperationsPage } from "../pages/admin/AnalyticsOperationsPage";
 import { YouTubeAnalyticsPage } from "../pages/admin/YouTubeAnalyticsPage";
 import { YouTubeCallbackPage } from "../pages/admin/YouTubeCallbackPage";
+import { VisibilityGuard } from "../components/visibility/VisibilityGuard";
 
 export const router = createBrowserRouter([
   {
@@ -52,19 +53,19 @@ export const router = createBrowserRouter([
     element: <AdminLayout />,
     children: [
       { index: true, element: <AdminOverviewPage /> },
-      { path: "settings", element: <SettingsRegistryPage /> },
-      { path: "visibility", element: <VisibilityRegistryPage /> },
+      { path: "settings", element: <VisibilityGuard targetKey="panel:settings"><SettingsRegistryPage /></VisibilityGuard> },
+      { path: "visibility", element: <VisibilityGuard targetKey="panel:visibility"><VisibilityRegistryPage /></VisibilityGuard> },
       { path: "jobs", element: <JobsRegistryPage /> },
       { path: "jobs/:jobId", element: <JobDetailPage /> },
       { path: "standard-videos", element: <StandardVideoRegistryPage /> },
       { path: "standard-videos/new", element: <StandardVideoCreatePage /> },
       { path: "standard-videos/:itemId", element: <StandardVideoDetailPage /> },
-      { path: "templates/new", element: <TemplateCreatePage /> },
-      { path: "templates", element: <TemplatesRegistryPage /> },
+      { path: "templates/new", element: <VisibilityGuard targetKey="panel:templates"><TemplateCreatePage /></VisibilityGuard> },
+      { path: "templates", element: <VisibilityGuard targetKey="panel:templates"><TemplatesRegistryPage /></VisibilityGuard> },
       { path: "style-blueprints/new", element: <StyleBlueprintCreatePage /> },
       { path: "style-blueprints", element: <StyleBlueprintsRegistryPage /> },
-      { path: "sources/new", element: <SourceCreatePage /> },
-      { path: "sources", element: <SourcesRegistryPage /> },
+      { path: "sources/new", element: <VisibilityGuard targetKey="panel:sources"><SourceCreatePage /></VisibilityGuard> },
+      { path: "sources", element: <VisibilityGuard targetKey="panel:sources"><SourcesRegistryPage /></VisibilityGuard> },
       { path: "source-scans/new", element: <SourceScanCreatePage /> },
       { path: "source-scans", element: <SourceScansRegistryPage /> },
       { path: "news-bulletins/new", element: <NewsBulletinCreatePage /> },
@@ -77,10 +78,10 @@ export const router = createBrowserRouter([
       { path: "template-style-links", element: <TemplateStyleLinksRegistryPage /> },
       { path: "library", element: <ContentLibraryPage /> },
       { path: "assets", element: <AssetLibraryPage /> },
-      { path: "analytics", element: <AnalyticsOverviewPage /> },
-      { path: "analytics/content", element: <AnalyticsContentPage /> },
-      { path: "analytics/operations", element: <AnalyticsOperationsPage /> },
-      { path: "analytics/youtube", element: <YouTubeAnalyticsPage /> },
+      { path: "analytics", element: <VisibilityGuard targetKey="panel:analytics"><AnalyticsOverviewPage /></VisibilityGuard> },
+      { path: "analytics/content", element: <VisibilityGuard targetKey="panel:analytics"><AnalyticsContentPage /></VisibilityGuard> },
+      { path: "analytics/operations", element: <VisibilityGuard targetKey="panel:analytics"><AnalyticsOperationsPage /></VisibilityGuard> },
+      { path: "analytics/youtube", element: <VisibilityGuard targetKey="panel:analytics"><YouTubeAnalyticsPage /></VisibilityGuard> },
       { path: "settings/youtube-callback", element: <YouTubeCallbackPage /> },
     ],
   },

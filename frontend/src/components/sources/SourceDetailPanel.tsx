@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useSourceDetail } from "../../hooks/useSourceDetail";
 import { useUpdateSource } from "../../hooks/useUpdateSource";
+import { useReadOnly } from "../visibility/ReadOnlyGuard";
 import { SourceForm } from "./SourceForm";
 import { formatDateTime } from "../../lib/formatDate";
 import { isBlank } from "../../lib/isBlank";
@@ -48,6 +49,7 @@ function UrlField({ label, value }: { label: string; value: string | null }) {
 }
 
 export function SourceDetailPanel({ sourceId }: SourceDetailPanelProps) {
+  const readOnly = useReadOnly();
   const [editMode, setEditMode] = useState(false);
   const { data: source, isLoading, isError, error } = useSourceDetail(sourceId);
   const { mutate: updateMutate, isPending: isUpdating, error: updateError } = useUpdateSource(sourceId ?? "");
@@ -108,14 +110,16 @@ export function SourceDetailPanel({ sourceId }: SourceDetailPanelProps) {
         <h3 style={{ margin: 0, fontSize: "1rem", color: COLOR_DARK }}>{source.name}</h3>
         <button
           onClick={() => setEditMode(true)}
+          disabled={readOnly}
           style={{
             padding: "0.25rem 0.75rem",
             background: "transparent",
             color: "#1e40af",
             border: "1px solid #bfdbfe",
             borderRadius: "4px",
-            cursor: "pointer",
+            cursor: readOnly ? "not-allowed" : "pointer",
             fontSize: "0.8rem",
+            opacity: readOnly ? 0.5 : 1,
           }}
         >
           Düzenle

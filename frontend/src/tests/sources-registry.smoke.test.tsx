@@ -42,11 +42,22 @@ const MOCK_SOURCES: SourceResponse[] = [
 ];
 
 function mockFetch(data: unknown, status = 200) {
-  return vi.fn().mockResolvedValue({
-    ok: status >= 200 && status < 300,
-    status,
-    json: () => Promise.resolve(data),
-  });
+  return vi.fn((url: string | URL | Request) => {
+    const urlStr = String(url);
+    // Handle visibility resolve requests (from ReadOnlyGuard)
+    if (urlStr.includes("/visibility-rules/resolve")) {
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve({ visible: true, read_only: false, wizard_visible: false }),
+      });
+    }
+    return Promise.resolve({
+      ok: status >= 200 && status < 300,
+      status,
+      json: () => Promise.resolve(data),
+    });
+  }) as unknown as typeof window.fetch;
 }
 
 function renderRegistry(fetchFn: typeof window.fetch) {
@@ -136,14 +147,18 @@ describe("Sources Registry smoke tests", () => {
   });
 
   it("shows detail panel loading state after selection", async () => {
-    let callCount = 0;
-    window.fetch = vi.fn().mockImplementation(() => {
-      callCount++;
-      if (callCount === 1) {
+    let listCallDone = false;
+    window.fetch = vi.fn((url: string | URL | Request) => {
+      const urlStr = String(url);
+      if (urlStr.includes("/visibility-rules/resolve")) {
+        return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve({ visible: true, read_only: false, wizard_visible: false }) });
+      }
+      if (!listCallDone) {
+        listCallDone = true;
         return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(MOCK_SOURCES) });
       }
       return new Promise(() => {}); // detail never resolves
-    });
+    }) as unknown as typeof window.fetch;
     const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     const testRouter = createMemoryRouter(
       [{ path: "/admin/sources", element: <SourcesRegistryPage /> }],
@@ -163,14 +178,18 @@ describe("Sources Registry smoke tests", () => {
   });
 
   it("shows detail panel data after selecting a source", async () => {
-    let callCount = 0;
-    window.fetch = vi.fn().mockImplementation(() => {
-      callCount++;
-      if (callCount === 1) {
+    let listCallDone = false;
+    window.fetch = vi.fn((url: string | URL | Request) => {
+      const urlStr = String(url);
+      if (urlStr.includes("/visibility-rules/resolve")) {
+        return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve({ visible: true, read_only: false, wizard_visible: false }) });
+      }
+      if (!listCallDone) {
+        listCallDone = true;
         return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(MOCK_SOURCES) });
       }
       return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(MOCK_SOURCES[0]) });
-    });
+    }) as unknown as typeof window.fetch;
     const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     const testRouter = createMemoryRouter(
       [{ path: "/admin/sources", element: <SourcesRegistryPage /> }],

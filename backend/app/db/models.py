@@ -913,6 +913,27 @@ class PublishRecord(Base):
     )
 
 
+class VideoStatsSnapshot(Base):
+    """
+    YouTube video istatistik snapshot'i — periyodik kayit.
+
+    Her snapshot cekildiginde video basina bir satir olusturulur.
+    Zaman serisi analizi icin kullanilir.
+    M14-C: youtube.upload scope ile Data API v3'ten alinan veriler.
+    """
+
+    __tablename__ = "video_stats_snapshots"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    platform_video_id: Mapped[str] = mapped_column(String(128), nullable=False, index=True)
+    view_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    like_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    comment_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    snapshot_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now, index=True
+    )
+
+
 class PublishLog(Base):
     """
     Publish Center — Denetim izi (Phase M7).

@@ -131,6 +131,26 @@ export async function fetchYouTubeVideoStats(): Promise<VideoStatsResponse> {
   return res.json();
 }
 
+// YouTube Video Stats Trend (M14-C)
+export interface VideoStatsTrendItem {
+  snapshot_at: string;
+  view_count: number;
+  like_count: number;
+  comment_count: number;
+}
+
+export interface VideoStatsTrendResponse {
+  video_id: string;
+  title: string;
+  snapshots: VideoStatsTrendItem[];
+}
+
+export async function fetchVideoStatsTrend(videoId: string): Promise<VideoStatsTrendResponse> {
+  const res = await fetch(`${YT_BASE}/video-stats/${encodeURIComponent(videoId)}/trend`);
+  if (!res.ok) throw new Error(`Failed to fetch video stats trend: ${res.status}`);
+  return res.json();
+}
+
 export async function getYouTubeAuthUrl(redirectUri: string): Promise<string> {
   const params = new URLSearchParams({ redirect_uri: redirectUri });
   const res = await fetch(`${YT_BASE}/auth-url?${params}`);

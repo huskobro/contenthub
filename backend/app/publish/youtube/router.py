@@ -391,6 +391,22 @@ async def get_video_stats(db: AsyncSession = Depends(get_db)):
                 )
             )
 
+        # Record snapshots for time-series tracking (M14-C)
+        try:
+            from app.db.models import VideoStatsSnapshot
+
+            for v in videos:
+                db.add(VideoStatsSnapshot(
+                    platform_video_id=v.video_id,
+                    view_count=v.view_count,
+                    like_count=v.like_count,
+                    comment_count=v.comment_count,
+                ))
+            await db.commit()
+        except Exception as snap_exc:
+            logger.warning("Snapshot kaydi basarisiz (non-fatal): %s", snap_exc)
+            await db.rollback()
+
         return VideoStatsResponse(
             videos=videos,
             total_views=total_views,
@@ -407,6 +423,74 @@ async def get_video_stats(db: AsyncSession = Depends(get_db)):
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail=f"YouTube API hatasi: {exc}",
         )
+
+
+# ---------------------------------------------------------------------------
+# Video Stats Trend (M14-C)
+# ---------------------------------------------------------------------------
+
+class VideoStatsTrendItem(BaseModel):
+    snapshot_at: str
+    view_count: int
+    like_count: int
+    comment_count: int
+
+
+class VideoStatsTrendResponse(BaseModel):
+    video_id: str
+    title: str
+    snapshots: list[VideoStatsTrendItem]
+
+
+@router.get("/video-stats/{video_id}/trend", response_model=VideoStatsTrendResponse)
+async def get_video_stats_trend(video_id: str, db: AsyncSession = Depends(get_db)):
+    """
+    Belirli bir videonun zaman serisi istatistiklerini dondurur.
+
+    Local snapshot verisi kullanir — YouTube Analytics API scope gerektirmez.
+    """
+    import json
+    from app.db.models import VideoStatsSnapshot, PublishRecord
+
+    # Video title from publish record
+    stmt = select(PublishRecord.payload_json).where(
+        PublishRecord.platform_video_id == video_id,
+        PublishRecord.platform == "youtube",
+    ).limit(1)
+    result = await db.execute(stmt)
+    row = result.first()
+    title = "Bilinmeyen Video"
+    if row and row[0]:
+        try:
+            payload = json.loads(row[0]) if isinstance(row[0], str) else row[0]
+            title = payload.get("title", title)
+        except (json.JSONDecodeError, TypeError):
+            pass
+
+    # Fetch snapshots ordered by time
+    snap_stmt = (
+        select(VideoStatsSnapshot)
+        .where(VideoStatsSnapshot.platform_video_id == video_id)
+        .order_by(VideoStatsSnapshot.snapshot_at.asc())
+    )
+    snap_result = await db.execute(snap_stmt)
+    snapshots = snap_result.scalars().all()
+
+    trend_items = [
+        VideoStatsTrendItem(
+            snapshot_at=s.snapshot_at.isoformat() if s.snapshot_at else "",
+            view_count=s.view_count,
+            like_count=s.like_count,
+            comment_count=s.comment_count,
+        )
+        for s in snapshots
+    ]
+
+    return VideoStatsTrendResponse(
+        video_id=video_id,
+        title=title,
+        snapshots=trend_items,
+    )
 
 
 @router.delete("/revoke", status_code=status.HTTP_204_NO_CONTENT)

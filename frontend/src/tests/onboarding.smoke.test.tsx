@@ -15,9 +15,19 @@ import { OnboardingPage } from "../pages/OnboardingPage";
 import { AppEntryGate } from "../app/AppEntryGate";
 
 function mockFetch(data: unknown) {
-  return vi.fn().mockResolvedValue({
-    ok: true,
-    json: () => Promise.resolve(data),
+  return vi.fn((url: string | URL | Request) => {
+    const urlStr = String(url);
+    // Handle visibility resolve requests (from OnboardingPage wizard checks)
+    if (urlStr.includes("/visibility-rules/resolve")) {
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({ visible: true, read_only: false, wizard_visible: true }),
+      });
+    }
+    return Promise.resolve({
+      ok: true,
+      json: () => Promise.resolve(data),
+    });
   }) as unknown as typeof window.fetch;
 }
 
@@ -56,8 +66,13 @@ const MOCK_SETTINGS_WITH_PROVIDERS_AND_WORKSPACE = [
 
 function mockFetchMulti(responses: Record<string, unknown>) {
   return vi.fn().mockImplementation((url: string) => {
+    const urlStr = String(url);
+    // Handle visibility resolve requests (from OnboardingPage wizard checks)
+    if (urlStr.includes("/visibility-rules/resolve")) {
+      return Promise.resolve({ ok: true, json: () => Promise.resolve({ visible: true, read_only: false, wizard_visible: true }) });
+    }
     for (const [pattern, data] of Object.entries(responses)) {
-      if (url.includes(pattern)) {
+      if (urlStr.includes(pattern)) {
         return Promise.resolve({ ok: true, json: () => Promise.resolve(data) });
       }
     }

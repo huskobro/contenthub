@@ -2,12 +2,14 @@ import { useState } from "react";
 import { useVisibilityRulesList } from "../../hooks/useVisibilityRulesList";
 import { VisibilityRulesTable } from "../../components/visibility/VisibilityRulesTable";
 import { VisibilityRuleDetailPanel } from "../../components/visibility/VisibilityRuleDetailPanel";
+import { ReadOnlyGuard } from "../../components/visibility/ReadOnlyGuard";
 
 export function VisibilityRegistryPage() {
   const { data: rules, isLoading, isError, error } = useVisibilityRulesList();
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   return (
+    <ReadOnlyGuard targetKey="panel:visibility">
     <div>
       <h2
         style={{ margin: "0 0 0.25rem", fontSize: "1.125rem", fontWeight: 600 }}
@@ -74,5 +76,6 @@ export function VisibilityRegistryPage() {
         </div>
       )}
     </div>
+    </ReadOnlyGuard>
   );
 }
