@@ -3,8 +3,9 @@ import { useSettingsList } from "../../hooks/useSettingsList";
 import { SettingsTable } from "../../components/settings/SettingsTable";
 import { SettingDetailPanel } from "../../components/settings/SettingDetailPanel";
 import { CredentialsPanel } from "../../components/settings/CredentialsPanel";
+import { EffectiveSettingsPanel } from "../../components/settings/EffectiveSettingsPanel";
 
-type TabKey = "credentials" | "registry";
+type TabKey = "credentials" | "effective" | "registry";
 
 const TAB_ITEMS: { key: TabKey; label: string; description: string }[] = [
   {
@@ -14,10 +15,16 @@ const TAB_ITEMS: { key: TabKey; label: string; description: string }[] = [
       "API anahtarlari, OAuth baglantilari ve provider entegrasyonlarini yonetin.",
   },
   {
+    key: "effective",
+    label: "Effective Ayarlar",
+    description:
+      "Tum bilinen ayarlarin grup bazli effective degerleri, kaynaklari ve runtime wiring durumu. Ayarlari buradan yonetebilirsiniz.",
+  },
+  {
     key: "registry",
     label: "Ayar Kayitlari",
     description:
-      "Sistemde tanimli tum ayarlarin listesi ve detaylari. Grup, modul kapsami ve governance durumuna gore yonetilir.",
+      "Sistemde tanimli tum ayarlarin DB tablosu gorunumu. Dusuk seviye veri inceleme ve yonetim.",
   },
 ];
 
@@ -89,6 +96,8 @@ export function SettingsRegistryPage() {
 
       {/* Tab content */}
       {activeTab === "credentials" && <CredentialsPanel />}
+
+      {activeTab === "effective" && <EffectiveSettingsPanel />}
 
       {activeTab === "registry" && (
         <>

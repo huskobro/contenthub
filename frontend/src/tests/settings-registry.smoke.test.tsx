@@ -57,13 +57,18 @@ function mockFetch(data: unknown, status = 200) {
   });
 }
 
-/* Smarter mock: returns [] for credentials endpoint, data for everything else */
+/* Smarter mock: returns [] for credentials/effective/groups endpoints, data for settings */
 function mockFetchUrl(data: unknown, status = 200) {
   return vi.fn((url: string) =>
     Promise.resolve({
       ok: status >= 200 && status < 300,
       status,
-      json: () => Promise.resolve(url.includes("/credentials") ? [] : data),
+      json: () => {
+        if (typeof url === "string" && url.includes("/credentials")) return Promise.resolve([]);
+        if (typeof url === "string" && url.includes("/groups")) return Promise.resolve([]);
+        if (typeof url === "string" && url.includes("/effective")) return Promise.resolve([]);
+        return Promise.resolve(data);
+      },
     })
   ) as unknown as typeof window.fetch;
 }

@@ -1,10 +1,14 @@
 """
-Credential Wiring — M9-A.
+Credential Wiring — M9-A / M10-B.
 
 Credential kaydedildikten sonra ilgili provider'in yeniden baslatilmasi.
 
 Her credential key icin dogru provider sinifini olusturur ve
 provider_registry.replace_provider() ile mevcut provider'i degistirir.
+
+M10-B: Provider factory'leri artik KNOWN_SETTINGS builtin default'larini
+       kullanir. DB'den ayar okunamadigi durumlarda (credential wiring async
+       degil, DB session yok) builtin default'lar fallback olarak kullanilir.
 
 YouTube credential'lari provider reinit gerektirmez — sadece DB'de saklanir.
 """
@@ -13,6 +17,7 @@ import logging
 
 from app.providers.capability import ProviderCapability
 from app.providers.registry import provider_registry
+from app.settings.settings_resolver import KNOWN_SETTINGS
 
 logger = logging.getLogger(__name__)
 
@@ -45,6 +50,14 @@ _CREDENTIAL_PROVIDER_MAP: dict[str, dict] = {
 # Provider factory fonksiyonlari
 # ---------------------------------------------------------------------------
 
+def _get_builtin(key: str, fallback=None):
+    """KNOWN_SETTINGS'ten builtin_default degerini okur."""
+    meta = KNOWN_SETTINGS.get(key)
+    if meta is None:
+        return fallback
+    return meta.get("builtin_default", fallback)
+
+
 def _make_kie_ai_provider(api_key: str):
     from app.providers.llm.kie_ai_provider import KieAiProvider
     return KieAiProvider(api_key=api_key)
@@ -52,7 +65,8 @@ def _make_kie_ai_provider(api_key: str):
 
 def _make_openai_compat_provider(api_key: str):
     from app.providers.llm.openai_compat_provider import OpenAICompatProvider
-    return OpenAICompatProvider(api_key=api_key, model="gpt-4o-mini")
+    model = _get_builtin("provider.llm.openai_model", "gpt-4o-mini")
+    return OpenAICompatProvider(api_key=api_key, model=model)
 
 
 def _make_pexels_provider(api_key: str):

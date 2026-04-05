@@ -141,7 +141,7 @@ describe("Phase 305 — Settings Registry heading and workflow note", () => {
     const user = userEvent.setup();
     await user.click(screen.getByTestId("settings-tab-registry"));
     const subtitle = screen.getByTestId("settings-registry-subtitle");
-    expect(subtitle.textContent).toContain("governance");
+    expect(subtitle.textContent).toContain("DB tablosu");
   });
 });
 

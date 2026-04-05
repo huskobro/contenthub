@@ -13,12 +13,19 @@ Credential endpoints (M9-A):
   PUT    /settings/credentials/{key}     — save credential value
   POST   /settings/credentials/{key}/validate — basic credential validation
 
+Effective settings endpoints (M10-D):
+  GET    /settings/effective             — all known settings with effective values
+  GET    /settings/effective/{key}       — single setting effective state (explain)
+  GET    /settings/groups                — group summary with counts
+  PUT    /settings/effective/{key}       — update admin_value for a setting
+
 Intentionally absent:
   DELETE, bulk operations, history, admin/user split surfaces.
 """
 
+import json
 import logging
-from typing import List, Optional
+from typing import Any, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
@@ -34,6 +41,13 @@ from app.settings.credential_resolver import (
     resolve_credential,
     save_credential,
 )
+from app.settings.settings_resolver import (
+    KNOWN_SETTINGS,
+    explain as settings_explain,
+    list_effective,
+    list_groups,
+)
+from app.settings.settings_seed import seed_known_settings
 
 logger = logging.getLogger(__name__)
 
@@ -58,6 +72,39 @@ class CredentialStatusResponse(BaseModel):
     help_text: str = ""
     group: str = ""
     capability: str = ""
+
+
+class EffectiveSettingResponse(BaseModel):
+    key: str
+    effective_value: Any = None
+    source: str = "missing"
+    type: str = "string"
+    is_secret: bool = False
+    group: str = "general"
+    label: str = ""
+    help_text: str = ""
+    module_scope: Optional[str] = None
+    wired: bool = False
+    wired_to: str = ""
+    builtin_default: Any = None
+    env_var: str = ""
+    has_admin_override: bool = False
+    has_db_row: bool = False
+    db_version: Optional[int] = None
+    updated_at: Optional[str] = None
+
+
+class GroupSummaryResponse(BaseModel):
+    group: str
+    label: str
+    total: int
+    wired: int
+    secret: int
+    missing: int
+
+
+class SettingAdminValueRequest(BaseModel):
+    value: Any
 
 
 # ---------------------------------------------------------------------------
@@ -135,6 +182,121 @@ async def validate_credential(
     if value:
         return {"key": key, "valid": True, "message": "Credential degeri mevcut."}
     return {"key": key, "valid": False, "message": "Credential degeri bulunamadi."}
+
+
+# ---------------------------------------------------------------------------
+# Effective settings endpoints (M10-D) — MUST be before /{setting_id}
+# ---------------------------------------------------------------------------
+
+@router.get("/effective", response_model=List[EffectiveSettingResponse])
+async def list_effective_settings(
+    group: Optional[str] = Query(None, description="Filter by group name"),
+    wired_only: bool = Query(False, description="Only wired settings"),
+    db: AsyncSession = Depends(get_db),
+) -> List[EffectiveSettingResponse]:
+    """Tum bilinen ayarlar icin effective deger ve kaynak bilgisi doner."""
+    items = await list_effective(db, group=group, wired_only=wired_only)
+    return [EffectiveSettingResponse(**item) for item in items]
+
+
+@router.get("/groups", response_model=List[GroupSummaryResponse])
+async def get_groups(
+    db: AsyncSession = Depends(get_db),
+) -> List[GroupSummaryResponse]:
+    """Grup bazli ozet bilgi doner (toplam, wired, secret, missing sayilari)."""
+    groups = await list_groups(db)
+    return [GroupSummaryResponse(**g) for g in groups]
+
+
+@router.get("/effective/{key}", response_model=EffectiveSettingResponse)
+async def get_effective_setting(
+    key: str,
+    db: AsyncSession = Depends(get_db),
+) -> EffectiveSettingResponse:
+    """Tek ayar icin tam effective durum raporu doner."""
+    if key not in KNOWN_SETTINGS:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Bilinmeyen ayar key: {key}",
+        )
+    item = await settings_explain(key, db)
+    return EffectiveSettingResponse(**item)
+
+
+@router.put("/effective/{key}")
+async def update_effective_setting(
+    key: str,
+    body: SettingAdminValueRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Ayarin admin_value degerini gunceller.
+
+    Credential key'leri icin credential resolver'a yonlendirir.
+    Diger key'ler icin settings tablosunda admin_value_json guncellenir.
+    """
+    if key not in KNOWN_SETTINGS:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Bilinmeyen ayar key: {key}",
+        )
+
+    # Credential key'leri icin credential resolver'a devret
+    if key.startswith("credential."):
+        if key not in CREDENTIAL_KEYS:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Credential key credential_resolver'da tanimli degil: {key}",
+            )
+        result = await save_credential(key, str(body.value), db)
+        # Provider reinit — best effort
+        wiring_result = {"key": key, "action": "skipped", "provider_id": None}
+        try:
+            from app.settings.credential_wiring import reinitialize_provider_for_credential
+            wiring_result = await reinitialize_provider_for_credential(key, str(body.value))
+        except Exception as exc:
+            logger.warning("Provider reinit basarisiz for %s: %s", key, exc)
+        return {**result, "wiring": wiring_result}
+
+    # Normal setting — admin_value_json guncelle
+    from sqlalchemy import select as sa_select
+    from app.db.models import Setting as SettingModel
+    stmt = sa_select(SettingModel).where(SettingModel.key == key)
+    result = await db.execute(stmt)
+    row = result.scalar_one_or_none()
+
+    admin_json = json.dumps(body.value)
+
+    if row is not None:
+        row.admin_value_json = admin_json
+        row.version = row.version + 1
+    else:
+        # Seed etmemis olabilir — yeni satir olustur
+        meta = KNOWN_SETTINGS[key]
+        builtin = meta.get("builtin_default")
+        row = SettingModel(
+            key=key,
+            group_name=meta.get("group", "general"),
+            type=meta.get("type", "string"),
+            default_value_json=json.dumps(builtin) if builtin is not None else "null",
+            admin_value_json=admin_json,
+            user_override_allowed=False,
+            visible_to_user=False,
+            visible_in_wizard=False,
+            read_only_for_user=True,
+            module_scope=meta.get("module_scope"),
+            help_text=meta.get("help_text", ""),
+            validation_rules_json="{}",
+            status="active",
+        )
+        db.add(row)
+
+    await db.commit()
+    await db.refresh(row)
+
+    # Return updated effective state
+    item = await settings_explain(key, db)
+    return item
 
 
 # ---------------------------------------------------------------------------

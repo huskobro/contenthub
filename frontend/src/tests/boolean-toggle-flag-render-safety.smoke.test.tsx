@@ -171,12 +171,15 @@ describe("No raw boolean interpolation in detail panels", () => {
   }
 });
 
-// ─── No checkbox inputs receive null/undefined checked ────────────
+// ─── Checkbox inputs must use explicit checked={boolean} ─────────
+// M10: EffectiveSettingsPanel uses a checkbox for wired-only filter.
+// Guard: every checkbox must have explicit `checked` prop bound to state,
+// not an uncontrolled default.
 
-describe("No checkbox inputs in codebase (no null checked risk)", () => {
-  it("no type=checkbox inputs exist in components", () => {
+describe("Checkbox inputs use explicit checked prop (no null checked risk)", () => {
+  it("all type=checkbox inputs in components have explicit checked prop", () => {
     const componentsDir = path.join(SRC, "components");
-    let hasCheckbox = false;
+    const issues: string[] = [];
 
     function walk(dir: string) {
       for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -185,14 +188,16 @@ describe("No checkbox inputs in codebase (no null checked risk)", () => {
         else if (entry.name.endsWith(".tsx") || entry.name.endsWith(".ts")) {
           const content = fs.readFileSync(full, "utf-8");
           if (content.includes('type="checkbox"') || content.includes("type='checkbox'")) {
-            hasCheckbox = true;
+            // Every checkbox must have a `checked={` prop
+            if (!content.includes("checked={")) {
+              issues.push(entry.name);
+            }
           }
         }
       }
     }
 
     walk(componentsDir);
-    // If checkboxes are added in the future, this test will flag them for review
-    expect(hasCheckbox).toBe(false);
+    expect(issues).toEqual([]);
   });
 });
