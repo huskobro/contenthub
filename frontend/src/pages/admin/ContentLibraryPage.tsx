@@ -195,7 +195,7 @@ export function ContentLibraryPage() {
           data-testid="library-filters-deferred"
         >
           <span style={{ fontSize: "0.75rem", color: "#94a3b8" }}>
-            Filtre ve arama islevleri icerik kutuphanesi backend entegrasyonu ile aktif edilecektir.
+            Filtreleme backend entegrasyonu tamamlaninca aktif olacaktir. Status filtresi yalnizca standart video endpointinde mevcut.
           </span>
         </div>
       </div>

@@ -105,6 +105,32 @@ export async function fetchYouTubeChannelInfo(): Promise<YouTubeChannelInfo> {
   return res.json();
 }
 
+// YouTube Video Stats
+export interface VideoStatsItem {
+  video_id: string;
+  title: string;
+  published_at: string | null;
+  view_count: number;
+  like_count: number;
+  comment_count: number;
+}
+
+export interface VideoStatsResponse {
+  videos: VideoStatsItem[];
+  total_views: number;
+  total_likes: number;
+  total_comments: number;
+  video_count: number;
+}
+
+export async function fetchYouTubeVideoStats(): Promise<VideoStatsResponse> {
+  const res = await fetch(`${YT_BASE}/video-stats`);
+  if (!res.ok) {
+    throw new Error(`YouTube video stats: ${res.status}`);
+  }
+  return res.json();
+}
+
 export async function getYouTubeAuthUrl(redirectUri: string): Promise<string> {
   const params = new URLSearchParams({ redirect_uri: redirectUri });
   const res = await fetch(`${YT_BASE}/auth-url?${params}`);

@@ -5,6 +5,7 @@ import {
   validateCredential,
   fetchYouTubeStatus,
   fetchYouTubeChannelInfo,
+  fetchYouTubeVideoStats,
   revokeYouTubeCredentials,
 } from "../api/credentialsApi";
 
@@ -43,6 +44,15 @@ export function useYouTubeChannelInfo() {
   return useQuery({
     queryKey: ["youtube", "channel-info"],
     queryFn: fetchYouTubeChannelInfo,
+  });
+}
+
+export function useYouTubeVideoStats() {
+  return useQuery({
+    queryKey: ["youtube", "video-stats"],
+    queryFn: fetchYouTubeVideoStats,
+    retry: false,
+    staleTime: 60_000,
   });
 }
 

@@ -1,4 +1,4 @@
-import { useYouTubeStatus, useYouTubeChannelInfo } from "../../hooks/useCredentials";
+import { useYouTubeStatus, useYouTubeChannelInfo, useYouTubeVideoStats } from "../../hooks/useCredentials";
 
 const CONTAINER: React.CSSProperties = {
   maxWidth: "800px",
@@ -40,9 +40,47 @@ const STAT_LABEL: React.CSSProperties = {
   marginTop: "0.125rem",
 };
 
+const TABLE_STYLE: React.CSSProperties = {
+  width: "100%",
+  borderCollapse: "collapse",
+  fontSize: "0.8125rem",
+};
+
+const TH_STYLE: React.CSSProperties = {
+  textAlign: "left",
+  padding: "0.5rem 0.75rem",
+  borderBottom: "2px solid #e2e8f0",
+  fontSize: "0.6875rem",
+  fontWeight: 600,
+  color: "#64748b",
+  textTransform: "uppercase",
+  letterSpacing: "0.05em",
+};
+
+const TD_STYLE: React.CSSProperties = {
+  padding: "0.5rem 0.75rem",
+  borderBottom: "1px solid #f1f5f9",
+  color: "#334155",
+};
+
+const TD_NUM: React.CSSProperties = {
+  ...TD_STYLE,
+  textAlign: "right",
+  fontVariantNumeric: "tabular-nums",
+};
+
+function fmtNum(n: number): string {
+  return n.toLocaleString("tr-TR");
+}
+
 export function YouTubeAnalyticsPage() {
   const { data: ytStatus, isLoading: statusLoading } = useYouTubeStatus();
   const { data: channelInfo, isLoading: channelLoading } = useYouTubeChannelInfo();
+  const {
+    data: videoStats,
+    isLoading: statsLoading,
+    error: statsError,
+  } = useYouTubeVideoStats();
 
   const isLoading = statusLoading || channelLoading;
   const isConnected = ytStatus?.has_credentials === true;
@@ -62,7 +100,7 @@ export function YouTubeAnalyticsPage() {
           lineHeight: 1.5,
         }}
       >
-        Bagli YouTube kanalinin temel bilgileri ve yayin durumu.
+        Bagli YouTube kanalinin temel bilgileri ve yayin istatistikleri.
       </p>
 
       {isLoading && (
@@ -78,7 +116,6 @@ export function YouTubeAnalyticsPage() {
               padding: "2rem 1rem",
             }}
           >
-            <div style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>&#x1F6AA;</div>
             <p style={{ fontSize: "0.875rem", color: "#475569", margin: "0 0 0.5rem" }}>
               YouTube hesabi bagli degil.
             </p>
@@ -126,7 +163,7 @@ export function YouTubeAnalyticsPage() {
                 <div style={STAT_VALUE}>
                   {channelInfo?.subscriber_count
                     ? Number(channelInfo.subscriber_count).toLocaleString("tr-TR")
-                    : "—"}
+                    : "\u2014"}
                 </div>
                 <div style={STAT_LABEL}>Abone</div>
               </div>
@@ -134,38 +171,105 @@ export function YouTubeAnalyticsPage() {
                 <div style={STAT_VALUE}>
                   {channelInfo?.video_count
                     ? Number(channelInfo.video_count).toLocaleString("tr-TR")
-                    : "—"}
+                    : "\u2014"}
                 </div>
                 <div style={STAT_LABEL}>Video</div>
               </div>
             </div>
           </div>
 
-          {/* Future: Published videos from ContentHub */}
+          {/* Video Stats Summary */}
           <div style={CARD}>
             <div style={{ fontSize: "0.8125rem", fontWeight: 600, color: "#334155", marginBottom: "0.5rem" }}>
-              ContentHub Yayinlari
+              ContentHub Yayinlari — Istatistikler
             </div>
-            <p style={{ fontSize: "0.75rem", color: "#94a3b8", margin: 0 }}>
-              Bu bolum, ContentHub uzerinden yayinlanan videolarin YouTube performans
-              metriklerini gosterecektir. Surekli bu yetkilendirmede YouTube Analytics API
-              scope'u eklendikten sonra aktif olacaktir.
-            </p>
-            <div
-              style={{
-                marginTop: "0.75rem",
-                padding: "0.5rem 0.75rem",
-                background: "#fffbeb",
-                borderRadius: "4px",
-                border: "1px solid #fef08a",
-                fontSize: "0.6875rem",
-                color: "#854d0e",
-              }}
-            >
-              YouTube Analytics API entegrasyonu henuz tamamlanmadi.
-              Mevcut OAuth yetkisi yalnizca video yukleme (youtube.upload) scope'u ile sinirlidir.
-              Analytics icin youtube.readonly scope'u gerekecektir.
-            </div>
+
+            {statsLoading && (
+              <p style={{ fontSize: "0.75rem", color: "#64748b" }}>Video istatistikleri yukleniyor...</p>
+            )}
+
+            {statsError && (
+              <div
+                style={{
+                  padding: "0.5rem 0.75rem",
+                  background: "#fef2f2",
+                  borderRadius: "4px",
+                  border: "1px solid #fecaca",
+                  fontSize: "0.75rem",
+                  color: "#991b1b",
+                }}
+              >
+                YouTube API hatasi: {statsError instanceof Error ? statsError.message : "Bilinmeyen hata"}
+              </div>
+            )}
+
+            {!statsLoading && !statsError && videoStats && videoStats.video_count === 0 && (
+              <p style={{ fontSize: "0.75rem", color: "#94a3b8", margin: 0 }}>
+                Henuz YouTube'a yayinlanmis video bulunmuyor.
+              </p>
+            )}
+
+            {!statsLoading && !statsError && videoStats && videoStats.video_count > 0 && (
+              <>
+                {/* Summary cards */}
+                <div style={STAT_ROW}>
+                  <div style={STAT_CARD}>
+                    <div style={STAT_VALUE}>{fmtNum(videoStats.total_views)}</div>
+                    <div style={STAT_LABEL}>Toplam Goruntulenme</div>
+                  </div>
+                  <div style={STAT_CARD}>
+                    <div style={STAT_VALUE}>{fmtNum(videoStats.total_likes)}</div>
+                    <div style={STAT_LABEL}>Toplam Begeni</div>
+                  </div>
+                  <div style={STAT_CARD}>
+                    <div style={STAT_VALUE}>{fmtNum(videoStats.total_comments)}</div>
+                    <div style={STAT_LABEL}>Toplam Yorum</div>
+                  </div>
+                  <div style={STAT_CARD}>
+                    <div style={STAT_VALUE}>{fmtNum(videoStats.video_count)}</div>
+                    <div style={STAT_LABEL}>Yayinlanan Video</div>
+                  </div>
+                </div>
+
+                {/* Video table */}
+                <div style={{ marginTop: "1rem", overflowX: "auto" }}>
+                  <table style={TABLE_STYLE}>
+                    <thead>
+                      <tr>
+                        <th style={TH_STYLE}>Video</th>
+                        <th style={{ ...TH_STYLE, textAlign: "right" }}>Goruntulenme</th>
+                        <th style={{ ...TH_STYLE, textAlign: "right" }}>Begeni</th>
+                        <th style={{ ...TH_STYLE, textAlign: "right" }}>Yorum</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {videoStats.videos.map((v) => (
+                        <tr key={v.video_id}>
+                          <td style={TD_STYLE}>
+                            <a
+                              href={`https://www.youtube.com/watch?v=${v.video_id}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{ color: "#1e40af", textDecoration: "none" }}
+                            >
+                              {v.title || v.video_id}
+                            </a>
+                            {v.published_at && (
+                              <div style={{ fontSize: "0.625rem", color: "#94a3b8", marginTop: "0.125rem" }}>
+                                {new Date(v.published_at).toLocaleDateString("tr-TR")}
+                              </div>
+                            )}
+                          </td>
+                          <td style={TD_NUM}>{fmtNum(v.view_count)}</td>
+                          <td style={TD_NUM}>{fmtNum(v.like_count)}</td>
+                          <td style={TD_NUM}>{fmtNum(v.comment_count)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
+            )}
           </div>
         </>
       )}

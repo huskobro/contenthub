@@ -7,6 +7,7 @@ Endpoint'ler:
   GET  /publish/youtube/auth-url      : OAuth2 yetkilendirme URL'i üretir
   POST /publish/youtube/auth-callback : Authorization code'u token ile takas eder
   GET  /publish/youtube/status        : Token durumu (var mı / süresi dolmuş mu)
+  GET  /publish/youtube/video-stats   : Yayınlanan videoların YouTube istatistikleri
   DELETE /publish/youtube/revoke      : Token dosyasını siler
 
 Güvenlik notu:
@@ -23,11 +24,14 @@ Yetkilendirme akışı:
   6. Bundan sonra upload/activate zinciri çalışabilir
 """
 
+from __future__ import annotations
+
 import logging
-from typing import Optional
+from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
@@ -263,6 +267,145 @@ async def get_channel_info():
         return ChannelInfoResponse(
             connected=True,
             message=f"Kanal bilgisi alınamadı: {exc}",
+        )
+
+
+# ---------------------------------------------------------------------------
+# Video Stats şemaları
+# ---------------------------------------------------------------------------
+
+class VideoStatsItem(BaseModel):
+    video_id: str
+    title: str
+    published_at: Optional[str] = None
+    view_count: int = 0
+    like_count: int = 0
+    comment_count: int = 0
+
+
+class VideoStatsResponse(BaseModel):
+    videos: List[VideoStatsItem]
+    total_views: int
+    total_likes: int
+    total_comments: int
+    video_count: int
+
+
+@router.get("/video-stats", response_model=VideoStatsResponse)
+async def get_video_stats(db: AsyncSession = Depends(get_db)):
+    """
+    ContentHub uzerinden yayinlanan videolarin YouTube istatistiklerini dondurur.
+
+    PublishRecord tablosundan platform='youtube' ve status='published' kayitlarini
+    bulur, her birinin platform_video_id'si icin YouTube Data API v3'ten
+    istatistik ceker.
+
+    youtube.upload scope'u ile videos.list endpoint'i calisiyor.
+    """
+    if not _token_store.has_credentials():
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="YouTube kimlik bilgileri bulunamadi. Ayarlar > YouTube baglantisindan yetkilendirme yapin.",
+        )
+
+    try:
+        access_token = await _token_store.get_access_token()
+    except YouTubeAuthError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=f"YouTube token alinamadi: {exc}",
+        )
+
+    # DB'den yayinlanmis videolarin platform_video_id'lerini cek
+    from app.db.models import PublishRecord
+
+    stmt = (
+        select(PublishRecord.platform_video_id)
+        .where(
+            PublishRecord.platform == "youtube",
+            PublishRecord.status == "published",
+            PublishRecord.platform_video_id.isnot(None),
+            PublishRecord.platform_video_id != "",
+        )
+        .order_by(PublishRecord.published_at.desc())
+        .limit(50)
+    )
+    result = await db.execute(stmt)
+    video_ids = [row[0] for row in result.fetchall()]
+
+    if not video_ids:
+        return VideoStatsResponse(
+            videos=[],
+            total_views=0,
+            total_likes=0,
+            total_comments=0,
+            video_count=0,
+        )
+
+    # YouTube Data API v3 — videos.list (batch, max 50)
+    import httpx
+
+    ids_param = ",".join(video_ids)
+    try:
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            resp = await client.get(
+                "https://www.googleapis.com/youtube/v3/videos",
+                params={
+                    "part": "statistics,snippet",
+                    "id": ids_param,
+                },
+                headers={"Authorization": f"Bearer {access_token}"},
+            )
+        if resp.status_code != 200:
+            logger.error("YouTube video-stats API hatasi: HTTP %s — %s", resp.status_code, resp.text[:300])
+            raise HTTPException(
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail=f"YouTube API hatasi: HTTP {resp.status_code}",
+            )
+
+        data = resp.json()
+        items = data.get("items", [])
+
+        videos: List[VideoStatsItem] = []
+        total_views = 0
+        total_likes = 0
+        total_comments = 0
+
+        for item in items:
+            snippet = item.get("snippet", {})
+            stats = item.get("statistics", {})
+            views = int(stats.get("viewCount", 0))
+            likes = int(stats.get("likeCount", 0))
+            comments = int(stats.get("commentCount", 0))
+            total_views += views
+            total_likes += likes
+            total_comments += comments
+            videos.append(
+                VideoStatsItem(
+                    video_id=item.get("id", ""),
+                    title=snippet.get("title", ""),
+                    published_at=snippet.get("publishedAt"),
+                    view_count=views,
+                    like_count=likes,
+                    comment_count=comments,
+                )
+            )
+
+        return VideoStatsResponse(
+            videos=videos,
+            total_views=total_views,
+            total_likes=total_likes,
+            total_comments=total_comments,
+            video_count=len(videos),
+        )
+
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.error("YouTube video-stats beklenmeyen hata: %s", exc)
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"YouTube API hatasi: {exc}",
         )
 
 

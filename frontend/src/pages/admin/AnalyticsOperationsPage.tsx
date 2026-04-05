@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAnalyticsOperations } from "../../hooks/useAnalyticsOperations";
+import { useAnalyticsOverview } from "../../hooks/useAnalyticsOverview";
 import type { AnalyticsWindow, StepStat } from "../../api/analyticsApi";
 
 const SUBTITLE: React.CSSProperties = {
@@ -79,6 +80,11 @@ const WINDOW_OPTIONS: { value: AnalyticsWindow; label: string }[] = [
   { value: "all_time", label: "Tüm Zamanlar" },
 ];
 
+function fmtRate(v: number | null | undefined): string {
+  if (v == null) return "—";
+  return `${(v * 100).toFixed(1)}%`;
+}
+
 function fmtSeconds(v: number | null | undefined): string {
   if (v == null) return "—";
   if (v < 60) return `${v.toFixed(1)}s`;
@@ -93,7 +99,9 @@ function fmtCount(v: number | null | undefined): string {
 export function AnalyticsOperationsPage() {
   const [window, setWindow] = useState<AnalyticsWindow>("last_30d");
   const { data, isLoading, isError } = useAnalyticsOperations(window);
+  const { data: overviewData, isLoading: overviewLoading } = useAnalyticsOverview(window);
 
+  const anyLoading = isLoading || overviewLoading;
   const stepStats: StepStat[] = data?.step_stats ?? [];
   const sortedSteps = [...stepStats].sort((a, b) => b.count - a.count);
 
@@ -178,17 +186,23 @@ export function AnalyticsOperationsPage() {
         <div style={METRIC_GRID}>
           <div style={METRIC_CARD} data-testid="ops-metric-total-jobs">
             <p style={METRIC_LABEL}>Toplam Is</p>
-            <p style={METRIC_VALUE}>—</p>
+            <p style={METRIC_VALUE} data-testid="ops-metric-total-jobs-value">
+              {anyLoading ? "…" : fmtCount(overviewData?.total_job_count)}
+            </p>
             <p style={METRIC_NOTE}>Olusturulan tum isler</p>
           </div>
           <div style={METRIC_CARD} data-testid="ops-metric-completed">
             <p style={METRIC_LABEL}>Tamamlanan</p>
-            <p style={METRIC_VALUE}>—</p>
+            <p style={METRIC_VALUE} data-testid="ops-metric-completed-value">
+              {anyLoading ? "…" : fmtCount(overviewData?.completed_job_count)}
+            </p>
             <p style={METRIC_NOTE}>Basariyla biten isler</p>
           </div>
           <div style={METRIC_CARD} data-testid="ops-metric-failed">
             <p style={METRIC_LABEL}>Basarisiz</p>
-            <p style={METRIC_VALUE}>—</p>
+            <p style={METRIC_VALUE} data-testid="ops-metric-failed-value">
+              {anyLoading ? "…" : fmtCount(overviewData?.failed_job_count)}
+            </p>
             <p style={METRIC_NOTE}>Hata ile sonuclanan isler</p>
           </div>
           <div style={METRIC_CARD} data-testid="ops-metric-avg-render">
@@ -212,15 +226,15 @@ export function AnalyticsOperationsPage() {
         <div style={METRIC_GRID}>
           <div style={METRIC_CARD} data-testid="ops-metric-provider-calls">
             <p style={METRIC_LABEL}>Provider Cagrisi</p>
-            <p style={METRIC_VALUE}>—</p>
-            <p style={METRIC_NOTE}>Toplam dis servis cagrisi</p>
+            <p style={{ ...METRIC_VALUE, color: "#94a3b8" }}>—</p>
+            <p style={METRIC_NOTE}>Veri kaynagi yok — toplam cagri sayisi metrigi henuz mevcut degil</p>
           </div>
           <div style={METRIC_CARD} data-testid="ops-metric-provider-errors">
-            <p style={METRIC_LABEL}>Provider Hatasi</p>
+            <p style={METRIC_LABEL}>Provider Hata Orani</p>
             <p style={METRIC_VALUE} data-testid="ops-metric-provider-error-value">
-              —
+              {isLoading ? "…" : fmtRate(data?.provider_error_rate)}
             </p>
-            <p style={METRIC_NOTE}>M8-C2: henuz desteklenmiyor</p>
+            <p style={METRIC_NOTE}>script/metadata/tts/visuals adimlarinin basarisizlik orani</p>
           </div>
         </div>
       </div>

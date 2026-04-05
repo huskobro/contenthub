@@ -232,7 +232,7 @@ export function AnalyticsOverviewPage() {
             <p style={METRIC_VALUE} data-testid="ops-metric-provider-error-value">
               —
             </p>
-            <p style={METRIC_NOTE}>Dis servis hatalari (M8-C2: desteklenmiyor)</p>
+            <p style={METRIC_NOTE}>Detay icin Operasyon Metrikleri sayfasina bakiniz</p>
           </div>
         </div>
       </div>
@@ -297,18 +297,18 @@ export function AnalyticsOverviewPage() {
         <div style={METRIC_GRID}>
           <div style={METRIC_CARD} data-testid="metric-total-content">
             <p style={METRIC_LABEL}>Toplam Icerik</p>
-            <p style={METRIC_VALUE}>—</p>
-            <p style={METRIC_NOTE}>Uretilen tum icerikler</p>
+            <p style={{ ...METRIC_VALUE, color: "#94a3b8" }}>—</p>
+            <p style={METRIC_NOTE}>Veri kaynagi yok — backend content_count metrigi henuz mevcut degil</p>
           </div>
           <div style={METRIC_CARD} data-testid="metric-active-modules">
             <p style={METRIC_LABEL}>Aktif Moduller</p>
-            <p style={METRIC_VALUE}>—</p>
-            <p style={METRIC_NOTE}>Kullanilan uretim modulleri</p>
+            <p style={{ ...METRIC_VALUE, color: "#94a3b8" }}>—</p>
+            <p style={METRIC_NOTE}>Veri kaynagi yok — modul kullanim metrigi henuz mevcut degil</p>
           </div>
           <div style={METRIC_CARD} data-testid="metric-template-impact">
             <p style={METRIC_LABEL}>Sablon Etkisi</p>
-            <p style={METRIC_VALUE}>—</p>
-            <p style={METRIC_NOTE}>En cok kullanilan sablonlar</p>
+            <p style={{ ...METRIC_VALUE, color: "#94a3b8" }}>—</p>
+            <p style={METRIC_NOTE}>Veri kaynagi yok — sablon etki metrigi henuz mevcut degil</p>
           </div>
         </div>
       </div>
@@ -360,7 +360,7 @@ export function AnalyticsOverviewPage() {
           </div>
         </div>
         <p style={{ margin: "0.5rem 0 0", fontSize: "0.6875rem", color: "#cbd5e1" }} data-testid="filter-disabled-note">
-          Filtreler backend entegrasyonu ile etkinlestirilecektir.
+          Tarih araligi ve modul filtreleri backend entegrasyonu tamamlaninca aktif olacaktir. Zaman penceresi secici yukarda aktiftir.
         </p>
       </div>
 

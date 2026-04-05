@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { useVisibility } from "../hooks/useVisibility";
 
 const SECTION: React.CSSProperties = {
   marginBottom: "1.5rem",
@@ -41,7 +42,15 @@ const CARD_DESC: React.CSSProperties = {
   lineHeight: 1.5,
 };
 
-const QUICK_LINKS = [
+interface QuickLink {
+  title: string;
+  desc: string;
+  to: string;
+  testId: string;
+  visibilityKey?: string;
+}
+
+const QUICK_LINKS: QuickLink[] = [
   {
     title: "Icerik Kutuphanesi",
     desc: "Tum icerik kayitlarini tek yuzeyden goruntuleyip yonetin",
@@ -65,12 +74,14 @@ const QUICK_LINKS = [
     desc: "Haber kaynaklarini yonet ve tara",
     to: "/admin/sources",
     testId: "quick-link-sources",
+    visibilityKey: "panel:sources",
   },
   {
     title: "Sablonlar",
     desc: "Uretim hattinin yapi taslari: icerik, stil ve yayin sablonlarini yonet",
     to: "/admin/templates",
     testId: "quick-link-templates",
+    visibilityKey: "panel:templates",
   },
   {
     title: "Isler",
@@ -83,6 +94,7 @@ const QUICK_LINKS = [
     desc: "Ayar kayitlarini ve governance durumunu yonet",
     to: "/admin/settings",
     testId: "quick-link-settings",
+    visibilityKey: "panel:settings",
   },
   {
     title: "Haber Bultenleri",
@@ -95,11 +107,32 @@ const QUICK_LINKS = [
     desc: "Uretim metrikleri, raporlama ve karar destek ozetlerini goruntule",
     to: "/admin/analytics",
     testId: "quick-link-analytics",
+    visibilityKey: "panel:analytics",
   },
 ];
 
+function useFilteredQuickLinks(): QuickLink[] {
+  const settings = useVisibility("panel:settings");
+  const sources = useVisibility("panel:sources");
+  const templates = useVisibility("panel:templates");
+  const analytics = useVisibility("panel:analytics");
+
+  const guardMap: Record<string, boolean> = {
+    "panel:settings": settings.visible,
+    "panel:sources": sources.visible,
+    "panel:templates": templates.visible,
+    "panel:analytics": analytics.visible,
+  };
+
+  return QUICK_LINKS.filter((link) => {
+    if (!link.visibilityKey) return true;
+    return guardMap[link.visibilityKey] !== false;
+  });
+}
+
 export function AdminOverviewPage() {
   const navigate = useNavigate();
+  const filteredLinks = useFilteredQuickLinks();
 
   return (
     <div>
@@ -127,7 +160,7 @@ export function AdminOverviewPage() {
           Hizli Erisim
         </h3>
         <div style={GRID}>
-          {QUICK_LINKS.map((link) => (
+          {filteredLinks.map((link) => (
             <div
               key={link.to}
               style={CARD}

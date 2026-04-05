@@ -32,3 +32,22 @@ export async function fetchVisibilityRuleById(id: string): Promise<VisibilityRul
   }
   return res.json();
 }
+
+export interface VisibilityResolution {
+  visible: boolean;
+  read_only: boolean;
+  wizard_visible: boolean;
+}
+
+export async function resolveVisibility(
+  targetKey: string,
+  params?: { role?: string; mode?: string; module_scope?: string },
+): Promise<VisibilityResolution> {
+  const searchParams = new URLSearchParams({ target_key: targetKey });
+  if (params?.role) searchParams.set("role", params.role);
+  if (params?.mode) searchParams.set("mode", params.mode);
+  if (params?.module_scope) searchParams.set("module_scope", params.module_scope);
+  const resp = await fetch(`${BASE_URL}/resolve?${searchParams}`);
+  if (!resp.ok) return { visible: true, read_only: false, wizard_visible: false };
+  return resp.json();
+}
