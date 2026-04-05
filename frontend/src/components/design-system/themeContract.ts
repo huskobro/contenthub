@@ -250,21 +250,21 @@ export const DEFAULT_THEME: ThemeManifest = {
   name: "Obsidian Slate",
   description: "ContentHub'un varsayilan temasi. Profesyonel, temiz ve modern bir admin deneyimi sunar.",
   author: "system",
-  version: "1.0.0",
+  version: "1.1.0",
   tone: ["professional", "clean", "modern", "neutral"],
 
   typography: {
     heading: {
-      family: "Inter",
-      stack: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+      family: "Plus Jakarta Sans",
+      stack: "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
     },
     body: {
-      family: "Inter",
-      stack: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+      family: "Plus Jakarta Sans",
+      stack: "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
     },
     mono: {
-      family: "JetBrains Mono",
-      stack: "'JetBrains Mono', 'SF Mono', 'Fira Code', monospace",
+      family: "Geist Mono",
+      stack: "'Geist Mono', 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace",
     },
     size: {
       xs: "0.6875rem",
@@ -278,7 +278,7 @@ export const DEFAULT_THEME: ThemeManifest = {
     },
     weight: { normal: 400, medium: 500, semibold: 600, bold: 700 },
     lineHeight: { tight: 1.25, normal: 1.5, relaxed: 1.625 },
-    letterSpacing: { tight: "-0.01em", normal: "0", wide: "0.05em" },
+    letterSpacing: { tight: "-0.02em", normal: "0", wide: "0.06em" },
   },
 
   colors: {
@@ -485,15 +485,15 @@ export const EXAMPLE_WARM_EARTH_THEME: ThemeManifest = {
   typography: {
     heading: {
       family: "DM Sans",
-      stack: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+      stack: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
     },
     body: {
       family: "DM Sans",
-      stack: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+      stack: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
     },
     mono: {
-      family: "JetBrains Mono",
-      stack: "'JetBrains Mono', 'SF Mono', 'Fira Code', monospace",
+      family: "Geist Mono",
+      stack: "'Geist Mono', 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace",
     },
     size: {
       xs: "0.6875rem", sm: "0.75rem", base: "0.8125rem", md: "0.875rem",

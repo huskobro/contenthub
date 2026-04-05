@@ -43,7 +43,7 @@ export function PageShell({ title, subtitle, breadcrumb, actions, children, test
       )}
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: spacing[6], gap: spacing[4] }}>
         <div>
-          <h1 style={{ margin: 0, fontSize: typography.size["2xl"], fontWeight: typography.weight.bold, color: colors.neutral[900], lineHeight: typography.lineHeight.tight }} data-testid={testId ? `${testId}-heading` : undefined}>
+          <h1 style={{ margin: 0, fontSize: typography.size["2xl"], fontWeight: typography.weight.bold, color: colors.neutral[900], lineHeight: typography.lineHeight.tight, fontFamily: typography.headingFamily, letterSpacing: "-0.02em" }} data-testid={testId ? `${testId}-heading` : undefined}>
             {title}
           </h1>
           {subtitle && (
@@ -92,7 +92,7 @@ export function SectionShell({ title, description, actions, children, testId, fl
       {(title || description || actions) && (
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: (title || description) ? spacing[4] : 0, padding: flush ? `${spacing[5]} ${spacing[5]} 0` : 0 }}>
           <div>
-            {title && <h3 style={{ margin: 0, fontSize: typography.size.lg, fontWeight: typography.weight.semibold, color: colors.neutral[900] }}>{title}</h3>}
+            {title && <h3 style={{ margin: 0, fontSize: typography.size.lg, fontWeight: typography.weight.semibold, color: colors.neutral[900], fontFamily: typography.headingFamily, letterSpacing: "-0.015em" }}>{title}</h3>}
             {description && <p style={{ margin: `${spacing[1]} 0 0`, fontSize: typography.size.sm, color: colors.neutral[500], lineHeight: typography.lineHeight.normal }}>{description}</p>}
           </div>
           {actions && <div style={{ display: "flex", gap: spacing[2] }}>{actions}</div>}
@@ -138,7 +138,7 @@ export function MetricTile({ label, value, note, loading, testId, accentColor }:
       <p style={{ margin: 0, fontSize: typography.size.sm, color: colors.neutral[500], fontWeight: typography.weight.medium, letterSpacing: "0.01em" }}>
         {label}
       </p>
-      <p style={{ margin: `${spacing[1]} 0 0`, fontSize: typography.size["2xl"], fontWeight: typography.weight.bold, color: colors.neutral[900], lineHeight: 1.2, fontVariantNumeric: "tabular-nums" }} data-testid={testId ? `${testId}-value` : undefined}>
+      <p style={{ margin: `${spacing[1]} 0 0`, fontSize: typography.size["2xl"], fontWeight: typography.weight.bold, color: colors.neutral[900], lineHeight: 1.2, fontVariantNumeric: "tabular-nums", fontFamily: typography.headingFamily, letterSpacing: "-0.02em" }} data-testid={testId ? `${testId}-value` : undefined}>
         {loading ? "\u2026" : value}
       </p>
       {note && (

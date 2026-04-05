@@ -23,7 +23,7 @@ export function AppSidebar({ items }: AppSidebarProps) {
       style={{
         width: sidebarWidth,
         background: colors.surface.sidebar,
-        backgroundImage: `linear-gradient(180deg, rgba(76,110,245,0.03) 0%, transparent 40%)`,
+        backgroundImage: `linear-gradient(180deg, rgba(76,110,245,0.04) 0%, transparent 35%), radial-gradient(ellipse at 30% 0%, rgba(76,110,245,0.03) 0%, transparent 60%)`,
         flexShrink: 0,
         display: "flex",
         flexDirection: "column",
@@ -72,8 +72,8 @@ export function AppSidebar({ items }: AppSidebarProps) {
                 color: colors.neutral[0],
                 fontSize: typography.size.md,
                 fontWeight: typography.weight.semibold,
-                fontFamily: typography.fontFamily,
-                letterSpacing: "-0.01em",
+                fontFamily: typography.headingFamily,
+                letterSpacing: "-0.025em",
                 whiteSpace: "nowrap",
               }}
             >

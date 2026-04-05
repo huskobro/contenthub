@@ -347,7 +347,8 @@ export function AdminOverviewPage() {
               fontSize: typography.size.lg,
               fontWeight: typography.weight.bold,
               color: colors.brand[800],
-              letterSpacing: "-0.01em",
+              letterSpacing: "-0.02em",
+              fontFamily: typography.headingFamily,
             }}>
               Platform Metrikleri
             </h2>

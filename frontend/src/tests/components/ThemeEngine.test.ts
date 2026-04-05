@@ -5,8 +5,8 @@ import { DEFAULT_THEME, EXAMPLE_WARM_EARTH_THEME } from "../../components/design
 describe("generateCSSVariables", () => {
   it("generates CSS variables from default theme", () => {
     const vars = generateCSSVariables(DEFAULT_THEME);
-    expect(vars["--ch-font-body"]).toContain("Inter");
-    expect(vars["--ch-font-mono"]).toContain("JetBrains Mono");
+    expect(vars["--ch-font-body"]).toContain("Plus Jakarta Sans");
+    expect(vars["--ch-font-mono"]).toContain("Geist Mono");
     expect(vars["--ch-brand-500"]).toBe("#4f6fff");
     expect(vars["--ch-neutral-900"]).toBe("#212529");
     expect(vars["--ch-success-base"]).toBe("#37b24d");
@@ -50,9 +50,9 @@ describe("resolveTokens", () => {
   it("resolves token structure from default theme", () => {
     const tokens = resolveTokens(DEFAULT_THEME);
     expect(tokens.colors.brand[600]).toBe("#3d5afe");
-    expect(tokens.typography.fontFamily).toContain("Inter");
-    expect(tokens.typography.headingFamily).toContain("Inter");
-    expect(tokens.typography.monoFamily).toContain("JetBrains Mono");
+    expect(tokens.typography.fontFamily).toContain("Plus Jakarta Sans");
+    expect(tokens.typography.headingFamily).toContain("Plus Jakarta Sans");
+    expect(tokens.typography.monoFamily).toContain("Geist Mono");
     expect(tokens.spacing[4]).toBe("1rem");
     expect(tokens.radius.md).toBe("8px");
     expect(tokens.transition.fast).toContain("120ms");

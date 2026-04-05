@@ -103,12 +103,20 @@ Hicbir islevsellik bozulmadi. Command palette, discovery, quicklook, sheet, keyb
 | motion.easing | ease | cubic-bezier(0.2,0,0,1) |
 | typography.2xl | 1.375rem | 1.5rem |
 | typography.3xl | 1.75rem | 2rem |
+| heading.family | Inter | Plus Jakarta Sans |
+| body.family | Inter | Plus Jakarta Sans |
+| mono.family | JetBrains Mono | Geist Mono |
+| letterSpacing.tight | -0.01em | -0.02em |
+| letterSpacing.wide | 0.05em | 0.06em |
 
 ### tokens.ts
 - shadow export: xl ve 2xl eklendi (fallback ile)
 
 ### primitives.tsx
 - SectionShell: hover lift efekti (shadow.sm → shadow.md)
+- PageShell h1: headingFamily + letterSpacing -0.02em
+- SectionShell h3: headingFamily + letterSpacing -0.015em
+- MetricTile value: headingFamily + letterSpacing -0.02em
 - MetricTile: hover lift, gradient top accent, token font size
 - DataTable: inset header, brand hover, selected left border
 - ActionButton: gradient primary/danger, hover states tum varyantlar
@@ -117,6 +125,10 @@ Hicbir islevsellik bozulmadi. Command palette, discovery, quicklook, sheet, keyb
 - FilterInput/FilterSelect: focus ring (brand[400] border + brand[100] glow)
 
 ### index.css
+- Google Fonts import: Inter → Plus Jakarta Sans, JetBrains Mono → Geist Mono
+- body fallback font-family guncellendi
+- Heading elements: letter-spacing -0.02em, font-feature-settings ss01/ss02
+- Tabular-nums for metric/table data displays
 - palette-pulse keyframe animasyonu eklendi
 - placeholder color override
 
@@ -208,6 +220,34 @@ TypeScript  0 errors
 5. **AnalyticsContentPage module distribution tablosu**: DataTable'a gecildi ama DataTable'in mevcut column API'si bazi format gereksinimleri icin sinirli olabilir
 6. **Dark mode**: Hala eklenmedi — TAM yapilmadigi icin eklenmeyecek karari gecerli
 
-## 12. Commit Hash ve Push Durumu
+## 12. Tipografi ve Estetik Yukseltme (Frontend-Design Skill)
+
+### Motivasyon
+Frontend-design skill kurali: "NEVER use generic AI-generated aesthetics like overused font families (Inter, Roboto, Arial, system fonts)". Inter, her AI tarafindan onerilen varsayilan font olarak "slop" kategorisindeydi.
+
+### Font Degisiklikleri
+
+| Kullanim | Onceki | Yeni | Neden |
+|----------|--------|------|-------|
+| Heading | Inter | Plus Jakarta Sans | Geometrik humanist, sicak karakter, daha belirgin kisilik |
+| Body | Inter | Plus Jakarta Sans | Tutarli hiyerarsi, daha iyi okunabilirlik |
+| Mono | JetBrains Mono | Geist Mono | Vercel'in modern monospace fontu, daha temiz karakter |
+| Warm Earth heading | DM Sans | DM Sans (degismedi) | Zaten benzersiz secim |
+| Warm Earth mono | JetBrains Mono | Geist Mono | Tutarlilik |
+
+### Atmosferik Iyilestirmeler
+- Sidebar: Radial gradient overlay eklendi (derinlik efekti)
+- Heading letter-spacing: -0.02em (Plus Jakarta Sans'in geometrik karakterini guclendirir)
+- Brand text (ContentHub): headingFamily + -0.025em letter-spacing
+- CSS font-feature-settings: ss01/ss02 (stylistic alternates)
+- PageShell/SectionShell/MetricTile baslik ve deger: headingFamily explicit kullanimi
+
+### Uyumluluk
+- Google Fonts'ta her iki font da mevcut
+- Fallback stack: system fonts (graceful degradation)
+- Theme switching: Calisiyor (ThemeEngine Google Fonts link'i dinamik gunceller)
+- Tum testler gecti (0 yeni hata)
+
+## 13. Commit Hash ve Push Durumu
 
 (Bu rapor yazildiktan sonra commit ve push yapilacak)

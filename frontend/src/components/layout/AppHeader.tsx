@@ -45,8 +45,9 @@ export function AppHeader({ area }: AppHeaderProps) {
         style={{
           color: colors.neutral[600],
           fontSize: typography.size.md,
-          fontWeight: typography.weight.medium,
-          fontFamily: typography.fontFamily,
+          fontWeight: typography.weight.semibold,
+          fontFamily: typography.headingFamily,
+          letterSpacing: "-0.01em",
         }}
         data-testid="header-area-label"
       >
