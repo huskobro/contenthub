@@ -14,6 +14,7 @@ const MOCK_OPERATIONS: OperationsMetrics = {
     { step_key: "tts", count: 36, avg_elapsed_seconds: 8.1, failed_count: 0 },
   ],
   provider_error_rate: null,
+  provider_stats: [],
 };
 
 const MOCK_OPERATIONS_EMPTY: OperationsMetrics = {
@@ -21,6 +22,7 @@ const MOCK_OPERATIONS_EMPTY: OperationsMetrics = {
   avg_render_duration_seconds: null,
   step_stats: [],
   provider_error_rate: null,
+  provider_stats: [],
 };
 
 function buildFetch(payload: OperationsMetrics) {

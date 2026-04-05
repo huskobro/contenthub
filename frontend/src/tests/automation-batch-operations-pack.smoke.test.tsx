@@ -230,35 +230,34 @@ describe("Phase 312 — Retry/cancel/skip behavior clarity", () => {
     });
   });
 
-  it("actions panel mentions M14 milestone deferral", async () => {
+  it("actions panel shows operational actions heading", async () => {
     window.fetch = mockFetch(() => MOCK_JOB_DETAIL);
     renderAt("/admin/jobs/j2");
     await waitFor(() => {
       const panel = screen.getByTestId("job-actions-panel");
-      expect(panel.textContent).toContain("M14");
+      expect(panel.textContent).toContain("Operasyonel Aksiyonlar");
     });
   });
 
-  it("actions panel mentions Retry, Cancel, Skip by name", async () => {
+  it("actions panel mentions action labels by name", async () => {
     window.fetch = mockFetch(() => MOCK_JOB_DETAIL);
     renderAt("/admin/jobs/j2");
     await waitFor(() => {
       const panel = screen.getByTestId("job-actions-panel");
-      expect(panel.textContent).toContain("Retry");
-      expect(panel.textContent).toContain("Cancel");
-      expect(panel.textContent).toContain("Skip");
+      expect(panel.textContent).toContain("Yeniden Dene");
+      expect(panel.textContent).toContain("Iptal Et");
     });
   });
 
-  it("individual action cards are deferred (no action-retry testid)", async () => {
+  it("action buttons are present in the panel", async () => {
     window.fetch = mockFetch(() => MOCK_JOB_DETAIL);
     renderAt("/admin/jobs/j2");
     await waitFor(() => {
       expect(screen.getByTestId("job-actions-panel")).toBeDefined();
     });
-    expect(screen.queryByTestId("action-retry")).toBeNull();
-    expect(screen.queryByTestId("action-cancel")).toBeNull();
-    expect(screen.queryByTestId("action-skip")).toBeNull();
+    // M16: butonlar artik gercek — retry ve cancel butonlari mevcut
+    expect(screen.getByTestId("action-retry")).toBeDefined();
+    expect(screen.getByTestId("action-cancel")).toBeDefined();
   });
 });
 

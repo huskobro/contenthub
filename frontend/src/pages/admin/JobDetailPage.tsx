@@ -3,6 +3,7 @@ import { useJobDetail } from "../../hooks/useJobDetail";
 import { JobOverviewPanel } from "../../components/jobs/JobOverviewPanel";
 import { JobTimelinePanel } from "../../components/jobs/JobTimelinePanel";
 import { JobSystemPanels } from "../../components/jobs/JobSystemPanels";
+import { JobActionsPanel } from "../../components/jobs/JobActionsPanel";
 
 export function JobDetailPage() {
   const { jobId } = useParams<{ jobId: string }>();
@@ -60,21 +61,7 @@ export function JobDetailPage() {
       <JobTimelinePanel steps={job.steps} />
       <JobSystemPanels steps={job.steps} />
 
-      {/* Job actions — deferred to M14 */}
-      <div
-        style={{
-          border: "1px solid #e2e8f0",
-          borderRadius: "6px",
-          background: "#fafbfc",
-          padding: "0.75rem 1rem",
-          marginBottom: "1rem",
-          fontSize: "0.75rem",
-          color: "#94a3b8",
-        }}
-        data-testid="job-actions-panel"
-      >
-        Operasyonel aksiyonlar (Retry, Cancel, Skip) M14 milestone'unda aktif edilecektir.
-      </div>
+      <JobActionsPanel job={job} />
     </div>
   );
 }

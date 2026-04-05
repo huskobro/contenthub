@@ -24,6 +24,8 @@ export async function fetchAuditLogs(params?: {
   action?: string;
   entity_type?: string;
   entity_id?: string;
+  date_from?: string;
+  date_to?: string;
   limit?: number;
   offset?: number;
 }): Promise<AuditLogListResponse> {
@@ -31,6 +33,8 @@ export async function fetchAuditLogs(params?: {
   if (params?.action) qs.set("action", params.action);
   if (params?.entity_type) qs.set("entity_type", params.entity_type);
   if (params?.entity_id) qs.set("entity_id", params.entity_id);
+  if (params?.date_from) qs.set("date_from", params.date_from);
+  if (params?.date_to) qs.set("date_to", params.date_to);
   if (params?.limit) qs.set("limit", String(params.limit));
   if (params?.offset) qs.set("offset", String(params.offset));
   const suffix = qs.toString() ? `?${qs.toString()}` : "";

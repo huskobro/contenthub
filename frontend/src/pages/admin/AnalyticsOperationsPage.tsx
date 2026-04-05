@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAnalyticsOperations } from "../../hooks/useAnalyticsOperations";
 import { useAnalyticsOverview } from "../../hooks/useAnalyticsOverview";
-import type { AnalyticsWindow, StepStat } from "../../api/analyticsApi";
+import type { AnalyticsWindow, StepStat, ProviderStat } from "../../api/analyticsApi";
 
 const SUBTITLE: React.CSSProperties = {
   margin: "0 0 0.5rem",
@@ -104,6 +104,7 @@ export function AnalyticsOperationsPage() {
   const anyLoading = isLoading || overviewLoading;
   const stepStats: StepStat[] = data?.step_stats ?? [];
   const sortedSteps = [...stepStats].sort((a, b) => b.count - a.count);
+  const providerStats: ProviderStat[] = data?.provider_stats ?? [];
 
   return (
     <div>
@@ -221,13 +222,15 @@ export function AnalyticsOperationsPage() {
           Provider Sagligi
         </h3>
         <p style={{ margin: "0 0 0.75rem", fontSize: "0.75rem", color: "#94a3b8" }} data-testid="provider-health-note">
-          TTS, LLM ve YouTube gibi dis servislerin hata ve basari durumu.
+          TTS, LLM ve gorsel provider'larin hata ve basari durumu.
         </p>
         <div style={METRIC_GRID}>
           <div style={METRIC_CARD} data-testid="ops-metric-provider-calls">
-            <p style={METRIC_LABEL}>Provider Cagrisi</p>
-            <p style={{ ...METRIC_VALUE, color: "#94a3b8" }}>—</p>
-            <p style={METRIC_NOTE}>Veri kaynagi yok — toplam cagri sayisi metrigi henuz mevcut degil</p>
+            <p style={METRIC_LABEL}>Toplam Provider Cagrisi</p>
+            <p style={METRIC_VALUE} data-testid="ops-metric-provider-calls-value">
+              {isLoading ? "…" : fmtCount(providerStats.reduce((a, p) => a + p.total_calls, 0) || null)}
+            </p>
+            <p style={METRIC_NOTE}>Trace verisi olan cagrilar</p>
           </div>
           <div style={METRIC_CARD} data-testid="ops-metric-provider-errors">
             <p style={METRIC_LABEL}>Provider Hata Orani</p>
@@ -237,6 +240,54 @@ export function AnalyticsOperationsPage() {
             <p style={METRIC_NOTE}>script/metadata/tts/visuals adimlarinin basarisizlik orani</p>
           </div>
         </div>
+
+        {/* Provider bazli tablo */}
+        {!isLoading && providerStats.length > 0 && (
+          <div style={{ marginTop: "0.75rem", overflowX: "auto" }}>
+            <table style={TABLE_STYLE} data-testid="provider-stats-table">
+              <thead>
+                <tr>
+                  <th style={TH_STYLE}>Provider</th>
+                  <th style={TH_STYLE}>Tur</th>
+                  <th style={{ ...TH_STYLE, textAlign: "right" }}>Cagri</th>
+                  <th style={{ ...TH_STYLE, textAlign: "right" }}>Basarisiz</th>
+                  <th style={{ ...TH_STYLE, textAlign: "right" }}>Hata Orani</th>
+                  <th style={{ ...TH_STYLE, textAlign: "right" }}>Ort. Gecikme</th>
+                  <th style={{ ...TH_STYLE, textAlign: "right" }}>Tahmini Maliyet</th>
+                </tr>
+              </thead>
+              <tbody>
+                {providerStats.map((p: ProviderStat) => (
+                  <tr key={p.provider_name} data-testid={`provider-row-${p.provider_name}`}>
+                    <td style={TD_STYLE}>
+                      <code style={{ fontSize: "0.75rem", background: "#f1f5f9", padding: "0.1rem 0.3rem", borderRadius: "3px" }}>
+                        {p.provider_name}
+                      </code>
+                    </td>
+                    <td style={TD_STYLE}>{p.provider_kind}</td>
+                    <td style={{ ...TD_STYLE, textAlign: "right" }}>{fmtCount(p.total_calls)}</td>
+                    <td style={{ ...TD_STYLE, textAlign: "right", color: p.failed_calls > 0 ? "#ef4444" : "#0f172a" }}>
+                      {fmtCount(p.failed_calls)}
+                    </td>
+                    <td style={{ ...TD_STYLE, textAlign: "right" }}>{fmtRate(p.error_rate)}</td>
+                    <td style={{ ...TD_STYLE, textAlign: "right" }}>
+                      {p.avg_latency_ms != null ? `${(p.avg_latency_ms / 1000).toFixed(2)}s` : "—"}
+                    </td>
+                    <td style={{ ...TD_STYLE, textAlign: "right" }}>
+                      {p.total_estimated_cost_usd != null ? `$${p.total_estimated_cost_usd.toFixed(4)}` : "—"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {!isLoading && providerStats.length === 0 && (
+          <p style={{ marginTop: "0.5rem", fontSize: "0.8125rem", color: "#94a3b8" }} data-testid="provider-stats-empty">
+            Secilen donemde provider trace verisi yok.
+          </p>
+        )}
       </div>
 
       {/* Step Stats Table */}

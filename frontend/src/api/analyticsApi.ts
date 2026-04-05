@@ -23,11 +23,24 @@ export interface OverviewMetrics {
   retry_rate: number | null;
 }
 
+export interface ProviderStat {
+  provider_name: string;
+  provider_kind: string;
+  total_calls: number;
+  failed_calls: number;
+  error_rate: number | null;
+  avg_latency_ms: number | null;
+  total_estimated_cost_usd: number | null;
+  total_input_tokens: number | null;
+  total_output_tokens: number | null;
+}
+
 export interface OperationsMetrics {
   window: string;
   avg_render_duration_seconds: number | null;
   step_stats: StepStat[];
   provider_error_rate: number | null;
+  provider_stats: ProviderStat[];
 }
 
 export async function fetchOverviewMetrics(window: AnalyticsWindow): Promise<OverviewMetrics> {

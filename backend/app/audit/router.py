@@ -7,6 +7,7 @@ Endpoints:
 """
 
 import logging
+from datetime import datetime
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -48,6 +49,8 @@ async def list_audit_logs(
     action: Optional[str] = Query(None, description="Aksiyon prefix filtresi"),
     entity_type: Optional[str] = Query(None, description="Varlik tipi filtresi"),
     entity_id: Optional[str] = Query(None, description="Varlik ID filtresi"),
+    date_from: Optional[str] = Query(None, description="Baslangic tarihi (ISO format, ornek: 2026-01-01T00:00:00)"),
+    date_to: Optional[str] = Query(None, description="Bitis tarihi (ISO format, ornek: 2026-12-31T23:59:59)"),
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
     db: AsyncSession = Depends(get_db),
@@ -65,6 +68,22 @@ async def list_audit_logs(
     if entity_id:
         stmt = stmt.where(AuditLog.entity_id == entity_id)
         count_stmt = count_stmt.where(AuditLog.entity_id == entity_id)
+
+    # Tarih araligi filtreleri
+    if date_from:
+        try:
+            dt_from = datetime.fromisoformat(date_from)
+            stmt = stmt.where(AuditLog.created_at >= dt_from)
+            count_stmt = count_stmt.where(AuditLog.created_at >= dt_from)
+        except ValueError:
+            raise HTTPException(status_code=400, detail=f"Gecersiz date_from formati: {date_from!r}")
+    if date_to:
+        try:
+            dt_to = datetime.fromisoformat(date_to)
+            stmt = stmt.where(AuditLog.created_at <= dt_to)
+            count_stmt = count_stmt.where(AuditLog.created_at <= dt_to)
+        except ValueError:
+            raise HTTPException(status_code=400, detail=f"Gecersiz date_to formati: {date_to!r}")
 
     count_result = await db.execute(count_stmt)
     total = count_result.scalar() or 0

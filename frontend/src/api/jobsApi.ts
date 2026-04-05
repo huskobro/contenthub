@@ -48,3 +48,42 @@ export async function fetchJobById(id: string): Promise<JobResponse> {
   if (!res.ok) throw new Error(`Failed to fetch job ${id}: ${res.status}`);
   return res.json();
 }
+
+export interface AllowedActions {
+  can_cancel: boolean;
+  can_retry: boolean;
+  skippable_steps: string[];
+}
+
+export async function fetchAllowedActions(jobId: string): Promise<AllowedActions> {
+  const res = await fetch(`${BASE_URL}/${jobId}/allowed-actions`);
+  if (!res.ok) throw new Error(`Failed to fetch allowed actions: ${res.status}`);
+  return res.json();
+}
+
+export async function cancelJob(jobId: string): Promise<JobResponse> {
+  const res = await fetch(`${BASE_URL}/${jobId}/cancel`, { method: "POST" });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.detail || `Cancel failed: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function retryJob(jobId: string): Promise<JobResponse> {
+  const res = await fetch(`${BASE_URL}/${jobId}/retry`, { method: "POST" });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.detail || `Retry failed: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function skipStep(jobId: string, stepKey: string): Promise<JobResponse> {
+  const res = await fetch(`${BASE_URL}/${jobId}/steps/${stepKey}/skip`, { method: "POST" });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.detail || `Skip failed: ${res.status}`);
+  }
+  return res.json();
+}

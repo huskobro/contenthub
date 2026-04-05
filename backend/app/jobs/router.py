@@ -29,12 +29,26 @@ from app.db.session import get_db
 from app.jobs import service
 from app.jobs.schemas import JobCreate, JobCreateRequest, JobResponse, JobStepResponse
 from app.jobs.step_initializer import initialize_job_steps
+from app.jobs.exceptions import InvalidTransitionError, JobNotFoundError, StepNotFoundError
 from app.modules.exceptions import ModuleNotFoundError, InputValidationError
 from app.modules.input_normalizer import InputNormalizer
 from app.modules.registry import module_registry
 from app.jobs import workspace as ws
+from app.audit.service import write_audit_log
 
 router = APIRouter(prefix="/jobs", tags=["jobs"])
+
+# ---------------------------------------------------------------------------
+# Skip'e izin verilen step key'leri.
+# Sadece pipeline bütünlüğünü bozmayacak step'ler burada listelenir.
+# Downstream guard: composition/render gibi step'ler skip edildiğinde
+# sonraki step'ler çalışmaz çünkü job zaten pipeline'da değildir.
+# ---------------------------------------------------------------------------
+_SKIPPABLE_STEPS = frozenset({
+    "metadata",      # Metadata opsiyonel — script varsa video üretilebilir
+    "thumbnail",     # Thumbnail olmadan da video yayınlanabilir
+    "subtitles",     # Altyazı opsiyonel
+})
 
 
 @router.get("", response_model=list[JobResponse])
@@ -164,3 +178,183 @@ async def create_job(
     job_data = JobResponse.model_validate(job)
     job_data.steps = [JobStepResponse.model_validate(s) for s in steps]
     return job_data
+
+
+# ===========================================================================
+# M16 — Operational Actions
+# ===========================================================================
+
+
+@router.post("/{job_id}/cancel", response_model=JobResponse)
+async def cancel_job(job_id: str, db: AsyncSession = Depends(get_db)):
+    """
+    İşi iptal et. Yalnızca terminal olmayan durumlardan (queued, running,
+    waiting, retrying) iptal edilebilir.
+    """
+    try:
+        job = await service.transition_job_status(db, job_id, "cancelled")
+    except JobNotFoundError:
+        raise HTTPException(status_code=404, detail="İş bulunamadı")
+    except InvalidTransitionError as exc:
+        raise HTTPException(status_code=409, detail=str(exc))
+
+    # Çalışan step'leri de iptal et (failed olarak işaretle)
+    steps = await service.get_job_steps(db, job_id)
+    for step in steps:
+        if step.status == "running":
+            try:
+                await service.transition_step_status(
+                    db, job_id, step.step_key, "failed",
+                    last_error="Job cancelled by user",
+                )
+            except InvalidTransitionError:
+                pass  # step zaten terminal olmuş olabilir
+
+    await write_audit_log(
+        db, action="job.cancel", entity_type="job", entity_id=job_id,
+        actor_type="admin",
+        details={"previous_status": job.status, "new_status": "cancelled"},
+    )
+    await db.commit()
+
+    steps = await service.get_job_steps(db, job_id)
+    job_data = JobResponse.model_validate(job)
+    job_data.steps = [JobStepResponse.model_validate(s) for s in steps]
+    return job_data
+
+
+@router.post("/{job_id}/retry", response_model=JobResponse)
+async def retry_job(
+    job_id: str,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Başarısız bir işi yeniden dene. Yalnızca 'failed' durumundaki
+    işler yeniden denenebilir.
+
+    İşlem:
+      1. Job'u failed → retrying'e geçir
+      2. Başarısız step'leri pending'e sıfırla (geçici olarak doğrudan)
+      3. Job'u retrying → running'e geçir
+      4. Pipeline'ı yeniden başlat
+    """
+    job = await service.get_job(db, job_id)
+    if job is None:
+        raise HTTPException(status_code=404, detail="İş bulunamadı")
+    if job.status != "failed":
+        raise HTTPException(
+            status_code=409,
+            detail=f"Yalnızca 'failed' durumundaki işler yeniden denenebilir. Mevcut durum: {job.status!r}",
+        )
+
+    # State machine'de failed → retrying geçişi yok!
+    # Retry stratejisi: yeni bir job oluşturmak yerine, mevcut job'u
+    # doğrudan running'e almak da mümkün değil (failed terminal).
+    #
+    # Çözüm: "Rerun" pattern — aynı input ile yeni job oluştur.
+    # Bu CLAUDE.md'deki "Rerun/clone of a completed/failed job creates a
+    # NEW Job record rather than recycling the terminal state" kuralıyla uyumlu.
+
+    # Orijinal job'un input bilgilerini al
+    job_create = JobCreate(
+        module_type=job.module_type,
+        owner_id=job.owner_id,
+        template_id=job.template_id,
+        source_context_json=job.source_context_json,
+        input_data_json=job.input_data_json,
+        workspace_path=None,  # Yeni workspace oluşturulacak
+    )
+    new_job = await service.create_job(db, job_create)
+
+    # Adımları başlat
+    await initialize_job_steps(db, new_job.id, new_job.module_type, module_registry)
+
+    # Pipeline'ı başlat
+    dispatcher = getattr(request.app.state, "job_dispatcher", None)
+    if dispatcher is not None:
+        await dispatcher.dispatch(new_job.id)
+
+    await write_audit_log(
+        db, action="job.retry", entity_type="job", entity_id=new_job.id,
+        actor_type="admin",
+        details={"original_job_id": job_id, "new_job_id": new_job.id},
+    )
+    await db.commit()
+
+    steps = await service.get_job_steps(db, new_job.id)
+    job_data = JobResponse.model_validate(new_job)
+    job_data.steps = [JobStepResponse.model_validate(s) for s in steps]
+    return job_data
+
+
+@router.post("/{job_id}/steps/{step_key}/skip", response_model=JobResponse)
+async def skip_step(
+    job_id: str, step_key: str, db: AsyncSession = Depends(get_db),
+):
+    """
+    Belirtilen step'i atla. Yalnızca 'pending' durumundaki ve
+    _SKIPPABLE_STEPS listesindeki step'ler atlanabilir.
+
+    Skip edilen step'in downstream akışı bozmadığından emin olunur:
+    - Sadece güvenli step'lere izin verilir
+    - Pipeline bütünlüğü korunur
+    """
+    if step_key not in _SKIPPABLE_STEPS:
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                f"Step '{step_key}' atlanamaz. "
+                f"Atlanabilir step'ler: {sorted(_SKIPPABLE_STEPS)}"
+            ),
+        )
+
+    job = await service.get_job(db, job_id)
+    if job is None:
+        raise HTTPException(status_code=404, detail="İş bulunamadı")
+
+    try:
+        await service.transition_step_status(db, job_id, step_key, "skipped")
+    except StepNotFoundError:
+        raise HTTPException(status_code=404, detail=f"Step bulunamadı: {step_key}")
+    except InvalidTransitionError as exc:
+        raise HTTPException(status_code=409, detail=str(exc))
+
+    await write_audit_log(
+        db, action="job.step_skip", entity_type="job_step", entity_id=f"{job_id}/{step_key}",
+        actor_type="admin",
+        details={"job_id": job_id, "step_key": step_key},
+    )
+    await db.commit()
+
+    steps = await service.get_job_steps(db, job_id)
+    job = await service.get_job(db, job_id)
+    job_data = JobResponse.model_validate(job)
+    job_data.steps = [JobStepResponse.model_validate(s) for s in steps]
+    return job_data
+
+
+@router.get("/{job_id}/allowed-actions")
+async def get_allowed_actions(job_id: str, db: AsyncSession = Depends(get_db)):
+    """
+    Mevcut duruma göre izin verilen aksiyonları döndürür.
+    UI tarafında butonların enabled/disabled durumunu belirlemek için kullanılır.
+    """
+    job = await service.get_job(db, job_id)
+    if job is None:
+        raise HTTPException(status_code=404, detail="İş bulunamadı")
+
+    actions = {
+        "can_cancel": job.status in ("queued", "running", "waiting", "retrying"),
+        "can_retry": job.status == "failed",
+        "skippable_steps": [],
+    }
+
+    if job.status in ("queued", "running", "waiting"):
+        steps = await service.get_job_steps(db, job_id)
+        actions["skippable_steps"] = [
+            s.step_key for s in steps
+            if s.status == "pending" and s.step_key in _SKIPPABLE_STEPS
+        ]
+
+    return actions

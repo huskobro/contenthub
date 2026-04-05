@@ -149,10 +149,10 @@ describe("Phase 318 — Deferred/disabled note standardization", () => {
     expect(note.textContent).not.toContain("backend aktif olunca");
   });
 
-  it("job detail actions panel uses deferred wording", async () => {
+  it("job detail actions panel shows operational actions", async () => {
     renderAdmin("/admin/jobs/test-123");
     const panel = await waitFor(() => screen.getByTestId("job-actions-panel"));
-    expect(panel.textContent).toContain("M14");
+    expect(panel.textContent).toContain("Operasyonel Aksiyonlar");
     expect(panel.textContent).not.toContain("ilerideki fazlarda");
   });
 

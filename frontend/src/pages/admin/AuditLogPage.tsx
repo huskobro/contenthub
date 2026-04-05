@@ -1,9 +1,9 @@
 /**
- * Audit Log Admin Sayfasi — M15.
+ * Audit Log Admin Sayfasi — M15 + M16 Hardening.
  *
  * Gercek runtime audit kayitlarini gosterir.
- * Filtreler: aksiyon, varlik tipi.
- * Detay paneli: secilen kaydın old/new json icerigini gosterir.
+ * Filtreler: aksiyon, varlik tipi, tarih araligi.
+ * Detay paneli: secilen kaydin old/new JSON diff icerigini gosterir.
  */
 
 import { useState } from "react";
@@ -95,7 +95,66 @@ const ENTITY_LABELS: Record<string, string> = {
   template: "Sablon",
   style_blueprint: "Stil Sablonu",
   youtube_oauth: "YouTube OAuth",
+  job: "Is",
+  job_step: "Is Adimi",
 };
+
+// ---------------------------------------------------------------------------
+// Diff helper — old/new JSON alanlarini ayri goster
+// ---------------------------------------------------------------------------
+
+function DetailsDiff({ detailsJson }: { detailsJson: string }) {
+  let parsed: Record<string, unknown> = {};
+  try {
+    parsed = JSON.parse(detailsJson);
+  } catch {
+    return <pre style={PRE}>{detailsJson}</pre>;
+  }
+
+  const oldValue = parsed.old_value ?? parsed.old ?? parsed.previous_value;
+  const newValue = parsed.new_value ?? parsed.new ?? parsed.current_value;
+
+  // old/new pattern varsa diff gorunumu
+  if (oldValue !== undefined || newValue !== undefined) {
+    const remaining = { ...parsed };
+    delete remaining.old_value;
+    delete remaining.new_value;
+    delete remaining.old;
+    delete remaining.new;
+    delete remaining.previous_value;
+    delete remaining.current_value;
+
+    return (
+      <div>
+        {oldValue !== undefined && (
+          <div style={{ marginBottom: "0.5rem" }}>
+            <span style={{ fontSize: "0.75rem", color: "#dc2626", fontWeight: 600 }}>Onceki Deger:</span>
+            <pre style={{ ...PRE, borderLeft: "3px solid #fecaca" }}>
+              {typeof oldValue === "string" ? oldValue : JSON.stringify(oldValue, null, 2)}
+            </pre>
+          </div>
+        )}
+        {newValue !== undefined && (
+          <div style={{ marginBottom: "0.5rem" }}>
+            <span style={{ fontSize: "0.75rem", color: "#166534", fontWeight: 600 }}>Yeni Deger:</span>
+            <pre style={{ ...PRE, borderLeft: "3px solid #bbf7d0" }}>
+              {typeof newValue === "string" ? newValue : JSON.stringify(newValue, null, 2)}
+            </pre>
+          </div>
+        )}
+        {Object.keys(remaining).length > 0 && (
+          <div>
+            <span style={{ fontSize: "0.75rem", color: "#64748b", fontWeight: 500 }}>Ek Bilgi:</span>
+            <pre style={PRE}>{JSON.stringify(remaining, null, 2)}</pre>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // old/new pattern yoksa tek JSON goster
+  return <pre style={PRE} data-testid="audit-detail-json">{JSON.stringify(parsed, null, 2)}</pre>;
+}
 
 // ---------------------------------------------------------------------------
 // Component
@@ -104,6 +163,8 @@ const ENTITY_LABELS: Record<string, string> = {
 export function AuditLogPage() {
   const [actionFilter, setActionFilter] = useState("");
   const [entityTypeFilter, setEntityTypeFilter] = useState("");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [page, setPage] = useState(0);
   const limit = 30;
@@ -111,6 +172,8 @@ export function AuditLogPage() {
   const { data, isLoading, isError, error } = useAuditLogs({
     action: actionFilter || undefined,
     entity_type: entityTypeFilter || undefined,
+    date_from: dateFrom ? new Date(dateFrom).toISOString() : undefined,
+    date_to: dateTo ? new Date(dateTo + "T23:59:59").toISOString() : undefined,
     limit,
     offset: page * limit,
   });
@@ -144,6 +207,21 @@ export function AuditLogPage() {
             <option key={key} value={key}>{label}</option>
           ))}
         </select>
+        <input
+          style={{ ...INPUT, width: "150px" }}
+          type="date"
+          value={dateFrom}
+          onChange={(e) => { setDateFrom(e.target.value); setPage(0); }}
+          data-testid="audit-date-from"
+        />
+        <span style={{ fontSize: "0.75rem", color: "#64748b" }}>—</span>
+        <input
+          style={{ ...INPUT, width: "150px" }}
+          type="date"
+          value={dateTo}
+          onChange={(e) => { setDateTo(e.target.value); setPage(0); }}
+          data-testid="audit-date-to"
+        />
         {data && (
           <span style={{ fontSize: "0.6875rem", color: "#94a3b8" }}>
             {data.total} kayit
@@ -241,16 +319,8 @@ export function AuditLogPage() {
             <span>{detail.created_at ? new Date(detail.created_at).toLocaleString("tr-TR") : "—"}</span>
           </div>
           <div style={{ marginTop: "0.75rem" }}>
-            <span style={{ fontSize: "0.75rem", color: "#64748b", fontWeight: 500 }}>Detay JSON:</span>
-            <pre style={PRE} data-testid="audit-detail-json">
-              {(() => {
-                try {
-                  return JSON.stringify(JSON.parse(detail.details_json), null, 2);
-                } catch {
-                  return detail.details_json;
-                }
-              })()}
-            </pre>
+            <span style={{ fontSize: "0.75rem", color: "#64748b", fontWeight: 500 }}>Detay:</span>
+            <DetailsDiff detailsJson={detail.details_json} />
           </div>
         </div>
       )}

@@ -8,6 +8,8 @@ import { fetchAuditLogs, fetchAuditLogDetail } from "../api/auditLogApi";
 export function useAuditLogs(params?: {
   action?: string;
   entity_type?: string;
+  date_from?: string;
+  date_to?: string;
   limit?: number;
   offset?: number;
 }) {

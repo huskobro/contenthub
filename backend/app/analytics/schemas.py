@@ -29,8 +29,21 @@ class OverviewMetrics(BaseModel):
     retry_rate: Optional[float]
 
 
+class ProviderStat(BaseModel):
+    provider_name: str
+    provider_kind: str
+    total_calls: int
+    failed_calls: int
+    error_rate: Optional[float] = None
+    avg_latency_ms: Optional[float] = None
+    total_estimated_cost_usd: Optional[float] = None
+    total_input_tokens: Optional[int] = None
+    total_output_tokens: Optional[int] = None
+
+
 class OperationsMetrics(BaseModel):
     window: str
     avg_render_duration_seconds: Optional[float]
     step_stats: list[StepStat]
-    provider_error_rate: Optional[float] = None  # M8-C1: desteklenmiyor; provider_trace_json yapısı sabitlenmedi
+    provider_error_rate: Optional[float] = None
+    provider_stats: list[ProviderStat] = []

@@ -19,9 +19,12 @@ Provider error rate (M11):
   kullanır; failed/total oranı provider error rate olarak raporlanır.
 """
 
+import json as _json_module
 import logging
 from datetime import datetime, timezone, timedelta
 from typing import Optional
+
+_json_loads = _json_module.loads
 
 from sqlalchemy import select, func, case
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -231,9 +234,106 @@ async def get_operations_metrics(
         round(provider_failed / provider_total, 4) if provider_total > 0 else None
     )
 
+    # --- Provider bazlı özet (M16) ---
+    # provider_trace_json alanından gerçek trace verisi çıkar.
+    # JSON parse SQLite'da text fonksiyonlarıyla yapılır.
+    provider_trace_q = select(
+        JobStep.step_key,
+        JobStep.provider_trace_json,
+        JobStep.status,
+        JobStep.elapsed_seconds,
+    ).where(
+        JobStep.step_key.in_(["script", "metadata", "tts", "visuals"]),
+        JobStep.provider_trace_json.is_not(None),
+    )
+    if cut is not None:
+        provider_trace_q = provider_trace_q.where(JobStep.created_at >= cut)
+
+    trace_rows = (await session.execute(provider_trace_q)).all()
+
+    # Provider bazlı aggregation
+    provider_summary: dict[str, dict] = {}
+    for row in trace_rows:
+        trace_json = row.provider_trace_json
+        if not trace_json:
+            continue
+        try:
+            parsed = _json_loads(trace_json)
+        except Exception:
+            continue
+
+        # Trace, result dict'in içinde "provider_trace" altında olabilir
+        trace = parsed.get("provider_trace", parsed) if isinstance(parsed, dict) else {}
+        if not isinstance(trace, dict):
+            continue
+
+        pname = trace.get("provider_name", row.step_key)
+        if pname not in provider_summary:
+            provider_summary[pname] = {
+                "provider_name": pname,
+                "provider_kind": trace.get("provider_kind", "unknown"),
+                "total_calls": 0,
+                "failed_calls": 0,
+                "total_latency_ms": 0.0,
+                "latency_count": 0,
+                "total_estimated_cost_usd": 0.0,
+                "total_input_tokens": 0,
+                "total_output_tokens": 0,
+            }
+
+        s = provider_summary[pname]
+        s["total_calls"] += 1
+
+        if trace.get("success") is False or row.status == "failed":
+            s["failed_calls"] += 1
+
+        latency = trace.get("latency_ms")
+        if latency is not None:
+            s["total_latency_ms"] += float(latency)
+            s["latency_count"] += 1
+
+        cost = trace.get("cost_usd_estimate")
+        if cost is not None:
+            s["total_estimated_cost_usd"] += float(cost)
+
+        in_tok = trace.get("input_tokens")
+        if in_tok is not None:
+            s["total_input_tokens"] += int(in_tok)
+
+        out_tok = trace.get("output_tokens")
+        if out_tok is not None:
+            s["total_output_tokens"] += int(out_tok)
+
+    # Özet listesi oluştur
+    provider_stats = []
+    for pname, s in provider_summary.items():
+        avg_lat = (
+            round(s["total_latency_ms"] / s["latency_count"], 1)
+            if s["latency_count"] > 0 else None
+        )
+        err_rate = (
+            round(s["failed_calls"] / s["total_calls"], 4)
+            if s["total_calls"] > 0 else None
+        )
+        provider_stats.append({
+            "provider_name": s["provider_name"],
+            "provider_kind": s["provider_kind"],
+            "total_calls": s["total_calls"],
+            "failed_calls": s["failed_calls"],
+            "error_rate": err_rate,
+            "avg_latency_ms": avg_lat,
+            "total_estimated_cost_usd": (
+                round(s["total_estimated_cost_usd"], 4)
+                if s["total_estimated_cost_usd"] > 0 else None
+            ),
+            "total_input_tokens": s["total_input_tokens"] or None,
+            "total_output_tokens": s["total_output_tokens"] or None,
+        })
+
     return {
         "window": window,
         "avg_render_duration_seconds": avg_render,
         "step_stats": step_stats,
         "provider_error_rate": provider_error_rate,
+        "provider_stats": provider_stats,
     }
