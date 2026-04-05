@@ -106,9 +106,30 @@ class MetadataStepExecutor(StepExecutor):
                 "Script adımı önce tamamlanmış olmalı.",
             )
 
+        # Template/Style Blueprint context (M11)
+        template_ctx = getattr(job, '_template_context', None)
+        template_info = None
+        template_tone = None
+        template_seo_keywords = None
+        if isinstance(template_ctx, dict):
+            template_info = {
+                "template_id": template_ctx.get("template_id"),
+                "template_name": template_ctx.get("template_name"),
+                "template_version": template_ctx.get("template_version"),
+                "link_role": template_ctx.get("link_role"),
+            }
+            content_rules = template_ctx.get("content_rules")
+            if isinstance(content_rules, dict):
+                template_tone = content_rules.get("tone")
+            publish_profile = template_ctx.get("publish_profile")
+            if isinstance(publish_profile, dict):
+                template_seo_keywords = publish_profile.get("seo_keywords")
+
         messages = build_metadata_prompt(
             script=script_data,
             language=ctx.language,
+            template_tone=template_tone,
+            template_seo_keywords=template_seo_keywords,
         )
 
         try:
@@ -148,9 +169,12 @@ class MetadataStepExecutor(StepExecutor):
             artifact_path,
         )
 
-        return {
+        result = {
             "artifact_path": artifact_path,
             "language": ctx.language.value,
             "provider": output.trace,
             "step": self.step_key(),
         }
+        if template_info is not None:
+            result["template_info"] = template_info
+        return result

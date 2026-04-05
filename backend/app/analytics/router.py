@@ -11,10 +11,11 @@ Endpoint'ler:
 from fastapi import APIRouter, Depends, Query
 
 from app.db.session import get_db
+from app.visibility.dependencies import require_visible
 from app.analytics import service
 from app.analytics.schemas import OverviewMetrics, OperationsMetrics
 
-router = APIRouter(prefix="/analytics", tags=["analytics"])
+router = APIRouter(prefix="/analytics", tags=["analytics"], dependencies=[Depends(require_visible("panel:analytics"))])
 
 _VALID_WINDOWS = ("last_7d", "last_30d", "last_90d", "all_time")
 

@@ -4,6 +4,7 @@ from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
+from app.visibility.dependencies import require_visible
 from .schemas import ScanCreate, ScanUpdate, ScanResponse, ScanExecuteResponse
 from . import service
 from .scan_engine import execute_rss_scan
@@ -20,7 +21,7 @@ class ScanExecuteRequest(BaseModel):
     """
     allow_followup: bool = False
 
-router = APIRouter(prefix="/source-scans", tags=["source-scans"])
+router = APIRouter(prefix="/source-scans", tags=["source-scans"], dependencies=[Depends(require_visible("panel:source-scans"))])
 
 
 @router.get("", response_model=List[ScanResponse])

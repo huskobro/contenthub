@@ -136,6 +136,23 @@ class VisualsStepExecutor(StepExecutor):
                 "Script artifact'ında sahne bulunamadı.",
             )
 
+        # Template/Style Blueprint context (M11)
+        template_ctx = getattr(job, '_template_context', None)
+        template_info = None
+        image_style_prefix = None
+        if isinstance(template_ctx, dict):
+            template_info = {
+                "template_id": template_ctx.get("template_id"),
+                "template_name": template_ctx.get("template_name"),
+                "template_version": template_ctx.get("template_version"),
+                "link_role": template_ctx.get("link_role"),
+            }
+            bp = template_ctx.get("style_blueprint")
+            if isinstance(bp, dict):
+                visual_rules = bp.get("visual_rules")
+                if isinstance(visual_rules, dict):
+                    image_style_prefix = visual_rules.get("image_style")
+
         visuals_dir = _resolve_artifact_path(workspace_root, job.id, "visuals").parent / "visuals"
         visuals_dir.mkdir(parents=True, exist_ok=True)
 
@@ -158,6 +175,11 @@ class VisualsStepExecutor(StepExecutor):
                 not_found += 1
                 continue
 
+            # image_style varsa query'e prefix olarak ekle
+            search_query = visual_cue
+            if image_style_prefix and isinstance(image_style_prefix, str):
+                search_query = f"{image_style_prefix} {visual_cue}"
+
             image_filename = f"scene_{i}.jpg"
             image_path = visuals_dir / image_filename
             relative_path = f"artifacts/visuals/{image_filename}"
@@ -171,7 +193,7 @@ class VisualsStepExecutor(StepExecutor):
             for provider in self._providers:
                 try:
                     prov_output = await provider.invoke({
-                        "query": visual_cue,
+                        "query": search_query,
                         "count": 1,
                         "output_dir": str(visuals_dir),
                     })
@@ -201,7 +223,7 @@ class VisualsStepExecutor(StepExecutor):
                 manifest_scenes.append({
                     "scene_number": i,
                     "image_path": None,
-                    "query": visual_cue,
+                    "query": search_query,
                     "source": "not_found",
                     "photographer": None,
                     "original_url": None,
@@ -210,7 +232,7 @@ class VisualsStepExecutor(StepExecutor):
                 manifest_scenes.append({
                     "scene_number": i,
                     "image_path": relative_path,
-                    "query": visual_cue,
+                    "query": search_query,
                     "source": source,
                     "photographer": photographer,
                     "original_url": original_url,
@@ -251,7 +273,7 @@ class VisualsStepExecutor(StepExecutor):
             artifact_path,
         )
 
-        return {
+        result = {
             "artifact_path": artifact_path,
             "language": ctx.language.value,
             "scene_count": len(scenes),
@@ -263,6 +285,10 @@ class VisualsStepExecutor(StepExecutor):
                 "scenes_not_found": not_found,
                 "provider_hits": provider_hits,
                 "latency_ms": latency_ms,
+                "image_style_applied": image_style_prefix,
             },
             "step": self.step_key(),
         }
+        if template_info is not None:
+            result["template_info"] = template_info
+        return result

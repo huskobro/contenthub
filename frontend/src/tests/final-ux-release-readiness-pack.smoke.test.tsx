@@ -285,20 +285,22 @@ describe("Phase 320 — Release readiness checklist", () => {
     expect(screen.getByTestId("readiness-library")).toBeDefined();
   });
 
-  it("readiness items show correct status labels after M11", () => {
+  it("readiness items show correct status labels after M12", () => {
     renderAdmin("/admin");
     // Items still at Omurga hazir
     const omurgaIds = ["readiness-content", "readiness-jobs", "readiness-library"];
     omurgaIds.forEach((id) => {
       expect(screen.getByTestId(id).textContent).toContain("Omurga hazir");
     });
-    // Items upgraded to M11 aktif
-    const m11Ids = [
-      "readiness-publish", "readiness-templates", "readiness-news",
-      "readiness-settings", "readiness-analytics",
-    ];
+    // Items at M11 aktif
+    const m11Ids = ["readiness-publish", "readiness-news", "readiness-analytics"];
     m11Ids.forEach((id) => {
       expect(screen.getByTestId(id).textContent).toContain("M11 aktif");
+    });
+    // Items upgraded to M12 aktif
+    const m12Ids = ["readiness-templates", "readiness-settings"];
+    m12Ids.forEach((id) => {
+      expect(screen.getByTestId(id).textContent).toContain("M12 aktif");
     });
   });
 

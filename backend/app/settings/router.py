@@ -49,10 +49,11 @@ from app.settings.settings_resolver import (
 )
 from app.settings.settings_seed import seed_known_settings
 from app.audit.service import write_audit_log
+from app.visibility.dependencies import require_visible
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/settings", tags=["settings"])
+router = APIRouter(prefix="/settings", tags=["settings"], dependencies=[Depends(require_visible("panel:settings"))])
 
 
 # ---------------------------------------------------------------------------

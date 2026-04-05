@@ -3,10 +3,11 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
+from app.visibility.dependencies import require_visible
 from .schemas import SourceCreate, SourceUpdate, SourceResponse
 from . import service
 
-router = APIRouter(prefix="/sources", tags=["sources"])
+router = APIRouter(prefix="/sources", tags=["sources"], dependencies=[Depends(require_visible("panel:sources"))])
 
 
 @router.get("", response_model=List[SourceResponse])

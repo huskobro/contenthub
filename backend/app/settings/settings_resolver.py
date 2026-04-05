@@ -273,12 +273,12 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "group": "providers",
         "type": "string",
         "label": "Whisper Model Boyutu",
-        "help_text": "Yerel Whisper transkripsiyon model boyutu. Whisper provider henuz codebase'de yok.",
+        "help_text": "Yerel Whisper transkripsiyon model boyutu.",
         "module_scope": "standard_video",
         "env_var": "",
         "builtin_default": "base",
-        "wired": False,
-        "wired_to": "DEFINED — LocalWhisperProvider henuz codebase'de aktif degil",
+        "wired": True,
+        "wired_to": "LocalWhisperProvider constructor — main.py startup",
     },
 
     # --- Execution Settings ---
@@ -286,12 +286,12 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "group": "execution",
         "type": "integer",
         "label": "Render Still Timeout (saniye)",
-        "help_text": "Remotion still frame render isleminde maksimum bekleme suresi. Executor kendi RENDER_STILL_TIMEOUT_SECONDS sabitini kullaniyor.",
+        "help_text": "Remotion still frame render isleminde maksimum bekleme suresi.",
         "module_scope": "standard_video",
         "env_var": "",
         "builtin_default": 120,
-        "wired": False,
-        "wired_to": "DEFINED — render_still.py henuz bu ayari resolve() ile okumuyor",
+        "wired": True,
+        "wired_to": "RenderStillExecutor._resolve_timeout() — runtime lazy resolve",
     },
 
     # --- Source Scan Settings ---
@@ -312,12 +312,12 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "group": "publish",
         "type": "float",
         "label": "YouTube Upload Timeout (saniye)",
-        "help_text": "YouTube video yukleme isleminde HTTP timeout suresi. Adapter kendi hardcoded degerini kullaniyor.",
+        "help_text": "YouTube video yukleme isleminde HTTP timeout suresi.",
         "module_scope": "publish",
         "env_var": "",
         "builtin_default": 60.0,
-        "wired": False,
-        "wired_to": "DEFINED — YouTubeAdapter henuz bu ayari resolve() ile okumuyor",
+        "wired": True,
+        "wired_to": "YouTubeAdapter constructor (upload_timeout) — main.py startup",
     },
 }
 

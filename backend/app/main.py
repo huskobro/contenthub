@@ -36,6 +36,8 @@ from app.providers.tts.system_tts_provider import SystemTTSProvider
 from app.providers.visuals.pexels_provider import PexelsProvider
 from app.providers.visuals.pixabay_provider import PixabayProvider
 from app.providers.registry import provider_registry
+from app.publish.registry import publish_adapter_registry
+from app.publish.youtube.adapter import YouTubeAdapter
 from app.settings.credential_resolver import resolve_credential
 from app.settings.settings_resolver import resolve, KNOWN_SETTINGS
 from app.settings.settings_seed import seed_known_settings
@@ -101,6 +103,8 @@ async def lifespan(app: FastAPI):
         pexels_count = await resolve("provider.visuals.pexels_default_count", cred_db)
         pixabay_count = await resolve("provider.visuals.pixabay_default_count", cred_db)
         search_timeout = await resolve("provider.visuals.search_timeout_seconds", cred_db)
+        yt_upload_timeout = await resolve("publish.youtube.upload_timeout_seconds", cred_db)
+        whisper_model_size = await resolve("provider.whisper.model_size", cred_db)
     logger.info("Credential + ayar cozumleme tamamlandi (M9-A / M10-B / M11).")
 
     # Provider örneklerini provider_registry'ye kaydet (M3-C1 / M3-C2 / M9-A / M10-B)
@@ -154,10 +158,26 @@ async def lifespan(app: FastAPI):
         is_primary=False,
         priority=1,
     )
+    # WHISPER — local whisper provider (M4-C1)
+    from app.providers.whisper.local_whisper_provider import LocalWhisperProvider
+    provider_registry.register(
+        LocalWhisperProvider(model_size=whisper_model_size or "base"),
+        ProviderCapability.WHISPER,
+        is_primary=True,
+        priority=0,
+    )
+
     logger.info(
         "Provider'lar provider_registry'ye kaydedildi: capabilities=%s",
         [cap.value for cap in provider_registry.list_all().keys()],
     )
+
+    # YouTube publish adaptörünü kaydet (M7-C2)
+    publish_adapter_registry.register(
+        YouTubeAdapter(upload_timeout=yt_upload_timeout)
+    )
+    logger.info("YouTubeAdapter publish_adapter_registry'ye kaydedildi (upload_timeout=%.1f).",
+                yt_upload_timeout or 60.0)
 
     # JobDispatcher oluştur ve app.state'e bağla (M2-C6 / M3-C1)
     # Router'lar app.state.job_dispatcher üzerinden erişir

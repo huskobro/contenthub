@@ -6,6 +6,8 @@ Her dil için ayrı talimat bloğu tanımlanmıştır.
 doğal dil üretimi için her dilin kendi talimat bloğu burada merkezi olarak tutulur.
 """
 
+from typing import Optional
+
 from app.modules.language import SupportedLanguage
 
 
@@ -62,6 +64,8 @@ def build_script_prompt(
     topic: str,
     duration_seconds: int,
     language: SupportedLanguage,
+    template_tone: Optional[str] = None,
+    template_language_rules: Optional[str] = None,
 ) -> list[dict]:
     """
     Script adımı için LLM mesaj listesi oluşturur.
@@ -73,6 +77,8 @@ def build_script_prompt(
         topic           : Video konusu.
         duration_seconds: Hedef video süresi (saniye).
         language        : Üretim dili.
+        template_tone   : Template content_rules'tan gelen ton bilgisi (opsiyonel).
+        template_language_rules: Template content_rules'tan gelen dil kuralları (opsiyonel).
 
     Returns:
         [{"role": "system", ...}, {"role": "user", ...}] formatında mesaj listesi.
@@ -81,11 +87,18 @@ def build_script_prompt(
     locale = lang_config["locale_name"]
     tone = lang_config["script_tone"]
 
+    # Template tone varsa, varsayılan tone'a ek stil yönlendirmesi ekle
+    tone_guidance = ""
+    if template_tone:
+        tone_guidance = f"\nŞablon ton yönlendirmesi: {template_tone}"
+    if template_language_rules:
+        tone_guidance += f"\nEk dil kuralları: {template_language_rules}"
+
     system_content = (
         f"Sen bir video script yazarısın. "
         f"{locale} dilinde, {duration_seconds} saniyelik kısa bir video için "
         f"sahne sahne senaryo üreteceksin.\n\n"
-        f"Dil ve ton kuralları: {tone}\n\n"
+        f"Dil ve ton kuralları: {tone}{tone_guidance}\n\n"
         f"ÇIKTI FORMATI: Yalnızca geçerli JSON döndür, başka hiçbir şey ekleme. "
         f"Format:\n{_SCRIPT_OUTPUT_EXAMPLE}"
     )
@@ -108,6 +121,8 @@ def build_script_prompt(
 def build_metadata_prompt(
     script: dict,
     language: SupportedLanguage,
+    template_tone: Optional[str] = None,
+    template_seo_keywords: Optional[list] = None,
 ) -> list[dict]:
     """
     Metadata adımı için LLM mesaj listesi oluşturur.
@@ -117,6 +132,8 @@ def build_metadata_prompt(
     Args:
         script  : Script adımından gelen artifact dict (title, scenes içerir).
         language: Üretim dili.
+        template_tone: Template content_rules'tan gelen ton bilgisi (opsiyonel).
+        template_seo_keywords: Template publish_profile'dan gelen SEO anahtar kelimeleri (opsiyonel).
 
     Returns:
         [{"role": "system", ...}, {"role": "user", ...}] formatında mesaj listesi.
@@ -126,6 +143,14 @@ def build_metadata_prompt(
     metadata_tone = lang_config["metadata_tone"]
     tag_style = lang_config["tag_style"]
     hashtag_style = lang_config["hashtag_style"]
+
+    # Template tone varsa, metadata tone'a ek yönlendirme ekle
+    extra_guidance = ""
+    if template_tone:
+        extra_guidance += f"\nŞablon metadata tonu: {template_tone}"
+    if template_seo_keywords and isinstance(template_seo_keywords, list):
+        keywords_str = ", ".join(str(k) for k in template_seo_keywords)
+        extra_guidance += f"\nSEO anahtar kelimeleri (etiketlere dahil et): {keywords_str}"
 
     # Sahnelerden narration metnini özetle (LLM context'i için)
     scenes = script.get("scenes", [])
@@ -140,7 +165,7 @@ def build_metadata_prompt(
         f"Dil: {locale}\n"
         f"Metadata tonu: {metadata_tone}\n"
         f"Etiket stili: {tag_style}\n"
-        f"Hashtag stili: {hashtag_style}\n\n"
+        f"Hashtag stili: {hashtag_style}{extra_guidance}\n\n"
         f"ÇIKTI FORMATI: Yalnızca geçerli JSON döndür, başka hiçbir şey ekleme. "
         f"Format:\n{_METADATA_OUTPUT_EXAMPLE}"
     )

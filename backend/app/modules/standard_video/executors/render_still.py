@@ -32,6 +32,7 @@ import json
 import logging
 import time
 from pathlib import Path
+from typing import Optional
 
 from app.jobs.executor import StepExecutor
 from app.jobs.exceptions import StepExecutionError
@@ -183,6 +184,30 @@ class RenderStillExecutor(StepExecutor):
             "step": self.step_key(),
         }
 
+    async def _resolve_timeout(self) -> int:
+        """
+        Resolve render still timeout from settings registry.
+
+        Oncelik: DB admin_value -> DB default_value -> .env -> builtin -> constant.
+        Hata durumunda modul-seviyesi RENDER_STILL_TIMEOUT_SECONDS sabiti kullanilir.
+        """
+        try:
+            from app.db.session import AsyncSessionLocal
+            from app.settings.settings_resolver import resolve
+
+            async with AsyncSessionLocal() as db:
+                value = await resolve("execution.render_still_timeout_seconds", db)
+                if value is not None:
+                    return int(value)
+        except Exception as exc:
+            logger.warning(
+                "RenderStillExecutor: timeout ayari cozumlenemedi, "
+                "varsayilan kullaniliyor (%d): %s",
+                RENDER_STILL_TIMEOUT_SECONDS,
+                exc,
+            )
+        return RENDER_STILL_TIMEOUT_SECONDS
+
     async def _run_remotion_still(
         self,
         props_path: str,
@@ -231,8 +256,12 @@ class RenderStillExecutor(StepExecutor):
             "info",
         ]
 
+        # Resolve timeout from settings registry (fallback: module constant)
+        timeout_seconds = await self._resolve_timeout()
+
         logger.info(
-            "RenderStillExecutor: subprocess başlatılıyor. job=%s", job_id
+            "RenderStillExecutor: subprocess başlatılıyor. job=%s timeout=%ds",
+            job_id, timeout_seconds,
         )
 
         try:
@@ -246,7 +275,7 @@ class RenderStillExecutor(StepExecutor):
             try:
                 stdout, stderr = await asyncio.wait_for(
                     proc.communicate(),
-                    timeout=RENDER_STILL_TIMEOUT_SECONDS,
+                    timeout=timeout_seconds,
                 )
             except asyncio.TimeoutError:
                 proc.kill()
@@ -254,7 +283,7 @@ class RenderStillExecutor(StepExecutor):
                 return {
                     "success": False,
                     "error": (
-                        f"renderStill zaman aşımı ({RENDER_STILL_TIMEOUT_SECONDS}s). "
+                        f"renderStill zaman aşımı ({timeout_seconds}s). "
                         f"job={job_id}"
                     ),
                 }

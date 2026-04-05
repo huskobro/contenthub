@@ -19,6 +19,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
 from app.visibility import service
+from app.visibility.dependencies import require_visible
 from app.visibility.schemas import (
     VisibilityRuleCreate,
     VisibilityRuleResponse,
@@ -28,7 +29,7 @@ from app.visibility.schemas import (
 router = APIRouter(prefix="/visibility-rules", tags=["visibility"])
 
 
-@router.get("", response_model=List[VisibilityRuleResponse])
+@router.get("", response_model=List[VisibilityRuleResponse], dependencies=[Depends(require_visible("panel:visibility"))])
 async def list_rules(
     rule_type: Optional[str] = Query(None, description="Filter by rule_type"),
     module_scope: Optional[str] = Query(None, description="Filter by module_scope"),
@@ -58,7 +59,7 @@ async def resolve_visibility_endpoint(
     return result
 
 
-@router.get("/{rule_id}", response_model=VisibilityRuleResponse)
+@router.get("/{rule_id}", response_model=VisibilityRuleResponse, dependencies=[Depends(require_visible("panel:visibility"))])
 async def get_rule(
     rule_id: str,
     db: AsyncSession = Depends(get_db),
@@ -67,7 +68,7 @@ async def get_rule(
     return VisibilityRuleResponse.model_validate(row)
 
 
-@router.post("", response_model=VisibilityRuleResponse, status_code=201)
+@router.post("", response_model=VisibilityRuleResponse, status_code=201, dependencies=[Depends(require_visible("panel:visibility"))])
 async def create_rule(
     payload: VisibilityRuleCreate,
     db: AsyncSession = Depends(get_db),
@@ -76,7 +77,7 @@ async def create_rule(
     return VisibilityRuleResponse.model_validate(row)
 
 
-@router.patch("/{rule_id}", response_model=VisibilityRuleResponse)
+@router.patch("/{rule_id}", response_model=VisibilityRuleResponse, dependencies=[Depends(require_visible("panel:visibility"))])
 async def update_rule(
     rule_id: str,
     payload: VisibilityRuleUpdate,

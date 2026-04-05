@@ -21,6 +21,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from app.db.session import get_db
+from app.visibility.dependencies import require_visible
 from app.publish import service
 from app.publish.exceptions import (
     PublishRecordNotFoundError,
@@ -43,7 +44,7 @@ from app.publish.schemas import (
     ArtifactChangedRequest,
 )
 
-router = APIRouter(prefix="/publish", tags=["publish"])
+router = APIRouter(prefix="/publish", tags=["publish"], dependencies=[Depends(require_visible("panel:publish"))])
 
 
 def _handle_not_found(exc: PublishRecordNotFoundError) -> HTTPException:

@@ -3,10 +3,11 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
+from app.visibility.dependencies import require_visible
 from .schemas import StyleBlueprintCreate, StyleBlueprintUpdate, StyleBlueprintResponse
 from . import service
 
-router = APIRouter(prefix="/style-blueprints", tags=["style-blueprints"])
+router = APIRouter(prefix="/style-blueprints", tags=["style-blueprints"], dependencies=[Depends(require_visible("panel:style-blueprints"))])
 
 
 @router.get("", response_model=List[StyleBlueprintResponse])

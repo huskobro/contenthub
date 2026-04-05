@@ -114,19 +114,23 @@ class YouTubeAdapter(PublishAdapter):
         self,
         token_store: Optional[YouTubeTokenStore] = None,
         http_client: Optional[httpx.AsyncClient] = None,
+        upload_timeout: Optional[float] = None,
     ):
         """
         Args:
-            token_store  : OAuth2 token yönetimi. None ise varsayılan oluşturulur.
-            http_client  : Test için inject edilebilir. None ise yeni client oluşturulur.
+            token_store    : OAuth2 token yönetimi. None ise varsayılan oluşturulur.
+            http_client    : Test için inject edilebilir. None ise yeni client oluşturulur.
+            upload_timeout : HTTP timeout (saniye). None ise 60.0 kullanılır.
+                             publish.youtube.upload_timeout_seconds ayarından çözümlenir.
         """
         self._token_store = token_store or YouTubeTokenStore()
         self._http_client = http_client
+        self._upload_timeout: float = upload_timeout or 60.0
 
     def _get_client(self) -> httpx.AsyncClient:
         if self._http_client is not None:
             return self._http_client
-        return httpx.AsyncClient(timeout=60.0)
+        return httpx.AsyncClient(timeout=self._upload_timeout)
 
     @property
     def platform_name(self) -> str:

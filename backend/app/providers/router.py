@@ -19,15 +19,16 @@ from __future__ import annotations
 
 import logging
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 
 from app.providers.capability import ProviderCapability
 from app.providers.registry import provider_registry
+from app.visibility.dependencies import require_visible
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/providers", tags=["providers"])
+router = APIRouter(prefix="/providers", tags=["providers"], dependencies=[Depends(require_visible("panel:providers"))])
 
 
 # ---------------------------------------------------------------------------
