@@ -283,8 +283,9 @@ export function CommandPalette() {
         style={{
           position: "fixed",
           inset: 0,
-          background: "rgba(0, 0, 0, 0.5)",
-          backdropFilter: "blur(2px)",
+          background: "rgba(15, 17, 26, 0.6)",
+          backdropFilter: "blur(8px)",
+          WebkitBackdropFilter: "blur(8px)",
         }}
         onClick={close}
       />
@@ -301,33 +302,51 @@ export function CommandPalette() {
           display: "flex",
           flexDirection: "column",
           background: colors.surface.card,
-          border: `1px solid ${colors.border.default}`,
-          borderRadius: radius.lg,
-          boxShadow: shadow.lg,
+          border: `1px solid ${colors.border.subtle}`,
+          borderRadius: radius.xl,
+          boxShadow: "0 20px 60px rgba(0,0,0,0.20), 0 8px 20px rgba(0,0,0,0.12)",
           overflow: "hidden",
           animation: "palette-enter 120ms ease-out",
         }}
         onKeyDown={handleKeyDown}
         data-testid="command-palette"
       >
+        {/* Brand accent strip */}
+        <div
+          style={{
+            height: "2px",
+            background: `linear-gradient(90deg, ${colors.brand[400]}, ${colors.brand[600]})`,
+            flexShrink: 0,
+          }}
+        />
         {/* Search input */}
         <div
           style={{
             display: "flex",
             alignItems: "center",
-            padding: `${spacing[3]} ${spacing[4]}`,
+            padding: `${spacing[4]} ${spacing[5]}`,
             borderBottom: `1px solid ${colors.border.subtle}`,
-            gap: spacing[2],
+            gap: spacing[3],
           }}
         >
           <span
             style={{
-              color: colors.neutral[400],
-              fontSize: typography.size.lg,
+              color: colors.neutral[500],
+              fontSize: typography.size.md,
               flexShrink: 0,
+              width: "28px",
+              height: "28px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background: colors.neutral[100],
+              borderRadius: radius.full,
+              ...(discoveryLoading
+                ? { animation: "palette-pulse 1.2s ease-in-out infinite" }
+                : {}),
             }}
           >
-            {discoveryLoading ? "⏳" : "⌘"}
+            {discoveryLoading ? "\u23F3" : "\u2318"}
           </span>
           <input
             ref={inputRef}
@@ -344,6 +363,7 @@ export function CommandPalette() {
               color: colors.neutral[900],
               fontFamily: typography.fontFamily,
               lineHeight: typography.lineHeight.normal,
+              padding: `${spacing[1]} 0`,
             }}
             data-testid="command-palette-input"
             aria-label="Komut ara"
@@ -353,11 +373,12 @@ export function CommandPalette() {
           <kbd
             style={{
               fontSize: typography.size.xs,
-              color: colors.neutral[400],
+              color: colors.neutral[500],
               background: colors.neutral[100],
-              padding: "0.1rem 0.4rem",
+              padding: "0.15rem 0.5rem",
               borderRadius: radius.sm,
-              border: `1px solid ${colors.border.subtle}`,
+              border: `1px solid ${colors.neutral[200]}`,
+              boxShadow: shadow.xs,
               fontFamily: typography.monoFamily,
             }}
           >
@@ -381,13 +402,26 @@ export function CommandPalette() {
           {flatList.length === 0 && !discoveryLoading && (
             <div
               style={{
-                padding: `${spacing[6]} ${spacing[4]}`,
+                padding: `${spacing[8]} ${spacing[5]}`,
                 textAlign: "center",
                 color: colors.neutral[500],
                 fontSize: typography.size.sm,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: spacing[2],
               }}
               data-testid="command-palette-empty"
             >
+              <span
+                style={{
+                  fontSize: typography.size["2xl"],
+                  color: colors.neutral[300],
+                  lineHeight: 1,
+                }}
+              >
+                {"\uD83D\uDD0D"}
+              </span>
               {showDiscovery && discoverySearched
                 ? "Sonuc bulunamadi."
                 : "Sonuc bulunamadi."}
@@ -398,32 +432,54 @@ export function CommandPalette() {
           {showDiscovery && discoveryLoading && flatList.length === 0 && (
             <div
               style={{
-                padding: `${spacing[4]} ${spacing[4]}`,
+                padding: `${spacing[6]} ${spacing[5]}`,
                 textAlign: "center",
                 color: colors.neutral[400],
                 fontSize: typography.size.sm,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: spacing[2],
               }}
               data-testid="command-palette-discovery-loading"
             >
-              Aranıyor...
+              <span style={{ animation: "palette-pulse 1.2s ease-in-out infinite" }}>
+                {"\u23F3"}
+              </span>
+              {`Aran\u0131yor...`}
             </div>
           )}
 
-          {allGroups.map((group) => (
+          {allGroups.map((group) => {
+            const isDiscoveryGroup = group.category === "discovery";
+            return (
             <div key={group.category}>
               <div
                 style={{
-                  padding: `${spacing[2]} ${spacing[4]} ${spacing[1]}`,
+                  padding: `${spacing[2]} ${spacing[5]} ${spacing[1]}`,
                   fontSize: typography.size.xs,
                   fontWeight: typography.weight.semibold,
-                  color:
-                    group.category === "discovery"
-                      ? colors.brand[600]
-                      : colors.neutral[500],
+                  color: isDiscoveryGroup
+                    ? colors.brand[500]
+                    : colors.neutral[400],
                   textTransform: "uppercase",
                   letterSpacing: "0.05em",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: spacing[2],
                 }}
               >
+                {isDiscoveryGroup && (
+                  <span
+                    style={{
+                      width: "2px",
+                      height: "12px",
+                      background: colors.brand[500],
+                      borderRadius: radius.full,
+                      flexShrink: 0,
+                    }}
+                  />
+                )}
                 {group.label}
               </div>
               {group.commands.map((cmd) => {
@@ -446,27 +502,29 @@ export function CommandPalette() {
                 );
               })}
             </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Footer hint */}
         <div
           style={{
-            padding: `${spacing[2]} ${spacing[4]}`,
+            padding: `${spacing[3]} ${spacing[5]}`,
             borderTop: `1px solid ${colors.border.subtle}`,
             display: "flex",
-            gap: spacing[3],
-            fontSize: typography.size.xs,
+            gap: spacing[4],
+            fontSize: typography.size.sm,
             color: colors.neutral[400],
+            background: colors.neutral[25],
           }}
         >
-          <span>
-            <kbd style={kbdStyle}>↑↓</kbd> gezin
+          <span style={{ display: "flex", alignItems: "center", gap: spacing[1] }}>
+            <kbd style={kbdStyle}>{"\u2191\u2193"}</kbd> gezin
           </span>
-          <span>
-            <kbd style={kbdStyle}>↵</kbd> calistir
+          <span style={{ display: "flex", alignItems: "center", gap: spacing[1] }}>
+            <kbd style={kbdStyle}>{"\u21B5"}</kbd> calistir
           </span>
-          <span>
+          <span style={{ display: "flex", alignItems: "center", gap: spacing[1] }}>
             <kbd style={kbdStyle}>esc</kbd> kapat
           </span>
         </div>
@@ -514,20 +572,29 @@ function CommandItem({
         display: "flex",
         alignItems: "center",
         gap: spacing[3],
-        padding: `${spacing[2]} ${spacing[4]}`,
+        padding: `${spacing[2]} ${spacing[5]}`,
         cursor: "pointer",
         background: isSelected ? colors.brand[50] : "transparent",
-        transition: `background ${transition.fast}`,
+        borderLeft: isSelected
+          ? `3px solid ${colors.brand[500]}`
+          : "3px solid transparent",
+        transition: `background ${transition.fast}, border-color ${transition.fast}`,
       }}
       data-testid={`command-palette-item-${command.id}`}
     >
       {command.icon && (
         <span
           style={{
-            fontSize: typography.size.md,
+            fontSize: typography.size.sm,
             flexShrink: 0,
-            width: "1.5rem",
-            textAlign: "center",
+            width: "28px",
+            height: "28px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            background: isSelected ? colors.brand[100] : colors.neutral[100],
+            borderRadius: radius.full,
+            transition: `background ${transition.fast}`,
           }}
         >
           {command.icon}
@@ -537,7 +604,7 @@ function CommandItem({
         <div
           style={{
             fontSize: typography.size.base,
-            color: isSelected ? colors.brand[700] : colors.neutral[800],
+            color: isSelected ? colors.brand[800] : colors.neutral[800],
             fontWeight: isSelected
               ? typography.weight.medium
               : typography.weight.normal,
@@ -545,6 +612,7 @@ function CommandItem({
             overflow: "hidden",
             textOverflow: "ellipsis",
             whiteSpace: "nowrap",
+            transition: `color ${transition.fast}`,
           }}
         >
           {command.label}
@@ -570,9 +638,9 @@ function CommandItem({
           style={{
             fontSize: typography.size.xs,
             color: colors.neutral[600],
-            background: colors.neutral[100],
+            background: colors.neutral[50],
             padding: "0.1rem 0.4rem",
-            borderRadius: radius.sm,
+            borderRadius: radius.full,
             flexShrink: 0,
           }}
         >
@@ -584,9 +652,9 @@ function CommandItem({
         style={{
           fontSize: typography.size.xs,
           color: colors.neutral[400],
-          background: colors.neutral[100],
+          background: colors.neutral[50],
           padding: "0.1rem 0.4rem",
-          borderRadius: radius.sm,
+          borderRadius: radius.full,
           flexShrink: 0,
           textTransform: "capitalize",
         }}
@@ -605,7 +673,9 @@ const kbdStyle: React.CSSProperties = {
   fontFamily: typography.monoFamily,
   fontSize: typography.size.xs,
   background: colors.neutral[100],
-  padding: "0.1rem 0.3rem",
+  padding: "0.15rem 0.4rem",
   borderRadius: radius.sm,
-  border: `1px solid ${colors.border.subtle}`,
+  border: `1px solid ${colors.neutral[200]}`,
+  boxShadow: shadow.xs,
+  lineHeight: typography.lineHeight.normal,
 };

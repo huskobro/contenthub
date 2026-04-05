@@ -73,6 +73,7 @@ interface SectionShellProps {
 }
 
 export function SectionShell({ title, description, actions, children, testId, flush }: SectionShellProps) {
+  const [hovered, setHovered] = React.useState(false);
   return (
     <section
       style={{
@@ -81,9 +82,12 @@ export function SectionShell({ title, description, actions, children, testId, fl
         borderRadius: radius.lg,
         padding: flush ? 0 : spacing[5],
         marginBottom: spacing[5],
-        boxShadow: shadow.xs,
+        boxShadow: hovered ? shadow.md : shadow.sm,
+        transition: `box-shadow ${transition.normal}`,
       }}
       data-testid={testId}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
     >
       {(title || description || actions) && (
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: (title || description) ? spacing[4] : 0, padding: flush ? `${spacing[5]} ${spacing[5]} 0` : 0 }}>
@@ -113,23 +117,28 @@ interface MetricTileProps {
 }
 
 export function MetricTile({ label, value, note, loading, testId, accentColor }: MetricTileProps) {
+  const [hovered, setHovered] = React.useState(false);
   return (
     <div
       style={{
         padding: `${spacing[4]} ${spacing[5]}`,
-        background: colors.surface.card,
+        background: accentColor
+          ? `linear-gradient(180deg, ${accentColor} 0%, ${accentColor} 2px, ${colors.surface.card} 2px)`
+          : colors.surface.card,
         border: `1px solid ${colors.border.subtle}`,
         borderRadius: radius.lg,
-        borderLeft: accentColor ? `3px solid ${accentColor}` : undefined,
-        boxShadow: shadow.xs,
+        boxShadow: hovered ? shadow.md : shadow.sm,
         minWidth: 0,
+        transition: `box-shadow ${transition.normal}`,
       }}
       data-testid={testId}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
     >
       <p style={{ margin: 0, fontSize: typography.size.sm, color: colors.neutral[500], fontWeight: typography.weight.medium, letterSpacing: "0.01em" }}>
         {label}
       </p>
-      <p style={{ margin: `${spacing[1]} 0 0`, fontSize: "1.5rem", fontWeight: typography.weight.bold, color: colors.neutral[900], lineHeight: 1.2, fontVariantNumeric: "tabular-nums" }} data-testid={testId ? `${testId}-value` : undefined}>
+      <p style={{ margin: `${spacing[1]} 0 0`, fontSize: typography.size["2xl"], fontWeight: typography.weight.bold, color: colors.neutral[900], lineHeight: 1.2, fontVariantNumeric: "tabular-nums" }} data-testid={testId ? `${testId}-value` : undefined}>
         {loading ? "\u2026" : value}
       </p>
       {note && (
@@ -160,25 +169,35 @@ export function MetricGrid({ children }: { children: React.ReactNode }) {
 interface StatusBadgeProps {
   status: StatusVariant | string;
   label?: string;
-  size?: "sm" | "md";
+  size?: "sm" | "md" | "lg";
 }
 
 export function StatusBadge({ status, label, size = "sm" }: StatusBadgeProps) {
   const style = statusStyle(status);
-  const isSmall = size === "sm";
+  const padMap = {
+    sm: `${spacing[1]} ${spacing[2]}`,
+    md: `${spacing[1]} ${spacing[3]}`,
+    lg: `${spacing[2]} ${spacing[3]}`,
+  };
+  const fontMap = {
+    sm: typography.size.xs,
+    md: typography.size.sm,
+    lg: typography.size.base,
+  };
   return (
     <span
       style={{
         display: "inline-flex",
         alignItems: "center",
-        padding: isSmall ? "0.125rem 0.5rem" : "0.25rem 0.625rem",
+        padding: padMap[size],
         borderRadius: radius.full,
-        fontSize: isSmall ? typography.size.xs : typography.size.sm,
-        fontWeight: typography.weight.semibold,
+        fontSize: fontMap[size],
+        fontWeight: typography.weight.bold,
         background: style.background,
         color: style.color,
         lineHeight: 1.5,
         whiteSpace: "nowrap",
+        boxShadow: size !== "sm" ? shadow.xs : undefined,
       }}
     >
       {label ?? status}
@@ -197,7 +216,7 @@ const thStyle: React.CSSProperties = {
   fontWeight: typography.weight.semibold,
   color: colors.neutral[600],
   borderBottom: `2px solid ${colors.border.default}`,
-  background: colors.neutral[25],
+  background: colors.surface.inset,
   whiteSpace: "nowrap",
 };
 
@@ -269,10 +288,11 @@ export function DataTable<T>({
                 onClick={onRowClick ? () => onRowClick(item) : undefined}
                 style={{
                   cursor: onRowClick ? "pointer" : "default",
-                  background: isSelected ? colors.brand[50] : "transparent",
-                  transition: `background ${transition.fast}`,
+                  background: isSelected ? colors.brand[100] : "transparent",
+                  borderLeft: isSelected ? `3px solid ${colors.brand[500]}` : "3px solid transparent",
+                  transition: `background ${transition.fast}, border-color ${transition.fast}`,
                 }}
-                onMouseEnter={(e) => { if (!isSelected) (e.currentTarget.style.background = colors.neutral[50]); }}
+                onMouseEnter={(e) => { if (!isSelected) (e.currentTarget.style.background = colors.brand[50]); }}
                 onMouseLeave={(e) => { if (!isSelected) (e.currentTarget.style.background = "transparent"); }}
               >
                 {columns.map((col) => (
@@ -318,18 +338,45 @@ const inputBase: React.CSSProperties = {
   background: colors.surface.card,
   color: colors.neutral[800],
   outline: "none",
-  transition: `border-color ${transition.fast}`,
+  transition: `border-color ${transition.fast}, box-shadow ${transition.fast}`,
+};
+
+const inputFocusHandlers = {
+  onFocus: (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>) => {
+    e.currentTarget.style.borderColor = colors.brand[400];
+    e.currentTarget.style.boxShadow = `0 0 0 3px ${colors.brand[100]}`;
+  },
+  onBlur: (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>) => {
+    e.currentTarget.style.borderColor = colors.border.default;
+    e.currentTarget.style.boxShadow = "none";
+  },
 };
 
 export const FilterInput = React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement>>(
   (props, ref) => {
-    return <input ref={ref} {...props} style={{ ...inputBase, minWidth: "180px", ...props.style }} />;
+    const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+      inputFocusHandlers.onFocus(e);
+      props.onFocus?.(e);
+    };
+    const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+      inputFocusHandlers.onBlur(e);
+      props.onBlur?.(e);
+    };
+    return <input ref={ref} {...props} style={{ ...inputBase, minWidth: "180px", ...props.style }} onFocus={handleFocus} onBlur={handleBlur} />;
   }
 );
 FilterInput.displayName = "FilterInput";
 
 export function FilterSelect(props: React.SelectHTMLAttributes<HTMLSelectElement>) {
-  return <select {...props} style={{ ...inputBase, ...props.style }} />;
+  const handleFocus = (e: React.FocusEvent<HTMLSelectElement>) => {
+    inputFocusHandlers.onFocus(e);
+    props.onFocus?.(e);
+  };
+  const handleBlur = (e: React.FocusEvent<HTMLSelectElement>) => {
+    inputFocusHandlers.onBlur(e);
+    props.onBlur?.(e);
+  };
+  return <select {...props} style={{ ...inputBase, ...props.style }} onFocus={handleFocus} onBlur={handleBlur} />;
 }
 
 // ---------------------------------------------------------------------------
@@ -365,9 +412,9 @@ function btnStyles(variant: ButtonVariant, size: "sm" | "md", disabled?: boolean
 
   switch (variant) {
     case "primary":
-      return { ...base, background: colors.brand[600], color: "#fff", borderColor: colors.brand[600] };
+      return { ...base, background: `linear-gradient(135deg, ${colors.brand[600]}, ${colors.brand[700]})`, color: "#fff", borderColor: colors.brand[600] };
     case "danger":
-      return { ...base, background: colors.error.light, color: colors.error.dark, borderColor: colors.error.light };
+      return { ...base, background: `linear-gradient(135deg, ${colors.error.base}, ${colors.error.dark})`, color: "#fff", borderColor: colors.error.base };
     case "ghost":
       return { ...base, background: "transparent", color: colors.neutral[700], borderColor: "transparent" };
     case "secondary":
@@ -377,8 +424,41 @@ function btnStyles(variant: ButtonVariant, size: "sm" | "md", disabled?: boolean
 }
 
 export function ActionButton({ variant = "secondary", size = "md", loading, children, ...props }: ActionButtonProps) {
+  const isDisabled = props.disabled || loading;
+  const handleMouseEnter = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (isDisabled) return;
+    const btn = e.currentTarget;
+    if (variant === "primary") {
+      btn.style.background = `linear-gradient(135deg, ${colors.brand[700]}, ${colors.brand[800]})`;
+      btn.style.boxShadow = shadow.sm;
+    } else if (variant === "secondary") {
+      btn.style.background = colors.neutral[100];
+      btn.style.borderColor = colors.border.strong;
+    } else if (variant === "danger") {
+      btn.style.background = `linear-gradient(135deg, ${colors.error.dark}, ${colors.error.dark})`;
+      btn.style.boxShadow = shadow.sm;
+    } else if (variant === "ghost") {
+      btn.style.background = colors.neutral[50];
+    }
+    props.onMouseEnter?.(e);
+  };
+  const handleMouseLeave = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (isDisabled) return;
+    const styles = btnStyles(variant, size, isDisabled);
+    const btn = e.currentTarget;
+    btn.style.background = styles.background as string;
+    btn.style.boxShadow = "";
+    btn.style.borderColor = styles.borderColor as string;
+    props.onMouseLeave?.(e);
+  };
   return (
-    <button {...props} disabled={props.disabled || loading} style={{ ...btnStyles(variant, size, props.disabled || loading), ...props.style }}>
+    <button
+      {...props}
+      disabled={isDisabled}
+      style={{ ...btnStyles(variant, size, isDisabled), ...props.style }}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
       {loading ? "..." : children}
     </button>
   );
@@ -557,13 +637,16 @@ export function TabBar<T extends string>({ tabs, active, onChange, testId }: Tab
               fontSize: typography.size.base,
               fontWeight: isActive ? typography.weight.semibold : typography.weight.normal,
               color: isActive ? colors.brand[700] : colors.neutral[600],
-              background: "transparent",
+              background: isActive ? colors.brand[50] : "transparent",
               border: "none",
+              borderRadius: `${radius.md} ${radius.md} 0 0`,
               borderBottom: `2px solid ${isActive ? colors.brand[600] : "transparent"}`,
               marginBottom: "-2px",
               cursor: "pointer",
-              transition: `color ${transition.fast}, border-color ${transition.fast}`,
+              transition: `color ${transition.fast}, border-color ${transition.fast}, background ${transition.fast}`,
             }}
+            onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.background = colors.neutral[50]; }}
+            onMouseLeave={(e) => { if (!isActive) e.currentTarget.style.background = "transparent"; }}
             data-testid={`${testId}-${tab.key}`}
           >
             {tab.label}

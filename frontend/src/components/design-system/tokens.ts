@@ -65,7 +65,11 @@ export const spacing = { ...DEFAULT_THEME.spacing } as const;
 
 export const radius = { ...DEFAULT_THEME.radius } as const;
 
-export const shadow = { ...DEFAULT_THEME.shadow } as const;
+export const shadow = {
+  ...DEFAULT_THEME.shadow,
+  xl: DEFAULT_THEME.shadow.xl ?? "0 16px 48px rgba(0,0,0,0.16), 0 8px 16px rgba(0,0,0,0.10)",
+  "2xl": DEFAULT_THEME.shadow["2xl"] ?? "0 24px 64px rgba(0,0,0,0.20), 0 12px 24px rgba(0,0,0,0.12)",
+} as const;
 
 // ---------------------------------------------------------------------------
 // Transitions — derived from active theme

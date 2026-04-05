@@ -7,14 +7,14 @@ describe("generateCSSVariables", () => {
     const vars = generateCSSVariables(DEFAULT_THEME);
     expect(vars["--ch-font-body"]).toContain("Inter");
     expect(vars["--ch-font-mono"]).toContain("JetBrains Mono");
-    expect(vars["--ch-brand-500"]).toBe("#5c7cfa");
+    expect(vars["--ch-brand-500"]).toBe("#4f6fff");
     expect(vars["--ch-neutral-900"]).toBe("#212529");
     expect(vars["--ch-success-base"]).toBe("#37b24d");
-    expect(vars["--ch-surface-page"]).toBe("#f8f9fb");
-    expect(vars["--ch-border-default"]).toBe("#dee2e6");
-    expect(vars["--ch-focus"]).toBe("#4c6ef5");
+    expect(vars["--ch-surface-page"]).toBe("#f5f6fa");
+    expect(vars["--ch-border-default"]).toBe("#d5d9e5");
+    expect(vars["--ch-focus"]).toBe("#3d5afe");
     expect(vars["--ch-space-4"]).toBe("1rem");
-    expect(vars["--ch-radius-md"]).toBe("6px");
+    expect(vars["--ch-radius-md"]).toBe("8px");
     expect(vars["--ch-shadow-sm"]).toBeTruthy();
     expect(vars["--ch-motion-fast"]).toContain("120ms");
     expect(vars["--ch-sidebar-width"]).toBe("240px");
@@ -49,12 +49,12 @@ describe("generateCSSVariables", () => {
 describe("resolveTokens", () => {
   it("resolves token structure from default theme", () => {
     const tokens = resolveTokens(DEFAULT_THEME);
-    expect(tokens.colors.brand[600]).toBe("#4c6ef5");
+    expect(tokens.colors.brand[600]).toBe("#3d5afe");
     expect(tokens.typography.fontFamily).toContain("Inter");
     expect(tokens.typography.headingFamily).toContain("Inter");
     expect(tokens.typography.monoFamily).toContain("JetBrains Mono");
     expect(tokens.spacing[4]).toBe("1rem");
-    expect(tokens.radius.md).toBe("6px");
+    expect(tokens.radius.md).toBe("8px");
     expect(tokens.transition.fast).toContain("120ms");
   });
 

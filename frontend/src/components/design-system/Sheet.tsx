@@ -1,17 +1,19 @@
 /**
- * Sheet — Wave 1 Final
+ * Sheet — Wave 2 Premium
  *
- * Right-sliding detail panel with overlay backdrop.
+ * Right-sliding detail panel with premium frosted-glass overlay backdrop.
  * Used for viewing item details without leaving the page context.
  *
  * Features:
  * - Slide-in animation from right
- * - Backdrop overlay (click to close)
+ * - Frosted glass backdrop (blur + dark overlay, click to close)
  * - ESC to close (via dismiss stack)
  * - Full focus trap (Tab/Shift+Tab cycle within panel)
  * - Focus restore on close
  * - Keyboard scope management
  * - Body scroll lock
+ * - Brand accent header strip
+ * - Premium panel shadow & radius
  */
 
 import React, { useEffect, useRef, useCallback } from "react";
@@ -101,12 +103,14 @@ export function Sheet({ open, onClose, title, children, width = "420px", testId 
 
   return (
     <>
-      {/* Backdrop */}
+      {/* Backdrop — frosted glass */}
       <div
         style={{
           position: "fixed",
           inset: 0,
-          background: "rgba(0, 0, 0, 0.3)",
+          background: "rgba(15, 17, 26, 0.5)",
+          backdropFilter: "blur(6px)",
+          WebkitBackdropFilter: "blur(6px)",
           zIndex: zIndex.modal - 1,
           animation: "sheetFadeIn 180ms ease",
         }}
@@ -131,16 +135,18 @@ export function Sheet({ open, onClose, title, children, width = "420px", testId 
           width,
           maxWidth: "90vw",
           background: colors.surface.card,
-          boxShadow: shadow.lg,
+          boxShadow: "0 0 40px rgba(0,0,0,0.15), -8px 0 24px rgba(0,0,0,0.10)",
+          borderRadius: `${radius.xl} 0 0 ${radius.xl}`,
           zIndex: zIndex.modal,
           display: "flex",
           flexDirection: "column",
           outline: "none",
+          overflow: "hidden",
           animation: "sheetSlideIn 220ms ease",
         }}
         data-testid={testId || "sheet-panel"}
       >
-        {/* Header */}
+        {/* Header — with brand accent gradient strip */}
         {title && (
           <div
             style={{
@@ -148,7 +154,6 @@ export function Sheet({ open, onClose, title, children, width = "420px", testId 
               alignItems: "center",
               justifyContent: "space-between",
               padding: `${spacing[4]} ${spacing[5]}`,
-              borderBottom: `1px solid ${colors.border.subtle}`,
               flexShrink: 0,
             }}
           >
@@ -167,18 +172,29 @@ export function Sheet({ open, onClose, title, children, width = "420px", testId 
               onClick={onClose}
               aria-label="Kapat"
               style={{
-                background: "none",
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: "32px",
+                height: "32px",
+                background: "transparent",
                 border: "none",
                 cursor: "pointer",
-                padding: spacing[1],
-                borderRadius: radius.sm,
+                padding: 0,
+                borderRadius: radius.full,
                 color: colors.neutral[500],
                 fontSize: typography.size.lg,
                 lineHeight: 1,
-                transition: `color ${transition.fast}`,
+                transition: `all ${transition.fast}`,
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.color = colors.neutral[800]; }}
-              onMouseLeave={(e) => { e.currentTarget.style.color = colors.neutral[500]; }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = colors.brand[700];
+                e.currentTarget.style.background = colors.brand[50];
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = colors.neutral[500];
+                e.currentTarget.style.background = "transparent";
+              }}
               data-testid={testId ? `${testId}-close` : "sheet-close"}
             >
               ✕
@@ -186,12 +202,24 @@ export function Sheet({ open, onClose, title, children, width = "420px", testId 
           </div>
         )}
 
-        {/* Scrollable content */}
+        {/* Brand accent gradient strip below header */}
+        {title && (
+          <div
+            style={{
+              height: "2px",
+              flexShrink: 0,
+              background: `linear-gradient(90deg, ${colors.brand[500]}, ${colors.brand[700]})`,
+            }}
+            aria-hidden="true"
+          />
+        )}
+
+        {/* Scrollable content — good padding via tokens */}
         <div
           style={{
             flex: 1,
             overflowY: "auto",
-            padding: spacing[5],
+            padding: `${spacing[5]} ${spacing[6]}`,
           }}
         >
           {children}

@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useCommandPaletteStore } from "../../stores/commandPaletteStore";
-import { colors, typography, spacing, radius, transition, zIndex, layout } from "../../components/design-system/tokens";
+import { colors, typography, spacing, radius, shadow, transition, zIndex, layout } from "../../components/design-system/tokens";
 
 interface AppHeaderProps {
   area: "Admin" | "User";
@@ -33,7 +33,10 @@ export function AppHeader({ area }: AppHeaderProps) {
         height: layout.headerHeight,
         padding: `0 ${spacing[6]}`,
         borderBottom: `1px solid ${colors.border.subtle}`,
-        background: colors.surface.card,
+        background: "rgba(255,255,255,0.85)",
+        backdropFilter: "blur(12px)",
+        WebkitBackdropFilter: "blur(12px)",
+        boxShadow: shadow.sm,
         zIndex: zIndex.header,
         flexShrink: 0,
       }}
@@ -66,20 +69,20 @@ export function AppHeader({ area }: AppHeaderProps) {
           fontSize: typography.size.sm,
           fontFamily: typography.fontFamily,
           color: colors.neutral[500],
-          background: colors.neutral[50],
-          border: `1px solid ${colors.border.default}`,
-          borderRadius: radius.md,
+          background: colors.surface.inset,
+          border: `1px solid ${colors.border.subtle}`,
+          borderRadius: radius.lg,
           cursor: "pointer",
-          transition: `background ${transition.fast}, border-color ${transition.fast}`,
+          transition: `background ${transition.fast}, border-color ${transition.fast}, box-shadow ${transition.fast}`,
           marginRight: spacing[3],
         }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.background = colors.neutral[100];
-          e.currentTarget.style.borderColor = colors.border.strong;
+          e.currentTarget.style.borderColor = colors.brand[400];
+          e.currentTarget.style.boxShadow = `0 0 0 2px rgba(76,110,245,0.1)`;
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.background = colors.neutral[50];
-          e.currentTarget.style.borderColor = colors.border.default;
+          e.currentTarget.style.borderColor = colors.border.subtle;
+          e.currentTarget.style.boxShadow = "none";
         }}
       >
         <span style={{ color: colors.neutral[400] }}>Ara veya komut...</span>
@@ -87,11 +90,13 @@ export function AppHeader({ area }: AppHeaderProps) {
           style={{
             fontSize: typography.size.xs,
             fontFamily: typography.monoFamily,
-            background: colors.surface.card,
-            padding: "0.1rem 0.35rem",
+            background: colors.neutral[100],
+            padding: `${spacing[0]} ${spacing[1]}`,
             borderRadius: radius.sm,
             border: `1px solid ${colors.border.subtle}`,
-            color: colors.neutral[400],
+            boxShadow: shadow.xs,
+            color: colors.neutral[500],
+            lineHeight: 1.4,
           }}
         >
           ⌘K
@@ -113,15 +118,17 @@ export function AppHeader({ area }: AppHeaderProps) {
           border: `1px solid ${colors.border.default}`,
           borderRadius: radius.md,
           cursor: "pointer",
-          transition: `background ${transition.fast}, border-color ${transition.fast}`,
+          transition: `background ${transition.fast}, border-color ${transition.fast}, box-shadow ${transition.fast}`,
         }}
         onMouseEnter={(e) => {
           e.currentTarget.style.background = colors.neutral[50];
-          e.currentTarget.style.borderColor = colors.border.strong;
+          e.currentTarget.style.borderColor = colors.brand[400];
+          e.currentTarget.style.boxShadow = `0 0 0 2px rgba(76,110,245,0.08)`;
         }}
         onMouseLeave={(e) => {
           e.currentTarget.style.background = "transparent";
           e.currentTarget.style.borderColor = colors.border.default;
+          e.currentTarget.style.boxShadow = "none";
         }}
       >
         {config.switchLabel}

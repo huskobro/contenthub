@@ -1,6 +1,7 @@
 import type { JobStepResponse } from "../../api/jobsApi";
 import { formatDuration } from "../../lib/formatDuration";
-import { colors, radius, typography } from "../design-system/tokens";
+import { colors, radius, typography, spacing, shadow, transition } from "../design-system/tokens";
+import { statusStyle } from "../design-system/tokens";
 
 interface JobStepsListProps {
   steps: JobStepResponse[];
@@ -13,31 +14,51 @@ export function JobStepsList({ steps }: JobStepsListProps) {
   }
 
   return (
-    <div style={{ marginTop: "0.5rem" }}>
-      {safeSteps.map((s) => (
-        <div
-          key={s.id}
-          style={{
-            padding: "0.5rem 0.75rem",
-            marginBottom: "0.375rem",
-            border: `1px solid ${colors.border.subtle}`,
-            borderRadius: radius.sm,
-            fontSize: typography.size.base,
-            background: colors.neutral[50],
-          }}
-        >
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.125rem" }}>
-            <strong style={{ fontFamily: "monospace" }}>{s.step_key}</strong>
-            <span style={{ color: colors.neutral[600] }}>#{s.step_order} — {s.status}</span>
+    <div style={{ marginTop: spacing[2], display: "flex", flexDirection: "column", gap: spacing[2] }}>
+      {safeSteps.map((s) => {
+        const sStyle = statusStyle(s.status);
+        return (
+          <div
+            key={s.id}
+            style={{
+              padding: `${spacing[3]} ${spacing[4]}`,
+              border: `1px solid ${colors.border.subtle}`,
+              borderRadius: radius.md,
+              fontSize: typography.size.base,
+              background: colors.surface.card,
+              boxShadow: shadow.xs,
+              borderLeft: `3px solid ${sStyle.color}`,
+              transition: `box-shadow ${transition.fast}`,
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.boxShadow = shadow.sm; }}
+            onMouseLeave={(e) => { e.currentTarget.style.boxShadow = shadow.xs; }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: spacing[1] }}>
+              <strong style={{ fontFamily: typography.monoFamily, color: colors.neutral[900], fontSize: typography.size.sm }}>{s.step_key}</strong>
+              <div style={{ display: "flex", gap: spacing[2], alignItems: "center" }}>
+                <span style={{ fontSize: typography.size.xs, color: colors.neutral[500] }}>#{s.step_order}</span>
+                <span style={{
+                  display: "inline-block",
+                  padding: `${spacing[1]} ${spacing[2]}`,
+                  borderRadius: radius.full,
+                  fontSize: typography.size.xs,
+                  fontWeight: typography.weight.semibold,
+                  background: sStyle.background,
+                  color: sStyle.color,
+                }}>
+                  {s.status}
+                </span>
+              </div>
+            </div>
+            <div style={{ color: colors.neutral[600], fontSize: typography.size.sm }}>
+              elapsed: {formatDuration(s.elapsed_seconds)}
+            </div>
+            {s.last_error && (
+              <div style={{ color: colors.error.base, marginTop: spacing[1], fontSize: typography.size.sm }}>{s.last_error}</div>
+            )}
           </div>
-          <div style={{ color: colors.neutral[600] }}>
-            elapsed: {formatDuration(s.elapsed_seconds)}
-          </div>
-          {s.last_error && (
-            <div style={{ color: colors.error.base, marginTop: "0.125rem" }}>{s.last_error}</div>
-          )}
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

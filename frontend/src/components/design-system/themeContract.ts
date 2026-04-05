@@ -169,6 +169,8 @@ export interface ThemeShadow {
   sm: string;
   md: string;
   lg: string;
+  xl?: string;
+  "2xl"?: string;
 }
 
 /** Motion/animation configuration */
@@ -271,8 +273,8 @@ export const DEFAULT_THEME: ThemeManifest = {
       md: "0.875rem",
       lg: "1rem",
       xl: "1.125rem",
-      "2xl": "1.375rem",
-      "3xl": "1.75rem",
+      "2xl": "1.5rem",
+      "3xl": "2rem",
     },
     weight: { normal: 400, medium: 500, semibold: 600, bold: 700 },
     lineHeight: { tight: 1.25, normal: 1.5, relaxed: 1.625 },
@@ -281,9 +283,9 @@ export const DEFAULT_THEME: ThemeManifest = {
 
   colors: {
     brand: {
-      50: "#f0f4ff", 100: "#dbe4ff", 200: "#bac8ff", 300: "#91a7ff",
-      400: "#748ffc", 500: "#5c7cfa", 600: "#4c6ef5", 700: "#4263eb",
-      800: "#3b5bdb", 900: "#364fc7",
+      50: "#eef2ff", 100: "#dce4ff", 200: "#bccaff", 300: "#94adff",
+      400: "#6b8aff", 500: "#4f6fff", 600: "#3d5afe", 700: "#3451e8",
+      800: "#2d46d0", 900: "#283fb5",
     },
     neutral: {
       0: "#ffffff", 25: "#fcfcfd", 50: "#f8f9fb", 100: "#f1f3f5",
@@ -296,13 +298,13 @@ export const DEFAULT_THEME: ThemeManifest = {
     error: { light: "#ffe3e3", base: "#f03e3e", dark: "#c92a2a", text: "#921515" },
     info: { light: "#d0ebff", base: "#339af0", dark: "#1c7ed6", text: "#0c4a7e" },
     surface: {
-      page: "#f8f9fb", card: "#ffffff", elevated: "#ffffff",
-      inset: "#f1f3f5", sidebar: "#1a1b1e", sidebarHover: "#25262b",
-      sidebarActive: "#2c2e33",
+      page: "#f5f6fa", card: "#ffffff", elevated: "#ffffff",
+      inset: "#eef0f6", sidebar: "#131419", sidebarHover: "#1e2030",
+      sidebarActive: "#282a3c",
     },
-    border: { subtle: "#e9ecef", default: "#dee2e6", strong: "#ced4da" },
-    focus: "#4c6ef5",
-    chart: ["#4c6ef5", "#37b24d", "#f59f00", "#f03e3e", "#339af0", "#7c3aed", "#e64980"],
+    border: { subtle: "#e4e7ef", default: "#d5d9e5", strong: "#bec4d4" },
+    focus: "#3d5afe",
+    chart: ["#3d5afe", "#37b24d", "#f59f00", "#f03e3e", "#339af0", "#7c3aed", "#e64980"],
   },
 
   spacing: {
@@ -310,16 +312,18 @@ export const DEFAULT_THEME: ThemeManifest = {
     5: "1.25rem", 6: "1.5rem", 8: "2rem", 10: "2.5rem", 12: "3rem", 16: "4rem",
   },
 
-  radius: { sm: "4px", md: "6px", lg: "8px", xl: "12px", full: "9999px" },
+  radius: { sm: "6px", md: "8px", lg: "12px", xl: "16px", full: "9999px" },
 
   shadow: {
-    xs: "0 1px 2px rgba(0,0,0,0.04)",
-    sm: "0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)",
-    md: "0 4px 6px -1px rgba(0,0,0,0.06), 0 2px 4px -2px rgba(0,0,0,0.04)",
-    lg: "0 10px 15px -3px rgba(0,0,0,0.06), 0 4px 6px -4px rgba(0,0,0,0.04)",
+    xs: "0 1px 2px rgba(0,0,0,0.06), 0 1px 1px rgba(0,0,0,0.04)",
+    sm: "0 2px 4px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06)",
+    md: "0 4px 12px rgba(0,0,0,0.10), 0 2px 4px rgba(0,0,0,0.06)",
+    lg: "0 8px 24px rgba(0,0,0,0.12), 0 4px 8px rgba(0,0,0,0.08)",
+    xl: "0 16px 48px rgba(0,0,0,0.16), 0 8px 16px rgba(0,0,0,0.10)",
+    "2xl": "0 24px 64px rgba(0,0,0,0.20), 0 12px 24px rgba(0,0,0,0.12)",
   },
 
-  motion: { fast: "120ms", normal: "180ms", slow: "280ms", easing: "ease" },
+  motion: { fast: "120ms", normal: "180ms", slow: "280ms", easing: "cubic-bezier(0.2, 0, 0, 1)" },
 
   layout: {
     sidebarWidth: "240px", sidebarCollapsedWidth: "56px",
@@ -530,16 +534,18 @@ export const EXAMPLE_WARM_EARTH_THEME: ThemeManifest = {
     5: "1.25rem", 6: "1.5rem", 8: "2rem", 10: "2.5rem", 12: "3rem", 16: "4rem",
   },
 
-  radius: { sm: "4px", md: "8px", lg: "10px", xl: "14px", full: "9999px" },
+  radius: { sm: "6px", md: "8px", lg: "12px", xl: "16px", full: "9999px" },
 
   shadow: {
     xs: "0 1px 2px rgba(37,33,25,0.05)",
     sm: "0 1px 3px rgba(37,33,25,0.07), 0 1px 2px rgba(37,33,25,0.04)",
     md: "0 4px 6px -1px rgba(37,33,25,0.07), 0 2px 4px -2px rgba(37,33,25,0.04)",
     lg: "0 10px 15px -3px rgba(37,33,25,0.08), 0 4px 6px -4px rgba(37,33,25,0.04)",
+    xl: "0 16px 48px rgba(37,33,25,0.18), 0 8px 16px rgba(37,33,25,0.12)",
+    "2xl": "0 24px 64px rgba(37,33,25,0.22), 0 12px 24px rgba(37,33,25,0.14)",
   },
 
-  motion: { fast: "120ms", normal: "200ms", slow: "300ms", easing: "ease" },
+  motion: { fast: "120ms", normal: "200ms", slow: "300ms", easing: "cubic-bezier(0.2, 0, 0, 1)" },
 
   layout: {
     sidebarWidth: "240px", sidebarCollapsedWidth: "56px",

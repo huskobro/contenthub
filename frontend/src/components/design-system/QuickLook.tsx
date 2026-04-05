@@ -1,14 +1,17 @@
 /**
- * QuickLook — Wave 1
+ * QuickLook — Wave 2 Premium
  *
- * Space-triggered minimal preview modal.
+ * Space-triggered minimal preview modal with premium frosted-glass overlay.
  * Shows a quick preview of a selected item without navigating away.
  *
  * Features:
  * - Space bar toggles (capture phase prevents inner button triggers)
  * - ESC to close (via dismiss stack, higher priority than Sheet)
  * - Focus restore on close
- * - Centered modal with backdrop
+ * - Frosted glass backdrop (blur + dark overlay)
+ * - Premium floating shadow
+ * - Brand accent header strip
+ * - Styled close hint badge
  *
  * Usage:
  *   <QuickLook
@@ -79,12 +82,14 @@ export function QuickLook({ open, onClose, title, children, testId }: QuickLookP
 
   return (
     <>
-      {/* Backdrop */}
+      {/* Backdrop — frosted glass */}
       <div
         style={{
           position: "fixed",
           inset: 0,
-          background: "rgba(0, 0, 0, 0.4)",
+          background: "rgba(15, 17, 26, 0.55)",
+          backdropFilter: "blur(8px)",
+          WebkitBackdropFilter: "blur(8px)",
           zIndex: zIndex.modal + 10,
           animation: "sheetFadeIn 150ms ease",
         }}
@@ -110,15 +115,26 @@ export function QuickLook({ open, onClose, title, children, testId }: QuickLookP
           maxHeight: "80vh",
           background: colors.surface.card,
           borderRadius: radius.xl,
-          boxShadow: shadow.lg,
+          boxShadow: "0 20px 60px rgba(0,0,0,0.20), 0 8px 24px rgba(0,0,0,0.12)",
           zIndex: zIndex.modal + 11,
           display: "flex",
           flexDirection: "column",
           outline: "none",
+          overflow: "hidden",
           animation: "quicklookScaleIn 180ms ease",
         }}
         data-testid={testId || "quicklook-modal"}
       >
+        {/* Brand accent strip — 2px gradient at top */}
+        <div
+          style={{
+            height: "2px",
+            flexShrink: 0,
+            background: `linear-gradient(90deg, ${colors.brand[500]}, ${colors.brand[700]})`,
+          }}
+          aria-hidden="true"
+        />
+
         {/* Header */}
         {title && (
           <div
@@ -144,10 +160,13 @@ export function QuickLook({ open, onClose, title, children, testId }: QuickLookP
             <span
               style={{
                 fontSize: typography.size.xs,
-                color: colors.neutral[500],
+                fontWeight: typography.weight.medium,
+                color: colors.neutral[600],
                 background: colors.neutral[100],
                 padding: `${spacing[1]} ${spacing[2]}`,
-                borderRadius: radius.sm,
+                borderRadius: radius.md,
+                boxShadow: shadow.xs,
+                letterSpacing: "0.01em",
               }}
             >
               Space ile kapat

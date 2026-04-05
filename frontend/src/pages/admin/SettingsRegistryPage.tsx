@@ -5,7 +5,7 @@ import { SettingDetailPanel } from "../../components/settings/SettingDetailPanel
 import { CredentialsPanel } from "../../components/settings/CredentialsPanel";
 import { EffectiveSettingsPanel } from "../../components/settings/EffectiveSettingsPanel";
 import { ReadOnlyGuard } from "../../components/visibility/ReadOnlyGuard";
-import { colors, typography, spacing } from "../../components/design-system/tokens";
+import { colors, typography, spacing, radius, shadow, transition } from "../../components/design-system/tokens";
 import { PageShell, SectionShell, TabBar } from "../../components/design-system/primitives";
 
 type TabKey = "credentials" | "effective" | "registry";
@@ -52,18 +52,28 @@ export function SettingsRegistryPage() {
         />
 
         {/* Tab description */}
-        <p
+        <div
           style={{
-            margin: `0 0 ${spacing[4]}`,
-            fontSize: typography.size.sm,
-            color: colors.neutral[500],
-            lineHeight: typography.lineHeight.normal,
-            maxWidth: "640px",
+            margin: `0 0 ${spacing[5]}`,
+            padding: `${spacing[3]} ${spacing[4]}`,
+            background: colors.surface.inset,
+            borderRadius: radius.md,
+            borderLeft: `3px solid ${colors.brand[400]}`,
+            maxWidth: "720px",
           }}
           data-testid="settings-registry-subtitle"
         >
-          {currentTab.description}
-        </p>
+          <p
+            style={{
+              margin: 0,
+              fontSize: typography.size.md,
+              color: colors.neutral[700],
+              lineHeight: typography.lineHeight.normal,
+            }}
+          >
+            {currentTab.description}
+          </p>
+        </div>
 
         {/* Tab content */}
         {activeTab === "credentials" && <CredentialsPanel />}

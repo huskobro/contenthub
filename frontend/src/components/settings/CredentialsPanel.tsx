@@ -35,6 +35,7 @@ const CARD: React.CSSProperties = {
   marginBottom: spacing[3],
   background: colors.surface.card,
   boxShadow: shadow.xs,
+  transition: `box-shadow ${transition.normal}, border-color ${transition.fast}`,
 };
 
 const ROW: React.CSSProperties = {
@@ -132,12 +133,13 @@ function StatusBadge({ status }: { status: string }) {
     <span
       style={{
         display: "inline-block",
-        padding: "0.125rem 0.5rem",
+        padding: `${spacing[1]} ${spacing[2]}`,
         borderRadius: radius.full,
         fontSize: typography.size.xs,
         fontWeight: typography.weight.semibold,
         background: s.bg,
         color: s.fg,
+        letterSpacing: "0.01em",
       }}
     >
       {s.label}
@@ -156,7 +158,7 @@ function SourceBadge({ source }: { source: string }) {
     <span
       style={{
         display: "inline-block",
-        padding: "0.1rem 0.375rem",
+        padding: `${spacing[1]} ${spacing[2]}`,
         borderRadius: radius.sm,
         fontSize: typography.size.xs,
         fontWeight: typography.weight.medium,
@@ -227,7 +229,11 @@ function CredentialRow({ cred }: { cred: CredentialStatus }) {
   }
 
   return (
-    <div style={CARD}>
+    <div
+      style={CARD}
+      onMouseEnter={(e) => { e.currentTarget.style.boxShadow = shadow.md; e.currentTarget.style.borderColor = colors.border.default; }}
+      onMouseLeave={(e) => { e.currentTarget.style.boxShadow = shadow.xs; e.currentTarget.style.borderColor = colors.border.subtle; }}
+    >
       <div style={ROW}>
         <span style={LABEL}>{cred.label}</span>
         <StatusBadge status={cred.status} />
@@ -338,7 +344,11 @@ function YouTubeConnectionSection() {
   }
 
   return (
-    <div style={CARD}>
+    <div
+      style={CARD}
+      onMouseEnter={(e) => { e.currentTarget.style.boxShadow = shadow.md; e.currentTarget.style.borderColor = colors.border.default; }}
+      onMouseLeave={(e) => { e.currentTarget.style.boxShadow = shadow.xs; e.currentTarget.style.borderColor = colors.border.subtle; }}
+    >
       <div style={ROW}>
         <span style={LABEL}>YouTube Baglantisi</span>
         {isLoading && (
