@@ -14,6 +14,7 @@ UYARI: Bu dosyaya API anahtarı GÖMÜLMEMELİDİR.
 import os
 import time
 import logging
+from typing import Optional
 
 import httpx
 
@@ -35,15 +36,19 @@ class PixabayProvider(BaseProvider):
     belirtilen dizine indirir.
     """
 
-    def __init__(self, api_key: str) -> None:
+    def __init__(self, api_key: str, default_count: Optional[int] = None, search_timeout: Optional[float] = None) -> None:
         """
         Args:
             api_key: Pixabay API anahtarı. app.core.config.settings üzerinden
                      iletilmeli, koda gömülmemelidir.
+            default_count: Varsayılan görsel sayısı. None ise _VARSAYILAN_ADET kullanılır.
+            search_timeout: HTTP arama timeout süresi (saniye). None ise 30.0 kullanılır.
         """
         if not api_key:
             logger.warning("PixabayProvider: API anahtarı boş — gerçek çağrılar başarısız olacak.")
         self._api_key = api_key
+        self._default_count = default_count or _VARSAYILAN_ADET
+        self._search_timeout = search_timeout or 30.0
 
     def provider_id(self) -> str:
         """Provider'ın benzersiz kimliği."""
@@ -76,7 +81,7 @@ class PixabayProvider(BaseProvider):
             ProviderInvokeError: API çağrısı veya indirme başarısız olduğunda.
         """
         sorgu: str = input_data.get("query", "").strip()
-        adet: int = int(input_data.get("count", _VARSAYILAN_ADET))
+        adet: int = int(input_data.get("count", self._default_count))
         cikis_dizini: str = input_data.get("output_dir", "")
 
         if not sorgu:
@@ -102,7 +107,7 @@ class PixabayProvider(BaseProvider):
 
         baslangic = time.monotonic()
         try:
-            async with httpx.AsyncClient(timeout=30.0) as istemci:
+            async with httpx.AsyncClient(timeout=self._search_timeout) as istemci:
                 arama_yaniti = await istemci.get(
                     _PIXABAY_ARAMA_URL,
                     params=parametreler,

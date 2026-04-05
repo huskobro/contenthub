@@ -285,14 +285,20 @@ describe("Phase 320 — Release readiness checklist", () => {
     expect(screen.getByTestId("readiness-library")).toBeDefined();
   });
 
-  it("most readiness items show 'Omurga hazir' status (except assets which is Bekliyor)", () => {
+  it("readiness items show correct status labels after M11", () => {
     renderAdmin("/admin");
-    const ids = [
-      "readiness-content", "readiness-publish", "readiness-jobs",
-      "readiness-news", "readiness-analytics", "readiness-library",
-    ];
-    ids.forEach((id) => {
+    // Items still at Omurga hazir
+    const omurgaIds = ["readiness-content", "readiness-jobs", "readiness-library"];
+    omurgaIds.forEach((id) => {
       expect(screen.getByTestId(id).textContent).toContain("Omurga hazir");
+    });
+    // Items upgraded to M11 aktif
+    const m11Ids = [
+      "readiness-publish", "readiness-templates", "readiness-news",
+      "readiness-settings", "readiness-analytics",
+    ];
+    m11Ids.forEach((id) => {
+      expect(screen.getByTestId(id).textContent).toContain("M11 aktif");
     });
   });
 

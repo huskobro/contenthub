@@ -1,7 +1,7 @@
 """
 ContentHub FastAPI application entry point.
 
-Lifespan handler (Phase M1-C4 / M2-C6 / M3-C1 / M3-C2 / M9-A / M10-B):
+Lifespan handler (Phase M1-C4 / M2-C6 / M3-C1 / M3-C2 / M9-A / M10-B / M11):
   1. Create DB tables (dev/test convenience).
   2. Run startup recovery scanner — marks any stale running jobs as failed
      BEFORE the server begins accepting requests (P-008 / C-07).
@@ -10,9 +10,11 @@ Lifespan handler (Phase M1-C4 / M2-C6 / M3-C1 / M3-C2 / M9-A / M10-B):
   5. Resolve credentials + provider settings from DB → .env → builtin (M9-A / M10-B).
   6. Provider örneklerini provider_registry'ye kaydet (M3-C1 / M3-C2).
   7. JobDispatcher oluştur ve app.state'e bağla (M2-C6).
-  8. Yield — server is now live.
+  8. Start publish scheduler background task (M11).
+  9. Yield — server is now live.
 """
 
+import asyncio
 import logging
 from contextlib import asynccontextmanager
 
@@ -90,13 +92,22 @@ async def lifespan(app: FastAPI):
         pixabay_key = await resolve_credential("credential.pixabay_api_key", cred_db) or settings.pixabay_api_key
         # Provider ayarlarini resolver'dan oku (M10-B)
         openai_model = await resolve("provider.llm.openai_model", cred_db) or "gpt-4o-mini"
-    logger.info("Credential + ayar cozumleme tamamlandi (M9-A / M10-B).")
+        # Provider settings from resolver (M11)
+        kie_model = await resolve("provider.llm.kie_model", cred_db)
+        kie_temperature = await resolve("provider.llm.kie_temperature", cred_db)
+        openai_temperature = await resolve("provider.llm.openai_temperature", cred_db)
+        llm_timeout = await resolve("provider.llm.timeout_seconds", cred_db)
+        edge_voice = await resolve("provider.tts.edge_default_voice", cred_db)
+        pexels_count = await resolve("provider.visuals.pexels_default_count", cred_db)
+        pixabay_count = await resolve("provider.visuals.pixabay_default_count", cred_db)
+        search_timeout = await resolve("provider.visuals.search_timeout_seconds", cred_db)
+    logger.info("Credential + ayar cozumleme tamamlandi (M9-A / M10-B / M11).")
 
     # Provider örneklerini provider_registry'ye kaydet (M3-C1 / M3-C2 / M9-A / M10-B)
 
     # LLM — primary: kie.ai Gemini 2.5 Flash
     provider_registry.register(
-        KieAiProvider(api_key=kie_ai_key),
+        KieAiProvider(api_key=kie_ai_key, model=kie_model, temperature=kie_temperature, timeout=llm_timeout),
         ProviderCapability.LLM,
         is_primary=True,
         priority=0,
@@ -105,7 +116,7 @@ async def lifespan(app: FastAPI):
     # API key yoksa kaydedilmez; fallback zincirine girmiyor
     if openai_key:
         provider_registry.register(
-            OpenAICompatProvider(api_key=openai_key, model=openai_model),
+            OpenAICompatProvider(api_key=openai_key, model=openai_model, temperature=openai_temperature, timeout=llm_timeout),
             ProviderCapability.LLM,
             is_primary=False,
             priority=1,
@@ -116,7 +127,7 @@ async def lifespan(app: FastAPI):
 
     # TTS — primary: Microsoft Edge TTS
     provider_registry.register(
-        EdgeTTSProvider(),
+        EdgeTTSProvider(default_voice=edge_voice),
         ProviderCapability.TTS,
         is_primary=True,
         priority=0,
@@ -132,13 +143,13 @@ async def lifespan(app: FastAPI):
 
     # VISUALS — primary: Pexels, fallback: Pixabay
     provider_registry.register(
-        PexelsProvider(api_key=pexels_key),
+        PexelsProvider(api_key=pexels_key, default_count=pexels_count, search_timeout=search_timeout),
         ProviderCapability.VISUALS,
         is_primary=True,
         priority=0,
     )
     provider_registry.register(
-        PixabayProvider(api_key=pixabay_key),
+        PixabayProvider(api_key=pixabay_key, default_count=pixabay_count, search_timeout=search_timeout),
         ProviderCapability.VISUALS,
         is_primary=False,
         priority=1,
@@ -158,8 +169,24 @@ async def lifespan(app: FastAPI):
     )
     logger.info("JobDispatcher app.state'e bağlandı.")
 
+    # Publish scheduler — background task (M11)
+    from app.publish.scheduler import poll_scheduled_publishes
+    scheduler_task = asyncio.create_task(
+        poll_scheduled_publishes(AsyncSessionLocal, interval=60)
+    )
+    app.state.scheduler_task = scheduler_task
+    logger.info("Publish scheduler task created.")
+
     yield
-    # Shutdown — nothing to do at this phase
+
+    # Shutdown: cancel publish scheduler
+    if hasattr(app.state, "scheduler_task"):
+        app.state.scheduler_task.cancel()
+        try:
+            await app.state.scheduler_task
+        except asyncio.CancelledError:
+            pass
+        logger.info("Publish scheduler cancelled.")
 
 
 def create_app() -> FastAPI:

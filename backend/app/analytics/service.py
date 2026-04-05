@@ -13,10 +13,10 @@ Zaman filtresi:
   last_90d : son 90 gün
   all_time : filtre yok
 
-Desteklenmeyen metrikler (M8-C1):
-  provider_error_rate — job_steps.provider_trace_json içinde tutarsız
-  yapı nedeniyle güvenilir kaynak yok. M8-C2 veya Hardening fazında
-  provider trace şeması sabitlenince eklenebilir.
+Provider error rate (M11):
+  provider_error_rate — provider-dependent step'lerin (script, metadata,
+  tts, visuals) başarısızlık oranı. Bu step'ler harici provider API'leri
+  kullanır; failed/total oranı provider error rate olarak raporlanır.
 """
 
 import logging
@@ -34,7 +34,7 @@ logger = logging.getLogger(__name__)
 # Zaman filtresi yardımcısı
 # ---------------------------------------------------------------------------
 
-_TIME_WINDOWS: dict[str, Optional[timedelta]] = {
+_TIME_WINDOWS: dict = {
     "last_7d": timedelta(days=7),
     "last_30d": timedelta(days=30),
     "last_90d": timedelta(days=90),
@@ -169,8 +169,9 @@ async def get_operations_metrics(
                                       RenderStepExecutor.step_key='render' pipeline'a
                                       bağlı değil; bu metrik için kullanılmaz.
       step_stats                    : step_key başına {count, avg_elapsed, failed_count}
-      provider_error_rate           : UNSUPPORTED — M8-C1'de kaynak yok (None).
-                                      provider_trace_json yapısı sabitlenmedi.
+      provider_error_rate           : Provider-dependent step'lerin (script,
+                                      metadata, tts, visuals) başarısızlık oranı.
+                                      Veri yoksa None döner.
     """
     cut = _cutoff(window)
 
@@ -213,9 +214,26 @@ async def get_operations_metrics(
         for row in step_rows
     ]
 
+    # --- Provider error rate (M11) ---
+    # Provider-dependent steps: script, metadata, tts, visuals
+    # These steps use external provider APIs; their failure rate = provider error rate
+    provider_step_q = select(
+        func.count(JobStep.id).label("total"),
+        func.sum(case((JobStep.status == "failed", 1), else_=0)).label("failed"),
+    ).where(JobStep.step_key.in_(["script", "metadata", "tts", "visuals"]))
+    if cut is not None:
+        provider_step_q = provider_step_q.where(JobStep.created_at >= cut)
+
+    provider_row = (await session.execute(provider_step_q)).one()
+    provider_total = provider_row.total or 0
+    provider_failed = int(provider_row.failed or 0)
+    provider_error_rate = (
+        round(provider_failed / provider_total, 4) if provider_total > 0 else None
+    )
+
     return {
         "window": window,
         "avg_render_duration_seconds": avg_render,
         "step_stats": step_stats,
-        "provider_error_rate": None,  # M8-C1: kaynak yok; provider_trace_json yapısı sabitlenmedi
+        "provider_error_rate": provider_error_rate,
     }

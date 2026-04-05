@@ -31,6 +31,7 @@ Test izolasyonu:
   - Adaptör mock ile inject edilir
   - service.mark_published / service.mark_failed mock'lanır
 """
+from __future__ import annotations
 
 import json
 import pytest

@@ -27,12 +27,13 @@ M4-C1: SubtitleStepExecutor registry alıyor.
 
 import asyncio
 import logging
-from typing import TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING
 
 from app.jobs import service
 from app.jobs.executor import StepExecutor
 from app.jobs.pipeline import PipelineRunner
 from app.modules.registry import ModuleRegistry
+from app.modules.templates.resolver import resolve_template_context
 from app.modules.standard_video.executors import (
     ScriptStepExecutor,
     MetadataStepExecutor,
@@ -178,6 +179,28 @@ class JobDispatcher:
             )
             return
 
+        # Template context resolution (M11)
+        template_context: Optional[dict] = None
+        if getattr(job, "template_id", None):
+            try:
+                resolve_db = self._session_factory()
+                try:
+                    template_context = await resolve_template_context(
+                        resolve_db, job.template_id
+                    )
+                finally:
+                    await resolve_db.close()
+                if template_context:
+                    logger.info(
+                        "JobDispatcher: template context resolved. job_id=%s, template=%s",
+                        job_id, template_context.get("template_name"),
+                    )
+            except Exception as exc:
+                logger.warning(
+                    "JobDispatcher: template resolution failed, continuing without template. "
+                    "job_id=%s, error=%s", job_id, exc,
+                )
+
         # Pipeline için yeni bir DB oturumu aç; runner ve PublishStepExecutor bu oturumu kullanır.
         pipeline_db = self._session_factory()
 
@@ -200,6 +223,7 @@ class JobDispatcher:
             db=pipeline_db,
             executors=executors,
             event_bus=self._event_bus,
+            template_context=template_context,
         )
 
         async def _run_pipeline() -> None:

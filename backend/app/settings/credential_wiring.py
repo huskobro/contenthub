@@ -60,23 +60,41 @@ def _get_builtin(key: str, fallback=None):
 
 def _make_kie_ai_provider(api_key: str):
     from app.providers.llm.kie_ai_provider import KieAiProvider
-    return KieAiProvider(api_key=api_key)
+    return KieAiProvider(
+        api_key=api_key,
+        model=_get_builtin("provider.llm.kie_model"),
+        temperature=_get_builtin("provider.llm.kie_temperature"),
+        timeout=_get_builtin("provider.llm.timeout_seconds"),
+    )
 
 
 def _make_openai_compat_provider(api_key: str):
     from app.providers.llm.openai_compat_provider import OpenAICompatProvider
     model = _get_builtin("provider.llm.openai_model", "gpt-4o-mini")
-    return OpenAICompatProvider(api_key=api_key, model=model)
+    return OpenAICompatProvider(
+        api_key=api_key,
+        model=model,
+        temperature=_get_builtin("provider.llm.openai_temperature"),
+        timeout=_get_builtin("provider.llm.timeout_seconds"),
+    )
 
 
 def _make_pexels_provider(api_key: str):
     from app.providers.visuals.pexels_provider import PexelsProvider
-    return PexelsProvider(api_key=api_key)
+    return PexelsProvider(
+        api_key=api_key,
+        default_count=_get_builtin("provider.visuals.pexels_default_count"),
+        search_timeout=_get_builtin("provider.visuals.search_timeout_seconds"),
+    )
 
 
 def _make_pixabay_provider(api_key: str):
     from app.providers.visuals.pixabay_provider import PixabayProvider
-    return PixabayProvider(api_key=api_key)
+    return PixabayProvider(
+        api_key=api_key,
+        default_count=_get_builtin("provider.visuals.pixabay_default_count"),
+        search_timeout=_get_builtin("provider.visuals.search_timeout_seconds"),
+    )
 
 
 # Factory dispatch

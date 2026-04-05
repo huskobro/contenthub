@@ -20,6 +20,7 @@ Doğrulama yöntemi:
   - CONTENTHUB_DATA_DIR env override ile gerçek alembic komutları
   - create_all veya stamp kullanılmaz — yalnızca alembic CLI
 """
+from __future__ import annotations
 
 import os
 import subprocess

@@ -38,6 +38,7 @@ from app.publish.exceptions import (
     ReviewGateViolationError,
 )
 from app.publish.schemas import PublishRecordCreate
+from app.audit.service import write_audit_log
 from app.publish.state_machine import PublishStateMachine
 
 logger = logging.getLogger(__name__)
@@ -144,6 +145,11 @@ async def _transition_status(
         to_status=validated_next,
         detail=detail,
         note=note,
+    )
+    await write_audit_log(
+        session, action="publish.status_transition",
+        entity_type="publish_record", entity_id=record.id,
+        details={"from_status": from_status, "to_status": validated_next},
     )
     logger.info(
         "PublishRecord %s: %s → %s (actor=%s/%s)",

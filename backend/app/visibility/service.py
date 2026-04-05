@@ -26,6 +26,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import VisibilityRule
+from app.audit.service import write_audit_log
 from app.visibility.schemas import VisibilityRuleCreate, VisibilityRuleUpdate
 
 
@@ -67,6 +68,11 @@ async def create_rule(db: AsyncSession, payload: VisibilityRuleCreate) -> Visibi
     db.add(row)
     await db.commit()
     await db.refresh(row)
+    await write_audit_log(
+        db, action="visibility.rule.create",
+        entity_type="visibility_rule", entity_id=row.id,
+        details={"rule_type": row.rule_type, "target_key": row.target_key},
+    )
     return row
 
 
@@ -83,4 +89,9 @@ async def update_rule(
         setattr(row, field, value)
     await db.commit()
     await db.refresh(row)
+    await write_audit_log(
+        db, action="visibility.rule.update",
+        entity_type="visibility_rule", entity_id=row.id,
+        details={"changed_fields": list(changes.keys())},
+    )
     return row

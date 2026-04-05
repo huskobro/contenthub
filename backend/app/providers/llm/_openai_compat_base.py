@@ -20,6 +20,7 @@ Bu dosyada DEĞİL:
 
 import time
 import logging
+from typing import Optional
 
 import httpx
 
@@ -39,6 +40,7 @@ async def openai_compat_chat_completions(
     model: str,
     messages: list[dict],
     temperature: float,
+    timeout: Optional[float] = None,
 ) -> tuple[str, str, dict, int]:
     """
     OpenAI uyumlu /v1/chat/completions endpoint'ini çağırır.
@@ -74,7 +76,7 @@ async def openai_compat_chat_completions(
 
     baslangic = time.monotonic()
     try:
-        async with httpx.AsyncClient(timeout=_VARSAYILAN_TIMEOUT) as client:
+        async with httpx.AsyncClient(timeout=timeout or _VARSAYILAN_TIMEOUT) as client:
             response = await client.post(
                 f"{base_url}/chat/completions",
                 json=payload,

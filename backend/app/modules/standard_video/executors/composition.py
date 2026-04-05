@@ -195,8 +195,42 @@ class CompositionStepExecutor(StepExecutor):
         timing_mode = subtitle_metadata.get("timing_mode", "cursor")
 
         # Job input'tan subtitle_style_preset alınır; yoksa varsayılan kullanılır
-        subtitle_style_preset_id: str | None = raw_input.get("subtitle_style_preset")
+        subtitle_style_preset_id = raw_input.get("subtitle_style_preset")
         subtitle_style = get_preset_for_composition(subtitle_style_preset_id)
+
+        # Template/Style Blueprint context (M11)
+        template_ctx = getattr(job, '_template_context', None)
+        style_blueprint_data = None
+        template_info = None
+        if isinstance(template_ctx, dict):
+            template_info = {
+                "template_id": template_ctx.get("template_id"),
+                "template_name": template_ctx.get("template_name"),
+                "template_version": template_ctx.get("template_version"),
+                "link_role": template_ctx.get("link_role"),
+            }
+            bp = template_ctx.get("style_blueprint")
+            if bp:
+                style_blueprint_data = {
+                    "blueprint_id": bp.get("id"),
+                    "blueprint_name": bp.get("name"),
+                    "blueprint_version": bp.get("version"),
+                    "visual_rules": bp.get("visual_rules"),
+                    "motion_rules": bp.get("motion_rules"),
+                    "layout_rules": bp.get("layout_rules"),
+                    "subtitle_rules": bp.get("subtitle_rules"),
+                    "thumbnail_rules": bp.get("thumbnail_rules"),
+                }
+                # If blueprint has subtitle_rules, merge into subtitle_style
+                bp_sub_rules = bp.get("subtitle_rules")
+                if bp_sub_rules and isinstance(bp_sub_rules, dict):
+                    for k, v in bp_sub_rules.items():
+                        if k in subtitle_style and v is not None:
+                            subtitle_style[k] = v
+                    logger.info(
+                        "CompositionStepExecutor: subtitle style merged from blueprint. "
+                        "blueprint=%s, job=%s", bp.get("name"), job.id,
+                    )
 
         start_time = time.monotonic()
 
@@ -222,6 +256,8 @@ class CompositionStepExecutor(StepExecutor):
                 },
             },
             "render_status": "props_ready",
+            "template": template_info,
+            "style_blueprint": style_blueprint_data,
             "created_at": datetime.now(timezone.utc).isoformat(),
         }
 
@@ -263,5 +299,7 @@ class CompositionStepExecutor(StepExecutor):
                 "timing_mode": timing_mode,
                 "latency_ms": latency_ms,
             },
+            "template": template_info,
+            "style_blueprint": style_blueprint_data,
             "step": self.step_key(),
         }

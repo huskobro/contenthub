@@ -13,6 +13,7 @@ Kurulum: pip install edge-tts
 
 import time
 import logging
+from typing import Optional
 
 from app.providers.base import BaseProvider, ProviderOutput
 from app.providers.capability import ProviderCapability
@@ -29,6 +30,13 @@ class EdgeTTSProvider(BaseProvider):
 
     API anahtarı gerektirmez. Ses üretimi için edge_tts.Communicate kullanır.
     """
+
+    def __init__(self, default_voice: Optional[str] = None) -> None:
+        """
+        Args:
+            default_voice: Varsayılan ses profili. None ise _VARSAYILAN_SES kullanılır.
+        """
+        self._default_voice = default_voice or _VARSAYILAN_SES
 
     def provider_id(self) -> str:
         """Provider'ın benzersiz kimliği."""
@@ -61,7 +69,7 @@ class EdgeTTSProvider(BaseProvider):
             ProviderInvokeError: TTS çağrısı başarısız olduğunda.
         """
         metin: str = input_data.get("text", "").strip()
-        ses: str = input_data.get("voice", _VARSAYILAN_SES)
+        ses: str = input_data.get("voice", self._default_voice)
         cikis_yolu: str = input_data.get("output_path", "")
 
         if not metin:

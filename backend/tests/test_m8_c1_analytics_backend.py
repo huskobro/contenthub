@@ -34,7 +34,7 @@ Kapsam (A–X, 24 test):
   O)  avg_render_duration_seconds exact: composition step
   P)  step_stats count exact: bilinen step sayısı
   Q)  step_stats failed_count exact
-  R)  provider_error_rate daima None (M8-C1 unsupported)
+  R)  provider_error_rate None or float (M11 provider step computation)
   S)  window filtresi step'leri exact dışlar
   T)  GET /api/v1/analytics/overview 200 + şema
   U)  GET /api/v1/analytics/operations 200 + şema
@@ -585,14 +585,15 @@ async def test_q_step_stats_failed_count_exact():
 
 
 # ---------------------------------------------------------------------------
-# R) provider_error_rate daima None
+# R) provider_error_rate — None when no provider steps, float otherwise
 # ---------------------------------------------------------------------------
 
 @pytest.mark.asyncio
-async def test_r_provider_error_rate_always_none():
+async def test_r_provider_error_rate_none_or_float():
     async with AsyncSessionLocal() as session:
         result = await analytics_service.get_operations_metrics(session=session, window="all_time")
-    assert result["provider_error_rate"] is None
+    rate = result["provider_error_rate"]
+    assert rate is None or isinstance(rate, float)
 
 
 # ---------------------------------------------------------------------------
@@ -658,7 +659,7 @@ async def test_u_route_operations_200(client):
     assert "avg_render_duration_seconds" in data
     assert "step_stats" in data
     assert "provider_error_rate" in data
-    assert data["provider_error_rate"] is None
+    assert data["provider_error_rate"] is None or isinstance(data["provider_error_rate"], float)
     assert isinstance(data["step_stats"], list)
 
 

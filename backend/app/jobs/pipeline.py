@@ -62,10 +62,12 @@ class PipelineRunner:
         db: AsyncSession,
         executors: dict[str, StepExecutor],
         event_bus: Optional["EventBus"] = None,
+        template_context: Optional[dict] = None,
     ) -> None:
         self._db = db
         self._executors = executors
         self._event_bus = event_bus
+        self._template_context = template_context
 
     async def run(self, job_id: str) -> None:
         """
@@ -83,6 +85,11 @@ class PipelineRunner:
         job = await service.transition_job_status(
             self._db, job_id, "running"
         )
+
+        # Attach template context as transient attribute (M11)
+        # Executors read via getattr(job, '_template_context', None)
+        if self._template_context:
+            object.__setattr__(job, '_template_context', self._template_context)
         if self._event_bus is not None:
             self._event_bus.publish_job_update(job_id, "running", job.current_step_key)
         await self._update_heartbeat(job_id)

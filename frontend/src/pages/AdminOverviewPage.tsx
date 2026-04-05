@@ -162,12 +162,12 @@ export function AdminOverviewPage() {
         <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
           {[
             { area: "Icerik Uretimi", status: "Omurga hazir", detail: "Video ve bulten olusturma akislari calisiyor", testId: "readiness-content" },
-            { area: "Yayin Akisi", status: "Omurga hazir", detail: "YouTube OAuth + yayin zinciri calisiyor", testId: "readiness-publish" },
+            { area: "Yayin Akisi", status: "M11 aktif", detail: "YouTube OAuth + yayin zinciri calisiyor, zamanlanmis yayin scheduler aktif, audit log calisiyor", testId: "readiness-publish" },
             { area: "Is Motoru", status: "Omurga hazir", detail: "Job/step/timeline/ETA gorunur, operasyonel aksiyonlar M14'te", testId: "readiness-jobs" },
-            { area: "Sablon Sistemi", status: "CRUD hazir", detail: "Template/style/blueprint kayit yonetimi calisiyor, job runtime baglantisi yok", testId: "readiness-templates" },
-            { area: "Haber Modulu", status: "Omurga hazir", detail: "Kaynak, tarama, haber, dedupe akislari calisiyor", testId: "readiness-news" },
-            { area: "Ayarlar ve Gorunurluk", status: "M10 aktif", detail: "Settings resolver (7/19 wired), credential yonetimi, gorunurluk CRUD only (runtime guard yok)", testId: "readiness-settings" },
-            { area: "Analytics ve Raporlama", status: "Omurga hazir", detail: "Platform metrikleri gercek SQL, YouTube Analytics temeli eklendi", testId: "readiness-analytics" },
+            { area: "Sablon Sistemi", status: "M11 aktif", detail: "Template/style/blueprint CRUD + job runtime baglantisi calisiyor (composition props'a akar)", testId: "readiness-templates" },
+            { area: "Haber Modulu", status: "M11 aktif", detail: "Kaynak, tarama, haber, dedupe akislari calisiyor; soft dedupe esigi ayarlardan okunuyor", testId: "readiness-news" },
+            { area: "Ayarlar ve Gorunurluk", status: "M11 aktif", detail: "Settings resolver (16/19 wired), credential yonetimi, gorunurluk runtime resolver + guard aktif, audit log calisiyor", testId: "readiness-settings" },
+            { area: "Analytics ve Raporlama", status: "M11 aktif", detail: "Platform metrikleri gercek SQL, provider_error_rate gercek JobStep verisinden, YouTube Analytics temeli eklendi", testId: "readiness-analytics" },
             { area: "Icerik Kutuphanesi", status: "Omurga hazir", detail: "Birlesik icerik listesi mevcut, filtreleme bekliyor", testId: "readiness-library" },
             { area: "Varlik Kutuphanesi", status: "Bekliyor", detail: "Backend asset altyapisi henuz mevcut degil", testId: "readiness-assets" },
           ].map((item) => (

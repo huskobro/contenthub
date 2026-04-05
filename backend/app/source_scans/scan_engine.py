@@ -255,9 +255,19 @@ async def execute_rss_scan(
     entries = getattr(feed, "entries", []) or []
     fetched_count = len(entries)
 
+    # -- Soft dedupe threshold from settings resolver (M11) --
+    soft_threshold = None
+    try:
+        from app.settings.settings_resolver import resolve as _resolve_setting
+        soft_threshold = await _resolve_setting("source_scans.soft_dedupe_threshold", db)
+    except Exception:
+        pass  # Fall back to module default
+
     # -- Mevcut item'ları yükle (hard + soft dedupe) --
     existing_items = await _load_existing_items(db, source.id)
-    dedupe_context = build_dedupe_context(existing_items, allow_followup=allow_followup)
+    dedupe_context = build_dedupe_context(
+        existing_items, allow_followup=allow_followup, soft_threshold=soft_threshold,
+    )
 
     # -- Entry'leri işle --
     new_count = 0

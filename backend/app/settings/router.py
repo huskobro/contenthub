@@ -48,6 +48,7 @@ from app.settings.settings_resolver import (
     list_groups,
 )
 from app.settings.settings_seed import seed_known_settings
+from app.audit.service import write_audit_log
 
 logger = logging.getLogger(__name__)
 
@@ -163,6 +164,11 @@ async def save_credential_endpoint(
         logger.info("Provider reinit for %s: %s", key, wiring_result)
     except Exception as exc:
         logger.warning("Provider reinit basarisiz for %s: %s", key, exc)
+
+    await write_audit_log(
+        db, action="credential.save",
+        entity_type="credential", entity_id=key,
+    )
 
     return {**result, "wiring": wiring_result}
 
@@ -293,6 +299,12 @@ async def update_effective_setting(
 
     await db.commit()
     await db.refresh(row)
+
+    await write_audit_log(
+        db, action="settings.effective.update",
+        entity_type="setting", entity_id=key,
+        details={"value": str(body.value)[:100]},
+    )
 
     # Return updated effective state
     item = await settings_explain(key, db)

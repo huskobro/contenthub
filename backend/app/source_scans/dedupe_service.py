@@ -40,7 +40,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
-from typing import Optional
+from typing import Optional  # noqa: used in DedupeContext and build_dedupe_context
 
 # ---------------------------------------------------------------------------
 # Sabitler
@@ -89,10 +89,12 @@ class DedupeContext:
     existing_url_map  : {normalized_url → news_item_id} — hard dedupe için
     existing_title_map: {normalized_title → (news_item_id, raw_title)} — soft dedupe için
     allow_followup    : True → soft dedupe atlanır
+    soft_threshold    : Jaccard benzerlik eşiği (M11: resolver'dan okunabilir)
     """
     existing_url_map: dict[str, str] = field(default_factory=dict)
     existing_title_map: dict[str, tuple[str, str]] = field(default_factory=dict)
     allow_followup: bool = False
+    soft_threshold: float = SOFT_DEDUPE_THRESHOLD
 
 
 # ---------------------------------------------------------------------------
@@ -190,7 +192,7 @@ def evaluate_entry(
                 best_score = score
                 best_match_id = item_id
 
-        if best_score >= SOFT_DEDUPE_THRESHOLD and best_match_id is not None:
+        if best_score >= context.soft_threshold and best_match_id is not None:
             return DedupeDecision(
                 reason="soft_title_match",
                 is_suppressed=True,
@@ -210,7 +212,7 @@ def evaluate_entry(
                 best_score = score
                 best_match_id = item_id
 
-        if best_score >= SOFT_DEDUPE_THRESHOLD and best_match_id is not None:
+        if best_score >= context.soft_threshold and best_match_id is not None:
             # Soft eşleşme var ama atlandı (follow-up exception)
             return DedupeDecision(
                 reason="soft_title_match",
@@ -235,6 +237,7 @@ def evaluate_entry(
 def build_dedupe_context(
     existing_items: list[dict],
     allow_followup: bool = False,
+    soft_threshold: Optional[float] = None,
 ) -> DedupeContext:
     """
     Mevcut NewsItem listesinden DedupeContext oluşturur.
@@ -258,8 +261,10 @@ def build_dedupe_context(
             if norm:
                 title_map[norm] = (item_id, title)
 
+    threshold = soft_threshold if soft_threshold is not None else SOFT_DEDUPE_THRESHOLD
     return DedupeContext(
         existing_url_map=url_map,
         existing_title_map=title_map,
         allow_followup=allow_followup,
+        soft_threshold=threshold,
     )

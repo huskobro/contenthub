@@ -19,6 +19,7 @@ Test kapsamı:
   14. SystemTTSProvider — noop=True işareti result ve trace'de var
   15. resolve_and_invoke — primary başarılı → trace'de fallback_from YOK
 """
+from __future__ import annotations
 
 import os
 import tempfile

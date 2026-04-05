@@ -16,6 +16,7 @@ UYARI: Bu dosyaya API anahtarı GÖMÜLMEMELİDİR.
 """
 
 import logging
+from typing import Optional
 
 from app.providers.base import BaseProvider, ProviderOutput
 from app.providers.capability import ProviderCapability
@@ -39,15 +40,21 @@ class KieAiProvider(BaseProvider):
     API anahtarı constructor üzerinden alınır — koda gömülmez.
     """
 
-    def __init__(self, api_key: str) -> None:
+    def __init__(self, api_key: str, model: Optional[str] = None, temperature: Optional[float] = None, timeout: Optional[float] = None) -> None:
         """
         Args:
             api_key: kie.ai API anahtarı. app.core.config.settings üzerinden
                      iletilmeli, koda gömülmemelidir.
+            model: Kullanılacak model adı. None ise _DEFAULT_MODEL kullanılır.
+            temperature: Varsayılan sıcaklık. None ise _DEFAULT_TEMPERATURE kullanılır.
+            timeout: HTTP timeout süresi (saniye). None ise 60.0 kullanılır.
         """
         if not api_key:
             logger.warning("KieAiProvider: API anahtarı boş — gerçek çağrılar başarısız olacak.")
         self._api_key = api_key
+        self._model = model or _DEFAULT_MODEL
+        self._temperature = temperature or _DEFAULT_TEMPERATURE
+        self._timeout = timeout or 60.0
 
     def provider_id(self) -> str:
         """Provider'ın benzersiz kimliği."""
@@ -80,7 +87,7 @@ class KieAiProvider(BaseProvider):
         """
         messages: list[dict] = list(input_data.get("messages", []))
         system_prompt: str | None = input_data.get("system_prompt")
-        temperature: float = float(input_data.get("temperature", _DEFAULT_TEMPERATURE))
+        temperature: float = float(input_data.get("temperature", self._temperature))
 
         if not messages and not system_prompt:
             raise ProviderInvokeError(
@@ -96,9 +103,10 @@ class KieAiProvider(BaseProvider):
             provider_id=self.provider_id(),
             base_url=_KIE_AI_BASE_URL,
             api_key=self._api_key,
-            model=_DEFAULT_MODEL,
+            model=self._model,
             messages=messages,
             temperature=temperature,
+            timeout=self._timeout,
         )
 
         input_tokens = kullanim.get("prompt_tokens", 0)
@@ -118,7 +126,7 @@ class KieAiProvider(BaseProvider):
             },
             trace={
                 "provider_id": self.provider_id(),
-                "model": _DEFAULT_MODEL,
+                "model": self._model,
                 "input_tokens": input_tokens,
                 "output_tokens": output_tokens,
                 "latency_ms": gecikme_ms,

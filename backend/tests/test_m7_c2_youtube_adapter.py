@@ -40,6 +40,7 @@ Test izolasyonu:
   - Token dosyası: tmp_path ile izole edilir (CONTENTHUB_DATA_DIR override)
   - YouTubeAdapter testi için minimal video dosyası tmp_path'te oluşturulur
 """
+from __future__ import annotations
 
 import json
 import os

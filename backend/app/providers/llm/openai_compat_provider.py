@@ -19,6 +19,7 @@ M3-C3 notu: Settings registry aktif olduğunda base_url ve model buradan
 """
 
 import logging
+from typing import Optional
 
 from app.providers.base import BaseProvider, ProviderOutput
 from app.providers.capability import ProviderCapability
@@ -44,14 +45,18 @@ class OpenAICompatProvider(BaseProvider):
         api_key: str,
         base_url: str = "https://api.openai.com/v1",
         model: str = _VARSAYILAN_MODEL,
+        temperature: Optional[float] = None,
+        timeout: Optional[float] = None,
     ) -> None:
         """
         Args:
-            api_key  : Bearer token. settings üzerinden iletilmeli.
-            base_url : API temel URL (sonunda / olmadan).
-                       Varsayılan: OpenAI resmi endpoint'i.
-            model    : Kullanılacak model adı.
-                       Varsayılan: 'gpt-4o-mini'.
+            api_key     : Bearer token. settings üzerinden iletilmeli.
+            base_url    : API temel URL (sonunda / olmadan).
+                          Varsayılan: OpenAI resmi endpoint'i.
+            model       : Kullanılacak model adı.
+                          Varsayılan: 'gpt-4o-mini'.
+            temperature : Varsayılan sıcaklık. None ise _VARSAYILAN_TEMPERATURE kullanılır.
+            timeout     : HTTP timeout süresi (saniye). None ise 60.0 kullanılır.
         """
         if not api_key:
             logger.warning(
@@ -61,6 +66,8 @@ class OpenAICompatProvider(BaseProvider):
         self._api_key = api_key
         self._base_url = base_url.rstrip("/")
         self._model = model
+        self._temperature = temperature or _VARSAYILAN_TEMPERATURE
+        self._timeout = timeout or 60.0
 
     def provider_id(self) -> str:
         """
@@ -98,7 +105,7 @@ class OpenAICompatProvider(BaseProvider):
         """
         messages: list[dict] = list(input_data.get("messages", []))
         system_prompt: str | None = input_data.get("system_prompt")
-        temperature: float = float(input_data.get("temperature", _VARSAYILAN_TEMPERATURE))
+        temperature: float = float(input_data.get("temperature", self._temperature))
 
         if not messages and not system_prompt:
             raise ProviderInvokeError(
@@ -117,6 +124,7 @@ class OpenAICompatProvider(BaseProvider):
             model=self._model,
             messages=messages,
             temperature=temperature,
+            timeout=self._timeout,
         )
 
         return ProviderOutput(
