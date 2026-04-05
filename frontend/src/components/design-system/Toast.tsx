@@ -1,5 +1,5 @@
 /**
- * Toast — Wave 1
+ * Toast — Wave 1 (Tailwind migration)
  *
  * Toast notification system rendered at layout level.
  * Reads from uiStore.toasts and auto-dismisses after 4 seconds.
@@ -18,7 +18,7 @@
 import React, { useEffect } from "react";
 import { useUIStore } from "../../stores/uiStore";
 import type { Toast as ToastData, ToastType } from "../../stores/uiStore";
-import { colors, typography, spacing, radius, shadow, transition, zIndex } from "./tokens";
+import { cn } from "../../lib/cn";
 
 // ---------------------------------------------------------------------------
 // Toast item
@@ -31,35 +31,28 @@ const iconMap: Record<ToastType, string> = {
   info: "ℹ",
 };
 
-const colorMap: Record<ToastType, { bg: string; border: string; text: string; icon: string }> = {
+/** Tailwind classes per toast type */
+const typeClasses: Record<ToastType, { container: string; icon: string }> = {
   success: {
-    bg: colors.success.light,
-    border: colors.success.base,
-    text: colors.success.text,
-    icon: colors.success.base,
+    container: "bg-success-light border-success/20 text-success-text",
+    icon: "text-success",
   },
   error: {
-    bg: colors.error.light,
-    border: colors.error.base,
-    text: colors.error.text,
-    icon: colors.error.base,
+    container: "bg-error-light border-error/20 text-error-text",
+    icon: "text-error",
   },
   warning: {
-    bg: colors.warning.light,
-    border: colors.warning.base,
-    text: colors.warning.text,
-    icon: colors.warning.dark,
+    container: "bg-warning-light border-warning/20 text-warning-text",
+    icon: "text-warning-dark",
   },
   info: {
-    bg: colors.info.light,
-    border: colors.info.base,
-    text: colors.info.text,
-    icon: colors.info.base,
+    container: "bg-info-light border-info/20 text-info-text",
+    icon: "text-info",
   },
 };
 
 function ToastItem({ toast, onDismiss }: { toast: ToastData; onDismiss: (id: string) => void }) {
-  const scheme = colorMap[toast.type];
+  const scheme = typeClasses[toast.type];
 
   // Auto-dismiss after 4s
   useEffect(() => {
@@ -70,55 +63,26 @@ function ToastItem({ toast, onDismiss }: { toast: ToastData; onDismiss: (id: str
   return (
     <div
       role="alert"
-      style={{
-        display: "flex",
-        alignItems: "flex-start",
-        gap: spacing[3],
-        padding: `${spacing[3]} ${spacing[4]}`,
-        background: scheme.bg,
-        border: `1px solid ${scheme.border}30`,
-        borderRadius: radius.md,
-        boxShadow: shadow.md,
-        fontSize: typography.size.base,
-        color: scheme.text,
-        maxWidth: "380px",
-        animation: "toastSlideIn 220ms ease",
-        pointerEvents: "auto",
-      }}
+      className={cn(
+        "flex items-start gap-3 px-4 py-3 border rounded-md shadow-md text-base max-w-[380px] animate-toast-slide-in pointer-events-auto",
+        scheme.container
+      )}
       data-testid={`toast-${toast.type}`}
     >
       <span
-        style={{
-          fontWeight: typography.weight.bold,
-          fontSize: typography.size.md,
-          color: scheme.icon,
-          flexShrink: 0,
-          marginTop: "1px",
-        }}
+        className={cn("font-bold text-md shrink-0 mt-px", scheme.icon)}
         aria-hidden="true"
       >
         {iconMap[toast.type]}
       </span>
-      <span style={{ flex: 1, lineHeight: typography.lineHeight.normal }}>
+      <span className="flex-1 leading-normal">
         {toast.message}
       </span>
       <button
         onClick={() => onDismiss(toast.id)}
         aria-label="Kapat"
-        style={{
-          background: "none",
-          border: "none",
-          cursor: "pointer",
-          color: scheme.text,
-          opacity: 0.6,
-          padding: 0,
-          fontSize: typography.size.sm,
-          flexShrink: 0,
-          lineHeight: 1,
-          transition: `opacity ${transition.fast}`,
-        }}
-        onMouseEnter={(e) => { e.currentTarget.style.opacity = "1"; }}
-        onMouseLeave={(e) => { e.currentTarget.style.opacity = "0.6"; }}
+        className="bg-transparent border-none cursor-pointer opacity-60 p-0 text-sm shrink-0 leading-none transition-opacity duration-fast hover:opacity-100"
+        style={{ color: "inherit" }}
       >
         ✕
       </button>
@@ -138,16 +102,7 @@ export function ToastContainer() {
 
   return (
     <div
-      style={{
-        position: "fixed",
-        top: spacing[4],
-        right: spacing[4],
-        zIndex: zIndex.toast,
-        display: "flex",
-        flexDirection: "column",
-        gap: spacing[2],
-        pointerEvents: "none",
-      }}
+      className="fixed top-4 right-4 z-toast flex flex-col gap-2 pointer-events-none"
       data-testid="toast-container"
       aria-live="polite"
       aria-atomic="false"

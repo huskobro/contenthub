@@ -1,5 +1,5 @@
 /**
- * Command Palette — Wave 2 / M25 + Contextual & Discovery enhancements
+ * Command Palette — Wave 2 / M25 + Contextual & Discovery enhancements (Tailwind migration)
  *
  * Cmd+K / Ctrl+K triggered overlay with real search + navigation.
  * - Keyboard-first: arrow keys, enter, escape
@@ -23,15 +23,7 @@ import { useKeyboardStore } from "../../stores/keyboardStore";
 import { useVisibility } from "../../hooks/useVisibility";
 import { useDismissStack } from "../../hooks/useDismissStack";
 import { useDiscoverySearch } from "../../hooks/useDiscoverySearch";
-import {
-  colors,
-  typography,
-  spacing,
-  radius,
-  shadow,
-  transition,
-  zIndex,
-} from "./tokens";
+import { cn } from "../../lib/cn";
 
 // ---------------------------------------------------------------------------
 // Scope ID
@@ -70,7 +62,6 @@ const DISCOVERY_GROUP_LABEL = "Bulunan Kayitlar";
 // ---------------------------------------------------------------------------
 
 function useVisibilityFilteredCommands(commands: Command[]): Command[] {
-  // Query visibility for each key (unconditional hooks — stable count via useMemo)
   const vis_settings = useVisibility("panel:settings");
   const vis_visibility = useVisibility("panel:visibility");
   const vis_templates = useVisibility("panel:templates");
@@ -244,7 +235,6 @@ export function CommandPalette() {
             close();
           }
           break;
-        // ESC is handled by useDismissStack
         case "Tab":
           e.preventDefault();
           break;
@@ -264,15 +254,7 @@ export function CommandPalette() {
 
   return createPortal(
     <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: zIndex.commandPalette,
-        display: "flex",
-        alignItems: "flex-start",
-        justifyContent: "center",
-        paddingTop: "min(20vh, 160px)",
-      }}
+      className="fixed inset-0 z-command-palette flex items-start justify-center pt-[min(20vh,160px)]"
       onClick={(e) => {
         if (e.target === e.currentTarget) close();
       }}
@@ -280,13 +262,7 @@ export function CommandPalette() {
     >
       {/* Backdrop */}
       <div
-        style={{
-          position: "fixed",
-          inset: 0,
-          background: "rgba(15, 17, 26, 0.6)",
-          backdropFilter: "blur(8px)",
-          WebkitBackdropFilter: "blur(8px)",
-        }}
+        className="fixed inset-0 bg-[rgba(15,17,26,0.6)] backdrop-blur-[8px]"
         onClick={close}
       />
 
@@ -295,56 +271,23 @@ export function CommandPalette() {
         role="dialog"
         aria-label="Komut Paleti"
         aria-modal="true"
+        className="relative w-[min(560px,90vw)] max-h-[min(480px,70vh)] flex flex-col bg-surface-card border border-border-subtle rounded-xl overflow-hidden animate-palette-enter"
         style={{
-          position: "relative",
-          width: "min(560px, 90vw)",
-          maxHeight: "min(480px, 70vh)",
-          display: "flex",
-          flexDirection: "column",
-          background: colors.surface.card,
-          border: `1px solid ${colors.border.subtle}`,
-          borderRadius: radius.xl,
           boxShadow: "0 20px 60px rgba(0,0,0,0.20), 0 8px 20px rgba(0,0,0,0.12)",
-          overflow: "hidden",
-          animation: "palette-enter 120ms ease-out",
         }}
         onKeyDown={handleKeyDown}
         data-testid="command-palette"
       >
         {/* Brand accent strip */}
-        <div
-          style={{
-            height: "2px",
-            background: `linear-gradient(90deg, ${colors.brand[400]}, ${colors.brand[600]})`,
-            flexShrink: 0,
-          }}
-        />
+        <div className="h-[2px] bg-gradient-to-r from-brand-400 to-brand-600 shrink-0" />
+
         {/* Search input */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            padding: `${spacing[4]} ${spacing[5]}`,
-            borderBottom: `1px solid ${colors.border.subtle}`,
-            gap: spacing[3],
-          }}
-        >
+        <div className="flex items-center px-5 py-4 border-b border-border-subtle gap-3">
           <span
-            style={{
-              color: colors.neutral[500],
-              fontSize: typography.size.md,
-              flexShrink: 0,
-              width: "28px",
-              height: "28px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              background: colors.neutral[100],
-              borderRadius: radius.full,
-              ...(discoveryLoading
-                ? { animation: "palette-pulse 1.2s ease-in-out infinite" }
-                : {}),
-            }}
+            className={cn(
+              "text-neutral-500 text-md shrink-0 w-7 h-7 flex items-center justify-center bg-neutral-100 rounded-full",
+              discoveryLoading && "animate-palette-pulse"
+            )}
           >
             {discoveryLoading ? "\u23F3" : "\u2318"}
           </span>
@@ -354,34 +297,13 @@ export function CommandPalette() {
             placeholder="Komut veya sayfa ara..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            style={{
-              flex: 1,
-              border: "none",
-              outline: "none",
-              background: "transparent",
-              fontSize: typography.size.md,
-              color: colors.neutral[900],
-              fontFamily: typography.fontFamily,
-              lineHeight: typography.lineHeight.normal,
-              padding: `${spacing[1]} 0`,
-            }}
+            className="flex-1 border-none outline-none bg-transparent text-md text-neutral-900 font-body leading-normal py-1"
             data-testid="command-palette-input"
             aria-label="Komut ara"
             autoComplete="off"
             spellCheck={false}
           />
-          <kbd
-            style={{
-              fontSize: typography.size.xs,
-              color: colors.neutral[500],
-              background: colors.neutral[100],
-              padding: "0.15rem 0.5rem",
-              borderRadius: radius.sm,
-              border: `1px solid ${colors.neutral[200]}`,
-              boxShadow: shadow.xs,
-              fontFamily: typography.monoFamily,
-            }}
-          >
+          <kbd className="text-xs text-neutral-500 bg-neutral-100 px-2 py-[0.15rem] rounded-sm border border-neutral-200 shadow-xs font-mono leading-normal">
             ESC
           </kbd>
         </div>
@@ -389,37 +311,18 @@ export function CommandPalette() {
         {/* Command list */}
         <div
           ref={listRef}
-          style={{
-            flex: 1,
-            overflowY: "auto",
-            padding: `${spacing[2]} 0`,
-          }}
+          className="flex-1 overflow-y-auto py-2"
           role="listbox"
           aria-label="Komutlar"
           data-testid="command-palette-list"
         >
-          {/* Empty state — only show when no static results AND discovery finished with nothing */}
+          {/* Empty state */}
           {flatList.length === 0 && !discoveryLoading && (
             <div
-              style={{
-                padding: `${spacing[8]} ${spacing[5]}`,
-                textAlign: "center",
-                color: colors.neutral[500],
-                fontSize: typography.size.sm,
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                gap: spacing[2],
-              }}
+              className="px-5 py-8 text-center text-neutral-500 text-sm flex flex-col items-center gap-2"
               data-testid="command-palette-empty"
             >
-              <span
-                style={{
-                  fontSize: typography.size["2xl"],
-                  color: colors.neutral[300],
-                  lineHeight: 1,
-                }}
-              >
+              <span className="text-2xl text-neutral-300 leading-none">
                 {"\uD83D\uDD0D"}
               </span>
               {showDiscovery && discoverySearched
@@ -431,19 +334,10 @@ export function CommandPalette() {
           {/* Discovery loading indicator */}
           {showDiscovery && discoveryLoading && flatList.length === 0 && (
             <div
-              style={{
-                padding: `${spacing[6]} ${spacing[5]}`,
-                textAlign: "center",
-                color: colors.neutral[400],
-                fontSize: typography.size.sm,
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                gap: spacing[2],
-              }}
+              className="px-5 py-6 text-center text-neutral-400 text-sm flex flex-col items-center gap-2"
               data-testid="command-palette-discovery-loading"
             >
-              <span style={{ animation: "palette-pulse 1.2s ease-in-out infinite" }}>
+              <span className="animate-palette-pulse">
                 {"\u23F3"}
               </span>
               {`Aran\u0131yor...`}
@@ -455,30 +349,13 @@ export function CommandPalette() {
             return (
             <div key={group.category}>
               <div
-                style={{
-                  padding: `${spacing[2]} ${spacing[5]} ${spacing[1]}`,
-                  fontSize: typography.size.xs,
-                  fontWeight: typography.weight.semibold,
-                  color: isDiscoveryGroup
-                    ? colors.brand[500]
-                    : colors.neutral[400],
-                  textTransform: "uppercase",
-                  letterSpacing: "0.05em",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: spacing[2],
-                }}
+                className={cn(
+                  "px-5 pt-2 pb-1 text-xs font-semibold uppercase tracking-[0.05em] flex items-center gap-2",
+                  isDiscoveryGroup ? "text-brand-500" : "text-neutral-400"
+                )}
               >
                 {isDiscoveryGroup && (
-                  <span
-                    style={{
-                      width: "2px",
-                      height: "12px",
-                      background: colors.brand[500],
-                      borderRadius: radius.full,
-                      flexShrink: 0,
-                    }}
-                  />
+                  <span className="w-[2px] h-3 bg-brand-500 rounded-full shrink-0" />
                 )}
                 {group.label}
               </div>
@@ -507,25 +384,15 @@ export function CommandPalette() {
         </div>
 
         {/* Footer hint */}
-        <div
-          style={{
-            padding: `${spacing[3]} ${spacing[5]}`,
-            borderTop: `1px solid ${colors.border.subtle}`,
-            display: "flex",
-            gap: spacing[4],
-            fontSize: typography.size.sm,
-            color: colors.neutral[400],
-            background: colors.neutral[25],
-          }}
-        >
-          <span style={{ display: "flex", alignItems: "center", gap: spacing[1] }}>
-            <kbd style={kbdStyle}>{"\u2191\u2193"}</kbd> gezin
+        <div className="px-5 py-3 border-t border-border-subtle flex gap-4 text-sm text-neutral-400 bg-neutral-25">
+          <span className="flex items-center gap-1">
+            <kbd className="font-mono text-xs bg-neutral-100 px-[0.4rem] py-[0.15rem] rounded-sm border border-neutral-200 shadow-xs leading-normal">{"\u2191\u2193"}</kbd> gezin
           </span>
-          <span style={{ display: "flex", alignItems: "center", gap: spacing[1] }}>
-            <kbd style={kbdStyle}>{"\u21B5"}</kbd> calistir
+          <span className="flex items-center gap-1">
+            <kbd className="font-mono text-xs bg-neutral-100 px-[0.4rem] py-[0.15rem] rounded-sm border border-neutral-200 shadow-xs leading-normal">{"\u21B5"}</kbd> calistir
           </span>
-          <span style={{ display: "flex", alignItems: "center", gap: spacing[1] }}>
-            <kbd style={kbdStyle}>esc</kbd> kapat
+          <span className="flex items-center gap-1">
+            <kbd className="font-mono text-xs bg-neutral-100 px-[0.4rem] py-[0.15rem] rounded-sm border border-neutral-200 shadow-xs leading-normal">esc</kbd> kapat
           </span>
         </div>
       </div>
@@ -568,114 +435,51 @@ function CommandItem({
       data-palette-index={index}
       onClick={onSelect}
       onMouseMove={onHover}
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: spacing[3],
-        padding: `${spacing[2]} ${spacing[5]}`,
-        cursor: "pointer",
-        background: isSelected ? colors.brand[50] : "transparent",
-        borderLeft: isSelected
-          ? `3px solid ${colors.brand[500]}`
-          : "3px solid transparent",
-        transition: `background ${transition.fast}, border-color ${transition.fast}`,
-      }}
+      className={cn(
+        "flex items-center gap-3 px-5 py-2 cursor-pointer border-l-[3px] transition-all duration-fast",
+        isSelected
+          ? "bg-brand-50 border-l-brand-500"
+          : "bg-transparent border-l-transparent"
+      )}
       data-testid={`command-palette-item-${command.id}`}
     >
       {command.icon && (
         <span
-          style={{
-            fontSize: typography.size.sm,
-            flexShrink: 0,
-            width: "28px",
-            height: "28px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            background: isSelected ? colors.brand[100] : colors.neutral[100],
-            borderRadius: radius.full,
-            transition: `background ${transition.fast}`,
-          }}
+          className={cn(
+            "text-sm shrink-0 w-7 h-7 flex items-center justify-center rounded-full transition-colors duration-fast",
+            isSelected ? "bg-brand-100" : "bg-neutral-100"
+          )}
         >
           {command.icon}
         </span>
       )}
-      <div style={{ flex: 1, minWidth: 0 }}>
+      <div className="flex-1 min-w-0">
         <div
-          style={{
-            fontSize: typography.size.base,
-            color: isSelected ? colors.brand[800] : colors.neutral[800],
-            fontWeight: isSelected
-              ? typography.weight.medium
-              : typography.weight.normal,
-            lineHeight: typography.lineHeight.tight,
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-            transition: `color ${transition.fast}`,
-          }}
+          className={cn(
+            "text-base leading-tight overflow-hidden text-ellipsis whitespace-nowrap transition-colors duration-fast",
+            isSelected
+              ? "text-brand-800 font-medium"
+              : "text-neutral-800 font-normal"
+          )}
         >
           {command.label}
         </div>
         {command.description && (
-          <div
-            style={{
-              fontSize: typography.size.xs,
-              color: colors.neutral[500],
-              lineHeight: typography.lineHeight.normal,
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-            }}
-          >
+          <div className="text-xs text-neutral-500 leading-normal overflow-hidden text-ellipsis whitespace-nowrap">
             {command.description}
           </div>
         )}
       </div>
       {/* Status badge for discovery results */}
       {statusBadge && (
-        <span
-          style={{
-            fontSize: typography.size.xs,
-            color: colors.neutral[600],
-            background: colors.neutral[50],
-            padding: "0.1rem 0.4rem",
-            borderRadius: radius.full,
-            flexShrink: 0,
-          }}
-        >
+        <span className="text-xs text-neutral-600 bg-neutral-50 px-[0.4rem] py-[0.1rem] rounded-full shrink-0">
           {statusBadge}
         </span>
       )}
       {/* Category badge */}
-      <span
-        style={{
-          fontSize: typography.size.xs,
-          color: colors.neutral[400],
-          background: colors.neutral[50],
-          padding: "0.1rem 0.4rem",
-          borderRadius: radius.full,
-          flexShrink: 0,
-          textTransform: "capitalize",
-        }}
-      >
+      <span className="text-xs text-neutral-400 bg-neutral-50 px-[0.4rem] py-[0.1rem] rounded-full shrink-0 capitalize">
         {isDiscovery ? "Sonuc" : CATEGORY_LABELS[command.category]}
       </span>
     </div>
   );
 }
-
-// ---------------------------------------------------------------------------
-// Shared kbd style
-// ---------------------------------------------------------------------------
-
-const kbdStyle: React.CSSProperties = {
-  fontFamily: typography.monoFamily,
-  fontSize: typography.size.xs,
-  background: colors.neutral[100],
-  padding: "0.15rem 0.4rem",
-  borderRadius: radius.sm,
-  border: `1px solid ${colors.neutral[200]}`,
-  boxShadow: shadow.xs,
-  lineHeight: typography.lineHeight.normal,
-};

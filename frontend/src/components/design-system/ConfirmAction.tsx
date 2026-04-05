@@ -1,5 +1,5 @@
 /**
- * ConfirmAction — Wave 1
+ * ConfirmAction — Wave 1 (Tailwind migration)
  *
  * Two-stage delete/destructive action confirmation.
  * First click shows "Emin misiniz?" state, second click executes.
@@ -15,7 +15,7 @@
  */
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { colors, typography, spacing, radius, transition } from "./tokens";
+import { cn } from "../../lib/cn";
 
 interface ConfirmActionProps {
   /** Initial button label */
@@ -34,6 +34,16 @@ interface ConfirmActionProps {
   resetTimeout?: number;
   testId?: string;
 }
+
+const variantNormal: Record<string, string> = {
+  danger: "bg-error-light text-error-dark border-error/20",
+  warning: "bg-warning-light text-warning-dark border-warning/20",
+};
+
+const variantConfirm: Record<string, string> = {
+  danger: "bg-error text-white border-error-dark font-semibold",
+  warning: "bg-warning text-white border-warning-dark font-semibold",
+};
 
 export function ConfirmAction({
   label,
@@ -59,11 +69,9 @@ export function ConfirmAction({
     if (disabled) return;
 
     if (!confirming) {
-      // First click — enter confirmation state
       setConfirming(true);
       timerRef.current = setTimeout(() => setConfirming(false), resetTimeout);
     } else {
-      // Second click — execute
       if (timerRef.current) clearTimeout(timerRef.current);
       setConfirming(false);
       onConfirm();
@@ -71,45 +79,19 @@ export function ConfirmAction({
   }, [confirming, disabled, onConfirm, resetTimeout]);
 
   const isSmall = size === "sm";
-  const isDanger = variant === "danger";
-
-  const baseStyle: React.CSSProperties = {
-    display: "inline-flex",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: spacing[1],
-    padding: isSmall ? `${spacing[1]} ${spacing[3]}` : `${spacing[2]} ${spacing[4]}`,
-    fontSize: isSmall ? typography.size.sm : typography.size.base,
-    fontWeight: typography.weight.medium,
-    borderRadius: radius.md,
-    cursor: disabled ? "not-allowed" : "pointer",
-    opacity: disabled ? 0.5 : 1,
-    transition: `all ${transition.fast}`,
-    lineHeight: 1.5,
-    whiteSpace: "nowrap",
-    border: "1px solid transparent",
-  };
-
-  const normalStyle: React.CSSProperties = {
-    ...baseStyle,
-    background: isDanger ? colors.error.light : colors.warning.light,
-    color: isDanger ? colors.error.dark : colors.warning.dark,
-    borderColor: isDanger ? `${colors.error.base}20` : `${colors.warning.base}20`,
-  };
-
-  const confirmingStyle: React.CSSProperties = {
-    ...baseStyle,
-    background: isDanger ? colors.error.base : colors.warning.base,
-    color: "#ffffff",
-    borderColor: isDanger ? colors.error.dark : colors.warning.dark,
-    fontWeight: typography.weight.semibold,
-  };
 
   return (
     <button
       onClick={handleClick}
       disabled={disabled}
-      style={confirming ? confirmingStyle : normalStyle}
+      className={cn(
+        "inline-flex items-center justify-center gap-1 rounded-md border transition-all duration-fast leading-normal whitespace-nowrap",
+        isSmall ? "px-3 py-1 text-sm" : "px-4 py-2 text-base",
+        "font-medium",
+        disabled && "cursor-not-allowed opacity-50",
+        !disabled && "cursor-pointer",
+        confirming ? variantConfirm[variant] : variantNormal[variant]
+      )}
       data-testid={testId}
       aria-label={confirming ? confirmLabel : label}
     >

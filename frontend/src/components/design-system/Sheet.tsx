@@ -1,5 +1,5 @@
 /**
- * Sheet — Wave 2 Premium
+ * Sheet — Wave 2 Premium (Tailwind migration)
  *
  * Right-sliding detail panel with premium frosted-glass overlay backdrop.
  * Used for viewing item details without leaving the page context.
@@ -17,7 +17,7 @@
  */
 
 import React, { useEffect, useRef, useCallback } from "react";
-import { colors, typography, spacing, radius, shadow, transition, zIndex } from "./tokens";
+import { cn } from "../../lib/cn";
 import { useDismissStack } from "../../hooks/useDismissStack";
 import { useFocusRestore } from "../../hooks/useFocusRestore";
 import { useKeyboardStore } from "../../stores/keyboardStore";
@@ -51,7 +51,6 @@ export function Sheet({ open, onClose, title, children, width = "420px", testId 
   useEffect(() => {
     if (open) {
       pushScope({ id: scopeId, label: "Sheet Panel" });
-      // Focus the panel for keyboard accessibility
       requestAnimationFrame(() => panelRef.current?.focus());
     } else {
       popScope(scopeId);
@@ -85,13 +84,11 @@ export function Sheet({ open, onClose, title, children, width = "420px", testId 
     const active = document.activeElement;
 
     if (e.shiftKey) {
-      // Shift+Tab: if at first, wrap to last
       if (active === first || active === panel) {
         e.preventDefault();
         last.focus();
       }
     } else {
-      // Tab: if at last, wrap to first
       if (active === last) {
         e.preventDefault();
         first.focus();
@@ -105,15 +102,7 @@ export function Sheet({ open, onClose, title, children, width = "420px", testId 
     <>
       {/* Backdrop — frosted glass */}
       <div
-        style={{
-          position: "fixed",
-          inset: 0,
-          background: "rgba(15, 17, 26, 0.5)",
-          backdropFilter: "blur(6px)",
-          WebkitBackdropFilter: "blur(6px)",
-          zIndex: zIndex.modal - 1,
-          animation: "sheetFadeIn 180ms ease",
-        }}
+        className="fixed inset-0 z-[299] bg-[rgba(15,17,26,0.5)] backdrop-blur-[6px] animate-sheet-fade-in"
         onClick={onClose}
         data-testid={testId ? `${testId}-backdrop` : "sheet-backdrop"}
         aria-hidden="true"
@@ -127,74 +116,23 @@ export function Sheet({ open, onClose, title, children, width = "420px", testId 
         aria-label={title || "Detail panel"}
         tabIndex={-1}
         onKeyDown={handleKeyDown}
+        className="fixed top-0 right-0 bottom-0 z-modal max-w-[90vw] bg-surface-card rounded-l-xl flex flex-col outline-none overflow-hidden animate-sheet-slide-in"
         style={{
-          position: "fixed",
-          top: 0,
-          right: 0,
-          bottom: 0,
           width,
-          maxWidth: "90vw",
-          background: colors.surface.card,
           boxShadow: "0 0 40px rgba(0,0,0,0.15), -8px 0 24px rgba(0,0,0,0.10)",
-          borderRadius: `${radius.xl} 0 0 ${radius.xl}`,
-          zIndex: zIndex.modal,
-          display: "flex",
-          flexDirection: "column",
-          outline: "none",
-          overflow: "hidden",
-          animation: "sheetSlideIn 220ms ease",
         }}
         data-testid={testId || "sheet-panel"}
       >
-        {/* Header — with brand accent gradient strip */}
+        {/* Header */}
         {title && (
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              padding: `${spacing[4]} ${spacing[5]}`,
-              flexShrink: 0,
-            }}
-          >
-            <h2
-              style={{
-                margin: 0,
-                fontSize: typography.size.lg,
-                fontWeight: typography.weight.semibold,
-                color: colors.neutral[900],
-                fontFamily: typography.headingFamily,
-              }}
-            >
+          <div className="flex items-center justify-between px-5 py-4 shrink-0">
+            <h2 className="m-0 text-lg font-semibold text-neutral-900 font-heading">
               {title}
             </h2>
             <button
               onClick={onClose}
               aria-label="Kapat"
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-                width: "32px",
-                height: "32px",
-                background: "transparent",
-                border: "none",
-                cursor: "pointer",
-                padding: 0,
-                borderRadius: radius.full,
-                color: colors.neutral[500],
-                fontSize: typography.size.lg,
-                lineHeight: 1,
-                transition: `all ${transition.fast}`,
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = colors.brand[700];
-                e.currentTarget.style.background = colors.brand[50];
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.color = colors.neutral[500];
-                e.currentTarget.style.background = "transparent";
-              }}
+              className="inline-flex items-center justify-center w-8 h-8 bg-transparent border-none cursor-pointer p-0 rounded-full text-neutral-500 text-lg leading-none transition-all duration-fast hover:text-brand-700 hover:bg-brand-50"
               data-testid={testId ? `${testId}-close` : "sheet-close"}
             >
               ✕
@@ -205,23 +143,13 @@ export function Sheet({ open, onClose, title, children, width = "420px", testId 
         {/* Brand accent gradient strip below header */}
         {title && (
           <div
-            style={{
-              height: "2px",
-              flexShrink: 0,
-              background: `linear-gradient(90deg, ${colors.brand[500]}, ${colors.brand[700]})`,
-            }}
+            className="h-[2px] shrink-0 bg-gradient-to-r from-brand-500 to-brand-700"
             aria-hidden="true"
           />
         )}
 
-        {/* Scrollable content — good padding via tokens */}
-        <div
-          style={{
-            flex: 1,
-            overflowY: "auto",
-            padding: `${spacing[5]} ${spacing[6]}`,
-          }}
-        >
+        {/* Scrollable content */}
+        <div className="flex-1 overflow-y-auto px-6 py-5">
           {children}
         </div>
       </div>

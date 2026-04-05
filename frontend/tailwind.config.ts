@@ -132,11 +132,57 @@ export default {
         page: "var(--ch-page-max-width)",
       },
 
+      /* ---- Z-Index ---- */
+      zIndex: {
+        sidebar: "100",
+        header: "110",
+        dropdown: "200",
+        modal: "300",
+        "command-palette": "350",
+        toast: "400",
+      },
+
       /* ---- Transitions ---- */
       transitionDuration: {
         fast: "120ms",
         normal: "180ms",
         slow: "280ms",
+      },
+
+      /* ---- Animations ---- */
+      keyframes: {
+        "sheet-slide-in": {
+          from: { transform: "translateX(100%)" },
+          to: { transform: "translateX(0)" },
+        },
+        "sheet-fade-in": {
+          from: { opacity: "0" },
+          to: { opacity: "1" },
+        },
+        "quicklook-scale-in": {
+          from: { opacity: "0", transform: "translate(-50%, -50%) scale(0.95)" },
+          to: { opacity: "1", transform: "translate(-50%, -50%) scale(1)" },
+        },
+        "toast-slide-in": {
+          from: { opacity: "0", transform: "translateX(20px)" },
+          to: { opacity: "1", transform: "translateX(0)" },
+        },
+        "palette-enter": {
+          from: { opacity: "0", transform: "translateY(-8px) scale(0.98)" },
+          to: { opacity: "1", transform: "translateY(0) scale(1)" },
+        },
+        "palette-pulse": {
+          "0%, 100%": { opacity: "1" },
+          "50%": { opacity: "0.4" },
+        },
+      },
+      animation: {
+        "sheet-slide-in": "sheet-slide-in 220ms ease",
+        "sheet-fade-in": "sheet-fade-in 180ms ease",
+        "quicklook-scale-in": "quicklook-scale-in 180ms ease",
+        "toast-slide-in": "toast-slide-in 220ms ease",
+        "palette-enter": "palette-enter 120ms ease-out",
+        "palette-pulse": "palette-pulse 1.2s ease-in-out infinite",
       },
     },
   },
