@@ -45,10 +45,25 @@ const MOCK_SV = {
   created_at: "2026-01-01T00:00:00Z",
 };
 
+const MOCK_CONTENT_METRICS = {
+  window: "all_time",
+  module_distribution: [],
+  content_output_count: 0,
+  published_content_count: 0,
+  avg_time_to_publish_seconds: null,
+  content_type_breakdown: [
+    { type: "standard_video", count: 0 },
+    { type: "news_bulletin", count: 0 },
+  ],
+  active_template_count: 0,
+  active_blueprint_count: 0,
+};
+
 function mockFetchByUrl() {
   window.fetch = vi.fn((url: string) => {
     let data: unknown = [];
-    if (url.includes("/jobs/test-123")) data = MOCK_JOB;
+    if (url.includes("/analytics/content")) data = MOCK_CONTENT_METRICS;
+    else if (url.includes("/jobs/test-123")) data = MOCK_JOB;
     else if (url.includes("/standard-videos/test-456")) data = MOCK_SV;
     else if (url.includes("/onboarding")) data = { onboarding_required: false, completed_at: "2026-01-01" };
     return Promise.resolve({
@@ -121,11 +136,11 @@ beforeEach(() => {
 /* ------------------------------------------------------------------ */
 
 describe("Phase 318 — Deferred/disabled note standardization", () => {
-  it("library filter deferred element uses standard 'backend entegrasyonu' wording", () => {
+  it("library filter inputs are active (M18-C)", () => {
     renderAdmin("/admin/library");
-    const note = screen.getByTestId("library-filters-deferred");
-    expect(note.textContent).toContain("backend entegrasyonu");
-    expect(note.textContent).not.toContain("ilerideki fazlarda");
+    const active = screen.getByTestId("library-filters-active");
+    expect(active).toBeDefined();
+    expect(screen.getByTestId("library-search-input")).toBeDefined();
   });
 
   it("analytics overview filter section is active (M17-B)", () => {
@@ -134,11 +149,12 @@ describe("Phase 318 — Deferred/disabled note standardization", () => {
     expect(note.textContent).toContain("zaman penceresi");
   });
 
-  it("analytics content module distribution deferred note uses standard wording", () => {
+  it("analytics content module distribution section exists (M18-B)", async () => {
     renderAdmin("/admin/analytics/content");
-    const note = screen.getByTestId("module-distribution-deferred");
-    expect(note.textContent).toContain("backend entegrasyonu");
-    expect(note.textContent).not.toContain("backend aktif olunca");
+    await waitFor(() => {
+      expect(screen.getByTestId("analytics-module-distribution")).toBeDefined();
+    });
+    expect(screen.getByTestId("module-distribution-heading").textContent).toContain("Modul Dagilimi");
   });
 
   it("analytics operations source impact shows real metrics (M17-A)", () => {
@@ -162,10 +178,9 @@ describe("Phase 318 — Deferred/disabled note standardization", () => {
     expect(note.textContent).not.toContain("ilerideki fazlarda");
   });
 
-  it("analytics content video performance empty state is present", () => {
+  it("analytics content window selector is present (M18-B)", () => {
     renderAdmin("/admin/analytics/content");
-    const empty = screen.getByTestId("video-performance-empty");
-    expect(empty.textContent).toContain("Henuz icerik performans verisi");
+    expect(screen.getByTestId("content-window-selector")).toBeDefined();
   });
 
   it("library empty state is present when no items", async () => {
@@ -284,15 +299,15 @@ describe("Phase 320 — Release readiness checklist", () => {
     expect(screen.getByTestId("readiness-library")).toBeDefined();
   });
 
-  it("readiness items show correct status labels after M12", () => {
+  it("readiness items show correct status labels after M18", () => {
     renderAdmin("/admin");
     // Items still at Omurga hazir
-    const omurgaIds = ["readiness-content", "readiness-jobs", "readiness-library"];
+    const omurgaIds = ["readiness-content", "readiness-jobs"];
     omurgaIds.forEach((id) => {
       expect(screen.getByTestId(id).textContent).toContain("Omurga hazir");
     });
     // Items at M11 aktif
-    const m11Ids = ["readiness-publish", "readiness-news", "readiness-analytics"];
+    const m11Ids = ["readiness-publish", "readiness-news"];
     m11Ids.forEach((id) => {
       expect(screen.getByTestId(id).textContent).toContain("M11 aktif");
     });
@@ -301,12 +316,17 @@ describe("Phase 320 — Release readiness checklist", () => {
     m12Ids.forEach((id) => {
       expect(screen.getByTestId(id).textContent).toContain("M12 aktif");
     });
+    // Items upgraded to M18 aktif
+    const m18Ids = ["readiness-analytics", "readiness-library"];
+    m18Ids.forEach((id) => {
+      expect(screen.getByTestId(id).textContent).toContain("M18 aktif");
+    });
   });
 
-  it("readiness-assets has Bekliyor status", () => {
+  it("readiness-assets has Desteklenmiyor status", () => {
     renderAdmin("/admin");
     const item = screen.getByTestId("readiness-assets");
-    expect(item.textContent).toContain("Bekliyor");
+    expect(item.textContent).toContain("Desteklenmiyor");
   });
 
   it("deferred note mentions backend entegrasyonu", () => {

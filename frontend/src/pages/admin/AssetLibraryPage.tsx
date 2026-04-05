@@ -40,20 +40,21 @@ export function AssetLibraryPage() {
         <p style={{ fontSize: "0.75rem", color: "#94a3b8", margin: 0, lineHeight: 1.5 }}>
           Bu modul, media dosyalarinin (muzik, font, gorsel, overlay vb.) backend
           tarafindan yonetilmesini gerektirir. Backend asset ingestion ve dosya
-          yukleme altyapisi tamamlandiginda bu sayfa aktif hale gelecektir.
+          yukleme altyapisi mevcut degil — bu alan desteklenmiyor (unsupported).
         </p>
         <div
           style={{
             marginTop: "1rem",
             padding: "0.5rem 0.75rem",
-            background: "#f1f5f9",
+            background: "#fef2f2",
             borderRadius: "4px",
             display: "inline-block",
             fontSize: "0.6875rem",
-            color: "#64748b",
+            color: "#991b1b",
           }}
+          data-testid="asset-library-unsupported-badge"
         >
-          Planlanan milestone: M16+
+          Desteklenmiyor — Backend asset altyapisi mevcut degil
         </div>
       </div>
     </div>

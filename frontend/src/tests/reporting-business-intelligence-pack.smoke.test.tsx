@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -12,12 +12,28 @@ import { AnalyticsOperationsPage } from "../pages/admin/AnalyticsOperationsPage"
 /*  Helpers                                                            */
 /* ------------------------------------------------------------------ */
 
+const MOCK_CONTENT_METRICS = {
+  window: "all_time",
+  module_distribution: [],
+  content_output_count: 0,
+  published_content_count: 0,
+  avg_time_to_publish_seconds: null,
+  content_type_breakdown: [
+    { type: "standard_video", count: 0 },
+    { type: "news_bulletin", count: 0 },
+  ],
+  active_template_count: 0,
+  active_blueprint_count: 0,
+};
+
 function renderAt(path: string) {
-  window.fetch = vi.fn(() =>
+  window.fetch = vi.fn((url: string) =>
     Promise.resolve({
       ok: true,
       status: 200,
-      json: () => Promise.resolve([]),
+      json: () => Promise.resolve(
+        url.includes("/analytics/content") ? MOCK_CONTENT_METRICS : []
+      ),
     })
   ) as unknown as typeof window.fetch;
 
@@ -170,8 +186,11 @@ describe("Phase 316 — Usage/performance summary", () => {
     expect(note.textContent).toContain("Verimlilik Ozeti");
   });
 
-  it("content page module distribution note mentions decision support", () => {
+  it("content page module distribution note mentions decision support", async () => {
     renderAt("/admin/analytics/content");
+    await waitFor(() => {
+      expect(screen.getByTestId("module-distribution-note")).toBeDefined();
+    });
     const note = screen.getByTestId("module-distribution-note");
     expect(note.textContent).toContain("verimlilik karari");
   });
@@ -236,13 +255,15 @@ describe("Phase 317 — Reporting end-to-end verification", () => {
     expect(screen.getByTestId("analytics-source-impact")).toBeDefined();
   });
 
-  it("content page chain: heading + subtitle + workflow + sections all present", () => {
+  it("content page chain: heading + subtitle + workflow + sections all present", async () => {
     renderAt("/admin/analytics/content");
     expect(screen.getByTestId("analytics-content-heading")).toBeDefined();
     expect(screen.getByTestId("analytics-content-subtitle")).toBeDefined();
     expect(screen.getByTestId("analytics-content-workflow-note")).toBeDefined();
-    expect(screen.getByTestId("analytics-video-performance")).toBeDefined();
-    expect(screen.getByTestId("analytics-module-distribution")).toBeDefined();
+    expect(screen.getByTestId("content-window-selector")).toBeDefined();
+    await waitFor(() => {
+      expect(screen.getByTestId("analytics-module-distribution")).toBeDefined();
+    });
   });
 
   it("analytics/reporting distinction clearly separates live vs summary", () => {

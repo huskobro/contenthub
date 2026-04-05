@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -8,11 +8,27 @@ import { AnalyticsOverviewPage } from "../pages/admin/AnalyticsOverviewPage";
 import { AnalyticsContentPage } from "../pages/admin/AnalyticsContentPage";
 import { AnalyticsOperationsPage } from "../pages/admin/AnalyticsOperationsPage";
 
+const MOCK_CONTENT_METRICS = {
+  window: "all_time",
+  module_distribution: [],
+  content_output_count: 0,
+  published_content_count: 0,
+  avg_time_to_publish_seconds: null,
+  content_type_breakdown: [
+    { type: "standard_video", count: 0 },
+    { type: "news_bulletin", count: 0 },
+  ],
+  active_template_count: 0,
+  active_blueprint_count: 0,
+};
+
 function mockFetch(handler: (url: string) => unknown) {
   return vi.fn((url: string) =>
     Promise.resolve({
       ok: true,
-      json: () => Promise.resolve(handler(url)),
+      json: () => Promise.resolve(
+        url.includes("/analytics/content") ? MOCK_CONTENT_METRICS : handler(url)
+      ),
     })
   ) as unknown as typeof window.fetch;
 }
@@ -148,20 +164,16 @@ describe("YouTube Analytics Pack (Phase 293-298)", () => {
       expect(note.textContent).toContain("standard video detay sayfasina");
     });
 
-    it("video performance section exists", () => {
+    it("content analytics has window selector (M18-B)", () => {
       renderAt("/admin/analytics/content");
-      expect(screen.getByTestId("analytics-video-performance")).toBeDefined();
-      expect(screen.getByTestId("video-performance-heading").textContent).toContain("Video Performans");
+      expect(screen.getByTestId("content-window-selector")).toBeDefined();
     });
 
-    it("video performance table shows empty state", () => {
+    it("module distribution section exists", async () => {
       renderAt("/admin/analytics/content");
-      expect(screen.getByTestId("video-performance-empty")).toBeDefined();
-    });
-
-    it("module distribution section exists", () => {
-      renderAt("/admin/analytics/content");
-      expect(screen.getByTestId("analytics-module-distribution")).toBeDefined();
+      await waitFor(() => {
+        expect(screen.getByTestId("analytics-module-distribution")).toBeDefined();
+      });
       expect(screen.getByTestId("module-distribution-heading").textContent).toContain("Modul Dagilimi");
     });
 

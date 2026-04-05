@@ -74,11 +74,11 @@ describe("Asset Library Entry Surface", () => {
     expect(links.length).toBeGreaterThanOrEqual(1);
   });
 
-  it("admin overview release readiness includes Varlik Kutuphanesi with Bekliyor status", () => {
+  it("admin overview release readiness includes Varlik Kutuphanesi with Desteklenmiyor status", () => {
     renderAdmin("/admin");
     const item = screen.getByTestId("readiness-assets");
     expect(item).toBeDefined();
-    expect(item.textContent).toContain("Bekliyor");
+    expect(item.textContent).toContain("Desteklenmiyor");
     expect(item.textContent).toContain("Varlik Kutuphanesi");
   });
 });
@@ -118,10 +118,10 @@ describe("Asset Library Empty State", () => {
     expect(emptyState.textContent).toContain("backend");
   });
 
-  it("asset library empty state mentions milestone", () => {
+  it("asset library empty state mentions unsupported", () => {
     renderAssets();
     const emptyState = screen.getByTestId("asset-library-empty-state");
-    expect(emptyState.textContent).toContain("milestone");
+    expect(emptyState.textContent).toContain("desteklenmiyor");
   });
 
   it("asset library does not render asset table", () => {
@@ -157,17 +157,17 @@ describe("Asset Library Verification — Admin Overview", () => {
     expect(screen.getByTestId("readiness-assets")).toBeDefined();
   });
 
-  it("readiness-assets item shows Bekliyor not Omurga hazir", () => {
+  it("readiness-assets item shows Desteklenmiyor not Omurga hazir", () => {
     renderAdmin("/admin");
     const item = screen.getByTestId("readiness-assets");
-    expect(item.textContent).toContain("Bekliyor");
+    expect(item.textContent).toContain("Desteklenmiyor");
     expect(item.textContent).not.toContain("Omurga hazir");
   });
 
-  it("readiness-assets item mentions backend asset altyapisi", () => {
+  it("readiness-assets item mentions backend asset altyapisi mevcut degil", () => {
     renderAdmin("/admin");
     const item = screen.getByTestId("readiness-assets");
-    expect(item.textContent).toContain("Backend asset altyapisi");
+    expect(item.textContent).toContain("Backend asset altyapisi mevcut degil");
   });
 
   it("admin overview deferred note does not mention asset library", () => {

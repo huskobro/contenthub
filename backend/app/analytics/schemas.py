@@ -93,3 +93,31 @@ class YouTubeChannelMetrics(BaseModel):
 class ChannelOverviewMetrics(BaseModel):
     window: str
     youtube: YouTubeChannelMetrics
+
+
+# ---------------------------------------------------------------------------
+# Content Analytics (M18-A)
+# ---------------------------------------------------------------------------
+
+class ModuleDistribution(BaseModel):
+    module_type: str
+    total_jobs: int
+    completed_jobs: int
+    failed_jobs: int
+    success_rate: Optional[float] = None
+
+
+class ContentTypeBreakdown(BaseModel):
+    type: str
+    count: int
+
+
+class ContentMetrics(BaseModel):
+    window: str
+    module_distribution: list[ModuleDistribution] = []
+    content_output_count: int
+    published_content_count: int
+    avg_time_to_publish_seconds: Optional[float] = None
+    content_type_breakdown: list[ContentTypeBreakdown] = []
+    active_template_count: int
+    active_blueprint_count: int

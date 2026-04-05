@@ -1,9 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
-import { fetchStandardVideos } from "../api/standardVideoApi";
+import { fetchStandardVideos, StandardVideoListParams } from "../api/standardVideoApi";
 
-export function useStandardVideosList() {
+export function useStandardVideosList(params?: StandardVideoListParams) {
   return useQuery({
-    queryKey: ["standard-videos"],
-    queryFn: fetchStandardVideos,
+    queryKey: ["standard-videos", params?.status ?? ""],
+    queryFn: () => fetchStandardVideos(params),
   });
 }

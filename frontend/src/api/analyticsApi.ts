@@ -133,3 +133,48 @@ export async function fetchChannelOverviewMetrics(window: AnalyticsWindow): Prom
   if (!res.ok) throw new Error(`Analytics channel fetch failed: ${res.status}`);
   return res.json();
 }
+
+// ---------------------------------------------------------------------------
+// Content Analytics (M18-A)
+// ---------------------------------------------------------------------------
+
+export interface ModuleDistribution {
+  module_type: string;
+  total_jobs: number;
+  completed_jobs: number;
+  failed_jobs: number;
+  success_rate: number | null;
+}
+
+export interface ContentTypeBreakdown {
+  type: string;
+  count: number;
+}
+
+export interface ContentMetrics {
+  window: string;
+  module_distribution: ModuleDistribution[];
+  content_output_count: number;
+  published_content_count: number;
+  avg_time_to_publish_seconds: number | null;
+  content_type_breakdown: ContentTypeBreakdown[];
+  active_template_count: number;
+  active_blueprint_count: number;
+}
+
+export async function fetchContentMetrics(
+  windowOrOpts: AnalyticsWindow | OverviewFetchOptions,
+): Promise<ContentMetrics> {
+  let url: string;
+  if (typeof windowOrOpts === "string") {
+    url = `${BASE_URL}/content?window=${windowOrOpts}`;
+  } else {
+    const params = new URLSearchParams({ window: windowOrOpts.window });
+    if (windowOrOpts.date_from) params.set("date_from", windowOrOpts.date_from);
+    if (windowOrOpts.date_to) params.set("date_to", windowOrOpts.date_to);
+    url = `${BASE_URL}/content?${params.toString()}`;
+  }
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Analytics content fetch failed: ${res.status}`);
+  return res.json();
+}

@@ -227,19 +227,18 @@ describe("Library/Gallery/Content Management Pack (Phase 299-304)", () => {
       expect(screen.getByTestId("library-filter-note").textContent).toContain("filtreleyebilirsiniz");
     });
 
-    it("filters deferred element is shown instead of individual inputs", () => {
+    it("filter inputs are active (M18-C)", () => {
       renderAdmin("/admin/library");
-      const deferred = screen.getByTestId("library-filters-deferred");
-      expect(deferred).toBeDefined();
-      expect(deferred.textContent).toContain("backend entegrasyonu");
+      const active = screen.getByTestId("library-filters-active");
+      expect(active).toBeDefined();
+      expect(screen.getByTestId("library-search-input")).toBeDefined();
+      expect(screen.getByTestId("library-type-filter")).toBeDefined();
+      expect(screen.getByTestId("library-status-filter")).toBeDefined();
     });
 
-    it("individual filter inputs are not present (deferred)", () => {
+    it("deferred filter element no longer exists", () => {
       renderAdmin("/admin/library");
-      expect(screen.queryByTestId("library-search-input")).toBeNull();
-      expect(screen.queryByTestId("library-type-filter")).toBeNull();
-      expect(screen.queryByTestId("library-status-filter")).toBeNull();
-      expect(screen.queryByTestId("library-sort-select")).toBeNull();
+      expect(screen.queryByTestId("library-filters-deferred")).toBeNull();
     });
   });
 

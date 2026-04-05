@@ -1,4 +1,5 @@
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { useStandardVideosList } from "../../hooks/useStandardVideosList";
 import { useNewsBulletinsList } from "../../hooks/useNewsBulletinsList";
 
@@ -91,7 +92,7 @@ function formatDate(iso: string) {
       year: "numeric",
     });
   } catch {
-    return "—";
+    return "\u2014";
   }
 }
 
@@ -108,43 +109,78 @@ interface ContentRow {
 
 export function ContentLibraryPage() {
   const navigate = useNavigate();
+
+  // Filter state
+  const [searchQuery, setSearchQuery] = useState("");
+  const [typeFilter, setTypeFilter] = useState<"" | "standard_video" | "news_bulletin">("");
+  const [statusFilter, setStatusFilter] = useState("");
+
   const { data: videos, isLoading: vLoading } = useStandardVideosList();
   const { data: bulletins, isLoading: bLoading } = useNewsBulletinsList();
 
   const isLoading = vLoading || bLoading;
 
-  const rows: ContentRow[] = [];
+  const allRows: ContentRow[] = useMemo(() => {
+    const rows: ContentRow[] = [];
 
-  if (videos) {
-    for (const v of videos) {
-      rows.push({
-        id: v.id,
-        type: "standard_video",
-        typeLabel: "Standart Video",
-        title: v.title || v.topic || v.id,
-        status: v.status ?? "draft",
-        createdAt: v.created_at,
-        detailLink: `/admin/standard-videos/${v.id}`,
-      });
+    if (videos) {
+      for (const v of videos) {
+        rows.push({
+          id: v.id,
+          type: "standard_video",
+          typeLabel: "Standart Video",
+          title: v.title || v.topic || v.id,
+          status: v.status ?? "draft",
+          createdAt: v.created_at,
+          detailLink: `/admin/standard-videos/${v.id}`,
+        });
+      }
     }
-  }
 
-  if (bulletins) {
-    for (const b of bulletins) {
-      rows.push({
-        id: b.id,
-        type: "news_bulletin",
-        typeLabel: "Haber Bulteni",
-        title: b.title || b.topic || b.id,
-        status: b.status ?? "draft",
-        createdAt: b.created_at,
-        detailLink: `/admin/news-bulletins`,
-        detailState: { selectedId: b.id },
-      });
+    if (bulletins) {
+      for (const b of bulletins) {
+        rows.push({
+          id: b.id,
+          type: "news_bulletin",
+          typeLabel: "Haber Bulteni",
+          title: b.title || b.topic || b.id,
+          status: b.status ?? "draft",
+          createdAt: b.created_at,
+          detailLink: `/admin/news-bulletins`,
+          detailState: { selectedId: b.id },
+        });
+      }
     }
-  }
 
-  rows.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    rows.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    return rows;
+  }, [videos, bulletins]);
+
+  // Apply client-side filters
+  const filteredRows = useMemo(() => {
+    let result = allRows;
+
+    if (typeFilter) {
+      result = result.filter((r) => r.type === typeFilter);
+    }
+
+    if (statusFilter) {
+      result = result.filter((r) => r.status === statusFilter);
+    }
+
+    if (searchQuery.trim()) {
+      const q = searchQuery.trim().toLowerCase();
+      result = result.filter((r) => r.title.toLowerCase().includes(q));
+    }
+
+    return result;
+  }, [allRows, typeFilter, statusFilter, searchQuery]);
+
+  // Collect unique statuses for filter dropdown
+  const availableStatuses = useMemo(() => {
+    const set = new Set(allRows.map((r) => r.status));
+    return Array.from(set).sort();
+  }, [allRows]);
 
   return (
     <div>
@@ -173,7 +209,7 @@ export function ContentLibraryPage() {
         ve yonetim aksiyonlarini baslatabilirsiniz.
       </p>
 
-      {/* Phase 301 — Filter/Sort/Search */}
+      {/* Filter/Sort/Search — M18-C aktif */}
       <div style={SECTION} data-testid="library-filter-area">
         <h3 style={{ margin: "0 0 0.25rem", fontSize: "1rem" }} data-testid="library-filter-heading">
           Filtre ve Arama
@@ -185,22 +221,68 @@ export function ContentLibraryPage() {
           Icerik kayitlarini tur, durum veya metin aramasiyla filtreleyebilirsiniz.
           Filtreler asagidaki listeyi etkiler.
         </p>
-        <div
-          style={{
-            ...FILTER_ROW,
-            opacity: 0.5,
-            pointerEvents: "none",
-            position: "relative",
-          }}
-          data-testid="library-filters-deferred"
-        >
-          <span style={{ fontSize: "0.75rem", color: "#94a3b8" }}>
-            Filtreleme backend entegrasyonu tamamlaninca aktif olacaktir. Status filtresi yalnizca standart video endpointinde mevcut.
-          </span>
+        <div style={FILTER_ROW} data-testid="library-filters-active">
+          <input
+            type="text"
+            placeholder="Baslik ara..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={{ ...FILTER_INPUT, minWidth: "180px" }}
+            data-testid="library-search-input"
+          />
+          <select
+            value={typeFilter}
+            onChange={(e) => setTypeFilter(e.target.value as typeof typeFilter)}
+            style={FILTER_SELECT}
+            data-testid="library-type-filter"
+          >
+            <option value="">Tum Turler</option>
+            <option value="standard_video">Standart Video</option>
+            <option value="news_bulletin">Haber Bulteni</option>
+          </select>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            style={FILTER_SELECT}
+            data-testid="library-status-filter"
+          >
+            <option value="">Tum Durumlar</option>
+            {availableStatuses.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
+          {(searchQuery || typeFilter || statusFilter) && (
+            <button
+              onClick={() => {
+                setSearchQuery("");
+                setTypeFilter("");
+                setStatusFilter("");
+              }}
+              style={{
+                padding: "0.4rem 0.75rem",
+                border: "1px solid #e2e8f0",
+                borderRadius: "4px",
+                fontSize: "0.8125rem",
+                background: "#fff",
+                cursor: "pointer",
+                color: "#64748b",
+              }}
+              data-testid="library-filter-clear"
+            >
+              Temizle
+            </button>
+          )}
         </div>
+        {(searchQuery || typeFilter || statusFilter) && (
+          <p style={{ fontSize: "0.6875rem", color: "#94a3b8", margin: "0" }} data-testid="library-filter-summary">
+            {filteredRows.length} / {allRows.length} kayit gosteriliyor
+          </p>
+        )}
       </div>
 
-      {/* Phase 300 — Content List */}
+      {/* Content List */}
       <div style={SECTION} data-testid="library-content-list">
         <h3 style={{ margin: "0 0 0.25rem", fontSize: "1rem" }} data-testid="library-list-heading">
           Icerik Kayitlari
@@ -213,16 +295,17 @@ export function ContentLibraryPage() {
           detay sayfasina gidebilirsiniz.
         </p>
 
-        {isLoading && <p style={{ color: "#64748b" }}>Yükleniyor...</p>}
+        {isLoading && <p style={{ color: "#64748b" }}>Yukleniyor...</p>}
 
-        {!isLoading && rows.length === 0 && (
+        {!isLoading && filteredRows.length === 0 && (
           <p style={{ color: "#94a3b8", fontSize: "0.8125rem" }} data-testid="library-empty-state">
-            Henuz icerik kaydi bulunmuyor. Icerik olusturma ekranindan yeni bir
-            icerik baslatabilirsiniz.
+            {allRows.length === 0
+              ? "Henuz icerik kaydi bulunmuyor. Icerik olusturma ekranindan yeni bir icerik baslatabilirsiniz."
+              : "Filtrelere uygun icerik kaydi bulunamadi."}
           </p>
         )}
 
-        {!isLoading && rows.length > 0 && (
+        {!isLoading && filteredRows.length > 0 && (
           <table style={TABLE} data-testid="library-table">
             <thead>
               <tr>
@@ -234,7 +317,7 @@ export function ContentLibraryPage() {
               </tr>
             </thead>
             <tbody>
-              {rows.map((row) => (
+              {filteredRows.map((row) => (
                 <tr key={`${row.type}-${row.id}`}>
                   <td style={TD}>{row.title}</td>
                   <td style={TD}>{row.typeLabel}</td>
@@ -267,7 +350,7 @@ export function ContentLibraryPage() {
         )}
       </div>
 
-      {/* Phase 303 — Reuse/Clone/Manage Actions Note */}
+      {/* Reuse/Clone/Manage Actions Note */}
       <div style={SECTION} data-testid="library-actions-area">
         <h3 style={{ margin: "0 0 0.25rem", fontSize: "1rem" }} data-testid="library-actions-heading">
           Icerik Yonetim Aksiyonlari

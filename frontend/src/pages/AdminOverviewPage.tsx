@@ -200,9 +200,9 @@ export function AdminOverviewPage() {
             { area: "Sablon Sistemi", status: "M12 aktif", detail: "Template/style context script, metadata, visuals ve composition step'lerinde tuketiliyor", testId: "readiness-templates" },
             { area: "Haber Modulu", status: "M11 aktif", detail: "Kaynak, tarama, haber, dedupe akislari calisiyor; soft dedupe esigi ayarlardan okunuyor", testId: "readiness-news" },
             { area: "Ayarlar ve Gorunurluk", status: "M12 aktif", detail: "Settings resolver (19/19 wired), visibility guard 9 admin router'da aktif, audit log calisiyor", testId: "readiness-settings" },
-            { area: "Analytics ve Raporlama", status: "M11 aktif", detail: "Platform metrikleri gercek SQL, provider_error_rate gercek JobStep verisinden, YouTube Analytics temeli eklendi", testId: "readiness-analytics" },
-            { area: "Icerik Kutuphanesi", status: "Omurga hazir", detail: "Birlesik icerik listesi mevcut, filtreleme bekliyor", testId: "readiness-library" },
-            { area: "Varlik Kutuphanesi", status: "Bekliyor", detail: "Backend asset altyapisi henuz mevcut degil", testId: "readiness-assets" },
+            { area: "Analytics ve Raporlama", status: "M18 aktif", detail: "Platform, operasyon, kaynak, kanal ve icerik analytics gercek SQL aggregation ile calisiyor", testId: "readiness-analytics" },
+            { area: "Icerik Kutuphanesi", status: "M18 aktif", detail: "Birlesik icerik listesi, tur/durum/arama filtreleri aktif", testId: "readiness-library" },
+            { area: "Varlik Kutuphanesi", status: "Desteklenmiyor", detail: "Backend asset altyapisi mevcut degil, bu alan henuz desteklenmiyor", testId: "readiness-assets" },
           ].map((item) => (
             <div
               key={item.area}

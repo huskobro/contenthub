@@ -1,5 +1,5 @@
 """
-Analytics Servis Katmanı — M8-C1, M16, M17.
+Analytics Servis Katmanı — M8-C1, M16, M17, M18.
 
 Mevcut tablolardan salt okunur aggregation sorguları.
 Şema değişikliği yok, migration yok, yazma yok.
@@ -47,6 +47,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.models import (
     Job, JobStep, PublishRecord,
     NewsSource, SourceScan, NewsItem, UsedNewsRegistry, NewsBulletin,
+    StandardVideo, Template, StyleBlueprint,
 )
 
 logger = logging.getLogger(__name__)
@@ -547,4 +548,128 @@ async def get_channel_overview_metrics(
             "last_published_at": last_published_at,
             "has_publish_history": has_publish_history,
         },
+    }
+
+
+# ---------------------------------------------------------------------------
+# Content analytics metrikleri (M18-A)
+# ---------------------------------------------------------------------------
+
+async def get_content_metrics(
+    session: AsyncSession,
+    window: str = "all_time",
+    date_from: Optional[datetime] = None,
+    date_to: Optional[datetime] = None,
+) -> dict:
+    """
+    İçerik düzeyinde analytics metrikleri.
+
+    Modül dağılımı, içerik üretim sayıları, yayın durumu ve ortalama
+    yayına kadar geçen süre gibi metrikleri gerçek veriden üretir.
+    """
+    # date_from/date_to öncelikli
+    if date_from is not None or date_to is not None:
+        cut = None
+    else:
+        cut = _cutoff(window)
+
+    def _apply_time_filter(q, col):
+        if date_from is not None:
+            q = q.where(col >= date_from)
+        elif cut is not None:
+            q = q.where(col >= cut)
+        if date_to is not None:
+            q = q.where(col <= date_to)
+        return q
+
+    # --- Modül dağılımı (Job.module_type bazında) ---
+    module_q = select(
+        Job.module_type,
+        func.count(Job.id).label("total"),
+        func.sum(case((Job.status == "completed", 1), else_=0)).label("completed"),
+        func.sum(case((Job.status == "failed", 1), else_=0)).label("failed"),
+    ).where(Job.module_type.is_not(None)).group_by(Job.module_type)
+    module_q = _apply_time_filter(module_q, Job.created_at)
+
+    module_rows = (await session.execute(module_q)).all()
+    module_distribution = []
+    for row in module_rows:
+        total = row.total or 0
+        completed = int(row.completed or 0)
+        failed = int(row.failed or 0)
+        module_distribution.append({
+            "module_type": row.module_type,
+            "total_jobs": total,
+            "completed_jobs": completed,
+            "failed_jobs": failed,
+            "success_rate": round(completed / total, 4) if total > 0 else None,
+        })
+
+    # --- İçerik çıktı sayıları ---
+    # StandardVideo sayısı
+    sv_q = select(func.count(StandardVideo.id).label("total"))
+    sv_q = _apply_time_filter(sv_q, StandardVideo.created_at)
+    sv_count = (await session.execute(sv_q)).scalar() or 0
+
+    # NewsBulletin sayısı
+    nb_q = select(func.count(NewsBulletin.id).label("total"))
+    nb_q = _apply_time_filter(nb_q, NewsBulletin.created_at)
+    nb_count = (await session.execute(nb_q)).scalar() or 0
+
+    content_output_count = sv_count + nb_count
+
+    # --- Yayınlanan içerik sayısı ---
+    pub_q = select(func.count(PublishRecord.id).label("total")).where(
+        PublishRecord.status == "published"
+    )
+    pub_q = _apply_time_filter(pub_q, PublishRecord.created_at)
+    published_content_count = (await session.execute(pub_q)).scalar() or 0
+
+    # --- Ortalama yayına kadar geçen süre ---
+    # Job oluşturma → publish_records.published_at arası ortalama (sadece published olanlar)
+    time_to_pub_q = select(
+        func.avg(
+            func.julianday(PublishRecord.published_at) * 86400.0
+            - func.julianday(Job.created_at) * 86400.0,
+        ).label("avg_time")
+    ).join(Job, Job.id == PublishRecord.job_id).where(
+        PublishRecord.status == "published",
+        PublishRecord.published_at.is_not(None),
+        Job.created_at.is_not(None),
+    )
+    time_to_pub_q = _apply_time_filter(time_to_pub_q, PublishRecord.created_at)
+    avg_time_to_publish = (await session.execute(time_to_pub_q)).scalar()
+    avg_time_to_publish = (
+        round(float(avg_time_to_publish), 2)
+        if avg_time_to_publish is not None
+        else None
+    )
+
+    # --- İçerik tipi kırılımı ---
+    content_type_breakdown = [
+        {"type": "standard_video", "count": sv_count},
+        {"type": "news_bulletin", "count": nb_count},
+    ]
+
+    # --- Template kullanım sayısı ---
+    tpl_q = select(func.count(Template.id).label("total")).where(
+        Template.status == "active"
+    )
+    active_template_count = (await session.execute(tpl_q)).scalar() or 0
+
+    # --- Style Blueprint kullanım sayısı ---
+    bp_q = select(func.count(StyleBlueprint.id).label("total")).where(
+        StyleBlueprint.status == "active"
+    )
+    active_blueprint_count = (await session.execute(bp_q)).scalar() or 0
+
+    return {
+        "window": window,
+        "module_distribution": module_distribution,
+        "content_output_count": content_output_count,
+        "published_content_count": published_content_count,
+        "avg_time_to_publish_seconds": avg_time_to_publish,
+        "content_type_breakdown": content_type_breakdown,
+        "active_template_count": active_template_count,
+        "active_blueprint_count": active_blueprint_count,
     }

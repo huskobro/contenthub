@@ -46,8 +46,16 @@ export interface StandardVideoMetadataResponse {
   updated_at: string;
 }
 
-export async function fetchStandardVideos(): Promise<StandardVideoResponse[]> {
-  const res = await fetch(BASE_URL);
+export interface StandardVideoListParams {
+  status?: string;
+}
+
+export async function fetchStandardVideos(
+  params?: StandardVideoListParams,
+): Promise<StandardVideoResponse[]> {
+  const url = new URL(BASE_URL, globalThis.location?.origin ?? "http://localhost");
+  if (params?.status) url.searchParams.set("status", params.status);
+  const res = await fetch(url.pathname + url.search);
   if (!res.ok) throw new Error(`Failed to fetch standard videos: ${res.status}`);
   return res.json();
 }
