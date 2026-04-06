@@ -8,7 +8,7 @@ export function UserJobTracker() {
   const navigate = useNavigate();
   const { data: jobs, isLoading } = useQuery({
     queryKey: ["jobs"],
-    queryFn: fetchJobs,
+    queryFn: () => fetchJobs(),
   });
 
   const activeJobs = (jobs ?? []).filter(

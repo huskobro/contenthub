@@ -166,7 +166,7 @@ export function JobsRegistryPage() {
                             title="Bu job arşivlenir ve varsayılan listeden kaldırılır. Veriler silinmez, 'Arşivlenmiş' filtresiyle erişilebilir."
                             onClick={(e) => handleArchiveClick(j.id, e)}
                             disabled={archiveMutation.isPending}
-                            className="text-xs px-2 py-0.5 rounded bg-error text-white font-medium cursor-pointer border-0 disabled:opacity-50"
+                            className="text-xs px-2 py-0.5 rounded bg-error text-neutral-0 font-medium cursor-pointer border-0 disabled:opacity-50"
                           >
                             Emin misiniz? Arşivle
                           </button>
