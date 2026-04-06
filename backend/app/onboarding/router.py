@@ -11,10 +11,11 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
+from app.visibility.dependencies import require_visible
 from app.onboarding import service
 from app.onboarding.schemas import OnboardingStatusResponse, SetupRequirementsResponse
 
-router = APIRouter(prefix="/onboarding", tags=["onboarding"])
+router = APIRouter(prefix="/onboarding", tags=["onboarding"], dependencies=[Depends(require_visible("panel:onboarding"))])
 
 
 @router.get("/status", response_model=OnboardingStatusResponse)

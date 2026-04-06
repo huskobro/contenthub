@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import type { TemplateResponse } from "../../api/templatesApi";
 import { validateJson } from "../../lib/safeJson";
 import { cn } from "../../lib/cn";
@@ -7,6 +7,7 @@ import {
   OWNER_SCOPES,
   TEMPLATE_STATUSES,
 } from "../../constants/statusOptions";
+import { TemplateVisualPreview } from "../preview/TemplateVisualPreview";
 
 export interface TemplateFormValues {
   name: string;
@@ -56,6 +57,18 @@ export function TemplateForm({
   });
 
   const [errors, setErrors] = useState<Partial<Record<keyof TemplateFormValues, string>>>({});
+
+  const templatePreviewProps = useMemo(() => {
+    function safeParse(json: string) {
+      if (!json.trim()) return undefined;
+      try { return JSON.parse(json); } catch { return undefined; }
+    }
+    return {
+      templateName: values.name || undefined,
+      styleProfile: safeParse(values.style_profile_json),
+      contentRules: safeParse(values.content_rules_json),
+    };
+  }, [values.name, values.style_profile_json, values.content_rules_json]);
 
   function set(field: keyof TemplateFormValues, value: string) {
     setValues((prev) => ({ ...prev, [field]: value }));
@@ -198,6 +211,14 @@ export function TemplateForm({
           {errors.publish_profile_json && <div className="text-sm text-error mt-0.5">{errors.publish_profile_json}</div>}
         </div>
       </div>
+
+      {/* Live template preview */}
+      {(templatePreviewProps.templateName || templatePreviewProps.styleProfile || templatePreviewProps.contentRules) && (
+        <div className="border-t border-neutral-100 pt-3 mt-1 mb-3">
+          <label className="block text-sm font-semibold text-neutral-700 mb-2">Sablon Onizlemesi</label>
+          <TemplateVisualPreview {...templatePreviewProps} />
+        </div>
+      )}
 
       {submitError && (
         <div className="text-error text-md mb-3 break-words [overflow-wrap:anywhere]">{submitError}</div>

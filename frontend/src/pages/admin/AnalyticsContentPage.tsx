@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useContentMetrics } from "../../hooks/useContentMetrics";
-import type { AnalyticsWindow } from "../../api/analyticsApi";
+import { useTemplateImpact } from "../../hooks/useTemplateImpact";
+import type { AnalyticsWindow, TemplateImpact, BlueprintImpact } from "../../api/analyticsApi";
 import { PageShell, SectionShell, MetricTile, MetricGrid, DataTable, WindowSelector } from "../../components/design-system/primitives";
+import { ModuleDistributionChart } from "../../components/analytics/ModuleDistributionChart";
 import type { ReactNode } from "react";
 
 const WINDOW_OPTIONS: { value: AnalyticsWindow; label: string }[] = [
@@ -30,6 +32,9 @@ interface ModuleRow {
   completed_jobs: number;
   failed_jobs: number;
   success_rate: number | null;
+  avg_production_duration_seconds: number | null;
+  avg_render_duration_seconds: number | null;
+  retry_rate: number | null;
 }
 
 const MODULE_COLUMNS: { key: string; header: string; render: (item: ModuleRow) => ReactNode }[] = [
@@ -38,11 +43,31 @@ const MODULE_COLUMNS: { key: string; header: string; render: (item: ModuleRow) =
   { key: "completed_jobs", header: "Tamamlanan", render: (item) => item.completed_jobs },
   { key: "failed_jobs", header: "Basarisiz", render: (item) => item.failed_jobs },
   { key: "success_rate", header: "Basari Orani", render: (item) => fmtRate(item.success_rate) },
+  { key: "avg_production_duration_seconds", header: "Ort. Uretim", render: (item) => fmtDuration(item.avg_production_duration_seconds) },
+  { key: "avg_render_duration_seconds", header: "Ort. Render", render: (item) => fmtDuration(item.avg_render_duration_seconds) },
+  { key: "retry_rate", header: "Retry Orani", render: (item) => fmtRate(item.retry_rate) },
+];
+
+const TEMPLATE_COLUMNS: { key: string; header: string; render: (item: TemplateImpact) => ReactNode }[] = [
+  { key: "template_name", header: "Sablon", render: (item) => item.template_name ?? item.template_id ?? "\u2014" },
+  { key: "total_jobs", header: "Toplam Is", render: (item) => item.total_jobs },
+  { key: "completed_jobs", header: "Tamamlanan", render: (item) => item.completed_jobs },
+  { key: "failed_jobs", header: "Basarisiz", render: (item) => item.failed_jobs },
+  { key: "success_rate", header: "Basari Orani", render: (item) => fmtRate(item.success_rate) },
+  { key: "avg_production_duration_seconds", header: "Ort. Sure", render: (item) => fmtDuration(item.avg_production_duration_seconds) },
+];
+
+const BLUEPRINT_COLUMNS: { key: string; header: string; render: (item: BlueprintImpact) => ReactNode }[] = [
+  { key: "blueprint_name", header: "Blueprint", render: (item) => item.blueprint_name ?? item.blueprint_id ?? "\u2014" },
+  { key: "total_jobs", header: "Toplam Is", render: (item) => item.total_jobs },
+  { key: "completed_jobs", header: "Tamamlanan", render: (item) => item.completed_jobs },
+  { key: "success_rate", header: "Basari Orani", render: (item) => fmtRate(item.success_rate) },
 ];
 
 export function AnalyticsContentPage() {
   const [window, setWindow] = useState<AnalyticsWindow>("all_time");
   const { data, isLoading, isError } = useContentMetrics(window);
+  const { data: tplData, isLoading: tplLoading } = useTemplateImpact(window);
 
   return (
     <PageShell
@@ -120,6 +145,7 @@ export function AnalyticsContentPage() {
           <SectionShell testId="analytics-module-distribution" flush title="Modul Dagilimi">
             <div data-testid="module-distribution-heading" className="hidden">Modul Dagilimi</div>
             <div data-testid="module-distribution-note" className="hidden">Icerik uretiminin modullere gore dagilimi.</div>
+            <ModuleDistributionChart data={data.module_distribution} />
             <DataTable<ModuleRow>
               columns={MODULE_COLUMNS}
               data={data.module_distribution}
@@ -128,6 +154,40 @@ export function AnalyticsContentPage() {
               testId="module-distribution-table"
               rowTestIdPrefix="module-row"
             />
+          </SectionShell>
+
+          {/* Template Impact */}
+          <SectionShell title="Sablon Etkisi" testId="analytics-template-impact">
+            {tplLoading && <p className="text-neutral-600 text-sm">Yukleniyor...</p>}
+            {tplData && tplData.template_stats && tplData.template_stats.length > 0 && (
+              <>
+                <h4 className="text-sm font-semibold text-neutral-700 mb-2">Sablon Bazli</h4>
+                <DataTable<TemplateImpact>
+                  columns={TEMPLATE_COLUMNS}
+                  data={tplData.template_stats}
+                  keyFn={(item) => item.template_id ?? "unknown"}
+                  emptyMessage="Sablon bazli is verisi bulunmuyor."
+                  testId="template-impact-table"
+                  rowTestIdPrefix="template-row"
+                />
+              </>
+            )}
+            {tplData && tplData.blueprint_stats && tplData.blueprint_stats.length > 0 && (
+              <>
+                <h4 className="text-sm font-semibold text-neutral-700 mb-2 mt-4">Blueprint Bazli</h4>
+                <DataTable<BlueprintImpact>
+                  columns={BLUEPRINT_COLUMNS}
+                  data={tplData.blueprint_stats}
+                  keyFn={(item) => item.blueprint_id ?? "unknown"}
+                  emptyMessage="Blueprint bazli is verisi bulunmuyor."
+                  testId="blueprint-impact-table"
+                  rowTestIdPrefix="blueprint-row"
+                />
+              </>
+            )}
+            {tplData && (!tplData.template_stats || tplData.template_stats.length === 0) && (!tplData.blueprint_stats || tplData.blueprint_stats.length === 0) && (
+              <p className="text-sm text-neutral-500">Henuz sablon veya blueprint ile iliskilendirilmis is bulunmuyor.</p>
+            )}
           </SectionShell>
         </>
       )}

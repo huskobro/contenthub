@@ -116,6 +116,37 @@ class ModuleDistribution(BaseModel):
     completed_jobs: int
     failed_jobs: int
     success_rate: Optional[float] = None
+    avg_production_duration_seconds: Optional[float] = None
+    avg_render_duration_seconds: Optional[float] = None
+    retry_rate: Optional[float] = None
+
+
+# ---------------------------------------------------------------------------
+# Template Impact (Faz G)
+# ---------------------------------------------------------------------------
+
+class TemplateImpact(BaseModel):
+    template_id: Optional[str] = None
+    template_name: Optional[str] = None
+    total_jobs: int
+    completed_jobs: int
+    failed_jobs: int
+    success_rate: Optional[float] = None
+    avg_production_duration_seconds: Optional[float] = None
+
+
+class BlueprintImpact(BaseModel):
+    blueprint_id: Optional[str] = None
+    blueprint_name: Optional[str] = None
+    total_jobs: int
+    completed_jobs: int
+    success_rate: Optional[float] = None
+
+
+class TemplateImpactMetrics(BaseModel):
+    window: str
+    template_stats: list[TemplateImpact] = []
+    blueprint_stats: list[BlueprintImpact] = []
 
 
 class ContentTypeBreakdown(BaseModel):

@@ -10,10 +10,11 @@ from typing import Optional
 from fastapi import APIRouter, Depends, Query, HTTPException
 
 from app.db.session import get_db
+from app.visibility.dependencies import require_visible
 from app.content_library import service
 from app.content_library.schemas import ContentLibraryResponse
 
-router = APIRouter(prefix="/content-library", tags=["content-library"])
+router = APIRouter(prefix="/content-library", tags=["content-library"], dependencies=[Depends(require_visible("panel:content-library"))])
 
 _VALID_CONTENT_TYPES = ("standard_video", "news_bulletin")
 

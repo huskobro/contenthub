@@ -9,7 +9,6 @@ export function UserJobTracker() {
   const { data: jobs, isLoading } = useQuery({
     queryKey: ["jobs"],
     queryFn: fetchJobs,
-    refetchInterval: 5000, // Poll while there might be active jobs
   });
 
   const activeJobs = (jobs ?? []).filter(

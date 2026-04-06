@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import type { StyleBlueprintResponse } from "../../api/styleBlueprintsApi";
 import { validateJson } from "../../lib/safeJson";
 import { cn } from "../../lib/cn";
 import { BLUEPRINT_STATUSES } from "../../constants/statusOptions";
+import { BlueprintVisualPreview } from "../preview/BlueprintVisualPreview";
 
 export interface StyleBlueprintFormValues {
   name: string;
@@ -52,6 +53,20 @@ export function StyleBlueprintForm({
   });
 
   const [errors, setErrors] = useState<Partial<Record<keyof StyleBlueprintFormValues, string>>>({});
+
+  const previewProps = useMemo(() => {
+    function safeParse(json: string) {
+      if (!json.trim()) return undefined;
+      try { return JSON.parse(json); } catch { return undefined; }
+    }
+    return {
+      visualRules: safeParse(values.visual_rules_json),
+      motionRules: safeParse(values.motion_rules_json),
+      layoutRules: safeParse(values.layout_rules_json),
+      subtitleRules: safeParse(values.subtitle_rules_json),
+      thumbnailRules: safeParse(values.thumbnail_rules_json),
+    };
+  }, [values.visual_rules_json, values.motion_rules_json, values.layout_rules_json, values.subtitle_rules_json, values.thumbnail_rules_json]);
 
   function set(field: keyof StyleBlueprintFormValues, value: string) {
     setValues((prev) => ({ ...prev, [field]: value }));
@@ -166,6 +181,14 @@ export function StyleBlueprintForm({
           </div>
         ))}
       </div>
+
+      {/* Live visual preview */}
+      {(previewProps.visualRules || previewProps.motionRules || previewProps.layoutRules || previewProps.subtitleRules || previewProps.thumbnailRules) && (
+        <div className="border-t border-neutral-100 pt-3 mt-1 mb-3">
+          <label className="block text-sm font-semibold text-neutral-700 mb-2">Gorsel Onizleme</label>
+          <BlueprintVisualPreview {...previewProps} />
+        </div>
+      )}
 
       {submitError && (
         <div className="text-error text-md mb-3 break-words [overflow-wrap:anywhere]">{submitError}</div>

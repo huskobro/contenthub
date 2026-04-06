@@ -31,6 +31,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.models import Setting
 from app.audit.service import write_audit_log
 from app.settings.schemas import SettingCreate, SettingUpdate
+from app.settings.validation import validate_setting_value, SettingValidationError
 
 logger = logging.getLogger(__name__)
 
@@ -38,10 +39,13 @@ logger = logging.getLogger(__name__)
 async def list_settings(
     db: AsyncSession,
     group_name: Optional[str] = None,
+    visible_to_user_only: bool = False,
 ) -> List[Setting]:
     stmt = select(Setting).order_by(Setting.group_name, Setting.key)
     if group_name is not None:
         stmt = stmt.where(Setting.group_name == group_name)
+    if visible_to_user_only:
+        stmt = stmt.where(Setting.visible_to_user == True)  # noqa: E712
     result = await db.execute(stmt)
     return list(result.scalars().all())
 
@@ -92,6 +96,23 @@ async def update_setting(
     changes = payload.model_dump(exclude_unset=True)
     if not changes:
         return row
+
+    # Validate admin_value_json if it is being updated
+    if "admin_value_json" in changes and changes["admin_value_json"] is not None:
+        if row.validation_rules_json and row.validation_rules_json != "{}":
+            try:
+                validate_setting_value(
+                    key=row.key,
+                    value_json=changes["admin_value_json"],
+                    rules_json=row.validation_rules_json,
+                    setting_type=row.type or "string",
+                )
+            except SettingValidationError as exc:
+                raise HTTPException(
+                    status_code=status.HTTP_UNPROCESSABLE_ENTITY,
+                    detail=exc.message,
+                )
+
     old_version = row.version
     for field, value in changes.items():
         setattr(row, field, value)
@@ -218,7 +239,23 @@ async def bulk_update_admin_values(
             logger.warning("Bulk update: key '%s' not found, skipping", key)
             continue
 
-        row.admin_value_json = json.dumps(value)
+        # Validate before applying
+        value_json = json.dumps(value)
+        if row.validation_rules_json and row.validation_rules_json != "{}":
+            try:
+                validate_setting_value(
+                    key=row.key,
+                    value_json=value_json,
+                    rules_json=row.validation_rules_json,
+                    setting_type=row.type or "string",
+                )
+            except SettingValidationError as exc:
+                raise HTTPException(
+                    status_code=status.HTTP_UNPROCESSABLE_ENTITY,
+                    detail=exc.message,
+                )
+
+        row.admin_value_json = value_json
         row.version = row.version + 1
         results.append(row)
 

@@ -11,10 +11,11 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
+from app.visibility.dependencies import require_visible
 from app.discovery.schemas import DiscoveryResponse
 from app.discovery import service
 
-router = APIRouter(prefix="/discovery", tags=["discovery"])
+router = APIRouter(prefix="/discovery", tags=["discovery"], dependencies=[Depends(require_visible("panel:discovery"))])
 
 
 @router.get("/search", response_model=DiscoveryResponse)

@@ -1,7 +1,7 @@
 """
 ContentHub FastAPI application entry point.
 
-Lifespan handler (Phase M1-C4 / M2-C6 / M3-C1 / M3-C2 / M9-A / M10-B / M11):
+Lifespan handler (Phase M1-C4 / M2-C6 / M3-C1 / M3-C2 / M9-A / M10-B / M11 / Faz-D / Faz-I):
   1. Create DB tables (dev/test convenience).
   2. Run startup recovery scanner — marks any stale running jobs as failed
      BEFORE the server begins accepting requests (P-008 / C-07).
@@ -11,7 +11,9 @@ Lifespan handler (Phase M1-C4 / M2-C6 / M3-C1 / M3-C2 / M9-A / M10-B / M11):
   6. Provider örneklerini provider_registry'ye kaydet (M3-C1 / M3-C2).
   7. JobDispatcher oluştur ve app.state'e bağla (M2-C6).
   8. Start publish scheduler background task (M11).
-  9. Yield — server is now live.
+  9. Start auto-scan scheduler background task (Faz-D).
+  10. Start job auto-retry scheduler if enabled (Faz-I).
+  11. Yield — server is now live.
 """
 
 import asyncio
@@ -212,6 +214,41 @@ async def lifespan(app: FastAPI):
     app.state.scheduler_task = scheduler_task
     logger.info("Publish scheduler task created.")
 
+    # Auto-scan scheduler — background task (Faz D)
+    from app.source_scans.scheduler import poll_auto_scans
+    auto_scan_task = asyncio.create_task(
+        poll_auto_scans(AsyncSessionLocal, interval=300)
+    )
+    app.state.auto_scan_task = auto_scan_task
+    logger.info("Auto-scan scheduler task created.")
+
+    # Job auto-retry scheduler — background task (Faz I)
+    # Only starts if jobs.auto_retry_enabled setting is True (default: False)
+    async with AsyncSessionLocal() as retry_settings_db:
+        auto_retry_enabled = await resolve("jobs.auto_retry_enabled", retry_settings_db)
+        retry_interval = 120  # default poll interval
+        retry_max = await resolve("jobs.max_auto_retries", retry_settings_db) or 3
+        retry_delay = await resolve("jobs.retry_base_delay_seconds", retry_settings_db) or 60
+
+    if auto_retry_enabled:
+        from app.jobs.retry_scheduler import poll_retryable_jobs
+        retry_task = asyncio.create_task(
+            poll_retryable_jobs(
+                AsyncSessionLocal,
+                app.state,
+                interval=retry_interval,
+                max_retries=int(retry_max),
+                base_delay=int(retry_delay),
+            )
+        )
+        app.state.retry_scheduler_task = retry_task
+        logger.info(
+            "Job retry scheduler task created (max_retries=%d, base_delay=%ds).",
+            retry_max, retry_delay,
+        )
+    else:
+        logger.info("Job auto-retry scheduler disabled (jobs.auto_retry_enabled=False).")
+
     yield
 
     # Shutdown: cancel publish scheduler
@@ -222,6 +259,24 @@ async def lifespan(app: FastAPI):
         except asyncio.CancelledError:
             pass
         logger.info("Publish scheduler cancelled.")
+
+    # Shutdown: cancel auto-scan scheduler
+    if hasattr(app.state, "auto_scan_task"):
+        app.state.auto_scan_task.cancel()
+        try:
+            await app.state.auto_scan_task
+        except asyncio.CancelledError:
+            pass
+        logger.info("Auto-scan scheduler cancelled.")
+
+    # Shutdown: cancel retry scheduler
+    if hasattr(app.state, "retry_scheduler_task"):
+        app.state.retry_scheduler_task.cancel()
+        try:
+            await app.state.retry_scheduler_task
+        except asyncio.CancelledError:
+            pass
+        logger.info("Job retry scheduler cancelled.")
 
 
 def _register_exception_handlers(app: FastAPI) -> None:
@@ -273,6 +328,12 @@ def _register_exception_handlers(app: FastAPI) -> None:
         NonRetryableProviderError,
         ProviderNotFoundError,
     )
+    from app.settings.validation import SettingValidationError
+
+    # --- Settings Validation 422 ---
+    @app.exception_handler(SettingValidationError)
+    async def _setting_validation_error(request: Request, exc: SettingValidationError) -> JSONResponse:
+        return JSONResponse(status_code=422, content={"detail": exc.message})
 
     # --- Job Engine 404s ---
     @app.exception_handler(JobNotFoundError)

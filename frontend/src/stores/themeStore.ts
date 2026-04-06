@@ -19,6 +19,7 @@ import {
 } from "../components/design-system/themeContract";
 import { RADICAL_THEMES } from "../components/design-system/themes-radical";
 import { HORIZON_THEMES } from "../components/design-system/themes-horizon";
+import { updateSettingAdminValue, fetchEffectiveSetting } from "../api/effectiveSettingsApi";
 
 // ---------------------------------------------------------------------------
 // Storage keys
@@ -74,6 +75,10 @@ function saveActiveThemeId(id: string): void {
   } catch {
     // silently fail
   }
+  // Fire-and-forget: persist to backend settings
+  updateSettingAdminValue("ui.active_theme", id).catch(() => {
+    // Backend save failed — localStorage is still the primary source
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -97,6 +102,8 @@ interface ThemeState {
   exportTheme: (id: string) => string | null;
   /** Check if a theme is built-in */
   isBuiltin: (id: string) => boolean;
+  /** Hydrate theme from backend if localStorage has no saved theme */
+  hydrateFromBackend: () => void;
 }
 
 export const useThemeStore = create<ThemeState>((set, get) => {
@@ -181,5 +188,44 @@ export const useThemeStore = create<ThemeState>((set, get) => {
     },
 
     isBuiltin: (id: string) => BUILTIN_THEMES.some((b) => b.id === id),
+
+    hydrateFromBackend: (): void => {
+      // Only hydrate if localStorage had no saved theme (user cleared browser)
+      let localSaved: string | null = null;
+      try {
+        localSaved = localStorage.getItem(STORAGE_KEY_ACTIVE);
+      } catch {
+        // localStorage unavailable (test env, SSR) — continue to backend hydration
+      }
+      if (localSaved) return; // localStorage has a value, no need to hydrate
+
+      fetchEffectiveSetting("ui.active_theme")
+        .then((setting) => {
+          const backendThemeId = setting?.effective_value;
+          if (typeof backendThemeId === "string" && backendThemeId) {
+            const { themes } = get();
+            if (themes.some((t) => t.id === backendThemeId)) {
+              set({ activeThemeId: backendThemeId });
+              // Save to localStorage so subsequent loads are fast
+              try {
+                localStorage.setItem(STORAGE_KEY_ACTIVE, backendThemeId);
+              } catch {
+                // silently fail
+              }
+            }
+          }
+        })
+        .catch(() => {
+          // Backend unreachable — use default, no error
+        });
+    },
   };
 });
+
+// Hydrate from backend on module load (runs once).
+// If localStorage already has a theme, this is a no-op.
+try {
+  useThemeStore.getState().hydrateFromBackend();
+} catch {
+  // Silently fail in test/SSR environments
+}

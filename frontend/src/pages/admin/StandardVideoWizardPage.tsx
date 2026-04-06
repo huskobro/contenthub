@@ -15,6 +15,8 @@ async function createStandardVideo(values: WizardValues) {
       tone: values.tone.trim() || null,
       language: values.language.trim() || null,
       visual_direction: values.visual_direction.trim() || null,
+      composition_direction: values.composition_direction.trim() || null,
+      thumbnail_direction: values.thumbnail_direction.trim() || null,
       subtitle_style: values.subtitle_style || null,
       template_id: values.template_id || null,
       style_blueprint_id: values.style_blueprint_id || null,

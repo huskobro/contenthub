@@ -18,6 +18,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, Query, HTTPException, UploadFile, File, Form
 
 from app.db.session import get_db
+from app.visibility.dependencies import require_visible
 from app.assets import service
 from app.assets.schemas import (
     AssetListResponse,
@@ -30,7 +31,7 @@ from app.assets.schemas import (
 )
 from app.audit.service import write_audit_log
 
-router = APIRouter(prefix="/assets", tags=["assets"])
+router = APIRouter(prefix="/assets", tags=["assets"], dependencies=[Depends(require_visible("panel:assets"))])
 
 _VALID_ASSET_TYPES = ("audio", "video", "image", "data", "text", "subtitle", "document", "other")
 

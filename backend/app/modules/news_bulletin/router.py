@@ -5,6 +5,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
+from app.visibility.dependencies import require_visible
 from .schemas import (
     NewsBulletinCreate, NewsBulletinUpdate, NewsBulletinResponse,
     NewsBulletinScriptCreate, NewsBulletinScriptUpdate, NewsBulletinScriptResponse,
@@ -61,7 +62,7 @@ class SelectableNewsItemResponse(BaseModel):
     published_at: Optional[str]
     language: Optional[str]
 
-router = APIRouter(prefix="/modules/news-bulletin", tags=["news-bulletin"])
+router = APIRouter(prefix="/modules/news-bulletin", tags=["news-bulletin"], dependencies=[Depends(require_visible("panel:news-bulletin"))])
 
 
 @router.get("", response_model=List[NewsBulletinResponse])

@@ -3,10 +3,11 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
+from app.visibility.dependencies import require_visible
 from .schemas import NewsItemCreate, NewsItemUpdate, NewsItemResponse
 from . import service
 
-router = APIRouter(prefix="/news-items", tags=["news-items"])
+router = APIRouter(prefix="/news-items", tags=["news-items"], dependencies=[Depends(require_visible("panel:news-items"))])
 
 
 @router.get("", response_model=List[NewsItemResponse])

@@ -1,4 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
+import { useState } from "react";
 import {
   usePublishRecord,
   usePublishLogs,
@@ -8,6 +9,7 @@ import {
   useCancelPublish,
   useRetryPublish,
   useResetToDraft,
+  useSchedulePublish,
 } from "../../hooks/usePublish";
 import {
   PageShell,
@@ -73,6 +75,8 @@ export function PublishDetailPage() {
   const cancelMutation = useCancelPublish();
   const retryMutation = useRetryPublish();
   const resetMutation = useResetToDraft();
+  const scheduleMutation = useSchedulePublish();
+  const [scheduleDate, setScheduleDate] = useState("");
 
   if (isLoading) return <PageShell title="Yayin Detay" testId="publish-detail"><p>Yukleniyor...</p></PageShell>;
   if (isError || !record) return <PageShell title="Yayin Detay" testId="publish-detail"><p className="text-red-600">Kayit bulunamadi.</p></PageShell>;
@@ -223,6 +227,39 @@ export function PublishDetailPage() {
             </ActionButton>
           )}
         </div>
+        {canSchedule && (
+          <div className="mt-3 pt-3 border-t border-neutral-200">
+            <p className="text-sm font-medium text-neutral-700 mb-2">Zamanlanmis Yayin</p>
+            <div className="flex items-center gap-2">
+              <input
+                type="datetime-local"
+                value={scheduleDate}
+                onChange={(e) => setScheduleDate(e.target.value)}
+                className="border border-neutral-300 rounded px-2 py-1.5 text-sm"
+                min={new Date().toISOString().slice(0, 16)}
+                data-testid="publish-schedule-input"
+              />
+              <ActionButton
+                variant="primary"
+                size="sm"
+                loading={scheduleMutation.isPending}
+                disabled={!scheduleDate}
+                onClick={() =>
+                  handleAction(
+                    () => scheduleMutation.mutateAsync({
+                      recordId: record.id,
+                      scheduledAt: new Date(scheduleDate).toISOString(),
+                    }),
+                    "Yayin zamanlandi.",
+                  )
+                }
+                data-testid="publish-action-schedule"
+              >
+                Zamanla
+              </ActionButton>
+            </div>
+          </div>
+        )}
       </SectionShell>
 
       {/* Audit Log */}

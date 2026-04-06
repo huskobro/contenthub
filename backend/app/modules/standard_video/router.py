@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
+from app.visibility.dependencies import require_visible
 from app.modules.standard_video import service
 from app.modules.standard_video.schemas import (
     StandardVideoCreate,
@@ -24,7 +25,7 @@ from app.modules.standard_video.subtitle_presets import (
     VALID_PRESET_IDS,
 )
 
-router = APIRouter(prefix="/modules/standard-video", tags=["standard-video"])
+router = APIRouter(prefix="/modules/standard-video", tags=["standard-video"], dependencies=[Depends(require_visible("panel:standard-video"))])
 
 
 @router.get("/subtitle-presets")

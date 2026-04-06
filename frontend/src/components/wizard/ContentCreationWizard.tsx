@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { WizardShell, type WizardStep } from "./WizardShell";
 import { TemplateSelector } from "../preview/TemplateSelector";
 import { StyleBlueprintSelector } from "../preview/StyleBlueprintSelector";
+import { CompositionDirectionPreview } from "../preview/CompositionDirectionPreview";
+import { ThumbnailDirectionPreview } from "../preview/ThumbnailDirectionPreview";
 import { SubtitleStylePicker } from "../standard-video/SubtitleStylePicker";
 import { useSubtitlePresets } from "../../hooks/useSubtitlePresets";
 import { cn } from "../../lib/cn";
@@ -29,6 +31,8 @@ export interface WizardValues {
   tone: string;
   language: string;
   visual_direction: string;
+  composition_direction: string;
+  thumbnail_direction: string;
   subtitle_style: string;
   template_id: string;
   style_blueprint_id: string;
@@ -54,6 +58,8 @@ export function ContentCreationWizard({
     tone: "",
     language: "tr",
     visual_direction: "",
+    composition_direction: "",
+    thumbnail_direction: "",
     subtitle_style: "",
     template_id: "",
     style_blueprint_id: "",
@@ -179,16 +185,32 @@ export function ContentCreationWizard({
             />
           </div>
           {moduleType === "standard_video" && (
-            <div>
-              <h3 className="m-0 mb-2 text-md font-semibold text-neutral-800">Altyazi Stili</h3>
-              <SubtitleStylePicker
-                value={values.subtitle_style}
-                onChange={(presetId) => set("subtitle_style", presetId)}
-                presets={presetsData?.presets ?? []}
-                loading={presetsLoading}
-                error={presetsError instanceof Error ? presetsError.message : (presetsError ? String(presetsError) : null)}
-              />
-            </div>
+            <>
+              <div>
+                <h3 className="m-0 mb-2 text-md font-semibold text-neutral-800">Kompozisyon Yonu</h3>
+                <CompositionDirectionPreview
+                  selected={values.composition_direction || undefined}
+                  onSelect={(dir) => set("composition_direction", dir)}
+                />
+              </div>
+              <div>
+                <h3 className="m-0 mb-2 text-md font-semibold text-neutral-800">Thumbnail Yonu</h3>
+                <ThumbnailDirectionPreview
+                  selected={values.thumbnail_direction || undefined}
+                  onSelect={(dir) => set("thumbnail_direction", dir)}
+                />
+              </div>
+              <div>
+                <h3 className="m-0 mb-2 text-md font-semibold text-neutral-800">Altyazi Stili</h3>
+                <SubtitleStylePicker
+                  value={values.subtitle_style}
+                  onChange={(presetId) => set("subtitle_style", presetId)}
+                  presets={presetsData?.presets ?? []}
+                  loading={presetsLoading}
+                  error={presetsError instanceof Error ? presetsError.message : (presetsError ? String(presetsError) : null)}
+                />
+              </div>
+            </>
           )}
         </div>
       )}
@@ -217,6 +239,8 @@ export function ContentCreationWizard({
             <Row label="Dil" value={values.language} />
             <Row label="Ton" value={values.tone} />
             <Row label="Gorsel Yon" value={values.visual_direction} />
+            <Row label="Kompozisyon" value={values.composition_direction} />
+            <Row label="Thumbnail" value={values.thumbnail_direction} />
             <Row label="Altyazi" value={values.subtitle_style} />
             <Row label="Sablon" value={values.template_id ? values.template_id.slice(0, 8) + "..." : ""} />
             <Row label="Stil" value={values.style_blueprint_id ? values.style_blueprint_id.slice(0, 8) + "..." : ""} />

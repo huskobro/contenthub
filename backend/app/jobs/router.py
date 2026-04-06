@@ -26,6 +26,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
+from app.visibility.dependencies import require_visible
 from app.jobs import service
 from app.jobs.schemas import JobCreate, JobCreateRequest, JobResponse, JobStepResponse
 from app.jobs.timing import enrich_job_eta
@@ -37,7 +38,7 @@ from app.modules.registry import module_registry
 from app.jobs import workspace as ws
 from app.audit.service import write_audit_log
 
-router = APIRouter(prefix="/jobs", tags=["jobs"])
+router = APIRouter(prefix="/jobs", tags=["jobs"], dependencies=[Depends(require_visible("panel:jobs"))])
 
 
 async def _build_job_response(db: AsyncSession, job, steps=None) -> JobResponse:
@@ -179,6 +180,23 @@ async def create_job(
         logging.getLogger(__name__).warning(
             "JobDispatcher app.state'de bulunamadı, pipeline başlatılmadı. job_id=%s", job.id
         )
+
+    # Audit: job creation
+    try:
+        steps = await service.get_job_steps(db, job.id)
+        await write_audit_log(
+            db,
+            action="job.create",
+            entity_type="job",
+            entity_id=job.id,
+            details={
+                "module_type": job.module_type,
+                "template_id": getattr(job, "template_id", None),
+                "step_count": len(steps) if steps else 0,
+            },
+        )
+    except Exception:
+        pass  # Audit must not break job creation
 
     # Güncel adımları al ve response oluştur
     return await _build_job_response(db, job)

@@ -13,7 +13,7 @@ Usage in routers:
 
 from typing import Optional
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, Header, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
@@ -34,3 +34,16 @@ def require_visible(target_key: str, role: Optional[str] = None):
             )
         return result
     return _check
+
+
+def get_caller_role(
+    x_contenthub_role: Optional[str] = Header(None, alias="X-ContentHub-Role"),
+) -> str:
+    """
+    Extract caller role from request header.
+    For MVP (localhost-only): admin by default if header absent.
+    When auth is added later, this will read from JWT token.
+    """
+    if x_contenthub_role in ("admin", "user"):
+        return x_contenthub_role
+    return "admin"

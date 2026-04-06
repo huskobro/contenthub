@@ -47,7 +47,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.models import (
     Job, JobStep, PublishRecord,
     NewsSource, SourceScan, NewsItem, UsedNewsRegistry, NewsBulletin,
-    StandardVideo, Template, StyleBlueprint,
+    StandardVideo, Template, StyleBlueprint, TemplateStyleLink,
 )
 
 logger = logging.getLogger(__name__)
@@ -623,21 +623,59 @@ async def get_content_metrics(
         func.count(Job.id).label("total"),
         func.sum(case((Job.status == "completed", 1), else_=0)).label("completed"),
         func.sum(case((Job.status == "failed", 1), else_=0)).label("failed"),
+        func.sum(case((Job.retry_count > 0, 1), else_=0)).label("retried"),
+        func.avg(
+            case(
+                (
+                    (Job.started_at.is_not(None)) & (Job.finished_at.is_not(None)),
+                    func.julianday(Job.finished_at) * 86400.0
+                    - func.julianday(Job.started_at) * 86400.0,
+                ),
+                else_=None,
+            )
+        ).label("avg_prod_duration"),
     ).where(Job.module_type.is_not(None)).group_by(Job.module_type)
     module_q = _apply_time_filter(module_q, Job.created_at)
 
     module_rows = (await session.execute(module_q)).all()
+
+    # Per-module avg render duration from composition steps
+    render_by_module_q = (
+        select(
+            Job.module_type,
+            func.avg(JobStep.elapsed_seconds).label("avg_render"),
+        )
+        .join(Job, Job.id == JobStep.job_id)
+        .where(JobStep.step_key == "composition", Job.module_type.is_not(None))
+        .group_by(Job.module_type)
+    )
+    render_by_module_q = _apply_time_filter(render_by_module_q, JobStep.created_at)
+    render_by_module_rows = (await session.execute(render_by_module_q)).all()
+    render_by_module = {r.module_type: r.avg_render for r in render_by_module_rows}
+
     module_distribution = []
     for row in module_rows:
         total = row.total or 0
         completed = int(row.completed or 0)
         failed = int(row.failed or 0)
+        retried = int(row.retried or 0)
+        avg_prod = (
+            round(float(row.avg_prod_duration), 2)
+            if row.avg_prod_duration is not None else None
+        )
+        avg_render_mod = render_by_module.get(row.module_type)
+        avg_render_val = (
+            round(float(avg_render_mod), 2) if avg_render_mod is not None else None
+        )
         module_distribution.append({
             "module_type": row.module_type,
             "total_jobs": total,
             "completed_jobs": completed,
             "failed_jobs": failed,
             "success_rate": round(completed / total, 4) if total > 0 else None,
+            "avg_production_duration_seconds": avg_prod,
+            "avg_render_duration_seconds": avg_render_val,
+            "retry_rate": round(retried / total, 4) if total > 0 else None,
         })
 
     # --- İçerik çıktı sayıları ---
@@ -707,4 +745,106 @@ async def get_content_metrics(
         "content_type_breakdown": content_type_breakdown,
         "active_template_count": active_template_count,
         "active_blueprint_count": active_blueprint_count,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Template impact metrikleri (Faz G)
+# ---------------------------------------------------------------------------
+
+async def get_template_impact_metrics(
+    session: AsyncSession,
+    window: str = "all_time",
+) -> dict:
+    """
+    Per-template and per-blueprint job success rates and avg durations.
+
+    Joins Job table with template_id (direct column on Job),
+    then to Template and StyleBlueprint tables via TemplateStyleLink.
+    """
+    cut = _cutoff(window)
+
+    # --- Per-template stats ---
+    # Job.template_id is a direct column (not JSON extraction needed).
+    tpl_q = (
+        select(
+            Job.template_id,
+            Template.name.label("template_name"),
+            func.count(Job.id).label("total"),
+            func.sum(case((Job.status == "completed", 1), else_=0)).label("completed"),
+            func.sum(case((Job.status == "failed", 1), else_=0)).label("failed"),
+            func.avg(
+                case(
+                    (
+                        (Job.started_at.is_not(None)) & (Job.finished_at.is_not(None)),
+                        func.julianday(Job.finished_at) * 86400.0
+                        - func.julianday(Job.started_at) * 86400.0,
+                    ),
+                    else_=None,
+                )
+            ).label("avg_duration"),
+        )
+        .outerjoin(Template, Template.id == Job.template_id)
+        .where(Job.template_id.is_not(None))
+        .group_by(Job.template_id)
+    )
+    if cut is not None:
+        tpl_q = tpl_q.where(Job.created_at >= cut)
+
+    tpl_rows = (await session.execute(tpl_q)).all()
+
+    template_stats = []
+    for row in tpl_rows:
+        total = row.total or 0
+        completed = int(row.completed or 0)
+        failed = int(row.failed or 0)
+        avg_dur = (
+            round(float(row.avg_duration), 2)
+            if row.avg_duration is not None else None
+        )
+        template_stats.append({
+            "template_id": row.template_id,
+            "template_name": row.template_name,
+            "total_jobs": total,
+            "completed_jobs": completed,
+            "failed_jobs": failed,
+            "success_rate": round(completed / total, 4) if total > 0 else None,
+            "avg_production_duration_seconds": avg_dur,
+        })
+
+    # --- Per-blueprint stats ---
+    # Join Job -> TemplateStyleLink (via template_id) -> StyleBlueprint
+    bp_q = (
+        select(
+            TemplateStyleLink.style_blueprint_id.label("blueprint_id"),
+            StyleBlueprint.name.label("blueprint_name"),
+            func.count(func.distinct(Job.id)).label("total"),
+            func.sum(case((Job.status == "completed", 1), else_=0)).label("completed"),
+        )
+        .join(TemplateStyleLink, TemplateStyleLink.template_id == Job.template_id)
+        .join(StyleBlueprint, StyleBlueprint.id == TemplateStyleLink.style_blueprint_id)
+        .where(Job.template_id.is_not(None))
+        .group_by(TemplateStyleLink.style_blueprint_id)
+    )
+    if cut is not None:
+        bp_q = bp_q.where(Job.created_at >= cut)
+
+    bp_rows = (await session.execute(bp_q)).all()
+
+    blueprint_stats = []
+    for row in bp_rows:
+        total = row.total or 0
+        completed = int(row.completed or 0)
+        blueprint_stats.append({
+            "blueprint_id": row.blueprint_id,
+            "blueprint_name": row.blueprint_name,
+            "total_jobs": total,
+            "completed_jobs": completed,
+            "success_rate": round(completed / total, 4) if total > 0 else None,
+        })
+
+    return {
+        "window": window,
+        "template_stats": template_stats,
+        "blueprint_stats": blueprint_stats,
     }

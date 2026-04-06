@@ -140,7 +140,12 @@ class JobResponse(BaseModel):
         active_statuses = {"running", "waiting", "retrying"}
 
         if self.status in active_statuses and self.started_at is not None:
-            self.elapsed_seconds = _elapsed_seconds(self.started_at)
+            live = _elapsed_seconds(self.started_at)
+            self.elapsed_seconds = live
+            # Populate elapsed_total_seconds for active jobs so the UI
+            # always has a value to display (ORM field stays null until terminal).
+            if self.elapsed_total_seconds is None:
+                self.elapsed_total_seconds = live
         elif self.elapsed_total_seconds is not None:
             self.elapsed_seconds = self.elapsed_total_seconds
 

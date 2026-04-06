@@ -100,7 +100,12 @@ export function PublishCenterPage() {
       key: "status",
       header: "Durum",
       render: (r: PublishRecordSummary) => (
-        <StatusBadge status={publishStatusVariant(r.status)} label={statusLabel(r.status)} />
+        <div className="flex flex-col gap-0.5">
+          <StatusBadge status={publishStatusVariant(r.status)} label={statusLabel(r.status)} />
+          {r.status === "scheduled" && r.scheduled_at && (
+            <span className="text-xs text-neutral-500">Zamanlandi: {formatDate(r.scheduled_at)}</span>
+          )}
+        </div>
       ),
     },
     {

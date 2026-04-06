@@ -5,6 +5,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
+from app.visibility.dependencies import require_visible
 from .schemas import (
     TemplateStyleLinkCreate,
     TemplateStyleLinkUpdate,
@@ -12,7 +13,7 @@ from .schemas import (
 )
 from . import service
 
-router = APIRouter(prefix="/template-style-links", tags=["template-style-links"])
+router = APIRouter(prefix="/template-style-links", tags=["template-style-links"], dependencies=[Depends(require_visible("panel:template-style-links"))])
 
 
 @router.get("", response_model=List[TemplateStyleLinkResponse])

@@ -50,7 +50,8 @@ from app.settings.settings_resolver import (
 )
 from app.settings.settings_seed import seed_known_settings
 from app.audit.service import write_audit_log
-from app.visibility.dependencies import require_visible
+from app.visibility.dependencies import get_caller_role, require_visible
+from app.settings.validation import validate_setting_value, SettingValidationError
 
 logger = logging.getLogger(__name__)
 
@@ -90,7 +91,7 @@ class EffectiveSettingResponse(BaseModel):
     wired: bool = False
     wired_to: str = ""
     builtin_default: Any = None
-    env_var: str = ""
+    env_var: Optional[str] = ""
     has_admin_override: bool = False
     has_db_row: bool = False
     db_version: Optional[int] = None
@@ -201,9 +202,17 @@ async def list_effective_settings(
     group: Optional[str] = Query(None, description="Filter by group name"),
     wired_only: bool = Query(False, description="Only wired settings"),
     db: AsyncSession = Depends(get_db),
+    role: str = Depends(get_caller_role),
 ) -> List[EffectiveSettingResponse]:
     """Tum bilinen ayarlar icin effective deger ve kaynak bilgisi doner."""
     items = await list_effective(db, group=group, wired_only=wired_only)
+    if role != "admin":
+        # Filter out settings not visible to users — prevent leaking hidden settings
+        visible_keys = {
+            s.key
+            for s in await service.list_settings(db, visible_to_user_only=True)
+        }
+        items = [item for item in items if item.get("key") in visible_keys]
     return [EffectiveSettingResponse(**item) for item in items]
 
 
@@ -236,6 +245,7 @@ async def update_effective_setting(
     key: str,
     body: SettingAdminValueRequest,
     db: AsyncSession = Depends(get_db),
+    caller_role: str = Depends(get_caller_role),
 ):
     """
     Ayarin admin_value degerini gunceller.
@@ -269,11 +279,40 @@ async def update_effective_setting(
     # Normal setting — admin_value_json guncelle
     from sqlalchemy import select as sa_select
     from app.db.models import Setting as SettingModel
+    from app.settings.settings_resolver import KNOWN_VALIDATION_RULES
     stmt = sa_select(SettingModel).where(SettingModel.key == key)
     result = await db.execute(stmt)
     row = result.scalar_one_or_none()
 
+    # user_override_allowed enforcement
+    if caller_role == "user" and row is not None and not row.user_override_allowed:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Bu ayar kullanici tarafindan degistirilemez: {key}",
+        )
+
     admin_json = json.dumps(body.value)
+
+    # Validation — check against rules before applying
+    rules_json = None
+    if row is not None:
+        rules_json = row.validation_rules_json
+    else:
+        rules_json = KNOWN_VALIDATION_RULES.get(key)
+    if rules_json and rules_json != "{}":
+        meta = KNOWN_SETTINGS[key]
+        try:
+            validate_setting_value(
+                key=key,
+                value_json=admin_json,
+                rules_json=rules_json,
+                setting_type=meta.get("type", "string"),
+            )
+        except SettingValidationError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_UNPROCESSABLE_ENTITY,
+                detail=exc.message,
+            )
 
     if row is not None:
         row.admin_value_json = admin_json
@@ -294,7 +333,7 @@ async def update_effective_setting(
             read_only_for_user=True,
             module_scope=meta.get("module_scope"),
             help_text=meta.get("help_text", ""),
-            validation_rules_json="{}",
+            validation_rules_json=KNOWN_VALIDATION_RULES.get(key, "{}"),
             status="active",
         )
         db.add(row)
@@ -321,8 +360,10 @@ async def update_effective_setting(
 async def list_settings(
     group_name: Optional[str] = Query(None, description="Filter by group_name"),
     db: AsyncSession = Depends(get_db),
+    role: str = Depends(get_caller_role),
 ) -> List[SettingResponse]:
-    rows = await service.list_settings(db, group_name=group_name)
+    visible_to_user_only = role != "admin"
+    rows = await service.list_settings(db, group_name=group_name, visible_to_user_only=visible_to_user_only)
     return [SettingResponse.model_validate(r) for r in rows]
 
 
@@ -330,8 +371,14 @@ async def list_settings(
 async def get_setting(
     setting_id: str,
     db: AsyncSession = Depends(get_db),
+    role: str = Depends(get_caller_role),
 ) -> SettingResponse:
     row = await service.get_setting(db, setting_id)
+    if role != "admin" and not row.visible_to_user:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="This setting is not visible to users.",
+        )
     return SettingResponse.model_validate(row)
 
 
@@ -349,7 +396,16 @@ async def update_setting(
     setting_id: str,
     payload: SettingUpdate,
     db: AsyncSession = Depends(get_db),
+    caller_role: str = Depends(get_caller_role),
 ) -> SettingResponse:
+    # user_override_allowed enforcement
+    if caller_role == "user":
+        existing = await service.get_setting(db, setting_id)
+        if not existing.user_override_allowed:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Bu ayar kullanici tarafindan degistirilemez.",
+            )
     row = await service.update_setting(db, setting_id, payload)
     return SettingResponse.model_validate(row)
 

@@ -26,6 +26,7 @@ M4-C1: SubtitleStepExecutor registry alıyor.
 """
 
 import asyncio
+import json
 import logging
 from typing import Optional, TYPE_CHECKING
 
@@ -200,6 +201,36 @@ class JobDispatcher:
                     "JobDispatcher: template resolution failed, continuing without template. "
                     "job_id=%s, error=%s", job_id, exc,
                 )
+
+        # Template snapshot: store resolved template context in job's input_data_json
+        # so that template edits during execution don't affect running jobs.
+        if template_context is not None:
+            snapshot_db = self._session_factory()
+            try:
+                snapshot_job = await service.get_job(snapshot_db, job_id)
+                if snapshot_job is not None:
+                    existing_input = {}
+                    if snapshot_job.input_data_json:
+                        try:
+                            existing_input = json.loads(snapshot_job.input_data_json)
+                            if not isinstance(existing_input, dict):
+                                existing_input = {}
+                        except (json.JSONDecodeError, TypeError):
+                            existing_input = {}
+                    existing_input["_template_snapshot"] = template_context
+                    snapshot_job.input_data_json = json.dumps(existing_input, ensure_ascii=False)
+                    await snapshot_db.commit()
+                    logger.info(
+                        "JobDispatcher: template snapshot stored in input_data_json. job_id=%s",
+                        job_id,
+                    )
+            except Exception as exc:
+                logger.warning(
+                    "JobDispatcher: failed to store template snapshot, continuing. "
+                    "job_id=%s, error=%s", job_id, exc,
+                )
+            finally:
+                await snapshot_db.close()
 
         # Pipeline için yeni bir DB oturumu aç; runner ve PublishStepExecutor bu oturumu kullanır.
         pipeline_db = self._session_factory()

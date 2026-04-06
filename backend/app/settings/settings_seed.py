@@ -19,7 +19,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import Setting
-from app.settings.settings_resolver import KNOWN_SETTINGS
+from app.settings.settings_resolver import KNOWN_SETTINGS, KNOWN_VALIDATION_RULES
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +59,7 @@ async def seed_known_settings(db: AsyncSession) -> int:
             read_only_for_user=True,
             module_scope=meta.get("module_scope"),
             help_text=meta.get("help_text", ""),
-            validation_rules_json="{}",
+            validation_rules_json=KNOWN_VALIDATION_RULES.get(key, "{}"),
             status="active",
         )
         db.add(row)

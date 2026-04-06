@@ -9,6 +9,7 @@ import { CommandPalette } from "../../components/design-system/CommandPalette";
 import { NotificationCenter } from "../../components/design-system/NotificationCenter";
 import { KeyboardShortcutsHelp } from "../../components/design-system/KeyboardShortcutsHelp";
 import { useCommandPaletteShortcut } from "../../hooks/useCommandPaletteShortcut";
+import { useGlobalSSE } from "../../hooks/useGlobalSSE";
 import { useCommandPaletteStore } from "../../stores/commandPaletteStore";
 import { buildAdminNavigationCommands, buildAdminActionCommands } from "../../commands/adminCommands";
 import { buildContextualCommands } from "../../commands/contextualCommands";
@@ -22,6 +23,9 @@ export function AdminLayout() {
 
   // Register command palette shortcut (Cmd+K / Ctrl+K)
   useCommandPaletteShortcut();
+
+  // Global SSE for app-wide notifications and query invalidation
+  useGlobalSSE();
 
   // Update command palette context on route change
   useEffect(() => {

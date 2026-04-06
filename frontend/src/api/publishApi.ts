@@ -11,6 +11,7 @@ export interface PublishRecordSummary {
   status: string;
   review_state: string;
   publish_attempt_count: number;
+  scheduled_at: string | null;
   published_at: string | null;
   platform_url: string | null;
   created_at: string;

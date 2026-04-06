@@ -10,10 +10,14 @@ import { ToastContainer } from "../../components/design-system/Toast";
 import { ThemeProvider } from "../../components/design-system/ThemeProvider";
 import { NotificationCenter, NotificationBell } from "../../components/design-system/NotificationCenter";
 import { KeyboardShortcutsHelp } from "../../components/design-system/KeyboardShortcutsHelp";
+import { useGlobalSSE } from "../../hooks/useGlobalSSE";
 import { HORIZON_USER_GROUPS } from "./useLayoutNavigation";
 
 export function HorizonUserLayout() {
   const navigate = useNavigate();
+
+  // Global SSE for app-wide notifications and query invalidation
+  useGlobalSSE();
 
   return (
     <ThemeProvider>

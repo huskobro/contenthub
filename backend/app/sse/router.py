@@ -62,3 +62,33 @@ async def stream_job_events(job_id: str) -> StreamingResponse:
             "Connection": "keep-alive",
         },
     )
+
+
+@router.get("/events")
+async def stream_global_events() -> StreamingResponse:
+    """
+    Stream all SSE events globally (not scoped to a specific job).
+    Used by the frontend for app-wide notifications and real-time updates.
+    """
+    client_id = f"global:{uuid.uuid4()}"
+    logger.debug("Global SSE stream opened: client=%s", client_id)
+
+    async def event_stream():
+        try:
+            async for message in event_bus.subscribe(client_id):
+                yield message
+        except GeneratorExit:
+            pass
+        finally:
+            event_bus.unsubscribe(client_id)
+            logger.debug("Global SSE stream closed: client=%s", client_id)
+
+    return StreamingResponse(
+        event_stream(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",
+            "Connection": "keep-alive",
+        },
+    )

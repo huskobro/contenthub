@@ -25,6 +25,7 @@ from app.analytics.schemas import (
     SourceImpactMetrics,
     ChannelOverviewMetrics,
     ContentMetrics,
+    TemplateImpactMetrics,
 )
 
 router = APIRouter(prefix="/analytics", tags=["analytics"], dependencies=[Depends(require_visible("panel:analytics"))])
@@ -115,6 +116,20 @@ async def get_channel_overview(
     """
     _validate_window(window)
     return await service.get_channel_overview_metrics(session=session, window=window)
+
+
+@router.get("/template-impact", response_model=TemplateImpactMetrics)
+async def get_template_impact(
+    window: str = Query(default="all_time", description="Zaman penceresi: last_7d | last_30d | last_90d | all_time"),
+    session=Depends(get_db),
+):
+    """
+    Template ve blueprint bazli is etki metrikleri.
+
+    Her template/blueprint icin toplam is, basari orani ve ortalama sure.
+    """
+    _validate_window(window)
+    return await service.get_template_impact_metrics(session=session, window=window)
 
 
 @router.get("/content", response_model=ContentMetrics)

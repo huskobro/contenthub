@@ -37,6 +37,7 @@ from app.jobs.exceptions import (
     JobNotFoundError,
     StepExecutionError,
 )
+from app.audit.service import write_audit_log
 
 if TYPE_CHECKING:
     from app.sse.bus import EventBus
@@ -94,6 +95,16 @@ class PipelineRunner:
             self._event_bus.publish_job_update(job_id, "running", job.current_step_key)
         await self._update_heartbeat(job_id)
 
+        try:
+            await write_audit_log(
+                self._db, action="job.pipeline_start",
+                entity_type="job", entity_id=str(job.id),
+                actor_type="system",
+                details={"status": "running"},
+            )
+        except Exception:
+            pass
+
         # Fetch steps ordered by step_order ascending
         steps = await service.get_job_steps(self._db, job_id)
         steps_ordered = sorted(steps, key=lambda s: s.step_order)
@@ -111,6 +122,15 @@ class PipelineRunner:
                 )
                 if self._event_bus is not None:
                     self._event_bus.publish_job_update(job_id, "failed", step.step_key)
+                try:
+                    await write_audit_log(
+                        self._db, action="job.pipeline_fail",
+                        entity_type="job", entity_id=str(job.id),
+                        actor_type="system",
+                        details={"status": "failed", "failed_step": step.step_key},
+                    )
+                except Exception:
+                    pass
                 await self._update_heartbeat(job_id)
                 return
 
@@ -118,6 +138,15 @@ class PipelineRunner:
         await service.transition_job_status(self._db, job_id, "completed")
         if self._event_bus is not None:
             self._event_bus.publish_job_update(job_id, "completed", None)
+        try:
+            await write_audit_log(
+                self._db, action="job.pipeline_complete",
+                entity_type="job", entity_id=str(job.id),
+                actor_type="system",
+                details={"status": "completed"},
+            )
+        except Exception:
+            pass
         await self._update_heartbeat(job_id)
 
     async def _run_step(self, job: Job, step: JobStep) -> bool:
@@ -137,6 +166,15 @@ class PipelineRunner:
         )
         if self._event_bus is not None:
             self._event_bus.publish_step_update(job.id, step_key, "running")
+        try:
+            await write_audit_log(
+                self._db, action="job.step_start",
+                entity_type="job_step", entity_id=str(step.id),
+                actor_type="system",
+                details={"job_id": str(job.id), "step_key": step.step_key},
+            )
+        except Exception:
+            pass
         await self._update_heartbeat(job.id)
 
         # Update job's current_step_key pointer directly — this is a data field
@@ -157,6 +195,15 @@ class PipelineRunner:
             )
             if self._event_bus is not None:
                 self._event_bus.publish_step_update(job.id, step_key, "failed")
+            try:
+                await write_audit_log(
+                    self._db, action="job.step_fail",
+                    entity_type="job_step", entity_id=str(step.id),
+                    actor_type="system",
+                    details={"job_id": str(job.id), "step_key": step_key, "error": error_msg[:500]},
+                )
+            except Exception:
+                pass
             return False
 
         try:
@@ -174,6 +221,15 @@ class PipelineRunner:
             )
             if self._event_bus is not None:
                 self._event_bus.publish_step_update(job.id, step_key, "failed")
+            try:
+                await write_audit_log(
+                    self._db, action="job.step_fail",
+                    entity_type="job_step", entity_id=str(step.id),
+                    actor_type="system",
+                    details={"job_id": str(job.id), "step_key": step_key, "error": str(exc)[:500]},
+                )
+            except Exception:
+                pass
             return False
         except Exception as exc:
             # Unexpected exception — wrap and fail the step
@@ -188,6 +244,15 @@ class PipelineRunner:
             )
             if self._event_bus is not None:
                 self._event_bus.publish_step_update(job.id, step_key, "failed")
+            try:
+                await write_audit_log(
+                    self._db, action="job.step_fail",
+                    entity_type="job_step", entity_id=str(step.id),
+                    actor_type="system",
+                    details={"job_id": str(job.id), "step_key": step_key, "error": str(exc)[:500]},
+                )
+            except Exception:
+                pass
             return False
 
         # Store result as provider_trace_json and transition to completed
@@ -201,6 +266,15 @@ class PipelineRunner:
         )
         if self._event_bus is not None:
             self._event_bus.publish_step_update(job.id, step_key, "completed")
+        try:
+            await write_audit_log(
+                self._db, action="job.step_complete",
+                entity_type="job_step", entity_id=str(step.id),
+                actor_type="system",
+                details={"job_id": str(job.id), "step_key": step.step_key},
+            )
+        except Exception:
+            pass
         # Also persist provider_trace_json on the step directly via a targeted update
         await self._store_provider_trace(job.id, step_key, trace_json)
         await self._update_heartbeat(job.id)

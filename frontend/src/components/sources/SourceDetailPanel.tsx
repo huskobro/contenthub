@@ -39,6 +39,24 @@ function UrlField({ label, value }: { label: string; value: string | null }) {
   );
 }
 
+function ScanModeBadge({ scanMode }: { scanMode: string | null }) {
+  if (!scanMode) return <span className="text-sm text-neutral-500">--</span>;
+
+  const config: Record<string, { label: string; bg: string; text: string }> = {
+    auto: { label: "Otomatik Tarama Aktif", bg: "bg-success-light", text: "text-success-dark" },
+    manual: { label: "Manuel Tarama", bg: "bg-neutral-100", text: "text-neutral-700" },
+    curated: { label: "Kuratorlu Tarama", bg: "bg-info-light", text: "text-info-dark" },
+  };
+
+  const c = config[scanMode] ?? { label: scanMode, bg: "bg-neutral-100", text: "text-neutral-700" };
+
+  return (
+    <span className={cn("inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium", c.bg, c.text)}>
+      {c.label}
+    </span>
+  );
+}
+
 export function SourceDetailPanel({ sourceId }: SourceDetailPanelProps) {
   const readOnly = useReadOnly();
   const [editMode, setEditMode] = useState(false);
@@ -111,7 +129,10 @@ export function SourceDetailPanel({ sourceId }: SourceDetailPanelProps) {
       <Field label="Source Type" value={source.source_type} />
       <Field label="Status" value={source.status} />
       <Field label="Trust Level" value={source.trust_level} />
-      <Field label="Scan Mode" value={source.scan_mode} />
+      <div className="mb-2 flex items-center gap-2">
+        <span className="text-sm font-semibold text-neutral-600">Scan Mode: </span>
+        <ScanModeBadge scanMode={source.scan_mode} />
+      </div>
       <Field label="Language" value={source.language} />
       <Field label="Category" value={source.category} />
 

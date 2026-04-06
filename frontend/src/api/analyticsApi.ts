@@ -132,6 +132,37 @@ export interface ModuleDistribution {
   completed_jobs: number;
   failed_jobs: number;
   success_rate: number | null;
+  avg_production_duration_seconds: number | null;
+  avg_render_duration_seconds: number | null;
+  retry_rate: number | null;
+}
+
+// ---------------------------------------------------------------------------
+// Template Impact (Faz G)
+// ---------------------------------------------------------------------------
+
+export interface TemplateImpact {
+  template_id: string | null;
+  template_name: string | null;
+  total_jobs: number;
+  completed_jobs: number;
+  failed_jobs: number;
+  success_rate: number | null;
+  avg_production_duration_seconds: number | null;
+}
+
+export interface BlueprintImpact {
+  blueprint_id: string | null;
+  blueprint_name: string | null;
+  total_jobs: number;
+  completed_jobs: number;
+  success_rate: number | null;
+}
+
+export interface TemplateImpactMetrics {
+  window: string;
+  template_stats: TemplateImpact[];
+  blueprint_stats: BlueprintImpact[];
 }
 
 export interface ContentTypeBreakdown {
@@ -148,6 +179,10 @@ export interface ContentMetrics {
   content_type_breakdown: ContentTypeBreakdown[];
   active_template_count: number;
   active_blueprint_count: number;
+}
+
+export function fetchTemplateImpactMetrics(window: AnalyticsWindow): Promise<TemplateImpactMetrics> {
+  return api.get<TemplateImpactMetrics>(`${BASE_URL}/template-impact`, { window });
 }
 
 export function fetchContentMetrics(

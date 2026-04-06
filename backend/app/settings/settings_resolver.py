@@ -295,6 +295,28 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
     },
 
     # --- Source Scan Settings ---
+    "source_scans.auto_scan_enabled": {
+        "group": "source_scans",
+        "type": "boolean",
+        "label": "Otomatik Tarama Aktif",
+        "help_text": "RSS kaynaklarinin otomatik taranmasini etkinlestirir.",
+        "module_scope": None,
+        "env_var": None,
+        "builtin_default": True,
+        "wired": True,
+        "wired_to": "source_scans.scheduler",
+    },
+    "source_scans.auto_scan_interval_seconds": {
+        "group": "source_scans",
+        "type": "integer",
+        "label": "Otomatik Tarama Araligi (saniye)",
+        "help_text": "Otomatik taramalar arasi bekleme suresi.",
+        "module_scope": None,
+        "env_var": None,
+        "builtin_default": 300,
+        "wired": True,
+        "wired_to": "source_scans.scheduler",
+    },
     "source_scans.soft_dedupe_threshold": {
         "group": "source_scans",
         "type": "float",
@@ -305,6 +327,54 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "builtin_default": 0.65,
         "wired": True,
         "wired_to": "scan_engine.execute_rss_scan → build_dedupe_context(soft_threshold=...)",
+    },
+
+    # --- UI Settings ---
+    "ui.active_theme": {
+        "group": "ui",
+        "type": "string",
+        "label": "Aktif Tema",
+        "help_text": "Kullanicinin secili temasi. Frontend tema degisikliklerinde backend'e kaydedilir.",
+        "module_scope": None,
+        "env_var": None,
+        "builtin_default": "default",
+        "wired": True,
+        "wired_to": "frontend.theme_store",
+    },
+
+    # --- Job Engine Settings ---
+    "jobs.auto_retry_enabled": {
+        "group": "jobs",
+        "type": "boolean",
+        "label": "Otomatik Yeniden Deneme",
+        "help_text": "Basarisiz islerin otomatik yeniden denenmesini etkinlestirir. Varsayilan olarak kapalidir.",
+        "module_scope": None,
+        "env_var": None,
+        "builtin_default": False,
+        "wired": True,
+        "wired_to": "jobs.retry_scheduler",
+    },
+    "jobs.max_auto_retries": {
+        "group": "jobs",
+        "type": "integer",
+        "label": "Maks Otomatik Deneme",
+        "help_text": "Bir isin otomatik yeniden denenebilecegi maksimum sayi.",
+        "module_scope": None,
+        "env_var": None,
+        "builtin_default": 3,
+        "wired": True,
+        "wired_to": "jobs.retry_scheduler",
+    },
+    "jobs.retry_base_delay_seconds": {
+        "group": "jobs",
+        "type": "integer",
+        "label": "Yeniden Deneme Baz Gecikme (saniye)",
+        "help_text": "Ilk yeniden deneme oncesi bekleme suresi. Sonraki denemeler katlanarak artar.",
+        "module_scope": None,
+        "env_var": None,
+        "builtin_default": 60,
+        "wired": True,
+        "wired_to": "jobs.retry_scheduler",
     },
 
     # --- YouTube / Publish Settings ---
@@ -361,9 +431,33 @@ GROUP_LABELS: Dict[str, str] = {
     "execution": "Calisma Ortami",
     "source_scans": "Kaynak Tarama",
     "publish": "Yayin Ayarlari",
+    "ui": "Arayuz Ayarlari",
+    "jobs": "Is Motoru Ayarlari",
 }
 
-GROUP_ORDER = ["credentials", "providers", "execution", "source_scans", "publish"]
+GROUP_ORDER = ["credentials", "providers", "execution", "source_scans", "publish", "ui", "jobs"]
+
+
+# ---------------------------------------------------------------------------
+# Known Validation Rules — companion dict for KNOWN_SETTINGS
+# ---------------------------------------------------------------------------
+
+KNOWN_VALIDATION_RULES: Dict[str, str] = {
+    "execution.render_still_timeout_seconds": '{"type": "integer", "min": 10, "max": 600}',
+    "provider.llm.timeout_seconds": '{"type": "float", "min": 5, "max": 3600}',
+    "provider.llm.kie_temperature": '{"type": "float", "min": 0.0, "max": 2.0}',
+    "provider.llm.openai_temperature": '{"type": "float", "min": 0.0, "max": 2.0}',
+    "provider.tts.edge_default_voice": '{"type": "string", "required": true}',
+    "provider.visuals.pexels_default_count": '{"type": "integer", "min": 1, "max": 50}',
+    "provider.visuals.pixabay_default_count": '{"type": "integer", "min": 1, "max": 50}',
+    "provider.visuals.search_timeout_seconds": '{"type": "float", "min": 5, "max": 300}',
+    "source_scans.auto_scan_interval_seconds": '{"type": "integer", "min": 60, "max": 86400}',
+    "source_scans.soft_dedupe_threshold": '{"type": "float", "min": 0.0, "max": 1.0}',
+    "publish.youtube.upload_timeout_seconds": '{"type": "float", "min": 10, "max": 600}',
+    "publish.youtube.default_category_id": '{"type": "string", "required": true}',
+    "jobs.max_auto_retries": '{"type": "integer", "min": 1, "max": 10}',
+    "jobs.retry_base_delay_seconds": '{"type": "integer", "min": 10, "max": 3600}',
+}
 
 
 # ---------------------------------------------------------------------------

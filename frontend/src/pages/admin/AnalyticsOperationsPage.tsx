@@ -14,6 +14,8 @@ import {
   Mono,
   StatusBadge,
 } from "../../components/design-system/primitives";
+import { ProviderLatencyChart } from "../../components/analytics/ProviderLatencyChart";
+import { StepDurationChart } from "../../components/analytics/StepDurationChart";
 
 /* ------------------------------------------------------------------ */
 /* Formatters                                                         */
@@ -275,6 +277,14 @@ export function AnalyticsOperationsPage() {
             </p>
           )}
         </div>
+
+        {/* Provider Latency Chart */}
+        {!isLoading && providerStats.length > 0 && (
+          <div className="mt-4">
+            <h4 className="text-sm font-semibold text-neutral-700 mb-2">Provider Gecikme Dagilimi</h4>
+            <ProviderLatencyChart data={providerStats} />
+          </div>
+        )}
       </SectionShell>
 
       {/* Step Stats */}
@@ -286,6 +296,14 @@ export function AnalyticsOperationsPage() {
           </div>
         ) : (
           <DataTable<StepStat> columns={stepColumns} data={sortedSteps} keyFn={(row) => row.step_key} loading={isLoading} emptyMessage="Secilen donemde adim verisi yok." testId="step-stats" rowTestIdPrefix="step-row" />
+        )}
+
+        {/* Step Duration Chart */}
+        {!isLoading && sortedSteps.length > 0 && (
+          <div className="mt-4">
+            <h4 className="text-sm font-semibold text-neutral-700 mb-2">Adim Sure Dagilimi</h4>
+            <StepDurationChart data={sortedSteps} />
+          </div>
         )}
       </SectionShell>
 
