@@ -1,4 +1,3 @@
-import { colors, radius, typography } from "../design-system/tokens";
 interface Props {
   usedNewsCount: number;
   lastUsageType?: string | null;
@@ -7,20 +6,10 @@ interface Props {
 
 export function UsedNewsWarningDetails({ usedNewsCount, lastUsageType, lastTargetModule }: Props) {
   return (
-    <div
-      style={{
-        fontSize: typography.size.sm,
-        color: colors.warning.text,
-        background: colors.warning.light,
-        border: `1px solid ${colors.warning.light}`,
-        borderRadius: radius.sm,
-        padding: "0.25rem 0.5rem",
-        marginTop: "0.2rem",
-      }}
-    >
+    <div className="text-sm text-warning-text bg-warning-light border border-warning-light rounded-sm px-2 py-1 mt-0.5">
       <span>Kullanım: {usedNewsCount}x</span>
-      {lastUsageType && <span style={{ marginLeft: "0.5rem" }}>Tür: {lastUsageType}</span>}
-      {lastTargetModule && <span style={{ marginLeft: "0.5rem" }}>Modül: {lastTargetModule}</span>}
+      {lastUsageType && <span className="ml-2">Tür: {lastUsageType}</span>}
+      {lastTargetModule && <span className="ml-2">Modül: {lastTargetModule}</span>}
     </div>
   );
 }

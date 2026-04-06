@@ -5,11 +5,8 @@ import { useUpdateNewsBulletinScript } from "../../hooks/useUpdateNewsBulletinSc
 import { NewsBulletinScriptForm } from "./NewsBulletinScriptForm";
 import { isBlank } from "../../lib/isBlank";
 import type { ScriptFormValues } from "./NewsBulletinScriptForm";
-import { colors, radius, typography } from "../design-system/tokens";
 
 const DASH = "—";
-const LABEL_TD: React.CSSProperties = { color: colors.neutral[600], paddingRight: "1rem", paddingBottom: "0.25rem" };
-const SECTION_STYLE: React.CSSProperties = { border: `1px solid ${colors.border.subtle}`, borderRadius: radius.md, padding: "1rem", marginTop: "1rem" };
 
 interface Props {
   bulletinId: string;
@@ -51,24 +48,24 @@ export function NewsBulletinScriptPanel({ bulletinId }: Props) {
 
   if (isLoading) {
     return (
-      <div style={SECTION_STYLE}>
-        <p style={{ color: colors.neutral[600], margin: 0 }}>Script yükleniyor...</p>
+      <div className="border border-border-subtle rounded-md p-4 mt-4">
+        <p className="text-neutral-600 m-0">Script yükleniyor...</p>
       </div>
     );
   }
 
   if (isError) {
     return (
-      <div style={SECTION_STYLE}>
-        <p style={{ color: colors.error.base, margin: 0 }}>Script yüklenirken hata oluştu.</p>
+      <div className="border border-border-subtle rounded-md p-4 mt-4">
+        <p className="text-error m-0">Script yüklenirken hata oluştu.</p>
       </div>
     );
   }
 
   if (mode === "create") {
     return (
-      <div style={SECTION_STYLE}>
-        <h4 style={{ margin: "0 0 1rem" }}>Script Oluştur</h4>
+      <div className="border border-border-subtle rounded-md p-4 mt-4">
+        <h4 className="m-0 mb-4">Script Oluştur</h4>
         <NewsBulletinScriptForm
           mode="create"
           isSubmitting={createMutation.isPending}
@@ -82,8 +79,8 @@ export function NewsBulletinScriptPanel({ bulletinId }: Props) {
 
   if (mode === "edit") {
     return (
-      <div style={SECTION_STYLE}>
-        <h4 style={{ margin: "0 0 1rem" }}>Script Düzenle</h4>
+      <div className="border border-border-subtle rounded-md p-4 mt-4">
+        <h4 className="m-0 mb-4">Script Düzenle</h4>
         <NewsBulletinScriptForm
           mode="edit"
           initial={{
@@ -103,9 +100,9 @@ export function NewsBulletinScriptPanel({ bulletinId }: Props) {
 
   // view mode
   return (
-    <div style={SECTION_STYLE}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem" }}>
-        <h4 style={{ margin: 0 }} data-testid="nb-script-heading">Script</h4>
+    <div className="border border-border-subtle rounded-md p-4 mt-4">
+      <div className="flex justify-between items-center mb-2">
+        <h4 className="m-0" data-testid="nb-script-heading">Script</h4>
         {script ? (
           <button onClick={() => setMode("edit")}>Düzenle</button>
         ) : (
@@ -113,12 +110,7 @@ export function NewsBulletinScriptPanel({ bulletinId }: Props) {
         )}
       </div>
       <p
-        style={{
-          margin: "0 0 0.75rem",
-          fontSize: typography.size.base,
-          color: colors.neutral[500],
-          lineHeight: 1.5,
-        }}
+        className="m-0 mb-3 text-base text-neutral-500 leading-normal"
         data-testid="nb-script-note"
       >
         Secili haberlerden uretilen bulten taslagi. Script, haber seciminden sonraki
@@ -126,32 +118,32 @@ export function NewsBulletinScriptPanel({ bulletinId }: Props) {
       </p>
 
       {!script ? (
-        <p style={{ color: colors.neutral[500], margin: 0 }}>Henüz script yok.</p>
+        <p className="text-neutral-500 m-0">Henüz script yok.</p>
       ) : (
         <div>
-          <table style={{ fontSize: typography.size.base, borderCollapse: "collapse", marginBottom: "0.75rem" }}>
+          <table className="text-base border-collapse mb-3">
             <tbody>
               <tr>
-                <td style={LABEL_TD}>Versiyon</td>
+                <td className="text-neutral-600 pr-4 pb-1">Versiyon</td>
                 <td>{script.version ?? DASH}</td>
               </tr>
               <tr>
-                <td style={LABEL_TD}>Kaynak</td>
+                <td className="text-neutral-600 pr-4 pb-1">Kaynak</td>
                 <td>{script.source_type ?? DASH}</td>
               </tr>
               <tr>
-                <td style={LABEL_TD}>Durum</td>
+                <td className="text-neutral-600 pr-4 pb-1">Durum</td>
                 <td>{script.generation_status ?? DASH}</td>
               </tr>
               {!isBlank(script.notes) && (
                 <tr>
-                  <td style={LABEL_TD}>Notlar</td>
+                  <td className="text-neutral-600 pr-4 pb-1">Notlar</td>
                   <td>{script.notes}</td>
                 </tr>
               )}
             </tbody>
           </table>
-          <div style={{ background: colors.neutral[50], border: `1px solid ${colors.border.subtle}`, borderRadius: radius.sm, padding: "0.75rem", fontSize: typography.size.base, whiteSpace: "pre-wrap", wordBreak: "break-word", overflowWrap: "anywhere" }}>
+          <div className="bg-neutral-50 border border-border-subtle rounded-sm p-3 text-base whitespace-pre-wrap break-words [overflow-wrap:anywhere]">
             {isBlank(script.content)
               ? DASH
               : showFull || (script.content ?? "").length <= PREVIEW_LIMIT
@@ -159,7 +151,7 @@ export function NewsBulletinScriptPanel({ bulletinId }: Props) {
               : (script.content ?? "").slice(0, PREVIEW_LIMIT) + "..."}
           </div>
           {(script.content ?? "").length > PREVIEW_LIMIT && (
-            <button onClick={() => setShowFull((v) => !v)} style={{ marginTop: "0.5rem", background: "none", border: "none", color: colors.brand[500], cursor: "pointer", padding: 0 }}>
+            <button onClick={() => setShowFull((v) => !v)} className="mt-2 bg-transparent border-none text-brand-500 cursor-pointer p-0">
               {showFull ? "Daha az göster" : "Tamamını göster"}
             </button>
           )}

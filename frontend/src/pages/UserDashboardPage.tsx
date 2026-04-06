@@ -1,15 +1,6 @@
 import { useOnboardingStatus } from "../hooks/useOnboardingStatus";
 import { PostOnboardingHandoff } from "../components/dashboard/PostOnboardingHandoff";
 import { DashboardActionHub } from "../components/dashboard/DashboardActionHub";
-import { colors, typography } from "../components/design-system/tokens";
-
-const SUBTITLE: React.CSSProperties = {
-  margin: "0 0 1.5rem",
-  fontSize: typography.size.lg,
-  color: colors.neutral[700],
-  lineHeight: 1.6,
-  maxWidth: "720px",
-};
 
 export function UserDashboardPage() {
   const { data: onboardingStatus } = useOnboardingStatus();
@@ -22,7 +13,7 @@ export function UserDashboardPage() {
       <h2 data-testid="dashboard-heading">Anasayfa</h2>
       {onboardingCompleted ? (
         <>
-          <p style={SUBTITLE} data-testid="dashboard-context-note">
+          <p className="m-0 mb-6 text-lg text-neutral-700 leading-relaxed max-w-[720px]" data-testid="dashboard-context-note">
             Baslangic ve takip merkezi. Icerik akisinizi baslatabilir, yayin
             durumunu takip edebilir ve detayli islemler icin yonetim paneline
             gecebilirsiniz.
@@ -32,7 +23,7 @@ export function UserDashboardPage() {
         </>
       ) : (
         <p
-          style={{ color: colors.neutral[700], fontSize: typography.size.lg, lineHeight: 1.6, maxWidth: "720px" }}
+          className="text-neutral-700 text-lg leading-relaxed max-w-[720px]"
           data-testid="dashboard-onboarding-pending-note"
         >
           ContentHub'a hosgeldiniz. Sistemi kullanmaya baslamak icin once

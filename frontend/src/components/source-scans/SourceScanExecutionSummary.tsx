@@ -1,4 +1,3 @@
-import { colors } from "../design-system/tokens";
 import {
   SourceScanExecutionBadge,
   SourceScanExecutionLevel,
@@ -33,9 +32,9 @@ export function SourceScanExecutionSummary({ status, resultCount, errorSummary }
   const detail = parts.length > 0 ? parts.join(" • ") : "detay yok";
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "0.15rem" }}>
+    <div className="flex flex-col gap-[0.15rem]">
       <SourceScanExecutionBadge level={level} />
-      <span style={{ fontSize: "0.68rem", color: colors.neutral[500] }}>{detail}</span>
+      <span className="text-[0.68rem] text-neutral-500">{detail}</span>
     </div>
   );
 }

@@ -4,11 +4,7 @@ import { useUpdateTemplateStyleLink } from "../../hooks/useUpdateTemplateStyleLi
 import { TemplateStyleLinkForm } from "./TemplateStyleLinkForm";
 import { formatDateTime } from "../../lib/formatDate";
 import type { TemplateStyleLinkFormValues } from "./TemplateStyleLinkForm";
-import { colors, radius, typography } from "../design-system/tokens";
-
-const RADIUS_SM = "6px";
-const COLOR_DARK = colors.neutral[900];
-const BORDER = `1px solid ${colors.border.subtle}`;
+import { cn } from "../../lib/cn";
 
 interface TemplateStyleLinkDetailPanelProps {
   linkId: string | null;
@@ -16,9 +12,9 @@ interface TemplateStyleLinkDetailPanelProps {
 
 function Field({ label, value }: { label: string; value: string | number | null }) {
   return (
-    <div style={{ marginBottom: "0.5rem" }}>
-      <span style={{ fontSize: typography.size.sm, fontWeight: 600, color: colors.neutral[600] }}>{label}: </span>
-      <span style={{ fontSize: typography.size.md, color: value !== null && value !== undefined ? COLOR_DARK : colors.neutral[500], wordBreak: "break-word", overflowWrap: "anywhere" }}>
+    <div className="mb-2">
+      <span className="text-sm font-semibold text-neutral-600">{label}: </span>
+      <span className={cn("text-md break-words [overflow-wrap:anywhere]", value !== null && value !== undefined ? "text-neutral-900" : "text-neutral-500")}>
         {value !== null && value !== undefined ? String(value) : "—"}
       </span>
     </div>
@@ -32,20 +28,17 @@ export function TemplateStyleLinkDetailPanel({ linkId }: TemplateStyleLinkDetail
 
   if (!linkId) {
     return (
-      <div style={{
-        padding: "2rem", color: colors.neutral[500], fontSize: typography.size.md,
-        textAlign: "center", border: `1px dashed ${colors.border.subtle}`, borderRadius: RADIUS_SM,
-      }}>
+      <div className="p-8 text-neutral-500 text-md text-center border border-dashed border-border-subtle rounded-md">
         Bir link seçin.
       </div>
     );
   }
 
-  if (isLoading) return <p style={{ color: colors.neutral[600], padding: "1rem" }}>Yükleniyor...</p>;
+  if (isLoading) return <p className="text-neutral-600 p-4">Yükleniyor...</p>;
 
   if (isError) {
     return (
-      <p style={{ color: colors.error.base, padding: "1rem" }}>
+      <p className="text-error p-4">
         Hata: {error instanceof Error ? error.message : "Bilinmeyen hata"}
       </p>
     );
@@ -66,8 +59,8 @@ export function TemplateStyleLinkDetailPanel({ linkId }: TemplateStyleLinkDetail
     }
 
     return (
-      <div style={{ padding: "1.25rem", border: BORDER, borderRadius: RADIUS_SM, background: colors.neutral[0] }}>
-        <h3 style={{ margin: "0 0 1rem", fontSize: typography.size.lg, color: COLOR_DARK }}>Link Düzenle</h3>
+      <div className="p-5 border border-border-subtle rounded-md bg-neutral-0">
+        <h3 className="m-0 mb-4 text-lg text-neutral-900">Link Düzenle</h3>
         <TemplateStyleLinkForm
           mode="edit"
           initial={link}
@@ -82,31 +75,18 @@ export function TemplateStyleLinkDetailPanel({ linkId }: TemplateStyleLinkDetail
   }
 
   return (
-    <div style={{ padding: "1.25rem", border: BORDER, borderRadius: RADIUS_SM, background: colors.neutral[0] }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
-        <h3 style={{ margin: 0, fontSize: typography.size.lg, color: COLOR_DARK }} data-testid="tsl-detail-heading">Sablon-Stil Baglanti Detayı</h3>
+    <div className="p-5 border border-border-subtle rounded-md bg-neutral-0">
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="m-0 text-lg text-neutral-900" data-testid="tsl-detail-heading">Sablon-Stil Baglanti Detayı</h3>
         <button
           onClick={() => setEditing(true)}
-          style={{
-            padding: "0.25rem 0.75rem",
-            fontSize: typography.size.base,
-            background: colors.neutral[100],
-            color: colors.neutral[700],
-            border: BORDER,
-            borderRadius: radius.sm,
-            cursor: "pointer",
-          }}
+          className="px-3 py-1 text-base bg-neutral-100 text-neutral-700 border border-border-subtle rounded-sm cursor-pointer"
         >
           Düzenle
         </button>
       </div>
       <p
-        style={{
-          margin: "0 0 1rem",
-          fontSize: typography.size.base,
-          color: colors.neutral[500],
-          lineHeight: 1.5,
-        }}
+        className="m-0 mb-4 text-base text-neutral-500 leading-normal"
         data-testid="tsl-detail-workflow-note"
       >
         Bu baglanti sablonun hangi style blueprint kurallariyla calisacagini
@@ -120,7 +100,7 @@ export function TemplateStyleLinkDetailPanel({ linkId }: TemplateStyleLinkDetail
       <Field label="Status" value={link.status} />
       <Field label="Notes" value={link.notes} />
 
-      <div style={{ marginTop: "0.75rem", borderTop: `1px solid ${colors.neutral[100]}`, paddingTop: "0.75rem" }}>
+      <div className="mt-3 border-t border-neutral-100 pt-3">
         <Field label="Created" value={formatDateTime(link.created_at)} />
         <Field label="Updated" value={formatDateTime(link.updated_at)} />
       </div>

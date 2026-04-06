@@ -9,10 +9,6 @@ import { UsedNewsWarningBadge } from "./UsedNewsWarningBadge";
 import { UsedNewsWarningDetails } from "./UsedNewsWarningDetails";
 import type { SelectedItemFormValues } from "./NewsBulletinSelectedItemForm";
 import type { NewsItemResponse } from "../../api/newsItemsApi";
-import { colors, radius, typography } from "../design-system/tokens";
-
-const MUTED_TEXT = colors.neutral[600];
-const TH_CELL: React.CSSProperties = { textAlign: "left", padding: "0.25rem 0.5rem", color: MUTED_TEXT, fontWeight: 500 };
 
 interface Props {
   bulletinId: string;
@@ -25,13 +21,6 @@ export function NewsBulletinSelectedItemsPanel({ bulletinId }: Props) {
   const [mode, setMode] = useState<"view" | "create" | "edit">("view");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [pickerError, setPickerError] = useState<string | null>(null);
-
-  const sectionStyle: React.CSSProperties = {
-    border: `1px solid ${colors.border.subtle}`,
-    borderRadius: radius.md,
-    padding: "1rem",
-    marginTop: "1rem",
-  };
 
   function handleCreate(values: SelectedItemFormValues) {
     createMutation.mutate(
@@ -78,24 +67,24 @@ export function NewsBulletinSelectedItemsPanel({ bulletinId }: Props) {
 
   if (isLoading) {
     return (
-      <div style={sectionStyle}>
-        <p style={{ color: MUTED_TEXT, margin: 0 }}>Selected news yükleniyor...</p>
+      <div className="border border-border-subtle rounded-md p-4 mt-4">
+        <p className="text-neutral-600 m-0">Selected news yükleniyor...</p>
       </div>
     );
   }
 
   if (isError) {
     return (
-      <div style={sectionStyle}>
-        <p style={{ color: colors.error.base, margin: 0 }}>Selected news yüklenirken hata oluştu.</p>
+      <div className="border border-border-subtle rounded-md p-4 mt-4">
+        <p className="text-error m-0">Selected news yüklenirken hata oluştu.</p>
       </div>
     );
   }
 
   if (mode === "create") {
     return (
-      <div style={sectionStyle}>
-        <h4 style={{ margin: "0 0 1rem" }}>Selected Item Ekle</h4>
+      <div className="border border-border-subtle rounded-md p-4 mt-4">
+        <h4 className="m-0 mb-4">Selected Item Ekle</h4>
         <NewsBulletinSelectedItemForm
           mode="create"
           isSubmitting={createMutation.isPending}
@@ -110,8 +99,8 @@ export function NewsBulletinSelectedItemsPanel({ bulletinId }: Props) {
   if (mode === "edit" && editingId) {
     const item = items?.find((i) => i.id === editingId);
     return (
-      <div style={sectionStyle}>
-        <h4 style={{ margin: "0 0 1rem" }}>Selected Item Düzenle</h4>
+      <div className="border border-border-subtle rounded-md p-4 mt-4">
+        <h4 className="m-0 mb-4">Selected Item Düzenle</h4>
         <NewsBulletinSelectedItemForm
           mode="edit"
           initial={{
@@ -130,18 +119,13 @@ export function NewsBulletinSelectedItemsPanel({ bulletinId }: Props) {
 
   // view mode
   return (
-    <div style={sectionStyle}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem" }}>
-        <h4 style={{ margin: 0 }} data-testid="nb-selected-news-heading">Secili Haberler</h4>
+    <div className="border border-border-subtle rounded-md p-4 mt-4">
+      <div className="flex justify-between items-center mb-2">
+        <h4 className="m-0" data-testid="nb-selected-news-heading">Secili Haberler</h4>
         <button onClick={() => setMode("create")}>+ Manuel Ekle</button>
       </div>
       <p
-        style={{
-          margin: "0 0 0.75rem",
-          fontSize: typography.size.base,
-          color: colors.neutral[500],
-          lineHeight: 1.5,
-        }}
+        className="m-0 mb-3 text-base text-neutral-500 leading-normal"
         data-testid="nb-selected-news-note"
       >
         Kaynaklardan gelen haberlerden bulteninize dahil edilecek olanlari secin.
@@ -155,28 +139,28 @@ export function NewsBulletinSelectedItemsPanel({ bulletinId }: Props) {
       />
 
       {!items || items.length === 0 ? (
-        <p style={{ color: colors.neutral[500], margin: 0 }}>Henüz seçilmiş haber yok.</p>
+        <p className="text-neutral-500 m-0">Henüz seçilmiş haber yok.</p>
       ) : (
-        <table style={{ width: "100%", fontSize: typography.size.base, borderCollapse: "collapse" }}>
+        <table className="w-full text-base border-collapse">
           <thead>
-            <tr style={{ borderBottom: `1px solid ${colors.border.subtle}` }}>
-              <th style={TH_CELL}>News Item ID</th>
-              <th style={TH_CELL}>Sıra</th>
-              <th style={TH_CELL}>Gerekçe</th>
-              <th style={TH_CELL}>Uyarı</th>
-              <th style={TH_CELL}>Eklendi</th>
-              <th style={{ padding: "0.25rem 0.5rem" }}></th>
+            <tr className="border-b border-border-subtle">
+              <th className="text-left px-2 py-1 text-neutral-600 font-medium">News Item ID</th>
+              <th className="text-left px-2 py-1 text-neutral-600 font-medium">Sıra</th>
+              <th className="text-left px-2 py-1 text-neutral-600 font-medium">Gerekçe</th>
+              <th className="text-left px-2 py-1 text-neutral-600 font-medium">Uyarı</th>
+              <th className="text-left px-2 py-1 text-neutral-600 font-medium">Eklendi</th>
+              <th className="px-2 py-1"></th>
             </tr>
           </thead>
           <tbody>
             {items.map((item) => (
-              <tr key={item.id} style={{ borderBottom: `1px solid ${colors.neutral[100]}` }}>
-                <td style={{ padding: "0.25rem 0.5rem", fontFamily: "monospace", fontSize: typography.size.sm }}>
+              <tr key={item.id} className="border-b border-neutral-100">
+                <td className="px-2 py-1 font-mono text-sm">
                   {item.news_item_id}
                 </td>
-                <td style={{ padding: "0.25rem 0.5rem" }}>{item.sort_order}</td>
-                <td style={{ padding: "0.25rem 0.5rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>{item.selection_reason ?? "—"}</td>
-                <td style={{ padding: "0.25rem 0.5rem" }}>
+                <td className="px-2 py-1">{item.sort_order}</td>
+                <td className="px-2 py-1 break-words [overflow-wrap:anywhere]">{item.selection_reason ?? "—"}</td>
+                <td className="px-2 py-1">
                   <UsedNewsWarningBadge warning={item.used_news_warning ?? false} />
                   {item.used_news_warning && (
                     <UsedNewsWarningDetails
@@ -186,13 +170,13 @@ export function NewsBulletinSelectedItemsPanel({ bulletinId }: Props) {
                     />
                   )}
                 </td>
-                <td style={{ padding: "0.25rem 0.5rem", color: colors.neutral[500] }}>
+                <td className="px-2 py-1 text-neutral-500">
                   {formatDateShort(item.created_at)}
                 </td>
-                <td style={{ padding: "0.25rem 0.5rem" }}>
+                <td className="px-2 py-1">
                   <button
                     onClick={() => { setEditingId(item.id); setMode("edit"); }}
-                    style={{ fontSize: typography.size.sm }}
+                    className="text-sm"
                   >
                     Düzenle
                   </button>

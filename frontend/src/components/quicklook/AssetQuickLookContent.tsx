@@ -7,7 +7,6 @@
 
 import React from "react";
 import type { AssetItem } from "../../api/assetApi";
-import { colors, typography, spacing, radius } from "../design-system/tokens";
 import { StatusBadge, DetailGrid, Mono } from "../design-system/primitives";
 
 interface AssetQuickLookContentProps {
@@ -23,14 +22,14 @@ function formatBytes(bytes: number): string {
 }
 
 function formatDate(iso: string | null): string {
-  if (!iso) return "—";
+  if (!iso) return "\u2014";
   try {
     return new Date(iso).toLocaleDateString("tr-TR", {
       day: "2-digit", month: "2-digit", year: "numeric",
       hour: "2-digit", minute: "2-digit",
     });
   } catch {
-    return "—";
+    return "\u2014";
   }
 }
 
@@ -38,13 +37,13 @@ export function AssetQuickLookContent({ item, onReveal, onDelete }: AssetQuickLo
   return (
     <div data-testid="quicklook-asset-item">
       {/* Header */}
-      <div style={{ marginBottom: spacing[4] }}>
-        <h4 style={{ margin: 0, fontSize: typography.size.md, fontWeight: typography.weight.semibold, color: colors.neutral[900], wordBreak: "break-all" }}>
+      <div className="mb-4">
+        <h4 className="m-0 text-md font-semibold text-neutral-900 break-all">
           {item.name}
         </h4>
-        <div style={{ display: "flex", gap: spacing[2], alignItems: "center", marginTop: spacing[2] }}>
+        <div className="flex gap-2 items-center mt-2">
           <StatusBadge status="info" label={item.asset_type} size="md" />
-          <span style={{ fontSize: typography.size.sm, color: colors.neutral[500] }}>
+          <span className="text-sm text-neutral-500">
             .{item.mime_ext}
           </span>
         </div>
@@ -57,7 +56,7 @@ export function AssetQuickLookContent({ item, onReveal, onDelete }: AssetQuickLo
           { label: "Tur", value: item.asset_type },
           { label: "Uzanti", value: <Mono>.{item.mime_ext}</Mono> },
           { label: "Kaynak", value: item.source_kind === "job_artifact" ? "Artifact" : "Preview" },
-          { label: "Modul", value: item.module_type || "—" },
+          { label: "Modul", value: item.module_type || "\u2014" },
           { label: "Tarih", value: formatDate(item.discovered_at) },
         ]}
         testId="quicklook-asset-details"
@@ -65,29 +64,20 @@ export function AssetQuickLookContent({ item, onReveal, onDelete }: AssetQuickLo
 
       {/* Relative path */}
       {item.file_path && (
-        <div style={{ marginTop: spacing[3], padding: spacing[3], background: colors.neutral[50], borderRadius: radius.md }}>
-          <span style={{ fontSize: typography.size.xs, color: colors.neutral[500] }}>Yol:</span>
-          <p style={{ margin: `${spacing[1]} 0 0`, fontSize: typography.size.sm, fontFamily: typography.monoFamily, color: colors.neutral[700], wordBreak: "break-all" }}>
+        <div className="mt-3 p-3 bg-neutral-50 rounded-md">
+          <span className="text-xs text-neutral-500">Yol:</span>
+          <p className="mt-1 mb-0 text-sm font-mono text-neutral-700 break-all">
             {item.file_path}
           </p>
         </div>
       )}
 
       {/* Actions */}
-      <div style={{ marginTop: spacing[4], paddingTop: spacing[3], borderTop: `1px solid ${colors.border.subtle}`, display: "flex", gap: spacing[2] }}>
+      <div className="mt-4 pt-3 border-t border-border-subtle flex gap-2">
         {onReveal && (
           <button
             onClick={onReveal}
-            style={{
-              padding: `${spacing[2]} ${spacing[4]}`,
-              fontSize: typography.size.base,
-              fontWeight: typography.weight.medium,
-              color: colors.brand[600],
-              background: colors.brand[50],
-              border: `1px solid ${colors.brand[200]}`,
-              borderRadius: radius.md,
-              cursor: "pointer",
-            }}
+            className="py-2 px-4 text-base font-medium text-brand-600 bg-brand-50 border border-brand-200 rounded-md cursor-pointer hover:bg-brand-100"
             data-testid="quicklook-asset-reveal"
           >
             Konum Goster
@@ -96,16 +86,7 @@ export function AssetQuickLookContent({ item, onReveal, onDelete }: AssetQuickLo
         {onDelete && (
           <button
             onClick={onDelete}
-            style={{
-              padding: `${spacing[2]} ${spacing[4]}`,
-              fontSize: typography.size.base,
-              fontWeight: typography.weight.medium,
-              color: colors.error.dark,
-              background: colors.error.light,
-              border: `1px solid ${colors.error.base}20`,
-              borderRadius: radius.md,
-              cursor: "pointer",
-            }}
+            className="py-2 px-4 text-base font-medium text-error-dark bg-error-light border border-error-base/20 rounded-md cursor-pointer hover:bg-error-base/10"
             data-testid="quicklook-asset-delete"
           >
             Sil

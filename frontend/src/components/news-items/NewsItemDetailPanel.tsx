@@ -5,7 +5,6 @@ import { NewsItemForm } from "./NewsItemForm";
 import type { NewsItemFormValues } from "./NewsItemForm";
 import { formatDateTime } from "../../lib/formatDate";
 import { isBlank } from "../../lib/isBlank";
-import { colors, radius, typography } from "../design-system/tokens";
 
 interface Props {
   selectedId: string | null;
@@ -14,9 +13,9 @@ interface Props {
 function Field({ label, value }: { label: string; value: React.ReactNode }) {
   const display = typeof value === "string" && isBlank(value) ? "—" : (value ?? "—");
   return (
-    <div style={{ marginBottom: "8px" }}>
-      <span style={{ fontWeight: 600, marginRight: "8px", color: colors.neutral[600], fontSize: typography.size.base }}>{label}:</span>
-      <span style={{ fontSize: typography.size.md, wordBreak: "break-word", overflowWrap: "anywhere" }}>{display}</span>
+    <div className="mb-2">
+      <span className="font-semibold mr-2 text-neutral-600 text-base">{label}:</span>
+      <span className="text-md break-words [overflow-wrap:anywhere]">{display}</span>
     </div>
   );
 }
@@ -27,7 +26,7 @@ export function NewsItemDetailPanel({ selectedId }: Props) {
   const { mutate, isPending, error: updateError } = useUpdateNewsItem(selectedId ?? "");
 
   if (!selectedId) {
-    return <p style={{ color: colors.neutral[500] }}>Bir news item seçin.</p>;
+    return <p className="text-neutral-500">Bir news item seçin.</p>;
   }
 
   if (isLoading) {
@@ -35,7 +34,7 @@ export function NewsItemDetailPanel({ selectedId }: Props) {
   }
 
   if (isError || !data) {
-    return <p style={{ color: "red" }}>Hata: detay yüklenemedi.</p>;
+    return <p className="text-red-500">Hata: detay yüklenemedi.</p>;
   }
 
   if (editing) {
@@ -58,7 +57,7 @@ export function NewsItemDetailPanel({ selectedId }: Props) {
 
     return (
       <div>
-        <h3 style={{ marginTop: 0 }}>News Item Düzenle</h3>
+        <h3 className="mt-0">News Item Düzenle</h3>
         <NewsItemForm
           mode="edit"
           initial={data}
@@ -74,26 +73,18 @@ export function NewsItemDetailPanel({ selectedId }: Props) {
 
   return (
     <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
-        <h3 style={{ margin: 0 }}>News Item Detayı</h3>
+      <div className="flex justify-between items-center mb-3">
+        <h3 className="m-0">News Item Detayı</h3>
         <button
           onClick={() => setEditing(true)}
-          style={{
-            padding: "0.25rem 0.75rem",
-            fontSize: typography.size.base,
-            background: colors.neutral[100],
-            color: colors.neutral[700],
-            border: `1px solid ${colors.border.subtle}`,
-            borderRadius: radius.sm,
-            cursor: "pointer",
-          }}
+          className="px-3 py-1 text-base bg-neutral-100 text-neutral-700 border border-border-subtle rounded-sm cursor-pointer hover:bg-neutral-200 transition-colors duration-fast"
         >
           Düzenle
         </button>
       </div>
-      <Field label="ID" value={<code style={{ fontSize: typography.size.sm }}>{data.id}</code>} />
+      <Field label="ID" value={<code className="text-sm">{data.id}</code>} />
       <Field label="Başlık" value={data.title} />
-      <Field label="URL" value={data.url ? <a href={data.url} target="_blank" rel="noopener noreferrer" style={{ fontSize: typography.size.base, wordBreak: "break-all" }}>{data.url}</a> : null} />
+      <Field label="URL" value={data.url ? <a href={data.url} target="_blank" rel="noopener noreferrer" className="text-base break-all">{data.url}</a> : null} />
       <Field label="Status" value={data.status} />
       <Field label="Kaynak ID" value={data.source_id} />
       <Field label="Scan ID" value={data.source_scan_id} />

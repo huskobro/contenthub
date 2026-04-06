@@ -1,4 +1,3 @@
-import { colors } from "../design-system/tokens";
 import { NewsItemScanLineageBadge, NewsItemScanLineageLevel } from "./NewsItemScanLineageBadge";
 
 interface Props {
@@ -24,9 +23,9 @@ export function NewsItemScanLineageSummary({ sourceScanId, sourceScanStatus }: P
     : "doğrudan kayıt";
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "0.15rem" }}>
+    <div className="flex flex-col gap-[0.15rem]">
       <NewsItemScanLineageBadge level={level} />
-      <span style={{ fontSize: "0.68rem", color: colors.neutral[500] }}>{detail}</span>
+      <span className="text-[0.68rem] text-neutral-500">{detail}</span>
     </div>
   );
 }

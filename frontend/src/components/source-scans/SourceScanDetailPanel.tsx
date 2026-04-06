@@ -6,14 +6,7 @@ import type { SourceScanFormValues } from "./SourceScanForm";
 import { formatDateTime } from "../../lib/formatDate";
 import { isBlank } from "../../lib/isBlank";
 import { JsonPreviewField } from "../shared/JsonPreviewField";
-import { colors, radius, typography } from "../design-system/tokens";
-
-const FONT_SM = "0.875rem";
-const COLOR_DARK = colors.neutral[900];
-const COLOR_ERR = colors.error.base;
-const LABEL_SPAN: React.CSSProperties = { fontSize: typography.size.sm, fontWeight: 600, color: colors.neutral[600] };
-const PANEL_BOX: React.CSSProperties = { padding: "1.25rem", border: `1px solid ${colors.border.subtle}`, borderRadius: radius.md, background: colors.neutral[0] };
-const SECTION_DIVIDER: React.CSSProperties = { marginTop: "0.75rem", borderTop: `1px solid ${colors.neutral[100]}`, paddingTop: "0.75rem" };
+import { cn } from "../../lib/cn";
 
 interface SourceScanDetailPanelProps {
   scanId: string | null;
@@ -22,9 +15,9 @@ interface SourceScanDetailPanelProps {
 function Field({ label, value }: { label: string; value: string | number | null }) {
   const isEmpty = value === null || value === undefined || (typeof value === "string" && isBlank(value));
   return (
-    <div style={{ marginBottom: "0.5rem" }}>
-      <span style={LABEL_SPAN}>{label}: </span>
-      <span style={{ fontSize: FONT_SM, color: isEmpty ? colors.neutral[500] : COLOR_DARK, wordBreak: "break-word", overflowWrap: "anywhere" }}>
+    <div className="mb-2">
+      <span className="text-sm font-semibold text-neutral-600">{label}: </span>
+      <span className={cn("text-sm break-words [overflow-wrap:anywhere]", isEmpty ? "text-neutral-500" : "text-neutral-900")}>
         {isEmpty ? "—" : String(value)}
       </span>
     </div>
@@ -38,20 +31,17 @@ export function SourceScanDetailPanel({ scanId }: SourceScanDetailPanelProps) {
 
   if (!scanId) {
     return (
-      <div style={{
-        padding: "2rem", color: colors.neutral[500], fontSize: FONT_SM,
-        textAlign: "center", border: `1px dashed ${colors.border.subtle}`, borderRadius: radius.md,
-      }}>
+      <div className="p-8 text-neutral-500 text-sm text-center border border-dashed border-border-subtle rounded-md">
         Bir scan kaydı seçin.
       </div>
     );
   }
 
-  if (isLoading) return <p style={{ color: colors.neutral[600], padding: "1rem" }}>Yükleniyor...</p>;
+  if (isLoading) return <p className="text-neutral-600 p-4">Yükleniyor...</p>;
 
   if (isError) {
     return (
-      <p style={{ color: COLOR_ERR, padding: "1rem" }}>
+      <p className="text-error p-4">
         Hata: {error instanceof Error ? error.message : "Bilinmeyen hata"}
       </p>
     );
@@ -74,8 +64,8 @@ export function SourceScanDetailPanel({ scanId }: SourceScanDetailPanelProps) {
     }
 
     return (
-      <div style={PANEL_BOX}>
-        <h3 style={{ margin: "0 0 1rem", fontSize: typography.size.lg, color: COLOR_DARK }}>Scan Düzenle</h3>
+      <div className="p-5 border border-border-subtle rounded-md bg-neutral-0">
+        <h3 className="m-0 mb-4 text-lg text-neutral-900">Scan Düzenle</h3>
         <SourceScanForm
           mode="edit"
           initial={scan}
@@ -90,20 +80,12 @@ export function SourceScanDetailPanel({ scanId }: SourceScanDetailPanelProps) {
   }
 
   return (
-    <div style={PANEL_BOX}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
-        <h3 style={{ margin: 0, fontSize: typography.size.lg, color: COLOR_DARK }}>Scan Detayı</h3>
+    <div className="p-5 border border-border-subtle rounded-md bg-neutral-0">
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="m-0 text-lg text-neutral-900">Scan Detayı</h3>
         <button
           onClick={() => setEditing(true)}
-          style={{
-            padding: "0.25rem 0.75rem",
-            fontSize: typography.size.base,
-            background: colors.neutral[100],
-            color: colors.neutral[700],
-            border: `1px solid ${colors.border.subtle}`,
-            borderRadius: radius.sm,
-            cursor: "pointer",
-          }}
+          className="px-3 py-1 text-base bg-neutral-100 text-neutral-700 border border-border-subtle rounded-sm cursor-pointer"
         >
           Düzenle
         </button>
@@ -117,28 +99,28 @@ export function SourceScanDetailPanel({ scanId }: SourceScanDetailPanelProps) {
       <Field label="Result Count" value={scan.result_count} />
 
       {scan.error_summary && (
-        <div style={{ marginBottom: "0.5rem" }}>
-          <span style={{ fontSize: typography.size.sm, fontWeight: 600, color: COLOR_ERR }}>Error: </span>
-          <span style={{ fontSize: FONT_SM, color: COLOR_ERR }}>{scan.error_summary}</span>
+        <div className="mb-2">
+          <span className="text-sm font-semibold text-error">Error: </span>
+          <span className="text-sm text-error">{scan.error_summary}</span>
         </div>
       )}
 
-      <div style={SECTION_DIVIDER}>
+      <div className="mt-3 border-t border-neutral-100 pt-3">
         <Field label="Started" value={formatDateTime(scan.started_at)} />
         <Field label="Finished" value={formatDateTime(scan.finished_at)} />
       </div>
 
-      <div style={SECTION_DIVIDER}>
+      <div className="mt-3 border-t border-neutral-100 pt-3">
         <JsonPreviewField label="raw_result_preview_json" value={scan.raw_result_preview_json} />
       </div>
 
       {!isBlank(scan.notes) && (
-        <div style={{ marginTop: "0.5rem", borderTop: `1px solid ${colors.neutral[100]}`, paddingTop: "0.5rem" }}>
+        <div className="mt-2 border-t border-neutral-100 pt-2">
           <Field label="Notes" value={scan.notes} />
         </div>
       )}
 
-      <div style={SECTION_DIVIDER}>
+      <div className="mt-3 border-t border-neutral-100 pt-3">
         <Field label="Created" value={formatDateTime(scan.created_at)} />
         <Field label="Updated" value={formatDateTime(scan.updated_at)} />
       </div>

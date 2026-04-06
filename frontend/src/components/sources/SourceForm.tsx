@@ -1,38 +1,11 @@
 import { useState } from "react";
 import type { SourceResponse, SourceCreatePayload } from "../../api/sourcesApi";
-import { colors, radius, typography } from "../design-system/tokens";
+import { cn } from "../../lib/cn";
 
 const SOURCE_TYPES = ["rss", "manual_url", "api"];
 const TRUST_LEVELS = ["", "low", "medium", "high"];
 const SCAN_MODES = ["", "manual", "auto", "curated"];
 const STATUSES = ["active", "paused", "archived"];
-
-const inputStyle: React.CSSProperties = {
-  width: "100%",
-  padding: "0.375rem 0.5rem",
-  border: `1px solid ${colors.border.default}`,
-  borderRadius: radius.sm,
-  fontSize: typography.size.md,
-  boxSizing: "border-box",
-};
-
-const labelStyle: React.CSSProperties = {
-  display: "block",
-  fontSize: typography.size.sm,
-  fontWeight: 600,
-  color: colors.neutral[600],
-  marginBottom: "0.25rem",
-};
-
-const fieldStyle: React.CSSProperties = { marginBottom: "0.75rem" };
-
-const errorStyle: React.CSSProperties = {
-  color: colors.error.base,
-  fontSize: typography.size.base,
-  marginTop: "0.25rem",
-  wordBreak: "break-word",
-  overflowWrap: "anywhere",
-};
 
 interface SourceFormProps {
   initial?: Partial<SourceResponse>;
@@ -65,6 +38,8 @@ export function SourceForm({
   const [category, setCategory] = useState(initial?.category ?? "");
   const [notes, setNotes] = useState(initial?.notes ?? "");
   const [validationError, setValidationError] = useState<string | null>(null);
+
+  const inputCls = "w-full px-2 py-1.5 border border-border rounded-sm text-md box-border focus:outline-none focus:ring-2 focus:ring-focus";
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -110,106 +85,93 @@ export function SourceForm({
 
   return (
     <form onSubmit={handleSubmit}>
-      <div style={fieldStyle}>
-        <label style={labelStyle}>Name *</label>
-        <input style={inputStyle} value={name} onChange={e => setName(e.target.value)} placeholder="Source adı" />
+      <div className="mb-3">
+        <label className="block text-sm font-semibold text-neutral-600 mb-1">Name *</label>
+        <input className={inputCls} value={name} onChange={e => setName(e.target.value)} placeholder="Source adı" />
       </div>
 
-      <div style={fieldStyle}>
-        <label style={labelStyle}>Source Type *</label>
-        <select style={inputStyle} value={sourceType} onChange={e => setSourceType(e.target.value)}>
+      <div className="mb-3">
+        <label className="block text-sm font-semibold text-neutral-600 mb-1">Source Type *</label>
+        <select className={inputCls} value={sourceType} onChange={e => setSourceType(e.target.value)}>
           {SOURCE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
         </select>
       </div>
 
-      <div style={fieldStyle}>
-        <label style={labelStyle}>Status *</label>
-        <select style={inputStyle} value={status} onChange={e => setStatus(e.target.value)}>
+      <div className="mb-3">
+        <label className="block text-sm font-semibold text-neutral-600 mb-1">Status *</label>
+        <select className={inputCls} value={status} onChange={e => setStatus(e.target.value)}>
           {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
         </select>
       </div>
 
       {sourceType === "rss" && (
-        <div style={fieldStyle}>
-          <label style={labelStyle}>Feed URL *</label>
-          <input style={inputStyle} value={feedUrl} onChange={e => setFeedUrl(e.target.value)} placeholder="https://example.com/feed.xml" />
+        <div className="mb-3">
+          <label className="block text-sm font-semibold text-neutral-600 mb-1">Feed URL *</label>
+          <input className={inputCls} value={feedUrl} onChange={e => setFeedUrl(e.target.value)} placeholder="https://example.com/feed.xml" />
         </div>
       )}
 
       {sourceType === "manual_url" && (
-        <div style={fieldStyle}>
-          <label style={labelStyle}>Base URL *</label>
-          <input style={inputStyle} value={baseUrl} onChange={e => setBaseUrl(e.target.value)} placeholder="https://example.com" />
+        <div className="mb-3">
+          <label className="block text-sm font-semibold text-neutral-600 mb-1">Base URL *</label>
+          <input className={inputCls} value={baseUrl} onChange={e => setBaseUrl(e.target.value)} placeholder="https://example.com" />
         </div>
       )}
 
       {sourceType === "api" && (
-        <div style={fieldStyle}>
-          <label style={labelStyle}>API Endpoint *</label>
-          <input style={inputStyle} value={apiEndpoint} onChange={e => setApiEndpoint(e.target.value)} placeholder="https://api.example.com/news" />
+        <div className="mb-3">
+          <label className="block text-sm font-semibold text-neutral-600 mb-1">API Endpoint *</label>
+          <input className={inputCls} value={apiEndpoint} onChange={e => setApiEndpoint(e.target.value)} placeholder="https://api.example.com/news" />
         </div>
       )}
 
-      <div style={fieldStyle}>
-        <label style={labelStyle}>Trust Level</label>
-        <select style={inputStyle} value={trustLevel} onChange={e => setTrustLevel(e.target.value)}>
+      <div className="mb-3">
+        <label className="block text-sm font-semibold text-neutral-600 mb-1">Trust Level</label>
+        <select className={inputCls} value={trustLevel} onChange={e => setTrustLevel(e.target.value)}>
           {TRUST_LEVELS.map(t => <option key={t} value={t}>{t || "—"}</option>)}
         </select>
       </div>
 
-      <div style={fieldStyle}>
-        <label style={labelStyle}>Scan Mode</label>
-        <select style={inputStyle} value={scanMode} onChange={e => setScanMode(e.target.value)}>
+      <div className="mb-3">
+        <label className="block text-sm font-semibold text-neutral-600 mb-1">Scan Mode</label>
+        <select className={inputCls} value={scanMode} onChange={e => setScanMode(e.target.value)}>
           {SCAN_MODES.map(m => <option key={m} value={m}>{m || "—"}</option>)}
         </select>
       </div>
 
-      <div style={fieldStyle}>
-        <label style={labelStyle}>Language</label>
-        <input style={inputStyle} value={language} onChange={e => setLanguage(e.target.value)} placeholder="tr, en ..." />
+      <div className="mb-3">
+        <label className="block text-sm font-semibold text-neutral-600 mb-1">Language</label>
+        <input className={inputCls} value={language} onChange={e => setLanguage(e.target.value)} placeholder="tr, en ..." />
       </div>
 
-      <div style={fieldStyle}>
-        <label style={labelStyle}>Category</label>
-        <input style={inputStyle} value={category} onChange={e => setCategory(e.target.value)} placeholder="general, tech ..." />
+      <div className="mb-3">
+        <label className="block text-sm font-semibold text-neutral-600 mb-1">Category</label>
+        <input className={inputCls} value={category} onChange={e => setCategory(e.target.value)} placeholder="general, tech ..." />
       </div>
 
-      <div style={fieldStyle}>
-        <label style={labelStyle}>Notes</label>
-        <textarea style={{ ...inputStyle, resize: "vertical", minHeight: "60px" }} value={notes} onChange={e => setNotes(e.target.value)} />
+      <div className="mb-3">
+        <label className="block text-sm font-semibold text-neutral-600 mb-1">Notes</label>
+        <textarea className={cn(inputCls, "resize-y min-h-[60px]")} value={notes} onChange={e => setNotes(e.target.value)} />
       </div>
 
-      {validationError && <p style={errorStyle}>{validationError}</p>}
-      {submitError && <p style={errorStyle}>{submitError}</p>}
+      {validationError && <p className="text-error text-base mt-1 break-words [overflow-wrap:anywhere]">{validationError}</p>}
+      {submitError && <p className="text-error text-base mt-1 break-words [overflow-wrap:anywhere]">{submitError}</p>}
 
-      <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem" }}>
+      <div className="flex gap-2 mt-2">
         <button
           type="submit"
           disabled={isPending}
-          style={{
-            padding: "0.375rem 1rem",
-            background: isPending ? colors.neutral[500] : colors.brand[700],
-            color: colors.neutral[0],
-            border: "none",
-            borderRadius: radius.sm,
-            cursor: isPending ? "not-allowed" : "pointer",
-            fontSize: typography.size.md,
-          }}
+          className={cn(
+            "px-4 py-1.5 text-neutral-0 border-none rounded-sm text-md",
+            isPending ? "bg-neutral-500 cursor-not-allowed" : "bg-brand-700 cursor-pointer hover:bg-brand-800 transition-colors duration-fast"
+          )}
         >
           {isPending ? "Kaydediliyor..." : submitLabel}
         </button>
         <button
           type="button"
           onClick={onCancel}
-          style={{
-            padding: "0.375rem 1rem",
-            background: "transparent",
-            color: colors.neutral[600],
-            border: `1px solid ${colors.border.default}`,
-            borderRadius: radius.sm,
-            cursor: "pointer",
-            fontSize: typography.size.md,
-          }}
+          className="px-4 py-1.5 bg-transparent text-neutral-600 border border-border rounded-sm cursor-pointer text-md hover:bg-neutral-50 transition-colors duration-fast"
         >
           {cancelLabel}
         </button>

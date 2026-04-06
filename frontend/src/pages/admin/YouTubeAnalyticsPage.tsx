@@ -1,72 +1,17 @@
 import { useState } from "react";
 import { useYouTubeStatus, useYouTubeChannelInfo, useYouTubeVideoStats, useVideoStatsTrend } from "../../hooks/useCredentials";
 import { PageShell } from "../../components/design-system/primitives";
-import { colors, typography, spacing, radius } from "../../components/design-system/tokens";
+import { cn } from "../../lib/cn";
 
-const CARD: React.CSSProperties = {
-  border: `1px solid ${colors.border.default}`,
-  borderRadius: radius.lg,
-  padding: "1.25rem",
-  marginBottom: spacing[4],
-  background: colors.surface.card,
-};
-
-const STAT_ROW: React.CSSProperties = {
-  display: "flex",
-  gap: spacing[4],
-  flexWrap: "wrap",
-  marginTop: spacing[3],
-};
-
-const STAT_CARD: React.CSSProperties = {
-  flex: "1 1 140px",
-  border: `1px solid ${colors.border.default}`,
-  borderRadius: radius.md,
-  padding: spacing[3],
-  background: colors.neutral[50],
-  textAlign: "center",
-};
-
-const STAT_VALUE: React.CSSProperties = {
-  fontSize: "1.25rem",
-  fontWeight: typography.weight.bold,
-  color: colors.neutral[900],
-};
-
-const STAT_LABEL: React.CSSProperties = {
-  fontSize: typography.size.xs,
-  color: colors.neutral[500],
-  marginTop: "0.125rem",
-};
-
-const TABLE_STYLE: React.CSSProperties = {
-  width: "100%",
-  borderCollapse: "collapse",
-  fontSize: typography.size.base,
-};
-
-const TH_STYLE: React.CSSProperties = {
-  textAlign: "left",
-  padding: `${spacing[2]} ${spacing[3]}`,
-  borderBottom: `2px solid ${colors.border.default}`,
-  fontSize: typography.size.xs,
-  fontWeight: typography.weight.semibold,
-  color: colors.neutral[600],
-  textTransform: "uppercase",
-  letterSpacing: "0.05em",
-};
-
-const TD_STYLE: React.CSSProperties = {
-  padding: `${spacing[2]} ${spacing[3]}`,
-  borderBottom: `1px solid ${colors.neutral[100]}`,
-  color: colors.neutral[700],
-};
-
-const TD_NUM: React.CSSProperties = {
-  ...TD_STYLE,
-  textAlign: "right",
-  fontVariantNumeric: "tabular-nums",
-};
+const CARD_CLASS = "border border-border rounded-lg p-5 mb-4 bg-surface-card";
+const STAT_ROW_CLASS = "flex gap-4 flex-wrap mt-3";
+const STAT_CARD_CLASS = "flex-[1_1_140px] border border-border rounded-md p-3 bg-neutral-50 text-center";
+const STAT_VALUE_CLASS = "text-xl font-bold text-neutral-900";
+const STAT_LABEL_CLASS = "text-xs text-neutral-500 mt-0.5";
+const TABLE_CLASS = "w-full border-collapse text-base";
+const TH_CLASS = "text-left py-2 px-3 border-b-2 border-border text-xs font-semibold text-neutral-600 uppercase tracking-wider";
+const TD_CLASS = "py-2 px-3 border-b border-neutral-100 text-neutral-700";
+const TD_NUM_CLASS = "py-2 px-3 border-b border-neutral-100 text-neutral-700 text-right tabular-nums";
 
 function fmtNum(n: number): string {
   return n.toLocaleString("tr-TR");
@@ -96,26 +41,21 @@ export function YouTubeAnalyticsPage() {
       subtitle="Bagli YouTube kanalinin temel bilgileri ve yayin istatistikleri."
     >
       {isLoading && (
-        <p style={{ color: colors.neutral[600], fontSize: typography.size.base }}>Yükleniyor...</p>
+        <p className="text-neutral-600 text-base">Yükleniyor...</p>
       )}
 
       {/* Not connected state */}
       {!isLoading && !isConnected && (
-        <div style={CARD}>
-          <div
-            style={{
-              textAlign: "center",
-              padding: "2rem 1rem",
-            }}
-          >
-            <p style={{ fontSize: typography.size.md, color: colors.neutral[700], margin: "0 0 0.5rem" }}>
+        <div className={CARD_CLASS}>
+          <div className="text-center py-8 px-4">
+            <p className="text-md text-neutral-700 m-0 mb-2">
               YouTube hesabi bagli degil.
             </p>
-            <p style={{ fontSize: typography.size.sm, color: colors.neutral[500], margin: 0, maxWidth: "400px", marginInline: "auto" }}>
+            <p className="text-sm text-neutral-500 m-0 max-w-[400px] mx-auto">
               YouTube Analytics goruntulemek icin once{" "}
               <a
                 href="/admin/settings"
-                style={{ color: colors.brand[800], textDecoration: "underline" }}
+                className="text-brand-800 underline"
               >
                 Ayarlar &gt; Kimlik Bilgileri
               </a>{" "}
@@ -129,74 +69,65 @@ export function YouTubeAnalyticsPage() {
       {!isLoading && isConnected && (
         <>
           {/* Channel summary */}
-          <div style={CARD}>
-            <div style={{ display: "flex", alignItems: "center", gap: spacing[3] }}>
+          <div className={CARD_CLASS}>
+            <div className="flex items-center gap-3">
               {channelInfo?.thumbnail_url && (
                 <img
                   src={channelInfo.thumbnail_url}
                   alt={channelInfo.channel_title ?? "Kanal"}
-                  style={{ width: 48, height: 48, borderRadius: "50%" }}
+                  className="w-12 h-12 rounded-full"
                 />
               )}
               <div>
-                <div style={{ fontSize: "0.9375rem", fontWeight: typography.weight.semibold, color: colors.neutral[900] }}>
+                <div className="text-[0.9375rem] font-semibold text-neutral-900">
                   {channelInfo?.channel_title ?? "Kanal bilgisi yukleniyor..."}
                 </div>
                 {channelInfo?.channel_id && (
-                  <div style={{ fontSize: typography.size.xs, color: colors.neutral[500], fontFamily: typography.monoFamily }}>
+                  <div className="text-xs text-neutral-500 font-mono">
                     {channelInfo.channel_id}
                   </div>
                 )}
               </div>
             </div>
 
-            <div style={STAT_ROW}>
-              <div style={STAT_CARD}>
-                <div style={STAT_VALUE}>
+            <div className={STAT_ROW_CLASS}>
+              <div className={STAT_CARD_CLASS}>
+                <div className={STAT_VALUE_CLASS}>
                   {channelInfo?.subscriber_count
                     ? Number(channelInfo.subscriber_count).toLocaleString("tr-TR")
                     : "\u2014"}
                 </div>
-                <div style={STAT_LABEL}>Abone</div>
+                <div className={STAT_LABEL_CLASS}>Abone</div>
               </div>
-              <div style={STAT_CARD}>
-                <div style={STAT_VALUE}>
+              <div className={STAT_CARD_CLASS}>
+                <div className={STAT_VALUE_CLASS}>
                   {channelInfo?.video_count
                     ? Number(channelInfo.video_count).toLocaleString("tr-TR")
                     : "\u2014"}
                 </div>
-                <div style={STAT_LABEL}>Video</div>
+                <div className={STAT_LABEL_CLASS}>Video</div>
               </div>
             </div>
           </div>
 
           {/* Video Stats Summary */}
-          <div style={CARD}>
-            <div style={{ fontSize: typography.size.base, fontWeight: typography.weight.semibold, color: colors.neutral[700], marginBottom: spacing[2] }}>
+          <div className={CARD_CLASS}>
+            <div className="text-base font-semibold text-neutral-700 mb-2">
               ContentHub Yayinlari — Istatistikler
             </div>
 
             {statsLoading && (
-              <p style={{ fontSize: typography.size.sm, color: colors.neutral[600] }}>Video istatistikleri yukleniyor...</p>
+              <p className="text-sm text-neutral-600">Video istatistikleri yukleniyor...</p>
             )}
 
             {statsError && (
-              <div
-                style={{
-                  padding: `${spacing[2]} ${spacing[3]}`,
-                  background: colors.error.light,
-                  borderRadius: radius.sm,
-                  border: `1px solid ${colors.error.base}`,
-                  fontSize: typography.size.sm,
-                  color: colors.error.text,
-                }}
-              >
+              <div className="py-2 px-3 bg-error-light rounded-sm border border-error text-sm text-error-text">
                 YouTube API hatasi: {statsError instanceof Error ? statsError.message : "Bilinmeyen hata"}
               </div>
             )}
 
             {!statsLoading && !statsError && videoStats && videoStats.video_count === 0 && (
-              <p style={{ fontSize: typography.size.sm, color: colors.neutral[500], margin: 0 }}>
+              <p className="text-sm text-neutral-500 m-0">
                 Henüz YouTube'a yayinlanmis video bulunmuyor.
               </p>
             )}
@@ -204,34 +135,34 @@ export function YouTubeAnalyticsPage() {
             {!statsLoading && !statsError && videoStats && videoStats.video_count > 0 && (
               <>
                 {/* Summary cards */}
-                <div style={STAT_ROW}>
-                  <div style={STAT_CARD}>
-                    <div style={STAT_VALUE}>{fmtNum(videoStats.total_views)}</div>
-                    <div style={STAT_LABEL}>Toplam Goruntulenme</div>
+                <div className={STAT_ROW_CLASS}>
+                  <div className={STAT_CARD_CLASS}>
+                    <div className={STAT_VALUE_CLASS}>{fmtNum(videoStats.total_views)}</div>
+                    <div className={STAT_LABEL_CLASS}>Toplam Goruntulenme</div>
                   </div>
-                  <div style={STAT_CARD}>
-                    <div style={STAT_VALUE}>{fmtNum(videoStats.total_likes)}</div>
-                    <div style={STAT_LABEL}>Toplam Begeni</div>
+                  <div className={STAT_CARD_CLASS}>
+                    <div className={STAT_VALUE_CLASS}>{fmtNum(videoStats.total_likes)}</div>
+                    <div className={STAT_LABEL_CLASS}>Toplam Begeni</div>
                   </div>
-                  <div style={STAT_CARD}>
-                    <div style={STAT_VALUE}>{fmtNum(videoStats.total_comments)}</div>
-                    <div style={STAT_LABEL}>Toplam Yorum</div>
+                  <div className={STAT_CARD_CLASS}>
+                    <div className={STAT_VALUE_CLASS}>{fmtNum(videoStats.total_comments)}</div>
+                    <div className={STAT_LABEL_CLASS}>Toplam Yorum</div>
                   </div>
-                  <div style={STAT_CARD}>
-                    <div style={STAT_VALUE}>{fmtNum(videoStats.video_count)}</div>
-                    <div style={STAT_LABEL}>Yayinlanan Video</div>
+                  <div className={STAT_CARD_CLASS}>
+                    <div className={STAT_VALUE_CLASS}>{fmtNum(videoStats.video_count)}</div>
+                    <div className={STAT_LABEL_CLASS}>Yayinlanan Video</div>
                   </div>
                 </div>
 
                 {/* Video table */}
-                <div style={{ marginTop: spacing[4], overflowX: "auto" }}>
-                  <table style={TABLE_STYLE}>
+                <div className="mt-4 overflow-x-auto">
+                  <table className={TABLE_CLASS}>
                     <thead>
                       <tr>
-                        <th style={TH_STYLE}>Video</th>
-                        <th style={{ ...TH_STYLE, textAlign: "right" }}>Goruntulenme</th>
-                        <th style={{ ...TH_STYLE, textAlign: "right" }}>Begeni</th>
-                        <th style={{ ...TH_STYLE, textAlign: "right" }}>Yorum</th>
+                        <th className={TH_CLASS}>Video</th>
+                        <th className={cn(TH_CLASS, "text-right")}>Goruntulenme</th>
+                        <th className={cn(TH_CLASS, "text-right")}>Begeni</th>
+                        <th className={cn(TH_CLASS, "text-right")}>Yorum</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -241,29 +172,29 @@ export function YouTubeAnalyticsPage() {
                           onClick={() => setSelectedVideoId(
                             selectedVideoId === v.video_id ? null : v.video_id
                           )}
-                          style={{
-                            cursor: "pointer",
-                            background: selectedVideoId === v.video_id ? colors.info.light : undefined,
-                          }}
+                          className={cn(
+                            "cursor-pointer",
+                            selectedVideoId === v.video_id && "bg-info-light"
+                          )}
                         >
-                          <td style={TD_STYLE}>
+                          <td className={TD_CLASS}>
                             <a
                               href={`https://www.youtube.com/watch?v=${v.video_id}`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              style={{ color: colors.brand[800], textDecoration: "none" }}
+                              className="text-brand-800 no-underline"
                             >
                               {v.title || v.video_id}
                             </a>
                             {v.published_at && (
-                              <div style={{ fontSize: "0.625rem", color: colors.neutral[500], marginTop: "0.125rem" }}>
+                              <div className="text-[0.625rem] text-neutral-500 mt-0.5">
                                 {new Date(v.published_at).toLocaleDateString("tr-TR")}
                               </div>
                             )}
                           </td>
-                          <td style={TD_NUM}>{fmtNum(v.view_count)}</td>
-                          <td style={TD_NUM}>{fmtNum(v.like_count)}</td>
-                          <td style={TD_NUM}>{fmtNum(v.comment_count)}</td>
+                          <td className={TD_NUM_CLASS}>{fmtNum(v.view_count)}</td>
+                          <td className={TD_NUM_CLASS}>{fmtNum(v.like_count)}</td>
+                          <td className={TD_NUM_CLASS}>{fmtNum(v.comment_count)}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -275,18 +206,18 @@ export function YouTubeAnalyticsPage() {
 
           {/* Video Trend Section (M14-C) */}
           {selectedVideoId && (
-            <div style={CARD} data-testid="yt-video-trend-section">
-              <div style={{ fontSize: typography.size.base, fontWeight: typography.weight.semibold, color: colors.neutral[700], marginBottom: spacing[2] }}>
+            <div className={CARD_CLASS} data-testid="yt-video-trend-section">
+              <div className="text-base font-semibold text-neutral-700 mb-2">
                 Zaman Serisi — {trendData?.title ?? selectedVideoId}
               </div>
 
               {trendLoading && (
-                <p style={{ fontSize: typography.size.sm, color: colors.neutral[600] }}>Trend verisi yukleniyor...</p>
+                <p className="text-sm text-neutral-600">Trend verisi yukleniyor...</p>
               )}
 
               {!trendLoading && (!trendData || trendData.snapshots.length === 0) && (
                 <p
-                  style={{ fontSize: typography.size.sm, color: colors.neutral[500], margin: 0 }}
+                  className="text-sm text-neutral-500 m-0"
                   data-testid="yt-trend-empty"
                 >
                   Henüz snapshot verisi bulunmuyor. Video istatistikleri her sorgulamada otomatik kaydedilir.
@@ -294,27 +225,27 @@ export function YouTubeAnalyticsPage() {
               )}
 
               {!trendLoading && trendData && trendData.snapshots.length > 0 && (
-                <div style={{ overflowX: "auto" }}>
-                  <table style={TABLE_STYLE} data-testid="yt-trend-table">
+                <div className="overflow-x-auto">
+                  <table className={TABLE_CLASS} data-testid="yt-trend-table">
                     <thead>
                       <tr>
-                        <th style={TH_STYLE}>Tarih</th>
-                        <th style={{ ...TH_STYLE, textAlign: "right" }}>Goruntulenme</th>
-                        <th style={{ ...TH_STYLE, textAlign: "right" }}>Begeni</th>
-                        <th style={{ ...TH_STYLE, textAlign: "right" }}>Yorum</th>
+                        <th className={TH_CLASS}>Tarih</th>
+                        <th className={cn(TH_CLASS, "text-right")}>Goruntulenme</th>
+                        <th className={cn(TH_CLASS, "text-right")}>Begeni</th>
+                        <th className={cn(TH_CLASS, "text-right")}>Yorum</th>
                       </tr>
                     </thead>
                     <tbody>
                       {trendData.snapshots.map((s, idx) => (
                         <tr key={idx}>
-                          <td style={TD_STYLE}>
+                          <td className={TD_CLASS}>
                             {s.snapshot_at
                               ? new Date(s.snapshot_at).toLocaleString("tr-TR")
                               : "\u2014"}
                           </td>
-                          <td style={TD_NUM}>{fmtNum(s.view_count)}</td>
-                          <td style={TD_NUM}>{fmtNum(s.like_count)}</td>
-                          <td style={TD_NUM}>{fmtNum(s.comment_count)}</td>
+                          <td className={TD_NUM_CLASS}>{fmtNum(s.view_count)}</td>
+                          <td className={TD_NUM_CLASS}>{fmtNum(s.like_count)}</td>
+                          <td className={TD_NUM_CLASS}>{fmtNum(s.comment_count)}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -326,15 +257,7 @@ export function YouTubeAnalyticsPage() {
 
           {/* Scope limitation note (M14-C) */}
           <div
-            style={{
-              padding: `${spacing[3]} ${spacing[4]}`,
-              background: colors.warning.light,
-              borderRadius: radius.md,
-              border: `1px solid ${colors.warning.base}`,
-              fontSize: typography.size.xs,
-              color: colors.warning.text,
-              lineHeight: 1.6,
-            }}
+            className="py-3 px-4 bg-warning-light rounded-md border border-warning text-xs text-warning-text leading-relaxed"
             data-testid="yt-scope-note"
           >
             Zaman serisi verileri yerel snapshot'lardan olusturulur. YouTube Analytics API

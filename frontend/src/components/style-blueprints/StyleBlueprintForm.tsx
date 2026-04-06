@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { StyleBlueprintResponse } from "../../api/styleBlueprintsApi";
 import { validateJson } from "../../lib/safeJson";
-import { colors, radius, typography } from "../design-system/tokens";
+import { cn } from "../../lib/cn";
 
 export interface StyleBlueprintFormValues {
   name: string;
@@ -26,63 +26,6 @@ interface StyleBlueprintFormProps {
   onCancel: () => void;
   submitLabel?: string;
 }
-
-
-
-const BORDER_COLOR = colors.border.subtle;
-const COLOR_ERR = colors.error.base;
-
-const inputStyle: React.CSSProperties = {
-  width: "100%",
-  padding: "0.375rem 0.5rem",
-  fontSize: typography.size.md,
-  border: `1px solid ${BORDER_COLOR}`,
-  borderRadius: radius.sm,
-  boxSizing: "border-box",
-};
-
-const labelStyle: React.CSSProperties = {
-  display: "block",
-  fontSize: typography.size.sm,
-  fontWeight: 600,
-  color: colors.neutral[700],
-  marginBottom: "0.25rem",
-};
-
-const fieldStyle: React.CSSProperties = {
-  marginBottom: "0.75rem",
-};
-
-const errorStyle: React.CSSProperties = {
-  fontSize: typography.size.sm,
-  color: COLOR_ERR,
-  marginTop: "0.2rem",
-};
-
-const JSON_TEXTAREA: React.CSSProperties = {
-  ...inputStyle,
-  minHeight: "70px",
-  resize: "vertical",
-  fontFamily: "monospace",
-  fontSize: typography.size.base,
-};
-
-const BTN_PRIMARY: React.CSSProperties = {
-  padding: "0.375rem 1rem",
-  fontSize: typography.size.md,
-  color: colors.neutral[0],
-  border: "none",
-  borderRadius: radius.sm,
-};
-
-const BTN_CANCEL: React.CSSProperties = {
-  padding: "0.375rem 1rem",
-  fontSize: typography.size.md,
-  background: colors.neutral[100],
-  color: colors.neutral[700],
-  border: `1px solid ${BORDER_COLOR}`,
-  borderRadius: radius.sm,
-};
 
 export function StyleBlueprintForm({
   mode,
@@ -148,60 +91,60 @@ export function StyleBlueprintForm({
 
   return (
     <form onSubmit={handleSubmit} noValidate>
-      <div style={fieldStyle}>
-        <label style={labelStyle}>
-          Ad <span style={{ color: COLOR_ERR }}>*</span>
+      <div className="mb-3">
+        <label className="block text-sm font-semibold text-neutral-700 mb-1">
+          Ad <span className="text-error">*</span>
         </label>
         <input
-          style={{ ...inputStyle, borderColor: errors.name ? COLOR_ERR : BORDER_COLOR }}
+          className={cn("w-full py-1.5 px-2 text-md border rounded-sm box-border", errors.name ? "border-error" : "border-border-subtle")}
           value={values.name}
           onChange={(e) => set("name", e.target.value)}
           placeholder="Blueprint adı"
         />
-        {errors.name && <div style={errorStyle}>{errors.name}</div>}
+        {errors.name && <div className="text-sm text-error mt-0.5">{errors.name}</div>}
       </div>
 
-      <div style={fieldStyle}>
-        <label style={labelStyle}>Module Scope</label>
+      <div className="mb-3">
+        <label className="block text-sm font-semibold text-neutral-700 mb-1">Module Scope</label>
         <input
-          style={inputStyle}
+          className="w-full py-1.5 px-2 text-md border border-border-subtle rounded-sm box-border"
           value={values.module_scope}
           onChange={(e) => set("module_scope", e.target.value)}
           placeholder="ör. standard_video (opsiyonel)"
         />
       </div>
 
-      <div style={fieldStyle}>
-        <label style={labelStyle}>Status</label>
-        <select style={inputStyle} value={values.status} onChange={(e) => set("status", e.target.value)}>
+      <div className="mb-3">
+        <label className="block text-sm font-semibold text-neutral-700 mb-1">Status</label>
+        <select className="w-full py-1.5 px-2 text-md border border-border-subtle rounded-sm box-border" value={values.status} onChange={(e) => set("status", e.target.value)}>
           <option value="draft">draft</option>
           <option value="active">active</option>
           <option value="archived">archived</option>
         </select>
       </div>
 
-      <div style={fieldStyle}>
-        <label style={labelStyle}>Version</label>
+      <div className="mb-3">
+        <label className="block text-sm font-semibold text-neutral-700 mb-1">Version</label>
         <input
-          style={{ ...inputStyle, borderColor: errors.version ? COLOR_ERR : BORDER_COLOR }}
+          className={cn("w-full py-1.5 px-2 text-md border rounded-sm box-border", errors.version ? "border-error" : "border-border-subtle")}
           type="text"
           value={values.version}
           onChange={(e) => set("version", e.target.value)}
         />
-        {errors.version && <div style={errorStyle}>{errors.version}</div>}
+        {errors.version && <div className="text-sm text-error mt-0.5">{errors.version}</div>}
       </div>
 
-      <div style={fieldStyle}>
-        <label style={labelStyle}>Notes</label>
+      <div className="mb-3">
+        <label className="block text-sm font-semibold text-neutral-700 mb-1">Notes</label>
         <textarea
-          style={{ ...inputStyle, minHeight: "60px", resize: "vertical" }}
+          className="w-full py-1.5 px-2 text-md border border-border-subtle rounded-sm box-border min-h-[60px] resize-y"
           value={values.notes}
           onChange={(e) => set("notes", e.target.value)}
           placeholder="Opsiyonel notlar"
         />
       </div>
 
-      <div style={{ borderTop: `1px solid ${colors.neutral[100]}`, paddingTop: "0.75rem", marginTop: "0.25rem" }}>
+      <div className="border-t border-neutral-100 pt-3 mt-1">
         {(
           [
             ["visual_rules_json", "visual_rules_json"],
@@ -212,28 +155,31 @@ export function StyleBlueprintForm({
             ["preview_strategy_json", "preview_strategy_json"],
           ] as [keyof StyleBlueprintFormValues, string][]
         ).map(([field, label]) => (
-          <div key={field} style={fieldStyle}>
-            <label style={labelStyle}>{label}</label>
+          <div key={field} className="mb-3">
+            <label className="block text-sm font-semibold text-neutral-700 mb-1">{label}</label>
             <textarea
-              style={{ ...JSON_TEXTAREA, borderColor: errors[field] ? COLOR_ERR : BORDER_COLOR }}
+              className={cn("w-full py-1.5 px-2 text-base font-mono border rounded-sm box-border min-h-[70px] resize-y", errors[field] ? "border-error" : "border-border-subtle")}
               value={values[field]}
               onChange={(e) => set(field, e.target.value)}
               placeholder='{"key": "value"}'
             />
-            {errors[field] && <div style={errorStyle}>{errors[field]}</div>}
+            {errors[field] && <div className="text-sm text-error mt-0.5">{errors[field]}</div>}
           </div>
         ))}
       </div>
 
       {submitError && (
-        <div style={{ color: COLOR_ERR, fontSize: typography.size.md, marginBottom: "0.75rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>{submitError}</div>
+        <div className="text-error text-md mb-3 break-words" style={{ overflowWrap: "anywhere" }}>{submitError}</div>
       )}
 
-      <div style={{ display: "flex", gap: "0.5rem" }}>
+      <div className="flex gap-2">
         <button
           type="submit"
           disabled={isSubmitting}
-          style={{ ...BTN_PRIMARY, background: isSubmitting ? colors.info.light : colors.brand[500], cursor: isSubmitting ? "not-allowed" : "pointer" }}
+          className={cn(
+            "py-1.5 px-4 text-md text-neutral-0 border-none rounded-sm",
+            isSubmitting ? "bg-info-light cursor-not-allowed" : "bg-brand-500 cursor-pointer"
+          )}
         >
           {isSubmitting ? "Kaydediliyor..." : (submitLabel ?? (mode === "create" ? "Oluştur" : "Kaydet"))}
         </button>
@@ -241,7 +187,7 @@ export function StyleBlueprintForm({
           type="button"
           onClick={onCancel}
           disabled={isSubmitting}
-          style={{ ...BTN_CANCEL, cursor: isSubmitting ? "not-allowed" : "pointer" }}
+          className={cn("py-1.5 px-4 text-md bg-neutral-100 text-neutral-700 border border-border-subtle rounded-sm", isSubmitting ? "cursor-not-allowed" : "cursor-pointer")}
         >
           İptal
         </button>

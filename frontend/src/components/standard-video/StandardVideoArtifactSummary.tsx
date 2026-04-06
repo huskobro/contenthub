@@ -1,4 +1,3 @@
-import { colors } from "../design-system/tokens";
 import { ArtifactStatus, StandardVideoArtifactStatusBadge } from "./StandardVideoArtifactStatusBadge";
 
 interface Props {
@@ -16,13 +15,13 @@ export function StandardVideoArtifactSummary({ hasScript, hasMetadata }: Props) 
   const metaStatus = toStatus(hasMetadata);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "0.2rem" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
-        <span style={{ fontSize: "0.65rem", color: colors.neutral[600], minWidth: "46px" }}>Script:</span>
+    <div className="flex flex-col gap-[0.2rem]">
+      <div className="flex items-center gap-[0.3rem]">
+        <span className="text-[0.65rem] text-neutral-600 min-w-[46px]">Script:</span>
         <StandardVideoArtifactStatusBadge status={scriptStatus} />
       </div>
-      <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
-        <span style={{ fontSize: "0.65rem", color: colors.neutral[600], minWidth: "46px" }}>Metadata:</span>
+      <div className="flex items-center gap-[0.3rem]">
+        <span className="text-[0.65rem] text-neutral-600 min-w-[46px]">Metadata:</span>
         <StandardVideoArtifactStatusBadge status={metaStatus} />
       </div>
     </div>

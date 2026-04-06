@@ -2,7 +2,6 @@ import { useNavigate } from "react-router-dom";
 import { useCreateStyleBlueprint } from "../../hooks/useCreateStyleBlueprint";
 import { StyleBlueprintForm } from "../../components/style-blueprints/StyleBlueprintForm";
 import type { StyleBlueprintFormValues } from "../../components/style-blueprints/StyleBlueprintForm";
-import { colors, typography } from "../../components/design-system/tokens";
 
 export function StyleBlueprintCreatePage() {
   const navigate = useNavigate();
@@ -32,23 +31,11 @@ export function StyleBlueprintCreatePage() {
   }
 
   return (
-    <div style={{ maxWidth: "600px" }}>
-      <h2
-        style={{ margin: "0 0 0.5rem", fontSize: typography.size.xl, fontWeight: 600 }}
-        data-testid="sb-create-heading"
-      >
+    <div className="max-w-[600px]">
+      <h2 className="m-0 mb-2 text-xl font-semibold" data-testid="sb-create-heading">
         Yeni Style Blueprint
       </h2>
-      <p
-        style={{
-          margin: "0 0 1.25rem",
-          fontSize: typography.size.md,
-          color: colors.neutral[600],
-          lineHeight: 1.6,
-          maxWidth: "640px",
-        }}
-        data-testid="sb-create-subtitle"
-      >
+      <p className="m-0 mb-5 text-md text-neutral-600 leading-relaxed max-w-[640px]" data-testid="sb-create-subtitle">
         Style blueprint gorsel ve yapisal kurallari tanimlar. Gorsel kimlik,
         hareket stili, layout yonu, altyazi stili ve kucuk resim yonu gibi
         kurallari belirleyerek uretim ciktisinin gorsel yonunu kontrol edin.

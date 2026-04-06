@@ -2,7 +2,6 @@ import { useJobDetail } from "../../hooks/useJobDetail";
 import { JobStepsList } from "./JobStepsList";
 import { DurationBadge } from "./DurationBadge";
 import { formatDateISO } from "../../lib/formatDate";
-import { colors, typography, spacing, radius, shadow, transition } from "../design-system/tokens";
 
 interface JobDetailPanelProps {
   selectedId: string | null;
@@ -10,11 +9,11 @@ interface JobDetailPanelProps {
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div style={{ display: "flex", padding: `${spacing[2]} 0`, borderBottom: `1px solid ${colors.neutral[100]}` }}>
-      <span style={{ width: "200px", flexShrink: 0, color: colors.neutral[600], fontSize: typography.size.base, fontWeight: typography.weight.medium }}>
+    <div className="flex py-2 border-b border-neutral-100">
+      <span className="w-[200px] shrink-0 text-neutral-600 text-base font-medium">
         {label}
       </span>
-      <span style={{ fontSize: typography.size.md, wordBreak: "break-word", overflowWrap: "anywhere", color: colors.neutral[800] }}>{children}</span>
+      <span className="text-md break-words [overflow-wrap:anywhere] text-neutral-800">{children}</span>
     </div>
   );
 }
@@ -24,19 +23,19 @@ export function JobDetailPanel({ selectedId }: JobDetailPanelProps) {
 
   if (!selectedId) {
     return (
-      <div style={{ color: colors.neutral[500], padding: spacing[4] }}>
+      <div className="text-neutral-500 p-4">
         Detay görmek için bir job seçin.
       </div>
     );
   }
 
   if (isLoading) {
-    return <div style={{ padding: spacing[4], color: colors.neutral[600] }}>Yükleniyor...</div>;
+    return <div className="p-4 text-neutral-600">Yükleniyor...</div>;
   }
 
   if (isError) {
     return (
-      <div style={{ padding: spacing[4], color: colors.error.base }}>
+      <div className="p-4 text-error">
         Hata: {error instanceof Error ? error.message : "Bilinmeyen hata"}
       </div>
     );
@@ -44,29 +43,17 @@ export function JobDetailPanel({ selectedId }: JobDetailPanelProps) {
 
   if (!data) return null;
 
-  const em = <em style={{ color: colors.neutral[500] }}>—</em>;
+  const em = <em className="text-neutral-500">—</em>;
 
   return (
-    <div style={{ padding: spacing[4] }}>
-      <h3 style={{
-        margin: `0 0 ${spacing[3]}`,
-        fontSize: typography.size.xl,
-        fontWeight: typography.weight.bold,
-        color: colors.neutral[900],
-      }}>
+    <div className="p-4">
+      <h3 className="m-0 mb-3 text-xl font-bold text-neutral-900">
         Job Detayı
       </h3>
 
       {/* Overview section */}
-      <div style={{
-        background: colors.surface.card,
-        border: `1px solid ${colors.border.subtle}`,
-        borderRadius: radius.lg,
-        padding: spacing[4],
-        marginBottom: spacing[4],
-        boxShadow: shadow.xs,
-      }}>
-        <Row label="id"><code style={{ fontSize: typography.size.sm, fontFamily: typography.monoFamily, background: colors.neutral[100], padding: `${spacing[1]} ${spacing[2]}`, borderRadius: radius.sm }}>{data.id}</code></Row>
+      <div className="bg-surface-card border border-border-subtle rounded-lg p-4 mb-4 shadow-xs">
+        <Row label="id"><code className="text-sm font-mono bg-neutral-100 px-2 py-1 rounded-sm">{data.id}</code></Row>
         <Row label="module_type">{data.module_type}</Row>
         <Row label="status">{data.status}</Row>
         <Row label="owner_id">{data.owner_id ?? em}</Row>
@@ -76,27 +63,14 @@ export function JobDetailPanel({ selectedId }: JobDetailPanelProps) {
         <Row label="workspace_path">{data.workspace_path ?? em}</Row>
         <Row label="last_error">
           {data.last_error ? (
-            <span style={{ color: colors.error.base }}>{data.last_error}</span>
+            <span className="text-error">{data.last_error}</span>
           ) : em}
         </Row>
       </div>
 
       {/* Timing section */}
-      <div style={{
-        background: colors.surface.inset,
-        border: `1px solid ${colors.border.subtle}`,
-        borderRadius: radius.lg,
-        padding: spacing[4],
-        marginBottom: spacing[4],
-      }}>
-        <div style={{
-          fontSize: typography.size.sm,
-          fontWeight: typography.weight.semibold,
-          color: colors.neutral[600],
-          textTransform: "uppercase" as const,
-          letterSpacing: "0.04em",
-          marginBottom: spacing[2],
-        }}>
+      <div className="bg-surface-inset border border-border-subtle rounded-lg p-4 mb-4">
+        <div className="text-sm font-semibold text-neutral-600 uppercase tracking-wider mb-2">
           Zamanlama
         </div>
         <Row label="elapsed_total_seconds">
@@ -110,12 +84,7 @@ export function JobDetailPanel({ selectedId }: JobDetailPanelProps) {
         <Row label="finished_at">{formatDateISO(data.finished_at, em)}</Row>
       </div>
 
-      <h4 style={{
-        margin: `0 0 ${spacing[3]}`,
-        fontSize: typography.size.lg,
-        fontWeight: typography.weight.semibold,
-        color: colors.neutral[800],
-      }}>
+      <h4 className="m-0 mb-3 text-lg font-semibold text-neutral-800">
         Steps
       </h4>
       <JobStepsList steps={data.steps} />

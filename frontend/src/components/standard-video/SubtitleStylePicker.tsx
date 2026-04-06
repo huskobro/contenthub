@@ -1,29 +1,28 @@
 /**
- * Subtitle stil seçici — M4-C3 preview-first UI.
+ * Subtitle stil secici — M4-C3 preview-first UI.
  *
- * Her preset için bir stil kartı gösterir. Stil kartı:
- *   - Preset'in renklerini, font ağırlığını, arka planını CSS ile inline önizler.
- *   - Örnek bir karaoke satırı gösterir (aktif kelime active_color ile).
- *   - Timing degrade uyarısını görünür kılar.
+ * Her preset icin bir stil karti gosterir. Stil karti:
+ *   - Preset'in renklerini, font agirligini, arka planini CSS ile inline onizler.
+ *   - Ornek bir karaoke satiri gosterir (aktif kelime active_color ile).
+ *   - Timing degrade uyarisini gorunur kilar.
  *
  * KAPSAM NOTU (M4-C3):
- *   Bu component yalnızca subtitle stil seçimi için preview sunar.
- *   M6 genel preview altyapısına (kompozisyon preview, Remotion renderStill) dahil değildir.
- *   Stil kartı CSS-tabanlıdır — Remotion gerektirmez.
+ *   Bu component yalnizca subtitle stil secimi icin preview sunar.
+ *   M6 genel preview altyapisina (kompozisyon preview, Remotion renderStill) dahil degildir.
+ *   Stil karti CSS-tabanlidir — Remotion gerektirmez.
  *
- * Preview artifact vs final artifact ayrımı:
- *   - Bu component bir PREVIEW gösterir (CSS inline render).
- *   - Final artifact: Remotion render çıktısı (M6'da aktif).
- *   - Preview ve final birbirinin yerini tutmaz; UI'da açıkça etiketlenmiştir.
+ * Preview artifact vs final artifact ayrimi:
+ *   - Bu component bir PREVIEW gosterir (CSS inline render).
+ *   - Final artifact: Remotion render ciktisi (M6'da aktif).
+ *   - Preview ve final birbirinin yerini tutmaz; UI'da acikca etiketlenmistir.
  *
  * Degrade mod etiketi:
- *   Whisper kullanılmadığında (cursor modu) her kart
- *   "Sınırlı zamanlama — karaoke highlight çalışmaz" uyarısını gösterir.
- *   Bu uyarı yalnızca timingMode prop'u "cursor" ise görünür.
+ *   Whisper kullanilmadiginda (cursor modu) her kart
+ *   "Sinirli zamanlama — karaoke highlight calismaz" uyarisini gosterir.
+ *   Bu uyari yalnizca timingMode prop'u "cursor" ise gorunur.
  */
 
-import { useEffect, useState } from "react";
-import { colors, radius, typography } from "../design-system/tokens";
+import { cn } from "../../lib/cn";
 
 // Backend subtitle-contracts.ts ile uyumlu tip — drift guard
 export type SubtitlePresetId =
@@ -51,25 +50,25 @@ export interface SubtitlePresetOption {
 }
 
 interface SubtitleStylePickerProps {
-  /** Seçili preset_id. */
+  /** Secili preset_id. */
   value: string;
-  /** Seçim değiştiğinde çağrılır. */
+  /** Secim degistiginde cagirilir. */
   onChange: (presetId: string) => void;
-  /** Mevcut timing modu — degrade uyarısı için. */
+  /** Mevcut timing modu — degrade uyarisi icin. */
   timingMode?: TimingMode;
-  /** Preset listesi — /api/v1/modules/standard-video/subtitle-presets'ten yüklenir. */
+  /** Preset listesi — /api/v1/modules/standard-video/subtitle-presets'ten yuklenir. */
   presets?: SubtitlePresetOption[];
-  /** Yüklenme durumu. */
+  /** Yuklenme durumu. */
   loading?: boolean;
-  /** Yükleme hatası. */
+  /** Yukleme hatasi. */
   error?: string | null;
 }
 
-// Örnek karaoke metni — stil kartında gösterilir
-const SAMPLE_WORDS = ["İçerik", "üretim", "platformu"];
-const SAMPLE_ACTIVE_WORD = "üretim";
+// Ornek karaoke metni — stil kartinda gosterilir
+const SAMPLE_WORDS = ["Icerik", "uretim", "platformu"];
+const SAMPLE_ACTIVE_WORD = "uretim";
 
-/** Outline text-shadow CSS string'i üretir. */
+/** Outline text-shadow CSS string'i uretir. */
 function buildOutlineShadow(width: number, color: string): string | undefined {
   if (width <= 0) return undefined;
   const w = width;
@@ -81,7 +80,7 @@ function buildOutlineShadow(width: number, color: string): string | undefined {
   );
 }
 
-/** Tek bir altyazı stil kartı. */
+/** Tek bir altyazi stil karti. */
 function SubtitleStyleCard({
   preset,
   isSelected,
@@ -94,99 +93,46 @@ function SubtitleStyleCard({
   onClick: () => void;
 }) {
   const isDegraded = timingMode === "cursor";
-
-  const cardStyle: React.CSSProperties = {
-    border: isSelected ? `2px solid ${colors.brand[500]}` : `2px solid ${colors.border.subtle}`,
-    borderRadius: radius.lg,
-    padding: "12px",
-    cursor: "pointer",
-    background: isSelected ? colors.info.light : colors.neutral[0],
-    transition: "border-color 0.15s, background 0.15s",
-    position: "relative",
-  };
-
-  const previewBoxStyle: React.CSSProperties = {
-    background: preset.background !== "none" ? preset.background : colors.neutral[900],
-    borderRadius: radius.sm,
-    padding: "8px 10px",
-    marginBottom: "8px",
-    minHeight: "40px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  };
-
   const textOutline = buildOutlineShadow(preset.outline_width, preset.outline_color);
 
-  const baseTextStyle: React.CSSProperties = {
-    fontSize: `${Math.min(preset.font_size * 0.5, 18)}px`,
-    fontWeight: preset.font_weight as React.CSSProperties["fontWeight"],
-    lineHeight: preset.line_height,
-    textShadow: textOutline,
-  };
-
-  const labelStyle: React.CSSProperties = {
-    fontSize: typography.size.sm,
-    fontWeight: 600,
-    color: colors.neutral[800],
-    marginBottom: "2px",
-  };
-
-  const defaultBadgeStyle: React.CSSProperties = {
-    display: "inline-block",
-    fontSize: "0.625rem",
-    background: colors.info.light,
-    color: colors.info.dark,
-    borderRadius: radius.sm,
-    padding: "1px 5px",
-    marginLeft: "6px",
-    verticalAlign: "middle",
-  };
-
-  const degradedWarningStyle: React.CSSProperties = {
-    fontSize: typography.size.xs,
-    color: colors.warning.text,
-    background: colors.warning.light,
-    borderRadius: radius.sm,
-    padding: "2px 6px",
-    marginTop: "4px",
-    display: "flex",
-    alignItems: "center",
-    gap: "4px",
-  };
-
-  const selectedMarkStyle: React.CSSProperties = {
-    position: "absolute",
-    top: "8px",
-    right: "8px",
-    width: "16px",
-    height: "16px",
-    borderRadius: "50%",
-    background: colors.brand[500],
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  };
-
   return (
-    <div style={cardStyle} onClick={onClick} role="button" aria-pressed={isSelected} tabIndex={0}
+    <div
+      className={cn(
+        "rounded-lg p-3 cursor-pointer relative transition-all duration-150",
+        isSelected
+          ? "border-2 border-brand-500 bg-info-light"
+          : "border-2 border-border-subtle bg-neutral-0 hover:border-brand-300",
+      )}
+      onClick={onClick}
+      role="button"
+      aria-pressed={isSelected}
+      tabIndex={0}
       onKeyDown={(e) => e.key === "Enter" || e.key === " " ? onClick() : undefined}
     >
       {isSelected && (
-        <div style={selectedMarkStyle}>
-          <span style={{ color: colors.neutral[0], fontSize: "10px", lineHeight: 1 }}>✓</span>
+        <div className="absolute top-2 right-2 w-4 h-4 rounded-full bg-brand-500 flex items-center justify-center">
+          <span className="text-neutral-0 text-[10px] leading-none">&#10003;</span>
         </div>
       )}
 
-      {/* Önizleme kutusu — CSS tabanlı, Remotion gerektirmez */}
-      {/* PREVIEW: Bu CSS render — final Remotion çıktısının yaklaşık önizlemesidir */}
-      <div style={previewBoxStyle} title="Stil önizlemesi (CSS tabanlı — final Remotion çıktısından farklı olabilir)">
+      {/* Onizleme kutusu — CSS tabanli, Remotion gerektirmez */}
+      {/* PREVIEW: Bu CSS render — final Remotion ciktisinin yaklasik onizlemesidir */}
+      <div
+        className="rounded-sm py-2 px-2.5 mb-2 min-h-[40px] flex items-center justify-center"
+        style={{
+          background: preset.background !== "none" ? preset.background : undefined,
+        }}
+        title="Stil onizlemesi (CSS tabanli — final Remotion ciktsindan farkli olabilir)"
+      >
         <span>
           {SAMPLE_WORDS.map((word, i) => (
             <span
               key={i}
               style={{
-                ...baseTextStyle,
+                fontSize: `${Math.min(preset.font_size * 0.5, 18)}px`,
+                fontWeight: preset.font_weight as React.CSSProperties["fontWeight"],
+                lineHeight: preset.line_height,
+                textShadow: textOutline,
                 color: word === SAMPLE_ACTIVE_WORD ? preset.active_color : preset.text_color,
               }}
             >
@@ -197,21 +143,25 @@ function SubtitleStyleCard({
       </div>
 
       {/* Stil etiketi */}
-      <div style={labelStyle}>
+      <div className="text-sm font-semibold text-neutral-800 mb-0.5">
         {preset.label}
-        {preset.is_default && <span style={defaultBadgeStyle}>varsayılan</span>}
+        {preset.is_default && (
+          <span className="inline-block text-[0.625rem] bg-info-light text-info-dark rounded-sm py-px px-1.5 ml-1.5 align-middle">
+            varsayilan
+          </span>
+        )}
       </div>
 
-      {/* Önizleme notu — preview vs final ayrımı */}
-      <div style={{ fontSize: "0.625rem", color: colors.neutral[500], marginBottom: "2px" }}>
-        Önizleme — final video farklı görünebilir
+      {/* Onizleme notu — preview vs final ayrimi */}
+      <div className="text-[0.625rem] text-neutral-500 mb-0.5">
+        Onizleme — final video farkli gorunebilir
       </div>
 
-      {/* Degrade mod uyarısı — cursor modunda görünür */}
+      {/* Degrade mod uyarisi — cursor modunda gorunur */}
       {isDegraded && (
-        <div style={degradedWarningStyle}>
-          <span>⚠</span>
-          <span>Sınırlı zamanlama — karaoke highlight çalışmaz</span>
+        <div className="text-xs text-warning-text bg-warning-light rounded-sm py-0.5 px-1.5 mt-1 flex items-center gap-1">
+          <span>&#9888;</span>
+          <span>Sinirli zamanlama — karaoke highlight calismaz</span>
         </div>
       )}
     </div>
@@ -219,10 +169,10 @@ function SubtitleStyleCard({
 }
 
 /**
- * Altyazı stil seçici — preset listesinden görsel seçim.
+ * Altyazi stil secici — preset listesinden gorsel secim.
  *
- * Preset listesi prop olarak geçilir; yükleme/hata durumları parent tarafından yönetilir.
- * timingMode="cursor" ise tüm kartlarda degrade uyarısı gösterilir.
+ * Preset listesi prop olarak gecilir; yukleme/hata durumlari parent tarafindan yonetilir.
+ * timingMode="cursor" ise tum kartlarda degrade uyarisi gosterilir.
  */
 export function SubtitleStylePicker({
   value,
@@ -232,32 +182,11 @@ export function SubtitleStylePicker({
   loading = false,
   error = null,
 }: SubtitleStylePickerProps) {
-  const containerStyle: React.CSSProperties = {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))",
-    gap: "10px",
-    marginTop: "8px",
-  };
-
-  const sectionLabelStyle: React.CSSProperties = {
-    fontSize: typography.size.base,
-    fontWeight: 500,
-    color: colors.neutral[700],
-    marginBottom: "6px",
-  };
-
-  const scopeNoteStyle: React.CSSProperties = {
-    fontSize: typography.size.xs,
-    color: colors.neutral[500],
-    marginBottom: "8px",
-    fontStyle: "italic",
-  };
-
   if (loading) {
     return (
       <div>
-        <div style={sectionLabelStyle}>Altyazı Stili</div>
-        <div style={{ color: colors.neutral[500], fontSize: typography.size.base }}>Stiller yükleniyor…</div>
+        <div className="text-base font-medium text-neutral-700 mb-1.5">Altyazi Stili</div>
+        <div className="text-neutral-500 text-base">Stiller yukleniyor...</div>
       </div>
     );
   }
@@ -265,9 +194,9 @@ export function SubtitleStylePicker({
   if (error) {
     return (
       <div>
-        <div style={sectionLabelStyle}>Altyazı Stili</div>
-        <div style={{ color: colors.error.base, fontSize: typography.size.base }}>
-          Stiller yüklenemedi: {error}
+        <div className="text-base font-medium text-neutral-700 mb-1.5">Altyazi Stili</div>
+        <div className="text-error-base text-base">
+          Stiller yuklenemedi: {error}
         </div>
       </div>
     );
@@ -275,30 +204,22 @@ export function SubtitleStylePicker({
 
   return (
     <div>
-      <div style={sectionLabelStyle}>Altyazı Stili</div>
-      {/* Kapsam notu — M4-C3 subtitle-specific preview sınırı */}
-      <div style={scopeNoteStyle}>
-        Stil kartları CSS önizlemesidir. Final video Remotion ile render edilir.
+      <div className="text-base font-medium text-neutral-700 mb-1.5">Altyazi Stili</div>
+      {/* Kapsam notu — M4-C3 subtitle-specific preview siniri */}
+      <div className="text-xs text-neutral-500 mb-2 italic">
+        Stil kartlari CSS onizlemesidir. Final video Remotion ile render edilir.
       </div>
 
-      {/* Degrade mod uyarısı — genel, tüm kartların üzerinde */}
+      {/* Degrade mod uyarisi — genel, tum kartlarin uzerinde */}
       {timingMode === "cursor" && (
-        <div style={{
-          background: colors.warning.light,
-          border: `1px solid ${colors.warning.base}`,
-          borderRadius: radius.sm,
-          padding: "6px 10px",
-          marginBottom: "8px",
-          fontSize: typography.size.base,
-          color: colors.warning.text,
-        }}>
-          ⚠ Whisper entegrasyonu aktif değil — sınırlı zamanlama modu (cursor).
-          Karaoke kelime highlight bu videoda çalışmayacak.
-          Stil seçimi geçerli, ancak aktif kelime vurgusu olmaz.
+        <div className="bg-warning-light border border-warning-base rounded-sm py-1.5 px-2.5 mb-2 text-base text-warning-text">
+          &#9888; Whisper entegrasyonu aktif degil — sinirli zamanlama modu (cursor).
+          Karaoke kelime highlight bu videoda calismayacak.
+          Stil secimi gecerli, ancak aktif kelime vurgusu olmaz.
         </div>
       )}
 
-      <div style={containerStyle}>
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-2.5 mt-2">
         {presets.map((preset) => (
           <SubtitleStyleCard
             key={preset.preset_id}

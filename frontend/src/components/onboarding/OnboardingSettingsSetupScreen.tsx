@@ -1,67 +1,7 @@
 import { useState } from "react";
 import { useCreateSetting } from "../../hooks/useCreateSetting";
 import { useQueryClient } from "@tanstack/react-query";
-import { colors, radius, typography } from "../design-system/tokens";
-
-const CONTAINER: React.CSSProperties = {
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
-  justifyContent: "center",
-  minHeight: "100vh",
-  background: `linear-gradient(135deg, ${colors.neutral[50]} 0%, ${colors.border.subtle} 100%)`,
-  padding: "2rem",
-};
-
-const CARD: React.CSSProperties = {
-  maxWidth: "560px",
-  width: "100%",
-  background: colors.neutral[0],
-  borderRadius: radius.xl,
-  boxShadow: "0 4px 24px rgba(0, 0, 0, 0.08)",
-  padding: "2.5rem",
-};
-
-const TITLE: React.CSSProperties = {
-  margin: "0 0 0.375rem",
-  fontSize: "1.5rem",
-  fontWeight: 700,
-  color: colors.neutral[900],
-  textAlign: "center",
-};
-
-const SUBTITLE: React.CSSProperties = {
-  margin: "0 0 1.75rem",
-  fontSize: typography.size.lg,
-  color: colors.neutral[700],
-  lineHeight: 1.6,
-  textAlign: "center",
-};
-
-const inputStyle: React.CSSProperties = {
-  width: "100%",
-  padding: "0.375rem 0.5rem",
-  border: `1px solid ${colors.border.default}`,
-  borderRadius: radius.sm,
-  fontSize: typography.size.md,
-  boxSizing: "border-box",
-};
-
-const labelStyle: React.CSSProperties = {
-  display: "block",
-  fontSize: typography.size.sm,
-  fontWeight: 600,
-  color: colors.neutral[600],
-  marginBottom: "0.25rem",
-};
-
-const fieldStyle: React.CSSProperties = { marginBottom: "0.75rem" };
-
-const errorStyle: React.CSSProperties = {
-  color: colors.error.base,
-  fontSize: typography.size.base,
-  marginTop: "0.25rem",
-};
+import { cn } from "../../lib/cn";
 
 interface Props {
   onBack: () => void;
@@ -115,29 +55,29 @@ export function OnboardingSettingsSetupScreen({ onBack, onComplete }: Props) {
     : null;
 
   return (
-    <div style={CONTAINER}>
-      <div style={CARD}>
-        <h2 style={TITLE}>Sistem Ayari Ekle</h2>
-        <p style={SUBTITLE}>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-neutral-50 to-border-subtle p-8">
+      <div className="max-w-[560px] w-full bg-neutral-0 rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.08)] p-10">
+        <h2 className="mb-1.5 text-2xl font-bold text-neutral-900 text-center">Sistem Ayari Ekle</h2>
+        <p className="mb-7 text-lg text-neutral-700 leading-relaxed text-center">
           Sisteminize en az bir yapilandirilmis ayar ekleyin. Temel bir ayar
           tanimlamak kurulumu tamamlamak icin yeterlidir.
         </p>
 
         <form onSubmit={handleSubmit}>
-          <div style={fieldStyle}>
-            <label style={labelStyle}>Ayar Anahtari *</label>
+          <div className="mb-3">
+            <label className="block text-sm font-semibold text-neutral-600 mb-1">Ayar Anahtari *</label>
             <input
-              style={inputStyle}
+              className="w-full py-1.5 px-2 border border-border rounded-sm text-md box-border"
               value={key}
               onChange={(e) => setKey(e.target.value)}
               placeholder="ornek: site_name, default_language"
             />
           </div>
 
-          <div style={fieldStyle}>
-            <label style={labelStyle}>Grup</label>
+          <div className="mb-3">
+            <label className="block text-sm font-semibold text-neutral-600 mb-1">Grup</label>
             <select
-              style={inputStyle}
+              className="w-full py-1.5 px-2 border border-border rounded-sm text-md box-border"
               value={groupName}
               onChange={(e) => setGroupName(e.target.value)}
             >
@@ -148,10 +88,10 @@ export function OnboardingSettingsSetupScreen({ onBack, onComplete }: Props) {
             </select>
           </div>
 
-          <div style={fieldStyle}>
-            <label style={labelStyle}>Tur</label>
+          <div className="mb-3">
+            <label className="block text-sm font-semibold text-neutral-600 mb-1">Tur</label>
             <select
-              style={inputStyle}
+              className="w-full py-1.5 px-2 border border-border rounded-sm text-md box-border"
               value={settingType}
               onChange={(e) => setSettingType(e.target.value)}
             >
@@ -162,57 +102,44 @@ export function OnboardingSettingsSetupScreen({ onBack, onComplete }: Props) {
             </select>
           </div>
 
-          <div style={fieldStyle}>
-            <label style={labelStyle}>Admin Degeri *</label>
+          <div className="mb-3">
+            <label className="block text-sm font-semibold text-neutral-600 mb-1">Admin Degeri *</label>
             <input
-              style={inputStyle}
+              className="w-full py-1.5 px-2 border border-border rounded-sm text-md box-border"
               value={adminValue}
               onChange={(e) => setAdminValue(e.target.value)}
               placeholder="Ayar degeri"
             />
           </div>
 
-          <div style={fieldStyle}>
-            <label style={labelStyle}>Aciklama</label>
+          <div className="mb-3">
+            <label className="block text-sm font-semibold text-neutral-600 mb-1">Aciklama</label>
             <input
-              style={inputStyle}
+              className="w-full py-1.5 px-2 border border-border rounded-sm text-md box-border"
               value={helpText}
               onChange={(e) => setHelpText(e.target.value)}
               placeholder="Opsiyonel aciklama"
             />
           </div>
 
-          {validationError && <p style={errorStyle}>{validationError}</p>}
-          {submitError && <p style={errorStyle}>{submitError}</p>}
+          {validationError && <p className="text-error text-base mt-1">{validationError}</p>}
+          {submitError && <p className="text-error text-base mt-1">{submitError}</p>}
 
-          <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem" }}>
+          <div className="flex gap-2 mt-2">
             <button
               type="submit"
               disabled={createMutation.isPending}
-              style={{
-                padding: "0.375rem 1rem",
-                background: createMutation.isPending ? colors.neutral[500] : colors.brand[700],
-                color: colors.neutral[0],
-                border: "none",
-                borderRadius: radius.sm,
-                cursor: createMutation.isPending ? "not-allowed" : "pointer",
-                fontSize: typography.size.md,
-              }}
+              className={cn(
+                "py-1.5 px-4 text-neutral-0 border-none rounded-sm text-md",
+                createMutation.isPending ? "bg-neutral-500 cursor-not-allowed" : "bg-brand-700 cursor-pointer"
+              )}
             >
               {createMutation.isPending ? "Kaydediliyor..." : "Ayari Kaydet"}
             </button>
             <button
               type="button"
               onClick={onBack}
-              style={{
-                padding: "0.375rem 1rem",
-                background: "transparent",
-                color: colors.neutral[600],
-                border: `1px solid ${colors.border.default}`,
-                borderRadius: radius.sm,
-                cursor: "pointer",
-                fontSize: typography.size.md,
-              }}
+              className="py-1.5 px-4 bg-transparent text-neutral-600 border border-border rounded-sm cursor-pointer text-md"
             >
               Geri Don
             </button>

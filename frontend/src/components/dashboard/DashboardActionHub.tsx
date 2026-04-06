@@ -1,78 +1,10 @@
-import { colors, typography } from "../design-system/tokens";
 import { useNavigate } from "react-router-dom";
-
-const SECTION: React.CSSProperties = {
-  marginTop: "1.5rem",
-  maxWidth: "720px",
-};
-
-const SECTION_HEADING: React.CSSProperties = {
-  margin: "0 0 0.25rem",
-  fontSize: typography.size.lg,
-  fontWeight: 600,
-  color: colors.neutral[900],
-};
-
-const SECTION_DESC: React.CSSProperties = {
-  margin: "0 0 1rem",
-  fontSize: typography.size.base,
-  color: colors.neutral[600],
-  lineHeight: 1.5,
-};
-
-const GRID: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
-  gap: "0.75rem",
-};
-
-const CARD: React.CSSProperties = {
-  padding: "1rem 1.25rem",
-  background: colors.neutral[0],
-  border: `1px solid ${colors.border.subtle}`,
-  borderRadius: "10px",
-  cursor: "pointer",
-};
-
-const CARD_ICON: React.CSSProperties = {
-  width: "32px",
-  height: "32px",
-  borderRadius: "7px",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  fontSize: typography.size.md,
-  fontWeight: 700,
-  color: colors.neutral[0],
-  marginBottom: "0.5rem",
-};
-
-const CARD_TITLE: React.CSSProperties = {
-  margin: "0 0 0.25rem",
-  fontSize: typography.size.md,
-  fontWeight: 600,
-  color: colors.neutral[900],
-};
-
-const CARD_DESC: React.CSSProperties = {
-  margin: 0,
-  fontSize: typography.size.sm,
-  color: colors.neutral[600],
-  lineHeight: 1.4,
-};
-
-const CARD_CTA: React.CSSProperties = {
-  display: "inline-block",
-  marginTop: "0.5rem",
-  fontSize: typography.size.sm,
-  fontWeight: 600,
-  color: colors.brand[600],
-};
+import { cn } from "../../lib/cn";
 
 const HUB_ENTRIES = [
   {
     icon: "I",
-    iconBg: colors.brand[600],
+    iconBg: "bg-brand-600",
     title: "Icerik",
     desc: "Ilk adim: yeni icerik olusturun veya mevcut icerikleri inceleyin.",
     cta: "Icerige Git",
@@ -81,7 +13,7 @@ const HUB_ENTRIES = [
   },
   {
     icon: "Y",
-    iconBg: colors.brand[700],
+    iconBg: "bg-brand-700",
     title: "Yayin",
     desc: "Sonraki adim: olusturulan iceriklerin yayin durumunu takip edin.",
     cta: "Yayina Git",
@@ -90,7 +22,7 @@ const HUB_ENTRIES = [
   },
   {
     icon: "P",
-    iconBg: colors.success.dark,
+    iconBg: "bg-success-dark",
     title: "Yonetim Paneli",
     desc: "Uretim ve yonetim merkezi: ayarlar, sablonlar, kaynaklar ve islemleri yonetin.",
     cta: "Yonetim Paneline Git",
@@ -103,28 +35,30 @@ export function DashboardActionHub() {
   const navigate = useNavigate();
 
   return (
-    <div style={SECTION} data-testid="dashboard-action-hub">
-      <h3 style={SECTION_HEADING}>Hizli Erisim</h3>
-      <p style={SECTION_DESC} data-testid="hub-flow-desc">
+    <div className="mt-6 max-w-[720px]" data-testid="dashboard-action-hub">
+      <h3 className="m-0 mb-1 text-lg font-semibold text-neutral-900">Hizli Erisim</h3>
+      <p className="m-0 mb-4 text-base text-neutral-600 leading-normal" data-testid="hub-flow-desc">
         Once icerik olusturun, ardindan yayin surecini takip edin.
         Detayli islemler icin yonetim panelini kullanin.
       </p>
 
-      <div style={GRID}>
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-3">
         {HUB_ENTRIES.map((entry) => (
           <div
             key={entry.to}
-            style={CARD}
+            className="p-4 px-5 bg-neutral-0 border border-border-subtle rounded-[10px] cursor-pointer hover:border-brand-400 transition-colors duration-fast"
             onClick={() => navigate(entry.to)}
             role="button"
             tabIndex={0}
             onKeyDown={(e) => e.key === "Enter" && navigate(entry.to)}
             data-testid={entry.testId}
           >
-            <div style={{ ...CARD_ICON, background: entry.iconBg }}>{entry.icon}</div>
-            <p style={CARD_TITLE}>{entry.title}</p>
-            <p style={CARD_DESC}>{entry.desc}</p>
-            <span style={CARD_CTA}>{entry.cta} &rarr;</span>
+            <div className={cn("w-8 h-8 rounded-[7px] flex items-center justify-center text-md font-bold text-neutral-0 mb-2", entry.iconBg)}>
+              {entry.icon}
+            </div>
+            <p className="m-0 mb-1 text-md font-semibold text-neutral-900">{entry.title}</p>
+            <p className="m-0 text-sm text-neutral-600 leading-snug">{entry.desc}</p>
+            <span className="inline-block mt-2 text-sm font-semibold text-brand-600">{entry.cta} &rarr;</span>
           </div>
         ))}
       </div>

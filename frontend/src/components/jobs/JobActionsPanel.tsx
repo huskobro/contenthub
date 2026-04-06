@@ -9,47 +9,11 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { JobResponse, AllowedActions } from "../../api/jobsApi";
 import { fetchAllowedActions, cancelJob, retryJob, skipStep } from "../../api/jobsApi";
-import { colors, radius, typography } from "../design-system/tokens";
+import { cn } from "../../lib/cn";
 
 interface JobActionsPanelProps {
   job: JobResponse;
 }
-
-const BTN: React.CSSProperties = {
-  padding: "0.4rem 0.85rem",
-  fontSize: typography.size.base,
-  fontWeight: 600,
-  borderRadius: radius.sm,
-  border: `1px solid ${colors.border.subtle}`,
-  cursor: "pointer",
-  transition: "all 0.15s",
-};
-
-const BTN_DANGER: React.CSSProperties = {
-  ...BTN,
-  background: colors.error.light,
-  color: colors.error.text,
-  borderColor: colors.error.light,
-};
-
-const BTN_PRIMARY: React.CSSProperties = {
-  ...BTN,
-  background: colors.info.light,
-  color: colors.brand[700],
-  borderColor: colors.info.light,
-};
-
-const BTN_SECONDARY: React.CSSProperties = {
-  ...BTN,
-  background: colors.neutral[100],
-  color: colors.neutral[700],
-  borderColor: colors.border.subtle,
-};
-
-const DISABLED: React.CSSProperties = {
-  opacity: 0.5,
-  cursor: "not-allowed",
-};
 
 export function JobActionsPanel({ job }: JobActionsPanelProps) {
   const queryClient = useQueryClient();
@@ -85,25 +49,25 @@ export function JobActionsPanel({ job }: JobActionsPanelProps) {
     }
   };
 
+  const btnBase = "px-3 py-1.5 text-base font-semibold rounded-sm border cursor-pointer transition-all duration-fast";
+  const btnDanger = cn(btnBase, "bg-error-light text-error-text border-error-light");
+  const btnPrimary = cn(btnBase, "bg-info-light text-brand-700 border-info-light");
+  const btnSecondary = cn(btnBase, "bg-neutral-100 text-neutral-700 border-border-subtle");
+  const disabledCls = "opacity-50 cursor-not-allowed";
+
   return (
     <div
-      style={{
-        border: `1px solid ${colors.border.subtle}`,
-        borderRadius: radius.md,
-        background: colors.neutral[50],
-        padding: "0.75rem 1rem",
-        marginBottom: "1rem",
-      }}
+      className="border border-border-subtle rounded-md bg-neutral-50 px-4 py-3 mb-4"
       data-testid="job-actions-panel"
     >
-      <h4 style={{ margin: "0 0 0.5rem", fontSize: typography.size.lg, color: colors.neutral[900] }}>
+      <h4 className="m-0 mb-2 text-lg text-neutral-900">
         Operasyonel Aksiyonlar
       </h4>
 
-      <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", alignItems: "center" }}>
+      <div className="flex gap-2 flex-wrap items-center">
         {/* Cancel */}
         <button
-          style={canCancel && !loading ? BTN_DANGER : { ...BTN_DANGER, ...DISABLED }}
+          className={cn(btnDanger, (!canCancel || !!loading) && disabledCls)}
           disabled={!canCancel || !!loading}
           onClick={() => handleAction("Cancel", () => cancelJob(job.id))}
           data-testid="action-cancel"
@@ -113,7 +77,7 @@ export function JobActionsPanel({ job }: JobActionsPanelProps) {
 
         {/* Retry */}
         <button
-          style={canRetry && !loading ? BTN_PRIMARY : { ...BTN_PRIMARY, ...DISABLED }}
+          className={cn(btnPrimary, (!canRetry || !!loading) && disabledCls)}
           disabled={!canRetry || !!loading}
           onClick={() => handleAction("Retry", () => retryJob(job.id))}
           data-testid="action-retry"
@@ -125,7 +89,7 @@ export function JobActionsPanel({ job }: JobActionsPanelProps) {
         {skippableSteps.map((stepKey) => (
           <button
             key={stepKey}
-            style={!loading ? BTN_SECONDARY : { ...BTN_SECONDARY, ...DISABLED }}
+            className={cn(btnSecondary, !!loading && disabledCls)}
             disabled={!!loading}
             onClick={() => handleAction(`Skip:${stepKey}`, () => skipStep(job.id, stepKey))}
             data-testid={`action-skip-${stepKey}`}
@@ -137,18 +101,18 @@ export function JobActionsPanel({ job }: JobActionsPanelProps) {
 
       {/* Durum mesajlari */}
       {error && (
-        <p style={{ margin: "0.5rem 0 0", fontSize: typography.size.base, color: colors.error.base }} data-testid="action-error">
+        <p className="mt-2 mb-0 text-base text-error" data-testid="action-error">
           Hata: {error}
         </p>
       )}
       {success && (
-        <p style={{ margin: "0.5rem 0 0", fontSize: typography.size.base, color: colors.success.text }} data-testid="action-success">
+        <p className="mt-2 mb-0 text-base text-success-text" data-testid="action-success">
           {success}
         </p>
       )}
 
       {/* Durum bilgisi */}
-      <p style={{ margin: "0.5rem 0 0", fontSize: typography.size.xs, color: colors.neutral[500] }}>
+      <p className="mt-2 mb-0 text-xs text-neutral-500">
         Mevcut durum: <strong>{job.status}</strong>
         {!canCancel && !canRetry && skippableSteps.length === 0 && (
           <span> — bu durumda kullanilabilir aksiyon yok</span>

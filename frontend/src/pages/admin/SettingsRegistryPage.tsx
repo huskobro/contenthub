@@ -5,7 +5,6 @@ import { SettingDetailPanel } from "../../components/settings/SettingDetailPanel
 import { CredentialsPanel } from "../../components/settings/CredentialsPanel";
 import { EffectiveSettingsPanel } from "../../components/settings/EffectiveSettingsPanel";
 import { ReadOnlyGuard } from "../../components/visibility/ReadOnlyGuard";
-import { colors, typography, spacing, radius, shadow, transition } from "../../components/design-system/tokens";
 import { PageShell, SectionShell, TabBar } from "../../components/design-system/primitives";
 
 type TabKey = "credentials" | "effective" | "registry";
@@ -43,7 +42,6 @@ export function SettingsRegistryPage() {
   return (
     <ReadOnlyGuard targetKey="panel:settings">
       <PageShell title="Ayarlar" testId="settings-registry">
-        {/* Tabs */}
         <TabBar<TabKey>
           tabs={TABS}
           active={activeTab}
@@ -51,55 +49,35 @@ export function SettingsRegistryPage() {
           testId="settings-tab"
         />
 
-        {/* Tab description */}
         <div
-          style={{
-            margin: `0 0 ${spacing[5]}`,
-            padding: `${spacing[3]} ${spacing[4]}`,
-            background: colors.surface.inset,
-            borderRadius: radius.md,
-            borderLeft: `3px solid ${colors.brand[400]}`,
-            maxWidth: "720px",
-          }}
+          className="mb-5 py-3 px-4 bg-surface-inset rounded-md border-l-[3px] border-brand-400 max-w-[720px]"
           data-testid="settings-registry-subtitle"
         >
-          <p
-            style={{
-              margin: 0,
-              fontSize: typography.size.md,
-              color: colors.neutral[700],
-              lineHeight: typography.lineHeight.normal,
-            }}
-          >
+          <p className="m-0 text-md text-neutral-700 leading-normal">
             {currentTab.description}
           </p>
         </div>
 
-        {/* Tab content */}
         {activeTab === "credentials" && <CredentialsPanel />}
 
         {activeTab === "effective" && <EffectiveSettingsPanel />}
 
         {activeTab === "registry" && (
           <>
-            {isLoading && (
-              <p style={{ color: colors.neutral[500], fontSize: typography.size.base, padding: spacing[4] }}>
-                Yükleniyor...
-              </p>
-            )}
+            {isLoading && <p className="text-neutral-500 text-base p-4">Yükleniyor...</p>}
             {isError && (
-              <p style={{ color: colors.error.base, fontSize: typography.size.base, padding: spacing[4] }}>
+              <p className="text-error text-base p-4">
                 Hata: {error instanceof Error ? error.message : "Bilinmeyen hata"}
               </p>
             )}
             {!isLoading && !isError && settings && settings.length === 0 && (
-              <div style={{ textAlign: "center", padding: `${spacing[8]} ${spacing[4]}`, color: colors.neutral[500] }}>
-                <p style={{ margin: 0, fontSize: typography.size.md }}>Henüz kayıtlı ayar yok.</p>
+              <div className="text-center py-8 px-4 text-neutral-500">
+                <p className="m-0 text-md">Henüz kayıtlı ayar yok.</p>
               </div>
             )}
             {settings && settings.length > 0 && (
-              <div style={{ display: "flex", gap: spacing[5], alignItems: "flex-start" }}>
-                <div style={{ flex: 2, minWidth: 0 }}>
+              <div className="flex gap-5 items-start">
+                <div className="flex-[2] min-w-0">
                   <SectionShell flush testId="settings-registry-table-section">
                     <SettingsTable
                       settings={settings}
@@ -108,7 +86,7 @@ export function SettingsRegistryPage() {
                     />
                   </SectionShell>
                 </div>
-                <div style={{ flex: 1, minWidth: "280px" }}>
+                <div className="flex-1 min-w-[280px]">
                   <SectionShell testId="settings-registry-detail-section">
                     <SettingDetailPanel selectedId={selectedId} />
                   </SectionShell>

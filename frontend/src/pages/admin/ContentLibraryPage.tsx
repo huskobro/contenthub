@@ -7,7 +7,7 @@ import {
   cloneNewsBulletin,
   ContentLibraryItem,
 } from "../../api/contentLibraryApi";
-import { colors, typography, spacing, radius } from "../../components/design-system/tokens";
+import { cn } from "../../lib/cn";
 import {
   PageShell,
   SectionShell,
@@ -146,7 +146,7 @@ export function ContentLibraryPage() {
       key: "title",
       header: "Baslik",
       render: (item: ContentLibraryItem) => (
-        <span style={{ fontWeight: typography.weight.medium, color: colors.neutral[900] }}>
+        <span className="font-medium text-neutral-900">
           {item.title || item.topic}
         </span>
       ),
@@ -165,7 +165,7 @@ export function ContentLibraryPage() {
       key: "content",
       header: "Icerik",
       render: (item: ContentLibraryItem) => (
-        <div style={{ display: "flex", gap: spacing[1] }}>
+        <div className="flex gap-1">
           {item.has_script && (
             <span data-testid={`library-has-script-${item.id}`}>
               <StatusBadge status="info" label="Script" size="sm" />
@@ -177,7 +177,7 @@ export function ContentLibraryPage() {
             </span>
           )}
           {!item.has_script && !item.has_metadata && (
-            <span style={{ fontSize: typography.size.xs, color: colors.neutral[400] }}>{"\u2014"}</span>
+            <span className="text-xs text-neutral-400">{"\u2014"}</span>
           )}
         </div>
       ),
@@ -186,7 +186,7 @@ export function ContentLibraryPage() {
       key: "created_at",
       header: "Olusturulma",
       render: (item: ContentLibraryItem) => (
-        <span style={{ fontSize: typography.size.sm, color: colors.neutral[600] }}>
+        <span className="text-sm text-neutral-600">
           {formatDate(item.created_at)}
         </span>
       ),
@@ -197,7 +197,7 @@ export function ContentLibraryPage() {
       render: (item: ContentLibraryItem) => {
         const link = detailLink(item);
         return (
-          <div style={{ display: "flex", gap: spacing[2], alignItems: "center" }}>
+          <div className="flex gap-2 items-center">
             <ActionButton
               variant="ghost"
               size="sm"
@@ -206,7 +206,7 @@ export function ContentLibraryPage() {
                 navigate(link.path, link.state ? { state: link.state } : undefined);
               }}
               data-testid={`library-detail-${item.id}`}
-              style={{ color: colors.brand[600] }}
+              className="text-brand-600"
             >
               Detay
             </ActionButton>
@@ -219,7 +219,7 @@ export function ContentLibraryPage() {
                 handleClone(item);
               }}
               data-testid={`library-clone-${item.id}`}
-              style={{ color: cloningId === item.id ? undefined : colors.brand[700] }}
+              className={cn(cloningId !== item.id && "text-brand-700")}
             >
               Klonla
             </ActionButton>
@@ -236,13 +236,7 @@ export function ContentLibraryPage() {
       testId="library"
     >
       <p
-        style={{
-          margin: `0 0 ${spacing[5]}`,
-          fontSize: typography.size.base,
-          color: colors.neutral[500],
-          lineHeight: typography.lineHeight.normal,
-          maxWidth: "640px",
-        }}
+        className="m-0 mb-5 text-base text-neutral-500 leading-normal max-w-[640px]"
         data-testid="library-workflow-note"
       >
         Icerik yonetim zinciri: Olusturma &rarr; Uretim &rarr; Detay Yonetimi &rarr; Yayin.
@@ -252,8 +246,8 @@ export function ContentLibraryPage() {
 
       {/* Filter/Sort/Search */}
       <SectionShell title="Filtre ve Arama" description="Icerik kayitlarini tur, durum veya metin aramasiyla filtreleyebilirsiniz. Filtreleme backend tarafinda yapilir." testId="library-filter-area">
-        <div data-testid="library-filter-heading" style={{ display: "none" }}>Filtre ve Arama</div>
-        <div data-testid="library-filter-note" style={{ display: "none" }}>Icerik kayitlarini tur, durum veya metin aramasiyla filtreleyebilirsiniz. Filtreleme backend tarafinda yapilir.</div>
+        <div data-testid="library-filter-heading" className="hidden">Filtre ve Arama</div>
+        <div data-testid="library-filter-note" className="hidden">Icerik kayitlarini tur, durum veya metin aramasiyla filtreleyebilirsiniz. Filtreleme backend tarafinda yapilir.</div>
         <FilterBar testId="library-filters-active">
           <FilterInput
             ref={searchInputRef}
@@ -304,29 +298,29 @@ export function ContentLibraryPage() {
           )}
         </FilterBar>
         {hasActiveFilters && (
-          <p style={{ fontSize: typography.size.xs, color: colors.neutral[500], margin: 0 }} data-testid="library-filter-summary">
+          <p className="text-xs text-neutral-500 m-0" data-testid="library-filter-summary">
             {total} kayıt bulundu
           </p>
         )}
       </SectionShell>
 
       {/* Content List */}
-      <div onKeyDown={handleKeyDown} tabIndex={0} style={{ outline: "none" }}>
+      <div onKeyDown={handleKeyDown} tabIndex={0} className="outline-none">
         <SectionShell
           flush
           title="Icerik Kayitlari"
           description={`Tum modul turlerini birlesik olarak goruntuleyebilirsiniz. Toplam: ${total}`}
           testId="library-content-list"
         >
-          <div data-testid="library-list-heading" style={{ display: "none" }}>Icerik Kayitlari</div>
-          <div data-testid="library-list-note" style={{ display: "none" }}>Tum modul turlerini birlesik olarak goruntuleyebilirsiniz.</div>
-          <span data-testid="library-total-count" style={{ display: "none" }}>Toplam: {total}</span>
+          <div data-testid="library-list-heading" className="hidden">Icerik Kayitlari</div>
+          <div data-testid="library-list-note" className="hidden">Tum modul turlerini birlesik olarak goruntuleyebilirsiniz.</div>
+          <span data-testid="library-total-count" className="hidden">Toplam: {total}</span>
           {!isLoading && !isError && items.length === 0 ? (
             <div
-              style={{ textAlign: "center", padding: `${spacing[8]} ${spacing[4]}`, color: colors.neutral[500] }}
+              className="text-center py-8 px-4 text-neutral-500"
               data-testid="library-empty-state"
             >
-              <p style={{ margin: 0, fontSize: typography.size.md }}>
+              <p className="m-0 text-md">
                 {hasActiveFilters
                   ? "Filtrelere uygun icerik kaydi bulunamadi."
                   : "Henüz icerik kaydi bulunmuyor. Icerik olusturma ekranindan yeni bir icerik baslatabilirsiniz."}
@@ -365,54 +359,39 @@ export function ContentLibraryPage() {
         description="Mevcut icerikler uzerinde duzenleme, yeniden kullanim ve klonlama islemleri. Detay sayfasindan da erisebilirsiniz."
         testId="library-actions-area"
       >
-        <div data-testid="library-actions-heading" style={{ display: "none" }}>Icerik Yonetim Aksiyonlari</div>
-        <div data-testid="library-actions-note" style={{ display: "none" }}>Mevcut icerikler uzerinde duzenleme, yeniden kullanim ve klonlama islemleri.</div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: spacing[4] }}>
+        <div data-testid="library-actions-heading" className="hidden">Icerik Yonetim Aksiyonlari</div>
+        <div data-testid="library-actions-note" className="hidden">Mevcut icerikler uzerinde duzenleme, yeniden kullanim ve klonlama islemleri.</div>
+        <div className="grid grid-cols-3 gap-4">
           <div
-            style={{
-              padding: `${spacing[4]} ${spacing[5]}`,
-              background: colors.surface.card,
-              border: `1px solid ${colors.border.subtle}`,
-              borderRadius: radius.lg,
-            }}
+            className="py-4 px-5 bg-surface-card border border-border-subtle rounded-lg"
             data-testid="action-edit"
           >
-            <p style={{ margin: 0, fontWeight: typography.weight.semibold, color: colors.neutral[900], marginBottom: spacing[1] }}>
+            <p className="m-0 font-semibold text-neutral-900 mb-1">
               Düzenleme
             </p>
-            <p style={{ margin: 0, fontSize: typography.size.sm, color: colors.neutral[600] }}>
+            <p className="m-0 text-sm text-neutral-600">
               Icerik detay sayfasindan baslik, konu ve diger alanlari duzenleyin.
             </p>
           </div>
           <div
-            style={{
-              padding: `${spacing[4]} ${spacing[5]}`,
-              background: colors.surface.card,
-              border: `1px solid ${colors.border.subtle}`,
-              borderRadius: radius.lg,
-            }}
+            className="py-4 px-5 bg-surface-card border border-border-subtle rounded-lg"
             data-testid="action-reuse"
           >
-            <p style={{ margin: 0, fontWeight: typography.weight.semibold, color: colors.neutral[900], marginBottom: spacing[1] }}>
+            <p className="m-0 font-semibold text-neutral-900 mb-1">
               Yeniden Kullanim
             </p>
-            <p style={{ margin: 0, fontSize: typography.size.sm, color: colors.neutral[600] }}>
+            <p className="m-0 text-sm text-neutral-600">
               Mevcut icerigi sablon olarak kullanarak yeni icerik olusturun.
             </p>
           </div>
           <div
-            style={{
-              padding: `${spacing[4]} ${spacing[5]}`,
-              background: colors.surface.card,
-              border: `1px solid ${colors.border.subtle}`,
-              borderRadius: radius.lg,
-            }}
+            className="py-4 px-5 bg-surface-card border border-border-subtle rounded-lg"
             data-testid="action-clone"
           >
-            <p style={{ margin: 0, fontWeight: typography.weight.semibold, color: colors.neutral[900], marginBottom: spacing[1] }}>
+            <p className="m-0 font-semibold text-neutral-900 mb-1">
               Klonlama
             </p>
-            <p style={{ margin: 0, fontSize: typography.size.sm, color: colors.neutral[600] }}>
+            <p className="m-0 text-sm text-neutral-600">
               Mevcut icerigin birebir kopyasini olusturun. Klonlanan icerik draft olarak baslar.
             </p>
           </div>

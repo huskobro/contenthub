@@ -1,7 +1,7 @@
 import type { JobStepResponse } from "../../api/jobsApi";
 import { formatDuration } from "../../lib/formatDuration";
-import { colors, radius, typography, spacing, shadow, transition } from "../design-system/tokens";
 import { statusStyle } from "../design-system/tokens";
+import { cn } from "../../lib/cn";
 
 interface JobStepsListProps {
   steps: JobStepResponse[];
@@ -10,51 +10,36 @@ interface JobStepsListProps {
 export function JobStepsList({ steps }: JobStepsListProps) {
   const safeSteps = Array.isArray(steps) ? steps : [];
   if (safeSteps.length === 0) {
-    return <p style={{ color: colors.neutral[500], fontSize: typography.size.md }}>Henüz step yok.</p>;
+    return <p className="text-neutral-500 text-md">Henüz step yok.</p>;
   }
 
   return (
-    <div style={{ marginTop: spacing[2], display: "flex", flexDirection: "column", gap: spacing[2] }}>
+    <div className="mt-2 flex flex-col gap-2">
       {safeSteps.map((s) => {
         const sStyle = statusStyle(s.status);
         return (
           <div
             key={s.id}
-            style={{
-              padding: `${spacing[3]} ${spacing[4]}`,
-              border: `1px solid ${colors.border.subtle}`,
-              borderRadius: radius.md,
-              fontSize: typography.size.base,
-              background: colors.surface.card,
-              boxShadow: shadow.xs,
-              borderLeft: `3px solid ${sStyle.color}`,
-              transition: `box-shadow ${transition.fast}`,
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.boxShadow = shadow.sm; }}
-            onMouseLeave={(e) => { e.currentTarget.style.boxShadow = shadow.xs; }}
+            className="py-3 px-4 border border-border-subtle rounded-md text-base bg-surface-card shadow-xs hover:shadow-sm transition-shadow duration-fast"
+            style={{ borderLeft: `3px solid ${sStyle.color}` }}
           >
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: spacing[1] }}>
-              <strong style={{ fontFamily: typography.monoFamily, color: colors.neutral[900], fontSize: typography.size.sm }}>{s.step_key}</strong>
-              <div style={{ display: "flex", gap: spacing[2], alignItems: "center" }}>
-                <span style={{ fontSize: typography.size.xs, color: colors.neutral[500] }}>#{s.step_order}</span>
-                <span style={{
-                  display: "inline-block",
-                  padding: `${spacing[1]} ${spacing[2]}`,
-                  borderRadius: radius.full,
-                  fontSize: typography.size.xs,
-                  fontWeight: typography.weight.semibold,
-                  background: sStyle.background,
-                  color: sStyle.color,
-                }}>
+            <div className="flex justify-between items-center mb-1">
+              <strong className="font-mono text-neutral-900 text-sm">{s.step_key}</strong>
+              <div className="flex gap-2 items-center">
+                <span className="text-xs text-neutral-500">#{s.step_order}</span>
+                <span
+                  className="inline-block px-2 py-1 rounded-full text-xs font-semibold"
+                  style={{ background: sStyle.background, color: sStyle.color }}
+                >
                   {s.status}
                 </span>
               </div>
             </div>
-            <div style={{ color: colors.neutral[600], fontSize: typography.size.sm }}>
+            <div className="text-neutral-600 text-sm">
               elapsed: {formatDuration(s.elapsed_seconds)}
             </div>
             {s.last_error && (
-              <div style={{ color: colors.error.base, marginTop: spacing[1], fontSize: typography.size.sm }}>{s.last_error}</div>
+              <div className="text-error mt-1 text-sm">{s.last_error}</div>
             )}
           </div>
         );

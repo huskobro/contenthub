@@ -7,7 +7,6 @@
 
 import React from "react";
 import type { ContentLibraryItem } from "../../api/contentLibraryApi";
-import { colors, typography, spacing, radius } from "../design-system/tokens";
 import { StatusBadge, DetailGrid } from "../design-system/primitives";
 
 interface ContentQuickLookContentProps {
@@ -22,7 +21,7 @@ function formatDate(iso: string) {
       day: "2-digit", month: "2-digit", year: "numeric",
     });
   } catch {
-    return "—";
+    return "\u2014";
   }
 }
 
@@ -32,13 +31,13 @@ export function ContentQuickLookContent({ item, onNavigate, onClone }: ContentQu
   return (
     <div data-testid="quicklook-content-item">
       {/* Header */}
-      <div style={{ marginBottom: spacing[4] }}>
-        <h4 style={{ margin: 0, fontSize: typography.size.md, fontWeight: typography.weight.semibold, color: colors.neutral[900] }}>
+      <div className="mb-4">
+        <h4 className="m-0 text-md font-semibold text-neutral-900">
           {item.title || item.topic}
         </h4>
-        <div style={{ display: "flex", gap: spacing[2], alignItems: "center", marginTop: spacing[2] }}>
+        <div className="flex gap-2 items-center mt-2">
           <StatusBadge status={item.status} size="md" />
-          <span style={{ fontSize: typography.size.sm, color: colors.neutral[600] }}>{typeLabel}</span>
+          <span className="text-sm text-neutral-600">{typeLabel}</span>
         </div>
       </div>
 
@@ -55,38 +54,20 @@ export function ContentQuickLookContent({ item, onNavigate, onClone }: ContentQu
       />
 
       {/* Actions */}
-      <div style={{ marginTop: spacing[4], paddingTop: spacing[3], borderTop: `1px solid ${colors.border.subtle}`, display: "flex", gap: spacing[2] }}>
+      <div className="mt-4 pt-3 border-t border-border-subtle flex gap-2">
         {onNavigate && (
           <button
             onClick={onNavigate}
-            style={{
-              padding: `${spacing[2]} ${spacing[4]}`,
-              fontSize: typography.size.base,
-              fontWeight: typography.weight.medium,
-              color: colors.brand[600],
-              background: colors.brand[50],
-              border: `1px solid ${colors.brand[200]}`,
-              borderRadius: radius.md,
-              cursor: "pointer",
-            }}
+            className="py-2 px-4 text-base font-medium text-brand-600 bg-brand-50 border border-brand-200 rounded-md cursor-pointer hover:bg-brand-100"
             data-testid="quicklook-content-navigate"
           >
-            Detay →
+            Detay &rarr;
           </button>
         )}
         {onClone && (
           <button
             onClick={onClone}
-            style={{
-              padding: `${spacing[2]} ${spacing[4]}`,
-              fontSize: typography.size.base,
-              fontWeight: typography.weight.medium,
-              color: colors.neutral[700],
-              background: colors.neutral[50],
-              border: `1px solid ${colors.border.default}`,
-              borderRadius: radius.md,
-              cursor: "pointer",
-            }}
+            className="py-2 px-4 text-base font-medium text-neutral-700 bg-neutral-50 border border-border rounded-md cursor-pointer hover:bg-neutral-100"
             data-testid="quicklook-content-clone"
           >
             Klonla

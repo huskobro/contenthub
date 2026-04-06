@@ -10,10 +10,7 @@ import { JobInputQualitySummary } from "./JobInputQualitySummary";
 import { JobTargetOutputConsistencySummary } from "./JobTargetOutputConsistencySummary";
 import { JobPublicationYieldSummary } from "./JobPublicationYieldSummary";
 import { JobInputSpecificitySummary } from "./JobInputSpecificitySummary";
-import { colors, typography, spacing } from "../design-system/tokens";
-
-const TH_STYLE: React.CSSProperties = { padding: `${spacing[2]} ${spacing[3]}`, borderBottom: `1px solid ${colors.border.default}` };
-const TD_STYLE: React.CSSProperties = { padding: `${spacing[2]} ${spacing[3]}` };
+import { cn } from "../../lib/cn";
 
 interface JobsTableProps {
   jobs: JobResponse[];
@@ -25,29 +22,29 @@ interface JobsTableProps {
 
 export function JobsTable({ jobs, selectedId, onSelect, activeIndex }: JobsTableProps) {
   if (jobs.length === 0) {
-    return <p style={{ color: colors.neutral[600] }}>Henüz kayıtlı job yok.</p>;
+    return <p className="text-neutral-600">Henüz kayıtlı job yok.</p>;
   }
 
   return (
-    <div style={{ overflowX: "auto" }}>
-    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: typography.size.md }}>
+    <div className="overflow-x-auto">
+    <table className="w-full border-collapse text-md">
       <thead>
-        <tr style={{ background: colors.neutral[100], textAlign: "left" }}>
-          <th style={TH_STYLE}>Modül</th>
-          <th style={TH_STYLE}>Bağlam</th>
-          <th style={TH_STYLE}>Durum</th>
-          <th style={TH_STYLE}>Aksiyon Özeti</th>
-          <th style={TH_STYLE}>Mevcut Adım</th>
-          <th style={TH_STYLE}>Tekrar</th>
-          <th style={TH_STYLE}>Süre</th>
-          <th style={TH_STYLE}>Girdi Kalitesi</th>
-          <th style={TH_STYLE}>Girdi Özgüllüğü</th>
-          <th style={TH_STYLE}>Çıktı Zenginliği</th>
-          <th style={TH_STYLE}>Yayın Verimi</th>
-          <th style={TH_STYLE}>Yayın Çıktısı</th>
-          <th style={TH_STYLE}>Artifact Tutarlılığı</th>
-          <th style={TH_STYLE}>Target/Output Tutarlılığı</th>
-          <th style={TH_STYLE}>Oluşturulma</th>
+        <tr className="bg-neutral-100 text-left">
+          <th className="px-3 py-2 border-b border-border">Modül</th>
+          <th className="px-3 py-2 border-b border-border">Bağlam</th>
+          <th className="px-3 py-2 border-b border-border">Durum</th>
+          <th className="px-3 py-2 border-b border-border">Aksiyon Özeti</th>
+          <th className="px-3 py-2 border-b border-border">Mevcut Adım</th>
+          <th className="px-3 py-2 border-b border-border">Tekrar</th>
+          <th className="px-3 py-2 border-b border-border">Süre</th>
+          <th className="px-3 py-2 border-b border-border">Girdi Kalitesi</th>
+          <th className="px-3 py-2 border-b border-border">Girdi Özgüllüğü</th>
+          <th className="px-3 py-2 border-b border-border">Çıktı Zenginliği</th>
+          <th className="px-3 py-2 border-b border-border">Yayın Verimi</th>
+          <th className="px-3 py-2 border-b border-border">Yayın Çıktısı</th>
+          <th className="px-3 py-2 border-b border-border">Artifact Tutarlılığı</th>
+          <th className="px-3 py-2 border-b border-border">Target/Output Tutarlılığı</th>
+          <th className="px-3 py-2 border-b border-border">Oluşturulma</th>
         </tr>
       </thead>
       <tbody>
@@ -60,21 +57,19 @@ export function JobsTable({ jobs, selectedId, onSelect, activeIndex }: JobsTable
             onClick={() => onSelect(j.id)}
             tabIndex={isActive ? 0 : -1}
             data-keyboard-active={isActive || undefined}
-            style={{
-              borderBottom: `1px solid ${colors.neutral[100]}`,
-              cursor: "pointer",
-              background: isSelected ? colors.info.light : isActive ? colors.neutral[50] : "transparent",
-              outline: isActive ? `2px solid ${colors.brand[500]}40` : "none",
-              outlineOffset: "-2px",
-            }}
+            className={cn(
+              "border-b border-neutral-100 cursor-pointer",
+              isSelected && "bg-info-light",
+              !isSelected && isActive && "bg-neutral-50",
+              isActive && "outline outline-2 -outline-offset-2 outline-brand-500/25",
+            )}
           >
-            {/* Kimlik & Durum */}
-            <td style={{ padding: `${spacing[2]} ${spacing[3]}`, fontFamily: "monospace" }}>{j.module_type}</td>
-            <td style={TD_STYLE}>
+            <td className="px-3 py-2 font-mono">{j.module_type}</td>
+            <td className="px-3 py-2">
               <JobContextSummary moduleType={j.module_type} sourceContextJson={j.source_context_json} />
             </td>
-            <td style={TD_STYLE}>{j.status}</td>
-            <td style={TD_STYLE}>
+            <td className="px-3 py-2">{j.status}</td>
+            <td className="px-3 py-2">
               <JobActionabilitySummary
                 status={j.status}
                 lastError={j.last_error}
@@ -83,30 +78,28 @@ export function JobsTable({ jobs, selectedId, onSelect, activeIndex }: JobsTable
                 estimatedRemainingSeconds={j.estimated_remaining_seconds}
               />
             </td>
-            <td style={TD_STYLE}>
-              {j.current_step_key ?? <em style={{ color: colors.neutral[500] }}>—</em>}
+            <td className="px-3 py-2">
+              {j.current_step_key ?? <em className="text-neutral-500">—</em>}
             </td>
-            <td style={TD_STYLE}>{j.retry_count}</td>
-            <td style={{ padding: `${spacing[2]} ${spacing[3]}`, fontSize: typography.size.base, color: colors.neutral[600] }}>
+            <td className="px-3 py-2">{j.retry_count}</td>
+            <td className="px-3 py-2 text-base text-neutral-600">
               {formatDuration(j.elapsed_total_seconds)}
             </td>
-            {/* Girdi Grubu */}
-            <td style={TD_STYLE}>
+            <td className="px-3 py-2">
               <JobInputQualitySummary
                 sourceContextJson={j.source_context_json}
                 templateId={j.template_id}
                 workspacePath={j.workspace_path}
               />
             </td>
-            <td style={TD_STYLE}>
+            <td className="px-3 py-2">
               <JobInputSpecificitySummary
                 sourceContextJson={j.source_context_json}
                 templateId={j.template_id}
                 workspacePath={j.workspace_path}
               />
             </td>
-            {/* Çıktı & Yayın Grubu */}
-            <td style={TD_STYLE}>
+            <td className="px-3 py-2">
               <JobOutputRichnessSummary
                 lastError={j.last_error}
                 sourceContextJson={j.source_context_json}
@@ -114,7 +107,7 @@ export function JobsTable({ jobs, selectedId, onSelect, activeIndex }: JobsTable
                 workspacePath={j.workspace_path}
               />
             </td>
-            <td style={TD_STYLE}>
+            <td className="px-3 py-2">
               <JobPublicationYieldSummary
                 status={j.status}
                 sourceContextJson={j.source_context_json}
@@ -124,7 +117,7 @@ export function JobsTable({ jobs, selectedId, onSelect, activeIndex }: JobsTable
                 lastError={j.last_error}
               />
             </td>
-            <td style={TD_STYLE}>
+            <td className="px-3 py-2">
               <JobPublicationOutcomeSummary
                 status={j.status}
                 lastError={j.last_error}
@@ -133,8 +126,7 @@ export function JobsTable({ jobs, selectedId, onSelect, activeIndex }: JobsTable
                 workspacePath={j.workspace_path}
               />
             </td>
-            {/* Tutarlılık Grubu */}
-            <td style={TD_STYLE}>
+            <td className="px-3 py-2">
               <JobArtifactConsistencySummary
                 sourceContextJson={j.source_context_json}
                 templateId={j.template_id}
@@ -143,7 +135,7 @@ export function JobsTable({ jobs, selectedId, onSelect, activeIndex }: JobsTable
                 currentStepKey={j.current_step_key}
               />
             </td>
-            <td style={TD_STYLE}>
+            <td className="px-3 py-2">
               <JobTargetOutputConsistencySummary
                 sourceContextJson={j.source_context_json}
                 templateId={j.template_id}
@@ -153,8 +145,7 @@ export function JobsTable({ jobs, selectedId, onSelect, activeIndex }: JobsTable
                 lastError={j.last_error}
               />
             </td>
-            {/* Zaman */}
-            <td style={{ padding: `${spacing[2]} ${spacing[3]}`, fontSize: typography.size.base, color: colors.neutral[600] }}>
+            <td className="px-3 py-2 text-base text-neutral-600">
               {formatDateISO(j.created_at)}
             </td>
           </tr>

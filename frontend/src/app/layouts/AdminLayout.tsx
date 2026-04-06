@@ -11,7 +11,6 @@ import { useCommandPaletteStore } from "../../stores/commandPaletteStore";
 import { buildAdminNavigationCommands, buildAdminActionCommands } from "../../commands/adminCommands";
 import { buildContextualCommands } from "../../commands/contextualCommands";
 import { useVisibility } from "../../hooks/useVisibility";
-import { colors, layout } from "../../components/design-system/tokens";
 
 interface AdminNavItem {
   label: string;
@@ -98,7 +97,7 @@ export function AdminLayout() {
 
   return (
     <ThemeProvider>
-      <div style={{ display: "flex", minHeight: "100vh" }}>
+      <div className="flex min-h-screen">
         {/* Toast notifications */}
         <ToastContainer />
         {/* Command Palette overlay */}
@@ -108,24 +107,10 @@ export function AdminLayout() {
         <AppSidebar items={filteredNav} />
 
         {/* Right side: header + continuity strip + scrollable content */}
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            flex: 1,
-            minWidth: 0,
-          }}
-        >
+        <div className="flex flex-col flex-1 min-w-0">
           <AppHeader area="Admin" />
           <AdminContinuityStrip />
-          <main
-            style={{
-              flex: 1,
-              padding: layout.pagePadding,
-              background: colors.surface.page,
-              overflowY: "auto",
-            }}
-          >
+          <main className="flex-1 p-6 bg-surface-page overflow-y-auto">
             <Outlet />
           </main>
         </div>

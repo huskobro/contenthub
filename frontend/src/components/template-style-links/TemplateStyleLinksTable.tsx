@@ -1,7 +1,7 @@
+import { cn } from "../../lib/cn";
 import type { TemplateStyleLinkResponse } from "../../api/templateStyleLinksApi";
 import { formatDateShort } from "../../lib/formatDate";
 import { TemplateStyleLinkReadinessSummary } from "./TemplateStyleLinkReadinessSummary";
-import { colors, typography } from "../design-system/tokens";
 
 interface TemplateStyleLinksTableProps {
   links: TemplateStyleLinkResponse[];
@@ -9,13 +9,10 @@ interface TemplateStyleLinksTableProps {
   onSelect: (id: string) => void;
 }
 
-const TD_PAD = "0.5rem 0.75rem";
-const TH_CELL: React.CSSProperties = { textAlign: "left", padding: TD_PAD, fontWeight: 600, color: colors.neutral[700] };
-
-const STATUS_COLORS: Record<string, string> = {
-  active: colors.success.base,
-  inactive: colors.neutral[600],
-  archived: colors.neutral[500],
+const STATUS_CLASSES: Record<string, string> = {
+  active: "bg-success text-neutral-0",
+  inactive: "bg-neutral-600 text-neutral-0",
+  archived: "bg-neutral-500 text-neutral-0",
 };
 
 export function TemplateStyleLinksTable({
@@ -24,25 +21,25 @@ export function TemplateStyleLinksTable({
   onSelect,
 }: TemplateStyleLinksTableProps) {
   return (
-    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: typography.size.md }}>
+    <table className="w-full border-collapse text-md">
       <thead>
-        <tr style={{ background: colors.neutral[50], borderBottom: `1px solid ${colors.border.subtle}` }}>
-          <th style={TH_CELL}>
+        <tr className="bg-neutral-50 border-b border-border-subtle">
+          <th className="text-left px-3 py-2 font-semibold text-neutral-700">
             Template ID
           </th>
-          <th style={TH_CELL}>
+          <th className="text-left px-3 py-2 font-semibold text-neutral-700">
             Blueprint ID
           </th>
-          <th style={TH_CELL}>
+          <th className="text-left px-3 py-2 font-semibold text-neutral-700">
             Role
           </th>
-          <th style={TH_CELL}>
+          <th className="text-left px-3 py-2 font-semibold text-neutral-700">
             Status
           </th>
-          <th style={TH_CELL}>
+          <th className="text-left px-3 py-2 font-semibold text-neutral-700">
             Bağ Durumu
           </th>
-          <th style={TH_CELL}>
+          <th className="text-left px-3 py-2 font-semibold text-neutral-700">
             Created
           </th>
         </tr>
@@ -52,34 +49,29 @@ export function TemplateStyleLinksTable({
           <tr
             key={link.id}
             onClick={() => onSelect(link.id)}
-            style={{
-              cursor: "pointer",
-              background: selectedId === link.id ? colors.info.light : "transparent",
-              borderBottom: `1px solid ${colors.neutral[100]}`,
-            }}
+            className={cn(
+              "cursor-pointer border-b border-neutral-100",
+              selectedId === link.id ? "bg-info-light" : "bg-transparent",
+            )}
           >
-            <td style={{ padding: TD_PAD, color: colors.neutral[900], fontFamily: "monospace", fontSize: typography.size.base }}>
+            <td className="px-3 py-2 text-neutral-900 font-mono text-base">
               {link.template_id.slice(0, 8)}…
             </td>
-            <td style={{ padding: TD_PAD, color: colors.neutral[900], fontFamily: "monospace", fontSize: typography.size.base }}>
+            <td className="px-3 py-2 text-neutral-900 font-mono text-base">
               {link.style_blueprint_id.slice(0, 8)}…
             </td>
-            <td style={{ padding: TD_PAD, color: colors.neutral[700] }}>
+            <td className="px-3 py-2 text-neutral-700">
               {link.link_role ?? "—"}
             </td>
-            <td style={{ padding: TD_PAD }}>
-              <span style={{
-                padding: "0.125rem 0.5rem",
-                borderRadius: "999px",
-                fontSize: typography.size.sm,
-                fontWeight: 600,
-                color: colors.neutral[0],
-                background: STATUS_COLORS[link.status] ?? colors.neutral[500],
-              }}>
+            <td className="px-3 py-2">
+              <span className={cn(
+                "px-2 py-0.5 rounded-full text-sm font-semibold",
+                STATUS_CLASSES[link.status] ?? "bg-neutral-500 text-neutral-0",
+              )}>
                 {link.status ?? "—"}
               </span>
             </td>
-            <td style={{ padding: TD_PAD }}>
+            <td className="px-3 py-2">
               <TemplateStyleLinkReadinessSummary
                 status={link.status}
                 linkRole={link.link_role}
@@ -87,7 +79,7 @@ export function TemplateStyleLinksTable({
                 styleBlueprintId={link.style_blueprint_id}
               />
             </td>
-            <td style={{ padding: TD_PAD, color: colors.neutral[600], fontSize: typography.size.base }}>
+            <td className="px-3 py-2 text-neutral-600 text-base">
               {formatDateShort(link.created_at)}
             </td>
           </tr>

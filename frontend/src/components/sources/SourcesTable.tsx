@@ -9,11 +9,9 @@ import { SourceInputQualitySummary } from "./SourceInputQualitySummary";
 import { SourceInputSpecificitySummary } from "./SourceInputSpecificitySummary";
 import { SourceTargetOutputConsistencySummary } from "./SourceTargetOutputConsistencySummary";
 import { SourcePublicationOutcomeSummary } from "./SourcePublicationOutcomeSummary";
-import { colors, radius, typography } from "../design-system/tokens";
+import { cn } from "../../lib/cn";
 
 const DASH = "—";
-const TH_STYLE: React.CSSProperties = { padding: "0.5rem 0.75rem", borderBottom: `1px solid ${colors.border.subtle}` };
-const TD_STYLE: React.CSSProperties = { padding: "0.5rem 0.75rem" };
 
 interface SourcesTableProps {
   sources: SourceResponse[];
@@ -23,26 +21,26 @@ interface SourcesTableProps {
 
 export function SourcesTable({ sources, selectedId, onSelect }: SourcesTableProps) {
   return (
-    <div style={{ overflowX: "auto" }}>
-    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: typography.size.md }}>
+    <div className="overflow-x-auto">
+    <table className="w-full border-collapse text-md">
       <thead>
-        <tr style={{ background: colors.neutral[100], textAlign: "left" }}>
-          <th style={TH_STYLE}>Ad</th>
-          <th style={TH_STYLE}>Tür</th>
-          <th style={TH_STYLE}>Durum</th>
-          <th style={TH_STYLE}>Güven</th>
-          <th style={TH_STYLE}>Tarama Modu</th>
-          <th style={TH_STYLE}>Dil</th>
-          <th style={TH_STYLE}>Taramalar</th>
-          <th style={TH_STYLE}>Hazırlık</th>
-          <th style={TH_STYLE}>Konfigürasyon</th>
-          <th style={TH_STYLE}>Girdi Kalitesi</th>
-          <th style={TH_STYLE}>Girdi Özgüllüğü</th>
-          <th style={TH_STYLE}>Haberler</th>
-          <th style={TH_STYLE}>Yayın Kaynağı</th>
-          <th style={TH_STYLE}>Artifact Tutarlılığı</th>
-          <th style={TH_STYLE}>Target/Output Tutarlılığı</th>
-          <th style={TH_STYLE}>Yayın Çıktısı</th>
+        <tr className="bg-neutral-100 text-left">
+          <th className="px-3 py-2 border-b border-border-subtle">Ad</th>
+          <th className="px-3 py-2 border-b border-border-subtle">Tür</th>
+          <th className="px-3 py-2 border-b border-border-subtle">Durum</th>
+          <th className="px-3 py-2 border-b border-border-subtle">Güven</th>
+          <th className="px-3 py-2 border-b border-border-subtle">Tarama Modu</th>
+          <th className="px-3 py-2 border-b border-border-subtle">Dil</th>
+          <th className="px-3 py-2 border-b border-border-subtle">Taramalar</th>
+          <th className="px-3 py-2 border-b border-border-subtle">Hazırlık</th>
+          <th className="px-3 py-2 border-b border-border-subtle">Konfigürasyon</th>
+          <th className="px-3 py-2 border-b border-border-subtle">Girdi Kalitesi</th>
+          <th className="px-3 py-2 border-b border-border-subtle">Girdi Özgüllüğü</th>
+          <th className="px-3 py-2 border-b border-border-subtle">Haberler</th>
+          <th className="px-3 py-2 border-b border-border-subtle">Yayın Kaynağı</th>
+          <th className="px-3 py-2 border-b border-border-subtle">Artifact Tutarlılığı</th>
+          <th className="px-3 py-2 border-b border-border-subtle">Target/Output Tutarlılığı</th>
+          <th className="px-3 py-2 border-b border-border-subtle">Yayın Çıktısı</th>
         </tr>
       </thead>
       <tbody>
@@ -50,118 +48,55 @@ export function SourcesTable({ sources, selectedId, onSelect }: SourcesTableProp
           <tr
             key={src.id}
             onClick={() => onSelect(src.id)}
-            style={{
-              cursor: "pointer",
-              background: selectedId === src.id ? colors.info.light : "transparent",
-              borderBottom: `1px solid ${colors.neutral[100]}`,
-            }}
+            className={cn(
+              "cursor-pointer border-b border-neutral-100",
+              selectedId === src.id ? "bg-info-light" : "hover:bg-neutral-50",
+            )}
           >
-            {/* Kimlik */}
-            <td style={{ padding: "0.5rem 0.75rem", color: colors.brand[700], fontWeight: selectedId === src.id ? 600 : 400, wordBreak: "break-word", overflowWrap: "anywhere" }}>
+            <td className={cn("px-3 py-2 text-brand-700 break-words [overflow-wrap:anywhere]", selectedId === src.id ? "font-semibold" : "font-normal")}>
               {src.name ?? DASH}
             </td>
-            <td style={{ padding: "0.5rem 0.75rem", color: colors.neutral[600] }}>{src.source_type ?? DASH}</td>
-            <td style={TD_STYLE}>
-              <span style={{
-                display: "inline-block",
-                padding: "0.125rem 0.5rem",
-                borderRadius: radius.full,
-                fontSize: typography.size.sm,
-                background: src.status === "active" ? colors.success.light : colors.neutral[100],
-                color: src.status === "active" ? colors.success.text : colors.neutral[700],
-              }}>
+            <td className="px-3 py-2 text-neutral-600">{src.source_type ?? DASH}</td>
+            <td className="px-3 py-2">
+              <span className={cn(
+                "inline-block px-2 py-0.5 rounded-full text-sm",
+                src.status === "active" ? "bg-success-light text-success-text" : "bg-neutral-100 text-neutral-700"
+              )}>
                 {src.status ?? DASH}
               </span>
             </td>
-            <td style={{ padding: "0.5rem 0.75rem", color: colors.neutral[600] }}>{src.trust_level ?? DASH}</td>
-            <td style={{ padding: "0.5rem 0.75rem", color: colors.neutral[600] }}>{src.scan_mode ?? DASH}</td>
-            <td style={{ padding: "0.5rem 0.75rem", color: colors.neutral[600] }}>{src.language ?? DASH}</td>
-            {/* Tarama & Hazırlık */}
-            <td style={TD_STYLE}>
-              <SourceScanSummary
-                scanCount={src.scan_count}
-                lastScanStatus={src.last_scan_status}
-                lastScanFinishedAt={src.last_scan_finished_at}
-              />
+            <td className="px-3 py-2 text-neutral-600">{src.trust_level ?? DASH}</td>
+            <td className="px-3 py-2 text-neutral-600">{src.scan_mode ?? DASH}</td>
+            <td className="px-3 py-2 text-neutral-600">{src.language ?? DASH}</td>
+            <td className="px-3 py-2">
+              <SourceScanSummary scanCount={src.scan_count} lastScanStatus={src.last_scan_status} lastScanFinishedAt={src.last_scan_finished_at} />
             </td>
-            <td style={TD_STYLE}>
-              <SourceReadinessSummary
-                sourceType={src.source_type}
-                status={src.status}
-                baseUrl={src.base_url}
-                feedUrl={src.feed_url}
-                apiEndpoint={src.api_endpoint}
-                scanCount={src.scan_count}
-                lastScanStatus={src.last_scan_status}
-              />
+            <td className="px-3 py-2">
+              <SourceReadinessSummary sourceType={src.source_type} status={src.status} baseUrl={src.base_url} feedUrl={src.feed_url} apiEndpoint={src.api_endpoint} scanCount={src.scan_count} lastScanStatus={src.last_scan_status} />
             </td>
-            {/* Girdi Grubu */}
-            <td style={TD_STYLE}>
-              <SourceConfigCoverageSummary
-                sourceType={src.source_type}
-                baseUrl={src.base_url}
-                feedUrl={src.feed_url}
-                apiEndpoint={src.api_endpoint}
-              />
+            <td className="px-3 py-2">
+              <SourceConfigCoverageSummary sourceType={src.source_type} baseUrl={src.base_url} feedUrl={src.feed_url} apiEndpoint={src.api_endpoint} />
             </td>
-            <td style={TD_STYLE}>
-              <SourceInputQualitySummary
-                sourceType={src.source_type}
-                name={src.name}
-                baseUrl={src.base_url}
-                feedUrl={src.feed_url}
-                apiEndpoint={src.api_endpoint}
-                language={src.language}
-              />
+            <td className="px-3 py-2">
+              <SourceInputQualitySummary sourceType={src.source_type} name={src.name} baseUrl={src.base_url} feedUrl={src.feed_url} apiEndpoint={src.api_endpoint} language={src.language} />
             </td>
-            <td style={TD_STYLE}>
-              <SourceInputSpecificitySummary
-                sourceType={src.source_type}
-                name={src.name}
-                baseUrl={src.base_url}
-                feedUrl={src.feed_url}
-                apiEndpoint={src.api_endpoint}
-                language={src.language}
-              />
+            <td className="px-3 py-2">
+              <SourceInputSpecificitySummary sourceType={src.source_type} name={src.name} baseUrl={src.base_url} feedUrl={src.feed_url} apiEndpoint={src.api_endpoint} language={src.language} />
             </td>
-            {/* Haber & Yayın Grubu */}
-            <td style={TD_STYLE}>
+            <td className="px-3 py-2">
               <SourceLinkedNewsSummary linkedNewsCount={src.linked_news_count} />
             </td>
-            <td style={TD_STYLE}>
-              <SourcePublicationSupplySummary
-                linkedNewsCount={src.linked_news_count}
-                reviewedNewsCount={src.reviewed_news_count}
-                usedNewsCountFromSource={src.used_news_count_from_source}
-              />
+            <td className="px-3 py-2">
+              <SourcePublicationSupplySummary linkedNewsCount={src.linked_news_count} reviewedNewsCount={src.reviewed_news_count} usedNewsCountFromSource={src.used_news_count_from_source} />
             </td>
-            {/* Tutarlılık & Çıktı Grubu */}
-            <td style={TD_STYLE}>
-              <SourceArtifactConsistencySummary
-                sourceType={src.source_type}
-                baseUrl={src.base_url}
-                feedUrl={src.feed_url}
-                apiEndpoint={src.api_endpoint}
-                linkedNewsCount={src.linked_news_count}
-              />
+            <td className="px-3 py-2">
+              <SourceArtifactConsistencySummary sourceType={src.source_type} baseUrl={src.base_url} feedUrl={src.feed_url} apiEndpoint={src.api_endpoint} linkedNewsCount={src.linked_news_count} />
             </td>
-            <td style={TD_STYLE}>
-              <SourceTargetOutputConsistencySummary
-                sourceType={src.source_type}
-                feedUrl={src.feed_url}
-                baseUrl={src.base_url}
-                apiEndpoint={src.api_endpoint}
-                linkedNewsCount={src.linked_news_count}
-                reviewedNewsCount={src.reviewed_news_count}
-                usedNewsCountFromSource={src.used_news_count_from_source}
-              />
+            <td className="px-3 py-2">
+              <SourceTargetOutputConsistencySummary sourceType={src.source_type} feedUrl={src.feed_url} baseUrl={src.base_url} apiEndpoint={src.api_endpoint} linkedNewsCount={src.linked_news_count} reviewedNewsCount={src.reviewed_news_count} usedNewsCountFromSource={src.used_news_count_from_source} />
             </td>
-            <td style={TD_STYLE}>
-              <SourcePublicationOutcomeSummary
-                linkedNewsCount={src.linked_news_count}
-                reviewedNewsCount={src.reviewed_news_count}
-                usedNewsCountFromSource={src.used_news_count_from_source}
-              />
+            <td className="px-3 py-2">
+              <SourcePublicationOutcomeSummary linkedNewsCount={src.linked_news_count} reviewedNewsCount={src.reviewed_news_count} usedNewsCountFromSource={src.used_news_count_from_source} />
             </td>
           </tr>
         ))}

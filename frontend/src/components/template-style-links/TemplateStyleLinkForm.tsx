@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { TemplateStyleLinkResponse } from "../../api/templateStyleLinksApi";
-import { colors, radius, typography } from "../design-system/tokens";
+import { cn } from "../../lib/cn";
 
 export interface TemplateStyleLinkFormValues {
   template_id: string;
@@ -19,51 +19,6 @@ interface TemplateStyleLinkFormProps {
   onCancel: () => void;
   submitLabel?: string;
 }
-
-const COLOR_ERR = colors.error.base;
-const inputStyle: React.CSSProperties = {
-  width: "100%",
-  padding: "0.375rem 0.5rem",
-  fontSize: typography.size.md,
-  border: `1px solid ${colors.border.subtle}`,
-  borderRadius: radius.sm,
-  boxSizing: "border-box",
-};
-
-const labelStyle: React.CSSProperties = {
-  display: "block",
-  fontSize: typography.size.sm,
-  fontWeight: 600,
-  color: colors.neutral[700],
-  marginBottom: "0.25rem",
-};
-
-const fieldStyle: React.CSSProperties = {
-  marginBottom: "0.75rem",
-};
-
-const errorStyle: React.CSSProperties = {
-  fontSize: typography.size.sm,
-  color: COLOR_ERR,
-  marginTop: "0.2rem",
-};
-
-const BTN_PRIMARY: React.CSSProperties = {
-  padding: "0.375rem 1rem",
-  fontSize: typography.size.md,
-  color: colors.neutral[0],
-  border: "none",
-  borderRadius: radius.sm,
-};
-
-const BTN_CANCEL: React.CSSProperties = {
-  padding: "0.375rem 1rem",
-  fontSize: typography.size.md,
-  background: colors.neutral[100],
-  color: colors.neutral[700],
-  border: `1px solid ${colors.border.subtle}`,
-  borderRadius: radius.sm,
-};
 
 export function TemplateStyleLinkForm({
   mode,
@@ -109,57 +64,67 @@ export function TemplateStyleLinkForm({
     <form onSubmit={handleSubmit} noValidate>
       {isCreate && (
         <>
-          <div style={fieldStyle}>
-            <label style={labelStyle}>
-              Template ID <span style={{ color: COLOR_ERR }}>*</span>
+          <div className="mb-3">
+            <label className="block text-sm font-semibold text-neutral-700 mb-1">
+              Template ID <span className="text-error">*</span>
             </label>
             <input
-              style={{ ...inputStyle, borderColor: errors.template_id ? COLOR_ERR : colors.border.subtle }}
+              className={cn(
+                "w-full px-2 py-1.5 text-md border rounded-sm box-border",
+                errors.template_id ? "border-error" : "border-border-subtle",
+              )}
               value={values.template_id}
               onChange={(e) => set("template_id", e.target.value)}
               placeholder="Template UUID"
             />
-            {errors.template_id && <div style={errorStyle}>{errors.template_id}</div>}
+            {errors.template_id && <div className="text-sm text-error mt-0.5">{errors.template_id}</div>}
           </div>
 
-          <div style={fieldStyle}>
-            <label style={labelStyle}>
-              Style Blueprint ID <span style={{ color: COLOR_ERR }}>*</span>
+          <div className="mb-3">
+            <label className="block text-sm font-semibold text-neutral-700 mb-1">
+              Style Blueprint ID <span className="text-error">*</span>
             </label>
             <input
-              style={{ ...inputStyle, borderColor: errors.style_blueprint_id ? COLOR_ERR : colors.border.subtle }}
+              className={cn(
+                "w-full px-2 py-1.5 text-md border rounded-sm box-border",
+                errors.style_blueprint_id ? "border-error" : "border-border-subtle",
+              )}
               value={values.style_blueprint_id}
               onChange={(e) => set("style_blueprint_id", e.target.value)}
               placeholder="Style Blueprint UUID"
             />
-            {errors.style_blueprint_id && <div style={errorStyle}>{errors.style_blueprint_id}</div>}
+            {errors.style_blueprint_id && <div className="text-sm text-error mt-0.5">{errors.style_blueprint_id}</div>}
           </div>
         </>
       )}
 
-      <div style={fieldStyle}>
-        <label style={labelStyle}>Link Role</label>
+      <div className="mb-3">
+        <label className="block text-sm font-semibold text-neutral-700 mb-1">Link Role</label>
         <input
-          style={inputStyle}
+          className="w-full px-2 py-1.5 text-md border border-border-subtle rounded-sm box-border"
           value={values.link_role}
           onChange={(e) => set("link_role", e.target.value)}
           placeholder="ör. primary, fallback, experimental (opsiyonel)"
         />
       </div>
 
-      <div style={fieldStyle}>
-        <label style={labelStyle}>Status</label>
-        <select style={inputStyle} value={values.status} onChange={(e) => set("status", e.target.value)}>
+      <div className="mb-3">
+        <label className="block text-sm font-semibold text-neutral-700 mb-1">Status</label>
+        <select
+          className="w-full px-2 py-1.5 text-md border border-border-subtle rounded-sm box-border"
+          value={values.status}
+          onChange={(e) => set("status", e.target.value)}
+        >
           <option value="active">active</option>
           <option value="inactive">inactive</option>
           <option value="archived">archived</option>
         </select>
       </div>
 
-      <div style={fieldStyle}>
-        <label style={labelStyle}>Notes</label>
+      <div className="mb-3">
+        <label className="block text-sm font-semibold text-neutral-700 mb-1">Notes</label>
         <textarea
-          style={{ ...inputStyle, minHeight: "60px", resize: "vertical" }}
+          className="w-full px-2 py-1.5 text-md border border-border-subtle rounded-sm box-border min-h-[60px] resize-y"
           value={values.notes}
           onChange={(e) => set("notes", e.target.value)}
           placeholder="Opsiyonel not"
@@ -167,14 +132,17 @@ export function TemplateStyleLinkForm({
       </div>
 
       {submitError && (
-        <div style={{ color: COLOR_ERR, fontSize: typography.size.md, marginBottom: "0.75rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>{submitError}</div>
+        <div className="text-error text-md mb-3 break-words [overflow-wrap:anywhere]">{submitError}</div>
       )}
 
-      <div style={{ display: "flex", gap: "0.5rem" }}>
+      <div className="flex gap-2">
         <button
           type="submit"
           disabled={isSubmitting}
-          style={{ ...BTN_PRIMARY, background: isSubmitting ? colors.info.light : colors.brand[500], cursor: isSubmitting ? "not-allowed" : "pointer" }}
+          className={cn(
+            "px-4 py-1.5 text-md text-neutral-0 border-none rounded-sm",
+            isSubmitting ? "bg-info-light cursor-not-allowed" : "bg-brand-500 cursor-pointer",
+          )}
         >
           {isSubmitting ? "Kaydediliyor..." : (submitLabel ?? (isCreate ? "Oluştur" : "Kaydet"))}
         </button>
@@ -182,7 +150,10 @@ export function TemplateStyleLinkForm({
           type="button"
           onClick={onCancel}
           disabled={isSubmitting}
-          style={{ ...BTN_CANCEL, cursor: isSubmitting ? "not-allowed" : "pointer" }}
+          className={cn(
+            "px-4 py-1.5 text-md bg-neutral-100 text-neutral-700 border border-border-subtle rounded-sm",
+            isSubmitting ? "cursor-not-allowed" : "cursor-pointer",
+          )}
         >
           İptal
         </button>

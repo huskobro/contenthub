@@ -4,7 +4,6 @@ import { useUpdateUsedNews } from "../../hooks/useUpdateUsedNews";
 import { UsedNewsForm } from "./UsedNewsForm";
 import type { UsedNewsFormValues } from "./UsedNewsForm";
 import { formatDateTime } from "../../lib/formatDate";
-import { colors, radius, typography } from "../design-system/tokens";
 
 interface Props {
   selectedId: string | null;
@@ -12,9 +11,9 @@ interface Props {
 
 function Field({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div style={{ marginBottom: "8px" }}>
-      <span style={{ fontWeight: 600, marginRight: "8px", color: colors.neutral[600], fontSize: typography.size.base }}>{label}:</span>
-      <span style={{ wordBreak: "break-word", overflowWrap: "anywhere" }}>{value ?? "—"}</span>
+    <div className="mb-2">
+      <span className="font-semibold mr-2 text-neutral-600 text-base">{label}:</span>
+      <span className="break-words" style={{ overflowWrap: "anywhere" }}>{value ?? "—"}</span>
     </div>
   );
 }
@@ -33,7 +32,7 @@ export function UsedNewsDetailPanel({ selectedId }: Props) {
   }
 
   if (isError || !data) {
-    return <p style={{ color: "red" }}>Hata: detay yüklenemedi.</p>;
+    return <p className="text-error">Hata: detay yüklenemedi.</p>;
   }
 
   if (editing) {
@@ -68,25 +67,17 @@ export function UsedNewsDetailPanel({ selectedId }: Props) {
 
   return (
     <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
-        <h3 style={{ margin: 0 }}>Used News Detayı</h3>
+      <div className="flex justify-between items-center mb-3">
+        <h3 className="m-0">Used News Detayı</h3>
         <button
           onClick={() => setEditing(true)}
-          style={{
-            padding: "0.25rem 0.75rem",
-            fontSize: typography.size.base,
-            background: colors.neutral[100],
-            color: colors.neutral[700],
-            border: `1px solid ${colors.border.subtle}`,
-            borderRadius: radius.sm,
-            cursor: "pointer",
-          }}
+          className="py-1 px-3 text-base bg-neutral-100 text-neutral-700 border border-border-subtle rounded-sm cursor-pointer"
         >
           Düzenle
         </button>
       </div>
       <Field label="ID" value={data.id} />
-      <Field label="News Item ID" value={<code style={{ fontSize: "0.85em" }}>{data.news_item_id}</code>} />
+      <Field label="News Item ID" value={<code className="text-[0.85em]">{data.news_item_id}</code>} />
       <Field label="Usage Type" value={data.usage_type} />
       <Field label="Usage Context" value={data.usage_context} />
       <Field label="Target Module" value={data.target_module} />

@@ -1,4 +1,3 @@
-import { colors } from "../design-system/tokens";
 import { NewsItemContentCompletenessBadge, NewsItemCompletenessLevel } from "./NewsItemContentCompletenessBadge";
 
 interface Props {
@@ -43,9 +42,9 @@ export function NewsItemContentCompletenessSummary({
   const detail = `${filled}/6 alan dolu`;
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "0.15rem" }}>
+    <div className="flex flex-col gap-[0.15rem]">
       <NewsItemContentCompletenessBadge level={level} />
-      <span style={{ fontSize: "0.68rem", color: colors.neutral[500] }}>{detail}</span>
+      <span className="text-[0.68rem] text-neutral-500">{detail}</span>
     </div>
   );
 }

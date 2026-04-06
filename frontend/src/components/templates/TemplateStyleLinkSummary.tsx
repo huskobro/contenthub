@@ -1,4 +1,3 @@
-import { colors } from "../design-system/tokens";
 import { TemplateStyleLinkStatusBadge } from "./TemplateStyleLinkStatusBadge";
 
 interface Props {
@@ -9,10 +8,10 @@ interface Props {
 export function TemplateStyleLinkSummary({ styleLinkCount, primaryLinkRole }: Props) {
   const count = styleLinkCount ?? 0;
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "0.15rem" }}>
+    <div className="flex flex-col gap-[0.15rem]">
       <TemplateStyleLinkStatusBadge styleLinkCount={count} />
       {count > 0 && primaryLinkRole && (
-        <span style={{ fontSize: "0.68rem", color: colors.neutral[600] }}>{primaryLinkRole}</span>
+        <span className="text-[0.68rem] text-neutral-600">{primaryLinkRole}</span>
       )}
     </div>
   );

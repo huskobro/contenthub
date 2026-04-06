@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { UsedNewsResponse } from "../../api/usedNewsApi";
-import { colors, radius, typography } from "../design-system/tokens";
+import { cn } from "../../lib/cn";
 
 export interface UsedNewsFormValues {
   news_item_id: string;
@@ -20,53 +20,6 @@ interface UsedNewsFormProps {
   onCancel: () => void;
   submitLabel?: string;
 }
-
-const COLOR_ERR = colors.error.base;
-const inputStyle: React.CSSProperties = {
-  width: "100%",
-  padding: "0.375rem 0.5rem",
-  fontSize: typography.size.md,
-  border: `1px solid ${colors.border.subtle}`,
-  borderRadius: radius.sm,
-  boxSizing: "border-box",
-};
-
-const labelStyle: React.CSSProperties = {
-  display: "block",
-  fontSize: typography.size.sm,
-  fontWeight: 600,
-  color: colors.neutral[700],
-  marginBottom: "0.25rem",
-};
-
-const fieldStyle: React.CSSProperties = {
-  marginBottom: "0.75rem",
-};
-
-const errorStyle: React.CSSProperties = {
-  fontSize: typography.size.sm,
-  color: COLOR_ERR,
-  marginTop: "0.2rem",
-};
-
-const REQ_MARK: React.CSSProperties = { color: COLOR_ERR };
-
-const BTN_PRIMARY: React.CSSProperties = {
-  padding: "0.375rem 1rem",
-  fontSize: typography.size.md,
-  color: colors.neutral[0],
-  border: "none",
-  borderRadius: radius.sm,
-};
-
-const BTN_CANCEL: React.CSSProperties = {
-  padding: "0.375rem 1rem",
-  fontSize: typography.size.md,
-  background: colors.neutral[100],
-  color: colors.neutral[700],
-  border: `1px solid ${colors.border.subtle}`,
-  borderRadius: radius.sm,
-};
 
 export function UsedNewsForm({
   mode,
@@ -113,70 +66,70 @@ export function UsedNewsForm({
   return (
     <form onSubmit={handleSubmit} noValidate>
       {isCreate && (
-        <div style={fieldStyle}>
-          <label style={labelStyle}>
-            News Item ID <span style={REQ_MARK}>*</span>
+        <div className="mb-3">
+          <label className="block text-sm font-semibold text-neutral-700 mb-1">
+            News Item ID <span className="text-error">*</span>
           </label>
           <input
-            style={{ ...inputStyle, borderColor: errors.news_item_id ? COLOR_ERR : colors.border.subtle }}
+            className={cn("w-full py-1.5 px-2 text-md border rounded-sm box-border", errors.news_item_id ? "border-error" : "border-border-subtle")}
             value={values.news_item_id}
             onChange={(e) => set("news_item_id", e.target.value)}
             placeholder="News item UUID"
           />
-          {errors.news_item_id && <div style={errorStyle}>{errors.news_item_id}</div>}
+          {errors.news_item_id && <div className="text-sm text-error mt-0.5">{errors.news_item_id}</div>}
         </div>
       )}
 
-      <div style={fieldStyle}>
-        <label style={labelStyle}>
-          Usage Type <span style={REQ_MARK}>*</span>
+      <div className="mb-3">
+        <label className="block text-sm font-semibold text-neutral-700 mb-1">
+          Usage Type <span className="text-error">*</span>
         </label>
         <input
-          style={{ ...inputStyle, borderColor: errors.usage_type ? COLOR_ERR : colors.border.subtle }}
+          className={cn("w-full py-1.5 px-2 text-md border rounded-sm box-border", errors.usage_type ? "border-error" : "border-border-subtle")}
           value={values.usage_type}
           onChange={(e) => set("usage_type", e.target.value)}
           placeholder="ör. bulletin, video"
         />
-        {errors.usage_type && <div style={errorStyle}>{errors.usage_type}</div>}
+        {errors.usage_type && <div className="text-sm text-error mt-0.5">{errors.usage_type}</div>}
       </div>
 
-      <div style={fieldStyle}>
-        <label style={labelStyle}>
-          Target Module <span style={REQ_MARK}>*</span>
+      <div className="mb-3">
+        <label className="block text-sm font-semibold text-neutral-700 mb-1">
+          Target Module <span className="text-error">*</span>
         </label>
         <input
-          style={{ ...inputStyle, borderColor: errors.target_module ? COLOR_ERR : colors.border.subtle }}
+          className={cn("w-full py-1.5 px-2 text-md border rounded-sm box-border", errors.target_module ? "border-error" : "border-border-subtle")}
           value={values.target_module}
           onChange={(e) => set("target_module", e.target.value)}
           placeholder="ör. news_bulletin, standard_video"
         />
-        {errors.target_module && <div style={errorStyle}>{errors.target_module}</div>}
+        {errors.target_module && <div className="text-sm text-error mt-0.5">{errors.target_module}</div>}
       </div>
 
-      <div style={fieldStyle}>
-        <label style={labelStyle}>Usage Context</label>
+      <div className="mb-3">
+        <label className="block text-sm font-semibold text-neutral-700 mb-1">Usage Context</label>
         <input
-          style={inputStyle}
+          className="w-full py-1.5 px-2 text-md border border-border-subtle rounded-sm box-border"
           value={values.usage_context}
           onChange={(e) => set("usage_context", e.target.value)}
           placeholder="Bağlam (opsiyonel)"
         />
       </div>
 
-      <div style={fieldStyle}>
-        <label style={labelStyle}>Target Entity ID</label>
+      <div className="mb-3">
+        <label className="block text-sm font-semibold text-neutral-700 mb-1">Target Entity ID</label>
         <input
-          style={inputStyle}
+          className="w-full py-1.5 px-2 text-md border border-border-subtle rounded-sm box-border"
           value={values.target_entity_id}
           onChange={(e) => set("target_entity_id", e.target.value)}
           placeholder="Hedef varlık UUID (opsiyonel)"
         />
       </div>
 
-      <div style={fieldStyle}>
-        <label style={labelStyle}>Notes</label>
+      <div className="mb-3">
+        <label className="block text-sm font-semibold text-neutral-700 mb-1">Notes</label>
         <textarea
-          style={{ ...inputStyle, minHeight: "50px", resize: "vertical" }}
+          className="w-full py-1.5 px-2 text-md border border-border-subtle rounded-sm box-border min-h-[50px] resize-y"
           value={values.notes}
           onChange={(e) => set("notes", e.target.value)}
           placeholder="Notlar (opsiyonel)"
@@ -184,14 +137,17 @@ export function UsedNewsForm({
       </div>
 
       {submitError && (
-        <div style={{ color: COLOR_ERR, fontSize: typography.size.md, marginBottom: "0.75rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>{submitError}</div>
+        <div className="text-error text-md mb-3 break-words" style={{ overflowWrap: "anywhere" }}>{submitError}</div>
       )}
 
-      <div style={{ display: "flex", gap: "0.5rem" }}>
+      <div className="flex gap-2">
         <button
           type="submit"
           disabled={isSubmitting}
-          style={{ ...BTN_PRIMARY, background: isSubmitting ? colors.info.light : colors.brand[500], cursor: isSubmitting ? "not-allowed" : "pointer" }}
+          className={cn(
+            "py-1.5 px-4 text-md text-neutral-0 border-none rounded-sm",
+            isSubmitting ? "bg-info-light cursor-not-allowed" : "bg-brand-500 cursor-pointer"
+          )}
         >
           {isSubmitting ? "Kaydediliyor..." : (submitLabel ?? (isCreate ? "Oluştur" : "Kaydet"))}
         </button>
@@ -199,7 +155,7 @@ export function UsedNewsForm({
           type="button"
           onClick={onCancel}
           disabled={isSubmitting}
-          style={{ ...BTN_CANCEL, cursor: isSubmitting ? "not-allowed" : "pointer" }}
+          className={cn("py-1.5 px-4 text-md bg-neutral-100 text-neutral-700 border border-border-subtle rounded-sm", isSubmitting ? "cursor-not-allowed" : "cursor-pointer")}
         >
           İptal
         </button>

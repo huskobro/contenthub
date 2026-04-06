@@ -5,11 +5,7 @@ import { StyleBlueprintForm } from "./StyleBlueprintForm";
 import { formatDateTime } from "../../lib/formatDate";
 import { JsonPreviewField } from "../shared/JsonPreviewField";
 import type { StyleBlueprintFormValues } from "./StyleBlueprintForm";
-import { colors, radius, typography } from "../design-system/tokens";
-
-const COLOR_DARK = colors.neutral[900];
-const PANEL_BOX: React.CSSProperties = { padding: "1.25rem", border: `1px solid ${colors.border.subtle}`, borderRadius: radius.md, background: colors.neutral[0] };
-const SECTION_DIVIDER: React.CSSProperties = { marginTop: "0.75rem", borderTop: `1px solid ${colors.neutral[100]}`, paddingTop: "0.75rem" };
+import { cn } from "../../lib/cn";
 
 interface StyleBlueprintDetailPanelProps {
   blueprintId: string | null;
@@ -17,9 +13,9 @@ interface StyleBlueprintDetailPanelProps {
 
 function Field({ label, value }: { label: string; value: string | number | null }) {
   return (
-    <div style={{ marginBottom: "0.5rem" }}>
-      <span style={{ fontSize: typography.size.sm, fontWeight: 600, color: colors.neutral[600] }}>{label}: </span>
-      <span style={{ fontSize: typography.size.md, color: value !== null && value !== undefined ? COLOR_DARK : colors.neutral[500], wordBreak: "break-word", overflowWrap: "anywhere" }}>
+    <div className="mb-2">
+      <span className="text-sm font-semibold text-neutral-600">{label}: </span>
+      <span className={cn("text-md break-words", value !== null && value !== undefined ? "text-neutral-900" : "text-neutral-500")} style={{ overflowWrap: "anywhere" }}>
         {value !== null && value !== undefined ? String(value) : "—"}
       </span>
     </div>
@@ -33,20 +29,17 @@ export function StyleBlueprintDetailPanel({ blueprintId }: StyleBlueprintDetailP
 
   if (!blueprintId) {
     return (
-      <div style={{
-        padding: "2rem", color: colors.neutral[500], fontSize: typography.size.md,
-        textAlign: "center", border: `1px dashed ${colors.border.subtle}`, borderRadius: radius.md,
-      }}>
+      <div className="p-8 text-neutral-500 text-md text-center border border-dashed border-border-subtle rounded-md">
         Bir style blueprint seçin.
       </div>
     );
   }
 
-  if (isLoading) return <p style={{ color: colors.neutral[600], padding: "1rem" }}>Yükleniyor...</p>;
+  if (isLoading) return <p className="text-neutral-600 p-4">Yükleniyor...</p>;
 
   if (isError) {
     return (
-      <p style={{ color: colors.error.base, padding: "1rem" }}>
+      <p className="text-error p-4">
         Hata: {error instanceof Error ? error.message : "Bilinmeyen hata"}
       </p>
     );
@@ -75,8 +68,8 @@ export function StyleBlueprintDetailPanel({ blueprintId }: StyleBlueprintDetailP
     }
 
     return (
-      <div style={PANEL_BOX}>
-        <h3 style={{ margin: "0 0 1rem", fontSize: typography.size.lg, color: COLOR_DARK }}>Blueprint Düzenle</h3>
+      <div className="p-5 border border-border-subtle rounded-md bg-neutral-0">
+        <h3 className="m-0 mb-4 text-lg text-neutral-900">Blueprint Düzenle</h3>
         <StyleBlueprintForm
           mode="edit"
           initial={blueprint}
@@ -91,31 +84,18 @@ export function StyleBlueprintDetailPanel({ blueprintId }: StyleBlueprintDetailP
   }
 
   return (
-    <div style={PANEL_BOX}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem" }}>
-        <h3 style={{ margin: 0, fontSize: typography.size.lg, color: COLOR_DARK }} data-testid="sb-detail-heading">{blueprint.name}</h3>
+    <div className="p-5 border border-border-subtle rounded-md bg-neutral-0">
+      <div className="flex justify-between items-center mb-2">
+        <h3 className="m-0 text-lg text-neutral-900" data-testid="sb-detail-heading">{blueprint.name}</h3>
         <button
           onClick={() => setEditing(true)}
-          style={{
-            padding: "0.25rem 0.75rem",
-            fontSize: typography.size.base,
-            background: colors.neutral[100],
-            color: colors.neutral[700],
-            border: `1px solid ${colors.border.subtle}`,
-            borderRadius: radius.sm,
-            cursor: "pointer",
-          }}
+          className="py-1 px-3 text-base bg-neutral-100 text-neutral-700 border border-border-subtle rounded-sm cursor-pointer"
         >
           Düzenle
         </button>
       </div>
       <p
-        style={{
-          margin: "0 0 1rem",
-          fontSize: typography.size.base,
-          color: colors.neutral[500],
-          lineHeight: 1.5,
-        }}
+        className="m-0 mb-4 text-base text-neutral-500 leading-normal"
         data-testid="sb-detail-workflow-note"
       >
         Bu blueprint gorsel ve yapisal kurallari tanimlar. Sablonlarla
@@ -127,7 +107,7 @@ export function StyleBlueprintDetailPanel({ blueprintId }: StyleBlueprintDetailP
       <Field label="Version" value={blueprint.version} />
       <Field label="Notes" value={blueprint.notes} />
 
-      <div style={{ marginTop: "1rem", borderTop: `1px solid ${colors.neutral[100]}`, paddingTop: "1rem" }}>
+      <div className="mt-4 border-t border-neutral-100 pt-4">
         <JsonPreviewField label="visual_rules_json" value={blueprint.visual_rules_json} />
         <JsonPreviewField label="motion_rules_json" value={blueprint.motion_rules_json} />
         <JsonPreviewField label="layout_rules_json" value={blueprint.layout_rules_json} />
@@ -136,7 +116,7 @@ export function StyleBlueprintDetailPanel({ blueprintId }: StyleBlueprintDetailP
         <JsonPreviewField label="preview_strategy_json" value={blueprint.preview_strategy_json} />
       </div>
 
-      <div style={SECTION_DIVIDER}>
+      <div className="mt-3 border-t border-neutral-100 pt-3">
         <Field label="Created" value={formatDateTime(blueprint.created_at)} />
         <Field label="Updated" value={formatDateTime(blueprint.updated_at)} />
       </div>

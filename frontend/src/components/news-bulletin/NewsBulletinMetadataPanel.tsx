@@ -5,12 +5,8 @@ import { useUpdateNewsBulletinMetadata } from "../../hooks/useUpdateNewsBulletin
 import { NewsBulletinMetadataForm } from "./NewsBulletinMetadataForm";
 import { isBlank } from "../../lib/isBlank";
 import type { MetadataFormValues } from "./NewsBulletinMetadataForm";
-import { colors, radius, typography } from "../design-system/tokens";
 
 const DASH = "—";
-const WRAP_WORD: React.CSSProperties = { wordBreak: "break-word", overflowWrap: "anywhere" };
-const LABEL_TD: React.CSSProperties = { color: colors.neutral[600], paddingRight: "1rem", paddingBottom: "0.25rem" };
-const SECTION_STYLE: React.CSSProperties = { border: `1px solid ${colors.border.subtle}`, borderRadius: radius.md, padding: "1rem", marginTop: "1rem" };
 
 interface Props {
   bulletinId: string;
@@ -57,24 +53,24 @@ export function NewsBulletinMetadataPanel({ bulletinId }: Props) {
 
   if (isLoading) {
     return (
-      <div style={SECTION_STYLE}>
-        <p style={{ color: colors.neutral[600], margin: 0 }}>Metadata yükleniyor...</p>
+      <div className="border border-border-subtle rounded-md p-4 mt-4">
+        <p className="text-neutral-600 m-0">Metadata yükleniyor...</p>
       </div>
     );
   }
 
   if (isError) {
     return (
-      <div style={SECTION_STYLE}>
-        <p style={{ color: colors.error.base, margin: 0 }}>Metadata yüklenirken hata oluştu.</p>
+      <div className="border border-border-subtle rounded-md p-4 mt-4">
+        <p className="text-error m-0">Metadata yüklenirken hata oluştu.</p>
       </div>
     );
   }
 
   if (mode === "create") {
     return (
-      <div style={SECTION_STYLE}>
-        <h4 style={{ margin: "0 0 1rem" }}>Metadata Oluştur</h4>
+      <div className="border border-border-subtle rounded-md p-4 mt-4">
+        <h4 className="m-0 mb-4">Metadata Oluştur</h4>
         <NewsBulletinMetadataForm
           mode="create"
           isSubmitting={createMutation.isPending}
@@ -88,8 +84,8 @@ export function NewsBulletinMetadataPanel({ bulletinId }: Props) {
 
   if (mode === "edit") {
     return (
-      <div style={SECTION_STYLE}>
-        <h4 style={{ margin: "0 0 1rem" }}>Metadata Düzenle</h4>
+      <div className="border border-border-subtle rounded-md p-4 mt-4">
+        <h4 className="m-0 mb-4">Metadata Düzenle</h4>
         <NewsBulletinMetadataForm
           mode="edit"
           initial={{
@@ -113,9 +109,9 @@ export function NewsBulletinMetadataPanel({ bulletinId }: Props) {
 
   // view mode
   return (
-    <div style={SECTION_STYLE}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem" }}>
-        <h4 style={{ margin: 0 }} data-testid="nb-metadata-heading">Metadata</h4>
+    <div className="border border-border-subtle rounded-md p-4 mt-4">
+      <div className="flex justify-between items-center mb-2">
+        <h4 className="m-0" data-testid="nb-metadata-heading">Metadata</h4>
         {metadata ? (
           <button onClick={() => setMode("edit")}>Düzenle</button>
         ) : (
@@ -123,12 +119,7 @@ export function NewsBulletinMetadataPanel({ bulletinId }: Props) {
         )}
       </div>
       <p
-        style={{
-          margin: "0 0 0.75rem",
-          fontSize: typography.size.base,
-          color: colors.neutral[500],
-          lineHeight: 1.5,
-        }}
+        className="m-0 mb-3 text-base text-neutral-500 leading-normal"
         data-testid="nb-metadata-note"
       >
         Bulten baslik, aciklama, etiket ve kategori bilgileri. Metadata,
@@ -136,46 +127,46 @@ export function NewsBulletinMetadataPanel({ bulletinId }: Props) {
       </p>
 
       {!metadata ? (
-        <p style={{ color: colors.neutral[500], margin: 0 }}>Henüz metadata yok.</p>
+        <p className="text-neutral-500 m-0">Henüz metadata yok.</p>
       ) : (
-        <table style={{ fontSize: typography.size.base, borderCollapse: "collapse" }}>
+        <table className="text-base border-collapse">
           <tbody>
             <tr>
-              <td style={LABEL_TD}>Başlık</td>
-              <td style={WRAP_WORD}>{metadata.title ?? DASH}</td>
+              <td className="text-neutral-600 pr-4 pb-1">Başlık</td>
+              <td className="break-words [overflow-wrap:anywhere]">{metadata.title ?? DASH}</td>
             </tr>
             <tr>
-              <td style={LABEL_TD}>Açıklama</td>
-              <td style={WRAP_WORD}>{metadata.description ?? DASH}</td>
+              <td className="text-neutral-600 pr-4 pb-1">Açıklama</td>
+              <td className="break-words [overflow-wrap:anywhere]">{metadata.description ?? DASH}</td>
             </tr>
             <tr>
-              <td style={LABEL_TD}>Etiketler</td>
-              <td style={{ wordBreak: "break-all", overflowWrap: "anywhere" }}>{metadata.tags_json ?? DASH}</td>
+              <td className="text-neutral-600 pr-4 pb-1">Etiketler</td>
+              <td className="break-all [overflow-wrap:anywhere]">{metadata.tags_json ?? DASH}</td>
             </tr>
             <tr>
-              <td style={LABEL_TD}>Kategori</td>
+              <td className="text-neutral-600 pr-4 pb-1">Kategori</td>
               <td>{metadata.category ?? DASH}</td>
             </tr>
             <tr>
-              <td style={LABEL_TD}>Dil</td>
+              <td className="text-neutral-600 pr-4 pb-1">Dil</td>
               <td>{metadata.language ?? DASH}</td>
             </tr>
             <tr>
-              <td style={LABEL_TD}>Versiyon</td>
+              <td className="text-neutral-600 pr-4 pb-1">Versiyon</td>
               <td>{metadata.version ?? DASH}</td>
             </tr>
             <tr>
-              <td style={LABEL_TD}>Kaynak</td>
+              <td className="text-neutral-600 pr-4 pb-1">Kaynak</td>
               <td>{metadata.source_type ?? DASH}</td>
             </tr>
             <tr>
-              <td style={LABEL_TD}>Durum</td>
+              <td className="text-neutral-600 pr-4 pb-1">Durum</td>
               <td>{metadata.generation_status ?? DASH}</td>
             </tr>
             {!isBlank(metadata.notes) && (
               <tr>
-                <td style={LABEL_TD}>Notlar</td>
-                <td style={WRAP_WORD}>{metadata.notes}</td>
+                <td className="text-neutral-600 pr-4 pb-1">Notlar</td>
+                <td className="break-words [overflow-wrap:anywhere]">{metadata.notes}</td>
               </tr>
             )}
           </tbody>

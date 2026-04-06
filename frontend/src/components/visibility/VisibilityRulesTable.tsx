@@ -1,9 +1,7 @@
-import { colors, typography } from "../design-system/tokens";
 import type { VisibilityRuleResponse } from "../../api/visibilityApi";
+import { cn } from "../../lib/cn";
 
 const DASH = "—";
-const TH_STYLE: React.CSSProperties = { padding: "0.5rem" };
-const TD_STYLE: React.CSSProperties = { padding: "0.5rem" };
 
 interface VisibilityRulesTableProps {
   rules: VisibilityRuleResponse[];
@@ -13,19 +11,19 @@ interface VisibilityRulesTableProps {
 
 export function VisibilityRulesTable({ rules, selectedId, onSelect }: VisibilityRulesTableProps) {
   if (rules.length === 0) {
-    return <p style={{ color: colors.neutral[600] }}>Henüz kayıtlı visibility rule yok.</p>;
+    return <p className="text-neutral-600">Henüz kayıtlı visibility rule yok.</p>;
   }
 
   return (
-    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: typography.size.md }}>
+    <table className="w-full border-collapse text-md">
       <thead>
-        <tr style={{ borderBottom: `2px solid ${colors.border.subtle}`, textAlign: "left" }}>
-          <th style={TD_STYLE}>rule_type</th>
-          <th style={TD_STYLE}>target_key</th>
-          <th style={TD_STYLE}>module_scope</th>
-          <th style={TD_STYLE}>role_scope</th>
-          <th style={TD_STYLE}>status</th>
-          <th style={TD_STYLE}>priority</th>
+        <tr className="border-b-2 border-border-subtle text-left">
+          <th className="p-2">rule_type</th>
+          <th className="p-2">target_key</th>
+          <th className="p-2">module_scope</th>
+          <th className="p-2">role_scope</th>
+          <th className="p-2">status</th>
+          <th className="p-2">priority</th>
         </tr>
       </thead>
       <tbody>
@@ -33,18 +31,17 @@ export function VisibilityRulesTable({ rules, selectedId, onSelect }: Visibility
           <tr
             key={r.id}
             onClick={() => onSelect(r.id)}
-            style={{
-              borderBottom: `1px solid ${colors.neutral[100]}`,
-              cursor: "pointer",
-              background: selectedId === r.id ? colors.info.light : "transparent",
-            }}
+            className={cn(
+              "border-b border-neutral-100 cursor-pointer",
+              selectedId === r.id ? "bg-info-light" : "bg-transparent"
+            )}
           >
-            <td style={TD_STYLE}>{r.rule_type ?? DASH}</td>
-            <td style={{ padding: "0.5rem", fontFamily: "monospace", wordBreak: "break-all", overflowWrap: "anywhere" }}>{r.target_key ?? DASH}</td>
-            <td style={TD_STYLE}>{r.module_scope ?? <em style={{ color: colors.neutral[500] }}>—</em>}</td>
-            <td style={TD_STYLE}>{r.role_scope ?? <em style={{ color: colors.neutral[500] }}>—</em>}</td>
-            <td style={TD_STYLE}>{r.status ?? DASH}</td>
-            <td style={TD_STYLE}>{r.priority ?? DASH}</td>
+            <td className="p-2">{r.rule_type ?? DASH}</td>
+            <td className="p-2 font-mono break-all" style={{ overflowWrap: "anywhere" }}>{r.target_key ?? DASH}</td>
+            <td className="p-2">{r.module_scope ?? <em className="text-neutral-500">—</em>}</td>
+            <td className="p-2">{r.role_scope ?? <em className="text-neutral-500">—</em>}</td>
+            <td className="p-2">{r.status ?? DASH}</td>
+            <td className="p-2">{r.priority ?? DASH}</td>
           </tr>
         ))}
       </tbody>

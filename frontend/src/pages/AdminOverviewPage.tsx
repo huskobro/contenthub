@@ -2,7 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useVisibility } from "../hooks/useVisibility";
 import { useAnalyticsOverview } from "../hooks/useAnalyticsOverview";
-import { colors, spacing, typography, radius, shadow, transition } from "../components/design-system/tokens";
+import { cn } from "../lib/cn";
 import {
   PageShell,
   SectionShell,
@@ -23,9 +23,9 @@ interface QuickLink {
   visibilityKey?: string;
   /** SVG icon path(s) rendered inside a 20x20 viewBox */
   iconPath: string;
-  /** Background tint for the icon circle */
-  iconBg: string;
-  /** Icon stroke/fill color */
+  /** Tailwind class for icon circle background */
+  iconBgClass: string;
+  /** Icon stroke/fill color (kept as inline for SVG stroke attr) */
   iconColor: string;
 }
 
@@ -36,8 +36,8 @@ const QUICK_LINKS: QuickLink[] = [
     to: "/admin/library",
     testId: "quick-link-library",
     iconPath: "M3 5h14M3 10h14M3 15h9",
-    iconBg: colors.brand[100],
-    iconColor: colors.brand[600],
+    iconBgClass: "bg-brand-100",
+    iconColor: "var(--color-brand-600)",
   },
   {
     title: "Varlik Kutuphanesi",
@@ -45,8 +45,8 @@ const QUICK_LINKS: QuickLink[] = [
     to: "/admin/assets",
     testId: "quick-link-assets",
     iconPath: "M4 4h5v5H4zM11 4h5v5h-5zM4 11h5v5H4zM11 11h5v5h-5z",
-    iconBg: colors.info.light,
-    iconColor: colors.info.dark,
+    iconBgClass: "bg-info-light",
+    iconColor: "var(--color-info-dark)",
   },
   {
     title: "Yeni Video Olustur",
@@ -54,8 +54,8 @@ const QUICK_LINKS: QuickLink[] = [
     to: "/admin/standard-videos/new",
     testId: "quick-link-new-video",
     iconPath: "M15.91 11.672a.375.375 0 010 .656l-7.5 4.5A.375.375 0 018 16.5v-9a.375.375 0 01.41-.328l7.5 4.5z",
-    iconBg: colors.success.light,
-    iconColor: colors.success.dark,
+    iconBgClass: "bg-success-light",
+    iconColor: "var(--color-success-dark)",
   },
   {
     title: "Kaynaklar",
@@ -64,8 +64,8 @@ const QUICK_LINKS: QuickLink[] = [
     testId: "quick-link-sources",
     visibilityKey: "panel:sources",
     iconPath: "M12 21a9 9 0 100-18 9 9 0 000 18zM12 3v18M3 12h18",
-    iconBg: colors.warning.light,
-    iconColor: colors.warning.dark,
+    iconBgClass: "bg-warning-light",
+    iconColor: "var(--color-warning-dark)",
   },
   {
     title: "Sablonlar",
@@ -74,8 +74,8 @@ const QUICK_LINKS: QuickLink[] = [
     testId: "quick-link-templates",
     visibilityKey: "panel:templates",
     iconPath: "M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z",
-    iconBg: colors.brand[100],
-    iconColor: colors.brand[700],
+    iconBgClass: "bg-brand-100",
+    iconColor: "var(--color-brand-700)",
   },
   {
     title: "Isler",
@@ -83,8 +83,8 @@ const QUICK_LINKS: QuickLink[] = [
     to: "/admin/jobs",
     testId: "quick-link-jobs",
     iconPath: "M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.573-1.066zM15 12a3 3 0 11-6 0 3 3 0 016 0z",
-    iconBg: colors.neutral[100],
-    iconColor: colors.neutral[700],
+    iconBgClass: "bg-neutral-100",
+    iconColor: "var(--color-neutral-700)",
   },
   {
     title: "Ayarlar",
@@ -93,8 +93,8 @@ const QUICK_LINKS: QuickLink[] = [
     testId: "quick-link-settings",
     visibilityKey: "panel:settings",
     iconPath: "M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4",
-    iconBg: colors.neutral[100],
-    iconColor: colors.neutral[600],
+    iconBgClass: "bg-neutral-100",
+    iconColor: "var(--color-neutral-600)",
   },
   {
     title: "Haber Bultenleri",
@@ -102,8 +102,8 @@ const QUICK_LINKS: QuickLink[] = [
     to: "/admin/news-bulletins",
     testId: "quick-link-news-bulletins",
     iconPath: "M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2",
-    iconBg: colors.info.light,
-    iconColor: colors.info.text,
+    iconBgClass: "bg-info-light",
+    iconColor: "var(--color-info-text)",
   },
   {
     title: "Analytics",
@@ -112,8 +112,8 @@ const QUICK_LINKS: QuickLink[] = [
     testId: "quick-link-analytics",
     visibilityKey: "panel:analytics",
     iconPath: "M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z",
-    iconBg: colors.success.light,
-    iconColor: colors.success.text,
+    iconBgClass: "bg-success-light",
+    iconColor: "var(--color-success-text)",
   },
 ];
 
@@ -170,20 +170,9 @@ function useFilteredQuickLinks(): QuickLink[] {
 /* Icon helper — renders an SVG icon in a colored circle              */
 /* ------------------------------------------------------------------ */
 
-function IconCircle({ path, bg, color }: { path: string; bg: string; color: string }) {
+function IconCircle({ path, bgClass, color }: { path: string; bgClass: string; color: string }) {
   return (
-    <div
-      style={{
-        width: "36px",
-        height: "36px",
-        borderRadius: radius.full,
-        background: bg,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        flexShrink: 0,
-      }}
-    >
+    <div className={cn("w-9 h-9 rounded-full flex items-center justify-center shrink-0", bgClass)}>
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
         <path d={path} />
       </svg>
@@ -192,62 +181,25 @@ function IconCircle({ path, bg, color }: { path: string; bg: string; color: stri
 }
 
 /* ------------------------------------------------------------------ */
-/* Styles                                                             */
-/* ------------------------------------------------------------------ */
-
-const CARD_GRID: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "repeat(3, 1fr)",
-  gap: spacing[4],
-};
-
-/* ------------------------------------------------------------------ */
 /* QuickCard — interactive quick access card with premium feel        */
 /* ------------------------------------------------------------------ */
 
 function QuickCard({ link, onClick }: { link: QuickLink; onClick: () => void }) {
-  const [hovered, setHovered] = React.useState(false);
-
   return (
     <div
-      style={{
-        padding: `${spacing[4]} ${spacing[5]}`,
-        background: colors.surface.card,
-        border: `1px solid ${hovered ? colors.brand[300] : colors.border.subtle}`,
-        borderLeft: `3px solid ${hovered ? colors.brand[400] : link.iconColor}`,
-        borderRadius: radius.lg,
-        cursor: "pointer",
-        transition: `border-color ${transition.normal}, box-shadow ${transition.normal}, transform ${transition.normal}`,
-        boxShadow: hovered ? shadow.md : shadow.sm,
-        display: "flex",
-        gap: spacing[3],
-        alignItems: "flex-start",
-      }}
+      className="py-4 px-5 bg-surface-card border border-border-subtle border-l-[3px] rounded-lg cursor-pointer duration-normal shadow-sm hover:border-brand-300 hover:border-l-brand-400 hover:shadow-md flex gap-3 items-start transition-all"
       onClick={onClick}
       role="button"
       tabIndex={0}
       onKeyDown={(e) => e.key === "Enter" && onClick()}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
       data-testid={link.testId}
     >
-      <IconCircle path={link.iconPath} bg={link.iconBg} color={link.iconColor} />
-      <div style={{ minWidth: 0 }}>
-        <p style={{
-          margin: 0,
-          fontSize: typography.size.md,
-          fontWeight: typography.weight.semibold,
-          color: colors.neutral[900],
-          marginBottom: spacing[1],
-        }}>
+      <IconCircle path={link.iconPath} bgClass={link.iconBgClass} color={link.iconColor} />
+      <div className="min-w-0">
+        <p className="m-0 text-md font-semibold text-neutral-900 mb-1">
           {link.title}
         </p>
-        <p style={{
-          margin: 0,
-          fontSize: typography.size.sm,
-          color: colors.neutral[600],
-          lineHeight: typography.lineHeight.normal,
-        }}>
+        <p className="m-0 text-sm text-neutral-600 leading-normal">
           {link.desc}
         </p>
       </div>
@@ -260,37 +212,21 @@ function QuickCard({ link, onClick }: { link: QuickLink; onClick: () => void }) 
 /* ------------------------------------------------------------------ */
 
 function ReadinessCard({ item, index }: { item: typeof READINESS_ITEMS[0]; index: number }) {
-  const [hovered, setHovered] = React.useState(false);
   const isEven = index % 2 === 0;
 
   return (
     <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: spacing[3],
-        padding: `${spacing[3]} ${spacing[4]}`,
-        background: hovered ? colors.brand[50] : (isEven ? colors.surface.card : colors.surface.inset),
-        borderRadius: radius.md,
-        border: `1px solid ${hovered ? colors.brand[200] : colors.border.subtle}`,
-        transition: `background ${transition.fast}, border-color ${transition.fast}`,
-        marginBottom: spacing[2],
-      }}
+      className={cn(
+        "flex items-center gap-3 py-3 px-4 rounded-md border border-border-subtle mb-2 transition-all duration-fast hover:bg-brand-50 hover:border-brand-200",
+        isEven ? "bg-surface-card" : "bg-surface-inset"
+      )}
       data-testid={item.testId}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
     >
       <StatusBadge status={item.status} label={item.statusLabel} size="md" />
-      <span style={{
-        fontWeight: typography.weight.semibold,
-        color: colors.neutral[900],
-        minWidth: "160px",
-        flexShrink: 0,
-        fontSize: typography.size.sm,
-      }}>
+      <span className="font-semibold text-neutral-900 min-w-[160px] shrink-0 text-sm">
         {item.area}
       </span>
-      <span style={{ color: colors.neutral[600], fontSize: typography.size.sm, lineHeight: typography.lineHeight.normal }}>
+      <span className="text-neutral-600 text-sm leading-normal">
         {item.detail}
       </span>
     </div>
@@ -314,61 +250,29 @@ export function AdminOverviewPage() {
     >
       {/* Workflow chain note */}
       <p
-        style={{
-          margin: `0 0 ${spacing[5]}`,
-          fontSize: typography.size.sm,
-          color: colors.neutral[500],
-          lineHeight: typography.lineHeight.normal,
-        }}
+        className="m-0 mb-5 text-sm text-neutral-500 leading-normal"
         data-testid="admin-overview-workflow-note"
       >
         Yonetim zinciri: Icerik Olusturma &rarr; Sablon/Stil Yonetimi &rarr; Kaynak Yonetimi &rarr; Is Takibi &rarr; Yayin &rarr; Analytics.
       </p>
 
       {/* ---- Hero / Summary Area ---- */}
-      <div
-        style={{
-          background: `linear-gradient(135deg, ${colors.brand[50]}, ${colors.brand[100]} 40%, ${colors.surface.page} 100%)`,
-          borderRadius: radius.xl,
-          padding: `${spacing[6]} ${spacing[6]} ${spacing[5]}`,
-          marginBottom: spacing[6],
-          border: `1px solid ${colors.brand[200]}`,
-        }}
-      >
-        <div style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          marginBottom: spacing[4],
-        }}>
+      <div className="bg-gradient-to-br from-brand-50 via-brand-100 to-surface-page rounded-xl p-6 pb-5 mb-6 border border-brand-200">
+        <div className="flex items-center justify-between mb-4">
           <div>
-            <h2 style={{
-              margin: 0,
-              fontSize: typography.size.lg,
-              fontWeight: typography.weight.bold,
-              color: colors.brand[800],
-              letterSpacing: "-0.02em",
-              fontFamily: typography.headingFamily,
-            }}>
+            <h2 className="m-0 text-lg font-bold text-brand-800 tracking-tight font-heading">
               Platform Metrikleri
             </h2>
-            <p style={{
-              margin: `${spacing[1]} 0 0`,
-              fontSize: typography.size.sm,
-              color: colors.brand[600],
-            }}>
+            <p className="mt-1 mb-0 text-sm text-brand-600">
               Son 30 gun
             </p>
           </div>
-          <div style={{
-            width: "8px",
-            height: "8px",
-            borderRadius: radius.full,
-            background: isLoading ? colors.warning.base : colors.success.base,
-            boxShadow: isLoading
-              ? `0 0 0 3px ${colors.warning.light}`
-              : `0 0 0 3px ${colors.success.light}`,
-          }} />
+          <div className={cn(
+            "w-2 h-2 rounded-full",
+            isLoading
+              ? "bg-warning-base shadow-[0_0_0_3px_var(--color-warning-light)]"
+              : "bg-success-base shadow-[0_0_0_3px_var(--color-success-light)]"
+          )} />
         </div>
 
         {/* Live Metric Tiles */}
@@ -379,7 +283,7 @@ export function AdminOverviewPage() {
             note="Olusturulan tum isler"
             loading={isLoading}
             testId="overview-metric-total-jobs"
-            accentColor={colors.brand[500]}
+            accentColor="var(--color-brand-500)"
           />
           <MetricTile
             label="Basari Orani"
@@ -387,7 +291,7 @@ export function AdminOverviewPage() {
             note="Tamamlanan / toplam is"
             loading={isLoading}
             testId="overview-metric-success-rate"
-            accentColor={colors.success.base}
+            accentColor="var(--color-success-base)"
           />
           <MetricTile
             label="Toplam Yayin"
@@ -395,7 +299,7 @@ export function AdminOverviewPage() {
             note="Basarili yayin sayisi"
             loading={isLoading}
             testId="overview-metric-published"
-            accentColor={colors.info.base}
+            accentColor="var(--color-info-base)"
           />
           <MetricTile
             label="Basarisiz"
@@ -403,7 +307,7 @@ export function AdminOverviewPage() {
             note="Hata ile sonuclanan yayinlar"
             loading={isLoading}
             testId="overview-metric-failed"
-            accentColor={colors.error.base}
+            accentColor="var(--color-error-base)"
           />
         </MetricGrid>
       </div>
@@ -414,18 +318,15 @@ export function AdminOverviewPage() {
         description="Ana urun alanlarinin mevcut durumu. Omurga yuzeyler oturmus, derin entegrasyon bekleyen alanlar asagida belirtilmistir."
         testId="release-readiness-section"
       >
-        <div data-testid="release-readiness-heading" style={{ display: "none" }}>Urun Hazirlik Durumu</div>
-        <p
-          style={{ display: "none" }}
-          data-testid="release-readiness-note"
-        >Ana urun alanlarinin mevcut durumu. Omurga yuzeyler oturmus, derin entegrasyon bekleyen alanlar asagida belirtilmistir.</p>
-        <div style={{ display: "flex", flexDirection: "column" }}>
+        <div data-testid="release-readiness-heading" className="hidden">Urun Hazirlik Durumu</div>
+        <p className="hidden" data-testid="release-readiness-note">Ana urun alanlarinin mevcut durumu. Omurga yuzeyler oturmus, derin entegrasyon bekleyen alanlar asagida belirtilmistir.</p>
+        <div className="flex flex-col">
           {READINESS_ITEMS.map((item, index) => (
             <ReadinessCard key={item.area} item={item} index={index} />
           ))}
         </div>
         <p
-          style={{ margin: `${spacing[3]} 0 0`, fontSize: typography.size.xs, color: colors.neutral[400] }}
+          className="mt-3 mb-0 text-xs text-neutral-400"
           data-testid="release-readiness-deferred-note"
         >
           Derin backend entegrasyonu, gercek metrik verisi ve kapsamli gorsel modernizasyon ayri fazlarda ele alinacaktir.
@@ -433,19 +334,11 @@ export function AdminOverviewPage() {
       </SectionShell>
 
       {/* ---- Quick Access ---- */}
-      <SectionShell
-        testId="admin-quick-access-section"
-      >
-        <h3 data-testid="admin-quick-access-heading" style={{
-          margin: 0,
-          fontSize: typography.size.lg,
-          fontWeight: typography.weight.semibold,
-          color: colors.neutral[900],
-          marginBottom: spacing[4],
-        }}>
+      <SectionShell testId="admin-quick-access-section">
+        <h3 data-testid="admin-quick-access-heading" className="m-0 text-lg font-semibold text-neutral-900 mb-4">
           Hizli Erisim
         </h3>
-        <div style={CARD_GRID}>
+        <div className="grid grid-cols-3 gap-4">
           {filteredLinks.map((link) => (
             <QuickCard
               key={link.to}

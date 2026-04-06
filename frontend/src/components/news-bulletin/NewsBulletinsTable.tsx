@@ -1,3 +1,4 @@
+import { cn } from "../../lib/cn";
 import type { NewsBulletinResponse } from "../../api/newsBulletinApi";
 import { formatDateShort } from "../../lib/formatDate";
 import { NewsBulletinArtifactSummary } from "./NewsBulletinArtifactSummary";
@@ -11,11 +12,8 @@ import { NewsBulletinArtifactConsistencySummary } from "./NewsBulletinArtifactCo
 import { NewsBulletinInputQualitySummary } from "./NewsBulletinInputQualitySummary";
 import { NewsBulletinInputSpecificitySummary } from "./NewsBulletinInputSpecificitySummary";
 import { NewsBulletinTargetOutputConsistencySummary } from "./NewsBulletinTargetOutputConsistencySummary";
-import { colors, typography } from "../design-system/tokens";
 
 const DASH = "—";
-const TH_STYLE: React.CSSProperties = { padding: "0.5rem 0.75rem", borderBottom: `1px solid ${colors.border.subtle}` };
-const TD_STYLE: React.CSSProperties = { padding: "0.5rem 0.75rem" };
 
 interface Props {
   bulletins: NewsBulletinResponse[];
@@ -29,34 +27,34 @@ export function NewsBulletinsTable({ bulletins, selectedId, onSelect }: Props) {
   }
 
   return (
-    <div style={{ overflowX: "auto" }}>
-    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: typography.size.md }}>
+    <div className="overflow-x-auto">
+    <table className="w-full border-collapse text-md">
       <thead>
-        <tr style={{ background: colors.neutral[100], textAlign: "left" }}>
+        <tr className="bg-neutral-100 text-left">
           {/* Kimlik & Durum */}
-          <th style={TH_STYLE}>Başlık</th>
-          <th style={TH_STYLE}>Konu</th>
-          <th style={TH_STYLE}>Kaynak Modu</th>
-          <th style={TH_STYLE}>Stil</th>
-          <th style={TH_STYLE}>Durum</th>
-          <th style={TH_STYLE}>Dil</th>
+          <th className="px-3 py-2 border-b border-border-subtle">Başlık</th>
+          <th className="px-3 py-2 border-b border-border-subtle">Konu</th>
+          <th className="px-3 py-2 border-b border-border-subtle">Kaynak Modu</th>
+          <th className="px-3 py-2 border-b border-border-subtle">Stil</th>
+          <th className="px-3 py-2 border-b border-border-subtle">Durum</th>
+          <th className="px-3 py-2 border-b border-border-subtle">Dil</th>
           {/* Hazırlık & İçerik */}
-          <th style={TH_STYLE}>Hazırlık</th>
-          <th style={TH_STYLE}>Artifact</th>
-          <th style={TH_STYLE}>Haberler</th>
-          <th style={TH_STYLE}>Uygunluk</th>
-          <th style={TH_STYLE}>Kaynak Kapsamı</th>
+          <th className="px-3 py-2 border-b border-border-subtle">Hazırlık</th>
+          <th className="px-3 py-2 border-b border-border-subtle">Artifact</th>
+          <th className="px-3 py-2 border-b border-border-subtle">Haberler</th>
+          <th className="px-3 py-2 border-b border-border-subtle">Uygunluk</th>
+          <th className="px-3 py-2 border-b border-border-subtle">Kaynak Kapsamı</th>
           {/* Girdi */}
-          <th style={TH_STYLE}>Girdi Kalitesi</th>
-          <th style={TH_STYLE}>Girdi Özgüllüğü</th>
-          <th style={TH_STYLE}>İçerik Kalitesi</th>
+          <th className="px-3 py-2 border-b border-border-subtle">Girdi Kalitesi</th>
+          <th className="px-3 py-2 border-b border-border-subtle">Girdi Özgüllüğü</th>
+          <th className="px-3 py-2 border-b border-border-subtle">İçerik Kalitesi</th>
           {/* Yayın */}
-          <th style={TH_STYLE}>Yayın Sinyali</th>
+          <th className="px-3 py-2 border-b border-border-subtle">Yayın Sinyali</th>
           {/* Tutarlılık */}
-          <th style={TH_STYLE}>Artifact Tutarlılığı</th>
-          <th style={TH_STYLE}>Target/Output Tutarlılığı</th>
+          <th className="px-3 py-2 border-b border-border-subtle">Artifact Tutarlılığı</th>
+          <th className="px-3 py-2 border-b border-border-subtle">Target/Output Tutarlılığı</th>
           {/* Zaman */}
-          <th style={TH_STYLE}>Oluşturulma</th>
+          <th className="px-3 py-2 border-b border-border-subtle">Oluşturulma</th>
         </tr>
       </thead>
       <tbody>
@@ -64,40 +62,40 @@ export function NewsBulletinsTable({ bulletins, selectedId, onSelect }: Props) {
           <tr
             key={b.id}
             onClick={() => onSelect(b.id)}
-            style={{
-              cursor: "pointer",
-              background: selectedId === b.id ? colors.info.light : undefined,
-            }}
+            className={cn(
+              "cursor-pointer",
+              selectedId === b.id ? "bg-info-light" : "",
+            )}
           >
             {/* Kimlik & Durum */}
-            <td style={{ padding: "0.5rem 0.75rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>{b.title ?? DASH}</td>
-            <td style={{ padding: "0.5rem 0.75rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>{b.topic ?? DASH}</td>
-            <td style={TD_STYLE}>{b.source_mode ?? DASH}</td>
-            <td style={TD_STYLE}>{b.bulletin_style ?? DASH}</td>
-            <td style={TD_STYLE}>{b.status ?? DASH}</td>
-            <td style={TD_STYLE}>{b.language ?? DASH}</td>
+            <td className="px-3 py-2 break-words [overflow-wrap:anywhere]">{b.title ?? DASH}</td>
+            <td className="px-3 py-2 break-words [overflow-wrap:anywhere]">{b.topic ?? DASH}</td>
+            <td className="px-3 py-2">{b.source_mode ?? DASH}</td>
+            <td className="px-3 py-2">{b.bulletin_style ?? DASH}</td>
+            <td className="px-3 py-2">{b.status ?? DASH}</td>
+            <td className="px-3 py-2">{b.language ?? DASH}</td>
             {/* Hazırlık & İçerik */}
-            <td style={TD_STYLE}>
+            <td className="px-3 py-2">
               <NewsBulletinReadinessSummary
                 selectedNewsCount={b.selected_news_count}
                 hasScript={b.has_script}
                 hasMetadata={b.has_metadata}
               />
             </td>
-            <td style={TD_STYLE}>
+            <td className="px-3 py-2">
               <NewsBulletinArtifactSummary hasScript={b.has_script} hasMetadata={b.has_metadata} />
             </td>
-            <td style={TD_STYLE}>
+            <td className="px-3 py-2">
               <NewsBulletinSelectedNewsSummary selectedNewsCount={b.selected_news_count} />
             </td>
-            <td style={TD_STYLE}>
+            <td className="px-3 py-2">
               <NewsBulletinEnforcementSummary
                 selectedNewsCount={b.selected_news_count}
                 hasSelectedNewsWarning={b.has_selected_news_warning}
                 selectedNewsWarningCount={b.selected_news_warning_count}
               />
             </td>
-            <td style={TD_STYLE}>
+            <td className="px-3 py-2">
               <NewsBulletinSourceCoverageSummary
                 selectedNewsCount={b.selected_news_count}
                 selectedNewsSourceCount={b.selected_news_source_count}
@@ -105,7 +103,7 @@ export function NewsBulletinsTable({ bulletins, selectedId, onSelect }: Props) {
               />
             </td>
             {/* Girdi */}
-            <td style={TD_STYLE}>
+            <td className="px-3 py-2">
               <NewsBulletinInputQualitySummary
                 title={b.title}
                 topic={b.topic}
@@ -115,7 +113,7 @@ export function NewsBulletinsTable({ bulletins, selectedId, onSelect }: Props) {
                 bulletinStyle={b.bulletin_style}
               />
             </td>
-            <td style={TD_STYLE}>
+            <td className="px-3 py-2">
               <NewsBulletinInputSpecificitySummary
                 title={b.title}
                 topic={b.topic}
@@ -125,7 +123,7 @@ export function NewsBulletinsTable({ bulletins, selectedId, onSelect }: Props) {
                 bulletinStyle={b.bulletin_style}
               />
             </td>
-            <td style={TD_STYLE}>
+            <td className="px-3 py-2">
               <NewsBulletinSelectedNewsQualitySummary
                 selectedNewsCount={b.selected_news_count}
                 selectedNewsQualityCompleteCount={b.selected_news_quality_complete_count}
@@ -134,7 +132,7 @@ export function NewsBulletinsTable({ bulletins, selectedId, onSelect }: Props) {
               />
             </td>
             {/* Yayın */}
-            <td style={TD_STYLE}>
+            <td className="px-3 py-2">
               <NewsBulletinPublicationSignalSummary
                 selectedNewsCount={b.selected_news_count}
                 hasScript={b.has_script}
@@ -143,13 +141,13 @@ export function NewsBulletinsTable({ bulletins, selectedId, onSelect }: Props) {
               />
             </td>
             {/* Tutarlılık */}
-            <td style={TD_STYLE}>
+            <td className="px-3 py-2">
               <NewsBulletinArtifactConsistencySummary
                 hasScript={b.has_script}
                 hasMetadata={b.has_metadata}
               />
             </td>
-            <td style={TD_STYLE}>
+            <td className="px-3 py-2">
               <NewsBulletinTargetOutputConsistencySummary
                 title={b.title}
                 topic={b.topic}
@@ -161,7 +159,7 @@ export function NewsBulletinsTable({ bulletins, selectedId, onSelect }: Props) {
               />
             </td>
             {/* Zaman */}
-            <td style={{ padding: "0.5rem 0.75rem", color: colors.neutral[500] }}>
+            <td className="px-3 py-2 text-neutral-500">
               {formatDateShort(b.created_at)}
             </td>
           </tr>

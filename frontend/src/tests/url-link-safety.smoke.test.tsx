@@ -38,7 +38,7 @@ describe("Anchor tag safety", () => {
     const src = read("components/news-items/NewsItemDetailPanel.tsx");
     const anchorLine = src.split("\n").find((l) => l.includes("<a ") && l.includes("href"));
     expect(anchorLine).toBeTruthy();
-    expect(anchorLine).toContain("wordBreak");
+    expect(anchorLine!.includes("wordBreak") || anchorLine!.includes("break-all") || anchorLine!.includes("break-words")).toBe(true);
   });
 
   it("No anchor tags exist without rel attribute", () => {
@@ -78,7 +78,7 @@ describe("UrlField safety", () => {
     const urlFieldFn = src.match(/function UrlField[\s\S]*?return[\s\S]*?<\/div>\s*\);?\s*\}/);
     expect(urlFieldFn).toBeTruthy();
     const code = urlFieldFn![0];
-    expect(code.includes("wordBreak")).toBe(true);
+    expect(code.includes("wordBreak") || code.includes("break-all") || code.includes("break-words")).toBe(true);
   });
 
   it("SourceDetailPanel UrlField has overflowWrap", () => {
@@ -86,7 +86,7 @@ describe("UrlField safety", () => {
     const urlFieldFn = src.match(/function UrlField[\s\S]*?return[\s\S]*?<\/div>\s*\);?\s*\}/);
     expect(urlFieldFn).toBeTruthy();
     const code = urlFieldFn![0];
-    expect(code.includes("overflowWrap")).toBe(true);
+    expect(code.includes("overflowWrap") || code.includes("overflow-wrap") || code.includes("break-words") || code.includes("break-all")).toBe(true);
   });
 
   it("SourceDetailPanel UrlField has em-dash fallback for null", () => {

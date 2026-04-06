@@ -1,4 +1,3 @@
-import { colors, radius, typography } from "../design-system/tokens";
 import { safeJsonPretty } from "../../lib/safeJson";
 
 interface JsonPreviewFieldProps {
@@ -10,34 +9,22 @@ interface JsonPreviewFieldProps {
 export function JsonPreviewField({ label, value }: JsonPreviewFieldProps) {
   if (!value) {
     return (
-      <div style={{ marginBottom: "0.75rem" }}>
-        <div style={{ fontSize: typography.size.sm, fontWeight: 600, color: colors.neutral[600], marginBottom: "0.25rem" }}>
+      <div className="mb-3">
+        <div className="text-sm font-semibold text-neutral-600 mb-1">
           {label}
         </div>
-        <span style={{ color: colors.neutral[500], fontSize: typography.size.md }}>—</span>
+        <span className="text-neutral-500 text-md">&mdash;</span>
       </div>
     );
   }
 
   return (
-    <div style={{ marginBottom: "0.75rem" }}>
-      <div style={{ fontSize: typography.size.sm, fontWeight: 600, color: colors.neutral[600], marginBottom: "0.25rem" }}>
+    <div className="mb-3">
+      <div className="text-sm font-semibold text-neutral-600 mb-1">
         {label}
       </div>
       <pre
-        style={{
-          margin: 0,
-          padding: "0.5rem",
-          background: colors.neutral[50],
-          border: `1px solid ${colors.border.subtle}`,
-          borderRadius: radius.sm,
-          fontSize: typography.size.base,
-          overflowX: "auto",
-          maxHeight: "120px",
-          whiteSpace: "pre-wrap",
-          wordBreak: "break-all",
-          overflowWrap: "anywhere",
-        }}
+        className="m-0 p-2 bg-neutral-50 border border-border-subtle rounded-sm text-base overflow-x-auto max-h-[120px] whitespace-pre-wrap break-all [overflow-wrap:anywhere]"
       >
         {safeJsonPretty(value)}
       </pre>

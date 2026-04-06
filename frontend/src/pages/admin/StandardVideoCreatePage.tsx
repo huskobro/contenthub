@@ -2,7 +2,6 @@ import { useNavigate } from "react-router-dom";
 import { StandardVideoForm } from "../../components/standard-video/StandardVideoForm";
 import type { StandardVideoFormValues } from "../../components/standard-video/StandardVideoForm";
 import { useCreateStandardVideo } from "../../hooks/useCreateStandardVideo";
-import { colors, typography } from "../../components/design-system/tokens";
 
 export function StandardVideoCreatePage() {
   const navigate = useNavigate();
@@ -29,23 +28,11 @@ export function StandardVideoCreatePage() {
   }
 
   return (
-    <div style={{ padding: "1.5rem" }}>
-      <h2
-        style={{ fontSize: typography.size.xl, fontWeight: 600, marginBottom: "0.5rem" }}
-        data-testid="sv-create-heading"
-      >
+    <div className="p-6">
+      <h2 className="text-xl font-semibold mb-2" data-testid="sv-create-heading">
         Yeni Standard Video
       </h2>
-      <p
-        style={{
-          margin: "0 0 1.25rem",
-          fontSize: typography.size.md,
-          color: colors.neutral[600],
-          lineHeight: 1.6,
-          maxWidth: "640px",
-        }}
-        data-testid="sv-create-subtitle"
-      >
+      <p className="m-0 mb-5 text-md text-neutral-600 leading-relaxed max-w-[640px]" data-testid="sv-create-subtitle">
         Video uretim akisinin baslangic noktasi. Konu ve temel bilgileri girerek
         yeni bir standart video kaydi olusturun. Olusturulan kayit uzerinden
         script, metadata ve uretim adimlari ilerleyecektir.

@@ -1,5 +1,5 @@
-import { colors, radius, typography } from "../design-system/tokens";
 import type { JobStepResponse } from "../../api/jobsApi";
+import { cn } from "../../lib/cn";
 
 interface ProviderTrace {
   provider_name?: string;
@@ -19,61 +19,20 @@ interface ProviderTrace {
 
 function SystemCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div
-      style={{
-        border: `1px solid ${colors.border.subtle}`,
-        borderRadius: radius.md,
-        background: colors.neutral[50],
-        padding: "1rem",
-        marginBottom: "1rem",
-      }}
-    >
-      <h4 style={{ margin: "0 0 0.5rem", fontSize: typography.size.lg, color: colors.neutral[900] }}>{title}</h4>
+    <div className="border border-border-subtle rounded-md bg-neutral-50 p-4 mb-4">
+      <h4 className="m-0 mb-2 text-lg text-neutral-900">{title}</h4>
       {children}
     </div>
   );
 }
 
-const LABEL: React.CSSProperties = {
-  color: colors.neutral[600],
-  fontWeight: 500,
-  fontSize: typography.size.sm,
-};
-
-const VALUE: React.CSSProperties = {
-  fontSize: typography.size.base,
-  color: colors.neutral[900],
-};
-
-const SUCCESS_BADGE: React.CSSProperties = {
-  display: "inline-block",
-  padding: "0.1rem 0.375rem",
-  borderRadius: radius.sm,
-  fontSize: typography.size.xs,
-  fontWeight: 600,
-  background: colors.success.light,
-  color: colors.success.text,
-};
-
-const FAIL_BADGE: React.CSSProperties = {
-  display: "inline-block",
-  padding: "0.1rem 0.375rem",
-  borderRadius: radius.sm,
-  fontSize: typography.size.xs,
-  fontWeight: 600,
-  background: colors.error.light,
-  color: colors.error.text,
-};
-
 function parseTrace(json: string | null): ProviderTrace | null {
   if (!json) return null;
   try {
     const parsed = JSON.parse(json);
-    // The provider_trace may be nested under "provider_trace" key or at top level
     if (parsed.provider_trace && typeof parsed.provider_trace === "object") {
       return parsed.provider_trace as ProviderTrace;
     }
-    // If it has provider_name at top level, it's the trace itself
     if (parsed.provider_name) {
       return parsed as ProviderTrace;
     }
@@ -86,70 +45,67 @@ function parseTrace(json: string | null): ProviderTrace | null {
 function ProviderTraceCard({ step, trace }: { step: JobStepResponse; trace: ProviderTrace }) {
   return (
     <div
-      style={{
-        border: `1px solid ${colors.border.subtle}`,
-        borderRadius: radius.md,
-        padding: "0.75rem",
-        marginBottom: "0.5rem",
-        background: colors.neutral[0],
-      }}
+      className="border border-border-subtle rounded-md p-3 mb-2 bg-neutral-0"
       data-testid={`provider-trace-${step.step_key}`}
     >
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.5rem" }}>
-        <strong style={{ fontFamily: "monospace", fontSize: typography.size.base }}>{step.step_key}</strong>
-        <span style={trace.success ? SUCCESS_BADGE : FAIL_BADGE}>
+      <div className="flex justify-between mb-2">
+        <strong className="font-mono text-base">{step.step_key}</strong>
+        <span className={cn(
+          "inline-block px-1.5 py-0.5 rounded-sm text-xs font-semibold",
+          trace.success ? "bg-success-light text-success-text" : "bg-error-light text-error-text"
+        )}>
           {trace.success ? "OK" : "FAIL"}
         </span>
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "140px 1fr", gap: "0.25rem 0.75rem", fontSize: typography.size.base }}>
+      <div className="grid grid-cols-[140px_1fr] gap-x-3 gap-y-1 text-base">
         {trace.provider_name && (
           <>
-            <span style={LABEL}>Provider:</span>
-            <span style={VALUE}>{trace.provider_name}</span>
+            <span className="text-neutral-600 font-medium text-sm">Provider:</span>
+            <span className="text-base text-neutral-900">{trace.provider_name}</span>
           </>
         )}
         {trace.provider_kind && (
           <>
-            <span style={LABEL}>Tur:</span>
-            <span style={VALUE}>{trace.provider_kind}</span>
+            <span className="text-neutral-600 font-medium text-sm">Tur:</span>
+            <span className="text-base text-neutral-900">{trace.provider_kind}</span>
           </>
         )}
         {trace.model && (
           <>
-            <span style={LABEL}>Model:</span>
-            <span style={VALUE}>{trace.model}</span>
+            <span className="text-neutral-600 font-medium text-sm">Model:</span>
+            <span className="text-base text-neutral-900">{trace.model}</span>
           </>
         )}
         {trace.latency_ms != null && (
           <>
-            <span style={LABEL}>Gecikme:</span>
-            <span style={VALUE}>{(trace.latency_ms / 1000).toFixed(2)}s</span>
+            <span className="text-neutral-600 font-medium text-sm">Gecikme:</span>
+            <span className="text-base text-neutral-900">{(trace.latency_ms / 1000).toFixed(2)}s</span>
           </>
         )}
         {(trace.input_tokens != null || trace.output_tokens != null) && (
           <>
-            <span style={LABEL}>Token:</span>
-            <span style={VALUE}>
+            <span className="text-neutral-600 font-medium text-sm">Token:</span>
+            <span className="text-base text-neutral-900">
               {trace.input_tokens ?? "—"} in / {trace.output_tokens ?? "—"} out
             </span>
           </>
         )}
         {trace.cost_usd_estimate != null && (
           <>
-            <span style={LABEL}>Tahmini Maliyet:</span>
-            <span style={VALUE}>${trace.cost_usd_estimate.toFixed(4)}</span>
+            <span className="text-neutral-600 font-medium text-sm">Tahmini Maliyet:</span>
+            <span className="text-base text-neutral-900">${trace.cost_usd_estimate.toFixed(4)}</span>
           </>
         )}
         {trace.error_type && (
           <>
-            <span style={LABEL}>Hata Tipi:</span>
-            <span style={{ ...VALUE, color: colors.error.base }}>{trace.error_type}</span>
+            <span className="text-neutral-600 font-medium text-sm">Hata Tipi:</span>
+            <span className="text-base text-error">{trace.error_type}</span>
           </>
         )}
         {trace.error_message && (
           <>
-            <span style={LABEL}>Hata:</span>
-            <span style={{ ...VALUE, color: colors.error.base, wordBreak: "break-word" }}>{trace.error_message}</span>
+            <span className="text-neutral-600 font-medium text-sm">Hata:</span>
+            <span className="text-base text-error break-words">{trace.error_message}</span>
           </>
         )}
       </div>
@@ -183,25 +139,14 @@ export function JobSystemPanels({ steps = [] }: JobSystemPanelsProps) {
     <div>
       <SystemCard title="Logs">
         {logSteps.length === 0 ? (
-          <p style={{ margin: 0, color: colors.neutral[500], fontSize: typography.size.sm }}>
+          <p className="m-0 text-neutral-500 text-sm">
             Henüz log kaydi yok.
           </p>
         ) : (
           logSteps.map((s) => (
-            <div key={s.id} style={{ marginBottom: "0.5rem" }}>
-              <strong style={{ fontFamily: "monospace", fontSize: typography.size.base }}>{s.step_key}</strong>
-              <pre
-                style={{
-                  background: colors.neutral[900],
-                  color: colors.border.subtle,
-                  padding: "0.5rem",
-                  borderRadius: radius.sm,
-                  fontSize: typography.size.sm,
-                  overflow: "auto",
-                  maxHeight: "200px",
-                  marginTop: "0.25rem",
-                }}
-              >
+            <div key={s.id} className="mb-2">
+              <strong className="font-mono text-base">{s.step_key}</strong>
+              <pre className="bg-neutral-900 text-border-subtle p-2 rounded-sm text-sm overflow-auto max-h-[200px] mt-1">
                 {s.log_text}
               </pre>
             </div>
@@ -211,7 +156,7 @@ export function JobSystemPanels({ steps = [] }: JobSystemPanelsProps) {
 
       <SystemCard title="Artifacts">
         {artifactSteps.length === 0 ? (
-          <p style={{ margin: 0, color: colors.neutral[500], fontSize: typography.size.sm }}>
+          <p className="m-0 text-neutral-500 text-sm">
             Henüz artifact yok.
           </p>
         ) : (
@@ -219,20 +164,9 @@ export function JobSystemPanels({ steps = [] }: JobSystemPanelsProps) {
             let parsed: unknown = null;
             try { parsed = JSON.parse(s.artifact_refs_json!); } catch { /* ignore */ }
             return (
-              <div key={s.id} style={{ marginBottom: "0.5rem" }}>
-                <strong style={{ fontFamily: "monospace", fontSize: typography.size.base }}>{s.step_key}</strong>
-                <pre
-                  style={{
-                    background: colors.neutral[900],
-                    color: colors.border.subtle,
-                    padding: "0.5rem",
-                    borderRadius: radius.sm,
-                    fontSize: typography.size.sm,
-                    overflow: "auto",
-                    maxHeight: "200px",
-                    marginTop: "0.25rem",
-                  }}
-                >
+              <div key={s.id} className="mb-2">
+                <strong className="font-mono text-base">{s.step_key}</strong>
+                <pre className="bg-neutral-900 text-border-subtle p-2 rounded-sm text-sm overflow-auto max-h-[200px] mt-1">
                   {parsed ? JSON.stringify(parsed, null, 2) : s.artifact_refs_json}
                 </pre>
               </div>
@@ -243,7 +177,7 @@ export function JobSystemPanels({ steps = [] }: JobSystemPanelsProps) {
 
       <SystemCard title="Provider Trace">
         {tracePairs.length === 0 ? (
-          <p style={{ margin: 0, color: colors.neutral[500], fontSize: typography.size.sm }} data-testid="provider-trace-empty">
+          <p className="m-0 text-neutral-500 text-sm" data-testid="provider-trace-empty">
             Henüz provider trace verisi yok.
           </p>
         ) : (

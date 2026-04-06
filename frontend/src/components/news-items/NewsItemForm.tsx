@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { NewsItemResponse } from "../../api/newsItemsApi";
 import { normalizeDateForInput } from "../../lib/formatDate";
-import { colors, radius, typography } from "../design-system/tokens";
+import { cn } from "../../lib/cn";
 
 export interface NewsItemFormValues {
   title: string;
@@ -24,51 +24,6 @@ interface NewsItemFormProps {
   onCancel: () => void;
   submitLabel?: string;
 }
-
-const COLOR_ERR = colors.error.base;
-const inputStyle: React.CSSProperties = {
-  width: "100%",
-  padding: "0.375rem 0.5rem",
-  fontSize: typography.size.md,
-  border: `1px solid ${colors.border.subtle}`,
-  borderRadius: radius.sm,
-  boxSizing: "border-box",
-};
-
-const labelStyle: React.CSSProperties = {
-  display: "block",
-  fontSize: typography.size.sm,
-  fontWeight: 600,
-  color: colors.neutral[700],
-  marginBottom: "0.25rem",
-};
-
-const fieldStyle: React.CSSProperties = {
-  marginBottom: "0.75rem",
-};
-
-const errorStyle: React.CSSProperties = {
-  fontSize: typography.size.sm,
-  color: COLOR_ERR,
-  marginTop: "0.2rem",
-};
-
-const BTN_PRIMARY: React.CSSProperties = {
-  padding: "0.375rem 1rem",
-  fontSize: typography.size.md,
-  color: colors.neutral[0],
-  border: "none",
-  borderRadius: radius.sm,
-};
-
-const BTN_CANCEL: React.CSSProperties = {
-  padding: "0.375rem 1rem",
-  fontSize: typography.size.md,
-  background: colors.neutral[100],
-  color: colors.neutral[700],
-  border: `1px solid ${colors.border.subtle}`,
-  borderRadius: radius.sm,
-};
 
 export function NewsItemForm({
   mode,
@@ -111,37 +66,40 @@ export function NewsItemForm({
     if (validate()) onSubmit(values);
   }
 
+  const inputCls = "w-full px-2 py-1.5 text-md border border-border-subtle rounded-sm box-border focus:outline-none focus:ring-2 focus:ring-focus";
+  const inputErrCls = "w-full px-2 py-1.5 text-md border border-error rounded-sm box-border focus:outline-none focus:ring-2 focus:ring-error";
+
   return (
     <form onSubmit={handleSubmit} noValidate>
-      <div style={fieldStyle}>
-        <label style={labelStyle}>
-          Başlık <span style={{ color: COLOR_ERR }}>*</span>
+      <div className="mb-3">
+        <label className="block text-sm font-semibold text-neutral-700 mb-1">
+          Başlık <span className="text-error">*</span>
         </label>
         <input
-          style={{ ...inputStyle, borderColor: errors.title ? COLOR_ERR : colors.border.subtle }}
+          className={errors.title ? inputErrCls : inputCls}
           value={values.title}
           onChange={(e) => set("title", e.target.value)}
           placeholder="Haber başlığı"
         />
-        {errors.title && <div style={errorStyle}>{errors.title}</div>}
+        {errors.title && <div className="text-sm text-error mt-0.5">{errors.title}</div>}
       </div>
 
-      <div style={fieldStyle}>
-        <label style={labelStyle}>
-          URL <span style={{ color: COLOR_ERR }}>*</span>
+      <div className="mb-3">
+        <label className="block text-sm font-semibold text-neutral-700 mb-1">
+          URL <span className="text-error">*</span>
         </label>
         <input
-          style={{ ...inputStyle, borderColor: errors.url ? COLOR_ERR : colors.border.subtle }}
+          className={errors.url ? inputErrCls : inputCls}
           value={values.url}
           onChange={(e) => set("url", e.target.value)}
           placeholder="Haber URL'si"
         />
-        {errors.url && <div style={errorStyle}>{errors.url}</div>}
+        {errors.url && <div className="text-sm text-error mt-0.5">{errors.url}</div>}
       </div>
 
-      <div style={fieldStyle}>
-        <label style={labelStyle}>Status</label>
-        <select style={inputStyle} value={values.status} onChange={(e) => set("status", e.target.value)}>
+      <div className="mb-3">
+        <label className="block text-sm font-semibold text-neutral-700 mb-1">Status</label>
+        <select className={inputCls} value={values.status} onChange={(e) => set("status", e.target.value)}>
           <option value="new">new</option>
           <option value="pending">pending</option>
           <option value="used">used</option>
@@ -150,60 +108,60 @@ export function NewsItemForm({
         </select>
       </div>
 
-      <div style={fieldStyle}>
-        <label style={labelStyle}>Kaynak ID</label>
+      <div className="mb-3">
+        <label className="block text-sm font-semibold text-neutral-700 mb-1">Kaynak ID</label>
         <input
-          style={inputStyle}
+          className={inputCls}
           value={values.source_id}
           onChange={(e) => set("source_id", e.target.value)}
           placeholder="Source UUID (opsiyonel)"
         />
       </div>
 
-      <div style={fieldStyle}>
-        <label style={labelStyle}>Dil</label>
+      <div className="mb-3">
+        <label className="block text-sm font-semibold text-neutral-700 mb-1">Dil</label>
         <input
-          style={inputStyle}
+          className={inputCls}
           value={values.language}
           onChange={(e) => set("language", e.target.value)}
           placeholder="ör. tr, en (opsiyonel)"
         />
       </div>
 
-      <div style={fieldStyle}>
-        <label style={labelStyle}>Kategori</label>
+      <div className="mb-3">
+        <label className="block text-sm font-semibold text-neutral-700 mb-1">Kategori</label>
         <input
-          style={inputStyle}
+          className={inputCls}
           value={values.category}
           onChange={(e) => set("category", e.target.value)}
           placeholder="ör. Teknoloji (opsiyonel)"
         />
       </div>
 
-      <div style={fieldStyle}>
-        <label style={labelStyle}>Yayınlanma Tarihi</label>
+      <div className="mb-3">
+        <label className="block text-sm font-semibold text-neutral-700 mb-1">Yayınlanma Tarihi</label>
         <input
-          style={inputStyle}
+          className={inputCls}
           type="datetime-local"
           value={values.published_at}
           onChange={(e) => set("published_at", e.target.value)}
         />
       </div>
 
-      <div style={fieldStyle}>
-        <label style={labelStyle}>Özet</label>
+      <div className="mb-3">
+        <label className="block text-sm font-semibold text-neutral-700 mb-1">Özet</label>
         <textarea
-          style={{ ...inputStyle, minHeight: "60px", resize: "vertical" }}
+          className={cn(inputCls, "min-h-[60px] resize-y")}
           value={values.summary}
           onChange={(e) => set("summary", e.target.value)}
           placeholder="Kısa özet (opsiyonel)"
         />
       </div>
 
-      <div style={fieldStyle}>
-        <label style={labelStyle}>Dedupe Key</label>
+      <div className="mb-3">
+        <label className="block text-sm font-semibold text-neutral-700 mb-1">Dedupe Key</label>
         <input
-          style={inputStyle}
+          className={inputCls}
           value={values.dedupe_key}
           onChange={(e) => set("dedupe_key", e.target.value)}
           placeholder="Dedupe anahtarı (opsiyonel)"
@@ -211,14 +169,17 @@ export function NewsItemForm({
       </div>
 
       {submitError && (
-        <div style={{ color: COLOR_ERR, fontSize: typography.size.md, marginBottom: "0.75rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>{submitError}</div>
+        <div className="text-error text-md mb-3 break-words [overflow-wrap:anywhere]">{submitError}</div>
       )}
 
-      <div style={{ display: "flex", gap: "0.5rem" }}>
+      <div className="flex gap-2">
         <button
           type="submit"
           disabled={isSubmitting}
-          style={{ ...BTN_PRIMARY, background: isSubmitting ? colors.info.light : colors.brand[500], cursor: isSubmitting ? "not-allowed" : "pointer" }}
+          className={cn(
+            "px-4 py-1.5 text-md text-neutral-0 border-none rounded-sm",
+            isSubmitting ? "bg-info-light cursor-not-allowed" : "bg-brand-500 cursor-pointer hover:bg-brand-600 transition-colors duration-fast"
+          )}
         >
           {isSubmitting ? "Kaydediliyor..." : (submitLabel ?? (mode === "create" ? "Oluştur" : "Kaydet"))}
         </button>
@@ -226,7 +187,10 @@ export function NewsItemForm({
           type="button"
           onClick={onCancel}
           disabled={isSubmitting}
-          style={{ ...BTN_CANCEL, cursor: isSubmitting ? "not-allowed" : "pointer" }}
+          className={cn(
+            "px-4 py-1.5 text-md bg-neutral-100 text-neutral-700 border border-border-subtle rounded-sm",
+            isSubmitting ? "cursor-not-allowed" : "cursor-pointer hover:bg-neutral-200 transition-colors duration-fast"
+          )}
         >
           İptal
         </button>

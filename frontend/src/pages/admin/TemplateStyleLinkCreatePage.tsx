@@ -2,7 +2,6 @@ import { useNavigate } from "react-router-dom";
 import { useCreateTemplateStyleLink } from "../../hooks/useCreateTemplateStyleLink";
 import { TemplateStyleLinkForm } from "../../components/template-style-links/TemplateStyleLinkForm";
 import type { TemplateStyleLinkFormValues } from "../../components/template-style-links/TemplateStyleLinkForm";
-import { colors, typography } from "../../components/design-system/tokens";
 
 export function TemplateStyleLinkCreatePage() {
   const navigate = useNavigate();
@@ -26,23 +25,11 @@ export function TemplateStyleLinkCreatePage() {
   }
 
   return (
-    <div style={{ maxWidth: "600px" }}>
-      <h2
-        style={{ margin: "0 0 0.5rem", fontSize: typography.size.xl, fontWeight: typography.weight.semibold }}
-        data-testid="tsl-create-heading"
-      >
+    <div className="max-w-[600px]">
+      <h2 className="m-0 mb-2 text-xl font-semibold" data-testid="tsl-create-heading">
         Yeni Sablon-Stil Baglantisi
       </h2>
-      <p
-        style={{
-          margin: "0 0 1.25rem",
-          fontSize: typography.size.md,
-          color: colors.neutral[600],
-          lineHeight: 1.6,
-          maxWidth: "640px",
-        }}
-        data-testid="tsl-create-subtitle"
-      >
+      <p className="m-0 mb-5 text-md text-neutral-600 leading-relaxed max-w-[640px]" data-testid="tsl-create-subtitle">
         Bir sablon ile style blueprint arasinda baglanti olusturun. Bu baglanti
         sablonun hangi gorsel kurallarla calisacagini belirler. Birincil, yedek
         veya deneysel rol atayabilirsiniz.

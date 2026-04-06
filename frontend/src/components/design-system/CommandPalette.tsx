@@ -289,7 +289,7 @@ export function CommandPalette() {
               discoveryLoading && "animate-palette-pulse"
             )}
           >
-            {discoveryLoading ? "\u23F3" : "\u2318"}
+            {discoveryLoading ? "⏳" : "⌘"}
           </span>
           <input
             ref={inputRef}
@@ -323,7 +323,7 @@ export function CommandPalette() {
               data-testid="command-palette-empty"
             >
               <span className="text-2xl text-neutral-300 leading-none">
-                {"\uD83D\uDD0D"}
+                {"🔍"}
               </span>
               {showDiscovery && discoverySearched
                 ? "Sonuc bulunamadi."
@@ -338,9 +338,9 @@ export function CommandPalette() {
               data-testid="command-palette-discovery-loading"
             >
               <span className="animate-palette-pulse">
-                {"\u23F3"}
+                {"⏳"}
               </span>
-              {`Aran\u0131yor...`}
+              {`Aranıyor...`}
             </div>
           )}
 
@@ -386,10 +386,10 @@ export function CommandPalette() {
         {/* Footer hint */}
         <div className="px-5 py-3 border-t border-border-subtle flex gap-4 text-sm text-neutral-400 bg-neutral-25">
           <span className="flex items-center gap-1">
-            <kbd className="font-mono text-xs bg-neutral-100 px-[0.4rem] py-[0.15rem] rounded-sm border border-neutral-200 shadow-xs leading-normal">{"\u2191\u2193"}</kbd> gezin
+            <kbd className="font-mono text-xs bg-neutral-100 px-[0.4rem] py-[0.15rem] rounded-sm border border-neutral-200 shadow-xs leading-normal">{"↑↓"}</kbd> gezin
           </span>
           <span className="flex items-center gap-1">
-            <kbd className="font-mono text-xs bg-neutral-100 px-[0.4rem] py-[0.15rem] rounded-sm border border-neutral-200 shadow-xs leading-normal">{"\u21B5"}</kbd> calistir
+            <kbd className="font-mono text-xs bg-neutral-100 px-[0.4rem] py-[0.15rem] rounded-sm border border-neutral-200 shadow-xs leading-normal">{"↵"}</kbd> calistir
           </span>
           <span className="flex items-center gap-1">
             <kbd className="font-mono text-xs bg-neutral-100 px-[0.4rem] py-[0.15rem] rounded-sm border border-neutral-200 shadow-xs leading-normal">esc</kbd> kapat

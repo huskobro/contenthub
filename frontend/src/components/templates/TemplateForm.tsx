@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { TemplateResponse } from "../../api/templatesApi";
 import { validateJson } from "../../lib/safeJson";
-import { colors, radius, typography } from "../design-system/tokens";
+import { cn } from "../../lib/cn";
 
 export interface TemplateFormValues {
   name: string;
@@ -26,65 +26,6 @@ interface TemplateFormProps {
   submitLabel?: string;
   cancelLabel?: string;
 }
-
-
-
-const BORDER_COLOR = colors.border.subtle;
-const COLOR_ERR = colors.error.base;
-
-const inputStyle: React.CSSProperties = {
-  width: "100%",
-  padding: "0.375rem 0.5rem",
-  fontSize: typography.size.md,
-  border: `1px solid ${BORDER_COLOR}`,
-  borderRadius: radius.sm,
-  boxSizing: "border-box",
-};
-
-const labelStyle: React.CSSProperties = {
-  display: "block",
-  fontSize: typography.size.sm,
-  fontWeight: 600,
-  color: colors.neutral[700],
-  marginBottom: "0.25rem",
-};
-
-const fieldStyle: React.CSSProperties = {
-  marginBottom: "0.75rem",
-};
-
-const errorStyle: React.CSSProperties = {
-  fontSize: typography.size.sm,
-  color: COLOR_ERR,
-  marginTop: "0.2rem",
-};
-
-const REQ_MARK: React.CSSProperties = { color: COLOR_ERR };
-
-const JSON_TEXTAREA: React.CSSProperties = {
-  ...inputStyle,
-  minHeight: "70px",
-  resize: "vertical",
-  fontFamily: "monospace",
-  fontSize: typography.size.base,
-};
-
-const BTN_PRIMARY: React.CSSProperties = {
-  padding: "0.375rem 1rem",
-  fontSize: typography.size.md,
-  color: colors.neutral[0],
-  border: "none",
-  borderRadius: radius.sm,
-};
-
-const BTN_CANCEL: React.CSSProperties = {
-  padding: "0.375rem 1rem",
-  fontSize: typography.size.md,
-  background: colors.neutral[100],
-  color: colors.neutral[700],
-  border: `1px solid ${BORDER_COLOR}`,
-  borderRadius: radius.sm,
-};
 
 export function TemplateForm({
   mode,
@@ -146,128 +87,131 @@ export function TemplateForm({
 
   return (
     <form onSubmit={handleSubmit} noValidate>
-      <div style={fieldStyle}>
-        <label style={labelStyle}>
-          Ad <span style={REQ_MARK}>*</span>
+      <div className="mb-3">
+        <label className="block text-sm font-semibold text-neutral-700 mb-1">
+          Ad <span className="text-error">*</span>
         </label>
         <input
-          style={{ ...inputStyle, borderColor: errors.name ? COLOR_ERR : BORDER_COLOR }}
+          className={cn("w-full py-1.5 px-2 text-md border rounded-sm box-border", errors.name ? "border-error" : "border-border-subtle")}
           value={values.name}
           onChange={(e) => set("name", e.target.value)}
           placeholder="Template adı"
         />
-        {errors.name && <div style={errorStyle}>{errors.name}</div>}
+        {errors.name && <div className="text-sm text-error mt-0.5">{errors.name}</div>}
       </div>
 
-      <div style={fieldStyle}>
-        <label style={labelStyle}>
-          Template Type <span style={REQ_MARK}>*</span>
+      <div className="mb-3">
+        <label className="block text-sm font-semibold text-neutral-700 mb-1">
+          Template Type <span className="text-error">*</span>
         </label>
-        <select style={inputStyle} value={values.template_type} onChange={(e) => set("template_type", e.target.value)}>
+        <select className="w-full py-1.5 px-2 text-md border border-border-subtle rounded-sm box-border" value={values.template_type} onChange={(e) => set("template_type", e.target.value)}>
           <option value="style">style</option>
           <option value="content">content</option>
           <option value="publish">publish</option>
         </select>
-        {errors.template_type && <div style={errorStyle}>{errors.template_type}</div>}
+        {errors.template_type && <div className="text-sm text-error mt-0.5">{errors.template_type}</div>}
       </div>
 
-      <div style={fieldStyle}>
-        <label style={labelStyle}>
-          Owner Scope <span style={REQ_MARK}>*</span>
+      <div className="mb-3">
+        <label className="block text-sm font-semibold text-neutral-700 mb-1">
+          Owner Scope <span className="text-error">*</span>
         </label>
-        <select style={inputStyle} value={values.owner_scope} onChange={(e) => set("owner_scope", e.target.value)}>
+        <select className="w-full py-1.5 px-2 text-md border border-border-subtle rounded-sm box-border" value={values.owner_scope} onChange={(e) => set("owner_scope", e.target.value)}>
           <option value="system">system</option>
           <option value="admin">admin</option>
           <option value="user">user</option>
         </select>
-        {errors.owner_scope && <div style={errorStyle}>{errors.owner_scope}</div>}
+        {errors.owner_scope && <div className="text-sm text-error mt-0.5">{errors.owner_scope}</div>}
       </div>
 
-      <div style={fieldStyle}>
-        <label style={labelStyle}>Module Scope</label>
+      <div className="mb-3">
+        <label className="block text-sm font-semibold text-neutral-700 mb-1">Module Scope</label>
         <input
-          style={inputStyle}
+          className="w-full py-1.5 px-2 text-md border border-border-subtle rounded-sm box-border"
           value={values.module_scope}
           onChange={(e) => set("module_scope", e.target.value)}
           placeholder="ör. standard_video (opsiyonel)"
         />
       </div>
 
-      <div style={fieldStyle}>
-        <label style={labelStyle}>Açıklama</label>
+      <div className="mb-3">
+        <label className="block text-sm font-semibold text-neutral-700 mb-1">Açıklama</label>
         <textarea
-          style={{ ...inputStyle, minHeight: "60px", resize: "vertical" }}
+          className="w-full py-1.5 px-2 text-md border border-border-subtle rounded-sm box-border min-h-[60px] resize-y"
           value={values.description}
           onChange={(e) => set("description", e.target.value)}
           placeholder="Opsiyonel açıklama"
         />
       </div>
 
-      <div style={fieldStyle}>
-        <label style={labelStyle}>Status</label>
-        <select style={inputStyle} value={values.status} onChange={(e) => set("status", e.target.value)}>
+      <div className="mb-3">
+        <label className="block text-sm font-semibold text-neutral-700 mb-1">Status</label>
+        <select className="w-full py-1.5 px-2 text-md border border-border-subtle rounded-sm box-border" value={values.status} onChange={(e) => set("status", e.target.value)}>
           <option value="draft">draft</option>
           <option value="active">active</option>
           <option value="archived">archived</option>
         </select>
       </div>
 
-      <div style={fieldStyle}>
-        <label style={labelStyle}>Version</label>
+      <div className="mb-3">
+        <label className="block text-sm font-semibold text-neutral-700 mb-1">Version</label>
         <input
-          style={{ ...inputStyle, borderColor: errors.version ? COLOR_ERR : BORDER_COLOR }}
+          className={cn("w-full py-1.5 px-2 text-md border rounded-sm box-border", errors.version ? "border-error" : "border-border-subtle")}
           type="number"
           min={0}
           value={values.version}
           onChange={(e) => set("version", e.target.value)}
         />
-        {errors.version && <div style={errorStyle}>{errors.version}</div>}
+        {errors.version && <div className="text-sm text-error mt-0.5">{errors.version}</div>}
       </div>
 
-      <div style={{ borderTop: `1px solid ${colors.neutral[100]}`, paddingTop: "0.75rem", marginTop: "0.25rem" }}>
-        <div style={fieldStyle}>
-          <label style={labelStyle}>style_profile_json</label>
+      <div className="border-t border-neutral-100 pt-3 mt-1">
+        <div className="mb-3">
+          <label className="block text-sm font-semibold text-neutral-700 mb-1">style_profile_json</label>
           <textarea
-            style={{ ...JSON_TEXTAREA, borderColor: errors.style_profile_json ? COLOR_ERR : BORDER_COLOR }}
+            className={cn("w-full py-1.5 px-2 text-base font-mono border rounded-sm box-border min-h-[70px] resize-y", errors.style_profile_json ? "border-error" : "border-border-subtle")}
             value={values.style_profile_json}
             onChange={(e) => set("style_profile_json", e.target.value)}
             placeholder='{"key": "value"}'
           />
-          {errors.style_profile_json && <div style={errorStyle}>{errors.style_profile_json}</div>}
+          {errors.style_profile_json && <div className="text-sm text-error mt-0.5">{errors.style_profile_json}</div>}
         </div>
 
-        <div style={fieldStyle}>
-          <label style={labelStyle}>content_rules_json</label>
+        <div className="mb-3">
+          <label className="block text-sm font-semibold text-neutral-700 mb-1">content_rules_json</label>
           <textarea
-            style={{ ...JSON_TEXTAREA, borderColor: errors.content_rules_json ? COLOR_ERR : BORDER_COLOR }}
+            className={cn("w-full py-1.5 px-2 text-base font-mono border rounded-sm box-border min-h-[70px] resize-y", errors.content_rules_json ? "border-error" : "border-border-subtle")}
             value={values.content_rules_json}
             onChange={(e) => set("content_rules_json", e.target.value)}
             placeholder='{"key": "value"}'
           />
-          {errors.content_rules_json && <div style={errorStyle}>{errors.content_rules_json}</div>}
+          {errors.content_rules_json && <div className="text-sm text-error mt-0.5">{errors.content_rules_json}</div>}
         </div>
 
-        <div style={fieldStyle}>
-          <label style={labelStyle}>publish_profile_json</label>
+        <div className="mb-3">
+          <label className="block text-sm font-semibold text-neutral-700 mb-1">publish_profile_json</label>
           <textarea
-            style={{ ...JSON_TEXTAREA, borderColor: errors.publish_profile_json ? COLOR_ERR : BORDER_COLOR }}
+            className={cn("w-full py-1.5 px-2 text-base font-mono border rounded-sm box-border min-h-[70px] resize-y", errors.publish_profile_json ? "border-error" : "border-border-subtle")}
             value={values.publish_profile_json}
             onChange={(e) => set("publish_profile_json", e.target.value)}
             placeholder='{"key": "value"}'
           />
-          {errors.publish_profile_json && <div style={errorStyle}>{errors.publish_profile_json}</div>}
+          {errors.publish_profile_json && <div className="text-sm text-error mt-0.5">{errors.publish_profile_json}</div>}
         </div>
       </div>
 
       {submitError && (
-        <div style={{ color: COLOR_ERR, fontSize: typography.size.md, marginBottom: "0.75rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>{submitError}</div>
+        <div className="text-error text-md mb-3 break-words" style={{ overflowWrap: "anywhere" }}>{submitError}</div>
       )}
 
-      <div style={{ display: "flex", gap: "0.5rem" }}>
+      <div className="flex gap-2">
         <button
           type="submit"
           disabled={isSubmitting}
-          style={{ ...BTN_PRIMARY, background: isSubmitting ? colors.info.light : colors.brand[500], cursor: isSubmitting ? "not-allowed" : "pointer" }}
+          className={cn(
+            "py-1.5 px-4 text-md text-neutral-0 border-none rounded-sm",
+            isSubmitting ? "bg-info-light cursor-not-allowed" : "bg-brand-500 cursor-pointer"
+          )}
         >
           {isSubmitting ? "Kaydediliyor..." : (submitLabel ?? (mode === "create" ? "Oluştur" : "Kaydet"))}
         </button>
@@ -275,7 +219,7 @@ export function TemplateForm({
           type="button"
           onClick={onCancel}
           disabled={isSubmitting}
-          style={{ ...BTN_CANCEL, cursor: isSubmitting ? "not-allowed" : "pointer" }}
+          className={cn("py-1.5 px-4 text-md bg-neutral-100 text-neutral-700 border border-border-subtle rounded-sm", isSubmitting ? "cursor-not-allowed" : "cursor-pointer")}
         >
           {cancelLabel}
         </button>

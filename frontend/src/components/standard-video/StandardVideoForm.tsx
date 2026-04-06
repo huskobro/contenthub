@@ -2,7 +2,7 @@ import { useState } from "react";
 import type { StandardVideoResponse } from "../../api/standardVideoApi";
 import { SubtitleStylePicker } from "./SubtitleStylePicker";
 import { useSubtitlePresets } from "../../hooks/useSubtitlePresets";
-import { colors, radius, typography } from "../design-system/tokens";
+import { cn } from "../../lib/cn";
 
 export interface StandardVideoFormValues {
   topic: string;
@@ -26,48 +26,6 @@ interface Props {
 }
 
 const STATUS_OPTIONS = ["draft", "script_ready", "metadata_ready", "ready", "failed"];
-const COLOR_ERR = colors.error.base;
-
-const FIELD_STYLE: React.CSSProperties = {
-  display: "block",
-  width: "100%",
-  padding: "0.375rem 0.5rem",
-  fontSize: typography.size.md,
-  border: `1px solid ${colors.border.default}`,
-  borderRadius: radius.sm,
-  boxSizing: "border-box",
-};
-
-const LABEL_STYLE: React.CSSProperties = {
-  display: "block",
-  fontSize: typography.size.base,
-  fontWeight: 500,
-  color: colors.neutral[700],
-  marginBottom: "0.25rem",
-};
-
-const ROW_STYLE: React.CSSProperties = {
-  marginBottom: "0.875rem",
-};
-
-const BTN_PRIMARY: React.CSSProperties = {
-  padding: "0.5rem 1.25rem",
-  fontSize: typography.size.md,
-  background: colors.brand[500],
-  color: colors.neutral[0],
-  border: "none",
-  borderRadius: radius.sm,
-};
-
-const BTN_CANCEL: React.CSSProperties = {
-  padding: "0.5rem 1.25rem",
-  fontSize: typography.size.md,
-  background: "transparent",
-  color: colors.neutral[600],
-  border: `1px solid ${colors.border.default}`,
-  borderRadius: radius.sm,
-  cursor: "pointer",
-};
 
 function toStr(v: string | null | undefined): string {
   return v ?? "";
@@ -127,49 +85,49 @@ export function StandardVideoForm({
     onSubmit(values);
   }
 
+  const inputCls = "block w-full px-2 py-1.5 text-md border border-border rounded-sm box-border focus:outline-none focus:ring-2 focus:ring-focus";
+
   return (
-    <form onSubmit={handleSubmit} style={{ maxWidth: "560px" }}>
-      <div style={ROW_STYLE}>
-        <label style={LABEL_STYLE}>
-          Konu <span style={{ color: COLOR_ERR }}>*</span>
+    <form onSubmit={handleSubmit} className="max-w-[560px]">
+      <div className="mb-3.5">
+        <label className="block text-base font-medium text-neutral-700 mb-1">
+          Konu <span className="text-error">*</span>
         </label>
         <input
-          style={FIELD_STYLE}
+          className={inputCls}
           value={values.topic}
           onChange={(e) => set("topic", e.target.value)}
           placeholder="Videonun ana konusu"
         />
         {topicError && (
-          <p style={{ color: COLOR_ERR, fontSize: typography.size.base, margin: "0.25rem 0 0" }}>
-            {topicError}
-          </p>
+          <p className="text-error text-base mt-1 mb-0">{topicError}</p>
         )}
       </div>
 
-      <div style={ROW_STYLE}>
-        <label style={LABEL_STYLE}>Başlık</label>
+      <div className="mb-3.5">
+        <label className="block text-base font-medium text-neutral-700 mb-1">Başlık</label>
         <input
-          style={FIELD_STYLE}
+          className={inputCls}
           value={values.title}
           onChange={(e) => set("title", e.target.value)}
           placeholder="Kullanıcı dostu etiket (opsiyonel)"
         />
       </div>
 
-      <div style={ROW_STYLE}>
-        <label style={LABEL_STYLE}>Brief</label>
+      <div className="mb-3.5">
+        <label className="block text-base font-medium text-neutral-700 mb-1">Brief</label>
         <textarea
-          style={{ ...FIELD_STYLE, minHeight: "80px", resize: "vertical" }}
+          className={cn(inputCls, "min-h-[80px] resize-y")}
           value={values.brief}
           onChange={(e) => set("brief", e.target.value)}
           placeholder="Kısa açıklama veya yönlendirme"
         />
       </div>
 
-      <div style={ROW_STYLE}>
-        <label style={LABEL_STYLE}>Hedef Süre (saniye)</label>
+      <div className="mb-3.5">
+        <label className="block text-base font-medium text-neutral-700 mb-1">Hedef Süre (saniye)</label>
         <input
-          style={FIELD_STYLE}
+          className={inputCls}
           type="number"
           min={0}
           value={values.target_duration_seconds}
@@ -177,43 +135,41 @@ export function StandardVideoForm({
           placeholder="örn. 120"
         />
         {durationError && (
-          <p style={{ color: COLOR_ERR, fontSize: typography.size.base, margin: "0.25rem 0 0" }}>
-            {durationError}
-          </p>
+          <p className="text-error text-base mt-1 mb-0">{durationError}</p>
         )}
       </div>
 
-      <div style={ROW_STYLE}>
-        <label style={LABEL_STYLE}>Ton</label>
+      <div className="mb-3.5">
+        <label className="block text-base font-medium text-neutral-700 mb-1">Ton</label>
         <input
-          style={FIELD_STYLE}
+          className={inputCls}
           value={values.tone}
           onChange={(e) => set("tone", e.target.value)}
           placeholder="örn. formal, casual, dramatic"
         />
       </div>
 
-      <div style={ROW_STYLE}>
-        <label style={LABEL_STYLE}>Dil</label>
+      <div className="mb-3.5">
+        <label className="block text-base font-medium text-neutral-700 mb-1">Dil</label>
         <input
-          style={FIELD_STYLE}
+          className={inputCls}
           value={values.language}
           onChange={(e) => set("language", e.target.value)}
           placeholder="örn. tr, en"
         />
       </div>
 
-      <div style={ROW_STYLE}>
-        <label style={LABEL_STYLE}>Görsel Yön</label>
+      <div className="mb-3.5">
+        <label className="block text-base font-medium text-neutral-700 mb-1">Görsel Yön</label>
         <input
-          style={FIELD_STYLE}
+          className={inputCls}
           value={values.visual_direction}
           onChange={(e) => set("visual_direction", e.target.value)}
           placeholder="örn. clean, cinematic, minimal"
         />
       </div>
 
-      <div style={ROW_STYLE}>
+      <div className="mb-3.5">
         <SubtitleStylePicker
           value={values.subtitle_style}
           onChange={(presetId) => set("subtitle_style", presetId)}
@@ -223,10 +179,10 @@ export function StandardVideoForm({
         />
       </div>
 
-      <div style={ROW_STYLE}>
-        <label style={LABEL_STYLE}>Durum</label>
+      <div className="mb-3.5">
+        <label className="block text-base font-medium text-neutral-700 mb-1">Durum</label>
         <select
-          style={FIELD_STYLE}
+          className={inputCls}
           value={values.status}
           onChange={(e) => set("status", e.target.value)}
         >
@@ -239,16 +195,19 @@ export function StandardVideoForm({
       </div>
 
       {submitError && (
-        <p style={{ color: COLOR_ERR, fontSize: typography.size.md, marginBottom: "0.75rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>
+        <p className="text-error text-md mb-3 break-words [overflow-wrap:anywhere]">
           {submitError}
         </p>
       )}
 
-      <div style={{ display: "flex", gap: "0.75rem" }}>
+      <div className="flex gap-3">
         <button
           type="submit"
           disabled={isSubmitting}
-          style={{ ...BTN_PRIMARY, cursor: isSubmitting ? "not-allowed" : "pointer", opacity: isSubmitting ? 0.7 : 1 }}
+          className={cn(
+            "px-5 py-2 text-md bg-brand-500 text-neutral-0 border-none rounded-sm",
+            isSubmitting ? "cursor-not-allowed opacity-70" : "cursor-pointer hover:bg-brand-600 transition-colors duration-fast"
+          )}
         >
           {isSubmitting ? "Kaydediliyor..." : submitLabel}
         </button>
@@ -256,7 +215,7 @@ export function StandardVideoForm({
           <button
             type="button"
             onClick={onCancel}
-            style={BTN_CANCEL}
+            className="px-5 py-2 text-md bg-transparent text-neutral-600 border border-border rounded-sm cursor-pointer hover:bg-neutral-50 transition-colors duration-fast"
           >
             İptal
           </button>

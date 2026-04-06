@@ -1,4 +1,3 @@
-import { colors } from "../design-system/tokens";
 import { NewsItemUsageBadge } from "./NewsItemUsageBadge";
 
 interface Props {
@@ -10,10 +9,10 @@ interface Props {
 export function NewsItemUsageSummary({ usageCount, lastUsageType, lastTargetModule }: Props) {
   const count = usageCount ?? 0;
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "0.15rem" }}>
+    <div className="flex flex-col gap-[0.15rem]">
       <NewsItemUsageBadge usageCount={count} />
       {count > 0 && (lastUsageType || lastTargetModule) && (
-        <span style={{ fontSize: "0.68rem", color: colors.neutral[500] }}>
+        <span className="text-[0.68rem] text-neutral-500">
           {[lastUsageType, lastTargetModule].filter(Boolean).join(" / ")}
         </span>
       )}

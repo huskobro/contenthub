@@ -8,7 +8,7 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { colors, radius, spacing, typography } from "../../components/design-system/tokens";
+import { cn } from "../../lib/cn";
 import { ActionButton } from "../../components/design-system/primitives";
 
 export function YouTubeCallbackPage() {
@@ -65,44 +65,28 @@ export function YouTubeCallbackPage() {
       });
   }, [searchParams, navigate]);
 
-  const bgColor = status === "success" ? colors.success.light : status === "error" ? colors.error.light : colors.neutral[50];
-  const textColor = status === "success" ? colors.success.text : status === "error" ? colors.error.text : colors.neutral[700];
-  const borderColor = status === "success" ? colors.success.light : status === "error" ? colors.error.light : colors.border.subtle;
+  const bgClass = status === "success" ? "bg-success-light border-success-light" : status === "error" ? "bg-error-light border-error-light" : "bg-neutral-50 border-border-subtle";
+  const textClass = status === "success" ? "text-success-text" : status === "error" ? "text-error-text" : "text-neutral-700";
 
   return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        minHeight: "60vh",
-        padding: spacing[8],
-      }}
-    >
+    <div className="flex justify-center items-center min-h-[60vh] p-8">
       <div
-        style={{
-          maxWidth: "480px",
-          width: "100%",
-          padding: spacing[8],
-          borderRadius: radius.xl,
-          border: `1px solid ${borderColor}`,
-          background: bgColor,
-          textAlign: "center",
-        }}
+        className={cn(
+          "max-w-[480px] w-full p-8 rounded-xl border text-center",
+          bgClass
+        )}
       >
-        <div style={{ fontSize: typography.size["2xl"], marginBottom: spacing[4] }}>
+        <div className="text-2xl mb-4">
           {status === "processing" && "⏳"}
           {status === "success" && "✅"}
           {status === "error" && "❌"}
         </div>
 
         <h2
-          style={{
-            fontSize: typography.size.xl,
-            fontWeight: typography.weight.semibold,
-            color: textColor,
-            marginBottom: spacing[3],
-          }}
+          className={cn(
+            "text-xl font-semibold mb-3",
+            textClass
+          )}
         >
           {status === "processing" && "YouTube Yetkilendirmesi"}
           {status === "success" && "Baglanti Basarili"}
@@ -110,17 +94,16 @@ export function YouTubeCallbackPage() {
         </h2>
 
         <p
-          style={{
-            fontSize: typography.size.md,
-            color: textColor,
-            lineHeight: typography.lineHeight.relaxed,
-          }}
+          className={cn(
+            "text-md leading-relaxed",
+            textClass
+          )}
         >
           {message}
         </p>
 
         {status === "error" && (
-          <div style={{ marginTop: spacing[4] }}>
+          <div className="mt-4">
             <ActionButton
               variant="primary"
               onClick={() => navigate("/admin/settings", { replace: true })}

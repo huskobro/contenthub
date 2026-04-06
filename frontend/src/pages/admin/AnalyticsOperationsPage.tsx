@@ -3,7 +3,7 @@ import { useAnalyticsOperations } from "../../hooks/useAnalyticsOperations";
 import { useAnalyticsOverview } from "../../hooks/useAnalyticsOverview";
 import { useSourceImpact } from "../../hooks/useSourceImpact";
 import type { AnalyticsWindow, StepStat, ProviderStat, SourceStat } from "../../api/analyticsApi";
-import { colors, spacing, typography } from "../../components/design-system/tokens";
+import { cn } from "../../lib/cn";
 import {
   PageShell,
   SectionShell,
@@ -84,7 +84,7 @@ const providerColumns = [
     header: "Basarisiz",
     align: "right" as const,
     render: (p: ProviderStat) => (
-      <span style={{ color: p.failed_calls > 0 ? colors.error.base : colors.neutral[800] }}>
+      <span className={cn(p.failed_calls > 0 ? "text-error-base" : "text-neutral-800")}>
         {fmtCount(p.failed_calls)}
       </span>
     ),
@@ -112,11 +112,7 @@ const providerColumns = [
         <span>
           {cost.text}{" "}
           <span data-testid={`provider-cost-badge-${p.provider_name}`}>
-            <StatusBadge
-              status={cost.badgeStatus}
-              label={cost.badge}
-              size="sm"
-            />
+            <StatusBadge status={cost.badgeStatus} label={cost.badge} size="sm" />
           </span>
         </span>
       );
@@ -147,7 +143,7 @@ const stepColumns = [
     header: "Basarisiz",
     align: "right" as const,
     render: (row: StepStat) => (
-      <span style={{ color: row.failed_count > 0 ? colors.error.base : colors.neutral[800] }}>
+      <span className={cn(row.failed_count > 0 ? "text-error-base" : "text-neutral-800")}>
         {fmtCount(row.failed_count)}
       </span>
     ),
@@ -218,15 +214,9 @@ export function AnalyticsOperationsPage() {
       ]}
       testId="analytics-operations"
     >
-      <a href="/admin/analytics" rel="noopener" style={{ position: "absolute", width: "1px", height: "1px", overflow: "hidden", clip: "rect(0,0,0,0)" }}>{"\u2190"} Analytics'e don</a>
+      <a href="/admin/analytics" rel="noopener" className="absolute w-px h-px overflow-hidden [clip:rect(0,0,0,0)]">{"\u2190"} Analytics'e don</a>
       <p
-        style={{
-          margin: `0 0 ${spacing[6]}`,
-          fontSize: typography.size.base,
-          color: colors.neutral[500],
-          lineHeight: typography.lineHeight.normal,
-          maxWidth: "640px",
-        }}
+        className="m-0 mb-6 text-base text-neutral-500 leading-normal max-w-[640px]"
         data-testid="analytics-operations-workflow-note"
       >
         Operasyonel rapor zinciri: Is Basari Orani &rarr; Retry/Hata Dagilimi &rarr;
@@ -235,7 +225,7 @@ export function AnalyticsOperationsPage() {
       </p>
 
       {/* Window Selector */}
-      <div style={{ marginBottom: spacing[5] }}>
+      <div className="mb-5">
         <WindowSelector
           options={WINDOW_OPTIONS}
           value={window}
@@ -246,82 +236,35 @@ export function AnalyticsOperationsPage() {
       </div>
 
       {isError && (
-        <p
-          style={{ color: colors.error.base, fontSize: typography.size.md, marginBottom: spacing[4] }}
-          data-testid="analytics-operations-error"
-        >
+        <p className="text-error-base text-md mb-4" data-testid="analytics-operations-error">
           Metrikler yuklenemedi. Backend baglantisi kontrol edilsin.
         </p>
       )}
 
       {/* Job Performance */}
-      <SectionShell
-        title="Is Performansi"
-        description="Uretim islerinin basari, sure ve hata dagilimi."
-        testId="analytics-job-performance"
-      >
-        <div data-testid="job-performance-heading" style={{ display: "none" }}>Is Performansi</div>
-        <div data-testid="job-performance-note" style={{ display: "none" }}>Uretim islerinin basari, sure ve hata dagilimi.</div>
+      <SectionShell title="Is Performansi" description="Uretim islerinin basari, sure ve hata dagilimi." testId="analytics-job-performance">
+        <div data-testid="job-performance-heading" className="hidden">Is Performansi</div>
+        <div data-testid="job-performance-note" className="hidden">Uretim islerinin basari, sure ve hata dagilimi.</div>
         <MetricGrid>
-          <MetricTile
-            label="Toplam Is"
-            value={fmtCount(overviewData?.total_job_count)}
-            note="Olusturulan tum isler"
-            loading={anyLoading}
-            testId="ops-metric-total-jobs"
-          />
-          <MetricTile
-            label="Tamamlanan"
-            value={fmtCount(overviewData?.completed_job_count)}
-            note="Basariyla biten isler"
-            loading={anyLoading}
-            testId="ops-metric-completed"
-          />
-          <MetricTile
-            label="Basarisiz"
-            value={fmtCount(overviewData?.failed_job_count)}
-            note="Hata ile sonuclanan isler"
-            loading={anyLoading}
-            testId="ops-metric-failed"
-          />
-          <MetricTile
-            label="Ort. Render Suresi"
-            value={fmtSeconds(data?.avg_render_duration_seconds)}
-            note="Composition adimi ortalamasi"
-            loading={isLoading}
-            testId="ops-metric-avg-render"
-          />
+          <MetricTile label="Toplam Is" value={fmtCount(overviewData?.total_job_count)} note="Olusturulan tum isler" loading={anyLoading} testId="ops-metric-total-jobs" />
+          <MetricTile label="Tamamlanan" value={fmtCount(overviewData?.completed_job_count)} note="Basariyla biten isler" loading={anyLoading} testId="ops-metric-completed" />
+          <MetricTile label="Basarisiz" value={fmtCount(overviewData?.failed_job_count)} note="Hata ile sonuclanan isler" loading={anyLoading} testId="ops-metric-failed" />
+          <MetricTile label="Ort. Render Suresi" value={fmtSeconds(data?.avg_render_duration_seconds)} note="Composition adimi ortalamasi" loading={isLoading} testId="ops-metric-avg-render" />
         </MetricGrid>
       </SectionShell>
 
       {/* Provider Health */}
-      <SectionShell
-        title="Provider Sagligi"
-        description="TTS, LLM ve gorsel provider'larin hata ve basari durumu."
-        testId="analytics-provider-health"
-      >
-        <div data-testid="provider-health-heading" style={{ display: "none" }}>Provider Sagligi</div>
-        <div data-testid="provider-health-note" style={{ display: "none" }}>TTS, LLM ve gorsel provider'larin hata ve basari durumu.</div>
+      <SectionShell title="Provider Sagligi" description="TTS, LLM ve gorsel provider'larin hata ve basari durumu." testId="analytics-provider-health">
+        <div data-testid="provider-health-heading" className="hidden">Provider Sagligi</div>
+        <div data-testid="provider-health-note" className="hidden">TTS, LLM ve gorsel provider'larin hata ve basari durumu.</div>
         <MetricGrid>
-          <MetricTile
-            label="Toplam Provider Cagrisi"
-            value={fmtCount(providerStats.reduce((a, p) => a + p.total_calls, 0) || null)}
-            note="Trace verisi olan cagrilar"
-            loading={isLoading}
-            testId="ops-metric-provider-calls"
-          />
-          <MetricTile
-            label="Provider Hata Orani"
-            value={fmtRate(data?.provider_error_rate)}
-            note="script/metadata/tts/visuals adimlarinin basarisizlik orani"
-            loading={isLoading}
-            testId="ops-metric-provider-error"
-          />
-          <div data-testid="ops-metric-provider-errors" style={{ display: "none" }}>Provider Hata Orani</div>
+          <MetricTile label="Toplam Provider Cagrisi" value={fmtCount(providerStats.reduce((a, p) => a + p.total_calls, 0) || null)} note="Trace verisi olan cagrilar" loading={isLoading} testId="ops-metric-provider-calls" />
+          <MetricTile label="Provider Hata Orani" value={fmtRate(data?.provider_error_rate)} note="script/metadata/tts/visuals adimlarinin basarisizlik orani" loading={isLoading} testId="ops-metric-provider-error" />
+          <div data-testid="ops-metric-provider-errors" className="hidden">Provider Hata Orani</div>
         </MetricGrid>
 
         {/* Provider Detail Table */}
-        <div style={{ marginTop: spacing[4] }}>
+        <div className="mt-4">
           <DataTable<ProviderStat>
             columns={providerColumns}
             data={providerStats}
@@ -332,7 +275,7 @@ export function AnalyticsOperationsPage() {
             rowTestIdPrefix="provider-row"
           />
           {!isLoading && providerStats.length > 0 && (
-            <p style={{ marginTop: spacing[1], fontSize: typography.size.xs, color: colors.neutral[500] }} data-testid="cost-model-legend">
+            <p className="mt-1 text-xs text-neutral-500" data-testid="cost-model-legend">
               actual: trace'den gelen gercek maliyet | estimated: statik tahmin | unsupported: maliyet verisi yok
             </p>
           )}
@@ -340,102 +283,34 @@ export function AnalyticsOperationsPage() {
       </SectionShell>
 
       {/* Step Stats */}
-      <SectionShell
-        title="Adim Bazli Istatistikler"
-        description="Pipeline adimlarinin calisma sayisi, ortalama sure ve hata dagilimi."
-        testId="analytics-step-stats"
-      >
-        <div data-testid="step-stats-heading" style={{ display: "none" }}>Adim Bazli Istatistikler</div>
+      <SectionShell title="Adim Bazli Istatistikler" description="Pipeline adimlarinin calisma sayisi, ortalama sure ve hata dagilimi." testId="analytics-step-stats">
+        <div data-testid="step-stats-heading" className="hidden">Adim Bazli Istatistikler</div>
         {sortedSteps.length > 0 && !isLoading ? (
           <div data-testid="step-stats-table">
-            <DataTable<StepStat>
-              columns={stepColumns}
-              data={sortedSteps}
-              keyFn={(row) => row.step_key}
-              loading={isLoading}
-              emptyMessage="Secilen donemde adim verisi yok."
-              testId="step-stats"
-              rowTestIdPrefix="step-row"
-            />
+            <DataTable<StepStat> columns={stepColumns} data={sortedSteps} keyFn={(row) => row.step_key} loading={isLoading} emptyMessage="Secilen donemde adim verisi yok." testId="step-stats" rowTestIdPrefix="step-row" />
           </div>
         ) : (
-          <DataTable<StepStat>
-            columns={stepColumns}
-            data={sortedSteps}
-            keyFn={(row) => row.step_key}
-            loading={isLoading}
-            emptyMessage="Secilen donemde adim verisi yok."
-            testId="step-stats"
-            rowTestIdPrefix="step-row"
-          />
+          <DataTable<StepStat> columns={stepColumns} data={sortedSteps} keyFn={(row) => row.step_key} loading={isLoading} emptyMessage="Secilen donemde adim verisi yok." testId="step-stats" rowTestIdPrefix="step-row" />
         )}
       </SectionShell>
 
       {/* Source Impact */}
-      <SectionShell
-        title="Kaynak Etkisi"
-        description="Haber kaynaklarinin uretim hattina etkisi. Kaynak bazli tarama, haber ve kullanim metrikleri."
-        testId="analytics-source-impact"
-      >
-        <div data-testid="source-impact-heading" style={{ display: "none" }}>Kaynak Etkisi</div>
-        <div data-testid="source-impact-note" style={{ display: "none" }}>Haber kaynaklarinin uretim hattina etkisi.</div>
+      <SectionShell title="Kaynak Etkisi" description="Haber kaynaklarinin uretim hattina etkisi. Kaynak bazli tarama, haber ve kullanim metrikleri." testId="analytics-source-impact">
+        <div data-testid="source-impact-heading" className="hidden">Kaynak Etkisi</div>
+        <div data-testid="source-impact-note" className="hidden">Haber kaynaklarinin uretim hattina etkisi.</div>
         <MetricGrid>
-          <MetricTile
-            label="Toplam Kaynak"
-            value={fmtCount(sourceData?.total_sources ?? null)}
-            note="Tanimli haber kaynaklari"
-            loading={sourceLoading}
-            testId="source-metric-total"
-          />
-          <MetricTile
-            label="Aktif Kaynak"
-            value={fmtCount(sourceData?.active_sources ?? null)}
-            note="Durumu aktif olan kaynaklar"
-            loading={sourceLoading}
-            testId="source-metric-active"
-          />
-          <MetricTile
-            label="Toplam Tarama"
-            value={fmtCount(sourceData?.total_scans ?? null)}
-            note="Gerceklestirilen taramalar"
-            loading={sourceLoading}
-            testId="source-metric-scans"
-          />
-          <MetricTile
-            label="Toplam Haber"
-            value={fmtCount(sourceData?.total_news_items ?? null)}
-            note="Toplanan haber ogeleri"
-            loading={sourceLoading}
-            testId="source-metric-news"
-          />
-          <MetricTile
-            label="Kullanilan Haber"
-            value={fmtCount(sourceData?.used_news_count ?? null)}
-            note="Uretime alinan haberler"
-            loading={sourceLoading}
-            testId="source-metric-used"
-          />
-          <MetricTile
-            label="Bulletin Sayisi"
-            value={fmtCount(sourceData?.bulletin_count ?? null)}
-            note="Olusturulan haber bultenleri"
-            loading={sourceLoading}
-            testId="source-metric-bulletins"
-          />
+          <MetricTile label="Toplam Kaynak" value={fmtCount(sourceData?.total_sources ?? null)} note="Tanimli haber kaynaklari" loading={sourceLoading} testId="source-metric-total" />
+          <MetricTile label="Aktif Kaynak" value={fmtCount(sourceData?.active_sources ?? null)} note="Durumu aktif olan kaynaklar" loading={sourceLoading} testId="source-metric-active" />
+          <MetricTile label="Toplam Tarama" value={fmtCount(sourceData?.total_scans ?? null)} note="Gerceklestirilen taramalar" loading={sourceLoading} testId="source-metric-scans" />
+          <MetricTile label="Toplam Haber" value={fmtCount(sourceData?.total_news_items ?? null)} note="Toplanan haber ogeleri" loading={sourceLoading} testId="source-metric-news" />
+          <MetricTile label="Kullanilan Haber" value={fmtCount(sourceData?.used_news_count ?? null)} note="Uretime alinan haberler" loading={sourceLoading} testId="source-metric-used" />
+          <MetricTile label="Bulletin Sayisi" value={fmtCount(sourceData?.bulletin_count ?? null)} note="Olusturulan haber bultenleri" loading={sourceLoading} testId="source-metric-bulletins" />
         </MetricGrid>
 
         {/* Source Detail Table */}
-        <div style={{ marginTop: spacing[4] }}>
+        <div className="mt-4">
           <div data-testid="source-stats-table">
-            <DataTable<SourceStat>
-              columns={sourceColumns}
-              data={sourceStats}
-              keyFn={(s) => String(s.source_id)}
-              loading={sourceLoading}
-              emptyMessage="Henüz tanimli haber kaynagi bulunmuyor."
-              testId="source-stats"
-              rowTestIdPrefix="source-row"
-            />
+            <DataTable<SourceStat> columns={sourceColumns} data={sourceStats} keyFn={(s) => String(s.source_id)} loading={sourceLoading} emptyMessage="Hen&uuml;z tanimli haber kaynagi bulunmuyor." testId="source-stats" rowTestIdPrefix="source-row" />
           </div>
         </div>
       </SectionShell>

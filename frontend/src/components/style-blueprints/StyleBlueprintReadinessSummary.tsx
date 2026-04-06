@@ -1,4 +1,3 @@
-import { colors } from "../design-system/tokens";
 import {
   StyleBlueprintReadinessBadge,
   StyleBlueprintReadinessLevel,
@@ -73,9 +72,9 @@ export function StyleBlueprintReadinessSummary({
   const detail = `${filledCount}/6 alan dolu`;
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "0.15rem" }}>
+    <div className="flex flex-col gap-[0.15rem]">
       <StyleBlueprintReadinessBadge level={level} />
-      <span style={{ fontSize: "0.68rem", color: colors.neutral[500] }}>{detail}</span>
+      <span className="text-[0.68rem] text-neutral-500">{detail}</span>
     </div>
   );
 }

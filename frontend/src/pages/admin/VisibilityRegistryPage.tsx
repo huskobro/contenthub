@@ -4,7 +4,6 @@ import { VisibilityRulesTable } from "../../components/visibility/VisibilityRule
 import { VisibilityRuleDetailPanel } from "../../components/visibility/VisibilityRuleDetailPanel";
 import { ReadOnlyGuard } from "../../components/visibility/ReadOnlyGuard";
 import { PageShell, SectionShell } from "../../components/design-system/primitives";
-import { colors, typography, spacing, radius } from "../../components/design-system/tokens";
 
 export function VisibilityRegistryPage() {
   const { data: rules, isLoading, isError, error } = useVisibilityRulesList();
@@ -13,47 +12,29 @@ export function VisibilityRegistryPage() {
   return (
     <ReadOnlyGuard targetKey="panel:visibility">
     <PageShell title="Gorunurluk Kurallari" testId="visibility-registry">
-      <p
-        style={{
-          margin: `${spacing[1]} 0 ${spacing[2]}`,
-          fontSize: typography.size.base,
-          color: colors.neutral[500],
-          lineHeight: 1.5,
-          maxWidth: "640px",
-        }}
-        data-testid="visibility-registry-subtitle"
-      >
+      <p className="mt-1 mb-2 text-base text-neutral-500 leading-normal max-w-[640px]" data-testid="visibility-registry-subtitle">
         Sistemde tanimli gorunurluk kurallarinin listesi ve detaylari. Kurallar
         hangi alanlarin, widgetlarin ve wizard adimlarinin gorulecegini belirler.
       </p>
-      <p
-        style={{
-          margin: `0 0 ${spacing[4]}`,
-          fontSize: typography.size.base,
-          color: colors.neutral[500],
-          lineHeight: 1.5,
-          maxWidth: "640px",
-        }}
-        data-testid="visibility-registry-workflow-note"
-      >
+      <p className="m-0 mb-4 text-base text-neutral-500 leading-normal max-w-[640px]" data-testid="visibility-registry-workflow-note">
         Gorunurluk kontrol zinciri: Kural Tanimlama &rarr; Hedef Belirleme &rarr;
-        Rol/Mod Kapsami &rarr; Gorünür/Salt-Okunur/Wizard Durumu. Bir kural
+        Rol/Mod Kapsami &rarr; Görünür/Salt-Okunur/Wizard Durumu. Bir kural
         sectiginizde detay panelinde governance durumunu gorebilirsiniz.
         Ayar duzeyinde governance icin Ayarlar sayfasini kullanin.
       </p>
 
-      <div style={{ display: "flex", gap: spacing[6], alignItems: "flex-start" }}>
-        <div style={{ flex: 2, minWidth: 0 }}>
+      <div className="flex gap-6 items-start">
+        <div className="flex-[2] min-w-0">
           <SectionShell testId="visibility-table-section">
-            {isLoading && <p style={{ color: colors.neutral[500], fontSize: typography.size.base, padding: spacing[4] }}>Yükleniyor...</p>}
+            {isLoading && <p className="text-neutral-500 text-base p-4">Yükleniyor...</p>}
             {isError && (
-              <p style={{ color: colors.error.base, fontSize: typography.size.base, padding: spacing[4] }}>
+              <p className="text-error text-base p-4">
                 Hata: {error instanceof Error ? error.message : "Bilinmeyen hata"}
               </p>
             )}
             {!isLoading && !isError && rules && rules.length === 0 && (
-              <div style={{ textAlign: "center", padding: `${spacing[8]} ${spacing[4]}`, color: colors.neutral[500] }}>
-                <p style={{ margin: 0, fontSize: typography.size.md }}>Henüz kayıtlı visibility rule yok.</p>
+              <div className="text-center py-8 px-4 text-neutral-500">
+                <p className="m-0 text-md">Henüz kayıtlı visibility rule yok.</p>
               </div>
             )}
             {rules && rules.length > 0 && (
@@ -65,15 +46,7 @@ export function VisibilityRegistryPage() {
             )}
           </SectionShell>
         </div>
-        <div
-          style={{
-            flex: 1,
-            minWidth: "280px",
-            border: `1px solid ${colors.border.default}`,
-            borderRadius: radius.md,
-            background: colors.neutral[50],
-          }}
-        >
+        <div className="flex-1 min-w-[280px] border border-border rounded-md bg-neutral-50">
           <VisibilityRuleDetailPanel selectedId={selectedId} />
         </div>
       </div>

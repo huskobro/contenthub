@@ -5,7 +5,6 @@ import { JobOverviewPanel } from "../../components/jobs/JobOverviewPanel";
 import { JobTimelinePanel } from "../../components/jobs/JobTimelinePanel";
 import { JobSystemPanels } from "../../components/jobs/JobSystemPanels";
 import { JobActionsPanel } from "../../components/jobs/JobActionsPanel";
-import { colors, typography, spacing } from "../../components/design-system/tokens";
 import {
   PageShell,
   Mono,
@@ -15,7 +14,6 @@ export function JobDetailPage() {
   const { jobId } = useParams<{ jobId: string }>();
   const { data: job, isLoading, isError, error } = useJobDetail(jobId ?? null);
 
-  // SSE live updates — active only for running/queued jobs
   const isActiveJob = !!job && ["queued", "running", "processing", "retrying"].includes(job.status);
   useSSE({
     url: `/api/v1/sse/jobs/${jobId}`,
@@ -27,7 +25,7 @@ export function JobDetailPage() {
   if (isLoading) {
     return (
       <PageShell title="Job Detayı" breadcrumb={[{ label: "Isler", to: "/admin/jobs" }, { label: "Detay" }]} testId="job-detail-loading">
-        <p style={{ color: colors.neutral[500] }}>Yükleniyor...</p>
+        <p className="text-neutral-500">Yükleniyor...</p>
       </PageShell>
     );
   }
@@ -35,7 +33,7 @@ export function JobDetailPage() {
   if (isError) {
     return (
       <PageShell title="Job Detayı" breadcrumb={[{ label: "Isler", to: "/admin/jobs" }, { label: "Detay" }]} testId="job-detail">
-        <p style={{ color: colors.error.base }}>
+        <p className="text-error">
           Hata: {error instanceof Error ? error.message : "Bilinmeyen hata"}
         </p>
       </PageShell>
@@ -45,7 +43,7 @@ export function JobDetailPage() {
   if (!job) {
     return (
       <PageShell title="Job Detayı" breadcrumb={[{ label: "Isler", to: "/admin/jobs" }, { label: "Detay" }]} testId="job-detail">
-        <p style={{ color: colors.neutral[500] }}>Job bulunamadi.</p>
+        <p className="text-neutral-500">Job bulunamadi.</p>
       </PageShell>
     );
   }
@@ -57,19 +55,10 @@ export function JobDetailPage() {
       breadcrumb={[{ label: "Isler", to: "/admin/jobs" }, { label: "Detay" }]}
       testId="job-detail"
     >
-      <p style={{ margin: `0 0 ${spacing[2]}`, fontSize: typography.size.sm, color: colors.neutral[600] }}>
+      <p className="m-0 mb-2 text-sm text-neutral-600">
         Job ID: <Mono>{job.id}</Mono>
       </p>
-      <p
-        style={{
-          margin: `0 0 ${spacing[5]}`,
-          fontSize: typography.size.base,
-          color: colors.neutral[500],
-          lineHeight: typography.lineHeight.normal,
-          maxWidth: "640px",
-        }}
-        data-testid="job-detail-workflow-note"
-      >
+      <p className="m-0 mb-5 text-base text-neutral-500 leading-normal max-w-[640px]" data-testid="job-detail-workflow-note">
         Bu isin ilerleme durumunu, adimlarini ve sure bilgilerini asagidaki
         timeline ve panellerden takip edebilirsiniz. Is tamamlandiginda
         yayin hazirlik durumu ve sonuclari buradan gorunur. Basarisiz veya

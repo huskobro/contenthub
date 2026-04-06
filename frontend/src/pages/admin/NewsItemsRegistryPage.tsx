@@ -4,7 +4,6 @@ import { useNewsItemsList } from "../../hooks/useNewsItemsList";
 import { NewsItemsTable } from "../../components/news-items/NewsItemsTable";
 import { NewsItemDetailPanel } from "../../components/news-items/NewsItemDetailPanel";
 import { PageShell, SectionShell, ActionButton } from "../../components/design-system/primitives";
-import { colors, typography, spacing } from "../../components/design-system/tokens";
 
 export function NewsItemsRegistryPage() {
   const location = useLocation();
@@ -24,14 +23,14 @@ export function NewsItemsRegistryPage() {
         </ActionButton>
       }
     >
-      <div style={{ display: "flex", gap: spacing[6] }}>
-        <div style={{ flex: 1 }}>
+      <div className="flex gap-6">
+        <div className="flex-1">
           <SectionShell testId="news-items-table-section">
-            {isLoading && <p style={{ color: colors.neutral[500], fontSize: typography.size.base, padding: spacing[4] }}>Yükleniyor...</p>}
-            {isError && <p style={{ color: colors.error.base, fontSize: typography.size.base, padding: spacing[4] }}>Hata: kayıtlar yüklenemedi.</p>}
+            {isLoading && <p className="text-neutral-500 text-base p-4">Yükleniyor...</p>}
+            {isError && <p className="text-error text-base p-4">Hata: kayıtlar yüklenemedi.</p>}
             {!isLoading && !isError && items && items.length === 0 && (
-              <div style={{ textAlign: "center", padding: `${spacing[8]} ${spacing[4]}`, color: colors.neutral[500] }}>
-                <p style={{ margin: 0, fontSize: typography.size.md }}>Henüz haber kaydı yok.</p>
+              <div className="text-center py-8 px-4 text-neutral-500">
+                <p className="m-0 text-md">Henüz haber kaydı yok.</p>
               </div>
             )}
             {items && items.length > 0 && (
@@ -45,7 +44,7 @@ export function NewsItemsRegistryPage() {
         </div>
 
         {selectedId && (
-          <div style={{ width: "380px", borderLeft: `1px solid ${colors.border.default}`, paddingLeft: spacing[6] }}>
+          <div className="w-[380px] border-l border-border pl-6">
             <NewsItemDetailPanel selectedId={selectedId} />
           </div>
         )}

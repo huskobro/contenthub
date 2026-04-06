@@ -1,4 +1,3 @@
-import { colors } from "../design-system/tokens";
 import { UsedNewsStateBadge, UsedNewsStateLevel } from "./UsedNewsStateBadge";
 
 interface Props {
@@ -30,9 +29,9 @@ export function UsedNewsStateSummary({ usageType, targetModule, targetEntityId }
   const detail = parts.length > 0 ? parts.join(" • ") : "target yok";
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "0.15rem" }}>
+    <div className="flex flex-col gap-[0.15rem]">
       <UsedNewsStateBadge level={level} />
-      <span style={{ fontSize: "0.68rem", color: colors.neutral[500] }}>{detail}</span>
+      <span className="text-[0.68rem] text-neutral-500">{detail}</span>
     </div>
   );
 }

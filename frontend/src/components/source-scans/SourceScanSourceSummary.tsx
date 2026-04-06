@@ -1,4 +1,3 @@
-import { colors } from "../design-system/tokens";
 import { SourceScanSourceStatusBadge, SourceScanSourceStatus } from "./SourceScanSourceStatusBadge";
 
 interface Props {
@@ -26,9 +25,9 @@ export function SourceScanSourceSummary({ sourceId, sourceName, sourceStatus }: 
     : "kaynak yok";
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "0.15rem" }}>
+    <div className="flex flex-col gap-[0.15rem]">
       <SourceScanSourceStatusBadge status={status} />
-      <span style={{ fontSize: "0.68rem", color: colors.neutral[500] }}>{detail}</span>
+      <span className="text-[0.68rem] text-neutral-500">{detail}</span>
     </div>
   );
 }

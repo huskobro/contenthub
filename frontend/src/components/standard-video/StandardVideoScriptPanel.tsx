@@ -3,17 +3,9 @@ import type { StandardVideoScriptResponse } from "../../api/standardVideoApi";
 import { StandardVideoScriptForm } from "./StandardVideoScriptForm";
 import type { ScriptFormValues } from "./StandardVideoScriptForm";
 import { isBlank } from "../../lib/isBlank";
-import { colors, radius, typography } from "../design-system/tokens";
 
 const PREVIEW_LIMIT = 400;
 const DASH = "—";
-const PAD_B_XS = "0.25rem";
-const RADIUS_XS = "4px";
-const CURSOR_PTR = "pointer";
-const COLOR_BLUE = colors.brand[500];
-const LABEL_TD: React.CSSProperties = { color: colors.neutral[600], paddingRight: "1rem", paddingBottom: PAD_B_XS };
-const SECTION_STYLE: React.CSSProperties = { border: `1px solid ${colors.border.subtle}`, borderRadius: radius.md, padding: "1rem", marginBottom: "1.25rem" };
-const FORM_HEADING: React.CSSProperties = { margin: "0 0 1rem", fontSize: typography.size.lg, fontWeight: 600 };
 
 interface Props {
   videoId: string;
@@ -46,6 +38,8 @@ export function StandardVideoScriptPanel({
   const [mode, setMode] = useState<"view" | "create" | "edit">("view");
   const [showFull, setShowFull] = useState(false);
 
+  const sectionCls = "border border-border-subtle rounded-md p-4 mb-5";
+
   function handleCreate(values: ScriptFormValues) {
     onCreate({
       content: values.content,
@@ -66,27 +60,26 @@ export function StandardVideoScriptPanel({
     setMode("view");
   }
 
-
   if (isLoading) {
     return (
-      <div style={SECTION_STYLE}>
-        <p style={{ color: colors.neutral[600], margin: 0 }}>Script yükleniyor...</p>
+      <div className={sectionCls}>
+        <p className="text-neutral-600 m-0">Script yükleniyor...</p>
       </div>
     );
   }
 
   if (isError) {
     return (
-      <div style={SECTION_STYLE}>
-        <p style={{ color: colors.error.base, margin: 0 }}>Script yüklenirken hata oluştu.</p>
+      <div className={sectionCls}>
+        <p className="text-error m-0">Script yüklenirken hata oluştu.</p>
       </div>
     );
   }
 
   if (mode === "create") {
     return (
-      <div style={SECTION_STYLE}>
-        <h4 style={FORM_HEADING}>Script Oluştur</h4>
+      <div className={sectionCls}>
+        <h4 className="m-0 mb-4 text-lg font-semibold">Script Oluştur</h4>
         <StandardVideoScriptForm
           mode="create"
           isSubmitting={isCreating}
@@ -100,8 +93,8 @@ export function StandardVideoScriptPanel({
 
   if (mode === "edit") {
     return (
-      <div style={SECTION_STYLE}>
-        <h4 style={FORM_HEADING}>Script Düzenle</h4>
+      <div className={sectionCls}>
+        <h4 className="m-0 mb-4 text-lg font-semibold">Script Düzenle</h4>
         <StandardVideoScriptForm
           mode="edit"
           initial={{
@@ -121,36 +114,20 @@ export function StandardVideoScriptPanel({
 
   // view mode
   return (
-    <div style={SECTION_STYLE}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
-        <h4 style={{ margin: 0, fontSize: typography.size.lg, fontWeight: 600 }}>Script</h4>
+    <div className={sectionCls}>
+      <div className="flex justify-between items-center mb-3">
+        <h4 className="m-0 text-lg font-semibold">Script</h4>
         {script ? (
           <button
             onClick={() => setMode("edit")}
-            style={{
-              fontSize: typography.size.base,
-              padding: "0.25rem 0.75rem",
-              background: "transparent",
-              color: COLOR_BLUE,
-              border: `1px solid ${colors.brand[500]}`,
-              borderRadius: RADIUS_XS,
-              cursor: CURSOR_PTR,
-            }}
+            className="text-base px-3 py-1 bg-transparent text-brand-500 border border-brand-500 rounded-sm cursor-pointer hover:bg-brand-50 transition-colors duration-fast"
           >
             Düzenle
           </button>
         ) : (
           <button
             onClick={() => setMode("create")}
-            style={{
-              fontSize: typography.size.base,
-              padding: "0.25rem 0.75rem",
-              background: COLOR_BLUE,
-              color: colors.neutral[0],
-              border: "none",
-              borderRadius: RADIUS_XS,
-              cursor: CURSOR_PTR,
-            }}
+            className="text-base px-3 py-1 bg-brand-500 text-neutral-0 border-none rounded-sm cursor-pointer hover:bg-brand-600 transition-colors duration-fast"
           >
             + Script Ekle
           </button>
@@ -158,45 +135,34 @@ export function StandardVideoScriptPanel({
       </div>
 
       {!script ? (
-        <p style={{ color: colors.neutral[500], fontSize: typography.size.md, margin: 0 }}>
+        <p className="text-neutral-500 text-md m-0">
           Henüz script yok.
         </p>
       ) : (
         <div>
-          <table style={{ fontSize: typography.size.base, borderCollapse: "collapse", marginBottom: "0.75rem" }}>
+          <table className="text-base border-collapse mb-3">
             <tbody>
               <tr>
-                <td style={LABEL_TD}>Versiyon</td>
-                <td style={{ paddingBottom: PAD_B_XS }}>{script.version ?? DASH}</td>
+                <td className="text-neutral-600 pr-4 pb-1">Versiyon</td>
+                <td className="pb-1">{script.version ?? DASH}</td>
               </tr>
               <tr>
-                <td style={LABEL_TD}>Kaynak</td>
-                <td style={{ paddingBottom: PAD_B_XS }}>{script.source_type ?? DASH}</td>
+                <td className="text-neutral-600 pr-4 pb-1">Kaynak</td>
+                <td className="pb-1">{script.source_type ?? DASH}</td>
               </tr>
               <tr>
-                <td style={LABEL_TD}>Durum</td>
-                <td style={{ paddingBottom: PAD_B_XS }}>{script.generation_status ?? DASH}</td>
+                <td className="text-neutral-600 pr-4 pb-1">Durum</td>
+                <td className="pb-1">{script.generation_status ?? DASH}</td>
               </tr>
               {!isBlank(script.notes) && (
                 <tr>
-                  <td style={LABEL_TD}>Notlar</td>
-                  <td style={{ paddingBottom: PAD_B_XS }}>{script.notes}</td>
+                  <td className="text-neutral-600 pr-4 pb-1">Notlar</td>
+                  <td className="pb-1">{script.notes}</td>
                 </tr>
               )}
             </tbody>
           </table>
-          <div
-            style={{
-              background: colors.neutral[50],
-              border: `1px solid ${colors.border.subtle}`,
-              borderRadius: RADIUS_XS,
-              padding: "0.75rem",
-              fontSize: typography.size.base,
-              whiteSpace: "pre-wrap",
-              wordBreak: "break-word",
-              overflowWrap: "anywhere",
-            }}
-          >
+          <div className="bg-neutral-50 border border-border-subtle rounded-sm p-3 text-base whitespace-pre-wrap break-words [overflow-wrap:anywhere]">
             {isBlank(script.content)
               ? DASH
               : showFull || (script.content ?? "").length <= PREVIEW_LIMIT
@@ -206,15 +172,7 @@ export function StandardVideoScriptPanel({
           {(script.content ?? "").length > PREVIEW_LIMIT && (
             <button
               onClick={() => setShowFull((v) => !v)}
-              style={{
-                marginTop: "0.5rem",
-                fontSize: typography.size.base,
-                background: "none",
-                border: "none",
-                color: COLOR_BLUE,
-                cursor: CURSOR_PTR,
-                padding: 0,
-              }}
+              className="mt-2 text-base bg-transparent border-none text-brand-500 cursor-pointer p-0 hover:underline"
             >
               {showFull ? "Daha az göster" : "Tamamını göster"}
             </button>

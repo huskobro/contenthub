@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useContentMetrics } from "../../hooks/useContentMetrics";
 import type { AnalyticsWindow } from "../../api/analyticsApi";
-import { colors, radius, typography, spacing, shadow, transition } from "../../components/design-system/tokens";
 import { PageShell, SectionShell, MetricTile, MetricGrid, DataTable, WindowSelector } from "../../components/design-system/primitives";
 import type { ReactNode } from "react";
 
@@ -57,34 +56,22 @@ export function AnalyticsContentPage() {
     >
       <Link
         to="/admin/analytics"
-        style={{
-          display: "inline-block",
-          marginBottom: spacing[3],
-          fontSize: typography.size.sm,
-          color: colors.brand[600],
-          textDecoration: "none",
-        }}
+        className="inline-block mb-3 text-sm text-brand-600 no-underline"
       >
-        ← Analytics'e don
+        &larr; Analytics'e don
       </Link>
 
       <p
-        style={{
-          margin: `0 0 ${spacing[5]}`,
-          fontSize: typography.size.sm,
-          color: colors.neutral[500],
-          lineHeight: typography.lineHeight.normal,
-          maxWidth: "640px",
-        }}
+        className="m-0 mb-5 text-sm text-neutral-500 leading-normal max-w-[640px]"
         data-testid="analytics-content-workflow-note"
       >
-        Kullanim/performans rapor zinciri: Modul Dagilimi → Icerik Uretim
-        Orani → Yayin Basarisi → Sablon/Kaynak Etkisi → Verimlilik Ozeti.
+        Kullanim/performans rapor zinciri: Modul Dagilimi &rarr; Icerik Uretim
+        Orani &rarr; Yayin Basarisi &rarr; Sablon/Kaynak Etkisi &rarr; Verimlilik Ozeti.
         Her icerik icin standard video detay sayfasina giderek ayrintili bilgi alabilirsiniz.
       </p>
 
       {/* Window selector */}
-      <div style={{ marginBottom: spacing[4] }} data-testid="content-window-selector">
+      <div className="mb-4" data-testid="content-window-selector">
         <WindowSelector
           options={WINDOW_OPTIONS}
           value={window}
@@ -94,11 +81,11 @@ export function AnalyticsContentPage() {
       </div>
 
       {isLoading && (
-        <p style={{ color: colors.neutral[600], fontSize: typography.size.base }}>Yükleniyor...</p>
+        <p className="text-neutral-600 text-base">Y&uuml;kleniyor...</p>
       )}
 
       {isError && (
-        <p style={{ color: colors.error.base, fontSize: typography.size.base }} data-testid="content-error">
+        <p className="text-error-base text-base" data-testid="content-error">
           Icerik metrikleri yuklenirken hata olustu.
         </p>
       )}
@@ -106,65 +93,27 @@ export function AnalyticsContentPage() {
       {data && (
         <>
           {/* Summary metrics */}
-          <div data-testid="content-summary-metrics" style={{ marginBottom: spacing[5] }}>
+          <div data-testid="content-summary-metrics" className="mb-5">
             <MetricGrid>
-              <MetricTile
-                label="Toplam Icerik"
-                value={data.content_output_count}
-                testId="metric-content-output"
-              />
-              <MetricTile
-                label="Yayinlanan"
-                value={data.published_content_count}
-                testId="metric-published-content"
-                accentColor={colors.success.base}
-              />
-              <MetricTile
-                label="Ort. Yayina Kadar"
-                value={fmtDuration(data.avg_time_to_publish_seconds)}
-                testId="metric-avg-time-to-publish"
-              />
-              <MetricTile
-                label="Aktif Sablon"
-                value={data.active_template_count}
-                testId="metric-active-templates"
-              />
-              <MetricTile
-                label="Aktif Blueprint"
-                value={data.active_blueprint_count}
-                testId="metric-active-blueprints"
-              />
+              <MetricTile label="Toplam Icerik" value={data.content_output_count} testId="metric-content-output" />
+              <MetricTile label="Yayinlanan" value={data.published_content_count} testId="metric-published-content" accentColor="var(--color-success-base)" />
+              <MetricTile label="Ort. Yayina Kadar" value={fmtDuration(data.avg_time_to_publish_seconds)} testId="metric-avg-time-to-publish" />
+              <MetricTile label="Aktif Sablon" value={data.active_template_count} testId="metric-active-templates" />
+              <MetricTile label="Aktif Blueprint" value={data.active_blueprint_count} testId="metric-active-blueprints" />
             </MetricGrid>
           </div>
 
           {/* Content type breakdown */}
-          <SectionShell
-            title="Icerik Tipi Kirilimi"
-            description="Uretilen iceriklerin tip bazli dagilimi."
-            testId="content-type-breakdown"
-          >
-            <div style={{ display: "flex", gap: spacing[3], flexWrap: "wrap" }}>
+          <SectionShell title="Icerik Tipi Kirilimi" description="Uretilen iceriklerin tip bazli dagilimi." testId="content-type-breakdown">
+            <div className="flex gap-3 flex-wrap">
               {data.content_type_breakdown.map((ct) => (
                 <div
                   key={ct.type}
-                  style={{
-                    padding: `${spacing[3]} ${spacing[4]}`,
-                    background: colors.surface.card,
-                    border: `1px solid ${colors.border.subtle}`,
-                    borderRadius: radius.md,
-                    textAlign: "center",
-                    minWidth: "120px",
-                    boxShadow: shadow.xs,
-                    transition: `box-shadow ${transition.fast}`,
-                  }}
+                  className="py-3 px-4 bg-surface-card border border-border-subtle rounded-md text-center min-w-[120px] shadow-xs transition-shadow duration-fast hover:shadow-sm"
                   data-testid={`content-type-${ct.type}`}
-                  onMouseEnter={(e) => { e.currentTarget.style.boxShadow = shadow.sm; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.boxShadow = shadow.xs; }}
                 >
-                  <div style={{ fontSize: typography.size.xl, fontWeight: typography.weight.bold, color: colors.neutral[900] }}>
-                    {ct.count}
-                  </div>
-                  <div style={{ fontSize: typography.size.xs, color: colors.neutral[600], marginTop: spacing[1] }}>
+                  <div className="text-xl font-bold text-neutral-900">{ct.count}</div>
+                  <div className="text-xs text-neutral-600 mt-1">
                     {ct.type === "standard_video" ? "Standart Video" : ct.type === "news_bulletin" ? "Haber Bulteni" : ct.type}
                   </div>
                 </div>
@@ -173,21 +122,12 @@ export function AnalyticsContentPage() {
           </SectionShell>
 
           {/* Module distribution */}
-          <SectionShell
-            testId="analytics-module-distribution"
-            flush
-          >
-            <div style={{ padding: `${spacing[5]} ${spacing[5]} 0` }}>
-              <h3
-                style={{ margin: 0, fontSize: typography.size.lg, fontWeight: typography.weight.semibold, color: colors.neutral[900] }}
-                data-testid="module-distribution-heading"
-              >
+          <SectionShell testId="analytics-module-distribution" flush>
+            <div className="p-5 pb-0">
+              <h3 className="m-0 text-lg font-semibold text-neutral-900" data-testid="module-distribution-heading">
                 Modul Dagilimi
               </h3>
-              <p
-                style={{ margin: `${spacing[1]} 0 ${spacing[4]}`, fontSize: typography.size.sm, color: colors.neutral[500], lineHeight: typography.lineHeight.normal }}
-                data-testid="module-distribution-note"
-              >
+              <p className="mt-1 mb-4 text-sm text-neutral-500 leading-normal" data-testid="module-distribution-note">
                 Icerik uretiminin modullere gore dagilimi. Hangi modul daha yogun
                 kullaniliyor, hangi modulde daha fazla hata olusuyor gorunur.
                 Modul bazli verimlilik karari icin bu dagilimi kullanabilirsiniz.
@@ -197,7 +137,7 @@ export function AnalyticsContentPage() {
               columns={MODULE_COLUMNS}
               data={data.module_distribution}
               keyFn={(item) => item.module_type}
-              emptyMessage="Henüz modul bazli is verisi bulunmuyor."
+              emptyMessage="Hen&uuml;z modul bazli is verisi bulunmuyor."
               testId="module-distribution-table"
               rowTestIdPrefix="module-row"
             />

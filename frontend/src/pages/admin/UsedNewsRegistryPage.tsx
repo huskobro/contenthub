@@ -4,7 +4,6 @@ import { useUsedNewsList } from "../../hooks/useUsedNewsList";
 import { UsedNewsTable } from "../../components/used-news/UsedNewsTable";
 import { UsedNewsDetailPanel } from "../../components/used-news/UsedNewsDetailPanel";
 import { PageShell, SectionShell, ActionButton } from "../../components/design-system/primitives";
-import { colors, typography, spacing } from "../../components/design-system/tokens";
 
 export function UsedNewsRegistryPage() {
   const { data: records, isLoading, isError } = useUsedNewsList();
@@ -30,14 +29,14 @@ export function UsedNewsRegistryPage() {
         </ActionButton>
       }
     >
-      <div style={{ display: "flex", gap: spacing[6] }}>
-        <div style={{ flex: 1 }}>
+      <div className="flex gap-6">
+        <div className="flex-1">
           <SectionShell testId="used-news-table-section">
-            {isLoading && <p style={{ color: colors.neutral[500], fontSize: typography.size.base, padding: spacing[4] }}>Yükleniyor...</p>}
-            {isError && <p style={{ color: colors.error.base, fontSize: typography.size.base, padding: spacing[4] }}>Hata: kayıtlar yüklenemedi.</p>}
+            {isLoading && <p className="text-neutral-500 text-base p-4">Yükleniyor...</p>}
+            {isError && <p className="text-error text-base p-4">Hata: kayıtlar yüklenemedi.</p>}
             {!isLoading && !isError && records && records.length === 0 && (
-              <div style={{ textAlign: "center", padding: `${spacing[8]} ${spacing[4]}`, color: colors.neutral[500] }}>
-                <p style={{ margin: 0, fontSize: typography.size.md }}>Henüz kullanılmış haber kaydı yok.</p>
+              <div className="text-center py-8 px-4 text-neutral-500">
+                <p className="m-0 text-md">Henüz kullanılmış haber kaydı yok.</p>
               </div>
             )}
             {records && records.length > 0 && (
@@ -51,7 +50,7 @@ export function UsedNewsRegistryPage() {
         </div>
 
         {selectedId && (
-          <div style={{ width: "360px", borderLeft: `1px solid ${colors.border.default}`, paddingLeft: spacing[6] }}>
+          <div className="w-[360px] border-l border-border pl-6">
             <UsedNewsDetailPanel selectedId={selectedId} />
           </div>
         )}

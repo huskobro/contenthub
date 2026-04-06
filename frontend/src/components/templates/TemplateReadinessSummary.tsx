@@ -1,6 +1,5 @@
 import { TemplateReadinessBadge, TemplateReadinessLevel } from "./TemplateReadinessBadge";
 import { safeNumber } from "../../lib/safeNumber";
-import { colors } from "../design-system/tokens";
 
 interface Props {
   templateType: string;
@@ -67,9 +66,9 @@ export function TemplateReadinessSummary({
   const detail = `${hasJson ? "JSON var" : "JSON yok"} • ${count} bağ`;
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "0.15rem" }}>
+    <div className="flex flex-col gap-[0.15rem]">
       <TemplateReadinessBadge level={level} />
-      <span style={{ fontSize: "0.68rem", color: colors.neutral[500] }}>{detail}</span>
+      <span className="text-[0.68rem] text-neutral-500">{detail}</span>
     </div>
   );
 }

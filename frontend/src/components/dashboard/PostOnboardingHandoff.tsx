@@ -1,92 +1,17 @@
-import { colors, radius, typography } from "../design-system/tokens";
 import { useNavigate } from "react-router-dom";
-
-const CARD: React.CSSProperties = {
-  background: colors.neutral[0],
-  border: `1px solid ${colors.border.subtle}`,
-  borderRadius: radius.xl,
-  padding: "2rem",
-  maxWidth: "560px",
-};
-
-const STATUS_ROW: React.CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  gap: "0.5rem",
-  marginBottom: "0.75rem",
-};
-
-const STATUS_DOT: React.CSSProperties = {
-  width: "10px",
-  height: "10px",
-  borderRadius: "50%",
-  background: colors.success.base,
-  flexShrink: 0,
-};
-
-const STATUS_TEXT: React.CSSProperties = {
-  fontSize: typography.size.base,
-  fontWeight: 600,
-  color: colors.success.base,
-};
-
-const HEADING: React.CSSProperties = {
-  margin: "0 0 0.5rem",
-  fontSize: typography.size["2xl"],
-  fontWeight: 700,
-  color: colors.neutral[900],
-};
-
-const DESC: React.CSSProperties = {
-  margin: "0 0 1.5rem",
-  fontSize: typography.size.md,
-  color: colors.neutral[700],
-  lineHeight: 1.6,
-};
-
-const PRIMARY_BTN: React.CSSProperties = {
-  display: "inline-block",
-  padding: "0.625rem 1.25rem",
-  fontSize: typography.size.md,
-  fontWeight: 600,
-  color: colors.neutral[0],
-  background: colors.brand[600],
-  border: "none",
-  borderRadius: radius.lg,
-  cursor: "pointer",
-};
-
-const SECONDARY_BTN: React.CSSProperties = {
-  display: "inline-block",
-  padding: "0.625rem 1.25rem",
-  fontSize: typography.size.md,
-  fontWeight: 500,
-  color: colors.neutral[700],
-  background: "transparent",
-  border: `1px solid ${colors.border.subtle}`,
-  borderRadius: radius.lg,
-  cursor: "pointer",
-  marginLeft: "0.5rem",
-};
-
-const ACTIONS: React.CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  gap: "0.5rem",
-};
 
 export function PostOnboardingHandoff() {
   const navigate = useNavigate();
 
   return (
-    <div style={CARD} data-testid="post-onboarding-handoff">
-      <div style={STATUS_ROW}>
-        <span style={STATUS_DOT} />
-        <span style={STATUS_TEXT}>Sistem Hazir</span>
+    <div className="bg-neutral-0 border border-border-subtle rounded-xl p-8 max-w-[560px]" data-testid="post-onboarding-handoff">
+      <div className="flex items-center gap-2 mb-3">
+        <span className="w-2.5 h-2.5 rounded-full bg-success shrink-0" />
+        <span className="text-base font-semibold text-success">Sistem Hazir</span>
       </div>
 
-      <h3 style={HEADING}>Ilk Iceriginizi Olusturun</h3>
-      <p style={DESC}>
+      <h3 className="m-0 mb-2 text-2xl font-bold text-neutral-900">Ilk Iceriginizi Olusturun</h3>
+      <p className="m-0 mb-6 text-md text-neutral-700 leading-relaxed">
         Kurulumunuz tamamlandi. Video uretimi ana icerik akisinizdir.
         Haber bulteni ikinci uretim akisinizdir.
         Asagidaki seceneklerle ilk iceriginizi olusturabilir
@@ -94,16 +19,16 @@ export function PostOnboardingHandoff() {
         yonetebilirsiniz.
       </p>
 
-      <div style={ACTIONS}>
+      <div className="flex items-center gap-2">
         <button
-          style={PRIMARY_BTN}
+          className="inline-block px-5 py-2.5 text-md font-semibold text-neutral-0 bg-brand-600 border-none rounded-lg cursor-pointer hover:bg-brand-700 transition-colors duration-fast"
           onClick={() => navigate("/admin/standard-videos/new")}
           data-testid="handoff-create-content"
         >
           Yeni Video Olustur
         </button>
         <button
-          style={SECONDARY_BTN}
+          className="inline-block px-5 py-2.5 text-md font-medium text-neutral-700 bg-transparent border border-border-subtle rounded-lg cursor-pointer hover:bg-neutral-50 transition-colors duration-fast"
           onClick={() => navigate("/admin")}
           data-testid="handoff-go-admin"
         >

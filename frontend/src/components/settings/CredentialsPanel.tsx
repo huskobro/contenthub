@@ -9,111 +9,7 @@ import {
 } from "../../hooks/useCredentials";
 import { useReadOnly } from "../visibility/ReadOnlyGuard";
 import { getYouTubeAuthUrl, type CredentialStatus } from "../../api/credentialsApi";
-import { colors, radius, typography, spacing, shadow, transition } from "../design-system/tokens";
-
-// ---------------------------------------------------------------------------
-// Styles — fully tokenized
-// ---------------------------------------------------------------------------
-
-const SECTION: React.CSSProperties = {
-  marginBottom: spacing[6],
-};
-
-const SECTION_TITLE: React.CSSProperties = {
-  fontSize: typography.size.base,
-  fontWeight: typography.weight.semibold,
-  color: colors.neutral[800],
-  marginBottom: spacing[3],
-  paddingBottom: spacing[2],
-  borderBottom: `1px solid ${colors.border.subtle}`,
-};
-
-const CARD: React.CSSProperties = {
-  border: `1px solid ${colors.border.subtle}`,
-  borderRadius: radius.lg,
-  padding: spacing[4],
-  marginBottom: spacing[3],
-  background: colors.surface.card,
-  boxShadow: shadow.xs,
-  transition: `box-shadow ${transition.normal}, border-color ${transition.fast}`,
-};
-
-const ROW: React.CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  gap: spacing[3],
-  flexWrap: "wrap",
-};
-
-const LABEL: React.CSSProperties = {
-  fontSize: typography.size.base,
-  fontWeight: typography.weight.semibold,
-  color: colors.neutral[900],
-  minWidth: "160px",
-};
-
-const HELP: React.CSSProperties = {
-  fontSize: typography.size.xs,
-  color: colors.neutral[500],
-  marginTop: spacing[1],
-  lineHeight: typography.lineHeight.normal,
-};
-
-const MASKED: React.CSSProperties = {
-  fontSize: typography.size.base,
-  color: colors.neutral[600],
-  fontFamily: typography.monoFamily,
-  letterSpacing: "0.5px",
-};
-
-const INPUT: React.CSSProperties = {
-  flex: 1,
-  minWidth: "200px",
-  padding: `${spacing[1]} ${spacing[2]}`,
-  border: `1px solid ${colors.border.default}`,
-  borderRadius: radius.sm,
-  fontSize: typography.size.base,
-  fontFamily: typography.fontFamily,
-  boxSizing: "border-box",
-  outline: "none",
-  transition: `border-color ${transition.fast}`,
-};
-
-const BTN_PRIMARY: React.CSSProperties = {
-  padding: `${spacing[1]} ${spacing[3]}`,
-  background: colors.brand[600],
-  color: colors.neutral[0],
-  border: "none",
-  borderRadius: radius.md,
-  cursor: "pointer",
-  fontSize: typography.size.sm,
-  fontWeight: typography.weight.medium,
-  transition: `opacity ${transition.fast}`,
-};
-
-const BTN_SECONDARY: React.CSSProperties = {
-  padding: `${spacing[1]} ${spacing[3]}`,
-  background: "transparent",
-  color: colors.neutral[600],
-  border: `1px solid ${colors.border.default}`,
-  borderRadius: radius.md,
-  cursor: "pointer",
-  fontSize: typography.size.sm,
-  fontWeight: typography.weight.medium,
-  transition: `background ${transition.fast}`,
-};
-
-const BTN_DANGER: React.CSSProperties = {
-  padding: `${spacing[1]} ${spacing[3]}`,
-  background: colors.error.base,
-  color: colors.neutral[0],
-  border: "none",
-  borderRadius: radius.md,
-  cursor: "pointer",
-  fontSize: typography.size.sm,
-  fontWeight: typography.weight.medium,
-  transition: `opacity ${transition.fast}`,
-};
+import { cn } from "../../lib/cn";
 
 // ---------------------------------------------------------------------------
 // Status Badge
@@ -121,26 +17,21 @@ const BTN_DANGER: React.CSSProperties = {
 
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, { bg: string; fg: string; label: string }> = {
-    configured: { bg: colors.success.light, fg: colors.success.text, label: "Yapilandirildi" },
-    env_only: { bg: colors.warning.light, fg: colors.warning.text, label: ".env" },
-    missing: { bg: colors.error.light, fg: colors.error.text, label: "Eksik" },
-    invalid: { bg: colors.error.light, fg: colors.error.text, label: "Gecersiz" },
-    connected: { bg: colors.info.light, fg: colors.brand[700], label: "Bagli" },
+    configured: { bg: "bg-success-light", fg: "text-success-text", label: "Yapilandirildi" },
+    env_only: { bg: "bg-warning-light", fg: "text-warning-text", label: ".env" },
+    missing: { bg: "bg-error-light", fg: "text-error-text", label: "Eksik" },
+    invalid: { bg: "bg-error-light", fg: "text-error-text", label: "Gecersiz" },
+    connected: { bg: "bg-info-light", fg: "text-brand-700", label: "Bagli" },
   };
-  const s = map[status] ?? { bg: colors.neutral[100], fg: colors.neutral[700], label: status };
+  const s = map[status] ?? { bg: "bg-neutral-100", fg: "text-neutral-700", label: status };
 
   return (
     <span
-      style={{
-        display: "inline-block",
-        padding: `${spacing[1]} ${spacing[2]}`,
-        borderRadius: radius.full,
-        fontSize: typography.size.xs,
-        fontWeight: typography.weight.semibold,
-        background: s.bg,
-        color: s.fg,
-        letterSpacing: "0.01em",
-      }}
+      className={cn(
+        "inline-block px-2 py-1 rounded-full text-xs font-semibold tracking-tight",
+        s.bg,
+        s.fg,
+      )}
     >
       {s.label}
     </span>
@@ -155,17 +46,7 @@ function SourceBadge({ source }: { source: string }) {
   if (source === "none") return null;
   const label = source === "db" ? "DB" : source === "env" ? "ENV" : source;
   return (
-    <span
-      style={{
-        display: "inline-block",
-        padding: `${spacing[1]} ${spacing[2]}`,
-        borderRadius: radius.sm,
-        fontSize: typography.size.xs,
-        fontWeight: typography.weight.medium,
-        background: colors.neutral[100],
-        color: colors.neutral[600],
-      }}
-    >
+    <span className="inline-block px-2 py-1 rounded-sm text-xs font-medium bg-neutral-100 text-neutral-600">
       kaynak: {label}
     </span>
   );
@@ -229,37 +110,33 @@ function CredentialRow({ cred }: { cred: CredentialStatus }) {
   }
 
   return (
-    <div
-      style={CARD}
-      onMouseEnter={(e) => { e.currentTarget.style.boxShadow = shadow.md; e.currentTarget.style.borderColor = colors.border.default; }}
-      onMouseLeave={(e) => { e.currentTarget.style.boxShadow = shadow.xs; e.currentTarget.style.borderColor = colors.border.subtle; }}
-    >
-      <div style={ROW}>
-        <span style={LABEL}>{cred.label}</span>
+    <div className="border border-border-subtle rounded-lg p-4 mb-3 bg-surface-card shadow-xs transition-shadow duration-normal hover:shadow-md hover:border-border">
+      <div className="flex items-center gap-3 flex-wrap">
+        <span className="text-base font-semibold text-neutral-900 min-w-[160px]">{cred.label}</span>
         <StatusBadge status={cred.status} />
         <SourceBadge source={cred.source} />
         {cred.updated_at && (
-          <span style={{ fontSize: typography.size.xs, color: colors.neutral[500] }}>
+          <span className="text-xs text-neutral-500">
             {new Date(cred.updated_at).toLocaleString("tr-TR")}
           </span>
         )}
       </div>
 
-      {cred.help_text && <div style={HELP}>{cred.help_text}</div>}
+      {cred.help_text && <div className="text-xs text-neutral-500 mt-1 leading-normal">{cred.help_text}</div>}
 
       {/* Current masked value */}
       {cred.masked_value && !editing && (
-        <div style={{ marginTop: spacing[2] }}>
-          <span style={MASKED}>{cred.masked_value}</span>
+        <div className="mt-2">
+          <span className="text-base text-neutral-600 font-mono tracking-wide">{cred.masked_value}</span>
         </div>
       )}
 
       {/* Action bar */}
-      <div style={{ display: "flex", gap: spacing[2], marginTop: spacing[2], alignItems: "center" }}>
+      <div className="flex gap-2 mt-2 items-center">
         {editing ? (
           <>
             <input
-              style={INPUT}
+              className="flex-1 min-w-[200px] px-2 py-1 border border-border rounded-sm text-base font-body outline-none transition-colors duration-fast focus:border-focus"
               type="password"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
@@ -268,24 +145,40 @@ function CredentialRow({ cred }: { cred: CredentialStatus }) {
               onKeyDown={(e) => { if (e.key === "Enter") handleSave(); }}
             />
             <button
-              style={{ ...BTN_PRIMARY, opacity: saveMutation.isPending ? 0.6 : 1 }}
+              className={cn(
+                "px-3 py-1 bg-brand-600 text-neutral-0 border-none rounded-md cursor-pointer text-sm font-medium transition-opacity duration-fast",
+                saveMutation.isPending && "opacity-60",
+              )}
               onClick={handleSave}
               disabled={saveMutation.isPending || !inputValue.trim()}
             >
               {saveMutation.isPending ? "..." : "Kaydet"}
             </button>
-            <button style={BTN_SECONDARY} onClick={handleCancel}>
+            <button
+              className="px-3 py-1 bg-transparent text-neutral-600 border border-border rounded-md cursor-pointer text-sm font-medium transition-colors duration-fast hover:bg-neutral-50"
+              onClick={handleCancel}
+            >
               Iptal
             </button>
           </>
         ) : (
           <>
-            <button style={{ ...BTN_SECONDARY, opacity: readOnly ? 0.5 : 1, cursor: readOnly ? "not-allowed" : "pointer" }} disabled={readOnly} onClick={() => setEditing(true)}>
+            <button
+              className={cn(
+                "px-3 py-1 bg-transparent text-neutral-600 border border-border rounded-md text-sm font-medium transition-colors duration-fast hover:bg-neutral-50",
+                readOnly ? "opacity-50 cursor-not-allowed" : "cursor-pointer",
+              )}
+              disabled={readOnly}
+              onClick={() => setEditing(true)}
+            >
               {cred.status === "missing" ? "Ekle" : "Degistir"}
             </button>
             {cred.status !== "missing" && (
               <button
-                style={{ ...BTN_SECONDARY, opacity: validateMutation.isPending ? 0.6 : 1 }}
+                className={cn(
+                  "px-3 py-1 bg-transparent text-neutral-600 border border-border rounded-md text-sm font-medium transition-colors duration-fast hover:bg-neutral-50",
+                  validateMutation.isPending && "opacity-60",
+                )}
                 onClick={handleValidate}
                 disabled={validateMutation.isPending}
               >
@@ -299,11 +192,10 @@ function CredentialRow({ cred }: { cred: CredentialStatus }) {
       {/* Feedback */}
       {feedback && (
         <div
-          style={{
-            marginTop: spacing[1],
-            fontSize: typography.size.sm,
-            color: feedback.type === "success" ? colors.success.text : colors.error.base,
-          }}
+          className={cn(
+            "mt-1 text-sm",
+            feedback.type === "success" ? "text-success-text" : "text-error",
+          )}
         >
           {feedback.msg}
         </div>
@@ -344,15 +236,11 @@ function YouTubeConnectionSection() {
   }
 
   return (
-    <div
-      style={CARD}
-      onMouseEnter={(e) => { e.currentTarget.style.boxShadow = shadow.md; e.currentTarget.style.borderColor = colors.border.default; }}
-      onMouseLeave={(e) => { e.currentTarget.style.boxShadow = shadow.xs; e.currentTarget.style.borderColor = colors.border.subtle; }}
-    >
-      <div style={ROW}>
-        <span style={LABEL}>YouTube Baglantisi</span>
+    <div className="border border-border-subtle rounded-lg p-4 mb-3 bg-surface-card shadow-xs transition-shadow duration-normal hover:shadow-md hover:border-border">
+      <div className="flex items-center gap-3 flex-wrap">
+        <span className="text-base font-semibold text-neutral-900 min-w-[160px]">YouTube Baglantisi</span>
         {isLoading && (
-          <span style={{ fontSize: typography.size.xs, color: colors.neutral[500] }}>Kontrol ediliyor...</span>
+          <span className="text-xs text-neutral-500">Kontrol ediliyor...</span>
         )}
         {!isLoading && !isError && ytStatus && (
           <StatusBadge status={ytStatus.has_credentials ? "connected" : "missing"} />
@@ -360,7 +248,7 @@ function YouTubeConnectionSection() {
         {isError && <StatusBadge status="invalid" />}
       </div>
 
-      <div style={HELP}>
+      <div className="text-xs text-neutral-500 mt-1 leading-normal">
         YouTube'a video yayinlamak icin OAuth2 yetkilendirmesi gereklidir.
         Once yukaridaki YouTube Client ID ve Client Secret alanlarini doldurun,
         sonra baglantiyi baslatin.
@@ -368,30 +256,19 @@ function YouTubeConnectionSection() {
 
       {/* Connected channel info */}
       {channelInfo?.connected && channelInfo.channel_title && (
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: spacing[3],
-            marginTop: spacing[3],
-            padding: spacing[3],
-            background: colors.success.light,
-            borderRadius: radius.md,
-            border: `1px solid ${colors.success.light}`,
-          }}
-        >
+        <div className="flex items-center gap-3 mt-3 p-3 bg-success-light rounded-md border border-success-light">
           {channelInfo.thumbnail_url && (
             <img
               src={channelInfo.thumbnail_url}
               alt={channelInfo.channel_title}
-              style={{ width: 40, height: 40, borderRadius: "50%" }}
+              className="w-10 h-10 rounded-full"
             />
           )}
           <div>
-            <div style={{ fontSize: typography.size.base, fontWeight: typography.weight.semibold, color: colors.success.text }}>
+            <div className="text-base font-semibold text-success-text">
               {channelInfo.channel_title}
             </div>
-            <div style={{ fontSize: typography.size.xs, color: colors.neutral[600] }}>
+            <div className="text-xs text-neutral-600">
               {channelInfo.subscriber_count && `${Number(channelInfo.subscriber_count).toLocaleString("tr-TR")} abone`}
               {channelInfo.subscriber_count && channelInfo.video_count && " · "}
               {channelInfo.video_count && `${Number(channelInfo.video_count).toLocaleString("tr-TR")} video`}
@@ -400,19 +277,30 @@ function YouTubeConnectionSection() {
         </div>
       )}
 
-      <div style={{ display: "flex", gap: spacing[2], marginTop: spacing[2], alignItems: "center" }}>
+      <div className="flex gap-2 mt-2 items-center">
         {ytStatus?.has_credentials ? (
           <>
-            <span style={{ fontSize: typography.size.sm, color: colors.success.text }}>
+            <span className="text-sm text-success-text">
               OAuth token mevcut — yayinlama yapilabilir.
             </span>
-            <button style={{ ...BTN_DANGER, opacity: readOnly ? 0.5 : 1, cursor: readOnly ? "not-allowed" : "pointer" }} onClick={handleDisconnect} disabled={readOnly || revokeMutation.isPending}>
+            <button
+              className={cn(
+                "px-3 py-1 bg-error text-neutral-0 border-none rounded-md text-sm font-medium transition-opacity duration-fast",
+                readOnly ? "opacity-50 cursor-not-allowed" : "cursor-pointer",
+              )}
+              onClick={handleDisconnect}
+              disabled={readOnly || revokeMutation.isPending}
+            >
               {revokeMutation.isPending ? "..." : "Baglantiyi Kes"}
             </button>
           </>
         ) : (
           <button
-            style={{ ...BTN_PRIMARY, opacity: (readOnly || connecting) ? 0.6 : 1, cursor: readOnly ? "not-allowed" : "pointer" }}
+            className={cn(
+              "px-3 py-1 bg-brand-600 text-neutral-0 border-none rounded-md text-sm font-medium transition-opacity duration-fast",
+              (readOnly || connecting) ? "opacity-60" : "",
+              readOnly ? "cursor-not-allowed" : "cursor-pointer",
+            )}
             onClick={handleConnect}
             disabled={readOnly || connecting}
           >
@@ -422,13 +310,13 @@ function YouTubeConnectionSection() {
       </div>
 
       {connectError && (
-        <div style={{ marginTop: spacing[1], fontSize: typography.size.sm, color: colors.error.base }}>
+        <div className="mt-1 text-sm text-error">
           {connectError}
         </div>
       )}
 
       {revokeMutation.isSuccess && (
-        <div style={{ marginTop: spacing[1], fontSize: typography.size.sm, color: colors.success.text }}>
+        <div className="mt-1 text-sm text-success-text">
           Baglanti basariyla kesildi.
         </div>
       )}
@@ -452,17 +340,17 @@ export function CredentialsPanel() {
   const { data: credentials, isLoading, isError, error } = useCredentialsList();
 
   if (isLoading) {
-    return <p style={{ color: colors.neutral[600], fontSize: typography.size.base }}>Yükleniyor...</p>;
+    return <p className="text-neutral-600 text-base">Yükleniyor...</p>;
   }
   if (isError) {
     return (
-      <p style={{ color: colors.error.base, fontSize: typography.size.base }}>
+      <p className="text-error text-base">
         Hata: {error instanceof Error ? error.message : "Bilinmeyen hata"}
       </p>
     );
   }
   if (!credentials || credentials.length === 0) {
-    return <p style={{ color: colors.neutral[600], fontSize: typography.size.base }}>Tanimli credential bulunamadi.</p>;
+    return <p className="text-neutral-600 text-base">Tanimli credential bulunamadi.</p>;
   }
 
   // Group credentials by their group field
@@ -479,8 +367,10 @@ export function CredentialsPanel() {
         const items = grouped[groupKey];
         if (!items || items.length === 0) return null;
         return (
-          <div key={groupKey} style={SECTION}>
-            <div style={SECTION_TITLE}>{GROUP_LABELS[groupKey] ?? groupKey}</div>
+          <div key={groupKey} className="mb-6">
+            <div className="text-base font-semibold text-neutral-800 mb-3 pb-2 border-b border-border-subtle">
+              {GROUP_LABELS[groupKey] ?? groupKey}
+            </div>
             {items.map((cred) => (
               <CredentialRow key={cred.key} cred={cred} />
             ))}

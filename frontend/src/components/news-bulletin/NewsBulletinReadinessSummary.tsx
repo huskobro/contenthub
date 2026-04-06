@@ -1,6 +1,5 @@
 import { NewsBulletinReadinessBadge, ReadinessLevel } from "./NewsBulletinReadinessBadge";
 import { safeNumber } from "../../lib/safeNumber";
-import { colors } from "../design-system/tokens";
 
 interface Props {
   selectedNewsCount?: number;
@@ -32,9 +31,9 @@ export function NewsBulletinReadinessSummary({ selectedNewsCount, hasScript, has
   parts.push(meta ? "Metadata var" : "Metadata yok");
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "0.15rem" }}>
+    <div className="flex flex-col gap-[0.15rem]">
       <NewsBulletinReadinessBadge level={level} />
-      <span style={{ fontSize: "0.68rem", color: colors.neutral[500] }}>{parts.join(" • ")}</span>
+      <span className="text-[0.68rem] text-neutral-500">{parts.join(" • ")}</span>
     </div>
   );
 }

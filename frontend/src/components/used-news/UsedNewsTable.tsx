@@ -8,10 +8,7 @@ import { UsedNewsArtifactConsistencySummary } from "./UsedNewsArtifactConsistenc
 import { UsedNewsInputQualitySummary } from "./UsedNewsInputQualitySummary";
 import { UsedNewsInputSpecificitySummary } from "./UsedNewsInputSpecificitySummary";
 import { UsedNewsTargetOutputConsistencySummary } from "./UsedNewsTargetOutputConsistencySummary";
-import { colors, typography } from "../design-system/tokens";
-
-const TH_STYLE: React.CSSProperties = { padding: "0.5rem 0.75rem", borderBottom: `1px solid ${colors.border.subtle}` };
-const TD_STYLE: React.CSSProperties = { padding: "0.5rem 0.75rem" };
+import { cn } from "../../lib/cn";
 
 interface Props {
   records: UsedNewsResponse[];
@@ -21,23 +18,23 @@ interface Props {
 
 export function UsedNewsTable({ records, selectedId, onSelect }: Props) {
   return (
-    <div style={{ overflowX: "auto" }}>
-    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: typography.size.md }}>
+    <div className="overflow-x-auto">
+    <table className="w-full border-collapse text-md">
       <thead>
-        <tr style={{ background: colors.neutral[100], textAlign: "left" }}>
-          <th style={TH_STYLE}>Haber ID</th>
-          <th style={TH_STYLE}>Kullanım Tipi</th>
-          <th style={TH_STYLE}>Durum</th>
-          <th style={TH_STYLE}>Kaynak Bağlamı</th>
-          <th style={TH_STYLE}>Girdi Kalitesi</th>
-          <th style={TH_STYLE}>Girdi Özgüllüğü</th>
-          <th style={TH_STYLE}>Hedef Modül</th>
-          <th style={TH_STYLE}>Hedef Varlık</th>
-          <th style={TH_STYLE}>Hedef Çözümü</th>
-          <th style={TH_STYLE}>Yayın Bağı</th>
-          <th style={TH_STYLE}>Artifact Tutarlılığı</th>
-          <th style={TH_STYLE}>Target/Output Tutarlılığı</th>
-          <th style={TH_STYLE}>Oluşturulma</th>
+        <tr className="bg-neutral-100 text-left">
+          <th className="py-2 px-3 border-b border-border-subtle">Haber ID</th>
+          <th className="py-2 px-3 border-b border-border-subtle">Kullanım Tipi</th>
+          <th className="py-2 px-3 border-b border-border-subtle">Durum</th>
+          <th className="py-2 px-3 border-b border-border-subtle">Kaynak Bağlamı</th>
+          <th className="py-2 px-3 border-b border-border-subtle">Girdi Kalitesi</th>
+          <th className="py-2 px-3 border-b border-border-subtle">Girdi Özgüllüğü</th>
+          <th className="py-2 px-3 border-b border-border-subtle">Hedef Modül</th>
+          <th className="py-2 px-3 border-b border-border-subtle">Hedef Varlık</th>
+          <th className="py-2 px-3 border-b border-border-subtle">Hedef Çözümü</th>
+          <th className="py-2 px-3 border-b border-border-subtle">Yayın Bağı</th>
+          <th className="py-2 px-3 border-b border-border-subtle">Artifact Tutarlılığı</th>
+          <th className="py-2 px-3 border-b border-border-subtle">Target/Output Tutarlılığı</th>
+          <th className="py-2 px-3 border-b border-border-subtle">Oluşturulma</th>
         </tr>
       </thead>
       <tbody>
@@ -45,93 +42,44 @@ export function UsedNewsTable({ records, selectedId, onSelect }: Props) {
           <tr
             key={record.id}
             onClick={() => onSelect(record.id)}
-            style={{
-              cursor: "pointer",
-              background: selectedId === record.id ? colors.info.light : "transparent",
-              borderBottom: `1px solid ${colors.neutral[100]}`,
-            }}
+            className={cn(
+              "cursor-pointer border-b border-neutral-100",
+              selectedId === record.id ? "bg-info-light" : "bg-transparent"
+            )}
           >
-            {/* Kimlik & Durum */}
-            <td style={{ padding: "0.5rem 0.75rem", fontFamily: "monospace", fontSize: typography.size.base, color: colors.brand[700], fontWeight: selectedId === record.id ? 600 : 400 }}>
+            <td className={cn("py-2 px-3 font-mono text-base text-brand-700", selectedId === record.id ? "font-semibold" : "font-normal")}>
               {record.news_item_id}
             </td>
-            <td style={{ padding: "0.5rem 0.75rem", color: colors.neutral[600] }}>{record.usage_type}</td>
-            <td style={TD_STYLE}>
-              <UsedNewsStateSummary
-                usageType={record.usage_type}
-                targetModule={record.target_module}
-                targetEntityId={record.target_entity_id}
-              />
+            <td className="py-2 px-3 text-neutral-600">{record.usage_type}</td>
+            <td className="py-2 px-3">
+              <UsedNewsStateSummary usageType={record.usage_type} targetModule={record.target_module} targetEntityId={record.target_entity_id} />
             </td>
-            <td style={TD_STYLE}>
-              <UsedNewsSourceContextSummary
-                newsItemId={record.news_item_id}
-                hasNewsItemSource={record.has_news_item_source}
-                hasNewsItemScanReference={record.has_news_item_scan_reference}
-              />
+            <td className="py-2 px-3">
+              <UsedNewsSourceContextSummary newsItemId={record.news_item_id} hasNewsItemSource={record.has_news_item_source} hasNewsItemScanReference={record.has_news_item_scan_reference} />
             </td>
-            {/* Girdi Grubu */}
-            <td style={TD_STYLE}>
-              <UsedNewsInputQualitySummary
-                newsItemId={record.news_item_id}
-                usageType={record.usage_type}
-                targetModule={record.target_module}
-                targetEntityId={record.target_entity_id}
-                usageContext={record.usage_context}
-                notes={record.notes}
-              />
+            <td className="py-2 px-3">
+              <UsedNewsInputQualitySummary newsItemId={record.news_item_id} usageType={record.usage_type} targetModule={record.target_module} targetEntityId={record.target_entity_id} usageContext={record.usage_context} notes={record.notes} />
             </td>
-            <td style={TD_STYLE}>
-              <UsedNewsInputSpecificitySummary
-                newsItemId={record.news_item_id}
-                usageType={record.usage_type}
-                targetModule={record.target_module}
-                targetEntityId={record.target_entity_id}
-                usageContext={record.usage_context}
-                notes={record.notes}
-              />
+            <td className="py-2 px-3">
+              <UsedNewsInputSpecificitySummary newsItemId={record.news_item_id} usageType={record.usage_type} targetModule={record.target_module} targetEntityId={record.target_entity_id} usageContext={record.usage_context} notes={record.notes} />
             </td>
-            {/* Hedef Grubu */}
-            <td style={{ padding: "0.5rem 0.75rem", color: colors.neutral[600] }}>{record.target_module}</td>
-            <td style={{ padding: "0.5rem 0.75rem", color: colors.neutral[500], fontFamily: "monospace", fontSize: typography.size.base }}>
+            <td className="py-2 px-3 text-neutral-600">{record.target_module}</td>
+            <td className="py-2 px-3 text-neutral-500 font-mono text-base">
               {record.target_entity_id ?? "—"}
             </td>
-            <td style={TD_STYLE}>
-              <UsedNewsTargetResolutionSummary
-                targetModule={record.target_module}
-                targetEntityId={record.target_entity_id}
-                hasTargetResolved={record.has_target_resolved}
-              />
+            <td className="py-2 px-3">
+              <UsedNewsTargetResolutionSummary targetModule={record.target_module} targetEntityId={record.target_entity_id} hasTargetResolved={record.has_target_resolved} />
             </td>
-            {/* Yayın & Tutarlılık Grubu */}
-            <td style={TD_STYLE}>
-              <UsedNewsPublicationLinkageSummary
-                usageType={record.usage_type}
-                targetEntityId={record.target_entity_id}
-              />
+            <td className="py-2 px-3">
+              <UsedNewsPublicationLinkageSummary usageType={record.usage_type} targetEntityId={record.target_entity_id} />
             </td>
-            <td style={TD_STYLE}>
-              <UsedNewsArtifactConsistencySummary
-                hasNewsItemSource={record.has_news_item_source}
-                hasNewsItemScanReference={record.has_news_item_scan_reference}
-                hasTargetResolved={record.has_target_resolved}
-                targetModule={record.target_module}
-                targetEntityId={record.target_entity_id}
-              />
+            <td className="py-2 px-3">
+              <UsedNewsArtifactConsistencySummary hasNewsItemSource={record.has_news_item_source} hasNewsItemScanReference={record.has_news_item_scan_reference} hasTargetResolved={record.has_target_resolved} targetModule={record.target_module} targetEntityId={record.target_entity_id} />
             </td>
-            <td style={TD_STYLE}>
-              <UsedNewsTargetOutputConsistencySummary
-                newsItemId={record.news_item_id}
-                usageType={record.usage_type}
-                usageContext={record.usage_context}
-                notes={record.notes}
-                hasTargetResolved={record.has_target_resolved}
-                targetModule={record.target_module}
-                targetEntityId={record.target_entity_id}
-              />
+            <td className="py-2 px-3">
+              <UsedNewsTargetOutputConsistencySummary newsItemId={record.news_item_id} usageType={record.usage_type} usageContext={record.usage_context} notes={record.notes} hasTargetResolved={record.has_target_resolved} targetModule={record.target_module} targetEntityId={record.target_entity_id} />
             </td>
-            {/* Zaman */}
-            <td style={{ padding: "0.5rem 0.75rem", color: colors.neutral[500], fontSize: typography.size.base }}>
+            <td className="py-2 px-3 text-neutral-500 text-base">
               {formatDateShort(record.created_at)}
             </td>
           </tr>

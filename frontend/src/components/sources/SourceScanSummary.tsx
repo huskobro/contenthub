@@ -1,6 +1,5 @@
 import { SourceScanStatusBadge } from "./SourceScanStatusBadge";
 import { formatDateShort } from "../../lib/formatDate";
-import { colors } from "../design-system/tokens";
 
 interface Props {
   scanCount?: number;
@@ -10,10 +9,10 @@ interface Props {
 
 export function SourceScanSummary({ scanCount, lastScanStatus, lastScanFinishedAt }: Props) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "0.15rem" }}>
+    <div className="flex flex-col gap-[0.15rem]">
       <SourceScanStatusBadge status={lastScanStatus} scanCount={scanCount} />
       {lastScanFinishedAt && (
-        <span style={{ fontSize: "0.68rem", color: colors.neutral[500] }}>
+        <span className="text-[0.68rem] text-neutral-500">
           {formatDateShort(lastScanFinishedAt)}
         </span>
       )}

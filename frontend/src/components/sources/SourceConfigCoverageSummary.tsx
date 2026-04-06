@@ -1,4 +1,3 @@
-import { colors } from "../design-system/tokens";
 import { SourceConfigCoverageBadge, SourceConfigCoverageLevel } from "./SourceConfigCoverageBadge";
 
 interface Props {
@@ -32,9 +31,9 @@ export function SourceConfigCoverageSummary({ sourceType, baseUrl, feedUrl, apiE
   const detail = sourceType ? sourceType : "tür yok";
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "0.15rem" }}>
+    <div className="flex flex-col gap-[0.15rem]">
       <SourceConfigCoverageBadge level={level} />
-      <span style={{ fontSize: "0.68rem", color: colors.neutral[500] }}>{detail}</span>
+      <span className="text-[0.68rem] text-neutral-500">{detail}</span>
     </div>
   );
 }

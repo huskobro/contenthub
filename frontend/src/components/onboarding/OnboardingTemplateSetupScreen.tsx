@@ -2,42 +2,6 @@ import { TemplateForm } from "../templates/TemplateForm";
 import { useCreateTemplate } from "../../hooks/useCreateTemplate";
 import { useQueryClient } from "@tanstack/react-query";
 import type { TemplateFormValues } from "../templates/TemplateForm";
-import { colors, radius, typography } from "../design-system/tokens";
-
-const CONTAINER: React.CSSProperties = {
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
-  justifyContent: "center",
-  minHeight: "100vh",
-  background: `linear-gradient(135deg, ${colors.neutral[50]} 0%, ${colors.border.subtle} 100%)`,
-  padding: "2rem",
-};
-
-const CARD: React.CSSProperties = {
-  maxWidth: "560px",
-  width: "100%",
-  background: colors.neutral[0],
-  borderRadius: radius.xl,
-  boxShadow: "0 4px 24px rgba(0, 0, 0, 0.08)",
-  padding: "2.5rem",
-};
-
-const TITLE: React.CSSProperties = {
-  margin: "0 0 0.375rem",
-  fontSize: "1.5rem",
-  fontWeight: 700,
-  color: colors.neutral[900],
-  textAlign: "center",
-};
-
-const SUBTITLE: React.CSSProperties = {
-  margin: "0 0 1.75rem",
-  fontSize: typography.size.lg,
-  color: colors.neutral[700],
-  lineHeight: 1.6,
-  textAlign: "center",
-};
 
 interface Props {
   onBack: () => void;
@@ -76,10 +40,10 @@ export function OnboardingTemplateSetupScreen({ onBack, onComplete }: Props) {
     : null;
 
   return (
-    <div style={CONTAINER}>
-      <div style={CARD}>
-        <h2 style={TITLE}>Sablon Olustur</h2>
-        <p style={SUBTITLE}>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-neutral-50 to-border-subtle p-8">
+      <div className="max-w-[560px] w-full bg-neutral-0 rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.08)] p-10">
+        <h2 className="mb-1.5 text-2xl font-bold text-neutral-900 text-center">Sablon Olustur</h2>
+        <p className="mb-7 text-lg text-neutral-700 leading-relaxed text-center">
           Sisteminize en az bir sablon ekleyin. Icerik uretimi icin style,
           content veya publish sablonu olusturabilirsiniz.
         </p>

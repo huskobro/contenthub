@@ -8,7 +8,7 @@
  *   - wired_to bilgisi
  *   - Admin degeri girme/degistirme
  *
- * Wave 1 Final: design-system tokens, useAutoSave, useSearchFocus integrated.
+ * Wave 1 Final: Tailwind classes, useAutoSave, useSearchFocus integrated.
  */
 
 import { useState, useRef } from "react";
@@ -21,92 +21,8 @@ import {
 import { useToast } from "../../hooks/useToast";
 import { useAutoSave } from "../../hooks/useAutoSave";
 import { useSearchFocus } from "../../hooks/useSearchFocus";
-import { colors, typography, spacing, radius } from "../../components/design-system/tokens";
+import { cn } from "../../lib/cn";
 import type { EffectiveSetting, GroupSummary } from "../../api/effectiveSettingsApi";
-
-// ---------------------------------------------------------------------------
-// Styles
-// ---------------------------------------------------------------------------
-
-const GROUP_SECTION: React.CSSProperties = {
-  marginBottom: spacing[6],
-};
-
-const GROUP_HEADER: React.CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  gap: spacing[3],
-  fontSize: typography.size.base,
-  fontWeight: typography.weight.semibold,
-  color: colors.neutral[700],
-  marginBottom: spacing[3],
-  paddingBottom: spacing[2],
-  borderBottom: `1px solid ${colors.border.default}`,
-};
-
-const CARD: React.CSSProperties = {
-  border: `1px solid ${colors.border.default}`,
-  borderRadius: radius.lg,
-  padding: `${spacing[3]} ${spacing[4]}`,
-  marginBottom: spacing[2],
-  background: colors.surface.card,
-};
-
-const KEY_ROW: React.CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  gap: spacing[2],
-  flexWrap: "wrap",
-};
-
-const KEY_LABEL: React.CSSProperties = {
-  fontSize: typography.size.base,
-  fontWeight: typography.weight.semibold,
-  color: colors.neutral[900],
-};
-
-const HELP_TEXT: React.CSSProperties = {
-  fontSize: typography.size.xs,
-  color: colors.neutral[500],
-  marginTop: spacing[1],
-  lineHeight: typography.lineHeight.tight,
-};
-
-const VALUE_ROW: React.CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  gap: spacing[2],
-  marginTop: spacing[2],
-  flexWrap: "wrap",
-};
-
-const VALUE_DISPLAY: React.CSSProperties = {
-  fontSize: typography.size.base,
-  color: colors.neutral[700],
-  fontFamily: typography.monoFamily,
-  background: colors.neutral[25],
-  padding: `${spacing[1]} ${spacing[2]}`,
-  borderRadius: radius.sm,
-  border: `1px solid ${colors.border.default}`,
-};
-
-const INPUT: React.CSSProperties = {
-  flex: 1,
-  minWidth: "180px",
-  padding: `${spacing[1]} ${spacing[2]}`,
-  border: `1px solid ${colors.neutral[400]}`,
-  borderRadius: radius.sm,
-  fontSize: typography.size.base,
-  boxSizing: "border-box" as const,
-};
-
-const BTN_SM: React.CSSProperties = {
-  padding: `${spacing[1]} ${spacing[2]}`,
-  fontSize: typography.size.xs,
-  borderRadius: radius.sm,
-  cursor: "pointer",
-  fontWeight: typography.weight.medium,
-};
 
 // ---------------------------------------------------------------------------
 // Auto-save status indicator
@@ -123,21 +39,21 @@ function AutoSaveStatus({
 }) {
   if (error) {
     return (
-      <span style={{ fontSize: typography.size.xs, color: colors.error.dark }}>
+      <span className="text-xs text-error-dark">
         Hata
       </span>
     );
   }
   if (isSaving) {
     return (
-      <span style={{ fontSize: typography.size.xs, color: colors.warning.text }}>
+      <span className="text-xs text-warning-text">
         Kaydediliyor...
       </span>
     );
   }
   if (isDirty) {
     return (
-      <span style={{ fontSize: typography.size.xs, color: colors.neutral[500] }}>
+      <span className="text-xs text-neutral-500">
         Kaydedilmedi
       </span>
     );
@@ -150,26 +66,18 @@ function AutoSaveStatus({
 // ---------------------------------------------------------------------------
 
 function SourceBadge({ source }: { source: string }) {
-  const badgeColors: Record<string, { bg: string; fg: string }> = {
-    admin: { bg: colors.info.light, fg: colors.brand[800] },
-    default: { bg: colors.neutral[100], fg: colors.neutral[700] },
-    env: { bg: colors.warning.light, fg: colors.warning.text },
-    builtin: { bg: colors.brand[100], fg: colors.brand[700] },
-    missing: { bg: colors.error.light, fg: colors.error.text },
+  const badgeClasses: Record<string, string> = {
+    admin: "bg-info-light text-brand-800",
+    default: "bg-neutral-100 text-neutral-700",
+    env: "bg-warning-light text-warning-text",
+    builtin: "bg-brand-100 text-brand-700",
+    missing: "bg-error-light text-error-text",
   };
-  const c = badgeColors[source] ?? badgeColors.missing;
+  const c = badgeClasses[source] ?? badgeClasses.missing;
 
   return (
     <span
-      style={{
-        display: "inline-block",
-        padding: `${spacing[1]} ${spacing[2]}`,
-        borderRadius: radius.full,
-        fontSize: typography.size.xs,
-        fontWeight: typography.weight.semibold,
-        background: c.bg,
-        color: c.fg,
-      }}
+      className={cn("inline-block px-2 py-1 rounded-full text-xs font-semibold", c)}
       data-testid={`source-badge-${source}`}
     >
       {source.toUpperCase()}
@@ -180,15 +88,10 @@ function SourceBadge({ source }: { source: string }) {
 function WiredBadge({ wired }: { wired: boolean }) {
   return (
     <span
-      style={{
-        display: "inline-block",
-        padding: `${spacing[1]} ${spacing[2]}`,
-        borderRadius: radius.sm,
-        fontSize: typography.size.xs,
-        fontWeight: typography.weight.semibold,
-        background: wired ? colors.success.light : colors.warning.light,
-        color: wired ? colors.success.text : colors.warning.text,
-      }}
+      className={cn(
+        "inline-block px-2 py-1 rounded-sm text-xs font-semibold",
+        wired ? "bg-success-light text-success-text" : "bg-warning-light text-warning-text",
+      )}
       data-testid={wired ? "badge-wired" : "badge-deferred"}
     >
       {wired ? "WIRED" : "DEFERRED"}
@@ -199,15 +102,8 @@ function WiredBadge({ wired }: { wired: boolean }) {
 function GroupCountBadge({ count, color }: { count: number; color: string }) {
   return (
     <span
-      style={{
-        display: "inline-block",
-        padding: `${spacing[1]} ${spacing[2]}`,
-        borderRadius: radius.full,
-        fontSize: typography.size.xs,
-        fontWeight: typography.weight.medium,
-        background: colors.neutral[100],
-        color,
-      }}
+      className="inline-block px-2 py-1 rounded-full text-xs font-medium bg-neutral-100"
+      style={{ color }}
     >
       {count}
     </span>
@@ -306,45 +202,41 @@ function SettingRow({ setting }: { setting: EffectiveSetting }) {
     : "—";
 
   return (
-    <div style={CARD} data-testid={`setting-row-${setting.key}`}>
-      <div style={KEY_ROW}>
-        <span style={KEY_LABEL}>{setting.label}</span>
+    <div className="border border-border rounded-lg px-4 py-3 mb-2 bg-surface-card" data-testid={`setting-row-${setting.key}`}>
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className="text-base font-semibold text-neutral-900">{setting.label}</span>
         <SourceBadge source={setting.source} />
         <WiredBadge wired={setting.wired} />
         {setting.module_scope && (
-          <span style={{ fontSize: typography.size.xs, color: colors.neutral[600], fontStyle: "italic" }}>
+          <span className="text-xs text-neutral-600 italic">
             [{setting.module_scope}]
           </span>
         )}
       </div>
 
-      {setting.help_text && <div style={HELP_TEXT}>{setting.help_text}</div>}
+      {setting.help_text && <div className="text-xs text-neutral-500 mt-1 leading-tight">{setting.help_text}</div>}
 
       {setting.wired && setting.wired_to && (
-        <div style={{ fontSize: typography.size.xs, color: colors.brand[700], marginTop: spacing[1] }}>
+        <div className="text-xs text-brand-700 mt-1">
           → {setting.wired_to}
         </div>
       )}
 
-      <div style={VALUE_ROW}>
+      <div className="flex items-center gap-2 mt-2 flex-wrap">
         {!editing && (
           <>
-            <span style={VALUE_DISPLAY} data-testid={`setting-value-${setting.key}`}>
+            <span className="text-base text-neutral-700 font-mono bg-neutral-25 px-2 py-1 rounded-sm border border-border" data-testid={`setting-value-${setting.key}`}>
               {setting.is_secret && setting.source !== "missing" ? "●●●●" : displayValue}
             </span>
             {setting.source === "builtin" && (
-              <span style={{ fontSize: typography.size.xs, color: colors.neutral[500] }}>(varsayilan)</span>
+              <span className="text-xs text-neutral-500">(varsayilan)</span>
             )}
             {!isCredential && (
               <button
-                style={{
-                  ...BTN_SM,
-                  background: "transparent",
-                  color: colors.neutral[600],
-                  border: `1px solid ${colors.neutral[400]}`,
-                  opacity: readOnly ? 0.5 : 1,
-                  cursor: readOnly ? "not-allowed" : "pointer",
-                }}
+                className={cn(
+                  "px-2 py-1 text-xs rounded-sm font-medium bg-transparent text-neutral-600 border border-neutral-400",
+                  readOnly ? "opacity-50 cursor-not-allowed" : "cursor-pointer",
+                )}
                 disabled={readOnly}
                 onClick={() => {
                   setEditing(true);
@@ -358,7 +250,7 @@ function SettingRow({ setting }: { setting: EffectiveSetting }) {
               </button>
             )}
             {isCredential && (
-              <span style={{ fontSize: typography.size.xs, color: colors.neutral[500] }}>
+              <span className="text-xs text-neutral-500">
                 (Kimlik Bilgileri sekmesinden yonetilir)
               </span>
             )}
@@ -368,7 +260,7 @@ function SettingRow({ setting }: { setting: EffectiveSetting }) {
         {editing && (
           <>
             <input
-              style={INPUT}
+              className="flex-1 min-w-[180px] px-2 py-1 border border-neutral-400 rounded-sm text-base box-border outline-none focus:border-focus"
               type={setting.is_secret ? "password" : "text"}
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
@@ -385,14 +277,14 @@ function SettingRow({ setting }: { setting: EffectiveSetting }) {
               />
             )}
             <button
-              style={{ ...BTN_SM, background: colors.brand[800], color: colors.surface.card, border: "none" }}
+              className="px-2 py-1 text-xs rounded-sm font-medium bg-brand-800 text-surface-card border-none cursor-pointer"
               onClick={handleSave}
               disabled={updateMutation.isPending}
             >
               {updateMutation.isPending ? "..." : "Kaydet"}
             </button>
             <button
-              style={{ ...BTN_SM, background: "transparent", color: colors.neutral[600], border: `1px solid ${colors.neutral[400]}` }}
+              className="px-2 py-1 text-xs rounded-sm font-medium bg-transparent text-neutral-600 border border-neutral-400 cursor-pointer"
               onClick={() => { setEditing(false); setInputValue(""); setFeedback(null); }}
             >
               Iptal
@@ -402,7 +294,7 @@ function SettingRow({ setting }: { setting: EffectiveSetting }) {
       </div>
 
       {feedback && (
-        <div style={{ marginTop: spacing[1], fontSize: typography.size.xs, color: feedback.includes("hata") ? colors.error.dark : colors.success.text }}>
+        <div className={cn("mt-1 text-xs", feedback.includes("hata") ? "text-error-dark" : "text-success-text")}>
           {feedback}
         </div>
       )}
@@ -430,17 +322,17 @@ function GroupSection({
   settings: EffectiveSetting[];
 }) {
   return (
-    <div style={GROUP_SECTION} data-testid={`settings-group-${group.group}`}>
-      <div style={GROUP_HEADER}>
+    <div className="mb-6" data-testid={`settings-group-${group.group}`}>
+      <div className="flex items-center gap-3 text-base font-semibold text-neutral-700 mb-3 pb-2 border-b border-border">
         <span>{GROUP_LABELS_MAP[group.group] ?? group.label}</span>
-        <GroupCountBadge count={group.total} color={colors.neutral[700]} />
+        <GroupCountBadge count={group.total} color="var(--ch-neutral-700)" />
         {group.wired > 0 && (
-          <span style={{ fontSize: typography.size.xs, color: colors.success.text }}>
+          <span className="text-xs text-success-text">
             {group.wired} wired
           </span>
         )}
         {group.missing > 0 && (
-          <span style={{ fontSize: typography.size.xs, color: colors.error.text }}>
+          <span className="text-xs text-error-text">
             {group.missing} eksik
           </span>
         )}
@@ -471,17 +363,17 @@ export function EffectiveSettingsPanel() {
   const isLoading = groupsLoading || settingsLoading;
 
   if (isLoading) {
-    return <p style={{ color: colors.neutral[600], fontSize: typography.size.base }}>Yükleniyor...</p>;
+    return <p className="text-neutral-600 text-base">Yükleniyor...</p>;
   }
   if (isError) {
     return (
-      <p style={{ color: colors.error.dark, fontSize: typography.size.base }}>
+      <p className="text-error-dark text-base">
         Hata: {error instanceof Error ? error.message : "Bilinmeyen hata"}
       </p>
     );
   }
   if (!settings || settings.length === 0) {
-    return <p style={{ color: colors.neutral[600], fontSize: typography.size.base }}>Tanimli ayar bulunamadi.</p>;
+    return <p className="text-neutral-600 text-base">Tanimli ayar bulunamadi.</p>;
   }
 
   // Filter by search term
@@ -506,18 +398,10 @@ export function EffectiveSettingsPanel() {
   return (
     <div>
       {/* Filter bar */}
-      <div
-        style={{
-          display: "flex",
-          gap: spacing[3],
-          marginBottom: spacing[4],
-          alignItems: "center",
-          flexWrap: "wrap",
-        }}
-      >
+      <div className="flex gap-3 mb-4 items-center flex-wrap">
         <input
           ref={searchRef}
-          style={{ ...INPUT, flex: "none", width: "240px" }}
+          className="w-[240px] px-2 py-1 border border-neutral-400 rounded-sm text-base box-border outline-none focus:border-focus"
           type="text"
           placeholder="Ayar ara... ( / )"
           value={searchTerm}
@@ -525,7 +409,7 @@ export function EffectiveSettingsPanel() {
           data-testid="settings-search"
         />
         <select
-          style={{ ...INPUT, flex: "none", width: "180px" }}
+          className="w-[180px] px-2 py-1 border border-neutral-400 rounded-sm text-base box-border outline-none focus:border-focus"
           value={filterGroup ?? ""}
           onChange={(e) => setFilterGroup(e.target.value || undefined)}
           data-testid="settings-group-filter"
@@ -537,7 +421,7 @@ export function EffectiveSettingsPanel() {
             </option>
           ))}
         </select>
-        <label style={{ fontSize: typography.size.sm, color: colors.neutral[600], display: "flex", alignItems: "center", gap: spacing[1] }}>
+        <label className="text-sm text-neutral-600 flex items-center gap-1">
           <input
             type="checkbox"
             checked={wiredOnly}
@@ -546,7 +430,7 @@ export function EffectiveSettingsPanel() {
           />
           Sadece Wired
         </label>
-        <span style={{ fontSize: typography.size.xs, color: colors.neutral[500] }}>
+        <span className="text-xs text-neutral-500">
           {filtered.length} / {settings.length} ayar
         </span>
       </div>

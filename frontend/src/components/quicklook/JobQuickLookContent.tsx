@@ -9,7 +9,7 @@ import React from "react";
 import type { JobResponse } from "../../api/jobsApi";
 import { formatDuration } from "../../lib/formatDuration";
 import { formatDateISO } from "../../lib/formatDate";
-import { colors, typography, spacing, radius } from "../design-system/tokens";
+import { cn } from "../../lib/cn";
 import { StatusBadge, Mono, DetailGrid } from "../design-system/primitives";
 
 interface JobQuickLookContentProps {
@@ -18,14 +18,14 @@ interface JobQuickLookContentProps {
 }
 
 export function JobQuickLookContent({ job, onNavigate }: JobQuickLookContentProps) {
-  const em = <span style={{ color: colors.neutral[400] }}>—</span>;
+  const em = <span className="text-neutral-400">&mdash;</span>;
 
   return (
     <div data-testid="quicklook-job-content">
       {/* Status header */}
-      <div style={{ display: "flex", alignItems: "center", gap: spacing[3], marginBottom: spacing[4] }}>
+      <div className="flex items-center gap-3 mb-4">
         <StatusBadge status={job.status} size="md" />
-        <span style={{ fontSize: typography.size.sm, color: colors.neutral[600] }}>
+        <span className="text-sm text-neutral-600">
           {job.module_type}
         </span>
       </div>
@@ -46,27 +46,21 @@ export function JobQuickLookContent({ job, onNavigate }: JobQuickLookContentProp
 
       {/* Steps summary */}
       {job.steps && job.steps.length > 0 && (
-        <div style={{ marginTop: spacing[4] }}>
-          <p style={{ fontSize: typography.size.sm, fontWeight: typography.weight.semibold, color: colors.neutral[700], marginBottom: spacing[2] }}>
+        <div className="mt-4">
+          <p className="text-sm font-semibold text-neutral-700 mb-2">
             Adimlar ({job.steps.length})
           </p>
-          <div style={{ display: "flex", gap: spacing[1], flexWrap: "wrap" }}>
+          <div className="flex gap-1 flex-wrap">
             {job.steps.map((step) => (
               <span
                 key={step.id}
-                style={{
-                  padding: `${spacing[1]} ${spacing[2]}`,
-                  fontSize: typography.size.xs,
-                  borderRadius: radius.sm,
-                  background: step.status === "completed" ? colors.success.light
-                    : step.status === "running" ? colors.warning.light
-                    : step.status === "failed" ? colors.error.light
-                    : colors.neutral[100],
-                  color: step.status === "completed" ? colors.success.text
-                    : step.status === "running" ? colors.warning.text
-                    : step.status === "failed" ? colors.error.text
-                    : colors.neutral[700],
-                }}
+                className={cn(
+                  "py-1 px-2 text-xs rounded-sm",
+                  step.status === "completed" && "bg-success-light text-success-text",
+                  step.status === "running" && "bg-warning-light text-warning-text",
+                  step.status === "failed" && "bg-error-light text-error-text",
+                  step.status !== "completed" && step.status !== "running" && step.status !== "failed" && "bg-neutral-100 text-neutral-700",
+                )}
               >
                 {step.step_key}
               </span>
@@ -77,36 +71,20 @@ export function JobQuickLookContent({ job, onNavigate }: JobQuickLookContentProp
 
       {/* Error if any */}
       {job.last_error && (
-        <div style={{
-          marginTop: spacing[3],
-          padding: spacing[3],
-          background: colors.error.light,
-          borderRadius: radius.md,
-          fontSize: typography.size.sm,
-          color: colors.error.text,
-        }}>
+        <div className="mt-3 p-3 bg-error-light rounded-md text-sm text-error-text">
           {job.last_error}
         </div>
       )}
 
       {/* Navigate action */}
       {onNavigate && (
-        <div style={{ marginTop: spacing[4], paddingTop: spacing[3], borderTop: `1px solid ${colors.border.subtle}` }}>
+        <div className="mt-4 pt-3 border-t border-border-subtle">
           <button
             onClick={onNavigate}
-            style={{
-              padding: `${spacing[2]} ${spacing[4]}`,
-              fontSize: typography.size.base,
-              fontWeight: typography.weight.medium,
-              color: colors.brand[600],
-              background: colors.brand[50],
-              border: `1px solid ${colors.brand[200]}`,
-              borderRadius: radius.md,
-              cursor: "pointer",
-            }}
+            className="py-2 px-4 text-base font-medium text-brand-600 bg-brand-50 border border-brand-200 rounded-md cursor-pointer hover:bg-brand-100"
             data-testid="quicklook-job-navigate"
           >
-            Detay Sayfasina Git →
+            Detay Sayfasina Git &rarr;
           </button>
         </div>
       )}

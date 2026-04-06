@@ -1,107 +1,6 @@
 import { useCompleteOnboarding } from "../../hooks/useCompleteOnboarding";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
-import { colors, radius, typography } from "../design-system/tokens";
-
-const CONTAINER: React.CSSProperties = {
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
-  justifyContent: "center",
-  minHeight: "100vh",
-  background: `linear-gradient(135deg, ${colors.neutral[50]} 0%, ${colors.border.subtle} 100%)`,
-  padding: "2rem",
-};
-
-const CARD: React.CSSProperties = {
-  maxWidth: "520px",
-  width: "100%",
-  background: colors.neutral[0],
-  borderRadius: radius.xl,
-  boxShadow: "0 4px 24px rgba(0, 0, 0, 0.08)",
-  padding: "2.5rem",
-  textAlign: "center",
-};
-
-const CHECK_CIRCLE: React.CSSProperties = {
-  width: "56px",
-  height: "56px",
-  borderRadius: "50%",
-  background: colors.success.light,
-  color: colors.success.text,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  fontSize: "1.5rem",
-  fontWeight: 700,
-  margin: "0 auto 1rem",
-};
-
-const TITLE: React.CSSProperties = {
-  margin: "0 0 0.5rem",
-  fontSize: "1.5rem",
-  fontWeight: 700,
-  color: colors.neutral[900],
-};
-
-const SUBTITLE: React.CSSProperties = {
-  margin: "0 0 1.5rem",
-  fontSize: typography.size.lg,
-  color: colors.neutral[700],
-  lineHeight: 1.6,
-};
-
-const CHECKLIST: React.CSSProperties = {
-  textAlign: "left",
-  margin: "0 0 1.75rem",
-  padding: 0,
-  listStyle: "none",
-  display: "flex",
-  flexDirection: "column",
-  gap: "0.5rem",
-};
-
-const CHECK_ITEM: React.CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  gap: "0.5rem",
-  fontSize: typography.size.md,
-  color: colors.neutral[800],
-};
-
-const CHECK_ICON: React.CSSProperties = {
-  color: colors.success.base,
-  fontWeight: 700,
-  fontSize: typography.size.md,
-  flexShrink: 0,
-};
-
-const PRIMARY_BTN: React.CSSProperties = {
-  display: "block",
-  width: "100%",
-  padding: "0.75rem",
-  fontSize: typography.size.lg,
-  fontWeight: 600,
-  color: colors.neutral[0],
-  background: colors.success.base,
-  border: "none",
-  borderRadius: radius.lg,
-  cursor: "pointer",
-};
-
-const SECONDARY_BTN: React.CSSProperties = {
-  display: "block",
-  width: "100%",
-  padding: "0.5rem",
-  fontSize: typography.size.base,
-  fontWeight: 500,
-  color: colors.neutral[600],
-  background: "transparent",
-  border: `1px solid ${colors.border.subtle}`,
-  borderRadius: radius.md,
-  cursor: "pointer",
-  marginTop: "0.5rem",
-};
 
 interface Props {
   onBack?: () => void;
@@ -122,43 +21,51 @@ export function OnboardingCompletionScreen({ onBack }: Props) {
   }
 
   return (
-    <div style={CONTAINER}>
-      <div style={CARD}>
-        <div style={CHECK_CIRCLE}>{"\u2713"}</div>
-        <h2 style={TITLE}>Kurulum Tamamlandi</h2>
-        <p style={SUBTITLE}>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-neutral-50 to-border-subtle p-8">
+      <div className="max-w-[520px] w-full bg-neutral-0 rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.08)] p-10 text-center">
+        <div className="w-14 h-14 rounded-full bg-success-light text-success-text flex items-center justify-center text-2xl font-bold mx-auto mb-4">
+          {"\u2713"}
+        </div>
+        <h2 className="mb-2 text-2xl font-bold text-neutral-900">Kurulum Tamamlandi</h2>
+        <p className="mb-6 text-lg text-neutral-700 leading-relaxed">
           Sisteminiz kullanima hazir. Artik icerik uretmeye ve yayinlamaya baslayabilirsiniz.
         </p>
 
-        <ul style={CHECKLIST}>
-          <li style={CHECK_ITEM}>
-            <span style={CHECK_ICON}>{"\u2713"}</span>
+        <ul className="text-left mb-7 p-0 list-none flex flex-col gap-2">
+          <li className="flex items-center gap-2 text-md text-neutral-800">
+            <span className="text-success font-bold text-md shrink-0">{"\u2713"}</span>
             Haber kaynaklari yapilandirildi
           </li>
-          <li style={CHECK_ITEM}>
-            <span style={CHECK_ICON}>{"\u2713"}</span>
+          <li className="flex items-center gap-2 text-md text-neutral-800">
+            <span className="text-success font-bold text-md shrink-0">{"\u2713"}</span>
             Sablonlar olusturuldu
           </li>
-          <li style={CHECK_ITEM}>
-            <span style={CHECK_ICON}>{"\u2713"}</span>
+          <li className="flex items-center gap-2 text-md text-neutral-800">
+            <span className="text-success font-bold text-md shrink-0">{"\u2713"}</span>
             Sistem ayarlari tanimlandi
           </li>
-          <li style={CHECK_ITEM}>
-            <span style={CHECK_ICON}>{"\u2713"}</span>
+          <li className="flex items-center gap-2 text-md text-neutral-800">
+            <span className="text-success font-bold text-md shrink-0">{"\u2713"}</span>
             Provider / API ayarlari yapilandirildi
           </li>
-          <li style={CHECK_ITEM}>
-            <span style={CHECK_ICON}>{"\u2713"}</span>
+          <li className="flex items-center gap-2 text-md text-neutral-800">
+            <span className="text-success font-bold text-md shrink-0">{"\u2713"}</span>
             Calisma alani tanimlandi
           </li>
         </ul>
 
-        <button style={PRIMARY_BTN} onClick={handleContinue}>
+        <button
+          className="block w-full py-3 text-lg font-semibold text-neutral-0 bg-success border-none rounded-lg cursor-pointer"
+          onClick={handleContinue}
+        >
           Uygulamaya Basla
         </button>
 
         {onBack && (
-          <button style={SECONDARY_BTN} onClick={onBack}>
+          <button
+            className="block w-full py-2 text-base font-medium text-neutral-600 bg-transparent border border-border-subtle rounded-md cursor-pointer mt-2"
+            onClick={onBack}
+          >
             Gereksinimleri Gozden Gecir
           </button>
         )}

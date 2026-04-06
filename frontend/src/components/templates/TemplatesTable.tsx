@@ -8,11 +8,9 @@ import { TemplateInputQualitySummary } from "./TemplateInputQualitySummary";
 import { TemplateInputSpecificitySummary } from "./TemplateInputSpecificitySummary";
 import { TemplateTargetOutputConsistencySummary } from "./TemplateTargetOutputConsistencySummary";
 import { TemplatePublicationOutcomeSummary } from "./TemplatePublicationOutcomeSummary";
-import { colors, radius, typography } from "../design-system/tokens";
+import { cn } from "../../lib/cn";
 
 const DASH = "—";
-const TH_STYLE: React.CSSProperties = { padding: "0.5rem 0.75rem", borderBottom: `1px solid ${colors.border.subtle}` };
-const TD_STYLE: React.CSSProperties = { padding: "0.5rem 0.75rem" };
 
 interface TemplatesTableProps {
   templates: TemplateResponse[];
@@ -22,30 +20,24 @@ interface TemplatesTableProps {
 
 export function TemplatesTable({ templates, selectedId, onSelect }: TemplatesTableProps) {
   return (
-    <div style={{ overflowX: "auto" }}>
-    <table
-      style={{
-        width: "100%",
-        borderCollapse: "collapse",
-        fontSize: typography.size.md,
-      }}
-    >
+    <div className="overflow-x-auto">
+    <table className="w-full border-collapse text-md">
       <thead>
-        <tr style={{ background: colors.neutral[100], textAlign: "left" }}>
-          <th style={TH_STYLE}>Ad</th>
-          <th style={TH_STYLE}>Tür</th>
-          <th style={TH_STYLE}>Sahip</th>
-          <th style={TH_STYLE}>Modül</th>
-          <th style={TH_STYLE}>Durum</th>
-          <th style={TH_STYLE}>Sürüm</th>
-          <th style={TH_STYLE}>Stil Bağları</th>
-          <th style={TH_STYLE}>Hazırlık</th>
-          <th style={TH_STYLE}>Girdi Kalitesi</th>
-          <th style={TH_STYLE}>Girdi Özgüllüğü</th>
-          <th style={TH_STYLE}>Yayın Sinyali</th>
-          <th style={TH_STYLE}>Yayın Çıktısı</th>
-          <th style={TH_STYLE}>Artifact Tutarlılığı</th>
-          <th style={TH_STYLE}>Target/Output Tutarlılığı</th>
+        <tr className="bg-neutral-100 text-left">
+          <th className="py-2 px-3 border-b border-border-subtle">Ad</th>
+          <th className="py-2 px-3 border-b border-border-subtle">Tür</th>
+          <th className="py-2 px-3 border-b border-border-subtle">Sahip</th>
+          <th className="py-2 px-3 border-b border-border-subtle">Modül</th>
+          <th className="py-2 px-3 border-b border-border-subtle">Durum</th>
+          <th className="py-2 px-3 border-b border-border-subtle">Sürüm</th>
+          <th className="py-2 px-3 border-b border-border-subtle">Stil Bağları</th>
+          <th className="py-2 px-3 border-b border-border-subtle">Hazırlık</th>
+          <th className="py-2 px-3 border-b border-border-subtle">Girdi Kalitesi</th>
+          <th className="py-2 px-3 border-b border-border-subtle">Girdi Özgüllüğü</th>
+          <th className="py-2 px-3 border-b border-border-subtle">Yayın Sinyali</th>
+          <th className="py-2 px-3 border-b border-border-subtle">Yayın Çıktısı</th>
+          <th className="py-2 px-3 border-b border-border-subtle">Artifact Tutarlılığı</th>
+          <th className="py-2 px-3 border-b border-border-subtle">Target/Output Tutarlılığı</th>
         </tr>
       </thead>
       <tbody>
@@ -53,109 +45,49 @@ export function TemplatesTable({ templates, selectedId, onSelect }: TemplatesTab
           <tr
             key={t.id}
             onClick={() => onSelect(t.id)}
-            style={{
-              cursor: "pointer",
-              background: selectedId === t.id ? colors.info.light : "transparent",
-              borderBottom: `1px solid ${colors.neutral[100]}`,
-            }}
+            className={cn(
+              "cursor-pointer border-b border-neutral-100",
+              selectedId === t.id ? "bg-info-light" : "bg-transparent"
+            )}
           >
-            {/* Kimlik & Durum */}
-            <td style={{ padding: "0.5rem 0.75rem", color: colors.brand[700], fontWeight: selectedId === t.id ? 600 : 400, wordBreak: "break-word", overflowWrap: "anywhere" }}>
+            <td className={cn("py-2 px-3 text-brand-700 break-words", selectedId === t.id ? "font-semibold" : "font-normal")} style={{ overflowWrap: "anywhere" }}>
               {t.name ?? DASH}
             </td>
-            <td style={{ padding: "0.5rem 0.75rem", color: colors.neutral[800] }}>{t.template_type ?? DASH}</td>
-            <td style={{ padding: "0.5rem 0.75rem", color: colors.neutral[800] }}>{t.owner_scope ?? DASH}</td>
-            <td style={{ padding: "0.5rem 0.75rem", color: colors.neutral[600] }}>{t.module_scope ?? DASH}</td>
-            <td style={TD_STYLE}>
-              <span
-                style={{
-                  display: "inline-block",
-                  padding: "0.125rem 0.5rem",
-                  borderRadius: radius.full,
-                  fontSize: typography.size.sm,
-                  background: t.status === "active" ? colors.success.light : colors.neutral[100],
-                  color: t.status === "active" ? colors.success.text : colors.neutral[700],
-                }}
-              >
+            <td className="py-2 px-3 text-neutral-800">{t.template_type ?? DASH}</td>
+            <td className="py-2 px-3 text-neutral-800">{t.owner_scope ?? DASH}</td>
+            <td className="py-2 px-3 text-neutral-600">{t.module_scope ?? DASH}</td>
+            <td className="py-2 px-3">
+              <span className={cn(
+                "inline-block py-0.5 px-2 rounded-full text-sm",
+                t.status === "active" ? "bg-success-light text-success-text" : "bg-neutral-100 text-neutral-700"
+              )}>
                 {t.status ?? DASH}
               </span>
             </td>
-            <td style={{ padding: "0.5rem 0.75rem", color: colors.neutral[600] }}>v{safeNumber(t.version, 0)}</td>
-            {/* Stil & Hazırlık */}
-            <td style={TD_STYLE}>
-              <TemplateStyleLinkSummary
-                styleLinkCount={t.style_link_count}
-                primaryLinkRole={t.primary_link_role}
-              />
+            <td className="py-2 px-3 text-neutral-600">v{safeNumber(t.version, 0)}</td>
+            <td className="py-2 px-3">
+              <TemplateStyleLinkSummary styleLinkCount={t.style_link_count} primaryLinkRole={t.primary_link_role} />
             </td>
-            <td style={TD_STYLE}>
-              <TemplateReadinessSummary
-                templateType={t.template_type}
-                status={t.status}
-                styleProfileJson={t.style_profile_json}
-                contentRulesJson={t.content_rules_json}
-                publishProfileJson={t.publish_profile_json}
-                styleLinkCount={t.style_link_count}
-              />
+            <td className="py-2 px-3">
+              <TemplateReadinessSummary templateType={t.template_type} status={t.status} styleProfileJson={t.style_profile_json} contentRulesJson={t.content_rules_json} publishProfileJson={t.publish_profile_json} styleLinkCount={t.style_link_count} />
             </td>
-            {/* Girdi Grubu */}
-            <td style={TD_STYLE}>
-              <TemplateInputQualitySummary
-                templateType={t.template_type}
-                styleProfileJson={t.style_profile_json}
-                contentRulesJson={t.content_rules_json}
-                publishProfileJson={t.publish_profile_json}
-              />
+            <td className="py-2 px-3">
+              <TemplateInputQualitySummary templateType={t.template_type} styleProfileJson={t.style_profile_json} contentRulesJson={t.content_rules_json} publishProfileJson={t.publish_profile_json} />
             </td>
-            <td style={TD_STYLE}>
-              <TemplateInputSpecificitySummary
-                templateType={t.template_type}
-                styleProfileJson={t.style_profile_json}
-                contentRulesJson={t.content_rules_json}
-                publishProfileJson={t.publish_profile_json}
-                styleLinkCount={t.style_link_count}
-                primaryLinkRole={t.primary_link_role}
-              />
+            <td className="py-2 px-3">
+              <TemplateInputSpecificitySummary templateType={t.template_type} styleProfileJson={t.style_profile_json} contentRulesJson={t.content_rules_json} publishProfileJson={t.publish_profile_json} styleLinkCount={t.style_link_count} primaryLinkRole={t.primary_link_role} />
             </td>
-            {/* Yayın Grubu */}
-            <td style={TD_STYLE}>
-              <TemplatePublicationSignalSummary
-                templateType={t.template_type}
-                status={t.status}
-                styleProfileJson={t.style_profile_json}
-                contentRulesJson={t.content_rules_json}
-                publishProfileJson={t.publish_profile_json}
-                styleLinkCount={t.style_link_count}
-              />
+            <td className="py-2 px-3">
+              <TemplatePublicationSignalSummary templateType={t.template_type} status={t.status} styleProfileJson={t.style_profile_json} contentRulesJson={t.content_rules_json} publishProfileJson={t.publish_profile_json} styleLinkCount={t.style_link_count} />
             </td>
-            <td style={TD_STYLE}>
-              <TemplatePublicationOutcomeSummary
-                templateType={t.template_type}
-                styleProfileJson={t.style_profile_json}
-                contentRulesJson={t.content_rules_json}
-                publishProfileJson={t.publish_profile_json}
-                styleLinkCount={t.style_link_count}
-                status={t.status}
-              />
+            <td className="py-2 px-3">
+              <TemplatePublicationOutcomeSummary templateType={t.template_type} styleProfileJson={t.style_profile_json} contentRulesJson={t.content_rules_json} publishProfileJson={t.publish_profile_json} styleLinkCount={t.style_link_count} status={t.status} />
             </td>
-            {/* Tutarlılık Grubu */}
-            <td style={TD_STYLE}>
-              <TemplateArtifactConsistencySummary
-                templateType={t.template_type}
-                styleProfileJson={t.style_profile_json}
-                contentRulesJson={t.content_rules_json}
-                publishProfileJson={t.publish_profile_json}
-                styleLinkCount={t.style_link_count}
-              />
+            <td className="py-2 px-3">
+              <TemplateArtifactConsistencySummary templateType={t.template_type} styleProfileJson={t.style_profile_json} contentRulesJson={t.content_rules_json} publishProfileJson={t.publish_profile_json} styleLinkCount={t.style_link_count} />
             </td>
-            <td style={TD_STYLE}>
-              <TemplateTargetOutputConsistencySummary
-                templateType={t.template_type}
-                styleProfileJson={t.style_profile_json}
-                contentRulesJson={t.content_rules_json}
-                publishProfileJson={t.publish_profile_json}
-                styleLinkCount={t.style_link_count}
-              />
+            <td className="py-2 px-3">
+              <TemplateTargetOutputConsistencySummary templateType={t.template_type} styleProfileJson={t.style_profile_json} contentRulesJson={t.content_rules_json} publishProfileJson={t.publish_profile_json} styleLinkCount={t.style_link_count} />
             </td>
           </tr>
         ))}

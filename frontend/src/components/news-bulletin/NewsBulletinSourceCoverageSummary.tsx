@@ -1,6 +1,5 @@
 import { NewsBulletinSourceCoverageBadge, NewsBulletinSourceCoverageLevel } from "./NewsBulletinSourceCoverageBadge";
 import { safeNumber } from "../../lib/safeNumber";
-import { colors } from "../design-system/tokens";
 
 interface Props {
   selectedNewsCount?: number;
@@ -38,9 +37,9 @@ export function NewsBulletinSourceCoverageSummary({
       : "seçili haber yok";
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "0.15rem" }}>
+    <div className="flex flex-col gap-[0.15rem]">
       <NewsBulletinSourceCoverageBadge level={level} />
-      <span style={{ fontSize: "0.68rem", color: colors.neutral[500] }}>{detail}</span>
+      <span className="text-[0.68rem] text-neutral-500">{detail}</span>
     </div>
   );
 }

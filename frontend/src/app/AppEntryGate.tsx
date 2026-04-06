@@ -1,6 +1,5 @@
 import { Navigate } from "react-router-dom";
 import { useOnboardingStatus } from "../hooks/useOnboardingStatus";
-import { colors, typography } from "../components/design-system/tokens";
 
 /**
  * App entry gate: checks if onboarding is required.
@@ -14,16 +13,7 @@ export function AppEntryGate() {
 
   if (isLoading) {
     return (
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          minHeight: "100vh",
-          color: colors.neutral[600],
-          fontSize: typography.size.lg,
-        }}
-      >
+      <div className="flex items-center justify-center min-h-screen text-neutral-600 text-lg">
         Yükleniyor...
       </div>
     );

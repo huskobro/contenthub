@@ -1,133 +1,7 @@
 import { useSetupRequirements } from "../../hooks/useSetupRequirements";
 import { useNavigate } from "react-router-dom";
 import type { SetupRequirementItem } from "../../api/onboardingApi";
-import { colors, radius, typography } from "../design-system/tokens";
-
-const CONTAINER: React.CSSProperties = {
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
-  justifyContent: "center",
-  minHeight: "100vh",
-  background: `linear-gradient(135deg, ${colors.neutral[50]} 0%, ${colors.border.subtle} 100%)`,
-  padding: "2rem",
-};
-
-const CARD: React.CSSProperties = {
-  maxWidth: "560px",
-  width: "100%",
-  background: colors.neutral[0],
-  borderRadius: radius.xl,
-  boxShadow: "0 4px 24px rgba(0, 0, 0, 0.08)",
-  padding: "2.5rem",
-};
-
-const TITLE: React.CSSProperties = {
-  margin: "0 0 0.375rem",
-  fontSize: "1.5rem",
-  fontWeight: 700,
-  color: colors.neutral[900],
-  textAlign: "center",
-};
-
-const SUBTITLE: React.CSSProperties = {
-  margin: "0 0 1.75rem",
-  fontSize: typography.size.lg,
-  color: colors.neutral[700],
-  lineHeight: 1.6,
-  textAlign: "center",
-};
-
-const REQ_LIST: React.CSSProperties = {
-  display: "flex",
-  flexDirection: "column",
-  gap: "0.625rem",
-  margin: "0 0 1.75rem",
-};
-
-const REQ_CARD: React.CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  gap: "0.75rem",
-  padding: "0.875rem 1rem",
-  borderRadius: radius.lg,
-  border: `1px solid ${colors.border.subtle}`,
-};
-
-const STATUS_ICON: React.CSSProperties = {
-  flexShrink: 0,
-  width: "28px",
-  height: "28px",
-  borderRadius: "50%",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  fontSize: typography.size.base,
-  fontWeight: 700,
-};
-
-const REQ_TITLE: React.CSSProperties = {
-  margin: 0,
-  fontSize: typography.size.md,
-  fontWeight: 600,
-  color: colors.neutral[900],
-};
-
-const REQ_DESC: React.CSSProperties = {
-  margin: "0.125rem 0 0",
-  fontSize: typography.size.base,
-  color: colors.neutral[600],
-  lineHeight: 1.4,
-};
-
-const REQ_DETAIL: React.CSSProperties = {
-  margin: "0.25rem 0 0",
-  fontSize: typography.size.sm,
-  color: colors.success.dark,
-  fontWeight: 500,
-};
-
-const PRIMARY_BTN: React.CSSProperties = {
-  display: "block",
-  width: "100%",
-  padding: "0.75rem",
-  fontSize: typography.size.lg,
-  fontWeight: 600,
-  color: colors.neutral[0],
-  background: colors.brand[600],
-  border: "none",
-  borderRadius: radius.lg,
-  cursor: "pointer",
-  textAlign: "center",
-};
-
-const SECONDARY_BTN: React.CSSProperties = {
-  display: "block",
-  width: "100%",
-  padding: "0.5rem",
-  fontSize: typography.size.base,
-  fontWeight: 500,
-  color: colors.neutral[600],
-  background: "transparent",
-  border: `1px solid ${colors.border.subtle}`,
-  borderRadius: radius.md,
-  cursor: "pointer",
-  marginTop: "0.5rem",
-  textAlign: "center",
-};
-
-const ACTION_BTN: React.CSSProperties = {
-  padding: "0.25rem 0.625rem",
-  fontSize: typography.size.sm,
-  fontWeight: 600,
-  color: colors.brand[700],
-  background: colors.info.light,
-  border: `1px solid ${colors.info.light}`,
-  borderRadius: radius.sm,
-  cursor: "pointer",
-  whiteSpace: "nowrap",
-  flexShrink: 0,
-};
+import { cn } from "../../lib/cn";
 
 function RequirementRow({
   item,
@@ -141,28 +15,33 @@ function RequirementRow({
   const isCompleted = item.status === "completed";
   return (
     <div
-      style={{
-        ...REQ_CARD,
-        background: isCompleted ? colors.success.light : colors.warning.light,
-        borderColor: isCompleted ? colors.success.light : colors.warning.light,
-      }}
+      className={cn(
+        "flex items-center gap-3 py-3.5 px-4 rounded-lg border",
+        isCompleted
+          ? "bg-success-light border-success-light"
+          : "bg-warning-light border-warning-light"
+      )}
     >
       <div
-        style={{
-          ...STATUS_ICON,
-          background: isCompleted ? colors.success.light : colors.warning.light,
-          color: isCompleted ? colors.success.text : colors.warning.text,
-        }}
+        className={cn(
+          "shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-base font-bold",
+          isCompleted
+            ? "bg-success-light text-success-text"
+            : "bg-warning-light text-warning-text"
+        )}
       >
         {isCompleted ? "\u2713" : "!"}
       </div>
-      <div style={{ flex: 1 }}>
-        <p style={REQ_TITLE}>{item.title}</p>
-        <p style={REQ_DESC}>{item.description}</p>
-        {isCompleted && item.detail && <p style={REQ_DETAIL}>{item.detail}</p>}
+      <div className="flex-1">
+        <p className="m-0 text-md font-semibold text-neutral-900">{item.title}</p>
+        <p className="mt-0.5 mb-0 text-base text-neutral-600 leading-snug">{item.description}</p>
+        {isCompleted && item.detail && <p className="mt-1 mb-0 text-sm text-success-dark font-medium">{item.detail}</p>}
       </div>
       {!isCompleted && onAction && (
-        <button style={ACTION_BTN} onClick={onAction}>
+        <button
+          className="py-1 px-2.5 text-sm font-semibold text-brand-700 bg-info-light border border-info-light rounded-sm cursor-pointer whitespace-nowrap shrink-0"
+          onClick={onAction}
+        >
           {actionLabel ?? "Ekle"}
         </button>
       )}
@@ -184,19 +63,22 @@ export function OnboardingRequirementsScreen({ onBack, onSourceSetup, onTemplate
 
   if (isLoading) {
     return (
-      <div style={CONTAINER}>
-        <div style={{ color: colors.neutral[600], fontSize: typography.size.lg }}>Kontrol ediliyor...</div>
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-neutral-50 to-border-subtle p-8">
+        <div className="text-neutral-600 text-lg">Kontrol ediliyor...</div>
       </div>
     );
   }
 
   if (isError || !data) {
     return (
-      <div style={CONTAINER}>
-        <div style={CARD}>
-          <h2 style={TITLE}>Bir Sorun Olustu</h2>
-          <p style={SUBTITLE}>Kurulum gereksinimleri kontrol edilemedi. Lutfen tekrar deneyin.</p>
-          <button style={PRIMARY_BTN} onClick={() => navigate("/user")}>
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-neutral-50 to-border-subtle p-8">
+        <div className="max-w-[560px] w-full bg-neutral-0 rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.08)] p-10">
+          <h2 className="mb-1.5 text-2xl font-bold text-neutral-900 text-center">Bir Sorun Olustu</h2>
+          <p className="mb-7 text-lg text-neutral-700 leading-relaxed text-center">Kurulum gereksinimleri kontrol edilemedi. Lutfen tekrar deneyin.</p>
+          <button
+            className="block w-full py-3 text-lg font-semibold text-neutral-0 bg-brand-600 border-none rounded-lg cursor-pointer text-center"
+            onClick={() => navigate("/user")}
+          >
             Uygulamaya Gec
           </button>
         </div>
@@ -208,17 +90,17 @@ export function OnboardingRequirementsScreen({ onBack, onSourceSetup, onTemplate
   const totalCount = data.requirements.length;
 
   return (
-    <div style={CONTAINER}>
-      <div style={CARD}>
-        <h2 style={TITLE}>Kurulum Durumu</h2>
-        <p style={SUBTITLE}>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-neutral-50 to-border-subtle p-8">
+      <div className="max-w-[560px] w-full bg-neutral-0 rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.08)] p-10">
+        <h2 className="mb-1.5 text-2xl font-bold text-neutral-900 text-center">Kurulum Durumu</h2>
+        <p className="mb-7 text-lg text-neutral-700 leading-relaxed text-center">
           Sisteminizin hazir olabilmesi icin asagidaki gereksinimleri kontrol edin.
           {completedCount === totalCount
             ? " Tum gereksinimler karsilandi!"
             : ` ${completedCount}/${totalCount} tamamlandi.`}
         </p>
 
-        <div style={REQ_LIST}>
+        <div className="flex flex-col gap-2.5 mb-7">
           {data.requirements.map((req) => {
             let onAction: (() => void) | undefined;
             let actionLabel: string | undefined;
@@ -245,19 +127,25 @@ export function OnboardingRequirementsScreen({ onBack, onSourceSetup, onTemplate
 
         {data.all_completed ? (
           <button
-            style={PRIMARY_BTN}
+            className="block w-full py-3 text-lg font-semibold text-neutral-0 bg-brand-600 border-none rounded-lg cursor-pointer text-center"
             onClick={onComplete ?? (() => navigate("/user"))}
           >
             Kurulumu Tamamla
           </button>
         ) : (
-          <button style={{ ...PRIMARY_BTN, background: colors.neutral[600] }} onClick={() => navigate("/user")}>
+          <button
+            className="block w-full py-3 text-lg font-semibold text-neutral-0 bg-neutral-600 border-none rounded-lg cursor-pointer text-center"
+            onClick={() => navigate("/user")}
+          >
             Sonra Tamamla
           </button>
         )}
 
         {onBack && (
-          <button style={SECONDARY_BTN} onClick={onBack}>
+          <button
+            className="block w-full py-2 text-base font-medium text-neutral-600 bg-transparent border border-border-subtle rounded-md cursor-pointer mt-2 text-center"
+            onClick={onBack}
+          >
             Geri Don
           </button>
         )}

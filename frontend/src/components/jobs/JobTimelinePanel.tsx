@@ -1,88 +1,53 @@
 import type { JobStepResponse } from "../../api/jobsApi";
 import { formatDuration } from "../../lib/formatDuration";
 import { formatDateISO } from "../../lib/formatDate";
-import { colors, radius, typography } from "../design-system/tokens";
 
 interface JobTimelinePanelProps {
   steps: JobStepResponse[];
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  completed: colors.success.text,
-  running: colors.info.dark,
-  failed: colors.error.base,
-  pending: colors.neutral[600],
-  cancelled: colors.warning.text,
+  completed: "text-success-text",
+  running: "text-info-dark",
+  failed: "text-error",
+  pending: "text-neutral-600",
+  cancelled: "text-warning-text",
 };
 
 export function JobTimelinePanel({ steps }: JobTimelinePanelProps) {
   const safeSteps = Array.isArray(steps) ? steps : [];
   return (
-    <div
-      style={{
-        border: `1px solid ${colors.border.subtle}`,
-        borderRadius: radius.md,
-        background: colors.neutral[50],
-        padding: "1rem",
-        marginBottom: "1.5rem",
-      }}
-    >
-      <h3 style={{ margin: "0 0 0.75rem", fontSize: typography.size.lg }}>Timeline</h3>
+    <div className="border border-border-subtle rounded-md bg-neutral-50 p-4 mb-6">
+      <h3 className="m-0 mb-3 text-lg">Timeline</h3>
       {safeSteps.length === 0 ? (
-        <p style={{ color: colors.neutral[500], fontSize: typography.size.md, margin: 0 }}>Henüz step yok.</p>
+        <p className="text-neutral-500 text-md m-0">Henüz step yok.</p>
       ) : (
         <div>
           {safeSteps.map((s, idx) => (
             <div
               key={s.id}
-              style={{
-                display: "flex",
-                gap: "1rem",
-                paddingBottom: idx < safeSteps.length - 1 ? "0.75rem" : 0,
-                marginBottom: idx < safeSteps.length - 1 ? "0.75rem" : 0,
-                borderBottom: idx < safeSteps.length - 1 ? `1px solid ${colors.neutral[100]}` : "none",
-              }}
+              className={`flex gap-4 ${idx < safeSteps.length - 1 ? "pb-3 mb-3 border-b border-neutral-100" : ""}`}
             >
-              <div
-                style={{
-                  width: "28px",
-                  height: "28px",
-                  borderRadius: "50%",
-                  background: colors.border.subtle,
-                  flexShrink: 0,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: typography.size.sm,
-                  fontWeight: 600,
-                  color: colors.neutral[600],
-                }}
-              >
+              <div className="w-7 h-7 rounded-full bg-border-subtle shrink-0 flex items-center justify-center text-sm font-semibold text-neutral-600">
                 {s.step_order}
               </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.125rem" }}>
-                  <strong style={{ fontFamily: "monospace", fontSize: typography.size.md }}>{s.step_key}</strong>
-                  <span
-                    style={{
-                      fontSize: typography.size.sm,
-                      fontWeight: 600,
-                      color: STATUS_COLORS[s.status] ?? colors.neutral[600],
-                    }}
-                  >
+              <div className="flex-1">
+                <div className="flex justify-between mb-0.5">
+                  <strong className="font-mono text-md">{s.step_key}</strong>
+                  <span className={`text-sm font-semibold ${STATUS_COLORS[s.status] ?? "text-neutral-600"}`}>
                     {s.status}
                   </span>
                 </div>
-                <div style={{ fontSize: typography.size.base, color: colors.neutral[600] }}>
+                <div className="text-base text-neutral-600">
                   elapsed: {formatDuration(s.elapsed_seconds)}
                   {s.started_at && (
-                    <span style={{ marginLeft: "0.75rem" }}>
+                    <span className="ml-3">
                       başlangıç: {formatDateISO(s.started_at)}
                     </span>
                   )}
                 </div>
                 {s.last_error && (
-                  <div style={{ fontSize: typography.size.base, color: colors.error.base, marginTop: "0.25rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>
+                  <div className="text-base text-error mt-1 break-words [overflow-wrap:anywhere]">
                     {s.last_error}
                   </div>
                 )}

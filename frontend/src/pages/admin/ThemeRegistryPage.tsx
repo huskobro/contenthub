@@ -13,7 +13,7 @@
  */
 
 import { useState, useCallback, useRef } from "react";
-import { colors, typography, spacing, radius, shadow, transition } from "../../components/design-system/tokens";
+import { cn } from "../../lib/cn";
 import {
   PageShell,
   SectionShell,
@@ -33,34 +33,22 @@ function ThemePreviewPanel({ theme }: { theme: ThemeManifest }) {
   const t = theme;
   return (
     <div
+      className="rounded-lg overflow-hidden"
       style={{
         border: `1px solid ${t.colors.border.default}`,
-        borderRadius: radius.lg,
-        overflow: "hidden",
         background: t.colors.surface.page,
       }}
       data-testid="theme-preview-panel"
     >
       {/* Header bar */}
       <div
-        style={{
-          background: t.colors.surface.sidebar,
-          padding: `${spacing[3]} ${spacing[4]}`,
-          display: "flex",
-          alignItems: "center",
-          gap: spacing[2],
-        }}
+        className="flex items-center gap-2 py-3 px-4"
+        style={{ background: t.colors.surface.sidebar }}
       >
         <div
+          className="w-6 h-6 rounded-md flex items-center justify-center text-white"
           style={{
-            width: "24px",
-            height: "24px",
-            borderRadius: radius.md,
             background: t.colors.brand[600],
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: colors.neutral[0],
             fontSize: t.typography.size.xs,
             fontWeight: t.typography.weight.bold,
             fontFamily: t.typography.body.stack,
@@ -81,11 +69,11 @@ function ThemePreviewPanel({ theme }: { theme: ThemeManifest }) {
       </div>
 
       {/* Content area */}
-      <div style={{ padding: spacing[4] }}>
+      <div className="p-4">
         {/* Text samples */}
         <h4
+          className="m-0 mb-2"
           style={{
-            margin: `0 0 ${spacing[2]}`,
             fontSize: t.typography.size.lg,
             fontWeight: t.typography.weight.semibold,
             color: t.colors.neutral[900],
@@ -95,8 +83,8 @@ function ThemePreviewPanel({ theme }: { theme: ThemeManifest }) {
           Baslik Ornegi
         </h4>
         <p
+          className="m-0 mb-3"
           style={{
-            margin: `0 0 ${spacing[3]}`,
             fontSize: t.typography.size.base,
             color: t.colors.neutral[600],
             fontFamily: t.typography.body.stack,
@@ -107,7 +95,7 @@ function ThemePreviewPanel({ theme }: { theme: ThemeManifest }) {
         </p>
 
         {/* Badges */}
-        <div style={{ display: "flex", gap: spacing[2], flexWrap: "wrap", marginBottom: spacing[3] }}>
+        <div className="flex gap-2 flex-wrap mb-3">
           {[
             { label: "Basarili", bg: t.colors.success.light, fg: t.colors.success.text },
             { label: "Uyari", bg: t.colors.warning.light, fg: t.colors.warning.text },
@@ -116,9 +104,8 @@ function ThemePreviewPanel({ theme }: { theme: ThemeManifest }) {
           ].map((b) => (
             <span
               key={b.label}
+              className="inline-block py-1 px-2"
               style={{
-                display: "inline-block",
-                padding: `${spacing[1]} ${spacing[2]}`,
                 borderRadius: t.radius.full,
                 fontSize: t.typography.size.xs,
                 fontWeight: t.typography.weight.semibold,
@@ -133,14 +120,12 @@ function ThemePreviewPanel({ theme }: { theme: ThemeManifest }) {
         </div>
 
         {/* Button samples */}
-        <div style={{ display: "flex", gap: spacing[2], marginBottom: spacing[3] }}>
+        <div className="flex gap-2 mb-3">
           <span
+            className="inline-block py-2 px-4 text-white"
             style={{
-              display: "inline-block",
-              padding: `${spacing[2]} ${spacing[4]}`,
               borderRadius: t.radius.md,
               background: t.colors.brand[600],
-              color: colors.neutral[0],
               fontSize: t.typography.size.base,
               fontWeight: t.typography.weight.medium,
               fontFamily: t.typography.body.stack,
@@ -149,9 +134,8 @@ function ThemePreviewPanel({ theme }: { theme: ThemeManifest }) {
             Birincil
           </span>
           <span
+            className="inline-block py-2 px-4"
             style={{
-              display: "inline-block",
-              padding: `${spacing[2]} ${spacing[4]}`,
               borderRadius: t.radius.md,
               background: t.colors.surface.card,
               color: t.colors.neutral[700],
@@ -167,23 +151,23 @@ function ThemePreviewPanel({ theme }: { theme: ThemeManifest }) {
 
         {/* Table sample */}
         <div
+          className="overflow-hidden"
           style={{
             border: `1px solid ${t.colors.border.subtle}`,
             borderRadius: t.radius.md,
-            overflow: "hidden",
           }}
         >
-          <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: t.typography.body.stack }}>
+          <table className="w-full border-collapse" style={{ fontFamily: t.typography.body.stack }}>
             <thead>
               <tr style={{ background: t.colors.neutral[100] }}>
-                <th style={{ padding: `${spacing[2]} ${spacing[3]}`, fontSize: t.typography.size.xs, fontWeight: t.typography.weight.semibold, color: t.colors.neutral[600], textAlign: "left" }}>Kolon</th>
-                <th style={{ padding: `${spacing[2]} ${spacing[3]}`, fontSize: t.typography.size.xs, fontWeight: t.typography.weight.semibold, color: t.colors.neutral[600], textAlign: "left" }}>Deger</th>
+                <th className="py-2 px-3 text-left" style={{ fontSize: t.typography.size.xs, fontWeight: t.typography.weight.semibold, color: t.colors.neutral[600] }}>Kolon</th>
+                <th className="py-2 px-3 text-left" style={{ fontSize: t.typography.size.xs, fontWeight: t.typography.weight.semibold, color: t.colors.neutral[600] }}>Deger</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td style={{ padding: `${spacing[2]} ${spacing[3]}`, fontSize: t.typography.size.sm, color: t.colors.neutral[900], borderTop: `1px solid ${t.colors.border.subtle}` }}>Ornek satir</td>
-                <td style={{ padding: `${spacing[2]} ${spacing[3]}`, fontSize: t.typography.size.sm, color: t.colors.neutral[600], borderTop: `1px solid ${t.colors.border.subtle}`, fontFamily: t.typography.mono.stack }}>42</td>
+                <td className="py-2 px-3" style={{ fontSize: t.typography.size.sm, color: t.colors.neutral[900], borderTop: `1px solid ${t.colors.border.subtle}` }}>Ornek satir</td>
+                <td className="py-2 px-3" style={{ fontSize: t.typography.size.sm, color: t.colors.neutral[600], borderTop: `1px solid ${t.colors.border.subtle}`, fontFamily: t.typography.mono.stack }}>42</td>
               </tr>
             </tbody>
           </table>
@@ -191,9 +175,8 @@ function ThemePreviewPanel({ theme }: { theme: ThemeManifest }) {
 
         {/* Mono sample */}
         <div
+          className="mt-3 p-3"
           style={{
-            marginTop: spacing[3],
-            padding: spacing[3],
             background: t.colors.neutral[50],
             borderRadius: t.radius.md,
             fontFamily: t.typography.mono.stack,
@@ -231,66 +214,40 @@ function ThemeCard({
 }) {
   return (
     <div
-      style={{
-        border: `1px solid ${isActive ? colors.brand[400] : colors.border.default}`,
-        borderRadius: radius.lg,
-        padding: spacing[5],
-        background: isActive ? colors.brand[50] : colors.surface.card,
-        boxShadow: isActive ? shadow.sm : shadow.xs,
-        transition: `border-color ${transition.fast}, background ${transition.fast}`,
-      }}
+      className={cn(
+        "rounded-lg p-5 transition-all duration-150",
+        isActive
+          ? "border border-brand-400 bg-brand-50 shadow-sm"
+          : "border border-border bg-surface-card shadow-xs"
+      )}
       data-testid={`theme-card-${theme.id}`}
     >
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: spacing[2] }}>
+      <div className="flex justify-between items-start mb-2">
         <div>
-          <div style={{ display: "flex", alignItems: "center", gap: spacing[2] }}>
-            <h3
-              style={{
-                margin: 0,
-                fontSize: typography.size.md,
-                fontWeight: typography.weight.semibold,
-                color: colors.neutral[900],
-              }}
-            >
+          <div className="flex items-center gap-2">
+            <h3 className="m-0 text-md font-semibold text-neutral-900">
               {theme.name}
             </h3>
             {isActive && <StatusBadge status="active" label="Aktif" />}
             {isBuiltin && (
-              <span
-                style={{
-                  fontSize: typography.size.xs,
-                  color: colors.neutral[500],
-                  fontStyle: "italic",
-                }}
-              >
+              <span className="text-xs text-neutral-500 italic">
                 yerlesik
               </span>
             )}
           </div>
-          <p
-            style={{
-              margin: `${spacing[1]} 0 0`,
-              fontSize: typography.size.sm,
-              color: colors.neutral[600],
-              lineHeight: typography.lineHeight.normal,
-            }}
-          >
+          <p className="mt-1 mb-0 text-sm text-neutral-600 leading-normal">
             {theme.description}
           </p>
         </div>
 
         {/* Color swatch */}
-        <div style={{ display: "flex", gap: "2px", flexShrink: 0 }}>
+        <div className="flex gap-0.5 shrink-0">
           {[theme.colors.brand[500], theme.colors.neutral[700], theme.colors.success.base, theme.colors.warning.base, theme.colors.error.base].map(
             (c, i) => (
               <div
                 key={i}
-                style={{
-                  width: "16px",
-                  height: "16px",
-                  borderRadius: radius.sm,
-                  background: c,
-                }}
+                className="w-4 h-4 rounded-sm"
+                style={{ background: c }}
               />
             )
           )}
@@ -298,7 +255,7 @@ function ThemeCard({
       </div>
 
       {/* Meta */}
-      <div style={{ display: "flex", gap: spacing[3], fontSize: typography.size.xs, color: colors.neutral[500], marginBottom: spacing[3], flexWrap: "wrap" }}>
+      <div className="flex gap-3 text-xs text-neutral-500 mb-3 flex-wrap">
         <span>v{theme.version}</span>
         <span>{theme.author}</span>
         <span>{theme.typography.body.family}</span>
@@ -306,7 +263,7 @@ function ThemeCard({
       </div>
 
       {/* Actions */}
-      <div style={{ display: "flex", gap: spacing[2], flexWrap: "wrap" }}>
+      <div className="flex gap-2 flex-wrap">
         {!isActive && (
           <ActionButton variant="primary" size="sm" onClick={onActivate} data-testid={`theme-activate-${theme.id}`}>
             Aktif Et
@@ -373,39 +330,23 @@ function ThemeImportSection({
         value={jsonInput}
         onChange={(e) => { setJsonInput(e.target.value); setErrors([]); setSuccess(false); }}
         placeholder='{"id": "my-theme", "name": "My Theme", ...}'
-        style={{
-          width: "100%",
-          minHeight: "200px",
-          padding: spacing[3],
-          fontSize: typography.size.sm,
-          fontFamily: typography.monoFamily,
-          border: `1px solid ${errors.length > 0 ? colors.error.base : colors.border.default}`,
-          borderRadius: radius.md,
-          background: colors.surface.card,
-          color: colors.neutral[900],
-          resize: "vertical",
-          lineHeight: typography.lineHeight.normal,
-        }}
+        className={cn(
+          "w-full min-h-[200px] p-3 text-sm font-mono rounded-md bg-surface-card text-neutral-900 resize-y leading-normal",
+          errors.length > 0 ? "border border-error" : "border border-border"
+        )}
         data-testid="theme-import-textarea"
       />
 
       {errors.length > 0 && (
         <div
-          style={{
-            marginTop: spacing[2],
-            padding: spacing[3],
-            background: colors.error.light,
-            borderRadius: radius.md,
-            fontSize: typography.size.sm,
-            color: colors.error.text,
-          }}
+          className="mt-2 p-3 bg-error-light rounded-md text-sm text-error-text"
           data-testid="theme-import-errors"
         >
           <strong>Dogrulama Hatalari:</strong>
-          <ul style={{ margin: `${spacing[1]} 0 0`, paddingLeft: spacing[4] }}>
+          <ul className="mt-1 mb-0 pl-4">
             {errors.map((err, i) => (
               <li key={i}>
-                {err.path && <code style={{ fontFamily: typography.monoFamily }}>{err.path}</code>}
+                {err.path && <code className="font-mono">{err.path}</code>}
                 {err.path && ": "}
                 {err.message}
               </li>
@@ -416,21 +357,14 @@ function ThemeImportSection({
 
       {success && (
         <div
-          style={{
-            marginTop: spacing[2],
-            padding: spacing[3],
-            background: colors.success.light,
-            borderRadius: radius.md,
-            fontSize: typography.size.sm,
-            color: colors.success.text,
-          }}
+          className="mt-2 p-3 bg-success-light rounded-md text-sm text-success-text"
           data-testid="theme-import-success"
         >
           Tema basariyla import edildi!
         </div>
       )}
 
-      <div style={{ marginTop: spacing[3], display: "flex", gap: spacing[2] }}>
+      <div className="mt-3 flex gap-2">
         <ActionButton
           variant="primary"
           size="sm"
@@ -542,19 +476,19 @@ export function ThemeRegistryPage() {
       >
         {(() => {
           const active = themes.find((t) => t.id === activeThemeId);
-          if (!active) return <p style={{ color: colors.neutral[500] }}>Aktif tema bulunamadi.</p>;
+          if (!active) return <p className="text-neutral-500">Aktif tema bulunamadi.</p>;
           return (
-            <div style={{ display: "flex", alignItems: "center", gap: spacing[3] }}>
-              <div style={{ display: "flex", gap: "2px" }}>
+            <div className="flex items-center gap-3">
+              <div className="flex gap-0.5">
                 {[active.colors.brand[500], active.colors.neutral[700], active.colors.success.base].map((c, i) => (
-                  <div key={i} style={{ width: "20px", height: "20px", borderRadius: radius.sm, background: c }} />
+                  <div key={i} className="w-5 h-5 rounded-sm" style={{ background: c }} />
                 ))}
               </div>
               <div>
-                <span style={{ fontSize: typography.size.md, fontWeight: typography.weight.semibold, color: colors.neutral[900] }}>
+                <span className="text-md font-semibold text-neutral-900">
                   {active.name}
                 </span>
-                <span style={{ marginLeft: spacing[2], fontSize: typography.size.sm, color: colors.neutral[500] }}>
+                <span className="ml-2 text-sm text-neutral-500">
                   v{active.version} — {active.typography.body.family}
                 </span>
               </div>
@@ -569,7 +503,7 @@ export function ThemeRegistryPage() {
         description={`${themes.length} tema mevcut`}
         testId="theme-list-section"
       >
-        <div style={{ display: "grid", gap: spacing[4] }}>
+        <div className="grid gap-4">
           {themes.map((theme) => (
             <ThemeCard
               key={theme.id}
@@ -605,15 +539,7 @@ export function ThemeRegistryPage() {
 
       {/* Authoring guide hint */}
       <div
-        style={{
-          marginTop: spacing[4],
-          padding: spacing[4],
-          background: colors.info.light,
-          borderRadius: radius.lg,
-          fontSize: typography.size.sm,
-          color: colors.info.text,
-          lineHeight: typography.lineHeight.relaxed,
-        }}
+        className="mt-4 p-4 bg-info-light rounded-lg text-sm text-info-text leading-relaxed"
         data-testid="theme-authoring-hint"
       >
         <strong>AI ile Tema Uretme:</strong> Bir AI'ye "ContentHub ThemeManifest JSON uretten" deyip

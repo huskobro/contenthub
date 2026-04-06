@@ -8,11 +8,9 @@ import { StyleBlueprintInputQualitySummary } from "./StyleBlueprintInputQualityS
 import { StyleBlueprintInputSpecificitySummary } from "./StyleBlueprintInputSpecificitySummary";
 import { StyleBlueprintTargetOutputConsistencySummary } from "./StyleBlueprintTargetOutputConsistencySummary";
 import { StyleBlueprintPublicationOutcomeSummary } from "./StyleBlueprintPublicationOutcomeSummary";
-import { colors, radius, typography } from "../design-system/tokens";
+import { cn } from "../../lib/cn";
 
 const DASH = "—";
-const TH_STYLE: React.CSSProperties = { padding: "0.5rem 0.75rem", borderBottom: `1px solid ${colors.border.subtle}` };
-const TD_STYLE: React.CSSProperties = { padding: "0.5rem 0.75rem" };
 
 interface StyleBlueprintsTableProps {
   blueprints: StyleBlueprintResponse[];
@@ -22,22 +20,22 @@ interface StyleBlueprintsTableProps {
 
 export function StyleBlueprintsTable({ blueprints, selectedId, onSelect }: StyleBlueprintsTableProps) {
   return (
-    <div style={{ overflowX: "auto" }}>
-    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: typography.size.md }}>
+    <div className="overflow-x-auto">
+    <table className="w-full border-collapse text-md">
       <thead>
-        <tr style={{ background: colors.neutral[100], textAlign: "left" }}>
-          <th style={TH_STYLE}>Ad</th>
-          <th style={TH_STYLE}>Modül</th>
-          <th style={TH_STYLE}>Durum</th>
-          <th style={TH_STYLE}>Sürüm</th>
-          <th style={TH_STYLE}>Hazırlık</th>
-          <th style={TH_STYLE}>Girdi Kalitesi</th>
-          <th style={TH_STYLE}>Girdi Özgüllüğü</th>
-          <th style={TH_STYLE}>Yayın Sinyali</th>
-          <th style={TH_STYLE}>Yayın Çıktısı</th>
-          <th style={TH_STYLE}>Artifact Tutarlılığı</th>
-          <th style={TH_STYLE}>Target/Output Tutarlılığı</th>
-          <th style={TH_STYLE}>Oluşturulma</th>
+        <tr className="bg-neutral-100 text-left">
+          <th className="py-2 px-3 border-b border-border-subtle">Ad</th>
+          <th className="py-2 px-3 border-b border-border-subtle">Modül</th>
+          <th className="py-2 px-3 border-b border-border-subtle">Durum</th>
+          <th className="py-2 px-3 border-b border-border-subtle">Sürüm</th>
+          <th className="py-2 px-3 border-b border-border-subtle">Hazırlık</th>
+          <th className="py-2 px-3 border-b border-border-subtle">Girdi Kalitesi</th>
+          <th className="py-2 px-3 border-b border-border-subtle">Girdi Özgüllüğü</th>
+          <th className="py-2 px-3 border-b border-border-subtle">Yayın Sinyali</th>
+          <th className="py-2 px-3 border-b border-border-subtle">Yayın Çıktısı</th>
+          <th className="py-2 px-3 border-b border-border-subtle">Artifact Tutarlılığı</th>
+          <th className="py-2 px-3 border-b border-border-subtle">Target/Output Tutarlılığı</th>
+          <th className="py-2 px-3 border-b border-border-subtle">Oluşturulma</th>
         </tr>
       </thead>
       <tbody>
@@ -45,32 +43,25 @@ export function StyleBlueprintsTable({ blueprints, selectedId, onSelect }: Style
           <tr
             key={bp.id}
             onClick={() => onSelect(bp.id)}
-            style={{
-              cursor: "pointer",
-              background: selectedId === bp.id ? colors.info.light : "transparent",
-              borderBottom: `1px solid ${colors.neutral[100]}`,
-            }}
+            className={cn(
+              "cursor-pointer border-b border-neutral-100",
+              selectedId === bp.id ? "bg-info-light" : "bg-transparent"
+            )}
           >
-            {/* Kimlik & Durum */}
-            <td style={{ padding: "0.5rem 0.75rem", color: colors.brand[700], fontWeight: selectedId === bp.id ? 600 : 400, wordBreak: "break-word", overflowWrap: "anywhere" }}>
+            <td className={cn("py-2 px-3 text-brand-700 break-words", selectedId === bp.id ? "font-semibold" : "font-normal")} style={{ overflowWrap: "anywhere" }}>
               {bp.name ?? DASH}
             </td>
-            <td style={{ padding: "0.5rem 0.75rem", color: colors.neutral[600] }}>{bp.module_scope ?? DASH}</td>
-            <td style={TD_STYLE}>
-              <span style={{
-                display: "inline-block",
-                padding: "0.125rem 0.5rem",
-                borderRadius: radius.full,
-                fontSize: typography.size.sm,
-                background: bp.status === "active" ? colors.success.light : colors.neutral[100],
-                color: bp.status === "active" ? colors.success.text : colors.neutral[700],
-              }}>
+            <td className="py-2 px-3 text-neutral-600">{bp.module_scope ?? DASH}</td>
+            <td className="py-2 px-3">
+              <span className={cn(
+                "inline-block py-0.5 px-2 rounded-full text-sm",
+                bp.status === "active" ? "bg-success-light text-success-text" : "bg-neutral-100 text-neutral-700"
+              )}>
                 {bp.status ?? DASH}
               </span>
             </td>
-            <td style={{ padding: "0.5rem 0.75rem", color: colors.neutral[600] }}>v{safeNumber(bp.version, 0)}</td>
-            {/* Hazırlık */}
-            <td style={TD_STYLE}>
+            <td className="py-2 px-3 text-neutral-600">v{safeNumber(bp.version, 0)}</td>
+            <td className="py-2 px-3">
               <StyleBlueprintReadinessSummary
                 status={bp.status}
                 visualRulesJson={bp.visual_rules_json}
@@ -81,8 +72,7 @@ export function StyleBlueprintsTable({ blueprints, selectedId, onSelect }: Style
                 previewStrategyJson={bp.preview_strategy_json}
               />
             </td>
-            {/* Girdi Grubu */}
-            <td style={TD_STYLE}>
+            <td className="py-2 px-3">
               <StyleBlueprintInputQualitySummary
                 visualRulesJson={bp.visual_rules_json}
                 motionRulesJson={bp.motion_rules_json}
@@ -92,7 +82,7 @@ export function StyleBlueprintsTable({ blueprints, selectedId, onSelect }: Style
                 previewStrategyJson={bp.preview_strategy_json}
               />
             </td>
-            <td style={TD_STYLE}>
+            <td className="py-2 px-3">
               <StyleBlueprintInputSpecificitySummary
                 visualRulesJson={bp.visual_rules_json}
                 motionRulesJson={bp.motion_rules_json}
@@ -102,8 +92,7 @@ export function StyleBlueprintsTable({ blueprints, selectedId, onSelect }: Style
                 previewStrategyJson={bp.preview_strategy_json}
               />
             </td>
-            {/* Yayın Grubu */}
-            <td style={TD_STYLE}>
+            <td className="py-2 px-3">
               <StyleBlueprintPublicationSignalSummary
                 status={bp.status}
                 visualRulesJson={bp.visual_rules_json}
@@ -114,7 +103,7 @@ export function StyleBlueprintsTable({ blueprints, selectedId, onSelect }: Style
                 previewStrategyJson={bp.preview_strategy_json}
               />
             </td>
-            <td style={TD_STYLE}>
+            <td className="py-2 px-3">
               <StyleBlueprintPublicationOutcomeSummary
                 visualRulesJson={bp.visual_rules_json}
                 motionRulesJson={bp.motion_rules_json}
@@ -125,8 +114,7 @@ export function StyleBlueprintsTable({ blueprints, selectedId, onSelect }: Style
                 status={bp.status}
               />
             </td>
-            {/* Tutarlılık Grubu */}
-            <td style={TD_STYLE}>
+            <td className="py-2 px-3">
               <StyleBlueprintArtifactConsistencySummary
                 visualRulesJson={bp.visual_rules_json}
                 motionRulesJson={bp.motion_rules_json}
@@ -136,7 +124,7 @@ export function StyleBlueprintsTable({ blueprints, selectedId, onSelect }: Style
                 previewStrategyJson={bp.preview_strategy_json}
               />
             </td>
-            <td style={TD_STYLE}>
+            <td className="py-2 px-3">
               <StyleBlueprintTargetOutputConsistencySummary
                 visualRulesJson={bp.visual_rules_json}
                 motionRulesJson={bp.motion_rules_json}
@@ -146,8 +134,7 @@ export function StyleBlueprintsTable({ blueprints, selectedId, onSelect }: Style
                 previewStrategyJson={bp.preview_strategy_json}
               />
             </td>
-            {/* Zaman */}
-            <td style={{ padding: "0.5rem 0.75rem", color: colors.neutral[500], fontSize: typography.size.base }}>
+            <td className="py-2 px-3 text-neutral-500 text-base">
               {formatDateShort(bp.created_at)}
             </td>
           </tr>

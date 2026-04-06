@@ -1,9 +1,7 @@
-import { colors, typography } from "../design-system/tokens";
+import { cn } from "../../lib/cn";
 import type { SettingResponse } from "../../api/settingsApi";
 
 const DASH = "—";
-const TH_STYLE: React.CSSProperties = { padding: "0.5rem" };
-const TD_STYLE: React.CSSProperties = { padding: "0.5rem" };
 
 interface SettingsTableProps {
   settings: SettingResponse[];
@@ -13,18 +11,18 @@ interface SettingsTableProps {
 
 export function SettingsTable({ settings, selectedId, onSelect }: SettingsTableProps) {
   if (settings.length === 0) {
-    return <p style={{ color: colors.neutral[600] }}>Henüz kayıtlı ayar yok.</p>;
+    return <p className="text-neutral-600">Henüz kayıtlı ayar yok.</p>;
   }
 
   return (
-    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: typography.size.md }}>
+    <table className="w-full border-collapse text-md">
       <thead>
-        <tr style={{ borderBottom: `2px solid ${colors.border.subtle}`, textAlign: "left" }}>
-          <th style={TD_STYLE}>key</th>
-          <th style={TD_STYLE}>group_name</th>
-          <th style={TD_STYLE}>type</th>
-          <th style={TD_STYLE}>status</th>
-          <th style={TD_STYLE}>version</th>
+        <tr className="border-b-2 border-border-subtle text-left">
+          <th className="p-2">key</th>
+          <th className="p-2">group_name</th>
+          <th className="p-2">type</th>
+          <th className="p-2">status</th>
+          <th className="p-2">version</th>
         </tr>
       </thead>
       <tbody>
@@ -32,17 +30,16 @@ export function SettingsTable({ settings, selectedId, onSelect }: SettingsTableP
           <tr
             key={s.id}
             onClick={() => onSelect(s.id)}
-            style={{
-              borderBottom: `1px solid ${colors.neutral[100]}`,
-              cursor: "pointer",
-              background: selectedId === s.id ? colors.info.light : "transparent",
-            }}
+            className={cn(
+              "border-b border-neutral-100 cursor-pointer",
+              selectedId === s.id ? "bg-info-light" : "bg-transparent",
+            )}
           >
-            <td style={{ padding: "0.5rem", fontFamily: "monospace", wordBreak: "break-all", overflowWrap: "anywhere" }}>{s.key ?? DASH}</td>
-            <td style={{ padding: "0.5rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>{s.group_name ?? DASH}</td>
-            <td style={TD_STYLE}>{s.type ?? DASH}</td>
-            <td style={TD_STYLE}>{s.status ?? DASH}</td>
-            <td style={TD_STYLE}>{s.version ?? DASH}</td>
+            <td className="p-2 font-mono break-all [overflow-wrap:anywhere]">{s.key ?? DASH}</td>
+            <td className="p-2 break-words [overflow-wrap:anywhere]">{s.group_name ?? DASH}</td>
+            <td className="p-2">{s.type ?? DASH}</td>
+            <td className="p-2">{s.status ?? DASH}</td>
+            <td className="p-2">{s.version ?? DASH}</td>
           </tr>
         ))}
       </tbody>

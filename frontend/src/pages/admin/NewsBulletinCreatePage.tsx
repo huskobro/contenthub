@@ -2,7 +2,6 @@ import { useNavigate } from "react-router-dom";
 import { useCreateNewsBulletin } from "../../hooks/useCreateNewsBulletin";
 import { NewsBulletinForm } from "../../components/news-bulletin/NewsBulletinForm";
 import type { NewsBulletinFormValues } from "../../components/news-bulletin/NewsBulletinForm";
-import { colors, typography } from "../../components/design-system/tokens";
 
 export function NewsBulletinCreatePage() {
   const navigate = useNavigate();
@@ -32,41 +31,20 @@ export function NewsBulletinCreatePage() {
   }
 
   return (
-    <div style={{ padding: "1.5rem" }}>
-      <h2
-        style={{ fontSize: typography.size.xl, fontWeight: 600, marginBottom: "0.5rem" }}
-        data-testid="nb-create-heading"
-      >
+    <div className="p-6">
+      <h2 className="text-xl font-semibold mb-2" data-testid="nb-create-heading">
         Yeni Haber Bulteni
       </h2>
-      <p
-        style={{
-          margin: "0 0 1.25rem",
-          fontSize: typography.size.md,
-          color: colors.neutral[600],
-          lineHeight: 1.6,
-          maxWidth: "640px",
-        }}
-        data-testid="nb-create-subtitle"
-      >
+      <p className="m-0 mb-5 text-md text-neutral-600 leading-relaxed max-w-[640px]" data-testid="nb-create-subtitle">
         Haber bulteni uretim akisinin baslangic noktasi. Konu ve temel bilgileri
         girerek yeni bir bulten kaydi olusturun. Kaynaklardan gelen haberler
         secilerek bulten taslagi, script ve metadata adimlari ilerleyecektir.
       </p>
-      <p
-        style={{
-          margin: "0 0 1.25rem",
-          fontSize: typography.size.base,
-          color: colors.neutral[500],
-          lineHeight: 1.5,
-          maxWidth: "640px",
-        }}
-        data-testid="nb-create-workflow-chain"
-      >
-        Uretim zinciri: Kaynak Tarama → Haber Secimi → Bulten Kaydi → Script → Metadata → Uretim.
+      <p className="m-0 mb-5 text-base text-neutral-500 leading-normal max-w-[640px]" data-testid="nb-create-workflow-chain">
+        Uretim zinciri: Kaynak Tarama &rarr; Haber Secimi &rarr; Bulten Kaydi &rarr; Script &rarr; Metadata &rarr; Uretim.
       </p>
       {mutation.isError && (
-        <p style={{ color: "red" }}>Hata: kayıt oluşturulamadı.</p>
+        <p className="text-error">Hata: kayıt oluşturulamadı.</p>
       )}
       <NewsBulletinForm
         onSubmit={handleSubmit}

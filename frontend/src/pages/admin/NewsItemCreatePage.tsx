@@ -2,7 +2,6 @@ import { useNavigate } from "react-router-dom";
 import { useCreateNewsItem } from "../../hooks/useCreateNewsItem";
 import { NewsItemForm } from "../../components/news-items/NewsItemForm";
 import type { NewsItemFormValues } from "../../components/news-items/NewsItemForm";
-import { colors, typography } from "../../components/design-system/tokens";
 
 export function NewsItemCreatePage() {
   const navigate = useNavigate();
@@ -30,9 +29,9 @@ export function NewsItemCreatePage() {
   }
 
   return (
-    <div style={{ maxWidth: "600px" }}>
-      <h2 style={{ margin: "0 0 0.25rem" }}>Yeni News Item</h2>
-      <p style={{ margin: "0 0 1.25rem", color: colors.neutral[600], fontSize: typography.size.md }}>
+    <div className="max-w-[600px]">
+      <h2 className="m-0 mb-1">Yeni News Item</h2>
+      <p className="m-0 mb-5 text-neutral-600 text-md">
         Yeni bir haber kaydı oluştur.
       </p>
       <NewsItemForm

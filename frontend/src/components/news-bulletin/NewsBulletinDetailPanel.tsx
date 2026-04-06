@@ -7,7 +7,6 @@ import { NewsBulletinScriptPanel } from "./NewsBulletinScriptPanel";
 import { NewsBulletinMetadataPanel } from "./NewsBulletinMetadataPanel";
 import { NewsBulletinSelectedItemsPanel } from "./NewsBulletinSelectedItemsPanel";
 import { formatDateTime } from "../../lib/formatDate";
-import { colors, typography } from "../design-system/tokens";
 
 interface Props {
   selectedId: string | null;
@@ -15,9 +14,9 @@ interface Props {
 
 function Field({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div style={{ marginBottom: "8px" }}>
-      <span style={{ fontWeight: 600, marginRight: "8px", color: colors.neutral[600], fontSize: typography.size.base }}>{label}:</span>
-      <span style={{ wordBreak: "break-word", overflowWrap: "anywhere" }}>{value ?? "—"}</span>
+    <div className="mb-2">
+      <span className="font-semibold mr-2 text-neutral-600 text-base">{label}:</span>
+      <span className="break-words [overflow-wrap:anywhere]">{value ?? "—"}</span>
     </div>
   );
 }
@@ -40,7 +39,7 @@ export function NewsBulletinDetailPanel({ selectedId }: Props) {
   }
 
   if (isError || !data) {
-    return <p style={{ color: "red" }}>Hata: detay yüklenemedi.</p>;
+    return <p className="text-error">Hata: detay yüklenemedi.</p>;
   }
 
   if (editMode) {
@@ -67,7 +66,7 @@ export function NewsBulletinDetailPanel({ selectedId }: Props) {
       <div>
         <h3>News Bulletin Düzenle</h3>
         {updateMutation.isError && (
-          <p style={{ color: "red" }}>Hata: güncelleme başarısız.</p>
+          <p className="text-error">Hata: güncelleme başarısız.</p>
         )}
         <NewsBulletinForm
           initial={data}
@@ -82,17 +81,12 @@ export function NewsBulletinDetailPanel({ selectedId }: Props) {
 
   return (
     <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <div className="flex justify-between items-center">
         <h3 data-testid="nb-detail-heading">Haber Bulteni Detayı</h3>
         <button onClick={() => setEditMode(true)}>Düzenle</button>
       </div>
       <p
-        style={{
-          margin: "0 0 1rem",
-          fontSize: typography.size.base,
-          color: colors.neutral[500],
-          lineHeight: 1.5,
-        }}
+        className="m-0 mb-4 text-base text-neutral-500 leading-normal"
         data-testid="nb-detail-workflow-chain"
       >
         Uretim zinciri: Kaynak Tarama → Haber Secimi → Bulten Kaydi → Script → Metadata → Uretim.
@@ -111,7 +105,7 @@ export function NewsBulletinDetailPanel({ selectedId }: Props) {
         label="Selected News IDs"
         value={
           data.selected_news_ids_json ? (
-            <code style={{ fontSize: "0.85em", wordBreak: "break-all", overflowWrap: "anywhere" }}>
+            <code className="text-[0.85em] break-all [overflow-wrap:anywhere]">
               {data.selected_news_ids_json}
             </code>
           ) : null

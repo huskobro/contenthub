@@ -15,7 +15,6 @@ import { useCreateStandardVideoScript } from "../../hooks/useCreateStandardVideo
 import { useUpdateStandardVideoScript } from "../../hooks/useUpdateStandardVideoScript";
 import { useCreateStandardVideoMetadata } from "../../hooks/useCreateStandardVideoMetadata";
 import { useUpdateStandardVideoMetadata } from "../../hooks/useUpdateStandardVideoMetadata";
-import { colors, typography, spacing } from "../../components/design-system/tokens";
 import {
   PageShell,
   SectionShell,
@@ -28,16 +27,8 @@ export function StandardVideoDetailPage() {
   const [editMode, setEditMode] = useState(false);
 
   const { data: video, isLoading, isError, error } = useStandardVideoDetail(itemId ?? null);
-  const {
-    data: script,
-    isLoading: scriptLoading,
-    isError: scriptError,
-  } = useStandardVideoScript(itemId ?? null);
-  const {
-    data: metadata,
-    isLoading: metadataLoading,
-    isError: metadataError,
-  } = useStandardVideoMetadata(itemId ?? null);
+  const { data: script, isLoading: scriptLoading, isError: scriptError } = useStandardVideoScript(itemId ?? null);
+  const { data: metadata, isLoading: metadataLoading, isError: metadataError } = useStandardVideoMetadata(itemId ?? null);
 
   const { mutate: updateVideo, isPending: isUpdating, error: updateError } = useUpdateStandardVideo(itemId ?? "");
   const { mutate: createScript, isPending: isCreatingScript, error: createScriptError } = useCreateStandardVideoScript(itemId ?? "");
@@ -50,35 +41,19 @@ export function StandardVideoDetailPage() {
       topic: values.topic || null,
       title: values.title || null,
       brief: values.brief || null,
-      target_duration_seconds: values.target_duration_seconds !== ""
-        ? Number(values.target_duration_seconds)
-        : null,
+      target_duration_seconds: values.target_duration_seconds !== "" ? Number(values.target_duration_seconds) : null,
       tone: values.tone || null,
       language: values.language || null,
       visual_direction: values.visual_direction || null,
       subtitle_style: values.subtitle_style || null,
       status: values.status || null,
     };
-    updateVideo(payload, {
-      onSuccess: () => setEditMode(false),
-    });
+    updateVideo(payload, { onSuccess: () => setEditMode(false) });
   }
 
-  if (isLoading) {
-    return <p style={{ color: colors.neutral[500], fontSize: typography.size.base }}>Yükleniyor...</p>;
-  }
-
-  if (isError) {
-    return (
-      <p style={{ color: colors.error.base, fontSize: typography.size.base }}>
-        Hata: {error instanceof Error ? error.message : "Bilinmeyen hata"}
-      </p>
-    );
-  }
-
-  if (!video) {
-    return <p style={{ color: colors.neutral[500], fontSize: typography.size.base }}>Kayit bulunamadi.</p>;
-  }
+  if (isLoading) return <p className="text-neutral-500 text-base">Yükleniyor...</p>;
+  if (isError) return <p className="text-error text-base">Hata: {error instanceof Error ? error.message : "Bilinmeyen hata"}</p>;
+  if (!video) return <p className="text-neutral-500 text-base">Kayit bulunamadi.</p>;
 
   return (
     <PageShell
@@ -89,57 +64,20 @@ export function StandardVideoDetailPage() {
         { label: "Video listesi", to: "/admin/standard-videos" },
         { label: video.topic || "Detay" },
       ]}
-      actions={
-        !editMode ? (
-          <ActionButton
-            variant="secondary"
-            size="sm"
-            onClick={() => setEditMode(true)}
-          >
-            Düzenle
-          </ActionButton>
-        ) : undefined
-      }
+      actions={!editMode ? <ActionButton variant="secondary" size="sm" onClick={() => setEditMode(true)}>Düzenle</ActionButton> : undefined}
     >
-      <a
-        href="/admin/library"
-        data-testid="sv-detail-library-link"
-        style={{
-          display: "inline-block",
-          marginBottom: spacing[2],
-          fontSize: typography.size.sm,
-          color: colors.brand[600],
-          textDecoration: "none",
-        }}
-      >
-        ← Kütüphaneye dön
+      <a href="/admin/library" data-testid="sv-detail-library-link" className="inline-block mb-2 text-sm text-brand-600 no-underline">
+        &larr; Kütüphaneye dön
       </a>
-      <p style={{ margin: `0 0 ${spacing[2]}`, color: colors.neutral[600], fontSize: typography.size.sm }}>
+      <p className="m-0 mb-2 text-neutral-600 text-sm">
         {video.topic} — <Mono>{video.id}</Mono>
       </p>
-      <p
-        style={{
-          margin: `0 0 ${spacing[5]}`,
-          fontSize: typography.size.sm,
-          color: colors.neutral[500],
-          lineHeight: typography.lineHeight.normal,
-          maxWidth: "640px",
-        }}
-        data-testid="sv-detail-workflow-chain"
-      >
+      <p className="m-0 mb-5 text-sm text-neutral-500 leading-normal max-w-[640px]" data-testid="sv-detail-workflow-chain">
         Uretim zinciri: Kayit &rarr; Script &rarr; Metadata &rarr; TTS &rarr; Altyazi &rarr; Kompozisyon.
         Asagidaki panellerden her adimi yonetebilirsiniz. Tum adimlar
         tamamlandiginda yayin sureci baslatilabilir.
       </p>
-      <p
-        style={{
-          margin: `0 0 ${spacing[5]}`,
-          fontSize: typography.size.xs,
-          color: colors.neutral[400],
-          maxWidth: "640px",
-        }}
-        data-testid="sv-detail-manage-note"
-      >
+      <p className="m-0 mb-5 text-xs text-neutral-400 max-w-[640px]" data-testid="sv-detail-manage-note">
         Bu kaydi duzenleyebilir veya bilgilerini referans alarak yeni bir icerik
         olusturabilirsiniz. Klonlama backend entegrasyonu ile eklenecektir.
       </p>
@@ -158,7 +96,6 @@ export function StandardVideoDetailPage() {
       ) : (
         <>
           <StandardVideoOverviewPanel video={video} />
-
           <StandardVideoScriptPanel
             videoId={itemId ?? ""}
             isLoading={scriptLoading}
@@ -171,7 +108,6 @@ export function StandardVideoDetailPage() {
             createError={createScriptError ? createScriptError.message : null}
             updateError={updateScriptError ? updateScriptError.message : null}
           />
-
           <StandardVideoMetadataPanel
             videoId={itemId ?? ""}
             isLoading={metadataLoading}

@@ -1,71 +1,5 @@
 import { useSetupRequirements } from "../../hooks/useSetupRequirements";
 import { useSettingsList } from "../../hooks/useSettingsList";
-import { colors, radius, typography } from "../design-system/tokens";
-
-const CONTAINER: React.CSSProperties = {
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
-  justifyContent: "center",
-  minHeight: "100vh",
-  background: `linear-gradient(135deg, ${colors.neutral[50]} 0%, ${colors.border.subtle} 100%)`,
-  padding: "2rem",
-};
-
-const CARD: React.CSSProperties = {
-  maxWidth: "560px",
-  width: "100%",
-  background: colors.neutral[0],
-  borderRadius: radius.xl,
-  boxShadow: "0 4px 24px rgba(0, 0, 0, 0.08)",
-  padding: "2.5rem",
-};
-
-const TITLE: React.CSSProperties = {
-  margin: "0 0 0.375rem",
-  fontSize: "1.5rem",
-  fontWeight: 700,
-  color: colors.neutral[900],
-  textAlign: "center",
-};
-
-const SUBTITLE: React.CSSProperties = {
-  margin: "0 0 1.75rem",
-  fontSize: typography.size.lg,
-  color: colors.neutral[700],
-  lineHeight: 1.6,
-  textAlign: "center",
-};
-
-const ROW: React.CSSProperties = {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  padding: "0.625rem 0",
-  borderBottom: `1px solid ${colors.neutral[100]}`,
-};
-
-const ROW_LABEL: React.CSSProperties = {
-  fontSize: typography.size.md,
-  fontWeight: 600,
-  color: colors.neutral[800],
-};
-
-const ROW_VALUE: React.CSSProperties = {
-  fontSize: typography.size.base,
-  color: colors.neutral[600],
-  textAlign: "right" as const,
-};
-
-const STATUS_OK: React.CSSProperties = {
-  color: colors.success.base,
-  fontWeight: 600,
-};
-
-const STATUS_MISSING: React.CSSProperties = {
-  color: colors.neutral[500],
-  fontWeight: 500,
-};
 
 interface Props {
   onBack: () => void;
@@ -129,62 +63,54 @@ export function OnboardingReviewSummaryScreen({ onBack, onComplete }: Props) {
 
   if (isLoading) {
     return (
-      <div style={CONTAINER}>
-        <div style={CARD}>
-          <p style={{ textAlign: "center", color: colors.neutral[600] }}>Yükleniyor...</p>
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-neutral-50 to-border-subtle p-8">
+        <div className="max-w-[560px] w-full bg-neutral-0 rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.08)] p-10">
+          <p className="text-center text-neutral-600">Yükleniyor...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div style={CONTAINER}>
-      <div style={CARD}>
-        <h2 style={TITLE}>Kurulum Ozeti</h2>
-        <p style={SUBTITLE}>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-neutral-50 to-border-subtle p-8">
+      <div className="max-w-[560px] w-full bg-neutral-0 rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.08)] p-10">
+        <h2 className="m-0 mb-1.5 text-2xl font-bold text-neutral-900 text-center">
+          Kurulum Ozeti
+        </h2>
+        <p className="m-0 mb-7 text-lg text-neutral-700 leading-relaxed text-center">
           Onboarding sirasinda yaptiginiz yapilandirmalarin ozetini asagida
           gorebilirsiniz. Her sey hazirsa kurulumu tamamlayabilirsiniz.
         </p>
 
-        <div style={{ marginBottom: "1.25rem" }}>
+        <div className="mb-5">
           {summaryRows.map((row) => (
-            <div key={row.label} style={ROW}>
-              <span style={ROW_LABEL}>{row.label}</span>
-              <span style={{ ...ROW_VALUE, ...(row.status === "ok" ? STATUS_OK : STATUS_MISSING) }}>
+            <div key={row.label} className="flex justify-between items-center py-2.5 border-b border-neutral-100">
+              <span className="text-md font-semibold text-neutral-800">{row.label}</span>
+              <span
+                className={`text-base text-right ${
+                  row.status === "ok"
+                    ? "text-success font-semibold"
+                    : "text-neutral-500 font-medium"
+                }`}
+              >
                 {row.detail}
               </span>
             </div>
           ))}
         </div>
 
-        <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem" }}>
+        <div className="flex gap-2 mt-2">
           <button
             type="button"
             onClick={onComplete}
-            style={{
-              padding: "0.375rem 1rem",
-              background: colors.brand[700],
-              color: colors.neutral[0],
-              border: "none",
-              borderRadius: radius.sm,
-              cursor: "pointer",
-              fontSize: typography.size.md,
-            }}
+            className="py-1.5 px-4 bg-brand-700 text-neutral-0 border-none rounded-sm cursor-pointer text-md"
           >
             Kurulumu Tamamla
           </button>
           <button
             type="button"
             onClick={onBack}
-            style={{
-              padding: "0.375rem 1rem",
-              background: "transparent",
-              color: colors.neutral[600],
-              border: `1px solid ${colors.border.default}`,
-              borderRadius: radius.sm,
-              cursor: "pointer",
-              fontSize: typography.size.md,
-            }}
+            className="py-1.5 px-4 bg-transparent text-neutral-600 border border-border rounded-sm cursor-pointer text-md"
           >
             Geri Don
           </button>

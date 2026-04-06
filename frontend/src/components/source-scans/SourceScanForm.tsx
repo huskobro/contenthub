@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { SourceScanResponse } from "../../api/sourceScansApi";
-import { colors, radius, typography } from "../design-system/tokens";
+import { cn } from "../../lib/cn";
 
 export interface SourceScanFormValues {
   source_id: string;
@@ -21,59 +21,6 @@ interface SourceScanFormProps {
   onCancel: () => void;
   submitLabel?: string;
 }
-
-const BORDER_COLOR = colors.border.subtle;
-const COLOR_ERR = colors.error.base;
-
-const inputStyle: React.CSSProperties = {
-  width: "100%",
-  padding: "0.375rem 0.5rem",
-  fontSize: typography.size.md,
-  border: `1px solid ${BORDER_COLOR}`,
-  borderRadius: radius.sm,
-  boxSizing: "border-box",
-};
-
-const labelStyle: React.CSSProperties = {
-  display: "block",
-  fontSize: typography.size.sm,
-  fontWeight: 600,
-  color: colors.neutral[700],
-  marginBottom: "0.25rem",
-};
-
-const fieldStyle: React.CSSProperties = {
-  marginBottom: "0.75rem",
-};
-
-const errorStyle: React.CSSProperties = {
-  fontSize: typography.size.sm,
-  color: COLOR_ERR,
-  marginTop: "0.2rem",
-};
-
-const TEXTAREA: React.CSSProperties = {
-  ...inputStyle,
-  minHeight: "50px",
-  resize: "vertical",
-};
-
-const BTN_PRIMARY: React.CSSProperties = {
-  padding: "0.375rem 1rem",
-  fontSize: typography.size.md,
-  color: colors.neutral[0],
-  border: "none",
-  borderRadius: radius.sm,
-};
-
-const BTN_CANCEL: React.CSSProperties = {
-  padding: "0.375rem 1rem",
-  fontSize: typography.size.md,
-  background: colors.neutral[100],
-  color: colors.neutral[700],
-  border: `1px solid ${BORDER_COLOR}`,
-  borderRadius: radius.sm,
-};
 
 export function SourceScanForm({
   mode,
@@ -125,25 +72,31 @@ export function SourceScanForm({
     <form onSubmit={handleSubmit} noValidate>
       {isCreate && (
         <>
-          <div style={fieldStyle}>
-            <label style={labelStyle}>
-              Source ID <span style={{ color: COLOR_ERR }}>*</span>
+          <div className="mb-3">
+            <label className="block text-sm font-semibold text-neutral-700 mb-1">
+              Source ID <span className="text-error">*</span>
             </label>
             <input
-              style={{ ...inputStyle, borderColor: errors.source_id ? COLOR_ERR : BORDER_COLOR }}
+              className={cn(
+                "w-full px-2 py-1.5 text-md border rounded-sm box-border",
+                errors.source_id ? "border-error" : "border-border-subtle",
+              )}
               value={values.source_id}
               onChange={(e) => set("source_id", e.target.value)}
               placeholder="Source UUID"
             />
-            {errors.source_id && <div style={errorStyle}>{errors.source_id}</div>}
+            {errors.source_id && <div className="text-sm text-error mt-0.5">{errors.source_id}</div>}
           </div>
 
-          <div style={fieldStyle}>
-            <label style={labelStyle}>
-              Scan Mode <span style={{ color: COLOR_ERR }}>*</span>
+          <div className="mb-3">
+            <label className="block text-sm font-semibold text-neutral-700 mb-1">
+              Scan Mode <span className="text-error">*</span>
             </label>
             <select
-              style={{ ...inputStyle, borderColor: errors.scan_mode ? COLOR_ERR : BORDER_COLOR }}
+              className={cn(
+                "w-full px-2 py-1.5 text-md border rounded-sm box-border",
+                errors.scan_mode ? "border-error" : "border-border-subtle",
+              )}
               value={values.scan_mode}
               onChange={(e) => set("scan_mode", e.target.value)}
             >
@@ -151,14 +104,18 @@ export function SourceScanForm({
               <option value="auto">auto</option>
               <option value="curated">curated</option>
             </select>
-            {errors.scan_mode && <div style={errorStyle}>{errors.scan_mode}</div>}
+            {errors.scan_mode && <div className="text-sm text-error mt-0.5">{errors.scan_mode}</div>}
           </div>
         </>
       )}
 
-      <div style={fieldStyle}>
-        <label style={labelStyle}>Status</label>
-        <select style={inputStyle} value={values.status} onChange={(e) => set("status", e.target.value)}>
+      <div className="mb-3">
+        <label className="block text-sm font-semibold text-neutral-700 mb-1">Status</label>
+        <select
+          className="w-full px-2 py-1.5 text-md border border-border-subtle rounded-sm box-border"
+          value={values.status}
+          onChange={(e) => set("status", e.target.value)}
+        >
           <option value="queued">queued</option>
           <option value="running">running</option>
           <option value="done">done</option>
@@ -167,42 +124,45 @@ export function SourceScanForm({
         </select>
       </div>
 
-      <div style={fieldStyle}>
-        <label style={labelStyle}>Requested By</label>
+      <div className="mb-3">
+        <label className="block text-sm font-semibold text-neutral-700 mb-1">Requested By</label>
         <input
-          style={inputStyle}
+          className="w-full px-2 py-1.5 text-md border border-border-subtle rounded-sm box-border"
           value={values.requested_by}
           onChange={(e) => set("requested_by", e.target.value)}
           placeholder="ör. admin (opsiyonel)"
         />
       </div>
 
-      <div style={fieldStyle}>
-        <label style={labelStyle}>Result Count</label>
+      <div className="mb-3">
+        <label className="block text-sm font-semibold text-neutral-700 mb-1">Result Count</label>
         <input
-          style={{ ...inputStyle, borderColor: errors.result_count ? COLOR_ERR : BORDER_COLOR }}
+          className={cn(
+            "w-full px-2 py-1.5 text-md border rounded-sm box-border",
+            errors.result_count ? "border-error" : "border-border-subtle",
+          )}
           type="text"
           value={values.result_count}
           onChange={(e) => set("result_count", e.target.value)}
           placeholder="Sayı (opsiyonel)"
         />
-        {errors.result_count && <div style={errorStyle}>{errors.result_count}</div>}
+        {errors.result_count && <div className="text-sm text-error mt-0.5">{errors.result_count}</div>}
       </div>
 
-      <div style={fieldStyle}>
-        <label style={labelStyle}>Error Summary</label>
+      <div className="mb-3">
+        <label className="block text-sm font-semibold text-neutral-700 mb-1">Error Summary</label>
         <textarea
-          style={TEXTAREA}
+          className="w-full px-2 py-1.5 text-md border border-border-subtle rounded-sm box-border min-h-[50px] resize-y"
           value={values.error_summary}
           onChange={(e) => set("error_summary", e.target.value)}
           placeholder="Hata özeti (opsiyonel)"
         />
       </div>
 
-      <div style={fieldStyle}>
-        <label style={labelStyle}>Notes</label>
+      <div className="mb-3">
+        <label className="block text-sm font-semibold text-neutral-700 mb-1">Notes</label>
         <textarea
-          style={TEXTAREA}
+          className="w-full px-2 py-1.5 text-md border border-border-subtle rounded-sm box-border min-h-[50px] resize-y"
           value={values.notes}
           onChange={(e) => set("notes", e.target.value)}
           placeholder="Notlar (opsiyonel)"
@@ -210,14 +170,17 @@ export function SourceScanForm({
       </div>
 
       {submitError && (
-        <div style={{ color: COLOR_ERR, fontSize: typography.size.md, marginBottom: "0.75rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>{submitError}</div>
+        <div className="text-error text-md mb-3 break-words [overflow-wrap:anywhere]">{submitError}</div>
       )}
 
-      <div style={{ display: "flex", gap: "0.5rem" }}>
+      <div className="flex gap-2">
         <button
           type="submit"
           disabled={isSubmitting}
-          style={{ ...BTN_PRIMARY, background: isSubmitting ? colors.info.light : colors.brand[500], cursor: isSubmitting ? "not-allowed" : "pointer" }}
+          className={cn(
+            "px-4 py-1.5 text-md text-neutral-0 border-none rounded-sm",
+            isSubmitting ? "bg-info-light cursor-not-allowed" : "bg-brand-500 cursor-pointer",
+          )}
         >
           {isSubmitting ? "Kaydediliyor..." : (submitLabel ?? (isCreate ? "Oluştur" : "Kaydet"))}
         </button>
@@ -225,7 +188,10 @@ export function SourceScanForm({
           type="button"
           onClick={onCancel}
           disabled={isSubmitting}
-          style={{ ...BTN_CANCEL, cursor: isSubmitting ? "not-allowed" : "pointer" }}
+          className={cn(
+            "px-4 py-1.5 text-md bg-neutral-100 text-neutral-700 border border-border-subtle rounded-sm",
+            isSubmitting ? "cursor-not-allowed" : "cursor-pointer",
+          )}
         >
           İptal
         </button>
