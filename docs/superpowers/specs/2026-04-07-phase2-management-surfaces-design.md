@@ -65,6 +65,16 @@ Tüm tablo/liste sayfalarında ortak standart:
 ### Fallback
 Eğer `key` yaklaşımı yan etki yaratırsa (state kaybı vb.), kontrollü `window.location.reload()` ile fallback yapılır.
 
+### State Kaybı Kontrol Listesi
+`key={layoutMode}` remount sırasında şu yüzeylerde state kaybı olup olmadığı test edilmeli:
+- Açık Sheet/detail panel
+- Command Palette
+- QuickLook
+- Tablo kolon tercihleri (localStorage'da ise sorun yok)
+- Wizard yarım state
+- Notification Center durumu
+- Sidebar expand/collapse durumu
+
 ### Etkilenen Dosyalar
 - `frontend/src/app/layouts/DynamicAdminLayout.tsx` — key prop eklenmesi
 - Varsa `DynamicUserLayout.tsx` — aynı pattern
@@ -87,6 +97,11 @@ Job silme/arşivleme için UI yok. Backend'de `is_test_data` soft-delete ve `bul
 - Tekil arşiv: satır action menüsünde "Arşivle" seçeneği
 - Toplu arşiv: toolbar'da "Seçilenleri Arşivle" butonu
 - Arşivlenmiş job'lar varsayılan listede görünmez, "Arşivlenmiş" filtresiyle gösterilebilir
+
+### Semantik Netlik
+- "Arşivle" = `is_test_data=True` set edilir (mevcut soft-delete mekanizması)
+- UI metni ile backend etkisi birebir eşleşmeli
+- Kullanıcıya tooltip/açıklama: "Bu job arşivlenir ve varsayılan listeden kaldırılır. Veriler silinmez, 'Arşivlenmiş' filtresiyle erişilebilir."
 
 ### Etkilenen Dosyalar
 - Job listesi sayfası — arşiv butonu ve onay UI
@@ -125,6 +140,12 @@ module.news_bulletin.enabled   → type: boolean, default: true
   - İlgili ayarlar (Settings sayfasına link)
   - İlgili wizard/özellik linkleri
   - Adım listesi (steps)
+
+### Backend Enforcement
+- `module.{id}.enabled=false` sadece UI gizleme değil, **backend'de de** yeni üretim engellenir
+- Job oluşturma endpoint'i modül enabled kontrolü yapar; disabled modül için 403 döner
+- Wizard API'si modül enabled kontrolü yapar
+- Bu kontrol service katmanında yapılır (router'da değil)
 
 ### Entegrasyonlar
 - Sidebar filtreleme: enabled=false modül sayfaları gizlenir
@@ -175,11 +196,15 @@ module.news_bulletin.enabled   → type: boolean, default: true
 ### Yaklaşım
 Ayrı admin sayfası. Settings Registry'den `type:"prompt"` olanları çeker.
 
-### Mevcut Prompt'lar (4 adet, hepsi news_bulletin)
-- `news_bulletin.prompt.narration_system`
-- `news_bulletin.prompt.narration_user`
-- `news_bulletin.prompt.headline_system`
-- `news_bulletin.prompt.headline_user`
+### Prompt Kapsamı
+- Bilinen 4 prompt (hepsi news_bulletin):
+  - `news_bulletin.prompt.narration_system`
+  - `news_bulletin.prompt.narration_user`
+  - `news_bulletin.prompt.headline_system`
+  - `news_bulletin.prompt.headline_user`
+- Implementasyon sırasında tüm codebase taranarak **gerçekte mevcut tüm prompt kaynakları** tespit edilecek
+- Sadece KNOWN_SETTINGS'teki 4 key ile sınırlı kalınmayacak; başka prompt kaynağı varsa dahil edilecek
+- Raporda "bulunan prompt kaynakları / eksik olanlar" dürüst listesi verilecek
 
 ### Frontend — Master Prompt Editor Sayfası
 - Route: `/admin/prompts`
