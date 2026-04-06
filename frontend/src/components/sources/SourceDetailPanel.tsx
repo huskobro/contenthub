@@ -18,9 +18,9 @@ interface SourceDetailPanelProps {
 function Field({ label, value }: { label: string; value: string | null }) {
   const blank = isBlank(value);
   return (
-    <div className="mb-2">
-      <span className="text-sm font-semibold text-neutral-600">{label}: </span>
-      <span className={cn("text-sm break-words [overflow-wrap:anywhere]", blank ? "text-neutral-500" : "text-neutral-900")}>
+    <div className="mb-1">
+      <span className="text-sm font-semibold text-neutral-500">{label}: </span>
+      <span className={cn("text-sm break-words [overflow-wrap:anywhere]", blank ? "text-neutral-600" : "text-neutral-800")}>
         {blank ? "—" : value}
       </span>
     </div>
@@ -29,7 +29,7 @@ function Field({ label, value }: { label: string; value: string | null }) {
 
 function UrlField({ label, value }: { label: string; value: string | null }) {
   return (
-    <div className="mb-2">
+    <div className="mb-1">
       <span className="text-sm font-semibold text-neutral-600">{label}: </span>
       {!isBlank(value) ? (
         <span className="text-base text-brand-700 break-all [overflow-wrap:anywhere] font-mono">
@@ -114,8 +114,8 @@ export function SourceDetailPanel({ sourceId }: SourceDetailPanelProps) {
 
   if (editMode) {
     return (
-      <div className="p-5 border border-border-subtle rounded-md bg-neutral-0">
-        <h3 className="m-0 mb-4 text-lg text-neutral-900">Düzenle: {source.name}</h3>
+      <div>
+        <h3 className="m-0 mb-4 text-lg font-semibold text-neutral-900">Düzenle: {source.name}</h3>
         <SourceForm
           initial={source}
           onSubmit={(payload: SourceCreatePayload) => {
@@ -133,9 +133,9 @@ export function SourceDetailPanel({ sourceId }: SourceDetailPanelProps) {
   }
 
   return (
-    <div className="p-5 border border-border-subtle rounded-md bg-neutral-0">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="m-0 text-lg text-neutral-900">{source.name}</h3>
+    <div>
+      <div className="flex justify-between items-center mb-2">
+        <h3 className="m-0 text-lg font-semibold text-neutral-900">{source.name}</h3>
         <div className="flex items-center gap-2">
           <button
             onClick={() => scanNow()}
@@ -168,26 +168,26 @@ export function SourceDetailPanel({ sourceId }: SourceDetailPanelProps) {
       <Field label="Source Type" value={source.source_type} />
       <Field label="Status" value={source.status} />
       <Field label="Trust Level" value={source.trust_level} />
-      <div className="mb-2 flex items-center gap-2">
-        <span className="text-sm font-semibold text-neutral-600">Scan Mode: </span>
+      <div className="mb-1 flex items-center gap-2">
+        <span className="text-sm font-semibold text-neutral-500">Scan Mode: </span>
         <ScanModeBadge scanMode={source.scan_mode} />
       </div>
       <Field label="Language" value={source.language} />
       <Field label="Category" value={source.category} />
 
-      <div className="mt-4 border-t border-neutral-100 pt-4">
+      <div className="mt-2 border-t border-border-subtle pt-2">
         <UrlField label="Base URL" value={source.base_url} />
         <UrlField label="Feed URL" value={source.feed_url} />
         <UrlField label="API Endpoint" value={source.api_endpoint} />
       </div>
 
       {!isBlank(source.notes) && (
-        <div className="mt-3 border-t border-neutral-100 pt-3">
+        <div className="mt-2 border-t border-border-subtle pt-2">
           <Field label="Notes" value={source.notes} />
         </div>
       )}
 
-      <div className="mt-3 border-t border-neutral-100 pt-3">
+      <div className="mt-2 border-t border-border-subtle pt-2">
         <Field label="Created" value={formatDateTime(source.created_at)} />
         <Field label="Updated" value={formatDateTime(source.updated_at)} />
       </div>

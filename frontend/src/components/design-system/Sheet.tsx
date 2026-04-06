@@ -116,16 +116,17 @@ export function Sheet({ open, onClose, title, children, width = "420px", testId 
         aria-label={title || "Detail panel"}
         tabIndex={-1}
         onKeyDown={handleKeyDown}
-        className="fixed top-0 right-0 bottom-0 z-modal max-w-[90vw] bg-surface-card rounded-l-xl flex flex-col outline-none overflow-hidden animate-sheet-slide-in"
+        className="fixed top-4 right-0 z-modal max-w-[90vw] bg-surface-card rounded-l-xl flex flex-col outline-none overflow-hidden animate-sheet-slide-in"
         style={{
           width,
+          maxHeight: "calc(100vh - 2rem)",
           boxShadow: "0 0 40px rgba(0,0,0,0.15), -8px 0 24px rgba(0,0,0,0.10)",
         }}
         data-testid={testId || "sheet-panel"}
       >
         {/* Header */}
         {title && (
-          <div className="flex items-center justify-between px-5 py-4 shrink-0">
+          <div className="flex items-center justify-between px-5 py-3 shrink-0">
             <h2 className="m-0 text-lg font-semibold text-neutral-900 font-heading">
               {title}
             </h2>
@@ -148,8 +149,8 @@ export function Sheet({ open, onClose, title, children, width = "420px", testId 
           />
         )}
 
-        {/* Scrollable content */}
-        <div className="flex-1 overflow-y-auto px-6 py-5">
+        {/* Content — grows with content, scrolls if exceeds max-height */}
+        <div className="overflow-y-auto px-5 py-3">
           {children}
         </div>
       </div>

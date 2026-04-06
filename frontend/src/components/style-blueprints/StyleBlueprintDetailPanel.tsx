@@ -68,7 +68,7 @@ export function StyleBlueprintDetailPanel({ blueprintId }: StyleBlueprintDetailP
     }
 
     return (
-      <div className="p-5 border border-border-subtle rounded-md bg-neutral-0">
+      <div>
         <h3 className="m-0 mb-4 text-lg text-neutral-900">Blueprint Düzenle</h3>
         <StyleBlueprintForm
           mode="edit"
@@ -84,7 +84,7 @@ export function StyleBlueprintDetailPanel({ blueprintId }: StyleBlueprintDetailP
   }
 
   return (
-    <div className="p-5 border border-border-subtle rounded-md bg-neutral-0">
+    <div>
       <div className="flex justify-between items-center mb-2">
         <h3 className="m-0 text-lg text-neutral-900" data-testid="sb-detail-heading">{blueprint.name}</h3>
         <button
@@ -107,7 +107,7 @@ export function StyleBlueprintDetailPanel({ blueprintId }: StyleBlueprintDetailP
       <Field label="Version" value={blueprint.version} />
       <Field label="Notes" value={blueprint.notes} />
 
-      <div className="mt-4 border-t border-neutral-100 pt-4">
+      <div className="mt-4 border-t border-border-subtle pt-4">
         <JsonPreviewField label="visual_rules_json" value={blueprint.visual_rules_json} />
         <JsonPreviewField label="motion_rules_json" value={blueprint.motion_rules_json} />
         <JsonPreviewField label="layout_rules_json" value={blueprint.layout_rules_json} />
@@ -116,7 +116,7 @@ export function StyleBlueprintDetailPanel({ blueprintId }: StyleBlueprintDetailP
         <JsonPreviewField label="preview_strategy_json" value={blueprint.preview_strategy_json} />
       </div>
 
-      <div className="mt-3 border-t border-neutral-100 pt-3">
+      <div className="mt-3 border-t border-border-subtle pt-3">
         <Field label="Created" value={formatDateTime(blueprint.created_at)} />
         <Field label="Updated" value={formatDateTime(blueprint.updated_at)} />
       </div>

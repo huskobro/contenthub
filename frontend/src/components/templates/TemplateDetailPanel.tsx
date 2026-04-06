@@ -79,7 +79,7 @@ export function TemplateDetailPanel({ templateId }: TemplateDetailPanelProps) {
     }
 
     return (
-      <div className="p-5 border border-border-subtle rounded-md bg-neutral-0">
+      <div>
         <h3 className="m-0 mb-4 text-lg text-neutral-900">Düzenle</h3>
         <TemplateForm
           mode="edit"
@@ -95,7 +95,7 @@ export function TemplateDetailPanel({ templateId }: TemplateDetailPanelProps) {
   }
 
   return (
-    <div className="p-5 border border-border-subtle rounded-md bg-neutral-0">
+    <div>
       <div className="flex justify-between items-start mb-2">
         <h3 className="m-0 text-lg text-neutral-900" data-testid="tpl-detail-heading">{template.name}</h3>
         <button
@@ -124,13 +124,13 @@ export function TemplateDetailPanel({ templateId }: TemplateDetailPanelProps) {
       <Field label="Version" value={template.version} />
       <Field label="Description" value={template.description} />
 
-      <div className="mt-4 border-t border-neutral-100 pt-4">
+      <div className="mt-4 border-t border-border-subtle pt-4">
         <JsonPreviewField label="style_profile_json" value={template.style_profile_json} />
         <JsonPreviewField label="content_rules_json" value={template.content_rules_json} />
         <JsonPreviewField label="publish_profile_json" value={template.publish_profile_json} />
       </div>
 
-      <div className="mt-3 border-t border-neutral-100 pt-3">
+      <div className="mt-3 border-t border-border-subtle pt-3">
         <Field label="Created" value={formatDateTime(template.created_at)} />
         <Field label="Updated" value={formatDateTime(template.updated_at)} />
       </div>

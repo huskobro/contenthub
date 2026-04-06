@@ -64,7 +64,7 @@ export function SourceScanDetailPanel({ scanId }: SourceScanDetailPanelProps) {
     }
 
     return (
-      <div className="p-5 border border-border-subtle rounded-md bg-neutral-0">
+      <div>
         <h3 className="m-0 mb-4 text-lg text-neutral-900">Scan Düzenle</h3>
         <SourceScanForm
           mode="edit"
@@ -80,7 +80,7 @@ export function SourceScanDetailPanel({ scanId }: SourceScanDetailPanelProps) {
   }
 
   return (
-    <div className="p-5 border border-border-subtle rounded-md bg-neutral-0">
+    <div>
       <div className="flex justify-between items-center mb-4">
         <h3 className="m-0 text-lg text-neutral-900">Scan Detayı</h3>
         <button
@@ -105,22 +105,22 @@ export function SourceScanDetailPanel({ scanId }: SourceScanDetailPanelProps) {
         </div>
       )}
 
-      <div className="mt-3 border-t border-neutral-100 pt-3">
+      <div className="mt-3 border-t border-border-subtle pt-3">
         <Field label="Started" value={formatDateTime(scan.started_at)} />
         <Field label="Finished" value={formatDateTime(scan.finished_at)} />
       </div>
 
-      <div className="mt-3 border-t border-neutral-100 pt-3">
+      <div className="mt-3 border-t border-border-subtle pt-3">
         <JsonPreviewField label="raw_result_preview_json" value={scan.raw_result_preview_json} />
       </div>
 
       {!isBlank(scan.notes) && (
-        <div className="mt-2 border-t border-neutral-100 pt-2">
+        <div className="mt-2 border-t border-border-subtle pt-2">
           <Field label="Notes" value={scan.notes} />
         </div>
       )}
 
-      <div className="mt-3 border-t border-neutral-100 pt-3">
+      <div className="mt-3 border-t border-border-subtle pt-3">
         <Field label="Created" value={formatDateTime(scan.created_at)} />
         <Field label="Updated" value={formatDateTime(scan.updated_at)} />
       </div>

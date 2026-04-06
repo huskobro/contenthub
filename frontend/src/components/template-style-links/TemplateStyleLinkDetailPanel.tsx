@@ -59,7 +59,7 @@ export function TemplateStyleLinkDetailPanel({ linkId }: TemplateStyleLinkDetail
     }
 
     return (
-      <div className="p-5 border border-border-subtle rounded-md bg-neutral-0">
+      <div>
         <h3 className="m-0 mb-4 text-lg text-neutral-900">Link Düzenle</h3>
         <TemplateStyleLinkForm
           mode="edit"
@@ -75,7 +75,7 @@ export function TemplateStyleLinkDetailPanel({ linkId }: TemplateStyleLinkDetail
   }
 
   return (
-    <div className="p-5 border border-border-subtle rounded-md bg-neutral-0">
+    <div>
       <div className="flex justify-between items-center mb-4">
         <h3 className="m-0 text-lg text-neutral-900" data-testid="tsl-detail-heading">Sablon-Stil Baglanti Detayı</h3>
         <button
@@ -100,7 +100,7 @@ export function TemplateStyleLinkDetailPanel({ linkId }: TemplateStyleLinkDetail
       <Field label="Status" value={link.status} />
       <Field label="Notes" value={link.notes} />
 
-      <div className="mt-3 border-t border-neutral-100 pt-3">
+      <div className="mt-3 border-t border-border-subtle pt-3">
         <Field label="Created" value={formatDateTime(link.created_at)} />
         <Field label="Updated" value={formatDateTime(link.updated_at)} />
       </div>
