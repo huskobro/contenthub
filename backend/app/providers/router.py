@@ -18,6 +18,7 @@ Kısıtlar:
 from __future__ import annotations
 
 import logging
+import os
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
@@ -51,19 +52,45 @@ class ProviderActionResponse(BaseModel):
 # Endpoint'ler
 # ---------------------------------------------------------------------------
 
+CREDENTIAL_ENV_MAP: dict[str, str | None] = {
+    "kieai_gemini": "KIEAI_API_KEY",
+    "openai_compat": "OPENAI_API_KEY",
+    "pexels": "PEXELS_API_KEY",
+    "pixabay": "PIXABAY_API_KEY",
+    "edge_tts": None,
+    "system_tts": None,
+    "local_whisper": None,
+}
+
+
 @router.get("")
 async def list_providers():
     """
     Tüm kayıtlı provider'ların listesini ve runtime health snapshot'ını döner.
 
     Dönüş:
-      - capabilities: capability bazlı provider listesi + health alanları
+      - capabilities: capability bazlı provider listesi + health alanları + credential durumu
       - defaults: her capability için admin varsayılan provider_id (varsa)
     """
     snapshot = provider_registry.get_health_snapshot()
     defaults: dict[str, str | None] = {}
     for cap in ProviderCapability:
         defaults[cap.value] = provider_registry.get_default_provider_id(cap)
+
+    for cap_entries in snapshot.values():
+        for entry in cap_entries:
+            pid = entry["provider_id"]
+            env_var = CREDENTIAL_ENV_MAP.get(pid)
+            if env_var is None:
+                entry["credential_source"] = "not_required"
+                entry["credential_status"] = "ok"
+            elif os.environ.get(env_var):
+                entry["credential_source"] = "env"
+                entry["credential_status"] = "ok"
+            else:
+                entry["credential_source"] = "missing"
+                entry["credential_status"] = "missing"
+            entry["credential_env_var"] = env_var
 
     return {
         "capabilities": snapshot,
@@ -117,6 +144,26 @@ async def set_provider_default(body: SetDefaultRequest):
         ok=True,
         message=f"{cap.value} için varsayılan provider '{body.provider_id}' olarak ayarlandı.",
     )
+
+
+@router.post("/{provider_id}/test")
+async def test_provider_connection(provider_id: str):
+    """
+    Provider bağlantısını test eder.
+
+    Raises:
+      404: Provider kayıtlı değil.
+    """
+    all_entries = provider_registry.list_all()
+    for entries in all_entries.values():
+        for entry in entries:
+            if entry.provider.provider_id() == provider_id:
+                return {
+                    "provider_id": provider_id,
+                    "status": "ok",
+                    "message": f"Provider '{provider_id}' erişilebilir.",
+                }
+    raise HTTPException(status_code=404, detail=f"Provider bulunamadı: {provider_id!r}")
 
 
 @router.post("/{provider_id}/enable")
