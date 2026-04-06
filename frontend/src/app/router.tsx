@@ -4,6 +4,8 @@ import { DynamicAdminLayout } from "./layouts/DynamicAdminLayout";
 import { DynamicUserLayout } from "./layouts/DynamicUserLayout";
 import { AppEntryGate } from "./AppEntryGate";
 import { OnboardingPage } from "../pages/OnboardingPage";
+import { NotFoundPage } from "../pages/NotFoundPage";
+import { RootErrorBoundary } from "../components/RootErrorBoundary";
 import { AdminOverviewPage } from "../pages/AdminOverviewPage";
 import { UserDashboardPage } from "../pages/UserDashboardPage";
 import { UserContentEntryPage } from "../pages/UserContentEntryPage";
@@ -31,6 +33,9 @@ import { TemplateStyleLinksRegistryPage } from "../pages/admin/TemplateStyleLink
 import { TemplateStyleLinkCreatePage } from "../pages/admin/TemplateStyleLinkCreatePage";
 import { YouTubeCallbackPage } from "../pages/admin/YouTubeCallbackPage";
 import { VisibilityGuard } from "../components/visibility/VisibilityGuard";
+import { ModuleManagementPage } from "../pages/admin/ModuleManagementPage";
+import { ProviderManagementPage } from "../pages/admin/ProviderManagementPage";
+import { PromptEditorPage } from "../pages/admin/PromptEditorPage";
 
 // ---------------------------------------------------------------------------
 // Lazy-loaded pages (heavy admin pages > 150 lines, code-split for perf)
@@ -60,14 +65,17 @@ export const router = createBrowserRouter([
   {
     path: "/",
     element: <AppEntryGate />,
+    errorElement: <RootErrorBoundary />,
   },
   {
     path: "/onboarding",
     element: <OnboardingPage />,
+    errorElement: <RootErrorBoundary />,
   },
   {
     path: "/admin",
     element: <DynamicAdminLayout />,
+    errorElement: <RootErrorBoundary />,
     children: [
       { index: true, element: <AdminOverviewPage /> },
       { path: "settings", element: <VisibilityGuard targetKey="panel:settings"><SettingsRegistryPage /></VisibilityGuard> },
@@ -107,16 +115,24 @@ export const router = createBrowserRouter([
       { path: "publish/:recordId", element: <VisibilityGuard targetKey="panel:publish"><Suspense fallback={<LazyFallback />}><PublishDetailPage /></Suspense></VisibilityGuard> },
       { path: "audit-logs", element: <VisibilityGuard targetKey="panel:audit-logs"><Suspense fallback={<LazyFallback />}><AuditLogPage /></Suspense></VisibilityGuard> },
       { path: "themes", element: <Suspense fallback={<LazyFallback />}><ThemeRegistryPage /></Suspense> },
+      { path: "modules", element: <ModuleManagementPage /> },
+      { path: "providers", element: <ProviderManagementPage /> },
+      { path: "prompts", element: <PromptEditorPage /> },
       { path: "settings/youtube-callback", element: <YouTubeCallbackPage /> },
     ],
   },
   {
     path: "/user",
     element: <DynamicUserLayout />,
+    errorElement: <RootErrorBoundary />,
     children: [
       { index: true, element: <UserDashboardPage /> },
       { path: "content", element: <UserContentEntryPage /> },
       { path: "publish", element: <UserPublishEntryPage /> },
     ],
+  },
+  {
+    path: "*",
+    element: <NotFoundPage />,
   },
 ]);
