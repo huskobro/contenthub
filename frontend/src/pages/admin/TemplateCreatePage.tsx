@@ -34,11 +34,8 @@ export function TemplateCreatePage() {
       <h2 className="m-0 mb-2 text-xl font-semibold" data-testid="tpl-create-heading">
         Yeni Sablon
       </h2>
-      <p className="m-0 mb-5 text-md text-neutral-600 leading-relaxed max-w-[640px]" data-testid="tpl-create-subtitle">
-        Sablon yapilandirma akisinin baslangic noktasi. Icerik, stil veya yayin
-        sablonu olusturarak uretim hattinda kullanilacak yapi taslarini tanimlayin.
-        Sablonlar style blueprint'lerle iliskilendirilerek gorsel ve yapisal
-        kurallar belirlenir.
+      <p className="m-0 mb-3 text-xs text-neutral-400" data-testid="tpl-create-subtitle">
+        Icerik, stil veya yayin sablonu olusturun. Blueprint'lerle iliskilendirilerek gorsel kurallar belirlenir.
       </p>
       <TemplateForm
         mode="create"

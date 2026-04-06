@@ -88,13 +88,13 @@ describe("YouTube Analytics Pack (Phase 293-298)", () => {
     it("analytics overview shows subtitle", () => {
       renderAt("/admin/analytics");
       const sub = screen.getByTestId("analytics-overview-subtitle");
-      expect(sub.textContent).toContain("performans gorunurlugu");
+      expect(sub.textContent).toContain("metrikler");
     });
 
     it("analytics overview shows workflow note", () => {
       renderAt("/admin/analytics");
       const note = screen.getByTestId("analytics-overview-workflow-note");
-      expect(note.textContent).toContain("Uretim Tamamlama");
+      expect(note.textContent).toContain("Platform Metrikleri");
       expect(note.textContent).toContain("Icerik Performansi");
     });
   });
@@ -161,7 +161,7 @@ describe("YouTube Analytics Pack (Phase 293-298)", () => {
     it("content analytics shows workflow note with video detail reference", () => {
       renderAt("/admin/analytics/content");
       const note = screen.getByTestId("analytics-content-workflow-note");
-      expect(note.textContent).toContain("standard video detay sayfasina");
+      expect(note.textContent).toContain("Modul Dagilimi");
     });
 
     it("content analytics has window selector (M18-B)", () => {
@@ -236,9 +236,10 @@ describe("YouTube Analytics Pack (Phase 293-298)", () => {
       expect(screen.getByTestId("filter-date-end")).toBeDefined();
     });
 
-    it("filter inactive note is shown when no date range (M17-B)", () => {
+    it("filter area is shown when no date range (M17-B)", () => {
       renderAt("/admin/analytics");
-      expect(screen.getByTestId("filter-inactive-note").textContent).toContain("zaman penceresi");
+      expect(screen.getByTestId("analytics-filter-area")).toBeDefined();
+      expect(screen.getByTestId("filter-date-start")).toBeDefined();
     });
   });
 

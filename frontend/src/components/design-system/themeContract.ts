@@ -341,10 +341,10 @@ export const DEFAULT_THEME: ThemeManifest = {
 
   layout: {
     sidebarWidth: "248px", sidebarCollapsedWidth: "56px",
-    headerHeight: "54px", pageMaxWidth: "1320px", pagePadding: "1.75rem",
+    headerHeight: "46px", pageMaxWidth: "1320px", pagePadding: "1.25rem",
   },
 
-  density: "comfortable",
+  density: "compact",
 };
 
 // ---------------------------------------------------------------------------

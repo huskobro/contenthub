@@ -29,10 +29,8 @@ export function TemplateStyleLinkCreatePage() {
       <h2 className="m-0 mb-2 text-xl font-semibold" data-testid="tsl-create-heading">
         Yeni Sablon-Stil Baglantisi
       </h2>
-      <p className="m-0 mb-5 text-md text-neutral-600 leading-relaxed max-w-[640px]" data-testid="tsl-create-subtitle">
-        Bir sablon ile style blueprint arasinda baglanti olusturun. Bu baglanti
-        sablonun hangi gorsel kurallarla calisacagini belirler. Birincil, yedek
-        veya deneysel rol atayabilirsiniz.
+      <p className="m-0 mb-3 text-xs text-neutral-400" data-testid="tsl-create-subtitle">
+        Sablon-blueprint baglantisi olusturun. Birincil, yedek veya deneysel rol atayin.
       </p>
       <TemplateStyleLinkForm
         mode="create"

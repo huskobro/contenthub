@@ -23,6 +23,8 @@ const MOCK_JOB: JobResponse = {
   created_at: "2026-04-01T10:00:00Z",
   started_at: "2026-04-01T10:00:05Z",
   finished_at: null,
+  elapsed_seconds: null,
+  eta_seconds: null,
   updated_at: "2026-04-01T10:01:30Z",
   steps: [
     {
@@ -45,6 +47,8 @@ const MOCK_JOB: JobResponse = {
       }),
       log_text: null,
       elapsed_seconds: 90,
+      elapsed_seconds_live: null,
+      eta_seconds: null,
       last_error: null,
       created_at: "2026-04-01T10:00:05Z",
       started_at: "2026-04-01T10:00:05Z",

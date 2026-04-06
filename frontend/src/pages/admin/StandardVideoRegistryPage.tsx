@@ -25,10 +25,8 @@ export function StandardVideoRegistryPage() {
         </ActionButton>
       }
     >
-      <p className="m-0 mb-5 text-sm text-neutral-500 leading-normal max-w-[640px]" data-testid="sv-registry-workflow-note">
-        Standart video kayitlarini buradan goruntuleyebilir ve yonetebilirsiniz.
-        Bir kayda tiklayarak detay sayfasina gidebilir, duzenleyebilir ve
-        uretim durumunu takip edebilirsiniz.
+      <p className="m-0 mb-3 text-xs text-neutral-400" data-testid="sv-registry-workflow-note">
+        Video kayitlarini goruntuleyin. Kayda tiklayarak detay ve uretim durumunu takip edin.
       </p>
 
       <SectionShell flush testId="sv-registry-table-section">

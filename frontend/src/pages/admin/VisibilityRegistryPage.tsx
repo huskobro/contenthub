@@ -12,15 +12,11 @@ export function VisibilityRegistryPage() {
   return (
     <ReadOnlyGuard targetKey="panel:visibility">
     <PageShell title="Gorunurluk Kurallari" testId="visibility-registry">
-      <p className="mt-1 mb-2 text-base text-neutral-500 leading-normal max-w-[640px]" data-testid="visibility-registry-subtitle">
-        Sistemde tanimli gorunurluk kurallarinin listesi ve detaylari. Kurallar
-        hangi alanlarin, widgetlarin ve wizard adimlarinin gorulecegini belirler.
+      <p className="mt-0 mb-2 text-xs text-neutral-400" data-testid="visibility-registry-subtitle">
+        Alan, widget ve wizard adimi gorunurluk kurallari. Kural secerek detay panelinde governance durumunu gorebilirsiniz.
       </p>
-      <p className="m-0 mb-4 text-base text-neutral-500 leading-normal max-w-[640px]" data-testid="visibility-registry-workflow-note">
-        Gorunurluk kontrol zinciri: Kural Tanimlama &rarr; Hedef Belirleme &rarr;
-        Rol/Mod Kapsami &rarr; Görünür/Salt-Okunur/Wizard Durumu. Bir kural
-        sectiginizde detay panelinde governance durumunu gorebilirsiniz.
-        Ayar duzeyinde governance icin Ayarlar sayfasini kullanin.
+      <p className="m-0 mb-3 text-xs text-neutral-400" data-testid="visibility-registry-workflow-note">
+        Kural Tanimlama &rarr; Hedef Belirleme &rarr; Rol/Mod Kapsami &rarr; Gorunur/Salt-Okunur/Wizard
       </p>
 
       <div className="flex gap-6 items-start">

@@ -29,6 +29,8 @@ const MOCK_JOBS: JobResponse[] = [
     created_at: "2026-04-01T10:00:00Z",
     started_at: null,
     finished_at: null,
+    elapsed_seconds: null,
+    eta_seconds: null,
     updated_at: "2026-04-01T10:00:00Z",
     steps: [],
   },
@@ -48,6 +50,8 @@ const MOCK_JOBS: JobResponse[] = [
     created_at: "2026-04-01T11:00:00Z",
     started_at: "2026-04-01T11:00:05Z",
     finished_at: "2026-04-01T11:01:35Z",
+    elapsed_seconds: null,
+    eta_seconds: null,
     updated_at: "2026-04-01T11:01:35Z",
     steps: [
       {
@@ -60,6 +64,8 @@ const MOCK_JOBS: JobResponse[] = [
         provider_trace_json: null,
         log_text: null,
         elapsed_seconds: 90,
+        elapsed_seconds_live: null,
+        eta_seconds: null,
         last_error: "TTS provider timeout",
         created_at: "2026-04-01T11:00:05Z",
         started_at: "2026-04-01T11:00:05Z",
@@ -142,7 +148,7 @@ describe("Phase 310 — Batch operations entry surface", () => {
     const subtitle = screen.getByTestId("jobs-registry-subtitle");
     expect(subtitle).toBeDefined();
     expect(subtitle.textContent).toContain("kuyruk");
-    expect(subtitle.textContent).toContain("toplu");
+    expect(subtitle.textContent).toContain("operasyonlar");
   });
 
   it("jobs registry has heading with testid", () => {
@@ -162,7 +168,7 @@ describe("Phase 311 — Queue/job batch control flow", () => {
     window.fetch = mockFetch(() => MOCK_JOBS);
     renderAt("/admin/jobs");
     const note = screen.getByTestId("jobs-registry-workflow-note");
-    expect(note.textContent).toContain("Kuyruga Alma");
+    expect(note.textContent).toContain("Kuyruk");
     expect(note.textContent).toContain("Adim Isleme");
     expect(note.textContent).toContain("Tamamlama");
   });
@@ -171,9 +177,9 @@ describe("Phase 311 — Queue/job batch control flow", () => {
     window.fetch = mockFetch(() => MOCK_JOBS);
     renderAt("/admin/jobs");
     const note = screen.getByTestId("jobs-registry-workflow-note");
-    expect(note.textContent).toContain("retry");
-    expect(note.textContent).toContain("cancel");
-    expect(note.textContent).toContain("skip");
+    expect(note.textContent).toContain("Yayin");
+    expect(note.textContent).toContain("gezin");
+    expect(note.textContent).toContain("Enter");
   });
 
   it("job overview panel shows Turkish labels for queue context", async () => {

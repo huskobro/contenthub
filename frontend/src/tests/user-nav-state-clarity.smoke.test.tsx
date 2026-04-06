@@ -52,7 +52,7 @@ describe("User panel navigation state clarity", () => {
     it("shows section identity in context note", async () => {
       renderAt("/user");
       const note = await screen.findByTestId("dashboard-context-note");
-      expect(note.textContent).toContain("Baslangic ve takip merkezi");
+      expect(note.textContent).toContain("Icerik akisini baslatin");
     });
 
     it("sidebar Anasayfa link is active", () => {
@@ -72,7 +72,7 @@ describe("User panel navigation state clarity", () => {
     it("shows section identity in subtitle", () => {
       renderAt("/user/content");
       const subtitle = screen.getByTestId("content-section-subtitle");
-      expect(subtitle.textContent).toContain("Icerik uretim merkezi");
+      expect(subtitle.textContent).toContain("Adim adim rehberlik ile yeni icerik olusturun");
     });
 
     it("sidebar Icerik link is active", () => {
@@ -92,7 +92,7 @@ describe("User panel navigation state clarity", () => {
     it("shows section identity in subtitle", () => {
       renderAt("/user/publish");
       const subtitle = screen.getByTestId("publish-section-subtitle");
-      expect(subtitle.textContent).toContain("Yayin ve dagitim merkezi");
+      expect(subtitle.textContent).toContain("Icerik yayin durumunu takip edin");
     });
 
     it("sidebar Yayin link is active", () => {

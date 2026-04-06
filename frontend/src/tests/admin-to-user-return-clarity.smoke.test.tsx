@@ -53,15 +53,15 @@ describe("Admin to user return landing clarity", () => {
   it("shows context note on user dashboard for completed onboarding", async () => {
     renderAt("/user");
     expect(await screen.findByTestId("dashboard-context-note")).toBeDefined();
-    expect(screen.getByText(/Baslangic ve takip merkezi/)).toBeDefined();
+    expect(screen.getByText(/Icerik akisini baslatin/)).toBeDefined();
   });
 
   it("context note explains available actions", async () => {
     renderAt("/user");
     const note = await screen.findByTestId("dashboard-context-note");
-    expect(note.textContent).toContain("Icerik akisinizi");
-    expect(note.textContent).toContain("yayin durumunu takip");
-    expect(note.textContent).toContain("yonetim paneline gecebilirsiniz");
+    expect(note.textContent).toContain("Icerik akisini baslatin");
+    expect(note.textContent).toContain("yayin durumunu takip edin");
+    expect(note.textContent).toContain("yonetim paneline gecin");
   });
 
   it("does not show context note when onboarding is incomplete", () => {

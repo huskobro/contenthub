@@ -35,13 +35,11 @@ export function NewsBulletinCreatePage() {
       <h2 className="text-xl font-semibold mb-2" data-testid="nb-create-heading">
         Yeni Haber Bulteni
       </h2>
-      <p className="m-0 mb-5 text-md text-neutral-600 leading-relaxed max-w-[640px]" data-testid="nb-create-subtitle">
-        Haber bulteni uretim akisinin baslangic noktasi. Konu ve temel bilgileri
-        girerek yeni bir bulten kaydi olusturun. Kaynaklardan gelen haberler
-        secilerek bulten taslagi, script ve metadata adimlari ilerleyecektir.
+      <p className="m-0 mb-2 text-xs text-neutral-400" data-testid="nb-create-subtitle">
+        Konu ve temel bilgileri girerek yeni bulten kaydi olusturun.
       </p>
-      <p className="m-0 mb-5 text-base text-neutral-500 leading-normal max-w-[640px]" data-testid="nb-create-workflow-chain">
-        Uretim zinciri: Kaynak Tarama &rarr; Haber Secimi &rarr; Bulten Kaydi &rarr; Script &rarr; Metadata &rarr; Uretim.
+      <p className="m-0 mb-3 text-xs text-neutral-400" data-testid="nb-create-workflow-chain">
+        Kaynak Tarama &rarr; Haber Secimi &rarr; Bulten &rarr; Script &rarr; Metadata &rarr; Uretim
       </p>
       {mutation.isError && (
         <p className="text-error">Hata: kayıt oluşturulamadı.</p>

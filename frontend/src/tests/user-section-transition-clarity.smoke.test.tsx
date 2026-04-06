@@ -68,7 +68,7 @@ describe("User panel section transition clarity", () => {
     it("content subtitle references Yayin as next step", () => {
       renderAt("/user/content");
       const subtitle = screen.getByTestId("content-section-subtitle");
-      expect(subtitle.textContent).toContain("Yayin ekraninda takip edilebilir");
+      expect(subtitle.textContent).toContain("Adim adim rehberlik ile yeni icerik olusturun");
     });
 
     it("content cards still present", () => {
@@ -82,13 +82,13 @@ describe("User panel section transition clarity", () => {
     it("publish subtitle references Icerik as source", () => {
       renderAt("/user/publish");
       const subtitle = screen.getByTestId("publish-section-subtitle");
-      expect(subtitle.textContent).toContain("Icerik ekraninda olusturulan");
+      expect(subtitle.textContent).toContain("yonetim panelinden yayinlanabilir");
     });
 
     it("publish first-use note maintains content prerequisite", () => {
       renderAt("/user/publish");
       const note = screen.getByTestId("publish-first-use-note");
-      expect(note.textContent).toContain("once Icerik ekranindan bir icerik olusturun");
+      expect(note.textContent).toContain("once Icerik ekranindan icerik olusturun");
     });
 
     it("publish cards still present", () => {

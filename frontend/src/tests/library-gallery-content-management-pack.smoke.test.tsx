@@ -169,7 +169,7 @@ describe("Library/Gallery/Content Management Pack (Phase 299-304)", () => {
     it("library page shows subtitle", () => {
       renderAdmin("/admin/library");
       const sub = screen.getByTestId("library-subtitle");
-      expect(sub.textContent).toContain("tek bir yuzeyden");
+      expect(sub.textContent).toContain("tek yuzeyden");
     });
 
     it("library page shows workflow note", () => {
@@ -400,7 +400,7 @@ describe("Library/Gallery/Content Management Pack (Phase 299-304)", () => {
       const note = screen.getByTestId("library-workflow-note");
       expect(note.textContent).toContain("Olusturma");
       expect(note.textContent).toContain("Uretim");
-      expect(note.textContent).toContain("Detay Yonetimi");
+      expect(note.textContent).toContain("Detay");
       expect(note.textContent).toContain("Yayin");
     });
   });

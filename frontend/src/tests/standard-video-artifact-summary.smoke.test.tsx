@@ -98,6 +98,8 @@ const mockVideo = (overrides: object = {}) => ({
   updated_at: "2026-04-02T10:00:00Z",
   has_script: true,
   has_metadata: false,
+  template_id: null,
+  style_blueprint_id: null,
   ...overrides,
 });
 

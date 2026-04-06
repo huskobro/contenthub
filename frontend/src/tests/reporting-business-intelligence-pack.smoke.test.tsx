@@ -83,15 +83,15 @@ describe("Phase 314 — Reporting entry surface", () => {
   it("analytics overview subtitle includes reporting context", () => {
     renderAt("/admin/analytics");
     const sub = screen.getByTestId("analytics-overview-subtitle");
-    expect(sub.textContent).toContain("raporlama");
-    expect(sub.textContent).toContain("karar destek");
+    expect(sub.textContent).toContain("metrikler");
+    expect(sub.textContent).toContain("performansi");
   });
 
   it("analytics overview workflow note describes reporting chain", () => {
     renderAt("/admin/analytics");
     const note = screen.getByTestId("analytics-overview-workflow-note");
-    expect(note.textContent).toContain("Raporlama zinciri");
-    expect(note.textContent).toContain("Karar Destek Ozeti");
+    expect(note.textContent).toContain("Platform Metrikleri");
+    expect(note.textContent).toContain("Operasyonel Saglik");
   });
 
   it("analytics overview has reporting distinction note", () => {
@@ -125,13 +125,13 @@ describe("Phase 315 — Operational metrics visibility", () => {
   it("operations page subtitle includes reporting context", () => {
     renderAt("/admin/analytics/operations");
     const sub = screen.getByTestId("analytics-operations-subtitle");
-    expect(sub.textContent).toContain("operasyonel saglik raporunun");
+    expect(sub.textContent).toContain("Is basari");
   });
 
   it("operations page workflow note describes report chain", () => {
     renderAt("/admin/analytics/operations");
     const note = screen.getByTestId("analytics-operations-workflow-note");
-    expect(note.textContent).toContain("Operasyonel rapor zinciri");
+    expect(note.textContent).toContain("Is Basari");
     expect(note.textContent).toContain("Karar Noktasi");
   });
 
@@ -176,23 +176,23 @@ describe("Phase 316 — Usage/performance summary", () => {
   it("content page subtitle includes usage/performance summary context", () => {
     renderAt("/admin/analytics/content");
     const sub = screen.getByTestId("analytics-content-subtitle");
-    expect(sub.textContent).toContain("kullanim ve performans ozetinin");
+    expect(sub.textContent).toContain("Video bazinda");
   });
 
   it("content page workflow note describes usage/performance report chain", () => {
     renderAt("/admin/analytics/content");
     const note = screen.getByTestId("analytics-content-workflow-note");
-    expect(note.textContent).toContain("Kullanim/performans rapor zinciri");
-    expect(note.textContent).toContain("Verimlilik Ozeti");
+    expect(note.textContent).toContain("Modul Dagilimi");
+    expect(note.textContent).toContain("Verimlilik");
   });
 
-  it("content page module distribution note mentions decision support", async () => {
+  it("content page module distribution note is present", async () => {
     renderAt("/admin/analytics/content");
     await waitFor(() => {
       expect(screen.getByTestId("module-distribution-note")).toBeDefined();
     });
     const note = screen.getByTestId("module-distribution-note");
-    expect(note.textContent).toContain("verimlilik karari");
+    expect(note.textContent).toContain("modullere gore dagilimi");
   });
 
   it("analytics overview channel overview note mentions YouTube (M17-C)", () => {
@@ -270,6 +270,6 @@ describe("Phase 317 — Reporting end-to-end verification", () => {
     renderAt("/admin/analytics");
     const note = screen.getByTestId("analytics-reporting-distinction");
     expect(note.textContent).toContain("canli metrikleri");
-    expect(note.textContent).toContain("ozetleyici");
+    expect(note.textContent).toContain("karar destekleyici");
   });
 });

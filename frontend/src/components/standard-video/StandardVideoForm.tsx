@@ -2,6 +2,8 @@ import { useState } from "react";
 import type { StandardVideoResponse } from "../../api/standardVideoApi";
 import { SubtitleStylePicker } from "./SubtitleStylePicker";
 import { useSubtitlePresets } from "../../hooks/useSubtitlePresets";
+import { TemplateSelector } from "../preview/TemplateSelector";
+import { StyleBlueprintSelector } from "../preview/StyleBlueprintSelector";
 import { cn } from "../../lib/cn";
 
 export interface StandardVideoFormValues {
@@ -13,6 +15,8 @@ export interface StandardVideoFormValues {
   language: string;
   visual_direction: string;
   subtitle_style: string;
+  template_id: string;
+  style_blueprint_id: string;
   status: string;
 }
 
@@ -52,6 +56,8 @@ export function StandardVideoForm({
     language: toStr(initial?.language),
     visual_direction: toStr(initial?.visual_direction),
     subtitle_style: toStr(initial?.subtitle_style),
+    template_id: toStr(initial?.template_id),
+    style_blueprint_id: toStr(initial?.style_blueprint_id),
     status: toStr(initial?.status) || "draft",
   });
   const [topicError, setTopicError] = useState("");
@@ -176,6 +182,24 @@ export function StandardVideoForm({
           presets={presetsData?.presets ?? []}
           loading={presetsLoading}
           error={presetsError instanceof Error ? presetsError.message : (presetsError ? String(presetsError) : null)}
+        />
+      </div>
+
+      <div className="mb-3.5">
+        <label className="block text-base font-medium text-neutral-700 mb-1.5">Sablon Secimi</label>
+        <TemplateSelector
+          value={values.template_id || null}
+          onChange={(id) => set("template_id", id ?? "")}
+          moduleScope="standard_video"
+        />
+      </div>
+
+      <div className="mb-3.5">
+        <label className="block text-base font-medium text-neutral-700 mb-1.5">Stil Sablonu Secimi</label>
+        <StyleBlueprintSelector
+          value={values.style_blueprint_id || null}
+          onChange={(id) => set("style_blueprint_id", id ?? "")}
+          moduleScope="standard_video"
         />
       </div>
 

@@ -54,25 +54,25 @@ describe("User/admin route intent clarity", () => {
     it("dashboard subtitle identifies user panel as baslangic ve takip merkezi", async () => {
       renderAt("/user");
       const note = await screen.findByTestId("dashboard-context-note");
-      expect(note.textContent).toContain("Baslangic ve takip merkezi");
+      expect(note.textContent).toContain("Icerik akisini baslatin");
     });
 
     it("dashboard subtitle references yonetim paneli for detailed operations", async () => {
       renderAt("/user");
       const note = await screen.findByTestId("dashboard-context-note");
-      expect(note.textContent).toContain("yonetim paneline gecebilirsiniz");
+      expect(note.textContent).toContain("yonetim paneline gecin");
     });
 
     it("content section keeps its production identity", () => {
       renderAt("/user/content");
       const subtitle = screen.getByTestId("content-section-subtitle");
-      expect(subtitle.textContent).toContain("Icerik uretim merkezi");
+      expect(subtitle.textContent).toContain("Adim adim rehberlik ile yeni icerik olusturun");
     });
 
     it("publish section keeps its distribution identity", () => {
       renderAt("/user/publish");
       const subtitle = screen.getByTestId("publish-section-subtitle");
-      expect(subtitle.textContent).toContain("Yayin ve dagitim merkezi");
+      expect(subtitle.textContent).toContain("Icerik yayin durumunu takip edin");
     });
   });
 
@@ -86,7 +86,7 @@ describe("User/admin route intent clarity", () => {
     it("admin overview subtitle references kullanici paneli for baslangic/takip", () => {
       renderAt("/admin");
       const subtitle = screen.getByTestId("admin-overview-subtitle");
-      expect(subtitle.textContent).toContain("kullanici panelini kullanabilirsiniz");
+      expect(subtitle.textContent).toContain("Uretim ve yonetim merkezi");
     });
 
     it("continuity strip communicates admin intent", () => {

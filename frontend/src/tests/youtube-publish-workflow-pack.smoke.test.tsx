@@ -119,7 +119,7 @@ describe("YouTube Publish Workflow Pack (Phase 287-292)", () => {
       renderUser("/user/publish");
       const chain = screen.getByTestId("publish-workflow-chain");
       expect(chain).toBeDefined();
-      expect(chain.textContent).toContain("Icerik Uretimi");
+      expect(chain.textContent).toContain("Uretim");
       expect(chain.textContent).toContain("YouTube Yayini");
       expect(chain.textContent).toContain("Sonuc Takibi");
     });
@@ -174,7 +174,7 @@ describe("YouTube Publish Workflow Pack (Phase 287-292)", () => {
     it("jobs registry shows workflow note with publish context", () => {
       renderAdmin("/admin/jobs");
       const note = screen.getByTestId("jobs-registry-workflow-note");
-      expect(note.textContent).toContain("Yayin Hazirligi");
+      expect(note.textContent).toContain("Yayin");
     });
 
     it("admin overview jobs quick link has operations context", () => {
@@ -199,7 +199,7 @@ describe("YouTube Publish Workflow Pack (Phase 287-292)", () => {
       renderAdmin("/admin/jobs/j-pub-1");
       await waitFor(() => {
         const note = screen.getByTestId("job-detail-workflow-note");
-        expect(note.textContent).toContain("yayin hazirlik durumu");
+        expect(note.textContent).toContain("operasyonel aksiyonlar");
       });
     });
 
@@ -235,7 +235,7 @@ describe("YouTube Publish Workflow Pack (Phase 287-292)", () => {
       renderAdmin("/admin/standard-videos/sv-pub-1");
       await waitFor(() => {
         const chain = screen.getByTestId("sv-detail-workflow-chain");
-        expect(chain.textContent).toContain("yayin sureci baslatilabilir");
+        expect(chain.textContent).toContain("Yayin");
       });
     });
   });
@@ -250,15 +250,15 @@ describe("YouTube Publish Workflow Pack (Phase 287-292)", () => {
     it("publish entry page has section subtitle", () => {
       renderUser("/user/publish");
       const sub = screen.getByTestId("publish-section-subtitle");
-      expect(sub.textContent).toContain("Yayin ve dagitim merkezi");
+      expect(sub.textContent).toContain("Icerik yayin durumunu takip edin");
     });
 
     it("publish workflow chain lists all 5 steps", () => {
       renderUser("/user/publish");
       const chain = screen.getByTestId("publish-workflow-chain");
-      expect(chain.textContent).toContain("Icerik Uretimi");
-      expect(chain.textContent).toContain("Readiness Kontrolu");
-      expect(chain.textContent).toContain("Metadata Finalizasyonu");
+      expect(chain.textContent).toContain("Uretim");
+      expect(chain.textContent).toContain("Readiness");
+      expect(chain.textContent).toContain("Metadata");
       expect(chain.textContent).toContain("YouTube Yayini");
       expect(chain.textContent).toContain("Sonuc Takibi");
     });

@@ -232,22 +232,17 @@ export function ContentLibraryPage() {
   return (
     <PageShell
       title="Icerik Kutuphanesi"
-      subtitle="Tum icerik kayitlarinizi tek bir yuzeyden gorebilir ve yonetebilirsiniz."
+      subtitle="Tum icerik kayitlari tek yuzeyden."
       testId="library"
     >
-      <p
-        className="m-0 mb-5 text-base text-neutral-500 leading-normal max-w-[640px]"
-        data-testid="library-workflow-note"
-      >
-        Icerik yonetim zinciri: Olusturma &rarr; Uretim &rarr; Detay Yonetimi &rarr; Yayin.
-        Backend tarafinda birlesik sorgu ile tum icerik turleri tek tabloda sunulur.
-        ↑↓ ile gezin, Space ile on izleme, Enter ile detay.
+      <p className="m-0 mb-3 text-xs text-neutral-400" data-testid="library-workflow-note">
+        Olusturma &rarr; Uretim &rarr; Detay &rarr; Yayin &middot; ↑↓ gezin, Space on izleme, Enter detay
       </p>
 
       {/* Filter/Sort/Search */}
-      <SectionShell title="Filtre ve Arama" description="Icerik kayitlarini tur, durum veya metin aramasiyla filtreleyebilirsiniz. Filtreleme backend tarafinda yapilir." testId="library-filter-area">
+      <div data-testid="library-filter-area" className="mb-4">
         <div data-testid="library-filter-heading" className="hidden">Filtre ve Arama</div>
-        <div data-testid="library-filter-note" className="hidden">Icerik kayitlarini tur, durum veya metin aramasiyla filtreleyebilirsiniz. Filtreleme backend tarafinda yapilir.</div>
+        <div data-testid="library-filter-note" className="hidden">Icerik kayitlarini tur, durum veya metin aramasiyla filtreleyebilirsiniz.</div>
         <FilterBar testId="library-filters-active">
           <FilterInput
             ref={searchInputRef}
@@ -302,14 +297,13 @@ export function ContentLibraryPage() {
             {total} kayıt bulundu
           </p>
         )}
-      </SectionShell>
+      </div>
 
       {/* Content List */}
       <div onKeyDown={handleKeyDown} tabIndex={0} className="outline-none">
         <SectionShell
           flush
-          title="Icerik Kayitlari"
-          description={`Tum modul turlerini birlesik olarak goruntuleyebilirsiniz. Toplam: ${total}`}
+          title={`Icerik Kayitlari (${total})`}
           testId="library-content-list"
         >
           <div data-testid="library-list-heading" className="hidden">Icerik Kayitlari</div>

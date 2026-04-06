@@ -207,7 +207,7 @@ export function AnalyticsOperationsPage() {
   return (
     <PageShell
       title="Operasyon Metrikleri"
-      subtitle="Is basari orani, uretim suresi, yeniden deneme ve adim bazli detaylari buradan inceleyebilirsiniz. Bu sayfa operasyonel saglik raporunun temelini olusturur."
+      subtitle="Is basari, uretim suresi, retry ve adim bazli detaylar."
       breadcrumb={[
         { label: "Analytics", to: "/admin/analytics" },
         { label: "Operasyon Metrikleri" },
@@ -215,13 +215,8 @@ export function AnalyticsOperationsPage() {
       testId="analytics-operations"
     >
       <a href="/admin/analytics" rel="noopener" className="absolute w-px h-px overflow-hidden [clip:rect(0,0,0,0)]">{"\u2190"} Analytics'e don</a>
-      <p
-        className="m-0 mb-6 text-base text-neutral-500 leading-normal max-w-[640px]"
-        data-testid="analytics-operations-workflow-note"
-      >
-        Operasyonel rapor zinciri: Is Basari Orani &rarr; Retry/Hata Dagilimi &rarr;
-        Provider Sagligi &rarr; Kaynak Etkisi &rarr; Karar Noktasi. Yuksek retry orani
-        veya provider hata orani sistemde dikkat gerektiren alanlari isaret eder.
+      <p className="m-0 mb-3 text-xs text-neutral-400" data-testid="analytics-operations-workflow-note">
+        Is Basari &rarr; Retry/Hata &rarr; Provider Sagligi &rarr; Kaynak Etkisi &rarr; Karar Noktasi
       </p>
 
       {/* Window Selector */}
@@ -242,7 +237,7 @@ export function AnalyticsOperationsPage() {
       )}
 
       {/* Job Performance */}
-      <SectionShell title="Is Performansi" description="Uretim islerinin basari, sure ve hata dagilimi." testId="analytics-job-performance">
+      <SectionShell title="Is Performansi"  testId="analytics-job-performance">
         <div data-testid="job-performance-heading" className="hidden">Is Performansi</div>
         <div data-testid="job-performance-note" className="hidden">Uretim islerinin basari, sure ve hata dagilimi.</div>
         <MetricGrid>
@@ -254,7 +249,7 @@ export function AnalyticsOperationsPage() {
       </SectionShell>
 
       {/* Provider Health */}
-      <SectionShell title="Provider Sagligi" description="TTS, LLM ve gorsel provider'larin hata ve basari durumu." testId="analytics-provider-health">
+      <SectionShell title="Provider Sagligi"  testId="analytics-provider-health">
         <div data-testid="provider-health-heading" className="hidden">Provider Sagligi</div>
         <div data-testid="provider-health-note" className="hidden">TTS, LLM ve gorsel provider'larin hata ve basari durumu.</div>
         <MetricGrid>
@@ -283,7 +278,7 @@ export function AnalyticsOperationsPage() {
       </SectionShell>
 
       {/* Step Stats */}
-      <SectionShell title="Adim Bazli Istatistikler" description="Pipeline adimlarinin calisma sayisi, ortalama sure ve hata dagilimi." testId="analytics-step-stats">
+      <SectionShell title="Adim Bazli Istatistikler"  testId="analytics-step-stats">
         <div data-testid="step-stats-heading" className="hidden">Adim Bazli Istatistikler</div>
         {sortedSteps.length > 0 && !isLoading ? (
           <div data-testid="step-stats-table">
@@ -295,7 +290,7 @@ export function AnalyticsOperationsPage() {
       </SectionShell>
 
       {/* Source Impact */}
-      <SectionShell title="Kaynak Etkisi" description="Haber kaynaklarinin uretim hattina etkisi. Kaynak bazli tarama, haber ve kullanim metrikleri." testId="analytics-source-impact">
+      <SectionShell title="Kaynak Etkisi"  testId="analytics-source-impact">
         <div data-testid="source-impact-heading" className="hidden">Kaynak Etkisi</div>
         <div data-testid="source-impact-note" className="hidden">Haber kaynaklarinin uretim hattina etkisi.</div>
         <MetricGrid>

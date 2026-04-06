@@ -114,8 +114,8 @@ export function AssetLibraryPage() {
   ];
 
   return (
-    <PageShell title="Varlik Kutuphanesi" subtitle="Workspace dizinlerindeki artifact ve preview dosyalari otomatik disk taramasi ile listelenir. Dosyalari goruntuleyebilir, konum bilgisini alabilir veya silebilirsiniz." testId="asset-library" actions={<ActionButton variant="secondary" size="sm" loading={refreshing} onClick={handleRefresh} data-testid="asset-refresh-btn">{refreshing ? "Taraniyor..." : "Yenile"}</ActionButton>}>
-      <SectionShell title="Dosya Y&uuml;kle" description="Workspace'e yeni bir dosya y&uuml;kleyin. Maks. 100 MB. Calistirilabilir dosyalar engellenir." testId="asset-upload-area">
+    <PageShell title="Varlik Kutuphanesi" subtitle="Workspace artifact ve preview dosyalari." testId="asset-library" actions={<ActionButton variant="secondary" size="sm" loading={refreshing} onClick={handleRefresh} data-testid="asset-refresh-btn">{refreshing ? "Taraniyor..." : "Yenile"}</ActionButton>}>
+      <SectionShell title="Dosya Yukle" testId="asset-upload-area">
         <div data-testid="asset-upload-heading" className="hidden">Dosya Y&uuml;kle</div>
         <div className="flex gap-2 items-center">
           <input type="file" ref={fileInputRef} className="text-base" data-testid="asset-upload-input" disabled={uploading} />
@@ -123,7 +123,7 @@ export function AssetLibraryPage() {
         </div>
       </SectionShell>
 
-      <SectionShell title="Filtre ve Arama" testId="asset-filter-area">
+      <div data-testid="asset-filter-area" className="mb-4">
         <FilterBar testId="asset-filters-active">
           <FilterInput ref={searchInputRef} type="text" placeholder="Dosya adi ara... ( / )" value={searchQuery} onChange={(e) => { setSearchQuery(e.target.value); setOffset(0); }} data-testid="asset-search-input" />
           <FilterSelect value={typeFilter} onChange={(e) => { setTypeFilter(e.target.value); setOffset(0); }} data-testid="asset-type-filter">
@@ -131,10 +131,10 @@ export function AssetLibraryPage() {
           </FilterSelect>
           {(searchQuery || typeFilter) && <ActionButton variant="secondary" size="sm" onClick={() => { setSearchQuery(""); setTypeFilter(""); setOffset(0); }} data-testid="asset-filter-clear">Temizle</ActionButton>}
         </FilterBar>
-      </SectionShell>
+      </div>
 
       <div onKeyDown={handleKeyDown} tabIndex={0} className="outline-none">
-        <SectionShell flush title="Varlik Listesi" description={`Toplam: ${total}`} testId="asset-list-section">
+        <SectionShell flush title={`Varliklar (${total})`} testId="asset-list-section">
           <span data-testid="asset-total-count" className="hidden">Toplam: {total}</span>
           {!isLoading && !isError && items.length === 0 ? (
             <div className="text-center py-8 px-4 text-neutral-500" data-testid="asset-library-empty-state">

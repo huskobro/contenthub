@@ -36,23 +36,18 @@ export function UserPublishEntryPage() {
   return (
     <div>
       <h2 data-testid="publish-heading">Yayin</h2>
-      <p className="m-0 mb-6 text-lg text-neutral-700 leading-relaxed max-w-[720px]" data-testid="publish-section-subtitle">
-        Yayin ve dagitim merkezi. Gorev zincirinizin ucuncu adimi: Icerik
-        ekraninda olusturulan iceriklerinizin yayin durumunu buradan takip
-        edebilirsiniz. Tamamlanan uretim isleri yonetim panelinden yayinlanabilir.
+      <p className="m-0 mb-2 text-sm text-neutral-500" data-testid="publish-section-subtitle">
+        Icerik yayin durumunu takip edin. Tamamlanan isler yonetim panelinden yayinlanabilir.
       </p>
-      <p
-        className="-mt-4 mb-6 text-base text-neutral-500 leading-normal max-w-[720px]"
-        data-testid="publish-workflow-chain"
-      >
-        Yayin zinciri: Icerik Uretimi &rarr; Readiness Kontrolu &rarr; Metadata Finalizasyonu &rarr; YouTube Yayini &rarr; Sonuc Takibi.
+      <p className="m-0 mb-3 text-xs text-neutral-400" data-testid="publish-workflow-chain">
+        Uretim &rarr; Readiness &rarr; Metadata &rarr; YouTube Yayini &rarr; Sonuc Takibi
       </p>
 
       <div className="grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-4 max-w-[720px]">
         {PUBLISH_ENTRIES.map((entry) => (
           <div
             key={entry.to}
-            className="py-5 px-6 bg-surface-card border border-border rounded-[10px] cursor-pointer transition-colors duration-fast hover:border-brand-300"
+            className="py-3 px-4 bg-surface-card border border-border rounded-lg cursor-pointer transition-colors duration-fast hover:border-brand-300"
             onClick={() => navigate(entry.to)}
             role="button"
             tabIndex={0}
@@ -67,11 +62,8 @@ export function UserPublishEntryPage() {
         ))}
       </div>
 
-      <div className="mt-6 py-3 px-4 bg-neutral-50 border border-border rounded-md text-base text-neutral-600 leading-normal max-w-[720px]" data-testid="publish-first-use-note">
-        Hen&uuml;z yayin sureci baslamadiysa, once Icerik ekranindan bir icerik
-        olusturun. Tamamlanan icerikler buradaki yayin alanlarina duser.
-        Yayin islemleri su an yonetim panelinde yurutulmektedir ve sectiginiz
-        alan sizi ilgili yonetim ekranina yonlendirecektir.
+      <div className="mt-4 py-2 px-3 bg-neutral-50 border border-border-subtle rounded-md text-xs text-neutral-500 max-w-[720px]" data-testid="publish-first-use-note">
+        Yayin sureci baslamadiysa once Icerik ekranindan icerik olusturun.
       </div>
 
       <div className="mt-4 text-base text-neutral-600 max-w-[720px]" data-testid="publish-crosslink-area">

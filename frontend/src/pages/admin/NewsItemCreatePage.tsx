@@ -31,8 +31,8 @@ export function NewsItemCreatePage() {
   return (
     <div className="max-w-[600px]">
       <h2 className="m-0 mb-1">Yeni News Item</h2>
-      <p className="m-0 mb-5 text-neutral-600 text-md">
-        Yeni bir haber kaydı oluştur.
+      <p className="m-0 mb-3 text-xs text-neutral-400">
+        Yeni bir haber kaydi olusturun.
       </p>
       <NewsItemForm
         mode="create"

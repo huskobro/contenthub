@@ -143,8 +143,8 @@ describe("Video workflow pack (Phase 269-275)", () => {
       renderAt("/admin/standard-videos/new");
       const subtitle = screen.getByTestId("sv-create-subtitle");
       expect(subtitle).toBeDefined();
-      expect(subtitle.textContent).toContain("Video uretim akisinin baslangic noktasi");
-      expect(subtitle.textContent).toContain("script, metadata ve uretim adimlari");
+      expect(subtitle.textContent).toContain("temel bilgileri girin");
+      expect(subtitle.textContent).toContain("Script, metadata ve uretim adimlari");
     });
 
     it("create page has form with submit", () => {
@@ -205,8 +205,8 @@ describe("Video workflow pack (Phase 269-275)", () => {
     it("job detail shows workflow tracking note", async () => {
       renderAt("/admin/jobs/job-001");
       const note = await screen.findByTestId("job-detail-workflow-note");
-      expect(note.textContent).toContain("ilerleme durumunu");
-      expect(note.textContent).toContain("timeline");
+      expect(note.textContent).toContain("Ilerleme");
+      expect(note.textContent).toContain("operasyonel aksiyonlar");
     });
 
     it("job detail shows timeline with steps", async () => {
@@ -236,7 +236,7 @@ describe("Video workflow pack (Phase 269-275)", () => {
       const card = screen.getByTestId("content-entry-standard-video");
       expect(card).toBeDefined();
       expect(card.textContent).toContain("Standart Video");
-      expect(card.textContent).toContain("Ana uretim akisi");
+      expect(card.textContent).toContain("Konu ve stil bilgilerini girerek standart video uretimini baslatin");
     });
 
     it("admin overview still shows video quick link", () => {

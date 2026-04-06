@@ -117,10 +117,10 @@ describe("M20-C: Content Library Operations", () => {
     expect(screen.getByText("Test Bulletin 1")).toBeDefined();
   });
 
-  it("library filter note mentions backend tarafinda", () => {
+  it("library filter note mentions filtreleyebilirsiniz", () => {
     renderLibrary();
     const note = screen.getByTestId("library-filter-note");
-    expect(note.textContent).toContain("backend tarafinda");
+    expect(note.textContent).toContain("filtreleyebilirsiniz");
   });
 
   it("library actions area does not contain ilerideki fazlarda", async () => {
@@ -150,6 +150,6 @@ describe("M20-C: Content Library Operations", () => {
   it("library workflow note is present", () => {
     renderLibrary();
     expect(screen.getByTestId("library-workflow-note")).toBeDefined();
-    expect(screen.getByTestId("library-workflow-note").textContent).toContain("Icerik yonetim zinciri");
+    expect(screen.getByTestId("library-workflow-note").textContent).toContain("Olusturma");
   });
 });

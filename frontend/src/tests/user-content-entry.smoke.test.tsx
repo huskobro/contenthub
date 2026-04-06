@@ -50,7 +50,7 @@ describe("User content entry surface", () => {
 
   it("shows description text", () => {
     renderAt("/user/content");
-    expect(screen.getByText(/Icerik uretim merkezi/)).toBeDefined();
+    expect(screen.getByText(/Adim adim rehberlik ile yeni icerik olusturun/)).toBeDefined();
   });
 
   it("shows standard video content card", () => {
@@ -69,7 +69,7 @@ describe("User content entry surface", () => {
 
   it("shows admin navigation note", () => {
     renderAt("/user/content");
-    expect(screen.getByText(/yonetim panelinde calismaktadir/)).toBeDefined();
+    expect(screen.getByTestId("content-to-library-crosslink")).toBeDefined();
   });
 
   it("sidebar Icerik link is active at /user/content", () => {

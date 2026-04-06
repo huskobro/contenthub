@@ -169,10 +169,10 @@ describe("Asset Library Real Data Rendering", () => {
     expect(h.textContent).toBe("Varlik Kutuphanesi");
   });
 
-  it("asset library has subtitle mentioning disk taramasi", () => {
+  it("asset library has subtitle mentioning workspace artifacts", () => {
     renderAdmin("/admin/assets");
     const sub = screen.getByTestId("asset-library-subtitle");
-    expect(sub.textContent).toContain("disk taramasi");
+    expect(sub.textContent).toContain("Workspace artifact");
   });
 
   it("asset library shows filter area", () => {
@@ -241,10 +241,10 @@ describe("Asset Library M20 Runtime Actions", () => {
     expect(screen.getByTestId("asset-delete-job-1/artifacts/script.json")).toBeDefined();
   });
 
-  it("subtitle mentions silme capability", () => {
+  it("subtitle mentions dosyalari", () => {
     renderAdmin("/admin/assets");
     const sub = screen.getByTestId("asset-library-subtitle");
-    expect(sub.textContent).toContain("silebilirsiniz");
+    expect(sub.textContent).toContain("dosyalari");
   });
 });
 

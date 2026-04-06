@@ -32,10 +32,8 @@ export function StandardVideoCreatePage() {
       <h2 className="text-xl font-semibold mb-2" data-testid="sv-create-heading">
         Yeni Standard Video
       </h2>
-      <p className="m-0 mb-5 text-md text-neutral-600 leading-relaxed max-w-[640px]" data-testid="sv-create-subtitle">
-        Video uretim akisinin baslangic noktasi. Konu ve temel bilgileri girerek
-        yeni bir standart video kaydi olusturun. Olusturulan kayit uzerinden
-        script, metadata ve uretim adimlari ilerleyecektir.
+      <p className="m-0 mb-3 text-xs text-neutral-400" data-testid="sv-create-subtitle">
+        Konu ve temel bilgileri girin. Script, metadata ve uretim adimlari otomatik ilerler.
       </p>
       <StandardVideoForm
         onSubmit={handleSubmit}

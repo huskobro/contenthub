@@ -61,6 +61,14 @@ const HORIZON_ADMIN_GROUPS: HorizonNavGroup[] = [
     ],
   },
   {
+    id: "publish",
+    label: "Yayin",
+    icon: "\u25B6",
+    items: [
+      { label: "Yayin Merkezi", to: "/admin/publish" },
+    ],
+  },
+  {
     id: "analytics",
     label: "Analytics",
     icon: "\u2261",
@@ -160,8 +168,8 @@ export function HorizonAdminLayout() {
 
         {/* Main Content — offset by icon rail width */}
         <main
-          className="ml-[48px] min-h-screen p-6 bg-surface-page overflow-y-auto transition-[margin] duration-normal"
-          style={{ paddingTop: "1.5rem" }}
+          className="ml-[48px] min-h-screen p-4 bg-surface-page overflow-y-auto transition-[margin] duration-normal"
+          style={{ paddingTop: "1rem" }}
         >
           {/* Breadcrumb-like context header */}
           <div className="flex items-center justify-between mb-4 max-w-page">

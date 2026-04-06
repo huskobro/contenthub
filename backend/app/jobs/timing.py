@@ -77,6 +77,47 @@ def estimate_remaining_seconds(
     return max(0.0, remaining)
 
 
+def estimate_remaining_from_history(
+    elapsed: float,
+    completed_steps: int,
+    total_steps: int,
+    historical_averages: dict[str, float],
+    remaining_step_keys: list[str],
+) -> Optional[float]:
+    """
+    ETA estimate using historical step averages.
+
+    Sums up historical average durations for remaining steps.
+    Falls back to linear projection for steps without historical data.
+    Returns None if no basis for estimate.
+    """
+    if total_steps <= 0 or completed_steps >= total_steps:
+        return 0.0
+
+    total_remaining = 0.0
+    unknown_count = 0
+
+    for key in remaining_step_keys:
+        avg = historical_averages.get(key)
+        if avg is not None:
+            total_remaining += avg
+        else:
+            unknown_count += 1
+
+    # For unknown steps, use average of known step durations as fallback
+    if unknown_count > 0:
+        known_count = len(remaining_step_keys) - unknown_count
+        if known_count > 0 and total_remaining > 0:
+            avg_known = total_remaining / known_count
+            total_remaining += avg_known * unknown_count
+        else:
+            # No historical data at all — fall back to linear estimate
+            fraction = step_progress_fraction(completed_steps, total_steps)
+            return estimate_remaining_seconds(elapsed, fraction)
+
+    return max(0.0, total_remaining)
+
+
 def step_progress_fraction(
     completed_steps: int,
     total_steps: int,

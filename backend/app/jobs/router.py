@@ -28,6 +28,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.session import get_db
 from app.jobs import service
 from app.jobs.schemas import JobCreate, JobCreateRequest, JobResponse, JobStepResponse
+from app.jobs.timing_service import enrich_job_eta
 from app.jobs.step_initializer import initialize_job_steps
 from app.jobs.exceptions import InvalidTransitionError, JobNotFoundError, StepNotFoundError
 from app.modules.exceptions import ModuleNotFoundError, InputValidationError
@@ -37,6 +38,16 @@ from app.jobs import workspace as ws
 from app.audit.service import write_audit_log
 
 router = APIRouter(prefix="/jobs", tags=["jobs"])
+
+
+async def _build_job_response(db: AsyncSession, job, steps=None) -> JobResponse:
+    """Build a JobResponse from ORM objects, enriched with historical ETA."""
+    if steps is None:
+        steps = await service.get_job_steps(db, job.id)
+    job_data = JobResponse.model_validate(job)
+    job_data.steps = [JobStepResponse.model_validate(s) for s in steps]
+    await enrich_job_eta(db, job_data)
+    return job_data
 
 # ---------------------------------------------------------------------------
 # Skip'e izin verilen step key'leri.
@@ -62,9 +73,7 @@ async def list_jobs(
     jobs = await service.list_jobs(db, status=status, module_type=module_type, search=search)
     result = []
     for job in jobs:
-        steps = await service.get_job_steps(db, job.id)
-        job_data = JobResponse.model_validate(job)
-        job_data.steps = [JobStepResponse.model_validate(s) for s in steps]
+        job_data = await _build_job_response(db, job)
         result.append(job_data)
     return result
 
@@ -109,10 +118,7 @@ async def get_job(job_id: str, db: AsyncSession = Depends(get_db)):
     job = await service.get_job(db, job_id)
     if not job:
         raise HTTPException(status_code=404, detail="İş bulunamadı")
-    steps = await service.get_job_steps(db, job_id)
-    job_data = JobResponse.model_validate(job)
-    job_data.steps = [JobStepResponse.model_validate(s) for s in steps]
-    return job_data
+    return await _build_job_response(db, job)
 
 
 @router.post("", response_model=JobResponse, status_code=201)
@@ -175,10 +181,7 @@ async def create_job(
         )
 
     # Güncel adımları al ve response oluştur
-    steps = await service.get_job_steps(db, job.id)
-    job_data = JobResponse.model_validate(job)
-    job_data.steps = [JobStepResponse.model_validate(s) for s in steps]
-    return job_data
+    return await _build_job_response(db, job)
 
 
 # ===========================================================================
@@ -218,10 +221,7 @@ async def cancel_job(job_id: str, db: AsyncSession = Depends(get_db)):
     )
     await db.commit()
 
-    steps = await service.get_job_steps(db, job_id)
-    job_data = JobResponse.model_validate(job)
-    job_data.steps = [JobStepResponse.model_validate(s) for s in steps]
-    return job_data
+    return await _build_job_response(db, job)
 
 
 @router.post("/{job_id}/retry", response_model=JobResponse)
@@ -283,10 +283,7 @@ async def retry_job(
     )
     await db.commit()
 
-    steps = await service.get_job_steps(db, new_job.id)
-    job_data = JobResponse.model_validate(new_job)
-    job_data.steps = [JobStepResponse.model_validate(s) for s in steps]
-    return job_data
+    return await _build_job_response(db, new_job)
 
 
 @router.post("/{job_id}/steps/{step_key}/skip", response_model=JobResponse)
@@ -328,11 +325,8 @@ async def skip_step(
     )
     await db.commit()
 
-    steps = await service.get_job_steps(db, job_id)
     job = await service.get_job(db, job_id)
-    job_data = JobResponse.model_validate(job)
-    job_data.steps = [JobStepResponse.model_validate(s) for s in steps]
-    return job_data
+    return await _build_job_response(db, job)
 
 
 @router.get("/{job_id}/allowed-actions")

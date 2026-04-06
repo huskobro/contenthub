@@ -57,10 +57,10 @@ describe("Video workflow entry map", () => {
       expect(screen.getByTestId("content-entry-standard-video")).toBeDefined();
     });
 
-    it("standard video card describes it as ana uretim akisi", () => {
+    it("standard video card describes production flow", () => {
       renderAt("/user/content");
       const card = screen.getByTestId("content-entry-standard-video");
-      expect(card.textContent).toContain("Ana uretim akisi");
+      expect(card.textContent).toContain("Konu ve stil bilgilerini girerek standart video uretimini baslatin");
     });
 
     it("standard video card CTA says Yeni Video Olustur", () => {

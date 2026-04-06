@@ -25,6 +25,8 @@ const MOCK_JOBS: JobResponse[] = [
     created_at: "2026-04-01T10:00:00Z",
     started_at: null,
     finished_at: null,
+    elapsed_seconds: null,
+    eta_seconds: null,
     updated_at: "2026-04-01T10:00:00Z",
     steps: [],
   },
@@ -44,6 +46,8 @@ const MOCK_JOBS: JobResponse[] = [
     created_at: "2026-04-01T11:00:00Z",
     started_at: "2026-04-01T11:00:05Z",
     finished_at: null,
+    elapsed_seconds: null,
+    eta_seconds: null,
     updated_at: "2026-04-01T11:00:35Z",
     steps: [
       {
@@ -56,6 +60,8 @@ const MOCK_JOBS: JobResponse[] = [
         provider_trace_json: null,
         log_text: null,
         elapsed_seconds: 30.0,
+        elapsed_seconds_live: null,
+        eta_seconds: null,
         last_error: null,
         created_at: "2026-04-01T11:00:05Z",
         started_at: "2026-04-01T11:00:05Z",

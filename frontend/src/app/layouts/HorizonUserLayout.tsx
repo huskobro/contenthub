@@ -51,8 +51,8 @@ export function HorizonUserLayout() {
         <HorizonSidebar groups={HORIZON_USER_GROUPS} brandLabel="ContentHub" />
 
         <main
-          className="ml-[48px] min-h-screen p-6 bg-surface-page overflow-y-auto transition-[margin] duration-normal"
-          style={{ paddingTop: "1.5rem" }}
+          className="ml-[48px] min-h-screen p-4 bg-surface-page overflow-y-auto transition-[margin] duration-normal"
+          style={{ paddingTop: "1rem" }}
         >
           <div className="flex items-center justify-between mb-4 max-w-page">
             <div className="flex items-center gap-2 text-xs text-neutral-500">

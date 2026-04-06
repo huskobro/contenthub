@@ -69,8 +69,8 @@ describe("User panel empty/first-use state clarity", () => {
       renderAt("/user/content");
       const note = screen.getByTestId("content-first-use-note");
       expect(note).toBeDefined();
-      expect(note.textContent).toContain("Henüz icerik olusturmadiyseniz");
-      expect(note.textContent).toContain("ilk iceriginizi baslatabilirsiniz");
+      expect(note.textContent).toContain("Ilk kez mi kullaniyorsunuz");
+      expect(note.textContent).toContain("turlerden birini secerek baslayabilirsiniz");
     });
 
     it("content cards are still present", () => {
@@ -89,8 +89,8 @@ describe("User panel empty/first-use state clarity", () => {
       renderAt("/user/publish");
       const note = screen.getByTestId("publish-first-use-note");
       expect(note).toBeDefined();
-      expect(note.textContent).toContain("Henüz yayin sureci baslamadiysa");
-      expect(note.textContent).toContain("once Icerik ekranindan bir icerik olusturun");
+      expect(note.textContent).toContain("Yayin sureci baslamadiysa");
+      expect(note.textContent).toContain("once Icerik ekranindan icerik olusturun");
     });
 
     it("publish cards are still present", () => {

@@ -50,7 +50,7 @@ describe("User publish entry surface", () => {
 
   it("shows description text", () => {
     renderAt("/user/publish");
-    expect(screen.getByText(/yayin durumunu buradan takip/)).toBeDefined();
+    expect(screen.getByText(/Icerik yayin durumunu takip edin/)).toBeDefined();
   });
 
   it("shows jobs publish card", () => {
@@ -76,7 +76,7 @@ describe("User publish entry surface", () => {
 
   it("shows admin navigation note", () => {
     renderAt("/user/publish");
-    expect(screen.getByText(/yonetim panelinde yurutulmektedir/)).toBeDefined();
+    expect(screen.getByText(/Tamamlanan isler yonetim panelinden yayinlanabilir/)).toBeDefined();
   });
 
   it("sidebar Yayin link is active at /user/publish", () => {

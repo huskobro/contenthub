@@ -35,6 +35,8 @@ const ADMIN_NAV: AdminNavItem[] = [
   { label: "Sablonlar", to: "/admin/templates", visibilityKey: "panel:templates" },
   { label: "Stil Sablonlari", to: "/admin/style-blueprints" },
   { label: "Sablon-Stil Baglantilari", to: "/admin/template-style-links" },
+  { label: "Yayin", section: true },
+  { label: "Yayin Merkezi", to: "/admin/publish", visibilityKey: "panel:publish" },
   { label: "Analytics", section: true },
   { label: "Analytics", to: "/admin/analytics", visibilityKey: "panel:analytics" },
   { label: "YouTube Analytics", to: "/admin/analytics/youtube" },
@@ -56,6 +58,7 @@ function useAdminNavFiltered(): AdminNavItem[] {
   const templates = useVisibility("panel:templates");
   const analytics = useVisibility("panel:analytics");
   const sources = useVisibility("panel:sources");
+  const publish = useVisibility("panel:publish");
 
   const guardMap: Record<string, boolean> = {
     "panel:settings": settings.visible,
@@ -63,6 +66,7 @@ function useAdminNavFiltered(): AdminNavItem[] {
     "panel:templates": templates.visible,
     "panel:analytics": analytics.visible,
     "panel:sources": sources.visible,
+    "panel:publish": publish.visible,
   };
 
   return ADMIN_NAV.filter((item) => {
@@ -116,7 +120,7 @@ export function AdminLayout() {
         <div className="flex flex-col flex-1 min-w-0">
           <AppHeader area="Admin" />
           <AdminContinuityStrip />
-          <main className="flex-1 p-6 bg-surface-page overflow-y-auto">
+          <main className="flex-1 p-4 bg-surface-page overflow-y-auto">
             <Outlet />
           </main>
         </div>

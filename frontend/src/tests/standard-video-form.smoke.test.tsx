@@ -21,6 +21,8 @@ const MOCK_VIDEO: StandardVideoResponse = {
   job_id: null,
   created_at: "2026-04-01T10:00:00Z",
   updated_at: "2026-04-01T10:00:00Z",
+  template_id: null,
+  style_blueprint_id: null,
 };
 
 function mockFetch(data: unknown, status = 200) {

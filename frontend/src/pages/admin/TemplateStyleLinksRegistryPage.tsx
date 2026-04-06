@@ -23,10 +23,8 @@ export function TemplateStyleLinksRegistryPage() {
         </ActionButton>
       }
     >
-      <p className="m-0 mb-5 text-base text-neutral-500 leading-normal max-w-[640px]" data-testid="tsl-registry-workflow-note">
-        Sablonlar ile style blueprint'ler arasindaki baglantilari buradan
-        yonetebilirsiniz. Her baglanti bir sablonun hangi gorsel kurallarla
-        calisacagini belirler. Birincil, yedek ve deneysel roller atanabilir.
+      <p className="m-0 mb-3 text-xs text-neutral-400" data-testid="tsl-registry-workflow-note">
+        Sablon-blueprint baglantilari. Birincil, yedek ve deneysel roller atanabilir.
       </p>
 
       <div className="flex gap-6 items-start">

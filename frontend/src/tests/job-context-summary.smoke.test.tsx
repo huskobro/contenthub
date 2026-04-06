@@ -89,6 +89,8 @@ const mockJob = (overrides: object = {}) => ({
   created_at: "2026-04-02T10:00:00Z",
   started_at: null,
   finished_at: null,
+  elapsed_seconds: null,
+  eta_seconds: null,
   updated_at: "2026-04-02T10:00:00Z",
   steps: [],
   ...overrides,

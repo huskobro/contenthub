@@ -29,7 +29,7 @@ class JobStepResponse(BaseModel):
 
     # Computed timing fields — not stored in the ORM model.
     # elapsed_seconds_live: live elapsed seconds (None if step not started or already finished)
-    # eta_seconds: None always for step-level (ETA lives at job level in v1)
+    # eta_seconds: estimated remaining seconds for this step (set by timing_service)
     elapsed_seconds_live: Optional[float] = None
     eta_seconds: Optional[float] = None
 

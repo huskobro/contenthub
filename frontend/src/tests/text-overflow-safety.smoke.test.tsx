@@ -60,7 +60,9 @@ describe("Inline text overflow safety", () => {
   it("JobTimelinePanel last_error has overflow protection", () => {
     const src = read("components/jobs/JobTimelinePanel.tsx");
     // Find the block containing s.last_error rendering (the div with the error text)
-    const idx = src.indexOf("{s.last_error}");
+    // Component was refactored: variable name changed from 's' to 'step'
+    let idx = src.indexOf("{s.last_error}");
+    if (idx < 0) idx = src.indexOf("{step.last_error}");
     expect(idx).toBeGreaterThan(0);
     const block = src.slice(Math.max(0, idx - 200), idx + 50);
     expect(

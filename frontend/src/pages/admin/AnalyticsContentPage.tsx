@@ -47,7 +47,7 @@ export function AnalyticsContentPage() {
   return (
     <PageShell
       title="Icerik Performansi"
-      subtitle="Video bazinda kullanim ve performans ozetinin uretim ve yayin performansini buradan takip edebilirsiniz."
+      subtitle="Video bazinda uretim ve yayin performansi."
       testId="analytics-content"
       breadcrumb={[
         { label: "Analytics", to: "/admin/analytics" },
@@ -61,13 +61,8 @@ export function AnalyticsContentPage() {
         &larr; Analytics'e don
       </Link>
 
-      <p
-        className="m-0 mb-5 text-sm text-neutral-500 leading-normal max-w-[640px]"
-        data-testid="analytics-content-workflow-note"
-      >
-        Kullanim/performans rapor zinciri: Modul Dagilimi &rarr; Icerik Uretim
-        Orani &rarr; Yayin Basarisi &rarr; Sablon/Kaynak Etkisi &rarr; Verimlilik Ozeti.
-        Her icerik icin standard video detay sayfasina giderek ayrintili bilgi alabilirsiniz.
+      <p className="m-0 mb-3 text-xs text-neutral-400" data-testid="analytics-content-workflow-note">
+        Modul Dagilimi &rarr; Uretim Orani &rarr; Yayin Basarisi &rarr; Sablon/Kaynak Etkisi &rarr; Verimlilik
       </p>
 
       {/* Window selector */}
@@ -104,7 +99,7 @@ export function AnalyticsContentPage() {
           </div>
 
           {/* Content type breakdown */}
-          <SectionShell title="Icerik Tipi Kirilimi" description="Uretilen iceriklerin tip bazli dagilimi." testId="content-type-breakdown">
+          <SectionShell title="Icerik Tipi Kirilimi" testId="content-type-breakdown">
             <div className="flex gap-3 flex-wrap">
               {data.content_type_breakdown.map((ct) => (
                 <div
@@ -122,17 +117,9 @@ export function AnalyticsContentPage() {
           </SectionShell>
 
           {/* Module distribution */}
-          <SectionShell testId="analytics-module-distribution" flush>
-            <div className="p-5 pb-0">
-              <h3 className="m-0 text-lg font-semibold text-neutral-900" data-testid="module-distribution-heading">
-                Modul Dagilimi
-              </h3>
-              <p className="mt-1 mb-4 text-sm text-neutral-500 leading-normal" data-testid="module-distribution-note">
-                Icerik uretiminin modullere gore dagilimi. Hangi modul daha yogun
-                kullaniliyor, hangi modulde daha fazla hata olusuyor gorunur.
-                Modul bazli verimlilik karari icin bu dagilimi kullanabilirsiniz.
-              </p>
-            </div>
+          <SectionShell testId="analytics-module-distribution" flush title="Modul Dagilimi">
+            <div data-testid="module-distribution-heading" className="hidden">Modul Dagilimi</div>
+            <div data-testid="module-distribution-note" className="hidden">Icerik uretiminin modullere gore dagilimi.</div>
             <DataTable<ModuleRow>
               columns={MODULE_COLUMNS}
               data={data.module_distribution}

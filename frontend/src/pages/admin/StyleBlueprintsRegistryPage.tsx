@@ -23,10 +23,8 @@ export function StyleBlueprintsRegistryPage() {
         </ActionButton>
       }
     >
-      <p className="m-0 mb-5 text-base text-neutral-500 leading-normal max-w-[640px]" data-testid="sb-registry-workflow-note">
-        Style blueprint'ler gorsel ve yapisal kurallari tanimlar. Template'lerden
-        farkli olarak blueprint'ler gorsel kimlik, hareket, layout ve altyazi
-        kurallarina odaklanir. Bir blueprint secerek detay ve kurallarini gorebilirsiniz.
+      <p className="m-0 mb-3 text-xs text-neutral-400" data-testid="sb-registry-workflow-note">
+        Gorsel kimlik, hareket, layout ve altyazi kurallari. Blueprint secerek detay gorun.
       </p>
 
       <div className="flex gap-6 items-start">

@@ -126,7 +126,7 @@ describe("News workflow pack (Phase 276-281)", () => {
       const card = screen.getByTestId("content-entry-news-bulletin");
       expect(card).toBeDefined();
       expect(card.textContent).toContain("Haber Bulteni");
-      expect(card.textContent).toContain("Ikinci uretim akisi");
+      expect(card.textContent).toContain("Haber kaynaklarinizdan sectiginiz haberlerle bulten olusturun");
     });
 
     it("admin overview shows news bulletins quick link", () => {
@@ -161,9 +161,7 @@ describe("News workflow pack (Phase 276-281)", () => {
       renderAt("/admin/news-bulletins/new");
       const subtitle = screen.getByTestId("nb-create-subtitle");
       expect(subtitle).toBeDefined();
-      expect(subtitle.textContent).toContain("Haber bulteni uretim akisinin baslangic noktasi");
-      expect(subtitle.textContent).toContain("Kaynaklardan gelen haberler");
-      expect(subtitle.textContent).toContain("script ve metadata adimlari");
+      expect(subtitle.textContent).toContain("bulten kaydi olusturun");
     });
 
     it("create page shows workflow chain with source intake", () => {
@@ -171,7 +169,7 @@ describe("News workflow pack (Phase 276-281)", () => {
       const chain = screen.getByTestId("nb-create-workflow-chain");
       expect(chain.textContent).toContain("Kaynak Tarama");
       expect(chain.textContent).toContain("Haber Secimi");
-      expect(chain.textContent).toContain("Bulten Kaydi");
+      expect(chain.textContent).toContain("Bulten");
       expect(chain.textContent).toContain("Script");
       expect(chain.textContent).toContain("Metadata");
       expect(chain.textContent).toContain("Uretim");
@@ -200,7 +198,7 @@ describe("News workflow pack (Phase 276-281)", () => {
     it("registry page shows workflow management note", async () => {
       renderAt("/admin/news-bulletins");
       const note = await screen.findByTestId("nb-registry-workflow-note");
-      expect(note.textContent).toContain("secili haberler");
+      expect(note.textContent).toContain("Bulten secerek");
       expect(note.textContent).toContain("script ve metadata");
     });
   });

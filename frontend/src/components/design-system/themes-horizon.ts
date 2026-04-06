@@ -96,8 +96,8 @@ export const HORIZON_CHALK_THEME: ThemeManifest = {
   },
 
   spacing: {
-    0: "0", 1: "0.25rem", 2: "0.5rem", 3: "0.75rem", 4: "1rem",
-    5: "1.25rem", 6: "1.5rem", 8: "2rem", 10: "2.5rem", 12: "3rem", 16: "4rem",
+    0: "0", 1: "0.125rem", 2: "0.25rem", 3: "0.5rem", 4: "0.75rem",
+    5: "1rem", 6: "1.25rem", 8: "1.5rem", 10: "2rem", 12: "2.5rem", 16: "3.2rem",
   },
 
   radius: { sm: "8px", md: "12px", lg: "16px", xl: "20px", full: "9999px" },
@@ -118,10 +118,10 @@ export const HORIZON_CHALK_THEME: ThemeManifest = {
     sidebarCollapsedWidth: "48px",
     headerHeight: "0px",
     pageMaxWidth: "1320px",
-    pagePadding: "2rem",
+    pagePadding: "1.25rem",
   },
 
-  density: "comfortable",
+  density: "compact",
 };
 
 // ---------------------------------------------------------------------------
@@ -223,7 +223,7 @@ export const HORIZON_OBSIDIAN_THEME: ThemeManifest = {
     sidebarCollapsedWidth: "48px",
     headerHeight: "0px",
     pageMaxWidth: "1440px",
-    pagePadding: "1.5rem",
+    pagePadding: "1.25rem",
   },
 
   density: "compact",
@@ -306,8 +306,8 @@ export const HORIZON_SAND_THEME: ThemeManifest = {
   },
 
   spacing: {
-    0: "0", 1: "0.25rem", 2: "0.5rem", 3: "0.75rem", 4: "1rem",
-    5: "1.25rem", 6: "1.5rem", 8: "2rem", 10: "2.5rem", 12: "3rem", 16: "4rem",
+    0: "0", 1: "0.125rem", 2: "0.25rem", 3: "0.5rem", 4: "0.75rem",
+    5: "1rem", 6: "1.25rem", 8: "1.5rem", 10: "2rem", 12: "2.5rem", 16: "3.2rem",
   },
 
   radius: { sm: "8px", md: "12px", lg: "16px", xl: "20px", full: "9999px" },
@@ -328,10 +328,10 @@ export const HORIZON_SAND_THEME: ThemeManifest = {
     sidebarCollapsedWidth: "48px",
     headerHeight: "0px",
     pageMaxWidth: "1280px",
-    pagePadding: "2rem",
+    pagePadding: "1.25rem",
   },
 
-  density: "comfortable",
+  density: "compact",
 };
 
 // ---------------------------------------------------------------------------
@@ -411,8 +411,8 @@ export const HORIZON_MIDNIGHT_THEME: ThemeManifest = {
   },
 
   spacing: {
-    0: "0", 1: "0.25rem", 2: "0.5rem", 3: "0.75rem", 4: "1rem",
-    5: "1.25rem", 6: "1.5rem", 8: "2rem", 10: "2.5rem", 12: "3rem", 16: "4rem",
+    0: "0", 1: "0.125rem", 2: "0.25rem", 3: "0.5rem", 4: "0.75rem",
+    5: "1rem", 6: "1.25rem", 8: "1.5rem", 10: "2rem", 12: "2.5rem", 16: "3.2rem",
   },
 
   radius: { sm: "6px", md: "10px", lg: "14px", xl: "18px", full: "9999px" },
@@ -433,10 +433,10 @@ export const HORIZON_MIDNIGHT_THEME: ThemeManifest = {
     sidebarCollapsedWidth: "48px",
     headerHeight: "0px",
     pageMaxWidth: "1360px",
-    pagePadding: "1.75rem",
+    pagePadding: "1.25rem",
   },
 
-  density: "comfortable",
+  density: "compact",
 };
 
 /** All Horizon themes */

@@ -67,12 +67,11 @@ export function JobsRegistryPage() {
   return (
     <PageShell
       title="Uretim Isleri"
-      subtitle="Sistemdeki tum uretim islerinin listesi, kuyruk durumu ve toplu operasyon gorunumu."
+      subtitle="Tum uretim isleri, kuyruk durumu ve operasyonlar."
       testId="jobs-registry"
     >
-      <p data-testid="jobs-registry-workflow-note" className="m-0 mb-5 text-base text-neutral-500 leading-normal max-w-[640px]">
-        Is akis zinciri: Olusturma &rarr; Kuyruga Alma &rarr; Adim Isleme &rarr; Tamamlama/Hata &rarr; Yayin Hazirligi. Bir ise tiklayarak detay sayfasinda retry, cancel veya skip gibi operasyonel aksiyonlarin durumunu gorebilirsiniz.
-        &uarr;&darr; ile gezin, Space ile on izleme, Enter ile detay panelini acin.
+      <p data-testid="jobs-registry-workflow-note" className="m-0 mb-3 text-xs text-neutral-400">
+        Olusturma &rarr; Kuyruk &rarr; Adim Isleme &rarr; Tamamlama &rarr; Yayin &middot; ↑↓ gezin, Enter detay
       </p>
       <div onKeyDown={handleKeyDown} tabIndex={0} className="outline-none">
         <SectionShell testId="jobs-table-section">

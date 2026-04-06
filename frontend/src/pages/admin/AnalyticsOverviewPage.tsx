@@ -70,22 +70,14 @@ export function AnalyticsOverviewPage() {
   return (
     <PageShell
       title="Analytics"
-      subtitle="Uretim ve yayin sonrasi performans gorunurlugu, raporlama ve karar destek ozetleri. Canli metrikler, operasyonel saglik ve icerik performansini buradan takip edebilirsiniz."
+      subtitle="Canli metrikler, operasyonel saglik ve icerik performansi."
       testId="analytics-overview"
     >
-      <p
-        className="m-0 mb-2 text-base text-neutral-500 leading-normal max-w-[640px]"
-        data-testid="analytics-overview-workflow-note"
-      >
-        Raporlama zinciri: Uretim Tamamlama &rarr; Yayin Sonucu &rarr; Platform
-        Metrikleri &rarr; Icerik Performansi &rarr; Operasyonel Saglik &rarr; Karar Destek Ozeti.
+      <p className="m-0 mb-2 text-xs text-neutral-400" data-testid="analytics-overview-workflow-note">
+        Uretim &rarr; Yayin &rarr; Platform Metrikleri &rarr; Icerik Performansi &rarr; Operasyonel Saglik
       </p>
-      <p
-        className="m-0 mb-6 text-base text-neutral-500 leading-normal max-w-[640px]"
-        data-testid="analytics-reporting-distinction"
-      >
-        Analytics canli metrikleri ve anlik durumu gosterir. Raporlama ise
-        ozetleyici ve karar destekleyici gorunum saglar.
+      <p className="m-0 mb-3 text-xs text-neutral-400" data-testid="analytics-reporting-distinction">
+        Analytics canli metrikleri gosterir. Raporlama karar destekleyici gorunum saglar.
       </p>
 
       {/* Window Selector */}
@@ -100,37 +92,20 @@ export function AnalyticsOverviewPage() {
       </div>
 
       {/* Date Range Filter */}
-      <SectionShell
-        title="Filtre ve Tarih Araligi"
-        description="Metrikleri belirli bir tarih araligiyla filtreleyebilirsiniz. Tarih araligi secildiginde zaman penceresi yerine tarih filtreleri kullanilir."
-        testId="analytics-filter-area"
-      >
+      <div data-testid="analytics-filter-area" className="mb-4">
         <div data-testid="filter-heading" className="hidden">Filtre ve Tarih Araligi</div>
         <div data-testid="filter-note" className="hidden">Metrikleri belirli bir tarih araligiyla filtreleyebilirsiniz.</div>
         <FilterBar>
-          <div>
-            <label className="block text-sm text-neutral-600 mb-1">Baslangic Tarihi</label>
-            <FilterInput type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} data-testid="filter-date-start" />
-          </div>
-          <div>
-            <label className="block text-sm text-neutral-600 mb-1">Bitis Tarihi</label>
-            <FilterInput type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} data-testid="filter-date-end" />
-          </div>
+          <FilterInput type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} data-testid="filter-date-start" placeholder="Baslangic" />
+          <FilterInput type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} data-testid="filter-date-end" placeholder="Bitis" />
           {hasDateRange && (
             <ActionButton variant="secondary" size="sm" onClick={() => { setDateFrom(""); setDateTo(""); }} data-testid="filter-date-clear">Temizle</ActionButton>
           )}
+          {hasDateRange && (
+            <span className="text-xs text-brand-600" data-testid="filter-active-note">Tarih filtresi aktif</span>
+          )}
         </FilterBar>
-        {hasDateRange && (
-          <p className="m-0 text-xs text-brand-600" data-testid="filter-active-note">
-            Tarih araligi filtresi aktif. Overview metrikleri secilen tarih araligina gore hesaplanir.
-          </p>
-        )}
-        {!hasDateRange && (
-          <p className="m-0 text-xs text-neutral-400" data-testid="filter-inactive-note">
-            Tarih araligi secilmediginde zaman penceresi secicisi kullanilir.
-          </p>
-        )}
-      </SectionShell>
+      </div>
 
       {isError && (
         <p className="text-error-base text-md mb-4" data-testid="analytics-overview-error">
@@ -139,7 +114,7 @@ export function AnalyticsOverviewPage() {
       )}
 
       {/* Core Metrics */}
-      <SectionShell title="Temel Metrikler" description="Uretim ve yayin surecinin ozet gostergesi. Veriler backend analytics modulu uzerinden gercek zamanli guncellenir." testId="analytics-core-metrics">
+      <SectionShell title="Temel Metrikler" testId="analytics-core-metrics">
         <div data-testid="core-metrics-heading" className="hidden">Temel Metrikler</div>
         <div data-testid="core-metrics-note" className="hidden">Uretim ve yayin surecinin ozet gostergesi.</div>
         <MetricGrid>
@@ -153,7 +128,7 @@ export function AnalyticsOverviewPage() {
       </SectionShell>
 
       {/* Job & Publish Detail */}
-      <SectionShell title="Is ve Yayin Detay&#305;" description="Is ve yayin sayilari, basari oranlari." testId="analytics-publish-metrics">
+      <SectionShell title="Is ve Yayin Detay&#305;"  testId="analytics-publish-metrics">
         <div data-testid="publish-metrics-heading" className="hidden" />
         <div data-testid="publish-metrics-note" className="hidden" />
         <MetricGrid>
@@ -166,7 +141,7 @@ export function AnalyticsOverviewPage() {
       </SectionShell>
 
       {/* Channel Overview */}
-      <SectionShell title="Kanal Ozeti" description="YouTube yayin kanali uzerindeki yayin durumu ve basari ozeti." testId="analytics-channel-overview">
+      <SectionShell title="Kanal Ozeti"  testId="analytics-channel-overview">
         <div data-testid="channel-overview-heading" className="hidden">Kanal Ozeti</div>
         <div data-testid="channel-overview-note" className="hidden">YouTube yayin kanali uzerindeki yayin durumu ve basari ozeti.</div>
         <MetricGrid>
@@ -191,7 +166,7 @@ export function AnalyticsOverviewPage() {
       </SectionShell>
 
       {/* Analytics Sub-Pages Navigation */}
-      <SectionShell title="Analytics Alanlari" description="Detayli analytics gorunumlerine buradan ulasabilirsiniz." testId="analytics-sub-nav">
+      <SectionShell title="Analytics Alanlari"  testId="analytics-sub-nav">
         <div data-testid="analytics-sub-nav-heading" className="hidden">Analytics Alanlari</div>
         <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
           <Link to="/admin/analytics/content" className="block py-4 px-5 bg-surface-card border border-border-subtle rounded-lg no-underline text-inherit transition-colors duration-normal hover:border-brand-300" data-testid="analytics-nav-content">

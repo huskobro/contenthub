@@ -247,8 +247,8 @@ describe("AnalyticsOverviewPage smoke tests", () => {
     expect(endInput.disabled).toBe(false);
   });
 
-  it("W: filter inactive note shown when no date range", () => {
+  it("W: filter area is shown when no date range", () => {
     renderPage(buildFetch(MOCK_OVERVIEW, MOCK_CHANNEL));
-    expect(screen.getByTestId("filter-inactive-note")).toBeTruthy();
+    expect(screen.getByTestId("analytics-filter-area")).toBeTruthy();
   });
 });

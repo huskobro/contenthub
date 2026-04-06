@@ -194,8 +194,8 @@ export const ARCTIC_FROST_THEME: ThemeManifest = {
   },
 
   spacing: {
-    0: "0", 1: "0.375rem", 2: "0.75rem", 3: "1.125rem", 4: "1.5rem",
-    5: "1.875rem", 6: "2.25rem", 8: "3rem", 10: "3.75rem", 12: "4.5rem", 16: "6rem",
+    0: "0", 1: "0.125rem", 2: "0.25rem", 3: "0.375rem", 4: "0.5rem",
+    5: "0.75rem", 6: "1rem", 8: "1.25rem", 10: "1.5rem", 12: "2rem", 16: "2.5rem",
   },
 
   // Super-rounded — pillowy, soft, Apple-inspired
@@ -217,12 +217,12 @@ export const ARCTIC_FROST_THEME: ThemeManifest = {
   layout: {
     sidebarWidth: "280px",             // wide sidebar — room to breathe
     sidebarCollapsedWidth: "72px",
-    headerHeight: "64px",              // tall header — spacious
+    headerHeight: "44px",              // compact header
     pageMaxWidth: "1120px",            // narrow content — reading-optimized
-    pagePadding: "2.5rem",             // generous padding
+    pagePadding: "1.25rem",            // compact padding
   },
 
-  density: "spacious",
+  density: "compact",
 };
 
 // ---------------------------------------------------------------------------
@@ -400,8 +400,8 @@ export const INK_AND_WIRE_THEME: ThemeManifest = {
   },
 
   spacing: {
-    0: "0", 1: "0.25rem", 2: "0.5rem", 3: "0.875rem", 4: "1.25rem",
-    5: "1.625rem", 6: "2rem", 8: "2.75rem", 10: "3.5rem", 12: "4.5rem", 16: "6rem",
+    0: "0", 1: "0.125rem", 2: "0.25rem", 3: "0.375rem", 4: "0.5rem",
+    5: "0.75rem", 6: "1rem", 8: "1.25rem", 10: "1.5rem", 12: "2rem", 16: "2.5rem",
   },
 
   // ZERO radius — brutalist newspaper aesthetic
@@ -423,12 +423,12 @@ export const INK_AND_WIRE_THEME: ThemeManifest = {
   layout: {
     sidebarWidth: "260px",
     sidebarCollapsedWidth: "60px",
-    headerHeight: "58px",              // taller header — editorial grandeur
+    headerHeight: "44px",              // compact header
     pageMaxWidth: "1080px",            // narrow — newspaper column width
-    pagePadding: "2.5rem",             // generous padding for reading
+    pagePadding: "1.25rem",            // compact padding
   },
 
-  density: "comfortable",
+  density: "compact",
 };
 
 // ---------------------------------------------------------------------------

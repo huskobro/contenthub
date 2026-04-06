@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useOnboardingStatus } from "../hooks/useOnboardingStatus";
 import { PostOnboardingHandoff } from "../components/dashboard/PostOnboardingHandoff";
 import { DashboardActionHub } from "../components/dashboard/DashboardActionHub";
+import { UserJobTracker } from "../components/dashboard/UserJobTracker";
 import { PageShell } from "../components/design-system/primitives";
 
 export function UserDashboardPage() {
@@ -19,22 +20,21 @@ export function UserDashboardPage() {
     >
       {onboardingCompleted ? (
         <>
-          <p className="m-0 mb-6 text-base text-neutral-600 leading-relaxed max-w-[720px]" data-testid="dashboard-context-note">
-            Baslangic ve takip merkezi. Icerik akisinizi baslatabilir, yayin durumunu takip edebilir ve
-            detayli islemler icin yonetim paneline gecebilirsiniz.
+          <p className="m-0 mb-3 text-xs text-neutral-400" data-testid="dashboard-context-note">
+            Icerik akisini baslatin, yayin durumunu takip edin veya yonetim paneline gecin.
           </p>
 
           {/* Welcome banner */}
-          <div className="bg-gradient-to-r from-brand-50 via-brand-100/50 to-surface-page rounded-xl p-5 mb-6 border border-brand-200 flex items-center gap-4">
-            <div className="w-10 h-10 rounded-full bg-brand-500 flex items-center justify-center text-white text-lg shrink-0">
+          <div className="bg-gradient-to-r from-brand-50 via-brand-100/50 to-surface-page rounded-lg p-3 mb-4 border border-brand-200 flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-brand-500 flex items-center justify-center text-white text-sm shrink-0">
               &#x1F44B;
             </div>
             <div className="flex-1 min-w-0">
-              <p className="m-0 text-md font-semibold text-brand-800">
+              <p className="m-0 text-sm font-semibold text-brand-800">
                 Hosgeldiniz!
               </p>
-              <p className="m-0 text-sm text-brand-600 mt-0.5">
-                Yeni icerik olusturmak veya mevcut yayin durumunu kontrol etmek icin asagidaki panelleri kullanin.
+              <p className="m-0 text-xs text-brand-600 mt-0.5">
+                Asagidaki panellerden icerik olusturun veya yayin durumunu kontrol edin.
               </p>
             </div>
             <button
@@ -46,6 +46,7 @@ export function UserDashboardPage() {
           </div>
 
           <PostOnboardingHandoff />
+          <UserJobTracker />
           <DashboardActionHub />
         </>
       ) : (

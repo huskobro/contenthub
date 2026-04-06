@@ -53,7 +53,7 @@ describe("User panel route landing consistency", () => {
       renderAt("/user");
       const subtitle = await screen.findByTestId("dashboard-context-note");
       expect(subtitle).toBeDefined();
-      expect(subtitle.textContent).toContain("Baslangic ve takip merkezi");
+      expect(subtitle.textContent).toContain("Icerik akisini baslatin");
     });
 
     it("has action hub block", async () => {
@@ -77,7 +77,7 @@ describe("User panel route landing consistency", () => {
       renderAt("/user/content");
       const subtitle = screen.getByTestId("content-section-subtitle");
       expect(subtitle).toBeDefined();
-      expect(subtitle.textContent).toContain("Icerik uretim merkezi");
+      expect(subtitle.textContent).toContain("Adim adim rehberlik ile yeni icerik olusturun");
     });
 
     it("has content cards", () => {
@@ -90,7 +90,7 @@ describe("User panel route landing consistency", () => {
       renderAt("/user/content");
       const note = screen.getByTestId("content-first-use-note");
       expect(note).toBeDefined();
-      expect(note.textContent).toContain("Henüz icerik olusturmadiyseniz");
+      expect(note.textContent).toContain("Ilk kez mi kullaniyorsunuz");
     });
   });
 
@@ -104,7 +104,7 @@ describe("User panel route landing consistency", () => {
       renderAt("/user/publish");
       const subtitle = screen.getByTestId("publish-section-subtitle");
       expect(subtitle).toBeDefined();
-      expect(subtitle.textContent).toContain("Yayin ve dagitim merkezi");
+      expect(subtitle.textContent).toContain("Icerik yayin durumunu takip edin");
     });
 
     it("has publish cards", () => {
@@ -118,7 +118,7 @@ describe("User panel route landing consistency", () => {
       renderAt("/user/publish");
       const note = screen.getByTestId("publish-first-use-note");
       expect(note).toBeDefined();
-      expect(note.textContent).toContain("Henüz yayin sureci baslamadiysa");
+      expect(note.textContent).toContain("Yayin sureci baslamadiysa");
     });
   });
 });

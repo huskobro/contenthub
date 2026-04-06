@@ -122,8 +122,8 @@ describe("Template/Style/Blueprint pack (Phase 282-286)", () => {
     it("templates registry shows workflow note", () => {
       renderAt("/admin/templates");
       const note = screen.getByTestId("tpl-registry-workflow-note");
-      expect(note.textContent).toContain("uretim hattinin yapi taslari");
-      expect(note.textContent).toContain("style blueprint iliskilerini");
+      expect(note.textContent).toContain("sablonlari");
+      expect(note.textContent).toContain("gezin");
     });
 
     it("style blueprints registry shows heading with testid", () => {
@@ -135,8 +135,8 @@ describe("Template/Style/Blueprint pack (Phase 282-286)", () => {
     it("style blueprints registry shows workflow note", () => {
       renderAt("/admin/style-blueprints");
       const note = screen.getByTestId("sb-registry-workflow-note");
-      expect(note.textContent).toContain("gorsel ve yapisal kurallari");
-      expect(note.textContent).toContain("gorsel kimlik");
+      expect(note.textContent).toContain("Gorsel kimlik");
+      expect(note.textContent).toContain("Blueprint secerek");
     });
 
     it("template-style links registry shows heading with testid", () => {
@@ -148,7 +148,7 @@ describe("Template/Style/Blueprint pack (Phase 282-286)", () => {
     it("template-style links registry shows workflow note", () => {
       renderAt("/admin/template-style-links");
       const note = screen.getByTestId("tsl-registry-workflow-note");
-      expect(note.textContent).toContain("hangi gorsel kurallarla");
+      expect(note.textContent).toContain("baglantilari");
       expect(note.textContent).toContain("Birincil, yedek ve deneysel");
     });
   });
@@ -167,9 +167,9 @@ describe("Template/Style/Blueprint pack (Phase 282-286)", () => {
     it("template create page shows workflow subtitle", () => {
       renderAt("/admin/templates/new");
       const subtitle = screen.getByTestId("tpl-create-subtitle");
-      expect(subtitle.textContent).toContain("Sablon yapilandirma akisinin baslangic noktasi");
-      expect(subtitle.textContent).toContain("style blueprint");
-      expect(subtitle.textContent).toContain("uretim hattinda kullanilacak");
+      expect(subtitle.textContent).toContain("sablonu olusturun");
+      expect(subtitle.textContent).toContain("Blueprint");
+      expect(subtitle.textContent).toContain("gorsel kurallar");
     });
 
     it("template create page has form with submit", () => {
@@ -204,9 +204,9 @@ describe("Template/Style/Blueprint pack (Phase 282-286)", () => {
     it("style blueprint create page shows workflow subtitle", () => {
       renderAt("/admin/style-blueprints/new");
       const subtitle = screen.getByTestId("sb-create-subtitle");
-      expect(subtitle.textContent).toContain("gorsel ve yapisal kurallari tanimlar");
+      expect(subtitle.textContent).toContain("kurallarini tanimlayin");
       expect(subtitle.textContent).toContain("Gorsel kimlik");
-      expect(subtitle.textContent).toContain("sablonlarla iliskilendirilerek");
+      expect(subtitle.textContent).toContain("iliskilendirilir");
     });
 
     it("style blueprint create page has form with submit", () => {
@@ -241,7 +241,7 @@ describe("Template/Style/Blueprint pack (Phase 282-286)", () => {
     it("template-style link create page shows workflow subtitle", () => {
       renderAt("/admin/template-style-links/new");
       const subtitle = screen.getByTestId("tsl-create-subtitle");
-      expect(subtitle.textContent).toContain("sablon ile style blueprint arasinda");
+      expect(subtitle.textContent).toContain("baglantisi olusturun");
       expect(subtitle.textContent).toContain("Birincil, yedek veya deneysel");
     });
 

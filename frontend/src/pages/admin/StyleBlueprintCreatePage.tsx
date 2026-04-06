@@ -35,11 +35,8 @@ export function StyleBlueprintCreatePage() {
       <h2 className="m-0 mb-2 text-xl font-semibold" data-testid="sb-create-heading">
         Yeni Style Blueprint
       </h2>
-      <p className="m-0 mb-5 text-md text-neutral-600 leading-relaxed max-w-[640px]" data-testid="sb-create-subtitle">
-        Style blueprint gorsel ve yapisal kurallari tanimlar. Gorsel kimlik,
-        hareket stili, layout yonu, altyazi stili ve kucuk resim yonu gibi
-        kurallari belirleyerek uretim ciktisinin gorsel yonunu kontrol edin.
-        Blueprint'ler sablonlarla iliskilendirilerek kullanilir.
+      <p className="m-0 mb-3 text-xs text-neutral-400" data-testid="sb-create-subtitle">
+        Gorsel kimlik, hareket, layout ve altyazi kurallarini tanimlayin. Sablonlarla iliskilendirilir.
       </p>
       <StyleBlueprintForm
         mode="create"

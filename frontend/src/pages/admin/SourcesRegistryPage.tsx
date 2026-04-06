@@ -45,7 +45,7 @@ export function SourcesRegistryPage() {
     <ReadOnlyGuard targetKey="panel:sources">
       <PageShell
         title="Sources Registry"
-        subtitle="Haber kaynaklarının admin görünümü. Detay için bir source seçin veya ↑↓ tuşlarıyla gezinin."
+        subtitle="Haber kaynaklari. ↑↓ gezin, detay icin secin."
         testId="sources-registry"
         actions={
           <ActionButton variant="primary" onClick={() => navigate("/admin/sources/new")}>

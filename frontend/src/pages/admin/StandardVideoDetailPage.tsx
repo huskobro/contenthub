@@ -72,15 +72,10 @@ export function StandardVideoDetailPage() {
       <p className="m-0 mb-2 text-neutral-600 text-sm">
         {video.topic} — <Mono>{video.id}</Mono>
       </p>
-      <p className="m-0 mb-5 text-sm text-neutral-500 leading-normal max-w-[640px]" data-testid="sv-detail-workflow-chain">
-        Uretim zinciri: Kayit &rarr; Script &rarr; Metadata &rarr; TTS &rarr; Altyazi &rarr; Kompozisyon.
-        Asagidaki panellerden her adimi yonetebilirsiniz. Tum adimlar
-        tamamlandiginda yayin sureci baslatilabilir.
+      <p className="m-0 mb-3 text-xs text-neutral-400" data-testid="sv-detail-workflow-chain">
+        Kayit &rarr; Script &rarr; Metadata &rarr; TTS &rarr; Altyazi &rarr; Kompozisyon &rarr; Yayin
       </p>
-      <p className="m-0 mb-5 text-xs text-neutral-400 max-w-[640px]" data-testid="sv-detail-manage-note">
-        Bu kaydi duzenleyebilir veya bilgilerini referans alarak yeni bir icerik
-        olusturabilirsiniz. Klonlama backend entegrasyonu ile eklenecektir.
-      </p>
+      <div data-testid="sv-detail-manage-note" className="hidden">Kaydi duzenleyin veya klonlayin.</div>
 
       {editMode ? (
         <SectionShell title="Kaydi Düzenle" testId="sv-detail-edit-section">

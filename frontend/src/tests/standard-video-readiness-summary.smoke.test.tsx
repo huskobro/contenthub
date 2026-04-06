@@ -95,6 +95,8 @@ const mockVideo = (overrides: object = {}) => ({
   job_id: null,
   created_at: "2026-04-02T10:00:00Z",
   updated_at: "2026-04-02T10:00:00Z",
+  template_id: null,
+  style_blueprint_id: null,
   ...overrides,
 });
 

@@ -10,6 +10,8 @@ export interface JobStepResponse {
   provider_trace_json: string | null;
   log_text: string | null;
   elapsed_seconds: number | null;
+  elapsed_seconds_live: number | null;
+  eta_seconds: number | null;
   last_error: string | null;
   created_at: string;
   started_at: string | null;
@@ -28,6 +30,8 @@ export interface JobResponse {
   retry_count: number;
   elapsed_total_seconds: number | null;
   estimated_remaining_seconds: number | null;
+  elapsed_seconds: number | null;
+  eta_seconds: number | null;
   workspace_path: string | null;
   last_error: string | null;
   created_at: string;

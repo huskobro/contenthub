@@ -39,6 +39,9 @@ import { YouTubeAnalyticsPage } from "../pages/admin/YouTubeAnalyticsPage";
 import { YouTubeCallbackPage } from "../pages/admin/YouTubeCallbackPage";
 import { AuditLogPage } from "../pages/admin/AuditLogPage";
 import { ThemeRegistryPage } from "../pages/admin/ThemeRegistryPage";
+import { PublishCenterPage } from "../pages/admin/PublishCenterPage";
+import { PublishDetailPage } from "../pages/admin/PublishDetailPage";
+import { StandardVideoWizardPage } from "../pages/admin/StandardVideoWizardPage";
 import { VisibilityGuard } from "../components/visibility/VisibilityGuard";
 
 export const router = createBrowserRouter([
@@ -61,6 +64,7 @@ export const router = createBrowserRouter([
       { path: "jobs/:jobId", element: <JobDetailPage /> },
       { path: "standard-videos", element: <StandardVideoRegistryPage /> },
       { path: "standard-videos/new", element: <StandardVideoCreatePage /> },
+      { path: "standard-videos/wizard", element: <StandardVideoWizardPage /> },
       { path: "standard-videos/:itemId", element: <StandardVideoDetailPage /> },
       { path: "templates/new", element: <VisibilityGuard targetKey="panel:templates"><TemplateCreatePage /></VisibilityGuard> },
       { path: "templates", element: <VisibilityGuard targetKey="panel:templates"><TemplatesRegistryPage /></VisibilityGuard> },
@@ -84,6 +88,8 @@ export const router = createBrowserRouter([
       { path: "analytics/content", element: <VisibilityGuard targetKey="panel:analytics"><AnalyticsContentPage /></VisibilityGuard> },
       { path: "analytics/operations", element: <VisibilityGuard targetKey="panel:analytics"><AnalyticsOperationsPage /></VisibilityGuard> },
       { path: "analytics/youtube", element: <VisibilityGuard targetKey="panel:analytics"><YouTubeAnalyticsPage /></VisibilityGuard> },
+      { path: "publish", element: <VisibilityGuard targetKey="panel:publish"><PublishCenterPage /></VisibilityGuard> },
+      { path: "publish/:recordId", element: <VisibilityGuard targetKey="panel:publish"><PublishDetailPage /></VisibilityGuard> },
       { path: "audit-logs", element: <VisibilityGuard targetKey="panel:audit-logs"><AuditLogPage /></VisibilityGuard> },
       { path: "themes", element: <ThemeRegistryPage /> },
       { path: "settings/youtube-callback", element: <YouTubeCallbackPage /> },

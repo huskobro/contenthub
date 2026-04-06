@@ -10,6 +10,8 @@ export interface StandardVideoResponse {
   language: string | null;
   visual_direction: string | null;
   subtitle_style: string | null;
+  template_id: string | null;
+  style_blueprint_id: string | null;
   status: string;
   job_id: string | null;
   created_at: string;

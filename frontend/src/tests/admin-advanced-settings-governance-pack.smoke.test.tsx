@@ -346,7 +346,7 @@ describe("Phase 307 — Visibility Registry heading and workflow note", () => {
     expect(note).toBeDefined();
     expect(note.textContent).toContain("Kural Tanimlama");
     expect(note.textContent).toContain("Hedef Belirleme");
-    expect(note.textContent).toContain("Wizard Durumu");
+    expect(note.textContent).toContain("Rol/Mod Kapsami");
   });
 });
 

@@ -20,6 +20,8 @@ const MOCK_VIDEOS: StandardVideoResponse[] = [
     job_id: null,
     created_at: "2026-04-01T10:00:00Z",
     updated_at: "2026-04-01T10:00:00Z",
+    template_id: null,
+    style_blueprint_id: null,
   },
   {
     id: "sv2",
@@ -35,6 +37,8 @@ const MOCK_VIDEOS: StandardVideoResponse[] = [
     job_id: null,
     created_at: "2026-04-01T11:00:00Z",
     updated_at: "2026-04-01T11:00:00Z",
+    template_id: null,
+    style_blueprint_id: null,
   },
 ];
 

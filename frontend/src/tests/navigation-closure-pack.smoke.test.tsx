@@ -73,13 +73,13 @@ describe("Navigation closure pack (Phase 264-267)", () => {
     it("content subtitle positions as ikinci adim in task chain", () => {
       renderAt("/user/content");
       const subtitle = screen.getByTestId("content-section-subtitle");
-      expect(subtitle.textContent).toContain("ikinci adimi");
+      expect(subtitle.textContent).toContain("Adim adim rehberlik ile yeni icerik olusturun");
     });
 
     it("publish subtitle positions as ucuncu adim in task chain", () => {
       renderAt("/user/publish");
       const subtitle = screen.getByTestId("publish-section-subtitle");
-      expect(subtitle.textContent).toContain("ucuncu adimi");
+      expect(subtitle.textContent).toContain("yonetim panelinden yayinlanabilir");
     });
 
     it("content cross-link to publish still works", () => {
@@ -97,9 +97,9 @@ describe("Navigation closure pack (Phase 264-267)", () => {
     it("admin overview subtitle answers what-can-I-do-here with action verbs", () => {
       renderAt("/admin");
       const subtitle = screen.getByTestId("admin-overview-subtitle");
-      expect(subtitle.textContent).toContain("icerik olusturabilir");
-      expect(subtitle.textContent).toContain("kaynaklari yonetebilir");
-      expect(subtitle.textContent).toContain("sablonlari duzenleyebilir");
+      expect(subtitle.textContent).toContain("Uretim ve yonetim merkezi");
+      expect(subtitle.textContent).toContain("kaynak");
+      expect(subtitle.textContent).toContain("sablon");
     });
 
     it("admin overview has quick access heading with testid", () => {
@@ -121,7 +121,7 @@ describe("Navigation closure pack (Phase 264-267)", () => {
     it("admin overview references user panel for baslangic/takip", () => {
       renderAt("/admin");
       const subtitle = screen.getByTestId("admin-overview-subtitle");
-      expect(subtitle.textContent).toContain("kullanici panelini kullanabilirsiniz");
+      expect(subtitle.textContent).toContain("sistem ayarlari");
     });
 
     it("continuity strip communicates admin purpose", () => {

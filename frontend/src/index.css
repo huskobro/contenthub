@@ -184,6 +184,161 @@ nav[style*="sidebar"] {
   position: relative;
 }
 
+/* ===========================================================================
+   Per-Theme Atmospheric Effects — Premium ambient visuals
+   Each theme gets page background gradients, card hover glow, sidebar shadow,
+   focus ring glow, and metric micro-lift using its brand color.
+   =========================================================================== */
+
+/* Midnight Ultraviolet — atmospheric effects (dark, purple) */
+[data-theme="midnight-ultraviolet"] {
+  background: radial-gradient(ellipse at 15% 5%, rgba(139,92,246,0.04) 0%, transparent 50%),
+              radial-gradient(ellipse at 85% 95%, rgba(139,92,246,0.03) 0%, transparent 50%),
+              var(--ch-surface-page);
+}
+[data-theme="midnight-ultraviolet"] [data-testid*="metric"] {
+  transition: transform 0.2s var(--ch-motion-easing), box-shadow 0.2s var(--ch-motion-easing);
+}
+[data-theme="midnight-ultraviolet"] [data-testid*="metric"]:hover { transform: translateY(-1px); }
+[data-theme="midnight-ultraviolet"] nav[class*="bg-surface-sidebar"] {
+  box-shadow: 4px 0 24px rgba(0,0,0,0.3);
+}
+
+/* Arctic Frost — atmospheric effects (light, sky blue) */
+[data-theme="arctic-frost"] {
+  background: radial-gradient(ellipse at 15% 5%, rgba(14,165,233,0.05) 0%, transparent 50%),
+              radial-gradient(ellipse at 85% 95%, rgba(14,165,233,0.04) 0%, transparent 50%),
+              var(--ch-surface-page);
+}
+[data-theme="arctic-frost"] [data-testid*="metric"] {
+  transition: transform 0.2s var(--ch-motion-easing), box-shadow 0.2s var(--ch-motion-easing);
+}
+[data-theme="arctic-frost"] [data-testid*="metric"]:hover { transform: translateY(-1px); }
+[data-theme="arctic-frost"] nav[class*="bg-surface-sidebar"] {
+  box-shadow: 4px 0 24px rgba(0,0,0,0.06);
+}
+
+/* Tokyo Neon — atmospheric effects (dark, hot pink) */
+[data-theme="tokyo-neon"] {
+  background: radial-gradient(ellipse at 15% 5%, rgba(236,72,153,0.04) 0%, transparent 50%),
+              radial-gradient(ellipse at 85% 95%, rgba(236,72,153,0.03) 0%, transparent 50%),
+              var(--ch-surface-page);
+}
+[data-theme="tokyo-neon"] [data-testid*="metric"] {
+  transition: transform 0.2s var(--ch-motion-easing), box-shadow 0.2s var(--ch-motion-easing);
+}
+[data-theme="tokyo-neon"] [data-testid*="metric"]:hover { transform: translateY(-1px); }
+[data-theme="tokyo-neon"] nav[class*="bg-surface-sidebar"] {
+  box-shadow: 4px 0 24px rgba(0,0,0,0.3);
+}
+
+/* Ink & Wire — atmospheric effects (light, brown/ink) */
+[data-theme="ink-and-wire"] {
+  background: radial-gradient(ellipse at 15% 5%, rgba(94,72,50,0.06) 0%, transparent 50%),
+              radial-gradient(ellipse at 85% 95%, rgba(94,72,50,0.04) 0%, transparent 50%),
+              var(--ch-surface-page);
+}
+[data-theme="ink-and-wire"] [data-testid*="metric"] {
+  transition: transform 0.2s var(--ch-motion-easing), box-shadow 0.2s var(--ch-motion-easing);
+}
+[data-theme="ink-and-wire"] [data-testid*="metric"]:hover { transform: translateY(-1px); }
+[data-theme="ink-and-wire"] :focus-visible {
+  box-shadow: 0 0 0 4px rgba(94,72,50,0.10);
+}
+[data-theme="ink-and-wire"] nav[class*="bg-surface-sidebar"] {
+  box-shadow: 4px 0 24px rgba(0,0,0,0.12);
+}
+
+/* Solar Ember — atmospheric effects (dark, orange) */
+[data-theme="solar-ember"] {
+  background: radial-gradient(ellipse at 15% 5%, rgba(234,88,12,0.04) 0%, transparent 50%),
+              radial-gradient(ellipse at 85% 95%, rgba(234,88,12,0.03) 0%, transparent 50%),
+              var(--ch-surface-page);
+}
+[data-theme="solar-ember"] [data-testid*="metric"] {
+  transition: transform 0.2s var(--ch-motion-easing), box-shadow 0.2s var(--ch-motion-easing);
+}
+[data-theme="solar-ember"] [data-testid*="metric"]:hover { transform: translateY(-1px); }
+[data-theme="solar-ember"] nav[class*="bg-surface-sidebar"] {
+  box-shadow: 4px 0 24px rgba(0,0,0,0.3);
+}
+
+/* Horizon Chalk — atmospheric effects (light, blue) */
+[data-theme="horizon-chalk"] {
+  background: radial-gradient(ellipse at 15% 5%, rgba(59,130,246,0.05) 0%, transparent 50%),
+              radial-gradient(ellipse at 85% 95%, rgba(59,130,246,0.04) 0%, transparent 50%),
+              var(--ch-surface-page);
+}
+[data-theme="horizon-chalk"] [data-testid*="metric"] {
+  transition: transform 0.2s var(--ch-motion-easing), box-shadow 0.2s var(--ch-motion-easing);
+}
+[data-theme="horizon-chalk"] [data-testid*="metric"]:hover { transform: translateY(-1px); }
+[data-theme="horizon-chalk"] :focus-visible {
+  outline: 2px solid var(--ch-focus);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(59,130,246,0.12);
+}
+[data-theme="horizon-chalk"] nav[class*="bg-surface-sidebar"] {
+  box-shadow: 4px 0 24px rgba(0,0,0,0.08);
+}
+
+/* Horizon Obsidian — atmospheric effects (dark, neon green) */
+[data-theme="horizon-obsidian"] {
+  background: radial-gradient(ellipse at 15% 5%, rgba(45,213,91,0.04) 0%, transparent 50%),
+              radial-gradient(ellipse at 85% 95%, rgba(45,213,91,0.03) 0%, transparent 50%),
+              var(--ch-surface-page);
+}
+[data-theme="horizon-obsidian"] [data-testid*="metric"] {
+  transition: transform 0.2s var(--ch-motion-easing), box-shadow 0.2s var(--ch-motion-easing);
+}
+[data-theme="horizon-obsidian"] [data-testid*="metric"]:hover { transform: translateY(-1px); }
+[data-theme="horizon-obsidian"] :focus-visible {
+  outline: 2px solid var(--ch-focus);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(45,213,91,0.12);
+}
+[data-theme="horizon-obsidian"] nav[class*="bg-surface-sidebar"] {
+  box-shadow: 4px 0 24px rgba(0,0,0,0.3);
+}
+
+/* Horizon Sand — atmospheric effects (light, amber) */
+[data-theme="horizon-sand"] {
+  background: radial-gradient(ellipse at 15% 5%, rgba(245,158,11,0.06) 0%, transparent 50%),
+              radial-gradient(ellipse at 85% 95%, rgba(245,158,11,0.04) 0%, transparent 50%),
+              var(--ch-surface-page);
+}
+[data-theme="horizon-sand"] [data-testid*="metric"] {
+  transition: transform 0.2s var(--ch-motion-easing), box-shadow 0.2s var(--ch-motion-easing);
+}
+[data-theme="horizon-sand"] [data-testid*="metric"]:hover { transform: translateY(-1px); }
+[data-theme="horizon-sand"] :focus-visible {
+  outline: 2px solid var(--ch-focus);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(245,158,11,0.12);
+}
+[data-theme="horizon-sand"] nav[class*="bg-surface-sidebar"] {
+  box-shadow: 4px 0 24px rgba(0,0,0,0.08);
+}
+
+/* Horizon Midnight — atmospheric effects (dark, gold) */
+[data-theme="horizon-midnight"] {
+  background: radial-gradient(ellipse at 15% 5%, rgba(212,182,66,0.04) 0%, transparent 50%),
+              radial-gradient(ellipse at 85% 95%, rgba(212,182,66,0.03) 0%, transparent 50%),
+              var(--ch-surface-page);
+}
+[data-theme="horizon-midnight"] [data-testid*="metric"] {
+  transition: transform 0.2s var(--ch-motion-easing), box-shadow 0.2s var(--ch-motion-easing);
+}
+[data-theme="horizon-midnight"] [data-testid*="metric"]:hover { transform: translateY(-1px); }
+[data-theme="horizon-midnight"] :focus-visible {
+  outline: 2px solid var(--ch-focus);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(212,182,66,0.12);
+}
+[data-theme="horizon-midnight"] nav[class*="bg-surface-sidebar"] {
+  box-shadow: 4px 0 24px rgba(0,0,0,0.3);
+}
+
 /* ---------------------------------------------------------------------------
    Void Terminal — Dark theme ambient glow effects (CSS-only, no JS needed)
    These use CSS variables and only activate when Void Terminal colors are set.
@@ -404,9 +559,9 @@ body[style*="#0a0a0c"] [data-testid="command-palette-input"]::placeholder {
   letter-spacing: -0.025em;
 }
 
-/* Extra generous card padding via nested spacing */
+/* Compact card padding via nested spacing */
 [data-theme="arctic-frost"] main {
-  padding: 2.5rem !important;
+  padding: 1.25rem !important;
 }
 
 /* ---------------------------------------------------------------------------

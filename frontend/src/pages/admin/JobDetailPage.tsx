@@ -58,12 +58,8 @@ export function JobDetailPage() {
       <p className="m-0 mb-2 text-sm text-neutral-600">
         Job ID: <Mono>{job.id}</Mono>
       </p>
-      <p className="m-0 mb-5 text-base text-neutral-500 leading-normal max-w-[640px]" data-testid="job-detail-workflow-note">
-        Bu isin ilerleme durumunu, adimlarini ve sure bilgilerini asagidaki
-        timeline ve panellerden takip edebilirsiniz. Is tamamlandiginda
-        yayin hazirlik durumu ve sonuclari buradan gorunur. Basarisiz veya
-        bekleyen isler icin retry, cancel ve skip aksiyonlari
-        asagidaki operasyon panelinden yonetilebilir.
+      <p className="m-0 mb-3 text-xs text-neutral-400" data-testid="job-detail-workflow-note">
+        Ilerleme, adimlar, sure ve operasyonel aksiyonlar (retry, cancel, skip).
       </p>
 
       <JobOverviewPanel job={job} />

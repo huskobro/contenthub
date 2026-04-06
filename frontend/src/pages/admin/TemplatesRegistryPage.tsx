@@ -52,13 +52,8 @@ export function TemplatesRegistryPage() {
           </ActionButton>
         }
       >
-        <p
-          data-testid="tpl-registry-workflow-note"
-          className="m-0 mb-5 text-base text-neutral-500 leading-normal max-w-[640px]"
-        >
-          Icerik, stil ve yayin sablonlarini buradan yonetebilirsiniz. Sablonlar
-          uretim hattinin yapi taslaridir. Bir sablon secerek detay, kural ve
-          style blueprint iliskilerini gorebilirsiniz. &uarr;&darr; tuslariyla gezinip Enter ile detay panelini acabilirsiniz.
+        <p data-testid="tpl-registry-workflow-note" className="m-0 mb-3 text-xs text-neutral-400">
+          Icerik, stil ve yayin sablonlari. ↑↓ gezin, Enter detay paneli.
         </p>
 
         <div onKeyDown={handleKeyDown} tabIndex={0} className="outline-none">

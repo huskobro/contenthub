@@ -28,7 +28,7 @@ export function AppHeader({ area }: AppHeaderProps) {
 
   return (
     <header
-      className="flex items-center h-header px-6 border-b border-border-subtle backdrop-blur-[16px] z-header shrink-0 relative"
+      className="flex items-center h-header px-4 border-b border-border-subtle backdrop-blur-[16px] z-header shrink-0 relative"
       style={{ backgroundColor: "color-mix(in srgb, var(--ch-surface-card) 82%, transparent)" }}
     >
       {/* Subtle bottom gradient line */}

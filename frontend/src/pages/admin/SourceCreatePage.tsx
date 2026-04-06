@@ -18,8 +18,8 @@ export function SourceCreatePage() {
   return (
     <div className="max-w-[600px]">
       <h2 className="m-0 mb-1">Yeni Source</h2>
-      <p className="m-0 mb-5 text-neutral-600 text-md">
-        Yeni bir haber kaynağı oluşturun.
+      <p className="m-0 mb-3 text-xs text-neutral-400">
+        Yeni bir haber kaynagi olusturun.
       </p>
       <SourceForm
         onSubmit={handleSubmit}

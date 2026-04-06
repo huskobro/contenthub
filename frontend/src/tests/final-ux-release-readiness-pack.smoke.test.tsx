@@ -145,8 +145,8 @@ describe("Phase 318 — Deferred/disabled note standardization", () => {
 
   it("analytics overview filter section is active (M17-B)", () => {
     renderAdmin("/admin/analytics");
-    const note = screen.getByTestId("filter-inactive-note");
-    expect(note.textContent).toContain("zaman penceresi");
+    expect(screen.getByTestId("analytics-filter-area")).toBeDefined();
+    expect(screen.getByTestId("filter-date-start")).toBeDefined();
   });
 
   it("analytics content module distribution section exists (M18-B)", async () => {
@@ -174,7 +174,7 @@ describe("Phase 318 — Deferred/disabled note standardization", () => {
   it("standard video detail manage note uses standard wording", async () => {
     renderAdmin("/admin/standard-videos/test-456");
     const note = await waitFor(() => screen.getByTestId("sv-detail-manage-note"));
-    expect(note.textContent).toContain("backend entegrasyonu");
+    expect(note.textContent).toContain("Kaydi duzenleyin");
     expect(note.textContent).not.toContain("ilerideki fazlarda");
   });
 
@@ -210,7 +210,7 @@ describe("Phase 319 — Cross-module UX coherence", () => {
     it("admin overview has workflow note with testid", () => {
       renderAdmin("/admin");
       const note = screen.getByTestId("admin-overview-workflow-note");
-      expect(note.textContent).toContain("Yonetim zinciri");
+      expect(note.textContent).toContain("Icerik Olusturma");
     });
   });
 
@@ -246,7 +246,7 @@ describe("Phase 319 — Cross-module UX coherence", () => {
     it("publish page has workflow chain", () => {
       renderUser("/user/publish");
       const chain = screen.getByTestId("publish-workflow-chain");
-      expect(chain.textContent).toContain("Yayin zinciri");
+      expect(chain.textContent).toContain("YouTube Yayini");
     });
   });
 
@@ -254,13 +254,13 @@ describe("Phase 319 — Cross-module UX coherence", () => {
     it("content page has first-use note", () => {
       renderUser("/user/content");
       const note = screen.getByTestId("content-first-use-note");
-      expect(note.textContent).toContain("Henüz icerik olusturmadiyseniz");
+      expect(note.textContent).toContain("Ilk kez mi kullaniyorsunuz");
     });
 
     it("publish page has first-use note", () => {
       renderUser("/user/publish");
       const note = screen.getByTestId("publish-first-use-note");
-      expect(note.textContent).toContain("Henüz yayin sureci baslamadiysa");
+      expect(note.textContent).toContain("Yayin sureci baslamadiysa");
     });
   });
 });

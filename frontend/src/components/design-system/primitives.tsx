@@ -45,13 +45,13 @@ export function PageShell({ title, subtitle, breadcrumb, actions, children, test
           ))}
         </nav>
       )}
-      <div className="flex items-start justify-between mb-6 gap-4">
+      <div className="flex items-start justify-between mb-4 gap-3">
         <div>
-          <h1 className="m-0 text-2xl font-bold text-neutral-900 leading-tight font-heading tracking-[-0.02em]" data-testid={testId ? `${testId}-heading` : undefined}>
+          <h1 className="m-0 text-xl font-bold text-neutral-900 leading-tight font-heading tracking-[-0.02em]" data-testid={testId ? `${testId}-heading` : undefined}>
             {title}
           </h1>
           {subtitle && (
-            <p className="mt-2 text-md text-neutral-600 leading-normal max-w-[640px]" data-testid={testId ? `${testId}-subtitle` : undefined}>
+            <p className="mt-1 text-sm text-neutral-600 leading-normal max-w-[640px]" data-testid={testId ? `${testId}-subtitle` : undefined}>
               {subtitle}
             </p>
           )}
@@ -80,16 +80,16 @@ export function SectionShell({ title, description, actions, children, testId, fl
   return (
     <section
       className={cn(
-        "bg-surface-card border border-border-subtle rounded-lg mb-5 shadow-sm hover:shadow-md transition-all duration-normal",
-        flush ? "p-0" : "p-5"
+        "bg-surface-card border border-border-subtle rounded-lg mb-4 shadow-sm hover:shadow-md transition-all duration-normal",
+        flush ? "p-0" : "p-4"
       )}
       data-testid={testId}
     >
       {(title || description || actions) && (
         <div className={cn(
           "flex justify-between items-start",
-          (title || description) && "mb-4",
-          flush && "px-5 pt-5"
+          (title || description) && "mb-3",
+          flush && "px-4 pt-4"
         )}>
           <div>
             {title && <h3 className="m-0 text-lg font-semibold text-neutral-900 font-heading tracking-[-0.015em]">{title}</h3>}
@@ -119,7 +119,7 @@ interface MetricTileProps {
 export function MetricTile({ label, value, note, loading, testId, accentColor }: MetricTileProps) {
   return (
     <div
-      className="px-5 py-4 border border-border-subtle rounded-lg shadow-sm hover:shadow-md transition-shadow duration-normal min-w-0 bg-surface-card"
+      className="px-4 py-3 border border-border-subtle rounded-lg shadow-sm hover:shadow-md transition-shadow duration-normal min-w-0 bg-surface-card"
       style={accentColor ? { background: `linear-gradient(180deg, ${accentColor} 0%, ${accentColor} 2px, var(--ch-surface-card) 2px)` } : undefined}
       data-testid={testId}
     >
@@ -147,7 +147,7 @@ export function MetricTile({ label, value, note, loading, testId, accentColor }:
 
 export function MetricGrid({ children }: { children: React.ReactNode }) {
   return (
-    <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-4">
+    <div className="grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-3">
       {children}
     </div>
   );
@@ -241,7 +241,7 @@ export function DataTable<T>({
             {columns.map((col) => (
               <th
                 key={col.key}
-                className="text-left py-3 px-4 text-sm font-semibold text-neutral-600 border-b-2 border-border bg-surface-inset whitespace-nowrap"
+                className="text-left py-2 px-3 text-sm font-semibold text-neutral-600 border-b-2 border-border bg-surface-inset whitespace-nowrap"
                 style={{ textAlign: col.align || "left", width: col.width }}
               >
                 {col.header}
@@ -269,7 +269,7 @@ export function DataTable<T>({
                 {columns.map((col) => (
                   <td
                     key={col.key}
-                    className="py-3 px-4 text-base text-neutral-800 border-b border-border-subtle"
+                    className="py-2 px-3 text-base text-neutral-800 border-b border-border-subtle"
                     style={{ textAlign: col.align || "left" }}
                   >
                     {col.render(item)}
@@ -513,7 +513,7 @@ interface TabBarProps<T extends string> {
 
 export function TabBar<T extends string>({ tabs, active, onChange, testId }: TabBarProps<T>) {
   return (
-    <div className="flex gap-0 border-b-2 border-border mb-5" data-testid={testId}>
+    <div className="flex gap-0 border-b-2 border-border mb-4" data-testid={testId}>
       {tabs.map((tab) => {
         const isActive = active === tab.key;
         return (
@@ -521,7 +521,7 @@ export function TabBar<T extends string>({ tabs, active, onChange, testId }: Tab
             key={tab.key}
             onClick={() => onChange(tab.key)}
             className={cn(
-              "py-3 px-4 text-base border-none rounded-t-md border-b-2 -mb-[2px] cursor-pointer transition-all duration-fast",
+              "py-2 px-3 text-sm border-none rounded-t-md border-b-2 -mb-[2px] cursor-pointer transition-all duration-fast",
               isActive
                 ? "font-semibold text-brand-700 bg-brand-50 border-b-brand-600"
                 : "font-normal text-neutral-600 bg-transparent border-b-transparent hover:bg-neutral-50",

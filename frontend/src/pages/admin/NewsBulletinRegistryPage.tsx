@@ -22,10 +22,8 @@ export function NewsBulletinRegistryPage() {
         </ActionButton>
       }
     >
-      <p className="mt-2 mb-5 text-base text-neutral-500 leading-normal max-w-[640px]" data-testid="nb-registry-workflow-note">
-        Haber bulteni kayitlarinizi buradan yonetebilirsiniz. Bir bulten
-        sectiginizde detay panelinde secili haberler, script ve metadata
-        adimlarini gorebilir ve duzenleyebilirsiniz.
+      <p className="mt-0 mb-3 text-xs text-neutral-400" data-testid="nb-registry-workflow-note">
+        Bulten secerek detay panelinde haberler, script ve metadata adimlarini gorun.
       </p>
 
       <div className="flex gap-6 items-start">

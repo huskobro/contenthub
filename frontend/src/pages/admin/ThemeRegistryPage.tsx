@@ -466,7 +466,7 @@ export function ThemeRegistryPage() {
   return (
     <PageShell
       title="Tema Yonetimi"
-      subtitle="Sistemdeki temalar. Aktif temayi degistirebilir, yeni tema import edebilir ve tema onizlemesi gorebilirsiniz."
+      subtitle="Aktif temayi degistirin, yeni tema import edin."
       testId="theme-registry"
     >
       {/* Active theme info */}

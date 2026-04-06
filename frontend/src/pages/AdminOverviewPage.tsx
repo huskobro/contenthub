@@ -203,7 +203,7 @@ function IconCircle({ path, bgClass, color }: { path: string; bgClass: string; c
 function QuickCard({ link, onClick }: { link: QuickLink; onClick: () => void }) {
   return (
     <div
-      className="py-4 px-5 bg-surface-card border border-border-subtle border-l-[3px] rounded-lg cursor-pointer duration-normal shadow-sm hover:border-brand-300 hover:border-l-brand-400 hover:shadow-md flex gap-3 items-start transition-all"
+      className="py-3 px-4 bg-surface-card border border-border-subtle border-l-[3px] rounded-lg cursor-pointer duration-normal shadow-sm hover:border-brand-300 hover:border-l-brand-400 hover:shadow-md flex gap-3 items-start transition-all"
       onClick={onClick}
       role="button"
       tabIndex={0}
@@ -215,7 +215,7 @@ function QuickCard({ link, onClick }: { link: QuickLink; onClick: () => void }) 
         <p className="m-0 text-md font-semibold text-neutral-900 mb-1">
           {link.title}
         </p>
-        <p className="m-0 text-sm text-neutral-600 leading-normal">
+        <p className="m-0 text-xs text-neutral-500 leading-normal line-clamp-2">
           {link.desc}
         </p>
       </div>
@@ -304,27 +304,23 @@ export function AdminOverviewPage() {
   return (
     <PageShell
       title="Genel Bakis"
-      subtitle="Uretim ve yonetim merkezi. Buradan icerik olusturabilir, kaynaklari yonetebilir, sablonlari duzenleyebilir, uretim islerini takip edebilir ve sistem ayarlarini yapilandirabilirsiniz. Baslangic ve takip islemleri icin kullanici panelini kullanabilirsiniz."
+      subtitle="Uretim ve yonetim merkezi. Icerik, kaynak, sablon, is takibi ve sistem ayarlari."
       testId="admin-overview"
     >
-      {/* Workflow chain note */}
-      <p
-        className="m-0 mb-5 text-sm text-neutral-500 leading-normal"
-        data-testid="admin-overview-workflow-note"
-      >
-        Yonetim zinciri: Icerik Olusturma &rarr; Sablon/Stil Yonetimi &rarr; Kaynak Yonetimi &rarr; Is Takibi &rarr; Yayin &rarr; Analytics.
+      <p className="m-0 mb-3 text-xs text-neutral-400" data-testid="admin-overview-workflow-note">
+        Icerik Olusturma &rarr; Sablon/Stil &rarr; Kaynak &rarr; Is Takibi &rarr; Yayin &rarr; Analytics
       </p>
 
       {/* ---- Hero / Summary Area ---- */}
-      <div className="bg-gradient-to-br from-brand-50 via-brand-100/60 to-surface-page rounded-xl p-6 pb-5 mb-6 border border-brand-200/60 relative overflow-hidden">
+      <div className="bg-gradient-to-br from-brand-50 via-brand-100/60 to-surface-page rounded-xl p-4 pb-3 mb-4 border border-brand-200/60 relative overflow-hidden">
         {/* Ambient glow overlay */}
         <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse at 90% 10%, color-mix(in srgb, var(--ch-brand-400) 6%, transparent) 0%, transparent 60%)" }} />
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-3">
           <div>
-            <h2 className="m-0 text-lg font-bold text-brand-800 tracking-tight font-heading">
+            <h2 className="m-0 text-md font-bold text-brand-800 tracking-tight font-heading">
               Platform Metrikleri
             </h2>
-            <p className="mt-1 mb-0 text-sm text-brand-600">
+            <p className="mt-0.5 mb-0 text-xs text-brand-600">
               Son 30 gun
             </p>
           </div>
@@ -374,7 +370,7 @@ export function AdminOverviewPage() {
 
         {/* Extra row: production duration & retry */}
         {!isLoading && data && (
-          <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-4 mt-4">
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-3 mt-3">
             <MetricTile
               label="Ort. Uretim Suresi"
               value={fmtDuration(data.avg_production_duration_seconds)}
@@ -401,7 +397,7 @@ export function AdminOverviewPage() {
       </div>
 
       {/* ---- Two-column: Recent Jobs + System Status ---- */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.2fr] gap-5 mb-6">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.2fr] gap-4 mb-4">
         {/* Recent Jobs */}
         <SectionShell
           title="Son Isler"
@@ -461,10 +457,10 @@ export function AdminOverviewPage() {
 
       {/* ---- Quick Access ---- */}
       <SectionShell testId="admin-quick-access-section">
-        <h3 data-testid="admin-quick-access-heading" className="m-0 text-lg font-semibold text-neutral-900 mb-4">
+        <h3 data-testid="admin-quick-access-heading" className="m-0 text-md font-semibold text-neutral-900 mb-3">
           Hizli Erisim
         </h3>
-        <div className="grid grid-cols-3 gap-4 stagger-children">
+        <div className="grid grid-cols-3 gap-3 stagger-children">
           {filteredLinks.map((link) => (
             <QuickCard
               key={link.to}

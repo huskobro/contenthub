@@ -1,5 +1,6 @@
 import type { JobResponse } from "../../api/jobsApi";
 import { DurationBadge } from "./DurationBadge";
+import { JobProgressBar } from "./JobProgressBar";
 import { formatDateISO } from "../../lib/formatDate";
 
 interface JobOverviewPanelProps {
@@ -30,6 +31,7 @@ export function JobOverviewPanel({ job }: JobOverviewPanelProps) {
         Isin tamamlanma durumu yayin hazirligini belirler. Basarili isler
         yayin adimina gecebilir. Kuyruk durumu ve retry bilgisi asagida gorunur.
       </p>
+      <JobProgressBar job={job} />
       <Row label="Is Kimlik"><code className="text-sm">{job.id}</code></Row>
       <Row label="Modul Turu">{job.module_type}</Row>
       <Row label="Durum">{job.status}</Row>
