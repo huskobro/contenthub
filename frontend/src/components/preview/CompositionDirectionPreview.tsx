@@ -98,7 +98,7 @@ export function CompositionDirectionPreview({
         ))}
       </div>
       <p className="m-0 mt-1.5 text-[10px] text-neutral-400 text-center italic">
-        Onizleme — nihai cikti farkli olabilir
+        Duzenleme yonu gorseli — sectiginiz yon bultende kullanilacaktir
       </p>
     </div>
   );

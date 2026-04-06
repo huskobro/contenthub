@@ -998,3 +998,43 @@ class PublishLog(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=_now
     )
+
+
+class WizardConfig(Base):
+    """
+    Wizard Configuration — M32.
+
+    Her wizard tipi (news_bulletin, standard_video) icin admin-managed
+    adim ve alan yapilandirmasi tutar.
+
+    steps_config_json:
+      JSON dizisi — siralanmis adim tanimlari ve her adimin alanlari.
+
+    field_defaults_json:
+      JSON dict — alan bazinda varsayilan degerler.
+
+    wizard_type: unique key — "news_bulletin", "standard_video" vb.
+    enabled: wizard tamamen kapatilabilir
+    version: admin degisikliklerini izler
+    """
+
+    __tablename__ = "wizard_configs"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    wizard_type: Mapped[str] = mapped_column(
+        String(100), nullable=False, unique=True, index=True
+    )
+    display_name: Mapped[str] = mapped_column(String(200), nullable=False)
+    enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    steps_config_json: Mapped[str] = mapped_column(Text, nullable=False, default="[]")
+    field_defaults_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    module_scope: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    status: Mapped[str] = mapped_column(String(50), nullable=False, default="active")
+    version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now, onupdate=_now
+    )

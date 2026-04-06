@@ -1,9 +1,10 @@
 /**
- * M29 — News Bulletin Wizard Page
+ * M32 — News Bulletin Wizard Page
  *
- * 3-step wizard: kaynak/haber secimi → draft review / narration edit → stil & uretim
+ * 3-step wizard: kaynak/haber secimi -> draft review / narration edit -> stil & uretim
  *
- * Step 0: Bulletin olusturma + haber secimi
+ * Step 0: Haber secimi (news-first) + bulten ayarlari (topic, tone, duration)
+ *         Kullanici once haberleri secer, sonra bulten olusturur.
  * Step 1: Editorial review — inline narration duzenleme + gate
  * Step 2: Stil/preview secimleri + production baslatma
  */
@@ -14,8 +15,10 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { WizardShell, type WizardStep } from "../../components/wizard/WizardShell";
 import { CompositionDirectionPreview } from "../../components/preview/CompositionDirectionPreview";
 import { ThumbnailDirectionPreview } from "../../components/preview/ThumbnailDirectionPreview";
+import { LowerThirdStylePreview } from "../../components/preview/LowerThirdStylePreview";
 import { StyleBlueprintSelector } from "../../components/preview/StyleBlueprintSelector";
 import { TemplateSelector } from "../../components/preview/TemplateSelector";
+import { SubtitleStylePicker } from "../../components/standard-video/SubtitleStylePicker";
 import { useToast } from "../../hooks/useToast";
 import { cn } from "../../lib/cn";
 import {
@@ -36,6 +39,10 @@ import {
   fetchTrustCheck,
   fetchCategoryStyleSuggestion,
 } from "../../api/newsBulletinApi";
+import {
+  type NewsItemResponse,
+  fetchNewsItems,
+} from "../../api/newsItemsApi";
 
 const STEPS: WizardStep[] = [
   { id: "source", label: "Kaynak & Haber" },
@@ -45,6 +52,13 @@ const STEPS: WizardStep[] = [
 
 const inputCls =
   "block w-full px-2 py-1.5 text-sm border border-border rounded-sm box-border focus:outline-none focus:ring-2 focus:ring-focus";
+
+// Render mode description mapping
+const RENDER_MODE_DESCRIPTIONS: Record<string, string> = {
+  combined: "Tum haberler tek bir video olarak render edilir",
+  per_category: "Her kategori icin ayri video render edilir",
+  per_item: "Her haber icin ayri video render edilir",
+};
 
 // ---------------------------------------------------------------------------
 // Main wizard page
@@ -62,13 +76,18 @@ export function NewsBulletinWizardPage() {
   const [step, setStep] = useState(0);
   const [bulletinId, setBulletinId] = useState<string | null>(resumeId);
 
-  // Step 0 state
-  const [topic, setTopic] = useState("");
-  const [title, setTitle] = useState("");
-  const [brief, setBrief] = useState("");
+  // Step 0 state — news-first flow
   const [language, setLanguage] = useState("tr");
+  const [topic, setTopic] = useState("");
   const [tone, setTone] = useState("formal");
   const [duration, setDuration] = useState("120");
+  // Local news selection before bulletin creation
+  const [selectedItemsLocal, setSelectedItemsLocal] = useState<
+    { news_item_id: string; sort_order: number; title: string }[]
+  >([]);
+  const [showBulletinSettings, setShowBulletinSettings] = useState(false);
+  // Track whether topic was auto-set (so we know if user manually changed it)
+  const [topicAutoSet, setTopicAutoSet] = useState(false);
 
   // Step 2 state
   const [compositionDirection, setCompositionDirection] = useState("");
@@ -94,8 +113,6 @@ export function NewsBulletinWizardPage() {
   useEffect(() => {
     if (bulletin) {
       setTopic(bulletin.topic || "");
-      setTitle(bulletin.title || "");
-      setBrief(bulletin.brief || "");
       setLanguage(bulletin.language || "tr");
       setTone(bulletin.tone || "formal");
       setDuration(String(bulletin.target_duration_seconds || 120));
@@ -118,14 +135,21 @@ export function NewsBulletinWizardPage() {
     }
   }, [bulletin]);
 
-  // Selectable news items
+  // Browse news items — available immediately (before bulletin creation)
+  const { data: browseItems = [], isLoading: loadingBrowse } = useQuery({
+    queryKey: ["browse-news-items", language],
+    queryFn: () => fetchNewsItems({ status: "new", language: language || undefined }),
+    enabled: !bulletinId, // Only browse when bulletin doesn't exist yet
+  });
+
+  // Selectable news items — after bulletin exists
   const { data: selectableItems = [], isLoading: loadingSelectable } = useQuery({
     queryKey: ["selectable-news", bulletinId, language],
     queryFn: () => fetchSelectableNewsItems(bulletinId!, { language: language || undefined }),
     enabled: !!bulletinId,
   });
 
-  // Selected items
+  // Selected items — after bulletin exists
   const { data: selectedItems = [], refetch: refetchSelected } = useQuery({
     queryKey: ["bulletin-selected", bulletinId],
     queryFn: () => fetchNewsBulletinSelectedItems(bulletinId!),
@@ -146,22 +170,76 @@ export function NewsBulletinWizardPage() {
     enabled: !!bulletinId && step === 2,
   });
 
+  // M32: Subtitle presets — fetched when on step 2
+  const { data: subtitlePresets = [], isLoading: loadingPresets, error: presetsError } = useQuery({
+    queryKey: ["subtitle-presets"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/modules/standard-video/subtitle-presets");
+      if (!res.ok) throw new Error("Preset yukleme hatasi");
+      return res.json();
+    },
+    enabled: step === 2,
+  });
+
+  // --- Local news selection helpers (before bulletin exists) ---
+
+  function addLocalItem(item: NewsItemResponse) {
+    setSelectedItemsLocal((prev) => {
+      if (prev.some((s) => s.news_item_id === item.id)) return prev;
+      const next = [...prev, { news_item_id: item.id, sort_order: prev.length, title: item.title }];
+      // Auto-suggest topic from first selected news item
+      if (next.length === 1 && !topic.trim()) {
+        setTopic(item.title);
+        setTopicAutoSet(true);
+      }
+      return next;
+    });
+    // Show bulletin settings once we have at least one item
+    setShowBulletinSettings(true);
+  }
+
+  function removeLocalItem(newsItemId: string) {
+    setSelectedItemsLocal((prev) => {
+      const next = prev
+        .filter((s) => s.news_item_id !== newsItemId)
+        .map((s, i) => ({ ...s, sort_order: i }));
+      // If we removed all items and topic was auto-set, clear it
+      if (next.length === 0 && topicAutoSet) {
+        setTopic("");
+        setTopicAutoSet(false);
+        setShowBulletinSettings(false);
+      }
+      return next;
+    });
+  }
+
   // --- Mutations ---
 
   const createBulletinMut = useMutation({
-    mutationFn: () =>
-      createNewsBulletin({
+    mutationFn: async () => {
+      // 1. Create bulletin
+      const created = await createNewsBulletin({
         topic: topic.trim(),
-        title: title.trim() || undefined,
-        brief: brief.trim() || undefined,
         target_duration_seconds: duration ? Number(duration) : null,
         language: language || "tr",
         tone: tone || "formal",
         status: "draft",
-      }),
+      });
+      // 2. Add all locally selected items
+      for (const item of selectedItemsLocal) {
+        await createNewsBulletinSelectedItem(created.id, {
+          news_item_id: item.news_item_id,
+          sort_order: item.sort_order,
+        });
+      }
+      return created;
+    },
     onSuccess: (created) => {
       setBulletinId(created.id);
+      setSelectedItemsLocal([]);
       toast.success("Bulten olusturuldu");
+      refetchSelected();
+      refetchBulletin();
     },
   });
 
@@ -245,7 +323,10 @@ export function NewsBulletinWizardPage() {
 
   const canGoNext = useCallback(() => {
     if (step === 0) {
-      if (!bulletinId) return topic.trim().length > 0;
+      if (!bulletinId) {
+        // Need at least 1 local selection and a topic
+        return selectedItemsLocal.length > 0 && topic.trim().length > 0;
+      }
       return selectedItems.length > 0;
     }
     if (step === 1) {
@@ -258,14 +339,14 @@ export function NewsBulletinWizardPage() {
       }
     }
     return true;
-  }, [step, bulletinId, topic, selectedItems, bulletin, trustCheck, trustEnforcementLevel]);
+  }, [step, bulletinId, topic, selectedItemsLocal, selectedItems, bulletin, trustCheck, trustEnforcementLevel]);
 
   async function handleNext() {
     if (step === 0) {
-      // Create bulletin if not exists
       if (!bulletinId) {
+        // Create bulletin + add all local selections
         createBulletinMut.mutate();
-        return; // Stay on step 0, bulletin will be created, then user selects news
+        return; // Stay on step 0 until bulletin is created, then auto-advance
       }
       setStep(1);
     } else if (step === 1) {
@@ -277,6 +358,13 @@ export function NewsBulletinWizardPage() {
     }
   }
 
+  // Auto-advance to step 1 after bulletin creation succeeds
+  useEffect(() => {
+    if (bulletinId && createBulletinMut.isSuccess) {
+      setStep(1);
+    }
+  }, [bulletinId, createBulletinMut.isSuccess]);
+
   function handleBack() {
     if (step > 0) setStep(step - 1);
   }
@@ -287,7 +375,7 @@ export function NewsBulletinWizardPage() {
     updateBulletinMut.isPending;
 
   const getNextLabel = () => {
-    if (step === 0 && !bulletinId) return "Bulten Olustur";
+    if (step === 0 && !bulletinId) return createBulletinMut.isPending ? "Olusturuluyor..." : "Bulten Olustur";
     if (step === 2) return startProductionMut.isPending ? "Baslatiliyor..." : "Uretimi Baslat";
     return "Devam";
   };
@@ -312,46 +400,149 @@ export function NewsBulletinWizardPage() {
       testId="bulletin-wizard"
     >
       {/* ----------------------------------------------------------------- */}
-      {/* Step 0: Source & News Selection                                    */}
+      {/* Step 0: News-First Source & Selection                              */}
       {/* ----------------------------------------------------------------- */}
       {step === 0 && (
         <div className="space-y-4">
-          {/* Bulletin basics — only if not yet created */}
+          {/* Language selector — always visible */}
+          <div className="flex items-center gap-3">
+            <label className="text-sm font-medium text-neutral-700 shrink-0">Dil</label>
+            <select
+              className={cn(inputCls, "w-32")}
+              value={language}
+              onChange={(e) => setLanguage(e.target.value)}
+            >
+              <option value="tr">Turkce</option>
+              <option value="en">English</option>
+            </select>
+          </div>
+
+          {/* Pre-bulletin: browse news items from global pool */}
           {!bulletinId && (
-            <div className="space-y-3">
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">
-                  Konu <span className="text-red-500">*</span>
-                </label>
-                <input
-                  className={inputCls}
-                  value={topic}
-                  onChange={(e) => setTopic(e.target.value)}
-                  placeholder="Bultenin ana konusu"
-                  autoFocus
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">Dil</label>
-                  <select className={inputCls} value={language} onChange={(e) => setLanguage(e.target.value)}>
-                    <option value="tr">Turkce</option>
-                    <option value="en">English</option>
-                  </select>
+            <>
+              {/* Local selection basket */}
+              {selectedItemsLocal.length > 0 && (
+                <div className="space-y-1.5">
+                  <p className="m-0 text-xs font-medium text-neutral-500 uppercase tracking-wide">
+                    Secilen Haberler ({selectedItemsLocal.length})
+                  </p>
+                  {selectedItemsLocal.map((item, idx) => (
+                    <div
+                      key={item.news_item_id}
+                      className="flex items-center justify-between p-2 bg-emerald-50 border border-emerald-200 rounded-md text-sm"
+                    >
+                      <span className="text-neutral-800 truncate flex-1 mr-2">
+                        #{idx + 1} — {item.title || item.news_item_id.slice(0, 12)}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => removeLocalItem(item.news_item_id)}
+                        className="text-xs text-red-500 bg-transparent border-none cursor-pointer hover:text-red-700"
+                      >
+                        Kaldir
+                      </button>
+                    </div>
+                  ))}
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">Ton</label>
-                  <input className={inputCls} value={tone} onChange={(e) => setTone(e.target.value)} placeholder="formal" />
+              )}
+
+              {/* Bulletin settings — collapsible, shown after first selection */}
+              {selectedItemsLocal.length > 0 && (
+                <div className="border border-neutral-200 rounded-md overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => setShowBulletinSettings((v) => !v)}
+                    className="w-full flex items-center justify-between px-3 py-2 bg-neutral-50 text-sm font-medium text-neutral-700 cursor-pointer border-none hover:bg-neutral-100 transition-colors"
+                  >
+                    <span>Bulten Ayarlari</span>
+                    <span className="text-neutral-400 text-xs">
+                      {showBulletinSettings ? "Gizle" : "Goster"}
+                    </span>
+                  </button>
+                  {showBulletinSettings && (
+                    <div className="p-3 space-y-3 border-t border-neutral-200">
+                      <div>
+                        <label className="block text-sm font-medium text-neutral-700 mb-1">
+                          Konu <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          className={inputCls}
+                          value={topic}
+                          onChange={(e) => {
+                            setTopic(e.target.value);
+                            setTopicAutoSet(false);
+                          }}
+                          placeholder="Bultenin ana konusu"
+                        />
+                        {topicAutoSet && (
+                          <p className="m-0 mt-0.5 text-[10px] text-neutral-400 italic">
+                            Ilk secilen haberin basligindan otomatik dolduruldu
+                          </p>
+                        )}
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-sm font-medium text-neutral-700 mb-1">Ton</label>
+                          <select className={inputCls} value={tone} onChange={(e) => setTone(e.target.value)}>
+                            <option value="formal">Formal</option>
+                            <option value="casual">Casual</option>
+                            <option value="dramatic">Dramatic</option>
+                            <option value="neutral">Neutral</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-neutral-700 mb-1">Hedef Sure (sn)</label>
+                          <input
+                            className={inputCls}
+                            type="number"
+                            min={0}
+                            value={duration}
+                            onChange={(e) => setDuration(e.target.value)}
+                            placeholder="120"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
+              )}
+
+              {/* Browseable news items */}
+              <div className="space-y-1.5">
+                <p className="m-0 text-xs font-medium text-neutral-500 uppercase tracking-wide">
+                  Mevcut Haberler {loadingBrowse && "(yukleniyor...)"}
+                </p>
+                {browseItems.length === 0 && !loadingBrowse && (
+                  <p className="text-sm text-neutral-400 italic">Secilebilir haber bulunamadi.</p>
+                )}
+                {browseItems
+                  .filter((ni) => !selectedItemsLocal.some((s) => s.news_item_id === ni.id))
+                  .slice(0, 20)
+                  .map((item) => (
+                    <div
+                      key={item.id}
+                      className="flex items-center justify-between p-2 bg-neutral-50 border border-neutral-200 rounded-md text-sm"
+                    >
+                      <div className="flex-1 mr-2 min-w-0">
+                        <span className="text-neutral-800 font-medium truncate block">{item.title || "(basliksiz)"}</span>
+                        {item.summary && (
+                          <span className="text-neutral-400 text-xs truncate block">{item.summary.slice(0, 100)}</span>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => addLocalItem(item)}
+                        className="text-xs text-blue-600 bg-transparent border-none cursor-pointer hover:text-blue-800 whitespace-nowrap"
+                      >
+                        Sec
+                      </button>
+                    </div>
+                  ))}
               </div>
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">Hedef Sure (sn)</label>
-                <input className={inputCls} type="number" min={0} value={duration} onChange={(e) => setDuration(e.target.value)} placeholder="120" />
-              </div>
-            </div>
+            </>
           )}
 
-          {/* News selection — only if bulletin exists */}
+          {/* Post-bulletin: server-side selection (resume flow) */}
           {bulletinId && (
             <div className="space-y-3">
               <div className="flex items-center justify-between">
@@ -512,64 +703,29 @@ export function NewsBulletinWizardPage() {
                 </button>
               ))}
             </div>
+            <p className="m-0 mt-1.5 text-xs text-neutral-500">
+              {RENDER_MODE_DESCRIPTIONS[renderMode] || ""}
+            </p>
           </div>
 
-          {/* ---- M31: Subtitle Style ---- */}
+          {/* ---- M32: Subtitle Style — SubtitleStylePicker ---- */}
           <div>
-            <h3 className="m-0 mb-2 text-md font-semibold text-neutral-800">Altyazi Stili</h3>
-            <div className="grid grid-cols-3 gap-2">
-              {(
-                [
-                  { value: "clean_white", label: "Temiz Beyaz" },
-                  { value: "bold_yellow", label: "Kalin Sari" },
-                  { value: "minimal_dark", label: "Minimal Koyu" },
-                  { value: "gradient_glow", label: "Isiltili Gecis" },
-                  { value: "outline_only", label: "Yalnizca Kontur" },
-                ] as const
-              ).map(({ value, label }) => (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => setSubtitleStyle(value)}
-                  className={cn(
-                    "px-3 py-2 text-sm border rounded-sm cursor-pointer text-center transition-colors",
-                    subtitleStyle === value
-                      ? "bg-brand-500 text-white border-brand-500"
-                      : "bg-white text-neutral-600 border-border hover:bg-neutral-50",
-                  )}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
+            <SubtitleStylePicker
+              value={subtitleStyle}
+              onChange={(presetId) => setSubtitleStyle(presetId)}
+              presets={subtitlePresets}
+              loading={loadingPresets}
+              error={presetsError instanceof Error ? presetsError.message : presetsError ? String(presetsError) : null}
+            />
           </div>
 
-          {/* ---- M31: Lower-Third Style ---- */}
+          {/* ---- M32: Lower-Third Style — LowerThirdStylePreview ---- */}
           <div>
             <h3 className="m-0 mb-2 text-md font-semibold text-neutral-800">Alt Bant Stili</h3>
-            <div className="flex gap-2">
-              {(
-                [
-                  { value: "broadcast", label: "TV Broadcast" },
-                  { value: "minimal", label: "Minimal" },
-                  { value: "modern", label: "Modern" },
-                ] as const
-              ).map(({ value, label }) => (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => setLowerThirdStyle(value)}
-                  className={cn(
-                    "px-3 py-1.5 text-sm border rounded-sm cursor-pointer transition-colors",
-                    lowerThirdStyle === value
-                      ? "bg-brand-500 text-white border-brand-500"
-                      : "bg-white text-neutral-600 border-border hover:bg-neutral-50",
-                  )}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
+            <LowerThirdStylePreview
+              selected={lowerThirdStyle || undefined}
+              onSelect={(style) => setLowerThirdStyle(style)}
+            />
           </div>
 
           {/* ---- M31: Trust Enforcement Level ---- */}
@@ -609,9 +765,9 @@ export function NewsBulletinWizardPage() {
             <div className="flex items-start gap-3 p-3 bg-blue-50 border border-blue-200 rounded-md text-sm">
               <div className="flex-1 min-w-0">
                 <p className="m-0 font-medium text-blue-800">
-                  Baskın kategori:{" "}
+                  Baskin kategori:{" "}
                   <span className="font-bold">{categoryStyleSuggestion.dominant_category ?? categoryStyleSuggestion.category_used}</span>
-                  {" → "}Önerilen stil:{" "}
+                  {" -> "}Onerilen stil:{" "}
                   <span className="font-bold">{categoryStyleSuggestion.suggested_subtitle_style}</span>
                 </p>
               </div>
@@ -626,14 +782,14 @@ export function NewsBulletinWizardPage() {
                   }}
                   className="px-2 py-1 text-xs font-medium text-white bg-blue-600 border-none rounded-sm cursor-pointer hover:bg-blue-700"
                 >
-                  Öneriyi Uygula
+                  Oneriyi Uygula
                 </button>
                 <button
                   type="button"
                   onClick={() => setSuggestionDismissed(true)}
                   className="text-xs text-blue-500 bg-transparent border-none cursor-pointer hover:text-blue-700 underline"
                 >
-                  Manuel seçim yapıyorum
+                  Manuel secim yapiyorum
                 </button>
               </div>
             </div>
@@ -657,7 +813,7 @@ export function NewsBulletinWizardPage() {
                   <p className="m-0 mt-1">{trustCheck.message}</p>
                   {trustCheck.low_trust_items.map((item) => (
                     <p key={item.news_item_id} className="m-0 mt-0.5 text-xs">
-                      — {item.source_name} (duzey: {item.trust_level})
+                      -- {item.source_name} (duzey: {item.trust_level})
                     </p>
                   ))}
                 </>
@@ -667,7 +823,7 @@ export function NewsBulletinWizardPage() {
                   <p className="m-0 mt-1">{trustCheck.message}</p>
                   {trustCheck.low_trust_items.map((item) => (
                     <p key={item.news_item_id} className="m-0 mt-0.5 text-xs">
-                      — {item.source_name} (duzey: {item.trust_level})
+                      -- {item.source_name} (duzey: {item.trust_level})
                     </p>
                   ))}
                 </>
@@ -681,12 +837,12 @@ export function NewsBulletinWizardPage() {
           <div className="bg-neutral-50 border border-border-subtle rounded-md p-3 space-y-1.5 text-sm">
             <p className="m-0 font-medium text-neutral-700">Uretim Ozeti</p>
             <SummaryRow label="Konu" value={bulletin?.topic || topic} />
-            <SummaryRow label="Durum" value={bulletin?.status || "—"} />
+            <SummaryRow label="Durum" value={bulletin?.status || "---"} />
             <SummaryRow label="Secili Haber" value={String(selectedItems.length)} />
             <SummaryRow label="Dil" value={bulletin?.language || language} />
             <SummaryRow label="Ton" value={bulletin?.tone || tone} />
-            <SummaryRow label="Kompozisyon" value={compositionDirection || "—"} />
-            <SummaryRow label="Thumbnail" value={thumbnailDirection || "—"} />
+            <SummaryRow label="Kompozisyon" value={compositionDirection || "---"} />
+            <SummaryRow label="Thumbnail" value={thumbnailDirection || "---"} />
             <SummaryRow label="Video Modu" value={renderMode} />
             <SummaryRow label="Altyazi" value={subtitleStyle} />
             <SummaryRow label="Alt Bant" value={lowerThirdStyle} />

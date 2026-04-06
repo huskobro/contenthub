@@ -24,6 +24,7 @@ export const ADMIN_NAV: AdminNavItem[] = [
   { label: "Sistem", section: true },
   { label: "Ayarlar", to: "/admin/settings", visibilityKey: "panel:settings" },
   { label: "Gorunurluk", to: "/admin/visibility", visibilityKey: "panel:visibility" },
+  { label: "Wizard Ayarlari", to: "/admin/wizard-settings" },
   { label: "Isler", to: "/admin/jobs" },
   { label: "Audit Log", to: "/admin/audit-logs" },
   { label: "Icerik Uretimi", section: true },
@@ -86,6 +87,7 @@ export const HORIZON_ADMIN_GROUPS: HorizonNavGroup[] = [
     items: [
       { label: "Ayarlar", to: "/admin/settings" },
       { label: "Gorunurluk", to: "/admin/visibility" },
+      { label: "Wizard Ayarlari", to: "/admin/wizard-settings" },
       { label: "Isler", to: "/admin/jobs" },
       { label: "Audit Log", to: "/admin/audit-logs" },
     ],

@@ -22,6 +22,7 @@ from app.audit.router import router as audit_logs_router
 from app.assets.router import router as assets_router
 from app.content_library.router import router as content_library_router
 from app.discovery.router import router as discovery_router
+from app.wizard_configs.router import router as wizard_configs_router
 
 api_router = APIRouter()
 api_router.include_router(health.router, tags=["health"])
@@ -47,3 +48,4 @@ api_router.include_router(audit_logs_router)
 api_router.include_router(assets_router)
 api_router.include_router(content_library_router)
 api_router.include_router(discovery_router)
+api_router.include_router(wizard_configs_router)

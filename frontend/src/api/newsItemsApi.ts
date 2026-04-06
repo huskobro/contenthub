@@ -54,8 +54,10 @@ export interface NewsItemUpdatePayload {
   raw_payload_json?: string | null;
 }
 
-export function fetchNewsItems(): Promise<NewsItemResponse[]> {
-  return api.get<NewsItemResponse[]>(BASE_URL);
+export function fetchNewsItems(
+  params?: { status?: string; language?: string; source_id?: string; search?: string; limit?: number },
+): Promise<NewsItemResponse[]> {
+  return api.get<NewsItemResponse[]>(BASE_URL, params);
 }
 
 export function fetchNewsItemById(id: string): Promise<NewsItemResponse> {

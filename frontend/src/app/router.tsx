@@ -48,6 +48,7 @@ const JobDetailPage = lazy(() => import("../pages/admin/JobDetailPage").then(m =
 const StandardVideoDetailPage = lazy(() => import("../pages/admin/StandardVideoDetailPage").then(m => ({ default: m.StandardVideoDetailPage })));
 const StandardVideoWizardPage = lazy(() => import("../pages/admin/StandardVideoWizardPage").then(m => ({ default: m.StandardVideoWizardPage })));
 const AuditLogPage = lazy(() => import("../pages/admin/AuditLogPage").then(m => ({ default: m.AuditLogPage })));
+const WizardSettingsPage = lazy(() => import("../pages/admin/WizardSettingsPage").then(m => ({ default: m.WizardSettingsPage })));
 const NewsBulletinWizardPage = lazy(() => import("../pages/admin/NewsBulletinWizardPage").then(m => ({ default: m.NewsBulletinWizardPage })));
 const NewsBulletinDetailPage = lazy(() => import("../pages/admin/NewsBulletinDetailPage").then(m => ({ default: m.NewsBulletinDetailPage })));
 
@@ -71,6 +72,7 @@ export const router = createBrowserRouter([
       { index: true, element: <AdminOverviewPage /> },
       { path: "settings", element: <VisibilityGuard targetKey="panel:settings"><SettingsRegistryPage /></VisibilityGuard> },
       { path: "visibility", element: <VisibilityGuard targetKey="panel:visibility"><VisibilityRegistryPage /></VisibilityGuard> },
+      { path: "wizard-settings", element: <Suspense fallback={<LazyFallback />}><WizardSettingsPage /></Suspense> },
       { path: "jobs", element: <JobsRegistryPage /> },
       { path: "jobs/:jobId", element: <Suspense fallback={<LazyFallback />}><JobDetailPage /></Suspense> },
       { path: "standard-videos", element: <StandardVideoRegistryPage /> },

@@ -90,7 +90,7 @@ export function ThumbnailDirectionPreview({
         ))}
       </div>
       <p className="m-0 mt-1.5 text-[10px] text-neutral-400 text-center italic">
-        Onizleme — nihai cikti farkli olabilir
+        Thumbnail yonu gorseli — sectiginiz yon thumbnail uretiminde kullanilacaktir
       </p>
     </div>
   );
