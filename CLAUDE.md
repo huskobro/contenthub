@@ -42,6 +42,11 @@ Keep the architecture future-ready, but do not add premature enterprise layers.
 - Do not use "we will refactor later" shortcuts.
 - Fail fast where correctness matters.
 - Every meaningful change must be tested, documented, and checkpointed in git.
+- All operator-facing behavior (prompts, thresholds, defaults, editorial patterns, scoring rules) must be manageable through the Settings Registry — not hardcoded in service/pipeline code.
+- Prompt texts used by AI steps must be stored as settings with type "prompt" and appropriate module_scope — never embedded as string literals in code. Use structured naming: `{module}.prompt.{purpose}` (e.g., `news_bulletin.prompt.narration_system`).
+- When a job starts, all effective settings and prompt values relevant to that job must be snapshot-locked alongside template snapshots — runtime config changes must not affect running jobs.
+- Core invariants (state machine rules, security guards, pipeline step order, validation enforcement) remain in code and cannot be disabled from admin panel.
+- Every new feature, module, behavior, or prompt must ship with its own settings management surface. Checklist: (1) Settings key defined in KNOWN_SETTINGS? (2) Visible in admin Settings page? (3) If prompt type, visible in Master Prompt Editor? (4) If wizard parameter, visible in wizard governance? (5) If module toggle, managed via `module.{id}.enabled` in Settings Registry?
 
 ## Product Priorities
 First-version priorities:
