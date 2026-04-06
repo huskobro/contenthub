@@ -40,7 +40,8 @@ export function HorizonSidebar({ groups, brandLabel = "ContentHub" }: HorizonSid
   const sidebarRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
 
-  // Auto-select group based on current route — skip if user manually selected a different group
+  // Auto-select group based on current route — find the MOST SPECIFIC match
+  // (longest matching path wins, so "/admin/sources" beats "/admin")
   const prevPathRef = useRef(location.pathname);
   useEffect(() => {
     const routeChanged = prevPathRef.current !== location.pathname;
@@ -51,11 +52,24 @@ export function HorizonSidebar({ groups, brandLabel = "ContentHub" }: HorizonSid
 
     if (routeChanged) setUserSelectedGroup(false);
 
+    // Find the group with the longest (most specific) matching item path
+    let bestGroup: string | null = null;
+    let bestMatchLength = -1;
+
     for (const group of groups) {
-      if (group.items.some((item) => location.pathname === item.to || location.pathname.startsWith(item.to + "/"))) {
-        setActiveGroupId(group.id);
-        return;
+      for (const item of group.items) {
+        const matches =
+          location.pathname === item.to ||
+          location.pathname.startsWith(item.to + "/");
+        if (matches && item.to.length > bestMatchLength) {
+          bestMatchLength = item.to.length;
+          bestGroup = group.id;
+        }
       }
+    }
+
+    if (bestGroup) {
+      setActiveGroupId(bestGroup);
     }
   }, [location.pathname, groups, userSelectedGroup]);
 
