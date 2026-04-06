@@ -137,18 +137,21 @@ export function SourceDetailPanel({ sourceId }: SourceDetailPanelProps) {
       <div className="flex justify-between items-center mb-4">
         <h3 className="m-0 text-lg text-neutral-900">{source.name}</h3>
         <div className="flex items-center gap-2">
-          {source.source_type === "rss" && (
-            <button
-              onClick={() => scanNow()}
-              disabled={isScanning}
-              className={cn(
-                "px-3 py-1 bg-transparent text-emerald-700 border border-emerald-300 rounded-sm text-sm",
-                isScanning ? "cursor-not-allowed opacity-50" : "cursor-pointer hover:bg-emerald-50 transition-colors duration-fast"
-              )}
-            >
-              {isScanning ? "Taraniyor..." : "Şimdi Tara"}
-            </button>
-          )}
+          <button
+            onClick={() => scanNow()}
+            disabled={isScanning || source.source_type !== "rss"}
+            title={source.source_type !== "rss" ? "Şu an yalnızca RSS kaynaklar taranabilir" : undefined}
+            className={cn(
+              "px-3 py-1 bg-transparent border rounded-sm text-sm",
+              source.source_type !== "rss"
+                ? "text-neutral-400 border-neutral-200 cursor-not-allowed opacity-50"
+                : isScanning
+                ? "text-emerald-700 border-emerald-300 cursor-not-allowed opacity-50"
+                : "text-emerald-700 border-emerald-300 cursor-pointer hover:bg-emerald-50 transition-colors duration-fast"
+            )}
+          >
+            {isScanning ? "Taraniyor..." : "Şimdi Tara"}
+          </button>
           <button
             onClick={() => setEditMode(true)}
             disabled={readOnly}

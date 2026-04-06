@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useCreateSource } from "../../hooks/useCreateSource";
 import { SourceForm } from "../../components/sources/SourceForm";
 import type { SourceCreatePayload } from "../../api/sourcesApi";
+import { createSourceScan, executeSourceScan } from "../../api/sourceScansApi";
 import { useToast } from "../../hooks/useToast";
 
 export function SourceCreatePage() {
@@ -11,8 +12,17 @@ export function SourceCreatePage() {
 
   function handleSubmit(payload: SourceCreatePayload) {
     mutate(payload, {
-      onSuccess: (created) => {
+      onSuccess: async (created) => {
         toast.success("Kaynak basariyla olusturuldu");
+        if (created.source_type === "rss") {
+          try {
+            const scan = await createSourceScan({ source_id: created.id, scan_mode: "manual" });
+            const result = await executeSourceScan(scan.id, false);
+            toast.success(`Ilk tarama tamamlandi: ${result.items_saved} haber kaydedildi`);
+          } catch {
+            toast.error("Kaynak olusturuldu ancak ilk tarama basarisiz oldu");
+          }
+        }
         navigate("/admin/sources", { state: { selectedId: created.id } });
       },
     });
