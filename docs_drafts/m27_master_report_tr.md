@@ -5,11 +5,12 @@
 Bu faz, ContentHub'in cekirdek altyapi eksiklerini kapatti. News bulletin pipeline gibi buyuk yeni moduller bilinçli olarak ertelendi. Odak: mevcut sistemi bozmadan operasyonel guvenilirligi, gorunurlugu ve kullanilabilirligi artirmak.
 
 **Sonuclar:**
-- Backend: 1234 test gecti (0 hata)
-- Frontend: 2301 test gecti (17 pre-existing localStorage hatalari)
+- Backend: 1234 test gecti, 0 hata
+- Frontend: 2318 toplam test — 2301 gecti, 17 pre-existing fail (M27 oncesinden miras, bu faza ait degil)
 - TypeScript: 0 hata
-- ~50 dosya degistirildi/olusturuldu
+- 56 dosya degistirildi/olusturuldu (14 yeni, 42 degisiklik)
 - Calisan hicbir islevsellik bozulmadi
+- Commit: `6767e5a` — push: `main → origin/main` tamamlandi
 
 ---
 
@@ -143,20 +144,47 @@ Bu fazin amaci:
 
 ## 8. Test Stratejisi
 
-- Backend: 1234 test (unit + integration + smoke + state machine + API)
-- Frontend: 2318 test (2301 passed, 17 pre-existing)
-- TypeScript: 0 error
-- Pre-existing failures: themeStore (13), uiStore sidebar (4) — localStorage mock sorunu, bizim degisikliklerimizden bagimsiz
+Backend ve frontend test suite'leri tam olarak calistirildi. Hicbir test atlanmadi veya ignore edilmedi (alembic migration testi haric — sistem python'da alembic paketi yok, pre-existing).
 
 ---
 
 ## 9. Test Sonuclari
 
-| Ortam | Durum | Sonuc |
-|---|---|---|
-| Backend pytest | GECTI | 1234 passed, 0 failed |
-| Frontend vitest | GECTI | 2301 passed, 17 pre-existing |
-| TypeScript tsc | GECTI | 0 error |
+### Backend (pytest)
+
+| Metrik | Deger |
+|---|---|
+| Toplam test | 1234 |
+| Gecen | 1234 |
+| Basarisiz | 0 |
+| M27 kaynakli regresyon | 0 |
+
+### Frontend (vitest)
+
+| Metrik | Deger |
+|---|---|
+| Toplam test | 2318 |
+| Gecen | 2301 |
+| Basarisiz | 17 |
+| M27 kaynakli regresyon | **0** |
+
+17 basarisiz testin tamami M27 oncesinden miras kalan, bu faza ait olmayan pre-existing hatalardir:
+
+| Test Dosyasi | Fail Sayisi | Neden | Bu Faza Ait Mi? |
+|---|---|---|---|
+| `themeStore.test.ts` | 13 | vitest ortaminda `localStorage` mock eksikligi | HAYIR — M26 ve oncesinden miras |
+| `uiStore.sidebar-persist.test.ts` | 4 | ayni localStorage mock sorunu | HAYIR — M26 ve oncesinden miras |
+
+Bu 17 test, M27 degisiklikleri oncesinde de ayni sekilde fail ediyordu. Kok neden: vitest test runner'inda `localStorage` API'sinin tam mock'lanmamasi. Duzeltme icin vitest setup dosyasina global localStorage mock eklenmesi gerekiyor — bu bir test altyapi iyilestirmesidir, M27 kapsaminda degil.
+
+**Sonuc: M27 degisiklikleri sifir regresyon uretmistir.**
+
+### TypeScript (tsc --noEmit)
+
+| Metrik | Deger |
+|---|---|
+| Hata | 0 |
+| Uyari | 0 |
 
 ---
 
@@ -197,26 +225,37 @@ Bu fazin amaci:
 
 ## 11. Durust Kalan Gap Listesi
 
-1. **News Bulletin Pipeline** — Otonom job akisi yok (bilincli erteleme)
-2. **News Bulletin Wizard** — Yok (bilincli erteleme)
-3. **News Bulletin Remotion Composition** — Yok (bilincli erteleme)
-4. **Trust Level Enforcement** — Sadece etiket, runtime'da enforce edilmiyor
-5. **Multi-Worker SSE** — Single-process bus, Redis pubsub yok
-6. **Authentication** — Yok, localhost-only MVP
-7. **edge-tts Paket** — venv'e kurulmamis, TTS stub'a dusuyor
-8. **faster-whisper Paket** — venv'e kurulmamis, cursor timing'e dusuyor
-9. **Template Version History UI** — Version numarasi var ama gecmis surumler UI'i yok
-10. **Semantic Dedupe** — Hard+soft var, semantic (embedding-based) ertelenmis
-11. **Analytics Time Series** — Snapshot bazli, trend cizgisi yok (gunluk/haftalik)
-12. **Product Review / Educational / HowTo Modulleri** — Henuz eklenmedi
-13. **localStorage Test Mock** — themeStore/uiStore testleri pre-existing fail
+### Bilincli Ertelemeler (sonraki milestone'a birakildi)
+
+| # | Alan | Aciklama |
+|---|---|---|
+| 1 | News Bulletin Pipeline | Otonom job akisi, executor'lar, dispatcher entegrasyonu |
+| 2 | News Bulletin Wizard | Kullanici odakli bulten olusturma wizard'i |
+| 3 | News Bulletin Remotion Composition | Bulten icin ozel video composition |
+| 4 | Trust Level Enforcement | Kaynak guvenilirlik seviyesinin runtime'da enforce edilmesi |
+| 5 | Product Review / Educational / HowTo Modulleri | Yeni icerik modul tipleri |
+
+### Teknik Borclar (mevcut, M27 kapsaminda degil)
+
+| # | Alan | Aciklama |
+|---|---|---|
+| 6 | Multi-Worker SSE | Single-process bus; Redis pubsub gerektirecek bir deployment senaryosu henuz yok |
+| 7 | Authentication | Localhost-only MVP; JWT/session sistemi gelecek fazda |
+| 8 | edge-tts Paket | venv'e kurulmamis, TTS noop stub'a dusuyor |
+| 9 | faster-whisper Paket | venv'e kurulmamis, subtitle cursor timing'e dusuyor |
+| 10 | Template Version History UI | Version numarasi DB'de var ama gecmis surumler UI'i yok |
+| 11 | Semantic Dedupe | Hard+soft dedupe calisiyor; embedding-based semantic dedupe ertelenmis |
+| 12 | Analytics Time Series | Metrikler snapshot bazli, gunluk/haftalik trend cizgisi yok |
+| 13 | localStorage Test Mock | themeStore/uiStore testleri vitest setup eksikliginden pre-existing fail |
 
 ---
 
 ## 12. Commit Hash ve Push Durumu
 
-- Commit: bekliyor (bu rapor tamamlandiktan sonra)
-- Push: kullanici onayiyla
+- Commit: `6767e5a`
+- Branch: `main`
+- Push: tamamlandi (`main → origin/main`)
+- Tarih: 2026-04-06
 
 ---
 
