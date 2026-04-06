@@ -36,18 +36,28 @@ interface HorizonSidebarProps {
 export function HorizonSidebar({ groups, brandLabel = "ContentHub" }: HorizonSidebarProps) {
   const [expanded, setExpanded] = useState(false);
   const [activeGroupId, setActiveGroupId] = useState<string | null>(null);
+  const [userSelectedGroup, setUserSelectedGroup] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
 
-  // Auto-select group based on current route
+  // Auto-select group based on current route — skip if user manually selected a different group
+  const prevPathRef = useRef(location.pathname);
   useEffect(() => {
+    const routeChanged = prevPathRef.current !== location.pathname;
+    prevPathRef.current = location.pathname;
+
+    // Only auto-select when route changes OR on first mount
+    if (!routeChanged && userSelectedGroup) return;
+
+    if (routeChanged) setUserSelectedGroup(false);
+
     for (const group of groups) {
       if (group.items.some((item) => location.pathname === item.to || location.pathname.startsWith(item.to + "/"))) {
         setActiveGroupId(group.id);
         return;
       }
     }
-  }, [location.pathname, groups]);
+  }, [location.pathname, groups, userSelectedGroup]);
 
   // Close on click outside
   useEffect(() => {
@@ -98,6 +108,7 @@ export function HorizonSidebar({ groups, brandLabel = "ContentHub" }: HorizonSid
                 key={group.id}
                 onClick={() => {
                   setActiveGroupId(group.id);
+                  setUserSelectedGroup(true);
                   setExpanded(true);
                 }}
                 title={group.label}
