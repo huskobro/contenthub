@@ -75,7 +75,7 @@ export function SourceDetailPanel({ sourceId }: SourceDetailPanelProps) {
       return executeSourceScan(scan.id, false);
     },
     onSuccess: (result) => {
-      toast.success(`Tarama tamamlandi: ${result.items_saved} yeni haber kaydedildi`);
+      toast.success(`Tarama tamamlandi: ${result.new_count} yeni haber kaydedildi`);
       queryClient.invalidateQueries({ queryKey: ["source-scans"] });
       queryClient.invalidateQueries({ queryKey: ["news-items"] });
     },

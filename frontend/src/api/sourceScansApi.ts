@@ -74,12 +74,15 @@ export function updateSourceScan(
 
 export interface ScanExecuteResponse {
   scan_id: string;
-  source_id: string;
-  items_found: number;
-  items_saved: number;
-  items_deduped: number;
   status: string;
-  error?: string | null;
+  fetched_count: number;
+  new_count: number;
+  skipped_dedupe: number;
+  skipped_hard: number;
+  skipped_soft: number;
+  followup_accepted: number;
+  skipped_invalid: number;
+  error_summary?: string | null;
 }
 
 export function executeSourceScan(

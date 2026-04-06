@@ -18,7 +18,7 @@ export function SourceCreatePage() {
           try {
             const scan = await createSourceScan({ source_id: created.id, scan_mode: "manual" });
             const result = await executeSourceScan(scan.id, false);
-            toast.success(`Ilk tarama tamamlandi: ${result.items_saved} haber kaydedildi`);
+            toast.success(`Ilk tarama tamamlandi: ${result.new_count} haber kaydedildi`);
           } catch {
             toast.error("Kaynak olusturuldu ancak ilk tarama basarisiz oldu");
           }
