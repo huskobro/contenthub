@@ -222,6 +222,10 @@ async def create_news_bulletin(
         selected_news_ids_json=payload.selected_news_ids_json,
         status=payload.status or "draft",
         job_id=payload.job_id,
+        composition_direction=payload.composition_direction,
+        thumbnail_direction=payload.thumbnail_direction,
+        template_id=payload.template_id,
+        style_blueprint_id=payload.style_blueprint_id,
     )
     db.add(item)
     await db.commit()
@@ -397,6 +401,18 @@ async def update_bulletin_selected_item(
     return item
 
 
+async def delete_bulletin_selected_item(
+    db: AsyncSession, selection_id: str
+) -> bool:
+    """Delete a selected item by ID. Returns True if deleted, False if not found."""
+    item = await get_bulletin_selected_item(db, selection_id)
+    if item is None:
+        return False
+    await db.delete(item)
+    await db.commit()
+    return True
+
+
 async def list_bulletin_selected_items_with_enforcement(
     db: AsyncSession, bulletin_id: str
 ) -> List[NewsBulletinSelectedItemWithEnforcementResponse]:
@@ -532,6 +548,10 @@ async def start_production(
         "tone": bulletin.tone or settings_snapshot.get("news_bulletin.config.default_tone", "formal"),
         "target_duration_seconds": bulletin.target_duration_seconds or settings_snapshot.get("news_bulletin.config.default_duration_seconds", 120),
         "selected_items": items_snapshot,
+        "composition_direction": bulletin.composition_direction,
+        "thumbnail_direction": bulletin.thumbnail_direction,
+        "template_id": bulletin.template_id,
+        "style_blueprint_id": bulletin.style_blueprint_id,
         "_settings_snapshot": settings_snapshot,
     }
 

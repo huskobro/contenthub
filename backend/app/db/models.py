@@ -637,6 +637,10 @@ class NewsBulletin(Base):
     selected_news_ids_json: JSON text list of manually selected news item ids
     status                : e.g. 'draft', 'in_progress', 'done'
     job_id                : nullable reference to jobs.id
+    composition_direction : e.g. 'classic', 'side_by_side', 'fullscreen', 'dynamic' (M29)
+    thumbnail_direction   : e.g. 'text_heavy', 'image_heavy', 'split', 'minimal' (M29)
+    template_id           : nullable reference to templates.id (M29)
+    style_blueprint_id    : nullable reference to style_blueprints.id (M29)
     """
 
     __tablename__ = "news_bulletins"
@@ -653,6 +657,10 @@ class NewsBulletin(Base):
     selected_news_ids_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     status: Mapped[str] = mapped_column(String(50), nullable=False, default="draft", index=True)
     job_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True)
+    composition_direction: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    thumbnail_direction: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    template_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True)
+    style_blueprint_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=_now
     )

@@ -48,6 +48,8 @@ const JobDetailPage = lazy(() => import("../pages/admin/JobDetailPage").then(m =
 const StandardVideoDetailPage = lazy(() => import("../pages/admin/StandardVideoDetailPage").then(m => ({ default: m.StandardVideoDetailPage })));
 const StandardVideoWizardPage = lazy(() => import("../pages/admin/StandardVideoWizardPage").then(m => ({ default: m.StandardVideoWizardPage })));
 const AuditLogPage = lazy(() => import("../pages/admin/AuditLogPage").then(m => ({ default: m.AuditLogPage })));
+const NewsBulletinWizardPage = lazy(() => import("../pages/admin/NewsBulletinWizardPage").then(m => ({ default: m.NewsBulletinWizardPage })));
+const NewsBulletinDetailPage = lazy(() => import("../pages/admin/NewsBulletinDetailPage").then(m => ({ default: m.NewsBulletinDetailPage })));
 
 function LazyFallback() {
   return <div className="p-8 text-sm text-neutral-400">Yukleniyor...</div>;
@@ -84,6 +86,8 @@ export const router = createBrowserRouter([
       { path: "source-scans/new", element: <SourceScanCreatePage /> },
       { path: "source-scans", element: <SourceScansRegistryPage /> },
       { path: "news-bulletins/new", element: <NewsBulletinCreatePage /> },
+      { path: "news-bulletins/wizard", element: <Suspense fallback={<LazyFallback />}><NewsBulletinWizardPage /></Suspense> },
+      { path: "news-bulletins/:itemId", element: <Suspense fallback={<LazyFallback />}><NewsBulletinDetailPage /></Suspense> },
       { path: "news-bulletins", element: <NewsBulletinRegistryPage /> },
       { path: "used-news/new", element: <UsedNewsCreatePage /> },
       { path: "used-news", element: <UsedNewsRegistryPage /> },

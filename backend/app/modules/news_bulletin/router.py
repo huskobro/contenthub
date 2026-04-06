@@ -204,6 +204,22 @@ async def update_bulletin_selected_item(
     return result
 
 
+@router.delete("/{item_id}/selected-news/{selection_id}", status_code=204)
+async def delete_bulletin_selected_item(
+    item_id: str, selection_id: str, db: AsyncSession = Depends(get_db)
+):
+    """Seçili haber öğesini kaldırır. Yalnızca 'draft' durumundaki bulletinlerde çalışır."""
+    bulletin = await service.get_news_bulletin(db, item_id)
+    if bulletin is None:
+        raise HTTPException(status_code=404, detail="News bulletin not found")
+    if bulletin.status != "draft":
+        raise HTTPException(status_code=409, detail="Seçili haber yalnızca 'draft' bulletinlerden kaldırılabilir.")
+    deleted = await service.delete_bulletin_selected_item(db, selection_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Selected item not found")
+    return None
+
+
 @router.post("/{item_id}/confirm-selection", response_model=ConfirmSelectionResponse)
 async def confirm_bulletin_selection(
     item_id: str, db: AsyncSession = Depends(get_db)

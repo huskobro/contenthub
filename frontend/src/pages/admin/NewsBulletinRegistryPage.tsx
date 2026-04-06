@@ -17,9 +17,14 @@ export function NewsBulletinRegistryPage() {
       title="Haber Bulteni Kayitlari"
       testId="nb-registry"
       actions={
-        <ActionButton variant="primary" size="sm" onClick={() => navigate("/admin/news-bulletins/new")}>
-          + Yeni Bulten Olustur
-        </ActionButton>
+        <div className="flex gap-2">
+          <ActionButton variant="primary" size="sm" onClick={() => navigate("/admin/news-bulletins/wizard")}>
+            Wizard ile Olustur
+          </ActionButton>
+          <ActionButton variant="secondary" size="sm" onClick={() => navigate("/admin/news-bulletins/new")}>
+            + Hizli Olustur
+          </ActionButton>
+        </div>
       }
     >
       <p className="mt-0 mb-3 text-xs text-neutral-400" data-testid="nb-registry-workflow-note">

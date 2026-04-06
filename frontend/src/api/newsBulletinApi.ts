@@ -15,6 +15,10 @@ export interface NewsBulletinResponse {
   selected_news_ids_json: string | null;
   status: string;
   job_id: string | null;
+  composition_direction: string | null;
+  thumbnail_direction: string | null;
+  template_id: string | null;
+  style_blueprint_id: string | null;
   created_at: string;
   updated_at: string;
   has_script?: boolean;
@@ -40,6 +44,10 @@ export interface NewsBulletinCreatePayload {
   source_mode?: string;
   selected_news_ids_json?: string | null;
   status?: string;
+  composition_direction?: string | null;
+  thumbnail_direction?: string | null;
+  template_id?: string | null;
+  style_blueprint_id?: string | null;
 }
 
 export interface NewsBulletinUpdatePayload {
@@ -53,6 +61,10 @@ export interface NewsBulletinUpdatePayload {
   source_mode?: string | null;
   selected_news_ids_json?: string | null;
   status?: string;
+  composition_direction?: string | null;
+  thumbnail_direction?: string | null;
+  template_id?: string | null;
+  style_blueprint_id?: string | null;
 }
 
 export function createNewsBulletin(
@@ -178,6 +190,7 @@ export interface NewsBulletinSelectedItemResponse {
   news_item_id: string;
   sort_order: number;
   selection_reason: string | null;
+  edited_narration: string | null;
   created_at: string;
   updated_at: string;
   used_news_count?: number;
@@ -195,6 +208,7 @@ export interface NewsBulletinSelectedItemCreatePayload {
 export interface NewsBulletinSelectedItemUpdatePayload {
   sort_order?: number;
   selection_reason?: string | null;
+  edited_narration?: string | null;
 }
 
 export function fetchNewsBulletinSelectedItems(
@@ -233,4 +247,87 @@ export function fetchNewsBulletins(
 
 export function fetchNewsBulletinById(id: string): Promise<NewsBulletinResponse> {
   return api.get<NewsBulletinResponse>(`${BASE_URL}/${id}`);
+}
+
+// ---------------------------------------------------------------------------
+// Selectable news items (status='new')
+// ---------------------------------------------------------------------------
+
+export interface SelectableNewsItemResponse {
+  id: string;
+  title: string;
+  url: string;
+  summary: string | null;
+  source_id: string | null;
+  published_at: string | null;
+  language: string | null;
+}
+
+export function fetchSelectableNewsItems(
+  bulletinId: string,
+  params?: { source_id?: string; language?: string; limit?: number },
+): Promise<SelectableNewsItemResponse[]> {
+  return api.get<SelectableNewsItemResponse[]>(`${BASE_URL}/${bulletinId}/selectable-news`, params);
+}
+
+// ---------------------------------------------------------------------------
+// Editorial gate operations
+// ---------------------------------------------------------------------------
+
+export interface ConfirmSelectionResponse {
+  success: boolean;
+  bulletin_id: string;
+  confirmed_count: number;
+  warning_items: string[];
+  error?: string | null;
+}
+
+export function confirmBulletinSelection(bulletinId: string): Promise<ConfirmSelectionResponse> {
+  return api.post<ConfirmSelectionResponse>(`${BASE_URL}/${bulletinId}/confirm-selection`, {});
+}
+
+export interface ConsumeNewsResponse {
+  success: boolean;
+  bulletin_id: string;
+  consumed_count: number;
+  already_used: string[];
+  error?: string | null;
+}
+
+export function consumeBulletinNews(bulletinId: string): Promise<ConsumeNewsResponse> {
+  return api.post<ConsumeNewsResponse>(`${BASE_URL}/${bulletinId}/consume-news`, {});
+}
+
+// ---------------------------------------------------------------------------
+// Start production (M28 pipeline trigger)
+// ---------------------------------------------------------------------------
+
+export interface StartProductionResponse {
+  job_id: string;
+  bulletin_id: string;
+  bulletin_status: string;
+  message: string;
+}
+
+export function startBulletinProduction(bulletinId: string): Promise<StartProductionResponse> {
+  return api.post<StartProductionResponse>(`${BASE_URL}/${bulletinId}/start-production`, {});
+}
+
+// ---------------------------------------------------------------------------
+// Clone
+// ---------------------------------------------------------------------------
+
+export function cloneNewsBulletin(bulletinId: string): Promise<NewsBulletinResponse> {
+  return api.post<NewsBulletinResponse>(`${BASE_URL}/${bulletinId}/clone`, {});
+}
+
+// ---------------------------------------------------------------------------
+// Delete selected item
+// ---------------------------------------------------------------------------
+
+export function deleteNewsBulletinSelectedItem(
+  bulletinId: string,
+  selectionId: string,
+): Promise<void> {
+  return api.delete(`${BASE_URL}/${bulletinId}/selected-news/${selectionId}`);
 }

@@ -75,6 +75,10 @@ const mockBulletin = (overrides: object = {}) => ({
   updated_at: "2026-04-02T10:00:00Z",
   has_script: false,
   has_metadata: false,
+  composition_direction: null,
+  thumbnail_direction: null,
+  template_id: null,
+  style_blueprint_id: null,
   ...overrides,
 });
 

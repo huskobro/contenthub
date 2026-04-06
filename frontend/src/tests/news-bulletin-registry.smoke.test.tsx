@@ -22,6 +22,10 @@ const MOCK_BULLETINS: NewsBulletinResponse[] = [
     job_id: null,
     created_at: "2026-04-02T08:00:00Z",
     updated_at: "2026-04-02T08:00:00Z",
+    composition_direction: null,
+    thumbnail_direction: null,
+    template_id: null,
+    style_blueprint_id: null,
   },
   {
     id: "bulletin-2",
@@ -38,6 +42,10 @@ const MOCK_BULLETINS: NewsBulletinResponse[] = [
     job_id: "job-abc",
     created_at: "2026-04-02T09:00:00Z",
     updated_at: "2026-04-02T09:30:00Z",
+    composition_direction: null,
+    thumbnail_direction: null,
+    template_id: null,
+    style_blueprint_id: null,
   },
 ];
 

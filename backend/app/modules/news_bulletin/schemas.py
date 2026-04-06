@@ -15,6 +15,10 @@ class NewsBulletinCreate(BaseModel):
     selected_news_ids_json: Optional[str] = None
     status: str = "draft"
     job_id: Optional[str] = None
+    composition_direction: Optional[str] = None
+    thumbnail_direction: Optional[str] = None
+    template_id: Optional[str] = None
+    style_blueprint_id: Optional[str] = None
 
     @field_validator("topic")
     @classmethod
@@ -43,6 +47,10 @@ class NewsBulletinUpdate(BaseModel):
     selected_news_ids_json: Optional[str] = None
     status: Optional[str] = None
     job_id: Optional[str] = None
+    composition_direction: Optional[str] = None
+    thumbnail_direction: Optional[str] = None
+    template_id: Optional[str] = None
+    style_blueprint_id: Optional[str] = None
 
     @field_validator("topic")
     @classmethod
@@ -72,6 +80,10 @@ class NewsBulletinResponse(BaseModel):
     selected_news_ids_json: Optional[str]
     status: str
     job_id: Optional[str]
+    composition_direction: Optional[str] = None
+    thumbnail_direction: Optional[str] = None
+    template_id: Optional[str] = None
+    style_blueprint_id: Optional[str] = None
     created_at: datetime
     updated_at: datetime
     has_script: bool = False

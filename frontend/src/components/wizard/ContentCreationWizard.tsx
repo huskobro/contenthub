@@ -184,33 +184,31 @@ export function ContentCreationWizard({
               moduleScope={moduleLabel}
             />
           </div>
+          <div>
+            <h3 className="m-0 mb-2 text-md font-semibold text-neutral-800">Kompozisyon Yonu</h3>
+            <CompositionDirectionPreview
+              selected={values.composition_direction || undefined}
+              onSelect={(dir) => set("composition_direction", dir)}
+            />
+          </div>
+          <div>
+            <h3 className="m-0 mb-2 text-md font-semibold text-neutral-800">Thumbnail Yonu</h3>
+            <ThumbnailDirectionPreview
+              selected={values.thumbnail_direction || undefined}
+              onSelect={(dir) => set("thumbnail_direction", dir)}
+            />
+          </div>
           {moduleType === "standard_video" && (
-            <>
-              <div>
-                <h3 className="m-0 mb-2 text-md font-semibold text-neutral-800">Kompozisyon Yonu</h3>
-                <CompositionDirectionPreview
-                  selected={values.composition_direction || undefined}
-                  onSelect={(dir) => set("composition_direction", dir)}
-                />
-              </div>
-              <div>
-                <h3 className="m-0 mb-2 text-md font-semibold text-neutral-800">Thumbnail Yonu</h3>
-                <ThumbnailDirectionPreview
-                  selected={values.thumbnail_direction || undefined}
-                  onSelect={(dir) => set("thumbnail_direction", dir)}
-                />
-              </div>
-              <div>
-                <h3 className="m-0 mb-2 text-md font-semibold text-neutral-800">Altyazi Stili</h3>
-                <SubtitleStylePicker
-                  value={values.subtitle_style}
-                  onChange={(presetId) => set("subtitle_style", presetId)}
-                  presets={presetsData?.presets ?? []}
-                  loading={presetsLoading}
-                  error={presetsError instanceof Error ? presetsError.message : (presetsError ? String(presetsError) : null)}
-                />
-              </div>
-            </>
+            <div>
+              <h3 className="m-0 mb-2 text-md font-semibold text-neutral-800">Altyazi Stili</h3>
+              <SubtitleStylePicker
+                value={values.subtitle_style}
+                onChange={(presetId) => set("subtitle_style", presetId)}
+                presets={presetsData?.presets ?? []}
+                loading={presetsLoading}
+                error={presetsError instanceof Error ? presetsError.message : (presetsError ? String(presetsError) : null)}
+              />
+            </div>
           )}
         </div>
       )}

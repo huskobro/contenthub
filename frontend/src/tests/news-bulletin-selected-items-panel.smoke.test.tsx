@@ -14,6 +14,7 @@ const MOCK_ITEM: NewsBulletinSelectedItemResponse = {
   selection_reason: "Top story",
   created_at: "2026-04-02T10:00:00Z",
   updated_at: "2026-04-02T10:00:00Z",
+  edited_narration: null,
 };
 
 function mockFetch(data: unknown, status = 200) {

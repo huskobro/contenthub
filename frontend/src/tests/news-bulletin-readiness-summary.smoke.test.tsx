@@ -91,6 +91,10 @@ const mockBulletin = (overrides: object = {}) => ({
   has_script: false,
   has_metadata: false,
   selected_news_count: 0,
+  composition_direction: null,
+  thumbnail_direction: null,
+  template_id: null,
+  style_blueprint_id: null,
   ...overrides,
 });
 
