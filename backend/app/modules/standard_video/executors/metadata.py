@@ -125,11 +125,18 @@ class MetadataStepExecutor(StepExecutor):
             if isinstance(publish_profile, dict):
                 template_seo_keywords = publish_profile.get("seo_keywords")
 
+        # Admin-managed prompt from settings snapshot (Phase 2 follow-up)
+        settings_snapshot = raw_input.get("_settings_snapshot", {})
+        admin_metadata_prompt = settings_snapshot.get(
+            "standard_video.prompt.metadata_system"
+        )
+
         messages = build_metadata_prompt(
             script=script_data,
             language=ctx.language,
             template_tone=template_tone,
             template_seo_keywords=template_seo_keywords,
+            admin_system_prompt=admin_metadata_prompt,
         )
 
         try:

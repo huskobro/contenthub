@@ -649,6 +649,39 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "wired_to": "wizard — category style suggestion",
     },
 
+    # --- Standard Video Module Prompts (Phase 2 follow-up) ---
+    "standard_video.prompt.script_system": {
+        "group": "standard_video",
+        "type": "prompt",
+        "label": "Video Script Sistem Prompt",
+        "help_text": "Video senaryosu uretimi icin LLM sistem talimatlari. Dil/ton/sure bilgileri runtime'da eklenir.",
+        "module_scope": "standard_video",
+        "env_var": "",
+        "builtin_default": (
+            "Sen bir video script yazarisin. "
+            "Sahne sahne senaryo ureteceksin.\n\n"
+            "Dil ve ton kurallari icin asagidaki bilgileri kullan.\n\n"
+            "CIKTI FORMATI: Yalnizca gecerli JSON dondur, baska hicbir sey ekleme."
+        ),
+        "wired": True,
+        "wired_to": "ScriptStepExecutor — script uretimi sistem prompt",
+    },
+    "standard_video.prompt.metadata_system": {
+        "group": "standard_video",
+        "type": "prompt",
+        "label": "Video Metadata Sistem Prompt",
+        "help_text": "YouTube metadata uretimi icin LLM sistem talimatlari. Dil/ton/etiket stilleri runtime'da eklenir.",
+        "module_scope": "standard_video",
+        "env_var": "",
+        "builtin_default": (
+            "Sen bir YouTube icerik uzmanisin. "
+            "Verilen script'ten platform icin optimize edilmis metadata ureteceksin.\n\n"
+            "CIKTI FORMATI: Yalnizca gecerli JSON dondur, baska hicbir sey ekleme."
+        ),
+        "wired": True,
+        "wired_to": "MetadataStepExecutor — metadata uretimi sistem prompt",
+    },
+
     # --- Module Registry Settings (Phase 2 — Faz A) ---
     "module.standard_video.enabled": {
         "group": "modules",
@@ -687,7 +720,7 @@ GROUP_LABELS: Dict[str, str] = {
     "modules": "Modüller",
 }
 
-GROUP_ORDER = ["credentials", "providers", "execution", "source_scans", "publish", "ui", "jobs", "news_bulletin", "modules"]
+GROUP_ORDER = ["credentials", "providers", "execution", "source_scans", "publish", "ui", "jobs", "standard_video", "news_bulletin", "modules"]
 
 
 # ---------------------------------------------------------------------------

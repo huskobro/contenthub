@@ -115,12 +115,19 @@ class ScriptStepExecutor(StepExecutor):
                 template_tone = content_rules.get("tone")
                 template_language_rules = content_rules.get("language_rules")
 
+        # Admin-managed prompt from settings snapshot (Phase 2 follow-up)
+        settings_snapshot = raw_input.get("_settings_snapshot", {})
+        admin_script_prompt = settings_snapshot.get(
+            "standard_video.prompt.script_system"
+        )
+
         messages = build_script_prompt(
             topic=ctx.topic,
             duration_seconds=ctx.duration_seconds,
             language=ctx.language,
             template_tone=template_tone,
             template_language_rules=template_language_rules,
+            admin_system_prompt=admin_script_prompt,
         )
 
         try:

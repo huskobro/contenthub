@@ -66,6 +66,7 @@ def build_script_prompt(
     language: SupportedLanguage,
     template_tone: Optional[str] = None,
     template_language_rules: Optional[str] = None,
+    admin_system_prompt: Optional[str] = None,
 ) -> list[dict]:
     """
     Script adımı için LLM mesaj listesi oluşturur.
@@ -79,6 +80,7 @@ def build_script_prompt(
         language        : Üretim dili.
         template_tone   : Template content_rules'tan gelen ton bilgisi (opsiyonel).
         template_language_rules: Template content_rules'tan gelen dil kuralları (opsiyonel).
+        admin_system_prompt: Settings Registry'den gelen admin-managed system prompt (opsiyonel).
 
     Returns:
         [{"role": "system", ...}, {"role": "user", ...}] formatında mesaj listesi.
@@ -94,14 +96,24 @@ def build_script_prompt(
     if template_language_rules:
         tone_guidance += f"\nEk dil kuralları: {template_language_rules}"
 
-    system_content = (
-        f"Sen bir video script yazarısın. "
-        f"{locale} dilinde, {duration_seconds} saniyelik kısa bir video için "
-        f"sahne sahne senaryo üreteceksin.\n\n"
-        f"Dil ve ton kuralları: {tone}{tone_guidance}\n\n"
-        f"ÇIKTI FORMATI: Yalnızca geçerli JSON döndür, başka hiçbir şey ekleme. "
-        f"Format:\n{_SCRIPT_OUTPUT_EXAMPLE}"
-    )
+    if admin_system_prompt:
+        # Admin-managed prompt + runtime context
+        system_content = (
+            f"{admin_system_prompt}\n\n"
+            f"Dil: {locale}, Hedef süre: {duration_seconds} saniye\n"
+            f"Dil ve ton kuralları: {tone}{tone_guidance}\n\n"
+            f"Format:\n{_SCRIPT_OUTPUT_EXAMPLE}"
+        )
+    else:
+        # Fallback: hardcoded prompt (geriye uyumluluk)
+        system_content = (
+            f"Sen bir video script yazarısın. "
+            f"{locale} dilinde, {duration_seconds} saniyelik kısa bir video için "
+            f"sahne sahne senaryo üreteceksin.\n\n"
+            f"Dil ve ton kuralları: {tone}{tone_guidance}\n\n"
+            f"ÇIKTI FORMATI: Yalnızca geçerli JSON döndür, başka hiçbir şey ekleme. "
+            f"Format:\n{_SCRIPT_OUTPUT_EXAMPLE}"
+        )
 
     user_content = (
         f"Konu: {topic}\n"
@@ -123,6 +135,7 @@ def build_metadata_prompt(
     language: SupportedLanguage,
     template_tone: Optional[str] = None,
     template_seo_keywords: Optional[list] = None,
+    admin_system_prompt: Optional[str] = None,
 ) -> list[dict]:
     """
     Metadata adımı için LLM mesaj listesi oluşturur.
@@ -134,6 +147,7 @@ def build_metadata_prompt(
         language: Üretim dili.
         template_tone: Template content_rules'tan gelen ton bilgisi (opsiyonel).
         template_seo_keywords: Template publish_profile'dan gelen SEO anahtar kelimeleri (opsiyonel).
+        admin_system_prompt: Settings Registry'den gelen admin-managed system prompt (opsiyonel).
 
     Returns:
         [{"role": "system", ...}, {"role": "user", ...}] formatında mesaj listesi.
@@ -159,16 +173,28 @@ def build_metadata_prompt(
     )
     script_title = script.get("title", "")
 
-    system_content = (
-        f"Sen bir YouTube içerik uzmanısın. "
-        f"Verilen script'ten platform için optimize edilmiş metadata üreteceksin.\n\n"
-        f"Dil: {locale}\n"
-        f"Metadata tonu: {metadata_tone}\n"
-        f"Etiket stili: {tag_style}\n"
-        f"Hashtag stili: {hashtag_style}{extra_guidance}\n\n"
-        f"ÇIKTI FORMATI: Yalnızca geçerli JSON döndür, başka hiçbir şey ekleme. "
-        f"Format:\n{_METADATA_OUTPUT_EXAMPLE}"
-    )
+    if admin_system_prompt:
+        # Admin-managed prompt + runtime context
+        system_content = (
+            f"{admin_system_prompt}\n\n"
+            f"Dil: {locale}\n"
+            f"Metadata tonu: {metadata_tone}\n"
+            f"Etiket stili: {tag_style}\n"
+            f"Hashtag stili: {hashtag_style}{extra_guidance}\n\n"
+            f"Format:\n{_METADATA_OUTPUT_EXAMPLE}"
+        )
+    else:
+        # Fallback: hardcoded prompt (geriye uyumluluk)
+        system_content = (
+            f"Sen bir YouTube içerik uzmanısın. "
+            f"Verilen script'ten platform için optimize edilmiş metadata üreteceksin.\n\n"
+            f"Dil: {locale}\n"
+            f"Metadata tonu: {metadata_tone}\n"
+            f"Etiket stili: {tag_style}\n"
+            f"Hashtag stili: {hashtag_style}{extra_guidance}\n\n"
+            f"ÇIKTI FORMATI: Yalnızca geçerli JSON döndür, başka hiçbir şey ekleme. "
+            f"Format:\n{_METADATA_OUTPUT_EXAMPLE}"
+        )
 
     user_content = (
         f"Script başlığı: {script_title}\n"

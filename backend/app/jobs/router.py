@@ -38,6 +38,7 @@ from app.modules.input_normalizer import InputNormalizer
 from app.modules.registry import module_registry
 from app.jobs import workspace as ws
 from app.audit.service import write_audit_log
+from app.settings.settings_resolver import KNOWN_SETTINGS, resolve
 
 router = APIRouter(prefix="/jobs", tags=["jobs"], dependencies=[Depends(require_visible("panel:jobs"))])
 
@@ -168,10 +169,27 @@ async def create_job(
             detail=f"Girdi doğrulama hatası [{exc.field!r}]: {exc.reason}",
         )
 
+    # Settings snapshot — runtime config değişiklikleri çalışan job'ları etkilemesin
+    snapshot_keys = [
+        k for k in KNOWN_SETTINGS
+        if k.startswith(f"{payload.module_id}.")
+    ]
+    settings_snapshot: dict = {}
+    for key in snapshot_keys:
+        value = await resolve(key, db)
+        if value is not None:
+            settings_snapshot[key] = value
+        else:
+            meta = KNOWN_SETTINGS.get(key, {})
+            if meta.get("builtin_default") is not None:
+                settings_snapshot[key] = meta["builtin_default"]
+    if settings_snapshot:
+        normalized["_settings_snapshot"] = settings_snapshot
+
     # Job DB kaydı oluştur
     job_create = JobCreate(
         module_type=payload.module_id,
-        input_data_json=json.dumps(normalized),
+        input_data_json=json.dumps(normalized, ensure_ascii=False),
     )
     job = await service.create_job(db, job_create)
 

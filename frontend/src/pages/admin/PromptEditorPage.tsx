@@ -410,15 +410,14 @@ export function PromptEditorPage() {
             </div>
           )}
 
-          {/* Info banner — standard_video hardcoded prompt notice */}
+          {/* Info banner — prompt editor usage note */}
           <div
-            className="mb-5 py-3 px-4 bg-warning-light border-l-[3px] border-warning rounded-md text-sm text-warning-text max-w-[720px]"
+            className="mb-5 py-3 px-4 bg-info-light border-l-[3px] border-info rounded-md text-sm text-info-text max-w-[720px]"
             data-testid="prompt-editor-notice"
           >
-            <strong>Not:</strong> <code className="font-mono">standard_video</code> modülünün
-            script ve metadata promptları şu an{" "}
-            <code className="font-mono">prompt_builder.py</code> içinde kodlanmıştır ve
-            bu ekranda düzenlenemez. İleride Settings kayıtlarına taşınması planlanmaktadır.
+            <strong>Bilgi:</strong> Burada d&uuml;zenlenen promptlar yeni olu&#351;turulan
+            job&apos;lara snapshot olarak uygulanır. Halihaz&#305;rda &ccedil;al&#305;&#351;an
+            job&apos;lar etkilenmez.
           </div>
 
           {moduleScopes.map((scope) => (
