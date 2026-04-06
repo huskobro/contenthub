@@ -1,13 +1,12 @@
-import { colors, radius, typography } from "../design-system/tokens";
 export type SourceLinkedNewsStatus =
   | "İçerik yok"
   | "İçerik var"
   | "Bilinmiyor";
 
-const styles: Record<SourceLinkedNewsStatus, { bg: string; color: string; border: string }> = {
-  "İçerik yok": { bg: colors.neutral[100], color: colors.neutral[500], border: colors.border.default },
-  "İçerik var": { bg: colors.success.light, color: colors.success.text, border: colors.success.light },
-  "Bilinmiyor": { bg: colors.neutral[50], color: colors.neutral[700], border: colors.border.subtle },
+const styles: Record<SourceLinkedNewsStatus, string> = {
+  "İçerik yok": "bg-neutral-100 text-neutral-500 border-border",
+  "İçerik var": "bg-success-light text-success-text border-success-light",
+  "Bilinmiyor": "bg-neutral-50 text-neutral-700 border-border-subtle",
 };
 
 interface Props {
@@ -15,19 +14,10 @@ interface Props {
 }
 
 export function SourceLinkedNewsStatusBadge({ status }: Props) {
-  const s = styles[status] ?? { bg: colors.neutral[50], color: colors.neutral[700], border: colors.border.subtle };
+  const s = styles[status] ?? "bg-neutral-50 text-neutral-700 border-border-subtle";
   return (
     <span
-      style={{
-        display: "inline-block",
-        padding: "0.1rem 0.45rem",
-        fontSize: typography.size.xs,
-        borderRadius: radius.sm,
-        background: s.bg,
-        color: s.color,
-        border: `1px solid ${s.border}`,
-        whiteSpace: "nowrap",
-      }}
+      className={`inline-block px-[0.45rem] py-[0.1rem] text-xs rounded-sm border whitespace-nowrap ${s}`}
     >
       {status ?? "—"}
     </span>

@@ -1,15 +1,14 @@
-import { colors, radius, typography } from "../design-system/tokens";
 export type NewsBulletinSourceCoverageLevel =
   | "Kaynak yok"
   | "Kaynak bilgisi eksik"
   | "Tek kaynak"
   | "Çoklu kaynak";
 
-const styles: Record<NewsBulletinSourceCoverageLevel, { bg: string; color: string; border: string }> = {
-  "Kaynak yok":           { bg: colors.neutral[100], color: colors.neutral[500], border: colors.border.default },
-  "Kaynak bilgisi eksik": { bg: colors.warning.light, color: colors.warning.text, border: colors.warning.light },
-  "Tek kaynak":           { bg: colors.info.light, color: colors.brand[700], border: colors.info.light },
-  "Çoklu kaynak":         { bg: colors.success.light, color: colors.success.text, border: colors.success.light },
+const styles: Record<NewsBulletinSourceCoverageLevel, string> = {
+  "Kaynak yok":           "bg-neutral-100 text-neutral-500 border-border",
+  "Kaynak bilgisi eksik": "bg-warning-light text-warning-text border-warning-light",
+  "Tek kaynak":           "bg-info-light text-brand-700 border-info-light",
+  "Çoklu kaynak":         "bg-success-light text-success-text border-success-light",
 };
 
 interface Props {
@@ -17,19 +16,10 @@ interface Props {
 }
 
 export function NewsBulletinSourceCoverageBadge({ level }: Props) {
-  const s = styles[level] ?? { bg: colors.neutral[50], color: colors.neutral[700], border: colors.border.subtle };
+  const s = styles[level] ?? "bg-neutral-50 text-neutral-700 border-border-subtle";
   return (
     <span
-      style={{
-        display: "inline-block",
-        padding: "0.1rem 0.45rem",
-        fontSize: typography.size.xs,
-        borderRadius: radius.sm,
-        background: s.bg,
-        color: s.color,
-        border: `1px solid ${s.border}`,
-        whiteSpace: "nowrap",
-      }}
+      className={`inline-block px-[0.45rem] py-[0.1rem] text-xs rounded-sm border whitespace-nowrap ${s}`}
     >
       {level ?? "—"}
     </span>

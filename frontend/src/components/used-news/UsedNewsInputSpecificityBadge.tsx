@@ -1,10 +1,9 @@
-import { colors, radius, typography } from "../design-system/tokens";
 type Level = "Genel giriş" | "Kısmi özgüllük" | "Belirgin giriş";
 
-const STYLES: Record<Level, { bg: string; color: string }> = {
-  "Genel giriş":    { bg: colors.neutral[100], color: colors.neutral[600] },
-  "Kısmi özgüllük": { bg: colors.warning.light, color: colors.warning.text },
-  "Belirgin giriş": { bg: colors.success.light, color: colors.success.text },
+const STYLES: Record<Level, string> = {
+  "Genel giriş":    "bg-neutral-100 text-neutral-600",
+  "Kısmi özgüllük": "bg-warning-light text-warning-text",
+  "Belirgin giriş": "bg-success-light text-success-text",
 };
 
 interface Props {
@@ -12,18 +11,10 @@ interface Props {
 }
 
 export function UsedNewsInputSpecificityBadge({ level }: Props) {
-  const s = STYLES[level] ?? { bg: colors.neutral[50], color: colors.neutral[700], border: colors.border.subtle };
+  const s = STYLES[level] ?? "bg-neutral-50 text-neutral-700 border-border-subtle";
   return (
     <span
-      style={{
-        display: "inline-block",
-        padding: "0.125rem 0.5rem",
-        borderRadius: radius.full,
-        fontSize: typography.size.sm,
-        background: s.bg,
-        color: s.color,
-        whiteSpace: "nowrap",
-      }}
+      className={`inline-block px-2 py-[0.125rem] text-sm rounded-full whitespace-nowrap ${s}`}
     >
       {level ?? "—"}
     </span>

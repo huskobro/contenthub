@@ -1,11 +1,10 @@
-import { colors, radius, typography } from "../design-system/tokens";
 type Level = "Hazırlanıyor" | "Ham çıktı" | "Aday çıktı" | "Yayına yakın çıktı";
 
-const STYLES: Record<Level, { bg: string; color: string }> = {
-  "Hazırlanıyor":       { bg: colors.neutral[100], color: colors.neutral[600] },
-  "Ham çıktı":          { bg: colors.warning.light, color: colors.warning.text },
-  "Aday çıktı":         { bg: colors.info.light, color: colors.brand[700] },
-  "Yayına yakın çıktı": { bg: colors.success.light, color: colors.success.text },
+const STYLES: Record<Level, string> = {
+  "Hazırlanıyor":       "bg-neutral-100 text-neutral-600",
+  "Ham çıktı":          "bg-warning-light text-warning-text",
+  "Aday çıktı":         "bg-info-light text-brand-700",
+  "Yayına yakın çıktı": "bg-success-light text-success-text",
 };
 
 interface Props {
@@ -13,18 +12,10 @@ interface Props {
 }
 
 export function StyleBlueprintPublicationOutcomeBadge({ level }: Props) {
-  const s = STYLES[level] ?? { bg: colors.neutral[50], color: colors.neutral[700], border: colors.border.subtle };
+  const s = STYLES[level] ?? "bg-neutral-50 text-neutral-700 border-border-subtle";
   return (
     <span
-      style={{
-        display: "inline-block",
-        padding: "0.125rem 0.5rem",
-        borderRadius: radius.full,
-        fontSize: typography.size.sm,
-        background: s.bg,
-        color: s.color,
-        whiteSpace: "nowrap",
-      }}
+      className={`inline-block px-2 py-[0.125rem] text-sm rounded-full whitespace-nowrap ${s}`}
     >
       {level ?? "—"}
     </span>

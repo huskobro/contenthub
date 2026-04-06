@@ -1,4 +1,3 @@
-import { colors, radius, typography } from "../design-system/tokens";
 interface Props {
   count: number;
 }
@@ -6,18 +5,11 @@ interface Props {
 export function NewsBulletinSelectedNewsCountBadge({ count }: Props) {
   return (
     <span
-      style={{
-        display: "inline-block",
-        padding: "0.1rem 0.4rem",
-        fontSize: typography.size.xs,
-        borderRadius: radius.sm,
-        background: count > 0 ? colors.info.light : colors.neutral[100],
-        color: count > 0 ? colors.info.dark : colors.neutral[500],
-        border: `1px solid ${count > 0 ? colors.info.light : colors.border.subtle}`,
-        whiteSpace: "nowrap",
-        minWidth: "1.5rem",
-        textAlign: "center",
-      }}
+      className={`inline-block px-1.5 py-[0.1rem] text-xs rounded-sm whitespace-nowrap min-w-[1.5rem] text-center border ${
+        count > 0
+          ? "bg-info-light text-info-dark border-info-light"
+          : "bg-neutral-100 text-neutral-500 border-border"
+      }`}
     >
       {count}
     </span>

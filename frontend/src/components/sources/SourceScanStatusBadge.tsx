@@ -1,41 +1,33 @@
-import { colors, radius, typography } from "../design-system/tokens";
+function statusClasses(status: string): string {
+  if (status === "completed") return "bg-success-light text-success-text border-success-light";
+  if (status === "failed") return "bg-error-light text-error-text border-error-light";
+  if (status === "running") return "bg-info-light text-info-dark border-info-light";
+  return "bg-neutral-100 text-neutral-600 border-border";
+}
+
 interface Props {
   status?: string | null;
   scanCount?: number;
 }
 
-function statusStyle(status: string): React.CSSProperties {
-  if (status === "completed") return { background: colors.success.light, color: colors.success.text, border: `1px solid ${colors.success.light}` };
-  if (status === "failed") return { background: colors.error.light, color: colors.error.text, border: `1px solid ${colors.error.light}` };
-  if (status === "running") return { background: colors.info.light, color: colors.info.dark, border: `1px solid ${colors.info.light}` };
-  return { background: colors.neutral[100], color: colors.neutral[600], border: `1px solid ${colors.border.subtle}` };
-}
-
 export function SourceScanStatusBadge({ status, scanCount }: Props) {
   if (!status && (!scanCount || scanCount === 0)) {
     return (
-      <span style={{ fontSize: typography.size.xs, color: colors.neutral[500] }}>Scan yok</span>
+      <span className="text-xs text-neutral-500">Scan yok</span>
     );
   }
 
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: "0.3rem", flexWrap: "wrap" }}>
+    <div className="flex items-center gap-1 flex-wrap">
       {status && (
         <span
-          style={{
-            display: "inline-block",
-            padding: "0.1rem 0.35rem",
-            fontSize: typography.size.xs,
-            borderRadius: radius.sm,
-            whiteSpace: "nowrap",
-            ...statusStyle(status),
-          }}
+          className={`inline-block px-1.5 py-[0.1rem] text-xs rounded-sm whitespace-nowrap border ${statusClasses(status)}`}
         >
           {status ?? "—"}
         </span>
       )}
       {typeof scanCount === "number" && (
-        <span style={{ fontSize: typography.size.xs, color: colors.neutral[500] }}>({scanCount}x)</span>
+        <span className="text-xs text-neutral-500">({scanCount}x)</span>
       )}
     </div>
   );

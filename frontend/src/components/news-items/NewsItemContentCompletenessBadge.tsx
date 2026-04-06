@@ -1,13 +1,12 @@
-import { colors, radius, typography } from "../design-system/tokens";
 export type NewsItemCompletenessLevel =
   | "Eksik"
   | "Kısmi"
   | "Dolu";
 
-const styles: Record<NewsItemCompletenessLevel, { bg: string; color: string; border: string }> = {
-  "Eksik": { bg: colors.error.light, color: colors.error.text, border: colors.error.light },
-  "Kısmi": { bg: colors.warning.light, color: colors.warning.text, border: colors.warning.light },
-  "Dolu":  { bg: colors.success.light, color: colors.success.text, border: colors.success.light },
+const styles: Record<NewsItemCompletenessLevel, string> = {
+  "Eksik": "bg-error-light text-error-text border-error-light",
+  "Kısmi": "bg-warning-light text-warning-text border-warning-light",
+  "Dolu":  "bg-success-light text-success-text border-success-light",
 };
 
 interface Props {
@@ -15,19 +14,10 @@ interface Props {
 }
 
 export function NewsItemContentCompletenessBadge({ level }: Props) {
-  const s = styles[level] ?? { bg: colors.neutral[50], color: colors.neutral[700], border: colors.border.subtle };
+  const s = styles[level] ?? "bg-neutral-50 text-neutral-700 border-border-subtle";
   return (
     <span
-      style={{
-        display: "inline-block",
-        padding: "0.1rem 0.45rem",
-        fontSize: typography.size.xs,
-        borderRadius: radius.sm,
-        background: s.bg,
-        color: s.color,
-        border: `1px solid ${s.border}`,
-        whiteSpace: "nowrap",
-      }}
+      className={`inline-block px-[0.45rem] py-[0.1rem] text-xs rounded-sm border whitespace-nowrap ${s}`}
     >
       {level ?? "—"}
     </span>

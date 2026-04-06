@@ -1,10 +1,9 @@
-import { colors, radius, typography } from "../design-system/tokens";
 import type { NewsItemInputQualityLevel } from "./NewsItemInputQualitySummary";
 
-const STYLES: Record<NewsItemInputQualityLevel, { bg: string; color: string }> = {
-  "Zayıf giriş": { bg: colors.error.light, color: colors.error.text },
-  "Kısmi giriş": { bg: colors.warning.light, color: colors.warning.text },
-  "Güçlü giriş": { bg: colors.success.light, color: colors.success.text },
+const STYLES: Record<NewsItemInputQualityLevel, string> = {
+  "Zayıf giriş": "bg-error-light text-error-text",
+  "Kısmi giriş": "bg-warning-light text-warning-text",
+  "Güçlü giriş": "bg-success-light text-success-text",
 };
 
 interface Props {
@@ -12,18 +11,10 @@ interface Props {
 }
 
 export function NewsItemInputQualityBadge({ level }: Props) {
-  const s = STYLES[level] ?? { bg: colors.neutral[50], color: colors.neutral[700], border: colors.border.subtle };
+  const s = STYLES[level] ?? "bg-neutral-50 text-neutral-700 border-border-subtle";
   return (
     <span
-      style={{
-        display: "inline-block",
-        padding: "0.125rem 0.5rem",
-        borderRadius: radius.full,
-        fontSize: typography.size.sm,
-        background: s.bg,
-        color: s.color,
-        whiteSpace: "nowrap",
-      }}
+      className={`inline-block px-2 py-[0.125rem] text-sm rounded-full whitespace-nowrap ${s}`}
     >
       {level ?? "—"}
     </span>

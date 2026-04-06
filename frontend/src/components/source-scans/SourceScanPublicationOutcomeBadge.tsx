@@ -1,4 +1,3 @@
-import { colors, radius, typography } from "../design-system/tokens";
 type OutcomeLevel =
   | "Sorunlu"
   | "Hazırlanıyor"
@@ -11,29 +10,19 @@ interface Props {
   level: OutcomeLevel;
 }
 
-const STYLES: Record<OutcomeLevel, { background: string; color: string }> = {
-  "Sorunlu":             { background: colors.error.light, color: colors.error.text },
-  "Hazırlanıyor":        { background: colors.info.light, color: colors.info.dark },
-  "Ham çıktı":           { background: colors.warning.light, color: colors.warning.text },
-  "Aday çıktı":          { background: colors.warning.light, color: colors.warning.text },
-  "Yayına yakın çıktı":  { background: colors.success.light, color: colors.success.text },
-  "Belirsiz":            { background: colors.neutral[100], color: colors.neutral[600] },
+const STYLES: Record<OutcomeLevel, string> = {
+  "Sorunlu":             "bg-error-light text-error-text",
+  "Hazırlanıyor":        "bg-info-light text-info-dark",
+  "Ham çıktı":           "bg-warning-light text-warning-text",
+  "Aday çıktı":          "bg-warning-light text-warning-text",
+  "Yayına yakın çıktı":  "bg-success-light text-success-text",
+  "Belirsiz":            "bg-neutral-100 text-neutral-600",
 };
 
 export function SourceScanPublicationOutcomeBadge({ level }: Props) {
-  const style = STYLES[level] ?? { bg: colors.neutral[50], color: colors.neutral[700], border: colors.border.subtle };
+  const s = STYLES[level] ?? "bg-neutral-100 text-neutral-600";
   return (
-    <span
-      style={{
-        display: "inline-block",
-        padding: "2px 8px",
-        borderRadius: radius.sm,
-        fontSize: typography.size.sm,
-        fontWeight: 500,
-        background: style.background,
-        color: style.color,
-      }}
-    >
+    <span className={`inline-block px-2 py-[0.125rem] text-sm rounded-md font-medium whitespace-nowrap ${s}`}>
       {level ?? "—"}
     </span>
   );

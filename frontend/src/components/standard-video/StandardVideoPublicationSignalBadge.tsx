@@ -1,15 +1,14 @@
-import { colors, radius, typography } from "../design-system/tokens";
 export type StandardVideoPublicationSignalLevel =
   | "Başlangıç"
   | "Taslak"
   | "Taslak hazır"
   | "Yayına yakın";
 
-const styles: Record<StandardVideoPublicationSignalLevel, { bg: string; color: string; border: string }> = {
-  "Başlangıç": { bg: colors.neutral[50], color: colors.neutral[500], border: colors.border.default },
-  "Taslak":    { bg: colors.warning.light, color: colors.warning.text, border: colors.warning.light },
-  "Taslak hazır": { bg: colors.info.light, color: colors.info.dark, border: colors.info.light },
-  "Yayına yakın": { bg: colors.success.light, color: colors.success.text, border: colors.success.light },
+const styles: Record<StandardVideoPublicationSignalLevel, string> = {
+  "Başlangıç": "bg-neutral-50 text-neutral-500 border-border",
+  "Taslak":    "bg-warning-light text-warning-text border-warning-light",
+  "Taslak hazır": "bg-info-light text-info-dark border-info-light",
+  "Yayına yakın": "bg-success-light text-success-text border-success-light",
 };
 
 interface Props {
@@ -17,19 +16,10 @@ interface Props {
 }
 
 export function StandardVideoPublicationSignalBadge({ level }: Props) {
-  const s = styles[level] ?? { bg: colors.neutral[50], color: colors.neutral[700], border: colors.border.subtle };
+  const s = styles[level] ?? "bg-neutral-50 text-neutral-700 border-border-subtle";
   return (
     <span
-      style={{
-        display: "inline-block",
-        padding: "0.1rem 0.45rem",
-        fontSize: typography.size.xs,
-        borderRadius: radius.sm,
-        background: s.bg,
-        color: s.color,
-        border: `1px solid ${s.border}`,
-        whiteSpace: "nowrap",
-      }}
+      className={`inline-block px-[0.45rem] py-[0.1rem] text-xs rounded-sm border whitespace-nowrap ${s}`}
     >
       {level ?? "—"}
     </span>

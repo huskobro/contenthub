@@ -1,4 +1,3 @@
-import { colors, typography } from "../design-system/tokens";
 import { formatDuration } from "../../lib/formatDuration";
 
 interface DurationBadgeProps {
@@ -12,8 +11,8 @@ export function DurationBadge({ seconds, label, approximate = false }: DurationB
   const display = approximate && text !== "—" ? `~${text}` : text;
 
   return (
-    <span style={{ fontSize: typography.size.base, color: seconds != null ? colors.neutral[900] : colors.neutral[500] }}>
-      {label && <span style={{ color: colors.neutral[600], marginRight: "0.25rem" }}>{label}:</span>}
+    <span className={`text-base ${seconds != null ? "text-neutral-900" : "text-neutral-500"}`}>
+      {label && <span className="text-neutral-600 mr-1">{label}:</span>}
       {display}
     </span>
   );

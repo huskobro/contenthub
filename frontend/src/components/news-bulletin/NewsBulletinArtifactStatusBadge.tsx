@@ -1,4 +1,3 @@
-import { colors, radius, typography } from "../design-system/tokens";
 interface Props {
   present: boolean;
   label: string;
@@ -7,16 +6,11 @@ interface Props {
 export function NewsBulletinArtifactStatusBadge({ present, label }: Props) {
   return (
     <span
-      style={{
-        display: "inline-block",
-        padding: "0.1rem 0.35rem",
-        fontSize: typography.size.xs,
-        borderRadius: radius.sm,
-        background: present ? colors.success.light : colors.neutral[100],
-        color: present ? colors.success.text : colors.neutral[500],
-        border: `1px solid ${present ? colors.success.light : colors.border.subtle}`,
-        whiteSpace: "nowrap",
-      }}
+      className={`inline-block px-1.5 py-[0.1rem] text-xs rounded-sm whitespace-nowrap border ${
+        present
+          ? "bg-success-light text-success-text border-success-light"
+          : "bg-neutral-100 text-neutral-500 border-border"
+      }`}
     >
       {label}: {present ? "Var" : "Eksik"}
     </span>

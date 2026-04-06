@@ -1,31 +1,20 @@
-import { colors, radius, typography } from "../design-system/tokens";
 type ConsistencyLevel = "Artifacts yok" | "Tek taraflı" | "Tutarsız" | "Dengeli";
 
 interface Props {
   level: ConsistencyLevel;
 }
 
-const STYLES: Record<ConsistencyLevel, { background: string; color: string }> = {
-  "Artifacts yok": { background: colors.neutral[100], color: colors.neutral[600] },
-  "Tek taraflı":   { background: colors.warning.light, color: colors.warning.text },
-  "Tutarsız":      { background: colors.error.light, color: colors.error.text },
-  "Dengeli":       { background: colors.success.light, color: colors.success.text },
+const STYLES: Record<ConsistencyLevel, string> = {
+  "Artifacts yok": "bg-neutral-100 text-neutral-600",
+  "Tek taraflı":   "bg-warning-light text-warning-text",
+  "Tutarsız":      "bg-error-light text-error-text",
+  "Dengeli":       "bg-success-light text-success-text",
 };
 
 export function SourceScanTargetOutputConsistencyBadge({ level }: Props) {
-  const style = STYLES[level] ?? { bg: colors.neutral[50], color: colors.neutral[700], border: colors.border.subtle };
+  const s = STYLES[level] ?? "bg-neutral-100 text-neutral-600";
   return (
-    <span
-      style={{
-        display: "inline-block",
-        padding: "2px 8px",
-        borderRadius: radius.sm,
-        fontSize: typography.size.sm,
-        fontWeight: 500,
-        background: style.background,
-        color: style.color,
-      }}
-    >
+    <span className={`inline-block px-2 py-[0.125rem] text-sm rounded-md font-medium whitespace-nowrap ${s}`}>
       {level ?? "—"}
     </span>
   );

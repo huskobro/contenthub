@@ -33,10 +33,11 @@ describe("Badge style lookup has fallback for unknown values", () => {
   for (const file of mapBadgeFiles) {
     it(`${path.basename(file)} has style lookup fallback`, () => {
       const src = read(file);
-      // Accept either: ?? { bg: ... } (inline neutral) OR ?? STYLES["..."] / ?? styles["..."] (named key fallback)
+      // Accept: ?? { bg: ... } (inline neutral), ?? STYLES["..."] (named key), or ?? "tw-class" (Tailwind string)
       const hasStyleFallback =
         src.includes('?? { bg: colors.neutral[50]') ||
-        /\?\?\s*(?:styles|STYLES)\[/.test(src);
+        /\?\?\s*(?:styles|STYLES)\[/.test(src) ||
+        /\?\?\s*"/.test(src);
       expect(
         hasStyleFallback,
         `${file} missing style lookup fallback (either neutral inline or named key)`

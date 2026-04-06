@@ -1,11 +1,10 @@
-import { colors, radius, typography } from "../design-system/tokens";
 import type { JobArtifactConsistencyLevel } from "./JobArtifactConsistencySummary";
 
-const STYLES: Record<JobArtifactConsistencyLevel, { bg: string; color: string }> = {
-  "Artifacts yok": { bg: colors.neutral[100], color: colors.neutral[600] },
-  "Tek taraflı": { bg: colors.warning.light, color: colors.warning.text },
-  "Tutarsız": { bg: colors.error.light, color: colors.error.text },
-  "Dengeli": { bg: colors.success.light, color: colors.success.text },
+const STYLES: Record<JobArtifactConsistencyLevel, string> = {
+  "Artifacts yok": "bg-neutral-100 text-neutral-600",
+  "Tek taraflı": "bg-warning-light text-warning-text",
+  "Tutarsız": "bg-error-light text-error-text",
+  "Dengeli": "bg-success-light text-success-text",
 };
 
 interface Props {
@@ -13,18 +12,10 @@ interface Props {
 }
 
 export function JobArtifactConsistencyBadge({ level }: Props) {
-  const s = STYLES[level] ?? { bg: colors.neutral[50], color: colors.neutral[700], border: colors.border.subtle };
+  const s = STYLES[level] ?? "bg-neutral-50 text-neutral-700 border-border-subtle";
   return (
     <span
-      style={{
-        display: "inline-block",
-        padding: "0.125rem 0.5rem",
-        borderRadius: radius.full,
-        fontSize: typography.size.sm,
-        background: s.bg,
-        color: s.color,
-        whiteSpace: "nowrap",
-      }}
+      className={`inline-block px-2 py-[0.125rem] text-sm rounded-full whitespace-nowrap ${s}`}
     >
       {level ?? "—"}
     </span>

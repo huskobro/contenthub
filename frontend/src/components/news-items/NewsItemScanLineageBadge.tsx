@@ -1,4 +1,3 @@
-import { colors, radius, typography } from "../design-system/tokens";
 export type NewsItemScanLineageLevel =
   | "Scan bağlı"
   | "Manuel"
@@ -6,12 +5,12 @@ export type NewsItemScanLineageLevel =
   | "Scan bulunamadı"
   | "Bilinmiyor";
 
-const styles: Record<NewsItemScanLineageLevel, { bg: string; color: string; border: string }> = {
-  "Scan bağlı":      { bg: colors.success.light, color: colors.success.text, border: colors.success.light },
-  "Manuel":          { bg: colors.neutral[100], color: colors.neutral[700], border: colors.border.default },
-  "Scan referansı":  { bg: colors.warning.light, color: colors.warning.text, border: colors.warning.light },
-  "Scan bulunamadı": { bg: colors.error.light, color: colors.error.text, border: colors.error.light },
-  "Bilinmiyor":      { bg: colors.neutral[50], color: colors.neutral[500], border: colors.border.subtle },
+const styles: Record<NewsItemScanLineageLevel, string> = {
+  "Scan bağlı":      "bg-success-light text-success-text border-success-light",
+  "Manuel":          "bg-neutral-100 text-neutral-700 border-border",
+  "Scan referansı":  "bg-warning-light text-warning-text border-warning-light",
+  "Scan bulunamadı": "bg-error-light text-error-text border-error-light",
+  "Bilinmiyor":      "bg-neutral-50 text-neutral-500 border-border-subtle",
 };
 
 interface Props {
@@ -19,19 +18,10 @@ interface Props {
 }
 
 export function NewsItemScanLineageBadge({ level }: Props) {
-  const s = styles[level] ?? { bg: colors.neutral[50], color: colors.neutral[700], border: colors.border.subtle };
+  const s = styles[level] ?? "bg-neutral-50 text-neutral-700 border-border-subtle";
   return (
     <span
-      style={{
-        display: "inline-block",
-        padding: "0.1rem 0.45rem",
-        fontSize: typography.size.xs,
-        borderRadius: radius.sm,
-        background: s.bg,
-        color: s.color,
-        border: `1px solid ${s.border}`,
-        whiteSpace: "nowrap",
-      }}
+      className={`inline-block px-[0.45rem] py-[0.1rem] text-xs rounded-sm border whitespace-nowrap ${s}`}
     >
       {level ?? "—"}
     </span>

@@ -1,4 +1,3 @@
-import { colors, radius, typography } from "../design-system/tokens";
 export type SourceConfigCoverageLevel =
   | "Feed tanımlı"
   | "Feed eksik"
@@ -8,14 +7,14 @@ export type SourceConfigCoverageLevel =
   | "API eksik"
   | "Tür belirsiz";
 
-const styles: Record<SourceConfigCoverageLevel, { bg: string; color: string; border: string }> = {
-  "Feed tanımlı": { bg: colors.success.light, color: colors.success.text, border: colors.success.light },
-  "Feed eksik":   { bg: colors.warning.light, color: colors.warning.text, border: colors.warning.light },
-  "URL tanımlı":  { bg: colors.success.light, color: colors.success.text, border: colors.success.light },
-  "URL eksik":    { bg: colors.warning.light, color: colors.warning.text, border: colors.warning.light },
-  "API tanımlı":  { bg: colors.success.light, color: colors.success.text, border: colors.success.light },
-  "API eksik":    { bg: colors.warning.light, color: colors.warning.text, border: colors.warning.light },
-  "Tür belirsiz": { bg: colors.neutral[100], color: colors.neutral[500], border: colors.border.default },
+const styles: Record<SourceConfigCoverageLevel, string> = {
+  "Feed tanımlı": "bg-success-light text-success-text border-success-light",
+  "Feed eksik":   "bg-warning-light text-warning-text border-warning-light",
+  "URL tanımlı":  "bg-success-light text-success-text border-success-light",
+  "URL eksik":    "bg-warning-light text-warning-text border-warning-light",
+  "API tanımlı":  "bg-success-light text-success-text border-success-light",
+  "API eksik":    "bg-warning-light text-warning-text border-warning-light",
+  "Tür belirsiz": "bg-neutral-100 text-neutral-500 border-border",
 };
 
 interface Props {
@@ -23,19 +22,10 @@ interface Props {
 }
 
 export function SourceConfigCoverageBadge({ level }: Props) {
-  const s = styles[level] ?? { bg: colors.neutral[50], color: colors.neutral[700], border: colors.border.subtle };
+  const s = styles[level] ?? "bg-neutral-50 text-neutral-700 border-border-subtle";
   return (
     <span
-      style={{
-        display: "inline-block",
-        padding: "0.1rem 0.45rem",
-        fontSize: typography.size.xs,
-        borderRadius: radius.sm,
-        background: s.bg,
-        color: s.color,
-        border: `1px solid ${s.border}`,
-        whiteSpace: "nowrap",
-      }}
+      className={`inline-block px-[0.45rem] py-[0.1rem] text-xs rounded-sm border whitespace-nowrap ${s}`}
     >
       {level ?? "—"}
     </span>

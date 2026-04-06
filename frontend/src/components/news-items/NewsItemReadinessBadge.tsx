@@ -1,4 +1,3 @@
-import { colors, radius, typography } from "../design-system/tokens";
 export type NewsItemReadinessLevel =
   | "Başlangıç"
   | "Ham kayıt"
@@ -7,13 +6,13 @@ export type NewsItemReadinessLevel =
   | "Hariç"
   | "Kısmen hazır";
 
-const styles: Record<NewsItemReadinessLevel, { bg: string; color: string; border: string }> = {
-  "Başlangıç":         { bg: colors.neutral[100], color: colors.neutral[600], border: colors.border.default },
-  "Ham kayıt":         { bg: colors.info.light, color: colors.info.dark, border: colors.info.light },
-  "Gözden geçirildi":  { bg: colors.warning.light, color: colors.warning.text, border: colors.warning.light },
-  "Kullanıldı":        { bg: colors.success.light, color: colors.success.text, border: colors.success.light },
-  "Hariç":             { bg: colors.neutral[100], color: colors.neutral[500], border: colors.border.subtle },
-  "Kısmen hazır":      { bg: colors.warning.light, color: colors.warning.text, border: colors.warning.light },
+const styles: Record<NewsItemReadinessLevel, string> = {
+  "Başlangıç":         "bg-neutral-100 text-neutral-600 border-border",
+  "Ham kayıt":         "bg-info-light text-info-dark border-info-light",
+  "Gözden geçirildi":  "bg-warning-light text-warning-text border-warning-light",
+  "Kullanıldı":        "bg-success-light text-success-text border-success-light",
+  "Hariç":             "bg-neutral-100 text-neutral-500 border-border-subtle",
+  "Kısmen hazır":      "bg-warning-light text-warning-text border-warning-light",
 };
 
 interface Props {
@@ -21,19 +20,10 @@ interface Props {
 }
 
 export function NewsItemReadinessBadge({ level }: Props) {
-  const s = styles[level] ?? { bg: colors.neutral[50], color: colors.neutral[700], border: colors.border.subtle };
+  const s = styles[level] ?? "bg-neutral-50 text-neutral-700 border-border-subtle";
   return (
     <span
-      style={{
-        display: "inline-block",
-        padding: "0.1rem 0.45rem",
-        fontSize: typography.size.xs,
-        borderRadius: radius.sm,
-        background: s.bg,
-        color: s.color,
-        border: `1px solid ${s.border}`,
-        whiteSpace: "nowrap",
-      }}
+      className={`inline-block px-[0.45rem] py-[0.1rem] text-xs rounded-sm border whitespace-nowrap ${s}`}
     >
       {level ?? "—"}
     </span>

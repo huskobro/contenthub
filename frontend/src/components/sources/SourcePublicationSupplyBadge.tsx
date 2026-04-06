@@ -1,4 +1,3 @@
-import { colors, radius, typography } from "../design-system/tokens";
 export type SourcePublicationSupplyLevel =
   | "İçerik yok"
   | "Ham içerik"
@@ -6,12 +5,12 @@ export type SourcePublicationSupplyLevel =
   | "Kullanılmış içerik var"
   | "Bilinmiyor";
 
-const styles: Record<SourcePublicationSupplyLevel, { bg: string; color: string; border: string }> = {
-  "İçerik yok":           { bg: colors.neutral[50], color: colors.neutral[500], border: colors.border.default },
-  "Ham içerik":           { bg: colors.warning.light, color: colors.warning.text, border: colors.warning.light },
-  "Aday içerik var":      { bg: colors.success.light, color: colors.success.text, border: colors.success.light },
-  "Kullanılmış içerik var":{ bg: colors.info.light, color: colors.brand[700], border: colors.info.light },
-  "Bilinmiyor":           { bg: colors.neutral[100], color: colors.neutral[600], border: colors.border.subtle },
+const styles: Record<SourcePublicationSupplyLevel, string> = {
+  "İçerik yok":           "bg-neutral-50 text-neutral-500 border-border",
+  "Ham içerik":           "bg-warning-light text-warning-text border-warning-light",
+  "Aday içerik var":      "bg-success-light text-success-text border-success-light",
+  "Kullanılmış içerik var":"bg-info-light text-brand-700 border-info-light",
+  "Bilinmiyor":           "bg-neutral-100 text-neutral-600 border-border-subtle",
 };
 
 interface Props {
@@ -19,19 +18,10 @@ interface Props {
 }
 
 export function SourcePublicationSupplyBadge({ level }: Props) {
-  const s = styles[level] ?? { bg: colors.neutral[50], color: colors.neutral[700], border: colors.border.subtle };
+  const s = styles[level] ?? "bg-neutral-50 text-neutral-700 border-border-subtle";
   return (
     <span
-      style={{
-        display: "inline-block",
-        padding: "0.1rem 0.45rem",
-        fontSize: typography.size.xs,
-        borderRadius: radius.sm,
-        background: s.bg,
-        color: s.color,
-        border: `1px solid ${s.border}`,
-        whiteSpace: "nowrap",
-      }}
+      className={`inline-block px-[0.45rem] py-[0.1rem] text-xs rounded-sm border whitespace-nowrap ${s}`}
     >
       {level ?? "—"}
     </span>

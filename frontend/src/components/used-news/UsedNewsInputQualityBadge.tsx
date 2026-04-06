@@ -1,30 +1,19 @@
-import { colors, radius, typography } from "../design-system/tokens";
 type InputQualityLevel = "Zayıf giriş" | "Kısmi giriş" | "Güçlü giriş";
 
 interface Props {
   level: InputQualityLevel;
 }
 
-const STYLES: Record<InputQualityLevel, { background: string; color: string }> = {
-  "Zayıf giriş": { background: colors.error.light, color: colors.error.text },
-  "Kısmi giriş": { background: colors.warning.light, color: colors.warning.text },
-  "Güçlü giriş": { background: colors.success.light, color: colors.success.text },
+const STYLES: Record<InputQualityLevel, string> = {
+  "Zayıf giriş": "bg-error-light text-error-text",
+  "Kısmi giriş": "bg-warning-light text-warning-text",
+  "Güçlü giriş": "bg-success-light text-success-text",
 };
 
 export function UsedNewsInputQualityBadge({ level }: Props) {
-  const style = STYLES[level] ?? { bg: colors.neutral[50], color: colors.neutral[700], border: colors.border.subtle };
+  const s = STYLES[level] ?? "bg-neutral-100 text-neutral-600";
   return (
-    <span
-      style={{
-        display: "inline-block",
-        padding: "2px 8px",
-        borderRadius: radius.sm,
-        fontSize: typography.size.sm,
-        fontWeight: 500,
-        background: style.background,
-        color: style.color,
-      }}
-    >
+    <span className={`inline-block px-2 py-[0.125rem] text-sm rounded-md font-medium whitespace-nowrap ${s}`}>
       {level ?? "—"}
     </span>
   );
