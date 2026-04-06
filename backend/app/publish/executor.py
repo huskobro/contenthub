@@ -495,8 +495,19 @@ class PublishStepExecutor(StepExecutor):
             render_step = result.scalar_one_or_none()
             if render_step and render_step.provider_trace_json:
                 trace = json.loads(render_step.provider_trace_json)
-                if isinstance(trace, dict) and "output_path" in trace:
-                    return trace["output_path"]
+                if isinstance(trace, dict):
+                    # Tek output — output_path
+                    if "output_path" in trace:
+                        return trace["output_path"]
+                    # Multi-output — output_paths listesinin ilkini al
+                    # (veya publish_record'daki output_index'e göre seçim)
+                    output_paths = trace.get("output_paths")
+                    if isinstance(output_paths, list) and output_paths:
+                        # publish_record'da video_output_index varsa onu kullan
+                        target_index = self._resolve_output_index(job, step)
+                        if 0 <= target_index < len(output_paths):
+                            return output_paths[target_index]
+                        return output_paths[0]
         except Exception as exc:
             logger.warning(
                 "PublishStepExecutor: render step trace okunamadı (job=%s): %s",
@@ -504,6 +515,25 @@ class PublishStepExecutor(StepExecutor):
             )
 
         return None
+
+    def _resolve_output_index(self, job: Job, step: JobStep) -> int:
+        """
+        Multi-output publish'te hangi output'un publish edileceğini belirler.
+
+        publish_record veya job input'unda "video_output_index" varsa onu döndürür.
+        Yoksa 0 (ilk output) döner.
+        """
+        for source in (step.artifact_refs_json, getattr(job, "input_data_json", None)):
+            if not source:
+                continue
+            try:
+                data = json.loads(source)
+                if isinstance(data, dict) and "video_output_index" in data:
+                    idx = data["video_output_index"]
+                    return int(idx) if isinstance(idx, (int, float, str)) else 0
+            except (json.JSONDecodeError, TypeError, ValueError):
+                continue
+        return 0
 
     def _resolve_payload(self, record) -> dict:
         """
