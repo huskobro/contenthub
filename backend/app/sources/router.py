@@ -47,3 +47,11 @@ async def update_source(
         raise HTTPException(status_code=404, detail="Source not found")
     await write_audit_log(db, action="source.update", entity_type="source", entity_id=source_id)
     return source
+
+
+@router.delete("/{source_id}", status_code=204)
+async def delete_source(source_id: str, db: AsyncSession = Depends(get_db)):
+    deleted = await service.delete_source(db, source_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Source not found")
+    await write_audit_log(db, action="source.delete", entity_type="source", entity_id=source_id)

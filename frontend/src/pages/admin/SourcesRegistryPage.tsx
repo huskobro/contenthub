@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSourcesList } from "../../hooks/useSourcesList";
 import { SourcesTable } from "../../components/sources/SourcesTable";
 import { SourceDetailPanel } from "../../components/sources/SourceDetailPanel";
@@ -7,6 +8,8 @@ import { ReadOnlyGuard } from "../../components/visibility/ReadOnlyGuard";
 import { Sheet } from "../../components/design-system/Sheet";
 import { PageShell, SectionShell, ActionButton } from "../../components/design-system/primitives";
 import { useScopedKeyboardNavigation } from "../../hooks/useScopedKeyboardNavigation";
+import { bulkDeleteSources } from "../../api/sourcesApi";
+import { useToast } from "../../hooks/useToast";
 
 export function SourcesRegistryPage() {
   const location = useLocation();
@@ -41,6 +44,23 @@ export function SourcesRegistryPage() {
     setSheetOpen(true);
   }, []);
 
+  const queryClient = useQueryClient();
+  const toast = useToast();
+  const { mutate: bulkDelete } = useMutation({
+    mutationFn: (ids: string[]) => bulkDeleteSources(ids),
+    onSuccess: (_, ids) => {
+      toast.success(`${ids.length} kaynak silindi`);
+      queryClient.invalidateQueries({ queryKey: ["sources"] });
+      queryClient.invalidateQueries({ queryKey: ["news-items"] });
+      queryClient.invalidateQueries({ queryKey: ["source-scans"] });
+      if (ids.includes(selectedId ?? "")) {
+        setSelectedId(null);
+        setSheetOpen(false);
+      }
+    },
+    onError: () => toast.error("Silme işlemi başarısız"),
+  });
+
   return (
     <ReadOnlyGuard targetKey="panel:sources">
       <PageShell
@@ -71,6 +91,7 @@ export function SourcesRegistryPage() {
                 sources={sources}
                 selectedId={selectedId}
                 onSelect={handleRowSelect}
+                onBulkDelete={(ids) => bulkDelete(ids)}
               />
             )}
           </SectionShell>

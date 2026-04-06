@@ -211,7 +211,7 @@ class YouTubeTokenStore:
             "response_type": "code",
             "scope": YOUTUBE_SCOPE,
             "access_type": "offline",
-            "prompt": "consent",
+            "prompt": "select_account consent",
         }
         query = "&".join(f"{k}={v}" for k, v in params.items())
         return f"{GOOGLE_AUTH_URL}?{query}"

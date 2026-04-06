@@ -341,6 +341,28 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "wired": True,
         "wired_to": "frontend.theme_store",
     },
+    "ui.timezone": {
+        "group": "ui",
+        "type": "string",
+        "label": "Saat Dilimi",
+        "help_text": "Tarih ve saat gosteriminde kullanilacak saat dilimi. Ornek: Europe/Istanbul (UTC+3), UTC, America/New_York. Bos birakilirsa tarayici yerel saati kullanilir.",
+        "module_scope": None,
+        "env_var": None,
+        "builtin_default": "Europe/Istanbul",
+        "wired": True,
+        "wired_to": "frontend.date_formatting",
+    },
+    "ui.date_format": {
+        "group": "ui",
+        "type": "string",
+        "label": "Tarih Formatı",
+        "help_text": "Tarih gosterim formati: 'short' (03.04.2026 14:30) veya 'long' (03 Nisan 2026 14:30:00).",
+        "module_scope": None,
+        "env_var": None,
+        "builtin_default": "short",
+        "wired": True,
+        "wired_to": "frontend.date_formatting",
+    },
 
     # --- Job Engine Settings ---
     "jobs.auto_retry_enabled": {

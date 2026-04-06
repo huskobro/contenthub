@@ -72,3 +72,11 @@ export function createSource(payload: SourceCreatePayload): Promise<SourceRespon
 export function updateSource(sourceId: string, payload: SourceUpdatePayload): Promise<SourceResponse> {
   return api.patch<SourceResponse>(`${BASE_URL}/${sourceId}`, payload);
 }
+
+export function deleteSource(sourceId: string): Promise<void> {
+  return api.delete<void>(`${BASE_URL}/${sourceId}`);
+}
+
+export function bulkDeleteSources(ids: string[]): Promise<void[]> {
+  return Promise.all(ids.map((id) => deleteSource(id)));
+}

@@ -2,11 +2,22 @@
  * Safe date formatting helpers.
  * All functions return a fallback string when the input is null, undefined,
  * empty, or produces an invalid Date.
+ *
+ * Timezone is read from localStorage key "ui.timezone" (set by settings sync).
+ * Falls back to "Europe/Istanbul" if not set.
  */
 
 import type { ReactNode } from "react";
 
-/** Full date+time for detail panels: "3.04.2026, 14:30:00" */
+function getTimezone(): string {
+  try {
+    return localStorage.getItem("ui.timezone") || "Europe/Istanbul";
+  } catch {
+    return "Europe/Istanbul";
+  }
+}
+
+/** Full date+time for detail panels: "03.04.2026 14:30:55" */
 export function formatDateTime(
   value: string | null | undefined,
   fallback: string = "—",
@@ -14,10 +25,18 @@ export function formatDateTime(
   if (!value) return fallback;
   const d = new Date(value);
   if (isNaN(d.getTime())) return fallback;
-  return d.toLocaleString();
+  return d.toLocaleString("tr-TR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    timeZone: getTimezone(),
+  });
 }
 
-/** Short date for registry tables: "3.04.2026" */
+/** Short date+time for registry tables: "03.04.2026 14:30" */
 export function formatDateShort(
   value: string | null | undefined,
   fallback: string = "—",
@@ -25,7 +44,14 @@ export function formatDateShort(
   if (!value) return fallback;
   const d = new Date(value);
   if (isNaN(d.getTime())) return fallback;
-  return d.toLocaleDateString();
+  return d.toLocaleString("tr-TR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: getTimezone(),
+  });
 }
 
 /** ISO-like "2026-04-03 14:30:00" for Job panels (slice pattern replacement).

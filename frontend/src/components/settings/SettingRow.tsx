@@ -132,6 +132,10 @@ export function SettingRow({ setting }: { setting: EffectiveSetting }) {
             onSuccess: () => {
               setFeedback("Kaydedildi.");
               toast.success(`${setting.label} kaydedildi.`);
+              // Sync UI settings to localStorage so formatDate picks them up immediately
+              if (setting.key === "ui.timezone" || setting.key === "ui.date_format") {
+                try { localStorage.setItem(setting.key, String(value)); } catch { /* ignore */ }
+              }
               resolve();
             },
             onError: (err) => {
@@ -168,6 +172,9 @@ export function SettingRow({ setting }: { setting: EffectiveSetting }) {
           setInputValue("");
           setFeedback("Kaydedildi.");
           toast.success(`${setting.label} kaydedildi.`);
+          if (setting.key === "ui.timezone" || setting.key === "ui.date_format") {
+            try { localStorage.setItem(setting.key, String(value)); } catch { /* ignore */ }
+          }
         },
         onError: (err) => {
           const msg = err instanceof Error ? err.message : "Kayit hatasi.";

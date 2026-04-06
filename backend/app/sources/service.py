@@ -1,5 +1,5 @@
 from typing import List, Optional
-from sqlalchemy import select
+from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import NewsSource, SourceScan, NewsItem
@@ -121,6 +121,21 @@ async def create_source(db: AsyncSession, payload: SourceCreate) -> NewsSource:
     await db.commit()
     await db.refresh(source)
     return source
+
+
+async def delete_source(db: AsyncSession, source_id: str) -> bool:
+    """Delete a source and all related records (scans, news items)."""
+    source = await get_source(db, source_id)
+    if source is None:
+        return False
+    # Remove news items linked to this source (nullify or delete based on your schema)
+    await db.execute(delete(NewsItem).where(NewsItem.source_id == source_id))
+    # Remove source scans
+    await db.execute(delete(SourceScan).where(SourceScan.source_id == source_id))
+    # Remove the source itself
+    await db.delete(source)
+    await db.commit()
+    return True
 
 
 async def update_source(
