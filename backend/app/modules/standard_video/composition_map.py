@@ -24,6 +24,7 @@ Senkron kuralı (değişmez):
 # Yeni modül eklemek için bu sözlüğe açık kayıt yapılmalıdır.
 COMPOSITION_MAP: dict[str, str] = {
     "standard_video": "StandardVideo",
+    "news_bulletin": "NewsBulletin",
 }
 
 # Preview composition kimlik eşleştirmesi (renderStill)

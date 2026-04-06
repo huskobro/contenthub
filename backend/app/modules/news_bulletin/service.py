@@ -1,4 +1,8 @@
+import asyncio
+import json
+import logging
 from typing import List, Optional
+
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -11,6 +15,8 @@ from .schemas import (
     NewsBulletinSelectedItemCreate, NewsBulletinSelectedItemUpdate,
     NewsBulletinSelectedItemWithEnforcementResponse,
 )
+
+logger = logging.getLogger(__name__)
 
 
 async def get_used_news_enforcement(
@@ -429,4 +435,228 @@ async def create_bulletin_selected_item_with_enforcement(
         created_at=item.created_at,
         updated_at=item.updated_at,
         **enforcement,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Start Production (M28)
+# ---------------------------------------------------------------------------
+
+async def start_production(
+    db: AsyncSession,
+    bulletin_id: str,
+    dispatcher,
+    session_factory,
+) -> dict:
+    """
+    Bülten üretim pipeline'ını başlatır.
+
+    Preconditions:
+      - Bulletin.status == "in_progress" (consume_news geçilmiş olmalı)
+      - En az 1 selected item olmalı
+
+    Akış:
+      1. Effective settings + prompt snapshot al
+      2. Selected items snapshot al (headline, summary, edited_narration)
+      3. Job oluştur (module_type="news_bulletin")
+      4. Bulletin.job_id = job.id, Bulletin.status = "rendering"
+      5. Dispatcher.dispatch(job_id) çağır
+      6. Audit log yaz
+      7. _watch_bulletin_job async task başlat
+
+    Returns:
+        dict: job_id, bulletin_id, bulletin_status, message
+
+    Raises:
+        ValueError: Precondition ihlali
+    """
+    from app.jobs.schemas import JobCreate
+    from app.jobs.service import create_job
+    from app.settings.settings_resolver import resolve, KNOWN_SETTINGS
+    from app.audit.service import write_audit_log
+
+    bulletin = await get_news_bulletin(db, bulletin_id)
+    if bulletin is None:
+        raise ValueError(f"Bülten bulunamadı: {bulletin_id}")
+
+    if bulletin.status != "in_progress":
+        raise ValueError(
+            f"Bülten status 'in_progress' olmalı, mevcut: '{bulletin.status}'. "
+            f"Önce consume_news çağrılmalı."
+        )
+
+    # Selected items kontrolü
+    selected_items = await list_bulletin_selected_items(db, bulletin_id)
+    if not selected_items:
+        raise ValueError("Seçilmiş haber öğesi yok. En az 1 haber seçilmiş olmalı.")
+
+    # Settings + prompt snapshot al
+    snapshot_keys = [
+        k for k in KNOWN_SETTINGS
+        if k.startswith("news_bulletin.")
+    ]
+    settings_snapshot = {}
+    for key in snapshot_keys:
+        value = await resolve(key, db)
+        if value is not None:
+            settings_snapshot[key] = value
+        else:
+            # Builtin default kullan
+            meta = KNOWN_SETTINGS.get(key, {})
+            if meta.get("builtin_default") is not None:
+                settings_snapshot[key] = meta["builtin_default"]
+
+    # Selected items snapshot (DB'den gelecek veriler pipeline boyunca değişmeyecek)
+    items_snapshot = []
+    for item in selected_items:
+        # NewsItem'dan headline ve summary çek
+        news_item_result = await db.execute(
+            select(NewsItem).where(NewsItem.id == item.news_item_id)
+        )
+        news_item = news_item_result.scalar_one_or_none()
+        items_snapshot.append({
+            "news_item_id": item.news_item_id,
+            "sort_order": item.sort_order,
+            "headline": news_item.title if news_item else "",
+            "summary": news_item.summary if news_item else "",
+            "title": news_item.title if news_item else "",
+            "edited_narration": item.edited_narration,
+            "category": news_item.category if news_item else None,
+        })
+
+    # Job input data
+    input_data = {
+        "bulletin_id": bulletin_id,
+        "topic": bulletin.topic or "Haber Bülteni",
+        "language": bulletin.language or settings_snapshot.get("news_bulletin.config.default_language", "tr"),
+        "tone": bulletin.tone or settings_snapshot.get("news_bulletin.config.default_tone", "formal"),
+        "target_duration_seconds": bulletin.target_duration_seconds or settings_snapshot.get("news_bulletin.config.default_duration_seconds", 120),
+        "selected_items": items_snapshot,
+        "_settings_snapshot": settings_snapshot,
+    }
+
+    # Job oluştur
+    job_payload = JobCreate(
+        module_type="news_bulletin",
+        input_data_json=json.dumps(input_data, ensure_ascii=False),
+    )
+    job = await create_job(db, job_payload)
+
+    # Bulletin güncelle
+    bulletin.job_id = job.id
+    bulletin.status = "rendering"
+    await db.commit()
+    await db.refresh(bulletin)
+
+    # Audit log
+    await write_audit_log(
+        db,
+        action="bulletin.production.started",
+        entity_type="news_bulletin",
+        entity_id=bulletin_id,
+        details={
+            "job_id": job.id,
+            "selected_items_count": len(items_snapshot),
+            "language": input_data["language"],
+            "tone": input_data["tone"],
+        },
+    )
+    await db.commit()
+
+    # Dispatch (arka planda pipeline başlat)
+    await dispatcher.dispatch(job.id)
+
+    # Watcher task — job tamamlandığında bulletin status'u güncelle
+    asyncio.create_task(
+        _watch_bulletin_job(
+            session_factory=session_factory,
+            bulletin_id=bulletin_id,
+            job_id=job.id,
+        )
+    )
+
+    logger.info(
+        "start_production: bulletin=%s job=%s items=%d dispatched",
+        bulletin_id, job.id, len(items_snapshot),
+    )
+
+    return {
+        "job_id": job.id,
+        "bulletin_id": bulletin_id,
+        "bulletin_status": "rendering",
+        "message": f"Üretim başlatıldı. {len(items_snapshot)} haber, job_id={job.id}",
+    }
+
+
+async def _watch_bulletin_job(
+    session_factory,
+    bulletin_id: str,
+    job_id: str,
+    poll_interval: float = 3.0,
+    timeout: float = 1800.0,
+) -> None:
+    """
+    Job tamamlanmasını izler ve bulletin status'unu günceller.
+
+    Bu async task start_production tarafından oluşturulur.
+    Job completed → bulletin.status = "done"
+    Job failed → bulletin.status = "failed"
+    """
+    from app.audit.service import write_audit_log
+
+    elapsed = 0.0
+    while elapsed < timeout:
+        await asyncio.sleep(poll_interval)
+        elapsed += poll_interval
+
+        async with session_factory() as db:
+            from app.jobs.service import get_job
+            job = await get_job(db, job_id)
+            if job is None:
+                logger.error(
+                    "_watch_bulletin_job: job bulunamadı. job_id=%s bulletin_id=%s",
+                    job_id, bulletin_id,
+                )
+                return
+
+            if job.status == "completed":
+                bulletin = await get_news_bulletin(db, bulletin_id)
+                if bulletin and bulletin.status == "rendering":
+                    bulletin.status = "done"
+                    await write_audit_log(
+                        db,
+                        action="bulletin.production.completed",
+                        entity_type="news_bulletin",
+                        entity_id=bulletin_id,
+                        details={"job_id": job_id},
+                    )
+                    await db.commit()
+                    logger.info(
+                        "_watch_bulletin_job: bulletin done. bulletin=%s job=%s",
+                        bulletin_id, job_id,
+                    )
+                return
+
+            if job.status == "failed":
+                bulletin = await get_news_bulletin(db, bulletin_id)
+                if bulletin and bulletin.status == "rendering":
+                    bulletin.status = "failed"
+                    await write_audit_log(
+                        db,
+                        action="bulletin.production.failed",
+                        entity_type="news_bulletin",
+                        entity_id=bulletin_id,
+                        details={"job_id": job_id},
+                    )
+                    await db.commit()
+                    logger.warning(
+                        "_watch_bulletin_job: bulletin failed. bulletin=%s job=%s",
+                        bulletin_id, job_id,
+                    )
+                return
+
+    # Timeout
+    logger.error(
+        "_watch_bulletin_job: timeout (%.0fs). bulletin=%s job=%s — bulletin may be stuck in 'rendering'.",
+        timeout, bulletin_id, job_id,
     )

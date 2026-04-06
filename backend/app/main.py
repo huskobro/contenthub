@@ -31,6 +31,7 @@ from app.jobs.recovery import run_startup_recovery
 from app.jobs.dispatcher import JobDispatcher
 from app.modules.registry import module_registry
 from app.modules.standard_video.definition import STANDARD_VIDEO_MODULE
+from app.modules.news_bulletin.definition import NEWS_BULLETIN_MODULE
 from app.providers.capability import ProviderCapability
 from app.providers.llm.kie_ai_provider import KieAiProvider
 from app.providers.llm.openai_compat_provider import OpenAICompatProvider
@@ -82,6 +83,9 @@ async def lifespan(app: FastAPI):
     # İçerik modüllerini kayıt defterine ekle (M2-C1)
     module_registry.register(STANDARD_VIDEO_MODULE)
     logger.info("Modül kaydedildi: %s", STANDARD_VIDEO_MODULE.module_id)
+
+    module_registry.register(NEWS_BULLETIN_MODULE)
+    logger.info("Modül kaydedildi: %s", NEWS_BULLETIN_MODULE.module_id)
 
     # KNOWN_SETTINGS'i DB'ye seed et (M10-C) — eksik key'ler icin DB satiri olusturur
     async with AsyncSessionLocal() as seed_db:
@@ -205,6 +209,9 @@ async def lifespan(app: FastAPI):
         registry=provider_registry,
     )
     logger.info("JobDispatcher app.state'e bağlandı.")
+
+    # Session factory'yi app.state'e ekle (M28 — _watch_bulletin_job için)
+    app.state.session_factory = _session_factory
 
     # Publish scheduler — background task (M11)
     from app.publish.scheduler import poll_scheduled_publishes

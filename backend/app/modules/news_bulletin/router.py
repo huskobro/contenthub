@@ -1,5 +1,5 @@
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import BaseModel
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -12,6 +12,7 @@ from .schemas import (
     NewsBulletinMetadataCreate, NewsBulletinMetadataUpdate, NewsBulletinMetadataResponse,
     NewsBulletinSelectedItemCreate, NewsBulletinSelectedItemUpdate, NewsBulletinSelectedItemResponse,
     NewsBulletinSelectedItemWithEnforcementResponse,
+    StartProductionResponse,
 )
 from . import service
 from .editorial_gate import (
@@ -283,3 +284,41 @@ async def list_selectable_news(
         )
         for i in items
     ]
+
+
+@router.post("/{item_id}/start-production", response_model=StartProductionResponse)
+async def start_production_endpoint(
+    item_id: str,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Bülten üretim pipeline'ını başlatır (M28).
+
+    Preconditions:
+      - Bulletin.status == "in_progress" (consume_news geçilmiş olmalı)
+      - En az 1 selected item olmalı
+
+    Job oluşturur, dispatcher'a gönderir, bulletin.status = "rendering" yapar.
+    """
+    dispatcher = getattr(request.app.state, "job_dispatcher", None)
+    if dispatcher is None:
+        raise HTTPException(status_code=503, detail="JobDispatcher hazır değil.")
+
+    session_factory = getattr(request.app.state, "session_factory", None)
+    if session_factory is None:
+        # Fallback: get_db session factory'den kullan
+        from app.db.session import AsyncSessionLocal
+        session_factory = AsyncSessionLocal
+
+    try:
+        result = await service.start_production(
+            db=db,
+            bulletin_id=item_id,
+            dispatcher=dispatcher,
+            session_factory=session_factory,
+        )
+    except ValueError as err:
+        raise HTTPException(status_code=400, detail=str(err))
+
+    return StartProductionResponse(**result)

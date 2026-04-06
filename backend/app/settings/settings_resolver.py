@@ -422,6 +422,165 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "wired": True,
         "wired_to": "YouTubeAdapter.upload() — payload'da tags yoksa settings'ten okunur",
     },
+
+    # --- News Bulletin Module (M28) ---
+    "news_bulletin.prompt.narration_system": {
+        "group": "news_bulletin",
+        "type": "prompt",
+        "label": "Bulten Narration Sistem Prompt",
+        "help_text": "Spiker tarzinda haber anlatimi icin LLM sistem talimatlari.",
+        "module_scope": "news_bulletin",
+        "env_var": "",
+        "builtin_default": (
+            "Sen profesyonel bir TV haber spikerisin. Sana verilen haber ozetlerini kisa, net, resmi ve "
+            "konusulabilir bir dilde yeniden yaz. Her haber 40-80 kelime arasinda olmali. Turkce formal "
+            "broadcast dilini kullan. Cevrilmis metin hissi verme."
+        ),
+        "wired": True,
+        "wired_to": "BulletinScriptExecutor — narration uretimi sistem prompt",
+    },
+    "news_bulletin.prompt.narration_style_rules": {
+        "group": "news_bulletin",
+        "type": "prompt",
+        "label": "Bulten Narration Stil Kurallari",
+        "help_text": "Formal broadcast, kisa cumle, ton kurallari.",
+        "module_scope": "news_bulletin",
+        "env_var": "",
+        "builtin_default": (
+            "Kurallar:\n"
+            "- Kisa cumleler kullan, max 15 kelime per cumle\n"
+            "- Aktif cumle yapisi tercih et\n"
+            "- Teknik jargon kullanma\n"
+            "- Resmi ama soguk olmayan ton\n"
+            "- Her haberi bagimsiz anlat, onceki habere referans verme\n"
+            "- Kapanisi temiz bitir, 'devam edecek' gibi ifadeler kullanma"
+        ),
+        "wired": True,
+        "wired_to": "BulletinScriptExecutor — narration stil kurallari",
+    },
+    "news_bulletin.prompt.anti_clickbait_rules": {
+        "group": "news_bulletin",
+        "type": "prompt",
+        "label": "Bulten Anti-Clickbait Kurallari",
+        "help_text": "Yasakli kaliplar, byline yasagi, abartili ifade engelleme.",
+        "module_scope": "news_bulletin",
+        "env_var": "",
+        "builtin_default": (
+            "Yasaklar:\n"
+            "- Clickbait basliklar kullanma\n"
+            "- 'Inanilmaz', 'sok edici', 'merak edilen' gibi abartili ifadeler yasak\n"
+            "- Kaynak adini, muhabir adini, byline bilgisini tekrarlama\n"
+            "- 'According to' kaliplarini kullanma\n"
+            "- Soru formunda baslik kullanma"
+        ),
+        "wired": True,
+        "wired_to": "BulletinScriptExecutor — anti-clickbait kurallari",
+    },
+    "news_bulletin.prompt.metadata_title_rules": {
+        "group": "news_bulletin",
+        "type": "prompt",
+        "label": "Bulten Metadata Uretim Kurallari",
+        "help_text": "Baslik, aciklama, etiket formati icin LLM talimatlari.",
+        "module_scope": "news_bulletin",
+        "env_var": "",
+        "builtin_default": (
+            "Bulten icin YouTube metadata uret:\n"
+            "- Baslik: max 60 karakter, bilgilendirici, clickbait degil\n"
+            "- Aciklama: 2-3 cumle, bultendeki haberlerin ozeti\n"
+            "- Etiketler: 5-10 adet, Turkce, hem genel hem habere ozel\n"
+            "- Hashtag: 3-5 adet, #haber #gundem formatinda"
+        ),
+        "wired": True,
+        "wired_to": "BulletinMetadataExecutor — metadata uretim kurallari",
+    },
+    "news_bulletin.config.default_language": {
+        "group": "news_bulletin",
+        "type": "string",
+        "label": "Varsayilan Bulten Dili",
+        "help_text": "ISO 639-1 dil kodu (tr, en, vb.).",
+        "module_scope": "news_bulletin",
+        "env_var": "",
+        "builtin_default": "tr",
+        "wired": True,
+        "wired_to": "BulletinScriptExecutor, BulletinMetadataExecutor — dil secimi",
+    },
+    "news_bulletin.config.default_tone": {
+        "group": "news_bulletin",
+        "type": "string",
+        "label": "Varsayilan Anlatim Tonu",
+        "help_text": "Narration tonu: formal, casual, energetic, vb.",
+        "module_scope": "news_bulletin",
+        "env_var": "",
+        "builtin_default": "formal",
+        "wired": True,
+        "wired_to": "BulletinScriptExecutor — anlatim tonu",
+    },
+    "news_bulletin.config.default_duration_seconds": {
+        "group": "news_bulletin",
+        "type": "integer",
+        "label": "Varsayilan Hedef Sure (sn)",
+        "help_text": "Bulten hedef suresi — saniye cinsinden.",
+        "module_scope": "news_bulletin",
+        "env_var": "",
+        "builtin_default": 120,
+        "wired": True,
+        "wired_to": "BulletinScriptExecutor — hedef sure",
+    },
+    "news_bulletin.config.max_items_per_bulletin": {
+        "group": "news_bulletin",
+        "type": "integer",
+        "label": "Max Haber Sayisi",
+        "help_text": "Tek bultendeki maksimum haber ogesi sayisi.",
+        "module_scope": "news_bulletin",
+        "env_var": "",
+        "builtin_default": 10,
+        "wired": True,
+        "wired_to": "start_production precondition check",
+    },
+    "news_bulletin.config.narration_word_limit_per_item": {
+        "group": "news_bulletin",
+        "type": "integer",
+        "label": "Haber Basina Max Kelime",
+        "help_text": "Her haberin narration metnindeki kelime limiti.",
+        "module_scope": "news_bulletin",
+        "env_var": "",
+        "builtin_default": 80,
+        "wired": True,
+        "wired_to": "BulletinScriptExecutor — kelime limiti",
+    },
+    "news_bulletin.config.render_mode": {
+        "group": "news_bulletin",
+        "type": "string",
+        "label": "Render Modu",
+        "help_text": "M28: sadece 'combined'. M29+: per-category, per-item.",
+        "module_scope": "news_bulletin",
+        "env_var": "",
+        "builtin_default": "combined",
+        "wired": False,
+        "wired_to": "DEFINED — M28 sadece combined destekler",
+    },
+    "news_bulletin.config.render_fps": {
+        "group": "news_bulletin",
+        "type": "integer",
+        "label": "Render FPS",
+        "help_text": "Video render kare hizi.",
+        "module_scope": "news_bulletin",
+        "env_var": "",
+        "builtin_default": 30,
+        "wired": False,
+        "wired_to": "DEFINED — Remotion composition'da kullanilacak",
+    },
+    "news_bulletin.config.render_format": {
+        "group": "news_bulletin",
+        "type": "string",
+        "label": "Render Formati",
+        "help_text": "16:9 (landscape) veya 9:16 (portrait).",
+        "module_scope": "news_bulletin",
+        "env_var": "",
+        "builtin_default": "landscape",
+        "wired": False,
+        "wired_to": "DEFINED — Remotion composition'da kullanilacak",
+    },
 }
 
 # Group labels for UI
@@ -433,9 +592,10 @@ GROUP_LABELS: Dict[str, str] = {
     "publish": "Yayin Ayarlari",
     "ui": "Arayuz Ayarlari",
     "jobs": "Is Motoru Ayarlari",
+    "news_bulletin": "Haber Bulteni",
 }
 
-GROUP_ORDER = ["credentials", "providers", "execution", "source_scans", "publish", "ui", "jobs"]
+GROUP_ORDER = ["credentials", "providers", "execution", "source_scans", "publish", "ui", "jobs", "news_bulletin"]
 
 
 # ---------------------------------------------------------------------------
@@ -457,6 +617,15 @@ KNOWN_VALIDATION_RULES: Dict[str, str] = {
     "publish.youtube.default_category_id": '{"type": "string", "required": true}',
     "jobs.max_auto_retries": '{"type": "integer", "min": 1, "max": 10}',
     "jobs.retry_base_delay_seconds": '{"type": "integer", "min": 10, "max": 3600}',
+    # News Bulletin (M28)
+    "news_bulletin.prompt.narration_system": '{"type": "string", "required": true, "min_length": 10}',
+    "news_bulletin.prompt.narration_style_rules": '{"type": "string", "required": true, "min_length": 10}',
+    "news_bulletin.prompt.anti_clickbait_rules": '{"type": "string", "required": true, "min_length": 10}',
+    "news_bulletin.prompt.metadata_title_rules": '{"type": "string", "required": true, "min_length": 10}',
+    "news_bulletin.config.default_duration_seconds": '{"type": "integer", "min": 30, "max": 600}',
+    "news_bulletin.config.max_items_per_bulletin": '{"type": "integer", "min": 1, "max": 50}',
+    "news_bulletin.config.narration_word_limit_per_item": '{"type": "integer", "min": 20, "max": 200}',
+    "news_bulletin.config.render_fps": '{"type": "integer", "min": 15, "max": 60}',
 }
 
 

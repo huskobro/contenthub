@@ -711,6 +711,8 @@ class NewsBulletinSelectedItem(Base):
     news_item_id      : FK to news_items.id (required, indexed)
     sort_order        : display/processing order (non-negative)
     selection_reason  : optional note about why this item was chosen
+    edited_narration  : operator-edited narration text (M28); if set, pipeline uses
+                        this instead of LLM-generated narration for this item
     """
 
     __tablename__ = "news_bulletin_selected_items"
@@ -733,6 +735,7 @@ class NewsBulletinSelectedItem(Base):
     )
     sort_order: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     selection_reason: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    edited_narration: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=_now
     )

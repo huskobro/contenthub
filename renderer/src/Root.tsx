@@ -5,9 +5,11 @@
  * Güvenli composition mapping kuralı: yeni composition eklemek için
  * bu dosyaya açık kayıt yapılmalı ve composition_map.py ile senkronize tutulmalıdır.
  *
- * Mevcut composition'lar (composition_map.py ile senkron — M6-C3):
+ * Mevcut composition'lar (composition_map.py ile senkron — M6-C3, M28):
  *   StandardVideo     — standard_video modülü için (final render)
  *                       composition_map.COMPOSITION_MAP["standard_video"]
+ *   NewsBulletin      — news_bulletin modülü için (combined render, M28)
+ *                       composition_map.COMPOSITION_MAP["news_bulletin"]
  *   PreviewFrame      — renderStill preview için (final render'dan ayrı)
  *                       composition_map.PREVIEW_COMPOSITION_MAP["standard_video_preview"]
  *
@@ -38,6 +40,11 @@ import {
   PreviewFrameComposition,
   type PreviewFrameProps,
 } from "./compositions/PreviewFrameComposition";
+import {
+  NewsBulletinComposition,
+  defaultNewsBulletinProps,
+  type NewsBulletinProps,
+} from "./compositions/NewsBulletinComposition";
 
 const FPS = 30;
 
@@ -47,6 +54,9 @@ const StandardVideoComponent =
 
 const PreviewFrameComponent =
   PreviewFrameComposition as unknown as React.ComponentType<Record<string, unknown>>;
+
+const NewsBulletinComponent =
+  NewsBulletinComposition as unknown as React.ComponentType<Record<string, unknown>>;
 
 // ---------------------------------------------------------------------------
 // StandardVideo defaultProps
@@ -126,6 +136,37 @@ export function RemotionRoot() {
             totalSecs = FALLBACK_SECS;
           } else {
             totalSecs = raw;
+          }
+          const durationInFrames = Math.max(1, Math.round(totalSecs * FPS));
+          return { durationInFrames };
+        }}
+      />
+
+      {/* News Bulletin combined render composition (M28) */}
+      <Composition
+        id="NewsBulletin"
+        component={NewsBulletinComponent}
+        durationInFrames={FPS * 120}
+        fps={FPS}
+        width={1920}
+        height={1080}
+        defaultProps={
+          defaultNewsBulletinProps as unknown as Record<string, unknown>
+        }
+        calculateMetadata={async ({ props }) => {
+          const typed = props as unknown as NewsBulletinProps;
+          const raw = typed.totalDurationSeconds;
+          const FALLBACK_SECS = 120;
+          let totalSecs: number;
+          if (typeof raw !== "number" || raw <= 0) {
+            console.warn(
+              `[Root.tsx] NewsBulletin totalDurationSeconds gecersiz (${raw}). ` +
+              `Fallback=${FALLBACK_SECS}s kullaniliyor.`
+            );
+            totalSecs = FALLBACK_SECS;
+          } else {
+            // 2 saniye baslik + item sureleri
+            totalSecs = raw + 2;
           }
           const durationInFrames = Math.max(1, Math.round(totalSecs * FPS));
           return { durationInFrames };

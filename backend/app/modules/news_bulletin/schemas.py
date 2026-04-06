@@ -152,6 +152,7 @@ class NewsBulletinSelectedItemCreate(BaseModel):
 class NewsBulletinSelectedItemUpdate(BaseModel):
     sort_order: Optional[int] = None
     selection_reason: Optional[str] = None
+    edited_narration: Optional[str] = None
 
     @field_validator("sort_order")
     @classmethod
@@ -167,6 +168,7 @@ class NewsBulletinSelectedItemResponse(BaseModel):
     news_item_id: str
     sort_order: int
     selection_reason: Optional[str]
+    edited_narration: Optional[str] = None
     created_at: datetime
     updated_at: datetime
 
@@ -221,3 +223,16 @@ class NewsBulletinScriptResponse(BaseModel):
     updated_at: datetime
 
     model_config = {"from_attributes": True}
+
+
+# ---------------------------------------------------------------------------
+# Start Production (M28)
+# ---------------------------------------------------------------------------
+
+
+class StartProductionResponse(BaseModel):
+    """Response when production pipeline is triggered for a bulletin."""
+    job_id: str
+    bulletin_id: str
+    bulletin_status: str
+    message: str
