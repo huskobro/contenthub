@@ -27,7 +27,7 @@ export function WizardSettingsPage() {
       <SectionShell testId="wizard-configs-section">
         {isLoading && <p className="text-neutral-500 text-sm p-4">Yukleniyor...</p>}
         {isError && (
-          <p className="text-red-600 text-sm p-4">
+          <p className="text-error-dark text-sm p-4">
             Hata: {error instanceof Error ? error.message : "Bilinmeyen hata"}
           </p>
         )}
@@ -78,7 +78,7 @@ function WizardConfigRow({ config, isExpanded, onToggle }: WizardConfigRowProps)
             className={cn(
               "inline-block px-2 py-0.5 rounded-sm text-xs font-medium",
               config.enabled
-                ? "bg-green-100 text-green-700"
+                ? "bg-success-light text-success-dark"
                 : "bg-neutral-100 text-neutral-500",
             )}
           >
@@ -198,7 +198,7 @@ function WizardConfigEditor({ config }: WizardConfigEditorProps) {
           <span
             className={cn(
               "text-xs",
-              saveMsg.startsWith("Hata") ? "text-red-600" : "text-green-600",
+              saveMsg.startsWith("Hata") ? "text-error-dark" : "text-success-dark",
             )}
           >
             {saveMsg}

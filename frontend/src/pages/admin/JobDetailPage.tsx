@@ -65,10 +65,10 @@ export function JobDetailPage() {
       {/* SSE connection indicator — only show when disconnected for active jobs */}
       {isActiveJob && !sseConnected && (
         <div
-          className={`flex items-center gap-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-3 py-1.5 mb-3 ${sseReconnecting ? "animate-pulse" : ""}`}
+          className={`flex items-center gap-2 text-xs text-warning-dark bg-warning-light border border-warning rounded px-3 py-1.5 mb-3 ${sseReconnecting ? "animate-pulse" : ""}`}
           data-testid="sse-connection-banner"
         >
-          <span className="inline-block w-2 h-2 rounded-full bg-amber-400 shrink-0" />
+          <span className="inline-block w-2 h-2 rounded-full bg-warning shrink-0" />
           Canli baglanti kesildi — yeniden baglaniliyor...
         </div>
       )}

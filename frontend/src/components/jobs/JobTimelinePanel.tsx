@@ -8,21 +8,21 @@ interface JobTimelinePanelProps {
 }
 
 const STATUS_DOT: Record<string, string> = {
-  completed: "bg-emerald-500",
+  completed: "bg-success",
   running: "bg-brand-500 ring-4 ring-brand-100 animate-pulse",
-  failed: "bg-red-500",
+  failed: "bg-error",
   skipped: "bg-neutral-300",
   pending: "bg-neutral-200 border-2 border-neutral-300",
-  cancelled: "bg-amber-400",
+  cancelled: "bg-warning",
 };
 
 const STATUS_TEXT: Record<string, string> = {
-  completed: "text-emerald-700",
+  completed: "text-success-dark",
   running: "text-brand-700",
-  failed: "text-red-600",
+  failed: "text-error-dark",
   skipped: "text-neutral-400",
   pending: "text-neutral-500",
-  cancelled: "text-amber-600",
+  cancelled: "text-warning-dark",
 };
 
 function StepRow({ step, isLast }: { step: JobStepResponse; isLast: boolean }) {
@@ -75,7 +75,7 @@ function StepRow({ step, isLast }: { step: JobStepResponse; isLast: boolean }) {
         </div>
 
         {step.last_error && (
-          <div className="text-xs text-red-600 mt-1 break-words [overflow-wrap:anywhere] bg-red-50 rounded px-2 py-1">
+          <div className="text-xs text-error-dark mt-1 break-words [overflow-wrap:anywhere] bg-error-light rounded px-2 py-1">
             {step.last_error}
           </div>
         )}

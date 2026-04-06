@@ -1,7 +1,8 @@
 /**
- * HorizonUserLayout — Radical new user layout for Horizon design mode
+ * HorizonUserLayout — User layout for Horizon design mode
  *
  * Same Horizon design language as admin but with simplified nav.
+ * Updated: 56px icon rail, sticky header.
  */
 
 import { Outlet, useNavigate } from "react-router-dom";
@@ -15,8 +16,6 @@ import { HORIZON_USER_GROUPS } from "./useLayoutNavigation";
 
 export function HorizonUserLayout() {
   const navigate = useNavigate();
-
-  // Global SSE for app-wide notifications and query invalidation
   useGlobalSSE();
 
   return (
@@ -28,14 +27,23 @@ export function HorizonUserLayout() {
 
         <HorizonSidebar groups={HORIZON_USER_GROUPS} brandLabel="ContentHub" />
 
-        <main
-          className="ml-[48px] min-h-screen p-4 pt-4 bg-surface-page overflow-y-auto transition-[margin] duration-normal"
+        <div
+          className="min-h-screen flex flex-col transition-[margin] duration-normal"
+          style={{ marginLeft: "var(--ch-sidebar-collapsed-width)" }}
         >
-          <div className="flex items-center justify-between mb-4 max-w-page">
-            <div className="flex items-center gap-2 text-xs text-neutral-500">
-              <span className="font-medium text-neutral-700">Kullanici</span>
-            </div>
-            <div className="flex items-center gap-2">
+          {/* Sticky Header */}
+          <header
+            className="sticky top-0 z-header flex items-center h-header border-b border-border-subtle shrink-0"
+            style={{ backgroundColor: "color-mix(in srgb, var(--ch-surface-page) 85%, transparent)", backdropFilter: "blur(12px)", padding: "0 var(--ch-page-padding)" }}
+          >
+            <div
+              className="absolute bottom-0 left-0 right-0 h-px"
+              style={{ background: "linear-gradient(90deg, transparent 0%, color-mix(in srgb, var(--ch-brand-400) 12%, transparent) 50%, transparent 100%)" }}
+            />
+
+            <span className="font-medium text-neutral-700 text-xs flex-1">Kullanici Paneli</span>
+
+            <div className="flex items-center gap-2 shrink-0">
               <NotificationBell />
               <button
                 onClick={() => navigate("/admin")}
@@ -45,10 +53,13 @@ export function HorizonUserLayout() {
                 Yonetim Paneli
               </button>
             </div>
-          </div>
+          </header>
 
-          <Outlet />
-        </main>
+          {/* Page Content */}
+          <main className="flex-1 bg-surface-page overflow-y-auto" style={{ padding: "var(--ch-page-padding)" }}>
+            <Outlet />
+          </main>
+        </div>
       </div>
     </ThemeProvider>
   );

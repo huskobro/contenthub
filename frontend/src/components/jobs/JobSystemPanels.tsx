@@ -175,7 +175,7 @@ export function JobSystemPanels({ steps = [] }: JobSystemPanelsProps) {
                 <div className="flex items-center gap-2">
                   <strong className="font-mono text-base">{s.step_key}</strong>
                   {isMultiOutput && (
-                    <span className="inline-block px-1.5 py-0.5 rounded-sm text-xs font-medium bg-blue-100 text-blue-700">
+                    <span className="inline-block px-1.5 py-0.5 rounded-sm text-xs font-medium bg-info-light text-info-dark">
                       {outputCount ?? outputPaths.length} cikti ({renderMode ?? "multi"})
                     </span>
                   )}

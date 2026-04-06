@@ -52,10 +52,10 @@ export function NewsBulletinScriptForm({
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-2.5">
-      {localError && <p className="text-red-600 m-0 break-words [overflow-wrap:anywhere]">{localError}</p>}
+      {localError && <p className="text-error-dark m-0 break-words [overflow-wrap:anywhere]">{localError}</p>}
 
       <label>
-        İçerik <span className="text-red-600">*</span>
+        İçerik <span className="text-error-dark">*</span>
         <textarea
           value={values.content}
           onChange={(e) => set("content", e.target.value)}

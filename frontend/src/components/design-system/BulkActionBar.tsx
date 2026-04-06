@@ -29,7 +29,7 @@ export function BulkActionBar({ selectedCount, actions, onClear }: BulkActionBar
             className={cn(
               "px-3 py-1 text-sm rounded-sm border transition-colors duration-fast cursor-pointer",
               action.variant === "danger"
-                ? "text-red-400 border-red-500 border-opacity-50 hover:bg-red-500 hover:bg-opacity-10 bg-transparent"
+                ? "text-error border-error border-opacity-50 hover:bg-error hover:bg-opacity-10 bg-transparent"
                 : "text-neutral-300 border-neutral-600 hover:bg-neutral-700 bg-transparent"
             )}
           >

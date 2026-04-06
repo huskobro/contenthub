@@ -84,14 +84,14 @@ export function CompositionDirectionPreview({
             className={cn(
               "flex flex-col items-center gap-1.5 p-2 rounded-lg border-2 bg-white transition-all duration-150 cursor-pointer",
               selected === d.id
-                ? "border-blue-500 shadow-md ring-2 ring-blue-200"
+                ? "border-brand-500 shadow-md ring-2 ring-brand-200"
                 : "border-neutral-200 hover:border-neutral-300 hover:shadow-sm",
             )}
           >
             <div className="w-full aspect-video p-1.5 bg-neutral-50 rounded">
               {d.render()}
             </div>
-            <span className={cn("text-xs font-medium", selected === d.id ? "text-blue-700" : "text-neutral-600")}>
+            <span className={cn("text-xs font-medium", selected === d.id ? "text-brand-700" : "text-neutral-600")}>
               {d.label}
             </span>
           </button>

@@ -114,9 +114,9 @@ export const HORIZON_CHALK_THEME: ThemeManifest = {
   motion: { fast: "120ms", normal: "200ms", slow: "350ms", easing: "cubic-bezier(0.34, 1.56, 0.64, 1)" },
 
   layout: {
-    sidebarWidth: "288px",
-    sidebarCollapsedWidth: "48px",
-    headerHeight: "0px",
+    sidebarWidth: "312px",
+    sidebarCollapsedWidth: "56px",
+    headerHeight: "48px",
     pageMaxWidth: "1320px",
     pagePadding: "1.25rem",
   },
@@ -219,9 +219,9 @@ export const HORIZON_OBSIDIAN_THEME: ThemeManifest = {
   motion: { fast: "80ms", normal: "140ms", slow: "240ms", easing: "cubic-bezier(0.34, 1.56, 0.64, 1)" },
 
   layout: {
-    sidebarWidth: "272px",
-    sidebarCollapsedWidth: "48px",
-    headerHeight: "0px",
+    sidebarWidth: "312px",
+    sidebarCollapsedWidth: "56px",
+    headerHeight: "48px",
     pageMaxWidth: "1440px",
     pagePadding: "1.25rem",
   },
@@ -324,9 +324,9 @@ export const HORIZON_SAND_THEME: ThemeManifest = {
   motion: { fast: "140ms", normal: "240ms", slow: "400ms", easing: "cubic-bezier(0.34, 1.56, 0.64, 1)" },
 
   layout: {
-    sidebarWidth: "280px",
-    sidebarCollapsedWidth: "48px",
-    headerHeight: "0px",
+    sidebarWidth: "312px",
+    sidebarCollapsedWidth: "56px",
+    headerHeight: "48px",
     pageMaxWidth: "1280px",
     pagePadding: "1.25rem",
   },
@@ -429,9 +429,9 @@ export const HORIZON_MIDNIGHT_THEME: ThemeManifest = {
   motion: { fast: "100ms", normal: "180ms", slow: "300ms", easing: "cubic-bezier(0.34, 1.56, 0.64, 1)" },
 
   layout: {
-    sidebarWidth: "280px",
-    sidebarCollapsedWidth: "48px",
-    headerHeight: "0px",
+    sidebarWidth: "312px",
+    sidebarCollapsedWidth: "56px",
+    headerHeight: "48px",
     pageMaxWidth: "1360px",
     pagePadding: "1.25rem",
   },

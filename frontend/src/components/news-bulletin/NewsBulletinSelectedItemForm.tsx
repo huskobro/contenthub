@@ -56,11 +56,11 @@ export function NewsBulletinSelectedItemForm({
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-2.5">
-      {localError && <p className="text-red-600 m-0 break-words [overflow-wrap:anywhere]">{localError}</p>}
+      {localError && <p className="text-error-dark m-0 break-words [overflow-wrap:anywhere]">{localError}</p>}
 
       {isCreate && (
         <label>
-          News Item ID <span className="text-red-600">*</span>
+          News Item ID <span className="text-error-dark">*</span>
           <input
             type="text"
             value={values.news_item_id}

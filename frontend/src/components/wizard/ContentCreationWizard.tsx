@@ -102,7 +102,7 @@ export function ContentCreationWizard({
         <div className="space-y-3">
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-1">
-              Konu <span className="text-red-500">*</span>
+              Konu <span className="text-error-dark">*</span>
             </label>
             <input
               className={inputCls}
@@ -244,7 +244,7 @@ export function ContentCreationWizard({
             <Row label="Stil" value={values.style_blueprint_id ? values.style_blueprint_id.slice(0, 8) + "..." : ""} />
           </div>
           {submitError && (
-            <p className="text-red-600 text-sm mt-2 break-words [overflow-wrap:anywhere]">{submitError}</p>
+            <p className="text-error-dark text-sm mt-2 break-words [overflow-wrap:anywhere]">{submitError}</p>
           )}
         </div>
       )}

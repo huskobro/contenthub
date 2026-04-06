@@ -75,7 +75,7 @@ export function TemplateVisualPreview({
             </span>
           )}
           {contentRules?.max_duration != null && (
-            <span className="px-2 py-0.5 text-[10px] font-medium rounded-full bg-amber-100 text-amber-700">
+            <span className="px-2 py-0.5 text-[10px] font-medium rounded-full bg-warning-light text-warning-dark">
               {contentRules.max_duration}s
             </span>
           )}

@@ -28,8 +28,8 @@ function renderModeLabel(mode: string | null | undefined): string {
 
 function renderModeBadge(mode: string | null | undefined): string {
   switch (mode) {
-    case "per_item": return "bg-purple-100 text-purple-700";
-    case "per_category": return "bg-blue-100 text-blue-700";
+    case "per_item": return "bg-info-light text-info-dark";
+    case "per_category": return "bg-info-light text-info-dark";
     default: return "bg-neutral-100 text-neutral-600";
   }
 }

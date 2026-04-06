@@ -25,9 +25,9 @@ export function JobProgressBar({ job }: JobProgressBarProps) {
   const eta = job.eta_seconds ?? job.estimated_remaining_seconds;
 
   const barColor = job.status === "failed"
-    ? "bg-red-500"
+    ? "bg-error"
     : job.status === "completed"
-      ? "bg-emerald-500"
+      ? "bg-success"
       : "bg-brand-500";
 
   return (
@@ -79,9 +79,9 @@ export function JobProgressBar({ job }: JobProgressBarProps) {
 
 function stepDotColor(status: string): string {
   switch (status) {
-    case "completed": return "bg-emerald-500";
+    case "completed": return "bg-success";
     case "running": return "bg-brand-500 animate-pulse";
-    case "failed": return "bg-red-500";
+    case "failed": return "bg-error";
     case "skipped": return "bg-neutral-300";
     default: return "bg-neutral-200";
   }

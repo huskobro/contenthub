@@ -34,7 +34,7 @@ export function NewsItemDetailPanel({ selectedId }: Props) {
   }
 
   if (isError || !data) {
-    return <p className="text-red-500">Hata: detay yüklenemedi.</p>;
+    return <p className="text-error-dark">Hata: detay yüklenemedi.</p>;
   }
 
   if (editing) {

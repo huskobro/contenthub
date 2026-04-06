@@ -1,12 +1,10 @@
 /**
- * HorizonAdminLayout — Radical new admin layout for Horizon design mode
+ * HorizonAdminLayout — Premium admin layout for Horizon design mode
  *
- * Key differences from classic AdminLayout:
- * - No header bar — brand + search in sidebar context panel
- * - Icon rail (48px) + expanding context panel (240px)
- * - Content area starts directly from top, full viewport height
- * - Monochromatic layered surfaces
- * - Spring-based page transitions
+ * - Sticky header bar with breadcrumb + actions
+ * - Icon rail (56px) + expanding context panel (256px)
+ * - Content area offset by icon rail
+ * - CM-inspired visual hierarchy
  */
 
 import { useEffect } from "react";
@@ -25,6 +23,51 @@ import { buildContextualCommands } from "../../commands/contextualCommands";
 import { useAdminVisibilityMap, filterHorizonAdminGroups } from "./useLayoutNavigation";
 
 // ---------------------------------------------------------------------------
+// Route label mapping for breadcrumb
+// ---------------------------------------------------------------------------
+
+const ROUTE_LABELS: Record<string, string> = {
+  admin: "Yonetim",
+  settings: "Ayarlar",
+  visibility: "Gorunurluk",
+  "wizard-settings": "Wizard Ayarlari",
+  jobs: "Isler",
+  "audit-logs": "Audit Log",
+  library: "Icerik Kutuphanesi",
+  assets: "Varlik Kutuphanesi",
+  "standard-videos": "Standart Video",
+  wizard: "Wizard",
+  templates: "Sablonlar",
+  "style-blueprints": "Stil Sablonlari",
+  "template-style-links": "Sablon-Stil Baglantilari",
+  publish: "Yayin Merkezi",
+  analytics: "Analytics",
+  youtube: "YouTube",
+  sources: "Kaynaklar",
+  "source-scans": "Kaynak Taramalari",
+  "news-bulletins": "Haber Bultenleri",
+  "news-items": "Haber Ogeler",
+  "used-news": "Kullanilan Haberler",
+  themes: "Tema Yonetimi",
+};
+
+function getBreadcrumbs(pathname: string): { label: string; path: string }[] {
+  const segments = pathname.split("/").filter(Boolean);
+  const crumbs: { label: string; path: string }[] = [];
+  let currentPath = "";
+
+  for (const seg of segments) {
+    currentPath += "/" + seg;
+    crumbs.push({
+      label: ROUTE_LABELS[seg] || seg,
+      path: currentPath,
+    });
+  }
+
+  return crumbs;
+}
+
+// ---------------------------------------------------------------------------
 // Layout
 // ---------------------------------------------------------------------------
 
@@ -35,8 +78,6 @@ export function HorizonAdminLayout() {
   const location = useLocation();
 
   useCommandPaletteShortcut();
-
-  // Global SSE for app-wide notifications and query invalidation
   useGlobalSSE();
 
   useEffect(() => {
@@ -55,6 +96,8 @@ export function HorizonAdminLayout() {
     };
   }, [navigate]);
 
+  const breadcrumbs = getBreadcrumbs(location.pathname);
+
   return (
     <ThemeProvider>
       <div className="min-h-screen bg-surface-page" data-testid="horizon-admin-layout">
@@ -66,21 +109,53 @@ export function HorizonAdminLayout() {
         {/* Horizon Sidebar */}
         <HorizonSidebar groups={filteredGroups} brandLabel="ContentHub" />
 
-        {/* Main Content — offset by icon rail width */}
-        <main
-          className="ml-[48px] min-h-screen p-4 pt-4 bg-surface-page overflow-y-auto transition-[margin] duration-normal"
+        {/* Main wrapper — offset by icon rail */}
+        <div
+          className="min-h-screen flex flex-col transition-[margin] duration-normal"
+          style={{ marginLeft: "var(--ch-sidebar-collapsed-width)" }}
         >
-          {/* Breadcrumb-like context header */}
-          <div className="flex items-center justify-between mb-4 max-w-page">
-            <div className="flex items-center gap-2 text-xs text-neutral-500">
-              <span className="font-medium text-neutral-700">Yonetim</span>
-              <span className="text-neutral-400">/</span>
-              <span className="text-neutral-500 capitalize">
-                {location.pathname.split("/").filter(Boolean).slice(1).join(" / ") || "Genel Bakis"}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
+          {/* Sticky Header */}
+          <header
+            className="sticky top-0 z-header flex items-center h-header border-b border-border-subtle shrink-0"
+            style={{ backgroundColor: "color-mix(in srgb, var(--ch-surface-page) 85%, transparent)", backdropFilter: "blur(12px)", padding: "0 var(--ch-page-padding)" }}
+          >
+            {/* Subtle bottom accent line */}
+            <div
+              className="absolute bottom-0 left-0 right-0 h-px"
+              style={{ background: "linear-gradient(90deg, transparent 0%, color-mix(in srgb, var(--ch-brand-400) 12%, transparent) 50%, transparent 100%)" }}
+            />
+
+            {/* Breadcrumb */}
+            <nav className="flex items-center gap-1.5 text-xs min-w-0 flex-1">
+              {breadcrumbs.map((crumb, i) => (
+                <span key={crumb.path} className="flex items-center gap-1.5 min-w-0">
+                  {i > 0 && <span className="text-neutral-400">/</span>}
+                  {i === breadcrumbs.length - 1 ? (
+                    <span className="font-medium text-neutral-800 truncate">{crumb.label}</span>
+                  ) : (
+                    <span className="text-neutral-500 truncate">{crumb.label}</span>
+                  )}
+                </span>
+              ))}
+            </nav>
+
+            {/* Actions */}
+            <div className="flex items-center gap-2 shrink-0">
+              {/* Command Palette trigger */}
+              <button
+                onClick={() => useCommandPaletteStore.getState().open()}
+                data-testid="header-command-palette"
+                title="Komut Paleti (⌘K)"
+                className="flex items-center gap-2 px-2.5 py-1 text-xs text-neutral-500 bg-surface-inset border border-border-subtle rounded-lg cursor-pointer transition-all duration-fast hover:border-brand-400 hover:ring-1 hover:ring-brand-400/10"
+              >
+                <span className="text-neutral-400">Ara...</span>
+                <kbd className="text-[10px] font-mono bg-neutral-100 px-1 py-0 rounded border border-border-subtle text-neutral-500 leading-[1.4]">
+                  ⌘K
+                </kbd>
+              </button>
+
               <NotificationBell />
+
               <button
                 onClick={() => navigate("/user")}
                 className="px-3 py-1 text-xs font-medium text-neutral-600 bg-surface-inset border border-border-subtle rounded-lg cursor-pointer transition-all duration-fast hover:bg-neutral-100 hover:border-brand-400"
@@ -89,10 +164,15 @@ export function HorizonAdminLayout() {
                 Kullanici Paneli
               </button>
             </div>
-          </div>
+          </header>
 
-          <Outlet />
-        </main>
+          {/* Page Content */}
+          <main className="flex-1 bg-surface-page overflow-y-auto" style={{ padding: "var(--ch-page-padding)" }}>
+            <div className="max-w-page">
+              <Outlet />
+            </div>
+          </main>
+        </div>
       </div>
     </ThemeProvider>
   );

@@ -79,7 +79,7 @@ export function PublishDetailPage() {
   const [scheduleDate, setScheduleDate] = useState("");
 
   if (isLoading) return <PageShell title="Yayin Detay" testId="publish-detail"><p>Yukleniyor...</p></PageShell>;
-  if (isError || !record) return <PageShell title="Yayin Detay" testId="publish-detail"><p className="text-red-600">Kayit bulunamadi.</p></PageShell>;
+  if (isError || !record) return <PageShell title="Yayin Detay" testId="publish-detail"><p className="text-error-dark">Kayit bulunamadi.</p></PageShell>;
 
   const s = record.status;
   const canSubmit = s === "draft";
@@ -139,7 +139,7 @@ export function PublishDetailPage() {
         </Row>
         <Row label="Deneme Sayisi">{record.publish_attempt_count}</Row>
         <Row label="Son Hata">
-          {record.last_error ? <span className="text-red-600">{record.last_error}</span> : em}
+          {record.last_error ? <span className="text-error-dark">{record.last_error}</span> : em}
         </Row>
         <Row label="Notlar">{record.notes ?? em}</Row>
         <Row label="Olusturma">{formatDate(record.created_at)}</Row>

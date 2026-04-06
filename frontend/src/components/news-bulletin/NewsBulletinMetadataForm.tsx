@@ -60,10 +60,10 @@ export function NewsBulletinMetadataForm({
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-2.5">
-      {localError && <p className="text-red-600 m-0 break-words [overflow-wrap:anywhere]">{localError}</p>}
+      {localError && <p className="text-error-dark m-0 break-words [overflow-wrap:anywhere]">{localError}</p>}
 
       <label>
-        Başlık <span className="text-red-600">*</span>
+        Başlık <span className="text-error-dark">*</span>
         <input
           type="text"
           value={values.title}

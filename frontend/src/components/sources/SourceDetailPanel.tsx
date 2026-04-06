@@ -146,8 +146,8 @@ export function SourceDetailPanel({ sourceId }: SourceDetailPanelProps) {
               source.source_type !== "rss"
                 ? "text-neutral-400 border-neutral-200 cursor-not-allowed opacity-50"
                 : isScanning
-                ? "text-emerald-700 border-emerald-300 cursor-not-allowed opacity-50"
-                : "text-emerald-700 border-emerald-300 cursor-pointer hover:bg-emerald-50 transition-colors duration-fast"
+                ? "text-success-dark border-success cursor-not-allowed opacity-50"
+                : "text-success-dark border-success cursor-pointer hover:bg-success-light transition-colors duration-fast"
             )}
           >
             {isScanning ? "Taraniyor..." : "Şimdi Tara"}

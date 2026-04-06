@@ -77,10 +77,10 @@ export function NewsBulletinForm({
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-      {error && <p className="text-red-600 break-words [overflow-wrap:anywhere]">{error}</p>}
+      {error && <p className="text-error-dark break-words [overflow-wrap:anywhere]">{error}</p>}
 
       <label>
-        Topic <span className="text-red-600">*</span>
+        Topic <span className="text-error-dark">*</span>
         <input
           value={values.topic}
           onChange={(e) => set("topic", e.target.value)}

@@ -51,7 +51,7 @@ export function WizardShell({
                 i === currentStep
                   ? "bg-brand-100 text-brand-700"
                   : i < currentStep
-                    ? "bg-emerald-100 text-emerald-700"
+                    ? "bg-success-light text-success-dark"
                     : "bg-neutral-100 text-neutral-400",
               )}
               data-testid={`${testId}-step-${step.id}`}
@@ -61,7 +61,7 @@ export function WizardShell({
                 i === currentStep
                   ? "bg-brand-500 text-white"
                   : i < currentStep
-                    ? "bg-emerald-500 text-white"
+                    ? "bg-success text-white"
                     : "bg-neutral-200 text-neutral-400",
               )}>
                 {i < currentStep ? "\u2713" : i + 1}
@@ -71,7 +71,7 @@ export function WizardShell({
             {i < steps.length - 1 && (
               <div className={cn(
                 "w-4 h-px",
-                i < currentStep ? "bg-emerald-300" : "bg-neutral-200",
+                i < currentStep ? "bg-success" : "bg-neutral-200",
               )} />
             )}
           </div>

@@ -27,7 +27,7 @@ const TYPE_COLORS: Record<string, string> = {
 const TYPE_BORDER: Record<string, string> = {
   style: "border-violet-300",
   content: "border-sky-300",
-  publish: "border-emerald-300",
+  publish: "border-success",
 };
 
 export function TemplatePreviewCard({

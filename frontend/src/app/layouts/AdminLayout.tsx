@@ -64,7 +64,7 @@ export function AdminLayout() {
         <div className="flex flex-col flex-1 min-w-0">
           <AppHeader area="Admin" />
           <AdminContinuityStrip />
-          <main className="flex-1 p-4 bg-surface-page overflow-y-auto">
+          <main className="flex-1 bg-surface-page overflow-y-auto" style={{ padding: "var(--ch-page-padding)" }}>
             <Outlet />
           </main>
         </div>

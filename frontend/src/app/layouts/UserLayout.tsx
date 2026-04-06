@@ -20,7 +20,7 @@ export function UserLayout() {
         <AppHeader area="User" />
         <div className="flex flex-1">
           <AppSidebar items={USER_NAV} />
-          <main className="flex-1 p-4 bg-surface-page overflow-y-auto">
+          <main className="flex-1 bg-surface-page overflow-y-auto" style={{ padding: "var(--ch-page-padding)" }}>
             <Outlet />
           </main>
         </div>

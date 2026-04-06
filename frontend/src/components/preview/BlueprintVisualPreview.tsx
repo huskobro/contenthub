@@ -19,7 +19,7 @@ function MotionIndicator({ level }: { level?: string }) {
           key={i}
           className={cn(
             "rounded-full transition-all",
-            i <= count ? "bg-blue-400" : "bg-neutral-300",
+            i <= count ? "bg-info" : "bg-neutral-300",
             i <= count ? "w-2 h-2 animate-pulse" : "w-1.5 h-1.5",
           )}
           style={i <= count ? { animationDelay: `${i * 200}ms` } : undefined}

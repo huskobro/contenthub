@@ -111,7 +111,7 @@ export function LowerThirdStylePreview({
             className={cn(
               "flex flex-col items-center gap-1.5 p-2 rounded-lg border-2 bg-white transition-all duration-150 cursor-pointer",
               selected === s.id
-                ? "border-blue-500 shadow-md ring-2 ring-blue-200"
+                ? "border-brand-500 shadow-md ring-2 ring-brand-200"
                 : "border-neutral-200 hover:border-neutral-300 hover:shadow-sm",
             )}
           >
@@ -121,7 +121,7 @@ export function LowerThirdStylePreview({
             <span
               className={cn(
                 "text-xs font-medium",
-                selected === s.id ? "text-blue-700" : "text-neutral-600",
+                selected === s.id ? "text-brand-700" : "text-neutral-600",
               )}
             >
               {s.label}

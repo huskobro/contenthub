@@ -461,7 +461,7 @@ export function NewsBulletinWizardPage() {
                   {selectedItemsLocal.map((item, idx) => (
                     <div
                       key={item.news_item_id}
-                      className="flex items-center justify-between p-2 bg-emerald-50 border border-emerald-200 rounded-md text-sm"
+                      className="flex items-center justify-between p-2 bg-success-light border border-success rounded-md text-sm"
                     >
                       <span className="text-neutral-800 truncate flex-1 mr-2">
                         #{idx + 1} — {item.title || item.news_item_id.slice(0, 12)}
@@ -469,7 +469,7 @@ export function NewsBulletinWizardPage() {
                       <button
                         type="button"
                         onClick={() => removeLocalItem(item.news_item_id)}
-                        className="text-xs text-red-500 bg-transparent border-none cursor-pointer hover:text-red-700"
+                        className="text-xs text-error-dark bg-transparent border-none cursor-pointer hover:text-error-dark"
                       >
                         Kaldir
                       </button>
@@ -495,7 +495,7 @@ export function NewsBulletinWizardPage() {
                     <div className="p-3 space-y-3 border-t border-neutral-200">
                       <div>
                         <label className="block text-sm font-medium text-neutral-700 mb-1">
-                          Konu <span className="text-red-500">*</span>
+                          Konu <span className="text-error-dark">*</span>
                         </label>
                         <input
                           className={inputCls}
@@ -564,7 +564,7 @@ export function NewsBulletinWizardPage() {
                       <button
                         type="button"
                         onClick={() => addLocalItem(item)}
-                        className="text-xs text-blue-600 bg-transparent border-none cursor-pointer hover:text-blue-800 whitespace-nowrap"
+                        className="text-xs text-info-dark bg-transparent border-none cursor-pointer hover:text-info-dark whitespace-nowrap"
                       >
                         Sec
                       </button>
@@ -593,7 +593,7 @@ export function NewsBulletinWizardPage() {
                   {selectedItems.map((item) => (
                     <div
                       key={item.id}
-                      className="flex items-center justify-between p-2 bg-emerald-50 border border-emerald-200 rounded-md text-sm"
+                      className="flex items-center justify-between p-2 bg-success-light border border-success rounded-md text-sm"
                     >
                       <span className="text-neutral-800 truncate flex-1 mr-2">
                         #{item.sort_order + 1} — {item.news_title || item.news_item_id.slice(0, 12)}
@@ -601,13 +601,13 @@ export function NewsBulletinWizardPage() {
                           <span className="ml-1 text-neutral-400 text-xs">[{item.news_category}]</span>
                         )}
                         {item.used_news_warning && (
-                          <span className="ml-1 text-amber-600 text-xs">(daha once kullanilmis)</span>
+                          <span className="ml-1 text-warning-dark text-xs">(daha once kullanilmis)</span>
                         )}
                       </span>
                       <button
                         type="button"
                         onClick={() => removeItemMut.mutate(item.id)}
-                        className="text-xs text-red-500 bg-transparent border-none cursor-pointer hover:text-red-700"
+                        className="text-xs text-error-dark bg-transparent border-none cursor-pointer hover:text-error-dark"
                         disabled={removeItemMut.isPending}
                       >
                         Kaldir
@@ -642,7 +642,7 @@ export function NewsBulletinWizardPage() {
                       <button
                         type="button"
                         onClick={() => addItemMut.mutate(item.id)}
-                        className="text-xs text-blue-600 bg-transparent border-none cursor-pointer hover:text-blue-800 whitespace-nowrap"
+                        className="text-xs text-info-dark bg-transparent border-none cursor-pointer hover:text-info-dark whitespace-nowrap"
                         disabled={addItemMut.isPending}
                       >
                         Sec
@@ -801,9 +801,9 @@ export function NewsBulletinWizardPage() {
                     "px-3 py-1.5 text-sm border rounded-sm cursor-pointer transition-colors",
                     trustEnforcementLevel === value
                       ? value === "block"
-                        ? "bg-red-500 text-white border-red-500"
+                        ? "bg-error text-white border-error"
                         : value === "warn"
-                          ? "bg-amber-500 text-white border-amber-500"
+                          ? "bg-warning text-white border-warning"
                           : "bg-neutral-400 text-white border-neutral-400"
                       : "bg-white text-neutral-600 border-border hover:bg-neutral-50",
                   )}
@@ -816,9 +816,9 @@ export function NewsBulletinWizardPage() {
 
           {/* ---- M31: Category Style Suggestion ---- */}
           {categoryStyleSuggestion && !suggestionDismissed && (
-            <div className="flex items-start gap-3 p-3 bg-blue-50 border border-blue-200 rounded-md text-sm">
+            <div className="flex items-start gap-3 p-3 bg-info-light border border-info rounded-md text-sm">
               <div className="flex-1 min-w-0">
-                <p className="m-0 font-medium text-blue-800">
+                <p className="m-0 font-medium text-info-dark">
                   Baskin kategori:{" "}
                   <span className="font-bold">{categoryStyleSuggestion.dominant_category ?? categoryStyleSuggestion.category_used}</span>
                   {" -> "}Onerilen stil:{" "}
@@ -834,14 +834,14 @@ export function NewsBulletinWizardPage() {
                     setCompositionDirection(categoryStyleSuggestion.suggested_composition_direction);
                     setSuggestionDismissed(true);
                   }}
-                  className="px-2 py-1 text-xs font-medium text-white bg-blue-600 border-none rounded-sm cursor-pointer hover:bg-blue-700"
+                  className="px-2 py-1 text-xs font-medium text-white bg-info hover:bg-info-dark border-none rounded-sm cursor-pointer"
                 >
                   Oneriyi Uygula
                 </button>
                 <button
                   type="button"
                   onClick={() => setSuggestionDismissed(true)}
-                  className="text-xs text-blue-500 bg-transparent border-none cursor-pointer hover:text-blue-700 underline"
+                  className="text-xs text-info bg-transparent border-none cursor-pointer hover:text-info-dark underline"
                 >
                   Manuel secim yapiyorum
                 </button>
@@ -855,10 +855,10 @@ export function NewsBulletinWizardPage() {
               className={cn(
                 "p-3 rounded-md border text-sm",
                 !trustCheck.pass_check
-                  ? "bg-red-50 border-red-200 text-red-800"
+                  ? "bg-error-light border-error text-error-dark"
                   : trustCheck.low_trust_items.length > 0
-                    ? "bg-amber-50 border-amber-200 text-amber-800"
-                    : "bg-emerald-50 border-emerald-200 text-emerald-800",
+                    ? "bg-warning-light border-warning text-warning-dark"
+                    : "bg-success-light border-success text-success-dark",
               )}
             >
               {!trustCheck.pass_check ? (
@@ -908,7 +908,7 @@ export function NewsBulletinWizardPage() {
           </div>
 
           {bulletin?.status !== "in_progress" && (
-            <p className="text-amber-600 text-xs">
+            <p className="text-warning-dark text-xs">
               Uretim baslatmak icin editorial gate gecilmis olmali (durum: in_progress).
               Mevcut durum: {bulletin?.status}
             </p>
@@ -918,7 +918,7 @@ export function NewsBulletinWizardPage() {
 
       {/* Error display */}
       {anyError && (
-        <p className="text-red-600 text-sm mt-2 break-words [overflow-wrap:anywhere]">
+        <p className="text-error-dark text-sm mt-2 break-words [overflow-wrap:anywhere]">
           {anyError instanceof Error ? anyError.message : String(anyError)}
         </p>
       )}
@@ -988,7 +988,7 @@ function EditorialReviewStep({
               "px-4 py-1.5 text-sm font-medium border-none rounded-sm",
               isConfirming || selectedItems.length === 0
                 ? "bg-neutral-300 text-neutral-500 cursor-not-allowed"
-                : "bg-amber-500 text-white cursor-pointer hover:bg-amber-600",
+                : "bg-warning text-white cursor-pointer hover:bg-warning-dark",
             )}
           >
             {isConfirming ? "Onaylaniyor..." : "Secimi Onayla"}
@@ -1004,7 +1004,7 @@ function EditorialReviewStep({
               "px-4 py-1.5 text-sm font-medium border-none rounded-sm",
               isConsuming
                 ? "bg-neutral-300 text-neutral-500 cursor-not-allowed"
-                : "bg-emerald-500 text-white cursor-pointer hover:bg-emerald-600",
+                : "bg-success text-white cursor-pointer hover:bg-success-dark",
             )}
           >
             {isConsuming ? "Islem yapiliyor..." : "Haberleri Tuket & Uretim Hazirla"}
@@ -1012,7 +1012,7 @@ function EditorialReviewStep({
         )}
 
         {status === "in_progress" && (
-          <span className="text-emerald-600 text-sm font-medium">
+          <span className="text-success-dark text-sm font-medium">
             Gate gecildi — devam edebilirsiniz
           </span>
         )}
@@ -1053,7 +1053,7 @@ function NarrationEditCard({
           )}
         </span>
         {item.used_news_warning && (
-          <span className="text-xs text-amber-500">daha once kullanilmis</span>
+          <span className="text-xs text-warning-dark">daha once kullanilmis</span>
         )}
       </div>
 
@@ -1107,7 +1107,7 @@ function NarrationEditCard({
               <button
                 type="button"
                 onClick={() => setEditing(true)}
-                className="text-xs text-blue-600 bg-transparent border-none cursor-pointer hover:text-blue-800 whitespace-nowrap"
+                className="text-xs text-info-dark bg-transparent border-none cursor-pointer hover:text-info-dark whitespace-nowrap"
               >
                 Duzenle
               </button>
@@ -1126,11 +1126,11 @@ function NarrationEditCard({
 function StatusBadge({ status }: { status: string }) {
   const colors: Record<string, string> = {
     draft: "bg-neutral-100 text-neutral-600",
-    selection_confirmed: "bg-amber-100 text-amber-700",
-    in_progress: "bg-emerald-100 text-emerald-700",
-    rendering: "bg-blue-100 text-blue-700",
-    done: "bg-emerald-100 text-emerald-700",
-    failed: "bg-red-100 text-red-700",
+    selection_confirmed: "bg-warning-light text-warning-dark",
+    in_progress: "bg-success-light text-success-dark",
+    rendering: "bg-info-light text-info-dark",
+    done: "bg-success-light text-success-dark",
+    failed: "bg-error-light text-error-dark",
   };
   return (
     <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium", colors[status] || "bg-neutral-100 text-neutral-500")}>

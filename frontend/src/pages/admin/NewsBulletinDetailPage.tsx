@@ -48,7 +48,7 @@ export function NewsBulletinDetailPage() {
   }
 
   if (!bulletin) {
-    return <div className="p-4 text-sm text-red-500">Bulten bulunamadi.</div>;
+    return <div className="p-4 text-sm text-error-dark">Bulten bulunamadi.</div>;
   }
 
   return (
@@ -84,10 +84,10 @@ export function NewsBulletinDetailPage() {
 
       {/* Job linkage + render output + publish handoff */}
       {bulletin.job_id && (
-        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md space-y-2">
+        <div className="mb-4 p-3 bg-info-light border border-info rounded-md space-y-2">
           <p className="m-0 text-sm">
-            <span className="font-medium text-blue-700">Job:</span>{" "}
-            <Link to={`/admin/jobs/${bulletin.job_id}`} className="text-blue-600 underline">
+            <span className="font-medium text-info-dark">Job:</span>{" "}
+            <Link to={`/admin/jobs/${bulletin.job_id}`} className="text-info-dark underline">
               {bulletin.job_id.slice(0, 12)}...
             </Link>
             <span className="ml-2 text-xs text-neutral-500">
@@ -95,23 +95,23 @@ export function NewsBulletinDetailPage() {
             </span>
           </p>
           {bulletin.status === "done" && (
-            <div className="flex items-center gap-3 pt-1 border-t border-blue-200">
+            <div className="flex items-center gap-3 pt-1 border-t border-info">
               <Link
                 to={`/admin/jobs/${bulletin.job_id}`}
-                className="text-xs font-medium text-blue-600 underline"
+                className="text-xs font-medium text-info-dark underline"
               >
                 Render ciktilarini gor
               </Link>
               <Link
                 to="/admin/publish-center"
-                className="text-xs font-medium text-emerald-600 underline"
+                className="text-xs font-medium text-success-dark underline"
               >
                 Publish Hub'a git
               </Link>
             </div>
           )}
           {bulletin.status === "failed" && (
-            <p className="m-0 text-xs text-red-600">
+            <p className="m-0 text-xs text-error-dark">
               Uretim basarisiz oldu. Job detayindan hata bilgisini inceleyin.
             </p>
           )}
@@ -159,7 +159,7 @@ export function NewsBulletinDetailPage() {
                     )}
                   </span>
                   {item.used_news_warning && (
-                    <span className="text-xs text-amber-500 shrink-0 ml-2">kullanilmis</span>
+                    <span className="text-xs text-warning-dark shrink-0 ml-2">kullanilmis</span>
                   )}
                 </div>
                 {item.edited_narration && (
@@ -212,7 +212,7 @@ export function NewsBulletinDetailPage() {
           <button
             type="button"
             onClick={() => navigate(`/admin/jobs/${bulletin.job_id}`)}
-            className="px-4 py-1.5 text-sm font-medium text-white bg-emerald-600 border-none rounded-sm cursor-pointer hover:bg-emerald-700"
+            className="px-4 py-1.5 text-sm font-medium text-white bg-success hover:bg-success-dark border-none rounded-sm cursor-pointer"
           >
             Ciktilari Gor
           </button>
@@ -232,11 +232,11 @@ export function NewsBulletinDetailPage() {
 function StatusBadge({ status }: { status: string }) {
   const colors: Record<string, string> = {
     draft: "bg-neutral-100 text-neutral-600",
-    selection_confirmed: "bg-amber-100 text-amber-700",
-    in_progress: "bg-emerald-100 text-emerald-700",
-    rendering: "bg-blue-100 text-blue-700",
-    done: "bg-emerald-100 text-emerald-700",
-    failed: "bg-red-100 text-red-700",
+    selection_confirmed: "bg-warning-light text-warning-dark",
+    in_progress: "bg-success-light text-success-dark",
+    rendering: "bg-info-light text-info-dark",
+    done: "bg-success-light text-success-dark",
+    failed: "bg-error-light text-error-dark",
   };
   return (
     <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium", colors[status] || "bg-neutral-100 text-neutral-500")}>

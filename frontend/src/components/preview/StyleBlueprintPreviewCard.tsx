@@ -46,9 +46,9 @@ export function StyleBlueprintPreviewCard({
     <div
       className={cn(
         "relative rounded-lg border-2 p-3 cursor-pointer transition-all duration-200",
-        "bg-gradient-to-br from-amber-500/10 to-orange-500/5",
+        "bg-gradient-to-br from-warning/10 to-warning/5",
         selected
-          ? "border-amber-400 shadow-md ring-2 ring-amber-200"
+          ? "border-brand-500 shadow-md ring-2 ring-brand-200"
           : "border-border-subtle hover:border-neutral-300 hover:shadow-sm",
       )}
       onClick={onClick}
@@ -70,10 +70,10 @@ export function StyleBlueprintPreviewCard({
       <div className="flex gap-1 mb-2">
         {[
           { has: hasVisual, label: "G", title: "Gorsel", color: "bg-violet-200 text-violet-800" },
-          { has: hasMotion, label: "H", title: "Hareket", color: "bg-blue-200 text-blue-800" },
-          { has: hasLayout, label: "D", title: "Duzenleme", color: "bg-teal-200 text-teal-800" },
-          { has: hasSub, label: "A", title: "Altyazi", color: "bg-rose-200 text-rose-800" },
-          { has: hasThumb, label: "T", title: "Thumbnail", color: "bg-amber-200 text-amber-800" },
+          { has: hasMotion, label: "H", title: "Hareket", color: "bg-info-light text-info-dark" },
+          { has: hasLayout, label: "D", title: "Duzenleme", color: "bg-success-light text-success-dark" },
+          { has: hasSub, label: "A", title: "Altyazi", color: "bg-error-light text-error-dark" },
+          { has: hasThumb, label: "T", title: "Thumbnail", color: "bg-warning-light text-warning-dark" },
         ].map((indicator) => (
           <span
             key={indicator.label}
@@ -109,7 +109,7 @@ export function StyleBlueprintPreviewCard({
 
       {/* Selected indicator */}
       {selected && (
-        <div className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-amber-500 flex items-center justify-center text-white text-xs font-bold">
+        <div className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-warning flex items-center justify-center text-white text-xs font-bold">
           &#10003;
         </div>
       )}
