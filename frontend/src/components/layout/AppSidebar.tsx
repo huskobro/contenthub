@@ -36,7 +36,7 @@ export function AppSidebar({ items }: AppSidebarProps) {
         <div className="flex items-center gap-3 min-w-0">
           <div
             className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-white text-sm font-bold font-body tracking-[0.02em] shrink-0"
-            style={{ boxShadow: "0 0 12px rgba(76,110,245,0.3)" }}
+            style={{ boxShadow: "0 0 12px color-mix(in srgb, var(--ch-brand-500) 30%, transparent)" }}
           >
             CH
           </div>

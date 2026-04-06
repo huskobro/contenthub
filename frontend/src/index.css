@@ -195,144 +195,61 @@ body[style*="#0a0a0c"] [data-testid="command-palette-input"]::placeholder {
   50%      { opacity: 0; }
 }
 
+/* ===========================================================================
+   RADICAL THEME EFFECTS
+   Each theme is a completely different design system, not just a color swap.
+   These CSS rules add unique visual treatments that cannot be expressed
+   through ThemeManifest tokens alone.
+   =========================================================================== */
+
 /* ---------------------------------------------------------------------------
-   Midnight Ultraviolet — Holographic glow effects
+   Midnight Ultraviolet — Cyberpunk glass-panel OS
+   Glass borders, holographic gradient shimmer, pill-shaped everything
    --------------------------------------------------------------------------- */
 
 [data-theme="midnight-ultraviolet"] :focus-visible {
   outline: 1px solid var(--ch-focus, #8b5cf6);
-  outline-offset: 1px;
-  box-shadow: 0 0 10px rgba(139, 92, 246, 0.2);
+  outline-offset: 2px;
+  box-shadow: 0 0 12px rgba(139, 92, 246, 0.25), 0 0 4px rgba(139, 92, 246, 0.4);
 }
 
-[data-theme="midnight-ultraviolet"] section {
-  border-color: rgba(139, 92, 246, 0.08);
+/* Frosted glass card borders */
+[data-theme="midnight-ultraviolet"] section,
+[data-theme="midnight-ultraviolet"] [class*="bg-surface-card"] {
+  border: 1px solid rgba(139, 92, 246, 0.08);
+  background-image: linear-gradient(135deg, rgba(139,92,246,0.03) 0%, transparent 50%);
 }
 
-/* Holographic gradient shimmer on sidebar */
+/* Holographic sidebar gradient */
 [data-theme="midnight-ultraviolet"] nav {
   background-image:
-    linear-gradient(180deg, rgba(139,92,246,0.06) 0%, transparent 40%),
-    radial-gradient(ellipse at 20% 0%, rgba(99,102,241,0.05) 0%, transparent 60%);
+    linear-gradient(180deg, rgba(139,92,246,0.08) 0%, transparent 40%),
+    radial-gradient(ellipse at 20% 0%, rgba(99,102,241,0.06) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 100%, rgba(139,92,246,0.04) 0%, transparent 40%);
 }
 
-/* Subtle purple glow on cards */
-@keyframes ultravioletPulse {
-  0%, 100% { box-shadow: 0 0 4px rgba(139, 92, 246, 0.05); }
-  50%      { box-shadow: 0 0 12px rgba(139, 92, 246, 0.1); }
+/* Purple glow on header */
+[data-theme="midnight-ultraviolet"] header {
+  border-bottom-color: rgba(139, 92, 246, 0.12) !important;
+  background-image: linear-gradient(90deg, rgba(139,92,246,0.03) 0%, transparent 30%, transparent 70%, rgba(99,102,241,0.03) 100%);
 }
 
-/* ---------------------------------------------------------------------------
-   Arctic Frost — Glass-morphism effects
-   --------------------------------------------------------------------------- */
-
-/* Frosted sidebar with left border accent */
-[data-theme="arctic-frost"] nav {
-  border-right: 1px solid var(--ch-border-subtle, #e5e7eb);
-  background-image: none;
+/* Gradient text for page titles */
+[data-theme="midnight-ultraviolet"] h1,
+[data-theme="midnight-ultraviolet"] h2 {
+  background: linear-gradient(135deg, #c4b5fd 0%, #a78bfa 40%, #818cf8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-/* Soft blue glow on focus */
-[data-theme="arctic-frost"] :focus-visible {
-  outline: 2px solid var(--ch-focus, #0ea5e9);
-  outline-offset: 2px;
-  box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.1);
+/* Table rows with subtle purple tint on hover */
+[data-theme="midnight-ultraviolet"] tr:hover {
+  background-color: rgba(139, 92, 246, 0.04) !important;
 }
 
-/* Arctic Frost sidebar — all text colors handled by sidebarText CSS variables */
-
-/* ---------------------------------------------------------------------------
-   Tokyo Neon — Hot pink glow + ambient effects
-   --------------------------------------------------------------------------- */
-
-[data-theme="tokyo-neon"] :focus-visible {
-  outline: 1px solid var(--ch-focus, #ec4899);
-  outline-offset: 1px;
-  box-shadow: 0 0 12px rgba(236, 72, 153, 0.25);
-}
-
-/* Neon pink sidebar gradient */
-[data-theme="tokyo-neon"] nav {
-  background-image:
-    linear-gradient(180deg, rgba(236,72,153,0.06) 0%, transparent 30%),
-    radial-gradient(ellipse at 50% 0%, rgba(236,72,153,0.04) 0%, transparent 50%);
-}
-
-/* Neon glow on brand buttons */
-[data-theme="tokyo-neon"] button[class*="from-brand"] {
-  box-shadow: 0 0 16px rgba(236, 72, 153, 0.2);
-}
-[data-theme="tokyo-neon"] button[class*="from-brand"]:hover {
-  box-shadow: 0 0 24px rgba(236, 72, 153, 0.35);
-}
-
-@keyframes neonPinkPulse {
-  0%, 100% { box-shadow: 0 0 6px rgba(236, 72, 153, 0.1); }
-  50%      { box-shadow: 0 0 18px rgba(236, 72, 153, 0.25); }
-}
-
-/* ---------------------------------------------------------------------------
-   Ink & Wire — Editorial print texture
-   --------------------------------------------------------------------------- */
-
-/* Subtle paper grain texture */
-[data-theme="ink-and-wire"]::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 9999;
-  opacity: 0.015;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-  mix-blend-mode: multiply;
-}
-
-/* Sharp editorial focus */
-[data-theme="ink-and-wire"] :focus-visible {
-  outline: 2px solid var(--ch-neutral-900, #1a1814);
-  outline-offset: 2px;
-}
-
-/* Underline accent on headings */
-[data-theme="ink-and-wire"] h1 {
-  border-bottom: 2px solid var(--ch-brand-600, #745a3e);
-  padding-bottom: 0.25em;
-  display: inline-block;
-}
-
-/* Newspaper-style sidebar gradient */
-[data-theme="ink-and-wire"] nav {
-  background-image:
-    linear-gradient(180deg, rgba(94,72,50,0.08) 0%, transparent 50%);
-}
-
-/* ---------------------------------------------------------------------------
-   Solar Ember — Volcanic fire ambient glow
-   --------------------------------------------------------------------------- */
-
-[data-theme="solar-ember"] :focus-visible {
-  outline: 1px solid var(--ch-focus, #ea580c);
-  outline-offset: 1px;
-  box-shadow: 0 0 10px rgba(234, 88, 12, 0.2);
-}
-
-/* Ember glow sidebar */
-[data-theme="solar-ember"] nav {
-  background-image:
-    linear-gradient(180deg, rgba(234,88,12,0.05) 0%, transparent 35%),
-    radial-gradient(ellipse at 30% 100%, rgba(234,88,12,0.03) 0%, transparent 50%);
-}
-
-/* Fire glow on brand buttons */
-[data-theme="solar-ember"] button[class*="from-brand"] {
-  box-shadow: 0 0 14px rgba(234, 88, 12, 0.18);
-}
-[data-theme="solar-ember"] button[class*="from-brand"]:hover {
-  box-shadow: 0 0 22px rgba(234, 88, 12, 0.3);
-}
-
-/* Ember heat shimmer scanline effect (very subtle) */
-[data-theme="solar-ember"]::after {
+/* Subtle scanline overlay */
+[data-theme="midnight-ultraviolet"]::after {
   content: "";
   position: fixed;
   inset: 0;
@@ -342,13 +259,334 @@ body[style*="#0a0a0c"] [data-testid="command-palette-input"]::placeholder {
     0deg,
     transparent,
     transparent 3px,
-    rgba(234, 88, 12, 0.005) 3px,
-    rgba(234, 88, 12, 0.005) 6px
+    rgba(139, 92, 246, 0.006) 3px,
+    rgba(139, 92, 246, 0.006) 6px
+  );
+  mix-blend-mode: screen;
+}
+
+@keyframes ultravioletPulse {
+  0%, 100% { box-shadow: 0 0 4px rgba(139, 92, 246, 0.08); }
+  50%      { box-shadow: 0 0 16px rgba(139, 92, 246, 0.15); }
+}
+
+/* ---------------------------------------------------------------------------
+   Arctic Frost — Swiss minimal print
+   Almost invisible borders, extreme whitespace, soft blue accent only on
+   interactive elements. Sidebar is white with thin right border.
+   --------------------------------------------------------------------------- */
+
+/* White sidebar with clean right border */
+[data-theme="arctic-frost"] nav {
+  border-right: 1px solid var(--ch-border-subtle, #f3f4f6);
+  background-image: none !important;
+  box-shadow: none;
+}
+
+/* Very soft, wide focus rings */
+[data-theme="arctic-frost"] :focus-visible {
+  outline: 2px solid var(--ch-focus, #0ea5e9);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 6px rgba(14, 165, 233, 0.08);
+}
+
+/* Cards float with barely-there shadow + border */
+[data-theme="arctic-frost"] section,
+[data-theme="arctic-frost"] [class*="bg-surface-card"] {
+  border: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+/* Header: ultra-clean, no shadow */
+[data-theme="arctic-frost"] header {
+  box-shadow: none !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Rounded pill buttons */
+[data-theme="arctic-frost"] button {
+  border-radius: 9999px;
+}
+
+/* Soft blue tint on table hover */
+[data-theme="arctic-frost"] tr:hover {
+  background-color: rgba(14, 165, 233, 0.03) !important;
+}
+
+/* No gradient on headings — pure text */
+[data-theme="arctic-frost"] h1,
+[data-theme="arctic-frost"] h2,
+[data-theme="arctic-frost"] h3 {
+  letter-spacing: -0.025em;
+}
+
+/* Extra generous card padding via nested spacing */
+[data-theme="arctic-frost"] main {
+  padding: 2.5rem !important;
+}
+
+/* ---------------------------------------------------------------------------
+   Tokyo Neon — Akihabara arcade terminal
+   Ultra-dense, scanlines, neon bleed on borders, monospace influence
+   --------------------------------------------------------------------------- */
+
+[data-theme="tokyo-neon"] :focus-visible {
+  outline: 1px solid var(--ch-focus, #ec4899);
+  outline-offset: 0px;
+  box-shadow: 0 0 8px rgba(236, 72, 153, 0.3), 0 0 2px rgba(236, 72, 153, 0.5);
+}
+
+/* Neon sidebar with hot-pink top accent line */
+[data-theme="tokyo-neon"] nav {
+  border-top: 2px solid rgba(236, 72, 153, 0.5);
+  background-image:
+    linear-gradient(180deg, rgba(236,72,153,0.08) 0%, transparent 20%),
+    radial-gradient(ellipse at 50% 0%, rgba(236,72,153,0.05) 0%, transparent 40%);
+}
+
+/* Neon border glow on cards */
+[data-theme="tokyo-neon"] section,
+[data-theme="tokyo-neon"] [class*="bg-surface-card"] {
+  border: 1px solid rgba(236, 72, 153, 0.08);
+}
+
+/* Header with neon bottom edge */
+[data-theme="tokyo-neon"] header {
+  border-bottom: 1px solid rgba(236, 72, 153, 0.15) !important;
+  box-shadow: 0 1px 0 rgba(236, 72, 153, 0.08) !important;
+}
+
+/* Neon glow on brand buttons */
+[data-theme="tokyo-neon"] button[class*="from-brand"] {
+  box-shadow: 0 0 16px rgba(236, 72, 153, 0.25);
+}
+[data-theme="tokyo-neon"] button[class*="from-brand"]:hover {
+  box-shadow: 0 0 28px rgba(236, 72, 153, 0.4);
+}
+
+/* Neon pink heading text */
+[data-theme="tokyo-neon"] h1 {
+  color: #f9a8d4;
+  text-shadow: 0 0 20px rgba(236, 72, 153, 0.15);
+}
+
+/* Uppercase section headers with wide spacing — arcade signage feel */
+[data-theme="tokyo-neon"] h3,
+[data-theme="tokyo-neon"] h4 {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.75em;
+}
+
+/* Dense scanline overlay */
+[data-theme="tokyo-neon"]::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 1px,
+    rgba(236, 72, 153, 0.008) 1px,
+    rgba(236, 72, 153, 0.008) 2px
+  );
+  mix-blend-mode: screen;
+}
+
+/* Table: dense, monospace-influenced */
+[data-theme="tokyo-neon"] td,
+[data-theme="tokyo-neon"] th {
+  font-size: 0.6875rem;
+  padding: 0.25rem 0.5rem;
+}
+
+@keyframes neonPinkPulse {
+  0%, 100% { box-shadow: 0 0 6px rgba(236, 72, 153, 0.1); }
+  50%      { box-shadow: 0 0 20px rgba(236, 72, 153, 0.3); }
+}
+
+/* ---------------------------------------------------------------------------
+   Ink & Wire — Broadsheet newspaper / editorial gazette
+   Zero radius, paper texture, drop-caps, rule lines, serif dominance
+   --------------------------------------------------------------------------- */
+
+/* Paper grain texture overlay */
+[data-theme="ink-and-wire"]::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.02;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  mix-blend-mode: multiply;
+}
+
+/* Hard editorial focus — thick, dark */
+[data-theme="ink-and-wire"] :focus-visible {
+  outline: 2px solid var(--ch-neutral-900, #1a1814);
+  outline-offset: 3px;
+  box-shadow: none;
+}
+
+/* Underline accent on major headings */
+[data-theme="ink-and-wire"] h1 {
+  border-bottom: 3px solid var(--ch-brand-600, #745a3e);
+  padding-bottom: 0.2em;
+  display: inline-block;
+  font-style: italic;
+}
+
+/* Thin rule line under h2 */
+[data-theme="ink-and-wire"] h2 {
+  border-bottom: 1px solid var(--ch-neutral-300, #c2bcae);
+  padding-bottom: 0.3em;
+}
+
+/* Editorial sidebar gradient */
+[data-theme="ink-and-wire"] nav {
+  background-image:
+    linear-gradient(180deg, rgba(94,72,50,0.1) 0%, transparent 50%);
+  border-right: none;
+}
+
+/* Header: thin top border, clean bottom rule */
+[data-theme="ink-and-wire"] header {
+  border-top: 3px solid var(--ch-neutral-900, #1a1814);
+  border-bottom: 1px solid var(--ch-neutral-300, #c2bcae) !important;
+  box-shadow: none !important;
+}
+
+/* Cards with no radius, ink border */
+[data-theme="ink-and-wire"] section,
+[data-theme="ink-and-wire"] [class*="bg-surface-card"] {
+  border: 1px solid var(--ch-neutral-300, #c2bcae);
+  border-radius: 0 !important;
+}
+
+/* All buttons squared off */
+[data-theme="ink-and-wire"] button {
+  border-radius: 0 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.8em;
+}
+
+/* Table: thick top border, thin row lines — newspaper table style */
+[data-theme="ink-and-wire"] table {
+  border-top: 2px solid var(--ch-neutral-900, #1a1814);
+  border-bottom: 2px solid var(--ch-neutral-900, #1a1814);
+}
+[data-theme="ink-and-wire"] th {
+  font-family: var(--ch-font-heading);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.6875rem;
+  border-bottom: 1px solid var(--ch-neutral-400, #a49e8f);
+}
+
+/* Hover: light sepia tint */
+[data-theme="ink-and-wire"] tr:hover {
+  background-color: rgba(140, 112, 80, 0.04) !important;
+}
+
+/* ---------------------------------------------------------------------------
+   Solar Ember — Industrial control panel / HUD
+   Inset cards, monospace headers, grid lines, ember glow, stamped look
+   --------------------------------------------------------------------------- */
+
+[data-theme="solar-ember"] :focus-visible {
+  outline: 1px solid var(--ch-focus, #ea580c);
+  outline-offset: 0px;
+  box-shadow: 0 0 6px rgba(234, 88, 12, 0.3), 0 0 2px rgba(234, 88, 12, 0.5);
+}
+
+/* Sidebar: no gradient, hard top border line */
+[data-theme="solar-ember"] nav {
+  border-top: 3px solid rgba(234, 88, 12, 0.4);
+  border-right: 1px solid rgba(234, 88, 12, 0.08);
+  background-image: none !important;
+}
+
+/* Header: industrial — thick bottom border, no blur */
+[data-theme="solar-ember"] header {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border-bottom: 2px solid rgba(234, 88, 12, 0.12) !important;
+  box-shadow: none !important;
+}
+
+/* Cards: inset, stamped into surface */
+[data-theme="solar-ember"] section,
+[data-theme="solar-ember"] [class*="bg-surface-card"] {
+  border: 1px solid rgba(234, 88, 12, 0.06);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Headings: uppercase, wide tracking — control panel labels */
+[data-theme="solar-ember"] h1,
+[data-theme="solar-ember"] h2,
+[data-theme="solar-ember"] h3 {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+}
+
+/* Monospace for all data labels */
+[data-theme="solar-ember"] th,
+[data-theme="solar-ember"] label,
+[data-theme="solar-ember"] dt {
+  font-family: var(--ch-font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.625rem;
+}
+
+/* Buttons: squared, industrial, ember border */
+[data-theme="solar-ember"] button {
+  border-radius: 2px !important;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Brand buttons: fire glow */
+[data-theme="solar-ember"] button[class*="from-brand"] {
+  box-shadow: 0 0 12px rgba(234, 88, 12, 0.2), inset 0 1px 0 rgba(255,255,255,0.05);
+}
+[data-theme="solar-ember"] button[class*="from-brand"]:hover {
+  box-shadow: 0 0 24px rgba(234, 88, 12, 0.35), inset 0 1px 0 rgba(255,255,255,0.08);
+}
+
+/* Table: grid-lined control panel */
+[data-theme="solar-ember"] table {
+  border: 1px solid rgba(234, 88, 12, 0.08);
+}
+[data-theme="solar-ember"] td,
+[data-theme="solar-ember"] th {
+  border: 1px solid rgba(234, 88, 12, 0.05);
+  font-size: 0.6875rem;
+  padding: 0.25rem 0.5rem;
+}
+
+/* Ember scanline overlay */
+[data-theme="solar-ember"]::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(234, 88, 12, 0.006) 2px,
+    rgba(234, 88, 12, 0.006) 4px
   );
   mix-blend-mode: screen;
 }
 
 @keyframes emberGlow {
   0%, 100% { box-shadow: 0 0 6px rgba(234, 88, 12, 0.08); }
-  50%      { box-shadow: 0 0 16px rgba(234, 88, 12, 0.15); }
+  50%      { box-shadow: 0 0 20px rgba(234, 88, 12, 0.18); }
 }

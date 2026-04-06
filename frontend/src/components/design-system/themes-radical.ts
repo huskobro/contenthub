@@ -1,27 +1,37 @@
 /**
- * Radical Theme Collection — 5 completely different design languages
+ * Radical Theme Collection — 5 completely different DESIGN SYSTEMS
  *
- * Each theme is a radically different visual identity:
- * - Midnight Ultraviolet: Cyberpunk deep-purple, holographic glow
- * - Arctic Frost: Ultra-minimal ice-glass, all-white sidebar, pastel accents
- * - Tokyo Neon: Akihabara night-street pink neon, dark indigo base
- * - Ink & Wire: Editorial gazette, serif headings, cream-paper warmth
- * - Solar Ember: Volcanic obsidian with orange-red ember highlights
+ * These are NOT color swaps. Each theme radically changes:
+ * - Layout proportions (sidebar width, header height, page padding)
+ * - Typography scale & hierarchy
+ * - Border radius philosophy (brutalist 0px → pillowed 24px)
+ * - Shadow depth & style
+ * - Motion timing & easing curves
+ * - Density (compact/comfortable/spacious)
+ * - Plus unique CSS effects per theme in index.css
+ *
+ * 1. Midnight Ultraviolet: Cyberpunk glass-panel OS — compact density, tight grid, holographic glow
+ * 2. Arctic Frost: Swiss minimal print — spacious airy, huge radius, whisper-thin shadows
+ * 3. Tokyo Neon: Akihabara arcade terminal — ultra-compact, tight type, neon bleed
+ * 4. Ink & Wire: Broadsheet newspaper — tall type, editorial spacing, zero radius, ink shadows
+ * 5. Solar Ember: Industrial control panel — brutalist grid, monospace-heavy, ember glow
  */
 
 import type { ThemeManifest } from "./themeContract";
 
 // ---------------------------------------------------------------------------
-// 1. Midnight Ultraviolet — Cyberpunk deep-purple aesthetic
+// 1. Midnight Ultraviolet — Cyberpunk glass-panel OS
+//    Think: Figma's dark mode × holographic UI × glassmorphism
+//    Radical: wide sidebar, thin header, pill-shaped buttons, frosted glass cards
 // ---------------------------------------------------------------------------
 
 export const MIDNIGHT_ULTRAVIOLET_THEME: ThemeManifest = {
   id: "midnight-ultraviolet",
   name: "Midnight Ultraviolet",
-  description: "Derin mor ve elektrik mavi ile koyu cyberpunk estetiği. Holografik vurgular, gradient gölgeler, dijital katman hissi.",
+  description: "Derin mor ve elektrik mavi ile cyberpunk cam-panel arayuzu. Genis sidebar, ince header, buzlu cam kartlar, holografik vurgular.",
   author: "system",
-  version: "1.0.0",
-  tone: ["dark", "cyberpunk", "ultraviolet", "neon", "futuristic"],
+  version: "2.0.0",
+  tone: ["dark", "cyberpunk", "ultraviolet", "glass", "futuristic"],
 
   typography: {
     heading: {
@@ -37,12 +47,18 @@ export const MIDNIGHT_ULTRAVIOLET_THEME: ThemeManifest = {
       stack: "'JetBrains Mono', 'SF Mono', 'Fira Code', monospace",
     },
     size: {
-      xs: "0.6875rem", sm: "0.75rem", base: "0.8125rem", md: "0.875rem",
-      lg: "1rem", xl: "1.125rem", "2xl": "1.5rem", "3xl": "2.25rem",
+      xs: "0.625rem",     // smaller base — compact cyberpunk feel
+      sm: "0.6875rem",
+      base: "0.75rem",
+      md: "0.8125rem",
+      lg: "0.9375rem",
+      xl: "1.125rem",
+      "2xl": "1.625rem",  // big jump for headings
+      "3xl": "2.5rem",    // hero-sized headings
     },
-    weight: { normal: 300, medium: 400, semibold: 600, bold: 700 },
-    lineHeight: { tight: 1.2, normal: 1.5, relaxed: 1.65 },
-    letterSpacing: { tight: "-0.025em", normal: "0", wide: "0.1em" },
+    weight: { normal: 300, medium: 400, semibold: 500, bold: 700 },
+    lineHeight: { tight: 1.15, normal: 1.45, relaxed: 1.6 },
+    letterSpacing: { tight: "-0.03em", normal: "-0.01em", wide: "0.12em" },
   },
 
   colors: {
@@ -75,42 +91,50 @@ export const MIDNIGHT_ULTRAVIOLET_THEME: ThemeManifest = {
   },
 
   spacing: {
-    0: "0", 1: "0.25rem", 2: "0.5rem", 3: "0.75rem", 4: "1rem",
-    5: "1.25rem", 6: "1.5rem", 8: "2rem", 10: "2.5rem", 12: "3rem", 16: "4rem",
+    0: "0", 1: "0.2rem", 2: "0.4rem", 3: "0.6rem", 4: "0.8rem",
+    5: "1rem", 6: "1.2rem", 8: "1.6rem", 10: "2rem", 12: "2.4rem", 16: "3.2rem",
   },
 
-  radius: { sm: "4px", md: "6px", lg: "10px", xl: "14px", full: "9999px" },
+  // Pill-shaped: large radius for that futuristic glass-panel look
+  radius: { sm: "8px", md: "12px", lg: "16px", xl: "24px", full: "9999px" },
 
+  // Colored glow shadows — purple tinted
   shadow: {
-    xs: "0 1px 3px rgba(139,92,246,0.06), 0 1px 2px rgba(0,0,0,0.4)",
-    sm: "0 2px 6px rgba(139,92,246,0.08), 0 1px 3px rgba(0,0,0,0.5)",
-    md: "0 4px 14px rgba(139,92,246,0.10), 0 2px 6px rgba(0,0,0,0.5)",
-    lg: "0 8px 28px rgba(139,92,246,0.12), 0 4px 10px rgba(0,0,0,0.6)",
-    xl: "0 20px 50px rgba(139,92,246,0.15), 0 8px 20px rgba(0,0,0,0.7)",
-    "2xl": "0 30px 70px rgba(139,92,246,0.18), 0 14px 30px rgba(0,0,0,0.8)",
+    xs: "0 1px 3px rgba(139,92,246,0.08), 0 1px 2px rgba(0,0,0,0.5)",
+    sm: "0 2px 8px rgba(139,92,246,0.10), 0 1px 3px rgba(0,0,0,0.6)",
+    md: "0 4px 16px rgba(139,92,246,0.12), 0 2px 6px rgba(0,0,0,0.5)",
+    lg: "0 8px 32px rgba(139,92,246,0.15), 0 4px 10px rgba(0,0,0,0.6)",
+    xl: "0 20px 60px rgba(139,92,246,0.18), 0 8px 20px rgba(0,0,0,0.7)",
+    "2xl": "0 32px 80px rgba(139,92,246,0.22), 0 16px 32px rgba(0,0,0,0.8)",
   },
 
-  motion: { fast: "100ms", normal: "160ms", slow: "260ms", easing: "cubic-bezier(0.16, 1, 0.3, 1)" },
+  // Snappy, springy motion
+  motion: { fast: "80ms", normal: "140ms", slow: "220ms", easing: "cubic-bezier(0.16, 1, 0.3, 1)" },
 
   layout: {
-    sidebarWidth: "230px", sidebarCollapsedWidth: "54px",
-    headerHeight: "48px", pageMaxWidth: "1360px", pagePadding: "1.5rem",
+    sidebarWidth: "272px",             // wider sidebar — more breathing room
+    sidebarCollapsedWidth: "64px",     // wider collapsed too
+    headerHeight: "42px",              // thin header — cyberpunk compact
+    pageMaxWidth: "1440px",            // wider content area
+    pagePadding: "1.25rem",
   },
 
-  density: "comfortable",
+  density: "compact",
 };
 
 // ---------------------------------------------------------------------------
-// 2. Arctic Frost — Ultra-minimal ice-glass, all-white sidebar
+// 2. Arctic Frost — Swiss minimal print design
+//    Think: Dieter Rams × Apple.com × Linear × ultra-whitespace
+//    Radical: huge padding, enormous radius, almost no shadows, white sidebar
 // ---------------------------------------------------------------------------
 
 export const ARCTIC_FROST_THEME: ThemeManifest = {
   id: "arctic-frost",
   name: "Arctic Frost",
-  description: "Buz beyazı yüzeyler, cam efektli kartlar, ultra-minimal detay. Kuzey ışıkları pastel vurguları. Beyaz sidebar.",
+  description: "Isvicre minimal baski tasarimi. Genis bosluklar, buyuk radius, neredeyse sifir golge. Beyaz sidebar, havali ve ferah.",
   author: "system",
-  version: "1.0.0",
-  tone: ["minimal", "frost", "glass", "clean", "arctic", "light"],
+  version: "2.0.0",
+  tone: ["minimal", "frost", "swiss", "airy", "clean", "light"],
 
   typography: {
     heading: {
@@ -126,12 +150,18 @@ export const ARCTIC_FROST_THEME: ThemeManifest = {
       stack: "'Geist Mono', 'JetBrains Mono', 'SF Mono', monospace",
     },
     size: {
-      xs: "0.6875rem", sm: "0.75rem", base: "0.8125rem", md: "0.875rem",
-      lg: "1rem", xl: "1.125rem", "2xl": "1.375rem", "3xl": "1.875rem",
+      xs: "0.75rem",      // larger base — spacious reading
+      sm: "0.8125rem",
+      base: "0.875rem",
+      md: "0.9375rem",
+      lg: "1.0625rem",
+      xl: "1.25rem",
+      "2xl": "1.5rem",
+      "3xl": "2rem",       // modest headings — swiss restraint
     },
     weight: { normal: 400, medium: 500, semibold: 600, bold: 700 },
-    lineHeight: { tight: 1.3, normal: 1.55, relaxed: 1.7 },
-    letterSpacing: { tight: "-0.015em", normal: "0", wide: "0.08em" },
+    lineHeight: { tight: 1.3, normal: 1.6, relaxed: 1.8 },
+    letterSpacing: { tight: "-0.015em", normal: "0.005em", wide: "0.1em" },
   },
 
   colors: {
@@ -158,48 +188,56 @@ export const ARCTIC_FROST_THEME: ThemeManifest = {
       sidebarTextActive: "#0369a1", sidebarSection: "#9ca3af",
       sidebarBorder: "#e5e7eb",
     },
-    border: { subtle: "#e5e7eb", default: "#d1d5db", strong: "#9ca3af" },
+    border: { subtle: "#f3f4f6", default: "#e5e7eb", strong: "#d1d5db" },
     focus: "#0ea5e9",
     chart: ["#0ea5e9", "#22c55e", "#eab308", "#ef4444", "#8b5cf6", "#ec4899", "#14b8a6"],
   },
 
   spacing: {
-    0: "0", 1: "0.25rem", 2: "0.5rem", 3: "0.75rem", 4: "1rem",
-    5: "1.25rem", 6: "1.5rem", 8: "2rem", 10: "2.5rem", 12: "3rem", 16: "4rem",
+    0: "0", 1: "0.375rem", 2: "0.75rem", 3: "1.125rem", 4: "1.5rem",
+    5: "1.875rem", 6: "2.25rem", 8: "3rem", 10: "3.75rem", 12: "4.5rem", 16: "6rem",
   },
 
-  radius: { sm: "8px", md: "12px", lg: "16px", xl: "20px", full: "9999px" },
+  // Super-rounded — pillowy, soft, Apple-inspired
+  radius: { sm: "12px", md: "16px", lg: "20px", xl: "28px", full: "9999px" },
 
+  // Whisper-thin shadows — almost flat design
   shadow: {
-    xs: "0 1px 2px rgba(0,0,0,0.03)",
-    sm: "0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.02)",
-    md: "0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -2px rgba(0,0,0,0.03)",
-    lg: "0 10px 15px -3px rgba(0,0,0,0.06), 0 4px 6px -4px rgba(0,0,0,0.03)",
-    xl: "0 20px 25px -5px rgba(0,0,0,0.07), 0 8px 10px -6px rgba(0,0,0,0.04)",
-    "2xl": "0 25px 50px -12px rgba(0,0,0,0.10)",
+    xs: "0 0 0 1px rgba(0,0,0,0.03)",
+    sm: "0 1px 2px rgba(0,0,0,0.03), 0 0 0 1px rgba(0,0,0,0.02)",
+    md: "0 2px 4px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.02)",
+    lg: "0 4px 8px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.02)",
+    xl: "0 8px 16px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.02)",
+    "2xl": "0 16px 32px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.03)",
   },
 
-  motion: { fast: "150ms", normal: "250ms", slow: "400ms", easing: "cubic-bezier(0.4, 0, 0.2, 1)" },
+  // Slow, gentle, breathing motion
+  motion: { fast: "180ms", normal: "320ms", slow: "500ms", easing: "cubic-bezier(0.4, 0, 0.2, 1)" },
 
   layout: {
-    sidebarWidth: "260px", sidebarCollapsedWidth: "60px",
-    headerHeight: "56px", pageMaxWidth: "1200px", pagePadding: "2rem",
+    sidebarWidth: "280px",             // wide sidebar — room to breathe
+    sidebarCollapsedWidth: "72px",
+    headerHeight: "64px",              // tall header — spacious
+    pageMaxWidth: "1120px",            // narrow content — reading-optimized
+    pagePadding: "2.5rem",             // generous padding
   },
 
   density: "spacious",
 };
 
 // ---------------------------------------------------------------------------
-// 3. Tokyo Neon — Akihabara night-street aesthetic
+// 3. Tokyo Neon — Akihabara arcade terminal
+//    Think: Cyberpunk 2077 UI × retro arcade × dense data displays
+//    Radical: ultra-compact, monospace-influenced, neon bleed, thin sidebar
 // ---------------------------------------------------------------------------
 
 export const TOKYO_NEON_THEME: ThemeManifest = {
   id: "tokyo-neon",
   name: "Tokyo Neon",
-  description: "Akihabara gece sokaklarından ilham. Sıcak pembe neon, koyu arka plan, Japon tipografi ruhu. Canlı, cesur, enerjik.",
+  description: "Akihabara arcade terminal estetiği. Ultra-sıkı, monospace ağırlıklı, neon pembe bleed. Dar sidebar, yoğun bilgi gösterimi.",
   author: "system",
-  version: "1.0.0",
-  tone: ["dark", "neon", "pink", "tokyo", "vibrant", "nightlife"],
+  version: "2.0.0",
+  tone: ["dark", "neon", "arcade", "dense", "terminal", "nightlife"],
 
   typography: {
     heading: {
@@ -215,12 +253,18 @@ export const TOKYO_NEON_THEME: ThemeManifest = {
       stack: "'Fira Code', 'JetBrains Mono', 'SF Mono', monospace",
     },
     size: {
-      xs: "0.6875rem", sm: "0.75rem", base: "0.8125rem", md: "0.875rem",
-      lg: "1rem", xl: "1.125rem", "2xl": "1.5rem", "3xl": "2.25rem",
+      xs: "0.625rem",     // tiny — arcade density
+      sm: "0.6875rem",
+      base: "0.75rem",
+      md: "0.8125rem",
+      lg: "0.875rem",
+      xl: "1rem",
+      "2xl": "1.25rem",
+      "3xl": "1.75rem",   // restrained headings
     },
-    weight: { normal: 400, medium: 500, semibold: 600, bold: 800 },
-    lineHeight: { tight: 1.2, normal: 1.5, relaxed: 1.65 },
-    letterSpacing: { tight: "-0.02em", normal: "0", wide: "0.15em" },
+    weight: { normal: 400, medium: 600, semibold: 700, bold: 800 },
+    lineHeight: { tight: 1.1, normal: 1.35, relaxed: 1.5 },
+    letterSpacing: { tight: "-0.02em", normal: "0.01em", wide: "0.2em" },
   },
 
   colors: {
@@ -253,42 +297,50 @@ export const TOKYO_NEON_THEME: ThemeManifest = {
   },
 
   spacing: {
-    0: "0", 1: "0.25rem", 2: "0.5rem", 3: "0.75rem", 4: "1rem",
-    5: "1.25rem", 6: "1.5rem", 8: "2rem", 10: "2.5rem", 12: "3rem", 16: "4rem",
+    0: "0", 1: "0.125rem", 2: "0.25rem", 3: "0.375rem", 4: "0.5rem",
+    5: "0.75rem", 6: "1rem", 8: "1.25rem", 10: "1.5rem", 12: "2rem", 16: "2.5rem",
   },
 
-  radius: { sm: "4px", md: "8px", lg: "12px", xl: "16px", full: "9999px" },
+  // Sharp corners — arcade/terminal feel
+  radius: { sm: "2px", md: "3px", lg: "4px", xl: "6px", full: "9999px" },
 
+  // Neon glow shadows
   shadow: {
-    xs: "0 1px 3px rgba(236,72,153,0.05), 0 1px 2px rgba(0,0,0,0.4)",
-    sm: "0 2px 6px rgba(236,72,153,0.08), 0 1px 3px rgba(0,0,0,0.5)",
-    md: "0 4px 14px rgba(236,72,153,0.10), 0 2px 6px rgba(0,0,0,0.5)",
-    lg: "0 8px 28px rgba(236,72,153,0.12), 0 4px 10px rgba(0,0,0,0.6)",
-    xl: "0 20px 50px rgba(236,72,153,0.14), 0 8px 20px rgba(0,0,0,0.7)",
-    "2xl": "0 30px 70px rgba(236,72,153,0.18), 0 14px 30px rgba(0,0,0,0.8)",
+    xs: "0 0 2px rgba(236,72,153,0.12), 0 1px 2px rgba(0,0,0,0.5)",
+    sm: "0 0 4px rgba(236,72,153,0.15), 0 1px 3px rgba(0,0,0,0.6)",
+    md: "0 0 8px rgba(236,72,153,0.12), 0 2px 6px rgba(0,0,0,0.5)",
+    lg: "0 0 16px rgba(236,72,153,0.15), 0 4px 10px rgba(0,0,0,0.6)",
+    xl: "0 0 32px rgba(236,72,153,0.18), 0 8px 20px rgba(0,0,0,0.7)",
+    "2xl": "0 0 48px rgba(236,72,153,0.22), 0 14px 30px rgba(0,0,0,0.8)",
   },
 
-  motion: { fast: "90ms", normal: "150ms", slow: "240ms", easing: "cubic-bezier(0.22, 1, 0.36, 1)" },
+  // Lightning-fast, snappy transitions
+  motion: { fast: "60ms", normal: "100ms", slow: "160ms", easing: "cubic-bezier(0.22, 1, 0.36, 1)" },
 
   layout: {
-    sidebarWidth: "225px", sidebarCollapsedWidth: "52px",
-    headerHeight: "46px", pageMaxWidth: "1380px", pagePadding: "1.5rem",
+    sidebarWidth: "200px",             // narrow sidebar — max content space
+    sidebarCollapsedWidth: "44px",     // ultra-thin collapsed
+    headerHeight: "38px",              // razor-thin header
+    pageMaxWidth: "1600px",            // extra-wide — data-dense layout
+    pagePadding: "0.75rem",            // tight padding
   },
 
   density: "compact",
 };
 
 // ---------------------------------------------------------------------------
-// 4. Ink & Wire — Editorial gazette aesthetic
+// 4. Ink & Wire — Broadsheet newspaper / editorial gazette
+//    Think: NYT × The Economist × printed broadsheet × typography-first
+//    Radical: zero radius, tall type, wide line-height, heavy weight contrast
 // ---------------------------------------------------------------------------
 
 export const INK_AND_WIRE_THEME: ThemeManifest = {
   id: "ink-and-wire",
   name: "Ink & Wire",
-  description: "Gazete editöryal estetiği. Serif başlıklar, krem kağıt tonu, siyah mürekkep kontrastı. Basılı medya ruhu.",
+  description: "Gazete editoryel tasarimi. Serif basliklar, sifir radius, krem kagit, agir ink kontrastlar. Tipografi-oncelikli okuma deneyimi.",
   author: "system",
-  version: "1.0.0",
-  tone: ["editorial", "gazette", "serif", "ink", "classic", "typographic"],
+  version: "2.0.0",
+  tone: ["editorial", "gazette", "serif", "ink", "broadsheet", "typographic"],
 
   typography: {
     heading: {
@@ -304,12 +356,18 @@ export const INK_AND_WIRE_THEME: ThemeManifest = {
       stack: "'IBM Plex Mono', 'Courier New', monospace",
     },
     size: {
-      xs: "0.6875rem", sm: "0.75rem", base: "0.8125rem", md: "0.9rem",
-      lg: "1.0625rem", xl: "1.25rem", "2xl": "1.625rem", "3xl": "2.375rem",
+      xs: "0.6875rem",
+      sm: "0.75rem",
+      base: "0.875rem",   // slightly larger body for readability
+      md: "0.9375rem",
+      lg: "1.125rem",
+      xl: "1.375rem",     // generous size jump
+      "2xl": "1.875rem",
+      "3xl": "2.75rem",   // dramatic serif headline scale
     },
     weight: { normal: 400, medium: 500, semibold: 600, bold: 700 },
-    lineHeight: { tight: 1.2, normal: 1.6, relaxed: 1.75 },
-    letterSpacing: { tight: "-0.01em", normal: "0.005em", wide: "0.14em" },
+    lineHeight: { tight: 1.15, normal: 1.65, relaxed: 1.85 },  // wide line height — readability
+    letterSpacing: { tight: "-0.01em", normal: "0.01em", wide: "0.18em" },
   },
 
   colors: {
@@ -342,42 +400,50 @@ export const INK_AND_WIRE_THEME: ThemeManifest = {
   },
 
   spacing: {
-    0: "0", 1: "0.25rem", 2: "0.5rem", 3: "0.75rem", 4: "1rem",
-    5: "1.25rem", 6: "1.5rem", 8: "2rem", 10: "2.5rem", 12: "3rem", 16: "4rem",
+    0: "0", 1: "0.25rem", 2: "0.5rem", 3: "0.875rem", 4: "1.25rem",
+    5: "1.625rem", 6: "2rem", 8: "2.75rem", 10: "3.5rem", 12: "4.5rem", 16: "6rem",
   },
 
-  radius: { sm: "2px", md: "3px", lg: "4px", xl: "6px", full: "9999px" },
+  // ZERO radius — brutalist newspaper aesthetic
+  radius: { sm: "0px", md: "0px", lg: "0px", xl: "2px", full: "9999px" },
 
+  // Flat ink shadows — subtle, print-like
   shadow: {
-    xs: "0 1px 1px rgba(26,24,20,0.05)",
-    sm: "0 1px 2px rgba(26,24,20,0.06), 0 1px 1px rgba(26,24,20,0.04)",
-    md: "0 2px 4px rgba(26,24,20,0.06), 0 1px 2px rgba(26,24,20,0.04)",
-    lg: "0 4px 8px rgba(26,24,20,0.08), 0 2px 4px rgba(26,24,20,0.04)",
-    xl: "0 8px 16px rgba(26,24,20,0.10), 0 4px 8px rgba(26,24,20,0.06)",
-    "2xl": "0 16px 32px rgba(26,24,20,0.14), 0 8px 16px rgba(26,24,20,0.08)",
+    xs: "0 1px 0 rgba(26,24,20,0.06)",
+    sm: "0 1px 1px rgba(26,24,20,0.08)",
+    md: "0 2px 3px rgba(26,24,20,0.08), 0 0 0 1px rgba(26,24,20,0.04)",
+    lg: "0 3px 6px rgba(26,24,20,0.10), 0 0 0 1px rgba(26,24,20,0.04)",
+    xl: "0 6px 12px rgba(26,24,20,0.12), 0 0 0 1px rgba(26,24,20,0.06)",
+    "2xl": "0 12px 24px rgba(26,24,20,0.16), 0 0 0 1px rgba(26,24,20,0.06)",
   },
 
-  motion: { fast: "140ms", normal: "220ms", slow: "360ms", easing: "cubic-bezier(0.25, 0.1, 0.25, 1)" },
+  // Elegant, unhurried transitions
+  motion: { fast: "160ms", normal: "280ms", slow: "440ms", easing: "cubic-bezier(0.25, 0.1, 0.25, 1)" },
 
   layout: {
-    sidebarWidth: "250px", sidebarCollapsedWidth: "58px",
-    headerHeight: "54px", pageMaxWidth: "1240px", pagePadding: "2rem",
+    sidebarWidth: "260px",
+    sidebarCollapsedWidth: "60px",
+    headerHeight: "58px",              // taller header — editorial grandeur
+    pageMaxWidth: "1080px",            // narrow — newspaper column width
+    pagePadding: "2.5rem",             // generous padding for reading
   },
 
   density: "comfortable",
 };
 
 // ---------------------------------------------------------------------------
-// 5. Solar Ember — Volcanic fire on dark obsidian
+// 5. Solar Ember — Industrial control panel / HUD
+//    Think: SpaceX mission control × dark factory dashboard × ember heat
+//    Radical: monospace headers, brutalist grid, inset cards, fire glow
 // ---------------------------------------------------------------------------
 
 export const SOLAR_EMBER_THEME: ThemeManifest = {
   id: "solar-ember",
   name: "Solar Ember",
-  description: "Volkanik ateş estetiği. Koyu obsidyen üzerinde turuncu-kırmızı kor renkleri. Güçlü, cesur, sıcak.",
+  description: "Endustriyel kontrol paneli estetiği. Monospace basliklar, brutalist grid, iceri gomulu kartlar, ates pariltisi.",
   author: "system",
-  version: "1.0.0",
-  tone: ["dark", "volcanic", "fire", "bold", "warm", "intense"],
+  version: "2.0.0",
+  tone: ["dark", "industrial", "hud", "monospace", "fire", "control-panel"],
 
   typography: {
     heading: {
@@ -393,12 +459,18 @@ export const SOLAR_EMBER_THEME: ThemeManifest = {
       stack: "'Source Code Pro', 'SF Mono', 'Fira Code', monospace",
     },
     size: {
-      xs: "0.6875rem", sm: "0.75rem", base: "0.8125rem", md: "0.875rem",
-      lg: "1rem", xl: "1.125rem", "2xl": "1.5rem", "3xl": "2.125rem",
+      xs: "0.625rem",
+      sm: "0.6875rem",
+      base: "0.75rem",
+      md: "0.8125rem",
+      lg: "0.9375rem",
+      xl: "1.0625rem",
+      "2xl": "1.375rem",
+      "3xl": "1.875rem",   // moderate headings — utilitarian
     },
-    weight: { normal: 400, medium: 500, semibold: 600, bold: 700 },
-    lineHeight: { tight: 1.2, normal: 1.5, relaxed: 1.65 },
-    letterSpacing: { tight: "-0.02em", normal: "0", wide: "0.08em" },
+    weight: { normal: 400, medium: 500, semibold: 700, bold: 700 },  // heavy medium-bold jump
+    lineHeight: { tight: 1.15, normal: 1.4, relaxed: 1.55 },
+    letterSpacing: { tight: "0em", normal: "0.02em", wide: "0.14em" },
   },
 
   colors: {
@@ -419,11 +491,11 @@ export const SOLAR_EMBER_THEME: ThemeManifest = {
     info: { light: "#0c1a2e", base: "#38bdf8", dark: "#0ea5e9", text: "#7dd3fc" },
     surface: {
       page: "#0c0a08", card: "#161310", elevated: "#1e1a16",
-      inset: "#110e0b", sidebar: "#110e0b", sidebarHover: "#1e1a16",
+      inset: "#110e0b", sidebar: "#0c0a08", sidebarHover: "#1e1a16",
       sidebarActive: "#292420",
       sidebarText: "#e9e4de", sidebarTextMuted: "#8a8078",
       sidebarTextActive: "#fb923c", sidebarSection: "#6b6259",
-      sidebarBorder: "#38322c",
+      sidebarBorder: "#292420",
     },
     border: { subtle: "#292420", default: "#38322c", strong: "#504840" },
     focus: "#ea580c",
@@ -431,26 +503,32 @@ export const SOLAR_EMBER_THEME: ThemeManifest = {
   },
 
   spacing: {
-    0: "0", 1: "0.25rem", 2: "0.5rem", 3: "0.75rem", 4: "1rem",
-    5: "1.25rem", 6: "1.5rem", 8: "2rem", 10: "2.5rem", 12: "3rem", 16: "4rem",
+    0: "0", 1: "0.125rem", 2: "0.25rem", 3: "0.5rem", 4: "0.75rem",
+    5: "1rem", 6: "1.25rem", 8: "1.5rem", 10: "2rem", 12: "2.5rem", 16: "3rem",
   },
 
-  radius: { sm: "3px", md: "5px", lg: "8px", xl: "12px", full: "9999px" },
+  // Zero radius — brutalist industrial look
+  radius: { sm: "0px", md: "2px", lg: "3px", xl: "4px", full: "9999px" },
 
+  // Inset shadows — cards feel stamped into the surface
   shadow: {
-    xs: "0 1px 3px rgba(234,88,12,0.06), 0 1px 2px rgba(0,0,0,0.4)",
-    sm: "0 2px 6px rgba(234,88,12,0.08), 0 1px 3px rgba(0,0,0,0.5)",
-    md: "0 4px 14px rgba(234,88,12,0.10), 0 2px 6px rgba(0,0,0,0.5)",
-    lg: "0 8px 28px rgba(234,88,12,0.14), 0 4px 10px rgba(0,0,0,0.6)",
-    xl: "0 20px 50px rgba(234,88,12,0.16), 0 8px 20px rgba(0,0,0,0.7)",
-    "2xl": "0 30px 70px rgba(234,88,12,0.20), 0 14px 30px rgba(0,0,0,0.8)",
+    xs: "inset 0 1px 2px rgba(0,0,0,0.3), 0 0 1px rgba(234,88,12,0.05)",
+    sm: "inset 0 1px 3px rgba(0,0,0,0.35), 0 0 2px rgba(234,88,12,0.08)",
+    md: "inset 0 2px 4px rgba(0,0,0,0.25), 0 0 4px rgba(234,88,12,0.06)",
+    lg: "inset 0 2px 6px rgba(0,0,0,0.3), 0 0 8px rgba(234,88,12,0.08)",
+    xl: "0 0 16px rgba(234,88,12,0.12), 0 4px 12px rgba(0,0,0,0.6)",
+    "2xl": "0 0 32px rgba(234,88,12,0.16), 0 8px 24px rgba(0,0,0,0.7)",
   },
 
-  motion: { fast: "100ms", normal: "160ms", slow: "250ms", easing: "cubic-bezier(0.16, 1, 0.3, 1)" },
+  // Instant, mechanical transitions
+  motion: { fast: "50ms", normal: "80ms", slow: "140ms", easing: "cubic-bezier(0, 0, 0.2, 1)" },
 
   layout: {
-    sidebarWidth: "230px", sidebarCollapsedWidth: "52px",
-    headerHeight: "48px", pageMaxWidth: "1360px", pagePadding: "1.5rem",
+    sidebarWidth: "208px",             // narrow sidebar — data-first
+    sidebarCollapsedWidth: "48px",
+    headerHeight: "40px",              // thin header — control panel
+    pageMaxWidth: "1560px",            // ultra-wide — dashboard layout
+    pagePadding: "1rem",               // tight — maximize data density
   },
 
   density: "compact",
