@@ -12,6 +12,8 @@ import React from "react";
 import { cn } from "../../lib/cn";
 import { statusStyle } from "./tokens";
 import type { StatusVariant } from "./tokens";
+import { SkeletonTable, Skeleton } from "./Skeleton";
+import { EmptyState } from "./EmptyState";
 
 // ---------------------------------------------------------------------------
 // PageShell — wraps every admin page
@@ -28,7 +30,7 @@ interface PageShellProps {
 
 export function PageShell({ title, subtitle, breadcrumb, actions, children, testId }: PageShellProps) {
   return (
-    <div className="max-w-page" data-testid={testId}>
+    <div className="max-w-page page-enter" data-testid={testId}>
       {breadcrumb && breadcrumb.length > 0 && (
         <nav className="mb-3 text-sm text-neutral-500 flex gap-1 items-center" data-testid="breadcrumb">
           {breadcrumb.map((item, i) => (
@@ -122,10 +124,19 @@ export function MetricTile({ label, value, note, loading, testId, accentColor }:
       data-testid={testId}
     >
       <p className="m-0 text-sm text-neutral-500 font-medium tracking-[0.01em]">{label}</p>
-      <p className="mt-1 text-2xl font-bold text-neutral-900 leading-[1.2] tabular-nums font-heading tracking-[-0.02em]" data-testid={testId ? `${testId}-value` : undefined}>
-        {loading ? "\u2026" : value}
-      </p>
-      {note && <p className="mt-1 text-xs text-neutral-500">{note}</p>}
+      {loading ? (
+        <>
+          <Skeleton width="80px" height="24px" rounded="sm" className="mt-2 mb-1" />
+          <Skeleton width="100px" height="10px" rounded="sm" />
+        </>
+      ) : (
+        <>
+          <p className="mt-1 text-2xl font-bold text-neutral-900 leading-[1.2] tabular-nums font-heading tracking-[-0.02em]" data-testid={testId ? `${testId}-value` : undefined}>
+            {value}
+          </p>
+          {note && <p className="mt-1 text-xs text-neutral-500">{note}</p>}
+        </>
+      )}
     </div>
   );
 }
@@ -199,16 +210,26 @@ export function DataTable<T>({
   columns, data, keyFn, onRowClick, selectedKey, emptyMessage, loading, error, errorMessage, testId, rowTestIdPrefix,
 }: DataTableProps<T>) {
   if (loading) {
-    return <p className="text-neutral-500 text-base p-4">Y&uuml;kleniyor...</p>;
+    return <SkeletonTable columns={columns.length || 5} rows={6} />;
   }
   if (error) {
-    return <p className="text-error text-base p-4">{errorMessage || "Veri yuklenirken hata olustu."}</p>;
+    return (
+      <EmptyState
+        illustration="error"
+        title="Veri yuklenemedi"
+        description={errorMessage || "Veri yuklenirken bir hata olustu. Lutfen tekrar deneyin."}
+        testId={testId ? `${testId}-error` : undefined}
+      />
+    );
   }
   if (data.length === 0) {
     return (
-      <div className="text-center py-8 px-4 text-neutral-500" data-testid={testId ? `${testId}-empty` : undefined}>
-        <p className="m-0 text-md">{emptyMessage || "Kayit bulunamadi."}</p>
-      </div>
+      <EmptyState
+        illustration="no-data"
+        title={emptyMessage || "Kayit bulunamadi"}
+        description="Henuz bu alanda kayit olusturulmamis."
+        testId={testId ? `${testId}-empty` : undefined}
+      />
     );
   }
 

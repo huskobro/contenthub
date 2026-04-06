@@ -6,6 +6,8 @@ import { AdminContinuityStrip } from "../../components/layout/AdminContinuityStr
 import { ToastContainer } from "../../components/design-system/Toast";
 import { ThemeProvider } from "../../components/design-system/ThemeProvider";
 import { CommandPalette } from "../../components/design-system/CommandPalette";
+import { NotificationCenter } from "../../components/design-system/NotificationCenter";
+import { KeyboardShortcutsHelp } from "../../components/design-system/KeyboardShortcutsHelp";
 import { useCommandPaletteShortcut } from "../../hooks/useCommandPaletteShortcut";
 import { useCommandPaletteStore } from "../../stores/commandPaletteStore";
 import { buildAdminNavigationCommands, buildAdminActionCommands } from "../../commands/adminCommands";
@@ -102,6 +104,10 @@ export function AdminLayout() {
         <ToastContainer />
         {/* Command Palette overlay */}
         <CommandPalette />
+        {/* Notification Center panel */}
+        <NotificationCenter />
+        {/* Keyboard shortcuts help (? key) */}
+        <KeyboardShortcutsHelp />
 
         {/* Dark sidebar on the left */}
         <AppSidebar items={filteredNav} />

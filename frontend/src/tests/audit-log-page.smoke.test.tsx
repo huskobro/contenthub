@@ -75,7 +75,9 @@ describe("Audit Log Page smoke tests", () => {
 
   it("shows loading state", () => {
     renderAuditPage(vi.fn().mockReturnValue(new Promise(() => {})));
-    expect(screen.getByText("Yükleniyor...")).toBeDefined();
+    // Loading state now shows skeleton shimmer instead of text
+    const skeletons = document.querySelectorAll(".skeleton-shimmer");
+    expect(skeletons.length).toBeGreaterThan(0);
   });
 
   it("renders audit log table with records", async () => {

@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useCommandPaletteStore } from "../../stores/commandPaletteStore";
+import { NotificationBell } from "../design-system/NotificationCenter";
 import { cn } from "../../lib/cn";
 
 interface AppHeaderProps {
@@ -52,6 +53,9 @@ export function AppHeader({ area }: AppHeaderProps) {
           ⌘K
         </kbd>
       </button>
+
+      {/* Notification Bell */}
+      <NotificationBell className="mr-3" />
 
       <button
         onClick={() => navigate(config.switchTo)}

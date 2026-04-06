@@ -15,6 +15,8 @@ import { HorizonSidebar, type HorizonNavGroup } from "../../components/layout/Ho
 import { ToastContainer } from "../../components/design-system/Toast";
 import { ThemeProvider } from "../../components/design-system/ThemeProvider";
 import { CommandPalette } from "../../components/design-system/CommandPalette";
+import { NotificationCenter, NotificationBell } from "../../components/design-system/NotificationCenter";
+import { KeyboardShortcutsHelp } from "../../components/design-system/KeyboardShortcutsHelp";
 import { useCommandPaletteShortcut } from "../../hooks/useCommandPaletteShortcut";
 import { useCommandPaletteStore } from "../../stores/commandPaletteStore";
 import { buildAdminNavigationCommands, buildAdminActionCommands } from "../../commands/adminCommands";
@@ -150,6 +152,8 @@ export function HorizonAdminLayout() {
       <div className="min-h-screen bg-surface-page" data-testid="horizon-admin-layout">
         <ToastContainer />
         <CommandPalette />
+        <NotificationCenter />
+        <KeyboardShortcutsHelp />
 
         {/* Horizon Sidebar */}
         <HorizonSidebar groups={filteredGroups} brandLabel="ContentHub" />
@@ -168,13 +172,16 @@ export function HorizonAdminLayout() {
                 {location.pathname.split("/").filter(Boolean).slice(1).join(" / ") || "Genel Bakis"}
               </span>
             </div>
-            <button
-              onClick={() => navigate("/user")}
-              className="px-3 py-1 text-xs font-medium text-neutral-600 bg-surface-inset border border-border-subtle rounded-lg cursor-pointer transition-all duration-fast hover:bg-neutral-100 hover:border-brand-400"
-              data-testid="horizon-panel-switch"
-            >
-              Kullanici Paneli
-            </button>
+            <div className="flex items-center gap-2">
+              <NotificationBell />
+              <button
+                onClick={() => navigate("/user")}
+                className="px-3 py-1 text-xs font-medium text-neutral-600 bg-surface-inset border border-border-subtle rounded-lg cursor-pointer transition-all duration-fast hover:bg-neutral-100 hover:border-brand-400"
+                data-testid="horizon-panel-switch"
+              >
+                Kullanici Paneli
+              </button>
+            </div>
           </div>
 
           <Outlet />
