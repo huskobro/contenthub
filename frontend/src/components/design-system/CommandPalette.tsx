@@ -21,6 +21,7 @@ import {
 } from "../../stores/commandPaletteStore";
 import { useKeyboardStore } from "../../stores/keyboardStore";
 import { useVisibility } from "../../hooks/useVisibility";
+import { useEnabledModules } from "../../hooks/useEnabledModules";
 import { useDismissStack } from "../../hooks/useDismissStack";
 import { useDiscoverySearch } from "../../hooks/useDiscoverySearch";
 import { cn } from "../../lib/cn";
@@ -67,6 +68,7 @@ function useVisibilityFilteredCommands(commands: Command[]): Command[] {
   const vis_templates = useVisibility("panel:templates");
   const vis_analytics = useVisibility("panel:analytics");
   const vis_sources = useVisibility("panel:sources");
+  const { enabledMap } = useEnabledModules();
 
   const visMap: Record<string, boolean> = useMemo(
     () => ({
@@ -88,10 +90,11 @@ function useVisibilityFilteredCommands(commands: Command[]): Command[] {
   return useMemo(
     () =>
       commands.filter((cmd) => {
-        if (!cmd.visibilityKey) return true;
-        return visMap[cmd.visibilityKey] !== false;
+        if (cmd.visibilityKey && visMap[cmd.visibilityKey] === false) return false;
+        if (cmd.moduleId && enabledMap[cmd.moduleId] === false) return false;
+        return true;
       }),
-    [commands, visMap]
+    [commands, visMap, enabledMap]
   );
 }
 

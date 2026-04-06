@@ -32,7 +32,7 @@ export interface HorizonNavGroup {
   id: string;
   label: string;
   icon: string; // icon key — mapped to lucide below
-  items: { label: string; to: string }[];
+  items: { label: string; to: string; moduleId?: string }[];
 }
 
 interface HorizonSidebarProps {

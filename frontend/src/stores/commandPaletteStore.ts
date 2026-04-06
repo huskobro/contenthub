@@ -38,6 +38,8 @@ export interface Command {
   description?: string;
   /** If set, command is only visible when this visibility key allows it */
   visibilityKey?: string;
+  /** If set, command is hidden when the module is disabled */
+  moduleId?: string;
   /** If set, command only appears when currentRoute matches one of these routes */
   contextRoutes?: string[];
   /** Execute the command */

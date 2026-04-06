@@ -21,6 +21,7 @@ import { useCommandPaletteStore } from "../../stores/commandPaletteStore";
 import { buildAdminNavigationCommands, buildAdminActionCommands } from "../../commands/adminCommands";
 import { buildContextualCommands } from "../../commands/contextualCommands";
 import { useAdminVisibilityMap, filterHorizonAdminGroups } from "./useLayoutNavigation";
+import { useEnabledModules } from "../../hooks/useEnabledModules";
 
 // ---------------------------------------------------------------------------
 // Route label mapping for breadcrumb
@@ -73,7 +74,8 @@ function getBreadcrumbs(pathname: string): { label: string; path: string }[] {
 
 export function HorizonAdminLayout() {
   const visibilityMap = useAdminVisibilityMap();
-  const filteredGroups = filterHorizonAdminGroups(visibilityMap);
+  const { enabledMap } = useEnabledModules();
+  const filteredGroups = filterHorizonAdminGroups(visibilityMap, enabledMap);
   const navigate = useNavigate();
   const location = useLocation();
 

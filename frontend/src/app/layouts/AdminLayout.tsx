@@ -14,10 +14,12 @@ import { useCommandPaletteStore } from "../../stores/commandPaletteStore";
 import { buildAdminNavigationCommands, buildAdminActionCommands } from "../../commands/adminCommands";
 import { buildContextualCommands } from "../../commands/contextualCommands";
 import { useAdminVisibilityMap, filterAdminNav } from "./useLayoutNavigation";
+import { useEnabledModules } from "../../hooks/useEnabledModules";
 
 export function AdminLayout() {
   const visibilityMap = useAdminVisibilityMap();
-  const filteredNav = filterAdminNav(visibilityMap);
+  const { enabledMap } = useEnabledModules();
+  const filteredNav = filterAdminNav(visibilityMap, enabledMap);
   const navigate = useNavigate();
   const location = useLocation();
 

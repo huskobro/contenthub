@@ -91,6 +91,7 @@ export function buildAdminNavigationCommands(navigate: (path: string) => void): 
       icon: "🎬",
       description: "Standart video kayitlari",
       keywords: ["video", "standart"],
+      moduleId: "standard_video",
       action: () => navigate("/admin/standard-videos"),
     },
     {
@@ -190,6 +191,7 @@ export function buildAdminNavigationCommands(navigate: (path: string) => void): 
       icon: "📰",
       description: "Haber bulten kayitlari",
       keywords: ["bulletin", "bulten", "haber"],
+      moduleId: "news_bulletin",
       action: () => navigate("/admin/news-bulletins"),
     },
     {
@@ -199,6 +201,7 @@ export function buildAdminNavigationCommands(navigate: (path: string) => void): 
       icon: "📝",
       description: "Bireysel haber kayitlari",
       keywords: ["news", "item", "haber", "oge"],
+      moduleId: "news_bulletin",
       action: () => navigate("/admin/news-items"),
     },
     {
@@ -208,6 +211,7 @@ export function buildAdminNavigationCommands(navigate: (path: string) => void): 
       icon: "✅",
       description: "Kullanilmis haber kayıt defteri",
       keywords: ["used", "news", "kullanilan", "dedupe"],
+      moduleId: "news_bulletin",
       action: () => navigate("/admin/used-news"),
     },
 
@@ -230,6 +234,7 @@ export function buildAdminNavigationCommands(navigate: (path: string) => void): 
       icon: "🧙",
       description: "Adim adim rehberli video olusturma",
       keywords: ["wizard", "sihirbaz", "rehber", "guided", "video", "olustur"],
+      moduleId: "standard_video",
       action: () => navigate("/admin/standard-videos/wizard"),
     },
     {
@@ -256,6 +261,7 @@ export function buildAdminActionCommands(navigate: (path: string) => void): Comm
       icon: "➕",
       description: "Yeni standart video olustur (hizli form)",
       keywords: ["create", "new", "yeni", "video", "olustur", "hizli"],
+      moduleId: "standard_video",
       action: () => navigate("/admin/standard-videos/new"),
     },
     {
@@ -265,6 +271,7 @@ export function buildAdminActionCommands(navigate: (path: string) => void): Comm
       icon: "🧙",
       description: "Adim adim rehberli video olusturma wizard'i",
       keywords: ["create", "new", "yeni", "video", "wizard", "sihirbaz", "rehber", "guided"],
+      moduleId: "standard_video",
       action: () => navigate("/admin/standard-videos/wizard"),
     },
     {
@@ -312,6 +319,7 @@ export function buildAdminActionCommands(navigate: (path: string) => void): Comm
       icon: "➕",
       description: "Yeni haber bulteni olustur",
       keywords: ["create", "new", "yeni", "bulten", "bulletin"],
+      moduleId: "news_bulletin",
       action: () => navigate("/admin/news-bulletins/new"),
     },
     {
@@ -321,6 +329,7 @@ export function buildAdminActionCommands(navigate: (path: string) => void): Comm
       icon: "➕",
       description: "Yeni haber ogesi ekle",
       keywords: ["create", "new", "yeni", "haber", "news"],
+      moduleId: "news_bulletin",
       action: () => navigate("/admin/news-items/new"),
     },
     {
@@ -330,6 +339,7 @@ export function buildAdminActionCommands(navigate: (path: string) => void): Comm
       icon: "➕",
       description: "Kullanilmis haber kaydi ekle",
       keywords: ["create", "new", "yeni", "kullanilan"],
+      moduleId: "news_bulletin",
       action: () => navigate("/admin/used-news/new"),
     },
     {

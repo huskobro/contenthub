@@ -1,8 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import { useWizardStore } from "../stores/wizardStore";
+import { useEnabledModules } from "../hooks/useEnabledModules";
 
 const CONTENT_TYPES = [
   {
+    moduleId: "standard_video",
     icon: "V",
     iconBgClass: "bg-brand-600",
     title: "Standart Video",
@@ -13,6 +15,7 @@ const CONTENT_TYPES = [
     testId: "content-entry-standard-video",
   },
   {
+    moduleId: "news_bulletin",
     icon: "H",
     iconBgClass: "bg-brand-700",
     title: "Haber Bulteni",
@@ -28,6 +31,11 @@ export function UserContentEntryPage() {
   const navigate = useNavigate();
   const userMode = useWizardStore((s) => s.userMode);
   const toggleMode = useWizardStore((s) => s.toggleUserMode);
+  const { enabledMap } = useEnabledModules();
+
+  const visibleTypes = CONTENT_TYPES.filter(
+    (ct) => enabledMap[ct.moduleId] !== false
+  );
 
   return (
     <div>
@@ -48,7 +56,7 @@ export function UserContentEntryPage() {
       </p>
 
       <div className="grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-4 max-w-[720px]">
-        {CONTENT_TYPES.map((ct) => {
+        {visibleTypes.map((ct) => {
           const to = userMode === "guided" ? ct.guidedTo : ct.advancedTo;
           return (
             <div

@@ -17,6 +17,8 @@ export interface AdminNavItem {
   to?: string;
   section?: boolean;
   visibilityKey?: string;
+  /** If set, item is hidden when the module is disabled. */
+  moduleId?: string;
 }
 
 export const ADMIN_NAV: AdminNavItem[] = [
@@ -33,8 +35,8 @@ export const ADMIN_NAV: AdminNavItem[] = [
   { label: "Icerik Uretimi", section: true },
   { label: "Icerik Kutuphanesi", to: "/admin/library" },
   { label: "Varlik Kutuphanesi", to: "/admin/assets" },
-  { label: "Standart Video", to: "/admin/standard-videos" },
-  { label: "Video Wizard", to: "/admin/standard-videos/wizard" },
+  { label: "Standart Video", to: "/admin/standard-videos", moduleId: "standard_video" },
+  { label: "Video Wizard", to: "/admin/standard-videos/wizard", moduleId: "standard_video" },
   { label: "Sablonlar", to: "/admin/templates", visibilityKey: "panel:templates" },
   { label: "Stil Sablonlari", to: "/admin/style-blueprints" },
   { label: "Sablon-Stil Baglantilari", to: "/admin/template-style-links" },
@@ -46,9 +48,9 @@ export const ADMIN_NAV: AdminNavItem[] = [
   { label: "Haber", section: true },
   { label: "Kaynaklar", to: "/admin/sources", visibilityKey: "panel:sources" },
   { label: "Kaynak Taramalari", to: "/admin/source-scans" },
-  { label: "Haber Bultenleri", to: "/admin/news-bulletins" },
-  { label: "Haber Ogeler", to: "/admin/news-items" },
-  { label: "Kullanilan Haberler", to: "/admin/used-news" },
+  { label: "Haber Bultenleri", to: "/admin/news-bulletins", moduleId: "news_bulletin" },
+  { label: "Haber Ogeler", to: "/admin/news-items", moduleId: "news_bulletin" },
+  { label: "Kullanilan Haberler", to: "/admin/used-news", moduleId: "news_bulletin" },
   { label: "Gorunum", section: true },
   { label: "Tema Yonetimi", to: "/admin/themes" },
 ];
@@ -105,8 +107,8 @@ export const HORIZON_ADMIN_GROUPS: HorizonNavGroup[] = [
     items: [
       { label: "Icerik Kutuphanesi", to: "/admin/library" },
       { label: "Varlik Kutuphanesi", to: "/admin/assets" },
-      { label: "Standart Video", to: "/admin/standard-videos" },
-      { label: "Video Wizard", to: "/admin/standard-videos/wizard" },
+      { label: "Standart Video", to: "/admin/standard-videos", moduleId: "standard_video" },
+      { label: "Video Wizard", to: "/admin/standard-videos/wizard", moduleId: "standard_video" },
       { label: "Sablonlar", to: "/admin/templates" },
       { label: "Stil Sablonlari", to: "/admin/style-blueprints" },
       { label: "Sablon-Stil Baglantilari", to: "/admin/template-style-links" },
@@ -136,9 +138,9 @@ export const HORIZON_ADMIN_GROUPS: HorizonNavGroup[] = [
     items: [
       { label: "Kaynaklar", to: "/admin/sources" },
       { label: "Kaynak Taramalari", to: "/admin/source-scans" },
-      { label: "Haber Bultenleri", to: "/admin/news-bulletins" },
-      { label: "Haber Ogeler", to: "/admin/news-items" },
-      { label: "Kullanilan Haberler", to: "/admin/used-news" },
+      { label: "Haber Bultenleri", to: "/admin/news-bulletins", moduleId: "news_bulletin" },
+      { label: "Haber Ogeler", to: "/admin/news-items", moduleId: "news_bulletin" },
+      { label: "Kullanilan Haberler", to: "/admin/used-news", moduleId: "news_bulletin" },
     ],
   },
   {
@@ -228,15 +230,21 @@ export function useAdminVisibilityMap(): AdminVisibilityMap {
 // ---------------------------------------------------------------------------
 
 /**
- * Filter classic admin nav items using the visibility map.
- * Items without a visibilityKey are always included.
+ * Filter classic admin nav items using the visibility map and module enabled map.
+ * Items without a visibilityKey or moduleId are always included.
  */
 export function filterAdminNav(
   visibilityMap: AdminVisibilityMap,
+  moduleEnabledMap?: Record<string, boolean>,
 ): AdminNavItem[] {
   return ADMIN_NAV.filter((item) => {
-    if (!item.visibilityKey) return true;
-    return visibilityMap[item.visibilityKey as AdminVisibilityKey] !== false;
+    if (item.visibilityKey && visibilityMap[item.visibilityKey as AdminVisibilityKey] === false) {
+      return false;
+    }
+    if (item.moduleId && moduleEnabledMap && moduleEnabledMap[item.moduleId] === false) {
+      return false;
+    }
+    return true;
   });
 }
 
@@ -255,18 +263,21 @@ const ROUTE_VISIBILITY: Record<string, AdminVisibilityKey> = {
 };
 
 /**
- * Filter Horizon admin groups using the visibility map.
- * Removes individual items whose route is guarded, then removes empty groups.
+ * Filter Horizon admin groups using the visibility map and module enabled map.
+ * Removes individual items whose route is guarded or module is disabled,
+ * then removes empty groups.
  */
 export function filterHorizonAdminGroups(
   visibilityMap: AdminVisibilityMap,
+  moduleEnabledMap?: Record<string, boolean>,
 ): HorizonNavGroup[] {
   return HORIZON_ADMIN_GROUPS.map((group) => ({
     ...group,
     items: group.items.filter((item) => {
       const key = ROUTE_VISIBILITY[item.to];
-      if (!key) return true;
-      return visibilityMap[key] !== false;
+      if (key && visibilityMap[key] === false) return false;
+      if (item.moduleId && moduleEnabledMap && moduleEnabledMap[item.moduleId] === false) return false;
+      return true;
     }),
   })).filter((group) => group.items.length > 0);
 }
