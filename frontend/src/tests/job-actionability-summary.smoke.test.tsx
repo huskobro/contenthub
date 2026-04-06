@@ -19,7 +19,6 @@ import { render, screen } from "@testing-library/react";
 import { computeJobActionability } from "../components/jobs/JobActionabilitySummary";
 import { JobActionabilityBadge } from "../components/jobs/JobActionabilityBadge";
 import { JobActionabilitySummary } from "../components/jobs/JobActionabilitySummary";
-import { JobsTable } from "../components/jobs/JobsTable";
 
 // ── computeJobActionability ───────────────────────────────────────────────────
 describe("computeJobActionability", () => {
@@ -86,33 +85,3 @@ describe("JobActionabilitySummary", () => {
   });
 });
 
-// ── JobsTable ─────────────────────────────────────────────────────────────────
-const mockJob = (overrides: object = {}) => ({
-  id: "job-1",
-  module_type: "news_bulletin",
-  status: "queued",
-  owner_id: null,
-  template_id: null,
-  source_context_json: null,
-  current_step_key: null,
-  retry_count: 0,
-  elapsed_total_seconds: null,
-  estimated_remaining_seconds: null,
-  workspace_path: null,
-  last_error: null,
-  created_at: "2026-04-02T10:00:00Z",
-  started_at: null,
-  finished_at: null,
-  elapsed_seconds: null,
-  eta_seconds: null,
-  updated_at: "2026-04-02T10:00:00Z",
-  steps: [],
-  ...overrides,
-});
-
-describe("JobsTable actionability summary", () => {
-  it("J) renders Aksiyon Özeti column header", () => {
-    render(<JobsTable jobs={[mockJob()]} selectedId={null} onSelect={() => {}} />);
-    expect(screen.getByText("Aksiyon Özeti")).toBeTruthy();
-  });
-});

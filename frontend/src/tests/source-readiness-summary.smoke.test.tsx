@@ -19,7 +19,6 @@ import { render, screen } from "@testing-library/react";
 import { computeSourceReadiness } from "../components/sources/SourceReadinessSummary";
 import { SourceReadinessBadge } from "../components/sources/SourceReadinessBadge";
 import { SourceReadinessSummary } from "../components/sources/SourceReadinessSummary";
-import { SourcesTable } from "../components/sources/SourcesTable";
 
 // ── computeSourceReadiness ─────────────────────────────────────────────────────
 describe("computeSourceReadiness", () => {
@@ -86,31 +85,3 @@ describe("SourceReadinessSummary", () => {
   });
 });
 
-// ── SourcesTable ───────────────────────────────────────────────────────────────
-const mockSource = (overrides: object = {}) => ({
-  id: "src-1",
-  name: "Test Source",
-  source_type: "rss",
-  status: "active",
-  base_url: null,
-  feed_url: "https://feed.example.com",
-  api_endpoint: null,
-  trust_level: null,
-  scan_mode: null,
-  language: null,
-  category: null,
-  notes: null,
-  created_at: "2026-04-02T10:00:00Z",
-  updated_at: "2026-04-02T10:00:00Z",
-  scan_count: 0,
-  last_scan_status: null,
-  last_scan_finished_at: null,
-  ...overrides,
-});
-
-describe("SourcesTable readiness", () => {
-  it("J) renders Hazırlık column header", () => {
-    render(<SourcesTable sources={[mockSource()]} selectedId={null} onSelect={() => {}} />);
-    expect(screen.getByText("Hazırlık")).toBeTruthy();
-  });
-});

@@ -152,6 +152,29 @@ def _build_render_props(composition_props: dict) -> dict:
     return props
 
 
+def _build_render_props_from_output(output_entry: dict) -> dict:
+    """
+    render_outputs[] içindeki tek bir output entry'sinden render props oluşturur.
+
+    Her output entry kendi props dict'ini taşır (bulletinTitle, items, subtitlesSrt, vb.).
+    word_timing_path → wordTimings dönüşümü burada da uygulanır.
+
+    Returns:
+        dict: Renderer'a geçirilecek props dict.
+    """
+    props = dict(output_entry.get("props", {}))
+
+    # wordTimingPath (camelCase — composition tarafı) → wordTimings inline
+    word_timing_path: str | None = props.pop("wordTimingPath", None)
+    # Ayrıca snake_case fallback
+    if not word_timing_path:
+        word_timing_path = props.pop("word_timing_path", None)
+    word_timings = _load_word_timings(word_timing_path)
+    props["wordTimings"] = word_timings
+
+    return props
+
+
 class RenderStepExecutor(StepExecutor):
     """
     Render adımı executor'ı — M6-C2.
@@ -177,22 +200,25 @@ class RenderStepExecutor(StepExecutor):
         """
         Render adımını çalıştırır.
 
+        Multi-output desteği (M34 — Faz A):
+          - composition_props.json içinde render_outputs[] varsa her output için
+            ayrı Remotion render çağrısı yapılır.
+          - render_outputs[] yoksa veya tek elemanlıysa mevcut combined davranış korunur.
+
         Adımlar:
           1. composition_props.json'u oku.
           2. render_status kontrol et (props_ready gerekli).
-          3. output.mp4 zaten varsa idempotent dön.
-          4. word_timing_path'ı yükle → wordTimings oluştur.
-          5. render_props.json'u yaz (Remotion'a geçirilecek props).
-          6. Remotion subprocess'i başlat.
-          7. Tamamlanınca composition_props.json'u rendered olarak güncelle.
-          8. Sonuç döndür.
+          3. render_outputs[] varsa → multi-output render (_execute_multi_output).
+          4. Yoksa → tek output render (geriye uyumluluk).
+          5. Tamamlanınca composition_props.json'u rendered olarak güncelle.
+          6. Sonuç döndür.
 
         Args:
             job : Job ORM nesnesi.
             step: JobStep ORM nesnesi.
 
         Returns:
-            dict: output_path, composition_id, render_status,
+            dict: output_path(s), composition_id, render_status,
                   timing_mode, word_timings_count, provider trace.
 
         Raises:
@@ -248,6 +274,15 @@ class RenderStepExecutor(StepExecutor):
                 "composition_id eksik veya boş: composition_props.json bozuk.",
             )
 
+        # Multi-output render: render_outputs[] listesi varsa ve >1 ise
+        render_outputs: list[dict] = composition_props.get("render_outputs", [])
+        if len(render_outputs) > 1:
+            return await self._execute_multi_output(
+                job, composition_props, composition_id, workspace_root, render_outputs,
+            )
+
+        # --- Tek output (combined / standard_video geriye uyumluluk) ---
+
         # Çıktı yolu — idempotency
         output_path = _resolve_artifact_path(workspace_root, job.id, "output.mp4")
         if output_path.exists():
@@ -268,8 +303,6 @@ class RenderStepExecutor(StepExecutor):
         word_timings_count = len(render_props.get("wordTimings", []))
 
         # Duration fallback kontrolü — sessiz fallback yok (M6-C3 kuralı).
-        # Authoritative kaynak: composition_props.json → props.total_duration_seconds
-        # Üretici: CompositionStepExecutor
         duration_fallback_used = False
         raw_duration = render_props.get("total_duration_seconds")
         _DURATION_FALLBACK_SECONDS = 60.0
@@ -318,7 +351,6 @@ class RenderStepExecutor(StepExecutor):
         elapsed_ms = int((time.monotonic() - start_time) * 1000)
 
         if not render_result["success"]:
-            # composition_props.json'u failed olarak güncelle
             composition_props["render_status"] = "failed"
             composition_props["render_error"] = render_result.get("error", "Bilinmeyen hata")
             composition_props["updated_at"] = datetime.now(timezone.utc).isoformat()
@@ -387,6 +419,207 @@ class RenderStepExecutor(StepExecutor):
                 "degradation_warnings": degradation_warnings,
                 "latency_ms": elapsed_ms,
                 "returncode": render_result.get("returncode", 0),
+            },
+            "step": self.step_key(),
+        }
+
+    async def _execute_multi_output(
+        self,
+        job: Job,
+        composition_props: dict,
+        composition_id: str,
+        workspace_root: str,
+        render_outputs: list[dict],
+    ) -> dict:
+        """
+        Multi-output render — render_outputs[] listesindeki her çıktı için
+        ayrı Remotion CLI çağrısı yaparak birden fazla video artifact üretir.
+
+        per_category: her kategori için ayrı video
+        per_item: her haber için ayrı video
+
+        Her output kendi props'unu taşır (composition executor'den gelir).
+        Tüm çıktılar başarılı olmalı — biri fail ederse job fail olur.
+
+        Returns:
+            dict: output_paths listesi, her output'un sonucu, provider trace.
+        """
+        total_outputs = len(render_outputs)
+        render_mode = composition_props.get("render_mode", "combined")
+
+        logger.info(
+            "RenderStepExecutor: multi-output render başlatılıyor. "
+            "job=%s render_mode=%s output_count=%d",
+            job.id, render_mode, total_outputs,
+        )
+
+        # Idempotency: tüm output dosyaları zaten varsa atla
+        all_exist = True
+        for entry in render_outputs:
+            fname = entry.get("suggested_filename", "output.mp4")
+            fpath = _resolve_artifact_path(workspace_root, job.id, fname)
+            if not fpath.exists():
+                all_exist = False
+                break
+
+        if all_exist:
+            output_paths = [
+                str(_resolve_artifact_path(workspace_root, job.id, e.get("suggested_filename", "output.mp4")))
+                for e in render_outputs
+            ]
+            logger.info(
+                "RenderStepExecutor: tüm %d output mevcut, adım atlanıyor. job=%s",
+                total_outputs, job.id,
+            )
+            return {
+                "output_paths": output_paths,
+                "output_count": total_outputs,
+                "render_mode": render_mode,
+                "composition_id": composition_id,
+                "render_status": "rendered",
+                "skipped": True,
+                "step": self.step_key(),
+            }
+
+        start_time = time.monotonic()
+        completed_outputs: list[dict] = []
+        all_degradation_warnings: list[str] = []
+        _DURATION_FALLBACK_SECONDS = 60.0
+
+        for idx, entry in enumerate(render_outputs):
+            output_key = entry.get("output_key", f"output_{idx}")
+            suggested_filename = entry.get("suggested_filename", f"output_{idx}.mp4")
+            output_path = _resolve_artifact_path(workspace_root, job.id, suggested_filename)
+
+            # Bu output zaten varsa atla (kısmi idempotency)
+            if output_path.exists():
+                logger.info(
+                    "RenderStepExecutor: output %d/%d zaten mevcut, atlanıyor. "
+                    "key=%s file=%s job=%s",
+                    idx + 1, total_outputs, output_key, suggested_filename, job.id,
+                )
+                completed_outputs.append({
+                    "output_key": output_key,
+                    "output_path": str(output_path),
+                    "skipped": True,
+                })
+                continue
+
+            # Output-specific render props oluştur
+            render_props = _build_render_props_from_output(entry)
+
+            # Duration fallback
+            duration_fallback_used = False
+            raw_duration = render_props.get("totalDurationSeconds") or render_props.get("total_duration_seconds")
+            if not isinstance(raw_duration, (int, float)) or raw_duration <= 0:
+                logger.warning(
+                    "RenderStepExecutor: output %d/%d duration geçersiz (değer=%r). "
+                    "Fallback=%ss. key=%s job=%s",
+                    idx + 1, total_outputs, raw_duration,
+                    _DURATION_FALLBACK_SECONDS, output_key, job.id,
+                )
+                render_props["totalDurationSeconds"] = _DURATION_FALLBACK_SECONDS
+                duration_fallback_used = True
+
+            # Output'a özel render_props dosyası yaz
+            props_filename = f"render_props_{output_key}.json"
+            render_props_path = _resolve_artifact_path(workspace_root, job.id, props_filename)
+            render_props_path.parent.mkdir(parents=True, exist_ok=True)
+            render_props_path.write_text(
+                json.dumps(render_props, ensure_ascii=False, indent=2),
+                encoding="utf-8",
+            )
+
+            # Render composition_id — output entry'den veya global
+            out_composition_id = entry.get("composition_id", composition_id)
+
+            logger.info(
+                "RenderStepExecutor: output %d/%d render başlatılıyor. "
+                "key=%s file=%s composition_id=%s job=%s",
+                idx + 1, total_outputs, output_key, suggested_filename,
+                out_composition_id, job.id,
+            )
+
+            render_result = await self._run_remotion_render(
+                composition_id=out_composition_id,
+                props_path=str(render_props_path),
+                output_path=str(output_path),
+                job_id=job.id,
+            )
+
+            if not render_result["success"]:
+                # Bir output fail ederse tüm job fail
+                composition_props["render_status"] = "failed"
+                composition_props["render_error"] = (
+                    f"Output {idx + 1}/{total_outputs} ({output_key}) başarısız: "
+                    f"{render_result.get('error', 'Bilinmeyen hata')}"
+                )
+                composition_props["updated_at"] = datetime.now(timezone.utc).isoformat()
+                _write_artifact(workspace_root, job.id, "composition_props.json", composition_props)
+
+                raise StepExecutionError(
+                    self.step_key(),
+                    f"Multi-output render başarısız: output {output_key} — "
+                    f"{render_result.get('error', 'Bilinmeyen hata')}",
+                )
+
+            if duration_fallback_used:
+                all_degradation_warnings.append(
+                    f"output {output_key}: duration fallback ({_DURATION_FALLBACK_SECONDS}s) kullanıldı"
+                )
+
+            completed_outputs.append({
+                "output_key": output_key,
+                "output_path": str(output_path),
+                "skipped": False,
+                "returncode": render_result.get("returncode", 0),
+            })
+
+            logger.info(
+                "RenderStepExecutor: output %d/%d tamamlandı. key=%s file=%s job=%s",
+                idx + 1, total_outputs, output_key, suggested_filename, job.id,
+            )
+
+        elapsed_ms = int((time.monotonic() - start_time) * 1000)
+
+        # composition_props.json güncelle
+        output_paths = [o["output_path"] for o in completed_outputs]
+        composition_props["render_status"] = "rendered"
+        composition_props["output_paths"] = output_paths
+        composition_props["output_count"] = total_outputs
+        composition_props["render_mode"] = render_mode
+        composition_props["updated_at"] = datetime.now(timezone.utc).isoformat()
+        _write_artifact(workspace_root, job.id, "composition_props.json", composition_props)
+
+        logger.info(
+            "RenderStepExecutor: multi-output render tamamlandı. "
+            "job=%s render_mode=%s output_count=%d elapsed_ms=%d",
+            job.id, render_mode, total_outputs, elapsed_ms,
+        )
+
+        if all_degradation_warnings:
+            logger.warning(
+                "RenderStepExecutor: multi-output degrade uyarıları — job=%s warnings=%s",
+                job.id, all_degradation_warnings,
+            )
+
+        return {
+            "output_paths": output_paths,
+            "output_count": total_outputs,
+            "render_mode": render_mode,
+            "completed_outputs": completed_outputs,
+            "composition_id": composition_id,
+            "render_status": "rendered",
+            "degradation_warnings": all_degradation_warnings,
+            "provider": {
+                "provider_id": "remotion_cli",
+                "composition_id": composition_id,
+                "render_status": "rendered",
+                "render_mode": render_mode,
+                "output_count": total_outputs,
+                "output_paths": output_paths,
+                "degradation_warnings": all_degradation_warnings,
+                "latency_ms": elapsed_ms,
             },
             "step": self.step_key(),
         }

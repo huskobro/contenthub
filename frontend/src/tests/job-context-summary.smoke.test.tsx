@@ -19,7 +19,6 @@ import { render, screen } from "@testing-library/react";
 import { extractContextTitle } from "../components/jobs/JobContextSummary";
 import { JobContextBadge } from "../components/jobs/JobContextBadge";
 import { JobContextSummary } from "../components/jobs/JobContextSummary";
-import { JobsTable } from "../components/jobs/JobsTable";
 
 // ── extractContextTitle ───────────────────────────────────────────────────────
 describe("extractContextTitle", () => {
@@ -72,33 +71,3 @@ describe("JobContextSummary", () => {
   });
 });
 
-// ── JobsTable ─────────────────────────────────────────────────────────────────
-const mockJob = (overrides: object = {}) => ({
-  id: "job-1",
-  module_type: "standard_video",
-  status: "pending",
-  owner_id: null,
-  template_id: null,
-  source_context_json: null,
-  current_step_key: null,
-  retry_count: 0,
-  elapsed_total_seconds: null,
-  estimated_remaining_seconds: null,
-  workspace_path: null,
-  last_error: null,
-  created_at: "2026-04-02T10:00:00Z",
-  started_at: null,
-  finished_at: null,
-  elapsed_seconds: null,
-  eta_seconds: null,
-  updated_at: "2026-04-02T10:00:00Z",
-  steps: [],
-  ...overrides,
-});
-
-describe("JobsTable context summary", () => {
-  it("J) renders Bağlam column header", () => {
-    render(<JobsTable jobs={[mockJob()]} selectedId={null} onSelect={() => {}} />);
-    expect(screen.getByText("Bağlam")).toBeTruthy();
-  });
-});

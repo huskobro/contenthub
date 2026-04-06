@@ -19,7 +19,6 @@ import { render, screen } from "@testing-library/react";
 import { computeSourceScanExecution } from "../components/source-scans/SourceScanExecutionSummary";
 import { SourceScanExecutionBadge } from "../components/source-scans/SourceScanExecutionBadge";
 import { SourceScanExecutionSummary } from "../components/source-scans/SourceScanExecutionSummary";
-import { SourceScansTable } from "../components/source-scans/SourceScansTable";
 
 // ── computeSourceScanExecution ────────────────────────────────────────────────
 describe("computeSourceScanExecution", () => {
@@ -82,27 +81,3 @@ describe("SourceScanExecutionSummary", () => {
   });
 });
 
-// ── SourceScansTable ──────────────────────────────────────────────────────────
-const mockScan = (overrides: object = {}) => ({
-  id: "sc-1",
-  source_id: "src-abc-123",
-  scan_mode: "manual",
-  status: "completed",
-  requested_by: null,
-  started_at: null,
-  finished_at: null,
-  result_count: 5,
-  error_summary: null,
-  raw_result_preview_json: null,
-  notes: null,
-  created_at: "2026-04-02T10:00:00Z",
-  updated_at: "2026-04-02T10:00:00Z",
-  ...overrides,
-});
-
-describe("SourceScansTable execution summary", () => {
-  it("J) renders Çalışma Özeti column header", () => {
-    render(<SourceScansTable scans={[mockScan()]} selectedId={null} onSelect={() => {}} />);
-    expect(screen.getByText("Çalışma Özeti")).toBeTruthy();
-  });
-});

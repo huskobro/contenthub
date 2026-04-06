@@ -14,13 +14,10 @@
  *   J) Registry table renders "Eksik" for bulletin with has_script=false
  */
 
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { createMemoryRouter, RouterProvider } from "react-router-dom";
 import { NewsBulletinArtifactStatusBadge } from "../components/news-bulletin/NewsBulletinArtifactStatusBadge";
 import { NewsBulletinArtifactSummary } from "../components/news-bulletin/NewsBulletinArtifactSummary";
-import { NewsBulletinsTable } from "../components/news-bulletin/NewsBulletinsTable";
 
 // ── Badge unit tests ──────────────────────────────────────────────────────────
 describe("NewsBulletinArtifactStatusBadge", () => {
@@ -65,49 +62,3 @@ describe("NewsBulletinArtifactSummary", () => {
   });
 });
 
-// ── Table integration ─────────────────────────────────────────────────────────
-describe("NewsBulletinsTable artifact column", () => {
-  const mockBulletins = [
-    {
-      id: "bul-1",
-      title: "Test Bulletin",
-      topic: "Spor",
-      brief: null,
-      target_duration_seconds: null,
-      language: "tr",
-      tone: null,
-      bulletin_style: null,
-      source_mode: null,
-      selected_news_ids_json: null,
-      status: "draft",
-      job_id: null,
-      created_at: "2026-04-02T10:00:00Z",
-      updated_at: "2026-04-02T10:00:00Z",
-      has_script: true,
-      has_metadata: false,
-      composition_direction: null,
-      thumbnail_direction: null,
-      template_id: null,
-      style_blueprint_id: null,
-      render_mode: null,
-      subtitle_style: null,
-      lower_third_style: null,
-      trust_enforcement_level: null,
-    },
-  ];
-
-  it("H) renders Artifacts column header", () => {
-    render(<NewsBulletinsTable bulletins={mockBulletins} selectedId={null} onSelect={() => {}} />);
-    expect(screen.getByText("Artifact")).toBeTruthy();
-  });
-
-  it("I) renders Var for has_script=true", () => {
-    render(<NewsBulletinsTable bulletins={mockBulletins} selectedId={null} onSelect={() => {}} />);
-    expect(screen.getByText("Script: Var")).toBeTruthy();
-  });
-
-  it("J) renders Eksik for has_metadata=false", () => {
-    render(<NewsBulletinsTable bulletins={mockBulletins} selectedId={null} onSelect={() => {}} />);
-    expect(screen.getByText("Metadata: Eksik")).toBeTruthy();
-  });
-});

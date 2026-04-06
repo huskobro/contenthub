@@ -19,7 +19,6 @@ import { render, screen } from "@testing-library/react";
 import { computeNewsItemReadiness } from "../components/news-items/NewsItemReadinessSummary";
 import { NewsItemReadinessBadge } from "../components/news-items/NewsItemReadinessBadge";
 import { NewsItemReadinessSummary } from "../components/news-items/NewsItemReadinessSummary";
-import { NewsItemsTable } from "../components/news-items/NewsItemsTable";
 
 // ── computeNewsItemReadiness ───────────────────────────────────────────────────
 describe("computeNewsItemReadiness", () => {
@@ -85,31 +84,3 @@ describe("NewsItemReadinessSummary", () => {
   });
 });
 
-// ── NewsItemsTable ─────────────────────────────────────────────────────────────
-const mockItem = (overrides: object = {}) => ({
-  id: "ni-1",
-  title: "Test Haber",
-  url: "https://example.com/news",
-  status: "new",
-  source_id: null,
-  source_scan_id: null,
-  summary: null,
-  published_at: null,
-  language: null,
-  category: null,
-  dedupe_key: null,
-  raw_payload_json: null,
-  created_at: "2026-04-02T10:00:00Z",
-  updated_at: "2026-04-02T10:00:00Z",
-  usage_count: 0,
-  last_usage_type: null,
-  last_target_module: null,
-  ...overrides,
-});
-
-describe("NewsItemsTable readiness", () => {
-  it("J) renders Hazırlık column header", () => {
-    render(<NewsItemsTable items={[mockItem()]} selectedId={null} onSelect={() => {}} />);
-    expect(screen.getByText("Hazırlık")).toBeTruthy();
-  });
-});

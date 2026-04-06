@@ -1,15 +1,8 @@
 import { cn } from "../../lib/cn";
 import type { SourceScanResponse } from "../../api/sourceScansApi";
 import { formatDateShort } from "../../lib/formatDate";
-import { SourceScanExecutionSummary } from "./SourceScanExecutionSummary";
-import { SourceScanSourceSummary } from "./SourceScanSourceSummary";
-import { SourceScanResultRichnessSummary } from "./SourceScanResultRichnessSummary";
-import { SourceScanPublicationYieldSummary } from "./SourceScanPublicationYieldSummary";
-import { SourceScanArtifactConsistencySummary } from "./SourceScanArtifactConsistencySummary";
-import { SourceScanInputQualitySummary } from "./SourceScanInputQualitySummary";
-import { SourceScanTargetOutputConsistencySummary } from "./SourceScanTargetOutputConsistencySummary";
-import { SourceScanPublicationOutcomeSummary } from "./SourceScanPublicationOutcomeSummary";
-import { SourceScanInputSpecificitySummary } from "./SourceScanInputSpecificitySummary";
+
+const DASH = "—";
 
 interface SourceScansTableProps {
   scans: SourceScanResponse[];
@@ -24,129 +17,60 @@ const statusClasses: Record<string, string> = {
 };
 
 export function SourceScansTable({ scans, selectedId, onSelect }: SourceScansTableProps) {
+  if (scans.length === 0) {
+    return <p className="text-neutral-500">Henuz tarama kaydi yok.</p>;
+  }
+
   return (
     <div className="overflow-x-auto">
-    <table className="w-full border-collapse text-md">
-      <thead>
-        <tr className="bg-neutral-100 text-left">
-          <th className="px-3 py-2 border-b border-border-subtle">Kaynak</th>
-          <th className="px-3 py-2 border-b border-border-subtle">Tarama Modu</th>
-          <th className="px-3 py-2 border-b border-border-subtle">Durum</th>
-          <th className="px-3 py-2 border-b border-border-subtle">Sonuç</th>
-          <th className="px-3 py-2 border-b border-border-subtle">Çalışma Özeti</th>
-          <th className="px-3 py-2 border-b border-border-subtle">Çıktı Zenginliği</th>
-          <th className="px-3 py-2 border-b border-border-subtle">Girdi Kalitesi</th>
-          <th className="px-3 py-2 border-b border-border-subtle">Girdi Özgüllüğü</th>
-          <th className="px-3 py-2 border-b border-border-subtle">Yayın Verimi</th>
-          <th className="px-3 py-2 border-b border-border-subtle">Yayın Çıktısı</th>
-          <th className="px-3 py-2 border-b border-border-subtle">Artifact Tutarlılığı</th>
-          <th className="px-3 py-2 border-b border-border-subtle">Target/Output Tutarlılığı</th>
-          <th className="px-3 py-2 border-b border-border-subtle">Oluşturulma</th>
-        </tr>
-      </thead>
-      <tbody>
-        {scans.map((scan) => {
-          const statusCls = statusClasses[scan.status] ?? "bg-neutral-100 text-neutral-700";
-          return (
-            <tr
-              key={scan.id}
-              onClick={() => onSelect(scan.id)}
-              className={cn(
-                "cursor-pointer border-b border-neutral-100",
-                selectedId === scan.id ? "bg-info-light" : "bg-transparent",
-              )}
-            >
-              {/* Kimlik & Durum */}
-              <td className="px-3 py-2">
-                <SourceScanSourceSummary
-                  sourceId={scan.source_id}
-                  sourceName={scan.source_name}
-                  sourceStatus={scan.source_status}
-                />
-              </td>
-              <td className="px-3 py-2 text-neutral-600">{scan.scan_mode}</td>
-              <td className="px-3 py-2">
-                <span className={cn("inline-block px-2 py-0.5 rounded-full text-sm", statusCls)}>
-                  {scan.status}
-                </span>
-              </td>
-              <td className="px-3 py-2 text-neutral-600">
-                {scan.result_count !== null ? scan.result_count : "—"}
-              </td>
-              {/* Çalışma & Çıktı */}
-              <td className="px-3 py-2">
-                <SourceScanExecutionSummary
-                  status={scan.status}
-                  resultCount={scan.result_count}
-                  errorSummary={scan.error_summary}
-                />
-              </td>
-              <td className="px-3 py-2">
-                <SourceScanResultRichnessSummary
-                  status={scan.status}
-                  resultCount={scan.result_count}
-                  errorSummary={scan.error_summary}
-                  rawResultPreviewJson={scan.raw_result_preview_json}
-                />
-              </td>
-              {/* Girdi Grubu */}
-              <td className="px-3 py-2">
-                <SourceScanInputQualitySummary
-                  sourceId={scan.source_id}
-                  scanMode={scan.scan_mode}
-                  requestedBy={scan.requested_by}
-                />
-              </td>
-              <td className="px-3 py-2">
-                <SourceScanInputSpecificitySummary
-                  sourceId={scan.source_id}
-                  scanMode={scan.scan_mode}
-                  requestedBy={scan.requested_by}
-                  notes={scan.notes}
-                />
-              </td>
-              {/* Yayın Grubu */}
-              <td className="px-3 py-2">
-                <SourceScanPublicationYieldSummary
-                  linkedCount={scan.linked_news_count_from_scan}
-                  reviewedCount={scan.reviewed_news_count_from_scan}
-                  usedCount={scan.used_news_count_from_scan}
-                />
-              </td>
-              <td className="px-3 py-2">
-                <SourceScanPublicationOutcomeSummary
-                  status={scan.status}
-                  resultCount={scan.result_count}
-                  linkedNewsCountFromScan={scan.linked_news_count_from_scan}
-                  reviewedNewsCountFromScan={scan.reviewed_news_count_from_scan}
-                  usedNewsCountFromScan={scan.used_news_count_from_scan}
-                  errorSummary={scan.error_summary}
-                />
-              </td>
-              {/* Tutarlılık Grubu */}
-              <td className="px-3 py-2">
-                <SourceScanArtifactConsistencySummary
-                  sourceId={scan.source_id}
-                  linkedNewsCountFromScan={scan.linked_news_count_from_scan}
-                />
-              </td>
-              <td className="px-3 py-2">
-                <SourceScanTargetOutputConsistencySummary
-                  sourceId={scan.source_id}
-                  resultCount={scan.result_count}
-                  linkedNewsCountFromScan={scan.linked_news_count_from_scan}
-                  usedNewsCountFromScan={scan.used_news_count_from_scan}
-                />
-              </td>
-              {/* Zaman */}
-              <td className="px-3 py-2 text-neutral-500 text-base">
-                {formatDateShort(scan.created_at)}
-              </td>
-            </tr>
-          );
-        })}
-      </tbody>
-    </table>
+      <table className="w-full border-collapse text-md">
+        <thead>
+          <tr className="bg-neutral-100 text-left">
+            <th className="px-4 py-2.5 border-b border-border-subtle min-w-[160px]">Kaynak</th>
+            <th className="px-3 py-2.5 border-b border-border-subtle">Mod</th>
+            <th className="px-3 py-2.5 border-b border-border-subtle">Durum</th>
+            <th className="px-3 py-2.5 border-b border-border-subtle text-right">Sonuc</th>
+            <th className="px-3 py-2.5 border-b border-border-subtle">Tarih</th>
+          </tr>
+        </thead>
+        <tbody>
+          {scans.map((s) => {
+            const statusCls = statusClasses[s.status] ?? "bg-neutral-100 text-neutral-600";
+            return (
+              <tr
+                key={s.id}
+                onClick={() => onSelect(s.id)}
+                className={cn(
+                  "cursor-pointer border-b border-neutral-100 transition-colors",
+                  selectedId === s.id ? "bg-info-light" : "hover:bg-neutral-50",
+                )}
+              >
+                <td className="px-4 py-2.5 font-medium text-brand-600 min-w-[160px]">
+                  <div className="truncate max-w-[200px]" title={s.source_name ?? s.source_id}>
+                    {s.source_name ?? s.source_id?.slice(0, 8) ?? DASH}
+                  </div>
+                </td>
+                <td className="px-3 py-2.5">
+                  <span className="inline-block px-2 py-0.5 rounded text-sm bg-neutral-100 text-neutral-700">
+                    {s.scan_mode ?? DASH}
+                  </span>
+                </td>
+                <td className="px-3 py-2.5">
+                  <span className={cn("inline-block px-2 py-0.5 rounded-full text-sm", statusCls)}>
+                    {s.status}
+                  </span>
+                </td>
+                <td className="px-3 py-2.5 text-right tabular-nums text-neutral-600">
+                  {s.result_count ?? DASH}
+                </td>
+                <td className="px-3 py-2.5 text-neutral-500 text-sm">
+                  {formatDateShort(s.created_at)}
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
     </div>
   );
 }

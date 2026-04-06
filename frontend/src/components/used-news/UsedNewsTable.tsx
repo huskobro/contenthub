@@ -1,14 +1,8 @@
 import type { UsedNewsResponse } from "../../api/usedNewsApi";
 import { formatDateShort } from "../../lib/formatDate";
-import { UsedNewsStateSummary } from "./UsedNewsStateSummary";
-import { UsedNewsSourceContextSummary } from "./UsedNewsSourceContextSummary";
-import { UsedNewsPublicationLinkageSummary } from "./UsedNewsPublicationLinkageSummary";
-import { UsedNewsTargetResolutionSummary } from "./UsedNewsTargetResolutionSummary";
-import { UsedNewsArtifactConsistencySummary } from "./UsedNewsArtifactConsistencySummary";
-import { UsedNewsInputQualitySummary } from "./UsedNewsInputQualitySummary";
-import { UsedNewsInputSpecificitySummary } from "./UsedNewsInputSpecificitySummary";
-import { UsedNewsTargetOutputConsistencySummary } from "./UsedNewsTargetOutputConsistencySummary";
 import { cn } from "../../lib/cn";
+
+const DASH = "—";
 
 interface Props {
   records: UsedNewsResponse[];
@@ -17,75 +11,51 @@ interface Props {
 }
 
 export function UsedNewsTable({ records, selectedId, onSelect }: Props) {
+  if (records.length === 0) {
+    return <p className="text-neutral-500">Henuz kullanilmis haber kaydi yok.</p>;
+  }
+
   return (
     <div className="overflow-x-auto">
-    <table className="w-full border-collapse text-md">
-      <thead>
-        <tr className="bg-neutral-100 text-left">
-          <th className="py-2 px-3 border-b border-border-subtle">Haber ID</th>
-          <th className="py-2 px-3 border-b border-border-subtle">Kullanım Tipi</th>
-          <th className="py-2 px-3 border-b border-border-subtle">Durum</th>
-          <th className="py-2 px-3 border-b border-border-subtle">Kaynak Bağlamı</th>
-          <th className="py-2 px-3 border-b border-border-subtle">Girdi Kalitesi</th>
-          <th className="py-2 px-3 border-b border-border-subtle">Girdi Özgüllüğü</th>
-          <th className="py-2 px-3 border-b border-border-subtle">Hedef Modül</th>
-          <th className="py-2 px-3 border-b border-border-subtle">Hedef Varlık</th>
-          <th className="py-2 px-3 border-b border-border-subtle">Hedef Çözümü</th>
-          <th className="py-2 px-3 border-b border-border-subtle">Yayın Bağı</th>
-          <th className="py-2 px-3 border-b border-border-subtle">Artifact Tutarlılığı</th>
-          <th className="py-2 px-3 border-b border-border-subtle">Target/Output Tutarlılığı</th>
-          <th className="py-2 px-3 border-b border-border-subtle">Oluşturulma</th>
-        </tr>
-      </thead>
-      <tbody>
-        {records.map((record) => (
-          <tr
-            key={record.id}
-            onClick={() => onSelect(record.id)}
-            className={cn(
-              "cursor-pointer border-b border-neutral-100",
-              selectedId === record.id ? "bg-info-light" : "bg-transparent"
-            )}
-          >
-            <td className={cn("py-2 px-3 font-mono text-base text-brand-700", selectedId === record.id ? "font-semibold" : "font-normal")}>
-              {record.news_item_id}
-            </td>
-            <td className="py-2 px-3 text-neutral-600">{record.usage_type}</td>
-            <td className="py-2 px-3">
-              <UsedNewsStateSummary usageType={record.usage_type} targetModule={record.target_module} targetEntityId={record.target_entity_id} />
-            </td>
-            <td className="py-2 px-3">
-              <UsedNewsSourceContextSummary newsItemId={record.news_item_id} hasNewsItemSource={record.has_news_item_source} hasNewsItemScanReference={record.has_news_item_scan_reference} />
-            </td>
-            <td className="py-2 px-3">
-              <UsedNewsInputQualitySummary newsItemId={record.news_item_id} usageType={record.usage_type} targetModule={record.target_module} targetEntityId={record.target_entity_id} usageContext={record.usage_context} notes={record.notes} />
-            </td>
-            <td className="py-2 px-3">
-              <UsedNewsInputSpecificitySummary newsItemId={record.news_item_id} usageType={record.usage_type} targetModule={record.target_module} targetEntityId={record.target_entity_id} usageContext={record.usage_context} notes={record.notes} />
-            </td>
-            <td className="py-2 px-3 text-neutral-600">{record.target_module}</td>
-            <td className="py-2 px-3 text-neutral-500 font-mono text-base">
-              {record.target_entity_id ?? "—"}
-            </td>
-            <td className="py-2 px-3">
-              <UsedNewsTargetResolutionSummary targetModule={record.target_module} targetEntityId={record.target_entity_id} hasTargetResolved={record.has_target_resolved} />
-            </td>
-            <td className="py-2 px-3">
-              <UsedNewsPublicationLinkageSummary usageType={record.usage_type} targetEntityId={record.target_entity_id} />
-            </td>
-            <td className="py-2 px-3">
-              <UsedNewsArtifactConsistencySummary hasNewsItemSource={record.has_news_item_source} hasNewsItemScanReference={record.has_news_item_scan_reference} hasTargetResolved={record.has_target_resolved} targetModule={record.target_module} targetEntityId={record.target_entity_id} />
-            </td>
-            <td className="py-2 px-3">
-              <UsedNewsTargetOutputConsistencySummary newsItemId={record.news_item_id} usageType={record.usage_type} usageContext={record.usage_context} notes={record.notes} hasTargetResolved={record.has_target_resolved} targetModule={record.target_module} targetEntityId={record.target_entity_id} />
-            </td>
-            <td className="py-2 px-3 text-neutral-500 text-base">
-              {formatDateShort(record.created_at)}
-            </td>
+      <table className="w-full border-collapse text-md">
+        <thead>
+          <tr className="bg-neutral-100 text-left">
+            <th className="px-4 py-2.5 border-b border-border-subtle min-w-[120px]">Haber ID</th>
+            <th className="px-3 py-2.5 border-b border-border-subtle">Kullanim Tipi</th>
+            <th className="px-3 py-2.5 border-b border-border-subtle">Hedef Modul</th>
+            <th className="px-3 py-2.5 border-b border-border-subtle">Hedef Varlik</th>
+            <th className="px-3 py-2.5 border-b border-border-subtle">Tarih</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {records.map((r) => (
+            <tr
+              key={r.id}
+              onClick={() => onSelect(r.id)}
+              className={cn(
+                "cursor-pointer border-b border-neutral-100 transition-colors",
+                selectedId === r.id ? "bg-info-light" : "hover:bg-neutral-50",
+              )}
+            >
+              <td className="px-4 py-2.5 font-mono text-sm text-brand-600">
+                {r.news_item_id?.slice(0, 8) ?? DASH}
+              </td>
+              <td className="px-3 py-2.5">
+                <span className="inline-block px-2 py-0.5 rounded text-sm bg-neutral-100 text-neutral-700">
+                  {r.usage_type ?? DASH}
+                </span>
+              </td>
+              <td className="px-3 py-2.5 text-neutral-600">{r.target_module ?? DASH}</td>
+              <td className="px-3 py-2.5 font-mono text-sm text-neutral-500">
+                {r.target_entity_id?.slice(0, 8) ?? DASH}
+              </td>
+              <td className="px-3 py-2.5 text-neutral-500 text-sm">
+                {formatDateShort(r.created_at)}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }

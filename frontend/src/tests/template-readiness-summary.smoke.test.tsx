@@ -19,7 +19,6 @@ import { render, screen } from "@testing-library/react";
 import { computeTemplateReadiness } from "../components/templates/TemplateReadinessSummary";
 import { TemplateReadinessBadge } from "../components/templates/TemplateReadinessBadge";
 import { TemplateReadinessSummary } from "../components/templates/TemplateReadinessSummary";
-import { TemplatesTable } from "../components/templates/TemplatesTable";
 
 // ── computeTemplateReadiness ───────────────────────────────────────────────────
 describe("computeTemplateReadiness", () => {
@@ -84,29 +83,3 @@ describe("TemplateReadinessSummary", () => {
   });
 });
 
-// ── TemplatesTable ─────────────────────────────────────────────────────────────
-const mockTemplate = (overrides: object = {}) => ({
-  id: "t-1",
-  name: "Test Template",
-  template_type: "style",
-  owner_scope: "admin",
-  module_scope: null,
-  description: null,
-  style_profile_json: null,
-  content_rules_json: null,
-  publish_profile_json: null,
-  status: "draft",
-  version: 1,
-  created_at: "2026-04-02T10:00:00Z",
-  updated_at: "2026-04-02T10:00:00Z",
-  style_link_count: 0,
-  primary_link_role: null,
-  ...overrides,
-});
-
-describe("TemplatesTable readiness", () => {
-  it("J) renders Hazırlık column header", () => {
-    render(<TemplatesTable templates={[mockTemplate()]} selectedId={null} onSelect={() => {}} />);
-    expect(screen.getByText("Hazırlık")).toBeTruthy();
-  });
-});

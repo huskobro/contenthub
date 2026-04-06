@@ -19,7 +19,6 @@ import { render, screen } from "@testing-library/react";
 import { computeUsedNewsState } from "../components/used-news/UsedNewsStateSummary";
 import { UsedNewsStateBadge } from "../components/used-news/UsedNewsStateBadge";
 import { UsedNewsStateSummary } from "../components/used-news/UsedNewsStateSummary";
-import { UsedNewsTable } from "../components/used-news/UsedNewsTable";
 
 // ── computeUsedNewsState ───────────────────────────────────────────────────────
 describe("computeUsedNewsState", () => {
@@ -82,26 +81,3 @@ describe("UsedNewsStateSummary", () => {
   });
 });
 
-// ── UsedNewsTable ──────────────────────────────────────────────────────────────
-const mockRecord = (overrides: object = {}) => ({
-  id: "un-1",
-  news_item_id: "ni-abc",
-  usage_type: "published",
-  usage_context: null,
-  target_module: "news_bulletin",
-  target_entity_id: null,
-  notes: null,
-  created_at: "2026-04-02T10:00:00Z",
-  updated_at: "2026-04-02T10:00:00Z",
-  has_news_item_source: false,
-  has_news_item_scan_reference: false,
-  has_target_resolved: false,
-  ...overrides,
-});
-
-describe("UsedNewsTable state summary", () => {
-  it("J) renders Durum column header", () => {
-    render(<UsedNewsTable records={[mockRecord()]} selectedId={null} onSelect={() => {}} />);
-    expect(screen.getByText("Durum")).toBeTruthy();
-  });
-});

@@ -19,7 +19,6 @@ import { render, screen } from "@testing-library/react";
 import { computeNewsBulletinEnforcement } from "../components/news-bulletin/NewsBulletinEnforcementSummary";
 import { NewsBulletinEnforcementStatusBadge } from "../components/news-bulletin/NewsBulletinEnforcementStatusBadge";
 import { NewsBulletinEnforcementSummary } from "../components/news-bulletin/NewsBulletinEnforcementSummary";
-import { NewsBulletinsTable } from "../components/news-bulletin/NewsBulletinsTable";
 
 // ── computeNewsBulletinEnforcement ────────────────────────────────────────────
 describe("computeNewsBulletinEnforcement", () => {
@@ -82,41 +81,3 @@ describe("NewsBulletinEnforcementSummary", () => {
   });
 });
 
-// ── NewsBulletinsTable ─────────────────────────────────────────────────────────
-const mockBulletin = (overrides: object = {}) => ({
-  id: "nb-1",
-  title: "Test Bülten",
-  topic: "Test konu",
-  brief: null,
-  target_duration_seconds: null,
-  language: "tr",
-  tone: null,
-  bulletin_style: null,
-  source_mode: null,
-  selected_news_ids_json: null,
-  status: "draft",
-  job_id: null,
-  created_at: "2026-04-02T10:00:00Z",
-  updated_at: "2026-04-02T10:00:00Z",
-  has_script: false,
-  has_metadata: false,
-  selected_news_count: 0,
-  has_selected_news_warning: false,
-  selected_news_warning_count: 0,
-  composition_direction: null,
-  thumbnail_direction: null,
-  template_id: null,
-  style_blueprint_id: null,
-  render_mode: null,
-  subtitle_style: null,
-  lower_third_style: null,
-  trust_enforcement_level: null,
-  ...overrides,
-});
-
-describe("NewsBulletinsTable enforcement summary", () => {
-  it("J) renders Enforcement column header", () => {
-    render(<NewsBulletinsTable bulletins={[mockBulletin()]} selectedId={null} onSelect={() => {}} />);
-    expect(screen.getByText("Uygunluk")).toBeTruthy();
-  });
-});

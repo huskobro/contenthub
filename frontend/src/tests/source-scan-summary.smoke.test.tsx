@@ -18,7 +18,6 @@ import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { SourceScanStatusBadge } from "../components/sources/SourceScanStatusBadge";
 import { SourceScanSummary } from "../components/sources/SourceScanSummary";
-import { SourcesTable } from "../components/sources/SourcesTable";
 
 // ── SourceScanStatusBadge ─────────────────────────────────────────────────────
 describe("SourceScanStatusBadge", () => {
@@ -63,39 +62,3 @@ describe("SourceScanSummary", () => {
   });
 });
 
-// ── SourcesTable ──────────────────────────────────────────────────────────────
-const mockSource = (overrides: object = {}) => ({
-  id: "src-1",
-  name: "Test Source",
-  source_type: "rss",
-  status: "active",
-  base_url: null,
-  feed_url: "https://example.com/feed.xml",
-  api_endpoint: null,
-  trust_level: "high",
-  scan_mode: "manual",
-  language: "tr",
-  category: null,
-  notes: null,
-  created_at: "2026-04-02T10:00:00Z",
-  updated_at: "2026-04-02T10:00:00Z",
-  ...overrides,
-});
-
-describe("SourcesTable scan summary", () => {
-  it("H) renders Taramalar column header", () => {
-    render(<SourcesTable sources={[mockSource()]} selectedId={null} onSelect={() => {}} />);
-    expect(screen.getByText("Taramalar")).toBeTruthy();
-  });
-
-  it("I) shows Scan yok for source with no scans", () => {
-    render(<SourcesTable sources={[mockSource({ scan_count: 0 })]} selectedId={null} onSelect={() => {}} />);
-    expect(screen.getByText("Scan yok")).toBeTruthy();
-  });
-
-  it("J) shows scan status for source with scans", () => {
-    render(<SourcesTable sources={[mockSource({ scan_count: 3, last_scan_status: "completed" })]} selectedId={null} onSelect={() => {}} />);
-    expect(screen.getByText("completed")).toBeTruthy();
-    expect(screen.getByText("(3x)")).toBeTruthy();
-  });
-});

@@ -19,7 +19,6 @@ import { render, screen } from "@testing-library/react";
 import { computeStyleBlueprintReadiness } from "../components/style-blueprints/StyleBlueprintReadinessSummary";
 import { StyleBlueprintReadinessBadge } from "../components/style-blueprints/StyleBlueprintReadinessBadge";
 import { StyleBlueprintReadinessSummary } from "../components/style-blueprints/StyleBlueprintReadinessSummary";
-import { StyleBlueprintsTable } from "../components/style-blueprints/StyleBlueprintsTable";
 
 // ── computeStyleBlueprintReadiness ────────────────────────────────────────────
 describe("computeStyleBlueprintReadiness", () => {
@@ -90,28 +89,3 @@ describe("StyleBlueprintReadinessSummary", () => {
   });
 });
 
-// ── StyleBlueprintsTable ──────────────────────────────────────────────────────
-const mockBlueprint = (overrides: object = {}) => ({
-  id: "bp-1",
-  name: "Test Blueprint",
-  module_scope: "news_bulletin",
-  status: "draft",
-  version: 1,
-  visual_rules_json: null,
-  motion_rules_json: null,
-  layout_rules_json: null,
-  subtitle_rules_json: null,
-  thumbnail_rules_json: null,
-  preview_strategy_json: null,
-  notes: null,
-  created_at: "2026-04-02T10:00:00Z",
-  updated_at: "2026-04-02T10:00:00Z",
-  ...overrides,
-});
-
-describe("StyleBlueprintsTable readiness summary", () => {
-  it("J) renders Hazırlık column header", () => {
-    render(<StyleBlueprintsTable blueprints={[mockBlueprint()]} selectedId={null} onSelect={() => {}} />);
-    expect(screen.getByText("Hazırlık")).toBeTruthy();
-  });
-});

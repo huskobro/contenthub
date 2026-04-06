@@ -18,7 +18,6 @@ import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { StandardVideoArtifactStatusBadge } from "../components/standard-video/StandardVideoArtifactStatusBadge";
 import { StandardVideoArtifactSummary } from "../components/standard-video/StandardVideoArtifactSummary";
-import { StandardVideosTable } from "../components/standard-video/StandardVideosTable";
 
 // ── StandardVideoArtifactStatusBadge ─────────────────────────────────────────
 describe("StandardVideoArtifactStatusBadge", () => {
@@ -81,36 +80,3 @@ describe("StandardVideoArtifactSummary", () => {
   });
 });
 
-// ── StandardVideosTable ───────────────────────────────────────────────────────
-const mockVideo = (overrides: object = {}) => ({
-  id: "sv-1",
-  title: "Test Video",
-  topic: "Test konu",
-  brief: null,
-  target_duration_seconds: 120,
-  tone: null,
-  language: "tr",
-  visual_direction: null,
-  subtitle_style: null,
-  status: "draft",
-  job_id: null,
-  created_at: "2026-04-02T10:00:00Z",
-  updated_at: "2026-04-02T10:00:00Z",
-  has_script: true,
-  has_metadata: false,
-  template_id: null,
-  style_blueprint_id: null,
-  ...overrides,
-});
-
-describe("StandardVideosTable artifact summary", () => {
-  it("I) renders Artifact column header", () => {
-    render(<StandardVideosTable videos={[mockVideo()]} selectedId={null} onSelect={() => {}} />);
-    expect(screen.getByText("Artifact")).toBeTruthy();
-  });
-
-  it("J) renders artifact summary for a record", () => {
-    render(<StandardVideosTable videos={[mockVideo()]} selectedId={null} onSelect={() => {}} />);
-    expect(screen.getByText("Script:")).toBeTruthy();
-  });
-});

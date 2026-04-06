@@ -1,14 +1,4 @@
 import type { SourceResponse } from "../../api/sourcesApi";
-import { SourceScanSummary } from "./SourceScanSummary";
-import { SourceReadinessSummary } from "./SourceReadinessSummary";
-import { SourceLinkedNewsSummary } from "./SourceLinkedNewsSummary";
-import { SourceConfigCoverageSummary } from "./SourceConfigCoverageSummary";
-import { SourcePublicationSupplySummary } from "./SourcePublicationSupplySummary";
-import { SourceArtifactConsistencySummary } from "./SourceArtifactConsistencySummary";
-import { SourceInputQualitySummary } from "./SourceInputQualitySummary";
-import { SourceInputSpecificitySummary } from "./SourceInputSpecificitySummary";
-import { SourceTargetOutputConsistencySummary } from "./SourceTargetOutputConsistencySummary";
-import { SourcePublicationOutcomeSummary } from "./SourcePublicationOutcomeSummary";
 import { cn } from "../../lib/cn";
 
 const DASH = "—";
@@ -19,89 +9,104 @@ interface SourcesTableProps {
   onSelect: (id: string) => void;
 }
 
+/** Badge renk secici */
+function statusColor(status: string | null | undefined) {
+  if (status === "active") return "bg-success-light text-success-text";
+  if (status === "paused") return "bg-warning-light text-warning-text";
+  return "bg-neutral-100 text-neutral-700";
+}
+
+function trustColor(trust: string | null | undefined) {
+  if (trust === "high") return "text-success-text";
+  if (trust === "medium") return "text-warning-text";
+  if (trust === "low") return "text-error";
+  return "text-neutral-500";
+}
+
 export function SourcesTable({ sources, selectedId, onSelect }: SourcesTableProps) {
   return (
     <div className="overflow-x-auto">
-    <table className="w-full border-collapse text-md">
-      <thead>
-        <tr className="bg-neutral-100 text-left">
-          <th className="px-3 py-2 border-b border-border-subtle">Ad</th>
-          <th className="px-3 py-2 border-b border-border-subtle">Tür</th>
-          <th className="px-3 py-2 border-b border-border-subtle">Durum</th>
-          <th className="px-3 py-2 border-b border-border-subtle">Güven</th>
-          <th className="px-3 py-2 border-b border-border-subtle">Tarama Modu</th>
-          <th className="px-3 py-2 border-b border-border-subtle">Dil</th>
-          <th className="px-3 py-2 border-b border-border-subtle">Taramalar</th>
-          <th className="px-3 py-2 border-b border-border-subtle">Hazırlık</th>
-          <th className="px-3 py-2 border-b border-border-subtle">Konfigürasyon</th>
-          <th className="px-3 py-2 border-b border-border-subtle">Girdi Kalitesi</th>
-          <th className="px-3 py-2 border-b border-border-subtle">Girdi Özgüllüğü</th>
-          <th className="px-3 py-2 border-b border-border-subtle">Haberler</th>
-          <th className="px-3 py-2 border-b border-border-subtle">Yayın Kaynağı</th>
-          <th className="px-3 py-2 border-b border-border-subtle">Artifact Tutarlılığı</th>
-          <th className="px-3 py-2 border-b border-border-subtle">Target/Output Tutarlılığı</th>
-          <th className="px-3 py-2 border-b border-border-subtle">Yayın Çıktısı</th>
-        </tr>
-      </thead>
-      <tbody>
-        {sources.map((src) => (
-          <tr
-            key={src.id}
-            onClick={() => onSelect(src.id)}
-            className={cn(
-              "cursor-pointer border-b border-neutral-100",
-              selectedId === src.id ? "bg-info-light" : "hover:bg-neutral-50",
-            )}
-          >
-            <td className={cn("px-3 py-2 text-brand-700 break-words [overflow-wrap:anywhere]", selectedId === src.id ? "font-semibold" : "font-normal")}>
-              {src.name ?? DASH}
-            </td>
-            <td className="px-3 py-2 text-neutral-600">{src.source_type ?? DASH}</td>
-            <td className="px-3 py-2">
-              <span className={cn(
-                "inline-block px-2 py-0.5 rounded-full text-sm",
-                src.status === "active" ? "bg-success-light text-success-text" : "bg-neutral-100 text-neutral-700"
-              )}>
-                {src.status ?? DASH}
-              </span>
-            </td>
-            <td className="px-3 py-2 text-neutral-600">{src.trust_level ?? DASH}</td>
-            <td className="px-3 py-2 text-neutral-600">{src.scan_mode ?? DASH}</td>
-            <td className="px-3 py-2 text-neutral-600">{src.language ?? DASH}</td>
-            <td className="px-3 py-2">
-              <SourceScanSummary scanCount={src.scan_count} lastScanStatus={src.last_scan_status} lastScanFinishedAt={src.last_scan_finished_at} />
-            </td>
-            <td className="px-3 py-2">
-              <SourceReadinessSummary sourceType={src.source_type} status={src.status} baseUrl={src.base_url} feedUrl={src.feed_url} apiEndpoint={src.api_endpoint} scanCount={src.scan_count} lastScanStatus={src.last_scan_status} />
-            </td>
-            <td className="px-3 py-2">
-              <SourceConfigCoverageSummary sourceType={src.source_type} baseUrl={src.base_url} feedUrl={src.feed_url} apiEndpoint={src.api_endpoint} />
-            </td>
-            <td className="px-3 py-2">
-              <SourceInputQualitySummary sourceType={src.source_type} name={src.name} baseUrl={src.base_url} feedUrl={src.feed_url} apiEndpoint={src.api_endpoint} language={src.language} />
-            </td>
-            <td className="px-3 py-2">
-              <SourceInputSpecificitySummary sourceType={src.source_type} name={src.name} baseUrl={src.base_url} feedUrl={src.feed_url} apiEndpoint={src.api_endpoint} language={src.language} />
-            </td>
-            <td className="px-3 py-2">
-              <SourceLinkedNewsSummary linkedNewsCount={src.linked_news_count} />
-            </td>
-            <td className="px-3 py-2">
-              <SourcePublicationSupplySummary linkedNewsCount={src.linked_news_count} reviewedNewsCount={src.reviewed_news_count} usedNewsCountFromSource={src.used_news_count_from_source} />
-            </td>
-            <td className="px-3 py-2">
-              <SourceArtifactConsistencySummary sourceType={src.source_type} baseUrl={src.base_url} feedUrl={src.feed_url} apiEndpoint={src.api_endpoint} linkedNewsCount={src.linked_news_count} />
-            </td>
-            <td className="px-3 py-2">
-              <SourceTargetOutputConsistencySummary sourceType={src.source_type} feedUrl={src.feed_url} baseUrl={src.base_url} apiEndpoint={src.api_endpoint} linkedNewsCount={src.linked_news_count} reviewedNewsCount={src.reviewed_news_count} usedNewsCountFromSource={src.used_news_count_from_source} />
-            </td>
-            <td className="px-3 py-2">
-              <SourcePublicationOutcomeSummary linkedNewsCount={src.linked_news_count} reviewedNewsCount={src.reviewed_news_count} usedNewsCountFromSource={src.used_news_count_from_source} />
-            </td>
+      <table className="w-full border-collapse text-md">
+        <thead>
+          <tr className="bg-neutral-100 text-left">
+            <th className="px-4 py-2.5 border-b border-border-subtle min-w-[180px]">Kaynak Adi</th>
+            <th className="px-3 py-2.5 border-b border-border-subtle">Tur</th>
+            <th className="px-3 py-2.5 border-b border-border-subtle">Durum</th>
+            <th className="px-3 py-2.5 border-b border-border-subtle">Guven</th>
+            <th className="px-3 py-2.5 border-b border-border-subtle">Dil</th>
+            <th className="px-3 py-2.5 border-b border-border-subtle text-right">Haber</th>
+            <th className="px-3 py-2.5 border-b border-border-subtle">Son Tarama</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {sources.map((src) => (
+            <tr
+              key={src.id}
+              onClick={() => onSelect(src.id)}
+              className={cn(
+                "cursor-pointer border-b border-neutral-100 transition-colors",
+                selectedId === src.id ? "bg-info-light" : "hover:bg-neutral-50",
+              )}
+            >
+              {/* Ad — genisletilmis, okunabilir */}
+              <td className={cn(
+                "px-4 py-2.5 min-w-[180px]",
+                selectedId === src.id ? "font-semibold text-brand-700" : "font-medium text-brand-600",
+              )}>
+                <div className="truncate max-w-[280px]" title={src.name ?? ""}>
+                  {src.name ?? DASH}
+                </div>
+              </td>
+
+              {/* Tur */}
+              <td className="px-3 py-2.5 text-neutral-600">
+                <span className="inline-block px-2 py-0.5 rounded text-sm bg-neutral-100 text-neutral-700">
+                  {src.source_type ?? DASH}
+                </span>
+              </td>
+
+              {/* Durum */}
+              <td className="px-3 py-2.5">
+                <span className={cn(
+                  "inline-block px-2 py-0.5 rounded-full text-sm",
+                  statusColor(src.status),
+                )}>
+                  {src.status ?? DASH}
+                </span>
+              </td>
+
+              {/* Guven */}
+              <td className={cn("px-3 py-2.5 font-medium", trustColor(src.trust_level))}>
+                {src.trust_level ?? DASH}
+              </td>
+
+              {/* Dil */}
+              <td className="px-3 py-2.5 text-neutral-600">
+                {src.language?.toUpperCase() ?? DASH}
+              </td>
+
+              {/* Haber sayisi */}
+              <td className="px-3 py-2.5 text-right tabular-nums text-neutral-600">
+                {src.linked_news_count ?? 0}
+              </td>
+
+              {/* Son Tarama */}
+              <td className="px-3 py-2.5 text-neutral-500 text-sm">
+                {src.scan_count && src.scan_count > 0 ? (
+                  <span>
+                    {src.last_scan_finished_at
+                      ? new Date(src.last_scan_finished_at).toLocaleDateString("tr-TR")
+                      : "Bekliyor"}
+                    <span className="text-neutral-400 ml-1">({src.scan_count})</span>
+                  </span>
+                ) : (
+                  <span className="text-neutral-400">Tarama yok</span>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }

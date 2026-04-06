@@ -18,7 +18,6 @@ import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { NewsItemUsageBadge } from "../components/news-items/NewsItemUsageBadge";
 import { NewsItemUsageSummary } from "../components/news-items/NewsItemUsageSummary";
-import { NewsItemsTable } from "../components/news-items/NewsItemsTable";
 
 // ── NewsItemUsageBadge ─────────────────────────────────────────────────────────
 describe("NewsItemUsageBadge", () => {
@@ -61,38 +60,3 @@ describe("NewsItemUsageSummary", () => {
   });
 });
 
-// ── NewsItemsTable ────────────────────────────────────────────────────────────
-const mockItem = (overrides: object = {}) => ({
-  id: "item-1",
-  title: "Test Haberi",
-  url: "https://example.com/news/1",
-  status: "new",
-  source_id: null,
-  source_scan_id: null,
-  summary: null,
-  published_at: null,
-  language: "tr",
-  category: null,
-  dedupe_key: null,
-  raw_payload_json: null,
-  created_at: "2026-04-02T10:00:00Z",
-  updated_at: "2026-04-02T10:00:00Z",
-  ...overrides,
-});
-
-describe("NewsItemsTable usage summary", () => {
-  it("H) renders Kullanım column header", () => {
-    render(<NewsItemsTable items={[mockItem()]} selectedId={null} onSelect={() => {}} />);
-    expect(screen.getByText("Kullanım")).toBeTruthy();
-  });
-
-  it("I) shows Kullanılmamış for usage_count=0", () => {
-    render(<NewsItemsTable items={[mockItem({ usage_count: 0 })]} selectedId={null} onSelect={() => {}} />);
-    expect(screen.getByText("Kullanılmamış")).toBeTruthy();
-  });
-
-  it("J) shows usage badge for usage_count=2", () => {
-    render(<NewsItemsTable items={[mockItem({ usage_count: 2, last_usage_type: "bulletin" })]} selectedId={null} onSelect={() => {}} />);
-    expect(screen.getByText("2x kullanıldı")).toBeTruthy();
-  });
-});

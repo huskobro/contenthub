@@ -18,7 +18,6 @@ import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { NewsBulletinSelectedNewsCountBadge } from "../components/news-bulletin/NewsBulletinSelectedNewsCountBadge";
 import { NewsBulletinSelectedNewsSummary } from "../components/news-bulletin/NewsBulletinSelectedNewsSummary";
-import { NewsBulletinsTable } from "../components/news-bulletin/NewsBulletinsTable";
 
 // ── CountBadge ─────────────────────────────────────────────────────────────────
 describe("NewsBulletinSelectedNewsCountBadge", () => {
@@ -57,54 +56,3 @@ describe("NewsBulletinSelectedNewsSummary", () => {
   });
 });
 
-// ── Table integration ──────────────────────────────────────────────────────────
-const mockBulletin = (overrides: object = {}) => ({
-  id: "bul-1",
-  title: "Test Bulletin",
-  topic: "Ekonomi",
-  brief: null,
-  target_duration_seconds: null,
-  language: "tr",
-  tone: null,
-  bulletin_style: null,
-  source_mode: null,
-  selected_news_ids_json: null,
-  status: "draft",
-  job_id: null,
-  created_at: "2026-04-02T10:00:00Z",
-  updated_at: "2026-04-02T10:00:00Z",
-  has_script: false,
-  has_metadata: false,
-  composition_direction: null,
-  thumbnail_direction: null,
-  template_id: null,
-  style_blueprint_id: null,
-  render_mode: null,
-  subtitle_style: null,
-  lower_third_style: null,
-  trust_enforcement_level: null,
-  ...overrides,
-});
-
-describe("NewsBulletinsTable selected news summary", () => {
-  it("G) renders Haberler column header", () => {
-    render(<NewsBulletinsTable bulletins={[mockBulletin()]} selectedId={null} onSelect={() => {}} />);
-    expect(screen.getByText("Haberler")).toBeTruthy();
-  });
-
-  it("H) renders Haber yok for selected_news_count=0", () => {
-    render(<NewsBulletinsTable bulletins={[mockBulletin({ selected_news_count: 0 })]} selectedId={null} onSelect={() => {}} />);
-    expect(screen.getByText("Haber yok")).toBeTruthy();
-  });
-
-  it("I) renders count for selected_news_count=4", () => {
-    render(<NewsBulletinsTable bulletins={[mockBulletin({ selected_news_count: 4 })]} selectedId={null} onSelect={() => {}} />);
-    expect(screen.getByText("4")).toBeTruthy();
-    expect(screen.getByText("haber")).toBeTruthy();
-  });
-
-  it("J) does not break when selected_news_count is undefined", () => {
-    render(<NewsBulletinsTable bulletins={[mockBulletin()]} selectedId={null} onSelect={() => {}} />);
-    expect(screen.getByText("Test Bulletin")).toBeTruthy();
-  });
-});

@@ -19,7 +19,6 @@ import { render, screen } from "@testing-library/react";
 import { computeStandardVideoReadiness } from "../components/standard-video/StandardVideoReadinessSummary";
 import { StandardVideoReadinessBadge } from "../components/standard-video/StandardVideoReadinessBadge";
 import { StandardVideoReadinessSummary } from "../components/standard-video/StandardVideoReadinessSummary";
-import { StandardVideosTable } from "../components/standard-video/StandardVideosTable";
 
 // ── computeStandardVideoReadiness ────────────────────────────────────────────
 describe("computeStandardVideoReadiness", () => {
@@ -80,29 +79,3 @@ describe("StandardVideoReadinessSummary", () => {
   });
 });
 
-// ── StandardVideosTable ───────────────────────────────────────────────────────
-const mockVideo = (overrides: object = {}) => ({
-  id: "sv-1",
-  title: "Test Video",
-  topic: "Test konu",
-  brief: null,
-  target_duration_seconds: 120,
-  tone: null,
-  language: "tr",
-  visual_direction: null,
-  subtitle_style: null,
-  status: "draft",
-  job_id: null,
-  created_at: "2026-04-02T10:00:00Z",
-  updated_at: "2026-04-02T10:00:00Z",
-  template_id: null,
-  style_blueprint_id: null,
-  ...overrides,
-});
-
-describe("StandardVideosTable readiness summary", () => {
-  it("J) renders Hazırlık column header", () => {
-    render(<StandardVideosTable videos={[mockVideo()]} selectedId={null} onSelect={() => {}} />);
-    expect(screen.getByText("Hazırlık")).toBeTruthy();
-  });
-});

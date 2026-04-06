@@ -18,7 +18,6 @@ import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { TemplateStyleLinkStatusBadge } from "../components/templates/TemplateStyleLinkStatusBadge";
 import { TemplateStyleLinkSummary } from "../components/templates/TemplateStyleLinkSummary";
-import { TemplatesTable } from "../components/templates/TemplatesTable";
 
 // ── TemplateStyleLinkStatusBadge ──────────────────────────────────────────────
 describe("TemplateStyleLinkStatusBadge", () => {
@@ -61,37 +60,3 @@ describe("TemplateStyleLinkSummary", () => {
   });
 });
 
-// ── TemplatesTable ────────────────────────────────────────────────────────────
-const mockTemplate = (overrides: object = {}) => ({
-  id: "t-1",
-  name: "Test Template",
-  template_type: "content",
-  owner_scope: "admin",
-  module_scope: null,
-  description: null,
-  style_profile_json: null,
-  content_rules_json: null,
-  publish_profile_json: null,
-  status: "active",
-  version: 1,
-  created_at: "2026-04-02T10:00:00Z",
-  updated_at: "2026-04-02T10:00:00Z",
-  ...overrides,
-});
-
-describe("TemplatesTable style link summary", () => {
-  it("H) renders Style Links column header", () => {
-    render(<TemplatesTable templates={[mockTemplate()]} selectedId={null} onSelect={() => {}} />);
-    expect(screen.getByText("Stil Bağları")).toBeTruthy();
-  });
-
-  it("I) shows Bağ yok for template with no links", () => {
-    render(<TemplatesTable templates={[mockTemplate({ style_link_count: 0 })]} selectedId={null} onSelect={() => {}} />);
-    expect(screen.getByText("Bağ yok")).toBeTruthy();
-  });
-
-  it("J) shows badge for template with links", () => {
-    render(<TemplatesTable templates={[mockTemplate({ style_link_count: 2, primary_link_role: "primary" })]} selectedId={null} onSelect={() => {}} />);
-    expect(screen.getByText("2 bağ")).toBeTruthy();
-  });
-});
