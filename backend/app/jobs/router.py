@@ -38,6 +38,7 @@ from app.modules.input_normalizer import InputNormalizer
 from app.modules.registry import module_registry
 from app.jobs import workspace as ws
 from app.audit.service import write_audit_log
+from app.settings.settings_resolver import resolve as resolve_setting
 
 router = APIRouter(prefix="/jobs", tags=["jobs"], dependencies=[Depends(require_visible("panel:jobs"))])
 
@@ -145,6 +146,15 @@ async def create_job(
       - 422: Geçersiz dil kodu (Pydantic doğrulaması)
       - 422: Modül bulunamadı veya zorunlu alan eksik
     """
+    # Modül etkinlik kontrolü — devre dışı modüller için yeni iş başlatılamaz
+    enabled_key = f"module.{payload.module_id}.enabled"
+    module_enabled = await resolve_setting(enabled_key, db)
+    if module_enabled is False:
+        raise HTTPException(
+            status_code=403,
+            detail=f"Modül devre dışı: {payload.module_id!r}. Yeni üretim başlatılamaz.",
+        )
+
     # Modül varlığı ve zorunlu alan doğrulaması
     normalizer = InputNormalizer(module_registry)
     raw_input = {"topic": payload.topic, "language": payload.language, "duration_seconds": payload.duration_seconds}

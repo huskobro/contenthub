@@ -648,6 +648,30 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "wired": True,
         "wired_to": "wizard — category style suggestion",
     },
+
+    # --- Module Registry Settings (Phase 2 — Faz A) ---
+    "module.standard_video.enabled": {
+        "group": "modules",
+        "type": "boolean",
+        "label": "Standart Video modülü etkin",
+        "help_text": "Devre dışı bırakıldığında: menüde gizlenir, yeni üretim engellenir, mevcut kayıtlar etkilenmez.",
+        "module_scope": "standard_video",
+        "env_var": None,
+        "builtin_default": True,
+        "wired": True,
+        "wired_to": "Module registry + sidebar + command palette + wizard",
+    },
+    "module.news_bulletin.enabled": {
+        "group": "modules",
+        "type": "boolean",
+        "label": "Haber Bülteni modülü etkin",
+        "help_text": "Devre dışı bırakıldığında: menüde gizlenir, yeni üretim engellenir, mevcut kayıtlar etkilenmez.",
+        "module_scope": "news_bulletin",
+        "env_var": None,
+        "builtin_default": True,
+        "wired": True,
+        "wired_to": "Module registry + sidebar + command palette + wizard",
+    },
 }
 
 # Group labels for UI
@@ -660,9 +684,10 @@ GROUP_LABELS: Dict[str, str] = {
     "ui": "Arayuz Ayarlari",
     "jobs": "Is Motoru Ayarlari",
     "news_bulletin": "Haber Bulteni",
+    "modules": "Modüller",
 }
 
-GROUP_ORDER = ["credentials", "providers", "execution", "source_scans", "publish", "ui", "jobs", "news_bulletin"]
+GROUP_ORDER = ["credentials", "providers", "execution", "source_scans", "publish", "ui", "jobs", "news_bulletin", "modules"]
 
 
 # ---------------------------------------------------------------------------
