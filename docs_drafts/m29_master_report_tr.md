@@ -8,8 +8,8 @@ M29, M28'de backend'de calisan News Bulletin combined pipeline'ini gercek urun y
 - Formal editorial gate lifecycle UI (draft → selection_confirmed → in_progress)
 - composition_direction ve thumbnail_direction gercek backend wiring
 - Bulletin detail page (job linkage, style secimleri, script, metadata)
-- Publish handoff icin mevcut pattern reuse
-- M28 pipeline'i BOZULMADAN tum entegrasyon
+- Mevcut publish pattern'ine basariyla baglandi (ozel bulletin publish yuzeyi henuz yok)
+- M28 pipeline'i BOZULMADAN tum entegrasyon (33/33 M28 regression test pass)
 
 ## 2. M29 Scope
 
@@ -153,11 +153,12 @@ M29 scope disinda. Mevcut StyleBlueprintSelector ve TemplateSelector ile manuel 
 
 ## 10. Publish Handoff Modeli
 
-Mevcut pattern reuse:
-- PublishStepExecutor (M28'den) pipeline'in 7. adimi
+Mevcut publish pattern'ine basariyla baglandi — ozel bulletin publish yuzeyi henuz yok:
+- PublishStepExecutor (M28'den) pipeline'in 7. adimi olarak calisiyor
 - PublishRecord olusturma ve platform upload mantigi degismedi
 - Bulletin job tamamlandiginda PublishStepExecutor tetiklenir
 - BulletinDetailPage'de job linkage gorunur
+- NOT: Bulletin'e ozel publish center UI genisletmesi M30 adayi
 
 ## 11. Test Stratejisi
 
@@ -185,8 +186,8 @@ Renderer: tsc --noEmit → 0 errors
 
 | Kontrol | Sonuc |
 |---|---|
-| M28 pipeline bozulmadi | ✅ 33/33 test pass |
-| Standard video bozulmadi | ✅ Regression clean |
+| M28 pipeline bozulmadi | ✅ 33/33 M28 test pass, 1267/1267 full suite |
+| Standard video bozulmadi | ✅ Regression clean (full suite pass) |
 | Settings registry korundu | ✅ Prompt keys intact |
 | Snapshot modeli korundu | ✅ Direction alanlari snapshot'a eklendi |
 | Safe composition mapping korundu | ✅ Drift test pass |
