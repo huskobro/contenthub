@@ -304,14 +304,23 @@ def build_bulletin_metadata_prompt(
     script_data: dict,
     language: SupportedLanguage,
     metadata_title_rules: str,
+    dominant_category: Optional[str] = None,
+    tone: str = "formal",
 ) -> list[dict]:
     """
-    Bulletin metadata adımı için LLM mesaj listesi oluşturur.
+    Bulletin metadata adımı için LLM mesaj listesi oluşturur — M31 SEO polish.
+
+    M31 geliştirmeleri:
+    - Dominant kategori varsa başlık ve etiket önerilerine dahil edilir
+    - Haber başlıkları narration özetine ek olarak ayrı liste halinde verilir
+    - Ton bilgisi metadata üretimini etkiler
 
     Args:
         script_data         : Bulletin script artifact dict (items listesi içerir).
         language            : Üretim dili.
         metadata_title_rules: Admin-managed metadata kuralları (settings snapshot).
+        dominant_category   : Baskın haber kategorisi (opsiyonel, M31).
+        tone                : Üretim tonu (formal, casual, vb.) (M31).
 
     Returns:
         [{"role": "system", ...}, {"role": "user", ...}] formatında mesaj listesi.
@@ -328,6 +337,7 @@ def build_bulletin_metadata_prompt(
     system_parts.append(
         f"\nDil: {locale}\n"
         f"Metadata tonu: {metadata_tone}\n"
+        f"Ton: {tone}\n"
         f"Etiket stili: {tag_style}\n"
         f"Hashtag stili: {hashtag_style}\n\n"
         f"ÇIKTI FORMATI: Yanıtını SADECE JSON formatında ver. Başka metin ekleme. "
@@ -336,16 +346,26 @@ def build_bulletin_metadata_prompt(
 
     system_content = "\n\n".join(system_parts)
 
-    # Script'ten narration özetini hazırla
+    # M31: Haber başlıklarını ayrı listele (SEO için daha iyi bağlam)
     items = script_data.get("items", [])
+    headlines = [item.get("headline", "") for item in items if item.get("headline")]
     narration_summary = " ".join(
         item.get("narration", "")[:150] for item in items[:5]
     )
 
+    # M31: Kategori bağlamı
+    category_context = ""
+    if dominant_category:
+        category_context = f"\nBaskın haber kategorisi: {dominant_category}"
+
     user_content = (
         f"Haber bülteni ({len(items)} haber) için YouTube metadata üret.\n\n"
-        f"Bülten narration özeti: {narration_summary}\n"
-        f"Dil: {locale}\n\n"
+        f"Haber başlıkları:\n"
+        + "\n".join(f"  - {h}" for h in headlines[:10])
+        + f"\n\nNarration özeti: {narration_summary}"
+        + category_context
+        + f"\nDil: {locale}\n\n"
+        f"Başlıkları ve etiketleri haberlerin kategorisi ve içeriğiyle uyumlu yap. "
         f"language alanına '{language.value}' yaz."
     )
 

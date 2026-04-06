@@ -26,6 +26,10 @@ const MOCK_BULLETINS: NewsBulletinResponse[] = [
     thumbnail_direction: null,
     template_id: null,
     style_blueprint_id: null,
+    render_mode: null,
+    subtitle_style: null,
+    lower_third_style: null,
+    trust_enforcement_level: null,
   },
   {
     id: "bulletin-2",
@@ -46,6 +50,10 @@ const MOCK_BULLETINS: NewsBulletinResponse[] = [
     thumbnail_direction: null,
     template_id: null,
     style_blueprint_id: null,
+    render_mode: null,
+    subtitle_style: null,
+    lower_third_style: null,
+    trust_enforcement_level: null,
   },
 ];
 

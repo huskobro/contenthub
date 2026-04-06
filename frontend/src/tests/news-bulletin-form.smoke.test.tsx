@@ -26,6 +26,10 @@ const MOCK_BULLETIN: NewsBulletinResponse = {
   thumbnail_direction: null,
   template_id: null,
   style_blueprint_id: null,
+  render_mode: null,
+  subtitle_style: null,
+  lower_third_style: null,
+  trust_enforcement_level: null,
 };
 
 function mockFetch(data: unknown, status = 200) {
@@ -130,7 +134,7 @@ describe("NewsBulletinForm / Create page smoke tests", () => {
         <RouterProvider router={testRouter} />
       </QueryClientProvider>
     );
-    expect(screen.getByRole("button", { name: "+ Yeni Bulten Olustur" })).toBeDefined();
+    expect(screen.getByRole("button", { name: "Wizard ile Olustur" })).toBeDefined();
   });
 
   it("edit mode opens when Düzenle is clicked in detail panel", async () => {

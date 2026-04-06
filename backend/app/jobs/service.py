@@ -39,10 +39,10 @@ Settings Registry integration note:
     enforces the state machine and its side effects.
 """
 
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import Job, JobStep
@@ -68,6 +68,7 @@ async def list_jobs(
     status: Optional[str] = None,
     module_type: Optional[str] = None,
     search: Optional[str] = None,
+    exclude_test_data: bool = True,
 ) -> list[Job]:
     stmt = select(Job).order_by(Job.created_at.desc())
     if status:
@@ -79,6 +80,8 @@ async def list_jobs(
         stmt = stmt.where(
             Job.module_type.ilike(pattern) | Job.id.ilike(pattern)
         )
+    if exclude_test_data:
+        stmt = stmt.where(Job.is_test_data == False)  # noqa: E712
     result = await db.execute(stmt)
     return list(result.scalars().all())
 
@@ -124,6 +127,67 @@ async def create_job(db: AsyncSession, payload: JobCreate) -> Job:
     await db.commit()
     await db.refresh(job)
     return job
+
+
+# ===========================================================================
+# M31 — Test data management
+# ===========================================================================
+
+async def mark_jobs_as_test_data(db: AsyncSession, job_ids: list[str]) -> int:
+    """
+    Mark the given job IDs as test/demo data (is_test_data=True).
+
+    These records are NOT deleted — they are hidden from the default list view.
+    Returns the number of rows updated.
+    """
+    if not job_ids:
+        return 0
+    stmt = (
+        update(Job)
+        .where(Job.id.in_(job_ids))
+        .values(is_test_data=True, updated_at=_now())
+    )
+    result = await db.execute(stmt)
+    await db.commit()
+    return result.rowcount
+
+
+async def bulk_archive_test_jobs(
+    db: AsyncSession,
+    older_than_days: int = 7,
+    module_type: Optional[str] = None,
+) -> int:
+    """
+    Bulk-archive jobs that look like test/demo runs by setting is_test_data=True.
+
+    Criteria (all must match):
+      - status in ('completed', 'failed', 'cancelled')
+      - created more than older_than_days ago
+      - workspace_path is None or empty string (no durable artifacts)
+      - is_test_data is already False (skip already-archived records)
+      - module_type matches, if provided
+
+    No records are hard-deleted. Returns the count of records archived.
+    """
+    cutoff = _now() - timedelta(days=older_than_days)
+    terminal_statuses = ["completed", "failed", "cancelled"]
+
+    stmt = (
+        update(Job)
+        .where(Job.status.in_(terminal_statuses))
+        .where(Job.created_at < cutoff)
+        .where(
+            (Job.workspace_path == None) | (Job.workspace_path == "")  # noqa: E711,E712
+        )
+        .where(Job.is_test_data == False)  # noqa: E712
+    )
+    if module_type:
+        stmt = stmt.where(Job.module_type == module_type)
+
+    stmt = stmt.values(is_test_data=True, updated_at=_now())
+    result = await db.execute(stmt)
+    await db.commit()
+    return result.rowcount
 
 
 # ===========================================================================

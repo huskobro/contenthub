@@ -148,6 +148,14 @@ async def list_news_bulletins_with_artifacts(
                 selected_news_ids_json=b.selected_news_ids_json,
                 status=b.status,
                 job_id=b.job_id,
+                composition_direction=b.composition_direction,
+                thumbnail_direction=b.thumbnail_direction,
+                template_id=b.template_id,
+                style_blueprint_id=b.style_blueprint_id,
+                render_mode=b.render_mode,
+                subtitle_style=b.subtitle_style,
+                lower_third_style=b.lower_third_style,
+                trust_enforcement_level=b.trust_enforcement_level,
                 created_at=b.created_at,
                 updated_at=b.updated_at,
                 has_script=script_row.scalar_one_or_none() is not None,
@@ -193,6 +201,14 @@ async def clone_news_bulletin(
         selected_news_ids_json=None,
         status="draft",
         job_id=None,
+        composition_direction=source.composition_direction,
+        thumbnail_direction=source.thumbnail_direction,
+        template_id=source.template_id,
+        style_blueprint_id=source.style_blueprint_id,
+        render_mode=source.render_mode,
+        subtitle_style=source.subtitle_style,
+        lower_third_style=source.lower_third_style,
+        trust_enforcement_level=source.trust_enforcement_level,
     )
     db.add(clone)
     await db.commit()
@@ -226,6 +242,10 @@ async def create_news_bulletin(
         thumbnail_direction=payload.thumbnail_direction,
         template_id=payload.template_id,
         style_blueprint_id=payload.style_blueprint_id,
+        render_mode=payload.render_mode or "combined",
+        subtitle_style=payload.subtitle_style,
+        lower_third_style=payload.lower_third_style,
+        trust_enforcement_level=payload.trust_enforcement_level or "warn",
     )
     db.add(item)
     await db.commit()
@@ -506,6 +526,14 @@ async def start_production(
     if not selected_items:
         raise ValueError("Seçilmiş haber öğesi yok. En az 1 haber seçilmiş olmalı.")
 
+    # M31: Trust enforcement check
+    trust_result = await check_trust_enforcement(db, bulletin_id)
+    if not trust_result["pass"]:
+        raise ValueError(
+            f"Güvenilirlik engeli: {trust_result['message']} "
+            f"trust_enforcement_level={trust_result['enforcement_level']}"
+        )
+
     # Settings + prompt snapshot al
     snapshot_keys = [
         k for k in KNOWN_SETTINGS
@@ -552,6 +580,10 @@ async def start_production(
         "thumbnail_direction": bulletin.thumbnail_direction,
         "template_id": bulletin.template_id,
         "style_blueprint_id": bulletin.style_blueprint_id,
+        "render_mode": bulletin.render_mode or "combined",
+        "subtitle_style": bulletin.subtitle_style,
+        "lower_third_style": bulletin.lower_third_style,
+        "trust_enforcement_level": bulletin.trust_enforcement_level or "warn",
         "_settings_snapshot": settings_snapshot,
     }
 
@@ -579,6 +611,8 @@ async def start_production(
             "selected_items_count": len(items_snapshot),
             "language": input_data["language"],
             "tone": input_data["tone"],
+            "trust_enforcement_level": bulletin.trust_enforcement_level or "warn",
+            "trust_low_trust_item_count": len(trust_result.get("low_trust_items", [])),
         },
     )
     await db.commit()
@@ -680,3 +714,199 @@ async def _watch_bulletin_job(
         "_watch_bulletin_job: timeout (%.0fs). bulletin=%s job=%s — bulletin may be stuck in 'rendering'.",
         timeout, bulletin_id, job_id,
     )
+
+
+# ---------------------------------------------------------------------------
+# Trust Level Enforcement (M30)
+# ---------------------------------------------------------------------------
+
+async def check_trust_enforcement(
+    db: AsyncSession,
+    bulletin_id: str,
+) -> dict:
+    """
+    Seçili haberlerin kaynak güvenilirlik düzeyini kontrol eder.
+
+    bulletin.trust_enforcement_level ayarına göre:
+      - "none"  : kontrol yapılmaz, her zaman pass
+      - "warn"  : düşük güvenilirlikli kaynaklar uyarı olarak raporlanır
+      - "block" : düşük güvenilirlikli kaynak varsa blok
+
+    Returns:
+        dict: {
+            "pass": bool,
+            "enforcement_level": str,
+            "low_trust_items": [{"news_item_id", "source_id", "source_name", "trust_level"}],
+            "total_checked": int,
+            "message": str,
+        }
+    """
+    from app.db.models import NewsSource
+
+    bulletin = await get_news_bulletin(db, bulletin_id)
+    if bulletin is None:
+        return {
+            "pass": False,
+            "enforcement_level": "unknown",
+            "low_trust_items": [],
+            "total_checked": 0,
+            "message": "Bulletin bulunamadı.",
+        }
+
+    level = bulletin.trust_enforcement_level or "warn"
+
+    if level == "none":
+        return {
+            "pass": True,
+            "enforcement_level": "none",
+            "low_trust_items": [],
+            "total_checked": 0,
+            "message": "Güvenilirlik kontrolü devre dışı.",
+        }
+
+    # Seçili item'ları yükle
+    selected_items = await list_bulletin_selected_items(db, bulletin_id)
+    if not selected_items:
+        return {
+            "pass": True,
+            "enforcement_level": level,
+            "low_trust_items": [],
+            "total_checked": 0,
+            "message": "Seçili haber yok.",
+        }
+
+    low_trust_items = []
+    for sel in selected_items:
+        news_item = await db.execute(
+            select(NewsItem).where(NewsItem.id == sel.news_item_id)
+        )
+        ni = news_item.scalar_one_or_none()
+        if ni is None or ni.source_id is None:
+            continue
+
+        source_result = await db.execute(
+            select(NewsSource).where(NewsSource.id == ni.source_id)
+        )
+        source = source_result.scalar_one_or_none()
+        if source is None:
+            continue
+
+        if source.trust_level == "low":
+            low_trust_items.append({
+                "news_item_id": sel.news_item_id,
+                "source_id": source.id,
+                "source_name": source.name,
+                "trust_level": source.trust_level,
+            })
+
+    total_checked = len(selected_items)
+    has_low_trust = len(low_trust_items) > 0
+
+    if level == "block" and has_low_trust:
+        return {
+            "pass": False,
+            "enforcement_level": "block",
+            "low_trust_items": low_trust_items,
+            "total_checked": total_checked,
+            "message": f"{len(low_trust_items)} düşük güvenilirlikli kaynak tespit edildi. Üretim engellendi.",
+        }
+
+    if level == "warn" and has_low_trust:
+        return {
+            "pass": True,
+            "enforcement_level": "warn",
+            "low_trust_items": low_trust_items,
+            "total_checked": total_checked,
+            "message": f"Uyarı: {len(low_trust_items)} düşük güvenilirlikli kaynak mevcut.",
+        }
+
+    return {
+        "pass": True,
+        "enforcement_level": level,
+        "low_trust_items": [],
+        "total_checked": total_checked,
+        "message": "Tüm kaynaklar güvenilir.",
+    }
+
+
+# ---------------------------------------------------------------------------
+# Category → Style Auto Mapping (M30)
+# ---------------------------------------------------------------------------
+
+# Controlled mapping — category string → suggested style_blueprint hints
+# These are suggestions, not enforced. Admin can override via Settings Registry.
+CATEGORY_STYLE_HINTS: dict[str, dict] = {
+    "general": {
+        "suggested_subtitle_style": "clean_white",
+        "suggested_lower_third_style": "broadcast",
+        "suggested_composition_direction": "classic",
+    },
+    "tech": {
+        "suggested_subtitle_style": "gradient_glow",
+        "suggested_lower_third_style": "modern",
+        "suggested_composition_direction": "dynamic",
+    },
+    "finance": {
+        "suggested_subtitle_style": "minimal_dark",
+        "suggested_lower_third_style": "broadcast",
+        "suggested_composition_direction": "side_by_side",
+    },
+    "crypto": {
+        "suggested_subtitle_style": "gradient_glow",
+        "suggested_lower_third_style": "modern",
+        "suggested_composition_direction": "dynamic",
+    },
+    "sports": {
+        "suggested_subtitle_style": "bold_yellow",
+        "suggested_lower_third_style": "modern",
+        "suggested_composition_direction": "fullscreen",
+    },
+    "entertainment": {
+        "suggested_subtitle_style": "bold_yellow",
+        "suggested_lower_third_style": "minimal",
+        "suggested_composition_direction": "dynamic",
+    },
+}
+
+
+def get_category_style_suggestion(category: Optional[str]) -> dict:
+    """
+    Kategori bazlı stil önerisi döner.
+
+    Bilinmeyen veya None kategori → 'general' varsayılanı kullanılır.
+    Bu bir öneri, zorunlu eşleme değil — wizard'da kullanıcıya gösterilir.
+
+    Returns:
+        dict: suggested_subtitle_style, suggested_lower_third_style,
+              suggested_composition_direction, category_matched
+    """
+    if category and category in CATEGORY_STYLE_HINTS:
+        result = dict(CATEGORY_STYLE_HINTS[category])
+        result["category_matched"] = True
+        result["category_used"] = category
+        return result
+
+    fallback = dict(CATEGORY_STYLE_HINTS["general"])
+    fallback["category_matched"] = False
+    fallback["category_used"] = "general"
+    return fallback
+
+
+def get_dominant_category(items_snapshot: list[dict]) -> Optional[str]:
+    """
+    Seçili haberlerin en sık kategorisini döner.
+
+    items_snapshot: start_production tarafından hazırlanan item listesi
+    Her item'da 'category' alanı olabilir.
+    Eşit sayıda birden fazla kategori varsa ilk karşılaşılanı döner.
+    """
+    from collections import Counter
+    categories = [
+        item.get("category")
+        for item in items_snapshot
+        if item.get("category")
+    ]
+    if not categories:
+        return None
+    counter = Counter(categories)
+    return counter.most_common(1)[0][0]

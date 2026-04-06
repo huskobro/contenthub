@@ -59,6 +59,7 @@ class JobCreate(BaseModel):
     source_context_json: Optional[str] = None
     input_data_json: Optional[str] = None
     workspace_path: Optional[str] = None
+    is_test_data: Optional[bool] = None
 
 
 # Desteklenen dil kodları — wizard/API yoluyla job yaratılırken kullanılır
@@ -114,6 +115,7 @@ class JobResponse(BaseModel):
     estimated_remaining_seconds: Optional[float] = None
     workspace_path: Optional[str] = None
     last_error: Optional[str] = None
+    is_test_data: bool = False
     created_at: datetime
     started_at: Optional[datetime] = None
     finished_at: Optional[datetime] = None

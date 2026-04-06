@@ -581,6 +581,51 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "wired": False,
         "wired_to": "DEFINED — Remotion composition'da kullanilacak",
     },
+    # --- News Bulletin Module (M30) ---
+    "news_bulletin.config.default_subtitle_style": {
+        "group": "news_bulletin",
+        "type": "string",
+        "label": "Varsayilan Altyazi Stili",
+        "help_text": "Altyazi preset ID: clean_white, bold_yellow, minimal_dark, gradient_glow, outline_only.",
+        "module_scope": "news_bulletin",
+        "env_var": "",
+        "builtin_default": "clean_white",
+        "wired": True,
+        "wired_to": "BulletinCompositionExecutor — subtitle preset secimi",
+    },
+    "news_bulletin.config.default_lower_third_style": {
+        "group": "news_bulletin",
+        "type": "string",
+        "label": "Varsayilan Lower-Third Stili",
+        "help_text": "Lower-third stil: broadcast, minimal, modern.",
+        "module_scope": "news_bulletin",
+        "env_var": "",
+        "builtin_default": "broadcast",
+        "wired": True,
+        "wired_to": "BulletinCompositionExecutor — lower-third stil secimi",
+    },
+    "news_bulletin.config.trust_enforcement_level": {
+        "group": "news_bulletin",
+        "type": "string",
+        "label": "Guvenilirlik Zorlama Seviyesi",
+        "help_text": "none: kontrol yok, warn: uyari, block: engelle. Kaynak trust_level='low' olan haberler icin.",
+        "module_scope": "news_bulletin",
+        "env_var": "",
+        "builtin_default": "warn",
+        "wired": True,
+        "wired_to": "editorial_gate / service — trust enforcement",
+    },
+    "news_bulletin.config.category_style_mapping_enabled": {
+        "group": "news_bulletin",
+        "type": "boolean",
+        "label": "Kategori → Stil Eslemesi Aktif",
+        "help_text": "True ise wizard'da kategori bazli stil onerisi gosterilir.",
+        "module_scope": "news_bulletin",
+        "env_var": "",
+        "builtin_default": True,
+        "wired": True,
+        "wired_to": "wizard — category style suggestion",
+    },
 }
 
 # Group labels for UI
@@ -626,6 +671,11 @@ KNOWN_VALIDATION_RULES: Dict[str, str] = {
     "news_bulletin.config.max_items_per_bulletin": '{"type": "integer", "min": 1, "max": 50}',
     "news_bulletin.config.narration_word_limit_per_item": '{"type": "integer", "min": 20, "max": 200}',
     "news_bulletin.config.render_fps": '{"type": "integer", "min": 15, "max": 60}',
+    # M30
+    "news_bulletin.config.default_subtitle_style": '{"type": "string", "required": false}',
+    "news_bulletin.config.default_lower_third_style": '{"type": "string", "required": false}',
+    "news_bulletin.config.trust_enforcement_level": '{"type": "string", "required": false, "enum": ["none", "warn", "block"]}',
+    "news_bulletin.config.category_style_mapping_enabled": '{"type": "boolean"}',
 }
 
 

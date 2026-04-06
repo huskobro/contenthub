@@ -23,6 +23,7 @@ from pathlib import Path
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
@@ -68,10 +69,11 @@ async def list_jobs(
     status: Optional[str] = Query(None),
     module_type: Optional[str] = Query(None),
     search: Optional[str] = Query(None, description="module_type veya id üzerinde arama (case-insensitive)"),
+    exclude_test_data: bool = Query(True, description="Test/demo job kayıtlarını listeden çıkar (varsayılan: True)"),
     db: AsyncSession = Depends(get_db),
 ):
-    """İş listesini döndürür. status, module_type ve search ile filtrelenebilir."""
-    jobs = await service.list_jobs(db, status=status, module_type=module_type, search=search)
+    """İş listesini döndürür. status, module_type, search ve exclude_test_data ile filtrelenebilir."""
+    jobs = await service.list_jobs(db, status=status, module_type=module_type, search=search, exclude_test_data=exclude_test_data)
     result = []
     for job in jobs:
         job_data = await _build_job_response(db, job)
@@ -371,3 +373,57 @@ async def get_allowed_actions(job_id: str, db: AsyncSession = Depends(get_db)):
         ]
 
     return actions
+
+
+# ===========================================================================
+# M31 — Test data management endpoints
+# ===========================================================================
+
+
+class _MarkTestDataRequest(BaseModel):
+    job_ids: list[str]
+
+
+class _BulkArchiveTestDataRequest(BaseModel):
+    older_than_days: int = 7
+    module_type: Optional[str] = None
+
+
+@router.post("/mark-test-data")
+async def mark_jobs_as_test_data(
+    payload: _MarkTestDataRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Verilen job ID'lerini is_test_data=True olarak işaretle.
+
+    Bu kayıtlar silinmez — varsayılan is listesinden gizlenir.
+    Admin panelinden exclude_test_data=false ile görüntülenebilir.
+    """
+    marked_count = await service.mark_jobs_as_test_data(db, payload.job_ids)
+    return {"marked_count": marked_count}
+
+
+@router.post("/bulk-archive-test-data")
+async def bulk_archive_test_jobs(
+    payload: _BulkArchiveTestDataRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Test/demo niteliğindeki eski job kayıtlarını toplu olarak arşivle.
+
+    Arşivleme kriteri (hepsi aynı anda sağlanmalı):
+      - status: completed / failed / cancelled
+      - created_at: older_than_days gün öncesinden eski
+      - workspace_path: boş veya None (kalıcı artifact yok)
+      - is_test_data: henüz False (tekrar işaretleme engeli)
+      - module_type eşleşmesi (opsiyonel)
+
+    Hiçbir kayıt silinmez; yalnızca is_test_data=True yapılır.
+    """
+    archived_count = await service.bulk_archive_test_jobs(
+        db,
+        older_than_days=payload.older_than_days,
+        module_type=payload.module_type,
+    )
+    return {"archived_count": archived_count}

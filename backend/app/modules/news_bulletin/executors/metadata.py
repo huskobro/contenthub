@@ -108,10 +108,18 @@ class BulletinMetadataExecutor(StepExecutor):
                 "Admin panelden prompt ayarını yapılandırın.",
             )
 
+        # M31: dominant_category ve tone snapshot'tan al (SEO polish)
+        from app.modules.news_bulletin.service import get_dominant_category
+        selected_items = raw_input.get("selected_items", [])
+        dominant_category = get_dominant_category(selected_items)
+        tone = raw_input.get("tone", "formal")
+
         messages = build_bulletin_metadata_prompt(
             script_data=script_data,
             language=language,
             metadata_title_rules=metadata_title_rules,
+            dominant_category=dominant_category,
+            tone=tone,
         )
 
         try:

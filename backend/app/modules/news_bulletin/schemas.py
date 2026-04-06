@@ -19,6 +19,10 @@ class NewsBulletinCreate(BaseModel):
     thumbnail_direction: Optional[str] = None
     template_id: Optional[str] = None
     style_blueprint_id: Optional[str] = None
+    render_mode: Optional[str] = "combined"
+    subtitle_style: Optional[str] = None
+    lower_third_style: Optional[str] = None
+    trust_enforcement_level: Optional[str] = "warn"
 
     @field_validator("topic")
     @classmethod
@@ -51,6 +55,10 @@ class NewsBulletinUpdate(BaseModel):
     thumbnail_direction: Optional[str] = None
     template_id: Optional[str] = None
     style_blueprint_id: Optional[str] = None
+    render_mode: Optional[str] = None
+    subtitle_style: Optional[str] = None
+    lower_third_style: Optional[str] = None
+    trust_enforcement_level: Optional[str] = None
 
     @field_validator("topic")
     @classmethod
@@ -84,6 +92,10 @@ class NewsBulletinResponse(BaseModel):
     thumbnail_direction: Optional[str] = None
     template_id: Optional[str] = None
     style_blueprint_id: Optional[str] = None
+    render_mode: Optional[str] = "combined"
+    subtitle_style: Optional[str] = None
+    lower_third_style: Optional[str] = None
+    trust_enforcement_level: Optional[str] = "warn"
     created_at: datetime
     updated_at: datetime
     has_script: bool = False

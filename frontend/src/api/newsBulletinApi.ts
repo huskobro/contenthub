@@ -19,6 +19,10 @@ export interface NewsBulletinResponse {
   thumbnail_direction: string | null;
   template_id: string | null;
   style_blueprint_id: string | null;
+  render_mode: string | null;
+  subtitle_style: string | null;
+  lower_third_style: string | null;
+  trust_enforcement_level: string | null;
   created_at: string;
   updated_at: string;
   has_script?: boolean;
@@ -48,6 +52,10 @@ export interface NewsBulletinCreatePayload {
   thumbnail_direction?: string | null;
   template_id?: string | null;
   style_blueprint_id?: string | null;
+  render_mode?: string | null;
+  subtitle_style?: string | null;
+  lower_third_style?: string | null;
+  trust_enforcement_level?: string | null;
 }
 
 export interface NewsBulletinUpdatePayload {
@@ -65,6 +73,10 @@ export interface NewsBulletinUpdatePayload {
   thumbnail_direction?: string | null;
   template_id?: string | null;
   style_blueprint_id?: string | null;
+  render_mode?: string | null;
+  subtitle_style?: string | null;
+  lower_third_style?: string | null;
+  trust_enforcement_level?: string | null;
 }
 
 export function createNewsBulletin(
@@ -330,4 +342,46 @@ export function deleteNewsBulletinSelectedItem(
   selectionId: string,
 ): Promise<void> {
   return api.delete(`${BASE_URL}/${bulletinId}/selected-news/${selectionId}`);
+}
+
+// ---------------------------------------------------------------------------
+// Trust enforcement check (M30)
+// ---------------------------------------------------------------------------
+
+export interface TrustCheckResponse {
+  pass_check: boolean;
+  enforcement_level: string;
+  low_trust_items: Array<{
+    news_item_id: string;
+    source_id: string;
+    source_name: string;
+    trust_level: string;
+  }>;
+  total_checked: number;
+  message: string;
+}
+
+export function fetchTrustCheck(bulletinId: string): Promise<TrustCheckResponse> {
+  return api.get<TrustCheckResponse>(`${BASE_URL}/${bulletinId}/trust-check`);
+}
+
+// ---------------------------------------------------------------------------
+// Category → Style suggestion (M30)
+// ---------------------------------------------------------------------------
+
+export interface CategoryStyleSuggestionResponse {
+  suggested_subtitle_style: string;
+  suggested_lower_third_style: string;
+  suggested_composition_direction: string;
+  category_matched: boolean;
+  category_used: string;
+  dominant_category: string | null;
+}
+
+export function fetchCategoryStyleSuggestion(
+  bulletinId: string,
+): Promise<CategoryStyleSuggestionResponse> {
+  return api.get<CategoryStyleSuggestionResponse>(
+    `${BASE_URL}/${bulletinId}/category-style-suggestion`,
+  );
 }

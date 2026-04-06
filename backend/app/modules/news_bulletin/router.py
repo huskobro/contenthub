@@ -335,6 +335,99 @@ async def start_production_endpoint(
             session_factory=session_factory,
         )
     except ValueError as err:
-        raise HTTPException(status_code=400, detail=str(err))
+        error_msg = str(err)
+        if "Güvenilirlik engeli" in error_msg:
+            raise HTTPException(status_code=422, detail=error_msg)
+        raise HTTPException(status_code=400, detail=error_msg)
 
     return StartProductionResponse(**result)
+
+
+# ---------------------------------------------------------------------------
+# Trust enforcement check (M30)
+# ---------------------------------------------------------------------------
+
+class TrustCheckResponse(BaseModel):
+    """Kaynak güvenilirlik kontrol sonucu."""
+    pass_check: bool
+    enforcement_level: str
+    low_trust_items: list[dict] = []
+    total_checked: int = 0
+    message: str = ""
+
+
+@router.get("/{item_id}/trust-check", response_model=TrustCheckResponse)
+async def check_trust(
+    item_id: str, db: AsyncSession = Depends(get_db)
+):
+    """
+    Seçili haberlerin kaynak güvenilirlik kontrolü (M30).
+
+    bulletin.trust_enforcement_level ayarına göre:
+      - none: kontrol yapılmaz
+      - warn: düşük güvenilirlikli kaynaklar uyarı olarak raporlanır
+      - block: düşük güvenilirlikli kaynak varsa blok
+    """
+    bulletin = await service.get_news_bulletin(db, item_id)
+    if bulletin is None:
+        raise HTTPException(status_code=404, detail="News bulletin not found")
+    result = await service.check_trust_enforcement(db, item_id)
+    return TrustCheckResponse(
+        pass_check=result["pass"],
+        enforcement_level=result["enforcement_level"],
+        low_trust_items=result["low_trust_items"],
+        total_checked=result["total_checked"],
+        message=result["message"],
+    )
+
+
+# ---------------------------------------------------------------------------
+# Category → Style suggestion (M30)
+# ---------------------------------------------------------------------------
+
+class CategoryStyleSuggestionResponse(BaseModel):
+    """Kategori bazlı stil önerisi."""
+    suggested_subtitle_style: str
+    suggested_lower_third_style: str
+    suggested_composition_direction: str
+    category_matched: bool
+    category_used: str
+    dominant_category: Optional[str] = None
+
+
+@router.get("/{item_id}/category-style-suggestion", response_model=CategoryStyleSuggestionResponse)
+async def get_category_style_suggestion_endpoint(
+    item_id: str, db: AsyncSession = Depends(get_db)
+):
+    """
+    Seçili haberlerin baskın kategorisine göre stil önerisi (M30).
+
+    Baskın kategori yoksa 'general' varsayılanı kullanılır.
+    Sonuç bir öneri — zorunlu değil.
+    """
+    bulletin = await service.get_news_bulletin(db, item_id)
+    if bulletin is None:
+        raise HTTPException(status_code=404, detail="News bulletin not found")
+
+    # Seçili item'ların kategorilerini topla
+    selected_items = await service.list_bulletin_selected_items(db, item_id)
+    items_data = []
+    for sel in selected_items:
+        from sqlalchemy import select as sa_select
+        from app.db.models import NewsItem
+        ni_row = await db.execute(sa_select(NewsItem).where(NewsItem.id == sel.news_item_id))
+        ni = ni_row.scalar_one_or_none()
+        if ni:
+            items_data.append({"category": ni.category})
+
+    dominant = service.get_dominant_category(items_data)
+    suggestion = service.get_category_style_suggestion(dominant)
+
+    return CategoryStyleSuggestionResponse(
+        suggested_subtitle_style=suggestion["suggested_subtitle_style"],
+        suggested_lower_third_style=suggestion["suggested_lower_third_style"],
+        suggested_composition_direction=suggestion["suggested_composition_direction"],
+        category_matched=suggestion["category_matched"],
+        category_used=suggestion["category_used"],
+        dominant_category=dominant,
+    )

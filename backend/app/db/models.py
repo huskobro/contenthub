@@ -201,6 +201,7 @@ class Job(Base):
     estimated_remaining_seconds: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     workspace_path: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     last_error: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    is_test_data: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, index=True)
     heartbeat_at: Mapped[Optional[datetime]] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
@@ -641,6 +642,10 @@ class NewsBulletin(Base):
     thumbnail_direction   : e.g. 'text_heavy', 'image_heavy', 'split', 'minimal' (M29)
     template_id           : nullable reference to templates.id (M29)
     style_blueprint_id    : nullable reference to style_blueprints.id (M29)
+    render_mode           : 'combined', 'per_category', 'per_item' (M30, default 'combined')
+    subtitle_style        : subtitle preset_id e.g. 'clean_white', 'bold_yellow' (M30)
+    lower_third_style     : lower-third style e.g. 'broadcast', 'minimal', 'modern' (M30)
+    trust_enforcement_level: 'none', 'warn', 'block' — source trust gate (M30)
     """
 
     __tablename__ = "news_bulletins"
@@ -661,6 +666,10 @@ class NewsBulletin(Base):
     thumbnail_direction: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
     template_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True)
     style_blueprint_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True)
+    render_mode: Mapped[Optional[str]] = mapped_column(String(30), nullable=True, default="combined")
+    subtitle_style: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    lower_third_style: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    trust_enforcement_level: Mapped[Optional[str]] = mapped_column(String(20), nullable=True, default="warn")
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=_now
     )

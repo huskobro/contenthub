@@ -33,6 +33,8 @@ import {
   confirmBulletinSelection,
   consumeBulletinNews,
   startBulletinProduction,
+  fetchTrustCheck,
+  fetchCategoryStyleSuggestion,
 } from "../../api/newsBulletinApi";
 
 const STEPS: WizardStep[] = [
@@ -73,6 +75,13 @@ export function NewsBulletinWizardPage() {
   const [thumbnailDirection, setThumbnailDirection] = useState("");
   const [templateId, setTemplateId] = useState("");
   const [styleBlueprintId, setStyleBlueprintId] = useState("");
+  // M31 pickers
+  const [renderMode, setRenderMode] = useState("combined");
+  const [subtitleStyle, setSubtitleStyle] = useState("clean_white");
+  const [lowerThirdStyle, setLowerThirdStyle] = useState("broadcast");
+  const [trustEnforcementLevel, setTrustEnforcementLevel] = useState("warn");
+  // Category suggestion dismiss state
+  const [suggestionDismissed, setSuggestionDismissed] = useState(false);
 
   // Load existing bulletin if resuming
   const { data: bulletin, refetch: refetchBulletin } = useQuery({
@@ -94,6 +103,11 @@ export function NewsBulletinWizardPage() {
       setThumbnailDirection(bulletin.thumbnail_direction || "");
       setTemplateId(bulletin.template_id || "");
       setStyleBlueprintId(bulletin.style_blueprint_id || "");
+      // M31 fields
+      setRenderMode(bulletin.render_mode || "combined");
+      setSubtitleStyle(bulletin.subtitle_style || "clean_white");
+      setLowerThirdStyle(bulletin.lower_third_style || "broadcast");
+      setTrustEnforcementLevel(bulletin.trust_enforcement_level || "warn");
 
       // Auto-advance based on status
       if (bulletin.status === "selection_confirmed" || bulletin.status === "in_progress") {
@@ -116,6 +130,20 @@ export function NewsBulletinWizardPage() {
     queryKey: ["bulletin-selected", bulletinId],
     queryFn: () => fetchNewsBulletinSelectedItems(bulletinId!),
     enabled: !!bulletinId,
+  });
+
+  // M31: Trust check — fetched when on step 2 and bulletin exists
+  const { data: trustCheck, refetch: refetchTrustCheck } = useQuery({
+    queryKey: ["bulletin-trust-check", bulletinId],
+    queryFn: () => fetchTrustCheck(bulletinId!),
+    enabled: !!bulletinId && step === 2,
+  });
+
+  // M31: Category style suggestion — fetched when bulletin exists and on step 2
+  const { data: categoryStyleSuggestion } = useQuery({
+    queryKey: ["bulletin-category-suggestion", bulletinId],
+    queryFn: () => fetchCategoryStyleSuggestion(bulletinId!),
+    enabled: !!bulletinId && step === 2,
   });
 
   // --- Mutations ---
@@ -192,8 +220,15 @@ export function NewsBulletinWizardPage() {
         thumbnail_direction: thumbnailDirection || null,
         template_id: templateId || null,
         style_blueprint_id: styleBlueprintId || null,
+        render_mode: renderMode,
+        subtitle_style: subtitleStyle,
+        lower_third_style: lowerThirdStyle,
+        trust_enforcement_level: trustEnforcementLevel,
       }),
-    onSuccess: () => refetchBulletin(),
+    onSuccess: () => {
+      refetchBulletin();
+      refetchTrustCheck();
+    },
   });
 
   const startProductionMut = useMutation({
@@ -216,8 +251,14 @@ export function NewsBulletinWizardPage() {
     if (step === 1) {
       return bulletin?.status === "in_progress";
     }
+    if (step === 2) {
+      // Block start if trust check failed (block mode)
+      if (trustCheck && !trustCheck.pass_check && trustEnforcementLevel === "block") {
+        return false;
+      }
+    }
     return true;
-  }, [step, bulletinId, topic, selectedItems, bulletin]);
+  }, [step, bulletinId, topic, selectedItems, bulletin, trustCheck, trustEnforcementLevel]);
 
   async function handleNext() {
     if (step === 0) {
@@ -445,6 +486,197 @@ export function NewsBulletinWizardPage() {
             />
           </div>
 
+          {/* ---- M31: Render Mode ---- */}
+          <div>
+            <h3 className="m-0 mb-2 text-md font-semibold text-neutral-800">Video Modu</h3>
+            <div className="flex gap-2">
+              {(
+                [
+                  { value: "combined", label: "Tek Video" },
+                  { value: "per_category", label: "Kategori Bazli" },
+                  { value: "per_item", label: "Haber Bazli" },
+                ] as const
+              ).map(({ value, label }) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setRenderMode(value)}
+                  className={cn(
+                    "px-3 py-1.5 text-sm border rounded-sm cursor-pointer transition-colors",
+                    renderMode === value
+                      ? "bg-brand-500 text-white border-brand-500"
+                      : "bg-white text-neutral-600 border-border hover:bg-neutral-50",
+                  )}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* ---- M31: Subtitle Style ---- */}
+          <div>
+            <h3 className="m-0 mb-2 text-md font-semibold text-neutral-800">Altyazi Stili</h3>
+            <div className="grid grid-cols-3 gap-2">
+              {(
+                [
+                  { value: "clean_white", label: "Temiz Beyaz" },
+                  { value: "bold_yellow", label: "Kalin Sari" },
+                  { value: "minimal_dark", label: "Minimal Koyu" },
+                  { value: "gradient_glow", label: "Isiltili Gecis" },
+                  { value: "outline_only", label: "Yalnizca Kontur" },
+                ] as const
+              ).map(({ value, label }) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setSubtitleStyle(value)}
+                  className={cn(
+                    "px-3 py-2 text-sm border rounded-sm cursor-pointer text-center transition-colors",
+                    subtitleStyle === value
+                      ? "bg-brand-500 text-white border-brand-500"
+                      : "bg-white text-neutral-600 border-border hover:bg-neutral-50",
+                  )}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* ---- M31: Lower-Third Style ---- */}
+          <div>
+            <h3 className="m-0 mb-2 text-md font-semibold text-neutral-800">Alt Bant Stili</h3>
+            <div className="flex gap-2">
+              {(
+                [
+                  { value: "broadcast", label: "TV Broadcast" },
+                  { value: "minimal", label: "Minimal" },
+                  { value: "modern", label: "Modern" },
+                ] as const
+              ).map(({ value, label }) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setLowerThirdStyle(value)}
+                  className={cn(
+                    "px-3 py-1.5 text-sm border rounded-sm cursor-pointer transition-colors",
+                    lowerThirdStyle === value
+                      ? "bg-brand-500 text-white border-brand-500"
+                      : "bg-white text-neutral-600 border-border hover:bg-neutral-50",
+                  )}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* ---- M31: Trust Enforcement Level ---- */}
+          <div>
+            <h3 className="m-0 mb-2 text-md font-semibold text-neutral-800">Guvenilirlik Denetimi</h3>
+            <div className="flex gap-2">
+              {(
+                [
+                  { value: "none", label: "Kontrol Yok" },
+                  { value: "warn", label: "Uyari Ver" },
+                  { value: "block", label: "Engelle" },
+                ] as const
+              ).map(({ value, label }) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setTrustEnforcementLevel(value)}
+                  className={cn(
+                    "px-3 py-1.5 text-sm border rounded-sm cursor-pointer transition-colors",
+                    trustEnforcementLevel === value
+                      ? value === "block"
+                        ? "bg-red-500 text-white border-red-500"
+                        : value === "warn"
+                          ? "bg-amber-500 text-white border-amber-500"
+                          : "bg-neutral-400 text-white border-neutral-400"
+                      : "bg-white text-neutral-600 border-border hover:bg-neutral-50",
+                  )}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* ---- M31: Category Style Suggestion ---- */}
+          {categoryStyleSuggestion && !suggestionDismissed && (
+            <div className="flex items-start gap-3 p-3 bg-blue-50 border border-blue-200 rounded-md text-sm">
+              <div className="flex-1 min-w-0">
+                <p className="m-0 font-medium text-blue-800">
+                  Baskın kategori:{" "}
+                  <span className="font-bold">{categoryStyleSuggestion.dominant_category ?? categoryStyleSuggestion.category_used}</span>
+                  {" → "}Önerilen stil:{" "}
+                  <span className="font-bold">{categoryStyleSuggestion.suggested_subtitle_style}</span>
+                </p>
+              </div>
+              <div className="flex gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSubtitleStyle(categoryStyleSuggestion.suggested_subtitle_style);
+                    setLowerThirdStyle(categoryStyleSuggestion.suggested_lower_third_style);
+                    setCompositionDirection(categoryStyleSuggestion.suggested_composition_direction);
+                    setSuggestionDismissed(true);
+                  }}
+                  className="px-2 py-1 text-xs font-medium text-white bg-blue-600 border-none rounded-sm cursor-pointer hover:bg-blue-700"
+                >
+                  Öneriyi Uygula
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSuggestionDismissed(true)}
+                  className="text-xs text-blue-500 bg-transparent border-none cursor-pointer hover:text-blue-700 underline"
+                >
+                  Manuel seçim yapıyorum
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ---- M31: Trust Check Result ---- */}
+          {trustCheck && (
+            <div
+              className={cn(
+                "p-3 rounded-md border text-sm",
+                !trustCheck.pass_check
+                  ? "bg-red-50 border-red-200 text-red-800"
+                  : trustCheck.low_trust_items.length > 0
+                    ? "bg-amber-50 border-amber-200 text-amber-800"
+                    : "bg-emerald-50 border-emerald-200 text-emerald-800",
+              )}
+            >
+              {!trustCheck.pass_check ? (
+                <>
+                  <p className="m-0 font-medium">Guvenilirlik Engeli</p>
+                  <p className="m-0 mt-1">{trustCheck.message}</p>
+                  {trustCheck.low_trust_items.map((item) => (
+                    <p key={item.news_item_id} className="m-0 mt-0.5 text-xs">
+                      — {item.source_name} (duzey: {item.trust_level})
+                    </p>
+                  ))}
+                </>
+              ) : trustCheck.low_trust_items.length > 0 ? (
+                <>
+                  <p className="m-0 font-medium">Guvenilirlik Uyarisi</p>
+                  <p className="m-0 mt-1">{trustCheck.message}</p>
+                  {trustCheck.low_trust_items.map((item) => (
+                    <p key={item.news_item_id} className="m-0 mt-0.5 text-xs">
+                      — {item.source_name} (duzey: {item.trust_level})
+                    </p>
+                  ))}
+                </>
+              ) : (
+                <p className="m-0 font-medium">Tum kaynaklar guvenilir</p>
+              )}
+            </div>
+          )}
+
           {/* Production summary */}
           <div className="bg-neutral-50 border border-border-subtle rounded-md p-3 space-y-1.5 text-sm">
             <p className="m-0 font-medium text-neutral-700">Uretim Ozeti</p>
@@ -455,6 +687,10 @@ export function NewsBulletinWizardPage() {
             <SummaryRow label="Ton" value={bulletin?.tone || tone} />
             <SummaryRow label="Kompozisyon" value={compositionDirection || "—"} />
             <SummaryRow label="Thumbnail" value={thumbnailDirection || "—"} />
+            <SummaryRow label="Video Modu" value={renderMode} />
+            <SummaryRow label="Altyazi" value={subtitleStyle} />
+            <SummaryRow label="Alt Bant" value={lowerThirdStyle} />
+            <SummaryRow label="Guvenilirlik" value={trustEnforcementLevel} />
           </div>
 
           {bulletin?.status !== "in_progress" && (
