@@ -734,6 +734,25 @@ export function NewsBulletinWizardPage() {
             <p className="m-0 mt-1.5 text-xs text-neutral-500">
               {RENDER_MODE_DESCRIPTIONS[renderMode] || ""}
             </p>
+            {/* Output count estimate based on selected news */}
+            {(() => {
+              const newsCount = bulletinId ? selectedItems.length : selectedItemsLocal.length;
+              if (newsCount === 0) return null;
+              let outputCount = 1;
+              let outputLabel = "1 video";
+              if (renderMode === "per_item") {
+                outputCount = newsCount;
+                outputLabel = `${outputCount} video (haber basina 1)`;
+              } else if (renderMode === "per_category") {
+                // Estimate unique categories — exact count needs backend, show approximate
+                outputLabel = "Kategori sayisi kadar video";
+              }
+              return (
+                <p className="m-0 mt-1 text-xs font-medium text-brand-600">
+                  Tahmini cikti: {outputLabel}
+                </p>
+              );
+            })()}
           </div>
 
           {/* ---- M32: Subtitle Style — SubtitleStylePicker ---- */}
@@ -871,7 +890,11 @@ export function NewsBulletinWizardPage() {
             <SummaryRow label="Ton" value={bulletin?.tone || tone} />
             <SummaryRow label="Kompozisyon" value={compositionDirection || "---"} />
             <SummaryRow label="Thumbnail" value={thumbnailDirection || "---"} />
-            <SummaryRow label="Video Modu" value={renderMode} />
+            <SummaryRow label="Video Modu" value={
+              renderMode === "per_item" ? `Haber Basina (${selectedItems.length} video)` :
+              renderMode === "per_category" ? "Kategori Basina" :
+              "Tek Video"
+            } />
             <SummaryRow label="Altyazi" value={subtitleStyle} />
             <SummaryRow label="Alt Bant" value={lowerThirdStyle} />
             <SummaryRow label="Guvenilirlik" value={trustEnforcementLevel} />
