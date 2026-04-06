@@ -18,6 +18,7 @@ import {
   type ThemeValidationError,
 } from "../components/design-system/themeContract";
 import { RADICAL_THEMES } from "../components/design-system/themes-radical";
+import { HORIZON_THEMES } from "../components/design-system/themes-horizon";
 
 // ---------------------------------------------------------------------------
 // Storage keys
@@ -30,7 +31,7 @@ const STORAGE_KEY_CUSTOM = "contenthub:custom-themes";
 // Built-in themes (cannot be deleted)
 // ---------------------------------------------------------------------------
 
-const BUILTIN_THEMES: ThemeManifest[] = [DEFAULT_THEME, VOID_TERMINAL_THEME, EXAMPLE_WARM_EARTH_THEME, ...RADICAL_THEMES];
+const BUILTIN_THEMES: ThemeManifest[] = [DEFAULT_THEME, VOID_TERMINAL_THEME, EXAMPLE_WARM_EARTH_THEME, ...RADICAL_THEMES, ...HORIZON_THEMES];
 
 // ---------------------------------------------------------------------------
 // Helpers

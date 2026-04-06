@@ -201,6 +201,9 @@ export interface ThemeLayout {
 /** UI density setting */
 export type ThemeDensity = "compact" | "comfortable" | "spacious";
 
+/** Layout mode — determines which layout shell to use */
+export type ThemeLayoutMode = "classic" | "horizon";
+
 // ---------------------------------------------------------------------------
 // Theme Manifest — the complete theme definition
 // ---------------------------------------------------------------------------
@@ -245,6 +248,8 @@ export interface ThemeManifest {
   layout: ThemeLayout;
   /** UI density */
   density: ThemeDensity;
+  /** Layout mode — "classic" uses traditional sidebar+header, "horizon" uses icon rail+context panel */
+  layoutMode?: ThemeLayoutMode;
 }
 
 // ---------------------------------------------------------------------------

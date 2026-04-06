@@ -1,6 +1,6 @@
 import { createBrowserRouter } from "react-router-dom";
-import { AdminLayout } from "./layouts/AdminLayout";
-import { UserLayout } from "./layouts/UserLayout";
+import { DynamicAdminLayout } from "./layouts/DynamicAdminLayout";
+import { DynamicUserLayout } from "./layouts/DynamicUserLayout";
 import { AppEntryGate } from "./AppEntryGate";
 import { OnboardingPage } from "../pages/OnboardingPage";
 import { AdminOverviewPage } from "../pages/AdminOverviewPage";
@@ -52,7 +52,7 @@ export const router = createBrowserRouter([
   },
   {
     path: "/admin",
-    element: <AdminLayout />,
+    element: <DynamicAdminLayout />,
     children: [
       { index: true, element: <AdminOverviewPage /> },
       { path: "settings", element: <VisibilityGuard targetKey="panel:settings"><SettingsRegistryPage /></VisibilityGuard> },
@@ -91,7 +91,7 @@ export const router = createBrowserRouter([
   },
   {
     path: "/user",
-    element: <UserLayout />,
+    element: <DynamicUserLayout />,
     children: [
       { index: true, element: <UserDashboardPage /> },
       { path: "content", element: <UserContentEntryPage /> },

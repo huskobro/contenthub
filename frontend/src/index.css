@@ -590,3 +590,188 @@ body[style*="#0a0a0c"] [data-testid="command-palette-input"]::placeholder {
   0%, 100% { box-shadow: 0 0 6px rgba(234, 88, 12, 0.08); }
   50%      { box-shadow: 0 0 20px rgba(234, 88, 12, 0.18); }
 }
+
+/* ===========================================================================
+   HORIZON DESIGN MODE — Layout-level radical changes
+   These only apply when a Horizon theme is active (layoutMode: "horizon").
+   Completely different UI language from Classic mode.
+   =========================================================================== */
+
+/* ---------------------------------------------------------------------------
+   Horizon shared — Spring animation, depth layers, card hover lift
+   --------------------------------------------------------------------------- */
+
+/* Spring overshoot easing for all Horizon themes */
+[data-theme^="horizon-"] * {
+  --horizon-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Card hover lift effect — cards float up on hover */
+[data-theme^="horizon-"] section,
+[data-theme^="horizon-"] [class*="bg-surface-card"] {
+  transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+[data-theme^="horizon-"] section:hover,
+[data-theme^="horizon-"] [class*="bg-surface-card"]:hover {
+  transform: translateY(-2px);
+}
+
+/* Stagger entrance animation for page content */
+@keyframes horizonFadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+[data-theme^="horizon-"] main > * {
+  animation: horizonFadeUp 300ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+[data-theme^="horizon-"] main > *:nth-child(1) { animation-delay: 0ms; }
+[data-theme^="horizon-"] main > *:nth-child(2) { animation-delay: 50ms; }
+[data-theme^="horizon-"] main > *:nth-child(3) { animation-delay: 100ms; }
+[data-theme^="horizon-"] main > *:nth-child(4) { animation-delay: 150ms; }
+[data-theme^="horizon-"] main > *:nth-child(5) { animation-delay: 200ms; }
+
+/* Headings — extra bold with tight tracking */
+[data-theme^="horizon-"] h1 {
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+[data-theme^="horizon-"] h2 {
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+/* ---------------------------------------------------------------------------
+   Horizon Chalk — Whisper shadows, blue accent glow on focus
+   --------------------------------------------------------------------------- */
+
+[data-theme="horizon-chalk"] :focus-visible {
+  outline: 2px solid var(--ch-focus, #3b82f6);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.08);
+}
+
+/* Subtle blue top accent on cards */
+[data-theme="horizon-chalk"] section {
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(0, 0, 0, 0.02);
+}
+
+/* Clean hover — slight blue tint */
+[data-theme="horizon-chalk"] tr:hover {
+  background-color: rgba(59, 130, 246, 0.03) !important;
+}
+
+/* ---------------------------------------------------------------------------
+   Horizon Obsidian — Terminal glow, neon green accents
+   --------------------------------------------------------------------------- */
+
+[data-theme="horizon-obsidian"] :focus-visible {
+  outline: 1px solid var(--ch-focus, #2dd55b);
+  outline-offset: 1px;
+  box-shadow: 0 0 8px rgba(45, 213, 91, 0.2), 0 0 2px rgba(45, 213, 91, 0.4);
+}
+
+/* Scanline effect */
+[data-theme="horizon-obsidian"]::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(45, 213, 91, 0.006) 2px,
+    rgba(45, 213, 91, 0.006) 4px
+  );
+  mix-blend-mode: screen;
+}
+
+/* Neon border glow on cards */
+[data-theme="horizon-obsidian"] section {
+  border: 1px solid rgba(45, 213, 91, 0.06);
+}
+
+/* Green tint on table hover */
+[data-theme="horizon-obsidian"] tr:hover {
+  background-color: rgba(45, 213, 91, 0.04) !important;
+}
+
+/* Monospace headings for terminal feel */
+[data-theme="horizon-obsidian"] h3,
+[data-theme="horizon-obsidian"] h4 {
+  font-family: var(--ch-font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.8em;
+}
+
+/* ---------------------------------------------------------------------------
+   Horizon Sand — Warm paper texture, amber glow
+   --------------------------------------------------------------------------- */
+
+[data-theme="horizon-sand"] :focus-visible {
+  outline: 2px solid var(--ch-focus, #f59e0b);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.1);
+}
+
+/* Subtle paper noise */
+[data-theme="horizon-sand"]::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.012;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  mix-blend-mode: multiply;
+}
+
+/* Warm hover tint */
+[data-theme="horizon-sand"] tr:hover {
+  background-color: rgba(245, 158, 11, 0.03) !important;
+}
+
+/* ---------------------------------------------------------------------------
+   Horizon Midnight — Gold accent glow, deep navy depth
+   --------------------------------------------------------------------------- */
+
+[data-theme="horizon-midnight"] :focus-visible {
+  outline: 1px solid var(--ch-focus, #d4b642);
+  outline-offset: 2px;
+  box-shadow: 0 0 10px rgba(212, 182, 66, 0.15), 0 0 4px rgba(212, 182, 66, 0.3);
+}
+
+/* Gold accent border on cards */
+[data-theme="horizon-midnight"] section {
+  border: 1px solid rgba(212, 182, 66, 0.06);
+  background-image: linear-gradient(180deg, rgba(212, 182, 66, 0.02) 0%, transparent 30%);
+}
+
+/* Gold heading glow */
+[data-theme="horizon-midnight"] h1 {
+  background: linear-gradient(135deg, #f0dd7e 0%, #e5ca5a 40%, #d4b642 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Gold tint on hover */
+[data-theme="horizon-midnight"] tr:hover {
+  background-color: rgba(212, 182, 66, 0.04) !important;
+}
+
+/* Subtle aurora gradient overlay for depth */
+[data-theme="horizon-midnight"]::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9998;
+  background: radial-gradient(ellipse at 20% 0%, rgba(212,182,66,0.02) 0%, transparent 50%),
+              radial-gradient(ellipse at 80% 100%, rgba(96,165,250,0.015) 0%, transparent 50%);
+}
