@@ -17,9 +17,10 @@ async def list_sources(
     status: Optional[str] = Query(None),
     scan_mode: Optional[str] = Query(None),
     search: Optional[str] = Query(None, description="Kaynak adında arama (case-insensitive)"),
+    include_test_data: bool = Query(False, description="Test/demo kayıtlarını dahil et (varsayılan: False)"),
     db: AsyncSession = Depends(get_db),
 ):
-    return await service.list_sources_with_scan_summary(db, source_type=source_type, status=status, scan_mode=scan_mode, search=search)
+    return await service.list_sources_with_scan_summary(db, source_type=source_type, status=status, scan_mode=scan_mode, search=search, include_test_data=include_test_data)
 
 
 @router.get("/{source_id}", response_model=SourceResponse)

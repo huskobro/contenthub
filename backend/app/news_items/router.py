@@ -16,9 +16,10 @@ async def list_news_items(
     source_id: Optional[str] = Query(None),
     language: Optional[str] = Query(None),
     search: Optional[str] = Query(None, description="Haber başlığında arama (case-insensitive)"),
+    include_test_data: bool = Query(False, description="Test/demo kayıtlarını dahil et (varsayılan: False)"),
     db: AsyncSession = Depends(get_db),
 ):
-    return await service.list_news_items_with_usage_summary(db, status=status, source_id=source_id, language=language, search=search)
+    return await service.list_news_items_with_usage_summary(db, status=status, source_id=source_id, language=language, search=search, include_test_data=include_test_data)
 
 
 @router.get("/{item_id}", response_model=NewsItemResponse)

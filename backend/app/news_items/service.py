@@ -12,8 +12,11 @@ async def list_news_items(
     source_id: Optional[str] = None,
     language: Optional[str] = None,
     search: Optional[str] = None,
+    include_test_data: bool = False,
 ) -> List[NewsItem]:
     q = select(NewsItem).order_by(NewsItem.created_at.desc())
+    if not include_test_data:
+        q = q.where(NewsItem.is_test_data == False)  # noqa: E712
     if status is not None:
         q = q.where(NewsItem.status == status)
     if source_id is not None:
@@ -33,10 +36,11 @@ async def list_news_items_with_usage_summary(
     source_id: Optional[str] = None,
     language: Optional[str] = None,
     search: Optional[str] = None,
+    include_test_data: bool = False,
 ) -> List[NewsItemResponse]:
     """Return news item list enriched with usage_count, last_usage_type, last_target_module."""
     from sqlalchemy import func as sqlfunc
-    items = await list_news_items(db, status=status, source_id=source_id, language=language, search=search)
+    items = await list_news_items(db, status=status, source_id=source_id, language=language, search=search, include_test_data=include_test_data)
 
     # Batch-load published used-news links (usage_type contains published/scheduled)
     if items:

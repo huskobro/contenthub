@@ -11,8 +11,11 @@ async def list_style_blueprints(
     module_scope: Optional[str] = None,
     status: Optional[str] = None,
     search: Optional[str] = None,
+    include_test_data: bool = False,
 ) -> List[StyleBlueprint]:
     q = select(StyleBlueprint).order_by(StyleBlueprint.created_at.desc())
+    if not include_test_data:
+        q = q.where(StyleBlueprint.is_test_data == False)  # noqa: E712
     if module_scope is not None:
         q = q.where(StyleBlueprint.module_scope == module_scope)
     if status is not None:

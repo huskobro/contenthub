@@ -22,8 +22,11 @@ async def list_standard_videos(
     search: Optional[str] = None,
     limit: int = 100,
     offset: int = 0,
+    include_test_data: bool = False,
 ) -> list[StandardVideo]:
     stmt = select(StandardVideo).order_by(StandardVideo.created_at.desc())
+    if not include_test_data:
+        stmt = stmt.where(StandardVideo.is_test_data == False)  # noqa: E712
     if status:
         stmt = stmt.where(StandardVideo.status == status)
     if search:
@@ -42,8 +45,9 @@ async def list_standard_videos_with_artifact_summary(
     search: Optional[str] = None,
     limit: int = 100,
     offset: int = 0,
+    include_test_data: bool = False,
 ) -> list[StandardVideoResponse]:
-    videos = await list_standard_videos(db, status=status, search=search, limit=limit, offset=offset)
+    videos = await list_standard_videos(db, status=status, search=search, limit=limit, offset=offset, include_test_data=include_test_data)
     result = []
     for v in videos:
         script_row = await db.execute(

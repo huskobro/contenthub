@@ -52,8 +52,11 @@ async def list_news_bulletins(
     search: Optional[str] = None,
     limit: int = 100,
     offset: int = 0,
+    include_test_data: bool = False,
 ) -> List[NewsBulletin]:
     stmt = select(NewsBulletin).order_by(NewsBulletin.created_at.desc())
+    if not include_test_data:
+        stmt = stmt.where(NewsBulletin.is_test_data == False)  # noqa: E712
     if status:
         stmt = stmt.where(NewsBulletin.status == status)
     if search:
@@ -72,10 +75,11 @@ async def list_news_bulletins_with_artifacts(
     search: Optional[str] = None,
     limit: int = 100,
     offset: int = 0,
+    include_test_data: bool = False,
 ) -> List[NewsBulletinResponse]:
     """Return bulletin list enriched with has_script, has_metadata, selected_news_count, and warning aggregate."""
     from sqlalchemy import func as sqlfunc
-    bulletins = await list_news_bulletins(db, status=status, search=search, limit=limit, offset=offset)
+    bulletins = await list_news_bulletins(db, status=status, search=search, limit=limit, offset=offset, include_test_data=include_test_data)
     result = []
     for b in bulletins:
         script_row = await db.execute(

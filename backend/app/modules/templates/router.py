@@ -19,6 +19,7 @@ async def list_templates(
     module_scope: Optional[str] = Query(None),
     status: Optional[str] = Query(None),
     search: Optional[str] = Query(None, description="Template adında arama (case-insensitive)"),
+    include_test_data: bool = Query(False, description="Test/demo kayıtlarını dahil et (varsayılan: False)"),
     db: AsyncSession = Depends(get_db),
 ):
     return await service.list_templates_with_style_link_summary(
@@ -28,6 +29,7 @@ async def list_templates(
         module_scope=module_scope,
         status=status,
         search=search,
+        include_test_data=include_test_data,
     )
 
 

@@ -16,9 +16,10 @@ async def list_blueprints(
     module_scope: Optional[str] = Query(None),
     status: Optional[str] = Query(None),
     search: Optional[str] = Query(None, description="Blueprint adında arama (case-insensitive)"),
+    include_test_data: bool = Query(False, description="Test/demo kayıtlarını dahil et (varsayılan: False)"),
     db: AsyncSession = Depends(get_db),
 ):
-    return await service.list_style_blueprints(db, module_scope=module_scope, status=status, search=search)
+    return await service.list_style_blueprints(db, module_scope=module_scope, status=status, search=search, include_test_data=include_test_data)
 
 
 @router.get("/{blueprint_id}", response_model=StyleBlueprintResponse)

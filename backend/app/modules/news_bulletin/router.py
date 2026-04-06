@@ -72,10 +72,11 @@ async def list_news_bulletins(
     search: Optional[str] = Query(None, description="Baslik/konu arama (case-insensitive)"),
     limit: int = Query(100, ge=1, le=500, description="Sayfalama limiti"),
     offset: int = Query(0, ge=0, description="Sayfalama offset'i"),
+    include_test_data: bool = Query(False, description="Test/demo kayıtlarını dahil et (varsayılan: False)"),
     db: AsyncSession = Depends(get_db),
 ):
     return await service.list_news_bulletins_with_artifacts(
-        db, status=status, search=search, limit=limit, offset=offset,
+        db, status=status, search=search, limit=limit, offset=offset, include_test_data=include_test_data,
     )
 
 

@@ -68,9 +68,11 @@ async def list_jobs(
     status: Optional[str] = None,
     module_type: Optional[str] = None,
     search: Optional[str] = None,
-    exclude_test_data: bool = True,
+    include_test_data: bool = False,
 ) -> list[Job]:
     stmt = select(Job).order_by(Job.created_at.desc())
+    if not include_test_data:
+        stmt = stmt.where(Job.is_test_data == False)  # noqa: E712
     if status:
         stmt = stmt.where(Job.status == status)
     if module_type:
@@ -80,8 +82,6 @@ async def list_jobs(
         stmt = stmt.where(
             Job.module_type.ilike(pattern) | Job.id.ilike(pattern)
         )
-    if exclude_test_data:
-        stmt = stmt.where(Job.is_test_data == False)  # noqa: E712
     result = await db.execute(stmt)
     return list(result.scalars().all())
 

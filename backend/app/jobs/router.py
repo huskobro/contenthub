@@ -69,11 +69,11 @@ async def list_jobs(
     status: Optional[str] = Query(None),
     module_type: Optional[str] = Query(None),
     search: Optional[str] = Query(None, description="module_type veya id üzerinde arama (case-insensitive)"),
-    exclude_test_data: bool = Query(True, description="Test/demo job kayıtlarını listeden çıkar (varsayılan: True)"),
+    include_test_data: bool = Query(False, description="Test/demo kayıtlarını dahil et (varsayılan: False)"),
     db: AsyncSession = Depends(get_db),
 ):
-    """İş listesini döndürür. status, module_type, search ve exclude_test_data ile filtrelenebilir."""
-    jobs = await service.list_jobs(db, status=status, module_type=module_type, search=search, exclude_test_data=exclude_test_data)
+    """İş listesini döndürür. status, module_type, search ve include_test_data ile filtrelenebilir."""
+    jobs = await service.list_jobs(db, status=status, module_type=module_type, search=search, include_test_data=include_test_data)
     result = []
     for job in jobs:
         job_data = await _build_job_response(db, job)
@@ -398,7 +398,7 @@ async def mark_jobs_as_test_data(
     Verilen job ID'lerini is_test_data=True olarak işaretle.
 
     Bu kayıtlar silinmez — varsayılan is listesinden gizlenir.
-    Admin panelinden exclude_test_data=false ile görüntülenebilir.
+    Admin panelinden include_test_data=true ile görüntülenebilir.
     """
     marked_count = await service.mark_jobs_as_test_data(db, payload.job_ids)
     return {"marked_count": marked_count}

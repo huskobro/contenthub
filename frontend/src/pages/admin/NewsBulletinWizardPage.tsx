@@ -241,6 +241,10 @@ export function NewsBulletinWizardPage() {
       refetchSelected();
       refetchBulletin();
     },
+    onError: (err: any) => {
+      const msg = err?.response?.data?.detail || err?.message || "Bilinmeyen hata";
+      toast.error(`Bulten olusturulamadi: ${msg}`);
+    },
   });
 
   const addItemMut = useMutation({
@@ -253,6 +257,10 @@ export function NewsBulletinWizardPage() {
       refetchSelected();
       refetchBulletin();
     },
+    onError: (err: any) => {
+      const msg = err?.response?.data?.detail || err?.message || "Bilinmeyen hata";
+      toast.error(`Haber eklenemedi: ${msg}`);
+    },
   });
 
   const removeItemMut = useMutation({
@@ -262,6 +270,10 @@ export function NewsBulletinWizardPage() {
       refetchSelected();
       refetchBulletin();
     },
+    onError: (err: any) => {
+      const msg = err?.response?.data?.detail || err?.message || "Bilinmeyen hata";
+      toast.error(`Haber kaldirilamadi: ${msg}`);
+    },
   });
 
   const updateNarrationMut = useMutation({
@@ -270,6 +282,10 @@ export function NewsBulletinWizardPage() {
         edited_narration: narration || null,
       }),
     onSuccess: () => refetchSelected(),
+    onError: (err: any) => {
+      const msg = err?.response?.data?.detail || err?.message || "Bilinmeyen hata";
+      toast.error(`Anlatim guncellenemedi: ${msg}`);
+    },
   });
 
   const confirmSelectionMut = useMutation({
@@ -281,6 +297,10 @@ export function NewsBulletinWizardPage() {
       toast.success(`Secim onaylandi (${res.confirmed_count} haber)`);
       refetchBulletin();
     },
+    onError: (err: any) => {
+      const msg = err?.response?.data?.detail || err?.message || "Bilinmeyen hata";
+      toast.error(`Secim onaylanamadi: ${msg}`);
+    },
   });
 
   const consumeNewsMut = useMutation({
@@ -288,6 +308,10 @@ export function NewsBulletinWizardPage() {
     onSuccess: (res) => {
       toast.success(`${res.consumed_count} haber tuketildi — pipeline hazir`);
       refetchBulletin();
+    },
+    onError: (err: any) => {
+      const msg = err?.response?.data?.detail || err?.message || "Bilinmeyen hata";
+      toast.error(`Haber tuketimi basarisiz: ${msg}`);
     },
   });
 
@@ -306,6 +330,10 @@ export function NewsBulletinWizardPage() {
     onSuccess: () => {
       refetchBulletin();
       refetchTrustCheck();
+    },
+    onError: (err: any) => {
+      const msg = err?.response?.data?.detail || err?.message || "Bilinmeyen hata";
+      toast.error(`Bulten guncellenemedi: ${msg}`);
     },
   });
 

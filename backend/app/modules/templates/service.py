@@ -16,8 +16,11 @@ async def list_templates(
     module_scope: Optional[str] = None,
     status: Optional[str] = None,
     search: Optional[str] = None,
+    include_test_data: bool = False,
 ) -> List[Template]:
     stmt = select(Template).order_by(Template.created_at.desc())
+    if not include_test_data:
+        stmt = stmt.where(Template.is_test_data == False)  # noqa: E712
     if template_type is not None:
         stmt = stmt.where(Template.template_type == template_type)
     if owner_scope is not None:
@@ -80,6 +83,7 @@ async def list_templates_with_style_link_summary(
     module_scope: Optional[str] = None,
     status: Optional[str] = None,
     search: Optional[str] = None,
+    include_test_data: bool = False,
 ) -> List[TemplateResponse]:
     templates = await list_templates(
         db,
@@ -88,6 +92,7 @@ async def list_templates_with_style_link_summary(
         module_scope=module_scope,
         status=status,
         search=search,
+        include_test_data=include_test_data,
     )
     result = []
     for t in templates:

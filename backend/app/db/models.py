@@ -294,6 +294,7 @@ class StandardVideo(Base):
     subtitle_style: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     status: Mapped[str] = mapped_column(String(50), nullable=False, default="draft", index=True)
     job_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True)
+    is_test_data: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, index=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=_now
     )
@@ -412,6 +413,7 @@ class Template(Base):
     publish_profile_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     status: Mapped[str] = mapped_column(String(50), nullable=False, default="draft", index=True)
     version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    is_test_data: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, index=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=_now
     )
@@ -455,6 +457,7 @@ class StyleBlueprint(Base):
     thumbnail_rules_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     preview_strategy_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    is_test_data: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, index=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=_now
     )
@@ -498,6 +501,7 @@ class NewsSource(Base):
     category: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     status: Mapped[str] = mapped_column(String(50), nullable=False, default="active", index=True)
     notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    is_test_data: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, index=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=_now
     )
@@ -580,6 +584,7 @@ class NewsItem(Base):
     status: Mapped[str] = mapped_column(String(50), nullable=False, default="new", index=True)
     dedupe_key: Mapped[Optional[str]] = mapped_column(String(500), nullable=True, index=True)
     raw_payload_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    is_test_data: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, index=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=_now
     )
@@ -670,6 +675,7 @@ class NewsBulletin(Base):
     subtitle_style: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
     lower_third_style: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
     trust_enforcement_level: Mapped[Optional[str]] = mapped_column(String(20), nullable=True, default="warn")
+    is_test_data: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, index=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=_now
     )
@@ -925,6 +931,7 @@ class PublishRecord(Base):
     payload_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     result_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    is_test_data: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, index=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=_now
     )
