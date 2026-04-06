@@ -287,7 +287,7 @@ describe("Phase 320 — Release readiness checklist", () => {
     expect(note.textContent).toContain("Ana urun alanlarinin mevcut durumu");
   });
 
-  it("has all 8 readiness items", () => {
+  it("has all readiness items", () => {
     renderAdmin("/admin");
     expect(screen.getByTestId("readiness-content")).toBeDefined();
     expect(screen.getByTestId("readiness-publish")).toBeDefined();
@@ -299,34 +299,29 @@ describe("Phase 320 — Release readiness checklist", () => {
     expect(screen.getByTestId("readiness-library")).toBeDefined();
   });
 
-  it("readiness items show correct status labels after M18", () => {
+  it("readiness items show dynamic status labels (Hazir or Yapilandirilmadi)", () => {
     renderAdmin("/admin");
-    // Items still at Omurga hazir
-    const omurgaIds = ["readiness-content", "readiness-jobs"];
-    omurgaIds.forEach((id) => {
-      expect(screen.getByTestId(id).textContent).toContain("Omurga hazir");
-    });
-    // Publish upgraded to M23
-    expect(screen.getByTestId("readiness-publish").textContent).toContain("M23 aktif");
-    // News still at M11
-    expect(screen.getByTestId("readiness-news").textContent).toContain("M11 aktif");
-    // Templates still at M12
-    expect(screen.getByTestId("readiness-templates").textContent).toContain("M12 aktif");
-    // Settings upgraded to M23
-    expect(screen.getByTestId("readiness-settings").textContent).toContain("M23 aktif");
-    // Analytics upgraded to M23
-    expect(screen.getByTestId("readiness-analytics").textContent).toContain("M23 aktif");
-    // Library/assets at M22
-    const m22Ids = ["readiness-library", "readiness-assets"];
-    m22Ids.forEach((id) => {
-      expect(screen.getByTestId(id).textContent).toContain("M22 aktif");
+    const allIds = [
+      "readiness-content",
+      "readiness-jobs",
+      "readiness-publish",
+      "readiness-news",
+      "readiness-templates",
+      "readiness-settings",
+      "readiness-analytics",
+      "readiness-library",
+    ];
+    allIds.forEach((id) => {
+      const text = screen.getByTestId(id).textContent || "";
+      expect(text.includes("Hazir") || text.includes("Yapilandirilmadi")).toBe(true);
     });
   });
 
-  it("readiness-assets has M22 aktif status", () => {
+  it("readiness-library has dynamic status", () => {
     renderAdmin("/admin");
-    const item = screen.getByTestId("readiness-assets");
-    expect(item.textContent).toContain("M22 aktif");
+    const item = screen.getByTestId("readiness-library");
+    const text = item.textContent || "";
+    expect(text.includes("Hazir") || text.includes("Yapilandirilmadi")).toBe(true);
   });
 
   it("deferred note mentions backend entegrasyonu", () => {

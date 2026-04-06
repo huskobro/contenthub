@@ -1,3 +1,5 @@
+import { api } from "./client";
+
 const BASE_URL = "/api/v1/templates";
 
 export interface TemplateResponse {
@@ -18,27 +20,17 @@ export interface TemplateResponse {
   primary_link_role?: string | null;
 }
 
-export async function fetchTemplates(params?: {
+export function fetchTemplates(params?: {
   template_type?: string;
   owner_scope?: string;
   module_scope?: string;
   status?: string;
 }): Promise<TemplateResponse[]> {
-  const url = new URL(BASE_URL, window.location.origin);
-  if (params?.template_type) url.searchParams.set("template_type", params.template_type);
-  if (params?.owner_scope) url.searchParams.set("owner_scope", params.owner_scope);
-  if (params?.module_scope) url.searchParams.set("module_scope", params.module_scope);
-  if (params?.status) url.searchParams.set("status", params.status);
-
-  const resp = await fetch(url.pathname + url.search);
-  if (!resp.ok) throw new Error(`Failed to fetch templates: ${resp.status}`);
-  return resp.json();
+  return api.get<TemplateResponse[]>(BASE_URL, params);
 }
 
-export async function fetchTemplateById(templateId: string): Promise<TemplateResponse> {
-  const resp = await fetch(`${BASE_URL}/${templateId}`);
-  if (!resp.ok) throw new Error(`Failed to fetch template ${templateId}: ${resp.status}`);
-  return resp.json();
+export function fetchTemplateById(templateId: string): Promise<TemplateResponse> {
+  return api.get<TemplateResponse>(`${BASE_URL}/${templateId}`);
 }
 
 export interface TemplateCreatePayload {
@@ -67,22 +59,10 @@ export interface TemplateUpdatePayload {
   version?: number;
 }
 
-export async function createTemplate(payload: TemplateCreatePayload): Promise<TemplateResponse> {
-  const resp = await fetch(BASE_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  if (!resp.ok) throw new Error(`Failed to create template: ${resp.status}`);
-  return resp.json();
+export function createTemplate(payload: TemplateCreatePayload): Promise<TemplateResponse> {
+  return api.post<TemplateResponse>(BASE_URL, payload);
 }
 
-export async function updateTemplate(templateId: string, payload: TemplateUpdatePayload): Promise<TemplateResponse> {
-  const resp = await fetch(`${BASE_URL}/${templateId}`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  if (!resp.ok) throw new Error(`Failed to update template ${templateId}: ${resp.status}`);
-  return resp.json();
+export function updateTemplate(templateId: string, payload: TemplateUpdatePayload): Promise<TemplateResponse> {
+  return api.patch<TemplateResponse>(`${BASE_URL}/${templateId}`, payload);
 }

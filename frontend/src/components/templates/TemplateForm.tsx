@@ -2,6 +2,11 @@ import { useState } from "react";
 import type { TemplateResponse } from "../../api/templatesApi";
 import { validateJson } from "../../lib/safeJson";
 import { cn } from "../../lib/cn";
+import {
+  TEMPLATE_TYPES,
+  OWNER_SCOPES,
+  TEMPLATE_STATUSES,
+} from "../../constants/statusOptions";
 
 export interface TemplateFormValues {
   name: string;
@@ -105,9 +110,7 @@ export function TemplateForm({
           Template Type <span className="text-error">*</span>
         </label>
         <select className="w-full py-1.5 px-2 text-md border border-border-subtle rounded-sm box-border" value={values.template_type} onChange={(e) => set("template_type", e.target.value)}>
-          <option value="style">style</option>
-          <option value="content">content</option>
-          <option value="publish">publish</option>
+          {TEMPLATE_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
         </select>
         {errors.template_type && <div className="text-sm text-error mt-0.5">{errors.template_type}</div>}
       </div>
@@ -117,9 +120,7 @@ export function TemplateForm({
           Owner Scope <span className="text-error">*</span>
         </label>
         <select className="w-full py-1.5 px-2 text-md border border-border-subtle rounded-sm box-border" value={values.owner_scope} onChange={(e) => set("owner_scope", e.target.value)}>
-          <option value="system">system</option>
-          <option value="admin">admin</option>
-          <option value="user">user</option>
+          {OWNER_SCOPES.map((s) => <option key={s} value={s}>{s}</option>)}
         </select>
         {errors.owner_scope && <div className="text-sm text-error mt-0.5">{errors.owner_scope}</div>}
       </div>
@@ -147,9 +148,7 @@ export function TemplateForm({
       <div className="mb-3">
         <label className="block text-sm font-semibold text-neutral-700 mb-1">Status</label>
         <select className="w-full py-1.5 px-2 text-md border border-border-subtle rounded-sm box-border" value={values.status} onChange={(e) => set("status", e.target.value)}>
-          <option value="draft">draft</option>
-          <option value="active">active</option>
-          <option value="archived">archived</option>
+          {TEMPLATE_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
         </select>
       </div>
 
@@ -201,7 +200,7 @@ export function TemplateForm({
       </div>
 
       {submitError && (
-        <div className="text-error text-md mb-3 break-words" style={{ overflowWrap: "anywhere" }}>{submitError}</div>
+        <div className="text-error text-md mb-3 break-words [overflow-wrap:anywhere]">{submitError}</div>
       )}
 
       <div className="flex gap-2">

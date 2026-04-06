@@ -2,9 +2,11 @@ import { useNavigate } from "react-router-dom";
 import { useCreateStyleBlueprint } from "../../hooks/useCreateStyleBlueprint";
 import { StyleBlueprintForm } from "../../components/style-blueprints/StyleBlueprintForm";
 import type { StyleBlueprintFormValues } from "../../components/style-blueprints/StyleBlueprintForm";
+import { useToast } from "../../hooks/useToast";
 
 export function StyleBlueprintCreatePage() {
   const navigate = useNavigate();
+  const toast = useToast();
   const { mutate, isPending, error } = useCreateStyleBlueprint();
 
   function handleSubmit(values: StyleBlueprintFormValues) {
@@ -24,6 +26,7 @@ export function StyleBlueprintCreatePage() {
       },
       {
         onSuccess: (created) => {
+          toast.success("Style blueprint basariyla olusturuldu");
           navigate("/admin/style-blueprints", { state: { selectedId: created.id } });
         },
       }

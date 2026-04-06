@@ -149,12 +149,13 @@ describe("Asset Library Entry Surface", () => {
     expect(links.length).toBeGreaterThanOrEqual(1);
   });
 
-  it("admin overview release readiness includes Varlik Kutuphanesi with M22 aktif status", () => {
+  it("admin overview release readiness includes Kutuphane with dynamic status", () => {
     renderAdmin("/admin");
-    const item = screen.getByTestId("readiness-assets");
+    const item = screen.getByTestId("readiness-library");
     expect(item).toBeDefined();
-    expect(item.textContent).toContain("M22 aktif");
-    expect(item.textContent).toContain("Varlik Kutuphanesi");
+    const text = item.textContent || "";
+    expect(text.includes("Hazir") || text.includes("Yapilandirilmadi")).toBe(true);
+    expect(text).toContain("Kutuphane");
   });
 });
 
@@ -276,23 +277,23 @@ describe("Asset Library Empty State", () => {
 /* ------------------------------------------------------------------ */
 
 describe("Asset Library Verification — Admin Overview", () => {
-  it("admin overview asset entry chain: quick link + readiness item", () => {
+  it("admin overview asset entry chain: quick link + readiness-library item", () => {
     renderAdmin("/admin");
     expect(screen.getByTestId("quick-link-assets")).toBeDefined();
-    expect(screen.getByTestId("readiness-assets")).toBeDefined();
+    expect(screen.getByTestId("readiness-library")).toBeDefined();
   });
 
-  it("readiness-assets item shows M22 aktif not Desteklenmiyor", () => {
+  it("readiness-library item shows dynamic status not Desteklenmiyor", () => {
     renderAdmin("/admin");
-    const item = screen.getByTestId("readiness-assets");
-    expect(item.textContent).toContain("M22 aktif");
-    expect(item.textContent).not.toContain("Desteklenmiyor");
+    const item = screen.getByTestId("readiness-library");
+    const text = item.textContent || "";
+    expect(text.includes("Hazir") || text.includes("Yapilandirilmadi")).toBe(true);
+    expect(text).not.toContain("Desteklenmiyor");
   });
 
-  it("readiness-assets item mentions key operations (M22 updated)", () => {
+  it("readiness-library item shows aktif detail", () => {
     renderAdmin("/admin");
-    const item = screen.getByTestId("readiness-assets");
-    expect(item.textContent).toContain("yukleme");
+    const item = screen.getByTestId("readiness-library");
     expect(item.textContent).toContain("aktif");
   });
 

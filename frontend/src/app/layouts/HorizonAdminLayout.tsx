@@ -11,7 +11,7 @@
 
 import { useEffect } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
-import { HorizonSidebar, type HorizonNavGroup } from "../../components/layout/HorizonSidebar";
+import { HorizonSidebar } from "../../components/layout/HorizonSidebar";
 import { ToastContainer } from "../../components/design-system/Toast";
 import { ThemeProvider } from "../../components/design-system/ThemeProvider";
 import { CommandPalette } from "../../components/design-system/CommandPalette";
@@ -21,119 +21,15 @@ import { useCommandPaletteShortcut } from "../../hooks/useCommandPaletteShortcut
 import { useCommandPaletteStore } from "../../stores/commandPaletteStore";
 import { buildAdminNavigationCommands, buildAdminActionCommands } from "../../commands/adminCommands";
 import { buildContextualCommands } from "../../commands/contextualCommands";
-import { useVisibility } from "../../hooks/useVisibility";
-
-// ---------------------------------------------------------------------------
-// Navigation groups for Horizon icon rail
-// ---------------------------------------------------------------------------
-
-const HORIZON_ADMIN_GROUPS: HorizonNavGroup[] = [
-  {
-    id: "overview",
-    label: "Genel",
-    icon: "\u25C9",
-    items: [
-      { label: "Genel Bakis", to: "/admin" },
-    ],
-  },
-  {
-    id: "system",
-    label: "Sistem",
-    icon: "\u2699",
-    items: [
-      { label: "Ayarlar", to: "/admin/settings" },
-      { label: "Gorunurluk", to: "/admin/visibility" },
-      { label: "Isler", to: "/admin/jobs" },
-      { label: "Audit Log", to: "/admin/audit-logs" },
-    ],
-  },
-  {
-    id: "content",
-    label: "Icerik Uretimi",
-    icon: "\u270E",
-    items: [
-      { label: "Icerik Kutuphanesi", to: "/admin/library" },
-      { label: "Varlik Kutuphanesi", to: "/admin/assets" },
-      { label: "Standart Video", to: "/admin/standard-videos" },
-      { label: "Sablonlar", to: "/admin/templates" },
-      { label: "Stil Sablonlari", to: "/admin/style-blueprints" },
-      { label: "Sablon-Stil Baglantilari", to: "/admin/template-style-links" },
-    ],
-  },
-  {
-    id: "publish",
-    label: "Yayin",
-    icon: "\u25B6",
-    items: [
-      { label: "Yayin Merkezi", to: "/admin/publish" },
-    ],
-  },
-  {
-    id: "analytics",
-    label: "Analytics",
-    icon: "\u2261",
-    items: [
-      { label: "Analytics", to: "/admin/analytics" },
-      { label: "YouTube Analytics", to: "/admin/analytics/youtube" },
-    ],
-  },
-  {
-    id: "news",
-    label: "Haber",
-    icon: "\u2139",
-    items: [
-      { label: "Kaynaklar", to: "/admin/sources" },
-      { label: "Kaynak Taramalari", to: "/admin/source-scans" },
-      { label: "Haber Bultenleri", to: "/admin/news-bulletins" },
-      { label: "Haber Ogeler", to: "/admin/news-items" },
-      { label: "Kullanilan Haberler", to: "/admin/used-news" },
-    ],
-  },
-  {
-    id: "appearance",
-    label: "Gorunum",
-    icon: "\u25D0",
-    items: [
-      { label: "Tema Yonetimi", to: "/admin/themes" },
-    ],
-  },
-];
-
-// ---------------------------------------------------------------------------
-// Visibility-filtered groups
-// ---------------------------------------------------------------------------
-
-function useFilteredGroups(): HorizonNavGroup[] {
-  const settings = useVisibility("panel:settings");
-  const visibility = useVisibility("panel:visibility");
-  const templates = useVisibility("panel:templates");
-  const analytics = useVisibility("panel:analytics");
-  const sources = useVisibility("panel:sources");
-
-  const guardMap: Record<string, boolean> = {
-    "/admin/settings": settings.visible,
-    "/admin/visibility": visibility.visible,
-    "/admin/templates": templates.visible,
-    "/admin/analytics": analytics.visible,
-    "/admin/analytics/youtube": analytics.visible,
-    "/admin/sources": sources.visible,
-  };
-
-  return HORIZON_ADMIN_GROUPS.map((group) => ({
-    ...group,
-    items: group.items.filter((item) => {
-      const guard = guardMap[item.to];
-      return guard !== false;
-    }),
-  })).filter((group) => group.items.length > 0);
-}
+import { useAdminVisibilityMap, filterHorizonAdminGroups } from "./useLayoutNavigation";
 
 // ---------------------------------------------------------------------------
 // Layout
 // ---------------------------------------------------------------------------
 
 export function HorizonAdminLayout() {
-  const filteredGroups = useFilteredGroups();
+  const visibilityMap = useAdminVisibilityMap();
+  const filteredGroups = filterHorizonAdminGroups(visibilityMap);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -168,8 +64,7 @@ export function HorizonAdminLayout() {
 
         {/* Main Content — offset by icon rail width */}
         <main
-          className="ml-[48px] min-h-screen p-4 bg-surface-page overflow-y-auto transition-[margin] duration-normal"
-          style={{ paddingTop: "1rem" }}
+          className="ml-[48px] min-h-screen p-4 pt-4 bg-surface-page overflow-y-auto transition-[margin] duration-normal"
         >
           {/* Breadcrumb-like context header */}
           <div className="flex items-center justify-between mb-4 max-w-page">

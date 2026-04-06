@@ -18,7 +18,8 @@ import asyncio
 import logging
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 
 from app.core.config import settings
 from app.core.logging import setup_logging
@@ -223,6 +224,126 @@ async def lifespan(app: FastAPI):
         logger.info("Publish scheduler cancelled.")
 
 
+def _register_exception_handlers(app: FastAPI) -> None:
+    """
+    Map domain exceptions to proper HTTP status codes.
+
+    Job Engine:
+        JobNotFoundError / StepNotFoundError  → 404
+        InvalidTransitionError                → 409
+        StepExecutionError                    → 500 (internal)
+
+    Publish:
+        PublishRecordNotFoundError            → 404
+        InvalidPublishTransitionError         → 409
+        PublishGateViolationError             → 409
+        ReviewGateViolationError              → 409
+        PublishAlreadyTerminalError           → 409
+
+    Modules:
+        ModuleNotFoundError                   → 404
+        InputValidationError (modules)        → 422
+
+    Providers:
+        ProviderNotFoundError                 → 503
+        NonRetryableProviderError             → 502
+        ProviderInvokeError                   → 502
+        ProviderError (base)                  → 502
+    """
+    from app.jobs.exceptions import (
+        JobNotFoundError,
+        StepNotFoundError,
+        InvalidTransitionError,
+        StepExecutionError,
+    )
+    from app.publish.exceptions import (
+        PublishRecordNotFoundError,
+        InvalidPublishTransitionError,
+        PublishGateViolationError,
+        ReviewGateViolationError,
+        PublishAlreadyTerminalError,
+    )
+    from app.modules.exceptions import (
+        ModuleNotFoundError as ModuleNotFound,
+        InputValidationError as ModuleInputValidationError,
+    )
+    from app.providers.exceptions import (
+        ProviderError,
+        ProviderInvokeError,
+        NonRetryableProviderError,
+        ProviderNotFoundError,
+    )
+
+    # --- Job Engine 404s ---
+    @app.exception_handler(JobNotFoundError)
+    async def _job_not_found(request: Request, exc: JobNotFoundError) -> JSONResponse:
+        return JSONResponse(status_code=404, content={"detail": str(exc)})
+
+    @app.exception_handler(StepNotFoundError)
+    async def _step_not_found(request: Request, exc: StepNotFoundError) -> JSONResponse:
+        return JSONResponse(status_code=404, content={"detail": str(exc)})
+
+    # --- Job Engine 409 ---
+    @app.exception_handler(InvalidTransitionError)
+    async def _invalid_transition(request: Request, exc: InvalidTransitionError) -> JSONResponse:
+        return JSONResponse(status_code=409, content={"detail": str(exc)})
+
+    # --- Job Engine 500 ---
+    @app.exception_handler(StepExecutionError)
+    async def _step_execution(request: Request, exc: StepExecutionError) -> JSONResponse:
+        return JSONResponse(status_code=500, content={"detail": str(exc)})
+
+    # --- Publish 404 ---
+    @app.exception_handler(PublishRecordNotFoundError)
+    async def _publish_not_found(request: Request, exc: PublishRecordNotFoundError) -> JSONResponse:
+        return JSONResponse(status_code=404, content={"detail": str(exc)})
+
+    # --- Publish 409s ---
+    @app.exception_handler(InvalidPublishTransitionError)
+    async def _invalid_publish_transition(request: Request, exc: InvalidPublishTransitionError) -> JSONResponse:
+        return JSONResponse(status_code=409, content={"detail": str(exc)})
+
+    @app.exception_handler(PublishGateViolationError)
+    async def _publish_gate(request: Request, exc: PublishGateViolationError) -> JSONResponse:
+        return JSONResponse(status_code=409, content={"detail": str(exc)})
+
+    @app.exception_handler(ReviewGateViolationError)
+    async def _review_gate(request: Request, exc: ReviewGateViolationError) -> JSONResponse:
+        return JSONResponse(status_code=409, content={"detail": str(exc)})
+
+    @app.exception_handler(PublishAlreadyTerminalError)
+    async def _publish_terminal(request: Request, exc: PublishAlreadyTerminalError) -> JSONResponse:
+        return JSONResponse(status_code=409, content={"detail": str(exc)})
+
+    # --- Module 404 ---
+    @app.exception_handler(ModuleNotFound)
+    async def _module_not_found(request: Request, exc: ModuleNotFound) -> JSONResponse:
+        return JSONResponse(status_code=404, content={"detail": str(exc)})
+
+    # --- Module 422 ---
+    @app.exception_handler(ModuleInputValidationError)
+    async def _module_input_validation(request: Request, exc: ModuleInputValidationError) -> JSONResponse:
+        return JSONResponse(status_code=422, content={"detail": str(exc)})
+
+    # --- Provider 503 ---
+    @app.exception_handler(ProviderNotFoundError)
+    async def _provider_not_found(request: Request, exc: ProviderNotFoundError) -> JSONResponse:
+        return JSONResponse(status_code=503, content={"detail": str(exc)})
+
+    # --- Provider 502 (specific before general) ---
+    @app.exception_handler(NonRetryableProviderError)
+    async def _non_retryable_provider(request: Request, exc: NonRetryableProviderError) -> JSONResponse:
+        return JSONResponse(status_code=502, content={"detail": str(exc)})
+
+    @app.exception_handler(ProviderInvokeError)
+    async def _provider_invoke(request: Request, exc: ProviderInvokeError) -> JSONResponse:
+        return JSONResponse(status_code=502, content={"detail": str(exc)})
+
+    @app.exception_handler(ProviderError)
+    async def _provider_base(request: Request, exc: ProviderError) -> JSONResponse:
+        return JSONResponse(status_code=502, content={"detail": str(exc)})
+
+
 def create_app() -> FastAPI:
     setup_logging(debug=settings.debug)
 
@@ -232,6 +353,8 @@ def create_app() -> FastAPI:
         docs_url=f"{settings.api_prefix}/docs",
         lifespan=lifespan,
     )
+
+    _register_exception_handlers(app)
 
     app.include_router(api_router, prefix=settings.api_prefix)
 

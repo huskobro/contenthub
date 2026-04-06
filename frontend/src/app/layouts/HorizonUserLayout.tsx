@@ -5,38 +5,12 @@
  */
 
 import { Outlet, useNavigate } from "react-router-dom";
-import { HorizonSidebar, type HorizonNavGroup } from "../../components/layout/HorizonSidebar";
+import { HorizonSidebar } from "../../components/layout/HorizonSidebar";
 import { ToastContainer } from "../../components/design-system/Toast";
 import { ThemeProvider } from "../../components/design-system/ThemeProvider";
 import { NotificationCenter, NotificationBell } from "../../components/design-system/NotificationCenter";
 import { KeyboardShortcutsHelp } from "../../components/design-system/KeyboardShortcutsHelp";
-
-const HORIZON_USER_GROUPS: HorizonNavGroup[] = [
-  {
-    id: "home",
-    label: "Anasayfa",
-    icon: "\u25C9",
-    items: [
-      { label: "Anasayfa", to: "/user" },
-    ],
-  },
-  {
-    id: "content",
-    label: "Icerik",
-    icon: "\u270E",
-    items: [
-      { label: "Icerik", to: "/user/content" },
-    ],
-  },
-  {
-    id: "publish",
-    label: "Yayin",
-    icon: "\u25B6",
-    items: [
-      { label: "Yayin", to: "/user/publish" },
-    ],
-  },
-];
+import { HORIZON_USER_GROUPS } from "./useLayoutNavigation";
 
 export function HorizonUserLayout() {
   const navigate = useNavigate();
@@ -51,8 +25,7 @@ export function HorizonUserLayout() {
         <HorizonSidebar groups={HORIZON_USER_GROUPS} brandLabel="ContentHub" />
 
         <main
-          className="ml-[48px] min-h-screen p-4 bg-surface-page overflow-y-auto transition-[margin] duration-normal"
-          style={{ paddingTop: "1rem" }}
+          className="ml-[48px] min-h-screen p-4 pt-4 bg-surface-page overflow-y-auto transition-[margin] duration-normal"
         >
           <div className="flex items-center justify-between mb-4 max-w-page">
             <div className="flex items-center gap-2 text-xs text-neutral-500">

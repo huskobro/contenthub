@@ -1,3 +1,5 @@
+import { api } from "./client";
+
 const BASE_URL = "/api/v1/used-news";
 
 export interface UsedNewsResponse {
@@ -15,16 +17,12 @@ export interface UsedNewsResponse {
   has_target_resolved: boolean;
 }
 
-export async function fetchUsedNews(): Promise<UsedNewsResponse[]> {
-  const resp = await fetch(BASE_URL);
-  if (!resp.ok) throw new Error(`Failed to fetch used news: ${resp.status}`);
-  return resp.json();
+export function fetchUsedNews(): Promise<UsedNewsResponse[]> {
+  return api.get<UsedNewsResponse[]>(BASE_URL);
 }
 
-export async function fetchUsedNewsById(id: string): Promise<UsedNewsResponse> {
-  const resp = await fetch(`${BASE_URL}/${id}`);
-  if (!resp.ok) throw new Error(`Failed to fetch used news ${id}: ${resp.status}`);
-  return resp.json();
+export function fetchUsedNewsById(id: string): Promise<UsedNewsResponse> {
+  return api.get<UsedNewsResponse>(`${BASE_URL}/${id}`);
 }
 
 export interface UsedNewsCreatePayload {
@@ -44,22 +42,10 @@ export interface UsedNewsUpdatePayload {
   notes?: string | null;
 }
 
-export async function createUsedNews(payload: UsedNewsCreatePayload): Promise<UsedNewsResponse> {
-  const resp = await fetch(BASE_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  if (!resp.ok) throw new Error(`Failed to create used news: ${resp.status}`);
-  return resp.json();
+export function createUsedNews(payload: UsedNewsCreatePayload): Promise<UsedNewsResponse> {
+  return api.post<UsedNewsResponse>(BASE_URL, payload);
 }
 
-export async function updateUsedNews(id: string, payload: UsedNewsUpdatePayload): Promise<UsedNewsResponse> {
-  const resp = await fetch(`${BASE_URL}/${id}`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  if (!resp.ok) throw new Error(`Failed to update used news ${id}: ${resp.status}`);
-  return resp.json();
+export function updateUsedNews(id: string, payload: UsedNewsUpdatePayload): Promise<UsedNewsResponse> {
+  return api.patch<UsedNewsResponse>(`${BASE_URL}/${id}`, payload);
 }

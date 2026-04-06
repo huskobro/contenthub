@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useVisibility } from "../hooks/useVisibility";
 import { useAnalyticsOverview } from "../hooks/useAnalyticsOverview";
 import { useJobsList } from "../hooks/useJobsList";
+import { useSourcesList } from "../hooks/useSourcesList";
+import { useTemplatesList } from "../hooks/useTemplatesList";
 import { cn } from "../lib/cn";
 import {
   PageShell,
@@ -117,20 +119,100 @@ const QUICK_LINKS: QuickLink[] = [
 ];
 
 /* ------------------------------------------------------------------ */
-/* Release readiness items                                            */
+/* Release readiness — dynamic items                                  */
 /* ------------------------------------------------------------------ */
 
-const READINESS_ITEMS = [
-  { area: "Icerik Uretimi", status: "active" as const, statusLabel: "Omurga hazir", detail: "Video ve bulten olusturma akislari calisiyor", testId: "readiness-content" },
-  { area: "Yayin Akisi", status: "active" as const, statusLabel: "M23 aktif", detail: "YouTube OAuth + yayin zinciri, metadata hardening, settings-aware defaults, duplicate publish/cancel korumasi, scheduler audit", testId: "readiness-publish" },
-  { area: "Is Motoru", status: "active" as const, statusLabel: "Omurga hazir", detail: "Job/step/timeline/ETA gorunur, operasyonel aksiyonlar M14'te", testId: "readiness-jobs" },
-  { area: "Sablon Sistemi", status: "active" as const, statusLabel: "M12 aktif", detail: "Template/style context script, metadata, visuals ve composition step'lerinde tuketiliyor", testId: "readiness-templates" },
-  { area: "Haber Modulu", status: "active" as const, statusLabel: "M11 aktif", detail: "Kaynak, tarama, haber, dedupe akislari calisiyor; soft dedupe esigi ayarlardan okunuyor", testId: "readiness-news" },
-  { area: "Ayarlar ve Gorunurluk", status: "active" as const, statusLabel: "M23 aktif", detail: "Settings/visibility CRUD, delete/restore/bulk ops, change history, guvenli hata fallback, audit log zenginlestirmesi aktif", testId: "readiness-settings" },
-  { area: "Analytics ve Raporlama", status: "active" as const, statusLabel: "M23 aktif", detail: "Platform, operasyon, kaynak, kanal ve icerik analytics gercek SQL aggregation, trace data quality metrikleri, parse error gozlemlenebilirligi", testId: "readiness-analytics" },
-  { area: "Icerik Kutuphanesi", status: "active" as const, statusLabel: "M22 aktif", detail: "SQL UNION ALL birlesim, has_script/has_metadata gosterimi, klonlama + navigasyon, backend-side pagination", testId: "readiness-library" },
-  { area: "Varlik Kutuphanesi", status: "active" as const, statusLabel: "M22 aktif", detail: "Workspace disk taramasi, dosya yukleme (201), filtre, sayfalama, silme, konum gosterme ve yenileme aktif", testId: "readiness-assets" },
-];
+interface ReadinessItem {
+  area: string;
+  status: "active" | "warning";
+  statusLabel: string;
+  detail: string;
+  testId: string;
+}
+
+function useReadinessItems(analytics: {
+  total_job_count?: number;
+  completed_job_count?: number;
+  published_count?: number;
+  total_publish_count?: number;
+} | undefined): ReadinessItem[] {
+  const { data: sourcesData } = useSourcesList();
+  const { data: templatesData } = useTemplatesList();
+
+  const hasCompletedJobs = (analytics?.completed_job_count ?? 0) > 0;
+  const hasPublish = (analytics?.total_publish_count ?? 0) > 0;
+  const sourcesList = Array.isArray(sourcesData) ? sourcesData : [];
+  const templatesList = Array.isArray(templatesData) ? templatesData : [];
+  const hasSources = sourcesList.length > 0;
+  const hasTemplates = templatesList.length > 0;
+
+  return [
+    {
+      area: "Icerik Uretimi",
+      status: hasCompletedJobs ? "active" : "warning",
+      statusLabel: hasCompletedJobs ? "Hazir" : "Yapilandirilmadi",
+      detail: hasCompletedJobs
+        ? `${analytics!.completed_job_count} tamamlanmis is mevcut`
+        : "Henuz tamamlanmis is yok",
+      testId: "readiness-content",
+    },
+    {
+      area: "Yayin Akisi",
+      status: hasPublish ? "active" : "warning",
+      statusLabel: hasPublish ? "Hazir" : "Yapilandirilmadi",
+      detail: hasPublish
+        ? `${analytics!.total_publish_count} yayin kaydi mevcut`
+        : "Henuz yayin kaydi olusturulmamis",
+      testId: "readiness-publish",
+    },
+    {
+      area: "Is Motoru",
+      status: "active",
+      statusLabel: "Hazir",
+      detail: "Job/step/timeline/ETA sistemi aktif",
+      testId: "readiness-jobs",
+    },
+    {
+      area: "Sablonlar",
+      status: hasTemplates ? "active" : "warning",
+      statusLabel: hasTemplates ? "Hazir" : "Yapilandirilmadi",
+      detail: hasTemplates
+        ? `${templatesList.length} sablon tanimli`
+        : "Henuz sablon tanimlanmamis",
+      testId: "readiness-templates",
+    },
+    {
+      area: "Haber Modulu",
+      status: hasSources ? "active" : "warning",
+      statusLabel: hasSources ? "Hazir" : "Yapilandirilmadi",
+      detail: hasSources
+        ? `${sourcesList.length} haber kaynagi tanimli`
+        : "Henuz haber kaynagi eklenmemis",
+      testId: "readiness-news",
+    },
+    {
+      area: "Ayarlar",
+      status: "active",
+      statusLabel: "Hazir",
+      detail: "Settings/visibility CRUD aktif",
+      testId: "readiness-settings",
+    },
+    {
+      area: "Analitik",
+      status: "active",
+      statusLabel: "Hazir",
+      detail: "Platform, operasyon ve icerik analytics aktif",
+      testId: "readiness-analytics",
+    },
+    {
+      area: "Kutuphane",
+      status: "active",
+      statusLabel: "Hazir",
+      detail: "Icerik ve varlik kutuphanesi aktif",
+      testId: "readiness-library",
+    },
+  ];
+}
 
 /* ------------------------------------------------------------------ */
 /* Helpers                                                            */
@@ -227,7 +309,7 @@ function QuickCard({ link, onClick }: { link: QuickLink; onClick: () => void }) 
 /* ReadinessCard — individual system health card                      */
 /* ------------------------------------------------------------------ */
 
-function ReadinessCard({ item, index }: { item: typeof READINESS_ITEMS[0]; index: number }) {
+function ReadinessCard({ item, index }: { item: ReadinessItem; index: number }) {
   const isEven = index % 2 === 0;
 
   return (
@@ -297,6 +379,7 @@ export function AdminOverviewPage() {
   const filteredLinks = useFilteredQuickLinks();
   const { data, isLoading } = useAnalyticsOverview("last_30d");
   const { data: jobsData, isLoading: jobsLoading } = useJobsList();
+  const readinessItems = useReadinessItems(data);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recentJobs = ((jobsData as any)?.items || jobsData || []).slice(0, 5);
@@ -442,7 +525,7 @@ export function AdminOverviewPage() {
           <div data-testid="release-readiness-heading" className="hidden">Urun Hazirlik Durumu</div>
           <p className="hidden" data-testid="release-readiness-note">Ana urun alanlarinin mevcut durumu.</p>
           <div className="flex flex-col">
-            {READINESS_ITEMS.map((item, index) => (
+            {readinessItems.map((item, index) => (
               <ReadinessCard key={item.area} item={item} index={index} />
             ))}
           </div>

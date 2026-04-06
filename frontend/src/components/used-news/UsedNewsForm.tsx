@@ -137,7 +137,7 @@ export function UsedNewsForm({
       </div>
 
       {submitError && (
-        <div className="text-error text-md mb-3 break-words" style={{ overflowWrap: "anywhere" }}>{submitError}</div>
+        <div className="text-error text-md mb-3 break-words [overflow-wrap:anywhere]">{submitError}</div>
       )}
 
       <div className="flex gap-2">

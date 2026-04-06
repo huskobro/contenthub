@@ -33,7 +33,7 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
       <span className="w-40 shrink-0 text-neutral-600 text-base">
         {label}
       </span>
-      <span className="text-md break-words" style={{ overflowWrap: "anywhere" }}>{children}</span>
+      <span className="text-md break-words [overflow-wrap:anywhere]">{children}</span>
     </div>
   );
 }

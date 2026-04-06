@@ -2,9 +2,11 @@ import { useNavigate } from "react-router-dom";
 import { useCreateNewsItem } from "../../hooks/useCreateNewsItem";
 import { NewsItemForm } from "../../components/news-items/NewsItemForm";
 import type { NewsItemFormValues } from "../../components/news-items/NewsItemForm";
+import { useToast } from "../../hooks/useToast";
 
 export function NewsItemCreatePage() {
   const navigate = useNavigate();
+  const toast = useToast();
   const { mutate, isPending, error } = useCreateNewsItem();
 
   function handleSubmit(values: NewsItemFormValues) {
@@ -22,6 +24,7 @@ export function NewsItemCreatePage() {
       },
       {
         onSuccess: (created) => {
+          toast.success("Haber kaydi basariyla olusturuldu");
           navigate("/admin/news-items", { state: { selectedId: created.id } });
         },
       }

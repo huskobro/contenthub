@@ -5,12 +5,7 @@ import { ToastContainer } from "../../components/design-system/Toast";
 import { ThemeProvider } from "../../components/design-system/ThemeProvider";
 import { NotificationCenter } from "../../components/design-system/NotificationCenter";
 import { KeyboardShortcutsHelp } from "../../components/design-system/KeyboardShortcutsHelp";
-
-const USER_NAV = [
-  { label: "Anasayfa", to: "/user" },
-  { label: "Icerik", to: "/user/content" },
-  { label: "Yayin", to: "/user/publish" },
-];
+import { USER_NAV } from "./useLayoutNavigation";
 
 export function UserLayout() {
   return (

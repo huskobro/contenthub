@@ -15,7 +15,7 @@ export function JobDetailPage() {
   const { data: job, isLoading, isError, error } = useJobDetail(jobId ?? null);
 
   const isActiveJob = !!job && ["queued", "running", "processing", "retrying"].includes(job.status);
-  useSSE({
+  const { connected: sseConnected, reconnecting: sseReconnecting } = useSSE({
     url: `/api/v1/sse/jobs/${jobId}`,
     enabled: !!jobId && isActiveJob,
     invalidateKeys: [["job", jobId ?? ""]],
@@ -61,6 +61,17 @@ export function JobDetailPage() {
       <p className="m-0 mb-3 text-xs text-neutral-400" data-testid="job-detail-workflow-note">
         Ilerleme, adimlar, sure ve operasyonel aksiyonlar (retry, cancel, skip).
       </p>
+
+      {/* SSE connection indicator — only show when disconnected for active jobs */}
+      {isActiveJob && !sseConnected && (
+        <div
+          className={`flex items-center gap-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-3 py-1.5 mb-3 ${sseReconnecting ? "animate-pulse" : ""}`}
+          data-testid="sse-connection-banner"
+        >
+          <span className="inline-block w-2 h-2 rounded-full bg-amber-400 shrink-0" />
+          Canli baglanti kesildi — yeniden baglaniliyor...
+        </div>
+      )}
 
       <JobOverviewPanel job={job} />
       <JobTimelinePanel steps={job.steps} />

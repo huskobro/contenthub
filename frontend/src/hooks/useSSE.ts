@@ -14,7 +14,7 @@
  *   });
  */
 
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useCallback, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 
 export interface SSEEvent {
@@ -39,6 +39,13 @@ interface UseSSEOptions {
   reconnectDelay?: number;
 }
 
+export interface UseSSEReturn {
+  /** Whether SSE is currently connected */
+  connected: boolean;
+  /** Whether a reconnection attempt is in progress */
+  reconnecting: boolean;
+}
+
 export function useSSE({
   url,
   enabled = true,
@@ -46,12 +53,15 @@ export function useSSE({
   invalidateKeys,
   eventTypes,
   reconnectDelay = 3000,
-}: UseSSEOptions): void {
+}: UseSSEOptions): UseSSEReturn {
   const queryClient = useQueryClient();
   const sourceRef = useRef<EventSource | null>(null);
   const reconnectTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const onEventRef = useRef(onEvent);
   onEventRef.current = onEvent;
+
+  const [connected, setConnected] = useState(false);
+  const [reconnecting, setReconnecting] = useState(false);
 
   const handleMessage = useCallback(
     (e: MessageEvent) => {
@@ -85,6 +95,8 @@ export function useSSE({
     if (!enabled) {
       sourceRef.current?.close();
       sourceRef.current = null;
+      setConnected(false);
+      setReconnecting(false);
       return;
     }
 
@@ -97,6 +109,11 @@ export function useSSE({
       const source = new EventSource(url);
       sourceRef.current = source;
 
+      source.onopen = () => {
+        setConnected(true);
+        setReconnecting(false);
+      };
+
       if (eventTypes && eventTypes.length > 0) {
         for (const type of eventTypes) {
           source.addEventListener(type, handleMessage as EventListener);
@@ -108,6 +125,8 @@ export function useSSE({
       source.onerror = () => {
         source.close();
         sourceRef.current = null;
+        setConnected(false);
+        setReconnecting(true);
 
         // Auto-reconnect
         if (reconnectTimer.current) clearTimeout(reconnectTimer.current);
@@ -120,10 +139,14 @@ export function useSSE({
     return () => {
       sourceRef.current?.close();
       sourceRef.current = null;
+      setConnected(false);
+      setReconnecting(false);
       if (reconnectTimer.current) {
         clearTimeout(reconnectTimer.current);
         reconnectTimer.current = null;
       }
     };
   }, [url, enabled, handleMessage, eventTypes, reconnectDelay]);
+
+  return { connected, reconnecting };
 }

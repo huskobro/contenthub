@@ -2,9 +2,11 @@ import { useNavigate } from "react-router-dom";
 import { useCreateNewsBulletin } from "../../hooks/useCreateNewsBulletin";
 import { NewsBulletinForm } from "../../components/news-bulletin/NewsBulletinForm";
 import type { NewsBulletinFormValues } from "../../components/news-bulletin/NewsBulletinForm";
+import { useToast } from "../../hooks/useToast";
 
 export function NewsBulletinCreatePage() {
   const navigate = useNavigate();
+  const toast = useToast();
   const mutation = useCreateNewsBulletin();
 
   function handleSubmit(values: NewsBulletinFormValues) {
@@ -24,6 +26,7 @@ export function NewsBulletinCreatePage() {
       },
       {
         onSuccess: (created) => {
+          toast.success("Haber bulteni basariyla olusturuldu");
           navigate("/admin/news-bulletins", { state: { selectedId: created.id } });
         },
       }

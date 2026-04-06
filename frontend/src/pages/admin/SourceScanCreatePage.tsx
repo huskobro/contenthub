@@ -2,9 +2,11 @@ import { useNavigate } from "react-router-dom";
 import { useCreateSourceScan } from "../../hooks/useCreateSourceScan";
 import { SourceScanForm } from "../../components/source-scans/SourceScanForm";
 import type { SourceScanFormValues } from "../../components/source-scans/SourceScanForm";
+import { useToast } from "../../hooks/useToast";
 
 export function SourceScanCreatePage() {
   const navigate = useNavigate();
+  const toast = useToast();
   const { mutate, isPending, error } = useCreateSourceScan();
 
   function handleSubmit(values: SourceScanFormValues) {
@@ -19,14 +21,15 @@ export function SourceScanCreatePage() {
     };
     mutate(payload, {
       onSuccess: (created) => {
+        toast.success("Kaynak taramasi basariyla olusturuldu");
         navigate("/admin/source-scans", { state: { selectedId: created.id } });
       },
     });
   }
 
   return (
-    <div style={{ maxWidth: "520px" }}>
-      <h2 style={{ margin: "0 0 1.25rem" }}>Yeni Source Scan</h2>
+    <div className="max-w-[520px]">
+      <h2 className="m-0 mb-5">Yeni Source Scan</h2>
       <SourceScanForm
         mode="create"
         isSubmitting={isPending}

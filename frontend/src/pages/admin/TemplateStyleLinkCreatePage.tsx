@@ -2,9 +2,11 @@ import { useNavigate } from "react-router-dom";
 import { useCreateTemplateStyleLink } from "../../hooks/useCreateTemplateStyleLink";
 import { TemplateStyleLinkForm } from "../../components/template-style-links/TemplateStyleLinkForm";
 import type { TemplateStyleLinkFormValues } from "../../components/template-style-links/TemplateStyleLinkForm";
+import { useToast } from "../../hooks/useToast";
 
 export function TemplateStyleLinkCreatePage() {
   const navigate = useNavigate();
+  const toast = useToast();
   const { mutate, isPending, error } = useCreateTemplateStyleLink();
 
   function handleSubmit(values: TemplateStyleLinkFormValues) {
@@ -18,6 +20,7 @@ export function TemplateStyleLinkCreatePage() {
       },
       {
         onSuccess: (created) => {
+          toast.success("Sablon-stil baglantisi basariyla olusturuldu");
           navigate("/admin/template-style-links", { state: { selectedId: created.id } });
         },
       }

@@ -37,7 +37,7 @@ export function VisibilityRulesTable({ rules, selectedId, onSelect }: Visibility
             )}
           >
             <td className="p-2">{r.rule_type ?? DASH}</td>
-            <td className="p-2 font-mono break-all" style={{ overflowWrap: "anywhere" }}>{r.target_key ?? DASH}</td>
+            <td className="p-2 font-mono break-all [overflow-wrap:anywhere]">{r.target_key ?? DASH}</td>
             <td className="p-2">{r.module_scope ?? <em className="text-neutral-500">—</em>}</td>
             <td className="p-2">{r.role_scope ?? <em className="text-neutral-500">—</em>}</td>
             <td className="p-2">{r.status ?? DASH}</td>

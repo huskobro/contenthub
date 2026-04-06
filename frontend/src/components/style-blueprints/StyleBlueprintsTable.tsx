@@ -48,7 +48,7 @@ export function StyleBlueprintsTable({ blueprints, selectedId, onSelect }: Style
               selectedId === bp.id ? "bg-info-light" : "bg-transparent"
             )}
           >
-            <td className={cn("py-2 px-3 text-brand-700 break-words", selectedId === bp.id ? "font-semibold" : "font-normal")} style={{ overflowWrap: "anywhere" }}>
+            <td className={cn("py-2 px-3 text-brand-700 break-words [overflow-wrap:anywhere]", selectedId === bp.id ? "font-semibold" : "font-normal")}>
               {bp.name ?? DASH}
             </td>
             <td className="py-2 px-3 text-neutral-600">{bp.module_scope ?? DASH}</td>

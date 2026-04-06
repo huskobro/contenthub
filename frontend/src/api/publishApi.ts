@@ -1,3 +1,5 @@
+import { api } from "./client";
+
 const BASE_URL = "/api/v1/publish";
 
 export interface PublishRecordSummary {
@@ -59,132 +61,64 @@ export interface PublishListParams {
   offset?: number;
 }
 
-export async function fetchPublishRecords(
+export function fetchPublishRecords(
   params: PublishListParams = {},
 ): Promise<PublishRecordSummary[]> {
-  const qs = new URLSearchParams();
-  if (params.job_id) qs.set("job_id", params.job_id);
-  if (params.platform) qs.set("platform", params.platform);
-  if (params.status) qs.set("status", params.status);
-  if (params.limit) qs.set("limit", String(params.limit));
-  if (params.offset) qs.set("offset", String(params.offset));
-  const url = qs.toString() ? `${BASE_URL}/?${qs}` : `${BASE_URL}/`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`Failed to fetch publish records: ${res.status}`);
-  return res.json();
+  return api.get<PublishRecordSummary[]>(`${BASE_URL}/`, params);
 }
 
-export async function fetchPublishRecord(id: string): Promise<PublishRecordRead> {
-  const res = await fetch(`${BASE_URL}/${id}`);
-  if (!res.ok) throw new Error(`Failed to fetch publish record: ${res.status}`);
-  return res.json();
+export function fetchPublishRecord(id: string): Promise<PublishRecordRead> {
+  return api.get<PublishRecordRead>(`${BASE_URL}/${id}`);
 }
 
-export async function fetchPublishLogs(
+export function fetchPublishLogs(
   recordId: string,
   limit = 100,
 ): Promise<PublishLogRead[]> {
-  const res = await fetch(`${BASE_URL}/${recordId}/logs?limit=${limit}`);
-  if (!res.ok) throw new Error(`Failed to fetch publish logs: ${res.status}`);
-  return res.json();
+  return api.get<PublishLogRead[]>(`${BASE_URL}/${recordId}/logs`, { limit });
 }
 
-export async function submitForReview(recordId: string): Promise<PublishRecordRead> {
-  const res = await fetch(`${BASE_URL}/${recordId}/submit`, { method: "POST" });
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(body.detail || `Submit failed: ${res.status}`);
-  }
-  return res.json();
+export function submitForReview(recordId: string): Promise<PublishRecordRead> {
+  return api.post<PublishRecordRead>(`${BASE_URL}/${recordId}/submit`);
 }
 
-export async function reviewAction(
+export function reviewAction(
   recordId: string,
   decision: "approve" | "reject",
   note?: string,
 ): Promise<PublishRecordRead> {
-  const res = await fetch(`${BASE_URL}/${recordId}/review`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ decision, note }),
-  });
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(body.detail || `Review failed: ${res.status}`);
-  }
-  return res.json();
+  return api.post<PublishRecordRead>(`${BASE_URL}/${recordId}/review`, { decision, note });
 }
 
-export async function schedulePublish(
+export function schedulePublish(
   recordId: string,
   scheduledAt: string,
   note?: string,
 ): Promise<PublishRecordRead> {
-  const res = await fetch(`${BASE_URL}/${recordId}/schedule`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ scheduled_at: scheduledAt, note }),
-  });
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(body.detail || `Schedule failed: ${res.status}`);
-  }
-  return res.json();
+  return api.post<PublishRecordRead>(`${BASE_URL}/${recordId}/schedule`, { scheduled_at: scheduledAt, note });
 }
 
-export async function triggerPublish(
+export function triggerPublish(
   recordId: string,
   note?: string,
 ): Promise<PublishRecordRead> {
-  const res = await fetch(`${BASE_URL}/${recordId}/trigger`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ note }),
-  });
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(body.detail || `Trigger failed: ${res.status}`);
-  }
-  return res.json();
+  return api.post<PublishRecordRead>(`${BASE_URL}/${recordId}/trigger`, { note });
 }
 
-export async function cancelPublish(
+export function cancelPublish(
   recordId: string,
   note?: string,
 ): Promise<PublishRecordRead> {
-  const res = await fetch(`${BASE_URL}/${recordId}/cancel`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ note }),
-  });
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(body.detail || `Cancel failed: ${res.status}`);
-  }
-  return res.json();
+  return api.post<PublishRecordRead>(`${BASE_URL}/${recordId}/cancel`, { note });
 }
 
-export async function retryPublish(
+export function retryPublish(
   recordId: string,
   note?: string,
 ): Promise<PublishRecordRead> {
-  const res = await fetch(`${BASE_URL}/${recordId}/retry`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ note }),
-  });
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(body.detail || `Retry failed: ${res.status}`);
-  }
-  return res.json();
+  return api.post<PublishRecordRead>(`${BASE_URL}/${recordId}/retry`, { note });
 }
 
-export async function resetToDraft(recordId: string): Promise<PublishRecordRead> {
-  const res = await fetch(`${BASE_URL}/${recordId}/reset-to-draft`, { method: "POST" });
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(body.detail || `Reset failed: ${res.status}`);
-  }
-  return res.json();
+export function resetToDraft(recordId: string): Promise<PublishRecordRead> {
+  return api.post<PublishRecordRead>(`${BASE_URL}/${recordId}/reset-to-draft`);
 }

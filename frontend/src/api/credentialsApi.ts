@@ -1,3 +1,5 @@
+import { api } from "./client";
+
 const BASE_URL = "/api/v1/settings/credentials";
 
 export interface CredentialStatus {
@@ -12,20 +14,12 @@ export interface CredentialStatus {
   capability: string;
 }
 
-export async function fetchCredentialStatuses(): Promise<CredentialStatus[]> {
-  const res = await fetch(BASE_URL);
-  if (!res.ok) {
-    throw new Error(`Failed to fetch credentials: ${res.status}`);
-  }
-  return res.json();
+export function fetchCredentialStatuses(): Promise<CredentialStatus[]> {
+  return api.get<CredentialStatus[]>(BASE_URL);
 }
 
-export async function fetchCredentialStatus(key: string): Promise<CredentialStatus> {
-  const res = await fetch(`${BASE_URL}/${encodeURIComponent(key)}`);
-  if (!res.ok) {
-    throw new Error(`Failed to fetch credential ${key}: ${res.status}`);
-  }
-  return res.json();
+export function fetchCredentialStatus(key: string): Promise<CredentialStatus> {
+  return api.get<CredentialStatus>(`${BASE_URL}/${encodeURIComponent(key)}`);
 }
 
 export interface SaveCredentialResponse extends CredentialStatus {
@@ -36,32 +30,17 @@ export interface SaveCredentialResponse extends CredentialStatus {
   };
 }
 
-export async function saveCredential(
+export function saveCredential(
   key: string,
   value: string,
 ): Promise<SaveCredentialResponse> {
-  const res = await fetch(`${BASE_URL}/${encodeURIComponent(key)}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ value }),
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err?.detail ?? `Failed to save credential: ${res.status}`);
-  }
-  return res.json();
+  return api.put<SaveCredentialResponse>(`${BASE_URL}/${encodeURIComponent(key)}`, { value });
 }
 
-export async function validateCredential(
+export function validateCredential(
   key: string,
 ): Promise<{ key: string; valid: boolean; message: string }> {
-  const res = await fetch(`${BASE_URL}/${encodeURIComponent(key)}/validate`, {
-    method: "POST",
-  });
-  if (!res.ok) {
-    throw new Error(`Validation failed: ${res.status}`);
-  }
-  return res.json();
+  return api.post<{ key: string; valid: boolean; message: string }>(`${BASE_URL}/${encodeURIComponent(key)}/validate`);
 }
 
 // YouTube OAuth helpers
@@ -72,19 +51,12 @@ export interface YouTubeTokenStatus {
   message: string;
 }
 
-export async function fetchYouTubeStatus(): Promise<YouTubeTokenStatus> {
-  const res = await fetch(`${YT_BASE}/status`);
-  if (!res.ok) {
-    throw new Error(`Failed to fetch YouTube status: ${res.status}`);
-  }
-  return res.json();
+export function fetchYouTubeStatus(): Promise<YouTubeTokenStatus> {
+  return api.get<YouTubeTokenStatus>(`${YT_BASE}/status`);
 }
 
-export async function revokeYouTubeCredentials(): Promise<void> {
-  const res = await fetch(`${YT_BASE}/revoke`, { method: "DELETE" });
-  if (!res.ok) {
-    throw new Error(`Failed to revoke YouTube credentials: ${res.status}`);
-  }
+export function revokeYouTubeCredentials(): Promise<void> {
+  return api.delete<void>(`${YT_BASE}/revoke`);
 }
 
 export interface YouTubeChannelInfo {
@@ -97,12 +69,8 @@ export interface YouTubeChannelInfo {
   message: string;
 }
 
-export async function fetchYouTubeChannelInfo(): Promise<YouTubeChannelInfo> {
-  const res = await fetch(`${YT_BASE}/channel-info`);
-  if (!res.ok) {
-    throw new Error(`Failed to fetch channel info: ${res.status}`);
-  }
-  return res.json();
+export function fetchYouTubeChannelInfo(): Promise<YouTubeChannelInfo> {
+  return api.get<YouTubeChannelInfo>(`${YT_BASE}/channel-info`);
 }
 
 // YouTube Video Stats
@@ -123,12 +91,8 @@ export interface VideoStatsResponse {
   video_count: number;
 }
 
-export async function fetchYouTubeVideoStats(): Promise<VideoStatsResponse> {
-  const res = await fetch(`${YT_BASE}/video-stats`);
-  if (!res.ok) {
-    throw new Error(`YouTube video stats: ${res.status}`);
-  }
-  return res.json();
+export function fetchYouTubeVideoStats(): Promise<VideoStatsResponse> {
+  return api.get<VideoStatsResponse>(`${YT_BASE}/video-stats`);
 }
 
 // YouTube Video Stats Trend (M14-C)
@@ -145,19 +109,11 @@ export interface VideoStatsTrendResponse {
   snapshots: VideoStatsTrendItem[];
 }
 
-export async function fetchVideoStatsTrend(videoId: string): Promise<VideoStatsTrendResponse> {
-  const res = await fetch(`${YT_BASE}/video-stats/${encodeURIComponent(videoId)}/trend`);
-  if (!res.ok) throw new Error(`Failed to fetch video stats trend: ${res.status}`);
-  return res.json();
+export function fetchVideoStatsTrend(videoId: string): Promise<VideoStatsTrendResponse> {
+  return api.get<VideoStatsTrendResponse>(`${YT_BASE}/video-stats/${encodeURIComponent(videoId)}/trend`);
 }
 
 export async function getYouTubeAuthUrl(redirectUri: string): Promise<string> {
-  const params = new URLSearchParams({ redirect_uri: redirectUri });
-  const res = await fetch(`${YT_BASE}/auth-url?${params}`);
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err?.detail ?? `Failed to get auth URL: ${res.status}`);
-  }
-  const data = await res.json();
+  const data = await api.get<{ auth_url: string }>(`${YT_BASE}/auth-url`, { redirect_uri: redirectUri });
   return data.auth_url;
 }

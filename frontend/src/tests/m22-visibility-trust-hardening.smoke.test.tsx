@@ -78,7 +78,7 @@ describe("M22-A: Visibility API Error Handling", () => {
     const originalFetch = globalThis.fetch;
     globalThis.fetch = vi.fn().mockResolvedValue({ ok: false, status: 500 }) as typeof fetch;
     try {
-      await expect(resolveVisibility("test:key")).rejects.toThrow("Visibility resolution failed");
+      await expect(resolveVisibility("test:key")).rejects.toThrow("HTTP 500");
     } finally {
       globalThis.fetch = originalFetch;
     }

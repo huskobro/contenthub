@@ -182,7 +182,7 @@ describe("Form submitError overflow safety", () => {
       // Look for the block around submitError/localError/error rendering.
       const hasSubmitError = src.includes("{submitError}");
       const hasLocalError = src.includes("{localError}");
-      const hasError = src.includes("{error}") && src.includes("color");
+      const hasError = src.includes("{error}") && (src.includes("color") || src.includes("text-red"));
 
       expect(hasSubmitError || hasLocalError || hasError).toBe(true);
 

@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ContentCreationWizard, type WizardValues } from "../../components/wizard/ContentCreationWizard";
+import { useToast } from "../../hooks/useToast";
 
 async function createStandardVideo(values: WizardValues) {
   const res = await fetch("/api/v1/modules/standard-video", {
@@ -30,11 +31,13 @@ async function createStandardVideo(values: WizardValues) {
 export function StandardVideoWizardPage() {
   const navigate = useNavigate();
   const qc = useQueryClient();
+  const toast = useToast();
 
   const { mutate, isPending, error } = useMutation({
     mutationFn: createStandardVideo,
     onSuccess: (created) => {
       qc.invalidateQueries({ queryKey: ["standard-videos"] });
+      toast.success("Standard video basariyla olusturuldu");
       navigate(`/admin/standard-videos/${created.id}`);
     },
   });

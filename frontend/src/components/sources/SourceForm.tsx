@@ -1,11 +1,12 @@
 import { useState } from "react";
 import type { SourceResponse, SourceCreatePayload } from "../../api/sourcesApi";
 import { cn } from "../../lib/cn";
-
-const SOURCE_TYPES = ["rss", "manual_url", "api"];
-const TRUST_LEVELS = ["", "low", "medium", "high"];
-const SCAN_MODES = ["", "manual", "auto", "curated"];
-const STATUSES = ["active", "paused", "archived"];
+import {
+  SOURCE_TYPES,
+  TRUST_LEVELS,
+  SCAN_MODES,
+  SOURCE_STATUSES,
+} from "../../constants/statusOptions";
 
 interface SourceFormProps {
   initial?: Partial<SourceResponse>;
@@ -100,7 +101,7 @@ export function SourceForm({
       <div className="mb-3">
         <label className="block text-sm font-semibold text-neutral-600 mb-1">Status *</label>
         <select className={inputCls} value={status} onChange={e => setStatus(e.target.value)}>
-          {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
+          {SOURCE_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
         </select>
       </div>
 

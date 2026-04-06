@@ -1,10 +1,10 @@
-"""Tests for app.jobs.timing_service — historical ETA and enrichment."""
+"""Tests for app.jobs.timing — historical ETA and enrichment."""
 
 import pytest
 from unittest.mock import AsyncMock, MagicMock
 from datetime import datetime, timezone, timedelta
 
-from app.jobs.timing_service import (
+from app.jobs.timing import (
     compute_historical_eta,
     enrich_job_eta,
 )
@@ -123,7 +123,7 @@ class TestEnrichJobEta:
             return {"script": 10.0, "metadata": 8.0, "tts": 15.0}
 
         monkeypatch.setattr(
-            "app.jobs.timing_service.get_historical_step_averages",
+            "app.jobs.timing.get_historical_step_averages",
             mock_get_averages,
         )
 
@@ -145,7 +145,7 @@ class TestEnrichJobEta:
             return {"script": 10.0, "metadata": 8.0}
 
         monkeypatch.setattr(
-            "app.jobs.timing_service.get_historical_step_averages",
+            "app.jobs.timing.get_historical_step_averages",
             mock_get_averages,
         )
 
@@ -166,7 +166,7 @@ class TestEnrichJobEta:
             return {}
 
         monkeypatch.setattr(
-            "app.jobs.timing_service.get_historical_step_averages",
+            "app.jobs.timing.get_historical_step_averages",
             mock_get_averages,
         )
 

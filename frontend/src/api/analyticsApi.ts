@@ -1,3 +1,5 @@
+import { api } from "./client";
+
 const BASE_URL = "/api/v1/analytics";
 
 export type AnalyticsWindow = "last_7d" | "last_30d" | "last_90d" | "all_time";
@@ -99,39 +101,25 @@ export interface OverviewFetchOptions {
   date_to?: string;
 }
 
-export async function fetchOverviewMetrics(
+export function fetchOverviewMetrics(
   windowOrOpts: AnalyticsWindow | OverviewFetchOptions,
 ): Promise<OverviewMetrics> {
-  let url: string;
-  if (typeof windowOrOpts === "string") {
-    url = `${BASE_URL}/overview?window=${windowOrOpts}`;
-  } else {
-    const params = new URLSearchParams({ window: windowOrOpts.window });
-    if (windowOrOpts.date_from) params.set("date_from", windowOrOpts.date_from);
-    if (windowOrOpts.date_to) params.set("date_to", windowOrOpts.date_to);
-    url = `${BASE_URL}/overview?${params.toString()}`;
-  }
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`Analytics overview fetch failed: ${res.status}`);
-  return res.json();
+  const params = typeof windowOrOpts === "string"
+    ? { window: windowOrOpts }
+    : { window: windowOrOpts.window, date_from: windowOrOpts.date_from, date_to: windowOrOpts.date_to };
+  return api.get<OverviewMetrics>(`${BASE_URL}/overview`, params);
 }
 
-export async function fetchOperationsMetrics(window: AnalyticsWindow): Promise<OperationsMetrics> {
-  const res = await fetch(`${BASE_URL}/operations?window=${window}`);
-  if (!res.ok) throw new Error(`Analytics operations fetch failed: ${res.status}`);
-  return res.json();
+export function fetchOperationsMetrics(window: AnalyticsWindow): Promise<OperationsMetrics> {
+  return api.get<OperationsMetrics>(`${BASE_URL}/operations`, { window });
 }
 
-export async function fetchSourceImpactMetrics(window: AnalyticsWindow): Promise<SourceImpactMetrics> {
-  const res = await fetch(`${BASE_URL}/source-impact?window=${window}`);
-  if (!res.ok) throw new Error(`Analytics source-impact fetch failed: ${res.status}`);
-  return res.json();
+export function fetchSourceImpactMetrics(window: AnalyticsWindow): Promise<SourceImpactMetrics> {
+  return api.get<SourceImpactMetrics>(`${BASE_URL}/source-impact`, { window });
 }
 
-export async function fetchChannelOverviewMetrics(window: AnalyticsWindow): Promise<ChannelOverviewMetrics> {
-  const res = await fetch(`${BASE_URL}/channel?window=${window}`);
-  if (!res.ok) throw new Error(`Analytics channel fetch failed: ${res.status}`);
-  return res.json();
+export function fetchChannelOverviewMetrics(window: AnalyticsWindow): Promise<ChannelOverviewMetrics> {
+  return api.get<ChannelOverviewMetrics>(`${BASE_URL}/channel`, { window });
 }
 
 // ---------------------------------------------------------------------------
@@ -162,19 +150,11 @@ export interface ContentMetrics {
   active_blueprint_count: number;
 }
 
-export async function fetchContentMetrics(
+export function fetchContentMetrics(
   windowOrOpts: AnalyticsWindow | OverviewFetchOptions,
 ): Promise<ContentMetrics> {
-  let url: string;
-  if (typeof windowOrOpts === "string") {
-    url = `${BASE_URL}/content?window=${windowOrOpts}`;
-  } else {
-    const params = new URLSearchParams({ window: windowOrOpts.window });
-    if (windowOrOpts.date_from) params.set("date_from", windowOrOpts.date_from);
-    if (windowOrOpts.date_to) params.set("date_to", windowOrOpts.date_to);
-    url = `${BASE_URL}/content?${params.toString()}`;
-  }
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`Analytics content fetch failed: ${res.status}`);
-  return res.json();
+  const params = typeof windowOrOpts === "string"
+    ? { window: windowOrOpts }
+    : { window: windowOrOpts.window, date_from: windowOrOpts.date_from, date_to: windowOrOpts.date_to };
+  return api.get<ContentMetrics>(`${BASE_URL}/content`, params);
 }

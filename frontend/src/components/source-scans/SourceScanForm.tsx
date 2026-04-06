@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { SourceScanResponse } from "../../api/sourceScansApi";
 import { cn } from "../../lib/cn";
+import { SCAN_MODES_REQUIRED, SCAN_STATUSES } from "../../constants/statusOptions";
 
 export interface SourceScanFormValues {
   source_id: string;
@@ -100,9 +101,7 @@ export function SourceScanForm({
               value={values.scan_mode}
               onChange={(e) => set("scan_mode", e.target.value)}
             >
-              <option value="manual">manual</option>
-              <option value="auto">auto</option>
-              <option value="curated">curated</option>
+              {SCAN_MODES_REQUIRED.map((m) => <option key={m} value={m}>{m}</option>)}
             </select>
             {errors.scan_mode && <div className="text-sm text-error mt-0.5">{errors.scan_mode}</div>}
           </div>
@@ -116,11 +115,7 @@ export function SourceScanForm({
           value={values.status}
           onChange={(e) => set("status", e.target.value)}
         >
-          <option value="queued">queued</option>
-          <option value="running">running</option>
-          <option value="done">done</option>
-          <option value="failed">failed</option>
-          <option value="cancelled">cancelled</option>
+          {SCAN_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
         </select>
       </div>
 

@@ -15,7 +15,7 @@ function Field({ label, value }: { label: string; value: string | number | null 
   return (
     <div className="mb-2">
       <span className="text-sm font-semibold text-neutral-600">{label}: </span>
-      <span className={cn("text-md break-words", value !== null && value !== undefined ? "text-neutral-900" : "text-neutral-500")} style={{ overflowWrap: "anywhere" }}>
+      <span className={cn("text-md break-words [overflow-wrap:anywhere]", value !== null && value !== undefined ? "text-neutral-900" : "text-neutral-500")}>
         {value !== null && value !== undefined ? String(value) : "—"}
       </span>
     </div>

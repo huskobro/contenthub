@@ -1,3 +1,5 @@
+import { api } from "./client";
+
 const BASE_URL = "/api/v1/modules/news-bulletin";
 
 export interface NewsBulletinResponse {
@@ -53,29 +55,17 @@ export interface NewsBulletinUpdatePayload {
   status?: string;
 }
 
-export async function createNewsBulletin(
+export function createNewsBulletin(
   payload: NewsBulletinCreatePayload
 ): Promise<NewsBulletinResponse> {
-  const resp = await fetch(BASE_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  if (!resp.ok) throw new Error(`Failed to create news bulletin: ${resp.status}`);
-  return resp.json();
+  return api.post<NewsBulletinResponse>(BASE_URL, payload);
 }
 
-export async function updateNewsBulletin(
+export function updateNewsBulletin(
   id: string,
   payload: NewsBulletinUpdatePayload
 ): Promise<NewsBulletinResponse> {
-  const resp = await fetch(`${BASE_URL}/${id}`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  if (!resp.ok) throw new Error(`Failed to update news bulletin ${id}: ${resp.status}`);
-  return resp.json();
+  return api.patch<NewsBulletinResponse>(`${BASE_URL}/${id}`, payload);
 }
 
 export interface NewsBulletinScriptResponse {
@@ -104,39 +94,24 @@ export interface NewsBulletinScriptUpdatePayload {
   notes?: string | null;
 }
 
-export async function fetchNewsBulletinScript(
+export function fetchNewsBulletinScript(
   bulletinId: string
 ): Promise<NewsBulletinScriptResponse | null> {
-  const resp = await fetch(`/api/v1/modules/news-bulletin/${bulletinId}/script`);
-  if (resp.status === 404) return null;
-  if (!resp.ok) throw new Error(`Failed to fetch script: ${resp.status}`);
-  return resp.json();
+  return api.getOrNull<NewsBulletinScriptResponse>(`${BASE_URL}/${bulletinId}/script`);
 }
 
-export async function createNewsBulletinScript(
+export function createNewsBulletinScript(
   bulletinId: string,
   payload: NewsBulletinScriptCreatePayload
 ): Promise<NewsBulletinScriptResponse> {
-  const resp = await fetch(`/api/v1/modules/news-bulletin/${bulletinId}/script`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  if (!resp.ok) throw new Error(`Failed to create script: ${resp.status}`);
-  return resp.json();
+  return api.post<NewsBulletinScriptResponse>(`${BASE_URL}/${bulletinId}/script`, payload);
 }
 
-export async function updateNewsBulletinScript(
+export function updateNewsBulletinScript(
   bulletinId: string,
   payload: NewsBulletinScriptUpdatePayload
 ): Promise<NewsBulletinScriptResponse> {
-  const resp = await fetch(`/api/v1/modules/news-bulletin/${bulletinId}/script`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  if (!resp.ok) throw new Error(`Failed to update script: ${resp.status}`);
-  return resp.json();
+  return api.patch<NewsBulletinScriptResponse>(`${BASE_URL}/${bulletinId}/script`, payload);
 }
 
 export interface NewsBulletinMetadataResponse {
@@ -177,39 +152,24 @@ export interface NewsBulletinMetadataUpdatePayload {
   notes?: string | null;
 }
 
-export async function fetchNewsBulletinMetadata(
+export function fetchNewsBulletinMetadata(
   bulletinId: string
 ): Promise<NewsBulletinMetadataResponse | null> {
-  const resp = await fetch(`/api/v1/modules/news-bulletin/${bulletinId}/metadata`);
-  if (resp.status === 404) return null;
-  if (!resp.ok) throw new Error(`Failed to fetch metadata: ${resp.status}`);
-  return resp.json();
+  return api.getOrNull<NewsBulletinMetadataResponse>(`${BASE_URL}/${bulletinId}/metadata`);
 }
 
-export async function createNewsBulletinMetadata(
+export function createNewsBulletinMetadata(
   bulletinId: string,
   payload: NewsBulletinMetadataCreatePayload
 ): Promise<NewsBulletinMetadataResponse> {
-  const resp = await fetch(`/api/v1/modules/news-bulletin/${bulletinId}/metadata`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  if (!resp.ok) throw new Error(`Failed to create metadata: ${resp.status}`);
-  return resp.json();
+  return api.post<NewsBulletinMetadataResponse>(`${BASE_URL}/${bulletinId}/metadata`, payload);
 }
 
-export async function updateNewsBulletinMetadata(
+export function updateNewsBulletinMetadata(
   bulletinId: string,
   payload: NewsBulletinMetadataUpdatePayload
 ): Promise<NewsBulletinMetadataResponse> {
-  const resp = await fetch(`/api/v1/modules/news-bulletin/${bulletinId}/metadata`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  if (!resp.ok) throw new Error(`Failed to update metadata: ${resp.status}`);
-  return resp.json();
+  return api.patch<NewsBulletinMetadataResponse>(`${BASE_URL}/${bulletinId}/metadata`, payload);
 }
 
 export interface NewsBulletinSelectedItemResponse {
@@ -237,39 +197,25 @@ export interface NewsBulletinSelectedItemUpdatePayload {
   selection_reason?: string | null;
 }
 
-export async function fetchNewsBulletinSelectedItems(
+export function fetchNewsBulletinSelectedItems(
   bulletinId: string
 ): Promise<NewsBulletinSelectedItemResponse[]> {
-  const resp = await fetch(`/api/v1/modules/news-bulletin/${bulletinId}/selected-news`);
-  if (!resp.ok) throw new Error(`Failed to fetch selected items: ${resp.status}`);
-  return resp.json();
+  return api.get<NewsBulletinSelectedItemResponse[]>(`${BASE_URL}/${bulletinId}/selected-news`);
 }
 
-export async function createNewsBulletinSelectedItem(
+export function createNewsBulletinSelectedItem(
   bulletinId: string,
   payload: NewsBulletinSelectedItemCreatePayload
 ): Promise<NewsBulletinSelectedItemResponse> {
-  const resp = await fetch(`/api/v1/modules/news-bulletin/${bulletinId}/selected-news`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  if (!resp.ok) throw new Error(`Failed to create selected item: ${resp.status}`);
-  return resp.json();
+  return api.post<NewsBulletinSelectedItemResponse>(`${BASE_URL}/${bulletinId}/selected-news`, payload);
 }
 
-export async function updateNewsBulletinSelectedItem(
+export function updateNewsBulletinSelectedItem(
   bulletinId: string,
   selectionId: string,
   payload: NewsBulletinSelectedItemUpdatePayload
 ): Promise<NewsBulletinSelectedItemResponse> {
-  const resp = await fetch(`/api/v1/modules/news-bulletin/${bulletinId}/selected-news/${selectionId}`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  if (!resp.ok) throw new Error(`Failed to update selected item: ${resp.status}`);
-  return resp.json();
+  return api.patch<NewsBulletinSelectedItemResponse>(`${BASE_URL}/${bulletinId}/selected-news/${selectionId}`, payload);
 }
 
 export interface NewsBulletinListParams {
@@ -279,21 +225,12 @@ export interface NewsBulletinListParams {
   offset?: number;
 }
 
-export async function fetchNewsBulletins(
+export function fetchNewsBulletins(
   params?: NewsBulletinListParams,
 ): Promise<NewsBulletinResponse[]> {
-  const url = new URL(BASE_URL, globalThis.location?.origin ?? "http://localhost");
-  if (params?.status) url.searchParams.set("status", params.status);
-  if (params?.search) url.searchParams.set("search", params.search);
-  if (params?.limit !== undefined) url.searchParams.set("limit", String(params.limit));
-  if (params?.offset !== undefined) url.searchParams.set("offset", String(params.offset));
-  const resp = await fetch(url.pathname + url.search);
-  if (!resp.ok) throw new Error(`Failed to fetch news bulletins: ${resp.status}`);
-  return resp.json();
+  return api.get<NewsBulletinResponse[]>(BASE_URL, params);
 }
 
-export async function fetchNewsBulletinById(id: string): Promise<NewsBulletinResponse> {
-  const resp = await fetch(`${BASE_URL}/${id}`);
-  if (!resp.ok) throw new Error(`Failed to fetch news bulletin ${id}: ${resp.status}`);
-  return resp.json();
+export function fetchNewsBulletinById(id: string): Promise<NewsBulletinResponse> {
+  return api.get<NewsBulletinResponse>(`${BASE_URL}/${id}`);
 }

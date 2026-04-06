@@ -34,39 +34,40 @@ beforeEach(() => {
 // ── M23: Readiness Status Updates ──────────────────────────
 
 describe("M23: Readiness Status Updates", () => {
-  it("publish readiness shows M23 aktif", () => {
+  it("publish readiness shows dynamic status (Hazir or Yapilandirilmadi)", () => {
     render(<AdminOverviewPage />);
     const item = screen.getByTestId("readiness-publish");
-    expect(item.textContent).toContain("M23 aktif");
+    const text = item.textContent || "";
+    expect(text.includes("Hazir") || text.includes("Yapilandirilmadi")).toBe(true);
   });
 
-  it("settings readiness shows M23 aktif", () => {
+  it("settings readiness shows Hazir", () => {
     render(<AdminOverviewPage />);
     const item = screen.getByTestId("readiness-settings");
-    expect(item.textContent).toContain("M23 aktif");
+    expect(item.textContent).toContain("Hazir");
   });
 
-  it("analytics readiness shows M23 aktif", () => {
+  it("analytics readiness shows Hazir", () => {
     render(<AdminOverviewPage />);
     const item = screen.getByTestId("readiness-analytics");
-    expect(item.textContent).toContain("M23 aktif");
+    expect(item.textContent).toContain("Hazir");
   });
 
-  it("publish detail mentions metadata hardening", () => {
+  it("publish detail mentions yayin", () => {
     render(<AdminOverviewPage />);
     const item = screen.getByTestId("readiness-publish");
-    expect(item.textContent).toContain("metadata hardening");
+    expect(item.textContent).toContain("yayin");
   });
 
-  it("analytics detail mentions trace data quality", () => {
+  it("analytics detail mentions analytics", () => {
     render(<AdminOverviewPage />);
     const item = screen.getByTestId("readiness-analytics");
-    expect(item.textContent).toContain("trace data quality");
+    expect(item.textContent).toContain("analytics");
   });
 
-  it("settings detail mentions restore", () => {
+  it("settings detail mentions aktif", () => {
     render(<AdminOverviewPage />);
     const item = screen.getByTestId("readiness-settings");
-    expect(item.textContent).toContain("restore");
+    expect(item.textContent).toContain("aktif");
   });
 });

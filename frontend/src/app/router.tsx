@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { createBrowserRouter } from "react-router-dom";
 import { DynamicAdminLayout } from "./layouts/DynamicAdminLayout";
 import { DynamicUserLayout } from "./layouts/DynamicUserLayout";
@@ -10,9 +11,7 @@ import { UserPublishEntryPage } from "../pages/UserPublishEntryPage";
 import { SettingsRegistryPage } from "../pages/admin/SettingsRegistryPage";
 import { VisibilityRegistryPage } from "../pages/admin/VisibilityRegistryPage";
 import { JobsRegistryPage } from "../pages/admin/JobsRegistryPage";
-import { JobDetailPage } from "../pages/admin/JobDetailPage";
 import { StandardVideoRegistryPage } from "../pages/admin/StandardVideoRegistryPage";
-import { StandardVideoDetailPage } from "../pages/admin/StandardVideoDetailPage";
 import { StandardVideoCreatePage } from "../pages/admin/StandardVideoCreatePage";
 import { TemplatesRegistryPage } from "../pages/admin/TemplatesRegistryPage";
 import { TemplateCreatePage } from "../pages/admin/TemplateCreatePage";
@@ -30,19 +29,29 @@ import { NewsItemsRegistryPage } from "../pages/admin/NewsItemsRegistryPage";
 import { NewsItemCreatePage } from "../pages/admin/NewsItemCreatePage";
 import { TemplateStyleLinksRegistryPage } from "../pages/admin/TemplateStyleLinksRegistryPage";
 import { TemplateStyleLinkCreatePage } from "../pages/admin/TemplateStyleLinkCreatePage";
-import { ContentLibraryPage } from "../pages/admin/ContentLibraryPage";
-import { AssetLibraryPage } from "../pages/admin/AssetLibraryPage";
-import { AnalyticsOverviewPage } from "../pages/admin/AnalyticsOverviewPage";
-import { AnalyticsContentPage } from "../pages/admin/AnalyticsContentPage";
-import { AnalyticsOperationsPage } from "../pages/admin/AnalyticsOperationsPage";
-import { YouTubeAnalyticsPage } from "../pages/admin/YouTubeAnalyticsPage";
 import { YouTubeCallbackPage } from "../pages/admin/YouTubeCallbackPage";
-import { AuditLogPage } from "../pages/admin/AuditLogPage";
-import { ThemeRegistryPage } from "../pages/admin/ThemeRegistryPage";
-import { PublishCenterPage } from "../pages/admin/PublishCenterPage";
-import { PublishDetailPage } from "../pages/admin/PublishDetailPage";
-import { StandardVideoWizardPage } from "../pages/admin/StandardVideoWizardPage";
 import { VisibilityGuard } from "../components/visibility/VisibilityGuard";
+
+// ---------------------------------------------------------------------------
+// Lazy-loaded pages (heavy admin pages > 150 lines, code-split for perf)
+// ---------------------------------------------------------------------------
+const ThemeRegistryPage = lazy(() => import("../pages/admin/ThemeRegistryPage").then(m => ({ default: m.ThemeRegistryPage })));
+const ContentLibraryPage = lazy(() => import("../pages/admin/ContentLibraryPage").then(m => ({ default: m.ContentLibraryPage })));
+const AssetLibraryPage = lazy(() => import("../pages/admin/AssetLibraryPage").then(m => ({ default: m.AssetLibraryPage })));
+const PublishCenterPage = lazy(() => import("../pages/admin/PublishCenterPage").then(m => ({ default: m.PublishCenterPage })));
+const PublishDetailPage = lazy(() => import("../pages/admin/PublishDetailPage").then(m => ({ default: m.PublishDetailPage })));
+const AnalyticsOverviewPage = lazy(() => import("../pages/admin/AnalyticsOverviewPage").then(m => ({ default: m.AnalyticsOverviewPage })));
+const AnalyticsContentPage = lazy(() => import("../pages/admin/AnalyticsContentPage").then(m => ({ default: m.AnalyticsContentPage })));
+const AnalyticsOperationsPage = lazy(() => import("../pages/admin/AnalyticsOperationsPage").then(m => ({ default: m.AnalyticsOperationsPage })));
+const YouTubeAnalyticsPage = lazy(() => import("../pages/admin/YouTubeAnalyticsPage").then(m => ({ default: m.YouTubeAnalyticsPage })));
+const JobDetailPage = lazy(() => import("../pages/admin/JobDetailPage").then(m => ({ default: m.JobDetailPage })));
+const StandardVideoDetailPage = lazy(() => import("../pages/admin/StandardVideoDetailPage").then(m => ({ default: m.StandardVideoDetailPage })));
+const StandardVideoWizardPage = lazy(() => import("../pages/admin/StandardVideoWizardPage").then(m => ({ default: m.StandardVideoWizardPage })));
+const AuditLogPage = lazy(() => import("../pages/admin/AuditLogPage").then(m => ({ default: m.AuditLogPage })));
+
+function LazyFallback() {
+  return <div className="p-8 text-sm text-neutral-400">Yukleniyor...</div>;
+}
 
 export const router = createBrowserRouter([
   {
@@ -61,11 +70,11 @@ export const router = createBrowserRouter([
       { path: "settings", element: <VisibilityGuard targetKey="panel:settings"><SettingsRegistryPage /></VisibilityGuard> },
       { path: "visibility", element: <VisibilityGuard targetKey="panel:visibility"><VisibilityRegistryPage /></VisibilityGuard> },
       { path: "jobs", element: <JobsRegistryPage /> },
-      { path: "jobs/:jobId", element: <JobDetailPage /> },
+      { path: "jobs/:jobId", element: <Suspense fallback={<LazyFallback />}><JobDetailPage /></Suspense> },
       { path: "standard-videos", element: <StandardVideoRegistryPage /> },
       { path: "standard-videos/new", element: <StandardVideoCreatePage /> },
-      { path: "standard-videos/wizard", element: <StandardVideoWizardPage /> },
-      { path: "standard-videos/:itemId", element: <StandardVideoDetailPage /> },
+      { path: "standard-videos/wizard", element: <Suspense fallback={<LazyFallback />}><StandardVideoWizardPage /></Suspense> },
+      { path: "standard-videos/:itemId", element: <Suspense fallback={<LazyFallback />}><StandardVideoDetailPage /></Suspense> },
       { path: "templates/new", element: <VisibilityGuard targetKey="panel:templates"><TemplateCreatePage /></VisibilityGuard> },
       { path: "templates", element: <VisibilityGuard targetKey="panel:templates"><TemplatesRegistryPage /></VisibilityGuard> },
       { path: "style-blueprints/new", element: <StyleBlueprintCreatePage /> },
@@ -82,16 +91,16 @@ export const router = createBrowserRouter([
       { path: "news-items", element: <NewsItemsRegistryPage /> },
       { path: "template-style-links/new", element: <TemplateStyleLinkCreatePage /> },
       { path: "template-style-links", element: <TemplateStyleLinksRegistryPage /> },
-      { path: "library", element: <ContentLibraryPage /> },
-      { path: "assets", element: <AssetLibraryPage /> },
-      { path: "analytics", element: <VisibilityGuard targetKey="panel:analytics"><AnalyticsOverviewPage /></VisibilityGuard> },
-      { path: "analytics/content", element: <VisibilityGuard targetKey="panel:analytics"><AnalyticsContentPage /></VisibilityGuard> },
-      { path: "analytics/operations", element: <VisibilityGuard targetKey="panel:analytics"><AnalyticsOperationsPage /></VisibilityGuard> },
-      { path: "analytics/youtube", element: <VisibilityGuard targetKey="panel:analytics"><YouTubeAnalyticsPage /></VisibilityGuard> },
-      { path: "publish", element: <VisibilityGuard targetKey="panel:publish"><PublishCenterPage /></VisibilityGuard> },
-      { path: "publish/:recordId", element: <VisibilityGuard targetKey="panel:publish"><PublishDetailPage /></VisibilityGuard> },
-      { path: "audit-logs", element: <VisibilityGuard targetKey="panel:audit-logs"><AuditLogPage /></VisibilityGuard> },
-      { path: "themes", element: <ThemeRegistryPage /> },
+      { path: "library", element: <Suspense fallback={<LazyFallback />}><ContentLibraryPage /></Suspense> },
+      { path: "assets", element: <Suspense fallback={<LazyFallback />}><AssetLibraryPage /></Suspense> },
+      { path: "analytics", element: <VisibilityGuard targetKey="panel:analytics"><Suspense fallback={<LazyFallback />}><AnalyticsOverviewPage /></Suspense></VisibilityGuard> },
+      { path: "analytics/content", element: <VisibilityGuard targetKey="panel:analytics"><Suspense fallback={<LazyFallback />}><AnalyticsContentPage /></Suspense></VisibilityGuard> },
+      { path: "analytics/operations", element: <VisibilityGuard targetKey="panel:analytics"><Suspense fallback={<LazyFallback />}><AnalyticsOperationsPage /></Suspense></VisibilityGuard> },
+      { path: "analytics/youtube", element: <VisibilityGuard targetKey="panel:analytics"><Suspense fallback={<LazyFallback />}><YouTubeAnalyticsPage /></Suspense></VisibilityGuard> },
+      { path: "publish", element: <VisibilityGuard targetKey="panel:publish"><Suspense fallback={<LazyFallback />}><PublishCenterPage /></Suspense></VisibilityGuard> },
+      { path: "publish/:recordId", element: <VisibilityGuard targetKey="panel:publish"><Suspense fallback={<LazyFallback />}><PublishDetailPage /></Suspense></VisibilityGuard> },
+      { path: "audit-logs", element: <VisibilityGuard targetKey="panel:audit-logs"><Suspense fallback={<LazyFallback />}><AuditLogPage /></Suspense></VisibilityGuard> },
+      { path: "themes", element: <Suspense fallback={<LazyFallback />}><ThemeRegistryPage /></Suspense> },
       { path: "settings/youtube-callback", element: <YouTubeCallbackPage /> },
     ],
   },

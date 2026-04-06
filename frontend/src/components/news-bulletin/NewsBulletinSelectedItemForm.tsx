@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-const FIELD: React.CSSProperties = { display: "block", width: "100%", marginTop: "4px" };
+const FIELD_CLASS = "block w-full mt-1";
 
 export interface SelectedItemFormValues {
   news_item_id: string;
@@ -55,17 +55,17 @@ export function NewsBulletinSelectedItemForm({
   const localError = error ?? submitError;
 
   return (
-    <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-      {localError && <p style={{ color: "red", margin: 0, wordBreak: "break-word", overflowWrap: "anywhere" }}>{localError}</p>}
+    <form onSubmit={handleSubmit} className="flex flex-col gap-2.5">
+      {localError && <p className="text-red-600 m-0 break-words [overflow-wrap:anywhere]">{localError}</p>}
 
       {isCreate && (
         <label>
-          News Item ID <span style={{ color: "red" }}>*</span>
+          News Item ID <span className="text-red-600">*</span>
           <input
             type="text"
             value={values.news_item_id}
             onChange={(e) => set("news_item_id", e.target.value)}
-            style={{ ...FIELD, fontFamily: "monospace" }}
+            className="block w-full mt-1 font-mono"
           />
         </label>
       )}
@@ -76,7 +76,7 @@ export function NewsBulletinSelectedItemForm({
           type="text"
           value={values.sort_order}
           onChange={(e) => set("sort_order", e.target.value)}
-          style={FIELD}
+          className={FIELD_CLASS}
         />
       </label>
 
@@ -86,11 +86,11 @@ export function NewsBulletinSelectedItemForm({
           type="text"
           value={values.selection_reason}
           onChange={(e) => set("selection_reason", e.target.value)}
-          style={FIELD}
+          className={FIELD_CLASS}
         />
       </label>
 
-      <div style={{ display: "flex", gap: "8px" }}>
+      <div className="flex gap-2">
         <button type="submit" disabled={isSubmitting}>
           {isSubmitting ? "Kaydediliyor..." : isCreate ? "Ekle" : "Güncelle"}
         </button>

@@ -1,3 +1,5 @@
+import { api } from "./client";
+
 const BASE_URL = "/api/v1/visibility-rules";
 
 export interface VisibilityRuleResponse {
@@ -17,20 +19,12 @@ export interface VisibilityRuleResponse {
   updated_at: string;
 }
 
-export async function fetchVisibilityRules(): Promise<VisibilityRuleResponse[]> {
-  const res = await fetch(BASE_URL);
-  if (!res.ok) {
-    throw new Error(`Failed to fetch visibility rules: ${res.status}`);
-  }
-  return res.json();
+export function fetchVisibilityRules(): Promise<VisibilityRuleResponse[]> {
+  return api.get<VisibilityRuleResponse[]>(BASE_URL);
 }
 
-export async function fetchVisibilityRuleById(id: string): Promise<VisibilityRuleResponse> {
-  const res = await fetch(`${BASE_URL}/${id}`);
-  if (!res.ok) {
-    throw new Error(`Failed to fetch visibility rule ${id}: ${res.status}`);
-  }
-  return res.json();
+export function fetchVisibilityRuleById(id: string): Promise<VisibilityRuleResponse> {
+  return api.get<VisibilityRuleResponse>(`${BASE_URL}/${id}`);
 }
 
 export interface VisibilityResolution {
@@ -42,32 +36,23 @@ export interface VisibilityResolution {
 /**
  * Resolve visibility for a target key.
  *
- * M22-A: Hata durumunda artık sessiz permissive fallback dönmüyor.
- * Error propagation yapılır — çağıran (useVisibility hook) hata durumunu yönetir.
+ * M22-A: Hata durumunda artik sessiz permissive fallback donmuyor.
+ * Error propagation yapilir -- cagiran (useVisibility hook) hata durumunu yonetir.
  *
- * Bu değişikliğin gerekçesi:
- *   Eski davranış: API hatası → { visible: true } → güvenlik açığı
- *   Yeni davranış: API hatası → throw → hook error state → kontrollü fallback
+ * Bu degisikligin gerekcesi:
+ *   Eski davranis: API hatasi -> { visible: true } -> guvenlik acigi
+ *   Yeni davranis: API hatasi -> throw -> hook error state -> kontrollu fallback
  */
-export async function resolveVisibility(
+export function resolveVisibility(
   targetKey: string,
   params?: { role?: string; mode?: string; module_scope?: string },
 ): Promise<VisibilityResolution> {
-  const searchParams = new URLSearchParams({ target_key: targetKey });
-  if (params?.role) searchParams.set("role", params.role);
-  if (params?.mode) searchParams.set("mode", params.mode);
-  if (params?.module_scope) searchParams.set("module_scope", params.module_scope);
-  const resp = await fetch(`${BASE_URL}/resolve?${searchParams}`);
-  if (!resp.ok) {
-    throw new Error(`Visibility resolution failed for '${targetKey}': ${resp.status}`);
-  }
-  return resp.json();
+  return api.get<VisibilityResolution>(`${BASE_URL}/resolve`, {
+    target_key: targetKey,
+    ...params,
+  });
 }
 
-export async function deleteVisibilityRule(id: string): Promise<VisibilityRuleResponse> {
-  const res = await fetch(`${BASE_URL}/${id}`, { method: "DELETE" });
-  if (!res.ok) {
-    throw new Error(`Failed to delete visibility rule ${id}: ${res.status}`);
-  }
-  return res.json();
+export function deleteVisibilityRule(id: string): Promise<VisibilityRuleResponse> {
+  return api.delete<VisibilityRuleResponse>(`${BASE_URL}/${id}`);
 }

@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { StyleBlueprintResponse } from "../../api/styleBlueprintsApi";
 import { validateJson } from "../../lib/safeJson";
 import { cn } from "../../lib/cn";
+import { BLUEPRINT_STATUSES } from "../../constants/statusOptions";
 
 export interface StyleBlueprintFormValues {
   name: string;
@@ -117,9 +118,7 @@ export function StyleBlueprintForm({
       <div className="mb-3">
         <label className="block text-sm font-semibold text-neutral-700 mb-1">Status</label>
         <select className="w-full py-1.5 px-2 text-md border border-border-subtle rounded-sm box-border" value={values.status} onChange={(e) => set("status", e.target.value)}>
-          <option value="draft">draft</option>
-          <option value="active">active</option>
-          <option value="archived">archived</option>
+          {BLUEPRINT_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
         </select>
       </div>
 
@@ -169,7 +168,7 @@ export function StyleBlueprintForm({
       </div>
 
       {submitError && (
-        <div className="text-error text-md mb-3 break-words" style={{ overflowWrap: "anywhere" }}>{submitError}</div>
+        <div className="text-error text-md mb-3 break-words [overflow-wrap:anywhere]">{submitError}</div>
       )}
 
       <div className="flex gap-2">

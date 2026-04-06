@@ -79,7 +79,7 @@ describe("resolveVisibility", () => {
     ) as unknown as typeof window.fetch;
 
     await expect(resolveVisibility("panel:settings")).rejects.toThrow(
-      "Visibility resolution failed"
+      "HTTP 500"
     );
   });
 

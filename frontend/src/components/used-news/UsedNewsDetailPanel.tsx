@@ -13,7 +13,7 @@ function Field({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="mb-2">
       <span className="font-semibold mr-2 text-neutral-600 text-base">{label}:</span>
-      <span className="break-words" style={{ overflowWrap: "anywhere" }}>{value ?? "—"}</span>
+      <span className="break-words [overflow-wrap:anywhere]">{value ?? "—"}</span>
     </div>
   );
 }

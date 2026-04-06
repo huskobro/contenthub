@@ -1,3 +1,5 @@
+import { api } from "./client";
+
 const BASE_URL = "/api/v1/modules/standard-video";
 
 export interface StandardVideoResponse {
@@ -55,41 +57,26 @@ export interface StandardVideoListParams {
   offset?: number;
 }
 
-export async function fetchStandardVideos(
+export function fetchStandardVideos(
   params?: StandardVideoListParams,
 ): Promise<StandardVideoResponse[]> {
-  const url = new URL(BASE_URL, globalThis.location?.origin ?? "http://localhost");
-  if (params?.status) url.searchParams.set("status", params.status);
-  if (params?.search) url.searchParams.set("search", params.search);
-  if (params?.limit !== undefined) url.searchParams.set("limit", String(params.limit));
-  if (params?.offset !== undefined) url.searchParams.set("offset", String(params.offset));
-  const res = await fetch(url.pathname + url.search);
-  if (!res.ok) throw new Error(`Failed to fetch standard videos: ${res.status}`);
-  return res.json();
+  return api.get<StandardVideoResponse[]>(BASE_URL, params);
 }
 
-export async function fetchStandardVideoById(id: string): Promise<StandardVideoResponse> {
-  const res = await fetch(`${BASE_URL}/${id}`);
-  if (!res.ok) throw new Error(`Failed to fetch standard video ${id}: ${res.status}`);
-  return res.json();
+export function fetchStandardVideoById(id: string): Promise<StandardVideoResponse> {
+  return api.get<StandardVideoResponse>(`${BASE_URL}/${id}`);
 }
 
-export async function fetchStandardVideoScript(
+export function fetchStandardVideoScript(
   id: string
 ): Promise<StandardVideoScriptResponse | null> {
-  const res = await fetch(`${BASE_URL}/${id}/script`);
-  if (res.status === 404) return null;
-  if (!res.ok) throw new Error(`Failed to fetch script for ${id}: ${res.status}`);
-  return res.json();
+  return api.getOrNull<StandardVideoScriptResponse>(`${BASE_URL}/${id}/script`);
 }
 
-export async function fetchStandardVideoMetadata(
+export function fetchStandardVideoMetadata(
   id: string
 ): Promise<StandardVideoMetadataResponse | null> {
-  const res = await fetch(`${BASE_URL}/${id}/metadata`);
-  if (res.status === 404) return null;
-  if (!res.ok) throw new Error(`Failed to fetch metadata for ${id}: ${res.status}`);
-  return res.json();
+  return api.getOrNull<StandardVideoMetadataResponse>(`${BASE_URL}/${id}/metadata`);
 }
 
 export interface StandardVideoCreatePayload {
@@ -117,29 +104,17 @@ export interface StandardVideoUpdatePayload {
   job_id?: string | null;
 }
 
-export async function createStandardVideo(
+export function createStandardVideo(
   payload: StandardVideoCreatePayload
 ): Promise<StandardVideoResponse> {
-  const res = await fetch(BASE_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  if (!res.ok) throw new Error(`Failed to create standard video: ${res.status}`);
-  return res.json();
+  return api.post<StandardVideoResponse>(BASE_URL, payload);
 }
 
-export async function updateStandardVideo(
+export function updateStandardVideo(
   id: string,
   payload: StandardVideoUpdatePayload
 ): Promise<StandardVideoResponse> {
-  const res = await fetch(`${BASE_URL}/${id}`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  if (!res.ok) throw new Error(`Failed to update standard video ${id}: ${res.status}`);
-  return res.json();
+  return api.patch<StandardVideoResponse>(`${BASE_URL}/${id}`, payload);
 }
 
 export interface StandardVideoScriptCreatePayload {
@@ -156,30 +131,18 @@ export interface StandardVideoScriptUpdatePayload {
   notes?: string | null;
 }
 
-export async function createStandardVideoScript(
+export function createStandardVideoScript(
   videoId: string,
   payload: StandardVideoScriptCreatePayload
 ): Promise<StandardVideoScriptResponse> {
-  const res = await fetch(`${BASE_URL}/${videoId}/script`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  if (!res.ok) throw new Error(`Failed to create script for ${videoId}: ${res.status}`);
-  return res.json();
+  return api.post<StandardVideoScriptResponse>(`${BASE_URL}/${videoId}/script`, payload);
 }
 
-export async function updateStandardVideoScript(
+export function updateStandardVideoScript(
   videoId: string,
   payload: StandardVideoScriptUpdatePayload
 ): Promise<StandardVideoScriptResponse> {
-  const res = await fetch(`${BASE_URL}/${videoId}/script`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  if (!res.ok) throw new Error(`Failed to update script for ${videoId}: ${res.status}`);
-  return res.json();
+  return api.patch<StandardVideoScriptResponse>(`${BASE_URL}/${videoId}/script`, payload);
 }
 
 export interface StandardVideoMetadataCreatePayload {
@@ -204,28 +167,16 @@ export interface StandardVideoMetadataUpdatePayload {
   notes?: string | null;
 }
 
-export async function createStandardVideoMetadata(
+export function createStandardVideoMetadata(
   videoId: string,
   payload: StandardVideoMetadataCreatePayload
 ): Promise<StandardVideoMetadataResponse> {
-  const res = await fetch(`${BASE_URL}/${videoId}/metadata`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  if (!res.ok) throw new Error(`Failed to create metadata for ${videoId}: ${res.status}`);
-  return res.json();
+  return api.post<StandardVideoMetadataResponse>(`${BASE_URL}/${videoId}/metadata`, payload);
 }
 
-export async function updateStandardVideoMetadata(
+export function updateStandardVideoMetadata(
   videoId: string,
   payload: StandardVideoMetadataUpdatePayload
 ): Promise<StandardVideoMetadataResponse> {
-  const res = await fetch(`${BASE_URL}/${videoId}/metadata`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  if (!res.ok) throw new Error(`Failed to update metadata for ${videoId}: ${res.status}`);
-  return res.json();
+  return api.patch<StandardVideoMetadataResponse>(`${BASE_URL}/${videoId}/metadata`, payload);
 }

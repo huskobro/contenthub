@@ -1,3 +1,5 @@
+import { api } from "./client";
+
 const BASE_URL = "/api/v1/sources";
 
 export interface SourceResponse {
@@ -23,25 +25,16 @@ export interface SourceResponse {
   used_news_count_from_source?: number;
 }
 
-export async function fetchSources(params?: {
+export function fetchSources(params?: {
   source_type?: string;
   status?: string;
   scan_mode?: string;
 }): Promise<SourceResponse[]> {
-  const url = new URL(BASE_URL, window.location.origin);
-  if (params?.source_type) url.searchParams.set("source_type", params.source_type);
-  if (params?.status) url.searchParams.set("status", params.status);
-  if (params?.scan_mode) url.searchParams.set("scan_mode", params.scan_mode);
-
-  const resp = await fetch(url.pathname + url.search);
-  if (!resp.ok) throw new Error(`Failed to fetch sources: ${resp.status}`);
-  return resp.json();
+  return api.get<SourceResponse[]>(BASE_URL, params);
 }
 
-export async function fetchSourceById(sourceId: string): Promise<SourceResponse> {
-  const resp = await fetch(`${BASE_URL}/${sourceId}`);
-  if (!resp.ok) throw new Error(`Failed to fetch source ${sourceId}: ${resp.status}`);
-  return resp.json();
+export function fetchSourceById(sourceId: string): Promise<SourceResponse> {
+  return api.get<SourceResponse>(`${BASE_URL}/${sourceId}`);
 }
 
 export interface SourceCreatePayload {
@@ -72,28 +65,10 @@ export interface SourceUpdatePayload {
   notes?: string;
 }
 
-export async function createSource(payload: SourceCreatePayload): Promise<SourceResponse> {
-  const resp = await fetch(BASE_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  if (!resp.ok) {
-    const err = await resp.json().catch(() => ({}));
-    throw new Error(err?.detail?.[0]?.msg ?? err?.detail ?? `Failed to create source: ${resp.status}`);
-  }
-  return resp.json();
+export function createSource(payload: SourceCreatePayload): Promise<SourceResponse> {
+  return api.post<SourceResponse>(BASE_URL, payload);
 }
 
-export async function updateSource(sourceId: string, payload: SourceUpdatePayload): Promise<SourceResponse> {
-  const resp = await fetch(`${BASE_URL}/${sourceId}`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  if (!resp.ok) {
-    const err = await resp.json().catch(() => ({}));
-    throw new Error(err?.detail?.[0]?.msg ?? err?.detail ?? `Failed to update source: ${resp.status}`);
-  }
-  return resp.json();
+export function updateSource(sourceId: string, payload: SourceUpdatePayload): Promise<SourceResponse> {
+  return api.patch<SourceResponse>(`${BASE_URL}/${sourceId}`, payload);
 }

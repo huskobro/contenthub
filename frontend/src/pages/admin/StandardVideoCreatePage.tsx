@@ -2,9 +2,11 @@ import { useNavigate } from "react-router-dom";
 import { StandardVideoForm } from "../../components/standard-video/StandardVideoForm";
 import type { StandardVideoFormValues } from "../../components/standard-video/StandardVideoForm";
 import { useCreateStandardVideo } from "../../hooks/useCreateStandardVideo";
+import { useToast } from "../../hooks/useToast";
 
 export function StandardVideoCreatePage() {
   const navigate = useNavigate();
+  const toast = useToast();
   const { mutate, isPending, error } = useCreateStandardVideo();
 
   function handleSubmit(values: StandardVideoFormValues) {
@@ -22,6 +24,7 @@ export function StandardVideoCreatePage() {
     };
     mutate(payload, {
       onSuccess: (created) => {
+        toast.success("Standard video basariyla olusturuldu");
         navigate(`/admin/standard-videos/${created.id}`);
       },
     });

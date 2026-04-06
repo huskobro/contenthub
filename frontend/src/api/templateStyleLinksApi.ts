@@ -1,3 +1,5 @@
+import { api } from "./client";
+
 const BASE_URL = "/api/v1/template-style-links";
 
 export interface TemplateStyleLinkResponse {
@@ -25,50 +27,29 @@ export interface TemplateStyleLinkUpdatePayload {
   notes?: string | null;
 }
 
-export async function fetchTemplateStyleLinks(params?: {
+export function fetchTemplateStyleLinks(params?: {
   template_id?: string;
   style_blueprint_id?: string;
   status?: string;
 }): Promise<TemplateStyleLinkResponse[]> {
-  const url = new URL(BASE_URL, window.location.origin);
-  if (params?.template_id) url.searchParams.set("template_id", params.template_id);
-  if (params?.style_blueprint_id) url.searchParams.set("style_blueprint_id", params.style_blueprint_id);
-  if (params?.status) url.searchParams.set("status", params.status);
-
-  const resp = await fetch(url.pathname + url.search);
-  if (!resp.ok) throw new Error(`Failed to fetch template style links: ${resp.status}`);
-  return resp.json();
+  return api.get<TemplateStyleLinkResponse[]>(BASE_URL, params);
 }
 
-export async function fetchTemplateStyleLinkById(
+export function fetchTemplateStyleLinkById(
   linkId: string
 ): Promise<TemplateStyleLinkResponse> {
-  const resp = await fetch(`${BASE_URL}/${linkId}`);
-  if (!resp.ok) throw new Error(`Failed to fetch template style link ${linkId}: ${resp.status}`);
-  return resp.json();
+  return api.get<TemplateStyleLinkResponse>(`${BASE_URL}/${linkId}`);
 }
 
-export async function createTemplateStyleLink(
+export function createTemplateStyleLink(
   payload: TemplateStyleLinkCreatePayload
 ): Promise<TemplateStyleLinkResponse> {
-  const resp = await fetch(BASE_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  if (!resp.ok) throw new Error(`Failed to create template style link: ${resp.status}`);
-  return resp.json();
+  return api.post<TemplateStyleLinkResponse>(BASE_URL, payload);
 }
 
-export async function updateTemplateStyleLink(
+export function updateTemplateStyleLink(
   linkId: string,
   payload: TemplateStyleLinkUpdatePayload
 ): Promise<TemplateStyleLinkResponse> {
-  const resp = await fetch(`${BASE_URL}/${linkId}`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  if (!resp.ok) throw new Error(`Failed to update template style link ${linkId}: ${resp.status}`);
-  return resp.json();
+  return api.patch<TemplateStyleLinkResponse>(`${BASE_URL}/${linkId}`, payload);
 }

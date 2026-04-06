@@ -1,3 +1,5 @@
+import { api } from "./client";
+
 const BASE_URL = "/api/v1/settings";
 
 export interface SettingResponse {
@@ -20,20 +22,12 @@ export interface SettingResponse {
   updated_at: string;
 }
 
-export async function fetchSettings(): Promise<SettingResponse[]> {
-  const res = await fetch(BASE_URL);
-  if (!res.ok) {
-    throw new Error(`Failed to fetch settings: ${res.status}`);
-  }
-  return res.json();
+export function fetchSettings(): Promise<SettingResponse[]> {
+  return api.get<SettingResponse[]>(BASE_URL);
 }
 
-export async function fetchSettingById(id: string): Promise<SettingResponse> {
-  const res = await fetch(`${BASE_URL}/${id}`);
-  if (!res.ok) {
-    throw new Error(`Failed to fetch setting ${id}: ${res.status}`);
-  }
-  return res.json();
+export function fetchSettingById(id: string): Promise<SettingResponse> {
+  return api.get<SettingResponse>(`${BASE_URL}/${id}`);
 }
 
 export interface SettingCreatePayload {
@@ -52,15 +46,6 @@ export interface SettingCreatePayload {
   status?: string;
 }
 
-export async function createSetting(payload: SettingCreatePayload): Promise<SettingResponse> {
-  const res = await fetch(BASE_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err?.detail?.[0]?.msg ?? err?.detail ?? `Failed to create setting: ${res.status}`);
-  }
-  return res.json();
+export function createSetting(payload: SettingCreatePayload): Promise<SettingResponse> {
+  return api.post<SettingResponse>(BASE_URL, payload);
 }

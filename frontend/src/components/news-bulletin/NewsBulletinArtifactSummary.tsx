@@ -7,7 +7,7 @@ interface Props {
 
 export function NewsBulletinArtifactSummary({ hasScript, hasMetadata }: Props) {
   return (
-    <div style={{ display: "flex", gap: "0.3rem", flexWrap: "wrap" }}>
+    <div className="flex gap-1 flex-wrap">
       <NewsBulletinArtifactStatusBadge present={hasScript ?? false} label="Script" />
       <NewsBulletinArtifactStatusBadge present={hasMetadata ?? false} label="Metadata" />
     </div>

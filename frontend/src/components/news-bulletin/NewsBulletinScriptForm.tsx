@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-const FIELD: React.CSSProperties = { display: "block", width: "100%", marginTop: "4px" };
+const FIELD_CLASS = "block w-full mt-1";
 
 export interface ScriptFormValues {
   content: string;
@@ -51,16 +51,16 @@ export function NewsBulletinScriptForm({
   const localError = error ?? submitError;
 
   return (
-    <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-      {localError && <p style={{ color: "red", margin: 0, wordBreak: "break-word", overflowWrap: "anywhere" }}>{localError}</p>}
+    <form onSubmit={handleSubmit} className="flex flex-col gap-2.5">
+      {localError && <p className="text-red-600 m-0 break-words [overflow-wrap:anywhere]">{localError}</p>}
 
       <label>
-        İçerik <span style={{ color: "red" }}>*</span>
+        İçerik <span className="text-red-600">*</span>
         <textarea
           value={values.content}
           onChange={(e) => set("content", e.target.value)}
           rows={8}
-          style={{ ...FIELD, fontFamily: "monospace", fontSize: "0.85em" }}
+          className="block w-full mt-1 font-mono text-[0.85em]"
         />
       </label>
 
@@ -69,7 +69,7 @@ export function NewsBulletinScriptForm({
         <select
           value={values.source_type}
           onChange={(e) => set("source_type", e.target.value)}
-          style={FIELD}
+          className={FIELD_CLASS}
         >
           <option value="manual">manual</option>
           <option value="generated">generated</option>
@@ -81,7 +81,7 @@ export function NewsBulletinScriptForm({
         <select
           value={values.generation_status}
           onChange={(e) => set("generation_status", e.target.value)}
-          style={FIELD}
+          className={FIELD_CLASS}
         >
           <option value="draft">draft</option>
           <option value="ready">ready</option>
@@ -94,11 +94,11 @@ export function NewsBulletinScriptForm({
           value={values.notes}
           onChange={(e) => set("notes", e.target.value)}
           rows={2}
-          style={FIELD}
+          className={FIELD_CLASS}
         />
       </label>
 
-      <div style={{ display: "flex", gap: "8px" }}>
+      <div className="flex gap-2">
         <button type="submit" disabled={isSubmitting}>
           {isSubmitting ? "Kaydediliyor..." : mode === "create" ? "Oluştur" : "Güncelle"}
         </button>

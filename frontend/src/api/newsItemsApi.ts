@@ -1,3 +1,5 @@
+import { api } from "./client";
+
 const BASE_URL = "/api/v1/news-items";
 
 export interface NewsItemResponse {
@@ -52,37 +54,21 @@ export interface NewsItemUpdatePayload {
   raw_payload_json?: string | null;
 }
 
-export async function fetchNewsItems(): Promise<NewsItemResponse[]> {
-  const resp = await fetch(BASE_URL);
-  if (!resp.ok) throw new Error(`Failed to fetch news items: ${resp.status}`);
-  return resp.json();
+export function fetchNewsItems(): Promise<NewsItemResponse[]> {
+  return api.get<NewsItemResponse[]>(BASE_URL);
 }
 
-export async function fetchNewsItemById(id: string): Promise<NewsItemResponse> {
-  const resp = await fetch(`${BASE_URL}/${id}`);
-  if (!resp.ok) throw new Error(`Failed to fetch news item ${id}: ${resp.status}`);
-  return resp.json();
+export function fetchNewsItemById(id: string): Promise<NewsItemResponse> {
+  return api.get<NewsItemResponse>(`${BASE_URL}/${id}`);
 }
 
-export async function createNewsItem(payload: NewsItemCreatePayload): Promise<NewsItemResponse> {
-  const resp = await fetch(BASE_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  if (!resp.ok) throw new Error(`Failed to create news item: ${resp.status}`);
-  return resp.json();
+export function createNewsItem(payload: NewsItemCreatePayload): Promise<NewsItemResponse> {
+  return api.post<NewsItemResponse>(BASE_URL, payload);
 }
 
-export async function updateNewsItem(
+export function updateNewsItem(
   id: string,
   payload: NewsItemUpdatePayload
 ): Promise<NewsItemResponse> {
-  const resp = await fetch(`${BASE_URL}/${id}`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  if (!resp.ok) throw new Error(`Failed to update news item ${id}: ${resp.status}`);
-  return resp.json();
+  return api.patch<NewsItemResponse>(`${BASE_URL}/${id}`, payload);
 }

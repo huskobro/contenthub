@@ -3,7 +3,7 @@ import type { NewsBulletinResponse } from "../../api/newsBulletinApi";
 
 const DASH = "—";
 
-const FIELD: React.CSSProperties = { display: "block", width: "100%", marginTop: "4px" };
+const FIELD_CLASS = "block w-full mt-1";
 
 export interface NewsBulletinFormValues {
   topic: string;
@@ -76,15 +76,15 @@ export function NewsBulletinForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-      {error && <p style={{ color: "red", wordBreak: "break-word", overflowWrap: "anywhere" }}>{error}</p>}
+    <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+      {error && <p className="text-red-600 break-words [overflow-wrap:anywhere]">{error}</p>}
 
       <label>
-        Topic <span style={{ color: "red" }}>*</span>
+        Topic <span className="text-red-600">*</span>
         <input
           value={values.topic}
           onChange={(e) => set("topic", e.target.value)}
-          style={FIELD}
+          className={FIELD_CLASS}
         />
       </label>
 
@@ -93,7 +93,7 @@ export function NewsBulletinForm({
         <input
           value={values.title}
           onChange={(e) => set("title", e.target.value)}
-          style={FIELD}
+          className={FIELD_CLASS}
         />
       </label>
 
@@ -103,7 +103,7 @@ export function NewsBulletinForm({
           value={values.brief}
           onChange={(e) => set("brief", e.target.value)}
           rows={3}
-          style={FIELD}
+          className={FIELD_CLASS}
         />
       </label>
 
@@ -114,7 +114,7 @@ export function NewsBulletinForm({
           min={0}
           value={values.target_duration_seconds}
           onChange={(e) => set("target_duration_seconds", e.target.value)}
-          style={FIELD}
+          className={FIELD_CLASS}
         />
       </label>
 
@@ -123,7 +123,7 @@ export function NewsBulletinForm({
         <select
           value={values.language}
           onChange={(e) => set("language", e.target.value)}
-          style={FIELD}
+          className={FIELD_CLASS}
         >
           <option value="">{DASH}</option>
           <option value="tr">tr</option>
@@ -136,7 +136,7 @@ export function NewsBulletinForm({
         <select
           value={values.tone}
           onChange={(e) => set("tone", e.target.value)}
-          style={FIELD}
+          className={FIELD_CLASS}
         >
           <option value="">{DASH}</option>
           <option value="formal">formal</option>
@@ -150,7 +150,7 @@ export function NewsBulletinForm({
         <select
           value={values.bulletin_style}
           onChange={(e) => set("bulletin_style", e.target.value)}
-          style={FIELD}
+          className={FIELD_CLASS}
         >
           <option value="">{DASH}</option>
           <option value="studio">studio</option>
@@ -164,7 +164,7 @@ export function NewsBulletinForm({
         <select
           value={values.source_mode}
           onChange={(e) => set("source_mode", e.target.value)}
-          style={FIELD}
+          className={FIELD_CLASS}
         >
           <option value="">{DASH}</option>
           <option value="manual">manual</option>
@@ -180,7 +180,7 @@ export function NewsBulletinForm({
           onChange={(e) => set("selected_news_ids_json", e.target.value)}
           rows={3}
           placeholder='["id-1","id-2"]'
-          style={{ display: "block", width: "100%", marginTop: "4px", fontFamily: "monospace" }}
+          className="block w-full mt-1 font-mono"
         />
       </label>
 
@@ -189,7 +189,7 @@ export function NewsBulletinForm({
         <select
           value={values.status}
           onChange={(e) => set("status", e.target.value)}
-          style={FIELD}
+          className={FIELD_CLASS}
         >
           <option value="draft">draft</option>
           <option value="ready">ready</option>
@@ -197,7 +197,7 @@ export function NewsBulletinForm({
         </select>
       </label>
 
-      <div style={{ display: "flex", gap: "8px" }}>
+      <div className="flex gap-2">
         <button type="submit" disabled={isSubmitting}>
           {isSubmitting ? "Kaydediliyor..." : submitLabel}
         </button>

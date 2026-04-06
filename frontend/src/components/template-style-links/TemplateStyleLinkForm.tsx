@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { TemplateStyleLinkResponse } from "../../api/templateStyleLinksApi";
 import { cn } from "../../lib/cn";
+import { LINK_ROLES, LINK_STATUSES } from "../../constants/statusOptions";
 
 export interface TemplateStyleLinkFormValues {
   template_id: string;
@@ -100,12 +101,14 @@ export function TemplateStyleLinkForm({
 
       <div className="mb-3">
         <label className="block text-sm font-semibold text-neutral-700 mb-1">Link Role</label>
-        <input
+        <select
           className="w-full px-2 py-1.5 text-md border border-border-subtle rounded-sm box-border"
           value={values.link_role}
           onChange={(e) => set("link_role", e.target.value)}
-          placeholder="ör. primary, fallback, experimental (opsiyonel)"
-        />
+        >
+          <option value="">--</option>
+          {LINK_ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
+        </select>
       </div>
 
       <div className="mb-3">
@@ -115,9 +118,7 @@ export function TemplateStyleLinkForm({
           value={values.status}
           onChange={(e) => set("status", e.target.value)}
         >
-          <option value="active">active</option>
-          <option value="inactive">inactive</option>
-          <option value="archived">archived</option>
+          {LINK_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
         </select>
       </div>
 

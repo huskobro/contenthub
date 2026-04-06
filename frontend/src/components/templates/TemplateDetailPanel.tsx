@@ -18,7 +18,7 @@ function Field({ label, value }: { label: string; value: string | number | null 
   return (
     <div className="mb-2">
       <span className="text-sm font-semibold text-neutral-600">{label}: </span>
-      <span className={cn("text-md break-words", isEmpty ? "text-neutral-500" : "text-neutral-900")} style={{ overflowWrap: "anywhere" }}>
+      <span className={cn("text-md break-words [overflow-wrap:anywhere]", isEmpty ? "text-neutral-500" : "text-neutral-900")}>
         {isEmpty ? "—" : String(value)}
       </span>
     </div>

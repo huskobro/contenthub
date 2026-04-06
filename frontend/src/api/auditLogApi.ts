@@ -2,6 +2,8 @@
  * Audit Log API client — M15.
  */
 
+import { api } from "./client";
+
 const BASE = "/api/v1/audit-logs";
 
 export interface AuditLogEntry {
@@ -20,7 +22,7 @@ export interface AuditLogListResponse {
   total: number;
 }
 
-export async function fetchAuditLogs(params?: {
+export function fetchAuditLogs(params?: {
   action?: string;
   entity_type?: string;
   entity_id?: string;
@@ -29,22 +31,9 @@ export async function fetchAuditLogs(params?: {
   limit?: number;
   offset?: number;
 }): Promise<AuditLogListResponse> {
-  const qs = new URLSearchParams();
-  if (params?.action) qs.set("action", params.action);
-  if (params?.entity_type) qs.set("entity_type", params.entity_type);
-  if (params?.entity_id) qs.set("entity_id", params.entity_id);
-  if (params?.date_from) qs.set("date_from", params.date_from);
-  if (params?.date_to) qs.set("date_to", params.date_to);
-  if (params?.limit) qs.set("limit", String(params.limit));
-  if (params?.offset) qs.set("offset", String(params.offset));
-  const suffix = qs.toString() ? `?${qs.toString()}` : "";
-  const res = await fetch(`${BASE}${suffix}`);
-  if (!res.ok) throw new Error(`Failed to fetch audit logs: ${res.status}`);
-  return res.json();
+  return api.get<AuditLogListResponse>(BASE, params);
 }
 
-export async function fetchAuditLogDetail(logId: string): Promise<AuditLogEntry> {
-  const res = await fetch(`${BASE}/${encodeURIComponent(logId)}`);
-  if (!res.ok) throw new Error(`Failed to fetch audit log detail: ${res.status}`);
-  return res.json();
+export function fetchAuditLogDetail(logId: string): Promise<AuditLogEntry> {
+  return api.get<AuditLogEntry>(`${BASE}/${encodeURIComponent(logId)}`);
 }

@@ -1,3 +1,5 @@
+import { api } from "./client";
+
 const BASE_URL = "/api/v1/assets";
 
 export interface AssetItem {
@@ -28,22 +30,12 @@ export interface AssetListParams {
   offset?: number;
 }
 
-export async function fetchAssets(params?: AssetListParams): Promise<AssetListResponse> {
-  const url = new URL(BASE_URL, globalThis.location?.origin ?? "http://localhost");
-  if (params?.asset_type) url.searchParams.set("asset_type", params.asset_type);
-  if (params?.search) url.searchParams.set("search", params.search);
-  if (params?.job_id) url.searchParams.set("job_id", params.job_id);
-  if (params?.limit !== undefined) url.searchParams.set("limit", String(params.limit));
-  if (params?.offset !== undefined) url.searchParams.set("offset", String(params.offset));
-  const res = await fetch(url.pathname + url.search);
-  if (!res.ok) throw new Error(`Failed to fetch assets: ${res.status}`);
-  return res.json();
+export function fetchAssets(params?: AssetListParams): Promise<AssetListResponse> {
+  return api.get<AssetListResponse>(BASE_URL, params);
 }
 
-export async function fetchAssetById(assetId: string): Promise<AssetItem> {
-  const res = await fetch(`${BASE_URL}/${assetId}`);
-  if (!res.ok) throw new Error(`Failed to fetch asset ${assetId}: ${res.status}`);
-  return res.json();
+export function fetchAssetById(assetId: string): Promise<AssetItem> {
+  return api.get<AssetItem>(`${BASE_URL}/${assetId}`);
 }
 
 // ── M20-A: Operation interfaces ─────────────────────────────
@@ -74,31 +66,20 @@ export interface AssetAllowedActionsResponse {
 
 // ── M20-A: Operation functions ──────────────────────────────
 
-export async function refreshAssets(): Promise<AssetRefreshResponse> {
-  const res = await fetch(`${BASE_URL}/refresh`, { method: "POST" });
-  if (!res.ok) throw new Error(`Failed to refresh assets: ${res.status}`);
-  return res.json();
+export function refreshAssets(): Promise<AssetRefreshResponse> {
+  return api.post<AssetRefreshResponse>(`${BASE_URL}/refresh`);
 }
 
-export async function deleteAsset(assetId: string): Promise<AssetDeleteResponse> {
-  const res = await fetch(`${BASE_URL}/${assetId}`, { method: "DELETE" });
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({ detail: "Silme hatasi" }));
-    throw new Error(body.detail || `Failed to delete asset: ${res.status}`);
-  }
-  return res.json();
+export function deleteAsset(assetId: string): Promise<AssetDeleteResponse> {
+  return api.delete<AssetDeleteResponse>(`${BASE_URL}/${assetId}`);
 }
 
-export async function revealAsset(assetId: string): Promise<AssetRevealResponse> {
-  const res = await fetch(`${BASE_URL}/${assetId}/reveal`, { method: "POST" });
-  if (!res.ok) throw new Error(`Failed to reveal asset: ${res.status}`);
-  return res.json();
+export function revealAsset(assetId: string): Promise<AssetRevealResponse> {
+  return api.post<AssetRevealResponse>(`${BASE_URL}/${assetId}/reveal`);
 }
 
-export async function fetchAllowedActions(assetId: string): Promise<AssetAllowedActionsResponse> {
-  const res = await fetch(`${BASE_URL}/${assetId}/allowed-actions`);
-  if (!res.ok) throw new Error(`Failed to fetch allowed actions: ${res.status}`);
-  return res.json();
+export function fetchAllowedActions(assetId: string): Promise<AssetAllowedActionsResponse> {
+  return api.get<AssetAllowedActionsResponse>(`${BASE_URL}/${assetId}/allowed-actions`);
 }
 
 // ── M21-A: Upload ───────────────────────────────────────────
@@ -112,21 +93,12 @@ export interface AssetUploadResponse {
   message: string;
 }
 
-export async function uploadAsset(
+export function uploadAsset(
   file: File,
   assetType?: string
 ): Promise<AssetUploadResponse> {
   const formData = new FormData();
   formData.append("file", file);
   if (assetType) formData.append("asset_type", assetType);
-
-  const res = await fetch(`${BASE_URL}/upload`, {
-    method: "POST",
-    body: formData,
-  });
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({ detail: "Yukleme hatasi" }));
-    throw new Error(body.detail || `Failed to upload asset: ${res.status}`);
-  }
-  return res.json();
+  return api.upload<AssetUploadResponse>(`${BASE_URL}/upload`, formData);
 }

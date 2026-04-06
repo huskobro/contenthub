@@ -50,7 +50,7 @@ export function TemplatesTable({ templates, selectedId, onSelect }: TemplatesTab
               selectedId === t.id ? "bg-info-light" : "bg-transparent"
             )}
           >
-            <td className={cn("py-2 px-3 text-brand-700 break-words", selectedId === t.id ? "font-semibold" : "font-normal")} style={{ overflowWrap: "anywhere" }}>
+            <td className={cn("py-2 px-3 text-brand-700 break-words [overflow-wrap:anywhere]", selectedId === t.id ? "font-semibold" : "font-normal")}>
               {t.name ?? DASH}
             </td>
             <td className="py-2 px-3 text-neutral-800">{t.template_type ?? DASH}</td>

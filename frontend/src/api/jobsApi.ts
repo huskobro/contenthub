@@ -1,3 +1,5 @@
+import { api } from "./client";
+
 const BASE_URL = "/api/v1/jobs";
 
 export interface JobStepResponse {
@@ -41,16 +43,12 @@ export interface JobResponse {
   steps: JobStepResponse[];
 }
 
-export async function fetchJobs(): Promise<JobResponse[]> {
-  const res = await fetch(BASE_URL);
-  if (!res.ok) throw new Error(`Failed to fetch jobs: ${res.status}`);
-  return res.json();
+export function fetchJobs(): Promise<JobResponse[]> {
+  return api.get<JobResponse[]>(BASE_URL);
 }
 
-export async function fetchJobById(id: string): Promise<JobResponse> {
-  const res = await fetch(`${BASE_URL}/${id}`);
-  if (!res.ok) throw new Error(`Failed to fetch job ${id}: ${res.status}`);
-  return res.json();
+export function fetchJobById(id: string): Promise<JobResponse> {
+  return api.get<JobResponse>(`${BASE_URL}/${id}`);
 }
 
 export interface AllowedActions {
@@ -59,35 +57,18 @@ export interface AllowedActions {
   skippable_steps: string[];
 }
 
-export async function fetchAllowedActions(jobId: string): Promise<AllowedActions> {
-  const res = await fetch(`${BASE_URL}/${jobId}/allowed-actions`);
-  if (!res.ok) throw new Error(`Failed to fetch allowed actions: ${res.status}`);
-  return res.json();
+export function fetchAllowedActions(jobId: string): Promise<AllowedActions> {
+  return api.get<AllowedActions>(`${BASE_URL}/${jobId}/allowed-actions`);
 }
 
-export async function cancelJob(jobId: string): Promise<JobResponse> {
-  const res = await fetch(`${BASE_URL}/${jobId}/cancel`, { method: "POST" });
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(body.detail || `Cancel failed: ${res.status}`);
-  }
-  return res.json();
+export function cancelJob(jobId: string): Promise<JobResponse> {
+  return api.post<JobResponse>(`${BASE_URL}/${jobId}/cancel`);
 }
 
-export async function retryJob(jobId: string): Promise<JobResponse> {
-  const res = await fetch(`${BASE_URL}/${jobId}/retry`, { method: "POST" });
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(body.detail || `Retry failed: ${res.status}`);
-  }
-  return res.json();
+export function retryJob(jobId: string): Promise<JobResponse> {
+  return api.post<JobResponse>(`${BASE_URL}/${jobId}/retry`);
 }
 
-export async function skipStep(jobId: string, stepKey: string): Promise<JobResponse> {
-  const res = await fetch(`${BASE_URL}/${jobId}/steps/${stepKey}/skip`, { method: "POST" });
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(body.detail || `Skip failed: ${res.status}`);
-  }
-  return res.json();
+export function skipStep(jobId: string, stepKey: string): Promise<JobResponse> {
+  return api.post<JobResponse>(`${BASE_URL}/${jobId}/steps/${stepKey}/skip`);
 }

@@ -28,7 +28,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.session import get_db
 from app.jobs import service
 from app.jobs.schemas import JobCreate, JobCreateRequest, JobResponse, JobStepResponse
-from app.jobs.timing_service import enrich_job_eta
+from app.jobs.timing import enrich_job_eta
 from app.jobs.step_initializer import initialize_job_steps
 from app.jobs.exceptions import InvalidTransitionError, JobNotFoundError, StepNotFoundError
 from app.modules.exceptions import ModuleNotFoundError, InputValidationError

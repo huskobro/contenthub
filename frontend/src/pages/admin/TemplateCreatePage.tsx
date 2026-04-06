@@ -2,9 +2,11 @@ import { useNavigate } from "react-router-dom";
 import { useCreateTemplate } from "../../hooks/useCreateTemplate";
 import { TemplateForm } from "../../components/templates/TemplateForm";
 import type { TemplateFormValues } from "../../components/templates/TemplateForm";
+import { useToast } from "../../hooks/useToast";
 
 export function TemplateCreatePage() {
   const navigate = useNavigate();
+  const toast = useToast();
   const { mutate, isPending, error } = useCreateTemplate();
 
   function handleSubmit(values: TemplateFormValues) {
@@ -23,6 +25,7 @@ export function TemplateCreatePage() {
       },
       {
         onSuccess: (created) => {
+          toast.success("Sablon basariyla olusturuldu");
           navigate("/admin/templates", { state: { selectedId: created.id } });
         },
       }
