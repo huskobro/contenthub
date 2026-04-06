@@ -1,5 +1,5 @@
 /**
- * NewsBulletin composition bileseni — M28.
+ * NewsBulletin composition bileseni — M31.
  *
  * composition_props.json'dan gelen props ile haber bulteni video render eder.
  * Guvenli composition mapping: composition_map.py icindeki "NewsBulletin" ID ile eslesir.
@@ -14,21 +14,26 @@
  *   Haber basligi overlay olarak gosterilir.
  *   Narration ses olarak calar, altyazi senkron gosterilir.
  *
- * M29+ genisletme alanlari:
- *   - Per-category render mode
- *   - Lower-third, ticker, live badge
- *   - Gorseller (imagePath per item)
+ * M30 SubtitleStyle preset format uyumu:
+ *   subtitleStyle artik backend get_preset_for_composition() ciktisiyla uyumlu tam preset nesnesi.
+ *   Eski format (fontColor/backgroundColor/position) geriye donuk uyumlulukla desteklenir.
+ *
+ * M31 eklemeleri:
+ *   - lowerThirdStyle prop: BulletinLowerThird component ile lower-third bant
+ *   - renderMode prop: combined/per_category/per_item — UI rozeti gosterimi (cok-cikti backend-tarafli)
  */
 
+import React from "react";
 import {
   AbsoluteFill,
   Audio,
   Sequence,
   useVideoConfig,
 } from "remotion";
+import { BulletinLowerThird } from "../components/BulletinLowerThird";
 
 // ---------------------------------------------------------------------------
-// Props tipi — composition_props.json -> props alaniyla uyumlu
+// Props tipleri — composition_props.json -> props alaniyla uyumlu
 // ---------------------------------------------------------------------------
 
 export interface BulletinItemProps {
@@ -41,12 +46,29 @@ export interface BulletinItemProps {
   category?: string;
 }
 
+/**
+ * M30 preset format — backend get_preset_for_composition() ciktisiyla uyumlu.
+ * Eski alanlar (fontColor, backgroundColor, position) geriye donuk uyumluluk icin
+ * opsiyonel tutulur; yeni alanlar onceliklidir.
+ */
 export interface SubtitleStyle {
   preset_id: string;
-  fontSize: number;
-  fontColor: string;
-  backgroundColor: string;
-  position: string;
+  label?: string;
+  // M30 yeni alanlar (oncelikli)
+  font_size?: number;
+  font_weight?: string;
+  text_color?: string;
+  active_color?: string;
+  background?: string;
+  outline_width?: number;
+  outline_color?: string;
+  line_height?: number;
+  preset_fallback_used?: boolean;
+  // Eski alanlar (geriye donuk uyumluluk)
+  fontSize?: number;
+  fontColor?: string;
+  backgroundColor?: string;
+  position?: string;
 }
 
 export interface NewsBulletinProps {
@@ -65,12 +87,71 @@ export interface NewsBulletinProps {
   subtitleStyle: SubtitleStyle;
   totalDurationSeconds: number;
   language: string;
+  /** M31: lower-third bant stili (broadcast | minimal | modern). Null ise gosterilmez. */
+  lowerThirdStyle?: string | null;
+  /** M31: Render modu — UI rozeti icin. Cok-cikti uretimi backend-taraflidir. */
+  renderMode?: "combined" | "per_category" | "per_item" | null;
   metadata: {
     title: string;
     description: string;
     tags: string[];
     hashtags?: string[];
   };
+}
+
+// ---------------------------------------------------------------------------
+// SubtitleStyle alan cozumleme yardimcilari
+// M30 format oncelikli; eksik alanda eski format'a fallback.
+// ---------------------------------------------------------------------------
+
+function resolveTextColor(s: SubtitleStyle): string {
+  return s.text_color ?? s.fontColor ?? "#FFFFFF";
+}
+
+function resolveBackground(s: SubtitleStyle): string {
+  return s.background ?? s.backgroundColor ?? "rgba(0,0,0,0.7)";
+}
+
+function resolveFontSize(s: SubtitleStyle): number {
+  return s.font_size ?? s.fontSize ?? 36;
+}
+
+function resolveFontWeight(s: SubtitleStyle): string {
+  return s.font_weight ?? "400";
+}
+
+function resolveLineHeight(s: SubtitleStyle): number {
+  return s.line_height ?? 1.4;
+}
+
+function resolveOutlineWidth(s: SubtitleStyle): number {
+  return s.outline_width ?? 0;
+}
+
+function resolveOutlineColor(s: SubtitleStyle): string {
+  return s.outline_color ?? "#000000";
+}
+
+/**
+ * outline_width > 0 ise metin golge (outline efekti) CSS degerini dondurur.
+ * 0 ise bos string (no-op).
+ */
+function buildTextShadow(s: SubtitleStyle): string {
+  const width = resolveOutlineWidth(s);
+  if (width <= 0) return "";
+  const color = resolveOutlineColor(s);
+  const w = width;
+  return `${-w}px ${-w}px 0 ${color}, ${w}px ${-w}px 0 ${color}, ${-w}px ${w}px 0 ${color}, ${w}px ${w}px 0 ${color}`;
+}
+
+// ---------------------------------------------------------------------------
+// renderMode rozet etiketi
+// ---------------------------------------------------------------------------
+
+function renderModeLabel(mode: string): string {
+  if (mode === "per_category") return "Kategori Bazli";
+  if (mode === "per_item") return "Haber Bazli";
+  return mode;
 }
 
 // ---------------------------------------------------------------------------
@@ -94,14 +175,20 @@ export const defaultNewsBulletinProps: NewsBulletinProps = {
   wordTimings: [],
   timingMode: "cursor",
   subtitleStyle: {
-    preset_id: "default",
-    fontSize: 36,
-    fontColor: "#FFFFFF",
-    backgroundColor: "rgba(0,0,0,0.7)",
-    position: "bottom",
+    preset_id: "clean_white",
+    font_size: 36,
+    font_weight: "600",
+    text_color: "#FFFFFF",
+    active_color: "#FFD700",
+    background: "rgba(0,0,0,0.35)",
+    outline_width: 2,
+    outline_color: "#000000",
+    line_height: 1.4,
   },
   totalDurationSeconds: 10,
   language: "tr",
+  lowerThirdStyle: null,
+  renderMode: null,
   metadata: {
     title: "Ornek Bulten",
     description: "Ornek bulten aciklamasi",
@@ -116,7 +203,25 @@ export const defaultNewsBulletinProps: NewsBulletinProps = {
 
 export const NewsBulletinComposition: React.FC<NewsBulletinProps> = (props) => {
   const { fps } = useVideoConfig();
-  const { items, bulletinTitle, subtitleStyle } = props;
+  const {
+    items,
+    bulletinTitle,
+    subtitleStyle,
+    lowerThirdStyle,
+    renderMode,
+  } = props;
+
+  // Narration kutusu stil hesaplamalari
+  const textColor = resolveTextColor(subtitleStyle);
+  const background = resolveBackground(subtitleStyle);
+  const fontSize = resolveFontSize(subtitleStyle);
+  const fontWeight = resolveFontWeight(subtitleStyle);
+  const lineHeight = resolveLineHeight(subtitleStyle);
+  const textShadow = buildTextShadow(subtitleStyle);
+
+  // renderMode rozet gosterimi: "combined" ve null gosterilmez
+  const showRenderModeBadge =
+    renderMode != null && renderMode !== "combined";
 
   // Her item icin frame offset hesapla
   let currentFrame = 0;
@@ -127,6 +232,8 @@ export const NewsBulletinComposition: React.FC<NewsBulletinProps> = (props) => {
     );
     const startFrame = currentFrame;
     currentFrame += durationFrames;
+
+    const hasLowerThird = lowerThirdStyle != null && lowerThirdStyle !== "";
 
     return (
       <Sequence
@@ -163,6 +270,28 @@ export const NewsBulletinComposition: React.FC<NewsBulletinProps> = (props) => {
             {index + 1} / {items.length}
           </div>
 
+          {/* renderMode rozeti — top-center, sadece non-combined modlarda */}
+          {showRenderModeBadge && (
+            <div
+              style={{
+                position: "absolute",
+                top: 40,
+                left: "50%",
+                transform: "translateX(-50%)",
+                backgroundColor: "rgba(37,99,235,0.85)",
+                color: "#FFFFFF",
+                padding: "5px 14px",
+                borderRadius: 4,
+                fontSize: 14,
+                fontWeight: "600",
+                fontFamily: "sans-serif",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {renderModeLabel(renderMode!)}
+            </div>
+          )}
+
           {/* Baslik */}
           <h2
             style={{
@@ -183,17 +312,19 @@ export const NewsBulletinComposition: React.FC<NewsBulletinProps> = (props) => {
           <div
             style={{
               position: "absolute",
-              bottom: 80,
+              bottom: hasLowerThird ? 88 : 80, // lower-third varsa biraz yukari kaydir
               left: 40,
               right: 40,
-              backgroundColor: subtitleStyle.backgroundColor,
-              color: subtitleStyle.fontColor,
-              fontSize: subtitleStyle.fontSize,
+              backgroundColor: background,
+              color: textColor,
+              fontSize: fontSize,
+              fontWeight: fontWeight,
               fontFamily: "sans-serif",
               padding: "16px 24px",
               borderRadius: 8,
               textAlign: "center",
-              lineHeight: 1.4,
+              lineHeight: lineHeight,
+              ...(textShadow ? { textShadow } : {}),
             }}
           >
             {item.narration}
@@ -217,6 +348,17 @@ export const NewsBulletinComposition: React.FC<NewsBulletinProps> = (props) => {
             >
               {item.category}
             </div>
+          )}
+
+          {/* Lower-third bant — narration kutusunun uzerinde, ekranin alt kismi */}
+          {hasLowerThird && (
+            <BulletinLowerThird
+              headline={item.headline}
+              category={item.category}
+              itemNumber={item.itemNumber}
+              totalItems={items.length}
+              style={lowerThirdStyle}
+            />
           )}
 
           {/* Audio */}
