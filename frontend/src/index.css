@@ -8,7 +8,7 @@
  * Font imports are managed by the ThemeEngine dynamically.
  * Static imports below cover ALL built-in themes for instant rendering.
  */
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Geist+Mono:wght@400;500&family=Outfit:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Geist+Mono:wght@400;500&family=Outfit:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Instrument+Sans:wght@400;500;600;700&family=Sora:wght@400;500;600;700;800&family=Nunito+Sans:wght@400;500;600;700;800&family=Fira+Code:wght@400;500;600&family=Playfair+Display:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&family=Archivo:wght@400;500;600;700&family=Source+Code+Pro:wght@400;500;600&display=swap');
 
 *,
 *::before,
@@ -193,4 +193,185 @@ body[style*="#0a0a0c"] [data-testid="command-palette-input"]::placeholder {
 @keyframes terminalBlink {
   0%, 100% { opacity: 1; }
   50%      { opacity: 0; }
+}
+
+/* ---------------------------------------------------------------------------
+   Midnight Ultraviolet — Holographic glow effects
+   --------------------------------------------------------------------------- */
+
+[data-theme="midnight-ultraviolet"] :focus-visible {
+  outline: 1px solid var(--ch-focus, #8b5cf6);
+  outline-offset: 1px;
+  box-shadow: 0 0 10px rgba(139, 92, 246, 0.2);
+}
+
+[data-theme="midnight-ultraviolet"] section {
+  border-color: rgba(139, 92, 246, 0.08);
+}
+
+/* Holographic gradient shimmer on sidebar */
+[data-theme="midnight-ultraviolet"] nav {
+  background-image:
+    linear-gradient(180deg, rgba(139,92,246,0.06) 0%, transparent 40%),
+    radial-gradient(ellipse at 20% 0%, rgba(99,102,241,0.05) 0%, transparent 60%);
+}
+
+/* Subtle purple glow on cards */
+@keyframes ultravioletPulse {
+  0%, 100% { box-shadow: 0 0 4px rgba(139, 92, 246, 0.05); }
+  50%      { box-shadow: 0 0 12px rgba(139, 92, 246, 0.1); }
+}
+
+/* ---------------------------------------------------------------------------
+   Arctic Frost — Glass-morphism effects
+   --------------------------------------------------------------------------- */
+
+/* Frosted sidebar with left border accent */
+[data-theme="arctic-frost"] nav {
+  border-right: 1px solid var(--ch-border-subtle, #e5e7eb);
+  background-image: none;
+}
+
+/* Soft blue glow on focus */
+[data-theme="arctic-frost"] :focus-visible {
+  outline: 2px solid var(--ch-focus, #0ea5e9);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.1);
+}
+
+/* Arctic sidebar nav links — dark text on white */
+[data-theme="arctic-frost"] nav a {
+  color: var(--ch-neutral-700, #374151);
+}
+[data-theme="arctic-frost"] nav a[aria-current="page"] {
+  color: var(--ch-brand-700, #0369a1);
+  background: var(--ch-surface-sidebarActive, #e0f2fe);
+}
+
+/* Arctic section headers / groups — dark on white */
+[data-theme="arctic-frost"] nav [class*="uppercase"] {
+  color: var(--ch-neutral-500, #6b7280);
+}
+
+/* Logo text and collapse button for light sidebar */
+[data-theme="arctic-frost"] nav [class*="text-neutral-0"] {
+  color: var(--ch-neutral-900, #111827);
+}
+[data-theme="arctic-frost"] nav [class*="text-neutral-500"] {
+  color: var(--ch-neutral-400, #9ca3af);
+}
+[data-theme="arctic-frost"] nav [class*="border-neutral-800"] {
+  border-color: var(--ch-border-subtle, #e5e7eb);
+}
+
+/* ---------------------------------------------------------------------------
+   Tokyo Neon — Hot pink glow + ambient effects
+   --------------------------------------------------------------------------- */
+
+[data-theme="tokyo-neon"] :focus-visible {
+  outline: 1px solid var(--ch-focus, #ec4899);
+  outline-offset: 1px;
+  box-shadow: 0 0 12px rgba(236, 72, 153, 0.25);
+}
+
+/* Neon pink sidebar gradient */
+[data-theme="tokyo-neon"] nav {
+  background-image:
+    linear-gradient(180deg, rgba(236,72,153,0.06) 0%, transparent 30%),
+    radial-gradient(ellipse at 50% 0%, rgba(236,72,153,0.04) 0%, transparent 50%);
+}
+
+/* Neon glow on brand buttons */
+[data-theme="tokyo-neon"] button[class*="from-brand"] {
+  box-shadow: 0 0 16px rgba(236, 72, 153, 0.2);
+}
+[data-theme="tokyo-neon"] button[class*="from-brand"]:hover {
+  box-shadow: 0 0 24px rgba(236, 72, 153, 0.35);
+}
+
+@keyframes neonPinkPulse {
+  0%, 100% { box-shadow: 0 0 6px rgba(236, 72, 153, 0.1); }
+  50%      { box-shadow: 0 0 18px rgba(236, 72, 153, 0.25); }
+}
+
+/* ---------------------------------------------------------------------------
+   Ink & Wire — Editorial print texture
+   --------------------------------------------------------------------------- */
+
+/* Subtle paper grain texture */
+[data-theme="ink-and-wire"]::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.015;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  mix-blend-mode: multiply;
+}
+
+/* Sharp editorial focus */
+[data-theme="ink-and-wire"] :focus-visible {
+  outline: 2px solid var(--ch-neutral-900, #1a1814);
+  outline-offset: 2px;
+}
+
+/* Underline accent on headings */
+[data-theme="ink-and-wire"] h1 {
+  border-bottom: 2px solid var(--ch-brand-600, #745a3e);
+  padding-bottom: 0.25em;
+  display: inline-block;
+}
+
+/* Newspaper-style sidebar gradient */
+[data-theme="ink-and-wire"] nav {
+  background-image:
+    linear-gradient(180deg, rgba(94,72,50,0.08) 0%, transparent 50%);
+}
+
+/* ---------------------------------------------------------------------------
+   Solar Ember — Volcanic fire ambient glow
+   --------------------------------------------------------------------------- */
+
+[data-theme="solar-ember"] :focus-visible {
+  outline: 1px solid var(--ch-focus, #ea580c);
+  outline-offset: 1px;
+  box-shadow: 0 0 10px rgba(234, 88, 12, 0.2);
+}
+
+/* Ember glow sidebar */
+[data-theme="solar-ember"] nav {
+  background-image:
+    linear-gradient(180deg, rgba(234,88,12,0.05) 0%, transparent 35%),
+    radial-gradient(ellipse at 30% 100%, rgba(234,88,12,0.03) 0%, transparent 50%);
+}
+
+/* Fire glow on brand buttons */
+[data-theme="solar-ember"] button[class*="from-brand"] {
+  box-shadow: 0 0 14px rgba(234, 88, 12, 0.18);
+}
+[data-theme="solar-ember"] button[class*="from-brand"]:hover {
+  box-shadow: 0 0 22px rgba(234, 88, 12, 0.3);
+}
+
+/* Ember heat shimmer scanline effect (very subtle) */
+[data-theme="solar-ember"]::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(234, 88, 12, 0.005) 3px,
+    rgba(234, 88, 12, 0.005) 6px
+  );
+  mix-blend-mode: screen;
+}
+
+@keyframes emberGlow {
+  0%, 100% { box-shadow: 0 0 6px rgba(234, 88, 12, 0.08); }
+  50%      { box-shadow: 0 0 16px rgba(234, 88, 12, 0.15); }
 }

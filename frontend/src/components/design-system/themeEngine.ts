@@ -126,6 +126,9 @@ export function applyThemeToDOM(theme: ThemeManifest): void {
   // Update focus-visible outline color via CSS variable
   root.style.setProperty("--ch-focus-ring", theme.colors.focus);
 
+  // Set data-theme attribute for theme-specific CSS selectors
+  root.setAttribute("data-theme", theme.id);
+
   // Update Google Fonts link if fonts changed
   updateGoogleFontsLink(theme);
 }
