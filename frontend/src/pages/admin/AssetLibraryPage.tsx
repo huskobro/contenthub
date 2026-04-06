@@ -87,7 +87,7 @@ export function AssetLibraryPage() {
   const total = data?.total ?? 0;
   const items = data?.items ?? [];
 
-  const { activeIndex, handleKeyDown } = useScopedKeyboardNavigation({ scopeId: "asset-library-table", scopeLabel: "Asset Library", itemCount: items.length, onSelect: (i) => { if (items[i]) setQuickLookOpen(true); }, enabled: !quickLookOpen && !revealSheetOpen });
+  const { activeIndex, handleKeyDown } = useScopedKeyboardNavigation({ scopeId: "asset-library-table", scopeLabel: "Asset Library", itemCount: items.length, onEnter: (i) => { if (items[i]) setQuickLookOpen(true); }, onSpace: (i) => { if (items[i]) setQuickLookOpen(true); }, enabled: !quickLookOpen && !revealSheetOpen });
   useQuickLookTrigger({ enabled: items.length > 0 && !quickLookOpen && !revealSheetOpen, onToggle: () => setQuickLookOpen(true), scopeId: "asset-library-table" });
   useSearchFocus(searchInputRef, { enabled: !quickLookOpen && !revealSheetOpen });
 

@@ -25,7 +25,15 @@ interface UseScopedKeyboardNavigationOptions {
   scopeId: string;
   scopeLabel?: string;
   itemCount: number;
+  /**
+   * Called when Enter is pressed (if onEnter not provided).
+   * Kept for backward compatibility.
+   */
   onSelect?: (index: number) => void;
+  /** Called when Enter is pressed. Takes precedence over onSelect. */
+  onEnter?: (index: number) => void;
+  /** Called when Space is pressed. */
+  onSpace?: (index: number) => void;
   /** Whether this scope should be active. Default true. */
   enabled?: boolean;
   wrap?: boolean;
@@ -36,6 +44,8 @@ export function useScopedKeyboardNavigation({
   scopeLabel,
   itemCount,
   onSelect,
+  onEnter,
+  onSpace,
   enabled = true,
   wrap,
 }: UseScopedKeyboardNavigationOptions) {
@@ -55,6 +65,8 @@ export function useScopedKeyboardNavigation({
   return useRovingTabindex({
     itemCount,
     onSelect,
+    onEnter,
+    onSpace,
     scopeId,
     wrap,
   });

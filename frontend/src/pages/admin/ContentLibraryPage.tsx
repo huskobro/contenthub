@@ -84,7 +84,12 @@ export function ContentLibraryPage() {
     scopeId: "content-library-table",
     scopeLabel: "Content Library",
     itemCount: items.length,
-    onSelect: (i) => {
+    onEnter: (i) => {
+      if (items[i]) {
+        setQuickLookOpen(true);
+      }
+    },
+    onSpace: (i) => {
       if (items[i]) {
         setQuickLookOpen(true);
       }

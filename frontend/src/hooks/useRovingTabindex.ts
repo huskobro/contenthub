@@ -17,8 +17,15 @@ import { useKeyboardStore } from "../stores/keyboardStore";
 interface UseRovingTabindexOptions {
   /** Total number of navigable items */
   itemCount: number;
-  /** Called when Enter or Space is pressed on the active item */
+  /**
+   * Called when Enter is pressed on the active item (if onEnter not provided).
+   * Kept for backward compatibility.
+   */
   onSelect?: (index: number) => void;
+  /** Called when Enter is pressed on the active item. Takes precedence over onSelect. */
+  onEnter?: (index: number) => void;
+  /** Called when Space is pressed on the active item. */
+  onSpace?: (index: number) => void;
   /** Keyboard scope id — only active when this scope is topmost */
   scopeId?: string;
   /** Whether navigation wraps around at the edges */
@@ -35,6 +42,8 @@ interface UseRovingTabindexReturn {
 export function useRovingTabindex({
   itemCount,
   onSelect,
+  onEnter,
+  onSpace,
   scopeId,
   wrap = true,
 }: UseRovingTabindexOptions): UseRovingTabindexReturn {
@@ -46,6 +55,11 @@ export function useRovingTabindex({
       // If scopeId is provided, only handle events when this scope is active
       if (scopeId && !isActiveScope(scopeId)) return;
       if (itemCount === 0) return;
+
+      // Skip Enter/Space handling for native interactive elements
+      const tag = (e.target as HTMLElement).tagName;
+      const isNativeInteractive =
+        tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || tag === "BUTTON";
 
       let nextIndex = activeIndex;
       let handled = false;
@@ -82,8 +96,23 @@ export function useRovingTabindex({
           break;
         }
         case "Enter": {
-          handled = true;
-          onSelect?.(activeIndex);
+          if (!isNativeInteractive) {
+            handled = true;
+            if (onEnter) {
+              onEnter(activeIndex);
+            } else {
+              onSelect?.(activeIndex);
+            }
+          }
+          break;
+        }
+        case " ": {
+          if (!isNativeInteractive) {
+            if (onSpace) {
+              handled = true;
+              onSpace(activeIndex);
+            }
+          }
           break;
         }
       }
@@ -95,7 +124,7 @@ export function useRovingTabindex({
         }
       }
     },
-    [activeIndex, itemCount, onSelect, scopeId, isActiveScope, wrap]
+    [activeIndex, itemCount, onSelect, onEnter, onSpace, scopeId, isActiveScope, wrap]
   );
 
   const getTabIndex = useCallback(

@@ -15,8 +15,8 @@ export function DynamicAdminLayout() {
   const layoutMode = theme.layoutMode || "classic";
 
   if (layoutMode === "horizon") {
-    return <HorizonAdminLayout />;
+    return <HorizonAdminLayout key="horizon" />;
   }
 
-  return <AdminLayout />;
+  return <AdminLayout key="classic" />;
 }

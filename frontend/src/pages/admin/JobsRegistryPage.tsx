@@ -33,11 +33,21 @@ export function JobsRegistryPage() {
     [jobList]
   );
 
+  const handleSpaceQuickLook = useCallback(
+    (index: number) => {
+      if (jobList[index]) {
+        setQuickLookOpen(true);
+      }
+    },
+    [jobList]
+  );
+
   const { activeIndex, handleKeyDown } = useScopedKeyboardNavigation({
     scopeId: "jobs-table",
     scopeLabel: "Jobs Table",
     itemCount: jobList.length,
-    onSelect: handleSelect,
+    onEnter: handleSelect,
+    onSpace: handleSpaceQuickLook,
     enabled: !sheetOpen && !quickLookOpen,
   });
 

@@ -32,7 +32,7 @@ export function TemplatesRegistryPage() {
     scopeId: "templates-table",
     scopeLabel: "Templates Table",
     itemCount: templateList.length,
-    onSelect: handleSelect,
+    onEnter: handleSelect,
     enabled: !sheetOpen,
   });
 

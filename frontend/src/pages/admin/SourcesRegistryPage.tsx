@@ -35,7 +35,7 @@ export function SourcesRegistryPage() {
     scopeId: "sources-table",
     scopeLabel: "Sources Table",
     itemCount: sourceList.length,
-    onSelect: handleSelect,
+    onEnter: handleSelect,
     enabled: !sheetOpen,
   });
 

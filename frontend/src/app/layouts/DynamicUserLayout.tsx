@@ -12,8 +12,8 @@ export function DynamicUserLayout() {
   const layoutMode = theme.layoutMode || "classic";
 
   if (layoutMode === "horizon") {
-    return <HorizonUserLayout />;
+    return <HorizonUserLayout key="horizon" />;
   }
 
-  return <UserLayout />;
+  return <UserLayout key="classic" />;
 }
