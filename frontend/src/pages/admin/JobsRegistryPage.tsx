@@ -16,8 +16,6 @@ import {
 import { useScopedKeyboardNavigation } from "../../hooks/useScopedKeyboardNavigation";
 import { useToast } from "../../hooks/useToast";
 
-const TERMINAL_STATUSES = new Set(["completed", "failed", "cancelled"]);
-
 export function JobsRegistryPage() {
   const [includeArchived, setIncludeArchived] = useState(false);
   const { data: jobs, isLoading, isError, error } = useJobsList(includeArchived);
@@ -95,18 +93,6 @@ export function JobsRegistryPage() {
     [selectedId, navigate]
   );
 
-  const handleArchiveClick = useCallback(
-    (jobId: string, e: React.MouseEvent) => {
-      e.stopPropagation();
-      if (archiveConfirmId === jobId) {
-        archiveMutation.mutate([jobId]);
-      } else {
-        setArchiveConfirmId(jobId);
-      }
-    },
-    [archiveConfirmId, archiveMutation]
-  );
-
   return (
     <PageShell
       title="Uretim Isleri"
@@ -143,47 +129,16 @@ export function JobsRegistryPage() {
             </div>
           )}
           {jobs && jobs.length > 0 && (
-            <>
               <JobsTable
                 jobs={jobs}
                 selectedId={selectedId}
                 onSelect={handleRowClick}
                 activeIndex={activeIndex}
+                onArchive={(jobId) => archiveMutation.mutate([jobId])}
+                archiveConfirmId={archiveConfirmId}
+                onArchiveConfirmStart={(jobId) => setArchiveConfirmId(jobId)}
+                archivePending={archiveMutation.isPending}
               />
-              {/* Per-row archive actions rendered below table for terminal-state jobs */}
-              <div className="mt-2 flex flex-wrap gap-2 px-1">
-                {jobList
-                  .filter((j) => TERMINAL_STATUSES.has(j.status))
-                  .map((j) => {
-                    const isConfirming = archiveConfirmId === j.id;
-                    return (
-                      <div key={j.id} className="flex items-center gap-1">
-                        <span className="text-xs text-neutral-500 truncate max-w-[120px]" title={j.id}>
-                          {j.id.slice(0, 8)}…
-                        </span>
-                        {isConfirming ? (
-                          <button
-                            title="Bu job arşivlenir ve varsayılan listeden kaldırılır. Veriler silinmez, 'Arşivlenmiş' filtresiyle erişilebilir."
-                            onClick={(e) => handleArchiveClick(j.id, e)}
-                            disabled={archiveMutation.isPending}
-                            className="text-xs px-2 py-0.5 rounded bg-error text-neutral-0 font-medium cursor-pointer border-0 disabled:opacity-50"
-                          >
-                            Emin misiniz? Arşivle
-                          </button>
-                        ) : (
-                          <button
-                            onClick={(e) => handleArchiveClick(j.id, e)}
-                            disabled={archiveMutation.isPending}
-                            className="text-xs px-2 py-0.5 rounded text-neutral-500 hover:text-warning cursor-pointer border border-border-subtle bg-transparent disabled:opacity-50"
-                          >
-                            Arşivle
-                          </button>
-                        )}
-                      </div>
-                    );
-                  })}
-              </div>
-            </>
           )}
         </SectionShell>
       </div>

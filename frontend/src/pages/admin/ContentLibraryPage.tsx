@@ -19,6 +19,7 @@ import {
   StatusBadge,
   Pagination,
 } from "../../components/design-system/primitives";
+import { Sheet } from "../../components/design-system/Sheet";
 import { QuickLook, useQuickLookTrigger } from "../../components/design-system/QuickLook";
 import { ContentQuickLookContent } from "../../components/quicklook/ContentQuickLookContent";
 import { useScopedKeyboardNavigation } from "../../hooks/useScopedKeyboardNavigation";
@@ -52,7 +53,8 @@ export function ContentLibraryPage() {
   // Clone state
   const [cloningId, setCloningId] = useState<string | null>(null);
 
-  // QuickLook state
+  // Sheet + QuickLook state
+  const [sheetOpen, setSheetOpen] = useState(false);
   const [quickLookOpen, setQuickLookOpen] = useState(false);
 
   // Search focus ref
@@ -79,14 +81,14 @@ export function ContentLibraryPage() {
     setOffset(0);
   };
 
-  // Keyboard navigation
+  // Keyboard navigation — Enter: Sheet (detail), Space: QuickLook (preview)
   const { activeIndex, handleKeyDown } = useScopedKeyboardNavigation({
     scopeId: "content-library-table",
     scopeLabel: "Content Library",
     itemCount: items.length,
     onEnter: (i) => {
       if (items[i]) {
-        setQuickLookOpen(true);
+        setSheetOpen(true);
       }
     },
     onSpace: (i) => {
@@ -94,12 +96,12 @@ export function ContentLibraryPage() {
         setQuickLookOpen(true);
       }
     },
-    enabled: !quickLookOpen,
+    enabled: !sheetOpen && !quickLookOpen,
   });
 
   // QuickLook trigger (Space)
   useQuickLookTrigger({
-    enabled: items.length > 0 && !quickLookOpen,
+    enabled: items.length > 0 && !sheetOpen && !quickLookOpen,
     onToggle: () => setQuickLookOpen(true),
     scopeId: "content-library-table",
   });
@@ -241,7 +243,7 @@ export function ContentLibraryPage() {
       testId="library"
     >
       <p className="m-0 mb-3 text-xs text-neutral-400" data-testid="library-workflow-note">
-        Olusturma &rarr; Uretim &rarr; Detay &rarr; Yayin &middot; ↑↓ gezin, Space on izleme, Enter detay
+        Olusturma &rarr; Uretim &rarr; Detay &rarr; Yayin &middot; ↑↓ gezin, Enter detay panel, Space on izleme
       </p>
 
       {/* Filter/Sort/Search */}
@@ -330,6 +332,7 @@ export function ContentLibraryPage() {
               columns={columns}
               data={items}
               keyFn={(item) => `${item.content_type}-${item.id}`}
+              onRowClick={() => setSheetOpen(true)}
               loading={isLoading}
               error={isError}
               errorMessage="Icerik kayitlari yuklenirken hata olustu."
@@ -397,7 +400,31 @@ export function ContentLibraryPage() {
         </div>
       </SectionShell>
 
-      {/* QuickLook */}
+      {/* Sheet — Enter ile açılan detay paneli */}
+      <Sheet
+        open={sheetOpen}
+        onClose={() => setSheetOpen(false)}
+        title="Icerik Detayi"
+        testId="content-sheet"
+        width="480px"
+      >
+        {activeItem && (
+          <ContentQuickLookContent
+            item={activeItem}
+            onNavigate={() => {
+              setSheetOpen(false);
+              const link = detailLink(activeItem);
+              navigate(link.path, link.state ? { state: link.state } : undefined);
+            }}
+            onClone={() => {
+              setSheetOpen(false);
+              handleClone(activeItem);
+            }}
+          />
+        )}
+      </Sheet>
+
+      {/* QuickLook — Space ile açılan ön izleme */}
       <QuickLook
         open={quickLookOpen}
         onClose={() => setQuickLookOpen(false)}

@@ -9,12 +9,22 @@ import { formatDuration } from "../../lib/formatDuration";
 import { formatDateShort } from "../../lib/formatDate";
 import { cn } from "../../lib/cn";
 
+const TERMINAL_STATUSES = new Set(["completed", "failed", "cancelled"]);
+
 interface JobsTableProps {
   jobs: JobResponse[];
   selectedId: string | null;
   onSelect: (id: string) => void;
   activeIndex?: number;
   onBulkDelete?: (ids: string[]) => void;
+  /** Called when user confirms archive for a terminal-state job. */
+  onArchive?: (jobId: string) => void;
+  /** Job ID currently in confirm state (first click done, awaiting second). */
+  archiveConfirmId?: string | null;
+  /** Called on first click to enter confirm state. */
+  onArchiveConfirmStart?: (jobId: string) => void;
+  /** True while archive mutation is in-flight. */
+  archivePending?: boolean;
 }
 
 function statusBadge(status: string) {
@@ -38,7 +48,8 @@ const JOB_COLUMNS = [
   { key: "date", label: "Tarih" },
 ];
 
-export function JobsTable({ jobs, selectedId, onSelect, activeIndex, onBulkDelete }: JobsTableProps) {
+export function JobsTable({ jobs, selectedId, onSelect, activeIndex, onBulkDelete, onArchive, archiveConfirmId, onArchiveConfirmStart, archivePending }: JobsTableProps) {
+  const showArchiveCol = !!(onArchive && onArchiveConfirmStart);
   const [filters, setFilters] = useState<Record<string, string | null>>({ status: null, module_type: null });
   const col = useColumnVisibility("jobs-table", JOB_COLUMNS.map((c) => c.key));
 
@@ -101,6 +112,7 @@ export function JobsTable({ jobs, selectedId, onSelect, activeIndex, onBulkDelet
               {col.isVisible("retry") && <th className="px-3 py-2.5 border-b border-border text-right">Tekrar</th>}
               {col.isVisible("duration") && <th className="px-3 py-2.5 border-b border-border">Süre</th>}
               {col.isVisible("date") && <th className="px-3 py-2.5 border-b border-border">Tarih</th>}
+              {showArchiveCol && <th className="px-3 py-2.5 border-b border-border w-24"></th>}
             </tr>
           </thead>
           <tbody>
@@ -134,11 +146,35 @@ export function JobsTable({ jobs, selectedId, onSelect, activeIndex, onBulkDelet
                   {col.isVisible("retry") && <td className="px-3 py-2.5 text-right tabular-nums text-neutral-600">{j.retry_count > 0 ? j.retry_count : "—"}</td>}
                   {col.isVisible("duration") && <td className="px-3 py-2.5 text-neutral-600 tabular-nums">{formatDuration(j.elapsed_total_seconds)}</td>}
                   {col.isVisible("date") && <td className="px-3 py-2.5 text-neutral-500 text-sm">{formatDateShort(j.created_at)}</td>}
+                  {showArchiveCol && (
+                    <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
+                      {TERMINAL_STATUSES.has(j.status) && (
+                        archiveConfirmId === j.id ? (
+                          <button
+                            title="Bu job arşivlenir ve varsayılan listeden kaldırılır. Veriler silinmez."
+                            onClick={() => onArchive!(j.id)}
+                            disabled={archivePending}
+                            className="text-xs px-2 py-0.5 rounded bg-error text-neutral-0 font-medium cursor-pointer border-0 disabled:opacity-50"
+                          >
+                            Onayla
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => onArchiveConfirmStart!(j.id)}
+                            disabled={archivePending}
+                            className="text-xs px-2 py-0.5 rounded text-neutral-500 hover:text-warning cursor-pointer border border-border-subtle bg-transparent disabled:opacity-50"
+                          >
+                            Arşivle
+                          </button>
+                        )
+                      )}
+                    </td>
+                  )}
                 </tr>
               );
             })}
             {filtered.length === 0 && (
-              <tr><td colSpan={7} className="px-4 py-6 text-center text-neutral-500 text-sm">Filtre kriterlerine uygun kayıt bulunamadı.</td></tr>
+              <tr><td colSpan={showArchiveCol ? 8 : 7} className="px-4 py-6 text-center text-neutral-500 text-sm">Filtre kriterlerine uygun kayıt bulunamadı.</td></tr>
             )}
           </tbody>
         </table>
