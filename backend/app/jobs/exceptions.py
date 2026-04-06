@@ -68,6 +68,14 @@ class StepExecutionError(JobEngineError):
         super().__init__(f"Step execution failed [{step_key!r}]: {reason}")
 
 
+class ModuleDisabledError(JobEngineError):
+    """Raised when attempting to create a job for a disabled module."""
+
+    def __init__(self, module_id: str) -> None:
+        self.module_id = module_id
+        super().__init__(f"Modül devre dışı: {module_id!r}. Yeni üretim başlatılamaz.")
+
+
 class InvalidTransitionError(JobEngineError):
     """
     Raised when a requested state transition is not permitted by the

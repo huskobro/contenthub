@@ -112,6 +112,17 @@ async def get_job_step(
     return result.scalar_one_or_none()
 
 
+async def check_module_enabled(db: AsyncSession, module_id: str) -> None:
+    """Raise ModuleDisabledError if the module is disabled in settings."""
+    from app.settings.settings_resolver import resolve
+    from app.jobs.exceptions import ModuleDisabledError
+
+    enabled_key = f"module.{module_id}.enabled"
+    enabled = await resolve(enabled_key, db)
+    if enabled is False:
+        raise ModuleDisabledError(module_id)
+
+
 async def create_job(db: AsyncSession, payload: JobCreate) -> Job:
     job = Job(
         module_type=payload.module_type,

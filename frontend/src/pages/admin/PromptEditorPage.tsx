@@ -70,7 +70,7 @@ function PromptField({ setting, state, onChange, onSave, onReset }: PromptFieldP
             </span>
             {hasAdminOverride && (
               <span
-                className="text-xs font-medium text-info-600 bg-info-50 px-2 py-0.5 rounded-full border border-info-200"
+                className="text-xs font-medium text-info-text bg-info-light px-2 py-0.5 rounded-full border border-info"
                 data-testid={`prompt-override-badge-${setting.key}`}
               >
                 Admin Değeri Aktif
@@ -398,7 +398,7 @@ export function PromptEditorPage() {
         <>
           {/* Module filter hint */}
           {moduleFilter && (
-            <div className="mb-4 py-2 px-3 bg-info-50 border border-info-200 rounded-md text-sm text-info-700 flex items-center gap-2">
+            <div className="mb-4 py-2 px-3 bg-info-light border border-info rounded-md text-sm text-info-text flex items-center gap-2">
               <span>Modül filtresi aktif:</span>
               <code className="font-mono font-semibold">{moduleFilter}</code>
               <a
@@ -412,7 +412,7 @@ export function PromptEditorPage() {
 
           {/* Info banner — standard_video hardcoded prompt notice */}
           <div
-            className="mb-5 py-3 px-4 bg-warning-50 border-l-[3px] border-warning-400 rounded-md text-sm text-warning-800 max-w-[720px]"
+            className="mb-5 py-3 px-4 bg-warning-light border-l-[3px] border-warning rounded-md text-sm text-warning-text max-w-[720px]"
             data-testid="prompt-editor-notice"
           >
             <strong>Not:</strong> <code className="font-mono">standard_video</code> modülünün
