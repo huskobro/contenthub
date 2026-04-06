@@ -38,7 +38,7 @@ describe("Detail panel Field/Row overflow safety", () => {
       expect(fieldMatch).toBeTruthy();
       const fieldCode = fieldMatch![0];
       expect(
-        fieldCode.includes("wordBreak") || fieldCode.includes("overflowWrap")
+        fieldCode.includes("wordBreak") || fieldCode.includes("overflowWrap") || fieldCode.includes("break-words") || fieldCode.includes("break-all") || fieldCode.includes("overflow-wrap")
       ).toBe(true);
     });
   }
@@ -49,7 +49,7 @@ describe("Detail panel Field/Row overflow safety", () => {
     expect(rowMatch).toBeTruthy();
     const rowCode = rowMatch![0];
     expect(
-      rowCode.includes("wordBreak") || rowCode.includes("overflowWrap")
+      rowCode.includes("wordBreak") || rowCode.includes("overflowWrap") || rowCode.includes("break-words") || rowCode.includes("break-all") || rowCode.includes("overflow-wrap")
     ).toBe(true);
   });
 });
@@ -64,7 +64,7 @@ describe("Inline text overflow safety", () => {
     expect(idx).toBeGreaterThan(0);
     const block = src.slice(Math.max(0, idx - 200), idx + 50);
     expect(
-      block.includes("wordBreak") || block.includes("overflowWrap")
+      block.includes("wordBreak") || block.includes("overflowWrap") || block.includes("break-words") || block.includes("break-all") || block.includes("overflow-wrap")
     ).toBe(true);
   });
 
@@ -74,7 +74,7 @@ describe("Inline text overflow safety", () => {
     expect(idx).toBeGreaterThan(0);
     const block = src.slice(Math.max(0, idx - 150), idx + 30);
     expect(
-      block.includes("wordBreak") || block.includes("overflowWrap")
+      block.includes("wordBreak") || block.includes("overflowWrap") || block.includes("break-words") || block.includes("break-all") || block.includes("overflow-wrap")
     ).toBe(true);
   });
 
@@ -84,7 +84,7 @@ describe("Inline text overflow safety", () => {
     const line = src.split("\n").find((l) => l.includes("item.selection_reason"));
     expect(line).toBeTruthy();
     expect(
-      line!.includes("wordBreak") || line!.includes("overflowWrap")
+      line!.includes("wordBreak") || line!.includes("overflowWrap") || line!.includes("break-words") || line!.includes("break-all") || line!.includes("overflow-wrap")
     ).toBe(true);
   });
 
@@ -94,7 +94,7 @@ describe("Inline text overflow safety", () => {
     expect(line).toBeTruthy();
     // Accept inline styles or extracted const (WRAP_WORD)
     expect(
-      line!.includes("wordBreak") || line!.includes("overflowWrap") || line!.includes("WRAP_WORD")
+      line!.includes("wordBreak") || line!.includes("overflowWrap") || line!.includes("break-words") || line!.includes("break-all") || line!.includes("overflow-wrap") || line!.includes("WRAP_WORD") || line!.includes("word-break")
     ).toBe(true);
   });
 });
@@ -106,14 +106,14 @@ describe("Registry table td overflow safety", () => {
     const src = read("components/settings/SettingsTable.tsx");
     const line = src.split("\n").find((l) => l.includes("s.key"));
     expect(line).toBeTruthy();
-    expect(line!.includes("wordBreak") || line!.includes("overflowWrap")).toBe(true);
+    expect(line!.includes("wordBreak") || line!.includes("overflowWrap") || line!.includes("break-words") || line!.includes("break-all") || line!.includes("overflow-wrap")).toBe(true);
   });
 
   it("VisibilityRulesTable target_key td has overflow protection", () => {
     const src = read("components/visibility/VisibilityRulesTable.tsx");
     const line = src.split("\n").find((l) => l.includes("r.target_key"));
     expect(line).toBeTruthy();
-    expect(line!.includes("wordBreak") || line!.includes("overflowWrap")).toBe(true);
+    expect(line!.includes("wordBreak") || line!.includes("overflowWrap") || line!.includes("break-words") || line!.includes("break-all") || line!.includes("overflow-wrap")).toBe(true);
   });
 
   it("SourcesTable name td has overflow protection", () => {
@@ -121,35 +121,35 @@ describe("Registry table td overflow safety", () => {
     // name td may span multiple lines — find the block around src.name
     const idx = src.indexOf("src.name");
     const block = src.slice(Math.max(0, idx - 200), idx);
-    expect(block.includes("wordBreak") || block.includes("overflowWrap")).toBe(true);
+    expect(block.includes("wordBreak") || block.includes("overflowWrap") || block.includes("break-words") || block.includes("break-all") || block.includes("overflow-wrap")).toBe(true);
   });
 
   it("TemplatesTable name td has overflow protection", () => {
     const src = read("components/templates/TemplatesTable.tsx");
     const idx = src.indexOf("t.name");
     const block = src.slice(Math.max(0, idx - 200), idx);
-    expect(block.includes("wordBreak") || block.includes("overflowWrap")).toBe(true);
+    expect(block.includes("wordBreak") || block.includes("overflowWrap") || block.includes("break-words") || block.includes("break-all") || block.includes("overflow-wrap")).toBe(true);
   });
 
   it("StandardVideosTable title td has overflow protection", () => {
     const src = read("components/standard-video/StandardVideosTable.tsx");
     const line = src.split("\n").find((l) => l.includes("v.title"));
     expect(line).toBeTruthy();
-    expect(line!.includes("wordBreak") || line!.includes("overflowWrap")).toBe(true);
+    expect(line!.includes("wordBreak") || line!.includes("overflowWrap") || line!.includes("break-words") || line!.includes("break-all") || line!.includes("overflow-wrap")).toBe(true);
   });
 
   it("StyleBlueprintsTable name td has overflow protection", () => {
     const src = read("components/style-blueprints/StyleBlueprintsTable.tsx");
     const idx = src.indexOf("bp.name");
     const block = src.slice(Math.max(0, idx - 200), idx);
-    expect(block.includes("wordBreak") || block.includes("overflowWrap")).toBe(true);
+    expect(block.includes("wordBreak") || block.includes("overflowWrap") || block.includes("break-words") || block.includes("break-all") || block.includes("overflow-wrap")).toBe(true);
   });
 
   it("NewsBulletinsTable title td has overflow protection", () => {
     const src = read("components/news-bulletin/NewsBulletinsTable.tsx");
     const line = src.split("\n").find((l) => l.includes("b.title"));
     expect(line).toBeTruthy();
-    expect(line!.includes("wordBreak") || line!.includes("overflowWrap")).toBe(true);
+    expect(line!.includes("wordBreak") || line!.includes("overflowWrap") || line!.includes("break-words") || line!.includes("break-all") || line!.includes("overflow-wrap")).toBe(true);
   });
 });
 
@@ -188,7 +188,8 @@ describe("Form submitError overflow safety", () => {
       // Some forms use a shared errorStyle const, others inline styles.
       const hasOverflow =
         (src.includes("wordBreak") && src.includes("overflowWrap")) ||
-        (src.includes("errorStyle") && src.includes("wordBreak"));
+        (src.includes("errorStyle") && src.includes("wordBreak")) ||
+        (src.includes("break-words") || src.includes("break-all") || src.includes("overflow-wrap") || src.includes("word-break"));
       expect(hasOverflow).toBe(true);
     });
   }

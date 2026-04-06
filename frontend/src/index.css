@@ -239,30 +239,7 @@ body[style*="#0a0a0c"] [data-testid="command-palette-input"]::placeholder {
   box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.1);
 }
 
-/* Arctic sidebar nav links — dark text on white */
-[data-theme="arctic-frost"] nav a {
-  color: var(--ch-neutral-700, #374151);
-}
-[data-theme="arctic-frost"] nav a[aria-current="page"] {
-  color: var(--ch-brand-700, #0369a1);
-  background: var(--ch-surface-sidebarActive, #e0f2fe);
-}
-
-/* Arctic section headers / groups — dark on white */
-[data-theme="arctic-frost"] nav [class*="uppercase"] {
-  color: var(--ch-neutral-500, #6b7280);
-}
-
-/* Logo text and collapse button for light sidebar */
-[data-theme="arctic-frost"] nav [class*="text-neutral-0"] {
-  color: var(--ch-neutral-900, #111827);
-}
-[data-theme="arctic-frost"] nav [class*="text-neutral-500"] {
-  color: var(--ch-neutral-400, #9ca3af);
-}
-[data-theme="arctic-frost"] nav [class*="border-neutral-800"] {
-  border-color: var(--ch-border-subtle, #e5e7eb);
-}
+/* Arctic Frost sidebar — all text colors handled by sidebarText CSS variables */
 
 /* ---------------------------------------------------------------------------
    Tokyo Neon — Hot pink glow + ambient effects

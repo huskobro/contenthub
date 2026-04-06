@@ -23,25 +23,25 @@ export function AppSidebar({ items }: AppSidebarProps) {
         collapsed ? "w-sidebar-collapsed" : "w-sidebar"
       )}
       style={{
-        backgroundImage: `linear-gradient(180deg, rgba(76,110,245,0.04) 0%, transparent 35%), radial-gradient(ellipse at 30% 0%, rgba(76,110,245,0.03) 0%, transparent 60%)`,
+        backgroundImage: `linear-gradient(180deg, color-mix(in srgb, var(--ch-brand-500) 4%, transparent) 0%, transparent 35%), radial-gradient(ellipse at 30% 0%, color-mix(in srgb, var(--ch-brand-500) 3%, transparent) 0%, transparent 60%)`,
       }}
     >
       {/* Brand area */}
       <div
         className={cn(
-          "border-b border-neutral-800 flex items-center gap-3 transition-[padding] duration-normal",
+          "border-b border-surface-sidebar-border flex items-center gap-3 transition-[padding] duration-normal",
           collapsed ? "px-3 py-5 justify-center" : "px-4 py-5 justify-between"
         )}
       >
         <div className="flex items-center gap-3 min-w-0">
           <div
-            className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-neutral-0 text-sm font-bold font-body tracking-[0.02em] shrink-0"
+            className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-white text-sm font-bold font-body tracking-[0.02em] shrink-0"
             style={{ boxShadow: "0 0 12px rgba(76,110,245,0.3)" }}
           >
             CH
           </div>
           {!collapsed && (
-            <span className="text-neutral-0 text-md font-semibold font-heading tracking-[-0.025em] whitespace-nowrap">
+            <span className="text-surface-sidebar-text text-md font-semibold font-heading tracking-[-0.025em] whitespace-nowrap">
               ContentHub
             </span>
           )}
@@ -53,7 +53,7 @@ export function AppSidebar({ items }: AppSidebarProps) {
             onClick={toggleSidebar}
             aria-label="Kenar çubuğunu daralt"
             data-testid="sidebar-collapse-toggle"
-            className="bg-transparent border-none cursor-pointer p-1 rounded-sm text-neutral-500 text-sm leading-none shrink-0 flex items-center justify-center transition-colors duration-fast hover:text-neutral-200 hover:bg-surface-sidebar-hover"
+            className="bg-transparent border-none cursor-pointer p-1 rounded-sm text-surface-sidebar-text-muted text-sm leading-none shrink-0 flex items-center justify-center transition-colors duration-fast hover:text-surface-sidebar-text hover:bg-surface-sidebar-hover"
           >
             &#x2039;
           </button>
@@ -78,7 +78,7 @@ export function AppSidebar({ items }: AppSidebarProps) {
           <li key={item.to ?? `section-${idx}`}>
             {item.section ? (
               !collapsed && (
-                <div className="px-3 pt-4 pb-1 text-xs font-semibold font-body text-neutral-400 uppercase tracking-[0.08em] whitespace-nowrap">
+                <div className="px-3 pt-4 pb-1 text-xs font-semibold font-body text-surface-sidebar-section uppercase tracking-[0.08em] whitespace-nowrap">
                   {item.label}
                 </div>
               )
@@ -93,8 +93,8 @@ export function AppSidebar({ items }: AppSidebarProps) {
                       ? "px-2 py-2 text-xs text-center"
                       : "px-3 py-2 text-base text-left",
                     isActive
-                      ? "font-medium text-brand-300 bg-surface-sidebar-active border-l-brand-400"
-                      : "font-normal text-neutral-400 bg-transparent border-l-transparent hover:bg-surface-sidebar-hover hover:text-neutral-200"
+                      ? "font-medium text-surface-sidebar-text-active bg-surface-sidebar-active border-l-brand-400"
+                      : "font-normal text-surface-sidebar-text-muted bg-transparent border-l-transparent hover:bg-surface-sidebar-hover hover:text-surface-sidebar-text"
                   )
                 }
               >
@@ -103,7 +103,7 @@ export function AppSidebar({ items }: AppSidebarProps) {
             ) : (
               <span
                 className={cn(
-                  "block px-3 py-2 text-neutral-600 text-base font-body cursor-default whitespace-nowrap rounded-sm"
+                  "block px-3 py-2 text-surface-sidebar-text-muted text-base font-body cursor-default whitespace-nowrap rounded-sm"
                 )}
               >
                 {collapsed ? item.label.charAt(0) : item.label}

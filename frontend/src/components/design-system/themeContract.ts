@@ -123,6 +123,12 @@ export interface ThemeColors {
     sidebar: string;
     sidebarHover: string;
     sidebarActive: string;
+    /** Sidebar text colors — ensure readable on sidebar background */
+    sidebarText?: string;
+    sidebarTextMuted?: string;
+    sidebarTextActive?: string;
+    sidebarSection?: string;
+    sidebarBorder?: string;
   };
 
   /** Border shades */
@@ -301,6 +307,9 @@ export const DEFAULT_THEME: ThemeManifest = {
       page: "#f5f6fa", card: "#ffffff", elevated: "#ffffff",
       inset: "#eef0f6", sidebar: "#131419", sidebarHover: "#1e2030",
       sidebarActive: "#282a3c",
+      sidebarText: "#ffffff", sidebarTextMuted: "#868e96",
+      sidebarTextActive: "#94adff", sidebarSection: "#6b8aff",
+      sidebarBorder: "#282a3c",
     },
     border: { subtle: "#e4e7ef", default: "#d5d9e5", strong: "#bec4d4" },
     focus: "#3d5afe",
@@ -528,6 +537,9 @@ export const VOID_TERMINAL_THEME: ThemeManifest = {
       page: "#0a0a0c", card: "#121216", elevated: "#18181d",
       inset: "#0e0e11", sidebar: "#0a0a0c", sidebarHover: "#18181d",
       sidebarActive: "#1f2027",
+      sidebarText: "#dddff0", sidebarTextMuted: "#70728a",
+      sidebarTextActive: "#7cf0a0", sidebarSection: "#555668",
+      sidebarBorder: "#1f2027",
     },
     border: { subtle: "#1f2027", default: "#2a2b33", strong: "#3d3e4a" },
     focus: "#2dd55b",
@@ -613,6 +625,9 @@ export const EXAMPLE_WARM_EARTH_THEME: ThemeManifest = {
       page: "#faf8f5", card: "#ffffff", elevated: "#ffffff",
       inset: "#f3f0eb", sidebar: "#252119", sidebarHover: "#3d3731",
       sidebarActive: "#5c544c",
+      sidebarText: "#f3f0eb", sidebarTextMuted: "#a9a095",
+      sidebarTextActive: "#edb96a", sidebarSection: "#8a8177",
+      sidebarBorder: "#3d3731",
     },
     border: { subtle: "#e8e3dc", default: "#d9d2c9", strong: "#c4bbb0" },
     focus: "#d4882a",

@@ -75,6 +75,11 @@ export default {
           sidebar: "var(--ch-surface-sidebar)",
           "sidebar-hover": "var(--ch-surface-sidebarHover)",
           "sidebar-active": "var(--ch-surface-sidebarActive)",
+          "sidebar-text": "var(--ch-surface-sidebarText, #ffffff)",
+          "sidebar-text-muted": "var(--ch-surface-sidebarTextMuted, #868e96)",
+          "sidebar-text-active": "var(--ch-surface-sidebarTextActive, #94adff)",
+          "sidebar-section": "var(--ch-surface-sidebarSection, #6b8aff)",
+          "sidebar-border": "var(--ch-surface-sidebarBorder, #282a3c)",
         },
         border: {
           subtle: "var(--ch-border-subtle)",

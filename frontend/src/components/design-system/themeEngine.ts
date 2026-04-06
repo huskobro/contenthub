@@ -59,9 +59,11 @@ export function generateCSSVariables(theme: ThemeManifest): Record<string, strin
     vars[`--ch-${sem}-text`] = sc.text;
   }
 
-  // Colors — surface
+  // Colors — surface (skip undefined optional fields)
   for (const [key, val] of Object.entries(theme.colors.surface)) {
-    vars[`--ch-surface-${key}`] = val;
+    if (val != null) {
+      vars[`--ch-surface-${key}`] = val;
+    }
   }
 
   // Colors — border
