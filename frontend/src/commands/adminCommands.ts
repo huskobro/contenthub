@@ -221,6 +221,26 @@ export function buildAdminNavigationCommands(navigate: (path: string) => void): 
       keywords: ["theme", "tema", "gorunum", "renk"],
       action: () => navigate("/admin/themes"),
     },
+
+    // -- Wizard'lar --
+    {
+      id: "nav:admin-video-wizard",
+      label: "Video Olusturma Wizard'i",
+      category: "navigation",
+      icon: "🧙",
+      description: "Adim adim rehberli video olusturma",
+      keywords: ["wizard", "sihirbaz", "rehber", "guided", "video", "olustur"],
+      action: () => navigate("/admin/standard-videos/wizard"),
+    },
+    {
+      id: "nav:admin-onboarding",
+      label: "Onboarding Wizard'i",
+      category: "navigation",
+      icon: "🚀",
+      description: "Sistem kurulum sihirbazini yeniden calistir",
+      keywords: ["onboarding", "kurulum", "wizard", "sihirbaz", "baslangic", "setup"],
+      action: () => navigate("/onboarding?force=true"),
+    },
   ];
 }
 
@@ -234,9 +254,18 @@ export function buildAdminActionCommands(navigate: (path: string) => void): Comm
       label: "Yeni Standart Video",
       category: "action",
       icon: "➕",
-      description: "Yeni standart video olustur",
-      keywords: ["create", "new", "yeni", "video", "olustur"],
+      description: "Yeni standart video olustur (hizli form)",
+      keywords: ["create", "new", "yeni", "video", "olustur", "hizli"],
       action: () => navigate("/admin/standard-videos/new"),
+    },
+    {
+      id: "action:create-standard-video-wizard",
+      label: "Wizard ile Video Olustur",
+      category: "action",
+      icon: "🧙",
+      description: "Adim adim rehberli video olusturma wizard'i",
+      keywords: ["create", "new", "yeni", "video", "wizard", "sihirbaz", "rehber", "guided"],
+      action: () => navigate("/admin/standard-videos/wizard"),
     },
     {
       id: "action:create-template",

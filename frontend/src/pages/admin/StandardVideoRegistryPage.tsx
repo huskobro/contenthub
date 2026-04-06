@@ -16,13 +16,22 @@ export function StandardVideoRegistryPage() {
       title="Standart Video Kayitlari"
       testId="sv-registry"
       actions={
-        <ActionButton
-          variant="primary"
-          size="sm"
-          onClick={() => navigate("/admin/standard-videos/new")}
-        >
-          + Yeni Standard Video
-        </ActionButton>
+        <div className="flex gap-2">
+          <ActionButton
+            variant="secondary"
+            size="sm"
+            onClick={() => navigate("/admin/standard-videos/wizard")}
+          >
+            🧙 Wizard ile Olustur
+          </ActionButton>
+          <ActionButton
+            variant="primary"
+            size="sm"
+            onClick={() => navigate("/admin/standard-videos/new")}
+          >
+            + Yeni Standard Video
+          </ActionButton>
+        </div>
       }
     >
       <p className="m-0 mb-3 text-xs text-neutral-400" data-testid="sv-registry-workflow-note">

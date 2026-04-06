@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useSearchParams } from "react-router-dom";
 import { useOnboardingStatus } from "../hooks/useOnboardingStatus";
 import { useVisibility } from "../hooks/useVisibility";
 import { OnboardingWelcomeScreen } from "../components/onboarding/OnboardingWelcomeScreen";
@@ -24,6 +24,8 @@ type OnboardingStep =
   | "completion";
 
 export function OnboardingPage() {
+  const [searchParams] = useSearchParams();
+  const forceMode = searchParams.get("force") === "true";
   const { data: onboardingStatus, isLoading: statusLoading } = useOnboardingStatus();
   const [step, setStep] = useState<OnboardingStep>("welcome");
 
@@ -42,8 +44,9 @@ export function OnboardingPage() {
   }
 
   // Bypass: if onboarding already completed, redirect to normal app.
+  // Exception: ?force=true allows admin to re-run the wizard (e.g., from command palette).
   // While loading or on error, proceed with onboarding (safe default — no wrong redirect).
-  if (!statusLoading && onboardingStatus && onboardingStatus.onboarding_required === false) {
+  if (!forceMode && !statusLoading && onboardingStatus && onboardingStatus.onboarding_required === false) {
     return <Navigate to="/user" replace />;
   }
 
