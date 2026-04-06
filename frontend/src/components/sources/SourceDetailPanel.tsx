@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSourceDetail } from "../../hooks/useSourceDetail";
 import { useUpdateSource } from "../../hooks/useUpdateSource";
 import { useReadOnly } from "../visibility/ReadOnlyGuard";
@@ -6,6 +7,8 @@ import { SourceForm } from "./SourceForm";
 import { formatDateTime } from "../../lib/formatDate";
 import { isBlank } from "../../lib/isBlank";
 import type { SourceCreatePayload } from "../../api/sourcesApi";
+import { createSourceScan, executeSourceScan } from "../../api/sourceScansApi";
+import { useToast } from "../../hooks/useToast";
 import { cn } from "../../lib/cn";
 
 interface SourceDetailPanelProps {
@@ -62,6 +65,25 @@ export function SourceDetailPanel({ sourceId }: SourceDetailPanelProps) {
   const [editMode, setEditMode] = useState(false);
   const { data: source, isLoading, isError, error } = useSourceDetail(sourceId);
   const { mutate: updateMutate, isPending: isUpdating, error: updateError } = useUpdateSource(sourceId ?? "");
+  const toast = useToast();
+  const queryClient = useQueryClient();
+
+  const { mutate: scanNow, isPending: isScanning } = useMutation({
+    mutationFn: async () => {
+      if (!sourceId) throw new Error("Kaynak secili degil");
+      const scan = await createSourceScan({ source_id: sourceId, scan_mode: "manual" });
+      return executeSourceScan(scan.id, false);
+    },
+    onSuccess: (result) => {
+      toast.success(`Tarama tamamlandi: ${result.items_saved} yeni haber kaydedildi`);
+      queryClient.invalidateQueries({ queryKey: ["source-scans"] });
+      queryClient.invalidateQueries({ queryKey: ["news-items"] });
+    },
+    onError: (err: any) => {
+      const detail = err?.response?.data?.detail || err?.message || "Tarama basarisiz";
+      toast.error(`Tarama hatasi: ${detail}`);
+    },
+  });
 
   // Reset edit mode when selected source changes
   const [prevSourceId, setPrevSourceId] = useState(sourceId);
@@ -114,16 +136,30 @@ export function SourceDetailPanel({ sourceId }: SourceDetailPanelProps) {
     <div className="p-5 border border-border-subtle rounded-md bg-neutral-0">
       <div className="flex justify-between items-center mb-4">
         <h3 className="m-0 text-lg text-neutral-900">{source.name}</h3>
-        <button
-          onClick={() => setEditMode(true)}
-          disabled={readOnly}
-          className={cn(
-            "px-3 py-1 bg-transparent text-brand-700 border border-info-light rounded-sm text-base",
-            readOnly ? "cursor-not-allowed opacity-50" : "cursor-pointer hover:bg-info-light transition-colors duration-fast"
+        <div className="flex items-center gap-2">
+          {source.source_type === "rss" && (
+            <button
+              onClick={() => scanNow()}
+              disabled={isScanning}
+              className={cn(
+                "px-3 py-1 bg-transparent text-emerald-700 border border-emerald-300 rounded-sm text-sm",
+                isScanning ? "cursor-not-allowed opacity-50" : "cursor-pointer hover:bg-emerald-50 transition-colors duration-fast"
+              )}
+            >
+              {isScanning ? "Taraniyor..." : "Şimdi Tara"}
+            </button>
           )}
-        >
-          Düzenle
-        </button>
+          <button
+            onClick={() => setEditMode(true)}
+            disabled={readOnly}
+            className={cn(
+              "px-3 py-1 bg-transparent text-brand-700 border border-info-light rounded-sm text-base",
+              readOnly ? "cursor-not-allowed opacity-50" : "cursor-pointer hover:bg-info-light transition-colors duration-fast"
+            )}
+          >
+            Düzenle
+          </button>
+        </div>
       </div>
 
       <Field label="Source Type" value={source.source_type} />

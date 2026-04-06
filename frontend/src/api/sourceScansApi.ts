@@ -71,3 +71,22 @@ export function updateSourceScan(
 ): Promise<SourceScanResponse> {
   return api.patch<SourceScanResponse>(`${BASE_URL}/${scanId}`, payload);
 }
+
+export interface ScanExecuteResponse {
+  scan_id: string;
+  source_id: string;
+  items_found: number;
+  items_saved: number;
+  items_deduped: number;
+  status: string;
+  error?: string | null;
+}
+
+export function executeSourceScan(
+  scanId: string,
+  allowFollowup = false,
+): Promise<ScanExecuteResponse> {
+  return api.post<ScanExecuteResponse>(`${BASE_URL}/${scanId}/execute`, {
+    allow_followup: allowFollowup,
+  });
+}
