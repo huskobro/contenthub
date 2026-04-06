@@ -437,6 +437,17 @@ async def delete_bulletin_selected_item(
     return True
 
 
+async def _fetch_news_item_info(db: AsyncSession, news_item_id: str) -> dict:
+    """NewsItem'dan title ve category bilgisini çeker."""
+    result = await db.execute(
+        select(NewsItem.title, NewsItem.category).where(NewsItem.id == news_item_id)
+    )
+    row = result.first()
+    if row:
+        return {"news_title": row.title, "news_category": row.category}
+    return {"news_title": None, "news_category": None}
+
+
 async def list_bulletin_selected_items_with_enforcement(
     db: AsyncSession, bulletin_id: str
 ) -> List[NewsBulletinSelectedItemWithEnforcementResponse]:
@@ -444,6 +455,7 @@ async def list_bulletin_selected_items_with_enforcement(
     result = []
     for item in items:
         enforcement = await get_used_news_enforcement(db, item.news_item_id)
+        news_info = await _fetch_news_item_info(db, item.news_item_id)
         result.append(
             NewsBulletinSelectedItemWithEnforcementResponse(
                 id=item.id,
@@ -451,8 +463,10 @@ async def list_bulletin_selected_items_with_enforcement(
                 news_item_id=item.news_item_id,
                 sort_order=item.sort_order,
                 selection_reason=item.selection_reason,
+                edited_narration=item.edited_narration,
                 created_at=item.created_at,
                 updated_at=item.updated_at,
+                **news_info,
                 **enforcement,
             )
         )
@@ -466,14 +480,17 @@ async def create_bulletin_selected_item_with_enforcement(
     if item is None:
         return None
     enforcement = await get_used_news_enforcement(db, item.news_item_id)
+    news_info = await _fetch_news_item_info(db, item.news_item_id)
     return NewsBulletinSelectedItemWithEnforcementResponse(
         id=item.id,
         news_bulletin_id=item.news_bulletin_id,
         news_item_id=item.news_item_id,
         sort_order=item.sort_order,
         selection_reason=item.selection_reason,
+        edited_narration=item.edited_narration,
         created_at=item.created_at,
         updated_at=item.updated_at,
+        **news_info,
         **enforcement,
     )
 

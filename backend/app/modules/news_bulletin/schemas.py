@@ -200,6 +200,8 @@ class NewsBulletinSelectedItemResponse(BaseModel):
 
 
 class NewsBulletinSelectedItemWithEnforcementResponse(NewsBulletinSelectedItemResponse):
+    news_title: Optional[str] = None
+    news_category: Optional[str] = None
     used_news_count: int = 0
     used_news_warning: bool = False
     last_usage_type: Optional[str] = None

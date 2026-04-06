@@ -82,15 +82,39 @@ export function NewsBulletinDetailPage() {
         <InfoCard label="Trust Seviyesi" value={bulletin.trust_enforcement_level || "warn"} />
       </div>
 
-      {/* Job linkage */}
+      {/* Job linkage + render output + publish handoff */}
       {bulletin.job_id && (
-        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md space-y-2">
           <p className="m-0 text-sm">
             <span className="font-medium text-blue-700">Job:</span>{" "}
             <Link to={`/admin/jobs/${bulletin.job_id}`} className="text-blue-600 underline">
               {bulletin.job_id.slice(0, 12)}...
             </Link>
+            <span className="ml-2 text-xs text-neutral-500">
+              ({bulletin.status === "done" ? "tamamlandi" : bulletin.status === "failed" ? "basarisiz" : bulletin.status === "rendering" ? "render ediliyor..." : bulletin.status})
+            </span>
           </p>
+          {bulletin.status === "done" && (
+            <div className="flex items-center gap-3 pt-1 border-t border-blue-200">
+              <Link
+                to={`/admin/jobs/${bulletin.job_id}`}
+                className="text-xs font-medium text-blue-600 underline"
+              >
+                Render ciktilarini gor
+              </Link>
+              <Link
+                to="/admin/publish-center"
+                className="text-xs font-medium text-emerald-600 underline"
+              >
+                Publish Hub'a git
+              </Link>
+            </div>
+          )}
+          {bulletin.status === "failed" && (
+            <p className="m-0 text-xs text-red-600">
+              Uretim basarisiz oldu. Job detayindan hata bilgisini inceleyin.
+            </p>
+          )}
         </div>
       )}
 
@@ -128,11 +152,14 @@ export function NewsBulletinDetailPage() {
                 className="p-2 bg-white border border-neutral-200 rounded-md text-sm"
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-medium text-neutral-700">
-                    #{idx + 1} — {item.news_item_id.slice(0, 12)}...
+                  <span className="font-medium text-neutral-700 truncate">
+                    #{idx + 1} — {item.news_title || item.news_item_id.slice(0, 12)}
+                    {item.news_category && (
+                      <span className="ml-1 text-neutral-400 text-xs font-normal">[{item.news_category}]</span>
+                    )}
                   </span>
                   {item.used_news_warning && (
-                    <span className="text-xs text-amber-500">kullanilmis</span>
+                    <span className="text-xs text-amber-500 shrink-0 ml-2">kullanilmis</span>
                   )}
                 </div>
                 {item.edited_narration && (
@@ -172,13 +199,22 @@ export function NewsBulletinDetailPage() {
 
       {/* Actions */}
       <div className="flex gap-2 pt-3 border-t border-neutral-200">
-        {bulletin.status === "draft" && (
+        {(bulletin.status === "draft" || bulletin.status === "selection_confirmed") && (
           <button
             type="button"
             onClick={() => navigate(`/admin/news-bulletins/wizard?bulletinId=${bulletin.id}`)}
             className="px-4 py-1.5 text-sm font-medium text-white bg-brand-500 border-none rounded-sm cursor-pointer hover:bg-brand-600"
           >
             Wizard ile Devam Et
+          </button>
+        )}
+        {bulletin.status === "done" && bulletin.job_id && (
+          <button
+            type="button"
+            onClick={() => navigate(`/admin/jobs/${bulletin.job_id}`)}
+            className="px-4 py-1.5 text-sm font-medium text-white bg-emerald-600 border-none rounded-sm cursor-pointer hover:bg-emerald-700"
+          >
+            Ciktilari Gor
           </button>
         )}
         <button

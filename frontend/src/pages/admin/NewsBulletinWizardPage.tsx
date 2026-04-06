@@ -345,6 +345,10 @@ export function NewsBulletinWizardPage() {
       toast.success(`Uretim baslatildi — Job: ${res.job_id.slice(0, 8)}...`);
       navigate(`/admin/jobs/${res.job_id}`);
     },
+    onError: (err: any) => {
+      const detail = err?.response?.data?.detail || err?.message || "Uretim baslatilamadi";
+      toast.error(`Uretim hatasi: ${detail}`);
+    },
   });
 
   // --- Navigation logic ---
@@ -592,7 +596,10 @@ export function NewsBulletinWizardPage() {
                       className="flex items-center justify-between p-2 bg-emerald-50 border border-emerald-200 rounded-md text-sm"
                     >
                       <span className="text-neutral-800 truncate flex-1 mr-2">
-                        #{item.sort_order + 1} — {item.news_item_id.slice(0, 8)}...
+                        #{item.sort_order + 1} — {item.news_title || item.news_item_id.slice(0, 12)}
+                        {item.news_category && (
+                          <span className="ml-1 text-neutral-400 text-xs">[{item.news_category}]</span>
+                        )}
                         {item.used_news_warning && (
                           <span className="ml-1 text-amber-600 text-xs">(daha once kullanilmis)</span>
                         )}
@@ -1040,7 +1047,10 @@ function NarrationEditCard({
     <div className="border border-neutral-200 rounded-md p-3 bg-white">
       <div className="flex items-center justify-between mb-1.5">
         <span className="text-sm font-medium text-neutral-700">
-          #{index + 1} — {item.news_item_id.slice(0, 12)}...
+          #{index + 1} — {item.news_title || item.news_item_id.slice(0, 12)}
+          {item.news_category && (
+            <span className="ml-1 text-neutral-400 text-xs font-normal">[{item.news_category}]</span>
+          )}
         </span>
         {item.used_news_warning && (
           <span className="text-xs text-amber-500">daha once kullanilmis</span>

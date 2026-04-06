@@ -205,6 +205,8 @@ export interface NewsBulletinSelectedItemResponse {
   edited_narration: string | null;
   created_at: string;
   updated_at: string;
+  news_title?: string | null;
+  news_category?: string | null;
   used_news_count?: number;
   used_news_warning?: boolean;
   last_usage_type?: string | null;
