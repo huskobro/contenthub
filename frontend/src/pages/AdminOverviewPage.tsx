@@ -316,7 +316,9 @@ export function AdminOverviewPage() {
       </p>
 
       {/* ---- Hero / Summary Area ---- */}
-      <div className="bg-gradient-to-br from-brand-50 via-brand-100 to-surface-page rounded-xl p-6 pb-5 mb-6 border border-brand-200">
+      <div className="bg-gradient-to-br from-brand-50 via-brand-100/60 to-surface-page rounded-xl p-6 pb-5 mb-6 border border-brand-200/60 relative overflow-hidden">
+        {/* Ambient glow overlay */}
+        <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse at 90% 10%, color-mix(in srgb, var(--ch-brand-400) 6%, transparent) 0%, transparent 60%)" }} />
         <div className="flex items-center justify-between mb-4">
           <div>
             <h2 className="m-0 text-lg font-bold text-brand-800 tracking-tight font-heading">

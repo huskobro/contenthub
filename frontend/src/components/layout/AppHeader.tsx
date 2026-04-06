@@ -28,9 +28,11 @@ export function AppHeader({ area }: AppHeaderProps) {
 
   return (
     <header
-      className="flex items-center h-header px-6 border-b border-border-subtle backdrop-blur-[12px] shadow-sm z-header shrink-0"
-      style={{ backgroundColor: "color-mix(in srgb, var(--ch-surface-card) 85%, transparent)" }}
+      className="flex items-center h-header px-6 border-b border-border-subtle backdrop-blur-[16px] z-header shrink-0 relative"
+      style={{ backgroundColor: "color-mix(in srgb, var(--ch-surface-card) 82%, transparent)" }}
     >
+      {/* Subtle bottom gradient line */}
+      <div className="absolute bottom-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent 0%, color-mix(in srgb, var(--ch-brand-400) 15%, transparent) 50%, transparent 100%)" }} />
       <span
         className="text-neutral-600 text-md font-semibold font-heading tracking-[-0.01em]"
         data-testid="header-area-label"

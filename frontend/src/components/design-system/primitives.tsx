@@ -80,7 +80,7 @@ export function SectionShell({ title, description, actions, children, testId, fl
   return (
     <section
       className={cn(
-        "bg-surface-card border border-border-subtle rounded-lg mb-5 shadow-sm hover:shadow-md transition-shadow duration-normal",
+        "bg-surface-card border border-border-subtle rounded-lg mb-5 shadow-sm hover:shadow-md transition-all duration-normal",
         flush ? "p-0" : "p-5"
       )}
       data-testid={testId}

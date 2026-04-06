@@ -83,8 +83,93 @@ button {
 
 /* Tighter heading letter-spacing for premium feel */
 h1, h2, h3, h4, h5, h6 {
-  letter-spacing: -0.02em;
+  letter-spacing: var(--ch-letter-spacing-tight, -0.025em);
   font-feature-settings: 'ss01' on, 'ss02' on;
+}
+
+/* ===========================================================================
+   Obsidian Slate — Premium atmospheric effects (default theme)
+   =========================================================================== */
+
+/* Subtle warm gradient wash on page background */
+[data-theme="obsidian-slate"] {
+  background:
+    radial-gradient(ellipse at 15% 5%, rgba(79,104,247,0.03) 0%, transparent 50%),
+    radial-gradient(ellipse at 85% 95%, rgba(59,80,230,0.02) 0%, transparent 50%),
+    var(--ch-surface-page, #f0f2f7);
+}
+
+/* Premium card hover — subtle lift + brand glow */
+[data-theme="obsidian-slate"] [class*="bg-surface-card"]:hover {
+  box-shadow: 0 4px 16px rgba(15,18,25,0.08), 0 0 0 1px rgba(59,80,230,0.04);
+}
+
+/* Sidebar ambient glow — cinematic depth */
+[data-theme="obsidian-slate"] nav[class*="bg-surface-sidebar"] {
+  box-shadow: 4px 0 24px rgba(0,0,0,0.15);
+}
+
+/* Active nav item glow */
+[data-theme="obsidian-slate"] a[class*="border-l-brand"] {
+  text-shadow: 0 0 20px rgba(150,168,255,0.15);
+}
+
+/* Section shell enter — subtle reveal */
+[data-theme="obsidian-slate"] section[class*="bg-surface-card"] {
+  backdrop-filter: blur(0.5px);
+}
+
+/* Metric tile accent line glow */
+[data-theme="obsidian-slate"] [data-testid*="metric"] {
+  transition: transform 0.2s var(--ch-motion-easing), box-shadow 0.2s var(--ch-motion-easing);
+}
+[data-theme="obsidian-slate"] [data-testid*="metric"]:hover {
+  transform: translateY(-1px);
+}
+
+/* Status badge micro-shine */
+[data-theme="obsidian-slate"] span[class*="rounded-full"][class*="font-bold"] {
+  text-shadow: 0 0 8px rgba(255,255,255,0.08);
+}
+
+/* Header glass — deeper frost */
+[data-theme="obsidian-slate"] header[class*="backdrop-blur"] {
+  background: linear-gradient(180deg,
+    color-mix(in srgb, var(--ch-surface-card) 88%, transparent) 0%,
+    color-mix(in srgb, var(--ch-surface-card) 80%, transparent) 100%
+  ) !important;
+  box-shadow: 0 1px 0 rgba(59,80,230,0.06), 0 4px 16px rgba(0,0,0,0.04);
+}
+
+/* Brand icon refined glow */
+[data-theme="obsidian-slate"] [class*="from-brand-500"][class*="to-brand-700"] {
+  box-shadow: 0 0 16px color-mix(in srgb, var(--ch-brand-500) 25%, transparent),
+              0 2px 4px rgba(0,0,0,0.15) !important;
+}
+
+/* QuickCard left-border glow on hover */
+[data-theme="obsidian-slate"] [data-testid*="quick-link"]:hover {
+  box-shadow: -2px 0 12px rgba(59,80,230,0.08), 0 4px 16px rgba(0,0,0,0.06);
+}
+
+/* Focus rings — refined glow instead of harsh outline */
+[data-theme="obsidian-slate"] :focus-visible {
+  outline: 2px solid var(--ch-focus, #3b50e6);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(59,80,230,0.1);
+}
+
+/* Scrollbar — polished */
+[data-theme="obsidian-slate"] ::-webkit-scrollbar-thumb {
+  background: var(--ch-neutral-300, #cdd3dc);
+  border-radius: 4px;
+  border: 1px solid transparent;
+  background-clip: content-box;
+}
+[data-theme="obsidian-slate"] ::-webkit-scrollbar-thumb:hover {
+  background: var(--ch-neutral-400, #b0b8c7);
+  border: 1px solid transparent;
+  background-clip: content-box;
 }
 
 /* Tabular nums for all data displays */

@@ -7,17 +7,17 @@ describe("generateCSSVariables", () => {
     const vars = generateCSSVariables(DEFAULT_THEME);
     expect(vars["--ch-font-body"]).toContain("Plus Jakarta Sans");
     expect(vars["--ch-font-mono"]).toContain("Geist Mono");
-    expect(vars["--ch-brand-500"]).toBe("#4f6fff");
-    expect(vars["--ch-neutral-900"]).toBe("#212529");
-    expect(vars["--ch-success-base"]).toBe("#37b24d");
-    expect(vars["--ch-surface-page"]).toBe("#f5f6fa");
-    expect(vars["--ch-border-default"]).toBe("#d5d9e5");
-    expect(vars["--ch-focus"]).toBe("#3d5afe");
+    expect(vars["--ch-brand-500"]).toBe("#4f68f7");
+    expect(vars["--ch-neutral-900"]).toBe("#1a1f2b");
+    expect(vars["--ch-success-base"]).toBe("#34b849");
+    expect(vars["--ch-surface-page"]).toBe("#f0f2f7");
+    expect(vars["--ch-border-default"]).toBe("#d0d5e0");
+    expect(vars["--ch-focus"]).toBe("#3b50e6");
     expect(vars["--ch-space-4"]).toBe("1rem");
-    expect(vars["--ch-radius-md"]).toBe("8px");
+    expect(vars["--ch-radius-md"]).toBe("10px");
     expect(vars["--ch-shadow-sm"]).toBeTruthy();
-    expect(vars["--ch-motion-fast"]).toContain("120ms");
-    expect(vars["--ch-sidebar-width"]).toBe("240px");
+    expect(vars["--ch-motion-fast"]).toContain("100ms");
+    expect(vars["--ch-sidebar-width"]).toBe("248px");
   });
 
   it("generates different variables for warm earth theme", () => {
@@ -59,13 +59,13 @@ describe("generateCSSVariables", () => {
 describe("resolveTokens", () => {
   it("resolves token structure from default theme", () => {
     const tokens = resolveTokens(DEFAULT_THEME);
-    expect(tokens.colors.brand[600]).toBe("#3d5afe");
+    expect(tokens.colors.brand[600]).toBe("#3b50e6");
     expect(tokens.typography.fontFamily).toContain("Plus Jakarta Sans");
-    expect(tokens.typography.headingFamily).toContain("Plus Jakarta Sans");
+    expect(tokens.typography.headingFamily).toContain("Instrument Sans");
     expect(tokens.typography.monoFamily).toContain("Geist Mono");
     expect(tokens.spacing[4]).toBe("1rem");
-    expect(tokens.radius.md).toBe("8px");
-    expect(tokens.transition.fast).toContain("120ms");
+    expect(tokens.radius.md).toBe("10px");
+    expect(tokens.transition.fast).toContain("100ms");
   });
 
   it("resolves different tokens for warm earth theme", () => {

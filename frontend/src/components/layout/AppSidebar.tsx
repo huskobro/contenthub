@@ -23,7 +23,7 @@ export function AppSidebar({ items }: AppSidebarProps) {
         collapsed ? "w-sidebar-collapsed" : "w-sidebar"
       )}
       style={{
-        backgroundImage: `linear-gradient(180deg, color-mix(in srgb, var(--ch-brand-500) 4%, transparent) 0%, transparent 35%), radial-gradient(ellipse at 30% 0%, color-mix(in srgb, var(--ch-brand-500) 3%, transparent) 0%, transparent 60%)`,
+        backgroundImage: `linear-gradient(180deg, color-mix(in srgb, var(--ch-brand-500) 6%, transparent) 0%, transparent 30%), radial-gradient(ellipse at 20% 0%, color-mix(in srgb, var(--ch-brand-400) 4%, transparent) 0%, transparent 50%), linear-gradient(180deg, transparent 85%, color-mix(in srgb, var(--ch-brand-500) 2%, transparent) 100%)`,
       }}
     >
       {/* Brand area */}
