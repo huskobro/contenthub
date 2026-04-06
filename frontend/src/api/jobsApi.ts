@@ -43,8 +43,8 @@ export interface JobResponse {
   steps: JobStepResponse[];
 }
 
-export function fetchJobs(): Promise<JobResponse[]> {
-  return api.get<JobResponse[]>(BASE_URL);
+export function fetchJobs(params?: { include_test_data?: boolean }): Promise<JobResponse[]> {
+  return api.get<JobResponse[]>(BASE_URL, params);
 }
 
 export function fetchJobById(id: string): Promise<JobResponse> {
@@ -71,4 +71,18 @@ export function retryJob(jobId: string): Promise<JobResponse> {
 
 export function skipStep(jobId: string, stepKey: string): Promise<JobResponse> {
   return api.post<JobResponse>(`${BASE_URL}/${jobId}/steps/${stepKey}/skip`);
+}
+
+export function markJobsAsTestData(jobIds: string[]): Promise<{ marked_count: number }> {
+  return api.post<{ marked_count: number }>(`${BASE_URL}/mark-test-data`, { job_ids: jobIds });
+}
+
+export function bulkArchiveTestData(
+  olderThanDays: number = 7,
+  moduleType?: string,
+): Promise<{ archived_count: number }> {
+  return api.post<{ archived_count: number }>(`${BASE_URL}/bulk-archive-test-data`, {
+    older_than_days: olderThanDays,
+    module_type: moduleType ?? null,
+  });
 }
