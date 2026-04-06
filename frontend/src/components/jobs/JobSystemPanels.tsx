@@ -161,11 +161,38 @@ export function JobSystemPanels({ steps = [] }: JobSystemPanelsProps) {
           </p>
         ) : (
           artifactSteps.map((s) => {
-            let parsed: unknown = null;
-            try { parsed = JSON.parse(s.artifact_refs_json!); } catch { /* ignore */ }
+            let parsed: Record<string, unknown> | null = null;
+            try { parsed = JSON.parse(s.artifact_refs_json!) as Record<string, unknown>; } catch { /* ignore */ }
+
+            const isRenderStep = s.step_key === "render" && parsed;
+            const outputPaths = isRenderStep ? (parsed!.output_paths as string[] | undefined) : undefined;
+            const outputCount = isRenderStep ? (parsed!.output_count as number | undefined) : undefined;
+            const renderMode = isRenderStep ? (parsed!.render_mode as string | undefined) : undefined;
+            const isMultiOutput = outputPaths && outputPaths.length > 1;
+
             return (
               <div key={s.id} className="mb-2">
-                <strong className="font-mono text-base">{s.step_key}</strong>
+                <div className="flex items-center gap-2">
+                  <strong className="font-mono text-base">{s.step_key}</strong>
+                  {isMultiOutput && (
+                    <span className="inline-block px-1.5 py-0.5 rounded-sm text-xs font-medium bg-blue-100 text-blue-700">
+                      {outputCount ?? outputPaths.length} cikti ({renderMode ?? "multi"})
+                    </span>
+                  )}
+                </div>
+                {isMultiOutput && (
+                  <div className="mt-1 mb-1 space-y-0.5">
+                    {outputPaths.map((p, i) => {
+                      const fname = p.split("/").pop() ?? p;
+                      return (
+                        <div key={i} className="flex items-center gap-1.5 text-sm text-neutral-600">
+                          <span className="w-4 text-center text-xs text-neutral-400">{i + 1}</span>
+                          <span className="font-mono text-xs">{fname}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
                 <pre className="bg-neutral-900 text-border-subtle p-2 rounded-sm text-sm overflow-auto max-h-[200px] mt-1">
                   {parsed ? JSON.stringify(parsed, null, 2) : s.artifact_refs_json}
                 </pre>

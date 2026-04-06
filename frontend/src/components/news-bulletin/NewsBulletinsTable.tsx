@@ -10,6 +10,23 @@ interface Props {
   onSelect: (id: string) => void;
 }
 
+function renderModeLabel(mode: string | null | undefined): string {
+  switch (mode) {
+    case "per_item": return "Haber Basina";
+    case "per_category": return "Kategori";
+    case "combined": return "Tek";
+    default: return "Tek";
+  }
+}
+
+function renderModeBadge(mode: string | null | undefined): string {
+  switch (mode) {
+    case "per_item": return "bg-purple-100 text-purple-700";
+    case "per_category": return "bg-blue-100 text-blue-700";
+    default: return "bg-neutral-100 text-neutral-600";
+  }
+}
+
 function statusBadge(status: string) {
   const map: Record<string, string> = {
     draft: "bg-neutral-100 text-neutral-600",
@@ -69,8 +86,10 @@ export function NewsBulletinsTable({ bulletins, selectedId, onSelect }: Props) {
               <td className="px-3 py-2.5 text-right tabular-nums text-neutral-600">
                 {b.selected_news_count ?? 0}
               </td>
-              <td className="px-3 py-2.5 text-neutral-600 text-sm">
-                {b.render_mode ?? DASH}
+              <td className="px-3 py-2.5">
+                <span className={cn("inline-block px-2 py-0.5 rounded-full text-sm", renderModeBadge(b.render_mode))}>
+                  {renderModeLabel(b.render_mode)}
+                </span>
               </td>
               <td className="px-3 py-2.5 text-neutral-500 text-sm">
                 {formatDateShort(b.created_at)}

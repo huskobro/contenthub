@@ -74,6 +74,14 @@ export function NewsBulletinDetailPage() {
         <InfoCard label="Secili Haber" value={String(selectedItems.length)} />
       </div>
 
+      {/* Render mode info */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+        <InfoCard label="Render Modu" value={renderModeLabel(bulletin.render_mode)} />
+        <InfoCard label="Altyazi Stili" value={bulletin.subtitle_style || "—"} />
+        <InfoCard label="Lower Third" value={bulletin.lower_third_style || "—"} />
+        <InfoCard label="Trust Seviyesi" value={bulletin.trust_enforcement_level || "warn"} />
+      </div>
+
       {/* Job linkage */}
       {bulletin.job_id && (
         <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
@@ -208,6 +216,15 @@ function InfoCard({ label, value }: { label: string; value: string }) {
       <p className="m-0 text-sm font-medium text-neutral-700">{value}</p>
     </div>
   );
+}
+
+function renderModeLabel(mode: string | null | undefined): string {
+  switch (mode) {
+    case "per_item": return "Haber Basina";
+    case "per_category": return "Kategori Basina";
+    case "combined": return "Tek Video";
+    default: return "Tek Video";
+  }
 }
 
 function Row({ label, value }: { label: string; value: string }) {
