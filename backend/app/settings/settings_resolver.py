@@ -736,6 +736,40 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "wired": True,
         "wired_to": "PromptAssemblyService — nb.anti_clickbait block condition",
     },
+    # --- News Bulletin Visual Style (M33) ---
+    "news_bulletin.config.default_bulletin_style": {
+        "group": "news_bulletin",
+        "type": "string",
+        "label": "Varsayilan Gorsel Stil",
+        "help_text": "YTRobot gorsel stili: breaking, tech, corporate, sport, finance, weather, science, entertainment, dark.",
+        "module_scope": "news_bulletin",
+        "env_var": "",
+        "builtin_default": "breaking",
+        "wired": True,
+        "wired_to": "BulletinCompositionExecutor — bulletinStyle prop",
+    },
+    "news_bulletin.config.network_name": {
+        "group": "news_bulletin",
+        "type": "string",
+        "label": "Kanal Adi",
+        "help_text": "Video ust barinda gorunen kanal/ag adi.",
+        "module_scope": "news_bulletin",
+        "env_var": "",
+        "builtin_default": "ContentHub Haber",
+        "wired": True,
+        "wired_to": "BulletinCompositionExecutor — networkName prop",
+    },
+    "news_bulletin.config.show_ticker": {
+        "group": "news_bulletin",
+        "type": "boolean",
+        "label": "Alt Ticker Goster",
+        "help_text": "Alt haber akisi bandini gosterir/gizler.",
+        "module_scope": "news_bulletin",
+        "env_var": "",
+        "builtin_default": True,
+        "wired": True,
+        "wired_to": "BulletinCompositionExecutor — showTicker prop",
+    },
 
     # --- Standard Video Module Prompts (Phase 2 follow-up) ---
     "standard_video.prompt.script_system": {

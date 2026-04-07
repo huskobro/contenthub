@@ -608,6 +608,11 @@ async def start_production(
         "subtitle_style": bulletin.subtitle_style,
         "lower_third_style": bulletin.lower_third_style,
         "trust_enforcement_level": bulletin.trust_enforcement_level or "warn",
+        # M33: YTRobot visual style — bulletin_style from record, fallback to settings default
+        "bulletin_style": bulletin.bulletin_style or settings_snapshot.get("news_bulletin.config.default_bulletin_style", "breaking"),
+        "network_name": settings_snapshot.get("news_bulletin.config.network_name", "ContentHub Haber"),
+        "show_ticker": settings_snapshot.get("news_bulletin.config.show_ticker", True),
+        "ticker_items": None,  # auto-generated from headlines in composition
         "_settings_snapshot": settings_snapshot,
     }
 

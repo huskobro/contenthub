@@ -1,41 +1,88 @@
 /**
- * NewsBulletin composition bileseni — M31.
+ * NewsBulletin composition bileşeni — M31 + M33 kategori stil sistemi.
  *
- * composition_props.json'dan gelen props ile haber bulteni video render eder.
- * Guvenli composition mapping: composition_map.py icindeki "NewsBulletin" ID ile eslesir.
+ * composition_props.json'dan gelen props ile haber bülteni video render eder.
+ * Güvenli composition mapping: composition_map.py içindeki "NewsBulletin" ID ile eşleşir.
  *
- * Props kaynagi:
- *   backend/app/modules/news_bulletin/executors/composition.py -> composition_props.json
- *   backend RenderStepExecutor -> word_timing.json okunur -> wordTimings inline gecirilir
+ * Görsel stil sistemi (M33):
+ *   9 kategori stili: breaking, tech, corporate, sport, finance, weather, science, entertainment, dark
+ *   bulletinStyle prop ile kontrol edilir (backend composition executor'dan gelir).
+ *   Her haber item'ı category field'ına göre otomatik stil alır.
  *
- * V1 Combined Render:
- *   Tum haberler tek video icinde sirayla render edilir.
- *   Her haber arasinda basit cut gecis.
- *   Haber basligi overlay olarak gosterilir.
- *   Narration ses olarak calar, altyazi senkron gosterilir.
- *
- * M30 SubtitleStyle preset format uyumu:
- *   subtitleStyle artik backend get_preset_for_composition() ciktisiyla uyumlu tam preset nesnesi.
- *   Eski format (fontColor/backgroundColor/position) geriye donuk uyumlulukla desteklenir.
- *
- * M31 eklemeleri:
- *   - lowerThirdStyle prop: BulletinLowerThird component ile lower-third bant
- *   - renderMode prop: combined/per_category/per_item — UI rozeti gosterimi (cok-cikti backend-tarafli)
+ * Backend props formatı (composition_props.json → props alanı):
+ *   bulletinTitle         : string
+ *   items                 : BulletinItemProps[]
+ *   subtitlesSrt          : string | null
+ *   wordTimingPath        : string | null
+ *   wordTimings           : Array<{word, start, end, confidence?}>
+ *   timingMode            : "cursor" | "whisper_word" | "whisper_segment"
+ *   subtitleStyle         : SubtitleStyle
+ *   totalDurationSeconds  : number
+ *   language              : "tr" | "en"
+ *   bulletinStyle         : string | null   (M33)
+ *   networkName           : string | null   (M33)
+ *   showTicker            : boolean         (M33)
+ *   tickerItems           : string[] | null (M33)
+ *   lowerThirdStyle       : string | null
+ *   renderMode            : string | null
+ *   metadata              : { title, description, tags, hashtags? }
  */
 
 import React from "react";
 import {
   AbsoluteFill,
-  Audio,
   Sequence,
+  interpolate,
+  spring,
+  useCurrentFrame,
   useVideoConfig,
 } from "remotion";
 import { BulletinLowerThird } from "../components/BulletinLowerThird";
+import { StudioBackground, BulletinStyle } from "../templates/news-bulletin/components/StudioBackground";
+import { BreakingNewsOverlay } from "../templates/news-bulletin/components/BreakingNewsOverlay";
+import { HeadlineCard } from "../templates/news-bulletin/components/HeadlineCard";
+import { NewsTicker } from "../templates/news-bulletin/components/NewsTicker";
+import { CategoryFlash, CATEGORY_FLASH_DUR } from "../templates/news-bulletin/components/CategoryFlash";
+import { BULLETIN_ACCENT } from "../templates/news-bulletin/shared/palette";
+import { getLabel } from "../templates/news-bulletin/utils/localization";
 
 // ---------------------------------------------------------------------------
-// Props tipleri — composition_props.json -> props alaniyla uyumlu
+// Kategori → görsel stil çözümlemesi
 // ---------------------------------------------------------------------------
 
+const CATEGORY_TO_STYLE: Record<string, BulletinStyle> = {
+  gundem:         "breaking",
+  "son-dakika":   "breaking",
+  sondakika:      "breaking",
+  breaking:       "breaking",
+  teknoloji:      "tech",
+  tech:           "tech",
+  bilim:          "science",
+  science:        "science",
+  ekonomi:        "finance",
+  finans:         "finance",
+  finance:        "finance",
+  spor:           "sport",
+  sport:          "sport",
+  hava:           "weather",
+  weather:        "weather",
+  magazin:        "entertainment",
+  entertainment:  "entertainment",
+  eglen:          "entertainment",
+  kurumsal:       "corporate",
+  corporate:      "corporate",
+};
+
+function resolveBulletinStyle(category?: string, fallback: BulletinStyle = "breaking"): BulletinStyle {
+  if (!category) return fallback;
+  return CATEGORY_TO_STYLE[category.toLowerCase()] ?? fallback;
+}
+
+// ---------------------------------------------------------------------------
+// Props tipleri (ContentHub composition contract)
+// ---------------------------------------------------------------------------
+
+/** Backend composition_props.json → items[] elemanıyla birebir eşleşir. */
 export interface BulletinItemProps {
   itemNumber: number;
   headline: string;
@@ -46,15 +93,9 @@ export interface BulletinItemProps {
   category?: string;
 }
 
-/**
- * M30 preset format — backend get_preset_for_composition() ciktisiyla uyumlu.
- * Eski alanlar (fontColor, backgroundColor, position) geriye donuk uyumluluk icin
- * opsiyonel tutulur; yeni alanlar onceliklidir.
- */
 export interface SubtitleStyle {
   preset_id: string;
   label?: string;
-  // M30 yeni alanlar (oncelikli)
   font_size?: number;
   font_weight?: string;
   text_color?: string;
@@ -64,7 +105,6 @@ export interface SubtitleStyle {
   outline_color?: string;
   line_height?: number;
   preset_fallback_used?: boolean;
-  // Eski alanlar (geriye donuk uyumluluk)
   fontSize?: number;
   fontColor?: string;
   backgroundColor?: string;
@@ -76,20 +116,22 @@ export interface NewsBulletinProps {
   items: BulletinItemProps[];
   subtitlesSrt: string | null;
   wordTimingPath?: string | null;
-  /** Kelime zamanlama verisi — backend word_timing.json'dan okuyup inline gecirir. */
-  wordTimings?: Array<{
-    word: string;
-    start: number;
-    end: number;
-    confidence?: number;
-  }>;
+  wordTimings?: Array<{ word: string; start: number; end: number; confidence?: number }>;
   timingMode: "cursor" | "whisper_word" | "whisper_segment";
   subtitleStyle: SubtitleStyle;
   totalDurationSeconds: number;
   language: string;
-  /** M31: lower-third bant stili (broadcast | minimal | modern). Null ise gosterilmez. */
+  /** M33: YTRobot görsel stil — "breaking" | "tech" | "corporate" | ... */
+  bulletinStyle?: string | null;
+  /** M33: Üst bar kanal adı */
+  networkName?: string | null;
+  /** M33: Alt ticker göster */
+  showTicker?: boolean;
+  /** M33: Ticker metin listesi (null → başlıklardan otomatik üret) */
+  tickerItems?: string[] | null;
+  /** M31: lower-third bant stili */
   lowerThirdStyle?: string | null;
-  /** M31: Render modu — UI rozeti icin. Cok-cikti uretimi backend-taraflidir. */
+  /** M31: Render modu */
   renderMode?: "combined" | "per_category" | "per_item" | null;
   metadata: {
     title: string;
@@ -100,308 +142,215 @@ export interface NewsBulletinProps {
 }
 
 // ---------------------------------------------------------------------------
-// SubtitleStyle alan cozumleme yardimcilari
-// M30 format oncelikli; eksik alanda eski format'a fallback.
-// ---------------------------------------------------------------------------
-
-function resolveTextColor(s: SubtitleStyle): string {
-  return s.text_color ?? s.fontColor ?? "#FFFFFF";
-}
-
-function resolveBackground(s: SubtitleStyle): string {
-  return s.background ?? s.backgroundColor ?? "rgba(0,0,0,0.7)";
-}
-
-function resolveFontSize(s: SubtitleStyle): number {
-  return s.font_size ?? s.fontSize ?? 36;
-}
-
-function resolveFontWeight(s: SubtitleStyle): string {
-  return s.font_weight ?? "400";
-}
-
-function resolveLineHeight(s: SubtitleStyle): number {
-  return s.line_height ?? 1.4;
-}
-
-function resolveOutlineWidth(s: SubtitleStyle): number {
-  return s.outline_width ?? 0;
-}
-
-function resolveOutlineColor(s: SubtitleStyle): string {
-  return s.outline_color ?? "#000000";
-}
-
-/**
- * outline_width > 0 ise metin golge (outline efekti) CSS degerini dondurur.
- * 0 ise bos string (no-op).
- */
-function buildTextShadow(s: SubtitleStyle): string {
-  const width = resolveOutlineWidth(s);
-  if (width <= 0) return "";
-  const color = resolveOutlineColor(s);
-  const w = width;
-  return `${-w}px ${-w}px 0 ${color}, ${w}px ${-w}px 0 ${color}, ${-w}px ${w}px 0 ${color}, ${w}px ${w}px 0 ${color}`;
-}
-
-// ---------------------------------------------------------------------------
-// renderMode rozet etiketi
-// ---------------------------------------------------------------------------
-
-function renderModeLabel(mode: string): string {
-  if (mode === "per_category") return "Kategori Bazli";
-  if (mode === "per_item") return "Haber Bazli";
-  return mode;
-}
-
-// ---------------------------------------------------------------------------
-// Varsayilan props (Remotion Studio icin)
+// Varsayılan props (Remotion Studio önizlemesi için)
 // ---------------------------------------------------------------------------
 
 export const defaultNewsBulletinProps: NewsBulletinProps = {
-  bulletinTitle: "Haber Bulteni",
+  bulletinTitle:    "Haber Bülteni",
+  bulletinStyle:    "breaking",
+  networkName:      "ContentHub Haber",
+  showTicker:       true,
+  tickerItems:      null,
   items: [
     {
       itemNumber: 1,
-      headline: "Ornek Haber Basligi",
-      narration: "Bu bir ornek narration metnidir.",
+      headline: "SON DAKİKA: Önemli Gelişme",
+      narration: "Bu bir örnek narration metnidir. Sistemin testi yapılıyor.",
       audioPath: null,
       imagePath: null,
       durationSeconds: 10,
-      category: "genel",
+      category: "gundem",
+    },
+    {
+      itemNumber: 2,
+      headline: "EKONOMİDE YENİ ADIMLAR",
+      narration: "Merkez Bankası kararını açıkladı, piyasalar hareketlendi.",
+      audioPath: null,
+      imagePath: null,
+      durationSeconds: 8,
+      category: "ekonomi",
     },
   ],
-  subtitlesSrt: null,
-  wordTimings: [],
-  timingMode: "cursor",
+  subtitlesSrt:          null,
+  wordTimings:           [],
+  timingMode:            "cursor",
   subtitleStyle: {
-    preset_id: "clean_white",
-    font_size: 36,
-    font_weight: "600",
-    text_color: "#FFFFFF",
-    active_color: "#FFD700",
-    background: "rgba(0,0,0,0.35)",
+    preset_id:     "clean_white",
+    font_size:     36,
+    font_weight:   "600",
+    text_color:    "#FFFFFF",
+    active_color:  "#FFD700",
+    background:    "rgba(0,0,0,0.35)",
     outline_width: 2,
     outline_color: "#000000",
-    line_height: 1.4,
+    line_height:   1.4,
   },
-  totalDurationSeconds: 10,
-  language: "tr",
-  lowerThirdStyle: null,
-  renderMode: null,
+  totalDurationSeconds: 20,
+  language:             "tr",
+  lowerThirdStyle:      null,
+  renderMode:           null,
   metadata: {
-    title: "Ornek Bulten",
-    description: "Ornek bulten aciklamasi",
-    tags: ["haber", "gundem"],
-    hashtags: ["#haber"],
+    title:       "Örnek Bülten",
+    description: "Örnek bülten açıklaması",
+    tags:        ["haber", "gundem"],
+    hashtags:    ["#haber"],
   },
 };
 
 // ---------------------------------------------------------------------------
-// Composition bileseni
+// Composition
 // ---------------------------------------------------------------------------
+
+const NETWORK_BAR_HEIGHT = 96;
 
 export const NewsBulletinComposition: React.FC<NewsBulletinProps> = (props) => {
   const { fps } = useVideoConfig();
+  const frame = useCurrentFrame();
   const {
     items,
     bulletinTitle,
-    subtitleStyle,
+    bulletinStyle: rawBulletinStyle,
+    networkName,
+    showTicker = true,
+    tickerItems,
+    language = "tr",
     lowerThirdStyle,
-    renderMode,
   } = props;
 
-  // Narration kutusu stil hesaplamalari
-  const textColor = resolveTextColor(subtitleStyle);
-  const background = resolveBackground(subtitleStyle);
-  const fontSize = resolveFontSize(subtitleStyle);
-  const fontWeight = resolveFontWeight(subtitleStyle);
-  const lineHeight = resolveLineHeight(subtitleStyle);
-  const textShadow = buildTextShadow(subtitleStyle);
+  // Genel bülten stili
+  const defaultStyle: BulletinStyle =
+    rawBulletinStyle && (rawBulletinStyle in BULLETIN_ACCENT)
+      ? (rawBulletinStyle as BulletinStyle)
+      : "breaking";
 
-  // renderMode rozet gosterimi: "combined" ve null gosterilmez
-  const showRenderModeBadge =
-    renderMode != null && renderMode !== "combined";
+  const channelName = networkName || bulletinTitle || "ContentHub Haber";
+  const lang = language === "en" ? "en" : "tr";
 
-  // Her item icin frame offset hesapla
-  let currentFrame = 0;
-  const itemSequences = items.map((item, index) => {
-    const durationFrames = Math.max(
-      Math.round(item.durationSeconds * fps),
-      fps, // Minimum 1 saniye
-    );
-    const startFrame = currentFrame;
-    currentFrame += durationFrames;
+  // ── Network bar giriş animasyonu ──────────────────────────────────────────
+  const barProgress = spring({ frame, fps, config: { damping: 14, stiffness: 160 } });
+  const barY       = interpolate(barProgress, [0, 1], [-NETWORK_BAR_HEIGHT, 0]);
+  const barOpacity = interpolate(barProgress, [0, 0.4], [0, 1], { extrapolateRight: "clamp" });
 
-    const hasLowerThird = lowerThirdStyle != null && lowerThirdStyle !== "";
+  // Logo nefes alma
+  const breathe = interpolate(Math.sin((frame / 120) * Math.PI * 2), [-1, 1], [0.97, 1.03]);
 
-    return (
-      <Sequence
-        key={`item-${item.itemNumber}`}
-        from={startFrame}
-        durationInFrames={durationFrames}
-        name={`Haber ${item.itemNumber}`}
-      >
-        <AbsoluteFill
-          style={{
-            backgroundColor: "#1a1a2e",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            alignItems: "center",
-            padding: 60,
-          }}
-        >
-          {/* Haber numarasi badge */}
-          <div
-            style={{
-              position: "absolute",
-              top: 40,
-              left: 40,
-              backgroundColor: "#e94560",
-              color: "#FFFFFF",
-              padding: "8px 20px",
-              borderRadius: 4,
-              fontSize: 18,
-              fontWeight: "bold",
-              fontFamily: "sans-serif",
-            }}
-          >
-            {index + 1} / {items.length}
-          </div>
+  // ── Her item için frame ofseti ──────────────────────────────────────────
+  const HEADLINES_START = fps * 2; // ilk 2s başlık kartı
 
-          {/* renderMode rozeti — top-center, sadece non-combined modlarda */}
-          {showRenderModeBadge && (
-            <div
-              style={{
-                position: "absolute",
-                top: 40,
-                left: "50%",
-                transform: "translateX(-50%)",
-                backgroundColor: "rgba(37,99,235,0.85)",
-                color: "#FFFFFF",
-                padding: "5px 14px",
-                borderRadius: 4,
-                fontSize: 14,
-                fontWeight: "600",
-                fontFamily: "sans-serif",
-                whiteSpace: "nowrap",
-              }}
-            >
-              {renderModeLabel(renderMode!)}
-            </div>
-          )}
-
-          {/* Baslik */}
-          <h2
-            style={{
-              color: "#FFFFFF",
-              fontSize: 48,
-              fontWeight: "bold",
-              fontFamily: "sans-serif",
-              textAlign: "center",
-              lineHeight: 1.3,
-              maxWidth: "80%",
-              margin: 0,
-            }}
-          >
-            {item.headline}
-          </h2>
-
-          {/* Narration metni (altyazi olarak) */}
-          <div
-            style={{
-              position: "absolute",
-              bottom: hasLowerThird ? 88 : 80, // lower-third varsa biraz yukari kaydir
-              left: 40,
-              right: 40,
-              backgroundColor: background,
-              color: textColor,
-              fontSize: fontSize,
-              fontWeight: fontWeight,
-              fontFamily: "sans-serif",
-              padding: "16px 24px",
-              borderRadius: 8,
-              textAlign: "center",
-              lineHeight: lineHeight,
-              ...(textShadow ? { textShadow } : {}),
-            }}
-          >
-            {item.narration}
-          </div>
-
-          {/* Kategori etiketi */}
-          {item.category && (
-            <div
-              style={{
-                position: "absolute",
-                top: 40,
-                right: 40,
-                backgroundColor: "rgba(255,255,255,0.15)",
-                color: "#FFFFFF",
-                padding: "6px 16px",
-                borderRadius: 4,
-                fontSize: 14,
-                fontFamily: "sans-serif",
-                textTransform: "uppercase",
-              }}
-            >
-              {item.category}
-            </div>
-          )}
-
-          {/* Lower-third bant — narration kutusunun uzerinde, ekranin alt kismi */}
-          {hasLowerThird && (
-            <BulletinLowerThird
-              headline={item.headline}
-              category={item.category}
-              itemNumber={item.itemNumber}
-              totalItems={items.length}
-              style={lowerThirdStyle}
-            />
-          )}
-
-          {/* Audio */}
-          {item.audioPath && (
-            <Audio src={item.audioPath} />
-          )}
-        </AbsoluteFill>
-      </Sequence>
-    );
+  let cumulativeOffset = HEADLINES_START;
+  const sequenced = items.map((item, idx) => {
+    const durationFrames = Math.max(Math.round(item.durationSeconds * fps), fps);
+    const flashFrom   = cumulativeOffset;
+    const contentFrom = cumulativeOffset + CATEGORY_FLASH_DUR;
+    cumulativeOffset += CATEGORY_FLASH_DUR + durationFrames;
+    return { item, flashFrom, contentFrom, durationFrames, idx };
   });
 
+  // Aktif item stilini dinamik bar rengi için hesapla
+  const activeSeq = [...sequenced].reverse().find(s => frame >= s.flashFrom) ?? sequenced[0];
+  const activeItemStyle: BulletinStyle = activeSeq
+    ? resolveBulletinStyle(activeSeq.item.category, defaultStyle)
+    : defaultStyle;
+  const activeAccent = BULLETIN_ACCENT[activeItemStyle];
+
+  // Ticker içeriği
+  const tickerData = tickerItems && tickerItems.length > 0
+    ? tickerItems.map(t => ({ text: t }))
+    : items.map(item => ({ text: item.headline }));
+
   return (
-    <AbsoluteFill style={{ backgroundColor: "#0f0f23" }}>
-      {/* Bulten basligi (ilk 2 saniye) */}
-      <Sequence from={0} durationInFrames={fps * 2} name="Bulten Basligi">
-        <AbsoluteFill
-          style={{
-            backgroundColor: "#16213e",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <h1
-            style={{
-              color: "#FFFFFF",
-              fontSize: 64,
-              fontWeight: "bold",
-              fontFamily: "sans-serif",
-              textAlign: "center",
-            }}
-          >
-            {bulletinTitle}
+    <AbsoluteFill style={{ backgroundColor: "#000" }}>
+
+      {/* L1: Animasyonlu arka plan */}
+      <StudioBackground style={activeItemStyle} />
+
+      {/* L2: Network üst bar */}
+      <div style={{
+        position: "absolute", top: 0, left: 0, right: 0, height: NETWORK_BAR_HEIGHT,
+        background: `linear-gradient(to right, ${activeAccent} 0%, rgba(10,10,10,0.95) 60%, rgba(10,10,10,0.85) 100%)`,
+        display: "flex", alignItems: "center", paddingLeft: 40, paddingRight: 40,
+        transform: `translateY(${barY}px)`, opacity: barOpacity, zIndex: 10,
+        borderBottom: `2px solid ${activeAccent}`,
+        boxShadow: `0 4px 32px ${activeAccent}44`,
+      }}>
+        <span style={{
+          color: "#FFFFFF", fontSize: 44,
+          fontFamily: '"Bebas Neue", "Oswald", Impact, sans-serif',
+          letterSpacing: "0.14em", fontWeight: 900,
+          transform: `scale(${breathe})`, display: "inline-block",
+        }}>
+          {channelName.toUpperCase()}
+        </span>
+      </div>
+
+      {/* L3: Breaking overlay — yalnızca breaking stilinde, ilk 2s */}
+      {defaultStyle === "breaking" && (
+        <Sequence from={20} durationInFrames={60}>
+          <BreakingNewsOverlay networkName={channelName} style={defaultStyle} lang={lang} />
+        </Sequence>
+      )}
+
+      {/* L4: Bülten başlık kartı (ilk 2 saniye) */}
+      <Sequence from={0} durationInFrames={HEADLINES_START} name="Bülten Başlığı">
+        <AbsoluteFill style={{ backgroundColor: "transparent", display: "flex", justifyContent: "center", alignItems: "center" }}>
+          <h1 style={{
+            color: "#FFFFFF", fontSize: 80,
+            fontFamily: '"Bebas Neue", "Oswald", Impact, sans-serif',
+            fontWeight: 900, letterSpacing: "0.08em",
+            textAlign: "center", textShadow: `0 0 60px ${activeAccent}88`,
+            marginTop: 96,
+          }}>
+            {bulletinTitle.toUpperCase()}
           </h1>
         </AbsoluteFill>
       </Sequence>
 
-      {/* Haber item'lari — title'dan sonra baslar */}
-      <Sequence from={fps * 2} name="Haberler">
-        <AbsoluteFill>
-          {itemSequences}
-        </AbsoluteFill>
-      </Sequence>
+      {/* L5: Haberler — CategoryFlash + HeadlineCard + lower-third */}
+      {sequenced.map(({ item, flashFrom, contentFrom, durationFrames, idx }) => {
+        const itemStyle  = resolveBulletinStyle(item.category, defaultStyle);
+        const itemAccent = BULLETIN_ACCENT[itemStyle];
+        const itemLabel  = getLabel(itemStyle, lang);
+
+        return (
+          <React.Fragment key={idx}>
+            {/* Kategori flash (1.5s) */}
+            <Sequence from={flashFrom} durationInFrames={CATEGORY_FLASH_DUR} name={`Flash ${idx + 1}`}>
+              <CategoryFlash label={itemLabel} accent={itemAccent} />
+            </Sequence>
+
+            {/* Haber içerik kartı */}
+            <Sequence from={contentFrom} durationInFrames={durationFrames} name={`Haber ${idx + 1}`}>
+              <HeadlineCard
+                item={{
+                  headline:     item.headline,
+                  narration:    item.narration,
+                  audioUrl:     item.audioPath,
+                  bulletinStyle: itemStyle,
+                }}
+                index={idx}
+              />
+              {/* Lower-third: lowerThirdStyle atanmışsa tüm haberlerde göster */}
+              {lowerThirdStyle != null && lowerThirdStyle !== "" && (
+                <BulletinLowerThird
+                  headline={item.headline}
+                  category={item.category}
+                  itemNumber={item.itemNumber}
+                  totalItems={items.length}
+                  style={lowerThirdStyle}
+                />
+              )}
+            </Sequence>
+          </React.Fragment>
+        );
+      })}
+
+      {/* L6: Alt ticker — frame 30'dan itibaren */}
+      {showTicker !== false && tickerData.length > 0 && (
+        <Sequence from={30} name="Ticker">
+          <NewsTicker items={tickerData} style={activeItemStyle} lang={lang} />
+        </Sequence>
+      )}
+
     </AbsoluteFill>
   );
 };

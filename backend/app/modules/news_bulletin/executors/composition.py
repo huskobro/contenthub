@@ -65,6 +65,10 @@ def _build_render_outputs(
     lower_third_style: str | None,
     language: str,
     metadata_data: dict,
+    bulletin_style: str = "breaking",
+    network_name: str = "ContentHub Haber",
+    show_ticker: bool = True,
+    ticker_items: list[str] | None = None,
 ) -> list[dict]:
     """
     render_mode'a göre çıktı planını oluşturur.
@@ -102,6 +106,10 @@ def _build_render_outputs(
                 "renderMode": render_mode,
                 "totalDurationSeconds": round(total_dur, 3),
                 "language": language,
+                "bulletinStyle": bulletin_style,
+                "networkName": network_name,
+                "showTicker": show_ticker,
+                "tickerItems": ticker_items,
                 "metadata": {
                     "title": metadata_data.get("title", ""),
                     "description": metadata_data.get("description", ""),
@@ -264,6 +272,12 @@ class BulletinCompositionExecutor(StepExecutor):
         lower_third_style = raw_input.get("lower_third_style")
         render_mode = raw_input.get("render_mode", "combined")
 
+        # M33: YTRobot visual style props
+        bulletin_style = raw_input.get("bulletin_style", "breaking")
+        network_name = raw_input.get("network_name", "ContentHub Haber")
+        show_ticker = raw_input.get("show_ticker", True)
+        ticker_items = raw_input.get("ticker_items") or None
+
         # Script item'larını ve audio bilgilerini birleştir
         script_items: list[dict] = script_data.get("items", [])
         audio_scenes: list[dict] = audio_manifest.get("scenes", [])
@@ -313,6 +327,10 @@ class BulletinCompositionExecutor(StepExecutor):
             lower_third_style=lower_third_style,
             language=language,
             metadata_data=metadata_data,
+            bulletin_style=bulletin_style,
+            network_name=network_name,
+            show_ticker=show_ticker,
+            ticker_items=ticker_items,
         )
 
         composition_props: dict = {
@@ -334,6 +352,11 @@ class BulletinCompositionExecutor(StepExecutor):
                 "renderMode": render_mode,
                 "totalDurationSeconds": round(total_duration, 3),
                 "language": language,
+                # M33: YTRobot visual style
+                "bulletinStyle": bulletin_style,
+                "networkName": network_name,
+                "showTicker": show_ticker,
+                "tickerItems": ticker_items,
                 "metadata": {
                     "title": metadata_data.get("title", ""),
                     "description": metadata_data.get("description", ""),
