@@ -45,6 +45,68 @@ import { NewsTicker } from "../templates/news-bulletin/components/NewsTicker";
 import { CategoryFlash, CATEGORY_FLASH_DUR } from "../templates/news-bulletin/components/CategoryFlash";
 import { BULLETIN_ACCENT } from "../templates/news-bulletin/shared/palette";
 import { getLabel } from "../templates/news-bulletin/utils/localization";
+import type { SubtitleEntry, SubtitleWord } from "../templates/news-bulletin/shared/subtitle-renderer";
+
+// ---------------------------------------------------------------------------
+// M41c: SRT → SubtitleEntry[] per-item karaoke builder
+// ---------------------------------------------------------------------------
+
+interface RawSrtEntry { startSec: number; endSec: number; text: string; }
+
+function parseSrtToRaw(srt: string): RawSrtEntry[] {
+  const entries: RawSrtEntry[] = [];
+  const blocks = srt.trim().split(/\n\s*\n/);
+  for (const block of blocks) {
+    const lines = block.trim().split("\n");
+    if (lines.length < 3) continue;
+    const match = lines[1]?.match(
+      /(\d+):(\d+):(\d+)[,.](\d+)\s*-->\s*(\d+):(\d+):(\d+)[,.](\d+)/
+    );
+    if (!match) continue;
+    const startSec = +match[1] * 3600 + +match[2] * 60 + +match[3] + +match[4] / 1000;
+    const endSec   = +match[5] * 3600 + +match[6] * 60 + +match[7] + +match[8] / 1000;
+    const text     = lines.slice(2).join(" ").replace(/<[^>]+>/g, "").trim();
+    if (text) entries.push({ startSec, endSec, text });
+  }
+  return entries;
+}
+
+/**
+ * Global SRT + wordTimings → per-item SubtitleEntry[] array.
+ * contentFromSec / contentToSec: item'ın timeline içindeki zaman dilimi (saniye).
+ * Dönen entries'in startFrame/endFrame item'ın kendi Sequence scope'una göre (0-indexed).
+ */
+function buildItemSubtitles(
+  srtEntries: RawSrtEntry[],
+  wordTimings: Array<{ word: string; start: number; end: number; scene?: number }>,
+  contentFromSec: number,
+  contentToSec: number,
+  fps: number,
+): SubtitleEntry[] {
+  const result: SubtitleEntry[] = [];
+  for (const e of srtEntries) {
+    // SRT entry item'ın zaman dilimiyle örtüşüyor mu?
+    if (e.endSec <= contentFromSec || e.startSec >= contentToSec) continue;
+
+    // Item-relative zamanlar
+    const relStart = Math.max(0, e.startSec - contentFromSec);
+    const relEnd   = Math.min(contentToSec - contentFromSec, e.endSec - contentFromSec);
+    const startFrame = Math.round(relStart * fps);
+    const endFrame   = Math.round(relEnd * fps);
+
+    // Bu zaman dilimine giren kelimeleri bul
+    const words: SubtitleWord[] = wordTimings
+      .filter(w => w.start < e.endSec && w.end > e.startSec)
+      .map(w => ({
+        word: w.word,
+        startFrame: Math.round(Math.max(0, w.start - contentFromSec) * fps),
+        endFrame:   Math.round(Math.max(0, w.end   - contentFromSec) * fps),
+      }));
+
+    result.push({ text: e.text, startFrame, endFrame, words: words.length > 0 ? words : undefined });
+  }
+  return result;
+}
 
 // ---------------------------------------------------------------------------
 // Kategori → görsel stil çözümlemesi
@@ -262,6 +324,10 @@ export const NewsBulletinComposition: React.FC<NewsBulletinProps> = (props) => {
   // Logo nefes alma
   const breathe = interpolate(Math.sin((frame / 120) * Math.PI * 2), [-1, 1], [0.97, 1.03]);
 
+  // ── M41c: SRT karaoke — global SRT → per-item subtitle entries ──────────
+  const srtRaw = props.subtitlesSrt ? parseSrtToRaw(props.subtitlesSrt) : [];
+  const wt     = props.wordTimings ?? [];
+
   // ── Her item için frame ofseti ──────────────────────────────────────────
   const HEADLINES_START = fps * 2; // ilk 2s başlık kartı
 
@@ -271,7 +337,15 @@ export const NewsBulletinComposition: React.FC<NewsBulletinProps> = (props) => {
     const flashFrom   = cumulativeOffset;
     const contentFrom = cumulativeOffset + CATEGORY_FLASH_DUR;
     cumulativeOffset += CATEGORY_FLASH_DUR + durationFrames;
-    return { item, flashFrom, contentFrom, durationFrames, idx };
+
+    // Per-item subtitle entries (item's own Sequence scope, 0-indexed frames)
+    const contentFromSec = contentFrom / fps;
+    const contentToSec   = (contentFrom + durationFrames) / fps;
+    const itemSubtitles  = srtRaw.length > 0
+      ? buildItemSubtitles(srtRaw, wt, contentFromSec, contentToSec, fps)
+      : [];
+
+    return { item, flashFrom, contentFrom, durationFrames, idx, itemSubtitles };
   });
 
   // Aktif item stilini dinamik bar rengi için hesapla
@@ -336,7 +410,7 @@ export const NewsBulletinComposition: React.FC<NewsBulletinProps> = (props) => {
       </Sequence>
 
       {/* L5: Haberler — CategoryFlash + HeadlineCard + lower-third */}
-      {sequenced.map(({ item, flashFrom, contentFrom, durationFrames, idx }) => {
+      {sequenced.map(({ item, flashFrom, contentFrom, durationFrames, idx, itemSubtitles }) => {
         const itemStyle  = resolveBulletinStyle(item.category, defaultStyle);
         const itemAccent = BULLETIN_ACCENT[itemStyle];
         const itemLabel  = getLabel(itemStyle, lang);
@@ -358,6 +432,8 @@ export const NewsBulletinComposition: React.FC<NewsBulletinProps> = (props) => {
                   bulletinStyle: itemStyle,
                   imagePath:    item.imagePath,
                   imageTimeline: item.imageTimeline,
+                  // M41c: per-item karaoke subtitles
+                  subtitles:    itemSubtitles.length > 0 ? itemSubtitles : undefined,
                 }}
                 index={idx}
                 isPortrait={isPortrait}

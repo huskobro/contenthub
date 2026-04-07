@@ -379,6 +379,16 @@ async def execute_rss_scan(
         if decision.is_suppressed:
             if decision.reason == "hard_url_match":
                 skipped_hard += 1
+                # M41c: görsel backfill — mevcut item'da image_url yoksa güncelle
+                if decision.matched_item_id and (
+                    normalized.get("image_url") or normalized.get("image_urls_json")
+                ):
+                    await _backfill_images(
+                        db,
+                        item_id=decision.matched_item_id,
+                        image_url=normalized.get("image_url"),
+                        image_urls_json=normalized.get("image_urls_json"),
+                    )
             else:
                 skipped_soft += 1
             dedupe_details.append(_decision_to_dict(decision))
@@ -401,6 +411,9 @@ async def execute_rss_scan(
             status="new",
             dedupe_key=normalized["dedupe_key"],
             raw_payload_json=normalized["raw_payload_json"],
+            # M41a: görsel alanları — RSS'den çekilen görseller
+            image_url=normalized.get("image_url"),
+            image_urls_json=normalized.get("image_urls_json"),
         )
         db.add(item)
 
@@ -454,6 +467,33 @@ async def execute_rss_scan(
         "error_summary": None,
         "dedupe_details": dedupe_details,
     }
+
+
+async def _backfill_images(
+    db: AsyncSession,
+    item_id: str,
+    image_url: Optional[str],
+    image_urls_json: Optional[str],
+) -> None:
+    """
+    M41c: Mevcut NewsItem'da image_url yoksa RSS'den gelen görsel URL'lerini yazar.
+
+    Sadece image_url IS NULL olan kayıtları günceller — mevcut verilerin üstüne yazmaz.
+    """
+    try:
+        item = await db.get(NewsItem, item_id)
+        if item is None:
+            return
+        if item.image_url is not None:
+            return  # Zaten görsel var, dokunma
+        if image_url:
+            item.image_url = image_url
+        if image_urls_json:
+            item.image_urls_json = image_urls_json
+        await db.flush()  # commit scan loop'ta toplu yapılır
+        logger.debug("Görsel backfill: item=%s url=%s", item_id, image_url)
+    except Exception as exc:
+        logger.debug("Görsel backfill başarısız item=%s: %s", item_id, exc)
 
 
 def _decision_to_dict(d: DedupeDecision) -> dict:

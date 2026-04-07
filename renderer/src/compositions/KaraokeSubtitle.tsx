@@ -12,13 +12,18 @@
  * Timing modu davranışı:
  *   whisper_word    → kelime bazında highlight (word.start ≤ currentTime < word.end)
  *   whisper_segment → satır bazında highlight (segment zamanlaması kullanılır)
- *   cursor          → degrade mod: düz metin, renk değişimi yok
+ *   cursor          → SRT tabanlı fallback: aktif subtitle satırını düz metin gösterir
  *                     Operatöre ve kullanıcıya "degrade zamanlama modu" olarak yansıtılır.
  *
  * Stil kontrolü:
  *   Stil alanları SubtitleStylePreset sözleşmesinden gelir.
  *   Component içinde magic string veya hardcoded renk yoktur.
  *   Tüm görsel kararlar preset katmanında alınır.
+ *
+ * M41c: Portrait layout desteği eklendi.
+ *   isPortrait=true olduğunda font boyutu ve konum portrait için optimize edilir.
+ * M41c: Cursor modunda SRT parse fallback eklendi.
+ *   subtitles_srt geçilirse cursor modda dahi altyazı görünür.
  */
 
 // Remotion M6-C1 ile kuruldu — import'lar aktif edildi.
@@ -45,6 +50,60 @@ export interface KaraokeSubtitleProps {
   timingMode: TimingMode;
   /** Videonun toplam süresi (saniye). */
   totalDurationSeconds: number;
+  /** M41c: SRT formatında altyazı metni — cursor modda fallback olarak kullanılır. */
+  subtitlesSrt?: string | null;
+  /** M41c: Portrait layout flag — font boyutu ve konumu ayarlar. */
+  isPortrait?: boolean;
+}
+
+// ---------------------------------------------------------------------------
+// SRT Parser — cursor mod fallback
+// ---------------------------------------------------------------------------
+
+interface SrtEntry {
+  startSec: number;
+  endSec: number;
+  text: string;
+}
+
+function parseSrt(srt: string): SrtEntry[] {
+  const entries: SrtEntry[] = [];
+  // SRT blokları boş satırlarla ayrılır
+  const blocks = srt.trim().split(/\n\s*\n/);
+  for (const block of blocks) {
+    const lines = block.trim().split("\n");
+    if (lines.length < 3) continue;
+    // lines[0] = index, lines[1] = timestamps, lines[2+] = text
+    const timeLine = lines[1];
+    const match = timeLine.match(
+      /(\d+):(\d+):(\d+)[,.](\d+)\s*-->\s*(\d+):(\d+):(\d+)[,.](\d+)/
+    );
+    if (!match) continue;
+    const startSec =
+      parseInt(match[1]) * 3600 +
+      parseInt(match[2]) * 60 +
+      parseInt(match[3]) +
+      parseInt(match[4]) / 1000;
+    const endSec =
+      parseInt(match[5]) * 3600 +
+      parseInt(match[6]) * 60 +
+      parseInt(match[7]) +
+      parseInt(match[8]) / 1000;
+    const text = lines.slice(2).join(" ").replace(/<[^>]+>/g, "").trim();
+    if (text) {
+      entries.push({ startSec, endSec, text });
+    }
+  }
+  return entries;
+}
+
+function findActiveSrtEntry(entries: SrtEntry[], currentTime: number): string | null {
+  for (const e of entries) {
+    if (currentTime >= e.startSec && currentTime < e.endSec) {
+      return e.text;
+    }
+  }
+  return null;
 }
 
 // ---------------------------------------------------------------------------
@@ -54,10 +113,6 @@ export interface KaraokeSubtitleProps {
 /**
  * currentTime'a göre aktif WordTiming öğesini döner.
  * whisper_word modu için kullanılır.
- *
- * @param words   Kelime zamanlama listesi.
- * @param currentTime   Mevcut video zamanı (saniye).
- * @returns Aktif kelime veya null.
  */
 function findActiveWord(
   words: WordTiming[],
@@ -73,23 +128,16 @@ function findActiveWord(
 
 /**
  * currentTime'a göre aktif metni döner (whisper_segment modu için).
- * Segment başlangıç ve bitiş zamanları kelime verilerinden çıkarılır.
- *
- * @param words   Kelime zamanlama listesi.
- * @param currentTime   Mevcut video zamanı (saniye).
- * @returns Aktif segment metni veya null.
  */
 function findActiveSegmentText(
   words: WordTiming[],
   currentTime: number
 ): string | null {
-  // Aynı sahnenin kelimelerini bul
   const sceneWords = words.filter((w) => {
-    // Sahne zamanlaması: sahnenin ilk kelimesi start, son kelimesi end
-    const sceneWords = words.filter((sw) => sw.scene === w.scene);
-    if (sceneWords.length === 0) return false;
-    const sceneStart = sceneWords[0].start;
-    const sceneEnd = sceneWords[sceneWords.length - 1].end;
+    const sw = words.filter((sw) => sw.scene === w.scene);
+    if (sw.length === 0) return false;
+    const sceneStart = sw[0].start;
+    const sceneEnd = sw[sw.length - 1].end;
     return currentTime >= sceneStart && currentTime < sceneEnd;
   });
 
@@ -98,31 +146,31 @@ function findActiveSegmentText(
 }
 
 // ---------------------------------------------------------------------------
-// Ana component (Remotion kurulana kadar render edilemez)
+// Ana component
 // ---------------------------------------------------------------------------
 
-/**
- * Karaoke altyazı component'ı.
- *
- * Remotion `useCurrentFrame` ve `useVideoConfig` hook'larını kullanır.
- * M6'da Remotion kurulana kadar bu component aktif edilemez.
- *
- * Render davranışı timing_mode'a göre değişir:
- *   - whisper_word    : Her kelime için bireysel highlight.
- *   - whisper_segment : Satır bazında highlight.
- *   - cursor          : Degrade mod — düz metin, highlight yok.
- */
 export function KaraokeSubtitle(props: KaraokeSubtitleProps): JSX.Element {
-  const { wordTimings, style, timingMode, totalDurationSeconds } = props;
+  const {
+    wordTimings,
+    style,
+    timingMode,
+    totalDurationSeconds: _total,
+    subtitlesSrt,
+    isPortrait = false,
+  } = props;
 
-  // Remotion M6-C1: aktif edildi.
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const currentTime = frame / fps;
 
   const behavior: KaraokeRenderBehavior = resolveKaraokeRenderBehavior(timingMode);
 
-  // Aktif içeriği zamanlama moduna göre belirle
+  // M41c: Portrait layout — font boyutu ve konum ayarları
+  const portraitFontSize = Math.round(style.font_size * 0.75);
+  const fontSize = isPortrait ? portraitFontSize : style.font_size;
+  const bottomPct = isPortrait ? "12%" : "10%";
+  const sidePct = isPortrait ? "4%" : "5%";
+
   let displayText: string | null = null;
   let activeWordText: string | null = null;
 
@@ -137,34 +185,30 @@ export function KaraokeSubtitle(props: KaraokeSubtitleProps): JSX.Element {
     }
   } else if (behavior.segment_level_highlight) {
     displayText = findActiveSegmentText(wordTimings, currentTime);
-  }
-  // cursor (degrade) mod: displayText null kalır — SRT tabanlı overlay kullanılır
-
-  // Degrade mod uyarısı — M4-C1 notu: cursor modu whisper_word ile eşdeğer değildir
-  if (behavior.degraded_mode) {
-    // Operatör loguna düşürülmeli; UI'da da gösterilmeli (M4-C3 preview'da)
-    console.warn(
-      "[KaraokeSubtitle] Degrade zamanlama modu (cursor). " +
-        "Kelime-düzeyi highlight yok. Whisper entegrasyonu aktif değil."
-    );
+  } else if (behavior.degraded_mode) {
+    // M41c: cursor mod — SRT fallback. Whisper yoksa bile altyazı göster.
+    if (subtitlesSrt) {
+      const entries = parseSrt(subtitlesSrt);
+      displayText = findActiveSrtEntry(entries, currentTime);
+    }
+    // SRT da yoksa boş kalır — sessiz render
   }
 
-  // Satır içi stil — tüm değerler preset'ten gelir, hardcoded değer yok
   const containerStyle: React.CSSProperties = {
     position: "absolute",
-    bottom: "10%",
-    left: "5%",
-    right: "5%",
+    bottom: bottomPct,
+    left: sidePct,
+    right: sidePct,
     textAlign: "center",
   };
 
   const textStyle: React.CSSProperties = {
-    fontSize: `${style.font_size}px`,
+    fontSize: `${fontSize}px`,
     fontWeight: style.font_weight,
     color: style.text_color,
     background: style.background !== "none" ? style.background : undefined,
     lineHeight: style.line_height,
-    padding: "4px 12px",
+    padding: isPortrait ? "3px 8px" : "4px 12px",
     borderRadius: "4px",
     textShadow:
       style.outline_width > 0
@@ -176,11 +220,10 @@ export function KaraokeSubtitle(props: KaraokeSubtitleProps): JSX.Element {
   };
 
   if (!displayText) {
-    // Aktif kelime/segment yok — boş render
     return <div style={containerStyle} />;
   }
 
-  // Kelime-düzeyi highlight için kelime token'larını ayrı ayrı render et
+  // Kelime-düzeyi highlight
   if (behavior.word_level_highlight && activeWordText) {
     const words = displayText.split(" ");
     return (
@@ -217,7 +260,7 @@ export function KaraokeSubtitle(props: KaraokeSubtitleProps): JSX.Element {
     );
   }
 
-  // Degrade mod — düz metin
+  // Cursor/degrade mod — düz metin (SRT fallback)
   return (
     <div style={containerStyle}>
       <span style={textStyle}>{displayText}</span>
