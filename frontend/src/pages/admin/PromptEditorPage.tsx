@@ -388,14 +388,16 @@ export function PromptEditorPage() {
       testId="prompt-editor"
     >
       {isLoading && (
-        <p className="text-neutral-500 text-base p-4" data-testid="prompt-editor-loading">
-          Yükleniyor...
-        </p>
+        <div className="flex items-center gap-2 py-8 justify-center text-neutral-500" data-testid="prompt-editor-loading">
+          <span className="animate-spin inline-block w-4 h-4 border-2 border-neutral-300 border-t-brand-500 rounded-full" />
+          <span>Yükleniyor...</span>
+        </div>
       )}
       {isError && (
-        <p className="text-error text-base p-4" data-testid="prompt-editor-error">
-          Ayarlar yüklenemedi. Lütfen tekrar deneyin.
-        </p>
+        <div className="flex flex-col items-center py-8 gap-2" data-testid="prompt-editor-error">
+          <span className="text-error-base text-2xl">⚠</span>
+          <p className="text-error-base text-base m-0">Ayarlar yüklenemedi. Lütfen tekrar deneyin.</p>
+        </div>
       )}
 
       {!isLoading && !isError && moduleScopes.length === 0 && (

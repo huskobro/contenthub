@@ -84,7 +84,7 @@ export function QuickLook({ open, onClose, title, children, testId }: QuickLookP
     <>
       {/* Backdrop — frosted glass */}
       <div
-        className="fixed inset-0 z-[310] bg-[rgba(15,17,26,0.55)] backdrop-blur-[8px] animate-sheet-fade-in"
+        className="fixed inset-0 z-[310] bg-neutral-900/55 backdrop-blur-[8px] animate-sheet-fade-in"
         onClick={onClose}
         data-testid={testId ? `${testId}-backdrop` : "quicklook-backdrop"}
         aria-hidden="true"

@@ -69,6 +69,33 @@ async def lifespan(app: FastAPI):
     # Ensure tables exist (no-op in production where Alembic is used)
     await create_tables()
 
+    # --- Startup validation (M38) ---
+    import sys
+    py_ver = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
+    venv_active = sys.prefix != sys.base_prefix
+    if not venv_active:
+        logger.warning(
+            "STARTUP WARNING: Running without virtual environment. "
+            "Python: %s at %s. Expected venv at backend/.venv/",
+            py_ver, sys.executable,
+        )
+    else:
+        logger.info("Python %s (venv: %s)", py_ver, sys.prefix)
+
+    # WAL checkpoint on startup — consolidate WAL file
+    from app.db.session import wal_checkpoint
+    try:
+        ckpt = await wal_checkpoint()
+        if ckpt["log"] > 0:
+            logger.info(
+                "WAL checkpoint: %d pages consolidated (busy=%d).",
+                ckpt["checkpointed"], ckpt["busy"],
+            )
+        else:
+            logger.info("WAL checkpoint: clean (no pending pages).")
+    except Exception as exc:
+        logger.warning("WAL checkpoint failed: %s", exc)
+
     # Startup recovery — must complete before server accepts work
     async with AsyncSessionLocal() as db:
         summary = await run_startup_recovery(db)

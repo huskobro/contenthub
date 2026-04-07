@@ -101,13 +101,18 @@ export function AnalyticsContentPage() {
       </div>
 
       {isLoading && (
-        <p className="text-neutral-600 text-base">Y&uuml;kleniyor...</p>
+        <div className="flex items-center gap-2 py-8 justify-center text-neutral-500" data-testid="content-loading">
+          <span className="animate-spin inline-block w-4 h-4 border-2 border-neutral-300 border-t-brand-500 rounded-full" />
+          <span>Yükleniyor...</span>
+        </div>
       )}
 
       {isError && (
-        <p className="text-error-base text-base" data-testid="content-error">
-          Icerik metrikleri yuklenirken hata olustu.
-        </p>
+        <div className="flex flex-col items-center py-8 gap-2" data-testid="content-error">
+          <span className="text-error-base text-2xl">⚠</span>
+          <p className="text-error-base text-base m-0">Icerik metrikleri yuklenirken hata olustu.</p>
+          <p className="text-neutral-500 text-sm m-0">Backend baglantisi kontrol edilsin.</p>
+        </div>
       )}
 
       {data && (

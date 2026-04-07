@@ -102,7 +102,7 @@ export function Sheet({ open, onClose, title, children, width = "420px", testId 
     <>
       {/* Backdrop — frosted glass */}
       <div
-        className="fixed inset-0 z-[299] bg-[rgba(15,17,26,0.5)] backdrop-blur-[6px] animate-sheet-fade-in"
+        className="fixed inset-0 z-modal bg-neutral-900/50 backdrop-blur-[6px] animate-sheet-fade-in"
         onClick={onClose}
         data-testid={testId ? `${testId}-backdrop` : "sheet-backdrop"}
         aria-hidden="true"

@@ -72,8 +72,9 @@ export function PublishDetailPage() {
   const [editingPayload, setEditingPayload] = useState(false);
   const [payloadDraft, setPayloadDraft] = useState("");
 
-  if (isLoading) return <PageShell title="Yayin Detay" testId="publish-detail"><p>Yukleniyor...</p></PageShell>;
-  if (isError || !record) return <PageShell title="Yayin Detay" testId="publish-detail"><p className="text-error-dark">Kayit bulunamadi.</p></PageShell>;
+  if (isLoading) return <PageShell title="Yayin Detay" testId="publish-detail"><div className="flex items-center gap-2 py-8 justify-center text-neutral-500" data-testid="publish-detail-loading"><span className="animate-spin inline-block w-4 h-4 border-2 border-neutral-300 border-t-brand-500 rounded-full" /><span>Yukleniyor...</span></div></PageShell>;
+  if (isError) return <PageShell title="Yayin Detay" testId="publish-detail"><div className="flex flex-col items-center py-8 gap-2" data-testid="publish-detail-error"><span className="text-error-base text-2xl">⚠</span><p className="text-error-base text-base m-0">Yayin kaydi yuklenemedi.</p><p className="text-neutral-500 text-sm m-0">Backend baglantisi kontrol edilsin.</p></div></PageShell>;
+  if (!record) return <PageShell title="Yayin Detay" testId="publish-detail"><div className="flex flex-col items-center py-8 gap-2" data-testid="publish-detail-not-found"><span className="text-neutral-400 text-2xl">∅</span><p className="text-neutral-600 text-base m-0">Kayit bulunamadi.</p></div></PageShell>;
 
   const s = record.status;
   const canSubmit = s === "draft";

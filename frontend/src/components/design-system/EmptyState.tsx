@@ -27,10 +27,10 @@ type IllustrationPreset =
 function EmptyIllustration({ preset, size = 120 }: { preset: IllustrationPreset; size?: number }) {
   const s = size;
   const half = s / 2;
-  const color1 = "var(--ch-brand-200, #c3d4ff)";
-  const color2 = "var(--ch-brand-400, #6b8cff)";
-  const color3 = "var(--ch-neutral-300, #dee2e6)";
-  const colorBg = "var(--ch-brand-50, #f0f4ff)";
+  const color1 = "var(--ch-brand-200)";
+  const color2 = "var(--ch-brand-400)";
+  const color3 = "var(--ch-neutral-300)";
+  const colorBg = "var(--ch-brand-50)";
 
   const illustrations: Record<IllustrationPreset, React.ReactNode> = {
     "no-data": (

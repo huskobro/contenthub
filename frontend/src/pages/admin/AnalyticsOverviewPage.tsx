@@ -109,9 +109,10 @@ export function AnalyticsOverviewPage() {
       </div>
 
       {isError && (
-        <p className="text-error-base text-md mb-4" data-testid="analytics-overview-error">
-          Metrikler yuklenemedi. Backend baglantisi kontrol edilsin.
-        </p>
+        <div className="flex flex-col items-center py-8 gap-2 mb-4" data-testid="analytics-overview-error">
+          <span className="text-error-base text-2xl">⚠</span>
+          <p className="text-error-base text-md m-0">Metrikler yuklenemedi. Backend baglantisi kontrol edilsin.</p>
+        </div>
       )}
 
       {/* Core Metrics */}

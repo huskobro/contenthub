@@ -1,5 +1,5 @@
 """
-Analytics Servis Katmanı — M8-C1, M16, M17, M18.
+Analytics Servis Katmanı — M8-C1, M16, M17, M18, M37, M38.
 
 Mevcut tablolardan salt okunur aggregation sorguları.
 Şema değişikliği yok, migration yok, yazma yok.
@@ -19,8 +19,9 @@ Tarih aralığı (M17):
   verilmişse window ignore edilir.
 
 Provider error rate (M11):
-  provider_error_rate — provider-dependent step'lerin (script, metadata,
-  tts, visuals) başarısızlık oranı.
+  provider_error_rate — provider-dependent step'lerin başarısızlık oranı.
+  Hangi step'lerin provider-dependent olduğu PROVIDER_STEP_KEYS sabiti
+  ile tek noktadan yönetilir (M38 hardening).
 
 Source impact (M17-A):
   Kaynak (source) bazlı aggregation: toplam kaynak, aktif kaynak,
@@ -52,6 +53,18 @@ from app.db.models import (
 from app.prompt_assembly.models import PromptAssemblyRun
 
 logger = logging.getLogger(__name__)
+
+# ---------------------------------------------------------------------------
+# Provider-dependent step keys — tek noktadan yönetim (M38)
+# Yeni bir provider-dependent step eklendiğinde buraya eklenmeli.
+# ---------------------------------------------------------------------------
+PROVIDER_STEP_KEYS = ["script", "metadata", "tts", "visuals"]
+
+# ---------------------------------------------------------------------------
+# Render duration step key — tek noktadan yönetim (M38)
+# Pipeline'da render süresi ölçülen adım.
+# ---------------------------------------------------------------------------
+RENDER_STEP_KEY = "composition"
 
 # ---------------------------------------------------------------------------
 # Zaman filtresi yardımcısı
@@ -248,7 +261,7 @@ async def get_operations_metrics(
     # RenderStepExecutor.step_key='render' pipeline'a bağlı değil.
     render_q = select(
         func.avg(JobStep.elapsed_seconds).label("avg_render"),
-    ).where(JobStep.step_key == "composition")
+    ).where(JobStep.step_key == RENDER_STEP_KEY)
     if cut is not None:
         render_q = render_q.where(JobStep.created_at >= cut)
 
@@ -288,7 +301,7 @@ async def get_operations_metrics(
     provider_step_q = select(
         func.count(JobStep.id).label("total"),
         func.sum(case((JobStep.status == "failed", 1), else_=0)).label("failed"),
-    ).where(JobStep.step_key.in_(["script", "metadata", "tts", "visuals"]))
+    ).where(JobStep.step_key.in_(PROVIDER_STEP_KEYS))
     if cut is not None:
         provider_step_q = provider_step_q.where(JobStep.created_at >= cut)
 
@@ -308,7 +321,7 @@ async def get_operations_metrics(
         JobStep.status,
         JobStep.elapsed_seconds,
     ).where(
-        JobStep.step_key.in_(["script", "metadata", "tts", "visuals"]),
+        JobStep.step_key.in_(PROVIDER_STEP_KEYS),
         JobStep.provider_trace_json.is_not(None),
     )
     if cut is not None:
@@ -695,7 +708,7 @@ async def get_content_metrics(
             func.avg(JobStep.elapsed_seconds).label("avg_render"),
         )
         .join(Job, Job.id == JobStep.job_id)
-        .where(JobStep.step_key == "composition", Job.module_type.is_not(None))
+        .where(JobStep.step_key == RENDER_STEP_KEY, Job.module_type.is_not(None))
         .group_by(Job.module_type)
     )
     render_by_module_q = _apply_time_filter(render_by_module_q, JobStep.created_at)

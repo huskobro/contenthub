@@ -114,3 +114,20 @@ async def create_tables() -> None:
     """
     async with _holder.engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+
+
+async def wal_checkpoint() -> dict:
+    """Run WAL checkpoint to consolidate WAL file into main DB.
+
+    Returns checkpoint result: {busy, log, checkpointed}.
+    Called during startup and can be called periodically.
+    """
+    from sqlalchemy import text
+    async with _holder.engine.begin() as conn:
+        result = await conn.execute(text("PRAGMA wal_checkpoint(TRUNCATE)"))
+        row = result.fetchone()
+        return {
+            "busy": row[0] if row else -1,
+            "log": row[1] if row else -1,
+            "checkpointed": row[2] if row else -1,
+        }
