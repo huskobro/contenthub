@@ -505,6 +505,7 @@ async def start_production(
     bulletin_id: str,
     dispatcher,
     session_factory,
+    owner_id: Optional[str] = None,
 ) -> dict:
     """
     Bülten üretim pipeline'ını başlatır.
@@ -616,9 +617,10 @@ async def start_production(
         "_settings_snapshot": settings_snapshot,
     }
 
-    # Job oluştur
+    # Job oluştur — M40a: owner_id from active user
     job_payload = JobCreate(
         module_type="news_bulletin",
+        owner_id=owner_id,
         input_data_json=json.dumps(input_data, ensure_ascii=False),
     )
     job = await create_job(db, job_payload)

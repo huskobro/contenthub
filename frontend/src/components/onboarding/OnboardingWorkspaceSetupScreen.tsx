@@ -61,11 +61,11 @@ export function OnboardingWorkspaceSetupScreen({ onBack, onComplete }: Props) {
         value: workspaceRoot.trim(),
       });
 
-      // output_dir not a separate KNOWN_SETTING — store under system.workspace_root
-      // and record export path as a sub-path convention via separate key if defined.
-      // For now: workspace_root covers the jobs dir; output_dir is a display-only field
-      // stored in a second update if the key exists, otherwise silently skip.
-      // TODO: add system.output_dir to KNOWN_SETTINGS when needed.
+      // M40a: system.output_dir is now a first-class KNOWN_SETTING
+      await updateMutation.mutateAsync({
+        key: "system.output_dir",
+        value: outputDir.trim(),
+      });
 
       queryClient.invalidateQueries({ queryKey: ["setup-requirements"] });
       queryClient.invalidateQueries({ queryKey: ["settings"] });

@@ -69,6 +69,7 @@ async def list_jobs(
     module_type: Optional[str] = None,
     search: Optional[str] = None,
     include_test_data: bool = False,
+    owner_id: Optional[str] = None,
 ) -> list[Job]:
     stmt = select(Job).order_by(Job.created_at.desc())
     if not include_test_data:
@@ -77,6 +78,8 @@ async def list_jobs(
         stmt = stmt.where(Job.status == status)
     if module_type:
         stmt = stmt.where(Job.module_type == module_type)
+    if owner_id:
+        stmt = stmt.where(Job.owner_id == owner_id)
     if search:
         pattern = f"%{search}%"
         stmt = stmt.where(

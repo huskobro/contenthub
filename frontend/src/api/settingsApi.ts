@@ -49,3 +49,15 @@ export interface SettingCreatePayload {
 export function createSetting(payload: SettingCreatePayload): Promise<SettingResponse> {
   return api.post<SettingResponse>(BASE_URL, payload);
 }
+
+// M40a: PATCH governance fields
+export interface SettingPatchPayload {
+  user_override_allowed?: boolean;
+  visible_to_user?: boolean;
+  visible_in_wizard?: boolean;
+  read_only_for_user?: boolean;
+}
+
+export function patchSetting(id: string, payload: SettingPatchPayload): Promise<SettingResponse> {
+  return api.patch<SettingResponse>(`${BASE_URL}/${id}`, payload);
+}

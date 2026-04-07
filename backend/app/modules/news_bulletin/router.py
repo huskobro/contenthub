@@ -5,7 +5,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
-from app.visibility.dependencies import require_visible
+from app.visibility.dependencies import require_visible, get_active_user_id
 from .schemas import (
     NewsBulletinCreate, NewsBulletinUpdate, NewsBulletinResponse,
     NewsBulletinScriptCreate, NewsBulletinScriptUpdate, NewsBulletinScriptResponse,
@@ -308,6 +308,7 @@ async def start_production_endpoint(
     item_id: str,
     request: Request,
     db: AsyncSession = Depends(get_db),
+    user_id: Optional[str] = Depends(get_active_user_id),
 ):
     """
     Bülten üretim pipeline'ını başlatır (M28).
@@ -334,6 +335,7 @@ async def start_production_endpoint(
             bulletin_id=item_id,
             dispatcher=dispatcher,
             session_factory=session_factory,
+            owner_id=user_id,
         )
     except ValueError as err:
         error_msg = str(err)

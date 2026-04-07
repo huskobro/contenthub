@@ -27,7 +27,7 @@ from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
-from app.visibility.dependencies import require_visible
+from app.visibility.dependencies import require_visible, get_active_user_id
 from app.jobs import service
 from app.jobs.schemas import JobCreate, JobCreateRequest, JobResponse, JobStepResponse
 from app.jobs.timing import enrich_job_eta
@@ -71,10 +71,11 @@ async def list_jobs(
     module_type: Optional[str] = Query(None),
     search: Optional[str] = Query(None, description="module_type veya id üzerinde arama (case-insensitive)"),
     include_test_data: bool = Query(False, description="Test/demo kayıtlarını dahil et (varsayılan: False)"),
+    owner_id: Optional[str] = Query(None, description="Sadece belirtilen kullanıcıya ait işler (M40a)"),
     db: AsyncSession = Depends(get_db),
 ):
-    """İş listesini döndürür. status, module_type, search ve include_test_data ile filtrelenebilir."""
-    jobs = await service.list_jobs(db, status=status, module_type=module_type, search=search, include_test_data=include_test_data)
+    """İş listesini döndürür. status, module_type, search, owner_id ve include_test_data ile filtrelenebilir."""
+    jobs = await service.list_jobs(db, status=status, module_type=module_type, search=search, include_test_data=include_test_data, owner_id=owner_id)
     result = []
     for job in jobs:
         job_data = await _build_job_response(db, job)
@@ -194,6 +195,7 @@ async def create_job(
     payload: JobCreateRequest,
     request: Request,
     db: AsyncSession = Depends(get_db),
+    user_id: Optional[str] = Depends(get_active_user_id),
 ):
     """
     Yeni bir iş yarat, adımları başlat ve pipeline'ı tetikle.
@@ -250,9 +252,10 @@ async def create_job(
     if settings_snapshot:
         normalized["_settings_snapshot"] = settings_snapshot
 
-    # Job DB kaydı oluştur
+    # Job DB kaydı oluştur — M40a: owner_id from active user
     job_create = JobCreate(
         module_type=payload.module_id,
+        owner_id=user_id,
         input_data_json=json.dumps(normalized, ensure_ascii=False),
     )
     job = await service.create_job(db, job_create)

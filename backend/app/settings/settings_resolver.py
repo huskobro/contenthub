@@ -294,6 +294,18 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "wired_to": "start_production — job workspace_path hesaplanırken okunur",
     },
 
+    "system.output_dir": {
+        "group": "execution",
+        "type": "string",
+        "label": "Çıktı Dizini (Exports)",
+        "help_text": "Tamamlanan videoların ve son çıktıların yazılacağı dizin. Boş bırakılırsa workspace/users/{slug}/exports/ kullanılır.",
+        "module_scope": None,
+        "env_var": "CONTENTHUB_OUTPUT_DIR",
+        "builtin_default": "",
+        "wired": True,
+        "wired_to": "export operations, publish executor — final output destination",
+    },
+
     "system.active_user_id": {
         "group": "system",
         "type": "string",
