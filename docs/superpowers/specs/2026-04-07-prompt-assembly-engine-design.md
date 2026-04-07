@@ -137,6 +137,25 @@ null
 1. `admin_override_template` varsa onu kullan
 2. yoksa `content_template` (builtin default) kullan
 
+**admin_override_template hakkinda onemli not:**
+- v1'de yalnizca current effective override tutulur
+- Full version history (diff goruntuleme, rollback) bilincli olarak ertelenmistir
+- Admin override yaptiginda `source_kind` otomatik `admin_override` olur, `version` artar
+- Reset yapildiginda `admin_override_template = null` olur, `source_kind` `builtin_default`'a doner
+
+**Block yonetim kurallari (disable/edit koruma):**
+
+| Kind | Disable edilebilir mi | Admin override edilebilir mi | Aciklama |
+|------|----------------------|------------------------------|----------|
+| `core_system` | HAYIR | Evet (icerik duzenlenebilir) | Sistem talimati her zaman olmali |
+| `output_contract` | HAYIR | Evet (format degisebilir) | Cikti sozlesmesi her zaman olmali |
+| `module_instruction` | Evet | Evet | Module-specific talimat |
+| `behavior_block` | Evet | Evet | Ayar-kontrollü blok |
+| `context_block` | Evet | Evet | Veri-turetimli blok |
+| `provider_instruction` | Evet | Evet | Provider-specific talimat |
+
+UI'da `core_system` ve `output_contract` kind'li block'larin disable butonu pasif olacak ve tooltip ile aciklama gosterilecek: "Bu blok sistem butunlugu icin gereklidir ve devre disi birakilamaz."
+
 ### 4.2 PromptAssemblyRun
 
 Assembly calistirma kaydi. Hem gercek job hem dry run icin.
@@ -503,6 +522,25 @@ class ProviderPayloadBuilder:
 - ProviderPayloadBuilder her ikisini birlestirerek final payload olusturur
 - Her iki kisim da `final_payload_json`'da tam gorunur olacak
 
+### 8.5 Secret Redaction Policy
+
+`final_payload_json` ve `provider_response_json` trace'e yazilirken zorunlu redaction uygulanir:
+
+**Asla trace'e raw dusemeyecek alanlar:**
+- `Authorization` header degeri
+- `api_key`, `api-key`, `x-api-key` header/param degerleri
+- `token`, `bearer`, `secret` iceren field degerleri
+- Provider credential string'leri
+
+**Redaction kurallari:**
+1. ProviderPayloadBuilder, payload olustururken auth/credential alanlarini dahil ETMEZ (payload = body only, headers ayri)
+2. `final_payload_json`'a yalnizca request body yazilir; HTTP headers, auth tokenlari dahil edilmez
+3. Provider response trace'te model cevabi + metadata saklanir; session/auth bilgisi redact edilir
+4. Redaction servisi `PromptTraceService.sanitize_for_storage()` fonksiyonu ile yapilir
+5. Sanitize fonksiyonu bilinen secret pattern'lari `[REDACTED]` ile degistirir
+
+**Kural:** Trace her zaman "exact ne gitti" sorusunu yanıtlar, ama credential/auth bilgisi asla gorunmez.
+
 ### 8.4 Mevcut prompt_builder.py Gecisi
 
 Mevcut `build_bulletin_script_prompt()`, `build_script_prompt()` vb. fonksiyonlar kademeli olarak PromptAssemblyService'e devredilecek:
@@ -683,13 +721,38 @@ PROMPT PREVIEW
 └────────────────────────────────────────────────────┘
 ```
 
-### 10.3 Onemli Kurallar
+### 10.3 Data Source Ayrimi
+
+Dry run iki farkli kaynak ile calisabilir. Bu ayrım UI'da acikca gosterilmelidir:
+
+**A) Gercek job context'inden preview:**
+- Mevcut bir module record'unun (news_bulletin, standard_video) verileri kullanilir
+- `data_source: "job_context"` olarak isretlenir
+- Dogruluk seviyesi: YUKSEK — gercek verilere dayanir
+- UI'da: "Gercek veri ile preview" etiketi
+
+**B) Admin sample input ile preview:**
+- Admin, `data_overrides` ile ornek veri girer
+- `data_source: "sample_input"` olarak isaretlenir
+- Dogruluk seviyesi: ORTA — ornek veriye dayanir, gercek uretimden farkli olabilir
+- UI'da: "Ornek veri ile preview — gercek uretimde farklilik olabilir" uyarisi
+
+Response'a `data_source` alani eklenir:
+```json
+{
+    "data_source": "sample_input",  // veya "job_context"
+    ...
+}
+```
+
+### 10.4 Onemli Kurallar
 
 - Preview fake degil — gercek assembly mekanizmasini kullanir
 - Tek fark: provider call yapilmaz
 - `is_dry_run=true` olarak trace'e kaydedilir
 - Preview net olarak "Assembly Preview" etiketi tasir
 - Son urun gibi gosterilmez
+- CLAUDE.md kurali: "previews must be clearly distinguished from final outputs" burada da gecerli
 
 ## 11. Job Detail Prompt Trace Sekmesi
 
@@ -869,7 +932,30 @@ Ek: metadata step icin:
 | `sv.metadata_system` | core_system | 0 | always |
 | `sv.metadata_output_contract` | output_contract | 100 | always |
 
-### 13.3 Architecture Esnekligi
+### 13.3 Block Ownership ve Koruma Kurallari
+
+Her block icin net ownership ve koruma kurali:
+
+| Block Key | Seed ile gelir | Admin override edilebilir | Disable edilebilir | Aciklama |
+|-----------|---------------|--------------------------|-------------------|----------|
+| `nb.narration_system` | Evet | Evet | HAYIR (core_system) | Sistem talimati |
+| `nb.narration_style` | Evet | Evet | Evet | Stil kurallari |
+| `nb.anti_clickbait` | Evet | Evet | Evet | Clickbait engel |
+| `nb.normalize` | Evet | Evet | Evet | Normalizasyon |
+| `nb.humanizer` | Evet | Evet | Evet | Insansi dil |
+| `nb.tts_enhance` | Evet | Evet | Evet | TTS uyum |
+| `nb.category_guidance` | Evet | Evet | Evet | Kategori baglami |
+| `nb.selected_news_summary` | Evet | Evet | Evet | Haber baglami |
+| `nb.output_contract` | Evet | Evet | HAYIR (output_contract) | Cikti formati |
+
+Ayni kurallar `sv.*` block'lari icin de gecerli. `core_system` ve `output_contract` kind'li block'lar:
+- `block_seed.py` ile gelir
+- Admin icerigini override edebilir (content_template degisebilir)
+- Ama disable veya delete EDEMEZ
+- UI'da disable butonu pasif, tooltip: "Bu blok sistem butunlugu icin gereklidir"
+- Backend'de `status` degisikligi icin kind kontrolu yapilir
+
+### 13.4 Architecture Esnekligi
 
 Her iki modul ayni PromptAssemblyService'i, ayni ConditionEvaluator'i, ayni TemplateRenderer'i kullanir. Yeni modul eklemek = yeni block tanimlari seed etmek.
 
@@ -944,7 +1030,7 @@ Her iki modul ayni PromptAssemblyService'i, ayni ConditionEvaluator'i, ayni Temp
 
 ## 16. Bilincli Ertelenenler
 
-1. **Block versiyonlama history** — Suanlik sadece current version var, full history (diff goruntuleme) ileride
+1. **Block versiyonlama history** — v1'de `admin_override_template` yalnizca current effective override'i tutar. Full version history (diff goruntuleme, rollback, override timeline) bilincli olarak ertelenmistir. `version` alani her update'te artar ama eski degerler saklanmaz
 2. **Coklu condition expression** — v1'de tek condition_type yeterli; AND/OR zinciri ileride
 3. **A/B prompt testi** — Ayni job icin farkli assembly ile karsilastirma ileride
 4. **Block dependency graph** — Block'lar arasi bagimlilik (B, A'dan sonra gelmeli) ileride; order_index yeterli
