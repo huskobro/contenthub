@@ -1,7 +1,8 @@
 #!/bin/bash
 
-BACKEND_DIR="$(cd "$(dirname "$0")/backend" && pwd)"
-FRONTEND_DIR="$(cd "$(dirname "$0")/frontend" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+BACKEND_DIR="$SCRIPT_DIR/backend"
+FRONTEND_DIR="$SCRIPT_DIR/frontend"
 
 BACKEND_PID=""
 FRONTEND_PID=""
@@ -25,7 +26,68 @@ cleanup() {
 
 trap cleanup SIGINT SIGTERM
 
+# ---------------------------------------------------------------------------
+# Python: venv'i etkinleştir
+# ---------------------------------------------------------------------------
+if [ ! -f "$BACKEND_DIR/.venv/bin/activate" ]; then
+  echo "HATA: venv bulunamadı: $BACKEND_DIR/.venv"
+  echo "  Çözüm: cd backend && python3 -m venv .venv && pip install -e ."
+  exit 1
+fi
+
+source "$BACKEND_DIR/.venv/bin/activate"
+
+# Sanity check
+if ! command -v uvicorn >/dev/null 2>&1; then
+  echo "HATA: uvicorn bulunamadı. venv kurulumunu kontrol edin."
+  exit 1
+fi
+
+# ---------------------------------------------------------------------------
+# Node / npm: nvm, homebrew veya sistem PATH'inden bul
+# ---------------------------------------------------------------------------
+NODE=""
+
+# 1. nvm
+if [ -f "$HOME/.nvm/nvm.sh" ]; then
+  export NVM_DIR="$HOME/.nvm"
+  NVM_NODE=$(ls "$NVM_DIR/versions/node/" 2>/dev/null | sort -V | tail -1)
+  if [ -n "$NVM_NODE" ]; then
+    NODE="$NVM_DIR/versions/node/$NVM_NODE/bin/node"
+  fi
+fi
+
+# 2. Homebrew
+if [ -z "$NODE" ] || [ ! -x "$NODE" ]; then
+  for candidate in /opt/homebrew/bin/node /usr/local/bin/node; do
+    if [ -x "$candidate" ]; then
+      NODE="$candidate"
+      break
+    fi
+  done
+fi
+
+# 3. which fallback
+if [ -z "$NODE" ] || [ ! -x "$NODE" ]; then
+  NODE=$(which node 2>/dev/null)
+fi
+
+if [ -z "$NODE" ] || [ ! -x "$NODE" ]; then
+  echo "HATA: Node.js bulunamadı. Node.js v18+ kurulumu gerekli."
+  exit 1
+fi
+
+# node_modules yoksa npm install çalıştır
+VITE="$FRONTEND_DIR/node_modules/.bin/vite"
+if [ ! -f "$VITE" ]; then
+  NPM="$(dirname "$NODE")/npm"
+  echo "Frontend bağımlılıkları yükleniyor..."
+  cd "$FRONTEND_DIR" && "$NPM" install
+fi
+
 echo "ContentHub başlatılıyor..."
+echo "  Python  : $(python3 --version)"
+echo "  Node    : $("$NODE" --version)"
 echo ""
 
 # Portları temizle
@@ -39,18 +101,16 @@ for PORT in 8000 5173; do
 done
 
 # Backend
-source "$BACKEND_DIR/.venv/bin/activate"
 cd "$BACKEND_DIR"
 uvicorn app.main:app --port 8000 --reload &
 BACKEND_PID=$!
 echo "  Backend  → http://localhost:8000  (PID: $BACKEND_PID)"
 
-# Kısa bekleme — backend socket'i açsın
 sleep 1
 
 # Frontend
 cd "$FRONTEND_DIR"
-npm run dev -- --port 5173 &
+"$NODE" "$VITE" --port 5173 &
 FRONTEND_PID=$!
 echo "  Frontend → http://localhost:5173  (PID: $FRONTEND_PID)"
 
