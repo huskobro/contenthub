@@ -31,7 +31,7 @@
  */
 
 import React from "react";
-import { Composition } from "remotion";
+import { Composition, registerRoot } from "remotion";
 import {
   StandardVideoComposition,
   type StandardVideoProps,
@@ -45,6 +45,11 @@ import {
   defaultNewsBulletinProps,
   type NewsBulletinProps,
 } from "./compositions/NewsBulletinComposition";
+import {
+  NewsBulletinStyleTestComposition,
+  TEST_PROPS,
+} from "./compositions/NewsBulletinStyleTest";
+import type { BulletinStyle } from "./templates/news-bulletin/components/StudioBackground";
 
 const FPS = 30;
 
@@ -57,6 +62,15 @@ const PreviewFrameComponent =
 
 const NewsBulletinComponent =
   NewsBulletinComposition as unknown as React.ComponentType<Record<string, unknown>>;
+
+const NewsBulletinTestComponent =
+  NewsBulletinStyleTestComposition as unknown as React.ComponentType<Record<string, unknown>>;
+
+// 9 test stil ID listesi
+const BULLETIN_TEST_STYLES: BulletinStyle[] = [
+  "breaking", "tech", "corporate", "sport", "finance",
+  "weather", "science", "entertainment", "dark",
+];
 
 // ---------------------------------------------------------------------------
 // StandardVideo defaultProps
@@ -185,6 +199,30 @@ export function RemotionRoot() {
           defaultPreviewFrameProps as unknown as Record<string, unknown>
         }
       />
+
+      {/* ── Stil Test Composition'ları (9 stil × 16:9) ─────────────────────
+          Remotion Studio'da "NewsBulletin_Test_*" adıyla görünür.
+          Production render'da kullanılmaz — sadece görsel test içindir.
+      ──────────────────────────────────────────────────────────────────── */}
+      {BULLETIN_TEST_STYLES.map((style) => {
+        const testProps = TEST_PROPS[style];
+        const totalSecs = testProps.totalDurationSeconds + 2;
+        const durationInFrames = Math.max(1, Math.round(totalSecs * FPS));
+        return (
+          <Composition
+            key={`test_${style}`}
+            id={`NewsBulletin_Test_${style}`}
+            component={NewsBulletinTestComponent}
+            durationInFrames={durationInFrames}
+            fps={FPS}
+            width={1920}
+            height={1080}
+            defaultProps={testProps as unknown as Record<string, unknown>}
+          />
+        );
+      })}
     </>
   );
 }
+
+registerRoot(RemotionRoot);
