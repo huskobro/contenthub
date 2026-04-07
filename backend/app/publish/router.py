@@ -43,6 +43,8 @@ from app.publish.schemas import (
     TransitionRequest,
     RetryPublishRequest,
     ArtifactChangedRequest,
+    PublishRecordPatchPayload,
+    PublishFromJobRequest,
 )
 
 router = APIRouter(prefix="/publish", tags=["publish"], dependencies=[Depends(require_visible("panel:publish"))])
@@ -80,6 +82,7 @@ async def list_publish_records(
     job_id: Optional[str] = Query(default=None),
     platform: Optional[str] = Query(default=None),
     status: Optional[str] = Query(default=None),
+    content_ref_type: Optional[str] = Query(default=None),
     limit: int = Query(default=50, ge=1, le=200),
     offset: int = Query(default=0, ge=0),
     session=Depends(get_db),
@@ -90,6 +93,7 @@ async def list_publish_records(
         job_id=job_id,
         platform=platform,
         status=status,
+        content_ref_type=content_ref_type,
         limit=limit,
         offset=offset,
     )
@@ -167,14 +171,27 @@ async def review_action(
     Review gate / publish gate izolasyon:
       Bu endpoint yalnızca review kararı verir.
       Yayınlama başlatmaz — bunun için /trigger kullanılır.
+
+    Reddetme kuralı:
+      action == 'reject' ise rejection_reason zorunludur.
     """
+    if body.decision == "reject" and not body.rejection_reason:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Reddetme kararı için rejection_reason zorunludur.",
+        )
+    # rejection_reason'ı note ile birleştir (log'a düşmesi için)
+    effective_note = body.note
+    if body.decision == "reject" and body.rejection_reason:
+        effective_note = body.rejection_reason if not body.note else f"{body.rejection_reason} | {body.note}"
     try:
         result = await service.review_action(
             session=session,
             record_id=record_id,
             decision=body.decision,
             reviewer_id=body.reviewer_id,
-            note=body.note,
+            note=effective_note,
+            rejection_reason=body.rejection_reason,
         )
         await write_audit_log(session, action="publish.review", entity_type="publish_record", entity_id=record_id, details={"decision": body.decision})
         return result
@@ -311,6 +328,57 @@ async def retry_publish(
         raise _handle_gate_violation(exc)
     except (InvalidPublishTransitionError, PublishAlreadyTerminalError) as exc:
         raise _handle_invalid_transition(exc)
+
+
+@router.post("/from-job/{job_id}", response_model=PublishRecordRead, status_code=status.HTTP_201_CREATED)
+async def create_publish_record_from_job(
+    job_id: str,
+    body: PublishFromJobRequest,
+    session=Depends(get_db),
+):
+    """
+    Job'dan publish kaydı oluşturur.
+
+    Job'un metadata artifact'ından title/description/tags alanlarını okumaya
+    çalışır; bulunamazsa boş payload ile draft kaydı oluşturur.
+    """
+    try:
+        record = await service.create_publish_record_from_job(
+            session=session,
+            job_id=job_id,
+            platform=body.platform,
+            content_ref_type=body.content_ref_type,
+            content_ref_id=body.content_ref_id,
+        )
+        await write_audit_log(session, action="publish.create_from_job", entity_type="publish_record", entity_id=str(record.id), details={"job_id": job_id})
+        return record
+    except PublishRecordNotFoundError as exc:
+        raise _handle_not_found(exc)
+
+
+@router.patch("/{record_id}", response_model=PublishRecordRead)
+async def patch_publish_payload(
+    record_id: str,
+    body: PublishRecordPatchPayload,
+    session=Depends(get_db),
+):
+    """
+    Draft durumundaki publish kaydının payload_json'ını günceller.
+
+    Yalnızca draft durumunda izin verilir; diğer durumlarda 422 döner.
+    """
+    try:
+        result = await service.patch_publish_payload(
+            session=session,
+            record_id=record_id,
+            payload_json=body.payload_json,
+        )
+        await write_audit_log(session, action="publish.patch_payload", entity_type="publish_record", entity_id=record_id)
+        return result
+    except PublishRecordNotFoundError as exc:
+        raise _handle_not_found(exc)
+    except PublishGateViolationError as exc:
+        raise _handle_gate_violation(exc)
 
 
 @router.post("/{record_id}/reset-review", response_model=PublishRecordRead)

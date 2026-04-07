@@ -10,7 +10,10 @@ import {
   retryPublish,
   resetToDraft,
   schedulePublish,
+  patchPublishPayload,
+  createPublishRecordFromJob,
   type PublishListParams,
+  type PublishFromJobBody,
 } from "../api/publishApi";
 
 const KEY = "publish-records";
@@ -49,8 +52,8 @@ export function useSubmitForReview() {
 export function useReviewAction() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ recordId, decision, note }: { recordId: string; decision: "approve" | "reject"; note?: string }) =>
-      reviewAction(recordId, decision, note),
+    mutationFn: ({ recordId, decision, note, rejectionReason }: { recordId: string; decision: "approve" | "reject"; note?: string; rejectionReason?: string }) =>
+      reviewAction(recordId, decision, note, rejectionReason),
     onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
   });
 }
@@ -96,5 +99,31 @@ export function useSchedulePublish() {
     mutationFn: ({ recordId, scheduledAt, note }: { recordId: string; scheduledAt: string; note?: string }) =>
       schedulePublish(recordId, scheduledAt, note),
     onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
+  });
+}
+
+export function usePatchPublishPayload() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ recordId, payloadJson }: { recordId: string; payloadJson: string }) =>
+      patchPublishPayload(recordId, payloadJson),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
+  });
+}
+
+export function useCreatePublishRecordFromJob() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ jobId, body }: { jobId: string; body: PublishFromJobBody }) =>
+      createPublishRecordFromJob(jobId, body),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
+  });
+}
+
+export function usePublishRecordForJob(jobId: string | undefined) {
+  return useQuery({
+    queryKey: [KEY, "by-job", jobId],
+    queryFn: () => fetchPublishRecords({ job_id: jobId! }),
+    enabled: !!jobId,
   });
 }
