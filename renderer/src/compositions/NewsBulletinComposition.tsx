@@ -82,6 +82,13 @@ function resolveBulletinStyle(category?: string, fallback: BulletinStyle = "brea
 // Props tipleri (ContentHub composition contract)
 // ---------------------------------------------------------------------------
 
+/** M41: Per-item image timeline segmenti */
+export interface ImageTimelineSegment {
+  url: string;
+  startSeconds: number;
+  durationSeconds: number;
+}
+
 /** Backend composition_props.json → items[] elemanıyla birebir eşleşir. */
 export interface BulletinItemProps {
   itemNumber: number;
@@ -89,8 +96,14 @@ export interface BulletinItemProps {
   narration: string;
   audioPath: string | null;
   imagePath: string | null;
+  /** M41: Zaman bazlı görsel değişim planı */
+  imageTimeline?: ImageTimelineSegment[] | null;
   durationSeconds: number;
   category?: string;
+  /** M41: Haberin yayın tarihi (ISO string) */
+  publishedAt?: string | null;
+  /** M41: Kaynak ID */
+  sourceId?: string | null;
 }
 
 export interface SubtitleStyle {
@@ -133,6 +146,12 @@ export interface NewsBulletinProps {
   lowerThirdStyle?: string | null;
   /** M31: Render modu */
   renderMode?: "combined" | "per_category" | "per_item" | null;
+  /** M41: Render formatı — "landscape" (16:9) veya "portrait" (9:16). Varsayılan: landscape. */
+  renderFormat?: "landscape" | "portrait";
+  /** M41: Haberlerde tarih göster (varsayılan: true) */
+  showDate?: boolean;
+  /** M41: Haberlerde kaynak göster (varsayılan: false) */
+  showSource?: boolean;
   metadata: {
     title: string;
     description: string;
@@ -215,6 +234,8 @@ export const NewsBulletinComposition: React.FC<NewsBulletinProps> = (props) => {
     tickerItems,
     language = "tr",
     lowerThirdStyle,
+    showDate = true,
+    showSource = false,
   } = props;
 
   // Genel bülten stili
@@ -283,9 +304,10 @@ export const NewsBulletinComposition: React.FC<NewsBulletinProps> = (props) => {
         </span>
       </div>
 
-      {/* L3: Breaking overlay — yalnızca breaking stilinde, ilk 2s */}
+      {/* L3: Breaking overlay — yalnızca breaking stilinde, başlık kartı süresince
+           M41 fix: overlay HEADLINES_START'ta sona erer (frame 60-80 çift gösterim giderildi) */}
       {defaultStyle === "breaking" && (
-        <Sequence from={20} durationInFrames={60}>
+        <Sequence from={20} durationInFrames={Math.max(1, HEADLINES_START - 20)}>
           <BreakingNewsOverlay networkName={channelName} style={defaultStyle} lang={lang} />
         </Sequence>
       )}
@@ -326,6 +348,8 @@ export const NewsBulletinComposition: React.FC<NewsBulletinProps> = (props) => {
                   narration:    item.narration,
                   audioUrl:     item.audioPath,
                   bulletinStyle: itemStyle,
+                  imagePath:    item.imagePath,
+                  imageTimeline: item.imageTimeline,
                 }}
                 index={idx}
               />
@@ -337,6 +361,9 @@ export const NewsBulletinComposition: React.FC<NewsBulletinProps> = (props) => {
                   itemNumber={item.itemNumber}
                   totalItems={items.length}
                   style={lowerThirdStyle}
+                  publishedAt={item.publishedAt}
+                  showDate={showDate}
+                  showSource={showSource}
                 />
               )}
             </Sequence>

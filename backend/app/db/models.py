@@ -617,6 +617,8 @@ class NewsItem(Base):
     status: Mapped[str] = mapped_column(String(50), nullable=False, default="new", index=True)
     dedupe_key: Mapped[Optional[str]] = mapped_column(String(500), nullable=True, index=True)
     raw_payload_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    # M41: Haber görseli URL'si (RSS media:content, enclosure, og:image)
+    image_url: Mapped[Optional[str]] = mapped_column(String(2000), nullable=True)
     is_test_data: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, index=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=_now

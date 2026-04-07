@@ -134,9 +134,6 @@ export function RemotionRoot() {
           defaultStandardVideoProps as unknown as Record<string, unknown>
         }
         calculateMetadata={async ({ props }) => {
-          // Authoritative kaynak: render_props.json → total_duration_seconds
-          // Üretici: backend CompositionStepExecutor
-          // Fallback: eksik/sıfır/negatif → 60 saniye + console.warn
           const typed = props as unknown as StandardVideoProps;
           const raw = typed.total_duration_seconds;
           const FALLBACK_SECS = 60;
@@ -144,15 +141,20 @@ export function RemotionRoot() {
           if (typeof raw !== "number" || raw <= 0) {
             console.warn(
               `[Root.tsx] total_duration_seconds geçersiz (${raw}). ` +
-              `Fallback=${FALLBACK_SECS}s kullanılıyor. ` +
-              `Bu durum backend composition artifact sorununa işaret edebilir.`
+              `Fallback=${FALLBACK_SECS}s kullanılıyor.`
             );
             totalSecs = FALLBACK_SECS;
           } else {
             totalSecs = raw;
           }
           const durationInFrames = Math.max(1, Math.round(totalSecs * FPS));
-          return { durationInFrames };
+          // M41: 9:16 portrait desteği
+          const isPortrait = typed.renderFormat === "portrait";
+          return {
+            durationInFrames,
+            width: isPortrait ? 1080 : 1920,
+            height: isPortrait ? 1920 : 1080,
+          };
         }}
       />
 
@@ -179,11 +181,16 @@ export function RemotionRoot() {
             );
             totalSecs = FALLBACK_SECS;
           } else {
-            // 2 saniye baslik + item sureleri
             totalSecs = raw + 2;
           }
           const durationInFrames = Math.max(1, Math.round(totalSecs * FPS));
-          return { durationInFrames };
+          // M41: 9:16 portrait desteği
+          const isPortrait = typed.renderFormat === "portrait";
+          return {
+            durationInFrames,
+            width: isPortrait ? 1080 : 1920,
+            height: isPortrait ? 1920 : 1080,
+          };
         }}
       />
 

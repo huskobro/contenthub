@@ -22,6 +22,14 @@ export interface BulletinLowerThirdProps {
   itemNumber: number;
   totalItems: number;
   style: LowerThirdStyleId | string | null | undefined;
+  /** M41: Haberin yayın tarihi (ISO string) */
+  publishedAt?: string | null;
+  /** M41: Kaynak adı */
+  sourceName?: string | null;
+  /** M41: Tarih göster */
+  showDate?: boolean;
+  /** M41: Kaynak göster */
+  showSource?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -37,11 +45,26 @@ function resolveStyle(raw: string | null | undefined): LowerThirdStyleId {
 // Broadcast stili — klasik TV band
 // ---------------------------------------------------------------------------
 
+/** M41: Tarih formatla (ISO → kısa tarih) */
+function formatDate(iso: string | null | undefined): string {
+  if (!iso) return "";
+  try {
+    const d = new Date(iso);
+    return d.toLocaleDateString("tr-TR", { day: "numeric", month: "short", year: "numeric" });
+  } catch {
+    return "";
+  }
+}
+
 function BroadcastBar({
   headline,
   category,
   itemNumber,
   totalItems,
+  publishedAt,
+  sourceName,
+  showDate = true,
+  showSource = false,
 }: Omit<BulletinLowerThirdProps, "style">) {
   const containerStyle: React.CSSProperties = {
     position: "absolute",
@@ -107,7 +130,16 @@ function BroadcastBar({
       <div style={accentStyle} />
       <div style={textAreaStyle}>
         <div style={headlineStyle}>{headline}</div>
-        {category && <div style={categoryStyle}>{category}</div>}
+        <div style={categoryStyle}>
+          {category && <span>{category}</span>}
+          {/* M41: Tarih ve kaynak bilgisi */}
+          {showDate && publishedAt && (
+            <span>{category ? " · " : ""}{formatDate(publishedAt)}</span>
+          )}
+          {showSource && sourceName && (
+            <span>{(category || (showDate && publishedAt)) ? " · " : ""}{sourceName}</span>
+          )}
+        </div>
       </div>
       <div style={counterStyle}>
         {itemNumber} / {totalItems}

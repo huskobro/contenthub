@@ -75,6 +75,8 @@ export interface StandardVideoProps {
   subtitle_style: SubtitleStylePreset;
   total_duration_seconds: number;
   language: string;
+  /** M41: Render formatı — "landscape" (16:9) veya "portrait" (9:16). Varsayılan: landscape. */
+  renderFormat?: "landscape" | "portrait";
   metadata: {
     title: string;
     description: string;

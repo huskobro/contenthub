@@ -15,6 +15,7 @@ class NewsItemCreate(BaseModel):
     category: Optional[str] = None
     dedupe_key: Optional[str] = None
     raw_payload_json: Optional[str] = None
+    image_url: Optional[str] = None  # M41
 
     @field_validator("title")
     @classmethod
@@ -50,6 +51,7 @@ class NewsItemUpdate(BaseModel):
     category: Optional[str] = None
     dedupe_key: Optional[str] = None
     raw_payload_json: Optional[str] = None
+    image_url: Optional[str] = None  # M41
 
     @field_validator("title")
     @classmethod
@@ -86,6 +88,7 @@ class NewsItemResponse(BaseModel):
     category: Optional[str]
     dedupe_key: Optional[str]
     raw_payload_json: Optional[str]
+    image_url: Optional[str] = None  # M41
     created_at: datetime
     updated_at: datetime
     usage_count: int = 0

@@ -1,8 +1,15 @@
 import React from "react";
-import { AbsoluteFill, Audio, interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
+import { AbsoluteFill, Audio, Img, interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
 import { BulletinStyle } from "./StudioBackground";
 import { BULLETIN_ACCENT } from "../shared/palette";
 import { SubtitleEntry, renderSubtitleWords } from "../shared/subtitle-renderer";
+
+/** M41: Per-item image timeline segmenti */
+export interface ImageTimelineSegment {
+  url: string;
+  startSeconds: number;
+  durationSeconds: number;
+}
 
 /** HeadlineCard'a composition katmanından aktarılan düzleştirilmiş veri. */
 export interface HeadlineCardItem {
@@ -13,6 +20,10 @@ export interface HeadlineCardItem {
   audioUrl?: string | null;
   subtitles?: SubtitleEntry[];
   bulletinStyle?: BulletinStyle;
+  /** M41: Haber görseli URL'si */
+  imagePath?: string | null;
+  /** M41: Birden fazla görsel için zaman bazlı gösterim planı */
+  imageTimeline?: ImageTimelineSegment[] | null;
 }
 
 interface Props {
@@ -50,9 +61,55 @@ export const HeadlineCard: React.FC<Props> = ({ item, index = 0 }) => {
     ? interpolate(frame, [durationInFrames - 12, durationInFrames], [1, 0], { extrapolateRight: "clamp" })
     : 1;
 
+  // M41: Aktif görseli belirle (timeline varsa zaman bazlı, yoksa tek imagePath)
+  const currentTimeSec = frame / fps;
+  let activeImageUrl: string | null = null;
+  if (item.imageTimeline && item.imageTimeline.length > 0) {
+    for (const seg of item.imageTimeline) {
+      if (currentTimeSec >= seg.startSeconds && currentTimeSec < seg.startSeconds + seg.durationSeconds) {
+        activeImageUrl = seg.url;
+        break;
+      }
+    }
+    // Fallback: son segment
+    if (!activeImageUrl) {
+      activeImageUrl = item.imageTimeline[item.imageTimeline.length - 1].url;
+    }
+  } else if (item.imagePath) {
+    activeImageUrl = item.imagePath;
+  }
+
   return (
     <AbsoluteFill style={{ justifyContent: "center", alignItems: "center", pointerEvents: "none", opacity: exitOpacity }}>
       {item.audioUrl && <Audio src={item.audioUrl} />}
+
+      {/* M41: Haber görseli arka planı */}
+      {activeImageUrl && (
+        <>
+          <Img
+            src={activeImageUrl}
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              opacity: 0.35,
+              filter: "blur(2px)",
+            }}
+          />
+          {/* Koyu gradient — metin okunabilirliği */}
+          <div style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            background: "linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.3) 40%, rgba(0,0,0,0.6) 100%)",
+          }} />
+        </>
+      )}
 
       <div style={{
         position: "absolute",

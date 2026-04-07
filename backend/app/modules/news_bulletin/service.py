@@ -597,6 +597,10 @@ async def start_production(
             "title": news_item.title if news_item else "",
             "edited_narration": item.edited_narration,
             "category": news_item.category if news_item else None,
+            # M41: haber görseli + yayın tarihi + kaynak bilgisi
+            "image_url": getattr(news_item, "image_url", None) if news_item else None,
+            "published_at": news_item.published_at.isoformat() if news_item and news_item.published_at else None,
+            "source_id": news_item.source_id if news_item else None,
         })
 
     # Job input data

@@ -194,6 +194,13 @@ class CompositionStepExecutor(StepExecutor):
         word_timing_path = subtitle_metadata.get("word_timing_path")
         timing_mode = subtitle_metadata.get("timing_mode", "cursor")
 
+        # M41: karaoke_enabled kapalıysa timing_mode'u cursor'a düşür
+        karaoke_enabled = raw_input.get("_settings_snapshot", {}).get(
+            "standard_video.config.karaoke_enabled", True
+        )
+        if not karaoke_enabled:
+            timing_mode = "cursor"
+
         # Job input'tan subtitle_style_preset alınır; yoksa varsayılan kullanılır
         subtitle_style_preset_id = raw_input.get("subtitle_style_preset")
         subtitle_style = get_preset_for_composition(subtitle_style_preset_id)
@@ -248,6 +255,11 @@ class CompositionStepExecutor(StepExecutor):
                 "subtitle_style": subtitle_style,
                 "total_duration_seconds": round(total_duration, 3),
                 "language": language,
+                # M41: renderFormat — settings snapshot'tan oku
+                "renderFormat": raw_input.get("_settings_snapshot", {}).get(
+                    "standard_video.config.render_format",
+                    "landscape",
+                ),
                 "metadata": {
                     "title": metadata_data.get("title", ""),
                     "description": metadata_data.get("description", ""),

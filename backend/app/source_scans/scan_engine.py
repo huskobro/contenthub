@@ -101,6 +101,53 @@ def _build_dedupe_key(url: str) -> str:
     return url.strip().lower()
 
 
+def _extract_image_url(entry: object) -> Optional[str]:
+    """
+    M41: feedparser entry'sinden haber görseli URL'si çıkarır.
+
+    Öncelik sırası:
+      1. media_content[0].url (RSS media:content)
+      2. media_thumbnail[0].url (RSS media:thumbnail)
+      3. enclosures[0].href (RSS enclosure, image type)
+      4. image.href (atom:image)
+
+    Hiçbiri yoksa None döner.
+    """
+    # media:content
+    media_content = getattr(entry, "media_content", None)
+    if media_content and isinstance(media_content, list):
+        for mc in media_content:
+            url = mc.get("url", "") if isinstance(mc, dict) else ""
+            if url:
+                return url[:2000]
+
+    # media:thumbnail
+    media_thumbnail = getattr(entry, "media_thumbnail", None)
+    if media_thumbnail and isinstance(media_thumbnail, list):
+        for mt in media_thumbnail:
+            url = mt.get("url", "") if isinstance(mt, dict) else ""
+            if url:
+                return url[:2000]
+
+    # enclosures (image type)
+    enclosures = getattr(entry, "enclosures", None)
+    if enclosures and isinstance(enclosures, list):
+        for enc in enclosures:
+            enc_type = enc.get("type", "") if isinstance(enc, dict) else ""
+            enc_href = enc.get("href", "") if isinstance(enc, dict) else ""
+            if enc_href and "image" in enc_type:
+                return enc_href[:2000]
+
+    # atom image
+    image = getattr(entry, "image", None)
+    if image:
+        href = getattr(image, "href", None)
+        if href:
+            return str(href)[:2000]
+
+    return None
+
+
 def normalize_entry(
     entry: object,
     source: object,
@@ -125,6 +172,9 @@ def normalize_entry(
 
     published_at = _parse_published_at(entry)
 
+    # M41: Haber görseli çıkarma (media:content, enclosure, og:image)
+    image_url = _extract_image_url(entry)
+
     raw_preview: dict = {}
     for key in ("id", "link", "title", "published"):
         val = getattr(entry, key, None)
@@ -143,6 +193,7 @@ def normalize_entry(
         "status": "new",
         "dedupe_key": _build_dedupe_key(url),
         "raw_payload_json": json.dumps(raw_preview, ensure_ascii=False),
+        "image_url": image_url,
     }
 
 

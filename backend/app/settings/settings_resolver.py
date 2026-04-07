@@ -664,14 +664,49 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "group": "news_bulletin",
         "type": "string",
         "label": "Render Formati",
-        "help_text": "16:9 (landscape) veya 9:16 (portrait).",
+        "help_text": "16:9 (landscape) veya 9:16 (portrait). Composition ve Remotion boyutlarini belirler.",
         "module_scope": "news_bulletin",
         "env_var": "",
         "builtin_default": "landscape",
-        "wired": False,
-        "wired_to": "DEFINED — Remotion composition'da kullanilacak",
+        "wired": True,
+        "wired_to": "BulletinCompositionExecutor → composition_props.renderFormat → Root.tsx calculateMetadata",
     },
     # --- News Bulletin Module (M30) ---
+    # --- M41: Karaoke ayarları ---
+    "news_bulletin.config.karaoke_enabled": {
+        "group": "news_bulletin",
+        "type": "boolean",
+        "label": "Karaoke Altyazi",
+        "help_text": "Karaoke (kelime bazli vurgulama) modunu etkinlestirir. Kapali ise cursor modu kullanilir.",
+        "module_scope": "news_bulletin",
+        "env_var": "",
+        "builtin_default": True,
+        "wired": True,
+        "wired_to": "BulletinCompositionExecutor → timing_mode override; karaoke kapali ise cursor kullanilir",
+    },
+    # --- M41: Haber gosterim ayarlari ---
+    "news_bulletin.config.show_date": {
+        "group": "news_bulletin",
+        "type": "boolean",
+        "label": "Tarih Goster",
+        "help_text": "Haber bulteninde her haberin yayin tarihini gosterir.",
+        "module_scope": "news_bulletin",
+        "env_var": "",
+        "builtin_default": True,
+        "wired": True,
+        "wired_to": "BulletinCompositionExecutor → composition_props.showDate → BulletinLowerThird",
+    },
+    "news_bulletin.config.show_source": {
+        "group": "news_bulletin",
+        "type": "boolean",
+        "label": "Kaynak Goster",
+        "help_text": "Haber bulteninde her haberin kaynagini gosterir.",
+        "module_scope": "news_bulletin",
+        "env_var": "",
+        "builtin_default": False,
+        "wired": True,
+        "wired_to": "BulletinCompositionExecutor → composition_props.showSource → BulletinLowerThird",
+    },
     "news_bulletin.config.default_subtitle_style": {
         "group": "news_bulletin",
         "type": "string",
@@ -826,6 +861,32 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         ),
         "wired": True,
         "wired_to": "MetadataStepExecutor — metadata uretimi sistem prompt",
+    },
+
+    # --- Standard Video Format (M41) ---
+    "standard_video.config.render_format": {
+        "group": "standard_video",
+        "type": "string",
+        "label": "Render Formati",
+        "help_text": "16:9 (landscape) veya 9:16 (portrait). Video cikti boyutlarini belirler.",
+        "module_scope": "standard_video",
+        "env_var": "",
+        "builtin_default": "landscape",
+        "wired": True,
+        "wired_to": "CompositionStepExecutor → composition_props.renderFormat → Root.tsx calculateMetadata",
+    },
+
+    # --- M41: Standard Video Karaoke ---
+    "standard_video.config.karaoke_enabled": {
+        "group": "standard_video",
+        "type": "boolean",
+        "label": "Karaoke Altyazi",
+        "help_text": "Karaoke (kelime bazli vurgulama) modunu etkinlestirir. Kapali ise cursor modu kullanilir.",
+        "module_scope": "standard_video",
+        "env_var": "",
+        "builtin_default": True,
+        "wired": True,
+        "wired_to": "CompositionStepExecutor → timing_mode override; karaoke kapali ise cursor kullanilir",
     },
 
     # --- Standard Video Behavior Block Settings ---

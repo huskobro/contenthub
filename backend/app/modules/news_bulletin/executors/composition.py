@@ -291,24 +291,62 @@ class BulletinCompositionExecutor(StepExecutor):
                 job.id,
             )
 
+        # M41: Max image count per item
+        MAX_IMAGES_PER_ITEM = 5
+
         props_items: list[dict] = []
         for i, script_item in enumerate(script_items):
             audio_scene = audio_scenes[i] if i < len(audio_scenes) else {}
+            item_duration = audio_scene.get("duration_seconds", 0.0)
+
+            # M41: image_url → imagePath (tek görsel, asset server üzerinden serve edilir)
+            image_url = script_item.get("image_url")
+
+            # M41: image timeline hesaplaması
+            # Tek image_url varsa tüm süre boyunca gösterilir.
+            # Birden fazla görsel gelecekte images listesi ile desteklenecek.
+            # Şu an tek görsel → tek timeline segmenti.
+            image_timeline = None
+            if image_url:
+                image_timeline = [{
+                    "url": image_url,
+                    "startSeconds": 0,
+                    "durationSeconds": round(item_duration, 3),
+                }]
 
             props_items.append({
                 "itemNumber": i + 1,
                 "headline": script_item.get("headline", ""),
                 "narration": script_item.get("narration", ""),
                 "audioPath": audio_scene.get("audio_path"),
-                "imagePath": None,  # V1: no per-item visuals
-                "durationSeconds": audio_scene.get("duration_seconds", 0.0),
+                "imagePath": image_url,
+                "imageTimeline": image_timeline,
+                "durationSeconds": item_duration,
                 "category": script_item.get("category"),
+                # M41: tarih ve kaynak
+                "publishedAt": script_item.get("published_at"),
+                "sourceId": script_item.get("source_id"),
             })
 
         total_duration = sum(item.get("durationSeconds", 0.0) for item in props_items)
         subtitles_srt = subtitle_metadata.get("srt_path")
         word_timing_path = subtitle_metadata.get("word_timing_path")
         timing_mode = subtitle_metadata.get("timing_mode", "cursor")
+
+        # M41: karaoke_enabled kapalıysa timing_mode'u cursor'a düşür
+        karaoke_enabled = raw_input.get("_settings_snapshot", {}).get(
+            "news_bulletin.config.karaoke_enabled", True
+        )
+        if not karaoke_enabled:
+            timing_mode = "cursor"
+
+        # M41: show_date ve show_source ayarlarını oku
+        show_date = raw_input.get("_settings_snapshot", {}).get(
+            "news_bulletin.config.show_date", True
+        )
+        show_source = raw_input.get("_settings_snapshot", {}).get(
+            "news_bulletin.config.show_source", False
+        )
 
         start_time = time.monotonic()
 
@@ -357,6 +395,14 @@ class BulletinCompositionExecutor(StepExecutor):
                 "networkName": network_name,
                 "showTicker": show_ticker,
                 "tickerItems": ticker_items,
+                # M41: renderFormat — settings snapshot'tan oku
+                "renderFormat": raw_input.get("_settings_snapshot", {}).get(
+                    "news_bulletin.config.render_format",
+                    "landscape",
+                ),
+                # M41: tarih ve kaynak gosterim ayarlari
+                "showDate": show_date,
+                "showSource": show_source,
                 "metadata": {
                     "title": metadata_data.get("title", ""),
                     "description": metadata_data.get("description", ""),
