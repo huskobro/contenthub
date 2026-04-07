@@ -25,6 +25,10 @@ interface JobsTableProps {
   onArchiveConfirmStart?: (jobId: string) => void;
   /** True while archive mutation is in-flight. */
   archivePending?: boolean;
+  /** Called when user clicks clone on a terminal-state job. */
+  onClone?: (jobId: string) => void;
+  /** True while clone mutation is in-flight. */
+  clonePending?: boolean;
 }
 
 function statusBadge(status: string) {
@@ -48,8 +52,8 @@ const JOB_COLUMNS = [
   { key: "date", label: "Tarih" },
 ];
 
-export function JobsTable({ jobs, selectedId, onSelect, activeIndex, onBulkDelete, onArchive, archiveConfirmId, onArchiveConfirmStart, archivePending }: JobsTableProps) {
-  const showArchiveCol = !!(onArchive && onArchiveConfirmStart);
+export function JobsTable({ jobs, selectedId, onSelect, activeIndex, onBulkDelete, onArchive, archiveConfirmId, onArchiveConfirmStart, archivePending, onClone, clonePending }: JobsTableProps) {
+  const showActionsCol = !!(onArchive && onArchiveConfirmStart) || !!onClone;
   const [filters, setFilters] = useState<Record<string, string | null>>({ status: null, module_type: null });
   const col = useColumnVisibility("jobs-table", JOB_COLUMNS.map((c) => c.key));
 
@@ -112,7 +116,7 @@ export function JobsTable({ jobs, selectedId, onSelect, activeIndex, onBulkDelet
               {col.isVisible("retry") && <th className="px-3 py-2.5 border-b border-border text-right">Tekrar</th>}
               {col.isVisible("duration") && <th className="px-3 py-2.5 border-b border-border">Süre</th>}
               {col.isVisible("date") && <th className="px-3 py-2.5 border-b border-border">Tarih</th>}
-              {showArchiveCol && <th className="px-3 py-2.5 border-b border-border w-24"></th>}
+              {showActionsCol && <th className="px-3 py-2.5 border-b border-border w-24"></th>}
             </tr>
           </thead>
           <tbody>
@@ -146,27 +150,40 @@ export function JobsTable({ jobs, selectedId, onSelect, activeIndex, onBulkDelet
                   {col.isVisible("retry") && <td className="px-3 py-2.5 text-right tabular-nums text-neutral-600">{j.retry_count > 0 ? j.retry_count : "—"}</td>}
                   {col.isVisible("duration") && <td className="px-3 py-2.5 text-neutral-600 tabular-nums">{formatDuration(j.elapsed_total_seconds)}</td>}
                   {col.isVisible("date") && <td className="px-3 py-2.5 text-neutral-500 text-sm">{formatDateShort(j.created_at)}</td>}
-                  {showArchiveCol && (
+                  {showActionsCol && (
                     <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
                       {TERMINAL_STATUSES.has(j.status) && (
-                        archiveConfirmId === j.id ? (
-                          <button
-                            title="Bu job arşivlenir ve varsayılan listeden kaldırılır. Veriler silinmez."
-                            onClick={() => onArchive!(j.id)}
-                            disabled={archivePending}
-                            className="text-xs px-2 py-0.5 rounded bg-error text-neutral-0 font-medium cursor-pointer border-0 disabled:opacity-50"
-                          >
-                            Onayla
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => onArchiveConfirmStart!(j.id)}
-                            disabled={archivePending}
-                            className="text-xs px-2 py-0.5 rounded text-neutral-500 hover:text-warning cursor-pointer border border-border-subtle bg-transparent disabled:opacity-50"
-                          >
-                            Arşivle
-                          </button>
-                        )
+                        <div className="flex gap-1.5 items-center">
+                          {onClone && (
+                            <button
+                              onClick={() => onClone(j.id)}
+                              disabled={clonePending}
+                              className="text-xs px-2 py-0.5 rounded text-brand-600 hover:text-brand-700 cursor-pointer border border-brand-200 bg-transparent disabled:opacity-50"
+                            >
+                              Klonla
+                            </button>
+                          )}
+                          {onArchive && onArchiveConfirmStart && (
+                            archiveConfirmId === j.id ? (
+                              <button
+                                title="Bu job arşivlenir ve varsayılan listeden kaldırılır. Veriler silinmez."
+                                onClick={() => onArchive(j.id)}
+                                disabled={archivePending}
+                                className="text-xs px-2 py-0.5 rounded bg-error text-neutral-0 font-medium cursor-pointer border-0 disabled:opacity-50"
+                              >
+                                Onayla
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => onArchiveConfirmStart(j.id)}
+                                disabled={archivePending}
+                                className="text-xs px-2 py-0.5 rounded text-neutral-500 hover:text-warning cursor-pointer border border-border-subtle bg-transparent disabled:opacity-50"
+                              >
+                                Arşivle
+                              </button>
+                            )
+                          )}
+                        </div>
                       )}
                     </td>
                   )}
@@ -174,7 +191,7 @@ export function JobsTable({ jobs, selectedId, onSelect, activeIndex, onBulkDelet
               );
             })}
             {filtered.length === 0 && (
-              <tr><td colSpan={showArchiveCol ? 8 : 7} className="px-4 py-6 text-center text-neutral-500 text-sm">Filtre kriterlerine uygun kayıt bulunamadı.</td></tr>
+              <tr><td colSpan={showActionsCol ? 8 : 7} className="px-4 py-6 text-center text-neutral-500 text-sm">Filtre kriterlerine uygun kayıt bulunamadı.</td></tr>
             )}
           </tbody>
         </table>

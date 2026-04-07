@@ -6,9 +6,10 @@
  */
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { JobResponse, AllowedActions } from "../../api/jobsApi";
-import { fetchAllowedActions, cancelJob, retryJob, skipStep } from "../../api/jobsApi";
+import { fetchAllowedActions, cancelJob, retryJob, cloneJob, skipStep } from "../../api/jobsApi";
 import { cn } from "../../lib/cn";
 
 interface JobActionsPanelProps {
@@ -17,6 +18,7 @@ interface JobActionsPanelProps {
 
 export function JobActionsPanel({ job }: JobActionsPanelProps) {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -29,6 +31,7 @@ export function JobActionsPanel({ job }: JobActionsPanelProps) {
 
   const canCancel = actions?.can_cancel ?? false;
   const canRetry = actions?.can_retry ?? false;
+  const canClone = actions?.can_clone ?? false;
   const skippableSteps = actions?.skippable_steps ?? [];
 
   const handleAction = async (actionName: string, fn: () => Promise<unknown>) => {
@@ -85,6 +88,29 @@ export function JobActionsPanel({ job }: JobActionsPanelProps) {
           {loading === "Retry" ? "Yeniden deneniyor..." : "Yeniden Dene"}
         </button>
 
+        {/* Clone */}
+        <button
+          className={cn(btnSecondary, (!canClone || !!loading) && disabledCls)}
+          disabled={!canClone || !!loading}
+          onClick={async () => {
+            setLoading("Clone");
+            setError(null);
+            setSuccess(null);
+            try {
+              const newJob = await cloneJob(job.id);
+              queryClient.invalidateQueries({ queryKey: ["jobs"] });
+              navigate(`/admin/jobs/${newJob.id}`);
+            } catch (err) {
+              setError(err instanceof Error ? err.message : "Klonlama hatasi");
+            } finally {
+              setLoading(null);
+            }
+          }}
+          data-testid="action-clone"
+        >
+          {loading === "Clone" ? "Klonlaniyor..." : "Klonla"}
+        </button>
+
         {/* Skip Steps */}
         {skippableSteps.map((stepKey) => (
           <button
@@ -114,7 +140,7 @@ export function JobActionsPanel({ job }: JobActionsPanelProps) {
       {/* Durum bilgisi */}
       <p className="mt-2 mb-0 text-xs text-neutral-500">
         Mevcut durum: <strong>{job.status}</strong>
-        {!canCancel && !canRetry && skippableSteps.length === 0 && (
+        {!canCancel && !canRetry && !canClone && skippableSteps.length === 0 && (
           <span> — bu durumda kullanilabilir aksiyon yok</span>
         )}
       </p>

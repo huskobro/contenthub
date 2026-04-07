@@ -2,7 +2,7 @@ import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useJobsList } from "../../hooks/useJobsList";
-import { markJobsAsTestData } from "../../api/jobsApi";
+import { markJobsAsTestData, cloneJob } from "../../api/jobsApi";
 import { JobsTable } from "../../components/jobs/JobsTable";
 import { JobDetailPanel } from "../../components/jobs/JobDetailPanel";
 import { Sheet } from "../../components/design-system/Sheet";
@@ -36,6 +36,18 @@ export function JobsRegistryPage() {
     },
     onError: () => {
       toast.error("Arşivleme başarısız");
+    },
+  });
+
+  const cloneMutation = useMutation({
+    mutationFn: (jobId: string) => cloneJob(jobId),
+    onSuccess: (newJob) => {
+      queryClient.invalidateQueries({ queryKey: ["jobs"] });
+      toast.success("Job klonlandi");
+      navigate(`/admin/jobs/${newJob.id}`);
+    },
+    onError: () => {
+      toast.error("Klonlama basarisiz");
     },
   });
 
@@ -138,6 +150,8 @@ export function JobsRegistryPage() {
                 archiveConfirmId={archiveConfirmId}
                 onArchiveConfirmStart={(jobId) => setArchiveConfirmId(jobId)}
                 archivePending={archiveMutation.isPending}
+                onClone={(jobId) => cloneMutation.mutate(jobId)}
+                clonePending={cloneMutation.isPending}
               />
           )}
         </SectionShell>

@@ -54,6 +54,7 @@ export function fetchJobById(id: string): Promise<JobResponse> {
 export interface AllowedActions {
   can_cancel: boolean;
   can_retry: boolean;
+  can_clone: boolean;
   skippable_steps: string[];
 }
 
@@ -67,6 +68,10 @@ export function cancelJob(jobId: string): Promise<JobResponse> {
 
 export function retryJob(jobId: string): Promise<JobResponse> {
   return api.post<JobResponse>(`${BASE_URL}/${jobId}/retry`);
+}
+
+export function cloneJob(jobId: string): Promise<JobResponse> {
+  return api.post<JobResponse>(`${BASE_URL}/${jobId}/clone`);
 }
 
 export function skipStep(jobId: string, stepKey: string): Promise<JobResponse> {

@@ -268,6 +268,73 @@ async def cancel_job(job_id: str, db: AsyncSession = Depends(get_db)):
     return await _build_job_response(db, job)
 
 
+async def _rerun_job(
+    original_job,
+    request: Request,
+    db: AsyncSession,
+    audit_action: str,
+) -> JobResponse:
+    """
+    Ortak rerun/clone helper. Orijinal job'un input verisinden yeni job oluşturur.
+
+    _settings_snapshot ve _template_snapshot temizlenip yeniden resolve edilir.
+    _cloned_from_job_id ile orijinal job referansı korunur.
+    """
+    # Parse original input, strip snapshots
+    raw_input: dict = {}
+    if original_job.input_data_json:
+        try:
+            raw_input = json.loads(original_job.input_data_json)
+            if not isinstance(raw_input, dict):
+                raw_input = {}
+        except (json.JSONDecodeError, TypeError):
+            raw_input = {}
+
+    raw_input.pop("_settings_snapshot", None)
+    raw_input.pop("_template_snapshot", None)
+    raw_input["_cloned_from_job_id"] = original_job.id
+
+    # Re-resolve settings snapshot for current config
+    module_id = original_job.module_type
+    snapshot_keys = [k for k in KNOWN_SETTINGS if k.startswith(f"{module_id}.")]
+    settings_snapshot: dict = {}
+    for key in snapshot_keys:
+        value = await resolve(key, db)
+        if value is not None:
+            settings_snapshot[key] = value
+        else:
+            meta = KNOWN_SETTINGS.get(key, {})
+            if meta.get("builtin_default") is not None:
+                settings_snapshot[key] = meta["builtin_default"]
+    if settings_snapshot:
+        raw_input["_settings_snapshot"] = settings_snapshot
+
+    job_create = JobCreate(
+        module_type=module_id,
+        owner_id=original_job.owner_id,
+        template_id=original_job.template_id,
+        source_context_json=original_job.source_context_json,
+        input_data_json=json.dumps(raw_input, ensure_ascii=False),
+        workspace_path=None,
+    )
+    new_job = await service.create_job(db, job_create)
+
+    await initialize_job_steps(db, new_job.id, module_id, module_registry)
+
+    dispatcher = getattr(request.app.state, "job_dispatcher", None)
+    if dispatcher is not None:
+        await dispatcher.dispatch(new_job.id)
+
+    await write_audit_log(
+        db, action=audit_action, entity_type="job", entity_id=new_job.id,
+        actor_type="admin",
+        details={"original_job_id": original_job.id, "new_job_id": new_job.id},
+    )
+    await db.commit()
+
+    return await _build_job_response(db, new_job)
+
+
 @router.post("/{job_id}/retry", response_model=JobResponse)
 async def retry_job(
     job_id: str,
@@ -276,13 +343,7 @@ async def retry_job(
 ):
     """
     Başarısız bir işi yeniden dene. Yalnızca 'failed' durumundaki
-    işler yeniden denenebilir.
-
-    İşlem:
-      1. Job'u failed → retrying'e geçir
-      2. Başarısız step'leri pending'e sıfırla (geçici olarak doğrudan)
-      3. Job'u retrying → running'e geçir
-      4. Pipeline'ı yeniden başlat
+    işler yeniden denenebilir. Yeni bir job kaydı oluşturulur.
     """
     job = await service.get_job(db, job_id)
     if job is None:
@@ -292,42 +353,35 @@ async def retry_job(
             status_code=409,
             detail=f"Yalnızca 'failed' durumundaki işler yeniden denenebilir. Mevcut durum: {job.status!r}",
         )
+    return await _rerun_job(job, request, db, audit_action="job.retry")
 
-    # State machine'de failed → retrying geçişi yok!
-    # Retry stratejisi: yeni bir job oluşturmak yerine, mevcut job'u
-    # doğrudan running'e almak da mümkün değil (failed terminal).
-    #
-    # Çözüm: "Rerun" pattern — aynı input ile yeni job oluştur.
-    # Bu CLAUDE.md'deki "Rerun/clone of a completed/failed job creates a
-    # NEW Job record rather than recycling the terminal state" kuralıyla uyumlu.
 
-    # Orijinal job'un input bilgilerini al
-    job_create = JobCreate(
-        module_type=job.module_type,
-        owner_id=job.owner_id,
-        template_id=job.template_id,
-        source_context_json=job.source_context_json,
-        input_data_json=job.input_data_json,
-        workspace_path=None,  # Yeni workspace oluşturulacak
-    )
-    new_job = await service.create_job(db, job_create)
+@router.post("/{job_id}/clone", response_model=JobResponse, status_code=201)
+async def clone_job(
+    job_id: str,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Terminal durumdaki bir işi klonla. Aynı parametrelerle yeni bir iş oluşturur.
+    Settings snapshot yeniden resolve edilir — güncel ayarlar kullanılır.
+    """
+    job = await service.get_job(db, job_id)
+    if job is None:
+        raise HTTPException(status_code=404, detail="İş bulunamadı")
+    if not service.is_job_terminal(job.status):
+        raise HTTPException(
+            status_code=409,
+            detail=f"Yalnızca terminal durumdaki işler klonlanabilir. Mevcut durum: {job.status!r}",
+        )
 
-    # Adımları başlat
-    await initialize_job_steps(db, new_job.id, new_job.module_type, module_registry)
+    # Modül etkinlik kontrolü
+    try:
+        await service.check_module_enabled(db, job.module_type)
+    except ModuleDisabledError as exc:
+        raise HTTPException(status_code=403, detail=str(exc))
 
-    # Pipeline'ı başlat
-    dispatcher = getattr(request.app.state, "job_dispatcher", None)
-    if dispatcher is not None:
-        await dispatcher.dispatch(new_job.id)
-
-    await write_audit_log(
-        db, action="job.retry", entity_type="job", entity_id=new_job.id,
-        actor_type="admin",
-        details={"original_job_id": job_id, "new_job_id": new_job.id},
-    )
-    await db.commit()
-
-    return await _build_job_response(db, new_job)
+    return await _rerun_job(job, request, db, audit_action="job.clone")
 
 
 @router.post("/{job_id}/steps/{step_key}/skip", response_model=JobResponse)
@@ -386,6 +440,7 @@ async def get_allowed_actions(job_id: str, db: AsyncSession = Depends(get_db)):
     actions = {
         "can_cancel": job.status in ("queued", "running", "waiting", "retrying"),
         "can_retry": job.status == "failed",
+        "can_clone": service.is_job_terminal(job.status),
         "skippable_steps": [],
     }
 
