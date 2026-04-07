@@ -50,6 +50,84 @@ logger = logging.getLogger(__name__)
 
 
 # ---------------------------------------------------------------------------
+# M41a: Source name resolution — domain fallback
+# ---------------------------------------------------------------------------
+
+# Bilinen TLD uzantıları (www./tld strip mantığı için)
+_TLD_SUFFIXES = {
+    "com", "net", "org", "io", "co", "edu", "gov", "info", "biz", "me", "tv",
+    "com.tr", "org.tr", "net.tr", "gov.tr", "edu.tr",
+    "co.uk", "org.uk", "com.au", "co.jp", "co.in",
+}
+
+
+def resolve_source_domain_name(url_or_domain: str) -> str:
+    """
+    URL veya domain'den okunur kaynak adı çıkarır.
+
+    Kurallar:
+      - www. prefiksi atılır
+      - TLD uzantıları atılır (com, net, org, com.tr, ...)
+      - Aradaki asıl isim bölümü korunur
+
+    Örnekler:
+      www.ntv.com.tr → ntv
+      www.bbc.com    → bbc
+      www.reuters.com → reuters
+      www.some-site.net → some-site
+      https://news.example.org/feed → news.example
+    """
+    if not url_or_domain:
+        return ""
+
+    # URL'den domain çıkar
+    domain = url_or_domain.strip()
+    # Protokol strip
+    for prefix in ("https://", "http://", "//"):
+        if domain.startswith(prefix):
+            domain = domain[len(prefix):]
+    # Path strip
+    domain = domain.split("/")[0].split("?")[0].split("#")[0]
+    # Port strip
+    domain = domain.split(":")[0]
+    # www. strip
+    if domain.startswith("www."):
+        domain = domain[4:]
+
+    if not domain:
+        return ""
+
+    # TLD strip — en uzun eşleşen TLD'yi bul
+    parts = domain.split(".")
+    best_tld_len = 0
+    for i in range(1, len(parts)):
+        candidate = ".".join(parts[i:])
+        if candidate in _TLD_SUFFIXES:
+            best_tld_len = len(parts) - i
+
+    if best_tld_len > 0 and best_tld_len < len(parts):
+        name_parts = parts[:len(parts) - best_tld_len]
+        return ".".join(name_parts)
+
+    # Eşleşen TLD yoksa: son parçayı at (generic)
+    if len(parts) > 1:
+        return ".".join(parts[:-1])
+
+    return domain
+
+
+def _resolve_source_name_fallback(source_id: str) -> str:
+    """
+    source_id'den fallback isim üretir.
+
+    Gerçek kaynak adı service snapshot'tan gelmeli.
+    Bu sadece source_name hiç yoksa son çare.
+    """
+    # source_id genellikle UUID, okunur değil
+    return source_id[:12] if source_id else ""
+
+
+# ---------------------------------------------------------------------------
 # M31: Render output plan builder
 # ---------------------------------------------------------------------------
 
@@ -291,7 +369,7 @@ class BulletinCompositionExecutor(StepExecutor):
                 job.id,
             )
 
-        # M41: Max image count per item
+        # M41a: Max image count per item
         MAX_IMAGES_PER_ITEM = 5
 
         props_items: list[dict] = []
@@ -299,33 +377,53 @@ class BulletinCompositionExecutor(StepExecutor):
             audio_scene = audio_scenes[i] if i < len(audio_scenes) else {}
             item_duration = audio_scene.get("duration_seconds", 0.0)
 
-            # M41: image_url → imagePath (tek görsel, asset server üzerinden serve edilir)
-            image_url = script_item.get("image_url")
+            # M41a: Çoklu görsel desteği — image_urls listesi öncelikli
+            image_urls: list = script_item.get("image_urls", [])
+            image_url_single = script_item.get("image_url")
 
-            # M41: image timeline hesaplaması
-            # Tek image_url varsa tüm süre boyunca gösterilir.
-            # Birden fazla görsel gelecekte images listesi ile desteklenecek.
-            # Şu an tek görsel → tek timeline segmenti.
+            # Fallback: image_urls boşsa tek image_url'den liste oluştur
+            if not image_urls and image_url_single:
+                image_urls = [image_url_single]
+
+            # Max 5 görsel sınırı
+            image_urls = image_urls[:MAX_IMAGES_PER_ITEM]
+
+            # M41a: image timeline hesaplaması — süreyi görseller arasında eşit böl
             image_timeline = None
-            if image_url:
-                image_timeline = [{
-                    "url": image_url,
-                    "startSeconds": 0,
-                    "durationSeconds": round(item_duration, 3),
-                }]
+            if image_urls and item_duration > 0:
+                count = len(image_urls)
+                segment_duration = round(item_duration / count, 3)
+                image_timeline = []
+                for img_idx, img_url in enumerate(image_urls):
+                    start = round(img_idx * segment_duration, 3)
+                    # Son segment kalan süreyi alır (yuvarlama farkları için)
+                    dur = round(item_duration - start, 3) if img_idx == count - 1 else segment_duration
+                    image_timeline.append({
+                        "url": img_url,
+                        "startSeconds": start,
+                        "durationSeconds": dur,
+                    })
+
+            # M41a: Source name resolution (domain fallback)
+            source_name = script_item.get("source_name")
+            source_id = script_item.get("source_id")
+            if not source_name and source_id:
+                source_name = _resolve_source_name_fallback(source_id)
 
             props_items.append({
                 "itemNumber": i + 1,
                 "headline": script_item.get("headline", ""),
                 "narration": script_item.get("narration", ""),
                 "audioPath": audio_scene.get("audio_path"),
-                "imagePath": image_url,
+                "imagePath": image_urls[0] if image_urls else None,
                 "imageTimeline": image_timeline,
                 "durationSeconds": item_duration,
                 "category": script_item.get("category"),
                 # M41: tarih ve kaynak
                 "publishedAt": script_item.get("published_at"),
-                "sourceId": script_item.get("source_id"),
+                "sourceId": source_id,
+                # M41a: kaynak adı
+                "sourceName": source_name,
             })
 
         total_duration = sum(item.get("durationSeconds", 0.0) for item in props_items)

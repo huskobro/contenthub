@@ -58,7 +58,7 @@ logger = logging.getLogger(__name__)
 # Provider-dependent step keys — tek noktadan yönetim (M38)
 # Yeni bir provider-dependent step eklendiğinde buraya eklenmeli.
 # ---------------------------------------------------------------------------
-PROVIDER_STEP_KEYS = ["script", "metadata", "tts", "visuals"]
+PROVIDER_STEP_KEYS = ["script", "metadata", "tts", "visuals", "subtitle"]
 
 # ---------------------------------------------------------------------------
 # Render duration step key — tek noktadan yönetim (M38)

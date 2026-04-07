@@ -36,6 +36,10 @@ export interface WizardValues {
   subtitle_style: string;
   template_id: string;
   style_blueprint_id: string;
+  /** M41a: Render formatı — "landscape" (16:9) veya "portrait" (9:16) */
+  render_format: string;
+  /** M41a: Karaoke toggle */
+  karaoke_enabled: string;
 }
 
 const inputCls = "block w-full px-2 py-1.5 text-sm border border-border rounded-sm box-border focus:outline-none focus:ring-2 focus:ring-focus";
@@ -63,6 +67,8 @@ export function ContentCreationWizard({
     subtitle_style: "",
     template_id: "",
     style_blueprint_id: "",
+    render_format: "landscape",
+    karaoke_enabled: "true",
   });
 
   function set(field: keyof WizardValues, value: string) {
@@ -210,6 +216,51 @@ export function ContentCreationWizard({
               />
             </div>
           )}
+
+          {/* M41a: Video Formati */}
+          <div>
+            <h3 className="m-0 mb-2 text-md font-semibold text-neutral-800">Video Formati</h3>
+            <div className="flex gap-2">
+              {([
+                { value: "landscape", label: "16:9 (Yatay)", desc: "YouTube, TV" },
+                { value: "portrait", label: "9:16 (Shorts)", desc: "Shorts, Reels, TikTok" },
+              ] as const).map(({ value, label, desc }) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => set("render_format", value)}
+                  className={cn(
+                    "flex-1 flex flex-col items-center gap-1 px-3 py-3 border rounded-md cursor-pointer transition-colors text-center",
+                    values.render_format === value
+                      ? "bg-brand-50 text-brand-700 border-brand-400 ring-1 ring-brand-200"
+                      : "bg-white text-neutral-600 border-border hover:bg-neutral-50",
+                  )}
+                >
+                  <span className="text-sm font-medium">{label}</span>
+                  <span className="text-[11px] text-neutral-400">{desc}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* M41a: Karaoke Toggle */}
+          <div>
+            <h3 className="m-0 mb-2 text-md font-semibold text-neutral-800">Karaoke Altyazi</h3>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={values.karaoke_enabled === "true"}
+                onChange={(e) => set("karaoke_enabled", e.target.checked ? "true" : "false")}
+                className="w-4 h-4 accent-brand-500"
+              />
+              <span className="text-sm text-neutral-700">
+                Kelime bazli karaoke highlight
+              </span>
+            </label>
+            <p className="m-0 mt-1 text-xs text-neutral-400">
+              Acik: kelimeler konusulan anda vurgulanir. Kapali: standart zamanlama.
+            </p>
+          </div>
         </div>
       )}
 
@@ -240,6 +291,8 @@ export function ContentCreationWizard({
             <Row label="Kompozisyon" value={values.composition_direction} />
             <Row label="Thumbnail" value={values.thumbnail_direction} />
             <Row label="Altyazi" value={values.subtitle_style} />
+            <Row label="Format" value={values.render_format === "portrait" ? "9:16 (Shorts)" : "16:9 (Yatay)"} />
+            <Row label="Karaoke" value={values.karaoke_enabled === "true" ? "Acik" : "Kapali"} />
             <Row label="Sablon" value={values.template_id ? values.template_id.slice(0, 8) + "..." : ""} />
             <Row label="Stil" value={values.style_blueprint_id ? values.style_blueprint_id.slice(0, 8) + "..." : ""} />
           </div>

@@ -104,6 +104,8 @@ export interface BulletinItemProps {
   publishedAt?: string | null;
   /** M41: Kaynak ID */
   sourceId?: string | null;
+  /** M41a: Kaynak adı (human-readable) */
+  sourceName?: string | null;
 }
 
 export interface SubtitleStyle {
@@ -220,10 +222,11 @@ export const defaultNewsBulletinProps: NewsBulletinProps = {
 // Composition
 // ---------------------------------------------------------------------------
 
-const NETWORK_BAR_HEIGHT = 96;
+const NETWORK_BAR_HEIGHT_LANDSCAPE = 96;
+const NETWORK_BAR_HEIGHT_PORTRAIT = 64;
 
 export const NewsBulletinComposition: React.FC<NewsBulletinProps> = (props) => {
-  const { fps } = useVideoConfig();
+  const { fps, width, height } = useVideoConfig();
   const frame = useCurrentFrame();
   const {
     items,
@@ -236,7 +239,11 @@ export const NewsBulletinComposition: React.FC<NewsBulletinProps> = (props) => {
     lowerThirdStyle,
     showDate = true,
     showSource = false,
+    renderFormat,
   } = props;
+
+  const isPortrait = renderFormat === "portrait" || height > width;
+  const NETWORK_BAR_HEIGHT = isPortrait ? NETWORK_BAR_HEIGHT_PORTRAIT : NETWORK_BAR_HEIGHT_LANDSCAPE;
 
   // Genel bülten stili
   const defaultStyle: BulletinStyle =
@@ -295,7 +302,7 @@ export const NewsBulletinComposition: React.FC<NewsBulletinProps> = (props) => {
         boxShadow: `0 4px 32px ${activeAccent}44`,
       }}>
         <span style={{
-          color: "#FFFFFF", fontSize: 44,
+          color: "#FFFFFF", fontSize: isPortrait ? 28 : 44,
           fontFamily: '"Bebas Neue", "Oswald", Impact, sans-serif',
           letterSpacing: "0.14em", fontWeight: 900,
           transform: `scale(${breathe})`, display: "inline-block",
@@ -308,7 +315,7 @@ export const NewsBulletinComposition: React.FC<NewsBulletinProps> = (props) => {
            M41 fix: overlay HEADLINES_START'ta sona erer (frame 60-80 çift gösterim giderildi) */}
       {defaultStyle === "breaking" && (
         <Sequence from={20} durationInFrames={Math.max(1, HEADLINES_START - 20)}>
-          <BreakingNewsOverlay networkName={channelName} style={defaultStyle} lang={lang} />
+          <BreakingNewsOverlay networkName={channelName} style={defaultStyle} lang={lang} isPortrait={isPortrait} />
         </Sequence>
       )}
 
@@ -316,11 +323,12 @@ export const NewsBulletinComposition: React.FC<NewsBulletinProps> = (props) => {
       <Sequence from={0} durationInFrames={HEADLINES_START} name="Bülten Başlığı">
         <AbsoluteFill style={{ backgroundColor: "transparent", display: "flex", justifyContent: "center", alignItems: "center" }}>
           <h1 style={{
-            color: "#FFFFFF", fontSize: 80,
+            color: "#FFFFFF", fontSize: isPortrait ? 52 : 80,
             fontFamily: '"Bebas Neue", "Oswald", Impact, sans-serif',
             fontWeight: 900, letterSpacing: "0.08em",
             textAlign: "center", textShadow: `0 0 60px ${activeAccent}88`,
-            marginTop: 96,
+            marginTop: isPortrait ? 48 : 96,
+            padding: isPortrait ? "0 40px" : 0,
           }}>
             {bulletinTitle.toUpperCase()}
           </h1>
@@ -337,7 +345,7 @@ export const NewsBulletinComposition: React.FC<NewsBulletinProps> = (props) => {
           <React.Fragment key={idx}>
             {/* Kategori flash (1.5s) */}
             <Sequence from={flashFrom} durationInFrames={CATEGORY_FLASH_DUR} name={`Flash ${idx + 1}`}>
-              <CategoryFlash label={itemLabel} accent={itemAccent} />
+              <CategoryFlash label={itemLabel} accent={itemAccent} isPortrait={isPortrait} />
             </Sequence>
 
             {/* Haber içerik kartı */}
@@ -352,6 +360,7 @@ export const NewsBulletinComposition: React.FC<NewsBulletinProps> = (props) => {
                   imageTimeline: item.imageTimeline,
                 }}
                 index={idx}
+                isPortrait={isPortrait}
               />
               {/* Lower-third: lowerThirdStyle atanmışsa tüm haberlerde göster */}
               {lowerThirdStyle != null && lowerThirdStyle !== "" && (
@@ -362,8 +371,10 @@ export const NewsBulletinComposition: React.FC<NewsBulletinProps> = (props) => {
                   totalItems={items.length}
                   style={lowerThirdStyle}
                   publishedAt={item.publishedAt}
+                  sourceName={item.sourceName}
                   showDate={showDate}
                   showSource={showSource}
+                  isPortrait={isPortrait}
                 />
               )}
             </Sequence>
@@ -374,7 +385,7 @@ export const NewsBulletinComposition: React.FC<NewsBulletinProps> = (props) => {
       {/* L6: Alt ticker — frame 30'dan itibaren */}
       {showTicker !== false && tickerData.length > 0 && (
         <Sequence from={30} name="Ticker">
-          <NewsTicker items={tickerData} style={activeItemStyle} lang={lang} />
+          <NewsTicker items={tickerData} style={activeItemStyle} lang={lang} isPortrait={isPortrait} />
         </Sequence>
       )}
 

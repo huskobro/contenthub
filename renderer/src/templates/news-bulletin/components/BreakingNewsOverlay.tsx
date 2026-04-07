@@ -1,12 +1,7 @@
 /**
  * BreakingNewsOverlay — yalnızca "breaking" stilinde ilk saniyeler gösterilir.
  *
- * Composition katmanı tarafından Sequence ile sarılır; kendi animasyonu vardır.
- * Ağ adını ve kategori etiketini ekrana taşır.
- *
- * Animasyon kararları (ContentHub):
- *   - Badge: soldan giriş spring, 8 frame gecikmeyle ağ adı sağdan giriş
- *   - İlk 30 frame: dikkat çekici parlaklık dalgası
+ * M41a: Portrait layout desteği eklendi.
  */
 
 import React from "react";
@@ -19,12 +14,14 @@ interface Props {
   networkName: string;
   lang?: string;
   style?: BulletinStyle;
+  isPortrait?: boolean;
 }
 
 export const BreakingNewsOverlay: React.FC<Props> = ({
   networkName,
   lang = "tr",
   style = "breaking",
+  isPortrait = false,
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -35,11 +32,11 @@ export const BreakingNewsOverlay: React.FC<Props> = ({
 
   // Badge: soldan sürgülü giriş
   const badgeProgress = spring({ frame, fps, config: { damping: 15, stiffness: 190 } });
-  const badgeX        = interpolate(badgeProgress, [0, 1], [-640, 0]);
+  const badgeX        = interpolate(badgeProgress, [0, 1], [isPortrait ? -400 : -640, 0]);
 
   // Ağ adı: 8 frame gecikmeli sağdan giriş
   const nameProgress = spring({ frame: Math.max(0, frame - 8), fps, config: { damping: 15, stiffness: 190 } });
-  const nameX        = interpolate(nameProgress, [0, 1], [360, 0]);
+  const nameX        = interpolate(nameProgress, [0, 1], [isPortrait ? 200 : 360, 0]);
   const nameOpacity  = interpolate(nameProgress, [0, 0.35], [0, 1], { extrapolateRight: "clamp" });
 
   // İlk 30 frame: dikkat çekici parlaklık dalgası
@@ -48,13 +45,20 @@ export const BreakingNewsOverlay: React.FC<Props> = ({
       ? interpolate(Math.abs(Math.sin((frame / 30) * Math.PI * 3)), [0, 1], [0.55, 1.0])
       : 1.0;
 
+  const barH = isPortrait ? 60 : 88;
+  const badgeFontSize = isPortrait ? 28 : 40;
+  const nameFontSize = isPortrait ? 22 : 34;
+  const padLeft = isPortrait ? 32 : 56;
+  const padRight = isPortrait ? 20 : 36;
+  const clipOffset = isPortrait ? 18 : 28;
+
   return (
     <AbsoluteFill style={{ pointerEvents: "none" }}>
       <div style={{
         position:   "absolute",
-        top:        "38%",
+        top:        isPortrait ? "35%" : "38%",
         left: 0, right: 0,
-        height:     88,
+        height:     barH,
         display:    "flex",
         alignItems: "center",
       }}>
@@ -63,17 +67,17 @@ export const BreakingNewsOverlay: React.FC<Props> = ({
           transform:  `translateX(${badgeX}px)`,
           opacity:    flashOpacity,
           background: `linear-gradient(135deg, ${accent} 0%, ${darkAccent} 100%)`,
-          paddingLeft:  56,
-          paddingRight: 36,
+          paddingLeft:  padLeft,
+          paddingRight: padRight,
           height:       "100%",
           display:      "flex",
           alignItems:   "center",
-          clipPath:     "polygon(0 0, calc(100% - 28px) 0, 100% 50%, calc(100% - 28px) 100%, 0 100%)",
+          clipPath:     `polygon(0 0, calc(100% - ${clipOffset}px) 0, 100% 50%, calc(100% - ${clipOffset}px) 100%, 0 100%)`,
           boxShadow:    `0 0 36px ${accent}77`,
         }}>
           <span style={{
             color:         "#FFFFFF",
-            fontSize:      40,
+            fontSize:      badgeFontSize,
             fontFamily:    '"Bebas Neue", "Oswald", sans-serif',
             letterSpacing: "0.12em",
             fontWeight:    900,
@@ -87,12 +91,12 @@ export const BreakingNewsOverlay: React.FC<Props> = ({
         <div style={{
           transform:   `translateX(${nameX}px)`,
           opacity:     nameOpacity,
-          marginLeft:  18,
+          marginLeft:  isPortrait ? 10 : 18,
           flex:        1,
         }}>
           <span style={{
             color:         "#FFFFFF",
-            fontSize:      34,
+            fontSize:      nameFontSize,
             fontFamily:    '"Montserrat", Arial, sans-serif',
             fontWeight:    700,
             letterSpacing: "0.07em",

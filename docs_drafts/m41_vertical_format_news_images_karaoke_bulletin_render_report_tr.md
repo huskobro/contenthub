@@ -221,4 +221,5 @@ GÜNDEM · 8 Nis 2026 · Kaynak Adı
 
 ## 14. Commit Hash ve Push Durumu
 
-_(commit + push sonrası doldurulacak)_
+**Commit:** `87834a3`
+**Push:** main → origin/main başarılı

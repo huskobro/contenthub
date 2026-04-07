@@ -619,6 +619,8 @@ class NewsItem(Base):
     raw_payload_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     # M41: Haber görseli URL'si (RSS media:content, enclosure, og:image)
     image_url: Mapped[Optional[str]] = mapped_column(String(2000), nullable=True)
+    # M41a: Çoklu görsel URL'leri (JSON array, max 5)
+    image_urls_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     is_test_data: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, index=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=_now
@@ -710,6 +712,9 @@ class NewsBulletin(Base):
     subtitle_style: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
     lower_third_style: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
     trust_enforcement_level: Mapped[Optional[str]] = mapped_column(String(20), nullable=True, default="warn")
+    # M41a: Wizard'dan gelen format ve karaoke seçimi
+    render_format: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
+    karaoke_enabled: Mapped[Optional[bool]] = mapped_column(Boolean, nullable=True)
     is_test_data: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, index=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=_now

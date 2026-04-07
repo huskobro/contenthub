@@ -101,6 +101,9 @@ export function NewsBulletinWizardPage() {
   const [trustEnforcementLevel, setTrustEnforcementLevel] = useState("warn");
   // Category suggestion dismiss state
   const [suggestionDismissed, setSuggestionDismissed] = useState(false);
+  // M41a: Format picker + karaoke toggle
+  const [renderFormat, setRenderFormat] = useState("landscape");
+  const [karaokeEnabled, setKaraokeEnabled] = useState(true);
 
   // Load existing bulletin if resuming
   const { data: bulletin, refetch: refetchBulletin } = useQuery({
@@ -334,6 +337,8 @@ export function NewsBulletinWizardPage() {
         subtitle_style: subtitleStyle,
         lower_third_style: lowerThirdStyle,
         trust_enforcement_level: trustEnforcementLevel,
+        render_format: renderFormat,
+        karaoke_enabled: karaokeEnabled,
       }),
     onSuccess: () => {
       refetchBulletin();
@@ -795,6 +800,51 @@ export function NewsBulletinWizardPage() {
               selected={lowerThirdStyle || undefined}
               onSelect={(style) => setLowerThirdStyle(style)}
             />
+          </div>
+
+          {/* ---- M41a: Video Formati ---- */}
+          <div>
+            <h3 className="m-0 mb-2 text-md font-semibold text-neutral-800">Video Formati</h3>
+            <div className="flex gap-2">
+              {([
+                { value: "landscape", label: "16:9 (Yatay)", desc: "YouTube, TV" },
+                { value: "portrait", label: "9:16 (Shorts)", desc: "Shorts, Reels, TikTok" },
+              ] as const).map(({ value, label, desc }) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setRenderFormat(value)}
+                  className={cn(
+                    "flex-1 flex flex-col items-center gap-1 px-3 py-3 border rounded-md cursor-pointer transition-colors text-center",
+                    renderFormat === value
+                      ? "bg-brand-50 text-brand-700 border-brand-400 ring-1 ring-brand-200"
+                      : "bg-white text-neutral-600 border-border hover:bg-neutral-50",
+                  )}
+                >
+                  <span className="text-sm font-medium">{label}</span>
+                  <span className="text-[11px] text-neutral-400">{desc}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* ---- M41a: Karaoke Toggle ---- */}
+          <div>
+            <h3 className="m-0 mb-2 text-md font-semibold text-neutral-800">Karaoke Altyazi</h3>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={karaokeEnabled}
+                onChange={(e) => setKaraokeEnabled(e.target.checked)}
+                className="w-4 h-4 accent-brand-500"
+              />
+              <span className="text-sm text-neutral-700">
+                Kelime bazli karaoke highlight
+              </span>
+            </label>
+            <p className="m-0 mt-1 text-xs text-neutral-400">
+              Acik: kelimeler konusulan anda vurgulanir. Kapali: standart zamanlama.
+            </p>
           </div>
 
           {/* ---- M31: Trust Enforcement Level ---- */}

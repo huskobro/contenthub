@@ -242,14 +242,17 @@ class BulletinScriptExecutor(StepExecutor):
         script_data["language"] = language.value
         script_data["bulletin_id"] = bulletin_id
 
-        # M41: image_url, published_at, source_id selected_items snapshot'tan script items'a ekle
+        # M41/M41a: image_url, image_urls, published_at, source_id, source_name
+        # selected_items snapshot'tan script items'a ekle
         script_items_list = script_data.get("items", [])
         for idx, s_item in enumerate(script_items_list):
             if idx < len(selected_items_data):
                 src = selected_items_data[idx]
                 s_item["image_url"] = src.get("image_url")
+                s_item["image_urls"] = src.get("image_urls", [])
                 s_item["published_at"] = src.get("published_at")
                 s_item["source_id"] = src.get("source_id")
+                s_item["source_name"] = src.get("source_name")
 
         workspace_root = raw_input.get("workspace_root", "")
         if not workspace_root and hasattr(job, "workspace_path") and job.workspace_path:

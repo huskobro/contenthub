@@ -582,6 +582,7 @@ async def start_production(
             settings_snapshot[sys_key] = sys_val
 
     # Selected items snapshot (DB'den gelecek veriler pipeline boyunca değişmeyecek)
+    from app.db.models import NewsSource
     items_snapshot = []
     for item in selected_items:
         # NewsItem'dan headline ve summary çek
@@ -589,6 +590,42 @@ async def start_production(
             select(NewsItem).where(NewsItem.id == item.news_item_id)
         )
         news_item = news_item_result.scalar_one_or_none()
+
+        # M41a: Çoklu görsel URL'leri (JSON array)
+        image_urls_raw: list = []
+        if news_item:
+            urls_json = getattr(news_item, "image_urls_json", None)
+            if urls_json:
+                try:
+                    parsed = json.loads(urls_json)
+                    if isinstance(parsed, list):
+                        image_urls_raw = parsed[:5]
+                except (json.JSONDecodeError, TypeError):
+                    pass
+            # Fallback: tek image_url varsa onu kullan
+            if not image_urls_raw:
+                single_url = getattr(news_item, "image_url", None)
+                if single_url:
+                    image_urls_raw = [single_url]
+
+        # M41a: Source name resolution (DB name → domain fallback)
+        from app.modules.news_bulletin.executors.composition import resolve_source_domain_name
+        source_name = None
+        source_id = news_item.source_id if news_item else None
+        if source_id:
+            src_result = await db.execute(
+                select(NewsSource).where(NewsSource.id == source_id)
+            )
+            source = src_result.scalar_one_or_none()
+            if source:
+                # Öncelik: DB'deki insan-okunur ad
+                source_name = source.name or None
+                # Fallback: domain'den türet
+                if not source_name:
+                    domain_url = source.base_url or source.feed_url or ""
+                    if domain_url:
+                        source_name = resolve_source_domain_name(domain_url) or None
+
         items_snapshot.append({
             "news_item_id": item.news_item_id,
             "sort_order": item.sort_order,
@@ -599,8 +636,12 @@ async def start_production(
             "category": news_item.category if news_item else None,
             # M41: haber görseli + yayın tarihi + kaynak bilgisi
             "image_url": getattr(news_item, "image_url", None) if news_item else None,
+            # M41a: çoklu görsel
+            "image_urls": image_urls_raw,
             "published_at": news_item.published_at.isoformat() if news_item and news_item.published_at else None,
-            "source_id": news_item.source_id if news_item else None,
+            "source_id": source_id,
+            # M41a: kaynak adı
+            "source_name": source_name,
         })
 
     # Job input data
@@ -626,6 +667,13 @@ async def start_production(
         "ticker_items": None,  # auto-generated from headlines in composition
         "_settings_snapshot": settings_snapshot,
     }
+
+    # M41a: Wizard-level render_format ve karaoke_enabled override
+    # Bulletin modelinde açık seçim varsa settings snapshot'ı override et
+    if getattr(bulletin, "render_format", None):
+        input_data["_settings_snapshot"]["news_bulletin.config.render_format"] = bulletin.render_format
+    if getattr(bulletin, "karaoke_enabled", None) is not None:
+        input_data["_settings_snapshot"]["news_bulletin.config.karaoke_enabled"] = bulletin.karaoke_enabled
 
     # Job oluştur — M40a: owner_id from active user
     job_payload = JobCreate(

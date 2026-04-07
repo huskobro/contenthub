@@ -151,6 +151,9 @@ async def test_provider_connection(provider_id: str):
     """
     Provider bağlantısını test eder.
 
+    Kayıtlı olup olmadığını kontrol eder.
+    Whisper gibi yerel provider'lar için dependency check de yapar.
+
     Raises:
       404: Provider kayıtlı değil.
     """
@@ -158,6 +161,17 @@ async def test_provider_connection(provider_id: str):
     for entries in all_entries.values():
         for entry in entries:
             if entry.provider.provider_id() == provider_id:
+                # Whisper dependency check
+                if provider_id == "local_whisper":
+                    try:
+                        import faster_whisper  # noqa: F401
+                    except ImportError:
+                        return {
+                            "provider_id": provider_id,
+                            "status": "error",
+                            "message": "faster-whisper kütüphanesi kurulu değil. "
+                                       "Kurulum: pip install faster-whisper",
+                        }
                 return {
                     "provider_id": provider_id,
                     "status": "ok",

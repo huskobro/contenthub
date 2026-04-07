@@ -77,6 +77,10 @@ export interface NewsBulletinUpdatePayload {
   subtitle_style?: string | null;
   lower_third_style?: string | null;
   trust_enforcement_level?: string | null;
+  /** M41a: Render formatı */
+  render_format?: string | null;
+  /** M41a: Karaoke toggle */
+  karaoke_enabled?: boolean | null;
 }
 
 export function createNewsBulletin(

@@ -113,39 +113,67 @@ def _extract_image_url(entry: object) -> Optional[str]:
 
     Hiçbiri yoksa None döner.
     """
-    # media:content
+    urls = _extract_image_urls(entry)
+    return urls[0] if urls else None
+
+
+def _extract_image_urls(entry: object, max_count: int = 5) -> list:
+    """
+    M41a: feedparser entry'sinden birden fazla haber görseli URL'si çıkarır.
+
+    Tüm kaynakları tarar, benzersiz URL'leri toplar, max_count ile sınırlar.
+
+    Öncelik sırası:
+      1. media_content (tüm elemanlar)
+      2. media_thumbnail (tüm elemanlar)
+      3. enclosures (image/* type olanlar)
+      4. image.href (atom:image)
+
+    Returns:
+        Benzersiz URL listesi, en fazla max_count adet.
+    """
+    seen: set = set()
+    urls: list = []
+
+    def _add(url: str) -> None:
+        clean = url.strip()[:2000]
+        if clean and clean not in seen and len(urls) < max_count:
+            seen.add(clean)
+            urls.append(clean)
+
+    # media:content — tümü
     media_content = getattr(entry, "media_content", None)
     if media_content and isinstance(media_content, list):
         for mc in media_content:
-            url = mc.get("url", "") if isinstance(mc, dict) else ""
-            if url:
-                return url[:2000]
+            u = mc.get("url", "") if isinstance(mc, dict) else ""
+            if u:
+                _add(u)
 
-    # media:thumbnail
+    # media:thumbnail — tümü
     media_thumbnail = getattr(entry, "media_thumbnail", None)
     if media_thumbnail and isinstance(media_thumbnail, list):
         for mt in media_thumbnail:
-            url = mt.get("url", "") if isinstance(mt, dict) else ""
-            if url:
-                return url[:2000]
+            u = mt.get("url", "") if isinstance(mt, dict) else ""
+            if u:
+                _add(u)
 
-    # enclosures (image type)
+    # enclosures (image type) — tümü
     enclosures = getattr(entry, "enclosures", None)
     if enclosures and isinstance(enclosures, list):
         for enc in enclosures:
             enc_type = enc.get("type", "") if isinstance(enc, dict) else ""
             enc_href = enc.get("href", "") if isinstance(enc, dict) else ""
             if enc_href and "image" in enc_type:
-                return enc_href[:2000]
+                _add(enc_href)
 
     # atom image
     image = getattr(entry, "image", None)
     if image:
         href = getattr(image, "href", None)
         if href:
-            return str(href)[:2000]
+            _add(str(href))
 
-    return None
+    return urls
 
 
 def normalize_entry(
@@ -174,6 +202,8 @@ def normalize_entry(
 
     # M41: Haber görseli çıkarma (media:content, enclosure, og:image)
     image_url = _extract_image_url(entry)
+    # M41a: Çoklu görsel çıkarma (max 5)
+    image_urls = _extract_image_urls(entry, max_count=5)
 
     raw_preview: dict = {}
     for key in ("id", "link", "title", "published"):
@@ -194,6 +224,7 @@ def normalize_entry(
         "dedupe_key": _build_dedupe_key(url),
         "raw_payload_json": json.dumps(raw_preview, ensure_ascii=False),
         "image_url": image_url,
+        "image_urls_json": json.dumps(image_urls, ensure_ascii=False) if image_urls else None,
     }
 
 

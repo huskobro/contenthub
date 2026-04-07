@@ -4,10 +4,7 @@
  * Sequence içinde render edilir; kendi durationInFrames'i CATEGORY_FLASH_DUR'dur.
  * Giriş: soldan yay, Çıkış: sağa yay.
  *
- * Animasyon kararları (ContentHub):
- *   - Toplam gösterim: CATEGORY_FLASH_DUR frame
- *   - Çıkış başlar: toplam sürenin son %25'inde
- *   - Spring damping/stiffness: standart ContentHub broadcast değerleri
+ * M41a: Portrait layout desteği eklendi.
  */
 
 import React from "react";
@@ -16,12 +13,13 @@ import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } fr
 interface Props {
   label: string;
   accent: string;
+  isPortrait?: boolean;
 }
 
 /** CategoryFlash'ın kaç frame süreceği — composition'da Sequence süresi olarak kullanılır. */
 export const CATEGORY_FLASH_DUR = 75; // 1.25s @ 60fps — ContentHub tercihi
 
-export const CategoryFlash: React.FC<Props> = ({ label, accent }) => {
+export const CategoryFlash: React.FC<Props> = ({ label, accent, isPortrait = false }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
@@ -29,24 +27,31 @@ export const CategoryFlash: React.FC<Props> = ({ label, accent }) => {
   const EXIT_FRAME = Math.floor(CATEGORY_FLASH_DUR * 0.78);
 
   const enterProgress = spring({ frame, fps, config: { damping: 16, stiffness: 180 } });
-  const enterX = interpolate(enterProgress, [0, 1], [-1100, 0]);
+  const enterX = interpolate(enterProgress, [0, 1], [isPortrait ? -700 : -1100, 0]);
 
   const exitProgress = spring({
     frame: Math.max(0, frame - EXIT_FRAME),
     fps,
     config: { damping: 16, stiffness: 180 },
   });
-  const exitX = interpolate(exitProgress, [0, 1], [0, 1200]);
+  const exitX = interpolate(exitProgress, [0, 1], [0, isPortrait ? 800 : 1200]);
 
   const badgeX = frame < EXIT_FRAME ? enterX : exitX;
+
+  const badgeH = isPortrait ? 80 : 120;
+  const fontSize = isPortrait ? 36 : 56;
+  const padLeft = isPortrait ? 40 : 72;
+  const padRight = isPortrait ? 32 : 56;
+  const minW = isPortrait ? 240 : 380;
+  const clipOffset = isPortrait ? 18 : 28;
 
   return (
     <AbsoluteFill style={{ pointerEvents: "none" }}>
       <div style={{
         position: "absolute",
-        top: "38%",
+        top: isPortrait ? "35%" : "38%",
         left: 0, right: 0,
-        height: 120,
+        height: badgeH,
         display: "flex",
         alignItems: "center",
       }}>
@@ -56,15 +61,15 @@ export const CategoryFlash: React.FC<Props> = ({ label, accent }) => {
           height:          "100%",
           display:         "flex",
           alignItems:      "center",
-          paddingLeft:     72,
-          paddingRight:    56,
-          clipPath:        "polygon(0 0, calc(100% - 28px) 0, 100% 50%, calc(100% - 28px) 100%, 0 100%)",
+          paddingLeft:     padLeft,
+          paddingRight:    padRight,
+          clipPath:        `polygon(0 0, calc(100% - ${clipOffset}px) 0, 100% 50%, calc(100% - ${clipOffset}px) 100%, 0 100%)`,
           boxShadow:       `0 0 40px ${accent}66`,
-          minWidth:        380,
+          minWidth:        minW,
         }}>
           <span style={{
             color:       "#FFF",
-            fontSize:    56,
+            fontSize:    fontSize,
             fontFamily:  '"Bebas Neue", "Oswald", Impact, sans-serif',
             letterSpacing: "0.11em",
             fontWeight:  900,
@@ -76,7 +81,7 @@ export const CategoryFlash: React.FC<Props> = ({ label, accent }) => {
       {/* Alt yatay aksant çizgisi */}
       <div style={{
         position:  "absolute",
-        top:       "calc(38% + 122px)",
+        top:       `calc(${isPortrait ? "35%" : "38%"} + ${badgeH + 2}px)`,
         left: 0, right: 0,
         height:    2,
         background: `linear-gradient(to right, transparent, ${accent}66, transparent)`,

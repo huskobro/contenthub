@@ -30,6 +30,8 @@ export interface BulletinLowerThirdProps {
   showDate?: boolean;
   /** M41: Kaynak göster */
   showSource?: boolean;
+  /** M41a: Portrait layout */
+  isPortrait?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -56,6 +58,10 @@ function formatDate(iso: string | null | undefined): string {
   }
 }
 
+/** M41a: Ticker yüksekliği — lower-third bunun üzerine konumlanır */
+const TICKER_H_LANDSCAPE = 64;
+const TICKER_H_PORTRAIT = 48;
+
 function BroadcastBar({
   headline,
   category,
@@ -65,13 +71,17 @@ function BroadcastBar({
   sourceName,
   showDate = true,
   showSource = false,
+  isPortrait = false,
 }: Omit<BulletinLowerThirdProps, "style">) {
+  const tickerH = isPortrait ? TICKER_H_PORTRAIT : TICKER_H_LANDSCAPE;
+  const barH = isPortrait ? 60 : 80;
+
   const containerStyle: React.CSSProperties = {
     position: "absolute",
-    bottom: 0,
+    bottom: tickerH,
     left: 0,
     right: 0,
-    height: 80,
+    height: barH,
     backgroundColor: "#0a0f2c",
     display: "flex",
     alignItems: "center",
@@ -79,7 +89,7 @@ function BroadcastBar({
   };
 
   const accentStyle: React.CSSProperties = {
-    width: 6,
+    width: isPortrait ? 4 : 6,
     height: "100%",
     backgroundColor: "#e31414",
     flexShrink: 0,
@@ -90,13 +100,13 @@ function BroadcastBar({
     display: "flex",
     flexDirection: "column",
     justifyContent: "center",
-    padding: "0 20px",
+    padding: isPortrait ? "0 12px" : "0 20px",
     overflow: "hidden",
   };
 
   const headlineStyle: React.CSSProperties = {
     color: "#FFFFFF",
-    fontSize: 28,
+    fontSize: isPortrait ? 20 : 28,
     fontWeight: "bold",
     fontFamily: "sans-serif",
     whiteSpace: "nowrap",
@@ -108,7 +118,7 @@ function BroadcastBar({
 
   const categoryStyle: React.CSSProperties = {
     color: "#aaaaaa",
-    fontSize: 14,
+    fontSize: isPortrait ? 11 : 14,
     fontFamily: "sans-serif",
     marginTop: 2,
     textTransform: "uppercase",
@@ -117,10 +127,10 @@ function BroadcastBar({
 
   const counterStyle: React.CSSProperties = {
     color: "#888888",
-    fontSize: 14,
+    fontSize: isPortrait ? 11 : 14,
     fontFamily: "sans-serif",
     fontWeight: "bold",
-    padding: "0 20px",
+    padding: isPortrait ? "0 12px" : "0 20px",
     flexShrink: 0,
     whiteSpace: "nowrap",
   };
@@ -157,18 +167,20 @@ function MinimalBar({
   category,
   itemNumber,
   totalItems,
+  isPortrait = false,
 }: Omit<BulletinLowerThirdProps, "style">) {
+  const tickerH = isPortrait ? TICKER_H_PORTRAIT : TICKER_H_LANDSCAPE;
   const containerStyle: React.CSSProperties = {
     position: "absolute",
-    bottom: 0,
+    bottom: tickerH,
     left: 0,
     right: 0,
-    height: 80,
+    height: isPortrait ? 60 : 80,
     backgroundColor: "rgba(0, 0, 0, 0.55)",
     borderTop: "2px solid rgba(255,255,255,0.8)",
     display: "flex",
     alignItems: "center",
-    padding: "0 32px",
+    padding: isPortrait ? "0 16px" : "0 32px",
     overflow: "hidden",
   };
 
@@ -182,7 +194,7 @@ function MinimalBar({
 
   const headlineStyle: React.CSSProperties = {
     color: "#FFFFFF",
-    fontSize: 26,
+    fontSize: isPortrait ? 18 : 26,
     fontWeight: "600",
     fontFamily: "sans-serif",
     whiteSpace: "nowrap",
@@ -194,14 +206,14 @@ function MinimalBar({
 
   const categoryStyle: React.CSSProperties = {
     color: "rgba(255,255,255,0.6)",
-    fontSize: 13,
+    fontSize: isPortrait ? 10 : 13,
     fontFamily: "sans-serif",
     marginTop: 2,
   };
 
   const counterStyle: React.CSSProperties = {
     color: "rgba(255,255,255,0.5)",
-    fontSize: 13,
+    fontSize: isPortrait ? 10 : 13,
     fontFamily: "sans-serif",
     flexShrink: 0,
     whiteSpace: "nowrap",
@@ -230,38 +242,40 @@ function ModernBar({
   category,
   itemNumber,
   totalItems,
+  isPortrait = false,
 }: Omit<BulletinLowerThirdProps, "style">) {
+  const tickerH = isPortrait ? TICKER_H_PORTRAIT : TICKER_H_LANDSCAPE;
   const containerStyle: React.CSSProperties = {
     position: "absolute",
-    bottom: 0,
+    bottom: tickerH,
     left: 0,
     right: 0,
-    height: 80,
+    height: isPortrait ? 60 : 80,
     background: "linear-gradient(90deg, rgba(10,15,44,0.97) 0%, rgba(10,15,44,0.7) 75%, transparent 100%)",
     display: "flex",
     alignItems: "center",
-    padding: "0 28px",
+    padding: isPortrait ? "0 16px" : "0 28px",
     overflow: "hidden",
   };
 
   const categoryPillStyle: React.CSSProperties = {
     backgroundColor: "#2563eb",
     color: "#FFFFFF",
-    fontSize: 13,
+    fontSize: isPortrait ? 10 : 13,
     fontWeight: "700",
     fontFamily: "sans-serif",
-    padding: "4px 12px",
+    padding: isPortrait ? "3px 8px" : "4px 12px",
     borderRadius: 4,
     textTransform: "uppercase",
     letterSpacing: 1,
     flexShrink: 0,
-    marginRight: 18,
+    marginRight: isPortrait ? 10 : 18,
     whiteSpace: "nowrap",
   };
 
   const headlineStyle: React.CSSProperties = {
     color: "#FFFFFF",
-    fontSize: 30,
+    fontSize: isPortrait ? 20 : 30,
     fontWeight: "800",
     fontFamily: "sans-serif",
     whiteSpace: "nowrap",
@@ -274,7 +288,7 @@ function ModernBar({
 
   const counterStyle: React.CSSProperties = {
     color: "rgba(255,255,255,0.5)",
-    fontSize: 14,
+    fontSize: isPortrait ? 11 : 14,
     fontFamily: "sans-serif",
     flexShrink: 0,
     marginLeft: 16,
@@ -306,6 +320,7 @@ export const BulletinLowerThird: React.FC<BulletinLowerThirdProps> = (props) => 
         category={props.category}
         itemNumber={props.itemNumber}
         totalItems={props.totalItems}
+        isPortrait={props.isPortrait}
       />
     );
   }
@@ -317,6 +332,7 @@ export const BulletinLowerThird: React.FC<BulletinLowerThirdProps> = (props) => 
         category={props.category}
         itemNumber={props.itemNumber}
         totalItems={props.totalItems}
+        isPortrait={props.isPortrait}
       />
     );
   }
@@ -328,6 +344,11 @@ export const BulletinLowerThird: React.FC<BulletinLowerThirdProps> = (props) => 
       category={props.category}
       itemNumber={props.itemNumber}
       totalItems={props.totalItems}
+      publishedAt={props.publishedAt}
+      sourceName={props.sourceName}
+      showDate={props.showDate}
+      showSource={props.showSource}
+      isPortrait={props.isPortrait}
     />
   );
 };

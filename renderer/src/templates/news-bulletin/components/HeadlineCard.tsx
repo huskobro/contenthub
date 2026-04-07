@@ -30,9 +30,39 @@ interface Props {
   item: HeadlineCardItem;
   /** Sıra indeksi — slayt yönünü (sol/sağ) belirler */
   index?: number;
+  /** M41a: Portrait layout flag */
+  isPortrait?: boolean;
 }
 
-export const HeadlineCard: React.FC<Props> = ({ item, index = 0 }) => {
+/**
+ * M41a: Crossfade hesaplaması — segment geçişlerinde yumuşak geçiş.
+ * Segment başlangıcında fade-in, sonunda fade-out.
+ */
+const CROSSFADE_FRAMES = 6; // ~0.2s @ 30fps
+
+function getSegmentOpacity(
+  currentTimeSec: number,
+  seg: ImageTimelineSegment,
+  fps: number,
+): number {
+  const segEnd = seg.startSeconds + seg.durationSeconds;
+  const fadeInDur = CROSSFADE_FRAMES / fps;
+  const fadeOutDur = CROSSFADE_FRAMES / fps;
+
+  // Fade-in
+  if (currentTimeSec < seg.startSeconds + fadeInDur) {
+    const t = (currentTimeSec - seg.startSeconds) / fadeInDur;
+    return Math.max(0, Math.min(1, t));
+  }
+  // Fade-out
+  if (currentTimeSec > segEnd - fadeOutDur) {
+    const t = (segEnd - currentTimeSec) / fadeOutDur;
+    return Math.max(0, Math.min(1, t));
+  }
+  return 1;
+}
+
+export const HeadlineCard: React.FC<Props> = ({ item, index = 0, isPortrait = false }) => {
   const frame = useCurrentFrame();
   const { fps, durationInFrames } = useVideoConfig();
 
@@ -61,11 +91,15 @@ export const HeadlineCard: React.FC<Props> = ({ item, index = 0 }) => {
     ? interpolate(frame, [durationInFrames - 12, durationInFrames], [1, 0], { extrapolateRight: "clamp" })
     : 1;
 
-  // M41: Aktif görseli belirle (timeline varsa zaman bazlı, yoksa tek imagePath)
+  // M41a: Aktif görselleri belirle (timeline varsa zaman bazlı crossfade)
   const currentTimeSec = frame / fps;
+  const hasTimeline = item.imageTimeline && item.imageTimeline.length > 0;
+  const hasMultipleImages = hasTimeline && item.imageTimeline!.length > 1;
+
+  // Tek görsel veya ilk/son segment (crossfade gerekmez)
   let activeImageUrl: string | null = null;
-  if (item.imageTimeline && item.imageTimeline.length > 0) {
-    for (const seg of item.imageTimeline) {
+  if (hasTimeline) {
+    for (const seg of item.imageTimeline!) {
       if (currentTimeSec >= seg.startSeconds && currentTimeSec < seg.startSeconds + seg.durationSeconds) {
         activeImageUrl = seg.url;
         break;
@@ -73,18 +107,65 @@ export const HeadlineCard: React.FC<Props> = ({ item, index = 0 }) => {
     }
     // Fallback: son segment
     if (!activeImageUrl) {
-      activeImageUrl = item.imageTimeline[item.imageTimeline.length - 1].url;
+      activeImageUrl = item.imageTimeline![item.imageTimeline!.length - 1].url;
     }
   } else if (item.imagePath) {
     activeImageUrl = item.imagePath;
   }
 
+  // Portrait layout adjustments
+  const headlineFontSize = isPortrait ? 54 : 96;
+  const narrationFontSize = isPortrait ? 24 : 40;
+  const subtitleFontSize = isPortrait ? 22 : 32;
+  const contentMaxWidth = isPortrait ? 900 : 1400;
+  const contentPadH = isPortrait ? 40 : 80;
+
   return (
     <AbsoluteFill style={{ justifyContent: "center", alignItems: "center", pointerEvents: "none", opacity: exitOpacity }}>
       {item.audioUrl && <Audio src={item.audioUrl} />}
 
-      {/* M41: Haber görseli arka planı */}
-      {activeImageUrl && (
+      {/* M41a: Haber görseli arka planı — çoklu görsel crossfade */}
+      {hasMultipleImages ? (
+        // Çoklu görsel: tüm segmentleri render et, crossfade ile geçiş
+        <>
+          {item.imageTimeline!.map((seg, segIdx) => {
+            // Segment aktif mi kontrol et (±crossfade süresi kadar genişlet)
+            const segStart = seg.startSeconds;
+            const segEnd = seg.startSeconds + seg.durationSeconds;
+            const cfDur = CROSSFADE_FRAMES / fps;
+            const isVisible = currentTimeSec >= segStart - cfDur && currentTimeSec < segEnd + cfDur;
+            if (!isVisible) return null;
+
+            const segOpacity = getSegmentOpacity(currentTimeSec, seg, fps);
+            return (
+              <Img
+                key={`img-${segIdx}`}
+                src={seg.url}
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                  opacity: 0.35 * segOpacity,
+                  filter: "blur(2px)",
+                }}
+              />
+            );
+          })}
+          {/* Koyu gradient — metin okunabilirliği */}
+          <div style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            background: "linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.3) 40%, rgba(0,0,0,0.6) 100%)",
+          }} />
+        </>
+      ) : activeImageUrl ? (
+        // Tek görsel
         <>
           <Img
             src={activeImageUrl}
@@ -109,22 +190,22 @@ export const HeadlineCard: React.FC<Props> = ({ item, index = 0 }) => {
             background: "linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.3) 40%, rgba(0,0,0,0.6) 100%)",
           }} />
         </>
-      )}
+      ) : null}
 
       <div style={{
         position: "absolute",
         left: "50%",
         transform: `translateX(calc(-50% + ${slideX}px))`,
         opacity,
-        maxWidth: 1400,
-        paddingLeft: 80,
-        paddingRight: 80,
+        maxWidth: contentMaxWidth,
+        paddingLeft: contentPadH,
+        paddingRight: contentPadH,
         textAlign: "center",
       }}>
         {/* Aksant çizgisi */}
-        <div style={{ width: "100%", display: "flex", justifyContent: "center", marginBottom: 16 }}>
+        <div style={{ width: "100%", display: "flex", justifyContent: "center", marginBottom: isPortrait ? 10 : 16 }}>
           <div style={{
-            height: 6,
+            height: isPortrait ? 4 : 6,
             width: `${barScale * 60}%`,
             background: `linear-gradient(to right, transparent, ${accent}, transparent)`,
             borderRadius: 3,
@@ -135,7 +216,7 @@ export const HeadlineCard: React.FC<Props> = ({ item, index = 0 }) => {
         {/* Manşet */}
         <h1 style={{
           color: "#F5F5F5",
-          fontSize: 96,
+          fontSize: headlineFontSize,
           fontFamily: '"Bebas Neue", "Oswald", Impact, sans-serif',
           letterSpacing: "0.06em",
           lineHeight: 1.0,
@@ -149,10 +230,10 @@ export const HeadlineCard: React.FC<Props> = ({ item, index = 0 }) => {
         {item.narration && (!item.subtitles || item.subtitles.length === 0) && (
           <p style={{
             color: "rgba(220,220,220,0.9)",
-            fontSize: 40,
+            fontSize: narrationFontSize,
             fontFamily: '"Montserrat", Arial, sans-serif',
             fontWeight: 400,
-            marginTop: 16,
+            marginTop: isPortrait ? 10 : 16,
             letterSpacing: "0.04em",
             textShadow: "0 2px 12px rgba(0,0,0,0.9)",
             transform: `translateY(${subY}px)`,
@@ -165,9 +246,9 @@ export const HeadlineCard: React.FC<Props> = ({ item, index = 0 }) => {
         {/* Dinamik altyazı / karaoke */}
         {item.subtitles && item.subtitles.length > 0 && (
           <div style={{
-            marginTop: 28,
+            marginTop: isPortrait ? 16 : 28,
             opacity: subFadeOut,
-            fontSize: 32,
+            fontSize: subtitleFontSize,
             fontFamily: '"Montserrat", Arial, sans-serif',
             fontWeight: 600,
             color: "#FFFFFF",

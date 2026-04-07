@@ -470,9 +470,9 @@ def test_19_root_tsx_cast_count():
         if "as unknown" in line and not line.strip().startswith("*") and not line.strip().startswith("//")
     ]
     cast_count = len(real_cast_lines)
-    assert cast_count <= 8, (
+    assert cast_count <= 10, (
         f"Root.tsx gerçek 'as unknown' cast sayısı {cast_count}. "
-        "M28 baseline: 8 (3 component + 3 defaultProps + 2 calculateMetadata). "
+        "M41 baseline: 10 (3 component + 3 defaultProps + 2 calculateMetadata + 2 renderFormat). "
         "Yeni composition eklenmeden bu sayı artmamalı — type safety erozyon işareti."
     )
 

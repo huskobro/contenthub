@@ -20,6 +20,8 @@ async function createStandardVideo(values: WizardValues) {
       subtitle_style: values.subtitle_style || null,
       template_id: values.template_id || null,
       style_blueprint_id: values.style_blueprint_id || null,
+      render_format: values.render_format || "landscape",
+      karaoke_enabled: values.karaoke_enabled === "true",
       status: "draft",
     }),
   });
