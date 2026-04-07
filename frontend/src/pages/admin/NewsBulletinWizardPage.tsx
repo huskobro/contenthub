@@ -127,9 +127,14 @@ export function NewsBulletinWizardPage() {
       setTrustEnforcementLevel(bulletin.trust_enforcement_level || "warn");
 
       // Auto-advance based on status
-      if (bulletin.status === "selection_confirmed" || bulletin.status === "in_progress") {
+      // selection_confirmed → step 1 (editorial gate henüz tamamlanmadı, consume_news gerekli)
+      // in_progress         → step 2 (gate geçilmiş, style/production adımına devam)
+      if (bulletin.status === "in_progress") {
         setStep(2);
-      } else if (bulletin.status === "draft" && (bulletin.selected_news_count ?? 0) > 0) {
+      } else if (
+        bulletin.status === "selection_confirmed" ||
+        (bulletin.status === "draft" && (bulletin.selected_news_count ?? 0) > 0)
+      ) {
         setStep(1);
       }
     }
