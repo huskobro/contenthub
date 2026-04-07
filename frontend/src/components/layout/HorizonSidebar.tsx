@@ -23,6 +23,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { cn } from "../../lib/cn";
+import { HorizonUserRailButton, HorizonUserPanelSection } from "./UserSwitcher";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -166,15 +167,18 @@ export function HorizonSidebar({ groups, brandLabel = "ContentHub" }: HorizonSid
           })}
         </div>
 
-        {/* Bottom: expand toggle */}
-        <button
-          onClick={() => setExpanded(!expanded)}
-          className="w-full py-3 flex items-center justify-center text-surface-sidebar-text-muted hover:text-surface-sidebar-text bg-transparent border-none cursor-pointer transition-colors duration-fast"
-          title={expanded ? "Kapat" : "Genislet"}
-          data-testid="horizon-expand-toggle"
-        >
-          {expanded ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-        </button>
+        {/* Bottom: user avatar + expand toggle */}
+        <div className="flex flex-col items-center gap-2 pb-3 shrink-0">
+          <HorizonUserRailButton />
+          <button
+            onClick={() => setExpanded(!expanded)}
+            className="w-full py-1.5 flex items-center justify-center text-surface-sidebar-text-muted hover:text-surface-sidebar-text bg-transparent border-none cursor-pointer transition-colors duration-fast"
+            title={expanded ? "Kapat" : "Genislet"}
+            data-testid="horizon-expand-toggle"
+          >
+            {expanded ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+          </button>
+        </div>
       </div>
 
       {/* === Context Panel === */}
@@ -243,11 +247,9 @@ export function HorizonSidebar({ groups, brandLabel = "ContentHub" }: HorizonSid
           )}
         </nav>
 
-        {/* Bottom: version */}
-        <div className="px-5 py-3 border-t border-surface-sidebar-border shrink-0">
-          <p className="text-[10px] text-surface-sidebar-text-muted m-0 uppercase tracking-[0.1em]">
-            Horizon v1.0
-          </p>
+        {/* Bottom: user switcher */}
+        <div className="px-3 py-3 border-t border-surface-sidebar-border shrink-0">
+          <HorizonUserPanelSection />
         </div>
       </div>
     </div>
