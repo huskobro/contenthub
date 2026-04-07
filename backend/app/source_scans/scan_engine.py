@@ -245,7 +245,12 @@ async def execute_rss_scan(
     try:
         if not _FEEDPARSER_AVAILABLE or feedparser is None:
             raise ImportError("feedparser kurulu değil")
-        feed = feedparser.parse(source.feed_url)
+        # httpx ile fetch — redirect (301/302/308) desteği için
+        import httpx
+        async with httpx.AsyncClient(follow_redirects=True, timeout=30.0) as _http:
+            resp = await _http.get(source.feed_url)
+            resp.raise_for_status()
+        feed = feedparser.parse(resp.content)
     except Exception as exc:
         err = f"feedparser hatası: {exc}"
         logger.error("RSS taraması başarısız [scan_id=%s]: %s", scan_id, err)

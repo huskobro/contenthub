@@ -295,4 +295,8 @@ Not: `test_m7_c1_migration_fresh_db.py` 9 hata/fail — bu pre-existing (MEMORY.
 
 ## 12. Commit Hash ve Push Durumu
 
-*(Commit henüz oluşturulmadı — kullanıcı onayı bekleniyor)*
+| Commit | Hash | Açıklama |
+|--------|------|---------|
+| Implementation | `853a77c` | feat: M38 Hardening — runtime diagnostics, state consistency, theme fixes |
+
+**Push:** ✅ `github.com:huskobro/contenthub.git main` — başarılı

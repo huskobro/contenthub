@@ -110,6 +110,19 @@ class PipelineRunner:
         steps_ordered = sorted(steps, key=lambda s: s.step_order)
 
         for step in steps_ordered:
+            # operator_confirm tipi step'ler otomatik çalıştırılmaz — skip edilir
+            if getattr(step, "idempotency_type", "") == "operator_confirm":
+                logger.info(
+                    "Pipeline: operator_confirm step skipped. job=%s step=%s",
+                    job_id, step.step_key,
+                )
+                await service.transition_step_status(
+                    self._db, job.id, step.step_key, "skipped"
+                )
+                if self._event_bus is not None:
+                    self._event_bus.publish_step_update(job.id, step.step_key, "skipped")
+                continue
+
             success = await self._run_step(job, step)
             if not success:
                 # step failure already transitioned step → failed

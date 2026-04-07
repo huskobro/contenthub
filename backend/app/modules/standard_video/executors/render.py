@@ -80,42 +80,151 @@ logger = logging.getLogger(__name__)
 # Render subprocess zaman aşımı (saniye).
 RENDER_TIMEOUT_SECONDS: int = 600
 
+
+# ---------------------------------------------------------------------------
+# Workspace asset server — Remotion file:// kullanamaz, HTTP gerekli
+# YTRobot-v3 pattern: temp HTTP server → assets'i serve et
+# ---------------------------------------------------------------------------
+
+import http.server
+import socketserver
+import threading
+
+
+class _QuietHandler(http.server.SimpleHTTPRequestHandler):
+    """Sessiz HTTP handler — access log yazmaz."""
+    def log_message(self, fmt: str, *args: object) -> None:  # noqa: D102
+        pass  # suppress access logs
+
+
+def _start_asset_server(directory: str) -> tuple[socketserver.TCPServer, int]:
+    """
+    Verilen dizini serve eden HTTP server başlatır (random port).
+    Returns: (server_instance, port)
+    """
+    handler = lambda *a, **kw: _QuietHandler(*a, directory=directory, **kw)
+    srv = socketserver.TCPServer(("127.0.0.1", 0), handler)
+    port = srv.server_address[1]
+    t = threading.Thread(target=srv.serve_forever, daemon=True)
+    t.start()
+    logger.info("Asset server started: http://127.0.0.1:%d serving %s", port, directory)
+    return srv, port
+
+
+def _stop_asset_server(srv: socketserver.TCPServer) -> None:
+    """Asset server'ı durdurur."""
+    try:
+        srv.shutdown()
+        srv.server_close()
+    except Exception:
+        pass
+
+
+def _rewrite_asset_paths(props: dict, workspace_root: str, job_id: str, base_url: str) -> dict:
+    """
+    Props dict'indeki relative asset path'leri (audioPath, imagePath, subtitlesSrt)
+    HTTP URL'lere dönüştürür. Remotion file:// kullanamaz.
+
+    workspace_root: job workspace dizini (absolute)
+    base_url: http://127.0.0.1:{port}
+    """
+    workspace = Path(workspace_root)
+
+    def _to_url(val: object) -> object:
+        if not isinstance(val, str) or not val:
+            return val
+        # Zaten HTTP/HTTPS ise dokunma
+        if val.startswith(("http://", "https://")):
+            return val
+        # Absolute path → relative yap
+        p = Path(val)
+        if p.is_absolute():
+            try:
+                rel = p.relative_to(workspace)
+                return f"{base_url}/{rel.as_posix()}"
+            except ValueError:
+                return val
+        # Relative path (artifacts/audio/scene_1.mp3 gibi)
+        return f"{base_url}/{val}"
+
+    # items array'ini dönüştür (NB + SV)
+    for item in props.get("items", []):
+        if "audioPath" in item:
+            item["audioPath"] = _to_url(item["audioPath"])
+        if "imagePath" in item:
+            item["imagePath"] = _to_url(item["imagePath"])
+        if "audioUrl" in item:
+            item["audioUrl"] = _to_url(item["audioUrl"])
+
+    # scenes array'ini dönüştür (SV)
+    for scene in props.get("scenes", []):
+        if "audio_path" in scene:
+            scene["audio_path"] = _to_url(scene["audio_path"])
+        if "audioPath" in scene:
+            scene["audioPath"] = _to_url(scene["audioPath"])
+        if "image_path" in scene:
+            scene["image_path"] = _to_url(scene["image_path"])
+
+    # Top level paths
+    if "subtitlesSrt" in props:
+        props["subtitlesSrt"] = _to_url(props["subtitlesSrt"])
+
+    return props
+
 # renderer/ dizini — bu dosyaya göre göreli yol.
 # backend/app/modules/standard_video/executors/render.py → ContentHub/ → renderer/
 _BACKEND_DIR = Path(__file__).resolve().parents[5]  # → ContentHub/
 _RENDERER_DIR = _BACKEND_DIR / "renderer"
 
 
-def _resolve_npx() -> str:
+def _resolve_node_env() -> tuple[str, dict[str, str]]:
     """
-    npx binary'sini sırayla arar:
-    1. nvm'deki en yeni Node sürümünün bin/ dizini
-    2. Homebrew /opt/homebrew/bin/npx
-    3. /usr/local/bin/npx
-    4. Sistem PATH'indeki npx (shutil.which)
-    Bulunamazsa "npx" döner (FileNotFoundError zaten yakalanıyor).
+    npx binary'sini ve node'un bulunduğu bin dizinini içeren env dict döner.
+
+    Returns:
+        (npx_path, env_dict) — subprocess'e geçirilecek environment.
     """
     import shutil
     import os
 
+    env = dict(os.environ)
+    extra_paths: list[str] = []
+
     nvm_dir = Path(os.environ.get("NVM_DIR", Path.home() / ".nvm"))
     nvm_versions = nvm_dir / "versions" / "node"
+    npx_path: str | None = None
+
     if nvm_versions.exists():
         candidates = sorted(nvm_versions.iterdir(), key=lambda p: p.name)
         if candidates:
-            npx_candidate = candidates[-1] / "bin" / "npx"
+            bin_dir = candidates[-1] / "bin"
+            npx_candidate = bin_dir / "npx"
             if npx_candidate.exists():
-                return str(npx_candidate)
+                npx_path = str(npx_candidate)
+                extra_paths.append(str(bin_dir))
 
-    for p in ["/opt/homebrew/bin/npx", "/usr/local/bin/npx"]:
-        if Path(p).exists():
-            return p
+    if not npx_path:
+        for p in ["/opt/homebrew/bin", "/usr/local/bin"]:
+            if Path(p, "npx").exists():
+                npx_path = str(Path(p, "npx"))
+                extra_paths.append(p)
+                break
 
-    found = shutil.which("npx")
-    if found:
-        return found
+    if not npx_path:
+        found = shutil.which("npx")
+        if found:
+            npx_path = found
+            extra_paths.append(str(Path(found).parent))
 
-    return "npx"
+    if not npx_path:
+        npx_path = "npx"
+
+    # PATH'e node/npx dizinini ekle
+    if extra_paths:
+        current_path = env.get("PATH", "")
+        env["PATH"] = ":".join(extra_paths) + ":" + current_path
+
+    return npx_path, env
 
 
 def _load_word_timings(word_timing_path: str | None) -> list[dict]:
@@ -362,25 +471,34 @@ class RenderStepExecutor(StepExecutor):
             duration_fallback_used,
         )
 
-        # render_props.json'u artifacts/ altına yaz — Remotion'a --props ile geçirilir
-        render_props_path = _resolve_artifact_path(workspace_root, job.id, "render_props.json")
-        render_props_path.parent.mkdir(parents=True, exist_ok=True)
-        render_props_path.write_text(
-            json.dumps(render_props, ensure_ascii=False, indent=2),
-            encoding="utf-8",
-        )
+        # Asset server: workspace dizinini HTTP ile serve et
+        # Remotion file:// kullanamaz — tüm asset path'ler HTTP URL olmalı
+        asset_srv, asset_port = _start_asset_server(workspace_root)
+        asset_base_url = f"http://127.0.0.1:{asset_port}"
+        try:
+            _rewrite_asset_paths(render_props, workspace_root, job.id, asset_base_url)
 
-        start_time = time.monotonic()
+            # render_props.json'u artifacts/ altına yaz — Remotion'a --props ile geçirilir
+            render_props_path = _resolve_artifact_path(workspace_root, job.id, "render_props.json")
+            render_props_path.parent.mkdir(parents=True, exist_ok=True)
+            render_props_path.write_text(
+                json.dumps(render_props, ensure_ascii=False, indent=2),
+                encoding="utf-8",
+            )
 
-        # Remotion render subprocess
-        render_result = await self._run_remotion_render(
-            composition_id=composition_id,
-            props_path=str(render_props_path),
-            output_path=str(output_path),
-            job_id=job.id,
-        )
+            start_time = time.monotonic()
 
-        elapsed_ms = int((time.monotonic() - start_time) * 1000)
+            # Remotion render subprocess
+            render_result = await self._run_remotion_render(
+                composition_id=composition_id,
+                props_path=str(render_props_path),
+                output_path=str(output_path),
+                job_id=job.id,
+            )
+
+            elapsed_ms = int((time.monotonic() - start_time) * 1000)
+        finally:
+            _stop_asset_server(asset_srv)
 
         if not render_result["success"]:
             composition_props["render_status"] = "failed"
@@ -518,6 +636,10 @@ class RenderStepExecutor(StepExecutor):
         all_degradation_warnings: list[str] = []
         _DURATION_FALLBACK_SECONDS = 60.0
 
+        # Asset server: workspace dizinini HTTP ile serve et
+        asset_srv, asset_port = _start_asset_server(workspace_root)
+        asset_base_url = f"http://127.0.0.1:{asset_port}"
+
         for idx, entry in enumerate(render_outputs):
             output_key = entry.get("output_key", f"output_{idx}")
             suggested_filename = entry.get("suggested_filename", f"output_{idx}.mp4")
@@ -539,6 +661,9 @@ class RenderStepExecutor(StepExecutor):
 
             # Output-specific render props oluştur
             render_props = _build_render_props_from_output(entry)
+
+            # Asset path'leri HTTP URL'ye dönüştür
+            _rewrite_asset_paths(render_props, workspace_root, job.id, asset_base_url)
 
             # Duration fallback
             duration_fallback_used = False
@@ -580,6 +705,7 @@ class RenderStepExecutor(StepExecutor):
             )
 
             if not render_result["success"]:
+                _stop_asset_server(asset_srv)
                 # Bir output fail ederse tüm job fail
                 composition_props["render_status"] = "failed"
                 composition_props["render_error"] = (
@@ -612,6 +738,7 @@ class RenderStepExecutor(StepExecutor):
                 idx + 1, total_outputs, output_key, suggested_filename, job.id,
             )
 
+        _stop_asset_server(asset_srv)
         elapsed_ms = int((time.monotonic() - start_time) * 1000)
 
         # composition_props.json güncelle
@@ -692,8 +819,9 @@ class RenderStepExecutor(StepExecutor):
             }
 
         # Remotion CLI args — shell injection'a karşı liste kullanılır
+        npx_path, subprocess_env = _resolve_node_env()
         args = [
-            _resolve_npx(),
+            npx_path,
             "remotion",
             "render",
             "src/Root.tsx",
@@ -706,9 +834,10 @@ class RenderStepExecutor(StepExecutor):
         ]
 
         logger.info(
-            "RenderStepExecutor: subprocess başlatılıyor. job=%s composition_id=%s",
+            "RenderStepExecutor: subprocess başlatılıyor. job=%s composition_id=%s npx=%s",
             job_id,
             composition_id,
+            npx_path,
         )
 
         try:
@@ -717,6 +846,7 @@ class RenderStepExecutor(StepExecutor):
                 cwd=str(renderer_dir),
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
+                env=subprocess_env,
             )
 
             try:

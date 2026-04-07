@@ -74,13 +74,46 @@ class AuditLog(Base):
 
 
 class User(Base):
+    """Multi-user foundation — M40.
+
+    slug: filesystem-safe identifier derived from display_name.
+          Used for workspace paths: workspace/users/{slug}/jobs/
+    """
+
     __tablename__ = "users"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
     email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False, index=True)
     display_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    slug: Mapped[str] = mapped_column(String(100), unique=True, nullable=False, index=True)
     role: Mapped[str] = mapped_column(String(50), nullable=False, default="user")
     status: Mapped[str] = mapped_column(String(50), nullable=False, default="active")
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now, onupdate=_now
+    )
+
+
+class UserSettingOverride(Base):
+    """Per-user setting override — M40.
+
+    Only honored when the parent Setting has user_override_allowed=True.
+    Resolution chain: user_override → admin_value → default_value → env → builtin.
+    """
+
+    __tablename__ = "user_setting_overrides"
+    __table_args__ = (
+        UniqueConstraint("user_id", "setting_key", name="uq_user_setting_key"),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    user_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    setting_key: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    value_json: Mapped[str] = mapped_column(Text, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=_now
     )

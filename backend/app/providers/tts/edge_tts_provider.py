@@ -104,8 +104,15 @@ class EdgeTTSProvider(BaseProvider):
 
         gecikme_ms = int((time.monotonic() - baslangic) * 1000)
 
-        # Yaklaşık süre: Türkçe konuşma hızı ~15 karakter/saniye
+        # Gerçek MP3 süresini ölç (mutagen); fallback: heuristic
         yaklasik_sure = round(len(metin) / 15.0, 2)
+        try:
+            from mutagen.mp3 import MP3
+            audio_info = MP3(cikis_yolu)
+            if audio_info.info and audio_info.info.length > 0:
+                yaklasik_sure = round(audio_info.info.length, 2)
+        except Exception:
+            pass  # heuristic fallback kullan
 
         return ProviderOutput(
             result={
