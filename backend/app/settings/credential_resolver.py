@@ -181,6 +181,25 @@ async def get_credential_status(key: str, db: AsyncSession) -> dict:
     }
 
 
+_YOUTUBE_CLIENT_ID_SUFFIX = ".apps.googleusercontent.com"
+
+
+def _normalize_credential_value(key: str, value: str) -> str:
+    """
+    Bilinen formatlama hatalarını temizler.
+
+    credential.youtube_client_id: kullanıcı tam URL yapıştırırsa
+    '.apps.googleusercontent.com' suffix'i otomatik kaldırılır.
+    Örnek: '1234-abc.apps.googleusercontent.com' → '1234-abc'
+    """
+    if key == "credential.youtube_client_id":
+        stripped = value.strip()
+        if stripped.endswith(_YOUTUBE_CLIENT_ID_SUFFIX):
+            stripped = stripped[: -len(_YOUTUBE_CLIENT_ID_SUFFIX)]
+        return stripped
+    return value.strip()
+
+
 async def save_credential(key: str, value: str, db: AsyncSession) -> dict:
     """
     Credential degerini settings tablosuna upsert eder.
@@ -190,6 +209,8 @@ async def save_credential(key: str, value: str, db: AsyncSession) -> dict:
     """
     if key not in CREDENTIAL_KEYS:
         raise ValueError(f"Bilinmeyen credential key: {key}")
+
+    value = _normalize_credential_value(key, value)
 
     meta = CREDENTIAL_KEYS[key]
     admin_json = json.dumps(value)  # '"sk-abc123"' seklinde JSON string
