@@ -75,7 +75,7 @@ export function JobDetailPage() {
 
       <JobOverviewPanel job={job} />
       <JobTimelinePanel steps={job.steps} />
-      <JobSystemPanels steps={job.steps} />
+      <JobSystemPanels steps={job.steps} jobId={job.id} />
       <JobActionsPanel job={job} />
     </PageShell>
   );
