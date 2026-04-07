@@ -648,6 +648,50 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "wired": True,
         "wired_to": "wizard — category style suggestion",
     },
+    "news_bulletin.config.normalize_enabled": {
+        "group": "news_bulletin",
+        "type": "boolean",
+        "label": "Normalizasyon Aktif",
+        "help_text": "Haber baslik/icerik normalizasyonunu etkinlestirir.",
+        "module_scope": "news_bulletin",
+        "env_var": "",
+        "builtin_default": True,
+        "wired": True,
+        "wired_to": "PromptAssemblyService — nb.normalize block condition",
+    },
+    "news_bulletin.config.humanize_enabled": {
+        "group": "news_bulletin",
+        "type": "boolean",
+        "label": "Humanizer Aktif",
+        "help_text": "Insansi dil zenginlestirmeyi etkinlestirir.",
+        "module_scope": "news_bulletin",
+        "env_var": "",
+        "builtin_default": False,
+        "wired": True,
+        "wired_to": "PromptAssemblyService — nb.humanizer block condition",
+    },
+    "news_bulletin.config.tts_enhance_enabled": {
+        "group": "news_bulletin",
+        "type": "boolean",
+        "label": "TTS Uyumluluk Aktif",
+        "help_text": "TTS uyumluluk talimatlarini etkinlestirir.",
+        "module_scope": "news_bulletin",
+        "env_var": "",
+        "builtin_default": True,
+        "wired": True,
+        "wired_to": "PromptAssemblyService — nb.tts_enhance block condition",
+    },
+    "news_bulletin.config.anti_clickbait_enabled": {
+        "group": "news_bulletin",
+        "type": "boolean",
+        "label": "Anti-Clickbait Aktif",
+        "help_text": "Clickbait engelleme kurallarini etkinlestirir.",
+        "module_scope": "news_bulletin",
+        "env_var": "",
+        "builtin_default": True,
+        "wired": True,
+        "wired_to": "PromptAssemblyService — nb.anti_clickbait block condition",
+    },
 
     # --- Standard Video Module Prompts (Phase 2 follow-up) ---
     "standard_video.prompt.script_system": {
@@ -756,6 +800,10 @@ KNOWN_VALIDATION_RULES: Dict[str, str] = {
     "news_bulletin.config.default_lower_third_style": '{"type": "string", "required": false}',
     "news_bulletin.config.trust_enforcement_level": '{"type": "string", "required": false, "enum": ["none", "warn", "block"]}',
     "news_bulletin.config.category_style_mapping_enabled": '{"type": "boolean"}',
+    "news_bulletin.config.normalize_enabled": '{"type": "boolean"}',
+    "news_bulletin.config.humanize_enabled": '{"type": "boolean"}',
+    "news_bulletin.config.tts_enhance_enabled": '{"type": "boolean"}',
+    "news_bulletin.config.anti_clickbait_enabled": '{"type": "boolean"}',
 }
 
 
