@@ -2,7 +2,8 @@ import { useState } from "react";
 import { useAnalyticsOperations } from "../../hooks/useAnalyticsOperations";
 import { useAnalyticsOverview } from "../../hooks/useAnalyticsOverview";
 import { useSourceImpact } from "../../hooks/useSourceImpact";
-import type { AnalyticsWindow, StepStat, ProviderStat, SourceStat } from "../../api/analyticsApi";
+import { usePromptAssemblyMetrics } from "../../hooks/usePromptAssemblyMetrics";
+import type { AnalyticsWindow, StepStat, ProviderStat, SourceStat, AssemblyModuleStat, AssemblyProviderStat } from "../../api/analyticsApi";
 import { cn } from "../../lib/cn";
 import {
   PageShell,
@@ -194,17 +195,76 @@ const sourceColumns = [
 /* Component                                                          */
 /* ------------------------------------------------------------------ */
 
+const assemblyModuleColumns = [
+  {
+    key: "module_scope",
+    header: "Modul",
+    render: (r: AssemblyModuleStat) => <Mono>{r.module_scope}</Mono>,
+  },
+  {
+    key: "run_count",
+    header: "Calisma",
+    align: "right" as const,
+    render: (r: AssemblyModuleStat) => fmtCount(r.run_count),
+  },
+  {
+    key: "avg_included_blocks",
+    header: "Ort. Dahil Blok",
+    align: "right" as const,
+    render: (r: AssemblyModuleStat) => r.avg_included_blocks.toFixed(1),
+  },
+  {
+    key: "avg_skipped_blocks",
+    header: "Ort. Atlanan Blok",
+    align: "right" as const,
+    render: (r: AssemblyModuleStat) => r.avg_skipped_blocks.toFixed(1),
+  },
+];
+
+const assemblyProviderColumns = [
+  {
+    key: "provider_name",
+    header: "Provider",
+    render: (r: AssemblyProviderStat) => <Mono>{r.provider_name}</Mono>,
+  },
+  {
+    key: "run_count",
+    header: "Calisma",
+    align: "right" as const,
+    render: (r: AssemblyProviderStat) => fmtCount(r.run_count),
+  },
+  {
+    key: "response_received_count",
+    header: "Yanit Alindi",
+    align: "right" as const,
+    render: (r: AssemblyProviderStat) => fmtCount(r.response_received_count),
+  },
+  {
+    key: "error_count",
+    header: "Hata",
+    align: "right" as const,
+    render: (r: AssemblyProviderStat) => (
+      <span className={cn(r.error_count > 0 ? "text-error-base" : "text-neutral-800")}>
+        {fmtCount(r.error_count)}
+      </span>
+    ),
+  },
+];
+
 export function AnalyticsOperationsPage() {
   const [window, setWindow] = useState<AnalyticsWindow>("last_30d");
   const { data, isLoading, isError } = useAnalyticsOperations(window);
   const { data: overviewData, isLoading: overviewLoading } = useAnalyticsOverview(window);
   const { data: sourceData, isLoading: sourceLoading } = useSourceImpact(window);
+  const { data: assemblyData, isLoading: assemblyLoading } = usePromptAssemblyMetrics(window);
 
   const anyLoading = isLoading || overviewLoading;
   const stepStats: StepStat[] = data?.step_stats ?? [];
   const sortedSteps = [...stepStats].sort((a, b) => b.count - a.count);
   const providerStats: ProviderStat[] = data?.provider_stats ?? [];
   const sourceStats: SourceStat[] = sourceData?.source_stats ?? [];
+  const assemblyModuleStats: AssemblyModuleStat[] = assemblyData?.module_stats ?? [];
+  const assemblyProviderStats: AssemblyProviderStat[] = assemblyData?.provider_stats ?? [];
 
   return (
     <PageShell
@@ -326,6 +386,74 @@ export function AnalyticsOperationsPage() {
             <DataTable<SourceStat> columns={sourceColumns} data={sourceStats} keyFn={(s) => String(s.source_id)} loading={sourceLoading} emptyMessage="Hen&uuml;z tanimli haber kaynagi bulunmuyor." testId="source-stats" rowTestIdPrefix="source-row" />
           </div>
         </div>
+      </SectionShell>
+
+      {/* Prompt Assembly */}
+      <SectionShell title="Prompt Assembly" testId="analytics-prompt-assembly">
+        <div data-testid="prompt-assembly-heading" className="hidden">Prompt Assembly</div>
+        <div data-testid="prompt-assembly-note" className="hidden">Prompt assembly calisma ozeti ve modul/provider dagilimi.</div>
+        <MetricGrid>
+          <MetricTile
+            label="Uretim Calismasi"
+            value={fmtCount(data?.total_assembly_runs ?? null)}
+            note="is_dry_run=False assembly sayisi"
+            loading={isLoading}
+            testId="assembly-metric-production"
+          />
+          <MetricTile
+            label="Dry Run"
+            value={fmtCount(data?.dry_run_count ?? null)}
+            note="is_dry_run=True assembly sayisi"
+            loading={isLoading}
+            testId="assembly-metric-dry-run"
+          />
+          <MetricTile
+            label="Ort. Dahil Blok"
+            value={assemblyData?.avg_included_blocks != null ? assemblyData.avg_included_blocks.toFixed(1) : "\u2014"}
+            note="Assembly basina ortalama dahil edilen blok"
+            loading={assemblyLoading}
+            testId="assembly-metric-avg-included"
+          />
+          <MetricTile
+            label="Ort. Atlanan Blok"
+            value={assemblyData?.avg_skipped_blocks != null ? assemblyData.avg_skipped_blocks.toFixed(1) : "\u2014"}
+            note="Assembly basina ortalama atlanan blok"
+            loading={assemblyLoading}
+            testId="assembly-metric-avg-skipped"
+          />
+        </MetricGrid>
+
+        {/* Module Stats Table */}
+        {assemblyModuleStats.length > 0 && (
+          <div className="mt-4" data-testid="assembly-module-stats">
+            <h4 className="text-sm font-semibold text-neutral-700 mb-2">Modul Bazli Dagilim</h4>
+            <DataTable<AssemblyModuleStat>
+              columns={assemblyModuleColumns}
+              data={assemblyModuleStats}
+              keyFn={(r) => r.module_scope}
+              loading={assemblyLoading}
+              emptyMessage="Secilen donemde assembly verisi yok."
+              testId="assembly-module-table"
+              rowTestIdPrefix="assembly-module-row"
+            />
+          </div>
+        )}
+
+        {/* Provider Stats Table */}
+        {assemblyProviderStats.length > 0 && (
+          <div className="mt-4" data-testid="assembly-provider-stats">
+            <h4 className="text-sm font-semibold text-neutral-700 mb-2">Provider Bazli Dagilim</h4>
+            <DataTable<AssemblyProviderStat>
+              columns={assemblyProviderColumns}
+              data={assemblyProviderStats}
+              keyFn={(r) => r.provider_name}
+              loading={assemblyLoading}
+              emptyMessage="Secilen donemde assembly provider verisi yok."
+              testId="assembly-provider-table"
+              rowTestIdPrefix="assembly-provider-row"
+            />
+          </div>
+        )}
       </SectionShell>
     </PageShell>
   );

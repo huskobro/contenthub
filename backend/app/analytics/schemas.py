@@ -27,6 +27,9 @@ class OverviewMetrics(BaseModel):
     publish_success_rate: Optional[float]
     avg_production_duration_seconds: Optional[float]
     retry_rate: Optional[float]
+    review_pending_count: int = 0
+    review_rejected_count: int = 0
+    publish_backlog_count: int = 0
 
 
 class ProviderStat(BaseModel):
@@ -58,6 +61,8 @@ class OperationsMetrics(BaseModel):
     provider_error_rate: Optional[float] = None
     provider_stats: list[ProviderStat] = []
     trace_data_quality: Optional[TraceDataQuality] = None
+    total_assembly_runs: int = 0
+    dry_run_count: int = 0
 
 
 # ---------------------------------------------------------------------------
@@ -163,3 +168,32 @@ class ContentMetrics(BaseModel):
     content_type_breakdown: list[ContentTypeBreakdown] = []
     active_template_count: int
     active_blueprint_count: int
+
+
+# ---------------------------------------------------------------------------
+# Prompt Assembly Metrics (M37)
+# ---------------------------------------------------------------------------
+
+class AssemblyModuleStat(BaseModel):
+    module_scope: str
+    run_count: int
+    avg_included_blocks: float
+    avg_skipped_blocks: float
+
+
+class AssemblyProviderStat(BaseModel):
+    provider_name: str
+    run_count: int
+    response_received_count: int
+    error_count: int
+
+
+class PromptAssemblyMetrics(BaseModel):
+    window: str
+    total_assembly_runs: int = 0
+    dry_run_count: int = 0
+    production_run_count: int = 0
+    avg_included_blocks: float = 0.0
+    avg_skipped_blocks: float = 0.0
+    module_stats: list[AssemblyModuleStat] = []
+    provider_stats: list[AssemblyProviderStat] = []

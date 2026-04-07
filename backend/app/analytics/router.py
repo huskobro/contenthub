@@ -26,6 +26,7 @@ from app.analytics.schemas import (
     ChannelOverviewMetrics,
     ContentMetrics,
     TemplateImpactMetrics,
+    PromptAssemblyMetrics,
 )
 
 router = APIRouter(prefix="/analytics", tags=["analytics"], dependencies=[Depends(require_visible("panel:analytics"))])
@@ -149,5 +150,26 @@ async def get_content_metrics(
     df = _parse_date(date_from, "date_from")
     dt = _parse_date(date_to, "date_to")
     return await service.get_content_metrics(
+        session=session, window=window, date_from=df, date_to=dt,
+    )
+
+
+@router.get("/prompt-assembly", response_model=PromptAssemblyMetrics)
+async def get_prompt_assembly_metrics(
+    window: str = Query(default="all_time", description="Zaman penceresi: last_7d | last_30d | last_90d | all_time"),
+    date_from: Optional[str] = Query(default=None, description="Baslangic tarihi (ISO 8601)"),
+    date_to: Optional[str] = Query(default=None, description="Bitis tarihi (ISO 8601)"),
+    session=Depends(get_db),
+):
+    """
+    Prompt Assembly calisma metrikleri.
+
+    Toplam assembly sayisi, dry run / production dagilimi,
+    modul ve provider bazli detaylar.
+    """
+    _validate_window(window)
+    df = _parse_date(date_from, "date_from")
+    dt = _parse_date(date_to, "date_to")
+    return await service.get_prompt_assembly_metrics(
         session=session, window=window, date_from=df, date_to=dt,
     )
