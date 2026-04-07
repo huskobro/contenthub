@@ -24,6 +24,7 @@ from app.content_library.router import router as content_library_router
 from app.discovery.router import router as discovery_router
 from app.wizard_configs.router import router as wizard_configs_router
 from app.modules.router import router as modules_router
+from app.prompt_assembly.router import router as prompt_assembly_router
 
 api_router = APIRouter()
 api_router.include_router(health.router, tags=["health"])
@@ -51,3 +52,4 @@ api_router.include_router(content_library_router)
 api_router.include_router(discovery_router)
 api_router.include_router(wizard_configs_router)
 api_router.include_router(modules_router)
+api_router.include_router(prompt_assembly_router)

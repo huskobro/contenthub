@@ -45,6 +45,7 @@ from app.publish.youtube.adapter import YouTubeAdapter
 from app.settings.credential_resolver import resolve_credential
 from app.settings.settings_resolver import resolve, KNOWN_SETTINGS
 from app.settings.settings_seed import seed_known_settings
+from app.prompt_assembly.block_seed import seed_prompt_blocks
 from app.sse.bus import event_bus
 
 logger = logging.getLogger(__name__)
@@ -92,6 +93,12 @@ async def lifespan(app: FastAPI):
         seed_count = await seed_known_settings(seed_db)
         if seed_count > 0:
             logger.info("Settings seed: %d yeni ayar DB'ye eklendi.", seed_count)
+
+    # Prompt Assembly Engine — seed builtin prompt blocks
+    async with AsyncSessionLocal() as seed_db:
+        block_seed_count = await seed_prompt_blocks(seed_db)
+        if block_seed_count > 0:
+            logger.info("PromptBlock seed: %d yeni blok DB'ye eklendi.", block_seed_count)
 
     # Credential + ayar cozumleme — DB -> .env -> builtin (M9-A / M10-B)
     async with AsyncSessionLocal() as cred_db:
