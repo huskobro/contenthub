@@ -1,3 +1,12 @@
+/**
+ * ThumbnailDirectionPreview — thumbnail yönü seçici.
+ *
+ * 4 thumbnail kompozisyon yönü için görsel şema kartları sunar.
+ * Kartlar kavramsal düzen şemalarıdır — Remotion thumbnail renderer'da
+ * henüz implemente edilmemiştir. Seçim kaydedilir ve
+ * renderer desteği eklendiğinde aktif olacaktır.
+ */
+
 import { cn } from "../../lib/cn";
 
 interface ThumbnailDirectionPreviewProps {
@@ -8,41 +17,76 @@ interface ThumbnailDirectionPreviewProps {
 interface ThumbOption {
   id: string;
   label: string;
+  description: string;
   render: () => React.ReactNode;
 }
+
+// Koyu tema — thumbnail mockup renkleri
+const IMG   = "#1a2540";   // görsel alanı
+const TITLE = "#e2e8f0";   // başlık placeholder
+const SUB   = "#6b7db3";   // alt metin placeholder
+const BADGE = "#2563eb";   // vurgu rozet
 
 const THUMB_STYLES: ThumbOption[] = [
   {
     id: "text_heavy",
-    label: "Metin Agirlikli",
+    label: "Metin Ağırlıklı",
+    description: "Büyük başlık + alt metin odaklı",
     render: () => (
-      <div className="flex flex-col h-full justify-center items-center gap-0.5 bg-neutral-100 rounded-sm p-1">
-        <div className="h-2 w-4/5 bg-neutral-500 rounded-sm" />
-        <div className="h-1.5 w-3/5 bg-neutral-400 rounded-sm" />
-        <div className="h-3 w-1/3 bg-neutral-300 rounded-sm mt-0.5" />
+      <div
+        className="h-full rounded-sm flex flex-col justify-center items-center gap-0.5 p-1.5"
+        style={{ background: "linear-gradient(135deg, #0f1220 0%, #1a2035 100%)" }}
+      >
+        {/* Büyük başlık */}
+        <div className="h-2 rounded-sm" style={{ width: "82%", background: TITLE }} />
+        <div className="h-2 rounded-sm" style={{ width: "65%", background: TITLE }} />
+        {/* Alt metin */}
+        <div className="h-1.5 rounded-sm mt-0.5" style={{ width: "55%", background: SUB }} />
+        {/* Rozet/logo alanı */}
+        <div className="h-2 rounded-sm mt-1 px-1.5 flex items-center justify-center" style={{ width: "30%", background: BADGE }}>
+          <div className="h-0.5 rounded-sm" style={{ width: "80%", background: "rgba(255,255,255,0.8)" }} />
+        </div>
       </div>
     ),
   },
   {
     id: "image_heavy",
-    label: "Gorsel Agirlikli",
+    label: "Görsel Ağırlıklı",
+    description: "Tam ekran görsel + minimal metin",
     render: () => (
-      <div className="relative h-full bg-neutral-300 rounded-sm">
-        <div className="absolute bottom-0.5 left-0.5 right-0.5">
-          <div className="h-1.5 w-1/2 bg-white/80 rounded-sm" />
+      <div className="relative h-full rounded-sm overflow-hidden" style={{ background: IMG }}>
+        {/* Görsel dolgusu — tam alan */}
+        <div className="absolute inset-0 opacity-60" style={{ background: "linear-gradient(135deg, #1a3a6a 0%, #0f1f45 100%)" }} />
+        {/* Alt gradient overlay */}
+        <div
+          className="absolute inset-x-0 bottom-0"
+          style={{ height: "40%", background: "linear-gradient(to top, rgba(0,0,0,0.85), transparent)" }}
+        />
+        {/* Metin — alt köşe */}
+        <div className="absolute bottom-1 left-1 right-1 space-y-0.5">
+          <div className="h-1.5 rounded-sm" style={{ width: "60%", background: "rgba(255,255,255,0.9)" }} />
         </div>
       </div>
     ),
   },
   {
     id: "split",
-    label: "Bolunmus",
+    label: "Bölünmüş",
+    description: "Sol görsel, sağ metin",
     render: () => (
-      <div className="flex h-full gap-0.5">
-        <div className="flex-1 bg-neutral-300 rounded-sm" />
-        <div className="flex-1 flex flex-col justify-center gap-0.5 p-0.5">
-          <div className="h-2 w-full bg-neutral-500 rounded-sm" />
-          <div className="h-1.5 w-3/4 bg-neutral-400 rounded-sm" />
+      <div className="flex h-full rounded-sm overflow-hidden gap-px">
+        {/* Sol — görsel */}
+        <div className="rounded-l-sm" style={{ flex: 1, background: IMG }}>
+          <div className="h-full w-full opacity-70" style={{ background: "linear-gradient(135deg, #1a3a6a 0%, #0f1f45 100%)" }} />
+        </div>
+        {/* Sağ — metin */}
+        <div
+          className="rounded-r-sm flex flex-col justify-center gap-0.5 p-1"
+          style={{ flex: 1, background: "#0f1220" }}
+        >
+          <div className="h-1.5 rounded-sm" style={{ width: "90%", background: TITLE }} />
+          <div className="h-1.5 rounded-sm" style={{ width: "75%", background: TITLE }} />
+          <div className="h-1 rounded-sm mt-0.5" style={{ width: "55%", background: SUB }} />
         </div>
       </div>
     ),
@@ -50,12 +94,19 @@ const THUMB_STYLES: ThumbOption[] = [
   {
     id: "minimal",
     label: "Minimal",
+    description: "Sade arka plan + ortalanmış başlık",
     render: () => (
-      <div className="flex h-full items-center justify-center bg-neutral-200 rounded-sm">
-        <div className="space-y-0.5 text-center">
-          <div className="h-2 w-12 bg-neutral-500 rounded-sm mx-auto" />
-          <div className="h-1 w-8 bg-neutral-400 rounded-sm mx-auto" />
-        </div>
+      <div
+        className="h-full rounded-sm flex flex-col justify-center items-center gap-0.5"
+        style={{ background: "#0a0d1a" }}
+      >
+        {/* İnce üst çizgi */}
+        <div className="h-px mb-1" style={{ width: "40%", background: BADGE }} />
+        {/* Başlık */}
+        <div className="h-1.5 rounded-sm" style={{ width: "70%", background: TITLE }} />
+        <div className="h-1.5 rounded-sm" style={{ width: "50%", background: TITLE }} />
+        {/* İnce alt çizgi */}
+        <div className="h-px mt-1" style={{ width: "40%", background: BADGE }} />
       </div>
     ),
   },
@@ -74,23 +125,29 @@ export function ThumbnailDirectionPreview({
             type="button"
             onClick={() => onSelect?.(t.id)}
             className={cn(
-              "flex flex-col items-center gap-1.5 p-2 rounded-lg border-2 bg-white transition-all duration-150 cursor-pointer",
+              "flex flex-col items-center gap-1.5 p-2 rounded-lg border-2 transition-all duration-150 cursor-pointer",
               selected === t.id
-                ? "border-brand-500 shadow-md ring-2 ring-brand-200"
-                : "border-neutral-200 hover:border-neutral-300 hover:shadow-sm",
+                ? "border-brand-500 bg-brand-50 shadow-md ring-2 ring-brand-200"
+                : "border-neutral-200 bg-white hover:border-neutral-300 hover:shadow-sm",
             )}
           >
-            <div className="w-full aspect-video p-1.5 bg-neutral-50 rounded">
+            <div className="w-full aspect-video p-1.5 rounded" style={{ background: "#07090f" }}>
               {t.render()}
             </div>
-            <span className={cn("text-xs font-medium", selected === t.id ? "text-brand-700" : "text-neutral-600")}>
-              {t.label}
-            </span>
+            <div className="text-center">
+              <span className={cn(
+                "block text-xs font-medium",
+                selected === t.id ? "text-brand-700" : "text-neutral-700",
+              )}>
+                {t.label}
+              </span>
+              <span className="block text-[9px] text-neutral-400 mt-0.5">{t.description}</span>
+            </div>
           </button>
         ))}
       </div>
       <p className="m-0 mt-1.5 text-[10px] text-neutral-400 text-center italic">
-        Thumbnail yonu gorseli — sectiginiz yon thumbnail uretiminde kullanilacaktir
+        Thumbnail şeması — Remotion render desteği yakında eklenecek
       </p>
     </div>
   );
