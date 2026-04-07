@@ -25,6 +25,7 @@ class PromptBlock(Base):
     key: Mapped[str] = mapped_column(String(255), unique=True, nullable=False, index=True)
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     module_scope: Mapped[Optional[str]] = mapped_column(String(100), nullable=True, index=True)
+    step_scope: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     provider_scope: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     group_name: Mapped[str] = mapped_column(String(100), nullable=False, default="core")
     kind: Mapped[str] = mapped_column(String(50), nullable=False)
@@ -59,6 +60,7 @@ class PromptBlock(Base):
             "key": self.key,
             "title": self.title,
             "module_scope": self.module_scope,
+            "step_scope": self.step_scope,
             "provider_scope": self.provider_scope,
             "group_name": self.group_name,
             "kind": self.kind,

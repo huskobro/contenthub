@@ -102,7 +102,7 @@ class PromptAssemblyService:
         data_source: str = "job_context",
     ) -> AssemblyResult:
         # 1. FILTER by scope + status
-        filtered = self._filter_blocks(block_snapshot, module_scope, provider_name)
+        filtered = self._filter_blocks(block_snapshot, module_scope, provider_name, step_key)
 
         # 2. EVALUATE conditions + 3. RENDER templates
         included_blocks: List[BlockTraceEntry] = []
@@ -164,15 +164,18 @@ class PromptAssemblyService:
         )
 
     def _filter_blocks(
-        self, blocks: List[dict], module_scope: str, provider_name: str
+        self, blocks: List[dict], module_scope: str, provider_name: str, step_key: Optional[str] = None
     ) -> List[dict]:
-        """Filter blocks by module/provider scope and status, sort by order_index."""
+        """Filter blocks by module/step/provider scope and status, sort by order_index."""
         filtered = []
         for b in blocks:
             if b.get("status") not in ("active", None):
                 continue
             b_module = b.get("module_scope")
             if b_module is not None and b_module != module_scope:
+                continue
+            b_step = b.get("step_scope")
+            if b_step is not None and step_key is not None and b_step != step_key:
                 continue
             b_provider = b.get("provider_scope")
             if b_provider is not None and not provider_name.startswith(b_provider):

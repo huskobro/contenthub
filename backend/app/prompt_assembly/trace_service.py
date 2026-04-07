@@ -6,6 +6,7 @@ from typing import List, Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 
 from app.prompt_assembly.models import PromptAssemblyRun, PromptAssemblyBlockTrace
 from app.prompt_assembly.payload_builder import ProviderPayloadBuilder
@@ -44,9 +45,9 @@ async def create_assembly_run(
         provider_type=provider_type,
         final_prompt_text=final_prompt_text,
         final_payload_json=sanitizer(final_payload) or "{}",
-        settings_snapshot_json=json.dumps(settings_snapshot, ensure_ascii=False),
+        settings_snapshot_json=sanitizer(settings_snapshot) or "{}",
         prompt_snapshot_json=json.dumps(prompt_snapshot, ensure_ascii=False),
-        data_snapshot_json=json.dumps(data_snapshot, ensure_ascii=False),
+        data_snapshot_json=sanitizer(data_snapshot) or "{}",
         included_block_keys_json=json.dumps(included_block_keys),
         skipped_block_keys_json=json.dumps(skipped_block_keys),
         block_count_included=len(included_block_keys),
@@ -125,10 +126,8 @@ async def get_assembly_run_detail(
 ) -> Optional[PromptAssemblyRun]:
     """Get a single assembly run with block traces eager-loaded."""
     result = await db.execute(
-        select(PromptAssemblyRun).where(PromptAssemblyRun.id == run_id)
+        select(PromptAssemblyRun)
+        .options(selectinload(PromptAssemblyRun.block_traces))
+        .where(PromptAssemblyRun.id == run_id)
     )
-    run = result.scalar_one_or_none()
-    if run is not None:
-        # Trigger lazy load of block_traces
-        _ = run.block_traces
-    return run
+    return result.scalar_one_or_none()

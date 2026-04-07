@@ -13,6 +13,7 @@ class PromptBlockCreate(BaseModel):
     key: str = Field(..., min_length=1, max_length=255)
     title: str = Field(..., min_length=1, max_length=255)
     module_scope: Optional[str] = Field(None, max_length=100)
+    step_scope: Optional[str] = Field(None, max_length=100)
     provider_scope: Optional[str] = Field(None, max_length=100)
     group_name: str = Field("core", max_length=100)
     kind: str = Field(..., max_length=50)
@@ -27,13 +28,18 @@ class PromptBlockCreate(BaseModel):
 
 
 class PromptBlockUpdate(BaseModel):
-    """All fields optional — PATCH semantics."""
+    """All fields optional — PATCH semantics.
+
+    NOTE: `kind` is intentionally excluded — kind is immutable after creation
+    to prevent protection bypasses (core_system/output_contract cannot be
+    disabled, and changing kind would allow circumventing that guard).
+    """
 
     title: Optional[str] = Field(None, max_length=255)
     module_scope: Optional[str] = Field(None, max_length=100)
+    step_scope: Optional[str] = Field(None, max_length=100)
     provider_scope: Optional[str] = Field(None, max_length=100)
     group_name: Optional[str] = Field(None, max_length=100)
-    kind: Optional[str] = Field(None, max_length=50)
     order_index: Optional[int] = None
     enabled_by_default: Optional[bool] = None
     condition_type: Optional[str] = Field(None, max_length=50)
@@ -49,6 +55,7 @@ class PromptBlockResponse(BaseModel):
     key: str
     title: str
     module_scope: Optional[str]
+    step_scope: Optional[str]
     provider_scope: Optional[str]
     group_name: str
     kind: str
