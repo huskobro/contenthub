@@ -6,6 +6,7 @@
  */
 
 import { useParams, useNavigate, Link } from "react-router-dom";
+import { formatDateShort } from "../../lib/formatDate";
 import { useQuery } from "@tanstack/react-query";
 import {
   fetchNewsBulletinById,
@@ -60,7 +61,7 @@ export function NewsBulletinDetailPage() {
             {bulletin.title || bulletin.topic}
           </h2>
           <p className="m-0 text-sm text-neutral-400">
-            ID: {bulletin.id.slice(0, 12)}... | Olusturulma: {new Date(bulletin.created_at).toLocaleString("tr")}
+            ID: {bulletin.id.slice(0, 12)}... | Olusturulma: {formatDateShort(bulletin.created_at)}
           </p>
         </div>
         <StatusBadge status={bulletin.status} />

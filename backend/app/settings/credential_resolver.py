@@ -152,6 +152,12 @@ async def get_credential_status(key: str, db: AsyncSession) -> dict:
     db_val = _parse_admin_value(row.admin_value_json) if row else None
     env_val = _env_value(key)
 
+    # Read tarafında da normalize — UI'da suffix görünmemesi için
+    if db_val:
+        db_val = _normalize_credential_value(key, db_val)
+    if env_val:
+        env_val = _normalize_credential_value(key, env_val)
+
     if db_val:
         cred_status = "configured"
         source = "db"
@@ -184,13 +190,25 @@ async def get_credential_status(key: str, db: AsyncSession) -> dict:
 _YOUTUBE_CLIENT_ID_SUFFIX = ".apps.googleusercontent.com"
 
 
+def expand_youtube_client_id(client_id: str) -> str:
+    """
+    DB'de kısa formda saklanan YouTube client_id'ye
+    '.apps.googleusercontent.com' suffix'ini geri ekler.
+    Google OAuth2 API çağrıları tam formatlı client_id gerektirir.
+    """
+    client_id = client_id.strip()
+    if client_id and not client_id.endswith(_YOUTUBE_CLIENT_ID_SUFFIX):
+        return client_id + _YOUTUBE_CLIENT_ID_SUFFIX
+    return client_id
+
+
 def _normalize_credential_value(key: str, value: str) -> str:
     """
     Bilinen formatlama hatalarını temizler.
 
     credential.youtube_client_id: kullanıcı tam URL yapıştırırsa
     '.apps.googleusercontent.com' suffix'i otomatik kaldırılır.
-    Örnek: '1234-abc.apps.googleusercontent.com' → '1234-abc'
+    DB'de kısa form saklanır; OAuth çağrılarında suffix geri eklenir.
     """
     if key == "credential.youtube_client_id":
         stripped = value.strip()

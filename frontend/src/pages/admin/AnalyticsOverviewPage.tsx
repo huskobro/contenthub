@@ -13,6 +13,7 @@ import {
   FilterInput,
   ActionButton,
 } from "../../components/design-system/primitives";
+import { formatDateShort } from "../../lib/formatDate";
 
 /* ------------------------------------------------------------------ */
 /* Formatters                                                         */
@@ -152,7 +153,7 @@ export function AnalyticsOverviewPage() {
           <MetricTile label="Devam Eden" value={fmtCount(yt?.in_progress_count ?? null)} note="Review/schedule/publishing asamasinda" loading={channelLoading} testId="metric-yt-in-progress" />
           <MetricTile
             label="Son Yayin"
-            value={channelLoading ? "\u2026" : yt?.last_published_at ? new Date(yt.last_published_at).toLocaleDateString("tr-TR") : "\u2014"}
+            value={channelLoading ? "\u2026" : formatDateShort(yt?.last_published_at, "\u2014")}
             note="Son basarili yayin tarihi"
             loading={channelLoading}
             testId="metric-yt-last-publish"

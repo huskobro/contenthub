@@ -56,7 +56,15 @@ export function YouTubeCallbackPage() {
         }
         return res.json();
       })
-      .then(() => {
+      .then((data) => {
+        if (data?.status === "scope_warning") {
+          setStatus("error");
+          setMessage(
+            data.message ||
+            "Yetersiz izin alindi. Google hesap ayarlarinizdan eski erisimi kaldirip tekrar baglanin."
+          );
+          return;
+        }
         setStatus("success");
         setMessage("YouTube baglantisi basariyla kuruldu!");
         // Popup ise kapat + ana pencereyi bilgilendir, değilse yönlendir

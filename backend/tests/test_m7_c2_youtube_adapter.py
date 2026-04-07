@@ -308,7 +308,7 @@ def test_j_token_store_auth_url(token_store):
     assert "client_id=my_client_id" in url
     assert "response_type=code" in url
     assert "access_type=offline" in url
-    assert "youtube.upload" in url
+    assert "auth%2Fyoutube" in url  # scope: .../auth/youtube (URL-encoded)
 
 
 # ===========================================================================

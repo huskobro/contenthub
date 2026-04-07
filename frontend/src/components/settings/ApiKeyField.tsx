@@ -17,6 +17,7 @@ import {
 import { useReadOnly } from "../visibility/ReadOnlyGuard";
 import type { CredentialStatus } from "../../api/credentialsApi";
 import { cn } from "../../lib/cn";
+import { formatDateShort } from "../../lib/formatDate";
 
 // ---------------------------------------------------------------------------
 // Status Badge (local to credentials context)
@@ -124,7 +125,7 @@ export function ApiKeyField({ cred }: { cred: CredentialStatus }) {
         <CredSourceBadge source={cred.source} />
         {cred.updated_at && (
           <span className="text-xs text-neutral-500">
-            {new Date(cred.updated_at).toLocaleString("tr-TR")}
+            {formatDateShort(cred.updated_at)}
           </span>
         )}
       </div>

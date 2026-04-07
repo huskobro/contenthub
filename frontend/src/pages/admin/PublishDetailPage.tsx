@@ -18,21 +18,10 @@ import {
   StatusBadge,
 } from "../../components/design-system/primitives";
 import { useToast } from "../../hooks/useToast";
+import { formatDateTime } from "../../lib/formatDate";
 
 function formatDate(iso: string | null | undefined) {
-  if (!iso) return "\u2014";
-  try {
-    return new Date(iso).toLocaleDateString("tr-TR", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-    });
-  } catch {
-    return "\u2014";
-  }
+  return formatDateTime(iso, "\u2014");
 }
 
 function statusVariant(status: string): string {

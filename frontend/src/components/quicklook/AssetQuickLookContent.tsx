@@ -8,6 +8,7 @@
 import React from "react";
 import type { AssetItem } from "../../api/assetApi";
 import { StatusBadge, DetailGrid, Mono } from "../design-system/primitives";
+import { formatDateShort } from "../../lib/formatDate";
 
 interface AssetQuickLookContentProps {
   item: AssetItem;
@@ -22,15 +23,7 @@ function formatBytes(bytes: number): string {
 }
 
 function formatDate(iso: string | null): string {
-  if (!iso) return "\u2014";
-  try {
-    return new Date(iso).toLocaleDateString("tr-TR", {
-      day: "2-digit", month: "2-digit", year: "numeric",
-      hour: "2-digit", minute: "2-digit",
-    });
-  } catch {
-    return "\u2014";
-  }
+  return formatDateShort(iso, "\u2014");
 }
 
 export function AssetQuickLookContent({ item, onReveal, onDelete }: AssetQuickLookContentProps) {

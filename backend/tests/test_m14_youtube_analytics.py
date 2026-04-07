@@ -127,28 +127,26 @@ async def test_trend_endpoint_unknown_video(client: AsyncClient):
 # ---------------------------------------------------------------------------
 
 @pytest.mark.asyncio
-async def test_trend_endpoint_returns_chronological_snapshots(client: AsyncClient):
+async def test_trend_endpoint_returns_chronological_snapshots(client: AsyncClient, db_session):
     """
     Insert snapshots out of order, verify trend endpoint returns them
     sorted by snapshot_at ascending.
     """
-    from app.db.session import AsyncSessionLocal
     from app.db.models import VideoStatsSnapshot
 
     test_video_id = f"chrono_test_{uuid.uuid4().hex[:8]}"
     now = datetime.now(timezone.utc)
 
-    async with AsyncSessionLocal() as session:
-        # Insert in reverse order
-        for i in [3, 1, 2]:
-            session.add(VideoStatsSnapshot(
-                platform_video_id=test_video_id,
-                view_count=i * 100,
-                like_count=i * 10,
-                comment_count=i,
-                snapshot_at=now + timedelta(hours=i),
-            ))
-        await session.commit()
+    # Insert in reverse order using the test DB session (same DB as client uses)
+    for i in [3, 1, 2]:
+        db_session.add(VideoStatsSnapshot(
+            platform_video_id=test_video_id,
+            view_count=i * 100,
+            like_count=i * 10,
+            comment_count=i,
+            snapshot_at=now + timedelta(hours=i),
+        ))
+    await db_session.commit()
 
     resp = await client.get(f"{YT_BASE}/video-stats/{test_video_id}/trend")
     assert resp.status_code == 200

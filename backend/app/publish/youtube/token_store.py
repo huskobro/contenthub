@@ -107,6 +107,22 @@ class YouTubeTokenStore:
         tokens = self._load_tokens()
         return bool(tokens.get("refresh_token") and tokens.get("client_id"))
 
+    def has_required_scope(self) -> bool:
+        """
+        Token'daki scope, mevcut YOUTUBE_SCOPE ile uyumlu mu?
+
+        Eski `youtube.upload` scope'u `channels?mine=true` için yetersiz.
+        Tam `youtube` scope'u gerekli. Uyumsuzluk varsa yeniden OAuth gerekir.
+
+        Scope string'i boşlukla ayrılmış birden fazla scope içerebilir.
+        Tam eşleşme kontrolü yapılır — substring match değil.
+        """
+        tokens = self._load_tokens()
+        token_scope = tokens.get("scope", "")
+        # Scope string boşlukla ayrılmış olabilir: "scope1 scope2"
+        granted_scopes = token_scope.split()
+        return YOUTUBE_SCOPE in granted_scopes
+
     def save_from_auth_response(
         self,
         client_id: str,
@@ -257,6 +273,11 @@ class YouTubeTokenStore:
             )
 
         data = resp.json()
+        logger.info(
+            "Google token exchange yanıtı — scope: %s, keys: %s",
+            data.get("scope", "<yok>"),
+            list(data.keys()),
+        )
         if "access_token" not in data:
             raise YouTubeAuthError(
                 f"Code exchange yanıtında access_token yok: {data}",

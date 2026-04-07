@@ -8,6 +8,7 @@
 import React from "react";
 import type { ContentLibraryItem } from "../../api/contentLibraryApi";
 import { StatusBadge, DetailGrid } from "../design-system/primitives";
+import { formatDateShort } from "../../lib/formatDate";
 
 interface ContentQuickLookContentProps {
   item: ContentLibraryItem;
@@ -16,13 +17,7 @@ interface ContentQuickLookContentProps {
 }
 
 function formatDate(iso: string) {
-  try {
-    return new Date(iso).toLocaleDateString("tr-TR", {
-      day: "2-digit", month: "2-digit", year: "numeric",
-    });
-  } catch {
-    return "\u2014";
-  }
+  return formatDateShort(iso, "\u2014");
 }
 
 export function ContentQuickLookContent({ item, onNavigate, onClone }: ContentQuickLookContentProps) {

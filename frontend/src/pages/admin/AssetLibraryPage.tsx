@@ -9,6 +9,7 @@ import {
   AssetItem,
   AssetRevealResponse,
 } from "../../api/assetApi";
+import { formatDateShort } from "../../lib/formatDate";
 import {
   PageShell,
   SectionShell,
@@ -60,10 +61,7 @@ function formatBytes(bytes: number): string {
 }
 
 function formatDate(iso: string | null): string {
-  if (!iso) return "—";
-  try {
-    return new Date(iso).toLocaleDateString("tr-TR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
-  } catch { return "—"; }
+  return formatDateShort(iso, "—");
 }
 
 const PAGE_SIZE = 50;

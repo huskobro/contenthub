@@ -14,6 +14,7 @@ import {
   type NotificationType,
 } from "../../stores/notificationStore";
 import { cn } from "../../lib/cn";
+import { formatDateShort } from "../../lib/formatDate";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -28,7 +29,7 @@ function timeAgo(dateStr: string): string {
   if (diff < 3600) return `${Math.floor(diff / 60)} dk once`;
   if (diff < 86400) return `${Math.floor(diff / 3600)} saat once`;
   if (diff < 604800) return `${Math.floor(diff / 86400)} gun once`;
-  return new Date(dateStr).toLocaleDateString("tr-TR");
+  return formatDateShort(dateStr);
 }
 
 const typeIcons: Record<NotificationType, string> = {

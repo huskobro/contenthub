@@ -100,7 +100,15 @@ export function YouTubeOAuthSection() {
           <span className="text-xs text-neutral-500">Kontrol ediliyor...</span>
         )}
         {!isLoading && !isError && ytStatus && (
-          <OAuthStatusBadge status={ytStatus.has_credentials ? "connected" : "missing"} />
+          <OAuthStatusBadge
+            status={
+              ytStatus.has_credentials
+                ? ytStatus.scope_ok === false
+                  ? "invalid"
+                  : "connected"
+                : "missing"
+            }
+          />
         )}
         {isError && <OAuthStatusBadge status="invalid" />}
       </div>
@@ -131,6 +139,14 @@ export function YouTubeOAuthSection() {
               {channelInfo.video_count && `${Number(channelInfo.video_count).toLocaleString("tr-TR")} video`}
             </div>
           </div>
+        </div>
+      )}
+
+      {ytStatus?.has_credentials && ytStatus?.scope_ok === false && (
+        <div className="flex items-center gap-2 mt-2 p-3 bg-warning-light rounded-md border border-warning-light">
+          <span className="text-sm text-warning-text">
+            Mevcut token yetersiz izinlerle alinmis. Lutfen baglantiyi kesip yeniden baglanin.
+          </span>
         </div>
       )}
 

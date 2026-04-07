@@ -38,7 +38,7 @@ from app.db.session import get_db
 from app.audit.service import write_audit_log
 from app.publish.youtube.token_store import YouTubeTokenStore
 from app.publish.youtube.errors import YouTubeAuthError
-from app.settings.credential_resolver import resolve_credential
+from app.settings.credential_resolver import resolve_credential, expand_youtube_client_id
 
 logger = logging.getLogger(__name__)
 
@@ -69,6 +69,7 @@ class AuthCallbackResponse(BaseModel):
 
 class TokenStatusResponse(BaseModel):
     has_credentials: bool
+    scope_ok: bool = True
     message: str
 
 
@@ -96,6 +97,8 @@ async def get_auth_url(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="YouTube client_id bulunamadi. Query param olarak girin veya credential ayarlarindan kaydedin.",
         )
+    # DB'de kısa form saklanır; Google OAuth tam format gerektirir
+    resolved_client_id = expand_youtube_client_id(resolved_client_id)
 
     try:
         auth_url = _token_store.get_auth_url(
@@ -137,6 +140,8 @@ async def auth_callback(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="YouTube client_id bulunamadi.",
         )
+    # DB'de kısa form saklanır; Google OAuth tam format gerektirir
+    resolved_client_id = expand_youtube_client_id(resolved_client_id)
 
     resolved_client_secret = body.client_secret
     if not resolved_client_secret:
@@ -173,6 +178,23 @@ async def auth_callback(
 
     await write_audit_log(db, action="youtube.auth_callback", entity_type="youtube_oauth")
 
+    # Scope kontrolü — Google eski/yetersiz scope döndüyse uyar
+    if not _token_store.has_required_scope():
+        granted = token_data.get("scope", "")
+        logger.warning(
+            "YouTube OAuth scope yetersiz. İstenen: %s — Alınan: %s",
+            "https://www.googleapis.com/auth/youtube",
+            granted,
+        )
+        return AuthCallbackResponse(
+            status="scope_warning",
+            message=(
+                "YouTube bağlantısı kuruldu ancak yetersiz izin alındı. "
+                "Google hesap ayarlarınızdan (myaccount.google.com/permissions) "
+                "bu uygulamanın eski erişimini kaldırıp tekrar bağlanın."
+            ),
+        )
+
     return AuthCallbackResponse(
         status="ok",
         message="YouTube OAuth2 yetkilendirmesi başarıyla tamamlandı.",
@@ -188,14 +210,20 @@ async def token_status():
     Erişim tokenının süresi dolmuş olabilir — get_access_token() çağrısında yenilenir.
     """
     has_creds = _token_store.has_credentials()
-    if has_creds:
+    scope_ok = _token_store.has_required_scope() if has_creds else True
+    if has_creds and not scope_ok:
+        message = (
+            "YouTube OAuth2 token mevcut ancak yetersiz scope ile alınmış. "
+            "Lütfen bağlantıyı kesip yeniden bağlanın."
+        )
+    elif has_creds:
         message = "YouTube OAuth2 credential mevcut. Publish işlemi yapılabilir."
     else:
         message = (
             "YouTube OAuth2 credential bulunamadı. "
             "Admin panelinden /publish/youtube/auth-url akışını tamamlayın."
         )
-    return TokenStatusResponse(has_credentials=has_creds, message=message)
+    return TokenStatusResponse(has_credentials=has_creds, scope_ok=scope_ok, message=message)
 
 
 class ChannelInfoResponse(BaseModel):
@@ -240,6 +268,17 @@ async def get_channel_info():
                     "mine": "true",
                 },
                 headers={"Authorization": f"Bearer {access_token}"},
+            )
+        if resp.status_code == 403:
+            scope_hint = ""
+            if not _token_store.has_required_scope():
+                scope_hint = (
+                    " Mevcut token yetersiz scope ile alınmış."
+                    " Lütfen bağlantıyı kesip yeniden bağlanın."
+                )
+            return ChannelInfoResponse(
+                connected=True,
+                message=f"YouTube API hatası: HTTP 403 — Erişim reddedildi.{scope_hint}",
             )
         if resp.status_code != 200:
             return ChannelInfoResponse(
@@ -361,9 +400,12 @@ async def get_video_stats(db: AsyncSession = Depends(get_db)):
             )
         if resp.status_code != 200:
             logger.error("YouTube video-stats API hatasi: HTTP %s — %s", resp.status_code, resp.text[:300])
+            scope_hint = ""
+            if resp.status_code == 403 and not _token_store.has_required_scope():
+                scope_hint = " Mevcut token yetersiz scope ile alinmis. Baglantiyi kesip yeniden baglanin."
             raise HTTPException(
                 status_code=status.HTTP_502_BAD_GATEWAY,
-                detail=f"YouTube API hatasi: HTTP {resp.status_code}",
+                detail=f"YouTube API hatasi: HTTP {resp.status_code}.{scope_hint}",
             )
 
         data = resp.json()

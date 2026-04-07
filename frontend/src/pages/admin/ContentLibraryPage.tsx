@@ -8,6 +8,7 @@ import {
   ContentLibraryItem,
 } from "../../api/contentLibraryApi";
 import { cn } from "../../lib/cn";
+import { formatDateShort } from "../../lib/formatDate";
 import {
   PageShell,
   SectionShell,
@@ -27,15 +28,7 @@ import { useSearchFocus } from "../../hooks/useSearchFocus";
 import { useToast } from "../../hooks/useToast";
 
 function formatDate(iso: string) {
-  try {
-    return new Date(iso).toLocaleDateString("tr-TR", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    });
-  } catch {
-    return "\u2014";
-  }
+  return formatDateShort(iso, "\u2014");
 }
 
 const PAGE_SIZE = 50;

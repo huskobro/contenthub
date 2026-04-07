@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useYouTubeStatus, useYouTubeChannelInfo, useYouTubeVideoStats, useVideoStatsTrend } from "../../hooks/useCredentials";
 import { PageShell } from "../../components/design-system/primitives";
 import { cn } from "../../lib/cn";
+import { formatDateShort } from "../../lib/formatDate";
 
 const CARD_CLASS = "border border-border rounded-lg p-5 mb-4 bg-surface-card";
 const STAT_ROW_CLASS = "flex gap-4 flex-wrap mt-3";
@@ -44,6 +45,28 @@ export function YouTubeAnalyticsPage() {
         <p className="text-neutral-600 text-base">Yükleniyor...</p>
       )}
 
+      {/* Scope mismatch — needs reconnect */}
+      {!isLoading && isConnected && ytStatus?.scope_ok === false && (
+        <div className={CARD_CLASS}>
+          <div className="text-center py-8 px-4">
+            <p className="text-md text-warning-text m-0 mb-2 font-semibold">
+              YouTube token'i yetersiz izinlerle alinmis.
+            </p>
+            <p className="text-sm text-neutral-600 m-0 max-w-[480px] mx-auto">
+              Kanal bilgileri ve istatistikler icin guncel izinler gereklidir.
+              Lutfen{" "}
+              <a
+                href="/admin/settings"
+                className="text-brand-800 underline"
+              >
+                Ayarlar &gt; Kimlik Bilgileri
+              </a>{" "}
+              sayfasindan YouTube baglantisinizi kesip yeniden baglanin.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Not connected state */}
       {!isLoading && !isConnected && (
         <div className={CARD_CLASS}>
@@ -65,8 +88,8 @@ export function YouTubeAnalyticsPage() {
         </div>
       )}
 
-      {/* Connected state */}
-      {!isLoading && isConnected && (
+      {/* Connected state — only show if scope is OK */}
+      {!isLoading && isConnected && ytStatus?.scope_ok !== false && (
         <>
           {/* Channel summary */}
           <div className={CARD_CLASS}>
@@ -188,7 +211,7 @@ export function YouTubeAnalyticsPage() {
                             </a>
                             {v.published_at && (
                               <div className="text-[0.625rem] text-neutral-500 mt-0.5">
-                                {new Date(v.published_at).toLocaleDateString("tr-TR")}
+                                {formatDateShort(v.published_at)}
                               </div>
                             )}
                           </td>
@@ -239,9 +262,7 @@ export function YouTubeAnalyticsPage() {
                       {trendData.snapshots.map((s, idx) => (
                         <tr key={idx}>
                           <td className={TD_CLASS}>
-                            {s.snapshot_at
-                              ? new Date(s.snapshot_at).toLocaleString("tr-TR")
-                              : "\u2014"}
+                            {formatDateShort(s.snapshot_at, "\u2014")}
                           </td>
                           <td className={TD_NUM_CLASS}>{fmtNum(s.view_count)}</td>
                           <td className={TD_NUM_CLASS}>{fmtNum(s.like_count)}</td>

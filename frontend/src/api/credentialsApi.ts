@@ -48,6 +48,7 @@ const YT_BASE = "/api/v1/publish/youtube";
 
 export interface YouTubeTokenStatus {
   has_credentials: boolean;
+  scope_ok: boolean;
   message: string;
 }
 

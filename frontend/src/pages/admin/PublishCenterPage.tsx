@@ -12,22 +12,12 @@ import {
   StatusBadge,
   Pagination,
 } from "../../components/design-system/primitives";
+import { formatDateShort } from "../../lib/formatDate";
 
 const PAGE_SIZE = 50;
 
 function formatDate(iso: string | null) {
-  if (!iso) return "\u2014";
-  try {
-    return new Date(iso).toLocaleDateString("tr-TR", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  } catch {
-    return "\u2014";
-  }
+  return formatDateShort(iso, "\u2014");
 }
 
 function publishStatusVariant(status: string): string {
