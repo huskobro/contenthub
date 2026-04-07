@@ -313,6 +313,187 @@ async def get_channel_info():
 
 
 # ---------------------------------------------------------------------------
+# Channel All Videos — kanalın tüm videoları
+# ---------------------------------------------------------------------------
+
+class ChannelVideoItem(BaseModel):
+    video_id: str
+    title: str
+    thumbnail_url: Optional[str] = None
+    published_at: Optional[str] = None
+    view_count: int = 0
+    like_count: int = 0
+    comment_count: int = 0
+    duration: Optional[str] = None
+    is_contenthub: bool = False  # ContentHub üzerinden yayınlanan
+
+
+class ChannelVideosResponse(BaseModel):
+    videos: List[ChannelVideoItem]
+    total_count: int
+    contenthub_count: int
+    fetched_count: int
+
+
+@router.get("/channel-videos", response_model=ChannelVideosResponse)
+async def get_channel_videos(
+    max_results: int = 50,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Bağlı YouTube kanalının tüm videolarını döndürür (max 50).
+
+    YouTube Data API v3 akışı:
+      1. channels?mine=true → uploads playlist ID
+      2. playlistItems?playlistId=uploads → video ID listesi
+      3. videos?id=...  → istatistik + snippet
+
+    ContentHub üzerinden yayınlanan videolar is_contenthub=True ile işaretlenir.
+    """
+    if not _token_store.has_credentials():
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="YouTube kimlik bilgileri bulunamadı.",
+        )
+    if not _token_store.has_required_scope():
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Yetersiz OAuth scope. Bağlantıyı kesip yeniden bağlanın.",
+        )
+
+    try:
+        access_token = await _token_store.get_access_token()
+    except YouTubeAuthError as exc:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(exc))
+
+    import httpx
+    from app.db.models import PublishRecord
+
+    # ContentHub yayın listesi — badge için
+    ch_stmt = (
+        select(PublishRecord.platform_video_id)
+        .where(
+            PublishRecord.platform == "youtube",
+            PublishRecord.status == "published",
+            PublishRecord.platform_video_id.isnot(None),
+            PublishRecord.platform_video_id != "",
+        )
+    )
+    ch_result = await db.execute(ch_stmt)
+    contenthub_ids: set[str] = {row[0] for row in ch_result.fetchall()}
+
+    headers = {"Authorization": f"Bearer {access_token}"}
+    max_results = min(max(1, max_results), 50)
+
+    async with httpx.AsyncClient(timeout=20.0) as client:
+        # Step 1: uploads playlist ID
+        ch_resp = await client.get(
+            "https://www.googleapis.com/youtube/v3/channels",
+            params={"part": "contentDetails", "mine": "true"},
+            headers=headers,
+        )
+        if ch_resp.status_code != 200:
+            scope_hint = " Yetersiz scope olabilir — bağlantıyı kesip yeniden bağlanın." if ch_resp.status_code == 403 else ""
+            raise HTTPException(
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail=f"Kanal bilgisi alınamadı: HTTP {ch_resp.status_code}.{scope_hint}",
+            )
+        ch_data = ch_resp.json()
+        ch_items = ch_data.get("items", [])
+        if not ch_items:
+            return ChannelVideosResponse(videos=[], total_count=0, contenthub_count=0, fetched_count=0)
+
+        uploads_playlist_id = (
+            ch_items[0]
+            .get("contentDetails", {})
+            .get("relatedPlaylists", {})
+            .get("uploads", "")
+        )
+        if not uploads_playlist_id:
+            return ChannelVideosResponse(videos=[], total_count=0, contenthub_count=0, fetched_count=0)
+
+        # Step 2: playlist items → video IDs
+        pl_resp = await client.get(
+            "https://www.googleapis.com/youtube/v3/playlistItems",
+            params={
+                "part": "contentDetails",
+                "playlistId": uploads_playlist_id,
+                "maxResults": max_results,
+            },
+            headers=headers,
+        )
+        if pl_resp.status_code != 200:
+            raise HTTPException(
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail=f"Playlist verisi alınamadı: HTTP {pl_resp.status_code}",
+            )
+        pl_data = pl_resp.json()
+        pl_items = pl_data.get("items", [])
+        video_ids = [
+            item["contentDetails"]["videoId"]
+            for item in pl_items
+            if item.get("contentDetails", {}).get("videoId")
+        ]
+        if not video_ids:
+            return ChannelVideosResponse(videos=[], total_count=0, contenthub_count=0, fetched_count=0)
+
+        # Step 3: video details (statistics + snippet + contentDetails for duration)
+        vid_resp = await client.get(
+            "https://www.googleapis.com/youtube/v3/videos",
+            params={
+                "part": "statistics,snippet,contentDetails",
+                "id": ",".join(video_ids),
+            },
+            headers=headers,
+        )
+        if vid_resp.status_code != 200:
+            raise HTTPException(
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail=f"Video detayları alınamadı: HTTP {vid_resp.status_code}",
+            )
+        vid_data = vid_resp.json()
+
+    videos: List[ChannelVideoItem] = []
+    for item in vid_data.get("items", []):
+        vid_id = item.get("id", "")
+        snippet = item.get("snippet", {})
+        stats = item.get("statistics", {})
+        content_details = item.get("contentDetails", {})
+
+        # En iyi thumbnail: maxres → high → medium → default
+        thumbs = snippet.get("thumbnails", {})
+        thumb_url = (
+            thumbs.get("maxres", {}).get("url")
+            or thumbs.get("high", {}).get("url")
+            or thumbs.get("medium", {}).get("url")
+            or thumbs.get("default", {}).get("url")
+        )
+
+        videos.append(
+            ChannelVideoItem(
+                video_id=vid_id,
+                title=snippet.get("title", ""),
+                thumbnail_url=thumb_url,
+                published_at=snippet.get("publishedAt"),
+                view_count=int(stats.get("viewCount", 0)),
+                like_count=int(stats.get("likeCount", 0)),
+                comment_count=int(stats.get("commentCount", 0)),
+                duration=content_details.get("duration"),
+                is_contenthub=vid_id in contenthub_ids,
+            )
+        )
+
+    contenthub_count = sum(1 for v in videos if v.is_contenthub)
+
+    return ChannelVideosResponse(
+        videos=videos,
+        total_count=len(videos),
+        contenthub_count=contenthub_count,
+        fetched_count=len(videos),
+    )
+
+
+# ---------------------------------------------------------------------------
 # Video Stats şemaları
 # ---------------------------------------------------------------------------
 

@@ -114,6 +114,30 @@ export function fetchVideoStatsTrend(videoId: string): Promise<VideoStatsTrendRe
   return api.get<VideoStatsTrendResponse>(`${YT_BASE}/video-stats/${encodeURIComponent(videoId)}/trend`);
 }
 
+// YouTube Channel All Videos
+export interface ChannelVideoItem {
+  video_id: string;
+  title: string;
+  thumbnail_url: string | null;
+  published_at: string | null;
+  view_count: number;
+  like_count: number;
+  comment_count: number;
+  duration: string | null;
+  is_contenthub: boolean;
+}
+
+export interface ChannelVideosResponse {
+  videos: ChannelVideoItem[];
+  total_count: number;
+  contenthub_count: number;
+  fetched_count: number;
+}
+
+export function fetchChannelVideos(maxResults = 50): Promise<ChannelVideosResponse> {
+  return api.get<ChannelVideosResponse>(`${YT_BASE}/channel-videos`, { max_results: maxResults });
+}
+
 export async function getYouTubeAuthUrl(redirectUri: string): Promise<string> {
   const data = await api.get<{ auth_url: string }>(`${YT_BASE}/auth-url`, { redirect_uri: redirectUri });
   return data.auth_url;
