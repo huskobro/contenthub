@@ -1,6 +1,7 @@
 import asyncio
 import json
 import logging
+from pathlib import Path
 from typing import List, Optional
 
 from sqlalchemy import select
@@ -616,6 +617,17 @@ async def start_production(
         input_data_json=json.dumps(input_data, ensure_ascii=False),
     )
     job = await create_job(db, job_payload)
+
+    # Workspace path oluştur ve job'a yaz
+    _workspace_base = Path(__file__).resolve().parent.parent.parent.parent / "workspace"
+    _job_workspace = _workspace_base / job.id
+    _job_workspace.mkdir(parents=True, exist_ok=True)
+    (_job_workspace / "artifacts").mkdir(exist_ok=True)
+    (_job_workspace / "preview").mkdir(exist_ok=True)
+    (_job_workspace / "tmp").mkdir(exist_ok=True)
+    job.workspace_path = str(_job_workspace)
+    await db.commit()
+    await db.refresh(job)
 
     # Bulletin güncelle
     bulletin.job_id = job.id

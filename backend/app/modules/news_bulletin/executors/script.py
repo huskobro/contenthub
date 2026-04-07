@@ -253,6 +253,26 @@ class BulletinScriptExecutor(StepExecutor):
             data=script_data,
         )
 
+        # TTS executor script.json (scenes format) bekliyor — uyumluluk için yaz
+        scenes_compat = {
+            "language": script_data.get("language", "tr"),
+            "scenes": [
+                {
+                    "scene_number": item.get("item_number", i + 1),
+                    "narration": item.get("narration", ""),
+                    "duration_seconds": item.get("duration_seconds"),
+                    "headline": item.get("headline", ""),
+                }
+                for i, item in enumerate(script_data.get("items", []))
+            ],
+        }
+        _write_artifact(
+            workspace_root=workspace_root,
+            job_id=job.id,
+            filename="script.json",
+            data=scenes_compat,
+        )
+
         item_count = len(script_data.get("items", []))
         logger.info(
             "BulletinScriptExecutor: job=%s dil=%s haber=%d artifact=%s assembly=%s",

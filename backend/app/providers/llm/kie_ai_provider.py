@@ -26,7 +26,8 @@ from app.providers.llm._openai_compat_base import openai_compat_chat_completions
 logger = logging.getLogger(__name__)
 
 # kie.ai OpenAI uyumlu endpoint
-_KIE_AI_BASE_URL = "https://kie.ai/api/v1"
+# Doğru format: https://api.kie.ai/{model}/v1 (her model kendi prefix'ini alır)
+_KIE_AI_BASE_URL = "https://api.kie.ai/gemini-2.5-flash/v1"
 _DEFAULT_MODEL = "gemini-2.5-flash"
 _DEFAULT_TEMPERATURE = 0.7
 

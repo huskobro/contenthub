@@ -86,6 +86,38 @@ _BACKEND_DIR = Path(__file__).resolve().parents[5]  # → ContentHub/
 _RENDERER_DIR = _BACKEND_DIR / "renderer"
 
 
+def _resolve_npx() -> str:
+    """
+    npx binary'sini sırayla arar:
+    1. nvm'deki en yeni Node sürümünün bin/ dizini
+    2. Homebrew /opt/homebrew/bin/npx
+    3. /usr/local/bin/npx
+    4. Sistem PATH'indeki npx (shutil.which)
+    Bulunamazsa "npx" döner (FileNotFoundError zaten yakalanıyor).
+    """
+    import shutil
+    import os
+
+    nvm_dir = Path(os.environ.get("NVM_DIR", Path.home() / ".nvm"))
+    nvm_versions = nvm_dir / "versions" / "node"
+    if nvm_versions.exists():
+        candidates = sorted(nvm_versions.iterdir(), key=lambda p: p.name)
+        if candidates:
+            npx_candidate = candidates[-1] / "bin" / "npx"
+            if npx_candidate.exists():
+                return str(npx_candidate)
+
+    for p in ["/opt/homebrew/bin/npx", "/usr/local/bin/npx"]:
+        if Path(p).exists():
+            return p
+
+    found = shutil.which("npx")
+    if found:
+        return found
+
+    return "npx"
+
+
 def _load_word_timings(word_timing_path: str | None) -> list[dict]:
     """
     word_timing_path dosyasından WordTiming listesini yükler.
@@ -661,7 +693,7 @@ class RenderStepExecutor(StepExecutor):
 
         # Remotion CLI args — shell injection'a karşı liste kullanılır
         args = [
-            "npx",
+            _resolve_npx(),
             "remotion",
             "render",
             "src/Root.tsx",
