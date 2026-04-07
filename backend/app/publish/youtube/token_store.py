@@ -37,12 +37,9 @@ logger = logging.getLogger(__name__)
 # Google OAuth2 endpoint'leri — sabit, hardcode edilebilir (public bilgi)
 GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
 GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
-# youtube.upload: video yükleme
-# youtube.readonly: kanal/video bilgisi okuma (channel-info, video-stats)
-YOUTUBE_SCOPE = (
-    "https://www.googleapis.com/auth/youtube.upload"
-    " https://www.googleapis.com/auth/youtube.readonly"
-)
+# youtube: tam YouTube yönetimi (kanal/video okuma + upload)
+# youtube.upload tek başına channels?mine=true için yetersiz (HTTP 403)
+YOUTUBE_SCOPE = "https://www.googleapis.com/auth/youtube"
 
 # Token dosyası adı — data_dir altında
 TOKEN_FILENAME = "youtube_tokens.json"
