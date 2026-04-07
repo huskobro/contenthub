@@ -21,9 +21,9 @@ export function UserJobTracker() {
     queryFn: () => fetchJobs(),
   });
 
-  const activeJobs = (jobs ?? []).filter(
-    (j) => ["queued", "running", "waiting", "retrying"].includes(j.status),
-  );
+  const activeJobs = (jobs ?? [])
+    .filter((j) => ["queued", "running", "waiting", "retrying"].includes(j.status))
+    .slice(0, 5);
   // Son 4 tamamlanan iş
   const recentCompleted = (jobs ?? [])
     .filter((j) => j.status === "completed")
@@ -148,8 +148,9 @@ function CompletedJobRow({ job, onClick }: { job: JobResponse; onClick: () => vo
   const moduleLabel = MODULE_LABELS[job.module_type] ?? job.module_type;
   const { data: contentRef } = useJobContentRef(job.id);
 
-  // İçerik adı: content-ref başlığı varsa onu, yoksa modül adı
-  const displayTitle = contentRef?.content_title || moduleLabel;
+  const hasTitle = !!contentRef?.content_title;
+  const displayTitle = hasTitle ? contentRef!.content_title! : moduleLabel;
+  const subtitle = hasTitle ? moduleLabel : null;
 
   return (
     <div
@@ -164,8 +165,8 @@ function CompletedJobRow({ job, onClick }: { job: JobResponse; onClick: () => vo
         <span className="w-1.5 h-1.5 rounded-full bg-success shrink-0" />
         <div className="min-w-0">
           <span className="text-sm font-medium text-neutral-800 truncate block">{displayTitle}</span>
-          {contentRef?.content_title && (
-            <span className="text-xs text-neutral-400">{moduleLabel}</span>
+          {subtitle && (
+            <span className="text-xs text-neutral-400">{subtitle}</span>
           )}
         </div>
       </div>

@@ -43,6 +43,10 @@ from app.modules.standard_video.executors import (
     SubtitleStepExecutor,
     CompositionStepExecutor,
 )
+from app.modules.news_bulletin.executors import (
+    BulletinScriptExecutor,
+    BulletinMetadataExecutor,
+)
 from app.providers.capability import ProviderCapability
 from app.providers.registry import ProviderRegistry
 from app.publish.executor import PublishStepExecutor
@@ -90,6 +94,10 @@ def _build_executor_from_registry(
         return MetadataStepExecutor(
             registry=registry,
         )
+    if executor_class is BulletinScriptExecutor:
+        return BulletinScriptExecutor(registry=registry)
+    if executor_class is BulletinMetadataExecutor:
+        return BulletinMetadataExecutor(registry=registry)
     if executor_class is TTSStepExecutor:
         return TTSStepExecutor(
             registry=registry,
