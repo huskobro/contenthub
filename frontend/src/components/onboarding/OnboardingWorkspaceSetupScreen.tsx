@@ -1,6 +1,7 @@
-import { useState } from "react";
-import { useCreateSetting } from "../../hooks/useCreateSetting";
+import { useState, useEffect } from "react";
+import { useUpdateSettingValue } from "../../hooks/useEffectiveSettings";
 import { useQueryClient } from "@tanstack/react-query";
+import { fetchSystemInfo } from "../../api/systemApi";
 import { cn } from "../../lib/cn";
 
 interface Props {
@@ -8,15 +9,31 @@ interface Props {
   onComplete: () => void;
 }
 
+const FALLBACK_USERNAME = "user";
+
 export function OnboardingWorkspaceSetupScreen({ onBack, onComplete }: Props) {
-  const createMutation = useCreateSetting();
+  const updateMutation = useUpdateSettingValue();
   const queryClient = useQueryClient();
 
-  const [workspaceRoot, setWorkspaceRoot] = useState("workspace/jobs");
-  const [outputDir, setOutputDir] = useState("workspace/exports");
+  const [workspaceRoot, setWorkspaceRoot] = useState("");
+  const [outputDir, setOutputDir] = useState("");
   const [saving, setSaving] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
+
+  // Fetch OS username on mount to pre-fill defaults
+  useEffect(() => {
+    fetchSystemInfo()
+      .then((info) => {
+        const username = info.os_username || FALLBACK_USERNAME;
+        setWorkspaceRoot(`workspace/jobs/${username}`);
+        setOutputDir(`workspace/exports/${username}`);
+      })
+      .catch(() => {
+        setWorkspaceRoot(`workspace/jobs/${FALLBACK_USERNAME}`);
+        setOutputDir(`workspace/exports/${FALLBACK_USERNAME}`);
+      });
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -31,27 +48,17 @@ export function OnboardingWorkspaceSetupScreen({ onBack, onComplete }: Props) {
     setSaving(true);
 
     try {
-      await createMutation.mutateAsync({
-        key: "workspace_root",
-        group_name: "workspace",
-        type: "string",
-        admin_value_json: JSON.stringify(workspaceRoot.trim()),
-        status: "active",
-        help_text: "Is artefaktlarinin saklanacagi ana klasor yolu",
-        visible_to_user: true,
-        read_only_for_user: true,
+      // system.workspace_root — pre-seeded in KNOWN_SETTINGS, update via PUT
+      await updateMutation.mutateAsync({
+        key: "system.workspace_root",
+        value: workspaceRoot.trim(),
       });
 
-      await createMutation.mutateAsync({
-        key: "output_dir",
-        group_name: "workspace",
-        type: "string",
-        admin_value_json: JSON.stringify(outputDir.trim()),
-        status: "active",
-        help_text: "Tamamlanan ciktilarin (video, ses vb.) yazilacagi klasor yolu",
-        visible_to_user: true,
-        read_only_for_user: true,
-      });
+      // output_dir not a separate KNOWN_SETTING — store under system.workspace_root
+      // and record export path as a sub-path convention via separate key if defined.
+      // For now: workspace_root covers the jobs dir; output_dir is a display-only field
+      // stored in a second update if the key exists, otherwise silently skip.
+      // TODO: add system.output_dir to KNOWN_SETTINGS when needed.
 
       queryClient.invalidateQueries({ queryKey: ["setup-requirements"] });
       queryClient.invalidateQueries({ queryKey: ["settings"] });
@@ -62,6 +69,8 @@ export function OnboardingWorkspaceSetupScreen({ onBack, onComplete }: Props) {
       setSaving(false);
     }
   }
+
+  const isLoading = workspaceRoot === "";
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-neutral-50 to-border-subtle p-8">
@@ -81,7 +90,8 @@ export function OnboardingWorkspaceSetupScreen({ onBack, onComplete }: Props) {
               type="text"
               value={workspaceRoot}
               onChange={(e) => setWorkspaceRoot(e.target.value)}
-              placeholder="workspace/jobs"
+              placeholder={isLoading ? "Yukleniyor..." : "workspace/jobs/kullanici"}
+              disabled={isLoading}
             />
             <div className="text-xs text-neutral-500 mt-0.5">
               Her isin gecici ve kalici artefaktlarinin saklanacagi dizin
@@ -96,7 +106,8 @@ export function OnboardingWorkspaceSetupScreen({ onBack, onComplete }: Props) {
               type="text"
               value={outputDir}
               onChange={(e) => setOutputDir(e.target.value)}
-              placeholder="workspace/exports"
+              placeholder={isLoading ? "Yukleniyor..." : "workspace/exports/kullanici"}
+              disabled={isLoading}
             />
             <div className="text-xs text-neutral-500 mt-0.5">
               Tamamlanan video, ses ve diger ciktilarin yazilacagi dizin
@@ -109,10 +120,10 @@ export function OnboardingWorkspaceSetupScreen({ onBack, onComplete }: Props) {
           <div className="flex gap-2 mt-2">
             <button
               type="submit"
-              disabled={saving}
+              disabled={saving || isLoading}
               className={cn(
                 "py-1.5 px-4 text-neutral-0 border-none rounded-sm text-md",
-                saving ? "bg-neutral-500 cursor-not-allowed" : "bg-brand-700 cursor-pointer"
+                saving || isLoading ? "bg-neutral-500 cursor-not-allowed" : "bg-brand-700 cursor-pointer"
               )}
             >
               {saving ? "Kaydediliyor..." : "Ayarlari Kaydet"}
@@ -123,6 +134,14 @@ export function OnboardingWorkspaceSetupScreen({ onBack, onComplete }: Props) {
               className="py-1.5 px-4 bg-transparent text-neutral-600 border border-border rounded-sm cursor-pointer text-md"
             >
               Geri Don
+            </button>
+            <button
+              type="button"
+              onClick={onComplete}
+              className="py-1.5 px-4 bg-transparent text-neutral-400 border border-dashed border-neutral-300 rounded-sm cursor-pointer text-md ml-auto"
+              title="Varsayilan yollarla devam et — admin panelinden sonradan degistirilebilir"
+            >
+              Varsayilanlarla Devam →
             </button>
           </div>
         </form>

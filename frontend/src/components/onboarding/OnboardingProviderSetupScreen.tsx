@@ -129,6 +129,14 @@ export function OnboardingProviderSetupScreen({ onBack, onComplete }: Props) {
             >
               Geri Don
             </button>
+            <button
+              type="button"
+              onClick={onComplete}
+              className="py-1.5 px-4 bg-transparent text-neutral-400 border border-dashed border-neutral-300 rounded-sm cursor-pointer text-md ml-auto"
+              title="API anahtarı girmeden geç — admin panel üzerinden sonradan ayarlanabilir"
+            >
+              Simdilik Atla →
+            </button>
           </div>
         </form>
       </div>

@@ -211,7 +211,7 @@ export function RemotionRoot() {
         return (
           <Composition
             key={`test_${style}`}
-            id={`NewsBulletin_Test_${style}`}
+            id={`NewsBulletinTest-${style}`}
             component={NewsBulletinTestComponent}
             durationInFrames={durationInFrames}
             fps={FPS}

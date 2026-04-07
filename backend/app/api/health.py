@@ -1,4 +1,5 @@
 import sys
+import getpass
 import logging
 from typing import Optional
 from fastapi import APIRouter
@@ -58,3 +59,17 @@ async def health() -> HealthResponse:
         db_wal_mode=db_wal_mode,
         db_error=db_error,
     )
+
+
+class SystemInfoResponse(BaseModel):
+    os_username: str
+
+
+@router.get("/system/info", response_model=SystemInfoResponse, tags=["system"])
+async def system_info() -> SystemInfoResponse:
+    """Return OS-level system info — used by onboarding to generate default workspace paths."""
+    try:
+        username = getpass.getuser()
+    except Exception:
+        username = "user"
+    return SystemInfoResponse(os_username=username)
