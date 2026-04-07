@@ -309,6 +309,8 @@ export function NewsBulletinWizardPage() {
     onSuccess: (res) => {
       toast.success(`${res.consumed_count} haber tuketildi — pipeline hazir`);
       refetchBulletin();
+      // Auto-advance to step 2 after consume succeeds (status → in_progress)
+      setStep(2);
     },
     onError: (err: any) => {
       const msg = err?.response?.data?.detail || err?.message || "Bilinmeyen hata";
@@ -383,10 +385,17 @@ export function NewsBulletinWizardPage() {
       }
       setStep(1);
     } else if (step === 1) {
+      // Guard: editorial gate must be completed (status === in_progress)
+      if (bulletin?.status !== "in_progress") return;
       setStep(2);
     } else if (step === 2) {
-      // Save style choices then start production
-      await updateBulletinMut.mutateAsync();
+      // Save style choices then start production (sequential — don't start if update fails)
+      try {
+        await updateBulletinMut.mutateAsync();
+      } catch {
+        // updateBulletinMut.onError already shows toast
+        return;
+      }
       startProductionMut.mutate();
     }
   }
