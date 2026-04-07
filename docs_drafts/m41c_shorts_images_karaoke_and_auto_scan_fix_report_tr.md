@@ -218,6 +218,41 @@ const itemSubtitles = srtRaw.length > 0
 
 ---
 
-## 11. Commit ve Push
+## 11. Render Executor Gerçek Bug'ları (M41c-fix)
 
-Sonraki bölümde git commit ve push yapılacak.
+M41c commit sonrası chrome testinde composition_props.json incelemesiyle 3 kritik bug tespit edildi:
+
+### Bug 1: wordTimingPath camelCase tanınmıyordu
+`_build_render_props()` yalnızca `word_timing_path` (snake_case) arıyordu. Bulletin composition `wordTimingPath` (camelCase) yazıyor. Sonuç: `wordTimings=[]` — karaoke hiç çalışmıyordu.
+
+**Fix**: Her iki forma da bakacak şekilde `props.pop("wordTimingPath", None)` eklendi. Hem `_build_render_props()` hem de `_build_render_props_from_output()` güncellendi.
+
+### Bug 2: subtitlesSrt dosya yolu olarak geçiriliyordu
+`composition_props.json`'daki `subtitlesSrt` değeri bir dosya yoluydu (`/path/to/subtitles.srt`). `_rewrite_asset_paths()` bunu HTTP URL'e çeviriyordu. Ama renderer SRT metin içeriği bekliyor, URL değil. `parseSrt()` URL string'ini parse edemez.
+
+**Fix**: `_build_render_props()` ve `_build_render_props_from_output()` içine SRT dosyası okuma eklendi: dosya yoluysa içerik okunur, URL/içerik ise aynen geçirilir. `_rewrite_asset_paths()` artık `subtitlesSrt`'a dokunmuyor.
+
+### Bug 3: imageTimeline[].url HTTP URL'e dönüştürülmüyordu
+`_rewrite_asset_paths()` items[], scenes[] içindeki path'leri dönüştürüyor ama `imageTimeline[].url` eksikti.
+
+**Fix**: `imageTimeline[].url` için `_to_url()` çağrısı eklendi (https:// olanlara dokunmuyor, local path'leri HTTP URL'e çeviriyor).
+
+### Test Fix: M5 httpx mock eksikliği
+Scan engine M41'de `httpx.AsyncClient` ile gerçek HTTP fetch yapmaya başladı ama M5 testleri yalnızca `feedparser`'ı mock'lıyordu. httpx gerçek request yapınca 404 alıyor, feedparser'a hiç ulaşmıyordu.
+
+**Fix**: Her iki test dosyasına `_mock_rss_fetch()` context manager eklendi — hem httpx hem feedparser'ı mock'luyor. 47 M5 testi tekrar geçiyor.
+
+## 12. Final Test Sonuçları
+
+| Test | Sonuç |
+|------|-------|
+| M41a 18 dedike test | ✅ 18/18 pass |
+| Backend tam suite (M7/M6 hariç) | ✅ 1516 pass, 0 yeni failure |
+| M5 C1+C2 scan engine testleri | ✅ 47/47 pass (httpx mock eklendi) |
+| TypeScript renderer | ✅ 0 hata |
+| TypeScript frontend | ✅ 0 hata |
+
+## 13. Commit ve Push
+
+`M41c-fix: render.py subtitlesSrt/imageTimeline/wordTimingPath + test httpx mocks`  
+Commit: `00eb168` → pushed to main.
