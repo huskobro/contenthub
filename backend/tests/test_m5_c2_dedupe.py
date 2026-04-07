@@ -31,6 +31,7 @@ Test kapsamı:
 
 from __future__ import annotations
 
+import contextlib
 import inspect
 import sys
 import types
@@ -52,6 +53,28 @@ from app.source_scans.dedupe_service import (
 )
 from app.source_scans.scan_engine import execute_rss_scan
 from app.source_scans.schemas import ScanDedupeDetail
+
+
+# ---------------------------------------------------------------------------
+# M41c: httpx mock yardımcısı (scan_engine artık httpx ile fetch yapıyor)
+# ---------------------------------------------------------------------------
+
+@contextlib.contextmanager
+def _mock_rss_fetch(feed_obj):
+    fake_resp = types.SimpleNamespace(
+        content=b"<rss/>",
+        status_code=200,
+        raise_for_status=lambda: None,
+    )
+    mock_http_client = mock.AsyncMock()
+    mock_http_client.get = mock.AsyncMock(return_value=fake_resp)
+    mock_http_client.__aenter__ = mock.AsyncMock(return_value=mock_http_client)
+    mock_http_client.__aexit__ = mock.AsyncMock(return_value=False)
+
+    with mock.patch("app.source_scans.scan_engine.feedparser") as fp, \
+         mock.patch("httpx.AsyncClient", return_value=mock_http_client):
+        fp.parse.return_value = feed_obj
+        yield fp
 
 
 # ---------------------------------------------------------------------------
@@ -264,8 +287,7 @@ async def test_soft_dedupe_bastiriliyor(db):
         title="Bitcoin fiyatı düştü son gelişmeler",
     )]
     fake_feed = types.SimpleNamespace(entries=entries)
-    with mock.patch("app.source_scans.scan_engine.feedparser") as fp:
-        fp.parse.return_value = fake_feed
+    with _mock_rss_fetch(fake_feed):
         result = await execute_rss_scan(db, "scan-s14", allow_followup=False)
 
     assert result["skipped_soft"] >= 0  # soft dedupe skoru değişkendir
@@ -300,8 +322,7 @@ async def test_allow_followup_soft_atlaniyor(db):
         title="merkez bankası faiz kararı açıkladı güncelleme",
     )]
     fake_feed = types.SimpleNamespace(entries=entries)
-    with mock.patch("app.source_scans.scan_engine.feedparser") as fp:
-        fp.parse.return_value = fake_feed
+    with _mock_rss_fetch(fake_feed):
         result = await execute_rss_scan(db, "scan-s15", allow_followup=True)
 
     # Skor eşiği geçtiyse followup_accepted=1, geçmediyse new_count=1
@@ -330,8 +351,7 @@ async def test_hard_dedupe_allow_followup_korum(db):
     # Aynı URL — hard dedupe tetiklenmeli
     entries = [_make_entry(link="https://example.com/haber/hard", title="Farklı Başlık")]
     fake_feed = types.SimpleNamespace(entries=entries)
-    with mock.patch("app.source_scans.scan_engine.feedparser") as fp:
-        fp.parse.return_value = fake_feed
+    with _mock_rss_fetch(fake_feed):
         result = await execute_rss_scan(db, "scan-s16", allow_followup=True)
 
     assert result["skipped_hard"] == 1
@@ -363,8 +383,7 @@ async def test_dedupe_details_yalnizca_ilgili(db):
         _make_entry(link="https://example.com/yeni2", title="Tamamen Yeni Haber İkinci"),
     ]
     fake_feed = types.SimpleNamespace(entries=entries)
-    with mock.patch("app.source_scans.scan_engine.feedparser") as fp:
-        fp.parse.return_value = fake_feed
+    with _mock_rss_fetch(fake_feed):
         result = await execute_rss_scan(db, "scan-s17")
 
     # Hard dup dedupe_details'te olmalı
@@ -395,8 +414,7 @@ async def test_dedupe_details_matched_item_id_ve_score(db):
 
     entries = [_make_entry(link="https://example.com/mevcut", title="Mevcut Haber")]
     fake_feed = types.SimpleNamespace(entries=entries)
-    with mock.patch("app.source_scans.scan_engine.feedparser") as fp:
-        fp.parse.return_value = fake_feed
+    with _mock_rss_fetch(fake_feed):
         result = await execute_rss_scan(db, "scan-s18")
 
     assert len(result["dedupe_details"]) == 1
@@ -426,8 +444,7 @@ async def test_hard_dedupe_similarity_score_1(db):
 
     entries = [_make_entry(link="https://example.com/hard", title="Hard Haber")]
     fake_feed = types.SimpleNamespace(entries=entries)
-    with mock.patch("app.source_scans.scan_engine.feedparser") as fp:
-        fp.parse.return_value = fake_feed
+    with _mock_rss_fetch(fake_feed):
         result = await execute_rss_scan(db, "scan-s19")
 
     detail = result["dedupe_details"][0]
@@ -449,8 +466,7 @@ async def test_newsitem_status_hic_deduped_olmaz(db):
 
     entries = [_make_entry(link=f"https://example.com/h/{i}", title=f"Haber {i}") for i in range(3)]
     fake_feed = types.SimpleNamespace(entries=entries)
-    with mock.patch("app.source_scans.scan_engine.feedparser") as fp:
-        fp.parse.return_value = fake_feed
+    with _mock_rss_fetch(fake_feed):
         await execute_rss_scan(db, "scan-s20")
 
     rows = await db.execute(sa_select(NewsItem).where(NewsItem.source_scan_id == "scan-s20"))
@@ -483,8 +499,7 @@ async def test_soft_dedupe_onceki_item_status_degismez(db):
     # Soft bastırma tetiklensin ya da tetiklenmesin — önceki item dokunulmaz
     entries = [_make_entry(link="https://example.com/baska21", title="Mevcut haber başlığı test")]
     fake_feed = types.SimpleNamespace(entries=entries)
-    with mock.patch("app.source_scans.scan_engine.feedparser") as fp:
-        fp.parse.return_value = fake_feed
+    with _mock_rss_fetch(fake_feed):
         await execute_rss_scan(db, "scan-s21")
 
     row = await db.execute(sa_select(NewsItem).where(NewsItem.id == "item-prev-21"))
@@ -516,8 +531,7 @@ async def test_skipped_dedupe_toplam(db):
         _make_entry(link="https://example.com/yeni22", title="Tamamen Yeni"),
     ]
     fake_feed = types.SimpleNamespace(entries=entries)
-    with mock.patch("app.source_scans.scan_engine.feedparser") as fp:
-        fp.parse.return_value = fake_feed
+    with _mock_rss_fetch(fake_feed):
         result = await execute_rss_scan(db, "scan-s22")
 
     assert result["skipped_dedupe"] == result["skipped_hard"] + result["skipped_soft"]

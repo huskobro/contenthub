@@ -31,6 +31,7 @@ from __future__ import annotations
 
 import json
 import types
+import contextlib
 import unittest.mock as mock
 from datetime import datetime, timezone
 
@@ -48,6 +49,36 @@ from app.source_scans.scan_engine import (
     execute_rss_scan,
 )
 from app.source_scans.schemas import ScanExecuteResponse
+
+
+# ---------------------------------------------------------------------------
+# M41c: httpx mock yardımcısı
+# scan_engine artık feedparser'a geçmeden önce httpx ile fetch yapıyor.
+# Test edilecek testlerin hem feedparser'ı hem de httpx'i mocklaması gerekiyor.
+# ---------------------------------------------------------------------------
+
+@contextlib.contextmanager
+def _mock_rss_fetch(feed_obj):
+    """
+    scan_engine içindeki httpx fetch + feedparser.parse ikilisini mocklar.
+    feed_obj: feedparser'ın döndürmesi gereken sahte feed nesnesi.
+    """
+    fake_resp = types.SimpleNamespace(
+        content=b"<rss/>",  # feedparser mock'u kullanıldığı için içerik önemsiz
+        status_code=200,
+        raise_for_status=lambda: None,
+    )
+
+    # httpx.AsyncClient'ı mock et — context manager protokolü gerekli
+    mock_http_client = mock.AsyncMock()
+    mock_http_client.get = mock.AsyncMock(return_value=fake_resp)
+    mock_http_client.__aenter__ = mock.AsyncMock(return_value=mock_http_client)
+    mock_http_client.__aexit__ = mock.AsyncMock(return_value=False)
+
+    with mock.patch("app.source_scans.scan_engine.feedparser") as fp, \
+         mock.patch("httpx.AsyncClient", return_value=mock_http_client):
+        fp.parse.return_value = feed_obj
+        yield fp
 
 
 # ---------------------------------------------------------------------------
@@ -239,8 +270,7 @@ async def test_execute_scan_basarili_tek_entry(db):
     fake_feed = types.SimpleNamespace(
         entries=[_make_entry(link="https://example.com/haber/12", title="Haber 12")]
     )
-    with mock.patch("app.source_scans.scan_engine.feedparser") as fp:
-        fp.parse.return_value = fake_feed
+    with _mock_rss_fetch(fake_feed):
         result = await execute_rss_scan(db, "scan-12")
 
     assert result["status"] == "completed"
@@ -271,8 +301,7 @@ async def test_execute_scan_hard_dedupe(db):
     fake_feed = types.SimpleNamespace(
         entries=[_make_entry(link="https://example.com/haber/13", title="Aynı Haber")]
     )
-    with mock.patch("app.source_scans.scan_engine.feedparser") as fp:
-        fp.parse.return_value = fake_feed
+    with _mock_rss_fetch(fake_feed):
         result = await execute_rss_scan(db, "scan-13")
 
     assert result["skipped_dedupe"] == 1
@@ -296,8 +325,7 @@ async def test_execute_scan_cok_entry(db):
         for i in range(5)
     ]
     fake_feed = types.SimpleNamespace(entries=entries)
-    with mock.patch("app.source_scans.scan_engine.feedparser") as fp:
-        fp.parse.return_value = fake_feed
+    with _mock_rss_fetch(fake_feed):
         result = await execute_rss_scan(db, "scan-14")
 
     assert result["new_count"] == 5
@@ -321,8 +349,7 @@ async def test_execute_scan_gecersiz_entry_atlaniyor(db):
         _make_entry(link="https://example.com/haber/15", title="Geçerli Haber"),
     ]
     fake_feed = types.SimpleNamespace(entries=entries)
-    with mock.patch("app.source_scans.scan_engine.feedparser") as fp:
-        fp.parse.return_value = fake_feed
+    with _mock_rss_fetch(fake_feed):
         result = await execute_rss_scan(db, "scan-15")
 
     assert result["skipped_invalid"] == 1
@@ -345,8 +372,7 @@ async def test_execute_scan_newsitem_status_new(db):
     fake_feed = types.SimpleNamespace(
         entries=[_make_entry(link="https://example.com/haber/16", title="Haber 16")]
     )
-    with mock.patch("app.source_scans.scan_engine.feedparser") as fp:
-        fp.parse.return_value = fake_feed
+    with _mock_rss_fetch(fake_feed):
         await execute_rss_scan(db, "scan-16")
 
     rows = await db.execute(sa_select(NewsItem).where(NewsItem.source_scan_id == "scan-16"))
@@ -371,8 +397,7 @@ async def test_execute_scan_sourcescan_completed(db):
     fake_feed = types.SimpleNamespace(
         entries=[_make_entry(link="https://example.com/haber/17", title="Haber 17")]
     )
-    with mock.patch("app.source_scans.scan_engine.feedparser") as fp:
-        fp.parse.return_value = fake_feed
+    with _mock_rss_fetch(fake_feed):
         await execute_rss_scan(db, "scan-17")
 
     await db.refresh(scan)
@@ -396,8 +421,7 @@ async def test_execute_scan_result_count(db):
         for i in range(3)
     ]
     fake_feed = types.SimpleNamespace(entries=entries)
-    with mock.patch("app.source_scans.scan_engine.feedparser") as fp:
-        fp.parse.return_value = fake_feed
+    with _mock_rss_fetch(fake_feed):
         result = await execute_rss_scan(db, "scan-18")
 
     await db.refresh(scan)
@@ -485,8 +509,7 @@ async def test_scan_motoru_used_atamiyor(db):
         for i in range(3)
     ]
     fake_feed = types.SimpleNamespace(entries=entries)
-    with mock.patch("app.source_scans.scan_engine.feedparser") as fp:
-        fp.parse.return_value = fake_feed
+    with _mock_rss_fetch(fake_feed):
         await execute_rss_scan(db, "scan-22")
 
     from sqlalchemy import select as sa_select
@@ -521,8 +544,7 @@ async def test_dedupe_key_case_insensitive(db):
     # Aynı URL küçük harfle
     entries = [_make_entry(link="https://example.com/haber/23", title="Aynı")]
     fake_feed = types.SimpleNamespace(entries=entries)
-    with mock.patch("app.source_scans.scan_engine.feedparser") as fp:
-        fp.parse.return_value = fake_feed
+    with _mock_rss_fetch(fake_feed):
         result = await execute_rss_scan(db, "scan-23")
 
     assert result["skipped_dedupe"] == 1

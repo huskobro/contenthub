@@ -167,8 +167,15 @@ def _rewrite_asset_paths(props: dict, workspace_root: str, job_id: str, base_url
             scene["image_path"] = _to_url(scene["image_path"])
 
     # Top level paths
-    if "subtitlesSrt" in props:
-        props["subtitlesSrt"] = _to_url(props["subtitlesSrt"])
+    # M41c: subtitlesSrt artık _build_render_props tarafından içeriğe dönüştürülüyor
+    # (dosya yolu → SRT metin içeriği). Bu noktada URL dönüşümü yapılmamalı.
+    # Eski path-tabanlı değerlerde (_to_url çağrısı) yanılgı olurdu.
+    # subtitlesSrt burada atlanıyor.
+
+    # imageTimeline[].url — external https:// ise dokunma, local path ise HTTP yap
+    for img_entry in props.get("imageTimeline", []) or []:
+        if "url" in img_entry:
+            img_entry["url"] = _to_url(img_entry["url"])
 
     return props
 
@@ -275,8 +282,9 @@ def _build_render_props(composition_props: dict) -> dict:
     composition_props.json → props alanından Remotion'a geçirilecek render_props oluşturur.
 
     M6-C2 dönüşümleri:
-      - word_timing_path string prop'u kaldırılır.
+      - word_timing_path / wordTimingPath string prop'u kaldırılır.
       - wordTimings: WordTiming[] inline olarak eklenir.
+      - subtitlesSrt: dosya yoluysa içeriği okunur, URL/içerik ise aynen geçirilir.
 
     Bu fonksiyon composition.py çıktısını değiştirmez — sadece render katmanında dönüştürür.
     Sözleşme uyumu: composition_props.json her zaman word_timing_path içerebilir (eski formatlar).
@@ -286,10 +294,25 @@ def _build_render_props(composition_props: dict) -> dict:
     """
     props = dict(composition_props.get("props", {}))
 
-    # word_timing_path'ı yükle ve inline wordTimings'e dönüştür
+    # M41c: camelCase wordTimingPath de destekle (bulletin composition çıktısı)
     word_timing_path: str | None = props.pop("word_timing_path", None)
+    if not word_timing_path:
+        word_timing_path = props.pop("wordTimingPath", None)
     word_timings = _load_word_timings(word_timing_path)
     props["wordTimings"] = word_timings
+
+    # M41c: subtitlesSrt dosya yoluysa içeriği oku, renderer string içerik bekliyor
+    srt_val = props.get("subtitlesSrt")
+    if srt_val and isinstance(srt_val, str) and not srt_val.startswith(("http://", "https://")):
+        srt_path = Path(srt_val)
+        if srt_path.exists():
+            try:
+                props["subtitlesSrt"] = srt_path.read_text(encoding="utf-8")
+            except OSError:
+                props["subtitlesSrt"] = None
+        # else: yol yoksa None bırak
+        else:
+            props["subtitlesSrt"] = None
 
     return props
 
@@ -300,6 +323,7 @@ def _build_render_props_from_output(output_entry: dict) -> dict:
 
     Her output entry kendi props dict'ini taşır (bulletinTitle, items, subtitlesSrt, vb.).
     word_timing_path → wordTimings dönüşümü burada da uygulanır.
+    subtitlesSrt dosya yoluysa içeriği okunur (M41c).
 
     Returns:
         dict: Renderer'a geçirilecek props dict.
@@ -313,6 +337,18 @@ def _build_render_props_from_output(output_entry: dict) -> dict:
         word_timing_path = props.pop("word_timing_path", None)
     word_timings = _load_word_timings(word_timing_path)
     props["wordTimings"] = word_timings
+
+    # M41c: subtitlesSrt dosya yoluysa içeriği oku, renderer string içerik bekliyor
+    srt_val = props.get("subtitlesSrt")
+    if srt_val and isinstance(srt_val, str) and not srt_val.startswith(("http://", "https://")):
+        srt_path = Path(srt_val)
+        if srt_path.exists():
+            try:
+                props["subtitlesSrt"] = srt_path.read_text(encoding="utf-8")
+            except OSError:
+                props["subtitlesSrt"] = None
+        else:
+            props["subtitlesSrt"] = None
 
     return props
 
