@@ -25,6 +25,7 @@ import logging
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
+from urllib.parse import urlencode
 
 import httpx
 
@@ -213,8 +214,7 @@ class YouTubeTokenStore:
             "access_type": "offline",
             "prompt": "select_account consent",
         }
-        query = "&".join(f"{k}={v}" for k, v in params.items())
-        return f"{GOOGLE_AUTH_URL}?{query}"
+        return f"{GOOGLE_AUTH_URL}?{urlencode(params)}"
 
     async def exchange_code_for_tokens(
         self,
