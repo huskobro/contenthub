@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useUpdateSettingValue } from "../../hooks/useEffectiveSettings";
 import { useQueryClient } from "@tanstack/react-query";
+import { useActiveUser } from "../../hooks/useUsers";
 import { fetchSystemInfo } from "../../api/systemApi";
 import { cn } from "../../lib/cn";
 
@@ -14,6 +15,7 @@ const FALLBACK_USERNAME = "user";
 export function OnboardingWorkspaceSetupScreen({ onBack, onComplete }: Props) {
   const updateMutation = useUpdateSettingValue();
   const queryClient = useQueryClient();
+  const { activeUser } = useActiveUser();
 
   const [workspaceRoot, setWorkspaceRoot] = useState("");
   const [outputDir, setOutputDir] = useState("");
@@ -21,19 +23,24 @@ export function OnboardingWorkspaceSetupScreen({ onBack, onComplete }: Props) {
   const [validationError, setValidationError] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  // Fetch OS username on mount to pre-fill defaults
+  // Use active user's slug if available, otherwise fall back to OS username
   useEffect(() => {
-    fetchSystemInfo()
-      .then((info) => {
-        const username = info.os_username || FALLBACK_USERNAME;
-        setWorkspaceRoot(`workspace/jobs/${username}`);
-        setOutputDir(`workspace/exports/${username}`);
-      })
-      .catch(() => {
-        setWorkspaceRoot(`workspace/jobs/${FALLBACK_USERNAME}`);
-        setOutputDir(`workspace/exports/${FALLBACK_USERNAME}`);
-      });
-  }, []);
+    if (activeUser?.slug) {
+      setWorkspaceRoot(`workspace/users/${activeUser.slug}/jobs`);
+      setOutputDir(`workspace/users/${activeUser.slug}/exports`);
+    } else {
+      fetchSystemInfo()
+        .then((info) => {
+          const username = info.os_username || FALLBACK_USERNAME;
+          setWorkspaceRoot(`workspace/users/${username}/jobs`);
+          setOutputDir(`workspace/users/${username}/exports`);
+        })
+        .catch(() => {
+          setWorkspaceRoot(`workspace/users/${FALLBACK_USERNAME}/jobs`);
+          setOutputDir(`workspace/users/${FALLBACK_USERNAME}/exports`);
+        });
+    }
+  }, [activeUser]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

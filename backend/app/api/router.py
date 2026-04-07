@@ -26,9 +26,11 @@ from app.wizard_configs.router import router as wizard_configs_router
 from app.modules.router import router as modules_router
 from app.prompt_assembly.router import router as prompt_assembly_router
 from app.fs.router import router as fs_router
+from app.users.router import router as users_router
 
 api_router = APIRouter()
 api_router.include_router(health.router, tags=["health"])
+api_router.include_router(users_router)
 api_router.include_router(providers_router)
 api_router.include_router(settings_router)
 api_router.include_router(visibility_router)

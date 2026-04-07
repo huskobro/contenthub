@@ -50,7 +50,7 @@ from app.settings.settings_resolver import (
 )
 from app.settings.settings_seed import seed_known_settings
 from app.audit.service import write_audit_log
-from app.visibility.dependencies import get_caller_role, require_visible
+from app.visibility.dependencies import get_caller_role, get_active_user_id, require_visible
 from app.settings.validation import validate_setting_value, SettingValidationError
 
 logger = logging.getLogger(__name__)
@@ -96,6 +96,13 @@ class EffectiveSettingResponse(BaseModel):
     has_db_row: bool = False
     db_version: Optional[int] = None
     updated_at: Optional[str] = None
+    # M40: user override and governance fields
+    has_user_override: bool = False
+    user_override_value: Any = None
+    user_override_allowed: bool = False
+    visible_to_user: bool = False
+    read_only_for_user: bool = True
+    visible_in_wizard: bool = False
 
 
 class GroupSummaryResponse(BaseModel):
@@ -203,9 +210,10 @@ async def list_effective_settings(
     wired_only: bool = Query(False, description="Only wired settings"),
     db: AsyncSession = Depends(get_db),
     role: str = Depends(get_caller_role),
+    user_id: Optional[str] = Depends(get_active_user_id),
 ) -> List[EffectiveSettingResponse]:
     """Tum bilinen ayarlar icin effective deger ve kaynak bilgisi doner."""
-    items = await list_effective(db, group=group, wired_only=wired_only)
+    items = await list_effective(db, group=group, wired_only=wired_only, user_id=user_id)
     if role != "admin":
         # Filter out settings not visible to users — prevent leaking hidden settings
         visible_keys = {
@@ -229,6 +237,7 @@ async def get_groups(
 async def get_effective_setting(
     key: str,
     db: AsyncSession = Depends(get_db),
+    user_id: Optional[str] = Depends(get_active_user_id),
 ) -> EffectiveSettingResponse:
     """Tek ayar icin tam effective durum raporu doner."""
     if key not in KNOWN_SETTINGS:
@@ -236,7 +245,7 @@ async def get_effective_setting(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Bilinmeyen ayar key: {key}",
         )
-    item = await settings_explain(key, db)
+    item = await settings_explain(key, db, user_id=user_id)
     return EffectiveSettingResponse(**item)
 
 

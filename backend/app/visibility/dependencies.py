@@ -47,3 +47,16 @@ def get_caller_role(
     if x_contenthub_role in ("admin", "user"):
         return x_contenthub_role
     return "admin"
+
+
+def get_active_user_id(
+    x_contenthub_user_id: Optional[str] = Header(None, alias="X-ContentHub-User-Id"),
+) -> Optional[str]:
+    """
+    Extract active user ID from request header — M40.
+    For localhost-first multi-user: frontend sends the active user's UUID.
+    Returns None if no user context is set.
+    """
+    if x_contenthub_user_id and len(x_contenthub_user_id.strip()) >= 32:
+        return x_contenthub_user_id.strip()
+    return None

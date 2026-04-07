@@ -15,7 +15,7 @@ const BASE = "/api/v1/settings";
 export interface EffectiveSetting {
   key: string;
   effective_value: unknown;
-  source: "admin" | "default" | "env" | "builtin" | "missing";
+  source: "admin" | "default" | "env" | "builtin" | "missing" | "user_override";
   type: string;
   is_secret: boolean;
   group: string;
@@ -30,6 +30,13 @@ export interface EffectiveSetting {
   has_db_row: boolean;
   db_version: number | null;
   updated_at: string | null;
+  // M40: user override and governance fields
+  has_user_override?: boolean;
+  user_override_value?: unknown;
+  user_override_allowed?: boolean;
+  visible_to_user?: boolean;
+  read_only_for_user?: boolean;
+  visible_in_wizard?: boolean;
 }
 
 export interface GroupSummary {

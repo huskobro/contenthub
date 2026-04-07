@@ -41,11 +41,35 @@ function buildUrl(
   return qs ? `${base}?${qs}` : base;
 }
 
+/**
+ * Inject X-ContentHub-User-Id header from localStorage (M40).
+ * Reads directly from localStorage to avoid circular dependency with userStore.
+ * The userStore and localStorage share the same key — always in sync.
+ */
+const USER_ID_STORAGE_KEY = "contenthub:active-user-id";
+
+function getActiveUserHeaders(): Record<string, string> {
+  try {
+    const userId = localStorage.getItem(USER_ID_STORAGE_KEY);
+    if (userId && userId.length >= 32) {
+      return { "X-ContentHub-User-Id": userId };
+    }
+  } catch {
+    // localStorage not available
+  }
+  return {};
+}
+
 async function request<T>(
   url: string,
   options?: RequestInit,
 ): Promise<T> {
-  const res = await fetch(url, options);
+  const userHeaders = getActiveUserHeaders();
+  const mergedHeaders = {
+    ...userHeaders,
+    ...(options?.headers as Record<string, string>),
+  };
+  const res = await fetch(url, { ...options, headers: mergedHeaders });
   if (!res.ok) {
     const detail = await parseErrorDetail(res);
     throw new ApiError(detail, res.status, detail);
@@ -57,7 +81,12 @@ async function requestNullable<T>(
   url: string,
   options?: RequestInit,
 ): Promise<T | null> {
-  const res = await fetch(url, options);
+  const userHeaders = getActiveUserHeaders();
+  const mergedHeaders = {
+    ...userHeaders,
+    ...(options?.headers as Record<string, string>),
+  };
+  const res = await fetch(url, { ...options, headers: mergedHeaders });
   if (res.status === 404) return null;
   if (!res.ok) {
     const detail = await parseErrorDetail(res);

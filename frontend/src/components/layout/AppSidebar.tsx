@@ -1,6 +1,7 @@
 import { NavLink } from "react-router-dom";
 import { cn } from "../../lib/cn";
 import { useUIStore } from "../../stores/uiStore";
+import { UserSwitcher } from "./UserSwitcher";
 
 interface NavItem {
   label: string;
@@ -112,6 +113,11 @@ export function AppSidebar({ items }: AppSidebarProps) {
           </li>
         ))}
       </ul>
+
+      {/* User switcher — M40 */}
+      <div className="border-t border-surface-sidebar-border px-2 py-2">
+        <UserSwitcher />
+      </div>
     </nav>
   );
 }

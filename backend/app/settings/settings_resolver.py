@@ -33,7 +33,7 @@ from typing import Any, Dict, List, Optional
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models import Setting
+from app.db.models import Setting, UserSettingOverride
 
 logger = logging.getLogger(__name__)
 
@@ -292,6 +292,18 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "builtin_default": "",
         "wired": True,
         "wired_to": "start_production — job workspace_path hesaplanırken okunur",
+    },
+
+    "system.active_user_id": {
+        "group": "system",
+        "type": "string",
+        "label": "Aktif Kullanıcı ID",
+        "help_text": "En son aktif kullanıcının ID'si. Uygulama yeniden açıldığında bu kullanıcı ile devam edilir.",
+        "module_scope": None,
+        "env_var": None,
+        "builtin_default": "",
+        "wired": True,
+        "wired_to": "frontend.userStore + backend user context",
     },
 
     "execution.render_still_timeout_seconds": {
@@ -942,19 +954,42 @@ KNOWN_VALIDATION_RULES: Dict[str, str] = {
 # Resolver functions
 # ---------------------------------------------------------------------------
 
-async def resolve(key: str, db: AsyncSession) -> Any:
+async def resolve(key: str, db: AsyncSession, user_id: Optional[str] = None) -> Any:
     """
     Ayar degerini cozer.
 
-    Oncelik: DB admin_value -> DB default_value -> .env -> builtin_default -> None
-    Deger KNOWN_SETTINGS'te tanimli type'a gore coerce edilir.
+    Oncelik (M40 user override eklendi):
+      1. User override (user_id varsa VE setting user_override_allowed ise)
+      2. DB admin_value
+      3. DB default_value
+      4. .env
+      5. builtin_default
+      6. None
+
+    user_id=None ise eski davranis korunur (backward compatible).
     """
     meta = KNOWN_SETTINGS.get(key)
     expected_type = meta["type"] if meta else "string"
 
-    # 1) DB admin_value_json
+    # DB row for governance flags and admin/default values
     result = await db.execute(select(Setting).where(Setting.key == key))
     row = result.scalar_one_or_none()
+
+    # 1) User override (M40)
+    if user_id and row and row.user_override_allowed:
+        override_stmt = select(UserSettingOverride).where(
+            UserSettingOverride.user_id == user_id,
+            UserSettingOverride.setting_key == key,
+        )
+        override = (await db.execute(override_stmt)).scalar_one_or_none()
+        if override:
+            user_val = _parse_json_field(override.value_json)
+            if user_val is not None:
+                coerced = _coerce(user_val, expected_type)
+                if coerced is not None:
+                    return coerced
+
+    # 2) DB admin_value_json
     if row is not None:
         admin_val = _parse_json_field(row.admin_value_json)
         if admin_val is not None:
@@ -962,7 +997,7 @@ async def resolve(key: str, db: AsyncSession) -> Any:
             if coerced is not None:
                 return coerced
 
-    # 2) DB default_value_json
+    # 3) DB default_value_json
     if row is not None:
         default_val = _parse_json_field(row.default_value_json)
         if default_val is not None:
@@ -970,7 +1005,7 @@ async def resolve(key: str, db: AsyncSession) -> Any:
             if coerced is not None:
                 return coerced
 
-    # 3) .env / ortam degiskeni
+    # 4) .env / ortam degiskeni
     if meta and meta.get("env_var"):
         env_val = os.environ.get(meta["env_var"])
         if env_val:
@@ -978,18 +1013,19 @@ async def resolve(key: str, db: AsyncSession) -> Any:
             if coerced is not None:
                 return coerced
 
-    # 4) builtin default
+    # 5) builtin default
     if meta and meta.get("builtin_default") is not None:
         return meta["builtin_default"]
 
     return None
 
 
-async def explain(key: str, db: AsyncSession) -> Dict[str, Any]:
+async def explain(key: str, db: AsyncSession, user_id: Optional[str] = None) -> Dict[str, Any]:
     """
     Ayar icin tam aciklama doner.
 
     Effective value + source + metadata + validation durumu.
+    M40: user_id verilirse user override katmani eklenir.
     """
     meta = KNOWN_SETTINGS.get(key, {})
     expected_type = meta.get("type", "string")
@@ -1002,8 +1038,29 @@ async def explain(key: str, db: AsyncSession) -> Dict[str, Any]:
     effective_value = None
     source = "missing"
 
-    # 1) admin_value
-    if row is not None:
+    # M40: user override fields
+    has_user_override = False
+    user_override_value = None
+
+    # 1) User override (M40)
+    if user_id and row and row.user_override_allowed:
+        override_stmt = select(UserSettingOverride).where(
+            UserSettingOverride.user_id == user_id,
+            UserSettingOverride.setting_key == key,
+        )
+        override = (await db.execute(override_stmt)).scalar_one_or_none()
+        if override:
+            has_user_override = True
+            user_val = _parse_json_field(override.value_json)
+            user_override_value = user_val
+            if user_val is not None:
+                coerced = _coerce(user_val, expected_type)
+                if coerced is not None:
+                    effective_value = coerced
+                    source = "user_override"
+
+    # 2) admin_value
+    if effective_value is None and row is not None:
         admin_val = _parse_json_field(row.admin_value_json)
         if admin_val is not None:
             coerced = _coerce(admin_val, expected_type)
@@ -1011,7 +1068,7 @@ async def explain(key: str, db: AsyncSession) -> Dict[str, Any]:
                 effective_value = coerced
                 source = "admin"
 
-    # 2) default_value
+    # 3) default_value
     if effective_value is None and row is not None:
         default_val = _parse_json_field(row.default_value_json)
         if default_val is not None:
@@ -1020,7 +1077,7 @@ async def explain(key: str, db: AsyncSession) -> Dict[str, Any]:
                 effective_value = coerced
                 source = "default"
 
-    # 3) .env
+    # 4) .env
     if effective_value is None and meta.get("env_var"):
         env_val = os.environ.get(meta["env_var"])
         if env_val:
@@ -1029,7 +1086,7 @@ async def explain(key: str, db: AsyncSession) -> Dict[str, Any]:
                 effective_value = coerced
                 source = "env"
 
-    # 4) builtin
+    # 5) builtin
     if effective_value is None and meta.get("builtin_default") is not None:
         effective_value = meta["builtin_default"]
         source = "builtin"
@@ -1038,6 +1095,16 @@ async def explain(key: str, db: AsyncSession) -> Dict[str, Any]:
     display_value = effective_value
     if is_secret and isinstance(effective_value, str) and effective_value:
         display_value = _mask_value(effective_value)
+
+    # Governance flags from DB row (M40)
+    governance = {}
+    if row is not None:
+        governance = {
+            "user_override_allowed": row.user_override_allowed,
+            "visible_to_user": row.visible_to_user,
+            "read_only_for_user": row.read_only_for_user,
+            "visible_in_wizard": row.visible_in_wizard,
+        }
 
     return {
         "key": key,
@@ -1058,28 +1125,37 @@ async def explain(key: str, db: AsyncSession) -> Dict[str, Any]:
         "has_db_row": row is not None,
         "db_version": row.version if row else None,
         "updated_at": row.updated_at.isoformat() if row and row.updated_at else None,
+        # M40: user override info
+        "has_user_override": has_user_override,
+        "user_override_value": user_override_value,
+        # M40: governance flags
+        **governance,
     }
 
 
-async def resolve_group(group: str, db: AsyncSession) -> Dict[str, Any]:
+async def resolve_group(group: str, db: AsyncSession, user_id: Optional[str] = None) -> Dict[str, Any]:
     """Bir gruptaki tum bilinen ayarlarin effective degerlerini doner."""
     results = {}
     for key, meta in KNOWN_SETTINGS.items():
         if meta.get("group") == group:
-            results[key] = await resolve(key, db)
+            results[key] = await resolve(key, db, user_id=user_id)
     return results
 
 
 async def list_effective(db: AsyncSession, group: Optional[str] = None,
-                         wired_only: bool = False) -> List[Dict[str, Any]]:
-    """Tum bilinen ayarlar icin explain listesi doner."""
+                         wired_only: bool = False,
+                         user_id: Optional[str] = None) -> List[Dict[str, Any]]:
+    """Tum bilinen ayarlar icin explain listesi doner.
+
+    M40: user_id verilirse user override katmani eklenir.
+    """
     items = []
     for key, meta in KNOWN_SETTINGS.items():
         if group and meta.get("group") != group:
             continue
         if wired_only and not meta.get("wired", False):
             continue
-        explanation = await explain(key, db)
+        explanation = await explain(key, db, user_id=user_id)
         items.append(explanation)
     return items
 
@@ -1120,12 +1196,13 @@ async def list_groups(db: AsyncSession) -> List[Dict[str, Any]]:
     return ordered
 
 
-async def resolve_for_runtime(key: str, db: AsyncSession) -> Any:
+async def resolve_for_runtime(key: str, db: AsyncSession, user_id: Optional[str] = None) -> Any:
     """
     Runtime bilesenler icin kisayol. Credential key'leri icin
     credential_resolver'a devreder.
+    M40: user_id destegi eklendi.
     """
     if key.startswith("credential."):
         from app.settings.credential_resolver import resolve_credential
         return await resolve_credential(key, db)
-    return await resolve(key, db)
+    return await resolve(key, db, user_id=user_id)

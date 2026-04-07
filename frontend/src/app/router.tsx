@@ -36,6 +36,9 @@ import { VisibilityGuard } from "../components/visibility/VisibilityGuard";
 import { ModuleManagementPage } from "../pages/admin/ModuleManagementPage";
 import { ProviderManagementPage } from "../pages/admin/ProviderManagementPage";
 import { PromptEditorPage } from "../pages/admin/PromptEditorPage";
+import { UsersRegistryPage } from "../pages/admin/UsersRegistryPage";
+import { UserSettingsDetailPage } from "../pages/admin/UserSettingsDetailPage";
+import { UserSettingsPage } from "../pages/UserSettingsPage";
 
 // ---------------------------------------------------------------------------
 // Lazy-loaded pages (heavy admin pages > 150 lines, code-split for perf)
@@ -118,6 +121,8 @@ export const router = createBrowserRouter([
       { path: "modules", element: <VisibilityGuard targetKey="panel:settings"><ModuleManagementPage /></VisibilityGuard> },
       { path: "providers", element: <VisibilityGuard targetKey="panel:settings"><ProviderManagementPage /></VisibilityGuard> },
       { path: "prompts", element: <VisibilityGuard targetKey="panel:settings"><PromptEditorPage /></VisibilityGuard> },
+      { path: "users", element: <UsersRegistryPage /> },
+      { path: "users/:userId/settings", element: <UserSettingsDetailPage /> },
       { path: "settings/youtube-callback", element: <YouTubeCallbackPage /> },
     ],
   },
@@ -129,6 +134,7 @@ export const router = createBrowserRouter([
       { index: true, element: <UserDashboardPage /> },
       { path: "content", element: <UserContentEntryPage /> },
       { path: "publish", element: <UserPublishEntryPage /> },
+      { path: "settings", element: <UserSettingsPage /> },
     ],
   },
   {

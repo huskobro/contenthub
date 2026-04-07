@@ -51,6 +51,8 @@ export const ADMIN_NAV: AdminNavItem[] = [
   { label: "Haber Bultenleri", to: "/admin/news-bulletins", moduleId: "news_bulletin" },
   { label: "Haber Ogeler", to: "/admin/news-items", moduleId: "news_bulletin" },
   { label: "Kullanilan Haberler", to: "/admin/used-news", moduleId: "news_bulletin" },
+  { label: "Kullanicilar", section: true },
+  { label: "Kullanici Yonetimi", to: "/admin/users" },
   { label: "Gorunum", section: true },
   { label: "Tema Yonetimi", to: "/admin/themes" },
 ];
@@ -68,6 +70,7 @@ export const USER_NAV: UserNavItem[] = [
   { label: "Anasayfa", to: "/user" },
   { label: "Icerik", to: "/user/content" },
   { label: "Yayin", to: "/user/publish" },
+  { label: "Ayarlarim", to: "/user/settings" },
 ];
 
 // ---------------------------------------------------------------------------
@@ -98,6 +101,7 @@ export const HORIZON_ADMIN_GROUPS: HorizonNavGroup[] = [
       { label: "Moduller", to: "/admin/modules" },
       { label: "Saglayicilar", to: "/admin/providers" },
       { label: "Prompt Yonetimi", to: "/admin/prompts" },
+      { label: "Kullanicilar", to: "/admin/users" },
     ],
   },
   {
