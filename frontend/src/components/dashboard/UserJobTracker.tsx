@@ -1,8 +1,18 @@
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { fetchJobs, type JobResponse } from "../../api/jobsApi";
+import { useJobContentRef } from "../../hooks/useJobContentRef";
 import { JobProgressBar } from "../jobs/JobProgressBar";
 import { StatusBadge } from "../design-system/primitives";
+import { formatDateShort } from "../../lib/formatDate";
+
+const MODULE_LABELS: Record<string, string> = {
+  standard_video: "Standart Video",
+  news_bulletin: "Haber Bülteni",
+  product_review: "Ürün Değerlendirme",
+  educational_video: "Eğitim Videosu",
+  howto_video: "Nasıl Yapılır",
+};
 
 export function UserJobTracker() {
   const navigate = useNavigate();
@@ -14,69 +24,102 @@ export function UserJobTracker() {
   const activeJobs = (jobs ?? []).filter(
     (j) => ["queued", "running", "waiting", "retrying"].includes(j.status),
   );
+  // Son 4 tamamlanan iş
   const recentCompleted = (jobs ?? [])
     .filter((j) => j.status === "completed")
-    .slice(0, 3);
+    .slice(0, 4);
 
   if (isLoading) {
     return (
-      <div className="mt-4 max-w-[720px]" data-testid="user-job-tracker">
-        <h3 className="m-0 mb-2 text-lg font-semibold text-neutral-900">Is Takibi</h3>
-        <p className="text-sm text-neutral-400 m-0">Yukleniyor...</p>
+      <div data-testid="user-job-tracker" className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="bg-surface-card border border-border-subtle rounded-xl p-4">
+          <p className="text-sm text-neutral-400 m-0">Yükleniyor...</p>
+        </div>
       </div>
     );
   }
 
   if (activeJobs.length === 0 && recentCompleted.length === 0) {
     return (
-      <div className="mt-4 max-w-[720px]" data-testid="user-job-tracker">
-        <h3 className="m-0 mb-2 text-lg font-semibold text-neutral-900">Is Takibi</h3>
-        <p className="text-sm text-neutral-500 m-0">Henuz aktif veya tamamlanmis is yok.</p>
+      <div data-testid="user-job-tracker" className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="bg-surface-card border border-border-subtle rounded-xl p-4">
+          <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2">Aktif İşler</p>
+          <p className="text-sm text-neutral-400 m-0">Şu an çalışan iş yok.</p>
+        </div>
+        <div className="bg-surface-card border border-border-subtle rounded-xl p-4">
+          <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2">Son Tamamlanan</p>
+          <p className="text-sm text-neutral-400 m-0">Henüz tamamlanan iş yok.</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="mt-4 max-w-[720px]" data-testid="user-job-tracker">
-      <h3 className="m-0 mb-2 text-lg font-semibold text-neutral-900">Is Takibi</h3>
-
-      {activeJobs.length > 0 && (
-        <div className="space-y-2 mb-3">
-          {activeJobs.map((job) => (
-            <JobCard key={job.id} job={job} onClick={() => navigate(`/admin/jobs/${job.id}`)} />
-          ))}
+    <div data-testid="user-job-tracker" className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      {/* SOL — Aktif işler */}
+      <div className="bg-surface-card border border-border-subtle rounded-xl p-4">
+        <div className="flex items-center justify-between mb-3">
+          <p className="m-0 text-xs font-semibold text-neutral-500 uppercase tracking-wider">
+            Aktif İşler
+          </p>
+          {activeJobs.length > 0 && (
+            <span className="text-xs bg-warning-light text-warning px-2 py-0.5 rounded-full font-medium">
+              {activeJobs.length} çalışıyor
+            </span>
+          )}
         </div>
-      )}
 
-      {recentCompleted.length > 0 && (
-        <>
-          <p className="m-0 mb-1 text-xs text-neutral-400 font-medium">Son Tamamlanan</p>
-          <div className="space-y-1.5">
-            {recentCompleted.map((job) => (
-              <div
+        {activeJobs.length === 0 ? (
+          <p className="text-sm text-neutral-400 m-0">Şu an çalışan iş yok.</p>
+        ) : (
+          <div className="space-y-2">
+            {activeJobs.map((job) => (
+              <JobCard
                 key={job.id}
-                className="flex items-center justify-between p-2 bg-neutral-50 rounded-md border border-border-subtle cursor-pointer hover:bg-neutral-100 transition-colors"
+                job={job}
                 onClick={() => navigate(`/admin/jobs/${job.id}`)}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => e.key === "Enter" && navigate(`/admin/jobs/${job.id}`)}
-                data-testid={`recent-job-${job.id}`}
-              >
-                <div className="flex items-center gap-2">
-                  <StatusBadge status="ready" label="Tamamlandi" size="sm" />
-                  <span className="text-xs text-neutral-600">{job.module_type}</span>
-                </div>
-                <code className="text-[10px] text-neutral-400">{job.id.slice(0, 8)}</code>
-              </div>
+              />
             ))}
           </div>
-        </>
-      )}
+        )}
+      </div>
+
+      {/* SAĞ — Son tamamlanan */}
+      <div className="bg-surface-card border border-border-subtle rounded-xl p-4">
+        <div className="flex items-center justify-between mb-3">
+          <p className="m-0 text-xs font-semibold text-neutral-500 uppercase tracking-wider">
+            Son Tamamlanan
+          </p>
+          {recentCompleted.length > 0 && (
+            <button
+              onClick={() => navigate("/admin/jobs")}
+              className="text-xs text-brand-600 hover:text-brand-700 bg-transparent border-0 cursor-pointer p-0"
+            >
+              Tümünü Gör →
+            </button>
+          )}
+        </div>
+
+        {recentCompleted.length === 0 ? (
+          <p className="text-sm text-neutral-400 m-0">Henüz tamamlanan iş yok.</p>
+        ) : (
+          <div className="space-y-1.5">
+            {recentCompleted.map((job) => (
+              <CompletedJobRow
+                key={job.id}
+                job={job}
+                onClick={() => navigate(`/admin/jobs/${job.id}`)}
+              />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
 
 function JobCard({ job, onClick }: { job: JobResponse; onClick: () => void }) {
+  const moduleLabel = MODULE_LABELS[job.module_type] ?? job.module_type;
   return (
     <div
       className="p-3 bg-white border border-border-subtle rounded-lg cursor-pointer hover:border-brand-300 transition-colors"
@@ -88,12 +131,45 @@ function JobCard({ job, onClick }: { job: JobResponse; onClick: () => void }) {
     >
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
-          <StatusBadge status={job.status === "running" ? "processing" : "warning"} label={job.status} size="sm" />
-          <span className="text-sm font-medium text-neutral-800">{job.module_type}</span>
+          <StatusBadge
+            status={job.status === "running" ? "processing" : "warning"}
+            label={job.status === "running" ? "Çalışıyor" : job.status === "queued" ? "Kuyrukta" : "Bekliyor"}
+            size="sm"
+          />
+          <span className="text-sm font-medium text-neutral-800">{moduleLabel}</span>
         </div>
-        <code className="text-[10px] text-neutral-400">{job.id.slice(0, 8)}</code>
       </div>
       <JobProgressBar job={job} />
+    </div>
+  );
+}
+
+function CompletedJobRow({ job, onClick }: { job: JobResponse; onClick: () => void }) {
+  const moduleLabel = MODULE_LABELS[job.module_type] ?? job.module_type;
+  const { data: contentRef } = useJobContentRef(job.id);
+
+  // İçerik adı: content-ref başlığı varsa onu, yoksa modül adı
+  const displayTitle = contentRef?.content_title || moduleLabel;
+
+  return (
+    <div
+      className="flex items-center justify-between px-3 py-2 rounded-lg border border-border-subtle bg-white cursor-pointer hover:bg-neutral-50 transition-colors"
+      onClick={onClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => e.key === "Enter" && onClick()}
+      data-testid={`recent-job-${job.id}`}
+    >
+      <div className="flex items-center gap-2 min-w-0">
+        <span className="w-1.5 h-1.5 rounded-full bg-success shrink-0" />
+        <div className="min-w-0">
+          <span className="text-sm font-medium text-neutral-800 truncate block">{displayTitle}</span>
+          {contentRef?.content_title && (
+            <span className="text-xs text-neutral-400">{moduleLabel}</span>
+          )}
+        </div>
+      </div>
+      <span className="text-xs text-neutral-400 shrink-0 ml-2">{formatDateShort(job.created_at)}</span>
     </div>
   );
 }

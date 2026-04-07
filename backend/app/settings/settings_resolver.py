@@ -364,6 +364,38 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "wired_to": "frontend.date_formatting",
     },
 
+    # --- Wizard Governance Settings ---
+    "wizard.standard_video.entry_mode": {
+        "group": "wizard",
+        "type": "string",
+        "label": "Standart Video Giriş Modu",
+        "help_text": (
+            "Kullanıcı 'Standart Video Oluştur' butonuna tıkladığında nereye yönlendirilsin? "
+            "'wizard' → adım adım wizard akışı (/admin/standard-videos/wizard), "
+            "'form' → tek sayfa form (/admin/standard-videos/new)"
+        ),
+        "module_scope": "standard_video",
+        "env_var": None,
+        "builtin_default": "wizard",
+        "wired": True,
+        "wired_to": "user_content_entry → navigation target",
+    },
+    "wizard.news_bulletin.entry_mode": {
+        "group": "wizard",
+        "type": "string",
+        "label": "Haber Bülteni Giriş Modu",
+        "help_text": (
+            "Kullanıcı 'Haber Bülteni Oluştur' butonuna tıkladığında nereye yönlendirilsin? "
+            "'wizard' → adım adım wizard akışı (/admin/news-bulletins/wizard), "
+            "'form' → tek sayfa form (/admin/news-bulletins/new)"
+        ),
+        "module_scope": "news_bulletin",
+        "env_var": None,
+        "builtin_default": "wizard",
+        "wired": True,
+        "wired_to": "user_content_entry → navigation target",
+    },
+
     # --- Job Engine Settings ---
     "jobs.auto_retry_enabled": {
         "group": "jobs",
@@ -814,9 +846,10 @@ GROUP_LABELS: Dict[str, str] = {
     "jobs": "Is Motoru Ayarlari",
     "news_bulletin": "Haber Bulteni",
     "modules": "Modüller",
+    "wizard": "Wizard Yönetimi",
 }
 
-GROUP_ORDER = ["credentials", "providers", "execution", "source_scans", "publish", "ui", "jobs", "standard_video", "news_bulletin", "modules"]
+GROUP_ORDER = ["credentials", "providers", "execution", "source_scans", "publish", "ui", "jobs", "wizard", "standard_video", "news_bulletin", "modules"]
 
 
 # ---------------------------------------------------------------------------

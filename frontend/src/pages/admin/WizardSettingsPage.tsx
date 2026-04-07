@@ -7,6 +7,7 @@ import {
   type WizardStepConfig,
   type WizardStepFieldConfig,
 } from "../../api/wizardConfigApi";
+import { useEffectiveSetting, useUpdateSettingValue } from "../../hooks/useEffectiveSettings";
 import { PageShell, SectionShell } from "../../components/design-system/primitives";
 import { cn } from "../../lib/cn";
 
@@ -19,10 +20,13 @@ export function WizardSettingsPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   return (
-    <PageShell title="Wizard Ayarlari" testId="wizard-settings">
+    <PageShell title="Wizard Ayarları" testId="wizard-settings">
       <p className="mt-0 mb-4 text-xs text-neutral-400">
-        Wizard yapilandirmalarini yonetin. Adim ve alan gorunurlugunu, zorunluluk ve onizleme ayarlarini buradan kontrol edebilirsiniz.
+        Wizard yapılandırmalarını yönetin. Adım ve alan görünürlüğünü, zorunluluk ve önizleme ayarlarını buradan kontrol edebilirsiniz.
       </p>
+
+      {/* Giriş Modu Ayarları */}
+      <EntryModeSettings />
 
       <SectionShell testId="wizard-configs-section">
         {isLoading && <p className="text-neutral-500 text-sm p-4">Yukleniyor...</p>}
@@ -50,6 +54,76 @@ export function WizardSettingsPage() {
         )}
       </SectionShell>
     </PageShell>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// EntryModeSettings — Kullanıcı içerik giriş modu (wizard vs form)
+// ---------------------------------------------------------------------------
+
+function EntryModePicker({ settingKey, label }: { settingKey: string; label: string }) {
+  const { data: setting } = useEffectiveSetting(settingKey);
+  const update = useUpdateSettingValue();
+  const currentValue = (setting?.effective_value ?? "wizard") as string;
+  const [saved, setSaved] = useState(false);
+
+  function handleChange(val: string) {
+    update.mutate(
+      { key: settingKey, value: val },
+      {
+        onSuccess: () => {
+          setSaved(true);
+          setTimeout(() => setSaved(false), 1500);
+        },
+      },
+    );
+  }
+
+  return (
+    <div className="flex items-center justify-between py-3 border-b border-border-subtle last:border-0">
+      <div>
+        <p className="m-0 text-sm font-medium text-neutral-800">{label}</p>
+        <p className="m-0 text-xs text-neutral-500 mt-0.5">
+          {currentValue === "wizard"
+            ? "Kullanıcı wizard akışına yönlendirilir (adım adım)"
+            : "Kullanıcı tek sayfa forma yönlendirilir"}
+        </p>
+      </div>
+      <div className="flex items-center gap-2 shrink-0 ml-4">
+        <select
+          value={currentValue}
+          onChange={(e) => handleChange(e.target.value)}
+          disabled={update.isPending}
+          className="border border-border rounded-md px-3 py-1.5 text-sm bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-brand-300 cursor-pointer"
+        >
+          <option value="wizard">Wizard (adım adım)</option>
+          <option value="form">Form (tek sayfa)</option>
+        </select>
+        {saved && <span className="text-xs text-success font-medium">✓ Kaydedildi</span>}
+      </div>
+    </div>
+  );
+}
+
+function EntryModeSettings() {
+  return (
+    <div className="mb-5 bg-surface-card border border-border-subtle rounded-xl p-4">
+      <div className="mb-3">
+        <h3 className="m-0 text-sm font-semibold text-neutral-800">İçerik Giriş Modu</h3>
+        <p className="m-0 mt-1 text-xs text-neutral-500">
+          Kullanıcı yeni içerik oluşturmak istediğinde wizard akışına mı yoksa direkt forma mı yönlendirilsin?
+          Bu ayar kullanıcı paneli "Rehberli Mod" için geçerlidir. Gelişmiş modda her zaman form açılır.
+        </p>
+      </div>
+      <EntryModePicker
+        settingKey="wizard.standard_video.entry_mode"
+        label="Standart Video"
+      />
+      <EntryModePicker
+        settingKey="wizard.news_bulletin.entry_mode"
+        label="Haber Bülteni"
+      />
+    </div>
   );
 }
 
