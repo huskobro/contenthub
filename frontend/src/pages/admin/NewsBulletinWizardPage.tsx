@@ -176,7 +176,8 @@ export function NewsBulletinWizardPage() {
     queryFn: async () => {
       const res = await fetch("/api/v1/modules/standard-video/subtitle-presets");
       if (!res.ok) throw new Error("Preset yukleme hatasi");
-      return res.json();
+      const data = await res.json();
+      return data.presets ?? [];
     },
     enabled: step === 2,
   });
