@@ -618,8 +618,12 @@ async def start_production(
     )
     job = await create_job(db, job_payload)
 
-    # Workspace path oluştur ve job'a yaz
-    _workspace_base = Path(__file__).resolve().parent.parent.parent.parent / "workspace"
+    # Workspace root: settings'ten oku, boşsa backend/workspace/ default
+    _workspace_root_setting = await resolve("system.workspace_root", db)
+    if _workspace_root_setting and str(_workspace_root_setting).strip():
+        _workspace_base = Path(str(_workspace_root_setting).strip()).expanduser()
+    else:
+        _workspace_base = Path(__file__).resolve().parent.parent.parent.parent / "workspace"
     _job_workspace = _workspace_base / job.id
     _job_workspace.mkdir(parents=True, exist_ok=True)
     (_job_workspace / "artifacts").mkdir(exist_ok=True)

@@ -282,6 +282,18 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
     },
 
     # --- Execution Settings ---
+    "system.workspace_root": {
+        "group": "execution",
+        "type": "string",
+        "label": "Çıktı Klasörü (Workspace)",
+        "help_text": "Job artifact'larının yazılacağı ana dizin. Boş bırakılırsa backend/workspace/ kullanılır.",
+        "module_scope": None,
+        "env_var": "CONTENTHUB_WORKSPACE_ROOT",
+        "builtin_default": "",
+        "wired": True,
+        "wired_to": "start_production — job workspace_path hesaplanırken okunur",
+    },
+
     "execution.render_still_timeout_seconds": {
         "group": "execution",
         "type": "integer",

@@ -4,6 +4,7 @@ import { SettingsTable } from "../../components/settings/SettingsTable";
 import { SettingDetailPanel } from "../../components/settings/SettingDetailPanel";
 import { CredentialsPanel } from "../../components/settings/CredentialsPanel";
 import { EffectiveSettingsPanel } from "../../components/settings/EffectiveSettingsPanel";
+import { WorkspaceRootPicker } from "../../components/settings/WorkspaceRootPicker";
 import { ReadOnlyGuard } from "../../components/visibility/ReadOnlyGuard";
 import { PageShell, SectionShell, TabBar } from "../../components/design-system/primitives";
 
@@ -60,7 +61,12 @@ export function SettingsRegistryPage() {
 
         {activeTab === "credentials" && <CredentialsPanel />}
 
-        {activeTab === "effective" && <EffectiveSettingsPanel />}
+        {activeTab === "effective" && (
+          <>
+            <WorkspaceRootPicker />
+            <EffectiveSettingsPanel />
+          </>
+        )}
 
         {activeTab === "registry" && (
           <>
