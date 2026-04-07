@@ -237,6 +237,191 @@ BUILTIN_BLOCKS: list[dict] = [
         ),
         "help_text": "Metadata JSON cikti format sozlesmesi.",
     },
+    # ═══════════════════════════════════════════
+    # STANDARD VIDEO — SCRIPT STEP
+    # ═══════════════════════════════════════════
+    {
+        "key": "sv.script_system",
+        "title": "Video Script System Prompt",
+        "module_scope": "standard_video",
+        "step_scope": "script",
+        "group_name": "core",
+        "kind": "core_system",
+        "order_index": 0,
+        "enabled_by_default": True,
+        "condition_type": "always",
+        "content_template": (
+            "Sen bir video script yazarisin. Verilen konuyu {{duration_seconds}} saniyelik, "
+            "sahne sahne bir video senaryosuna donustureceksin. "
+            "Her sahne icin: narration (spikerlik metni), visual_cue (gorsel talimat), duration_seconds. "
+            "Dil: {{language}}. Ton: dogal, akici, cevrilmis metin hissi verme."
+        ),
+        "help_text": "Video script uretimi icin ana sistem talimati. Her zaman dahil edilir.",
+    },
+    {
+        "key": "sv.opening_hooks",
+        "title": "Acilis Hook Kurallari",
+        "module_scope": "standard_video",
+        "step_scope": "script",
+        "group_name": "behavior",
+        "kind": "behavior_block",
+        "order_index": 10,
+        "enabled_by_default": True,
+        "condition_type": "settings_boolean",
+        "condition_config_json": json.dumps({"settings_key": "standard_video.config.opening_hooks_enabled"}),
+        "content_template": (
+            "Ilk sahne guclu bir hook ile baslamali:\n"
+            "- Izleyiciyi ilk 5 saniyede yakalamali\n"
+            "- Soru, sasirtici gercek veya ilgi cekici ifade kullan\n"
+            "- Dogal bir gecisle konuya gir"
+        ),
+        "help_text": "Acilis hook kurallari. opening_hooks_enabled ayariyla kontrol edilir.",
+    },
+    {
+        "key": "sv.narrative_arc",
+        "title": "Anlatim Arki",
+        "module_scope": "standard_video",
+        "step_scope": "script",
+        "group_name": "core",
+        "kind": "module_instruction",
+        "order_index": 20,
+        "enabled_by_default": True,
+        "condition_type": "always",
+        "content_template": (
+            "Senaryo yapisi:\n"
+            "- Giris: konuyu ve iddiasini kur\n"
+            "- Gelisim: ana noktalar, ornekler, kanitlar\n"
+            "- Sonuc: ozet ve harekete gecirici mesaj\n"
+            "Her sahne onceki sahneden dogal bicimde akmali."
+        ),
+        "help_text": "Anlatim arki ve sahne yapisina dair kurallar.",
+    },
+    {
+        "key": "sv.humanizer",
+        "title": "Humanizer",
+        "module_scope": "standard_video",
+        "step_scope": "script",
+        "group_name": "behavior",
+        "kind": "behavior_block",
+        "order_index": 30,
+        "enabled_by_default": False,
+        "condition_type": "settings_boolean",
+        "condition_config_json": json.dumps({"settings_key": "standard_video.config.humanize_enabled"}),
+        "content_template": (
+            "Metni daha insansi ve dogal hale getir:\n"
+            "- Mekanik cumle yapilarindan kacin\n"
+            "- Dogal gecisler kullan\n"
+            "- Izleyiciye dogrudan hitap et"
+        ),
+        "help_text": "Insansi dil zenginlestirme. humanize_enabled ayariyla kontrol edilir. Varsayilan kapali.",
+    },
+    {
+        "key": "sv.category_guidance",
+        "title": "Kategori Yonlendirme",
+        "module_scope": "standard_video",
+        "step_scope": "script",
+        "group_name": "context",
+        "kind": "context_block",
+        "order_index": 40,
+        "enabled_by_default": True,
+        "condition_type": "data_presence",
+        "condition_config_json": json.dumps({"data_key": "category"}),
+        "content_template": "Video kategorisi: {{category}}. Ton ve terminolojiyi kategoriye gore ayarla.",
+        "help_text": "Kategori varsa otomatik eklenir, ton uyarlamasi saglar.",
+    },
+    {
+        "key": "sv.tts_enhance",
+        "title": "TTS Uyumluluk",
+        "module_scope": "standard_video",
+        "step_scope": "script",
+        "group_name": "behavior",
+        "kind": "behavior_block",
+        "order_index": 50,
+        "enabled_by_default": True,
+        "condition_type": "settings_boolean",
+        "condition_config_json": json.dumps({"settings_key": "standard_video.config.tts_enhance_enabled"}),
+        "content_template": (
+            "TTS (text-to-speech) uyumluluk kurallari:\n"
+            "- Kisaltma kullanma, tam yaz\n"
+            "- Rakamlar varsa yazi ile yaz\n"
+            "- Parantez icinde aciklama yapma\n"
+            "- Dogal konusma ritmine uygun cumleler kur"
+        ),
+        "help_text": "TTS uyumluluk talimatlari. tts_enhance_enabled ayariyla kontrol edilir.",
+    },
+    {
+        "key": "sv.output_contract",
+        "title": "Script Cikti Format Sozlesmesi",
+        "module_scope": "standard_video",
+        "step_scope": "script",
+        "group_name": "output",
+        "kind": "output_contract",
+        "order_index": 100,
+        "enabled_by_default": True,
+        "condition_type": "always",
+        "content_template": (
+            'CIKTI FORMATI (JSON):\n'
+            '{"title": "...", "scenes": [{"scene_number": 1, "narration": "...", "visual_cue": "...", "duration_seconds": 10}], '
+            '"total_duration_seconds": 60, "language": "tr"}\n\n'
+            "YALNIZCA gecerli JSON don. Baska aciklama ekleme."
+        ),
+        "help_text": "Script JSON cikti format sozlesmesi. Her zaman dahil edilir, devre disi birakilamaz.",
+    },
+    # ═══════════════════════════════════════════
+    # STANDARD VIDEO — METADATA STEP
+    # ═══════════════════════════════════════════
+    {
+        "key": "sv.metadata_system",
+        "title": "Video Metadata System Prompt",
+        "module_scope": "standard_video",
+        "step_scope": "metadata",
+        "group_name": "core",
+        "kind": "core_system",
+        "order_index": 0,
+        "enabled_by_default": True,
+        "condition_type": "always",
+        "content_template": (
+            "Sen bir YouTube icerik uzmanisin. Verilen video script'i icin YouTube metadata uret."
+        ),
+        "help_text": "Metadata uretimi icin ana sistem talimati.",
+    },
+    {
+        "key": "sv.metadata_seo_rules",
+        "title": "SEO Kurallari",
+        "module_scope": "standard_video",
+        "step_scope": "metadata",
+        "group_name": "behavior",
+        "kind": "behavior_block",
+        "order_index": 10,
+        "enabled_by_default": True,
+        "condition_type": "settings_boolean",
+        "condition_config_json": json.dumps({"settings_key": "standard_video.config.seo_rules_enabled"}),
+        "content_template": (
+            "SEO kurallari:\n"
+            "- Baslik: max 70 karakter, anahtar kelime icerecek sekilde\n"
+            "- Aciklama: 2-3 cumle, ilk cumlede anahtar kelime olsun\n"
+            "- Etiketler: 5-15 adet, hem genel hem ozele ozel\n"
+            "- Hashtag: 3-5 adet"
+        ),
+        "help_text": "SEO optimizasyon kurallari. seo_rules_enabled ayariyla kontrol edilir.",
+    },
+    {
+        "key": "sv.metadata_output_contract",
+        "title": "Metadata Cikti Sozlesmesi",
+        "module_scope": "standard_video",
+        "step_scope": "metadata",
+        "group_name": "output",
+        "kind": "output_contract",
+        "order_index": 100,
+        "enabled_by_default": True,
+        "condition_type": "always",
+        "content_template": (
+            'CIKTI FORMATI (JSON):\n'
+            '{"title": "...", "description": "...", "tags": ["..."], "hashtags": ["..."], "language": "tr"}\n\n'
+            "YALNIZCA gecerli JSON don."
+        ),
+        "help_text": "Metadata JSON cikti format sozlesmesi.",
+    },
 ]
 
 
