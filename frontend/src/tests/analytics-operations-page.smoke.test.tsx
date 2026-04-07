@@ -15,6 +15,8 @@ const MOCK_OPERATIONS: OperationsMetrics = {
   ],
   provider_error_rate: null,
   provider_stats: [],
+  total_assembly_runs: 0,
+  dry_run_count: 0,
 };
 
 const MOCK_OVERVIEW: OverviewMetrics = {
@@ -29,6 +31,9 @@ const MOCK_OVERVIEW: OverviewMetrics = {
   publish_success_rate: 0.9333,
   avg_production_duration_seconds: 125.5,
   retry_rate: 0.0714,
+  review_pending_count: 0,
+  review_rejected_count: 0,
+  publish_backlog_count: 0,
 };
 
 const MOCK_SOURCE_IMPACT: SourceImpactMetrics = {
@@ -59,6 +64,8 @@ const MOCK_OPERATIONS_EMPTY: OperationsMetrics = {
   step_stats: [],
   provider_error_rate: null,
   provider_stats: [],
+  total_assembly_runs: 0,
+  dry_run_count: 0,
 };
 
 const MOCK_SOURCE_EMPTY: SourceImpactMetrics = {

@@ -17,6 +17,9 @@ const MOCK_OVERVIEW: OverviewMetrics = {
   publish_success_rate: 0.9333,
   avg_production_duration_seconds: 125.5,
   retry_rate: 0.0714,
+  review_pending_count: 0,
+  review_rejected_count: 0,
+  publish_backlog_count: 0,
 };
 
 const MOCK_CHANNEL: ChannelOverviewMetrics = {
@@ -45,6 +48,9 @@ const MOCK_OVERVIEW_EMPTY: OverviewMetrics = {
   publish_success_rate: null,
   avg_production_duration_seconds: null,
   retry_rate: null,
+  review_pending_count: 0,
+  review_rejected_count: 0,
+  publish_backlog_count: 0,
 };
 
 const MOCK_CHANNEL_EMPTY: ChannelOverviewMetrics = {
