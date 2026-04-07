@@ -6,7 +6,7 @@
  * Basarili olursa ayarlar sayfasina yonlendirir.
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { cn } from "../../lib/cn";
 import { ActionButton } from "../../components/design-system/primitives";
@@ -16,8 +16,13 @@ export function YouTubeCallbackPage() {
   const navigate = useNavigate();
   const [status, setStatus] = useState<"processing" | "success" | "error">("processing");
   const [message, setMessage] = useState("YouTube yetkilendirmesi isleniyor...");
+  // StrictMode'da useEffect iki kez çalışır — code tek kullanımlık olduğu için guard gerekli
+  const exchangedRef = useRef(false);
 
   useEffect(() => {
+    if (exchangedRef.current) return;
+    exchangedRef.current = true;
+
     const code = searchParams.get("code");
     const error = searchParams.get("error");
 
@@ -53,11 +58,16 @@ export function YouTubeCallbackPage() {
       })
       .then(() => {
         setStatus("success");
-        setMessage("YouTube baglantisi basariyla kuruldu! Ayarlar sayfasina yonlendiriliyorsunuz...");
-        // 2 saniye sonra ayarlar sayfasina don
+        setMessage("YouTube baglantisi basariyla kuruldu!");
+        // Popup ise kapat + ana pencereyi bilgilendir, değilse yönlendir
         setTimeout(() => {
-          navigate("/admin/settings", { replace: true });
-        }, 2000);
+          if (window.opener) {
+            window.opener.postMessage({ type: "youtube-oauth-success" }, window.location.origin);
+            window.close();
+          } else {
+            navigate("/admin/settings", { replace: true });
+          }
+        }, 1500);
       })
       .catch((err) => {
         setStatus("error");

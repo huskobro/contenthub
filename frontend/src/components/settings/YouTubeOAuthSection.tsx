@@ -8,7 +8,8 @@
  * - Disconnect button with confirmation
  */
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   useYouTubeStatus,
   useYouTubeChannelInfo,
@@ -54,8 +55,23 @@ export function YouTubeOAuthSection() {
   const { data: ytStatus, isLoading, isError } = useYouTubeStatus();
   const { data: channelInfo } = useYouTubeChannelInfo();
   const revokeMutation = useRevokeYouTube();
+  const queryClient = useQueryClient();
   const [connecting, setConnecting] = useState(false);
   const [connectError, setConnectError] = useState<string | null>(null);
+
+  // Popup'tan OAuth başarı sinyali dinle — token kaydedilince query'leri yenile
+  useEffect(() => {
+    function handleMessage(e: MessageEvent) {
+      if (e.origin !== window.location.origin) return;
+      if (e.data?.type === "youtube-oauth-success") {
+        queryClient.invalidateQueries({ queryKey: ["youtube-status"] });
+        queryClient.invalidateQueries({ queryKey: ["youtube-channel-info"] });
+        setConnecting(false);
+      }
+    }
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, [queryClient]);
 
   async function handleConnect() {
     setConnecting(true);
