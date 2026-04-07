@@ -215,7 +215,8 @@ class YouTubeTokenStore:
             "scope": YOUTUBE_SCOPE,
             "access_type": "offline",
             "prompt": "select_account consent",
-            "include_granted_scopes": "true",
+            # include_granted_scopes kaldırıldı — eski scope inherit edilmesin,
+            # tam scope listesi her seferinde yeniden istenir
         }
         return f"{GOOGLE_AUTH_URL}?{urlencode(params, quote_via=quote)}"
 
