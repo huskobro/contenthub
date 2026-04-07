@@ -43,12 +43,7 @@ async def list_blocks(
     db: AsyncSession = Depends(get_db),
 ):
     blocks = await service.list_blocks(db, module_scope, provider_scope, status_filter)
-    result = []
-    for b in blocks:
-        d = PromptBlockResponse.model_validate(b)
-        d.effective_template = b.effective_template()
-        result.append(d)
-    return result
+    return [PromptBlockResponse.model_validate(b) for b in blocks]
 
 
 @router.get("/blocks/{block_id}", response_model=PromptBlockResponse)
@@ -57,9 +52,7 @@ async def get_block(
     db: AsyncSession = Depends(get_db),
 ):
     b = await service.get_block(db, block_id)
-    resp = PromptBlockResponse.model_validate(b)
-    resp.effective_template = b.effective_template()
-    return resp
+    return PromptBlockResponse.model_validate(b)
 
 
 @router.post("/blocks", response_model=PromptBlockResponse, status_code=status.HTTP_201_CREATED)
@@ -68,9 +61,7 @@ async def create_block(
     db: AsyncSession = Depends(get_db),
 ):
     b = await service.create_block(db, payload)
-    resp = PromptBlockResponse.model_validate(b)
-    resp.effective_template = b.effective_template()
-    return resp
+    return PromptBlockResponse.model_validate(b)
 
 
 @router.patch("/blocks/{block_id}", response_model=PromptBlockResponse)
@@ -80,9 +71,7 @@ async def update_block(
     db: AsyncSession = Depends(get_db),
 ):
     b = await service.update_block(db, block_id, payload)
-    resp = PromptBlockResponse.model_validate(b)
-    resp.effective_template = b.effective_template()
-    return resp
+    return PromptBlockResponse.model_validate(b)
 
 
 # -- Assembly Preview (Dry Run) --

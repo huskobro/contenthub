@@ -46,6 +46,7 @@ class PromptBlock(Base):
         DateTime(timezone=True), nullable=False, default=_now, onupdate=_now
     )
 
+    @property
     def effective_template(self) -> str:
         """Return admin override if set, otherwise builtin content_template."""
         if self.admin_override_template is not None:
