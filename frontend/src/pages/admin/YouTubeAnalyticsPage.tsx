@@ -104,6 +104,19 @@ const PAGE_SIZE = 20;
 // Connection Status Banner
 // ---------------------------------------------------------------------------
 
+// Extracts the HTTP status code from an ApiError-like error object
+function getErrorStatus(err: unknown): number | null {
+  if (err && typeof err === "object" && "status" in err) {
+    return (err as { status: number }).status;
+  }
+  return null;
+}
+
+function getErrorMessage(err: unknown): string | null {
+  if (err instanceof Error) return err.message;
+  return null;
+}
+
 function ConnectionBanner({
   isConnected,
   scopeOk,
@@ -114,7 +127,7 @@ function ConnectionBanner({
   isConnected: boolean;
   scopeOk: boolean;
   channelOk: boolean;
-  videosError: boolean;
+  videosError: Error | null;
   channelError: boolean;
 }) {
   if (!isConnected) {
@@ -184,19 +197,31 @@ function ConnectionBanner({
   }
 
   if (videosError) {
+    const errStatus = getErrorStatus(videosError);
+    const errMsg = getErrorMessage(videosError);
+    const isNotFound = errStatus === 404;
+    const isScope = errStatus === 403;
+
     return (
       <div
-        className="flex items-start gap-3 p-4 rounded-lg border border-error/20 bg-error-light mb-4"
+        className="flex items-start gap-3 p-4 rounded-lg border border-warning/30 bg-warning-light mb-4"
         data-testid="yt-status-videos-error"
       >
         <span className="text-2xl shrink-0 mt-0.5">⚠️</span>
         <div>
-          <p className="m-0 text-base font-semibold text-error-text">
-            Video listesi alınamadı
+          <p className="m-0 text-base font-semibold text-warning-text">
+            {isNotFound
+              ? "Video listesi endpoint'i bulunamadı"
+              : isScope
+                ? "Video listesi için yetki yetersiz"
+                : "Video listesi alınamadı"}
           </p>
           <p className="m-0 mt-1 text-sm text-neutral-600">
-            Kanal bağlantısı sağlıklı ancak video listesi çekilirken hata oluştu.
-            Lütfen tekrar deneyin.
+            {isNotFound
+              ? "Backend sunucusu eski versiyonu yüklemiş görünüyor. Uygulamayı yeniden başlatın (start.sh veya ContentHub.command)."
+              : isScope
+                ? "OAuth token'ınızın yeterli izni yok. Ayarlar sayfasından bağlantıyı yeniden kurun."
+                : `Kanal bağlantısı sağlıklı ancak video listesi çekilirken hata oluştu${errMsg ? `: ${errMsg}` : ""}. Sayfayı yenileyin.`}
           </p>
         </div>
       </div>
@@ -525,7 +550,8 @@ export function YouTubeAnalyticsPage() {
   const {
     data: channelVideos,
     isLoading: videosLoading,
-    isError: videosError,
+    isError: videosIsError,
+    error: videosErrorObj,
   } = useChannelVideos(
     ytStatus?.has_credentials === true && ytStatus?.scope_ok !== false,
   );
@@ -534,6 +560,10 @@ export function YouTubeAnalyticsPage() {
   const isConnected = ytStatus?.has_credentials === true;
   const scopeOk = ytStatus?.scope_ok !== false;
   const channelOk = !channelError && !!channelInfo?.connected;
+  // Typed error object for detailed error display
+  const videosError: Error | null = videosIsError
+    ? (videosErrorObj instanceof Error ? videosErrorObj : new Error("Video listesi alınamadı"))
+    : null;
 
   // All videos
   const allVideos = channelVideos?.videos ?? [];
