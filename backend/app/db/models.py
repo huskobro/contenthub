@@ -1045,3 +1045,7 @@ class WizardConfig(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=_now, onupdate=_now
     )
+
+
+# Prompt Assembly Engine models (Alembic discovery)
+import app.prompt_assembly.models  # noqa: E402, F401

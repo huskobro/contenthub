@@ -17,6 +17,9 @@ import {
 } from "../../api/effectiveSettingsApi";
 import { PageShell, SectionShell, ActionButton } from "../../components/design-system/primitives";
 import { useToast } from "../../hooks/useToast";
+import { PromptBlockList } from "../../components/prompt-assembly/PromptBlockList";
+import { RelatedRulesSection } from "../../components/prompt-assembly/RelatedRulesSection";
+import { PromptPreviewSection } from "../../components/prompt-assembly/PromptPreviewSection";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -241,11 +244,21 @@ function ModuleGroup({
 // Main Page
 // ---------------------------------------------------------------------------
 
+// Module scope options for the block section tabs
+const BLOCK_MODULE_TABS = [
+  { value: undefined as string | undefined, label: "Tümü" },
+  { value: "news_bulletin", label: "News Bulletin" },
+  { value: "standard_video", label: "Standard Video" },
+];
+
 export function PromptEditorPage() {
   const [searchParams] = useSearchParams();
   const moduleFilter = searchParams.get("module") ?? "";
   const toast = useToast();
   const queryClient = useQueryClient();
+
+  // Active module scope tab for the Prompt Blocks section
+  const [activeBlockModule, setActiveBlockModule] = useState<string | undefined>(undefined);
 
   const { data: allSettings, isLoading, isError } = useQuery({
     queryKey: ["effectiveSettings"],
@@ -420,6 +433,13 @@ export function PromptEditorPage() {
             job&apos;lar etkilenmez.
           </div>
 
+          {/* Section label for legacy editor */}
+          <div className="mb-1 mt-1">
+            <span className="text-xs font-semibold text-neutral-400 uppercase tracking-wider">
+              Eski Prompt Editörü (Settings Tabanlı)
+            </span>
+          </div>
+
           {moduleScopes.map((scope) => (
             <ModuleGroup
               key={scope}
@@ -434,6 +454,50 @@ export function PromptEditorPage() {
           ))}
         </>
       )}
+
+      {/* ── NEW SECTION: Prompt Blocks ── */}
+      <SectionShell
+        title="Prompt Blokları"
+        description="Assembly engine'deki tüm prompt bloklarını görüntüleyin ve admin override ekleyin."
+        testId="prompt-blocks-section"
+      >
+        {/* Module filter tabs */}
+        <div className="flex gap-1 mb-4 border-b border-border-subtle pb-2">
+          {BLOCK_MODULE_TABS.map((tab) => (
+            <ActionButton
+              key={tab.label}
+              variant={activeBlockModule === tab.value ? "primary" : "ghost"}
+              size="sm"
+              onClick={() => setActiveBlockModule(tab.value)}
+              data-testid={`block-module-tab-${tab.label}`}
+            >
+              {tab.label}
+            </ActionButton>
+          ))}
+        </div>
+
+        <PromptBlockList moduleScope={activeBlockModule} />
+      </SectionShell>
+
+      {/* ── NEW SECTION: Related Rules ── */}
+      {activeBlockModule && (
+        <SectionShell
+          title="İlişkili Kurallar"
+          description={`${activeBlockModule} modülüne ait konfigürasyon ayarları.`}
+          testId="related-rules-section"
+        >
+          <RelatedRulesSection moduleScope={activeBlockModule} />
+        </SectionShell>
+      )}
+
+      {/* ── NEW SECTION: Preview ── */}
+      <SectionShell
+        title="Assembly Preview"
+        description="Gerçek verilerle prompt assembly'yi test edin. Çalışan job'ları etkilemez."
+        testId="assembly-preview-section"
+      >
+        <PromptPreviewSection />
+      </SectionShell>
     </PageShell>
   );
 }

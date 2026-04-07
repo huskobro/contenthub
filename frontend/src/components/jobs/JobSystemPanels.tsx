@@ -1,5 +1,6 @@
 import type { JobStepResponse } from "../../api/jobsApi";
 import { cn } from "../../lib/cn";
+import { JobPromptTracePanel } from "./JobPromptTracePanel";
 
 interface ProviderTrace {
   provider_name?: string;
@@ -115,9 +116,10 @@ function ProviderTraceCard({ step, trace }: { step: JobStepResponse; trace: Prov
 
 interface JobSystemPanelsProps {
   steps?: JobStepResponse[];
+  jobId?: string;
 }
 
-export function JobSystemPanels({ steps = [] }: JobSystemPanelsProps) {
+export function JobSystemPanels({ steps = [], jobId }: JobSystemPanelsProps) {
   const safeSteps = Array.isArray(steps) ? steps : [];
 
   // Extract provider traces from steps
@@ -211,6 +213,16 @@ export function JobSystemPanels({ steps = [] }: JobSystemPanelsProps) {
           tracePairs.map(({ step, trace }) => (
             <ProviderTraceCard key={step.id} step={step} trace={trace} />
           ))
+        )}
+      </SystemCard>
+
+      <SystemCard title="Prompt Trace">
+        {jobId ? (
+          <JobPromptTracePanel jobId={jobId} />
+        ) : (
+          <p className="m-0 text-neutral-500 text-sm" data-testid="prompt-trace-no-job">
+            Job ID bulunamadı.
+          </p>
         )}
       </SystemCard>
     </div>
