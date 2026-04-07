@@ -4,9 +4,15 @@ Bülten senaryo adımı executor'ı (BulletinScriptExecutor) — M28.
 Seçilmiş haber öğelerinden spiker tarzında narration metinleri üretir.
 Settings snapshot'tan admin-managed prompt'ları okur.
 
-Akış:
+Akış (assembly engine — primary):
   1. bulletin_id → DB'den selected items + narration metinleri çekilir
-  2. Settings snapshot'tan prompt key'ler okunur
+  2. PromptAssemblyService ile blok tabanlı prompt derlenir
+  3. Assembly sonucu messages LLM'e gönderilir
+  4. Assembly trace kaydedilir
+  5. bulletin_script.json artifact yazılır
+
+Akış (fallback — legacy):
+  1-2. Aynı
   3. build_bulletin_script_prompt ile LLM mesajları hazırlanır
   4. resolve_and_invoke(LLM) çağrılır
   5. bulletin_script.json artifact yazılır
@@ -51,6 +57,9 @@ class BulletinScriptExecutor(StepExecutor):
     async def execute(self, job: Job, step: JobStep) -> dict:
         """
         Script adımını çalıştırır.
+
+        PRIMARY: PromptAssemblyService ile blok tabanlı prompt derlenir.
+        FALLBACK: build_bulletin_script_prompt ile eski yol kullanılır.
 
         Args:
             job : Job ORM nesnesi.
@@ -136,23 +145,52 @@ class BulletinScriptExecutor(StepExecutor):
                 "edited_narration": item.get("edited_narration"),
             })
 
-        if not narration_system:
-            raise StepExecutionError(
-                self.step_key(),
-                "news_bulletin.prompt.narration_system ayarı boş. "
-                "Admin panelden prompt ayarını yapılandırın.",
+        # --- PRIMARY PATH: Prompt Assembly Engine ---
+        messages = None
+        assembly_run_id = None
+        used_assembly = False
+
+        try:
+            messages, assembly_run_id = await self._assemble_prompt(
+                job_id=str(job.id),
+                settings_snapshot=settings_snapshot,
+                items_for_prompt=items_for_prompt,
+                language_code=language.value,
+                tone=tone,
+                word_limit=int(word_limit) if word_limit else 80,
+                target_duration=int(duration) if duration else 120,
+            )
+            used_assembly = True
+            logger.info(
+                "BulletinScriptExecutor: assembly engine used, run_id=%s",
+                assembly_run_id,
+            )
+        except Exception as exc:
+            logger.warning(
+                "BulletinScriptExecutor: assembly engine failed, falling back "
+                "to legacy prompt builder. Error: %s",
+                exc,
             )
 
-        messages = build_bulletin_script_prompt(
-            items=items_for_prompt,
-            language=language,
-            narration_system_prompt=narration_system,
-            narration_style_rules=narration_style,
-            anti_clickbait_rules=anti_clickbait,
-            word_limit_per_item=int(word_limit) if word_limit else 80,
-            target_duration_seconds=int(duration) if duration else 120,
-            tone=tone,
-        )
+        # --- FALLBACK PATH: Legacy prompt builder ---
+        if messages is None:
+            if not narration_system:
+                raise StepExecutionError(
+                    self.step_key(),
+                    "news_bulletin.prompt.narration_system ayarı boş. "
+                    "Admin panelden prompt ayarını yapılandırın.",
+                )
+
+            messages = build_bulletin_script_prompt(
+                items=items_for_prompt,
+                language=language,
+                narration_system_prompt=narration_system,
+                narration_style_rules=narration_style,
+                anti_clickbait_rules=anti_clickbait,
+                word_limit_per_item=int(word_limit) if word_limit else 80,
+                target_duration_seconds=int(duration) if duration else 120,
+                tone=tone,
+            )
 
         try:
             output = await resolve_and_invoke(
@@ -164,6 +202,32 @@ class BulletinScriptExecutor(StepExecutor):
             raise StepExecutionError(self.step_key(), f"LLM çağrısı başarısız: {err}")
 
         raw_content: str = output.result.get("content", "")
+
+        # Record provider result in assembly trace (if assembly was used)
+        if used_assembly and assembly_run_id:
+            try:
+                from app.db.session import AsyncSessionLocal
+                from app.prompt_assembly import trace_service
+
+                async with AsyncSessionLocal() as db_session:
+                    await trace_service.record_provider_result(
+                        db_session,
+                        assembly_run_id,
+                        response_json={
+                            "content": raw_content[:2000],
+                            "provider_id": output.trace.get("provider_id"),
+                            "model": output.trace.get("model"),
+                            "input_tokens": output.trace.get("input_tokens"),
+                            "output_tokens": output.trace.get("output_tokens"),
+                            "latency_ms": output.trace.get("latency_ms"),
+                        },
+                    )
+                    await db_session.commit()
+            except Exception as exc:
+                logger.warning(
+                    "BulletinScriptExecutor: failed to record assembly provider "
+                    "result: %s", exc,
+                )
 
         cleaned = _strip_markdown_json(raw_content)
         try:
@@ -191,11 +255,12 @@ class BulletinScriptExecutor(StepExecutor):
 
         item_count = len(script_data.get("items", []))
         logger.info(
-            "BulletinScriptExecutor: job=%s dil=%s haber=%d artifact=%s",
+            "BulletinScriptExecutor: job=%s dil=%s haber=%d artifact=%s assembly=%s",
             job.id,
             language.value,
             item_count,
             artifact_path,
+            used_assembly,
         )
 
         trace_info = build_provider_trace(
@@ -207,7 +272,11 @@ class BulletinScriptExecutor(StepExecutor):
             model=output.trace.get("model"),
             input_tokens=output.trace.get("input_tokens"),
             output_tokens=output.trace.get("output_tokens"),
-            extra={"resolution_role": output.trace.get("resolution_role")},
+            extra={
+                "resolution_role": output.trace.get("resolution_role"),
+                "used_assembly_engine": used_assembly,
+                "assembly_run_id": assembly_run_id,
+            },
         )
 
         return {
@@ -219,3 +288,97 @@ class BulletinScriptExecutor(StepExecutor):
             "provider_trace": trace_info,
             "step": self.step_key(),
         }
+
+    async def _assemble_prompt(
+        self,
+        *,
+        job_id: str,
+        settings_snapshot: dict,
+        items_for_prompt: list,
+        language_code: str,
+        tone: str,
+        word_limit: int,
+        target_duration: int,
+    ) -> tuple:
+        """
+        Use PromptAssemblyService to build messages.
+
+        Returns:
+            (messages, assembly_run_id) tuple.
+
+        Raises:
+            Exception on any assembly failure (caller catches for fallback).
+        """
+        from app.db.session import AsyncSessionLocal
+        from app.prompt_assembly.assembly_service import PromptAssemblyService
+        from app.prompt_assembly import service as block_service
+        from app.settings.settings_resolver import resolve_group
+
+        # Build data_snapshot with all context the blocks may reference
+        data_snapshot = {
+            "selected_news_items": items_for_prompt,
+            "item_count": len(items_for_prompt),
+            "language": language_code,
+            "tone": tone,
+            "word_limit_per_item": word_limit,
+            "target_duration_seconds": target_duration,
+        }
+
+        # Build user_content — the actual news items as structured text
+        user_lines = []
+        for item in items_for_prompt:
+            edited = item.get("edited_narration")
+            if edited:
+                user_lines.append(
+                    f"[Haber {item['item_number']}] (EDITED — koru)\n"
+                    f"Başlık: {item['headline']}\n"
+                    f"Narration: {edited}"
+                )
+            else:
+                user_lines.append(
+                    f"[Haber {item['item_number']}]\n"
+                    f"Başlık: {item['headline']}\n"
+                    f"Özet: {item['summary']}"
+                )
+        user_content = "\n\n".join(user_lines)
+
+        async with AsyncSessionLocal() as db_session:
+            # Load block snapshot
+            blocks = await block_service.get_effective_blocks(
+                db_session, "news_bulletin"
+            )
+            block_snapshot = [b.to_snapshot_dict() for b in blocks]
+
+            if not block_snapshot:
+                raise RuntimeError(
+                    "No active prompt blocks found for module 'news_bulletin'."
+                )
+
+            # Build settings snapshot from resolver (fresh from DB)
+            assembly_settings = await resolve_group("news_bulletin", db_session)
+            # Merge with job-level settings snapshot (job snapshot takes precedence)
+            merged_settings = {**assembly_settings, **settings_snapshot}
+
+            assembly_service = PromptAssemblyService()
+            result = await assembly_service.assemble(
+                db_session,
+                module_scope="news_bulletin",
+                step_key="script",
+                provider_name="llm",
+                provider_type="llm",
+                settings_snapshot=merged_settings,
+                block_snapshot=block_snapshot,
+                data_snapshot=data_snapshot,
+                user_content=user_content,
+                job_id=job_id,
+                is_dry_run=False,
+                data_source="job_context",
+            )
+
+            await db_session.commit()
+
+        messages = result.final_payload.get("messages")
+        if not messages:
+            raise RuntimeError("Assembly produced empty messages payload.")
+
+        return messages, result.assembly_run_id
