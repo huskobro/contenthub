@@ -726,6 +726,58 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "wired_to": "MetadataStepExecutor — metadata uretimi sistem prompt",
     },
 
+    # --- Standard Video Behavior Block Settings ---
+    "standard_video.config.opening_hooks_enabled": {
+        "group": "standard_video",
+        "type": "boolean",
+        "label": "Acilis Hook Kurallari",
+        "builtin_default": True,
+        "module_scope": "standard_video",
+        "help_text": "Acilis hook blogu etkin mi. sv.opening_hooks blocku ile baglantilidlr.",
+        "wired": True,
+        "wired_to": "sv.opening_hooks block condition",
+    },
+    "standard_video.config.humanize_enabled": {
+        "group": "standard_video",
+        "type": "boolean",
+        "label": "Humanizer",
+        "builtin_default": False,
+        "module_scope": "standard_video",
+        "help_text": "Humanizer blogu etkin mi. sv.humanizer blocku ile baglantilidlr. Varsayilan kapali.",
+        "wired": True,
+        "wired_to": "sv.humanizer block condition",
+    },
+    "standard_video.config.tts_enhance_enabled": {
+        "group": "standard_video",
+        "type": "boolean",
+        "label": "TTS Uyumluluk",
+        "builtin_default": True,
+        "module_scope": "standard_video",
+        "help_text": "TTS uyumluluk blogu etkin mi. sv.tts_enhance blocku ile baglantilidlr.",
+        "wired": True,
+        "wired_to": "sv.tts_enhance block condition",
+    },
+    "standard_video.config.seo_rules_enabled": {
+        "group": "standard_video",
+        "type": "boolean",
+        "label": "SEO Kurallari",
+        "builtin_default": True,
+        "module_scope": "standard_video",
+        "help_text": "SEO optimizasyon blogu etkin mi. sv.metadata_seo_rules blocku ile baglantilidlr.",
+        "wired": True,
+        "wired_to": "sv.metadata_seo_rules block condition",
+    },
+    "standard_video.config.category_guidance_enabled": {
+        "group": "standard_video",
+        "type": "boolean",
+        "label": "Kategori Yonlendirme",
+        "builtin_default": True,
+        "module_scope": "standard_video",
+        "help_text": "Kategori yonlendirme blogu etkin mi. sv.category_guidance data_presence ile kontrol edilir.",
+        "wired": True,
+        "wired_to": "sv.category_guidance block condition",
+    },
+
     # --- Module Registry Settings (Phase 2 — Faz A) ---
     "module.standard_video.enabled": {
         "group": "modules",
