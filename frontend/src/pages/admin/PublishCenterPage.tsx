@@ -54,17 +54,19 @@ export function PublishCenterPage() {
   const navigate = useNavigate();
   const [statusFilter, setStatusFilter] = useState("");
   const [platformFilter, setPlatformFilter] = useState("");
+  const [moduleFilter, setModuleFilter] = useState("");
   const [offset, setOffset] = useState(0);
 
   const { data, isLoading, isError } = usePublishRecords({
     status: statusFilter || undefined,
     platform: platformFilter || undefined,
+    content_ref_type: moduleFilter || undefined,
     limit: PAGE_SIZE,
     offset,
   });
 
   const items = data ?? [];
-  const hasFilters = !!(statusFilter || platformFilter);
+  const hasFilters = !!(statusFilter || platformFilter || moduleFilter);
 
   const columns = [
     {
@@ -181,11 +183,20 @@ export function PublishCenterPage() {
             <option value="">Tum Platformlar</option>
             <option value="youtube">YouTube</option>
           </FilterSelect>
+          <FilterSelect
+            value={moduleFilter}
+            onChange={(e) => { setModuleFilter(e.target.value); setOffset(0); }}
+            data-testid="publish-module-filter"
+          >
+            <option value="">Tum Moduller</option>
+            <option value="standard_video">Standart Video</option>
+            <option value="news_bulletin">Haber Bulteni</option>
+          </FilterSelect>
           {hasFilters && (
             <ActionButton
               variant="secondary"
               size="sm"
-              onClick={() => { setStatusFilter(""); setPlatformFilter(""); setOffset(0); }}
+              onClick={() => { setStatusFilter(""); setPlatformFilter(""); setModuleFilter(""); setOffset(0); }}
               data-testid="publish-filter-clear"
             >
               Temizle

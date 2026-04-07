@@ -25,10 +25,12 @@ import logging
 from datetime import datetime, timezone
 from typing import Optional
 
+import os
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models import PublishRecord, PublishLog
+from app.db.models import PublishRecord, PublishLog, Job
 from app.publish.enums import PublishStatus, PublishLogEvent
 from app.publish.exceptions import (
     PublishRecordNotFoundError,
@@ -214,13 +216,14 @@ async def list_publish_records(
     job_id: Optional[str] = None,
     platform: Optional[str] = None,
     status: Optional[str] = None,
+    content_ref_type: Optional[str] = None,
     limit: int = 50,
     offset: int = 0,
 ) -> list[PublishRecord]:
     """
     Filtrelenmiş publish kayıtlarını döndürür.
 
-    job_id, platform veya status ile filtrelenebilir.
+    job_id, platform, status veya content_ref_type ile filtrelenebilir.
     """
     query = select(PublishRecord)
     if job_id:
@@ -229,6 +232,8 @@ async def list_publish_records(
         query = query.where(PublishRecord.platform == platform)
     if status:
         query = query.where(PublishRecord.status == status)
+    if content_ref_type:
+        query = query.where(PublishRecord.content_ref_type == content_ref_type)
     query = query.order_by(PublishRecord.created_at.desc()).limit(limit).offset(offset)
     result = await session.execute(query)
     return list(result.scalars().all())
@@ -325,6 +330,7 @@ async def review_action(
     decision: str,
     reviewer_id: Optional[str] = None,
     note: Optional[str] = None,
+    rejection_reason: Optional[str] = None,
 ) -> PublishRecord:
     """
     Operatör review kararı: 'approve' veya 'reject'.
@@ -335,6 +341,9 @@ async def review_action(
     Review gate / publish gate izolasyon kuralı:
       Bu fonksiyon yalnızca review kararı verir.
       Yayınlama girişimini başlatmaz. trigger_publish() ayrı çağrılır.
+
+    Reddetme kuralı:
+      rejection_reason varsa log'a detail_json içinde kaydedilir.
     """
     record = await _get_record_or_404(session, record_id)
 
@@ -360,6 +369,10 @@ async def review_action(
     record.reviewer_id = reviewer_id
     record.reviewed_at = _now()
 
+    detail: dict = {"decision": decision}
+    if rejection_reason:
+        detail["rejection_reason"] = rejection_reason
+
     await _transition_status(
         session=session,
         record=record,
@@ -367,7 +380,7 @@ async def review_action(
         actor_type="admin",
         actor_id=reviewer_id,
         note=note,
-        detail={"decision": decision},
+        detail=detail,
     )
     await _append_log(
         session=session,
@@ -375,7 +388,7 @@ async def review_action(
         event_type=PublishLogEvent.REVIEW_ACTION,
         actor_type="admin",
         actor_id=reviewer_id,
-        detail={"decision": decision, "review_state": review_state},
+        detail={"decision": decision, "review_state": review_state, **({"rejection_reason": rejection_reason} if rejection_reason else {})},
         note=note,
     )
     await session.commit()
@@ -687,6 +700,103 @@ async def retry_publish(
         "PublishRecord %s retry başlatıldı (deneme=%d, platform_video_id=%s)",
         record.id, record.publish_attempt_count, record.platform_video_id,
     )
+    return record
+
+
+async def create_publish_record_from_job(
+    session: AsyncSession,
+    job_id: str,
+    platform: str,
+    content_ref_type: str,
+    content_ref_id: Optional[str] = None,
+    actor_id: Optional[str] = None,
+) -> PublishRecord:
+    """
+    Job'dan publish kaydı oluşturur.
+
+    Job'un workspace_path içindeki metadata.json artifact'ını okumaya çalışır
+    ve title/description/tags bilgilerini payload_json'a ekler.
+    Artifact bulunamazsa boş payload ile devam edilir.
+
+    Job bulunamazsa PublishRecordNotFoundError fırlatır.
+    """
+    result = await session.execute(select(Job).where(Job.id == job_id))
+    job = result.scalar_one_or_none()
+    if job is None:
+        raise PublishRecordNotFoundError(f"Job bulunamadı: id={job_id}")
+
+    # content_ref_id verilmemişse job_id'yi kullan
+    effective_content_ref_id = content_ref_id or job_id
+
+    # Workspace'ten metadata.json okumayı dene
+    payload_data: dict = {}
+    if job.workspace_path:
+        metadata_path = os.path.join(job.workspace_path, "metadata.json")
+        if os.path.isfile(metadata_path):
+            try:
+                with open(metadata_path, "r", encoding="utf-8") as f:
+                    meta = json.load(f)
+                for key in ("title", "description", "tags"):
+                    if key in meta:
+                        payload_data[key] = meta[key]
+            except Exception as exc:
+                logger.warning("create_publish_record_from_job: metadata.json okunamadı (job=%s): %s", job_id, exc)
+
+    # input_data_json'dan da başlık almayı dene (fallback)
+    if not payload_data.get("title") and job.input_data_json:
+        try:
+            input_data = json.loads(job.input_data_json)
+            if "topic" in input_data:
+                payload_data.setdefault("title", input_data["topic"])
+        except Exception:
+            pass
+
+    from app.publish.schemas import PublishRecordCreate
+    create_data = PublishRecordCreate(
+        job_id=job_id,
+        content_ref_type=content_ref_type,
+        content_ref_id=effective_content_ref_id,
+        platform=platform,
+        payload_json=json.dumps(payload_data, ensure_ascii=False) if payload_data else None,
+        notes=f"Job'dan otomatik oluşturuldu: {job_id}",
+    )
+    return await create_publish_record(session=session, data=create_data, actor_id=actor_id)
+
+
+async def patch_publish_payload(
+    session: AsyncSession,
+    record_id: str,
+    payload_json: str,
+    actor_id: Optional[str] = None,
+) -> PublishRecord:
+    """
+    Draft durumundaki publish kaydının payload_json'ını günceller.
+
+    Yalnızca draft durumunda izin verilir.
+    PublishGateViolationError: draft olmayan durumda çağrılırsa.
+    """
+    record = await _get_record_or_404(session, record_id)
+
+    if record.status != PublishStatus.DRAFT.value:
+        raise PublishGateViolationError(
+            f"PublishRecord {record.id} payload güncellenemez. "
+            f"Mevcut durum: '{record.status}'. "
+            f"Payload yalnızca draft durumunda güncellenebilir."
+        )
+
+    record.payload_json = payload_json
+    await _append_log(
+        session=session,
+        publish_record_id=record.id,
+        event_type=PublishLogEvent.NOTE,
+        actor_type="user",
+        actor_id=actor_id,
+        detail={"action": "payload_updated"},
+        note="Payload güncellendi (draft)",
+    )
+    await session.commit()
+    await session.refresh(record)
+    logger.info("PublishRecord %s: payload güncellendi (draft).", record.id)
     return record
 
 

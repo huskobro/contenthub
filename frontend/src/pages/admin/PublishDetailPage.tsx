@@ -10,6 +10,7 @@ import {
   useRetryPublish,
   useResetToDraft,
   useSchedulePublish,
+  usePatchPublishPayload,
 } from "../../hooks/usePublish";
 import {
   PageShell,
@@ -65,7 +66,11 @@ export function PublishDetailPage() {
   const retryMutation = useRetryPublish();
   const resetMutation = useResetToDraft();
   const scheduleMutation = useSchedulePublish();
+  const patchPayloadMutation = usePatchPublishPayload();
   const [scheduleDate, setScheduleDate] = useState("");
+  const [rejectionReason, setRejectionReason] = useState("");
+  const [editingPayload, setEditingPayload] = useState(false);
+  const [payloadDraft, setPayloadDraft] = useState("");
 
   if (isLoading) return <PageShell title="Yayin Detay" testId="publish-detail"><p>Yukleniyor...</p></PageShell>;
   if (isError || !record) return <PageShell title="Yayin Detay" testId="publish-detail"><p className="text-error-dark">Kayit bulunamadi.</p></PageShell>;
@@ -165,7 +170,8 @@ export function PublishDetailPage() {
               variant="secondary"
               size="sm"
               loading={reviewMutation.isPending}
-              onClick={() => handleAction(() => reviewMutation.mutateAsync({ recordId: record.id, decision: "reject" }), "Reddedildi.")}
+              disabled={canReject && !rejectionReason}
+              onClick={() => handleAction(() => reviewMutation.mutateAsync({ recordId: record.id, decision: "reject", rejectionReason }), "Reddedildi.")}
               data-testid="publish-action-reject"
             >
               Reddet
@@ -216,6 +222,19 @@ export function PublishDetailPage() {
             </ActionButton>
           )}
         </div>
+        {canReject && (
+          <div className="mt-3 pt-3 border-t border-neutral-200">
+            <p className="text-sm font-medium text-neutral-700 mb-2">Reddetme Gerekchesi <span className="text-error-dark">*</span></p>
+            <input
+              type="text"
+              value={rejectionReason}
+              onChange={(e) => setRejectionReason(e.target.value)}
+              placeholder="Reddetme gerekchesini giriniz (zorunlu)"
+              className="w-full border border-neutral-300 rounded px-2 py-1.5 text-sm"
+              data-testid="publish-rejection-reason-input"
+            />
+          </div>
+        )}
         {canSchedule && (
           <div className="mt-3 pt-3 border-t border-neutral-200">
             <p className="text-sm font-medium text-neutral-700 mb-2">Zamanlanmis Yayin</p>
@@ -250,6 +269,67 @@ export function PublishDetailPage() {
           </div>
         )}
       </SectionShell>
+
+      {/* Payload Edit (draft only) */}
+      {s === "draft" && (
+        <SectionShell title="Payload" testId="publish-payload-section">
+          {!editingPayload ? (
+            <div>
+              <pre className="text-xs bg-neutral-50 border border-neutral-200 rounded p-3 overflow-auto max-h-48 whitespace-pre-wrap">
+                {record.payload_json
+                  ? (() => { try { return JSON.stringify(JSON.parse(record.payload_json), null, 2); } catch { return record.payload_json; } })()
+                  : "(bos)"}
+              </pre>
+              <ActionButton
+                variant="secondary"
+                size="sm"
+                className="mt-2"
+                onClick={() => {
+                  setPayloadDraft(record.payload_json ?? "{}");
+                  setEditingPayload(true);
+                }}
+                data-testid="publish-payload-edit-btn"
+              >
+                Payload Duzenle
+              </ActionButton>
+            </div>
+          ) : (
+            <div>
+              <textarea
+                value={payloadDraft}
+                onChange={(e) => setPayloadDraft(e.target.value)}
+                rows={8}
+                className="w-full border border-neutral-300 rounded px-2 py-1.5 text-sm font-mono"
+                data-testid="publish-payload-textarea"
+              />
+              <div className="flex gap-2 mt-2">
+                <ActionButton
+                  variant="primary"
+                  size="sm"
+                  loading={patchPayloadMutation.isPending}
+                  onClick={() =>
+                    handleAction(
+                      () => patchPayloadMutation.mutateAsync({ recordId: record.id, payloadJson: payloadDraft }),
+                      "Payload guncellendi.",
+                    ).then(() => setEditingPayload(false))
+                  }
+                  data-testid="publish-payload-save-btn"
+                >
+                  Kaydet
+                </ActionButton>
+                <ActionButton
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setEditingPayload(false)}
+                  data-testid="publish-payload-cancel-btn"
+                >
+                  Iptal
+                </ActionButton>
+              </div>
+            </div>
+          )}
+        </SectionShell>
+      )}
 
       {/* Audit Log */}
       <SectionShell title="Denetim Izi" testId="publish-logs">

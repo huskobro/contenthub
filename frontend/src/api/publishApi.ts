@@ -58,6 +58,7 @@ export interface PublishListParams {
   job_id?: string;
   platform?: string;
   status?: string;
+  content_ref_type?: string;
   limit?: number;
   offset?: number;
 }
@@ -87,8 +88,13 @@ export function reviewAction(
   recordId: string,
   decision: "approve" | "reject",
   note?: string,
+  rejectionReason?: string,
 ): Promise<PublishRecordRead> {
-  return api.post<PublishRecordRead>(`${BASE_URL}/${recordId}/review`, { decision, note });
+  return api.post<PublishRecordRead>(`${BASE_URL}/${recordId}/review`, {
+    decision,
+    note,
+    rejection_reason: rejectionReason,
+  });
 }
 
 export function schedulePublish(
@@ -122,4 +128,24 @@ export function retryPublish(
 
 export function resetToDraft(recordId: string): Promise<PublishRecordRead> {
   return api.post<PublishRecordRead>(`${BASE_URL}/${recordId}/reset-to-draft`);
+}
+
+export function patchPublishPayload(
+  recordId: string,
+  payloadJson: string,
+): Promise<PublishRecordRead> {
+  return api.patch<PublishRecordRead>(`${BASE_URL}/${recordId}`, { payload_json: payloadJson });
+}
+
+export interface PublishFromJobBody {
+  platform: string;
+  content_ref_type: string;
+  content_ref_id?: string;
+}
+
+export function createPublishRecordFromJob(
+  jobId: string,
+  body: PublishFromJobBody,
+): Promise<PublishRecordRead> {
+  return api.post<PublishRecordRead>(`${BASE_URL}/from-job/${jobId}`, body);
 }

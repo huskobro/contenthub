@@ -97,6 +97,19 @@ class ReviewActionRequest(BaseModel):
     decision: str               # 'approve' veya 'reject'
     reviewer_id: Optional[str] = None
     note: Optional[str] = None
+    rejection_reason: Optional[str] = None
+
+
+class PublishRecordPatchPayload(BaseModel):
+    """Draft durumunda payload_json güncellemesi için."""
+    payload_json: str
+
+
+class PublishFromJobRequest(BaseModel):
+    """Job'dan publish kaydı oluşturma isteği."""
+    platform: str
+    content_ref_type: str
+    content_ref_id: Optional[str] = None
 
 
 class ScheduleRequest(BaseModel):
