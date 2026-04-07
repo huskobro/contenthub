@@ -141,6 +141,38 @@ export function AnalyticsOverviewPage() {
         </MetricGrid>
       </SectionShell>
 
+      {/* Publish Queue / Review Funnel */}
+      <SectionShell title="Yayin Kuyrugu" testId="analytics-publish-queue">
+        <div data-testid="publish-queue-heading" className="hidden">Yayin Kuyrugu</div>
+        <div data-testid="publish-queue-note" className="hidden">Operator dikkatini gerektiren yayin kayitlari.</div>
+        <MetricGrid>
+          <MetricTile
+            label="Inceleme Bekliyor"
+            value={fmtCount(data?.review_pending_count)}
+            note="Onay icin bekleyen yayin kayitlari"
+            loading={isLoading}
+            testId="metric-review-pending"
+            accentColor="var(--ch-warning-base)"
+          />
+          <MetricTile
+            label="Yayina Hazir"
+            value={fmtCount(data?.publish_backlog_count)}
+            note="Onaylandi / planlandi, henuz yayinlanmadi"
+            loading={isLoading}
+            testId="metric-publish-backlog"
+            accentColor="var(--ch-info-base)"
+          />
+          <MetricTile
+            label="Bu Donemde Reddedilen"
+            value={fmtCount(data?.review_rejected_count)}
+            note="Secilen pencerede review reddedildi"
+            loading={isLoading}
+            testId="metric-review-rejected"
+            accentColor="var(--ch-error-base)"
+          />
+        </MetricGrid>
+      </SectionShell>
+
       {/* Channel Overview */}
       <SectionShell title="Kanal Ozeti"  testId="analytics-channel-overview">
         <div data-testid="channel-overview-heading" className="hidden">Kanal Ozeti</div>

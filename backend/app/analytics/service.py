@@ -49,6 +49,7 @@ from app.db.models import (
     NewsSource, SourceScan, NewsItem, UsedNewsRegistry, NewsBulletin,
     StandardVideo, Template, StyleBlueprint, TemplateStyleLink,
 )
+from app.prompt_assembly.models import PromptAssemblyRun
 
 logger = logging.getLogger(__name__)
 
@@ -173,6 +174,32 @@ async def get_overview_metrics(
         round(published_count / total_publish, 4) if total_publish > 0 else None
     )
 
+    # --- Review funnel (current state — no window filter) ---
+    review_pending_q = select(
+        func.count(PublishRecord.id).label("pending"),
+    ).where(PublishRecord.status == "pending_review")
+    review_pending_row = (await session.execute(review_pending_q)).one()
+    review_pending_count = int(review_pending_row.pending or 0)
+
+    publish_backlog_q = select(
+        func.count(PublishRecord.id).label("backlog"),
+    ).where(PublishRecord.status.in_(["approved", "scheduled"]))
+    publish_backlog_row = (await session.execute(publish_backlog_q)).one()
+    publish_backlog_count = int(publish_backlog_row.backlog or 0)
+
+    # review_rejected is windowed
+    review_rejected_q = select(
+        func.count(PublishRecord.id).label("rejected"),
+    ).where(PublishRecord.status == "review_rejected")
+    if date_from is not None:
+        review_rejected_q = review_rejected_q.where(PublishRecord.created_at >= date_from)
+    elif cut is not None:
+        review_rejected_q = review_rejected_q.where(PublishRecord.created_at >= cut)
+    if date_to is not None:
+        review_rejected_q = review_rejected_q.where(PublishRecord.created_at <= date_to)
+    review_rejected_row = (await session.execute(review_rejected_q)).one()
+    review_rejected_count = int(review_rejected_row.rejected or 0)
+
     return {
         "window": window,
         "total_job_count": total_jobs,
@@ -185,6 +212,9 @@ async def get_overview_metrics(
         "publish_success_rate": publish_success_rate,
         "avg_production_duration_seconds": avg_production,
         "retry_rate": retry_rate,
+        "review_pending_count": review_pending_count,
+        "review_rejected_count": review_rejected_count,
+        "publish_backlog_count": publish_backlog_count,
     }
 
 
@@ -392,6 +422,23 @@ async def get_operations_metrics(
             _trace_invalid_structure, _trace_unknown_provider,
         )
 
+    # --- Prompt Assembly counts ---
+    assembly_prod_q = select(
+        func.count(PromptAssemblyRun.id).label("total"),
+    ).where(PromptAssemblyRun.is_dry_run.is_(False))
+    if cut is not None:
+        assembly_prod_q = assembly_prod_q.where(PromptAssemblyRun.created_at >= cut)
+    assembly_prod_row = (await session.execute(assembly_prod_q)).one()
+    total_assembly_runs = int(assembly_prod_row.total or 0)
+
+    assembly_dry_q = select(
+        func.count(PromptAssemblyRun.id).label("total"),
+    ).where(PromptAssemblyRun.is_dry_run.is_(True))
+    if cut is not None:
+        assembly_dry_q = assembly_dry_q.where(PromptAssemblyRun.created_at >= cut)
+    assembly_dry_row = (await session.execute(assembly_dry_q)).one()
+    dry_run_count = int(assembly_dry_row.total or 0)
+
     return {
         "window": window,
         "avg_render_duration_seconds": avg_render,
@@ -406,6 +453,8 @@ async def get_operations_metrics(
             "unknown_provider_count": _trace_unknown_provider,
             "valid_traces": _trace_total - _trace_empty - _trace_parse_errors - _trace_invalid_structure,
         },
+        "total_assembly_runs": total_assembly_runs,
+        "dry_run_count": dry_run_count,
     }
 
 
@@ -847,4 +896,114 @@ async def get_template_impact_metrics(
         "window": window,
         "template_stats": template_stats,
         "blueprint_stats": blueprint_stats,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Prompt Assembly metrikleri (M37)
+# ---------------------------------------------------------------------------
+
+async def get_prompt_assembly_metrics(
+    session: AsyncSession,
+    window: str = "all_time",
+    date_from: Optional[datetime] = None,
+    date_to: Optional[datetime] = None,
+) -> dict:
+    """
+    Prompt Assembly çalışma metrikleri.
+
+    Döndürülen alanlar:
+      window                 : zaman penceresi
+      total_assembly_runs    : toplam assembly çalışması
+      dry_run_count          : is_dry_run=True olanlar
+      production_run_count   : is_dry_run=False olanlar
+      avg_included_blocks    : ortalama dahil edilen blok sayısı
+      avg_skipped_blocks     : ortalama atlanan blok sayısı
+      module_stats           : modül bazında aggregation
+      provider_stats         : provider bazında aggregation
+    """
+    if date_from is not None or date_to is not None:
+        cut = None
+    else:
+        cut = _cutoff(window)
+
+    def _apply_time_filter(q, col):
+        if date_from is not None:
+            q = q.where(col >= date_from)
+        elif cut is not None:
+            q = q.where(col >= cut)
+        if date_to is not None:
+            q = q.where(col <= date_to)
+        return q
+
+    # --- Toplam sayılar ---
+    totals_q = select(
+        func.count(PromptAssemblyRun.id).label("total"),
+        func.sum(case((PromptAssemblyRun.is_dry_run.is_(True), 1), else_=0)).label("dry"),
+        func.sum(case((PromptAssemblyRun.is_dry_run.is_(False), 1), else_=0)).label("prod"),
+        func.avg(PromptAssemblyRun.block_count_included).label("avg_included"),
+        func.avg(PromptAssemblyRun.block_count_skipped).label("avg_skipped"),
+    )
+    totals_q = _apply_time_filter(totals_q, PromptAssemblyRun.created_at)
+    totals_row = (await session.execute(totals_q)).one()
+
+    total_runs = int(totals_row.total or 0)
+    dry_runs = int(totals_row.dry or 0)
+    prod_runs = int(totals_row.prod or 0)
+    avg_included = round(float(totals_row.avg_included), 2) if totals_row.avg_included is not None else 0.0
+    avg_skipped = round(float(totals_row.avg_skipped), 2) if totals_row.avg_skipped is not None else 0.0
+
+    # --- Modül bazlı istatistikler ---
+    module_q = select(
+        PromptAssemblyRun.module_scope,
+        func.count(PromptAssemblyRun.id).label("run_count"),
+        func.avg(PromptAssemblyRun.block_count_included).label("avg_included"),
+        func.avg(PromptAssemblyRun.block_count_skipped).label("avg_skipped"),
+    ).group_by(PromptAssemblyRun.module_scope)
+    module_q = _apply_time_filter(module_q, PromptAssemblyRun.created_at)
+    module_rows = (await session.execute(module_q)).all()
+
+    module_stats = [
+        {
+            "module_scope": row.module_scope,
+            "run_count": int(row.run_count or 0),
+            "avg_included_blocks": round(float(row.avg_included), 2) if row.avg_included is not None else 0.0,
+            "avg_skipped_blocks": round(float(row.avg_skipped), 2) if row.avg_skipped is not None else 0.0,
+        }
+        for row in module_rows
+    ]
+
+    # --- Provider bazlı istatistikler ---
+    provider_q = select(
+        PromptAssemblyRun.provider_name,
+        func.count(PromptAssemblyRun.id).label("run_count"),
+        func.sum(
+            case((PromptAssemblyRun.provider_response_json.is_not(None), 1), else_=0)
+        ).label("response_received"),
+        func.sum(
+            case((PromptAssemblyRun.provider_error_json.is_not(None), 1), else_=0)
+        ).label("error_count"),
+    ).group_by(PromptAssemblyRun.provider_name)
+    provider_q = _apply_time_filter(provider_q, PromptAssemblyRun.created_at)
+    provider_rows = (await session.execute(provider_q)).all()
+
+    provider_stats = [
+        {
+            "provider_name": row.provider_name,
+            "run_count": int(row.run_count or 0),
+            "response_received_count": int(row.response_received or 0),
+            "error_count": int(row.error_count or 0),
+        }
+        for row in provider_rows
+    ]
+
+    return {
+        "window": window,
+        "total_assembly_runs": total_runs,
+        "dry_run_count": dry_runs,
+        "production_run_count": prod_runs,
+        "avg_included_blocks": avg_included,
+        "avg_skipped_blocks": avg_skipped,
+        "module_stats": module_stats,
+        "provider_stats": provider_stats,
     }

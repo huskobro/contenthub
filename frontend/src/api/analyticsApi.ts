@@ -23,6 +23,9 @@ export interface OverviewMetrics {
   publish_success_rate: number | null;
   avg_production_duration_seconds: number | null;
   retry_rate: number | null;
+  review_pending_count: number;
+  review_rejected_count: number;
+  publish_backlog_count: number;
 }
 
 export interface ProviderStat {
@@ -43,6 +46,8 @@ export interface OperationsMetrics {
   step_stats: StepStat[];
   provider_error_rate: number | null;
   provider_stats: ProviderStat[];
+  total_assembly_runs: number;
+  dry_run_count: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -192,4 +197,37 @@ export function fetchContentMetrics(
     ? { window: windowOrOpts }
     : { window: windowOrOpts.window, date_from: windowOrOpts.date_from, date_to: windowOrOpts.date_to };
   return api.get<ContentMetrics>(`${BASE_URL}/content`, params);
+}
+
+// ---------------------------------------------------------------------------
+// Prompt Assembly Metrics (M37)
+// ---------------------------------------------------------------------------
+
+export interface AssemblyModuleStat {
+  module_scope: string;
+  run_count: number;
+  avg_included_blocks: number;
+  avg_skipped_blocks: number;
+}
+
+export interface AssemblyProviderStat {
+  provider_name: string;
+  run_count: number;
+  response_received_count: number;
+  error_count: number;
+}
+
+export interface PromptAssemblyMetrics {
+  window: string;
+  total_assembly_runs: number;
+  dry_run_count: number;
+  production_run_count: number;
+  avg_included_blocks: number;
+  avg_skipped_blocks: number;
+  module_stats: AssemblyModuleStat[];
+  provider_stats: AssemblyProviderStat[];
+}
+
+export function fetchPromptAssemblyMetrics(window: AnalyticsWindow): Promise<PromptAssemblyMetrics> {
+  return api.get<PromptAssemblyMetrics>(`${BASE_URL}/prompt-assembly`, { window });
 }
