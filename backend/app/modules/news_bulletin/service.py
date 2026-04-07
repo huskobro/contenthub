@@ -529,6 +529,8 @@ async def start_production(
     """
     from app.jobs.schemas import JobCreate
     from app.jobs.service import create_job
+    from app.jobs.step_initializer import initialize_job_steps
+    from app.modules.registry import module_registry
     from app.settings.settings_resolver import resolve, KNOWN_SETTINGS
     from app.audit.service import write_audit_log
 
@@ -637,6 +639,9 @@ async def start_production(
         },
     )
     await db.commit()
+
+    # Adımları ve workspace'i başlat (Jobs router'daki akışla aynı)
+    await initialize_job_steps(db, job.id, "news_bulletin", module_registry)
 
     # Dispatch (arka planda pipeline başlat)
     await dispatcher.dispatch(job.id)

@@ -91,3 +91,16 @@ export function bulkArchiveTestData(
     module_type: moduleType ?? null,
   });
 }
+
+export interface JobContentRef {
+  job_id: string;
+  module_type: string | null;
+  content_id: string | null;
+  content_title: string | null;
+  content_status: string | null;
+  content_url: string | null;
+}
+
+export function fetchJobContentRef(jobId: string): Promise<JobContentRef> {
+  return api.get<JobContentRef>(`${BASE_URL}/${jobId}/content-ref`);
+}

@@ -116,6 +116,70 @@ async def get_job_artifacts(job_id: str, db: AsyncSession = Depends(get_db)):
     return {"job_id": job_id, "artifacts": artifacts}
 
 
+@router.get("/{job_id}/content-ref")
+async def get_job_content_ref(job_id: str, db: AsyncSession = Depends(get_db)):
+    """
+    Bir job'a bağlı içerik kaydını (NewsBulletin veya StandardVideo) döndürür.
+
+    Dönen yapı:
+        {
+            "job_id": "...",
+            "module_type": "news_bulletin" | "standard_video" | null,
+            "content_id": "...",       // ilgili içerik kaydının ID'si
+            "content_title": "...",    // başlık (varsa)
+            "content_status": "...",   // içerik durumu
+            "content_url": "/admin/news-bulletins/..." // frontend linki
+        }
+    """
+    from sqlalchemy import select as sa_select
+    from app.db.models import NewsBulletin, StandardVideo
+
+    job = await service.get_job(db, job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail="İş bulunamadı")
+
+    module_type = job.module_type
+
+    if module_type == "news_bulletin":
+        result = await db.execute(
+            sa_select(NewsBulletin).where(NewsBulletin.job_id == job_id).limit(1)
+        )
+        bulletin = result.scalar_one_or_none()
+        if bulletin:
+            return {
+                "job_id": job_id,
+                "module_type": "news_bulletin",
+                "content_id": bulletin.id,
+                "content_title": bulletin.title or bulletin.topic or "Haber Bülteni",
+                "content_status": bulletin.status,
+                "content_url": f"/admin/news-bulletins/{bulletin.id}",
+            }
+
+    elif module_type == "standard_video":
+        result = await db.execute(
+            sa_select(StandardVideo).where(StandardVideo.job_id == job_id).limit(1)
+        )
+        video = result.scalar_one_or_none()
+        if video:
+            return {
+                "job_id": job_id,
+                "module_type": "standard_video",
+                "content_id": video.id,
+                "content_title": getattr(video, "title", None) or getattr(video, "topic", None) or "Standart Video",
+                "content_status": getattr(video, "status", None),
+                "content_url": f"/admin/standard-videos/{video.id}",
+            }
+
+    return {
+        "job_id": job_id,
+        "module_type": module_type,
+        "content_id": None,
+        "content_title": None,
+        "content_status": None,
+        "content_url": None,
+    }
+
+
 @router.get("/{job_id}", response_model=JobResponse)
 async def get_job(job_id: str, db: AsyncSession = Depends(get_db)):
     """Belirtilen işi adımlarıyla birlikte döndürür."""

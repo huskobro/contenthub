@@ -56,3 +56,34 @@ export function resolveVisibility(
 export function deleteVisibilityRule(id: string): Promise<VisibilityRuleResponse> {
   return api.delete<VisibilityRuleResponse>(`${BASE_URL}/${id}`);
 }
+
+export interface VisibilityRuleCreate {
+  rule_type: string;
+  target_key: string;
+  module_scope?: string | null;
+  role_scope?: string | null;
+  mode_scope?: string | null;
+  visible?: boolean;
+  read_only?: boolean;
+  wizard_visible?: boolean;
+  status?: string;
+  priority?: number;
+  notes?: string | null;
+}
+
+export interface VisibilityRulePatch {
+  visible?: boolean;
+  read_only?: boolean;
+  wizard_visible?: boolean;
+  status?: string;
+  priority?: number;
+  notes?: string | null;
+}
+
+export function createVisibilityRule(payload: VisibilityRuleCreate): Promise<VisibilityRuleResponse> {
+  return api.post<VisibilityRuleResponse>(BASE_URL, payload);
+}
+
+export function patchVisibilityRule(id: string, payload: VisibilityRulePatch): Promise<VisibilityRuleResponse> {
+  return api.patch<VisibilityRuleResponse>(`${BASE_URL}/${id}`, payload);
+}

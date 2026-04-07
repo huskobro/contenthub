@@ -11,6 +11,28 @@ import { cn } from "../../lib/cn";
 
 const TERMINAL_STATUSES = new Set(["completed", "failed", "cancelled"]);
 
+const MODULE_LABELS: Record<string, string> = {
+  standard_video: "Standart Video",
+  news_bulletin: "Haber Bülteni",
+  product_review: "Ürün Değerlendirme",
+  educational_video: "Eğitim Videosu",
+  howto_video: "Nasıl Yapılır",
+};
+
+const STATUS_LABELS: Record<string, string> = {
+  queued: "Kuyrukta",
+  running: "Çalışıyor",
+  completed: "Tamamlandı",
+  failed: "Başarısız",
+  cancelled: "İptal",
+  retrying: "Yeniden",
+  waiting: "Bekliyor",
+};
+
+function getModuleLabel(moduleType: string): string {
+  return MODULE_LABELS[moduleType] ?? moduleType;
+}
+
 interface JobsTableProps {
   jobs: JobResponse[];
   selectedId: string | null;
@@ -86,7 +108,7 @@ export function JobsTable({ jobs, selectedId, onSelect, activeIndex, onBulkDelet
             {
               key: "module_type",
               label: "Modül",
-              options: modules.map((m) => ({ value: m, label: m })),
+              options: modules.map((m) => ({ value: m, label: getModuleLabel(m) })),
             },
           ]}
           active={filters}
@@ -140,10 +162,10 @@ export function JobsTable({ jobs, selectedId, onSelect, activeIndex, onBulkDelet
                   <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
                     <input type="checkbox" checked={sel.isSelected(j.id)} onChange={() => sel.toggle(j.id)} className="cursor-pointer accent-brand-500" />
                   </td>
-                  {col.isVisible("module") && <td className="px-4 py-2.5 font-mono text-sm">{j.module_type}</td>}
+                  {col.isVisible("module") && <td className="px-4 py-2.5 text-sm font-medium text-neutral-800">{getModuleLabel(j.module_type)}</td>}
                   {col.isVisible("status") && (
                     <td className="px-3 py-2.5">
-                      <span className={cn("inline-block px-2 py-0.5 rounded-full text-sm", statusBadge(j.status))}>{j.status}</span>
+                      <span className={cn("inline-block px-2 py-0.5 rounded-full text-sm", statusBadge(j.status))}>{STATUS_LABELS[j.status] ?? j.status}</span>
                     </td>
                   )}
                   {col.isVisible("step") && <td className="px-3 py-2.5 text-neutral-600">{j.current_step_key ?? <span className="text-neutral-400">—</span>}</td>}
