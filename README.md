@@ -24,7 +24,7 @@ Klasik bir CMS değildir. İçerik oluşturma, yayın iş akışları, operasyon
 | Provider Yönetimi + Test | ✅ Bağlantı testi çalışıyor |
 | Tema Sistemi (12 tema) | ✅ Anlık geçiş çalışıyor |
 | Command Palette (Cmd+K) | ✅ Arama + navigasyon + eylem |
-| Kaynak Yönetimi + RSS Tarama | ✅ NTV Gündem aktif |
+| Kaynak Yönetimi + RSS Tarama | ✅ 1 Kaynak aktif |
 | Haber Deduplication | ✅ Hard/soft dedupe çalışıyor |
 | YouTube Publish Adaptörü | ✅ Altyapı hazır (API key gerekli) |
 | Remotion Render Pipeline | ⏳ Altyapı hazır (provider bağlantısı gerekli) |
