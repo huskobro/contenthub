@@ -121,6 +121,18 @@ async def lifespan(app: FastAPI):
         if seed_count > 0:
             logger.info("Settings seed: %d yeni ayar DB'ye eklendi.", seed_count)
 
+    # M40b: workspace_root + output_dir global state'ini settings'ten yukle
+    from pathlib import Path as _Path
+    from app.jobs.workspace import set_workspace_root as _set_workspace_root
+    async with AsyncSessionLocal() as ws_db:
+        _ws_root_val = await resolve("system.workspace_root", ws_db)
+        if _ws_root_val and str(_ws_root_val).strip():
+            _ws_path = _Path(str(_ws_root_val).strip()).expanduser()
+            _set_workspace_root(_ws_path)
+            logger.info("M40b: workspace_root settings'ten yuklendi: %s", _ws_path)
+        else:
+            logger.info("M40b: workspace_root settings bos, varsayilan kullaniliyor.")
+
     # Prompt Assembly Engine — seed builtin prompt blocks
     async with AsyncSessionLocal() as seed_db:
         block_seed_count = await seed_prompt_blocks(seed_db)

@@ -150,6 +150,16 @@ export function JobDetailPanel({ selectedId }: JobDetailPanelProps) {
         <Row label="İş Kimliği">
           <code className="text-xs font-mono bg-neutral-100 px-2 py-1 rounded-sm text-neutral-600">{data.id}</code>
         </Row>
+        {data.owner_id && (
+          <Row label="Sahip">
+            <span className="font-mono text-sm text-neutral-700">{data.owner_id}</span>
+          </Row>
+        )}
+        {data.workspace_path && (
+          <Row label="Çalışma Dizini">
+            <code className="text-xs font-mono text-neutral-500 break-all">{data.workspace_path}</code>
+          </Row>
+        )}
       </div>
 
       {/* Timing section */}

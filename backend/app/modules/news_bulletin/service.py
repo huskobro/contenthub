@@ -575,6 +575,12 @@ async def start_production(
             if meta.get("builtin_default") is not None:
                 settings_snapshot[key] = meta["builtin_default"]
 
+    # M40b: system.workspace_root ve system.output_dir snapshot'a ekle
+    for sys_key in ("system.workspace_root", "system.output_dir"):
+        sys_val = await resolve(sys_key, db, user_id=owner_id)
+        if sys_val is not None:
+            settings_snapshot[sys_key] = sys_val
+
     # Selected items snapshot (DB'den gelecek veriler pipeline boyunca değişmeyecek)
     items_snapshot = []
     for item in selected_items:

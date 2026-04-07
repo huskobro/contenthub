@@ -20,6 +20,7 @@ All functions are pure pathlib — no external dependencies.
 
 import shutil
 from pathlib import Path
+from typing import Optional
 
 # Default workspace root: two levels up from this file (backend/) + "workspace"
 _DEFAULT_WORKSPACE_ROOT = Path(__file__).parent.parent.parent / "workspace"
@@ -90,6 +91,35 @@ def create_user_job_workspace(user_slug: str, job_id: str) -> Path:
     (root / "preview").mkdir(parents=True, exist_ok=True)
     (root / "tmp").mkdir(parents=True, exist_ok=True)
     return root
+
+
+# ---------------------------------------------------------------------------
+# Output dir helpers (M40b)
+# ---------------------------------------------------------------------------
+
+def get_user_export_dir(user_slug: str) -> Path:
+    """Return the exports directory for a specific user (no mkdir)."""
+    return _workspace_root / "users" / user_slug / "exports"
+
+
+def resolve_output_dir(output_dir_setting: str, user_slug: Optional[str] = None) -> Path:
+    """
+    M40b: Etkili output dizinini çözer.
+
+    Öncelik: settings değeri → user-scoped default → global default.
+
+    Args:
+        output_dir_setting: system.output_dir settings değeri (boş olabilir).
+        user_slug: Aktif kullanıcı slug'ı (opsiyonel).
+
+    Returns:
+        Resolved output directory Path.
+    """
+    if output_dir_setting and str(output_dir_setting).strip():
+        return Path(str(output_dir_setting).strip()).expanduser()
+    if user_slug:
+        return get_user_export_dir(user_slug)
+    return _workspace_root / "exports"
 
 
 # ---------------------------------------------------------------------------

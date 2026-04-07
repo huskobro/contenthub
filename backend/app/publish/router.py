@@ -22,7 +22,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from app.db.session import get_db
 from app.audit.service import write_audit_log
-from app.visibility.dependencies import require_visible
+from app.visibility.dependencies import require_visible, get_active_user_id
 from app.publish import service
 from app.publish.exceptions import (
     PublishRecordNotFoundError,
@@ -230,6 +230,7 @@ async def trigger_publish(
     record_id: str,
     body: PublishTriggerRequest,
     session=Depends(get_db),
+    user_id: Optional[str] = Depends(get_active_user_id),
 ):
     """
     Publish işlemini başlatır (approved/scheduled/failed → publishing).
@@ -237,12 +238,15 @@ async def trigger_publish(
     Publish gate kontrolü yapılır:
       draft veya pending_review durumundan bu endpoint çağrılamaz.
       422 döner.
+    M40b: actor_id body'den gelmiyorsa aktif kullanıcı header'ından alınır.
     """
+    # M40b: actor_id önce body'den, yoksa aktif kullanıcı header'ından
+    effective_actor_id = body.actor_id or user_id
     try:
         result = await service.trigger_publish(
             session=session,
             record_id=record_id,
-            actor_id=body.actor_id,
+            actor_id=effective_actor_id,
             note=body.note,
         )
         await write_audit_log(session, action="publish.trigger", entity_type="publish_record", entity_id=record_id)

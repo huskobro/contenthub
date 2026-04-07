@@ -73,6 +73,7 @@ from ._helpers import (
     _resolve_artifact_path,
     _read_artifact,
     _write_artifact,
+    _export_to_output_dir,
 )
 
 logger = logging.getLogger(__name__)
@@ -430,6 +431,9 @@ class RenderStepExecutor(StepExecutor):
             logger.info(
                 "RenderStepExecutor: output.mp4 mevcut, adım atlanıyor. job=%s", job.id
             )
+            # M40b: idempotent path'te de export dene (output_dir değişmiş olabilir)
+            settings_snap = raw_input.get("_settings_snapshot", {})
+            _export_to_output_dir(output_path, settings_snap.get("system.output_dir", ""), job.id)
             return {
                 "output_path": str(output_path),
                 "composition_id": composition_id,
@@ -550,8 +554,14 @@ class RenderStepExecutor(StepExecutor):
                 job.id, degradation_warnings,
             )
 
+        # M40b: system.output_dir varsa final artifact'ı export et
+        settings_snap = raw_input.get("_settings_snapshot", {})
+        export_output_dir = settings_snap.get("system.output_dir", "")
+        exported_path = _export_to_output_dir(output_path, export_output_dir, job.id)
+
         return {
             "output_path": str(output_path),
+            "exported_path": exported_path,
             "composition_id": composition_id,
             "render_status": "rendered",
             "timing_mode": timing_mode,
@@ -563,6 +573,7 @@ class RenderStepExecutor(StepExecutor):
                 "composition_id": composition_id,
                 "render_status": "rendered",
                 "output_path": str(output_path),
+                "exported_path": exported_path,
                 "timing_mode": timing_mode,
                 "word_timings_count": word_timings_count,
                 "duration_fallback_used": duration_fallback_used,
