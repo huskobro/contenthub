@@ -7,12 +7,45 @@
  * - Effective value (computed)
  * - Governance badges (override allowed, read-only, etc.)
  * - Admin can clear overrides
+ *
+ * Horizon design system: PageShell, SectionShell, DataTable, StatusBadge, ActionButton.
  */
 
 import { useParams, useNavigate } from "react-router-dom";
 import { useUser, useUserOverrides, useDeleteUserOverride } from "../../hooks/useUsers";
 import { useEffectiveSettings } from "../../hooks/useEffectiveSettings";
+import {
+  PageShell,
+  SectionShell,
+  DataTable,
+  StatusBadge,
+  ActionButton,
+} from "../../components/design-system/primitives";
 import { cn } from "../../lib/cn";
+
+interface VisibleSetting {
+  key: string;
+  label: string;
+  effective_value: unknown;
+  source: string;
+  user_override_allowed?: boolean;
+  read_only_for_user?: boolean;
+  visible_to_user?: boolean;
+}
+
+function UserAvatar({ name, role }: { name: string; role: string }) {
+  const letter = (name || "?")[0].toUpperCase();
+  return (
+    <div
+      className={cn(
+        "w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-semibold shrink-0",
+        role === "admin" ? "bg-brand-600" : "bg-emerald-600",
+      )}
+    >
+      {letter}
+    </div>
+  );
+}
 
 export function UserSettingsDetailPage() {
   const { userId } = useParams<{ userId: string }>();
@@ -32,153 +65,142 @@ export function UserSettingsDetailPage() {
   );
 
   // Filter to visible_to_user settings
-  const visibleSettings = (settings ?? []).filter(
+  const visibleSettings: VisibleSetting[] = (settings ?? []).filter(
     (s) => s.visible_to_user === true,
-  );
+  ) as VisibleSetting[];
+
+  const columns = [
+    {
+      key: "setting",
+      header: "Ayar",
+      render: (s: VisibleSetting) => (
+        <div>
+          <div className="font-medium text-neutral-800">{s.label}</div>
+          <div className="text-xs text-neutral-500 font-mono mt-0.5">{s.key}</div>
+        </div>
+      ),
+    },
+    {
+      key: "effective",
+      header: "Effective",
+      render: (s: VisibleSetting) => (
+        <code className="text-sm bg-neutral-100 px-1.5 py-0.5 rounded text-neutral-800">
+          {String(s.effective_value ?? "\u2014")}
+        </code>
+      ),
+    },
+    {
+      key: "source",
+      header: "Kaynak",
+      render: (s: VisibleSetting) => (
+        <StatusBadge
+          status={
+            s.source === "user_override"
+              ? "warning"
+              : s.source === "admin"
+                ? "info"
+                : "neutral"
+          }
+          label={s.source}
+        />
+      ),
+    },
+    {
+      key: "override",
+      header: "Override",
+      render: (s: VisibleSetting) => {
+        const has = overrideMap.has(s.key);
+        return has ? (
+          <code className="text-sm bg-warning-light text-warning-text px-1.5 py-0.5 rounded">
+            {overrideMap.get(s.key)}
+          </code>
+        ) : (
+          <span className="text-sm text-neutral-400">—</span>
+        );
+      },
+    },
+    {
+      key: "governance",
+      header: "Yetki",
+      align: "center" as const,
+      render: (s: VisibleSetting) => (
+        <div className="flex items-center justify-center gap-1 flex-wrap">
+          {s.user_override_allowed && (
+            <StatusBadge status="success" label="override" size="sm" />
+          )}
+          {s.read_only_for_user && (
+            <StatusBadge status="neutral" label="readonly" size="sm" />
+          )}
+        </div>
+      ),
+    },
+    {
+      key: "actions",
+      header: "Islem",
+      align: "right" as const,
+      render: (s: VisibleSetting) => {
+        const has = overrideMap.has(s.key);
+        return has ? (
+          <ActionButton
+            variant="danger"
+            size="sm"
+            onClick={() =>
+              deleteOverride.mutate({
+                userId: userId,
+                settingKey: s.key,
+              })
+            }
+          >
+            Sifirla
+          </ActionButton>
+        ) : null;
+      },
+    },
+  ];
 
   return (
-    <div className="p-6 max-w-5xl mx-auto">
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
-        <button
-          type="button"
-          onClick={() => navigate("/admin/users")}
-          className="text-sm text-neutral-500 hover:text-neutral-700 cursor-pointer"
-        >
-          ← Kullanicilar
-        </button>
-        <div className="flex-1">
-          <h1 className="text-2xl font-bold text-neutral-900">
-            {user?.display_name ?? "..."} — Ayarlar
-          </h1>
-          <p className="text-sm text-neutral-500 mt-0.5">
-            Kullanici ayarlarini goruntuleyin, override durumlarini yonetin
-          </p>
-        </div>
-      </div>
-
+    <PageShell
+      title={`${user?.display_name ?? "..."} — Ayarlar`}
+      subtitle="Kullanici ayarlarini goruntuleyin, override durumlarini yonetin"
+      testId="user-settings-detail"
+      breadcrumb={[
+        { label: "Kullanicilar", to: "/admin/users" },
+        { label: user?.display_name ?? "..." },
+      ]}
+    >
       {/* User info strip */}
       {user && (
-        <div className="mb-6 p-3 bg-neutral-50 rounded-lg border border-neutral-200 flex items-center gap-3 text-sm">
-          <div
-            className={cn(
-              "w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-semibold",
-              user.role === "admin" ? "bg-brand-600" : "bg-emerald-600",
-            )}
-          >
-            {(user.display_name || "?")[0].toUpperCase()}
+        <SectionShell testId="user-info-strip">
+          <div className="flex items-center gap-3 text-base">
+            <UserAvatar name={user.display_name} role={user.role} />
+            <div className="flex items-center gap-2 flex-wrap min-w-0">
+              <span className="font-medium text-neutral-800">{user.display_name}</span>
+              <span className="text-neutral-400">|</span>
+              <span className="text-neutral-600">{user.email}</span>
+              <span className="text-neutral-400">|</span>
+              <span className="font-mono text-sm text-neutral-500">{user.slug}</span>
+            </div>
+            <div className="ml-auto shrink-0">
+              <StatusBadge
+                status={user.override_count > 0 ? "warning" : "neutral"}
+                label={`${user.override_count} override`}
+              />
+            </div>
           </div>
-          <div>
-            <span className="font-medium text-neutral-800">{user.display_name}</span>
-            <span className="text-neutral-400 mx-1.5">|</span>
-            <span className="text-neutral-500">{user.email}</span>
-            <span className="text-neutral-400 mx-1.5">|</span>
-            <span className="font-mono text-xs text-neutral-400">{user.slug}</span>
-          </div>
-          <div className="ml-auto text-xs text-neutral-400">
-            {user.override_count} override
-          </div>
-        </div>
+        </SectionShell>
       )}
 
       {/* Settings table */}
-      {isLoading ? (
-        <div className="text-center py-12 text-neutral-400">Yukleniyor...</div>
-      ) : visibleSettings.length === 0 ? (
-        <div className="text-center py-12 text-neutral-400">
-          Kullaniciya gorunur ayar bulunmuyor
-        </div>
-      ) : (
-        <div className="bg-white rounded-lg border border-neutral-200 overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-neutral-50 border-b border-neutral-200">
-              <tr>
-                <th className="text-left px-4 py-2.5 font-semibold text-neutral-600">Ayar</th>
-                <th className="text-left px-4 py-2.5 font-semibold text-neutral-600">Effective</th>
-                <th className="text-left px-4 py-2.5 font-semibold text-neutral-600">Kaynak</th>
-                <th className="text-left px-4 py-2.5 font-semibold text-neutral-600">Override</th>
-                <th className="text-center px-4 py-2.5 font-semibold text-neutral-600">Yetki</th>
-                <th className="text-right px-4 py-2.5 font-semibold text-neutral-600">Islem</th>
-              </tr>
-            </thead>
-            <tbody>
-              {visibleSettings.map((s) => {
-                const key = s.key;
-                const hasOverride = overrideMap.has(key);
-                const overrideAllowed = s.user_override_allowed === true;
-                const readOnly = s.read_only_for_user === true;
-
-                return (
-                  <tr key={key} className="border-b border-neutral-100 hover:bg-neutral-50">
-                    <td className="px-4 py-2.5">
-                      <div className="font-medium text-neutral-800">{s.label}</div>
-                      <div className="text-[10px] text-neutral-400 font-mono">{key}</div>
-                    </td>
-                    <td className="px-4 py-2.5">
-                      <code className="text-xs bg-neutral-100 px-1.5 py-0.5 rounded text-neutral-700">
-                        {String(s.effective_value ?? "\u2014")}
-                      </code>
-                    </td>
-                    <td className="px-4 py-2.5">
-                      <span
-                        className={cn(
-                          "px-1.5 py-0.5 rounded text-xs font-medium",
-                          s.source === "user_override"
-                            ? "bg-amber-100 text-amber-700"
-                            : s.source === "admin"
-                              ? "bg-brand-100 text-brand-700"
-                              : "bg-neutral-100 text-neutral-500",
-                        )}
-                      >
-                        {s.source}
-                      </span>
-                    </td>
-                    <td className="px-4 py-2.5">
-                      {hasOverride ? (
-                        <code className="text-xs bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded">
-                          {overrideMap.get(key)}
-                        </code>
-                      ) : (
-                        <span className="text-xs text-neutral-300">—</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-2.5 text-center">
-                      <div className="flex items-center justify-center gap-1">
-                        {overrideAllowed && (
-                          <span className="px-1.5 py-0.5 bg-green-100 text-green-700 text-[10px] rounded">
-                            override
-                          </span>
-                        )}
-                        {readOnly && (
-                          <span className="px-1.5 py-0.5 bg-neutral-200 text-neutral-500 text-[10px] rounded">
-                            readonly
-                          </span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-4 py-2.5 text-right">
-                      {hasOverride && (
-                        <button
-                          type="button"
-                          onClick={() =>
-                            deleteOverride.mutate({
-                              userId: userId,
-                              settingKey: key,
-                            })
-                          }
-                          className="px-2 py-1 text-xs text-red-600 hover:bg-red-50 rounded cursor-pointer transition-colors"
-                        >
-                          Sifirla
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </div>
+      <SectionShell flush testId="user-settings-table-section">
+        <DataTable<VisibleSetting>
+          columns={columns}
+          data={visibleSettings}
+          keyFn={(s) => s.key}
+          loading={isLoading}
+          emptyMessage="Kullaniciya gorunur ayar bulunmuyor"
+          testId="user-settings-table"
+        />
+      </SectionShell>
+    </PageShell>
   );
 }
