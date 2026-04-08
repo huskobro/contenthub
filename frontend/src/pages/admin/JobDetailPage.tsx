@@ -14,6 +14,39 @@ import {
   StatusBadge,
 } from "../../components/design-system/primitives";
 import { useToast } from "../../hooks/useToast";
+import { VideoPlayer } from "../../components/shared/VideoPlayer";
+import type { JobStepResponse } from "../../api/jobsApi";
+
+const VIDEO_EXTS = ["mp4", "webm", "mov"];
+const IMAGE_EXTS = ["png", "jpg", "jpeg", "gif", "webp"];
+
+function extractOutputArtifacts(steps: JobStepResponse[]): { videos: string[]; images: string[]; others: string[] } {
+  const videos: string[] = [];
+  const images: string[] = [];
+  const others: string[] = [];
+
+  for (const step of steps) {
+    if (!step.artifact_refs_json) continue;
+    try {
+      const parsed = JSON.parse(step.artifact_refs_json);
+      const paths: string[] = parsed.output_paths || [];
+      for (const p of paths) {
+        const ext = p.split(".").pop()?.toLowerCase() || "";
+        if (VIDEO_EXTS.includes(ext)) videos.push(p);
+        else if (IMAGE_EXTS.includes(ext)) images.push(p);
+        else others.push(p);
+      }
+    } catch { /* skip malformed JSON */ }
+  }
+
+  return { videos, images, others };
+}
+
+function artifactUrl(jobId: string, path: string): string {
+  // Extract just the filename from the full path
+  const filename = path.split("/").pop() ?? path;
+  return `/api/v1/jobs/${jobId}/artifacts/${encodeURIComponent(filename)}`;
+}
 
 function publishStatusVariant(status: string): string {
   switch (status) {
@@ -101,6 +134,48 @@ export function JobDetailPage() {
       <JobTimelinePanel steps={job.steps} />
       <JobSystemPanels steps={job.steps} jobId={job.id} />
       <JobActionsPanel job={job} />
+
+      {/* Ciktilar */}
+      {(() => {
+        const { videos, images } = extractOutputArtifacts(job.steps);
+        const hasOutputs = videos.length > 0 || images.length > 0;
+
+        return (
+          <SectionShell title="Ciktilar" testId="job-outputs">
+            {hasOutputs ? (
+              <div className="flex flex-col gap-4">
+                {videos.map((v, i) => (
+                  <VideoPlayer
+                    key={v}
+                    src={artifactUrl(job.id, v)}
+                    title={videos.length > 1 ? `Video ${i + 1}` : undefined}
+                    showDownload
+                    testId={`job-output-video-${i}`}
+                  />
+                ))}
+                {images.map((img, i) => (
+                  <div key={img} className="flex flex-col gap-1">
+                    {images.length > 1 && (
+                      <span className="text-xs text-neutral-500">Gorsel {i + 1}</span>
+                    )}
+                    <img
+                      src={artifactUrl(job.id, img)}
+                      alt={`Output ${i + 1}`}
+                      className="rounded-lg object-contain bg-neutral-100 border border-border-subtle max-h-96 w-full"
+                      data-testid={`job-output-image-${i}`}
+                    />
+                    <span className="text-xs text-neutral-400 truncate" title={img}>
+                      {img.split("/").pop()}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-neutral-400 m-0 py-2">Henuz cikti yok.</p>
+            )}
+          </SectionShell>
+        );
+      })()}
 
       {/* Yayın Durumu */}
       <SectionShell title="Yayin Durumu" testId="job-publish-linkage">

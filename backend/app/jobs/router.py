@@ -6,6 +6,7 @@ Endpointler:
   GET  /api/v1/jobs/{job_id}           — tek iş + adımları
   POST /api/v1/jobs                    — yeni iş yarat + pipeline başlat
   GET  /api/v1/jobs/{job_id}/artifacts — workspace artifact listesi
+  GET  /api/v1/jobs/{job_id}/artifacts/{file_path} — artifact dosyası serve
 
 Sorumlulukları:
   - HTTP request/response yönetimi
@@ -19,10 +20,12 @@ Bu dosyada YOKTUR:
 """
 
 import json
+import mimetypes
 from pathlib import Path
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from sqlalchemy import select, update as sa_update
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -120,6 +123,75 @@ async def get_job_artifacts(job_id: str, db: AsyncSession = Depends(get_db)):
                 })
 
     return {"job_id": job_id, "artifacts": artifacts}
+
+
+# ---------------------------------------------------------------------------
+# Artifact file serving — media type mapping
+# ---------------------------------------------------------------------------
+_MEDIA_TYPES: dict[str, str] = {
+    ".mp4": "video/mp4",
+    ".webm": "video/webm",
+    ".mov": "video/quicktime",
+    ".mp3": "audio/mpeg",
+    ".wav": "audio/wav",
+    ".png": "image/png",
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".gif": "image/gif",
+    ".json": "application/json",
+    ".srt": "text/plain",
+    ".txt": "text/plain",
+}
+
+
+def _resolve_media_type(file_path: Path) -> str:
+    """Return an appropriate media type for the given file path."""
+    suffix = file_path.suffix.lower()
+    if suffix in _MEDIA_TYPES:
+        return _MEDIA_TYPES[suffix]
+    guessed, _ = mimetypes.guess_type(str(file_path))
+    return guessed or "application/octet-stream"
+
+
+@router.get("/{job_id}/artifacts/{file_path:path}")
+async def serve_job_artifact(job_id: str, file_path: str, db: AsyncSession = Depends(get_db)):
+    """
+    Serve a job artifact file (video, image, audio, json, etc.).
+
+    Path resolution follows the same logic as get_job_artifacts:
+    if the job has an explicit workspace_path, use it; otherwise fall
+    back to the global workspace root.
+
+    Security: the resolved absolute path must reside inside the job's
+    workspace directory to prevent path-traversal attacks.
+    """
+    job = await service.get_job(db, job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail="İş bulunamadı")
+
+    # Resolve workspace root for this job (user-scoped or global)
+    if getattr(job, "workspace_path", None) and str(job.workspace_path).strip():
+        workspace_dir = Path(str(job.workspace_path).strip())
+    else:
+        workspace_dir = ws.get_workspace_path(job_id)
+
+    artifacts_dir = workspace_dir / "artifacts"
+    target = (artifacts_dir / file_path).resolve()
+
+    # Path-traversal guard: target must be inside the workspace directory
+    try:
+        target.relative_to(workspace_dir.resolve())
+    except ValueError:
+        raise HTTPException(status_code=404, detail="Dosya bulunamadı")
+
+    if not target.is_file():
+        raise HTTPException(status_code=404, detail="Dosya bulunamadı")
+
+    return FileResponse(
+        path=str(target),
+        media_type=_resolve_media_type(target),
+        filename=target.name,
+    )
 
 
 @router.get("/{job_id}/content-ref")

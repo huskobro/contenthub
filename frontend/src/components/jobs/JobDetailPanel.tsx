@@ -4,6 +4,8 @@ import { JobStepsList } from "./JobStepsList";
 import { DurationBadge } from "./DurationBadge";
 import { formatDateISO } from "../../lib/formatDate";
 import { Link } from "react-router-dom";
+import { MediaPreview } from "../shared/MediaPreview";
+import type { JobStepResponse } from "../../api/jobsApi";
 
 interface JobDetailPanelProps {
   selectedId: string | null;
@@ -37,6 +39,23 @@ const STATUS_LABELS: Record<string, string> = {
   retrying: "Yeniden Deneniyor",
   waiting: "Bekliyor",
 };
+
+const VIDEO_EXTS = ["mp4", "webm", "mov"];
+
+function findFirstVideoArtifact(steps: JobStepResponse[]): string | null {
+  for (const step of steps) {
+    if (!step.artifact_refs_json) continue;
+    try {
+      const parsed = JSON.parse(step.artifact_refs_json);
+      const paths: string[] = parsed.output_paths || [];
+      for (const p of paths) {
+        const ext = p.split(".").pop()?.toLowerCase() || "";
+        if (VIDEO_EXTS.includes(ext)) return p;
+      }
+    } catch { /* skip */ }
+  }
+  return null;
+}
 
 function statusBadgeClass(status: string) {
   const map: Record<string, string> = {
@@ -121,6 +140,21 @@ export function JobDetailPanel({ selectedId }: JobDetailPanelProps) {
           )}
         </div>
       )}
+
+      {/* Video output preview */}
+      {data.steps && (() => {
+        const videoPath = findFirstVideoArtifact(data.steps);
+        if (!videoPath) return null;
+        return (
+          <div className="mb-4" data-testid="job-panel-video-preview">
+            <MediaPreview
+              src={`/api/v1/jobs/${data.id}/artifacts/${encodeURIComponent(videoPath.split("/").pop() ?? videoPath)}`}
+              compact
+              testId="job-panel-media"
+            />
+          </div>
+        );
+      })()}
 
       {/* Overview section */}
       <div className="bg-surface-card border border-border-subtle rounded-lg p-4 mb-4 shadow-xs">

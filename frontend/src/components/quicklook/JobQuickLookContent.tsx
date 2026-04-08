@@ -6,11 +6,29 @@
  */
 
 import React from "react";
-import type { JobResponse } from "../../api/jobsApi";
+import type { JobResponse, JobStepResponse } from "../../api/jobsApi";
 import { formatDuration } from "../../lib/formatDuration";
 import { formatDateISO } from "../../lib/formatDate";
 import { cn } from "../../lib/cn";
 import { StatusBadge, Mono, DetailGrid } from "../design-system/primitives";
+import { VideoPlayer } from "../shared/VideoPlayer";
+
+const VIDEO_EXTS = ["mp4", "webm", "mov"];
+
+function findFirstVideoArtifact(steps: JobStepResponse[]): string | null {
+  for (const step of steps) {
+    if (!step.artifact_refs_json) continue;
+    try {
+      const parsed = JSON.parse(step.artifact_refs_json);
+      const paths: string[] = parsed.output_paths || [];
+      for (const p of paths) {
+        const ext = p.split(".").pop()?.toLowerCase() || "";
+        if (VIDEO_EXTS.includes(ext)) return p;
+      }
+    } catch { /* skip */ }
+  }
+  return null;
+}
 
 interface JobQuickLookContentProps {
   job: JobResponse;
@@ -19,9 +37,22 @@ interface JobQuickLookContentProps {
 
 export function JobQuickLookContent({ job, onNavigate }: JobQuickLookContentProps) {
   const em = <span className="text-neutral-400">&mdash;</span>;
+  const firstVideo = job.steps ? findFirstVideoArtifact(job.steps) : null;
 
   return (
     <div data-testid="quicklook-job-content">
+      {/* Video preview */}
+      {firstVideo && (
+        <div className="mb-4" data-testid="quicklook-job-video-preview">
+          <VideoPlayer
+            src={`/api/v1/jobs/${job.id}/artifacts/${encodeURIComponent(firstVideo.split("/").pop() ?? firstVideo)}`}
+            compact
+            showDownload={false}
+            testId="quicklook-job-video"
+          />
+        </div>
+      )}
+
       {/* Status header */}
       <div className="flex items-center gap-3 mb-4">
         <StatusBadge status={job.status} size="md" />
