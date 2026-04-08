@@ -14,7 +14,7 @@
 
 import React from "react";
 
-export type LowerThirdStyleId = "broadcast" | "minimal" | "modern";
+export type LowerThirdStyleId = "broadcast" | "minimal" | "modern" | "ytrobot";
 
 export interface BulletinLowerThirdProps {
   headline: string;
@@ -32,6 +32,13 @@ export interface BulletinLowerThirdProps {
   showSource?: boolean;
   /** M41a: Portrait layout */
   isPortrait?: boolean;
+  /** M43: Accent rengi (kategori bazlı) */
+  accent?: string;
+  /** M43: Lower third font ayarları */
+  fontFamily?: string;
+  fontSize?: number;
+  bgColor?: string;
+  textColor?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -39,7 +46,7 @@ export interface BulletinLowerThirdProps {
 // ---------------------------------------------------------------------------
 
 function resolveStyle(raw: string | null | undefined): LowerThirdStyleId {
-  if (raw === "minimal" || raw === "modern") return raw;
+  if (raw === "minimal" || raw === "modern" || raw === "ytrobot") return raw;
   return "broadcast";
 }
 
@@ -307,6 +314,136 @@ function ModernBar({
 }
 
 // ---------------------------------------------------------------------------
+// M43: YTRobot stili — accent rengi bar, kanal adı, slide-in
+// ---------------------------------------------------------------------------
+
+function YtRobotBar({
+  headline,
+  category,
+  itemNumber,
+  totalItems,
+  publishedAt,
+  sourceName,
+  showDate = true,
+  showSource = false,
+  isPortrait = false,
+  accent = "#DC2626",
+  fontFamily = "Inter",
+  fontSize: propFontSize,
+  bgColor: propBgColor,
+  textColor = "#FFFFFF",
+}: Omit<BulletinLowerThirdProps, "style">) {
+  const tickerH = isPortrait ? TICKER_H_PORTRAIT : TICKER_H_LANDSCAPE;
+  const barH = isPortrait ? 72 : 88;
+  const headlineFontSize = propFontSize ?? (isPortrait ? 22 : 28);
+  const bgColorResolved = propBgColor ?? "rgba(0,0,0,0.85)";
+
+  return (
+    <div style={{
+      position: "absolute",
+      bottom: tickerH,
+      left: 0,
+      right: 0,
+      height: barH,
+      display: "flex",
+      flexDirection: "row",
+      alignItems: "stretch",
+      overflow: "hidden",
+    }}>
+      {/* Accent bar — sol kenar */}
+      <div style={{
+        width: isPortrait ? 6 : 8,
+        backgroundColor: accent,
+        flexShrink: 0,
+        boxShadow: `0 0 20px ${accent}66`,
+      }} />
+
+      {/* Ana panel */}
+      <div style={{
+        flex: 1,
+        backgroundColor: bgColorResolved,
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "center",
+        paddingLeft: isPortrait ? 16 : 24,
+        paddingRight: isPortrait ? 16 : 24,
+        gap: isPortrait ? 12 : 20,
+      }}>
+        {/* Kategori pill */}
+        {category && (
+          <div style={{
+            backgroundColor: accent,
+            color: "#FFFFFF",
+            fontSize: isPortrait ? 11 : 14,
+            fontWeight: 700,
+            fontFamily,
+            padding: isPortrait ? "3px 10px" : "5px 14px",
+            borderRadius: 3,
+            textTransform: "uppercase",
+            letterSpacing: "0.06em",
+            flexShrink: 0,
+            whiteSpace: "nowrap",
+          }}>
+            {category}
+          </div>
+        )}
+
+        {/* Headline + meta */}
+        <div style={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          overflow: "hidden",
+        }}>
+          <div style={{
+            color: textColor,
+            fontSize: headlineFontSize,
+            fontWeight: 700,
+            fontFamily,
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            lineHeight: 1.2,
+          }}>
+            {headline}
+          </div>
+
+          {/* Meta satır: tarih + kaynak */}
+          {(showDate || showSource) && (
+            <div style={{
+              color: "rgba(255,255,255,0.55)",
+              fontSize: isPortrait ? 11 : 13,
+              fontFamily,
+              marginTop: 3,
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+            }}>
+              {showDate && publishedAt && <span>{formatDate(publishedAt)}</span>}
+              {showDate && publishedAt && showSource && sourceName && <span> · </span>}
+              {showSource && sourceName && <span>{sourceName}</span>}
+            </div>
+          )}
+        </div>
+
+        {/* Counter */}
+        <div style={{
+          color: accent,
+          fontSize: isPortrait ? 13 : 16,
+          fontWeight: 800,
+          fontFamily: '"Bebas Neue", sans-serif',
+          flexShrink: 0,
+          whiteSpace: "nowrap",
+          letterSpacing: "0.05em",
+        }}>
+          {String(itemNumber).padStart(2, "0")} / {String(totalItems).padStart(2, "0")}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Disari aktarilan ana component
 // ---------------------------------------------------------------------------
 
@@ -333,6 +470,27 @@ export const BulletinLowerThird: React.FC<BulletinLowerThirdProps> = (props) => 
         itemNumber={props.itemNumber}
         totalItems={props.totalItems}
         isPortrait={props.isPortrait}
+      />
+    );
+  }
+
+  if (resolved === "ytrobot") {
+    return (
+      <YtRobotBar
+        headline={props.headline}
+        category={props.category}
+        itemNumber={props.itemNumber}
+        totalItems={props.totalItems}
+        publishedAt={props.publishedAt}
+        sourceName={props.sourceName}
+        showDate={props.showDate}
+        showSource={props.showSource}
+        isPortrait={props.isPortrait}
+        accent={props.accent}
+        fontFamily={props.fontFamily}
+        fontSize={props.fontSize}
+        bgColor={props.bgColor}
+        textColor={props.textColor}
       />
     );
   }
