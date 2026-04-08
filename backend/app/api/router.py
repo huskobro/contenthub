@@ -27,10 +27,22 @@ from app.modules.router import router as modules_router
 from app.prompt_assembly.router import router as prompt_assembly_router
 from app.fs.router import router as fs_router
 from app.users.router import router as users_router
+from app.channels.router import router as channels_router
+from app.platform_connections.router import router as platform_connections_router
+from app.content_projects.router import router as content_projects_router
+from app.engagement.router import router as engagement_router
+from app.brand_profiles.router import router as brand_profiles_router
+from app.automation.router import router as automation_router
 
 api_router = APIRouter()
 api_router.include_router(health.router, tags=["health"])
 api_router.include_router(users_router)
+api_router.include_router(channels_router)
+api_router.include_router(platform_connections_router)
+api_router.include_router(content_projects_router)
+api_router.include_router(engagement_router)
+api_router.include_router(brand_profiles_router)
+api_router.include_router(automation_router)
 api_router.include_router(providers_router)
 api_router.include_router(settings_router)
 api_router.include_router(visibility_router)

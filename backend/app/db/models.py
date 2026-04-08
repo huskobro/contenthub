@@ -88,6 +88,7 @@ class User(Base):
     slug: Mapped[str] = mapped_column(String(100), unique=True, nullable=False, index=True)
     role: Mapped[str] = mapped_column(String(50), nullable=False, default="user")
     status: Mapped[str] = mapped_column(String(50), nullable=False, default="active")
+    password_hash: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=_now
     )
@@ -234,6 +235,10 @@ class Job(Base):
     estimated_remaining_seconds: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     workspace_path: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     last_error: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    # Faz 2: channel/project/trigger linkage (no FK constraint yet)
+    channel_profile_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True, index=True)
+    content_project_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True, index=True)
+    trigger_source: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
     is_test_data: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, index=True)
     heartbeat_at: Mapped[Optional[datetime]] = mapped_column(
         DateTime(timezone=True), nullable=True
@@ -973,6 +978,11 @@ class PublishRecord(Base):
     payload_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     result_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    # Faz 2: project/platform-connection linkage (no FK constraint yet)
+    content_project_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True, index=True)
+    platform_connection_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True, index=True)
+    publish_intent_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    publish_result_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     is_test_data: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, index=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=_now
@@ -1001,6 +1011,8 @@ class VideoStatsSnapshot(Base):
     snapshot_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=_now, index=True
     )
+    # Faz 2: platform connection linkage (no FK constraint yet)
+    platform_connection_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True, index=True)
 
 
 class PublishLog(Base):
@@ -1081,6 +1093,218 @@ class WizardConfig(Base):
     status: Mapped[str] = mapped_column(String(50), nullable=False, default="active")
     version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
     notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now, onupdate=_now
+    )
+
+
+class ChannelProfile(Base):
+    """Kanal profili — kullanicinin kavramsal yayin profili. Faz 2."""
+
+    __tablename__ = "channel_profiles"
+    __table_args__ = (
+        UniqueConstraint("user_id", "channel_slug", name="uq_user_channel_slug"),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    user_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    profile_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    profile_type: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    channel_slug: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
+    default_language: Mapped[str] = mapped_column(String(10), nullable=False, default="tr")
+    default_content_mode: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    brand_profile_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True)
+    automation_policy_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True)
+    status: Mapped[str] = mapped_column(String(50), nullable=False, default="active")
+    notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now, onupdate=_now
+    )
+
+
+class PlatformConnection(Base):
+    """Platform baglantisi — gercek platform hesabi. Faz 2."""
+
+    __tablename__ = "platform_connections"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    channel_profile_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("channel_profiles.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    platform: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
+    external_account_id: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    external_account_name: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    external_avatar_url: Mapped[Optional[str]] = mapped_column(String(1000), nullable=True)
+    auth_state: Mapped[str] = mapped_column(String(50), nullable=False, default="pending")
+    token_state: Mapped[str] = mapped_column(String(50), nullable=False, default="invalid")
+    scopes_granted: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    scopes_required: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    scope_status: Mapped[str] = mapped_column(String(50), nullable=False, default="insufficient")
+    features_available: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    connection_status: Mapped[str] = mapped_column(String(50), nullable=False, default="disconnected")
+    requires_reauth: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    sync_status: Mapped[str] = mapped_column(String(50), nullable=False, default="never")
+    last_sync_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_success_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_error: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    is_primary: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    subscriber_count: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now, onupdate=_now
+    )
+
+
+class PlatformCredential(Base):
+    """Platform kimlik bilgileri — sifrelenmis tokenlar. Faz 2."""
+
+    __tablename__ = "platform_credentials"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    platform_connection_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("platform_connections.id", ondelete="CASCADE"),
+        nullable=False, unique=True
+    )
+    access_token: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    refresh_token: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    token_expiry: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    client_id: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    client_secret: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    scopes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    raw_token_response: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now, onupdate=_now
+    )
+
+
+class ContentProject(Base):
+    """Icerik projesi — kullanicinin gordugu birincil entity. Faz 2."""
+
+    __tablename__ = "content_projects"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    user_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    channel_profile_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("channel_profiles.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    module_type: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
+    title: Mapped[str] = mapped_column(String(500), nullable=False)
+    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    current_stage: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    content_status: Mapped[str] = mapped_column(String(50), nullable=False, default="draft")
+    review_status: Mapped[str] = mapped_column(String(50), nullable=False, default="not_required")
+    publish_status: Mapped[str] = mapped_column(String(50), nullable=False, default="unpublished")
+    primary_platform: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    origin_type: Mapped[str] = mapped_column(String(50), nullable=False, default="original")
+    priority: Mapped[str] = mapped_column(String(50), nullable=False, default="normal")
+    deadline_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    active_job_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True)
+    latest_output_ref: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now, onupdate=_now
+    )
+
+
+class EngagementTask(Base):
+    """Platform etkisim gorevi — yorum, playlist, gonderi vb. Faz 2."""
+
+    __tablename__ = "engagement_tasks"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    user_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    channel_profile_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("channel_profiles.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    content_project_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True, index=True)
+    platform_connection_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("platform_connections.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    type: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
+    target_object_type: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    target_object_id: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    payload: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    ai_suggestion: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    final_user_input: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    status: Mapped[str] = mapped_column(String(50), nullable=False, default="pending")
+    scheduled_for: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    error_message: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    executed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now, onupdate=_now
+    )
+
+
+class BrandProfile(Base):
+    """Marka kimlik profili — basit v1. Faz 2."""
+
+    __tablename__ = "brand_profiles"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    owner_user_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    brand_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    palette: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    typography: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    motion_style: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    logo_path: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    watermark_path: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    watermark_position: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    intro_template_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True)
+    outro_template_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True)
+    lower_third_defaults: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now, onupdate=_now
+    )
+
+
+class AutomationPolicy(Base):
+    """Otomasyon politikasi — checkpoint bazli. Faz 2."""
+
+    __tablename__ = "automation_policies"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    channel_profile_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("channel_profiles.id", ondelete="CASCADE"),
+        nullable=False, unique=True
+    )
+    automation_level: Mapped[str] = mapped_column(String(50), nullable=False, default="manual")
+    # Checkpoint controls: auto / review_required / disabled
+    cp_source_scan: Mapped[str] = mapped_column(String(50), nullable=False, default="disabled")
+    cp_draft_generation: Mapped[str] = mapped_column(String(50), nullable=False, default="review_required")
+    cp_render: Mapped[str] = mapped_column(String(50), nullable=False, default="disabled")
+    cp_publish: Mapped[str] = mapped_column(String(50), nullable=False, default="review_required")
+    cp_post_publish: Mapped[str] = mapped_column(String(50), nullable=False, default="disabled")
+    publish_windows: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    max_daily_posts: Mapped[int] = mapped_column(Integer, nullable=False, default=10)
+    platform_specific_rules: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    status: Mapped[str] = mapped_column(String(50), nullable=False, default="paused")
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=_now
     )
