@@ -20,18 +20,29 @@ def _export_to_output_dir(
     output_dir: str,
     job_id: str,
     suggested_filename: Optional[str] = None,
+    user_slug: Optional[str] = None,
 ) -> Optional[str]:
     """
-    M40b: Render tamamlandığında final artifact'ı system.output_dir'e kopyalar.
+    M40b/M42: Render tamamlandığında final artifact'ı output dizinine kopyalar.
 
-    output_dir boşsa veya source dosyası yoksa no-op (uyarı loglar).
+    M42: user_slug varsa workspace.resolve_output_dir ile user-scoped export
+    dizini çözülür. Yoksa output_dir aynen kullanılır.
+
+    output_dir boşsa ve user_slug yoksa no-op (uyarı loglar).
     Kopyalama başarısızlığı render'ı durdurmaz — sadece loglanır.
 
     Returns:
         Kopyalanan dosyanın yolu (str) veya None.
     """
-    if not output_dir or not str(output_dir).strip():
+    from app.jobs import workspace as ws_mod
+
+    # M42: Etkili output dizinini çöz — user-scoped veya global
+    resolved_dir = ws_mod.resolve_output_dir(output_dir or "", user_slug)
+    # resolve_output_dir boş output_dir + None user_slug → global exports/
+    # Eğer explicit output_dir yoksa ve user_slug da yoksa global exports'a yaz
+    if not output_dir and not user_slug:
         return None
+
     if not source_path.exists():
         logger.warning(
             "_export_to_output_dir: kaynak dosya bulunamadı: %s job=%s",
@@ -39,14 +50,14 @@ def _export_to_output_dir(
         )
         return None
     try:
-        dest_dir = Path(str(output_dir).strip()).expanduser() / job_id
+        dest_dir = resolved_dir / job_id
         dest_dir.mkdir(parents=True, exist_ok=True)
         fname = suggested_filename or source_path.name
         dest_path = dest_dir / fname
         shutil.copy2(str(source_path), str(dest_path))
         logger.info(
-            "_export_to_output_dir: %s → %s job=%s",
-            source_path.name, dest_path, job_id,
+            "_export_to_output_dir: %s → %s job=%s user_slug=%s",
+            source_path.name, dest_path, job_id, user_slug,
         )
         return str(dest_path)
     except Exception as exc:

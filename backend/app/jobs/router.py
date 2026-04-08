@@ -24,6 +24,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import BaseModel
+from sqlalchemy import select, update as sa_update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
@@ -101,7 +102,11 @@ async def get_job_artifacts(job_id: str, db: AsyncSession = Depends(get_db)):
     if not job:
         raise HTTPException(status_code=404, detail="İş bulunamadı")
 
-    artifacts_dir: Path = ws.get_workspace_path(job_id) / "artifacts"
+    # M42: job.workspace_path varsa onu kullan (user-scoped olabilir), yoksa global fallback
+    if getattr(job, "workspace_path", None) and str(job.workspace_path).strip():
+        artifacts_dir = Path(str(job.workspace_path).strip()) / "artifacts"
+    else:
+        artifacts_dir = ws.get_workspace_path(job_id) / "artifacts"
     artifacts = []
 
     if artifacts_dir.exists():
@@ -259,6 +264,13 @@ async def create_job(
     if settings_snapshot:
         normalized["_settings_snapshot"] = settings_snapshot
 
+    # M42: user slug çözümle — workspace user-scoped olacak
+    user_slug: Optional[str] = None
+    if user_id:
+        from app.db.models import User
+        user_row = (await db.execute(select(User).where(User.id == user_id))).scalar_one_or_none()
+        user_slug = user_row.slug if user_row else None
+
     # Job DB kaydı oluştur — M40a: owner_id from active user
     job_create = JobCreate(
         module_type=payload.module_id,
@@ -267,8 +279,21 @@ async def create_job(
     )
     job = await service.create_job(db, job_create)
 
-    # Adımları ve workspace'i başlat
-    await initialize_job_steps(db, job.id, payload.module_id, module_registry)
+    # Adımları ve workspace'i başlat — M42: user-scoped workspace
+    ws_path = await initialize_job_steps(db, job.id, payload.module_id, module_registry, user_slug=user_slug)
+
+    # workspace_root ve user_slug'ı input_data'ya enjekte et — executor'lar bu path'i kullanır
+    if ws_path:
+        normalized["workspace_root"] = ws_path
+        if user_slug:
+            normalized["user_slug"] = user_slug
+        from app.db.models import Job as JobModel
+        await db.execute(
+            sa_update(JobModel).where(JobModel.id == job.id).values(
+                input_data_json=json.dumps(normalized, ensure_ascii=False),
+            )
+        )
+        await db.commit()
 
     # Pipeline'ı dispatcher üzerinden arka planda başlat
     dispatcher = getattr(request.app.state, "job_dispatcher", None)

@@ -361,8 +361,8 @@ async def test_kie_ai_provider_cost_estimate_usd_trace_alani_var():
 
     assert "cost_estimate_usd" in output.trace
     assert isinstance(output.trace["cost_estimate_usd"], float)
-    # 100 input * 0.075 + 50 output * 0.30 = 7.5 + 15 = 22.5 / 1M = 0.0000225
-    assert output.trace["cost_estimate_usd"] == pytest.approx(0.0000225, rel=1e-4)
+    # 100 input * 0.09 + 50 output * 0.75 = 9 + 37.5 = 46.5 / 1M = 0.0000465
+    assert output.trace["cost_estimate_usd"] == pytest.approx(0.0000465, rel=1e-4)
 
 
 # ---------------------------------------------------------------------------

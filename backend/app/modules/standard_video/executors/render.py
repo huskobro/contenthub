@@ -475,9 +475,12 @@ class RenderStepExecutor(StepExecutor):
             logger.info(
                 "RenderStepExecutor: output.mp4 mevcut, adım atlanıyor. job=%s", job.id
             )
-            # M40b: idempotent path'te de export dene (output_dir değişmiş olabilir)
+            # M40b/M42: idempotent path'te de export dene (output_dir değişmiş olabilir)
             settings_snap = raw_input.get("_settings_snapshot", {})
-            _export_to_output_dir(output_path, settings_snap.get("system.output_dir", ""), job.id)
+            _export_to_output_dir(
+                output_path, settings_snap.get("system.output_dir", ""), job.id,
+                user_slug=raw_input.get("user_slug"),
+            )
             return {
                 "output_path": str(output_path),
                 "composition_id": composition_id,
@@ -598,10 +601,13 @@ class RenderStepExecutor(StepExecutor):
                 job.id, degradation_warnings,
             )
 
-        # M40b: system.output_dir varsa final artifact'ı export et
+        # M40b/M42: system.output_dir varsa final artifact'ı export et (user-scoped)
         settings_snap = raw_input.get("_settings_snapshot", {})
         export_output_dir = settings_snap.get("system.output_dir", "")
-        exported_path = _export_to_output_dir(output_path, export_output_dir, job.id)
+        exported_path = _export_to_output_dir(
+            output_path, export_output_dir, job.id,
+            user_slug=raw_input.get("user_slug"),
+        )
 
         return {
             "output_path": str(output_path),

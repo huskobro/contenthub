@@ -529,12 +529,14 @@ async def start_production(
     Raises:
         ValueError: Precondition ihlali
     """
+    from sqlalchemy import select as sa_select, update as sa_update
     from app.jobs.schemas import JobCreate
     from app.jobs.service import create_job
     from app.jobs.step_initializer import initialize_job_steps
     from app.modules.registry import module_registry
     from app.settings.settings_resolver import resolve, KNOWN_SETTINGS
     from app.audit.service import write_audit_log
+    from app.db.models import User, Job
 
     bulletin = await get_news_bulletin(db, bulletin_id)
     if bulletin is None:
@@ -675,6 +677,12 @@ async def start_production(
     if getattr(bulletin, "karaoke_enabled", None) is not None:
         input_data["_settings_snapshot"]["news_bulletin.config.karaoke_enabled"] = bulletin.karaoke_enabled
 
+    # M42: user slug çözümle — workspace user-scoped olacak
+    user_slug: Optional[str] = None
+    if owner_id:
+        user_row = (await db.execute(sa_select(User).where(User.id == owner_id))).scalar_one_or_none()
+        user_slug = user_row.slug if user_row else None
+
     # Job oluştur — M40a: owner_id from active user
     job_payload = JobCreate(
         module_type="news_bulletin",
@@ -682,21 +690,6 @@ async def start_production(
         input_data_json=json.dumps(input_data, ensure_ascii=False),
     )
     job = await create_job(db, job_payload)
-
-    # Workspace root: settings'ten oku, boşsa backend/workspace/ default
-    _workspace_root_setting = await resolve("system.workspace_root", db)
-    if _workspace_root_setting and str(_workspace_root_setting).strip():
-        _workspace_base = Path(str(_workspace_root_setting).strip()).expanduser()
-    else:
-        _workspace_base = Path(__file__).resolve().parent.parent.parent.parent / "workspace"
-    _job_workspace = _workspace_base / job.id
-    _job_workspace.mkdir(parents=True, exist_ok=True)
-    (_job_workspace / "artifacts").mkdir(exist_ok=True)
-    (_job_workspace / "preview").mkdir(exist_ok=True)
-    (_job_workspace / "tmp").mkdir(exist_ok=True)
-    job.workspace_path = str(_job_workspace)
-    await db.commit()
-    await db.refresh(job)
 
     # Bulletin güncelle
     bulletin.job_id = job.id
@@ -721,8 +714,20 @@ async def start_production(
     )
     await db.commit()
 
-    # Adımları ve workspace'i başlat (Jobs router'daki akışla aynı)
-    await initialize_job_steps(db, job.id, "news_bulletin", module_registry)
+    # Adımları ve workspace'i başlat — M42: user-scoped workspace
+    ws_path = await initialize_job_steps(db, job.id, "news_bulletin", module_registry, user_slug=user_slug)
+
+    # workspace_root ve user_slug'ı input_data'ya enjekte et — executor'lar bu path'i kullanır
+    if ws_path:
+        input_data["workspace_root"] = ws_path
+        if user_slug:
+            input_data["user_slug"] = user_slug
+        await db.execute(
+            sa_update(Job).where(Job.id == job.id).values(
+                input_data_json=json.dumps(input_data, ensure_ascii=False),
+            )
+        )
+        await db.commit()
 
     # Dispatch (arka planda pipeline başlat)
     await dispatcher.dispatch(job.id)
