@@ -97,6 +97,9 @@ async def _check_and_scan(db_session_factory, interval: float) -> int:
                 )
                 last_result = await db.execute(last_scan_stmt)
                 last_finished = last_result.scalar_one_or_none()
+                # SQLite may return naive datetime — normalize to UTC-aware
+                if last_finished is not None and last_finished.tzinfo is None:
+                    last_finished = last_finished.replace(tzinfo=timezone.utc)
                 if last_finished is not None and last_finished > cooldown_cutoff:
                     logger.debug(
                         "Auto-scan skipped source %s: cooldown (last=%s, cutoff=%s).",

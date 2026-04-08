@@ -44,8 +44,19 @@ import {
   fetchNewsItems,
 } from "../../api/newsItemsApi";
 import { fetchSources, type SourceResponse } from "../../api/sourcesApi";
+import { fetchEffectiveSetting } from "../../api/effectiveSettingsApi";
 import { SOURCE_CATEGORIES, SOURCE_CATEGORY_LABELS } from "../../constants/statusOptions";
 import { timeAgo } from "../../lib/formatDate";
+
+/** Category style mapping entry from settings */
+interface CategoryStyleEntry {
+  accent: string;
+  bg: string;
+  grid: string;
+  label_tr: string;
+  label_en: string;
+}
+type CategoryStyleMap = Record<string, CategoryStyleEntry>;
 
 const STEPS: WizardStep[] = [
   { id: "source", label: "Kaynak & Haber" },
@@ -55,6 +66,25 @@ const STEPS: WizardStep[] = [
 
 const inputCls =
   "block w-full px-2 py-1.5 text-sm border border-border rounded-sm box-border focus:outline-none focus:ring-2 focus:ring-focus";
+
+/** Visual style badge — shows matched style label or "GS—" */
+function StyleBadge({ category, mapping }: { category: string | null | undefined; mapping: CategoryStyleMap }) {
+  if (!category) {
+    return <span className="text-[10px] px-1 py-0.5 rounded-sm bg-neutral-100 text-neutral-400 font-medium whitespace-nowrap">GS—</span>;
+  }
+  const entry = mapping[category];
+  if (!entry) {
+    return <span className="text-[10px] px-1 py-0.5 rounded-sm bg-neutral-100 text-neutral-400 font-medium whitespace-nowrap">GS—</span>;
+  }
+  return (
+    <span
+      className="text-[10px] px-1 py-0.5 rounded-sm font-semibold whitespace-nowrap"
+      style={{ backgroundColor: entry.accent + "1A", color: entry.accent }}
+    >
+      {entry.label_tr}
+    </span>
+  );
+}
 
 // Render mode description mapping
 const RENDER_MODE_DESCRIPTIONS: Record<string, string> = {
@@ -88,7 +118,7 @@ export function NewsBulletinWizardPage() {
   const [duration, setDuration] = useState("120");
   // Local news selection before bulletin creation
   const [selectedItemsLocal, setSelectedItemsLocal] = useState<
-    { news_item_id: string; sort_order: number; title: string; source_name?: string | null }[]
+    { news_item_id: string; sort_order: number; title: string; source_name?: string | null; category?: string | null }[]
   >([]);
   const [showBulletinSettings, setShowBulletinSettings] = useState(false);
   // Track whether topic was auto-set (so we know if user manually changed it)
@@ -163,6 +193,13 @@ export function NewsBulletinWizardPage() {
     queryFn: () => fetchSources({ status: "active" }),
   });
 
+  // Category style mapping — for visual style badge on news items
+  const { data: categoryStyleMapSetting } = useQuery({
+    queryKey: ["setting-category-style-mapping"],
+    queryFn: () => fetchEffectiveSetting("news_bulletin.config.category_style_mapping"),
+  });
+  const categoryStyleMap: CategoryStyleMap = (categoryStyleMapSetting?.effective_value as CategoryStyleMap) ?? {};
+
   // Browse news items — available immediately (before bulletin creation)
   const { data: browseItems = [], isLoading: loadingBrowse } = useQuery({
     queryKey: ["browse-news-items", language, sourceFilter, categoryFilter],
@@ -224,7 +261,7 @@ export function NewsBulletinWizardPage() {
   function addLocalItem(item: NewsItemResponse) {
     setSelectedItemsLocal((prev) => {
       if (prev.some((s) => s.news_item_id === item.id)) return prev;
-      const next = [...prev, { news_item_id: item.id, sort_order: prev.length, title: item.title, source_name: item.source_name }];
+      const next = [...prev, { news_item_id: item.id, sort_order: prev.length, title: item.title, source_name: item.source_name, category: item.category }];
       // Auto-suggest topic from first selected news item
       if (next.length === 1 && !topic.trim()) {
         setTopic(item.title);
@@ -542,6 +579,7 @@ export function NewsBulletinWizardPage() {
                         {item.source_name && (
                           <span className="ml-1.5 text-neutral-400 text-xs font-normal">({item.source_name})</span>
                         )}
+                        <span className="ml-1"><StyleBadge category={item.category} mapping={categoryStyleMap} /></span>
                       </span>
                       <button
                         type="button"
@@ -656,13 +694,11 @@ export function NewsBulletinWizardPage() {
                         <div className="flex items-center gap-1.5">
                           <span className="text-neutral-800 font-medium truncate">{item.title || "(basliksiz)"}</span>
                         </div>
-                        <div className="flex items-center gap-2 mt-0.5">
+                        <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                           {item.source_name && (
                             <span className="text-xs text-brand-600 font-medium">{item.source_name}</span>
                           )}
-                          {item.category && (
-                            <span className="text-xs text-neutral-400">{SOURCE_CATEGORY_LABELS[item.category] ?? item.category}</span>
-                          )}
+                          <StyleBadge category={item.category} mapping={categoryStyleMap} />
                           <span className="text-xs text-neutral-300">{timeAgo(item.created_at)}</span>
                           {item.summary && (
                             <span className="text-neutral-400 text-xs truncate">{item.summary.slice(0, 60)}</span>
@@ -707,10 +743,8 @@ export function NewsBulletinWizardPage() {
                         <span className="text-neutral-800 font-medium truncate block">
                           #{item.sort_order + 1} — {item.news_title || item.news_item_id.slice(0, 12)}
                         </span>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          {item.news_category && (
-                            <span className="text-xs text-neutral-500">{SOURCE_CATEGORY_LABELS[item.news_category] ?? item.news_category}</span>
-                          )}
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          <StyleBadge category={item.news_category} mapping={categoryStyleMap} />
                           {item.used_news_warning && (
                             <span className="text-xs text-warning-dark">(daha once kullanilmis)</span>
                           )}
@@ -748,13 +782,11 @@ export function NewsBulletinWizardPage() {
                     >
                       <div className="flex-1 mr-2 min-w-0">
                         <span className="text-neutral-800 font-medium truncate block">{item.title || "(basliksiz)"}</span>
-                        <div className="flex items-center gap-2 mt-0.5">
+                        <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                           {item.source_name && (
                             <span className="text-xs text-brand-600 font-medium">{item.source_name}</span>
                           )}
-                          {item.category && (
-                            <span className="text-xs text-neutral-400">{SOURCE_CATEGORY_LABELS[item.category] ?? item.category}</span>
-                          )}
+                          <StyleBadge category={item.category} mapping={categoryStyleMap} />
                           <span className="text-xs text-neutral-300">{timeAgo(item.created_at)}</span>
                           {item.summary && (
                             <span className="text-neutral-400 text-xs truncate">{item.summary.slice(0, 60)}</span>
