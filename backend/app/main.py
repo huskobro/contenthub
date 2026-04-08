@@ -139,6 +139,11 @@ async def lifespan(app: FastAPI):
         if block_seed_count > 0:
             logger.info("PromptBlock seed: %d yeni blok DB'ye eklendi.", block_seed_count)
 
+    # Auth — seed initial admin user if none exists (Faz 3)
+    from app.auth.seed import seed_admin_user
+    async with AsyncSessionLocal() as auth_db:
+        await seed_admin_user(auth_db)
+
     # Credential + ayar cozumleme — DB -> .env -> builtin (M9-A / M10-B)
     async with AsyncSessionLocal() as cred_db:
         kie_ai_key = await resolve_credential("credential.kie_ai_api_key", cred_db) or settings.kie_ai_api_key

@@ -33,6 +33,7 @@ from app.content_projects.router import router as content_projects_router
 from app.engagement.router import router as engagement_router
 from app.brand_profiles.router import router as brand_profiles_router
 from app.automation.router import router as automation_router
+from app.auth.router import router as auth_router
 
 api_router = APIRouter()
 api_router.include_router(health.router, tags=["health"])
@@ -69,3 +70,4 @@ api_router.include_router(wizard_configs_router)
 api_router.include_router(modules_router)
 api_router.include_router(prompt_assembly_router)
 api_router.include_router(fs_router)
+api_router.include_router(auth_router)
