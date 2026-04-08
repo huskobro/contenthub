@@ -715,6 +715,8 @@ class NewsBulletin(Base):
     # M41a: Wizard'dan gelen format ve karaoke seçimi
     render_format: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
     karaoke_enabled: Mapped[Optional[bool]] = mapped_column(Boolean, nullable=True)
+    # M42: Karaoke animasyon preset — 'hype' | 'explosive' | 'vibrant' | 'minimal'
+    karaoke_anim_preset: Mapped[Optional[str]] = mapped_column(String(30), nullable=True)
     is_test_data: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, index=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=_now

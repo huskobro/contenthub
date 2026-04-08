@@ -147,6 +147,8 @@ def _build_render_outputs(
     network_name: str = "ContentHub Haber",
     show_ticker: bool = True,
     ticker_items: list[str] | None = None,
+    render_format: str = "landscape",
+    karaoke_anim_preset: str = "hype",
 ) -> list[dict]:
     """
     render_mode'a göre çıktı planını oluşturur.
@@ -188,6 +190,8 @@ def _build_render_outputs(
                 "networkName": network_name,
                 "showTicker": show_ticker,
                 "tickerItems": ticker_items,
+                "renderFormat": render_format,
+                "karaokeAnimPreset": karaoke_anim_preset,
                 "metadata": {
                     "title": metadata_data.get("title", ""),
                     "description": metadata_data.get("description", ""),
@@ -450,6 +454,15 @@ class BulletinCompositionExecutor(StepExecutor):
 
         bulletin_title = metadata_data.get("title", script_data.get("bulletin_id", ""))
 
+        # M42: karaoke_anim_preset — settings snapshot'tan oku
+        karaoke_anim_preset = raw_input.get("_settings_snapshot", {}).get(
+            "news_bulletin.config.karaoke_anim_preset", "hype"
+        )
+        # M41: render_format — settings snapshot'tan oku
+        render_format_val = raw_input.get("_settings_snapshot", {}).get(
+            "news_bulletin.config.render_format", "landscape"
+        )
+
         # M31: render_output dizisi — render moduna göre çıktı planı
         render_outputs = _build_render_outputs(
             render_mode=render_mode,
@@ -467,6 +480,8 @@ class BulletinCompositionExecutor(StepExecutor):
             network_name=network_name,
             show_ticker=show_ticker,
             ticker_items=ticker_items,
+            render_format=render_format_val,
+            karaoke_anim_preset=karaoke_anim_preset,
         )
 
         composition_props: dict = {
@@ -493,11 +508,10 @@ class BulletinCompositionExecutor(StepExecutor):
                 "networkName": network_name,
                 "showTicker": show_ticker,
                 "tickerItems": ticker_items,
-                # M41: renderFormat — settings snapshot'tan oku
-                "renderFormat": raw_input.get("_settings_snapshot", {}).get(
-                    "news_bulletin.config.render_format",
-                    "landscape",
-                ),
+                # M41: renderFormat
+                "renderFormat": render_format_val,
+                # M42: karaokeAnimPreset
+                "karaokeAnimPreset": karaoke_anim_preset,
                 # M41: tarih ve kaynak gosterim ayarlari
                 "showDate": show_date,
                 "showSource": show_source,

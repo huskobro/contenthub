@@ -25,6 +25,7 @@ class NewsBulletinCreate(BaseModel):
     trust_enforcement_level: Optional[str] = "warn"
     render_format: Optional[str] = None  # M41a
     karaoke_enabled: Optional[bool] = None  # M41a
+    karaoke_anim_preset: Optional[str] = None  # M42
 
     @field_validator("topic")
     @classmethod
@@ -63,6 +64,7 @@ class NewsBulletinUpdate(BaseModel):
     trust_enforcement_level: Optional[str] = None
     render_format: Optional[str] = None  # M41a
     karaoke_enabled: Optional[bool] = None  # M41a
+    karaoke_anim_preset: Optional[str] = None  # M42
 
     @field_validator("topic")
     @classmethod
@@ -102,6 +104,7 @@ class NewsBulletinResponse(BaseModel):
     trust_enforcement_level: Optional[str] = "warn"
     render_format: Optional[str] = None  # M41a
     karaoke_enabled: Optional[bool] = None  # M41a
+    karaoke_anim_preset: Optional[str] = None  # M42
     created_at: datetime
     updated_at: datetime
     has_script: bool = False

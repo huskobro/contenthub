@@ -23,6 +23,11 @@ export interface NewsBulletinResponse {
   subtitle_style: string | null;
   lower_third_style: string | null;
   trust_enforcement_level: string | null;
+  /** M41a */
+  render_format?: string | null;
+  karaoke_enabled?: boolean | null;
+  /** M42 */
+  karaoke_anim_preset?: string | null;
   created_at: string;
   updated_at: string;
   has_script?: boolean;
@@ -81,6 +86,8 @@ export interface NewsBulletinUpdatePayload {
   render_format?: string | null;
   /** M41a: Karaoke toggle */
   karaoke_enabled?: boolean | null;
+  /** M42: Karaoke animasyon preset */
+  karaoke_anim_preset?: string | null;
 }
 
 export function createNewsBulletin(

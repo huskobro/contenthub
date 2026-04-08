@@ -104,6 +104,8 @@ export function NewsBulletinWizardPage() {
   // M41a: Format picker + karaoke toggle
   const [renderFormat, setRenderFormat] = useState("landscape");
   const [karaokeEnabled, setKaraokeEnabled] = useState(true);
+  // M42: Karaoke animasyon preset
+  const [karaokeAnimPreset, setKaraokeAnimPreset] = useState("hype");
 
   // Load existing bulletin if resuming
   const { data: bulletin, refetch: refetchBulletin } = useQuery({
@@ -128,6 +130,13 @@ export function NewsBulletinWizardPage() {
       setSubtitleStyle(bulletin.subtitle_style || "clean_white");
       setLowerThirdStyle(bulletin.lower_third_style || "broadcast");
       setTrustEnforcementLevel(bulletin.trust_enforcement_level || "warn");
+
+      // M41a / M42 fields
+      if (bulletin.render_format) setRenderFormat(bulletin.render_format);
+      if (bulletin.karaoke_enabled !== undefined && bulletin.karaoke_enabled !== null) {
+        setKaraokeEnabled(bulletin.karaoke_enabled);
+      }
+      if (bulletin.karaoke_anim_preset) setKaraokeAnimPreset(bulletin.karaoke_anim_preset);
 
       // Auto-advance based on status
       // selection_confirmed → step 1 (editorial gate henüz tamamlanmadı, consume_news gerekli)
@@ -339,6 +348,7 @@ export function NewsBulletinWizardPage() {
         trust_enforcement_level: trustEnforcementLevel,
         render_format: renderFormat,
         karaoke_enabled: karaokeEnabled,
+        karaoke_anim_preset: karaokeAnimPreset,
       }),
     onSuccess: () => {
       refetchBulletin();
@@ -847,6 +857,38 @@ export function NewsBulletinWizardPage() {
             </p>
           </div>
 
+          {/* ---- M42: Karaoke Animasyon Preset ---- */}
+          {karaokeEnabled && (
+            <div>
+              <h3 className="m-0 mb-2 text-md font-semibold text-neutral-800">Animasyon Stili</h3>
+              <div className="grid grid-cols-2 gap-2">
+                {(
+                  [
+                    { value: "hype", label: "Hype", desc: "Bounce + parlama" },
+                    { value: "explosive", label: "Explosive", desc: "Ates efekti + agresif scale" },
+                    { value: "vibrant", label: "Vibrant", desc: "Renk kaymasi + dinamik" },
+                    { value: "minimal", label: "Minimal", desc: "Sadece renk, animasyon yok" },
+                  ] as const
+                ).map(({ value, label, desc }) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => setKaraokeAnimPreset(value)}
+                    className={cn(
+                      "flex flex-col items-start gap-0.5 px-3 py-2.5 border rounded-md cursor-pointer transition-colors text-left",
+                      karaokeAnimPreset === value
+                        ? "bg-brand-50 text-brand-700 border-brand-400 ring-1 ring-brand-200"
+                        : "bg-white text-neutral-600 border-border hover:bg-neutral-50",
+                    )}
+                  >
+                    <span className="text-sm font-medium">{label}</span>
+                    <span className="text-[11px] text-neutral-400">{desc}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* ---- M31: Trust Enforcement Level ---- */}
           <div>
             <h3 className="m-0 mb-2 text-md font-semibold text-neutral-800">Guvenilirlik Denetimi</h3>
@@ -969,6 +1011,8 @@ export function NewsBulletinWizardPage() {
             } />
             <SummaryRow label="Altyazi" value={subtitleStyle} />
             <SummaryRow label="Alt Bant" value={lowerThirdStyle} />
+            <SummaryRow label="Format" value={renderFormat === "portrait" ? "9:16 (Shorts)" : "16:9 (Yatay)"} />
+            <SummaryRow label="Karaoke" value={karaokeEnabled ? `Acik (${karaokeAnimPreset})` : "Kapali"} />
             <SummaryRow label="Guvenilirlik" value={trustEnforcementLevel} />
           </div>
 
