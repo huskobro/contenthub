@@ -2,12 +2,14 @@
  * StudioBackground — ContentHub haber bülteni arka planı.
  *
  * bulletinStyle prop'una göre kategori rengini seçer.
- * Animated grid + merkezi ışık dalgası + vignette.
+ * categoryStyleMapping prop'u varsa renk paletini dinamik olarak override eder
+ * (admin panelden ayarlanabilir).
  *
- * Animasyon kararları:
- *   - Grid: yarı saydam, her 96px'de bir ızgara çizgisi
- *   - Pulse: sin dalgası, 180 frame döngü (~3s at 60fps)
- *   - Vignette: radyal gradient, köşeleri karartan
+ * Animated grid + merkezi ışık dalgası + scanline glow + vignette.
+ *
+ * M43: categoryStyleMapping desteği — hardcoded palette yerine setting'den gelen
+ * renk tablosu kullanılabilir. Mapping yoksa veya stil bulunamazsa dahili
+ * fallback palette kullanılır.
  */
 
 import React from "react";
@@ -26,39 +28,79 @@ export type BulletinStyle =
   | "entertainment"
   | "dark";
 
-// ── Palette (tek kaynak: shared/palette.ts'ten değil, burada tanımlı) ─────────
-// StudioBackground palette'i bg+grid içeriyor; accent-only değerler shared/palette.ts'te.
+// ── Fallback Palette (setting yoksa veya stil bulunamazsa) ───────────────────
 
-interface StylePalette { bg: string; grid: string; }
+interface StylePalette { bg: string; grid: string; accent: string; }
 
-const PALETTES: Record<BulletinStyle, StylePalette> = {
-  breaking:      { bg: "#0A0A0A", grid: "rgba(220,38,38,0.07)"   },
-  tech:          { bg: "#0D1B2A", grid: "rgba(0,229,255,0.07)"   },
-  corporate:     { bg: "#0A1628", grid: "rgba(37,99,235,0.07)"   },
-  sport:         { bg: "#051A10", grid: "rgba(16,185,129,0.07)"  },
-  finance:       { bg: "#1A1405", grid: "rgba(245,158,11,0.07)"  },
-  weather:       { bg: "#0C1F3D", grid: "rgba(56,189,248,0.07)"  },
-  science:       { bg: "#0F0B1E", grid: "rgba(139,92,246,0.07)"  },
-  entertainment: { bg: "#1A0515", grid: "rgba(236,72,153,0.07)"  },
-  dark:          { bg: "#000000", grid: "rgba(148,163,184,0.07)" },
+const FALLBACK_PALETTES: Record<BulletinStyle, StylePalette> = {
+  breaking:      { bg: "#0A0A0A", grid: "rgba(220,38,38,0.07)",   accent: "#DC2626" },
+  tech:          { bg: "#0D1B2A", grid: "rgba(0,229,255,0.07)",   accent: "#00E5FF" },
+  corporate:     { bg: "#0A1628", grid: "rgba(37,99,235,0.07)",   accent: "#2563EB" },
+  sport:         { bg: "#051A10", grid: "rgba(16,185,129,0.07)",  accent: "#10B981" },
+  finance:       { bg: "#1A1405", grid: "rgba(245,158,11,0.07)",  accent: "#F59E0B" },
+  weather:       { bg: "#0C1F3D", grid: "rgba(56,189,248,0.07)",  accent: "#38BDF8" },
+  science:       { bg: "#0F0B1E", grid: "rgba(139,92,246,0.07)",  accent: "#8B5CF6" },
+  entertainment: { bg: "#1A0515", grid: "rgba(236,72,153,0.07)",  accent: "#EC4899" },
+  dark:          { bg: "#000000", grid: "rgba(148,163,184,0.07)", accent: "#94A3B8" },
 };
+
+// ── Palette resolver ─────────────────────────────────────────────────────────
+
+export interface CategoryStyleEntry {
+  accent: string;
+  bg: string;
+  grid: string;
+  label_tr?: string;
+  label_en?: string;
+}
+
+export type CategoryStyleMapping = Record<string, CategoryStyleEntry>;
+
+function resolvePalette(
+  style: BulletinStyle,
+  mapping?: CategoryStyleMapping | null,
+): StylePalette {
+  // Setting'den gelen mapping varsa ve stil bulunuyorsa onu kullan
+  if (mapping && mapping[style]) {
+    const entry = mapping[style];
+    return {
+      bg: entry.bg ?? FALLBACK_PALETTES[style]?.bg ?? "#000000",
+      grid: entry.grid ?? FALLBACK_PALETTES[style]?.grid ?? "rgba(255,255,255,0.05)",
+      accent: entry.accent ?? FALLBACK_PALETTES[style]?.accent ?? "#FFFFFF",
+    };
+  }
+  // Fallback: dahili palette
+  return FALLBACK_PALETTES[style] ?? FALLBACK_PALETTES.breaking;
+}
 
 // ── Bileşen ────────────────────────────────────────────────────────────────────
 
 interface Props {
   style?: BulletinStyle;
+  /** M43: Admin panelden gelen kategori renk tablosu. Yoksa fallback palette kullanılır. */
+  categoryStyleMapping?: CategoryStyleMapping | null;
 }
 
-export const StudioBackground: React.FC<Props> = ({ style = "breaking" }) => {
+export const StudioBackground: React.FC<Props> = ({
+  style = "breaking",
+  categoryStyleMapping,
+}) => {
   const frame = useCurrentFrame();
   const { width, height } = useVideoConfig();
-  const palette = PALETTES[style] ?? PALETTES.breaking;
+  const palette = resolvePalette(style, categoryStyleMapping);
 
   // Merkezi ışık dalgası: 3 saniyelik sin döngüsü (180 frame @ 60fps)
   const pulseOpacity = interpolate(
     Math.sin((frame / 180) * Math.PI * 2),
     [-1, 1],
-    [0.25, 0.65]
+    [0.25, 0.65],
+  );
+
+  // Scanline glow animasyonu — yavaş dikey kayma
+  const scanlineY = interpolate(
+    frame % 360,
+    [0, 360],
+    [0, height],
   );
 
   const GRID_CELL = 96;
@@ -92,6 +134,18 @@ export const StudioBackground: React.FC<Props> = ({ style = "breaking" }) => {
           />
         ))}
       </svg>
+
+      {/* Scanline glow — accent rengi ile yavaş yatay tarama */}
+      <div style={{
+        position: "absolute",
+        left: 0,
+        right: 0,
+        top: scanlineY,
+        height: 3,
+        background: `linear-gradient(90deg, transparent 0%, ${palette.accent}40 30%, ${palette.accent}80 50%, ${palette.accent}40 70%, transparent 100%)`,
+        filter: "blur(4px)",
+        pointerEvents: "none",
+      }} />
 
       {/* Yatay ışık dalgası — ekranın %40 yüksekliğinde */}
       <div style={{

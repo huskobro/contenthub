@@ -32,3 +32,17 @@ export const BULLETIN_DARK_ACCENT: Record<BulletinStyle, string> = {
   entertainment: "#9D174D",
   dark:          "#334155",
 };
+
+/**
+ * M43: Dynamic accent resolver — categoryStyleMapping prop'u varsa
+ * oradan okur, yoksa hardcoded BULLETIN_ACCENT fallback.
+ */
+export function resolveAccent(
+  style: BulletinStyle,
+  mapping?: Record<string, { accent?: string }> | null,
+): string {
+  if (mapping && mapping[style]?.accent) {
+    return mapping[style].accent;
+  }
+  return BULLETIN_ACCENT[style] ?? BULLETIN_ACCENT.breaking;
+}
