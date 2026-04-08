@@ -43,8 +43,10 @@ import { BreakingNewsOverlay } from "../templates/news-bulletin/components/Break
 import { HeadlineCard } from "../templates/news-bulletin/components/HeadlineCard";
 import { NewsTicker } from "../templates/news-bulletin/components/NewsTicker";
 import { CategoryFlash, CATEGORY_FLASH_DUR } from "../templates/news-bulletin/components/CategoryFlash";
-import { BULLETIN_ACCENT } from "../templates/news-bulletin/shared/palette";
+import { NewsItemIntro } from "../templates/news-bulletin/components/NewsItemIntro";
+import { BULLETIN_ACCENT, resolveAccent } from "../templates/news-bulletin/shared/palette";
 import { getLabel } from "../templates/news-bulletin/utils/localization";
+import type { CategoryStyleMapping } from "../templates/news-bulletin/components/StudioBackground";
 import type { SubtitleEntry, SubtitleWord } from "../templates/news-bulletin/shared/subtitle-renderer";
 
 // ---------------------------------------------------------------------------
@@ -216,6 +218,53 @@ export interface NewsBulletinProps {
   showDate?: boolean;
   /** M41: Haberlerde kaynak göster (varsayılan: false) */
   showSource?: boolean;
+  // --- M43: Yeni parametreler ---
+  /** Ticker hızı (px/frame) */
+  tickerSpeed?: number;
+  /** Ticker arka plan rengi */
+  tickerBgColor?: string;
+  /** Ticker yazı rengi */
+  tickerTextColor?: string;
+  /** CANLI badge göster */
+  showLiveBadge?: boolean;
+  /** Kategori flash animasyonu göster */
+  showCategoryFlash?: boolean;
+  /** Kategori flash süresi (saniye) */
+  categoryFlashDuration?: number;
+  /** Haber giriş paneli göster */
+  showItemIntro?: boolean;
+  /** Haber giriş süresi (saniye) */
+  itemIntroDuration?: number;
+  /** Lower third font ailesi */
+  lowerThirdFontFamily?: string;
+  /** Lower third font boyutu */
+  lowerThirdFontSize?: number;
+  /** Lower third arka plan rengi */
+  lowerThirdBgColor?: string;
+  /** Lower third yazı rengi */
+  lowerThirdTextColor?: string;
+  /** Altyazı font ailesi */
+  subtitleFontFamily?: string;
+  /** Altyazı font boyutu */
+  subtitleFontSize?: number;
+  /** Altyazı arka plan rengi */
+  subtitleBgColor?: string;
+  /** Altyazı yazı rengi */
+  subtitleTextColor?: string;
+  /** Altyazı stroke rengi */
+  subtitleStrokeColor?: string;
+  /** Altyazı stroke kalınlığı */
+  subtitleStrokeWidth?: number;
+  /** Altyazı animasyon tipi */
+  subtitleAnimation?: string;
+  /** Ken Burns efekti */
+  imageKenBurns?: boolean;
+  /** Görsel geçiş tipi */
+  imageTransition?: string;
+  /** Otomatik layout seçimi */
+  autoLayoutSelection?: boolean;
+  /** Kategori stil eşleme tablosu (admin panelden) */
+  categoryStyleMapping?: Record<string, { accent: string; bg: string; grid: string; label_tr?: string; label_en?: string }> | null;
   metadata: {
     title: string;
     description: string;
@@ -302,10 +351,35 @@ export const NewsBulletinComposition: React.FC<NewsBulletinProps> = (props) => {
     showDate = true,
     showSource = false,
     renderFormat,
+    // M43: Yeni parametreler
+    tickerSpeed,
+    tickerBgColor,
+    tickerTextColor,
+    showLiveBadge = true,
+    showCategoryFlash = true,
+    categoryFlashDuration = 1.5,
+    showItemIntro = true,
+    itemIntroDuration = 2.0,
+    lowerThirdFontFamily,
+    lowerThirdFontSize,
+    lowerThirdBgColor,
+    lowerThirdTextColor,
+    imageKenBurns = true,
+    imageTransition,
+    autoLayoutSelection = true,
+    categoryStyleMapping,
   } = props;
 
   const isPortrait = renderFormat === "portrait" || height > width;
   const NETWORK_BAR_HEIGHT = isPortrait ? NETWORK_BAR_HEIGHT_PORTRAIT : NETWORK_BAR_HEIGHT_LANDSCAPE;
+
+  // M43: Dinamik flash/intro frame süreleri (setting'den)
+  const FLASH_DUR_FRAMES = showCategoryFlash
+    ? Math.round(categoryFlashDuration * fps)
+    : 0;
+  const INTRO_DUR_FRAMES = showItemIntro
+    ? Math.round(itemIntroDuration * fps)
+    : 0;
 
   // Genel bülten stili
   const defaultStyle: BulletinStyle =
@@ -332,19 +406,20 @@ export const NewsBulletinComposition: React.FC<NewsBulletinProps> = (props) => {
   const HEADLINES_START = fps * 2; // ilk 2s başlık kartı
 
   // Audio timeline cursor — SRT/wordTimings global audio zamanları kullanır.
-  // Visual timeline ise HEADLINES_START + CATEGORY_FLASH_DUR ekler.
+  // Visual timeline ise HEADLINES_START + FLASH_DUR + INTRO_DUR ekler.
   // Bu iki timeline FARKLIDIR — subtitle filtreleme audio timeline'ı kullanmalı.
   let audioCursor = 0;
   let cumulativeOffset = HEADLINES_START;
   const sequenced = items.map((item, idx) => {
     const durationFrames = Math.max(Math.round(item.durationSeconds * fps), fps);
+
+    // M43: Her item için visual timeline: [flash] → [intro] → [content]
     const flashFrom   = cumulativeOffset;
-    const contentFrom = cumulativeOffset + CATEGORY_FLASH_DUR;
-    cumulativeOffset += CATEGORY_FLASH_DUR + durationFrames;
+    const introFrom   = cumulativeOffset + FLASH_DUR_FRAMES;
+    const contentFrom = cumulativeOffset + FLASH_DUR_FRAMES + INTRO_DUR_FRAMES;
+    cumulativeOffset += FLASH_DUR_FRAMES + INTRO_DUR_FRAMES + durationFrames;
 
     // Per-item subtitle entries — AUDIO timeline zamanları kullanılmalı
-    // SRT/wordTimings global audio cursor'a göre zamanlanmış (scene_1 + scene_2 + ...)
-    // Visual timeline farklı (HEADLINES_START + flash padding ekleniyor)
     const audioFromSec = audioCursor / fps;
     const audioToSec   = (audioCursor + durationFrames) / fps;
     audioCursor += durationFrames;
@@ -352,7 +427,7 @@ export const NewsBulletinComposition: React.FC<NewsBulletinProps> = (props) => {
       ? buildItemSubtitles(srtRaw, wt, audioFromSec, audioToSec, fps)
       : [];
 
-    return { item, flashFrom, contentFrom, durationFrames, idx, itemSubtitles };
+    return { item, flashFrom, introFrom, contentFrom, durationFrames, idx, itemSubtitles };
   });
 
   // Aktif item stilini dinamik bar rengi için hesapla
@@ -360,7 +435,7 @@ export const NewsBulletinComposition: React.FC<NewsBulletinProps> = (props) => {
   const activeItemStyle: BulletinStyle = activeSeq
     ? resolveBulletinStyle(activeSeq.item.category, defaultStyle)
     : defaultStyle;
-  const activeAccent = BULLETIN_ACCENT[activeItemStyle];
+  const activeAccent = resolveAccent(activeItemStyle, categoryStyleMapping);
 
   // Ticker içeriği
   const tickerData = tickerItems && tickerItems.length > 0
@@ -370,8 +445,8 @@ export const NewsBulletinComposition: React.FC<NewsBulletinProps> = (props) => {
   return (
     <AbsoluteFill style={{ backgroundColor: "#000" }}>
 
-      {/* L1: Animasyonlu arka plan */}
-      <StudioBackground style={activeItemStyle} />
+      {/* L1: Animasyonlu arka plan — categoryStyleMapping ile dinamik renk */}
+      <StudioBackground style={activeItemStyle} categoryStyleMapping={categoryStyleMapping} />
 
       {/* L2: Network üst bar */}
       <div style={{
@@ -390,6 +465,31 @@ export const NewsBulletinComposition: React.FC<NewsBulletinProps> = (props) => {
         }}>
           {channelName.toUpperCase()}
         </span>
+        {/* M43: CANLI badge */}
+        {showLiveBadge && (
+          <div style={{
+            marginLeft: "auto",
+            display: "flex", alignItems: "center", gap: 8,
+          }}>
+            <div style={{
+              width: isPortrait ? 10 : 14,
+              height: isPortrait ? 10 : 14,
+              borderRadius: "50%",
+              backgroundColor: "#DC2626",
+              boxShadow: "0 0 12px #DC262688",
+              animation: "pulse 1.5s ease infinite",
+            }} />
+            <span style={{
+              color: "#FFFFFF",
+              fontSize: isPortrait ? 16 : 22,
+              fontFamily: '"Bebas Neue", sans-serif',
+              fontWeight: 900,
+              letterSpacing: "0.1em",
+            }}>
+              {lang === "tr" ? "CANLI" : "LIVE"}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* L3: Breaking overlay — yalnızca breaking stilinde, başlık kartı süresince
@@ -416,18 +516,42 @@ export const NewsBulletinComposition: React.FC<NewsBulletinProps> = (props) => {
         </AbsoluteFill>
       </Sequence>
 
-      {/* L5: Haberler — CategoryFlash + HeadlineCard + lower-third */}
-      {sequenced.map(({ item, flashFrom, contentFrom, durationFrames, idx, itemSubtitles }) => {
+      {/* L5: Haberler — [CategoryFlash] → [NewsItemIntro] → HeadlineCard + lower-third */}
+      {sequenced.map(({ item, flashFrom, introFrom, contentFrom, durationFrames, idx, itemSubtitles }) => {
         const itemStyle  = resolveBulletinStyle(item.category, defaultStyle);
-        const itemAccent = BULLETIN_ACCENT[itemStyle];
+        const itemAccent = resolveAccent(itemStyle, categoryStyleMapping);
         const itemLabel  = getLabel(itemStyle, lang);
+
+        // M43: Kategori bg rengi (categoryStyleMapping'den)
+        const itemBg = categoryStyleMapping?.[itemStyle]?.bg;
 
         return (
           <React.Fragment key={idx}>
-            {/* Kategori flash (1.5s) */}
-            <Sequence from={flashFrom} durationInFrames={CATEGORY_FLASH_DUR} name={`Flash ${idx + 1}`}>
-              <CategoryFlash label={itemLabel} accent={itemAccent} isPortrait={isPortrait} />
-            </Sequence>
+            {/* M43: Kategori flash — showCategoryFlash ise */}
+            {showCategoryFlash && FLASH_DUR_FRAMES > 0 && (
+              <Sequence from={flashFrom} durationInFrames={FLASH_DUR_FRAMES} name={`Flash ${idx + 1}`}>
+                <CategoryFlash
+                  label={itemLabel}
+                  accent={itemAccent}
+                  isPortrait={isPortrait}
+                  durationFrames={FLASH_DUR_FRAMES}
+                />
+              </Sequence>
+            )}
+
+            {/* M43: Haber giriş paneli — showItemIntro ise */}
+            {showItemIntro && INTRO_DUR_FRAMES > 0 && (
+              <Sequence from={introFrom} durationInFrames={INTRO_DUR_FRAMES} name={`Intro ${idx + 1}`}>
+                <NewsItemIntro
+                  itemNumber={item.itemNumber}
+                  headline={item.headline}
+                  accent={itemAccent}
+                  bgColor={itemBg}
+                  networkName={networkName ?? channelName}
+                  isPortrait={isPortrait}
+                />
+              </Sequence>
+            )}
 
             {/* Haber içerik kartı */}
             <Sequence from={contentFrom} durationInFrames={durationFrames} name={`Haber ${idx + 1}`}>
@@ -439,11 +563,12 @@ export const NewsBulletinComposition: React.FC<NewsBulletinProps> = (props) => {
                   bulletinStyle: itemStyle,
                   imagePath:    item.imagePath,
                   imageTimeline: item.imageTimeline,
-                  // M41c: per-item karaoke subtitles
                   subtitles:    itemSubtitles.length > 0 ? itemSubtitles : undefined,
                 }}
                 index={idx}
                 isPortrait={isPortrait}
+                imageKenBurns={imageKenBurns}
+                categoryStyleMapping={categoryStyleMapping}
               />
               {/* Lower-third: lowerThirdStyle atanmışsa tüm haberlerde göster */}
               {lowerThirdStyle != null && lowerThirdStyle !== "" && (
@@ -458,6 +583,11 @@ export const NewsBulletinComposition: React.FC<NewsBulletinProps> = (props) => {
                   showDate={showDate}
                   showSource={showSource}
                   isPortrait={isPortrait}
+                  accent={itemAccent}
+                  fontFamily={lowerThirdFontFamily}
+                  fontSize={lowerThirdFontSize}
+                  bgColor={lowerThirdBgColor}
+                  textColor={lowerThirdTextColor}
                 />
               )}
             </Sequence>
@@ -468,7 +598,16 @@ export const NewsBulletinComposition: React.FC<NewsBulletinProps> = (props) => {
       {/* L6: Alt ticker — frame 30'dan itibaren */}
       {showTicker !== false && tickerData.length > 0 && (
         <Sequence from={30} name="Ticker">
-          <NewsTicker items={tickerData} style={activeItemStyle} lang={lang} isPortrait={isPortrait} />
+          <NewsTicker
+            items={tickerData}
+            style={activeItemStyle}
+            lang={lang}
+            isPortrait={isPortrait}
+            tickerSpeed={tickerSpeed}
+            tickerBgColor={tickerBgColor}
+            tickerTextColor={tickerTextColor}
+            categoryStyleMapping={categoryStyleMapping}
+          />
         </Sequence>
       )}
 
