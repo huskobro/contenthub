@@ -118,9 +118,10 @@ class KieAiProvider(BaseProvider):
 
         # Maliyet tahmini seam (M3-C3) — Gemini 2.5 Flash yaklaşık fiyatı.
         # Gerçek fatura kie.ai dashboard'dan alınır; bu tahmin izleme amaçlıdır.
-        # Fiyat: input $0.075 / 1M token, output $0.30 / 1M token (2026 yaklaşımı).
+        # kie.ai fiyatı (2026): input $0.09 / 1M token, output $0.75 / 1M token.
+        # Ref: https://kie.ai/gemini-2.5-flash
         cost_estimate_usd = round(
-            (input_tokens * 0.075 + output_tokens * 0.30) / 1_000_000, 8
+            (input_tokens * 0.09 + output_tokens * 0.75) / 1_000_000, 8
         )
 
         return ProviderOutput(

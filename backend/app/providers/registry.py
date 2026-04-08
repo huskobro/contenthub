@@ -178,6 +178,39 @@ class ProviderRegistry:
                 return True
         return False
 
+    def replace_provider_by_prefix(
+        self,
+        capability: ProviderCapability,
+        prefix: str,
+        new_provider: BaseProvider,
+    ) -> bool:
+        """
+        Prefix ile eslesen ilk provider'i yeni instance ile degistirir.
+
+        Model degisikligi durumunda (ornegin openai_compat_gpt-4 → openai_compat_gpt-4o-mini)
+        exact match bulamayinca prefix-based fallback olarak kullanilir.
+
+        Returns:
+            True: degistirme basarili.
+            False: prefix ile eslesen provider bulunamadi.
+        """
+        entries = self._entries.get(capability, [])
+        for entry in entries:
+            if entry.provider.provider_id().startswith(prefix):
+                logger.info(
+                    "replace_provider_by_prefix: %s → %s",
+                    entry.provider.provider_id(),
+                    new_provider.provider_id(),
+                )
+                entry.provider = new_provider
+                entry.invoke_count = 0
+                entry.error_count = 0
+                entry.last_error = None
+                entry.last_used_at = None
+                entry.last_latency_ms = None
+                return True
+        return False
+
     # ------------------------------------------------------------------
     # Runtime health kaydı — M3-C3
     # ------------------------------------------------------------------

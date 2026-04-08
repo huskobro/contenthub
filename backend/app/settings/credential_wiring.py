@@ -30,7 +30,7 @@ _CREDENTIAL_PROVIDER_MAP: dict[str, dict] = {
     },
     "credential.openai_api_key": {
         "capability": ProviderCapability.LLM,
-        "provider_id": "openai_compat_gpt-4o-mini",
+        "provider_id_prefix": "openai_compat_",
         "factory": "_make_openai_compat_provider",
     },
     "credential.pexels_api_key": {
@@ -128,30 +128,40 @@ async def reinitialize_provider_for_credential(key: str, value: str) -> dict:
         return {"key": key, "action": "no_provider", "provider_id": None}
 
     # Boş veya placeholder key — provider baslatma, zincirine ekleme
-    if not value or not value.strip() or value.strip() in ("abc", "sk-test-key-123", "placeholder"):
+    _PLACEHOLDER_KEYS = {"abc", "sk-test-key-123", "placeholder", ""}
+    if not value or not value.strip() or value.strip() in _PLACEHOLDER_KEYS:
         logger.info(
             "Credential %s bos veya placeholder — provider atlaniyor.",
             key,
         )
-        return {"key": key, "action": "skipped", "provider_id": mapping["provider_id"]}
+        return {"key": key, "action": "skipped", "provider_id": None}
 
     capability = mapping["capability"]
-    provider_id = mapping["provider_id"]
     factory_name = mapping["factory"]
     factory_fn = _FACTORIES[factory_name]
 
     new_provider = factory_fn(value)
+    new_pid = new_provider.provider_id()
 
-    # Mevcut provider'i degistir
-    replaced = provider_registry.replace_provider(capability, provider_id, new_provider)
+    # Mevcut provider'i degistir — once exact match, sonra prefix match
+    # (model degistirilmis olabilir: openai_compat_gpt-4 → openai_compat_gpt-4o-mini)
+    replaced = provider_registry.replace_provider(capability, new_pid, new_provider)
+
+    if not replaced:
+        # Prefix-based fallback: ayni ailenin (openai_compat_*) eski kaydini bul
+        prefix = mapping.get("provider_id_prefix") or mapping.get("provider_id")
+        if prefix:
+            replaced = provider_registry.replace_provider_by_prefix(
+                capability, prefix, new_provider,
+            )
 
     if replaced:
         logger.info(
             "Provider degistirildi: capability=%s, provider_id=%s",
             capability.value,
-            provider_id,
+            new_pid,
         )
-        return {"key": key, "action": "replaced", "provider_id": provider_id}
+        return {"key": key, "action": "replaced", "provider_id": new_pid}
 
     # Provider henuz kayitli degilse (ornegin openai key ilk kez giriliyor)
     # Yeni olarak kaydet
@@ -164,6 +174,6 @@ async def reinitialize_provider_for_credential(key: str, value: str) -> dict:
     logger.info(
         "Yeni provider kaydedildi: capability=%s, provider_id=%s",
         capability.value,
-        provider_id,
+        new_pid,
     )
-    return {"key": key, "action": "registered", "provider_id": provider_id}
+    return {"key": key, "action": "registered", "provider_id": new_pid}
