@@ -195,15 +195,35 @@ class CompositionStepExecutor(StepExecutor):
         timing_mode = subtitle_metadata.get("timing_mode", "cursor")
 
         # M41: karaoke_enabled kapalıysa timing_mode'u cursor'a düşür
-        karaoke_enabled = raw_input.get("_settings_snapshot", {}).get(
-            "standard_video.config.karaoke_enabled", True
-        )
+        snap = raw_input.get("_settings_snapshot", {})
+        karaoke_enabled = snap.get("standard_video.config.karaoke_enabled", True)
         if not karaoke_enabled:
             timing_mode = "cursor"
 
         # Job input'tan subtitle_style_preset alınır; yoksa varsayılan kullanılır
         subtitle_style_preset_id = raw_input.get("subtitle_style_preset")
         subtitle_style = get_preset_for_composition(subtitle_style_preset_id)
+
+        # M44: Settings override — preset değerlerinin üzerine admin ayarlarını yaz
+        _sub_font_family = snap.get("standard_video.config.subtitle_font_family", "")
+        _sub_font_size = snap.get("standard_video.config.subtitle_font_size", 0)
+        _sub_text_color = snap.get("standard_video.config.subtitle_text_color", "")
+        _sub_active_color = snap.get("standard_video.config.subtitle_active_color", "")
+        _sub_bg_color = snap.get("standard_video.config.subtitle_bg_color", "")
+        _sub_stroke_color = snap.get("standard_video.config.subtitle_stroke_color", "")
+        _sub_stroke_width = snap.get("standard_video.config.subtitle_stroke_width", -1)
+        if _sub_font_size and _sub_font_size > 0:
+            subtitle_style["font_size"] = _sub_font_size
+        if _sub_text_color:
+            subtitle_style["text_color"] = _sub_text_color
+        if _sub_active_color:
+            subtitle_style["active_color"] = _sub_active_color
+        if _sub_bg_color:
+            subtitle_style["background"] = _sub_bg_color
+        if _sub_stroke_color:
+            subtitle_style["outline_color"] = _sub_stroke_color
+        if _sub_stroke_width >= 0:
+            subtitle_style["outline_width"] = _sub_stroke_width
 
         # Template/Style Blueprint context (M11)
         template_ctx = getattr(job, '_template_context', None)
@@ -256,14 +276,27 @@ class CompositionStepExecutor(StepExecutor):
                 "total_duration_seconds": round(total_duration, 3),
                 "language": language,
                 # M41: renderFormat — settings snapshot'tan oku
-                "renderFormat": raw_input.get("_settings_snapshot", {}).get(
-                    "standard_video.config.render_format",
-                    "landscape",
+                "renderFormat": snap.get(
+                    "standard_video.config.render_format", "landscape",
                 ),
-                # M42: karaoke animasyon preset — modüller arası standart
-                "karaokeAnimPreset": raw_input.get("_settings_snapshot", {}).get(
+                # M42: karaoke animasyon preset
+                "karaokeAnimPreset": snap.get(
                     "standard_video.config.karaoke_anim_preset", "hype",
                 ),
+                # M44: Visual & overlay parameters
+                "renderFps": snap.get("standard_video.config.render_fps", 30),
+                "imageKenBurns": snap.get("standard_video.config.image_ken_burns", True),
+                "imageTransition": snap.get("standard_video.config.image_transition", "crossfade"),
+                "sceneTransitionDuration": snap.get("standard_video.config.scene_transition_duration", 0.5),
+                "bgColor": snap.get("standard_video.config.bg_color", "#0a0a0a"),
+                "showTitleOverlay": snap.get("standard_video.config.show_title_overlay", True),
+                "titleFontSize": snap.get("standard_video.config.title_font_size", 30),
+                "titleColor": snap.get("standard_video.config.title_color", "#FFFFFF"),
+                "gradientIntensity": snap.get("standard_video.config.gradient_intensity", 0.65),
+                "watermarkText": snap.get("standard_video.config.watermark_text", ""),
+                "watermarkOpacity": snap.get("standard_video.config.watermark_opacity", 0.3),
+                "watermarkPosition": snap.get("standard_video.config.watermark_position", "bottom-right"),
+                "subtitleFontFamily": _sub_font_family,
                 "metadata": {
                     "title": metadata_data.get("title", ""),
                     "description": metadata_data.get("description", ""),

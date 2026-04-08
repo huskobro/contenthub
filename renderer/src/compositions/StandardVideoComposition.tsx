@@ -94,6 +94,20 @@ export interface StandardVideoProps {
     tags: string[];
     hashtags: string[];
   };
+  /** M44: Visual & overlay parameters — tümü admin panelden kontrol edilir */
+  renderFps?: number;
+  imageKenBurns?: boolean;
+  imageTransition?: "crossfade" | "cut" | "slide" | "zoom";
+  sceneTransitionDuration?: number;
+  bgColor?: string;
+  showTitleOverlay?: boolean;
+  titleFontSize?: number;
+  titleColor?: string;
+  gradientIntensity?: number;
+  watermarkText?: string;
+  watermarkOpacity?: number;
+  watermarkPosition?: "top-left" | "top-right" | "bottom-left" | "bottom-right";
+  subtitleFontFamily?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -102,11 +116,16 @@ export interface StandardVideoProps {
 
 interface PortraitOverlayProps {
   title?: string;
+  gradientIntensity?: number;
+  titleFontSize?: number;
+  titleColor?: string;
 }
 
-function PortraitOverlay({ title }: PortraitOverlayProps) {
+function PortraitOverlay({ title, gradientIntensity = 0.65, titleFontSize = 30, titleColor = "#FFFFFF" }: PortraitOverlayProps) {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
+
+  const gi = Math.max(0, Math.min(1, gradientIntensity));
 
   // Başlık spring entrance
   const headProgress = spring({ frame, fps, config: { damping: 16, stiffness: 160 } });
@@ -120,8 +139,8 @@ function PortraitOverlay({ title }: PortraitOverlayProps) {
         position: "absolute",
         inset: 0,
         background: [
-          "linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, transparent 20%)",
-          "linear-gradient(to bottom, transparent 55%, rgba(0,0,0,0.75) 75%, rgba(0,0,0,0.92) 100%)",
+          `linear-gradient(to bottom, rgba(0,0,0,${(gi * 0.92).toFixed(2)}) 0%, transparent 20%)`,
+          `linear-gradient(to bottom, transparent 55%, rgba(0,0,0,${(gi * 1.15).toFixed(2)}) 75%, rgba(0,0,0,${Math.min(gi * 1.42, 0.98).toFixed(2)}) 100%)`,
         ].join(", "),
         pointerEvents: "none",
       }} />
@@ -147,9 +166,9 @@ function PortraitOverlay({ title }: PortraitOverlayProps) {
           opacity: headOpacity,
           transform: `translateY(${headY}px)`,
           textAlign: "center",
-          fontSize: 30,
+          fontSize: titleFontSize,
           fontWeight: "700",
-          color: "#FFFFFF",
+          color: titleColor,
           textShadow: "0 2px 12px rgba(0,0,0,0.9), 0 0 40px rgba(0,0,0,0.6)",
           lineHeight: 1.3,
           letterSpacing: "0.04em",
@@ -165,7 +184,12 @@ function PortraitOverlay({ title }: PortraitOverlayProps) {
 // Landscape overlay — minimal top gradient
 // ---------------------------------------------------------------------------
 
-function LandscapeOverlay() {
+interface LandscapeOverlayProps {
+  gradientIntensity?: number;
+}
+
+function LandscapeOverlay({ gradientIntensity = 0.65 }: LandscapeOverlayProps) {
+  const gi = Math.max(0, Math.min(1, gradientIntensity));
   return (
     <div style={{
       position: "absolute",
@@ -173,10 +197,39 @@ function LandscapeOverlay() {
       left: 0,
       right: 0,
       height: "35%",
-      background: "linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 100%)",
+      background: `linear-gradient(to top, rgba(0,0,0,${gi.toFixed(2)}) 0%, transparent 100%)`,
       pointerEvents: "none",
     }} />
   );
+}
+
+// ---------------------------------------------------------------------------
+// Watermark overlay — M44: admin ayarlı kanal/marka watermark
+// ---------------------------------------------------------------------------
+
+interface WatermarkOverlayProps {
+  text: string;
+  opacity?: number;
+  position?: "top-left" | "top-right" | "bottom-left" | "bottom-right";
+}
+
+function WatermarkOverlay({ text, opacity = 0.3, position = "bottom-right" }: WatermarkOverlayProps) {
+  if (!text) return null;
+
+  const posStyle: React.CSSProperties = {
+    position: "absolute",
+    ...(position.includes("top") ? { top: "3%" } : { bottom: "3%" }),
+    ...(position.includes("left") ? { left: "3%" } : { right: "3%" }),
+    opacity,
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#FFFFFF",
+    textShadow: "0 1px 4px rgba(0,0,0,0.8)",
+    letterSpacing: "0.06em",
+    pointerEvents: "none" as const,
+  };
+
+  return <div style={posStyle}>{text}</div>;
 }
 
 // ---------------------------------------------------------------------------
@@ -196,11 +249,56 @@ interface SceneComponentProps {
   };
   isPortrait: boolean;
   showTitle?: string;
+  /** M44 props */
+  imageKenBurns?: boolean;
+  imageTransition?: "crossfade" | "cut" | "slide" | "zoom";
+  bgColor?: string;
+  gradientIntensity?: number;
+  titleFontSize?: number;
+  titleColor?: string;
+  watermarkText?: string;
+  watermarkOpacity?: number;
+  watermarkPosition?: "top-left" | "top-right" | "bottom-left" | "bottom-right";
 }
 
-function SceneComponent({ scene, subtitleProps, isPortrait, showTitle }: SceneComponentProps) {
+function SceneComponent({
+  scene, subtitleProps, isPortrait, showTitle,
+  imageKenBurns = true, imageTransition = "crossfade",
+  bgColor = "#0a0a0a", gradientIntensity = 0.65,
+  titleFontSize = 30, titleColor = "#FFFFFF",
+  watermarkText = "", watermarkOpacity = 0.3, watermarkPosition = "bottom-right",
+}: SceneComponentProps) {
+  const frame = useCurrentFrame();
+  const { fps, durationInFrames } = useVideoConfig();
+
+  // Ken Burns: yavaş zoom (1.0 → 1.08 arası lerp)
+  const kenBurnsScale = imageKenBurns
+    ? interpolate(frame, [0, durationInFrames], [1.0, 1.08], { extrapolateRight: "clamp" })
+    : 1.0;
+
+  // Transition: sahne girişinde fade-in efekti
+  const transitionFrames = Math.round(fps * 0.5);
+  let entryOpacity = 1;
+  if (imageTransition === "crossfade") {
+    entryOpacity = interpolate(frame, [0, transitionFrames], [0, 1], { extrapolateRight: "clamp" });
+  } else if (imageTransition === "slide") {
+    entryOpacity = interpolate(frame, [0, Math.round(transitionFrames * 0.6)], [0, 1], { extrapolateRight: "clamp" });
+  } else if (imageTransition === "zoom") {
+    entryOpacity = interpolate(frame, [0, transitionFrames], [0, 1], { extrapolateRight: "clamp" });
+  }
+
+  const slideX = imageTransition === "slide"
+    ? interpolate(frame, [0, transitionFrames], [40, 0], { extrapolateRight: "clamp" })
+    : 0;
+
+  const zoomEntry = imageTransition === "zoom"
+    ? interpolate(frame, [0, transitionFrames], [1.15, 1.0], { extrapolateRight: "clamp" })
+    : 1.0;
+
+  const totalScale = kenBurnsScale * zoomEntry;
+
   return (
-    <AbsoluteFill style={{ backgroundColor: "#0a0a0a" }}>
+    <AbsoluteFill style={{ backgroundColor: bgColor }}>
       {/* Arka plan görseli */}
       {scene.image_path && (
         <Img
@@ -209,8 +307,9 @@ function SceneComponent({ scene, subtitleProps, isPortrait, showTitle }: SceneCo
             width: "100%",
             height: "100%",
             objectFit: "cover",
-            // Portrait'te görsel üst-orta odaklı — yüz/nesne framing için
             objectPosition: isPortrait ? "center 20%" : "center center",
+            opacity: entryOpacity,
+            transform: `scale(${totalScale}) translateX(${slideX}px)`,
           }}
         />
       )}
@@ -230,7 +329,13 @@ function SceneComponent({ scene, subtitleProps, isPortrait, showTitle }: SceneCo
       )}
 
       {/* Gradient overlay */}
-      {isPortrait ? <PortraitOverlay title={showTitle} /> : <LandscapeOverlay />}
+      {isPortrait
+        ? <PortraitOverlay title={showTitle} gradientIntensity={gradientIntensity} titleFontSize={titleFontSize} titleColor={titleColor} />
+        : <LandscapeOverlay gradientIntensity={gradientIntensity} />
+      }
+
+      {/* Watermark */}
+      <WatermarkOverlay text={watermarkText} opacity={watermarkOpacity} position={watermarkPosition} />
 
       {/* Altyazı katmanı — whisper varsa karaoke animasyonlu, yoksa SRT cursor fallback */}
       <KaraokeSubtitle
@@ -262,6 +367,17 @@ export function StandardVideoComposition(props: StandardVideoProps) {
     renderFormat,
     karaokeAnimPreset,
     title,
+    // M44 props
+    imageKenBurns = true,
+    imageTransition = "crossfade",
+    bgColor = "#0a0a0a",
+    showTitleOverlay = true,
+    titleFontSize = 30,
+    titleColor = "#FFFFFF",
+    gradientIntensity = 0.65,
+    watermarkText = "",
+    watermarkOpacity = 0.3,
+    watermarkPosition = "bottom-right",
   } = props;
 
   // M41c: Portrait detection — renderFormat prop veya canvas boyutundan
@@ -286,7 +402,7 @@ export function StandardVideoComposition(props: StandardVideoProps) {
   };
 
   return (
-    <AbsoluteFill style={{ backgroundColor: "#0a0a0a" }}>
+    <AbsoluteFill style={{ backgroundColor: bgColor }}>
       {scenes.map((scene, index) => {
         const durationFrames = Math.round(scene.duration_seconds * fps);
         if (durationFrames <= 0) return null;
@@ -301,8 +417,16 @@ export function StandardVideoComposition(props: StandardVideoProps) {
               scene={scene}
               subtitleProps={subtitleProps}
               isPortrait={isPortrait}
-              // Portrait'te ilk sahnede başlık göster
-              showTitle={isPortrait && index === 0 ? title : undefined}
+              showTitle={showTitleOverlay && index === 0 ? title : undefined}
+              imageKenBurns={imageKenBurns}
+              imageTransition={imageTransition}
+              bgColor={bgColor}
+              gradientIntensity={gradientIntensity}
+              titleFontSize={titleFontSize}
+              titleColor={titleColor}
+              watermarkText={watermarkText}
+              watermarkOpacity={watermarkOpacity}
+              watermarkPosition={watermarkPosition}
             />
           </Sequence>
         );
