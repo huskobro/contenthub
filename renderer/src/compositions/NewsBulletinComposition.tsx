@@ -331,6 +331,10 @@ export const NewsBulletinComposition: React.FC<NewsBulletinProps> = (props) => {
   // ── Her item için frame ofseti ──────────────────────────────────────────
   const HEADLINES_START = fps * 2; // ilk 2s başlık kartı
 
+  // Audio timeline cursor — SRT/wordTimings global audio zamanları kullanır.
+  // Visual timeline ise HEADLINES_START + CATEGORY_FLASH_DUR ekler.
+  // Bu iki timeline FARKLIDIR — subtitle filtreleme audio timeline'ı kullanmalı.
+  let audioCursor = 0;
   let cumulativeOffset = HEADLINES_START;
   const sequenced = items.map((item, idx) => {
     const durationFrames = Math.max(Math.round(item.durationSeconds * fps), fps);
@@ -338,11 +342,14 @@ export const NewsBulletinComposition: React.FC<NewsBulletinProps> = (props) => {
     const contentFrom = cumulativeOffset + CATEGORY_FLASH_DUR;
     cumulativeOffset += CATEGORY_FLASH_DUR + durationFrames;
 
-    // Per-item subtitle entries (item's own Sequence scope, 0-indexed frames)
-    const contentFromSec = contentFrom / fps;
-    const contentToSec   = (contentFrom + durationFrames) / fps;
+    // Per-item subtitle entries — AUDIO timeline zamanları kullanılmalı
+    // SRT/wordTimings global audio cursor'a göre zamanlanmış (scene_1 + scene_2 + ...)
+    // Visual timeline farklı (HEADLINES_START + flash padding ekleniyor)
+    const audioFromSec = audioCursor / fps;
+    const audioToSec   = (audioCursor + durationFrames) / fps;
+    audioCursor += durationFrames;
     const itemSubtitles  = srtRaw.length > 0
-      ? buildItemSubtitles(srtRaw, wt, contentFromSec, contentToSec, fps)
+      ? buildItemSubtitles(srtRaw, wt, audioFromSec, audioToSec, fps)
       : [];
 
     return { item, flashFrom, contentFrom, durationFrames, idx, itemSubtitles };
