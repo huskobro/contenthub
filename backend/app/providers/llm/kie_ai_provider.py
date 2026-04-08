@@ -8,8 +8,9 @@ HTTP çağrısı ve yanıt ayrıştırma _openai_compat_base.py üzerinden yapı
 bu dosyada yalnızca kie.ai'ye özgü yapılandırma ve provider kimliği yer alır.
 
 Referanslar:
-- kie.ai API: https://kie.ai/api — OpenAI uyumlu /v1/chat/completions
-- Model: gemini-2.5-flash
+- kie.ai API: https://docs.kie.ai/market/gemini/gemini-2-5-flash
+- Base URL : https://api.kie.ai/gemini-2.5-flash/v1
+- Model    : gemini-2.5-flash-openai  (request body "model" field'ı)
 
 UYARI: Bu dosyaya API anahtarı GÖMÜLMEMELİDİR.
        Anahtarlar yalnızca app.core.config.settings üzerinden okunur.
@@ -26,9 +27,11 @@ from app.providers.llm._openai_compat_base import openai_compat_chat_completions
 logger = logging.getLogger(__name__)
 
 # kie.ai OpenAI uyumlu endpoint
-# Doğru format: https://api.kie.ai/{model}/v1 (her model kendi prefix'ini alır)
+# Base URL: https://api.kie.ai/gemini-2.5-flash/v1  (prefix sabit, path değişmez)
+# Model adı: gemini-2.5-flash-openai  (request body'deki "model" field'ı)
+# Ref: https://docs.kie.ai/market/gemini/gemini-2-5-flash
 _KIE_AI_BASE_URL = "https://api.kie.ai/gemini-2.5-flash/v1"
-_DEFAULT_MODEL = "gemini-2.5-flash"
+_DEFAULT_MODEL = "gemini-2.5-flash-openai"
 _DEFAULT_TEMPERATURE = 0.7
 
 
