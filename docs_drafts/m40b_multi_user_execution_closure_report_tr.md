@@ -129,4 +129,5 @@ workspace/
 
 ## 9. Commit Hash ve Push Durumu
 
-_(commit + push yapıldıktan sonra doldurulacak)_
+**Commit:** `67fcad8`
+**Push:** main → origin/main başarılı

@@ -312,7 +312,8 @@ class TestPerCategoryRenderOutputs:
         # ekonomi: 2 haber
         eko = next(o for o in outputs if o["output_key"] == "category_ekonomi")
         assert len(eko["items"]) == 2
-        assert eko["total_duration_seconds"] == 22.0
+        # 22.0s audio + 2 items × 1.25s CATEGORY_FLASH_DUR = 24.5s
+        assert eko["total_duration_seconds"] == 24.5
 
         # spor: 1 haber
         spor = next(o for o in outputs if o["output_key"] == "category_spor")

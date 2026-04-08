@@ -177,7 +177,11 @@ def _build_render_outputs(
     Bilinmeyen mod → combined fallback, WARNING logu.
     """
     def _make_output(key: str, label: str, items: list[dict], filename: str) -> dict:
-        total_dur = sum(i.get("durationSeconds", 0.0) for i in items)
+        # Audio süreleri + CATEGORY_FLASH_DUR (renderer'daki her item öncesi flash)
+        _CATEGORY_FLASH_DUR_SEC = 1.25  # 75 frames @ 60fps
+        audio_dur = sum(i.get("durationSeconds", 0.0) for i in items)
+        flash_dur = _CATEGORY_FLASH_DUR_SEC * len(items)
+        total_dur = audio_dur + flash_dur
         return {
             "output_key": key,
             "output_label": label,
@@ -458,7 +462,16 @@ class BulletinCompositionExecutor(StepExecutor):
                 "sourceName": source_name,
             })
 
-        total_duration = sum(item.get("durationSeconds", 0.0) for item in props_items)
+        # Toplam süre: audio süreleri + renderer tarafındaki padding
+        # Renderer sabitleri (NewsBulletinComposition.tsx + Root.tsx ile senkron):
+        #   HEADLINES_START = fps * 2 = 2.0s (başlık kartı) — Root.tsx +2s olarak ekler
+        #   CATEGORY_FLASH_DUR = 75 frames @ 60fps = 1.25s (her item öncesi kategori flash)
+        # Root.tsx calculateMetadata totalSecs = raw + 2 → HEADLINES_START'ı karşılar
+        # Ama CATEGORY_FLASH_DUR'ları hesaba katmıyor → video erken kesiliyor
+        _CATEGORY_FLASH_DUR_SEC = 1.25  # 75 frames @ 60fps
+        audio_total = sum(item.get("durationSeconds", 0.0) for item in props_items)
+        flash_total = _CATEGORY_FLASH_DUR_SEC * len(props_items)
+        total_duration = audio_total + flash_total
         subtitles_srt = subtitle_metadata.get("srt_path")
         word_timing_path = subtitle_metadata.get("word_timing_path")
         timing_mode = subtitle_metadata.get("timing_mode", "cursor")

@@ -51,7 +51,7 @@ import {
 } from "./compositions/NewsBulletinStyleTest";
 import type { BulletinStyle } from "./templates/news-bulletin/components/StudioBackground";
 
-const FPS = 30;
+const FPS = 60;
 
 // Remotion v4: Zod kullanılmayan kayıtlar için ComponentType cast.
 const StandardVideoComponent =

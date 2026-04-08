@@ -74,13 +74,22 @@ class EventBus:
         for cid in dead_clients:
             self._subscribers.pop(cid, None)
 
-    async def subscribe(self, client_id: str) -> AsyncGenerator[str, None]:
+    async def subscribe(
+        self,
+        client_id: str,
+        heartbeat_interval: float = 25.0,
+    ) -> AsyncGenerator[str, None]:
         """
         Async generator that yields SSE-formatted strings for this client.
 
         Creates a per-subscriber queue. Yields messages until:
           - the sentinel value is received (unsubscribe was called), or
           - the generator is garbage-collected / closed by the caller.
+
+        Heartbeat: idle bağlantıların browser/proxy tarafından kesilmesini
+        engellemek için her heartbeat_interval saniyede bir SSE comment
+        mesajı (": heartbeat") gönderir. SSE spec'e göre comment satırları
+        istemci tarafından sessizce yok sayılır.
 
         Cleans up the queue on exit (normal or exceptional).
         """
@@ -89,7 +98,14 @@ class EventBus:
         logger.debug("SSE subscriber registered: %s", client_id)
         try:
             while True:
-                item = await queue.get()
+                try:
+                    item = await asyncio.wait_for(
+                        queue.get(), timeout=heartbeat_interval,
+                    )
+                except asyncio.TimeoutError:
+                    # Heartbeat — SSE comment line (istemci tarafından ignore edilir)
+                    yield ": heartbeat\n\n"
+                    continue
                 if item is _SENTINEL:
                     break
                 yield item
