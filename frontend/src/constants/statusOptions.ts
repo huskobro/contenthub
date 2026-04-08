@@ -12,6 +12,25 @@ export const SCAN_MODES = ["", "manual", "auto", "curated"] as const;
 /** Scan modes without the empty option (for required fields) */
 export const SCAN_MODES_REQUIRED = ["manual", "auto", "curated"] as const;
 
+// --- Source Category (visual style mapping) ---
+export const SOURCE_CATEGORIES = [
+  "", "breaking", "tech", "corporate", "sport", "finance",
+  "weather", "science", "entertainment", "dark",
+] as const;
+
+export const SOURCE_CATEGORY_LABELS: Record<string, string> = {
+  "": "— Seçiniz —",
+  breaking: "Son Dakika",
+  tech: "Teknoloji",
+  corporate: "Kurumsal",
+  sport: "Spor",
+  finance: "Finans",
+  weather: "Hava Durumu",
+  science: "Bilim/Teknik",
+  entertainment: "Eğlence/Magazin",
+  dark: "Gündem",
+};
+
 // --- Source Scan ---
 export const SCAN_STATUSES = ["queued", "running", "done", "failed", "cancelled"] as const;
 

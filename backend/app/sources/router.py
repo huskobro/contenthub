@@ -5,10 +5,30 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.session import get_db
 from app.audit.service import write_audit_log
 from app.visibility.dependencies import require_visible
-from .schemas import SourceCreate, SourceUpdate, SourceResponse
+from .schemas import SourceCreate, SourceUpdate, SourceResponse, VALID_SOURCE_CATEGORIES
 from . import service
 
 router = APIRouter(prefix="/sources", tags=["sources"], dependencies=[Depends(require_visible("panel:sources"))])
+
+
+@router.get("/category-options")
+async def get_category_options():
+    """M43: Kaynak kategori seçenekleri — görsel stil eşlemesi ile birebir."""
+    labels = {
+        "breaking": "Son Dakika",
+        "tech": "Teknoloji",
+        "corporate": "Kurumsal",
+        "sport": "Spor",
+        "finance": "Finans",
+        "weather": "Hava Durumu",
+        "science": "Bilim/Teknik",
+        "entertainment": "Eğlence/Magazin",
+        "dark": "Gündem",
+    }
+    return [
+        {"value": cat, "label": labels.get(cat, cat)}
+        for cat in VALID_SOURCE_CATEGORIES
+    ]
 
 
 @router.get("", response_model=List[SourceResponse])

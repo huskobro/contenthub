@@ -6,6 +6,8 @@ import {
   TRUST_LEVELS,
   SCAN_MODES,
   SOURCE_STATUSES,
+  SOURCE_CATEGORIES,
+  SOURCE_CATEGORY_LABELS,
 } from "../../constants/statusOptions";
 
 interface SourceFormProps {
@@ -147,7 +149,11 @@ export function SourceForm({
 
       <div className="mb-3">
         <label className="block text-sm font-semibold text-neutral-600 mb-1">Category</label>
-        <input className={inputCls} value={category} onChange={e => setCategory(e.target.value)} placeholder="general, tech ..." />
+        <select className={inputCls} value={category} onChange={e => setCategory(e.target.value)}>
+          {SOURCE_CATEGORIES.map(c => (
+            <option key={c} value={c}>{SOURCE_CATEGORY_LABELS[c] ?? c}</option>
+          ))}
+        </select>
       </div>
 
       <div className="mb-3">

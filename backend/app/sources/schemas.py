@@ -1,6 +1,13 @@
-from typing import Optional
+from typing import Optional, List
 from pydantic import BaseModel, field_validator, model_validator
 from datetime import datetime
+
+
+# M43: Geçerli kaynak kategorileri — görsel stil eşlemesi ile birebir
+VALID_SOURCE_CATEGORIES = [
+    "breaking", "tech", "corporate", "sport", "finance",
+    "weather", "science", "entertainment", "dark",
+]
 
 
 class SourceCreate(BaseModel):
@@ -28,6 +35,17 @@ class SourceCreate(BaseModel):
     def source_type_not_blank(cls, v: str) -> str:
         if not v.strip():
             raise ValueError("source_type must not be blank")
+        return v
+
+    @field_validator("category")
+    @classmethod
+    def category_must_be_valid(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None and v.strip():
+            if v.strip().lower() not in VALID_SOURCE_CATEGORIES:
+                raise ValueError(
+                    f"Geçersiz kategori: '{v}'. Geçerli değerler: {', '.join(VALID_SOURCE_CATEGORIES)}"
+                )
+            return v.strip().lower()
         return v
 
     @model_validator(mode="after")
@@ -60,6 +78,17 @@ class SourceUpdate(BaseModel):
     def name_not_blank(cls, v: Optional[str]) -> Optional[str]:
         if v is not None and not v.strip():
             raise ValueError("name must not be blank")
+        return v
+
+    @field_validator("category")
+    @classmethod
+    def category_must_be_valid(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None and v.strip():
+            if v.strip().lower() not in VALID_SOURCE_CATEGORIES:
+                raise ValueError(
+                    f"Geçersiz kategori: '{v}'. Geçerli değerler: {', '.join(VALID_SOURCE_CATEGORIES)}"
+                )
+            return v.strip().lower()
         return v
 
 
