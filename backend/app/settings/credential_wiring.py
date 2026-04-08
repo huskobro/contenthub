@@ -127,6 +127,14 @@ async def reinitialize_provider_for_credential(key: str, value: str) -> dict:
         logger.info("Credential %s icin provider reinit gerekmiyor.", key)
         return {"key": key, "action": "no_provider", "provider_id": None}
 
+    # Boş veya placeholder key — provider baslatma, zincirine ekleme
+    if not value or not value.strip() or value.strip() in ("abc", "sk-test-key-123", "placeholder"):
+        logger.info(
+            "Credential %s bos veya placeholder — provider atlaniyor.",
+            key,
+        )
+        return {"key": key, "action": "skipped", "provider_id": mapping["provider_id"]}
+
     capability = mapping["capability"]
     provider_id = mapping["provider_id"]
     factory_name = mapping["factory"]

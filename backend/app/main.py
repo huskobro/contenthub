@@ -173,17 +173,19 @@ async def lifespan(app: FastAPI):
         priority=0,
     )
     # LLM — fallback: OpenAI uyumlu generic (M3-C2 / M10-B)
-    # API key yoksa kaydedilmez; fallback zincirine girmiyor
-    if openai_key:
+    # Boş veya placeholder key ise kaydedilmez; fallback zincirine girmiyor
+    _OPENAI_PLACEHOLDERS = {"abc", "sk-test-key-123", "placeholder", ""}
+    openai_key_clean = (openai_key or "").strip()
+    if openai_key_clean and openai_key_clean not in _OPENAI_PLACEHOLDERS:
         provider_registry.register(
-            OpenAICompatProvider(api_key=openai_key, model=openai_model, temperature=openai_temperature, timeout=llm_timeout),
+            OpenAICompatProvider(api_key=openai_key_clean, model=openai_model, temperature=openai_temperature, timeout=llm_timeout),
             ProviderCapability.LLM,
             is_primary=False,
             priority=1,
         )
         logger.info("LLM fallback kaydedildi: openai_compat_%s", openai_model)
     else:
-        logger.info("OpenAI API key bos — LLM fallback kaydedilmedi.")
+        logger.info("OpenAI API key bos veya placeholder — LLM fallback kaydedilmedi.")
 
     # TTS — primary: Microsoft Edge TTS
     provider_registry.register(
