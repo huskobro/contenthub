@@ -1,0 +1,17 @@
+{
+  "language": "tr",
+  "scenes": [
+    {
+      "scene_number": 1,
+      "narration": "Video oyunu geliştiricisi Rockstar Games'in sahibi Take-Two Interactive, yapay zeka bölümü başkanı Luke Dicken'ı işten çıkardı. Dicken ile birlikte, yapay zeka ekibindeki bazı çalışanların da görevine son verildi. Bu ayrılıklar, merakla beklenen Grand Theft Auto Altı oyununun geliştirme süreci öncesinde yaşandı.",
+      "duration_seconds": 19,
+      "headline": "Take-Two'da Yapay Zeka Bölümünde İşten Çıkarmalar"
+    },
+    {
+      "scene_number": 2,
+      "narration": "Adana'da öğleden sonra şiddetli yağış etkili oldu. Kent genelinde aniden başlayan sağanak, kısa sürede yerini dolu yağışına bıraktı. Dolu taneleriyle birlikte cadde ve sokaklar kısa sürede beyaza büründü. Yağış nedeniyle trafikte de aksamalar yaşandı.",
+      "duration_seconds": 19,
+      "headline": "Adana'da Sağanak ve Dolu Yağışı Etkili Oldu"
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "items": [
+    {
+      "item_number": 1,
+      "headline": "Artemis İki'de ikinci kriz: Astronot Dünya'dan yardım istedi",
+      "narration": "NASA'nın insanlı Ay görevi Artemis İki'de beklenmedik gelişmeler yaşanıyor. Uzay aracının tuvalet sistemindeki arızanın ardından yeni bir sorun baş gösterdi. Astronotlar, bu kez bir Microsoft Outlook problemi ile karşılaştı. Teknik aksaklığın giderilmesi için Dünya'daki görev kontrol merkezinden yardım istendi.",
+      "duration_seconds": 17,
+      "image_url": null,
+      "image_urls": [],
+      "published_at": "2026-04-03T10:02:08",
+      "source_id": "6087188e-182f-4c45-9f7c-2a1946a6efca",
+      "source_name": "Mynet Teknoloji"
+    },
+    {
+      "item_number": 2,
+      "headline": "Google, yeni Gemma dört yapay zeka modellerini tanıttı",
+      "narration": "Google, yapay zeka teknolojilerinde önemli bir adım attı. Şirket, Gemma dört adını verdiği yeni yapay zeka modellerini tanıttı. Bu modeller, Gemini üç teknolojisi temel alınarak geliştirildi. Gemma dört ailesi, dört farklı sürüm ile kullanıcılara sunulmaya hazırlanıyor.",
+      "duration_seconds": 16,
+      "image_url": null,
+      "image_urls": [],
+      "published_at": "2026-04-03T10:53:39",
+      "source_id": "6087188e-182f-4c45-9f7c-2a1946a6efca",
+      "source_name": "Mynet Teknoloji"
+    },
+    {
+      "item_number": 3,
+      "headline": "Koşu saati alırken dikkat edilmesi gerekenler",
+      "narration": "Bahar aylarının gelmesiyle koşu aktivitesi popülerleşiyor. Koşu saati seçimi, performans için önem taşıyor. Bir koşu saati alırken bazı özelliklere dikkat edilmeli. Cihazın sadece adım saymaması, daha fazlasını sunması beklenir. Performans odaklı bir seçim yapmak, doğru antrenman için kritik.",
+      "duration_seconds": 18,
+      "image_url": null,
+      "image_urls": [],
+      "published_at": "2026-04-03T11:56:41",
+      "source_id": "6087188e-182f-4c45-9f7c-2a1946a6efca",
+      "source_name": "Mynet Teknoloji"
+    }
+  ],
+  "transitions": [],
+  "total_duration_seconds": 51,
+  "language": "tr",
+  "bulletin_id": "670af1aa-105e-4b79-8c7d-4ffc77d03651"
+}

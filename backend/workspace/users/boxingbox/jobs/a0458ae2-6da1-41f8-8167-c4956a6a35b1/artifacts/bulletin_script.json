@@ -1,0 +1,60 @@
+{
+  "items": [
+    {
+      "item_number": 1,
+      "headline": "Artemis İki Görevinde Tuvalet Sorunu Yaşandı",
+      "narration": "Artemis İki görevi astronotları uzayda tuvalet sorunu yaşadı. Uzay aracındaki tuvalet sisteminde yine arıza meydana geldi. Atık tahliyesi yapılamadığı ve kötü koku oluştuğu bildirildi. Bu durum, astronotların görev konforunu olumsuz etkiliyor. Daha önceki uçuşlarda da benzer sorunlar yaşanmıştı.",
+      "duration_seconds": 17,
+      "image_url": "https://imgrosetta.mynet.com.tr/file/24080557/24080557-1200x675.jpg",
+      "image_urls": [
+        "https://imgrosetta.mynet.com.tr/file/24080557/24080557-1200x675.jpg"
+      ],
+      "published_at": "2026-04-05T07:28:32",
+      "source_id": "6087188e-182f-4c45-9f7c-2a1946a6efca",
+      "source_name": "Mynet Teknoloji"
+    },
+    {
+      "item_number": 2,
+      "headline": "PlayStation Studios Web Sitesinden Bilgisayar İbarelerini Kaldırdı",
+      "narration": "PlayStation Studios, resmi web sitesini güncelledi. Stüdyo açıklamalarından biri dışındaki tüm \"bilgisayar\" ibareleri kaldırıldı. Bu değişiklik, Sony'nin büyük bütçeli oyunlarını bilgisayar platformuna sunma stratejisini gözden geçirdiği iddialarını gündeme getirdi. Şirketin yeni dönemde farklı bir yol izleyebileceği belirtiliyor.",
+      "duration_seconds": 20,
+      "image_url": "https://imgrosetta.mynet.com.tr/file/24026926/24026926-1200x675.jpg",
+      "image_urls": [
+        "https://imgrosetta.mynet.com.tr/file/24026926/24026926-1200x675.jpg"
+      ],
+      "published_at": "2026-04-05T08:50:37",
+      "source_id": "6087188e-182f-4c45-9f7c-2a1946a6efca",
+      "source_name": "Mynet Teknoloji"
+    },
+    {
+      "item_number": 3,
+      "headline": "Lise Öğrencileri Mobil Oyun Bağımlılığı Uygulaması Geliştirdi",
+      "narration": "Bolu'da lise öğrencileri önemli bir projeye imza attı. Mobil oyun bağımlılığı riskini analiz eden yapay zeka destekli bir uygulama geliştirdiler. Bu uygulama, kullanıcı yorumlarını inceleyerek riskli durumları belirliyor. Böylece ailelere, öğretmenlere ve uzmanlara erken uyarı sağlıyor.",
+      "duration_seconds": 19,
+      "image_url": "https://imgrosetta.mynet.com.tr/file/24083026/24083026-1200x675.jpg",
+      "image_urls": [
+        "https://imgrosetta.mynet.com.tr/file/24083026/24083026-1200x675.jpg"
+      ],
+      "published_at": "2026-04-05T10:05:43",
+      "source_id": "6087188e-182f-4c45-9f7c-2a1946a6efca",
+      "source_name": "Mynet Teknoloji"
+    },
+    {
+      "item_number": 4,
+      "headline": "Sosyal Medya Düzenlemesi Teklifi Meclis Gündeminde",
+      "narration": "Türkiye Büyük Millet Meclisi Genel Kurulu önemli bir teklifi görüşecek. Sosyal Hizmetler Kanunu'nda değişiklikler öngören yasa teklifi gündemde. Teklife göre, sosyal medya sağlayıcıları on beş yaş altındaki çocuklara hizmet veremeyecek. Bu düzenleme, çocukların çevrimiçi güvenliğini artırmayı hedefliyor.",
+      "duration_seconds": 19,
+      "image_url": "https://imgrosetta.mynet.com.tr/file/19280952/19280952-1200x675.jpg",
+      "image_urls": [
+        "https://imgrosetta.mynet.com.tr/file/19280952/19280952-1200x675.jpg"
+      ],
+      "published_at": "2026-04-05T10:10:24",
+      "source_id": "6087188e-182f-4c45-9f7c-2a1946a6efca",
+      "source_name": "Mynet Teknoloji"
+    }
+  ],
+  "transitions": [],
+  "total_duration_seconds": 75,
+  "language": "tr",
+  "bulletin_id": "8cfceabf-0447-49fc-8516-cfa09b4edaff"
+}

@@ -1,0 +1,17 @@
+{
+  "language": "tr",
+  "scenes": [
+    {
+      "scene_number": 1,
+      "narration": "Teknoloji devi Apple'ın yeni bir strateji izlediği belirtiliyor. Şirket, kâr kaybını göze alarak piyasadaki tüm mobil DRAM'leri yüksek fiyatlardan satın alıyor. Bu hamle, Apple'ın pazar payını önemli ölçüde artırabilir. Piyasadaki DRAM kıtlığına rağmen, Apple bu yolla rekabette öne geçmeyi amaçlıyor.",
+      "duration_seconds": 15,
+      "headline": "Apple'ın DRAM Stratejisi"
+    },
+    {
+      "scene_number": 2,
+      "narration": "Bilim insanları yüksek sıcaklığa dayanıklı yeni bir çip geliştirdi. Bu elektronik bellek cihazı, yedi yüz santigrat derecede dahi bozulmadan çalışabiliyor. Bu sıcaklık, erimiş lav sıcaklığından bile daha yüksek. Grafen, hafniyum oksit ve tungsten kullanılarak keşfedildi. Teknoloji, uzay görevleri ve yapay zeka sistemlerinde önemli bir potansiyel taşıyor.",
+      "duration_seconds": 18,
+      "headline": "Yedi Yüz Derece Sıcaklığa Dayanıklı Çip Geliştirildi"
+    }
+  ]
+}

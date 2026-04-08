@@ -1,0 +1,25 @@
+{
+  "scenes": [
+    {
+      "scene_number": 1,
+      "audio_path": "artifacts/audio/scene_1.mp3",
+      "narration": "NASA'nın insanlı Ay görevi Artemis İki'de beklenmedik gelişmeler yaşanıyor. Uzay aracının tuvalet sistemindeki arızanın ardından yeni bir sorun baş gösterdi. Astronotlar, bu kez bir Microsoft Outlook problemi ile karşılaştı. Teknik aksaklığın giderilmesi için Dünya'daki görev kontrol merkezinden yardım istendi.",
+      "duration_seconds": 23.448
+    },
+    {
+      "scene_number": 2,
+      "audio_path": "artifacts/audio/scene_2.mp3",
+      "narration": "Google, yapay zeka teknolojilerinde önemli bir adım attı. Şirket, Gemma dört adını verdiği yeni yapay zeka modellerini tanıttı. Bu modeller, Gemini üç teknolojisi temel alınarak geliştirildi. Gemma dört ailesi, dört farklı sürüm ile kullanıcılara sunulmaya hazırlanıyor.",
+      "duration_seconds": 21.096
+    },
+    {
+      "scene_number": 3,
+      "audio_path": "artifacts/audio/scene_3.mp3",
+      "narration": "Bahar aylarının gelmesiyle koşu aktivitesi popülerleşiyor. Koşu saati seçimi, performans için önem taşıyor. Bir koşu saati alırken bazı özelliklere dikkat edilmeli. Cihazın sadece adım saymaması, daha fazlasını sunması beklenir. Performans odaklı bir seçim yapmak, doğru antrenman için kritik.",
+      "duration_seconds": 24.888
+    }
+  ],
+  "total_duration_seconds": 69.43,
+  "voice": "tr-TR-AhmetNeural",
+  "language": "tr"
+}

@@ -1,0 +1,41 @@
+{
+  "items": [
+    {
+      "item_number": 1,
+      "headline": "Artemis İki görevi, Ay'a ulaştı.",
+      "narration": "Artemis İki görevi Ay'ın etki alanına girdi. Dört kişilik mürettebat, bin dokuz yüz yetmiş ikiden bu yana Ay eşiğini geçen ilk insanlar oldu. Astronotlar, Dünya'dan dört yüz yedi bin kilometre uzaklaşarak Apollo On Üç'ün rekorunu kıracak. Orion uzay aracı Ay'ın karanlık yüzüne geçtiğinde Dünya ile iletişim kesilecek. Bu tarihi anlarda ekip, bir Güneş tutulmasına da tanıklık edecek. Netflix, bu özel geçişi canlı yayınlayacak.",
+      "duration_seconds": 25,
+      "image_url": null,
+      "image_urls": [],
+      "published_at": "2026-04-06T06:27:53",
+      "source_id": "0de64d9d-0403-47d7-86e4-65bcf468ae37",
+      "source_name": "Mynet Son Dakika"
+    },
+    {
+      "item_number": 2,
+      "headline": "Katlanabilir iPhone Fold için yeni bir iddia ortaya atıldı.",
+      "narration": "Katlanabilir iPhone Fold hakkında yeni bir iddia ortaya çıktı. Çin kaynaklı bilgilere göre cihaz, üç boyutlu baskılı bir menteşe kullanacak. Bu menteşe, katlanabilir ekrandaki izi en aza indirmeyi hedefliyor. Daha önce cihazda sıvı metal ve çift katmanlı cam bulunacağı da söylenmişti.",
+      "duration_seconds": 25,
+      "image_url": null,
+      "image_urls": [],
+      "published_at": "2026-04-06T07:14:45",
+      "source_id": "0de64d9d-0403-47d7-86e4-65bcf468ae37",
+      "source_name": "Mynet Son Dakika"
+    },
+    {
+      "item_number": 3,
+      "headline": "Xiaomi On Sekiz Pro'dan yeni sızıntı.",
+      "narration": "Eylül iki bin yirmi altıda piyasaya sürülecek Xiaomi On Sekiz serisi hakkında yeni bilgiler sızdırıldı. Sızıntıya göre, Xiaomi On Sekiz Pro ve Pro Max modelleri arka ekrana sahip olacak. Bu ekran, yapay zeka destekli bir akıllı pencere işlevi görecek. Benzer bir özellik Xiaomi On Yedi Pro modelinde de yer alıyordu.",
+      "duration_seconds": 25,
+      "image_url": null,
+      "image_urls": [],
+      "published_at": "2026-04-06T08:38:54",
+      "source_id": "0de64d9d-0403-47d7-86e4-65bcf468ae37",
+      "source_name": "Mynet Son Dakika"
+    }
+  ],
+  "transitions": [],
+  "total_duration_seconds": 75,
+  "language": "tr",
+  "bulletin_id": "3b3e8d19-4383-434a-8fb4-b3fbdb7d6fbb"
+}

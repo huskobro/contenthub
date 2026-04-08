@@ -1,0 +1,210 @@
+{
+  "job_id": "b0102188-7998-4e9c-85a7-5eda343bcf7d",
+  "module_id": "news_bulletin",
+  "language": "tr",
+  "composition_id": "NewsBulletin",
+  "render_mode": "combined",
+  "render_outputs": [
+    {
+      "output_key": "combined",
+      "output_label": "Düzce'de Siyasi Birlik Çağrısı, Kocaeli'de Ölümcül Kaza",
+      "composition_id": "NewsBulletin",
+      "items": [
+        {
+          "itemNumber": 1,
+          "headline": "Düzce Belediye Başkanı Özlü, siyasi parti il başkanlarını aynı masada buluşturdu",
+          "narration": "Düzce Belediye Başkanı Faruk Özlü, kentteki siyasi parti il başkanlarıyla bir araya geldi. Başkan Özlü, toplantıda diyalog ve iş birliği çağrısında bulundu. Düzce'nin geleceğine yön verecek projeleri anlattı. İçme suyu yatırımları ve Millet Bahçesi İki gibi çalışmalar öne çıktı. Katılımcılar, devam eden ve planlanan projelerin uygulama alanlarını yerinde inceledi. Bu toplantı, siyaset üstü bir iş birliği mesajı verdi.",
+          "audioPath": "artifacts/audio/scene_1.mp3",
+          "imagePath": null,
+          "imageTimeline": null,
+          "durationSeconds": 32.62,
+          "category": null,
+          "publishedAt": "2026-04-05T10:54:52",
+          "sourceId": "0de64d9d-0403-47d7-86e4-65bcf468ae37",
+          "sourceName": "Mynet Son Dakika"
+        },
+        {
+          "itemNumber": 2,
+          "headline": "Kocaeli'de dereye düşen kamyonetin sürücüsü öldü",
+          "narration": "Kocaeli'nin İzmit ilçesinde üzücü bir kaza meydana geldi. Bir kamyonet dereye düştü. Olayda kamyonet sürücüsü hayatını kaybetti. Ekipler kısa sürede olay yerine ulaştı. Kazayla ilgili detaylı inceleme başlatıldı. Kaza yerinde güvenlik önlemleri alındı.",
+          "audioPath": "artifacts/audio/scene_2.mp3",
+          "imagePath": null,
+          "imageTimeline": null,
+          "durationSeconds": 22.49,
+          "category": null,
+          "publishedAt": "2026-04-05T14:18:00",
+          "sourceId": "0de64d9d-0403-47d7-86e4-65bcf468ae37",
+          "sourceName": "Mynet Son Dakika"
+        }
+      ],
+      "suggested_filename": "output.mp4",
+      "total_duration_seconds": 55.11,
+      "props": {
+        "bulletinTitle": "Düzce'de Siyasi Birlik Çağrısı, Kocaeli'de Ölümcül Kaza",
+        "items": [
+          {
+            "itemNumber": 1,
+            "headline": "Düzce Belediye Başkanı Özlü, siyasi parti il başkanlarını aynı masada buluşturdu",
+            "narration": "Düzce Belediye Başkanı Faruk Özlü, kentteki siyasi parti il başkanlarıyla bir araya geldi. Başkan Özlü, toplantıda diyalog ve iş birliği çağrısında bulundu. Düzce'nin geleceğine yön verecek projeleri anlattı. İçme suyu yatırımları ve Millet Bahçesi İki gibi çalışmalar öne çıktı. Katılımcılar, devam eden ve planlanan projelerin uygulama alanlarını yerinde inceledi. Bu toplantı, siyaset üstü bir iş birliği mesajı verdi.",
+            "audioPath": "artifacts/audio/scene_1.mp3",
+            "imagePath": null,
+            "imageTimeline": null,
+            "durationSeconds": 32.62,
+            "category": null,
+            "publishedAt": "2026-04-05T10:54:52",
+            "sourceId": "0de64d9d-0403-47d7-86e4-65bcf468ae37",
+            "sourceName": "Mynet Son Dakika"
+          },
+          {
+            "itemNumber": 2,
+            "headline": "Kocaeli'de dereye düşen kamyonetin sürücüsü öldü",
+            "narration": "Kocaeli'nin İzmit ilçesinde üzücü bir kaza meydana geldi. Bir kamyonet dereye düştü. Olayda kamyonet sürücüsü hayatını kaybetti. Ekipler kısa sürede olay yerine ulaştı. Kazayla ilgili detaylı inceleme başlatıldı. Kaza yerinde güvenlik önlemleri alındı.",
+            "audioPath": "artifacts/audio/scene_2.mp3",
+            "imagePath": null,
+            "imageTimeline": null,
+            "durationSeconds": 22.49,
+            "category": null,
+            "publishedAt": "2026-04-05T14:18:00",
+            "sourceId": "0de64d9d-0403-47d7-86e4-65bcf468ae37",
+            "sourceName": "Mynet Son Dakika"
+          }
+        ],
+        "subtitlesSrt": "/Users/huseyincoskun/Downloads/AntigravityProje/ContentHub/backend/workspace/b0102188-7998-4e9c-85a7-5eda343bcf7d/artifacts/subtitles.srt",
+        "wordTimingPath": "/Users/huseyincoskun/Downloads/AntigravityProje/ContentHub/backend/workspace/b0102188-7998-4e9c-85a7-5eda343bcf7d/artifacts/word_timing.json",
+        "timingMode": "whisper_word",
+        "subtitleStyle": {
+          "preset_id": "clean_white",
+          "preset_fallback_used": false,
+          "label": "Temiz Beyaz",
+          "font_size": 36,
+          "font_weight": "600",
+          "text_color": "#FFFFFF",
+          "active_color": "#FFD700",
+          "background": "rgba(0,0,0,0.35)",
+          "outline_width": 2,
+          "outline_color": "#000000",
+          "line_height": 1.4
+        },
+        "lowerThirdStyle": "broadcast",
+        "renderMode": "combined",
+        "totalDurationSeconds": 55.11,
+        "language": "tr",
+        "bulletinStyle": "breaking",
+        "networkName": "ContentHub Haber",
+        "showTicker": true,
+        "tickerItems": null,
+        "metadata": {
+          "title": "Düzce'de Siyasi Birlik Çağrısı, Kocaeli'de Ölümcül Kaza",
+          "description": "Düzce Belediye Başkanı Faruk Özlü, kentteki siyasi parti il başkanlarını bir araya getirerek diyalog ve iş birliği çağrısında bulundu. Kocaeli'nin İzmit ilçesinde ise dereye düşen kamyonetin sürücüsü hayatını kaybetti.",
+          "tags": [
+            "haber",
+            "gündem",
+            "son dakika",
+            "Düzce",
+            "Faruk Özlü",
+            "siyaset",
+            "Kocaeli",
+            "trafik kazası",
+            "ölümcül kaza",
+            "kamyonet kazası"
+          ],
+          "hashtags": [
+            "#haber",
+            "#gündem",
+            "#sondakika",
+            "#Düzce",
+            "#Kocaeli"
+          ]
+        }
+      }
+    }
+  ],
+  "props": {
+    "bulletinTitle": "Düzce'de Siyasi Birlik Çağrısı, Kocaeli'de Ölümcül Kaza",
+    "items": [
+      {
+        "itemNumber": 1,
+        "headline": "Düzce Belediye Başkanı Özlü, siyasi parti il başkanlarını aynı masada buluşturdu",
+        "narration": "Düzce Belediye Başkanı Faruk Özlü, kentteki siyasi parti il başkanlarıyla bir araya geldi. Başkan Özlü, toplantıda diyalog ve iş birliği çağrısında bulundu. Düzce'nin geleceğine yön verecek projeleri anlattı. İçme suyu yatırımları ve Millet Bahçesi İki gibi çalışmalar öne çıktı. Katılımcılar, devam eden ve planlanan projelerin uygulama alanlarını yerinde inceledi. Bu toplantı, siyaset üstü bir iş birliği mesajı verdi.",
+        "audioPath": "http://127.0.0.1:64207/artifacts/audio/scene_1.mp3",
+        "imagePath": null,
+        "imageTimeline": null,
+        "durationSeconds": 32.62,
+        "category": null,
+        "publishedAt": "2026-04-05T10:54:52",
+        "sourceId": "0de64d9d-0403-47d7-86e4-65bcf468ae37",
+        "sourceName": "Mynet Son Dakika"
+      },
+      {
+        "itemNumber": 2,
+        "headline": "Kocaeli'de dereye düşen kamyonetin sürücüsü öldü",
+        "narration": "Kocaeli'nin İzmit ilçesinde üzücü bir kaza meydana geldi. Bir kamyonet dereye düştü. Olayda kamyonet sürücüsü hayatını kaybetti. Ekipler kısa sürede olay yerine ulaştı. Kazayla ilgili detaylı inceleme başlatıldı. Kaza yerinde güvenlik önlemleri alındı.",
+        "audioPath": "http://127.0.0.1:64207/artifacts/audio/scene_2.mp3",
+        "imagePath": null,
+        "imageTimeline": null,
+        "durationSeconds": 22.49,
+        "category": null,
+        "publishedAt": "2026-04-05T14:18:00",
+        "sourceId": "0de64d9d-0403-47d7-86e4-65bcf468ae37",
+        "sourceName": "Mynet Son Dakika"
+      }
+    ],
+    "subtitlesSrt": "/Users/huseyincoskun/Downloads/AntigravityProje/ContentHub/backend/workspace/b0102188-7998-4e9c-85a7-5eda343bcf7d/artifacts/subtitles.srt",
+    "wordTimingPath": "/Users/huseyincoskun/Downloads/AntigravityProje/ContentHub/backend/workspace/b0102188-7998-4e9c-85a7-5eda343bcf7d/artifacts/word_timing.json",
+    "timingMode": "whisper_word",
+    "subtitleStyle": {
+      "preset_id": "clean_white",
+      "preset_fallback_used": false,
+      "label": "Temiz Beyaz",
+      "font_size": 36,
+      "font_weight": "600",
+      "text_color": "#FFFFFF",
+      "active_color": "#FFD700",
+      "background": "rgba(0,0,0,0.35)",
+      "outline_width": 2,
+      "outline_color": "#000000",
+      "line_height": 1.4
+    },
+    "lowerThirdStyle": "broadcast",
+    "renderMode": "combined",
+    "totalDurationSeconds": 55.11,
+    "language": "tr",
+    "bulletinStyle": "breaking",
+    "networkName": "ContentHub Haber",
+    "showTicker": true,
+    "tickerItems": null,
+    "renderFormat": "portrait",
+    "showDate": true,
+    "showSource": false,
+    "metadata": {
+      "title": "Düzce'de Siyasi Birlik Çağrısı, Kocaeli'de Ölümcül Kaza",
+      "description": "Düzce Belediye Başkanı Faruk Özlü, kentteki siyasi parti il başkanlarını bir araya getirerek diyalog ve iş birliği çağrısında bulundu. Kocaeli'nin İzmit ilçesinde ise dereye düşen kamyonetin sürücüsü hayatını kaybetti.",
+      "tags": [
+        "haber",
+        "gündem",
+        "son dakika",
+        "Düzce",
+        "Faruk Özlü",
+        "siyaset",
+        "Kocaeli",
+        "trafik kazası",
+        "ölümcül kaza",
+        "kamyonet kazası"
+      ],
+      "hashtags": [
+        "#haber",
+        "#gündem",
+        "#sondakika",
+        "#Düzce",
+        "#Kocaeli"
+      ]
+    }
+  },
+  "render_status": "rendered",
+  "created_at": "2026-04-07T23:09:05.965543+00:00",
+  "output_path": "/Users/huseyincoskun/Downloads/AntigravityProje/ContentHub/backend/workspace/b0102188-7998-4e9c-85a7-5eda343bcf7d/artifacts/output.mp4",
+  "timing_mode_used": "cursor",
+  "word_timings_count": 0,
+  "duration_fallback_used": true,
+  "updated_at": "2026-04-07T23:09:38.888113+00:00"
+}

@@ -1,0 +1,8 @@
+{
+  "srt_path": "/Users/huseyincoskun/Downloads/AntigravityProje/ContentHub/backend/workspace/users/boxingbox/jobs/43e27e12-5c20-4c7b-95f7-9c555a37f348/artifacts/subtitles.srt",
+  "word_timing_path": "/Users/huseyincoskun/Downloads/AntigravityProje/ContentHub/backend/workspace/users/boxingbox/jobs/43e27e12-5c20-4c7b-95f7-9c555a37f348/artifacts/word_timing.json",
+  "segment_count": 3,
+  "total_duration_seconds": 64.92,
+  "language": "tr",
+  "timing_mode": "whisper_word"
+}

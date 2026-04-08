@@ -1,0 +1,252 @@
+{
+  "job_id": "b5f409b2-6bdf-4576-992a-e8e52b8b84ef",
+  "module_id": "news_bulletin",
+  "language": "tr",
+  "composition_id": "NewsBulletin",
+  "render_mode": "combined",
+  "render_outputs": [
+    {
+      "output_key": "combined",
+      "output_label": "Artemis II'de Yeni Sorun, Google AI ve Koşu Saati Rehberi",
+      "composition_id": "NewsBulletin",
+      "items": [
+        {
+          "itemNumber": 1,
+          "headline": "Artemis İki'de ikinci kriz: Astronot Dünya'dan yardım istedi",
+          "narration": "NASA'nın insanlı Ay görevi Artemis İki'de beklenmedik gelişmeler yaşanıyor. Uzay aracının tuvalet sistemindeki arızanın ardından yeni bir sorun baş gösterdi. Astronotlar, bu kez bir Microsoft Outlook problemi ile karşılaştı. Teknik aksaklığın giderilmesi için Dünya'daki görev kontrol merkezinden yardım istendi.",
+          "audioPath": "artifacts/audio/scene_1.mp3",
+          "imagePath": null,
+          "imageTimeline": null,
+          "durationSeconds": 23.448,
+          "category": null,
+          "publishedAt": "2026-04-03T10:02:08",
+          "sourceId": "6087188e-182f-4c45-9f7c-2a1946a6efca",
+          "sourceName": "Mynet Teknoloji"
+        },
+        {
+          "itemNumber": 2,
+          "headline": "Google, yeni Gemma dört yapay zeka modellerini tanıttı",
+          "narration": "Google, yapay zeka teknolojilerinde önemli bir adım attı. Şirket, Gemma dört adını verdiği yeni yapay zeka modellerini tanıttı. Bu modeller, Gemini üç teknolojisi temel alınarak geliştirildi. Gemma dört ailesi, dört farklı sürüm ile kullanıcılara sunulmaya hazırlanıyor.",
+          "audioPath": "artifacts/audio/scene_2.mp3",
+          "imagePath": null,
+          "imageTimeline": null,
+          "durationSeconds": 21.096,
+          "category": null,
+          "publishedAt": "2026-04-03T10:53:39",
+          "sourceId": "6087188e-182f-4c45-9f7c-2a1946a6efca",
+          "sourceName": "Mynet Teknoloji"
+        },
+        {
+          "itemNumber": 3,
+          "headline": "Koşu saati alırken dikkat edilmesi gerekenler",
+          "narration": "Bahar aylarının gelmesiyle koşu aktivitesi popülerleşiyor. Koşu saati seçimi, performans için önem taşıyor. Bir koşu saati alırken bazı özelliklere dikkat edilmeli. Cihazın sadece adım saymaması, daha fazlasını sunması beklenir. Performans odaklı bir seçim yapmak, doğru antrenman için kritik.",
+          "audioPath": "artifacts/audio/scene_3.mp3",
+          "imagePath": null,
+          "imageTimeline": null,
+          "durationSeconds": 24.888,
+          "category": null,
+          "publishedAt": "2026-04-03T11:56:41",
+          "sourceId": "6087188e-182f-4c45-9f7c-2a1946a6efca",
+          "sourceName": "Mynet Teknoloji"
+        }
+      ],
+      "suggested_filename": "output.mp4",
+      "total_duration_seconds": 69.432,
+      "props": {
+        "bulletinTitle": "Artemis II'de Yeni Sorun, Google AI ve Koşu Saati Rehberi",
+        "items": [
+          {
+            "itemNumber": 1,
+            "headline": "Artemis İki'de ikinci kriz: Astronot Dünya'dan yardım istedi",
+            "narration": "NASA'nın insanlı Ay görevi Artemis İki'de beklenmedik gelişmeler yaşanıyor. Uzay aracının tuvalet sistemindeki arızanın ardından yeni bir sorun baş gösterdi. Astronotlar, bu kez bir Microsoft Outlook problemi ile karşılaştı. Teknik aksaklığın giderilmesi için Dünya'daki görev kontrol merkezinden yardım istendi.",
+            "audioPath": "artifacts/audio/scene_1.mp3",
+            "imagePath": null,
+            "imageTimeline": null,
+            "durationSeconds": 23.448,
+            "category": null,
+            "publishedAt": "2026-04-03T10:02:08",
+            "sourceId": "6087188e-182f-4c45-9f7c-2a1946a6efca",
+            "sourceName": "Mynet Teknoloji"
+          },
+          {
+            "itemNumber": 2,
+            "headline": "Google, yeni Gemma dört yapay zeka modellerini tanıttı",
+            "narration": "Google, yapay zeka teknolojilerinde önemli bir adım attı. Şirket, Gemma dört adını verdiği yeni yapay zeka modellerini tanıttı. Bu modeller, Gemini üç teknolojisi temel alınarak geliştirildi. Gemma dört ailesi, dört farklı sürüm ile kullanıcılara sunulmaya hazırlanıyor.",
+            "audioPath": "artifacts/audio/scene_2.mp3",
+            "imagePath": null,
+            "imageTimeline": null,
+            "durationSeconds": 21.096,
+            "category": null,
+            "publishedAt": "2026-04-03T10:53:39",
+            "sourceId": "6087188e-182f-4c45-9f7c-2a1946a6efca",
+            "sourceName": "Mynet Teknoloji"
+          },
+          {
+            "itemNumber": 3,
+            "headline": "Koşu saati alırken dikkat edilmesi gerekenler",
+            "narration": "Bahar aylarının gelmesiyle koşu aktivitesi popülerleşiyor. Koşu saati seçimi, performans için önem taşıyor. Bir koşu saati alırken bazı özelliklere dikkat edilmeli. Cihazın sadece adım saymaması, daha fazlasını sunması beklenir. Performans odaklı bir seçim yapmak, doğru antrenman için kritik.",
+            "audioPath": "artifacts/audio/scene_3.mp3",
+            "imagePath": null,
+            "imageTimeline": null,
+            "durationSeconds": 24.888,
+            "category": null,
+            "publishedAt": "2026-04-03T11:56:41",
+            "sourceId": "6087188e-182f-4c45-9f7c-2a1946a6efca",
+            "sourceName": "Mynet Teknoloji"
+          }
+        ],
+        "subtitlesSrt": "/Users/huseyincoskun/Downloads/AntigravityProje/ContentHub/backend/workspace/users/boxingbox/jobs/b5f409b2-6bdf-4576-992a-e8e52b8b84ef/artifacts/subtitles.srt",
+        "wordTimingPath": "/Users/huseyincoskun/Downloads/AntigravityProje/ContentHub/backend/workspace/users/boxingbox/jobs/b5f409b2-6bdf-4576-992a-e8e52b8b84ef/artifacts/word_timing.json",
+        "timingMode": "whisper_word",
+        "subtitleStyle": {
+          "preset_id": "clean_white",
+          "preset_fallback_used": false,
+          "label": "Temiz Beyaz",
+          "font_size": 36,
+          "font_weight": "600",
+          "text_color": "#FFFFFF",
+          "active_color": "#FFD700",
+          "background": "rgba(0,0,0,0.35)",
+          "outline_width": 2,
+          "outline_color": "#000000",
+          "line_height": 1.4
+        },
+        "lowerThirdStyle": "broadcast",
+        "renderMode": "combined",
+        "totalDurationSeconds": 69.432,
+        "language": "tr",
+        "bulletinStyle": "breaking",
+        "networkName": "ContentHub Haber",
+        "showTicker": true,
+        "tickerItems": null,
+        "renderFormat": "landscape",
+        "karaokeAnimPreset": "hype",
+        "metadata": {
+          "title": "Artemis II'de Yeni Sorun, Google AI ve Koşu Saati Rehberi",
+          "description": "NASA'nın Artemis II görevi yeni sorunlarla boğuşurken, Google yapay zeka alanında Gemma modellerini tanıttı. Ayrıca, bahar aylarında koşu aktivitesi için ideal koşu saati seçimi ipuçlarını derledik.",
+          "tags": [
+            "haber",
+            "gündem",
+            "teknoloji",
+            "Artemis II",
+            "NASA",
+            "Google",
+            "yapay zeka",
+            "Gemma",
+            "koşu saati",
+            "akıllı saat"
+          ],
+          "hashtags": [
+            "#haber",
+            "#gündem",
+            "#teknoloji",
+            "#ArtemisII",
+            "#yapayzeka"
+          ]
+        }
+      }
+    }
+  ],
+  "props": {
+    "bulletinTitle": "Artemis II'de Yeni Sorun, Google AI ve Koşu Saati Rehberi",
+    "items": [
+      {
+        "itemNumber": 1,
+        "headline": "Artemis İki'de ikinci kriz: Astronot Dünya'dan yardım istedi",
+        "narration": "NASA'nın insanlı Ay görevi Artemis İki'de beklenmedik gelişmeler yaşanıyor. Uzay aracının tuvalet sistemindeki arızanın ardından yeni bir sorun baş gösterdi. Astronotlar, bu kez bir Microsoft Outlook problemi ile karşılaştı. Teknik aksaklığın giderilmesi için Dünya'daki görev kontrol merkezinden yardım istendi.",
+        "audioPath": "http://127.0.0.1:58593/artifacts/audio/scene_1.mp3",
+        "imagePath": null,
+        "imageTimeline": null,
+        "durationSeconds": 23.448,
+        "category": null,
+        "publishedAt": "2026-04-03T10:02:08",
+        "sourceId": "6087188e-182f-4c45-9f7c-2a1946a6efca",
+        "sourceName": "Mynet Teknoloji"
+      },
+      {
+        "itemNumber": 2,
+        "headline": "Google, yeni Gemma dört yapay zeka modellerini tanıttı",
+        "narration": "Google, yapay zeka teknolojilerinde önemli bir adım attı. Şirket, Gemma dört adını verdiği yeni yapay zeka modellerini tanıttı. Bu modeller, Gemini üç teknolojisi temel alınarak geliştirildi. Gemma dört ailesi, dört farklı sürüm ile kullanıcılara sunulmaya hazırlanıyor.",
+        "audioPath": "http://127.0.0.1:58593/artifacts/audio/scene_2.mp3",
+        "imagePath": null,
+        "imageTimeline": null,
+        "durationSeconds": 21.096,
+        "category": null,
+        "publishedAt": "2026-04-03T10:53:39",
+        "sourceId": "6087188e-182f-4c45-9f7c-2a1946a6efca",
+        "sourceName": "Mynet Teknoloji"
+      },
+      {
+        "itemNumber": 3,
+        "headline": "Koşu saati alırken dikkat edilmesi gerekenler",
+        "narration": "Bahar aylarının gelmesiyle koşu aktivitesi popülerleşiyor. Koşu saati seçimi, performans için önem taşıyor. Bir koşu saati alırken bazı özelliklere dikkat edilmeli. Cihazın sadece adım saymaması, daha fazlasını sunması beklenir. Performans odaklı bir seçim yapmak, doğru antrenman için kritik.",
+        "audioPath": "http://127.0.0.1:58593/artifacts/audio/scene_3.mp3",
+        "imagePath": null,
+        "imageTimeline": null,
+        "durationSeconds": 24.888,
+        "category": null,
+        "publishedAt": "2026-04-03T11:56:41",
+        "sourceId": "6087188e-182f-4c45-9f7c-2a1946a6efca",
+        "sourceName": "Mynet Teknoloji"
+      }
+    ],
+    "subtitlesSrt": "/Users/huseyincoskun/Downloads/AntigravityProje/ContentHub/backend/workspace/users/boxingbox/jobs/b5f409b2-6bdf-4576-992a-e8e52b8b84ef/artifacts/subtitles.srt",
+    "wordTimingPath": "/Users/huseyincoskun/Downloads/AntigravityProje/ContentHub/backend/workspace/users/boxingbox/jobs/b5f409b2-6bdf-4576-992a-e8e52b8b84ef/artifacts/word_timing.json",
+    "timingMode": "whisper_word",
+    "subtitleStyle": {
+      "preset_id": "clean_white",
+      "preset_fallback_used": false,
+      "label": "Temiz Beyaz",
+      "font_size": 36,
+      "font_weight": "600",
+      "text_color": "#FFFFFF",
+      "active_color": "#FFD700",
+      "background": "rgba(0,0,0,0.35)",
+      "outline_width": 2,
+      "outline_color": "#000000",
+      "line_height": 1.4
+    },
+    "lowerThirdStyle": "broadcast",
+    "renderMode": "combined",
+    "totalDurationSeconds": 69.432,
+    "language": "tr",
+    "bulletinStyle": "breaking",
+    "networkName": "ContentHub Haber",
+    "showTicker": true,
+    "tickerItems": null,
+    "renderFormat": "landscape",
+    "karaokeAnimPreset": "hype",
+    "showDate": true,
+    "showSource": false,
+    "metadata": {
+      "title": "Artemis II'de Yeni Sorun, Google AI ve Koşu Saati Rehberi",
+      "description": "NASA'nın Artemis II görevi yeni sorunlarla boğuşurken, Google yapay zeka alanında Gemma modellerini tanıttı. Ayrıca, bahar aylarında koşu aktivitesi için ideal koşu saati seçimi ipuçlarını derledik.",
+      "tags": [
+        "haber",
+        "gündem",
+        "teknoloji",
+        "Artemis II",
+        "NASA",
+        "Google",
+        "yapay zeka",
+        "Gemma",
+        "koşu saati",
+        "akıllı saat"
+      ],
+      "hashtags": [
+        "#haber",
+        "#gündem",
+        "#teknoloji",
+        "#ArtemisII",
+        "#yapayzeka"
+      ]
+    }
+  },
+  "render_status": "rendered",
+  "created_at": "2026-04-08T11:27:02.864530+00:00",
+  "output_path": "/Users/huseyincoskun/Downloads/AntigravityProje/ContentHub/backend/workspace/users/boxingbox/jobs/b5f409b2-6bdf-4576-992a-e8e52b8b84ef/artifacts/output.mp4",
+  "timing_mode_used": "cursor",
+  "word_timings_count": 112,
+  "duration_fallback_used": true,
+  "updated_at": "2026-04-08T11:27:50.277465+00:00"
+}

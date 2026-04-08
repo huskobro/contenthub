@@ -242,8 +242,8 @@ const PortraitTextBlock: React.FC<TextBlockProps> = ({
 const PortraitLayout169: React.FC<{
   item: HeadlineCardItem; accent: string; frame: number;
   fps: number; durationInFrames: number; index: number;
-  currentTimeSec: number;
-}> = ({ item, accent, frame, fps, durationInFrames, index, currentTimeSec }) => {
+  currentTimeSec: number; imageKenBurns?: boolean;
+}> = ({ item, accent, frame, fps, durationInFrames, index, currentTimeSec, imageKenBurns = true }) => {
 
   const imgScale = imageKenBurns ? lerp(frame, [0, 300], [1.0, 1.06]) : 1.0;
   const IMAGE_TOP = NETWORK_BAR_H + 8;
@@ -480,7 +480,7 @@ export const HeadlineCard: React.FC<Props> = ({
         <PortraitLayout169
           item={item} accent={accent} frame={frame} fps={fps}
           durationInFrames={durationInFrames} index={index}
-          currentTimeSec={currentTimeSec}
+          currentTimeSec={currentTimeSec} imageKenBurns={imageKenBurns}
         />
       );
     }

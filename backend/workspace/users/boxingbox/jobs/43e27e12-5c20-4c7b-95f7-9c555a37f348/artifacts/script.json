@@ -1,0 +1,23 @@
+{
+  "language": "tr",
+  "scenes": [
+    {
+      "scene_number": 1,
+      "narration": "Rekabet Kurulu, Google hakkında soruşturma başlattı. Reklam faturalandırma süreçleri incelenecek. Ocak ayında başlayan ön araştırma tamamlandı. Elde edilen bulgular ciddi ve yeterli görüldü. Kurul, beş Mart tarihli toplantısında bu kararı aldı.",
+      "duration_seconds": 16,
+      "headline": "Rekabet Kurulu'ndan Google'a soruşturma"
+    },
+    {
+      "scene_number": 2,
+      "narration": "Samsung'un merakla beklenen Galaxy S26 FE modeli, Geekbench performans testinde görüntülendi. Cihazın bazı özellikleri kısa süreliğine listelendi. Bu veriler daha sonra siteden kaldırıldı. Yeni modelin potansiyel donanımı hakkında önemli bilgiler elde edildi.",
+      "duration_seconds": 18,
+      "headline": "Samsung Galaxy S26 FE Geekbench'te görüntülendi"
+    },
+    {
+      "scene_number": 3,
+      "narration": "Sosyal medya platformları için yeni bir yaş doğrulama düzenlemesi geliyor. Kullanıcılar, e-Devlet Kapısı üzerinden özel bir kod oluşturacak. Bu kod ile yalnızca yaş bilgileri doğrulanacak. Kimlik bilgileri doğrudan paylaşılmayacak. Böylece kişisel verilerin korunması hedefleniyor.",
+      "duration_seconds": 19,
+      "headline": "Sosyal medyada yaş doğrulama dönemi başlıyor"
+    }
+  ]
+}

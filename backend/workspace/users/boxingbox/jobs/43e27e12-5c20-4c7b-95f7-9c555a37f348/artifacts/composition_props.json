@@ -1,0 +1,248 @@
+{
+  "job_id": "43e27e12-5c20-4c7b-95f7-9c555a37f348",
+  "module_id": "news_bulletin",
+  "language": "tr",
+  "composition_id": "NewsBulletin",
+  "render_mode": "combined",
+  "render_outputs": [
+    {
+      "output_key": "combined",
+      "output_label": "Google Soruşturması, Galaxy S26 FE ve Sosyal Medyada Yaş Doğrulama",
+      "composition_id": "NewsBulletin",
+      "items": [
+        {
+          "itemNumber": 1,
+          "headline": "Rekabet Kurulu'ndan Google'a soruşturma",
+          "narration": "Rekabet Kurulu, Google hakkında soruşturma başlattı. Reklam faturalandırma süreçleri incelenecek. Ocak ayında başlayan ön araştırma tamamlandı. Elde edilen bulgular ciddi ve yeterli görüldü. Kurul, beş Mart tarihli toplantısında bu kararı aldı.",
+          "audioPath": "artifacts/audio/scene_1.mp3",
+          "imagePath": null,
+          "imageTimeline": null,
+          "durationSeconds": 21.144,
+          "category": null,
+          "publishedAt": "2026-04-03T14:50:35",
+          "sourceId": "6087188e-182f-4c45-9f7c-2a1946a6efca",
+          "sourceName": "Mynet Teknoloji"
+        },
+        {
+          "itemNumber": 2,
+          "headline": "Samsung Galaxy S26 FE Geekbench'te görüntülendi",
+          "narration": "Samsung'un merakla beklenen Galaxy S26 FE modeli, Geekbench performans testinde görüntülendi. Cihazın bazı özellikleri kısa süreliğine listelendi. Bu veriler daha sonra siteden kaldırıldı. Yeni modelin potansiyel donanımı hakkında önemli bilgiler elde edildi.",
+          "audioPath": "artifacts/audio/scene_2.mp3",
+          "imagePath": null,
+          "imageTimeline": null,
+          "durationSeconds": 21.096,
+          "category": null,
+          "publishedAt": "2026-04-03T15:16:18",
+          "sourceId": "6087188e-182f-4c45-9f7c-2a1946a6efca",
+          "sourceName": "Mynet Teknoloji"
+        },
+        {
+          "itemNumber": 3,
+          "headline": "Sosyal medyada yaş doğrulama dönemi başlıyor",
+          "narration": "Sosyal medya platformları için yeni bir yaş doğrulama düzenlemesi geliyor. Kullanıcılar, e-Devlet Kapısı üzerinden özel bir kod oluşturacak. Bu kod ile yalnızca yaş bilgileri doğrulanacak. Kimlik bilgileri doğrudan paylaşılmayacak. Böylece kişisel verilerin korunması hedefleniyor.",
+          "audioPath": "artifacts/audio/scene_3.mp3",
+          "imagePath": null,
+          "imageTimeline": null,
+          "durationSeconds": 22.68,
+          "category": null,
+          "publishedAt": "2026-04-04T06:29:37",
+          "sourceId": "6087188e-182f-4c45-9f7c-2a1946a6efca",
+          "sourceName": "Mynet Teknoloji"
+        }
+      ],
+      "suggested_filename": "output.mp4",
+      "total_duration_seconds": 68.67,
+      "props": {
+        "bulletinTitle": "Google Soruşturması, Galaxy S26 FE ve Sosyal Medyada Yaş Doğrulama",
+        "items": [
+          {
+            "itemNumber": 1,
+            "headline": "Rekabet Kurulu'ndan Google'a soruşturma",
+            "narration": "Rekabet Kurulu, Google hakkında soruşturma başlattı. Reklam faturalandırma süreçleri incelenecek. Ocak ayında başlayan ön araştırma tamamlandı. Elde edilen bulgular ciddi ve yeterli görüldü. Kurul, beş Mart tarihli toplantısında bu kararı aldı.",
+            "audioPath": "artifacts/audio/scene_1.mp3",
+            "imagePath": null,
+            "imageTimeline": null,
+            "durationSeconds": 21.144,
+            "category": null,
+            "publishedAt": "2026-04-03T14:50:35",
+            "sourceId": "6087188e-182f-4c45-9f7c-2a1946a6efca",
+            "sourceName": "Mynet Teknoloji"
+          },
+          {
+            "itemNumber": 2,
+            "headline": "Samsung Galaxy S26 FE Geekbench'te görüntülendi",
+            "narration": "Samsung'un merakla beklenen Galaxy S26 FE modeli, Geekbench performans testinde görüntülendi. Cihazın bazı özellikleri kısa süreliğine listelendi. Bu veriler daha sonra siteden kaldırıldı. Yeni modelin potansiyel donanımı hakkında önemli bilgiler elde edildi.",
+            "audioPath": "artifacts/audio/scene_2.mp3",
+            "imagePath": null,
+            "imageTimeline": null,
+            "durationSeconds": 21.096,
+            "category": null,
+            "publishedAt": "2026-04-03T15:16:18",
+            "sourceId": "6087188e-182f-4c45-9f7c-2a1946a6efca",
+            "sourceName": "Mynet Teknoloji"
+          },
+          {
+            "itemNumber": 3,
+            "headline": "Sosyal medyada yaş doğrulama dönemi başlıyor",
+            "narration": "Sosyal medya platformları için yeni bir yaş doğrulama düzenlemesi geliyor. Kullanıcılar, e-Devlet Kapısı üzerinden özel bir kod oluşturacak. Bu kod ile yalnızca yaş bilgileri doğrulanacak. Kimlik bilgileri doğrudan paylaşılmayacak. Böylece kişisel verilerin korunması hedefleniyor.",
+            "audioPath": "artifacts/audio/scene_3.mp3",
+            "imagePath": null,
+            "imageTimeline": null,
+            "durationSeconds": 22.68,
+            "category": null,
+            "publishedAt": "2026-04-04T06:29:37",
+            "sourceId": "6087188e-182f-4c45-9f7c-2a1946a6efca",
+            "sourceName": "Mynet Teknoloji"
+          }
+        ],
+        "subtitlesSrt": "/Users/huseyincoskun/Downloads/AntigravityProje/ContentHub/backend/workspace/users/boxingbox/jobs/43e27e12-5c20-4c7b-95f7-9c555a37f348/artifacts/subtitles.srt",
+        "wordTimingPath": "/Users/huseyincoskun/Downloads/AntigravityProje/ContentHub/backend/workspace/users/boxingbox/jobs/43e27e12-5c20-4c7b-95f7-9c555a37f348/artifacts/word_timing.json",
+        "timingMode": "whisper_word",
+        "subtitleStyle": {
+          "preset_id": "clean_white",
+          "preset_fallback_used": false,
+          "label": "Temiz Beyaz",
+          "font_size": 36,
+          "font_weight": "600",
+          "text_color": "#FFFFFF",
+          "active_color": "#FFD700",
+          "background": "rgba(0,0,0,0.35)",
+          "outline_width": 2,
+          "outline_color": "#000000",
+          "line_height": 1.4
+        },
+        "lowerThirdStyle": "broadcast",
+        "renderMode": "combined",
+        "totalDurationSeconds": 68.67,
+        "language": "tr",
+        "bulletinStyle": "breaking",
+        "networkName": "ContentHub Haber",
+        "showTicker": true,
+        "tickerItems": null,
+        "renderFormat": "portrait",
+        "karaokeAnimPreset": "hype",
+        "metadata": {
+          "title": "Google Soruşturması, Galaxy S26 FE ve Sosyal Medyada Yaş Doğrulama",
+          "description": "Rekabet Kurulu'ndan Google'a reklam faturalandırması nedeniyle soruşturma başlatıldı. Bu bültende ayrıca, merakla beklenen Samsung Galaxy S26 FE'nin Geekbench'te görüntülenmesi ve sosyal medyada e-Devlet üzerinden yaş doğrulama döneminin başlaması gibi önemli teknoloji haberlerini bulabilirsiniz.",
+          "tags": [
+            "teknoloji haberleri",
+            "Google soruşturma",
+            "Rekabet Kurulu",
+            "Samsung Galaxy S26 FE",
+            "sosyal medya yaş doğrulama",
+            "e-Devlet",
+            "gündem",
+            "son dakika teknoloji"
+          ],
+          "hashtags": [
+            "#TeknolojiHaberleri",
+            "#GoogleSoruşturma",
+            "#GalaxyS26FE",
+            "#SosyalMedya",
+            "#Gündem"
+          ]
+        }
+      }
+    }
+  ],
+  "props": {
+    "bulletinTitle": "Google Soruşturması, Galaxy S26 FE ve Sosyal Medyada Yaş Doğrulama",
+    "items": [
+      {
+        "itemNumber": 1,
+        "headline": "Rekabet Kurulu'ndan Google'a soruşturma",
+        "narration": "Rekabet Kurulu, Google hakkında soruşturma başlattı. Reklam faturalandırma süreçleri incelenecek. Ocak ayında başlayan ön araştırma tamamlandı. Elde edilen bulgular ciddi ve yeterli görüldü. Kurul, beş Mart tarihli toplantısında bu kararı aldı.",
+        "audioPath": "http://127.0.0.1:58030/artifacts/audio/scene_1.mp3",
+        "imagePath": null,
+        "imageTimeline": null,
+        "durationSeconds": 21.144,
+        "category": null,
+        "publishedAt": "2026-04-03T14:50:35",
+        "sourceId": "6087188e-182f-4c45-9f7c-2a1946a6efca",
+        "sourceName": "Mynet Teknoloji"
+      },
+      {
+        "itemNumber": 2,
+        "headline": "Samsung Galaxy S26 FE Geekbench'te görüntülendi",
+        "narration": "Samsung'un merakla beklenen Galaxy S26 FE modeli, Geekbench performans testinde görüntülendi. Cihazın bazı özellikleri kısa süreliğine listelendi. Bu veriler daha sonra siteden kaldırıldı. Yeni modelin potansiyel donanımı hakkında önemli bilgiler elde edildi.",
+        "audioPath": "http://127.0.0.1:58030/artifacts/audio/scene_2.mp3",
+        "imagePath": null,
+        "imageTimeline": null,
+        "durationSeconds": 21.096,
+        "category": null,
+        "publishedAt": "2026-04-03T15:16:18",
+        "sourceId": "6087188e-182f-4c45-9f7c-2a1946a6efca",
+        "sourceName": "Mynet Teknoloji"
+      },
+      {
+        "itemNumber": 3,
+        "headline": "Sosyal medyada yaş doğrulama dönemi başlıyor",
+        "narration": "Sosyal medya platformları için yeni bir yaş doğrulama düzenlemesi geliyor. Kullanıcılar, e-Devlet Kapısı üzerinden özel bir kod oluşturacak. Bu kod ile yalnızca yaş bilgileri doğrulanacak. Kimlik bilgileri doğrudan paylaşılmayacak. Böylece kişisel verilerin korunması hedefleniyor.",
+        "audioPath": "http://127.0.0.1:58030/artifacts/audio/scene_3.mp3",
+        "imagePath": null,
+        "imageTimeline": null,
+        "durationSeconds": 22.68,
+        "category": null,
+        "publishedAt": "2026-04-04T06:29:37",
+        "sourceId": "6087188e-182f-4c45-9f7c-2a1946a6efca",
+        "sourceName": "Mynet Teknoloji"
+      }
+    ],
+    "subtitlesSrt": "/Users/huseyincoskun/Downloads/AntigravityProje/ContentHub/backend/workspace/users/boxingbox/jobs/43e27e12-5c20-4c7b-95f7-9c555a37f348/artifacts/subtitles.srt",
+    "wordTimingPath": "/Users/huseyincoskun/Downloads/AntigravityProje/ContentHub/backend/workspace/users/boxingbox/jobs/43e27e12-5c20-4c7b-95f7-9c555a37f348/artifacts/word_timing.json",
+    "timingMode": "whisper_word",
+    "subtitleStyle": {
+      "preset_id": "clean_white",
+      "preset_fallback_used": false,
+      "label": "Temiz Beyaz",
+      "font_size": 36,
+      "font_weight": "600",
+      "text_color": "#FFFFFF",
+      "active_color": "#FFD700",
+      "background": "rgba(0,0,0,0.35)",
+      "outline_width": 2,
+      "outline_color": "#000000",
+      "line_height": 1.4
+    },
+    "lowerThirdStyle": "broadcast",
+    "renderMode": "combined",
+    "totalDurationSeconds": 68.67,
+    "language": "tr",
+    "bulletinStyle": "breaking",
+    "networkName": "ContentHub Haber",
+    "showTicker": true,
+    "tickerItems": null,
+    "renderFormat": "portrait",
+    "karaokeAnimPreset": "hype",
+    "showDate": true,
+    "showSource": false,
+    "metadata": {
+      "title": "Google Soruşturması, Galaxy S26 FE ve Sosyal Medyada Yaş Doğrulama",
+      "description": "Rekabet Kurulu'ndan Google'a reklam faturalandırması nedeniyle soruşturma başlatıldı. Bu bültende ayrıca, merakla beklenen Samsung Galaxy S26 FE'nin Geekbench'te görüntülenmesi ve sosyal medyada e-Devlet üzerinden yaş doğrulama döneminin başlaması gibi önemli teknoloji haberlerini bulabilirsiniz.",
+      "tags": [
+        "teknoloji haberleri",
+        "Google soruşturma",
+        "Rekabet Kurulu",
+        "Samsung Galaxy S26 FE",
+        "sosyal medya yaş doğrulama",
+        "e-Devlet",
+        "gündem",
+        "son dakika teknoloji"
+      ],
+      "hashtags": [
+        "#TeknolojiHaberleri",
+        "#GoogleSoruşturma",
+        "#GalaxyS26FE",
+        "#SosyalMedya",
+        "#Gündem"
+      ]
+    }
+  },
+  "render_status": "rendered",
+  "created_at": "2026-04-08T11:39:20.094230+00:00",
+  "output_path": "/Users/huseyincoskun/Downloads/AntigravityProje/ContentHub/backend/workspace/users/boxingbox/jobs/43e27e12-5c20-4c7b-95f7-9c555a37f348/artifacts/output.mp4",
+  "timing_mode_used": "cursor",
+  "word_timings_count": 101,
+  "duration_fallback_used": true,
+  "updated_at": "2026-04-08T11:40:42.135192+00:00"
+}

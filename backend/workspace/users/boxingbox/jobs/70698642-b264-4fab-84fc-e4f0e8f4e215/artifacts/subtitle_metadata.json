@@ -1,0 +1,8 @@
+{
+  "srt_path": "/Users/huseyincoskun/Downloads/AntigravityProje/ContentHub/backend/workspace/users/boxingbox/jobs/70698642-b264-4fab-84fc-e4f0e8f4e215/artifacts/subtitles.srt",
+  "word_timing_path": "/Users/huseyincoskun/Downloads/AntigravityProje/ContentHub/backend/workspace/users/boxingbox/jobs/70698642-b264-4fab-84fc-e4f0e8f4e215/artifacts/word_timing.json",
+  "segment_count": 3,
+  "total_duration_seconds": 63.31,
+  "language": "tr",
+  "timing_mode": "whisper_word"
+}

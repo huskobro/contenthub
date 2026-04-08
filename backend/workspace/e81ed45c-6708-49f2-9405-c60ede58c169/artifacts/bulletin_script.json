@@ -1,0 +1,41 @@
+{
+  "items": [
+    {
+      "item_number": 1,
+      "headline": "Venezuela Devlet Başkanı Maduro'dan Açıklama",
+      "narration": "Venezuela Devlet Başkanı Nicolas Maduro, uzun bir aranın ardından açıklama yaptı. Maduro, Paskalya Bayramı dolayısıyla halkına seslendi. Amerika Birleşik Devletleri'nin müdahale girişimlerinin ardından, Venezuelalılara \"birlik\" çağrısında bulundu. Ülkesinin geleceği için bir arada olmanın önemini vurguladı.",
+      "duration_seconds": 17,
+      "image_url": null,
+      "image_urls": [],
+      "published_at": "2026-04-06T04:51:11",
+      "source_id": "0de64d9d-0403-47d7-86e4-65bcf468ae37",
+      "source_name": "Mynet Son Dakika"
+    },
+    {
+      "item_number": 2,
+      "headline": "Trump'ın Hürmüz Boğazı Açıklamasına İran'dan Yanıt",
+      "narration": "Bölgedeki gerilim hem sahada hem de diplomatik olarak sürüyor. Amerika Birleşik Devletleri Başkanı Trump, Hürmüz Boğazı'nın açılması çağrısı yapmıştı. İran'dan bu açıklamalara yanıt gecikmedi. İran Devrim Muhafızları, Hürmüz Boğazı'nın Amerika Birleşik Devletleri ve İsrail için asla eski haline dönmeyeceğini bildirdi.",
+      "duration_seconds": 19,
+      "image_url": null,
+      "image_urls": [],
+      "published_at": "2026-04-06T04:52:10",
+      "source_id": "0de64d9d-0403-47d7-86e4-65bcf468ae37",
+      "source_name": "Mynet Son Dakika"
+    },
+    {
+      "item_number": 3,
+      "headline": "Bağcılar'da Bıçaklı Kavga: İki Polis Yaralandı",
+      "narration": "İstanbul Bağcılar'da bir boş arsada bıçaklı kavga çıktı. İhbar üzerine olay yerine polis ekipleri sevk edildi. Ekipler, on yedi yaşındaki bir şüpheliye müdahale etti. Şüpheli, müdahale sırasında iki polis memurunu el ve bacak bölgelerinden yaraladı. Yaralı polisler hastaneye kaldırılarak tedavi altına alındı.",
+      "duration_seconds": 20,
+      "image_url": null,
+      "image_urls": [],
+      "published_at": "2026-04-06T06:15:46",
+      "source_id": "0de64d9d-0403-47d7-86e4-65bcf468ae37",
+      "source_name": "Mynet Son Dakika"
+    }
+  ],
+  "transitions": [],
+  "total_duration_seconds": 56,
+  "language": "tr",
+  "bulletin_id": "241a0675-10f1-432c-9c07-025e951a3dad"
+}

@@ -1,0 +1,41 @@
+{
+  "items": [
+    {
+      "item_number": 1,
+      "headline": "Rekabet Kurulu'ndan Google'a soruşturma",
+      "narration": "Rekabet Kurulu, Google hakkında soruşturma başlattı. Reklam faturalandırma süreçleri incelenecek. Ocak ayında başlayan ön araştırma tamamlandı. Elde edilen bulgular ciddi ve yeterli görüldü. Kurul, beş Mart tarihli toplantısında bu kararı aldı.",
+      "duration_seconds": 16,
+      "image_url": null,
+      "image_urls": [],
+      "published_at": "2026-04-03T14:50:35",
+      "source_id": "6087188e-182f-4c45-9f7c-2a1946a6efca",
+      "source_name": "Mynet Teknoloji"
+    },
+    {
+      "item_number": 2,
+      "headline": "Samsung Galaxy S26 FE Geekbench'te görüntülendi",
+      "narration": "Samsung'un merakla beklenen Galaxy S26 FE modeli, Geekbench performans testinde görüntülendi. Cihazın bazı özellikleri kısa süreliğine listelendi. Bu veriler daha sonra siteden kaldırıldı. Yeni modelin potansiyel donanımı hakkında önemli bilgiler elde edildi.",
+      "duration_seconds": 18,
+      "image_url": null,
+      "image_urls": [],
+      "published_at": "2026-04-03T15:16:18",
+      "source_id": "6087188e-182f-4c45-9f7c-2a1946a6efca",
+      "source_name": "Mynet Teknoloji"
+    },
+    {
+      "item_number": 3,
+      "headline": "Sosyal medyada yaş doğrulama dönemi başlıyor",
+      "narration": "Sosyal medya platformları için yeni bir yaş doğrulama düzenlemesi geliyor. Kullanıcılar, e-Devlet Kapısı üzerinden özel bir kod oluşturacak. Bu kod ile yalnızca yaş bilgileri doğrulanacak. Kimlik bilgileri doğrudan paylaşılmayacak. Böylece kişisel verilerin korunması hedefleniyor.",
+      "duration_seconds": 19,
+      "image_url": null,
+      "image_urls": [],
+      "published_at": "2026-04-04T06:29:37",
+      "source_id": "6087188e-182f-4c45-9f7c-2a1946a6efca",
+      "source_name": "Mynet Teknoloji"
+    }
+  ],
+  "transitions": [],
+  "total_duration_seconds": 53,
+  "language": "tr",
+  "bulletin_id": "8d3f97a0-0944-4d24-a4c0-a4cfd5f74425"
+}

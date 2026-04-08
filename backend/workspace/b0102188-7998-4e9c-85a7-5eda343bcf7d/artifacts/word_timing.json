@@ -1,0 +1,659 @@
+{
+  "version": "1",
+  "timing_mode": "whisper_word",
+  "language": "tr",
+  "words": [
+    {
+      "scene": 1,
+      "word": "Düzce",
+      "start": 0.0,
+      "end": 0.72,
+      "probability": 0.7243
+    },
+    {
+      "scene": 1,
+      "word": "belediye",
+      "start": 0.72,
+      "end": 1.08,
+      "probability": 0.823
+    },
+    {
+      "scene": 1,
+      "word": "başkanı",
+      "start": 1.08,
+      "end": 1.6,
+      "probability": 0.9116
+    },
+    {
+      "scene": 1,
+      "word": "Faruk",
+      "start": 1.6,
+      "end": 1.94,
+      "probability": 0.8071
+    },
+    {
+      "scene": 1,
+      "word": "Özlü,",
+      "start": 1.94,
+      "end": 2.3,
+      "probability": 0.4519
+    },
+    {
+      "scene": 1,
+      "word": "kentdeki",
+      "start": 2.66,
+      "end": 3.06,
+      "probability": 0.7057
+    },
+    {
+      "scene": 1,
+      "word": "siyasi",
+      "start": 3.06,
+      "end": 3.44,
+      "probability": 0.8837
+    },
+    {
+      "scene": 1,
+      "word": "parti",
+      "start": 3.44,
+      "end": 3.86,
+      "probability": 0.8326
+    },
+    {
+      "scene": 1,
+      "word": "il",
+      "start": 3.86,
+      "end": 4.08,
+      "probability": 0.6792
+    },
+    {
+      "scene": 1,
+      "word": "başkanları",
+      "start": 4.08,
+      "end": 4.68,
+      "probability": 0.7924
+    },
+    {
+      "scene": 1,
+      "word": "ile",
+      "start": 4.68,
+      "end": 4.84,
+      "probability": 0.8962
+    },
+    {
+      "scene": 1,
+      "word": "bir",
+      "start": 4.84,
+      "end": 5.0,
+      "probability": 0.9772
+    },
+    {
+      "scene": 1,
+      "word": "araya",
+      "start": 5.0,
+      "end": 5.28,
+      "probability": 0.9182
+    },
+    {
+      "scene": 1,
+      "word": "geldi.",
+      "start": 5.28,
+      "end": 5.6,
+      "probability": 0.9386
+    },
+    {
+      "scene": 1,
+      "word": "Başkan",
+      "start": 7.02,
+      "end": 7.56,
+      "probability": 0.9802
+    },
+    {
+      "scene": 1,
+      "word": "Özlü,",
+      "start": 7.56,
+      "end": 7.96,
+      "probability": 0.6909
+    },
+    {
+      "scene": 1,
+      "word": "toplantıda",
+      "start": 8.2,
+      "end": 8.82,
+      "probability": 0.7904
+    },
+    {
+      "scene": 1,
+      "word": "diyalok",
+      "start": 8.82,
+      "end": 9.18,
+      "probability": 0.5156
+    },
+    {
+      "scene": 1,
+      "word": "ve",
+      "start": 9.18,
+      "end": 9.4,
+      "probability": 0.994
+    },
+    {
+      "scene": 1,
+      "word": "iş",
+      "start": 9.4,
+      "end": 9.66,
+      "probability": 0.9516
+    },
+    {
+      "scene": 1,
+      "word": "birliği",
+      "start": 9.66,
+      "end": 9.96,
+      "probability": 0.8973
+    },
+    {
+      "scene": 1,
+      "word": "çağrısında",
+      "start": 9.96,
+      "end": 10.56,
+      "probability": 0.779
+    },
+    {
+      "scene": 1,
+      "word": "bulundu.",
+      "start": 10.56,
+      "end": 11.3,
+      "probability": 0.9455
+    },
+    {
+      "scene": 1,
+      "word": "Düzcenin",
+      "start": 12.28,
+      "end": 12.98,
+      "probability": 0.9026
+    },
+    {
+      "scene": 1,
+      "word": "geleceğine",
+      "start": 12.98,
+      "end": 13.52,
+      "probability": 0.9754
+    },
+    {
+      "scene": 1,
+      "word": "yön",
+      "start": 13.52,
+      "end": 13.72,
+      "probability": 0.8244
+    },
+    {
+      "scene": 1,
+      "word": "verecek",
+      "start": 13.72,
+      "end": 14.16,
+      "probability": 0.9949
+    },
+    {
+      "scene": 1,
+      "word": "projeleri",
+      "start": 14.16,
+      "end": 14.68,
+      "probability": 0.866
+    },
+    {
+      "scene": 1,
+      "word": "anlattı.",
+      "start": 14.68,
+      "end": 15.42,
+      "probability": 0.9922
+    },
+    {
+      "scene": 1,
+      "word": "İçme",
+      "start": 16.62,
+      "end": 17.04,
+      "probability": 0.7737
+    },
+    {
+      "scene": 1,
+      "word": "suyu",
+      "start": 17.04,
+      "end": 17.34,
+      "probability": 0.9806
+    },
+    {
+      "scene": 1,
+      "word": "yatırımları",
+      "start": 17.34,
+      "end": 17.86,
+      "probability": 0.9487
+    },
+    {
+      "scene": 1,
+      "word": "ve",
+      "start": 17.86,
+      "end": 18.06,
+      "probability": 0.9964
+    },
+    {
+      "scene": 1,
+      "word": "millet",
+      "start": 18.06,
+      "end": 18.34,
+      "probability": 0.6775
+    },
+    {
+      "scene": 1,
+      "word": "bahçesi,",
+      "start": 18.34,
+      "end": 18.96,
+      "probability": 0.9562
+    },
+    {
+      "scene": 1,
+      "word": "iki",
+      "start": 19.18,
+      "end": 19.3,
+      "probability": 0.792
+    },
+    {
+      "scene": 1,
+      "word": "gibi",
+      "start": 19.3,
+      "end": 19.52,
+      "probability": 0.9953
+    },
+    {
+      "scene": 1,
+      "word": "çalışmalar",
+      "start": 19.52,
+      "end": 20.14,
+      "probability": 0.9651
+    },
+    {
+      "scene": 1,
+      "word": "öne",
+      "start": 20.14,
+      "end": 20.3,
+      "probability": 0.7205
+    },
+    {
+      "scene": 1,
+      "word": "çıktı.",
+      "start": 20.3,
+      "end": 20.54,
+      "probability": 0.9858
+    },
+    {
+      "scene": 1,
+      "word": "Katılımcılar,",
+      "start": 22.0,
+      "end": 22.8,
+      "probability": 0.8266
+    },
+    {
+      "scene": 1,
+      "word": "devam",
+      "start": 23.1,
+      "end": 23.28,
+      "probability": 0.9505
+    },
+    {
+      "scene": 1,
+      "word": "eden",
+      "start": 23.28,
+      "end": 23.66,
+      "probability": 0.9581
+    },
+    {
+      "scene": 1,
+      "word": "ve",
+      "start": 23.66,
+      "end": 23.86,
+      "probability": 0.9502
+    },
+    {
+      "scene": 1,
+      "word": "planlanan",
+      "start": 23.86,
+      "end": 24.4,
+      "probability": 0.887
+    },
+    {
+      "scene": 1,
+      "word": "projelerin",
+      "start": 24.4,
+      "end": 25.12,
+      "probability": 0.9202
+    },
+    {
+      "scene": 1,
+      "word": "uygulama",
+      "start": 25.12,
+      "end": 25.54,
+      "probability": 0.9269
+    },
+    {
+      "scene": 1,
+      "word": "alanlarını",
+      "start": 25.54,
+      "end": 26.02,
+      "probability": 0.8175
+    },
+    {
+      "scene": 1,
+      "word": "yerinde",
+      "start": 26.02,
+      "end": 26.4,
+      "probability": 0.9821
+    },
+    {
+      "scene": 1,
+      "word": "inceledi.",
+      "start": 26.4,
+      "end": 26.96,
+      "probability": 0.7248
+    },
+    {
+      "scene": 1,
+      "word": "Bu",
+      "start": 27.74,
+      "end": 28.5,
+      "probability": 0.9061
+    },
+    {
+      "scene": 1,
+      "word": "toplantı",
+      "start": 28.5,
+      "end": 29.16,
+      "probability": 0.732
+    },
+    {
+      "scene": 1,
+      "word": "siyaset",
+      "start": 29.16,
+      "end": 29.82,
+      "probability": 0.7992
+    },
+    {
+      "scene": 1,
+      "word": "üstü",
+      "start": 29.82,
+      "end": 30.08,
+      "probability": 0.8793
+    },
+    {
+      "scene": 1,
+      "word": "bir",
+      "start": 30.08,
+      "end": 30.2,
+      "probability": 0.9688
+    },
+    {
+      "scene": 1,
+      "word": "iş",
+      "start": 30.2,
+      "end": 30.42,
+      "probability": 0.9675
+    },
+    {
+      "scene": 1,
+      "word": "birliği",
+      "start": 30.42,
+      "end": 30.7,
+      "probability": 0.8521
+    },
+    {
+      "scene": 1,
+      "word": "mesajı",
+      "start": 30.7,
+      "end": 31.16,
+      "probability": 0.9755
+    },
+    {
+      "scene": 1,
+      "word": "vardı.",
+      "start": 31.16,
+      "end": 31.46,
+      "probability": 0.7774
+    },
+    {
+      "scene": 2,
+      "word": "Hocaylin",
+      "start": 32.62,
+      "end": 33.4,
+      "probability": 0.6759
+    },
+    {
+      "scene": 2,
+      "word": "'in",
+      "start": 33.4,
+      "end": 33.58,
+      "probability": 0.9292
+    },
+    {
+      "scene": 2,
+      "word": "İzmit",
+      "start": 33.58,
+      "end": 33.92,
+      "probability": 0.8174
+    },
+    {
+      "scene": 2,
+      "word": "İlçesinde",
+      "start": 33.92,
+      "end": 34.52,
+      "probability": 0.8402
+    },
+    {
+      "scene": 2,
+      "word": "Üzücü",
+      "start": 34.52,
+      "end": 34.96,
+      "probability": 0.7351
+    },
+    {
+      "scene": 2,
+      "word": "Bir",
+      "start": 34.96,
+      "end": 35.14,
+      "probability": 0.3624
+    },
+    {
+      "scene": 2,
+      "word": "Kaza",
+      "start": 35.14,
+      "end": 35.46,
+      "probability": 0.6913
+    },
+    {
+      "scene": 2,
+      "word": "Meydana",
+      "start": 35.46,
+      "end": 35.9,
+      "probability": 0.9401
+    },
+    {
+      "scene": 2,
+      "word": "Geldi.",
+      "start": 35.9,
+      "end": 36.3,
+      "probability": 0.6123
+    },
+    {
+      "scene": 2,
+      "word": "Bir",
+      "start": 37.46,
+      "end": 38.0,
+      "probability": 0.9696
+    },
+    {
+      "scene": 2,
+      "word": "Kamyonetleri",
+      "start": 38.0,
+      "end": 38.78,
+      "probability": 0.7051
+    },
+    {
+      "scene": 2,
+      "word": "Edüştü.",
+      "start": 38.78,
+      "end": 39.28,
+      "probability": 0.6092
+    },
+    {
+      "scene": 2,
+      "word": "Olayda",
+      "start": 40.42,
+      "end": 41.12,
+      "probability": 0.8522
+    },
+    {
+      "scene": 2,
+      "word": "Kamyonet",
+      "start": 41.12,
+      "end": 41.66,
+      "probability": 0.9543
+    },
+    {
+      "scene": 2,
+      "word": "Sürücüsü",
+      "start": 41.66,
+      "end": 42.16,
+      "probability": 0.7865
+    },
+    {
+      "scene": 2,
+      "word": "Hayatını",
+      "start": 42.16,
+      "end": 42.68,
+      "probability": 0.9693
+    },
+    {
+      "scene": 2,
+      "word": "Kaybetti.",
+      "start": 42.68,
+      "end": 43.12,
+      "probability": 0.8237
+    },
+    {
+      "scene": 2,
+      "word": "Ekipler",
+      "start": 44.44,
+      "end": 44.92,
+      "probability": 0.6617
+    },
+    {
+      "scene": 2,
+      "word": "kısa",
+      "start": 44.92,
+      "end": 45.24,
+      "probability": 0.8422
+    },
+    {
+      "scene": 2,
+      "word": "sürede",
+      "start": 45.24,
+      "end": 45.62,
+      "probability": 0.9709
+    },
+    {
+      "scene": 2,
+      "word": "olay",
+      "start": 45.62,
+      "end": 45.92,
+      "probability": 0.8476
+    },
+    {
+      "scene": 2,
+      "word": "yerine",
+      "start": 45.92,
+      "end": 46.26,
+      "probability": 0.9227
+    },
+    {
+      "scene": 2,
+      "word": "ulaştı.",
+      "start": 46.26,
+      "end": 46.74,
+      "probability": 0.9655
+    },
+    {
+      "scene": 2,
+      "word": "Kaza",
+      "start": 47.96,
+      "end": 48.32,
+      "probability": 0.8182
+    },
+    {
+      "scene": 2,
+      "word": "ile",
+      "start": 48.32,
+      "end": 48.52,
+      "probability": 0.9296
+    },
+    {
+      "scene": 2,
+      "word": "ilgili",
+      "start": 48.52,
+      "end": 48.8,
+      "probability": 0.84
+    },
+    {
+      "scene": 2,
+      "word": "detaylı",
+      "start": 48.8,
+      "end": 49.36,
+      "probability": 0.9299
+    },
+    {
+      "scene": 2,
+      "word": "inceleme",
+      "start": 49.36,
+      "end": 49.72,
+      "probability": 0.7305
+    },
+    {
+      "scene": 2,
+      "word": "başlatıldı.",
+      "start": 49.72,
+      "end": 50.38,
+      "probability": 0.9744
+    },
+    {
+      "scene": 2,
+      "word": "Kaza",
+      "start": 51.54,
+      "end": 52.02,
+      "probability": 0.9496
+    },
+    {
+      "scene": 2,
+      "word": "yerinde",
+      "start": 52.02,
+      "end": 52.52,
+      "probability": 0.9805
+    },
+    {
+      "scene": 2,
+      "word": "güvenlik",
+      "start": 52.52,
+      "end": 53.0,
+      "probability": 0.9716
+    },
+    {
+      "scene": 2,
+      "word": "önlemleri",
+      "start": 53.0,
+      "end": 53.54,
+      "probability": 0.7585
+    },
+    {
+      "scene": 2,
+      "word": "alındı.",
+      "start": 53.54,
+      "end": 53.96,
+      "probability": 0.8671
+    }
+  ],
+  "word_count": 93
+}

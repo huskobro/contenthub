@@ -1,0 +1,30 @@
+{
+  "items": [
+    {
+      "item_number": 1,
+      "headline": "Apple'ın DRAM Stratejisi",
+      "narration": "Teknoloji devi Apple'ın yeni bir strateji izlediği belirtiliyor. Şirket, kâr kaybını göze alarak piyasadaki tüm mobil DRAM'leri yüksek fiyatlardan satın alıyor. Bu hamle, Apple'ın pazar payını önemli ölçüde artırabilir. Piyasadaki DRAM kıtlığına rağmen, Apple bu yolla rekabette öne geçmeyi amaçlıyor.",
+      "duration_seconds": 15,
+      "image_url": null,
+      "image_urls": [],
+      "published_at": "2026-04-03T13:16:34",
+      "source_id": "6087188e-182f-4c45-9f7c-2a1946a6efca",
+      "source_name": "Mynet Teknoloji"
+    },
+    {
+      "item_number": 2,
+      "headline": "Yedi Yüz Derece Sıcaklığa Dayanıklı Çip Geliştirildi",
+      "narration": "Bilim insanları yüksek sıcaklığa dayanıklı yeni bir çip geliştirdi. Bu elektronik bellek cihazı, yedi yüz santigrat derecede dahi bozulmadan çalışabiliyor. Bu sıcaklık, erimiş lav sıcaklığından bile daha yüksek. Grafen, hafniyum oksit ve tungsten kullanılarak keşfedildi. Teknoloji, uzay görevleri ve yapay zeka sistemlerinde önemli bir potansiyel taşıyor.",
+      "duration_seconds": 18,
+      "image_url": null,
+      "image_urls": [],
+      "published_at": "2026-04-03T14:36:25",
+      "source_id": "6087188e-182f-4c45-9f7c-2a1946a6efca",
+      "source_name": "Mynet Teknoloji"
+    }
+  ],
+  "transitions": [],
+  "total_duration_seconds": 33,
+  "language": "tr",
+  "bulletin_id": "d767b5f4-6bc0-4190-8d37-da54b00e391a"
+}

@@ -1,0 +1,50 @@
+{
+  "items": [
+    {
+      "item_number": 1,
+      "headline": "İstanbul İsrail Konsolosluğu Önünde Çatışma: Gözaltı Sayısı Ona Yükseldi",
+      "narration": "İstanbul Beşiktaş'ta, İsrail Konsolosluğu'nun bulunduğu bina önünde dün silahlı bir çatışma yaşandı. Olay, güvenlik güçlerini harekete geçirdi. Geniş çaplı soruşturma hemen başlatıldı. Çatışmaya karıştığı düşünülen şüpheliler gözaltına alındı. Son bilgilere göre gözaltı sayısı ona yükseldi.",
+      "duration_seconds": 14,
+      "image_url": "https://images.ntv.com.tr/images/israilkonsoloslukçatışma-690922.png",
+      "image_urls": [
+        "https://images.ntv.com.tr/images/israilkonsoloslukçatışma-690922.png"
+      ],
+      "published_at": "2026-04-08T08:27:23",
+      "source_id": "cb7e9880-f5f2-4ce2-97ef-1584c5c3f8bc",
+      "source_name": "NTV Gundem"
+    },
+    {
+      "item_number": 2,
+      "headline": "Yeni MacBook Neo Sızdırıldı: iPhone Onyedi Pro ile Ortak Özellik",
+      "narration": "Apple'ın yeni nesil MacBook Neo modeli sızdırıldı. Şirket, önümüzdeki yıl A19 Pro çipli bu cihazı piyasaya sürecek. MacBook Neo, on iki gigabayt RAM ile gelecek. Sekiz gigabayt yerine daha yüksek bir bellek kapasitesi sunacak. iPhone Onyedi Pro modelleri de aynı çipi kullanacak. Bu telefonlar da on iki gigabayt RAM'e sahip olacak.",
+      "duration_seconds": 20,
+      "image_url": "https://imgrosetta.mynet.com.tr/file/23685382/23685382-1200x675.jpg",
+      "image_urls": [
+        "https://imgrosetta.mynet.com.tr/file/23685382/23685382-1200x675.jpg"
+      ],
+      "published_at": "2026-04-08T07:53:17",
+      "source_id": "6087188e-182f-4c45-9f7c-2a1946a6efca",
+      "source_name": "Mynet Teknoloji"
+    },
+    {
+      "item_number": 3,
+      "headline": "Abdurrahim Albayrak: Şu Anki Milli Takımın Temelini Lucescu Attı",
+      "narration": "Eski Galatasaray yöneticisi Abdurrahim Albayrak'tan önemli açıklamalar geldi. Albayrak, hayatını kaybeden Mircea Lucescu ile çalışmaktan şanslı olduğunu belirtti. Rumen teknik direktör Lucescu'nun Türk futboluna katkılarını vurguladı. Abdurrahim Albayrak, mevcut milli takımın temelini Lucescu'nun attığını söyledi.",
+      "duration_seconds": 14,
+      "image_url": "https://imgrosetta.mynet.com.tr/file/24120448/24120448-640xauto.jpg",
+      "image_urls": [
+        "https://imgrosetta.mynet.com.tr/file/24120448/24120448-640xauto.jpg"
+      ],
+      "published_at": "2026-08-08T08:04:01",
+      "source_id": "1570a82c-0373-4c70-ac09-ddaf3a8269e1",
+      "source_name": "Mynet Spor"
+    }
+  ],
+  "transitions": [
+    "Sıradaki haberimize geçiyoruz.",
+    "Bir diğer önemli gelişmeyle devam ediyoruz."
+  ],
+  "total_duration_seconds": 48,
+  "language": "tr",
+  "bulletin_id": "7022a2a3-2bfb-49e7-a318-0123cc2438db"
+}

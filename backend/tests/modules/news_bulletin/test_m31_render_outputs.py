@@ -75,8 +75,8 @@ class TestCombinedRenderOutput:
             bulletin_title="Test Bulten",
             **COMMON_KWARGS,
         )
-        # 30.0s audio + 3 items × 1.25s CATEGORY_FLASH_DUR = 33.75s
-        assert outputs[0]["total_duration_seconds"] == pytest.approx(33.75)
+        # 30.0s audio + 3 items × 1.5s flash + 3 items × 2.0s intro = 40.5s
+        assert outputs[0]["total_duration_seconds"] == pytest.approx(40.5)
 
     def test_combined_has_props(self):
         outputs = _build_render_outputs(
@@ -215,10 +215,10 @@ class TestPerItemRenderOutput:
             bulletin_title="Bulten",
             **COMMON_KWARGS,
         )
-        # Her item: audio_duration + 1 × 1.25s CATEGORY_FLASH_DUR
-        assert outputs[0]["total_duration_seconds"] == pytest.approx(11.25)
-        assert outputs[1]["total_duration_seconds"] == pytest.approx(13.25)
-        assert outputs[2]["total_duration_seconds"] == pytest.approx(9.25)
+        # Her item: audio_duration + 1 × 1.5s flash + 1 × 2.0s intro
+        assert outputs[0]["total_duration_seconds"] == pytest.approx(13.5)
+        assert outputs[1]["total_duration_seconds"] == pytest.approx(15.5)
+        assert outputs[2]["total_duration_seconds"] == pytest.approx(11.5)
 
     def test_per_item_props_structure(self):
         outputs = _build_render_outputs(

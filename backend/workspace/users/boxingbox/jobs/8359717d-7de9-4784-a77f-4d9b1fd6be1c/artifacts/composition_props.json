@@ -1,0 +1,213 @@
+{
+  "job_id": "8359717d-7de9-4784-a77f-4d9b1fd6be1c",
+  "module_id": "news_bulletin",
+  "language": "tr",
+  "composition_id": "NewsBulletin",
+  "render_mode": "combined",
+  "render_outputs": [
+    {
+      "output_key": "combined",
+      "output_label": "Teknoloji Bülteni: Apple'ın DRAM Hamlesi ve Yeni Çip",
+      "composition_id": "NewsBulletin",
+      "items": [
+        {
+          "itemNumber": 1,
+          "headline": "Apple'ın DRAM Stratejisi",
+          "narration": "Teknoloji devi Apple'ın yeni bir strateji izlediği belirtiliyor. Şirket, kâr kaybını göze alarak piyasadaki tüm mobil DRAM'leri yüksek fiyatlardan satın alıyor. Bu hamle, Apple'ın pazar payını önemli ölçüde artırabilir. Piyasadaki DRAM kıtlığına rağmen, Apple bu yolla rekabette öne geçmeyi amaçlıyor.",
+          "audioPath": "artifacts/audio/scene_1.mp3",
+          "imagePath": null,
+          "imageTimeline": null,
+          "durationSeconds": 22.368,
+          "category": null,
+          "publishedAt": "2026-04-03T13:16:34",
+          "sourceId": "6087188e-182f-4c45-9f7c-2a1946a6efca",
+          "sourceName": "Mynet Teknoloji"
+        },
+        {
+          "itemNumber": 2,
+          "headline": "Yedi Yüz Derece Sıcaklığa Dayanıklı Çip Geliştirildi",
+          "narration": "Bilim insanları yüksek sıcaklığa dayanıklı yeni bir çip geliştirdi. Bu elektronik bellek cihazı, yedi yüz santigrat derecede dahi bozulmadan çalışabiliyor. Bu sıcaklık, erimiş lav sıcaklığından bile daha yüksek. Grafen, hafniyum oksit ve tungsten kullanılarak keşfedildi. Teknoloji, uzay görevleri ve yapay zeka sistemlerinde önemli bir potansiyel taşıyor.",
+          "audioPath": "artifacts/audio/scene_2.mp3",
+          "imagePath": null,
+          "imageTimeline": null,
+          "durationSeconds": 27.6,
+          "category": null,
+          "publishedAt": "2026-04-03T14:36:25",
+          "sourceId": "6087188e-182f-4c45-9f7c-2a1946a6efca",
+          "sourceName": "Mynet Teknoloji"
+        }
+      ],
+      "suggested_filename": "output.mp4",
+      "total_duration_seconds": 49.968,
+      "props": {
+        "bulletinTitle": "Teknoloji Bülteni: Apple'ın DRAM Hamlesi ve Yeni Çip",
+        "items": [
+          {
+            "itemNumber": 1,
+            "headline": "Apple'ın DRAM Stratejisi",
+            "narration": "Teknoloji devi Apple'ın yeni bir strateji izlediği belirtiliyor. Şirket, kâr kaybını göze alarak piyasadaki tüm mobil DRAM'leri yüksek fiyatlardan satın alıyor. Bu hamle, Apple'ın pazar payını önemli ölçüde artırabilir. Piyasadaki DRAM kıtlığına rağmen, Apple bu yolla rekabette öne geçmeyi amaçlıyor.",
+            "audioPath": "artifacts/audio/scene_1.mp3",
+            "imagePath": null,
+            "imageTimeline": null,
+            "durationSeconds": 22.368,
+            "category": null,
+            "publishedAt": "2026-04-03T13:16:34",
+            "sourceId": "6087188e-182f-4c45-9f7c-2a1946a6efca",
+            "sourceName": "Mynet Teknoloji"
+          },
+          {
+            "itemNumber": 2,
+            "headline": "Yedi Yüz Derece Sıcaklığa Dayanıklı Çip Geliştirildi",
+            "narration": "Bilim insanları yüksek sıcaklığa dayanıklı yeni bir çip geliştirdi. Bu elektronik bellek cihazı, yedi yüz santigrat derecede dahi bozulmadan çalışabiliyor. Bu sıcaklık, erimiş lav sıcaklığından bile daha yüksek. Grafen, hafniyum oksit ve tungsten kullanılarak keşfedildi. Teknoloji, uzay görevleri ve yapay zeka sistemlerinde önemli bir potansiyel taşıyor.",
+            "audioPath": "artifacts/audio/scene_2.mp3",
+            "imagePath": null,
+            "imageTimeline": null,
+            "durationSeconds": 27.6,
+            "category": null,
+            "publishedAt": "2026-04-03T14:36:25",
+            "sourceId": "6087188e-182f-4c45-9f7c-2a1946a6efca",
+            "sourceName": "Mynet Teknoloji"
+          }
+        ],
+        "subtitlesSrt": "/Users/huseyincoskun/Downloads/AntigravityProje/ContentHub/backend/workspace/users/boxingbox/jobs/8359717d-7de9-4784-a77f-4d9b1fd6be1c/artifacts/subtitles.srt",
+        "wordTimingPath": "/Users/huseyincoskun/Downloads/AntigravityProje/ContentHub/backend/workspace/users/boxingbox/jobs/8359717d-7de9-4784-a77f-4d9b1fd6be1c/artifacts/word_timing.json",
+        "timingMode": "whisper_word",
+        "subtitleStyle": {
+          "preset_id": "clean_white",
+          "preset_fallback_used": false,
+          "label": "Temiz Beyaz",
+          "font_size": 36,
+          "font_weight": "600",
+          "text_color": "#FFFFFF",
+          "active_color": "#FFD700",
+          "background": "rgba(0,0,0,0.35)",
+          "outline_width": 2,
+          "outline_color": "#000000",
+          "line_height": 1.4
+        },
+        "lowerThirdStyle": "broadcast",
+        "renderMode": "combined",
+        "totalDurationSeconds": 49.968,
+        "language": "tr",
+        "bulletinStyle": "breaking",
+        "networkName": "ContentHub Haber",
+        "showTicker": true,
+        "tickerItems": null,
+        "renderFormat": "portrait",
+        "karaokeAnimPreset": "hype",
+        "metadata": {
+          "title": "Teknoloji Bülteni: Apple'ın DRAM Hamlesi ve Yeni Çip",
+          "description": "Teknoloji devi Apple, kâr kaybını göze alarak piyasadaki tüm mobil DRAM'leri yüksek fiyatlardan satın alarak yeni bir strateji izliyor. Diğer yandan, bilim insanları yedi yüz santigrat derecede dahi bozulmadan çalışabilen yüksek sıcaklığa dayanıklı yeni bir çip geliştirdi. Teknoloji dünyasındaki son gelişmeleri bu bültende bulabilirsiniz.",
+          "tags": [
+            "teknoloji",
+            "Apple",
+            "DRAM",
+            "mobil teknoloji",
+            "yüksek sıcaklık çipi",
+            "çip teknolojisi",
+            "bilim",
+            "inovasyon",
+            "haber bülteni",
+            "gündem"
+          ],
+          "hashtags": [
+            "#TeknolojiHaberleri",
+            "#Apple",
+            "#DRAM",
+            "#YüksekSıcaklıkÇip",
+            "#BilimVeTeknoloji"
+          ]
+        }
+      }
+    }
+  ],
+  "props": {
+    "bulletinTitle": "Teknoloji Bülteni: Apple'ın DRAM Hamlesi ve Yeni Çip",
+    "items": [
+      {
+        "itemNumber": 1,
+        "headline": "Apple'ın DRAM Stratejisi",
+        "narration": "Teknoloji devi Apple'ın yeni bir strateji izlediği belirtiliyor. Şirket, kâr kaybını göze alarak piyasadaki tüm mobil DRAM'leri yüksek fiyatlardan satın alıyor. Bu hamle, Apple'ın pazar payını önemli ölçüde artırabilir. Piyasadaki DRAM kıtlığına rağmen, Apple bu yolla rekabette öne geçmeyi amaçlıyor.",
+        "audioPath": "http://127.0.0.1:59097/artifacts/audio/scene_1.mp3",
+        "imagePath": null,
+        "imageTimeline": null,
+        "durationSeconds": 22.368,
+        "category": null,
+        "publishedAt": "2026-04-03T13:16:34",
+        "sourceId": "6087188e-182f-4c45-9f7c-2a1946a6efca",
+        "sourceName": "Mynet Teknoloji"
+      },
+      {
+        "itemNumber": 2,
+        "headline": "Yedi Yüz Derece Sıcaklığa Dayanıklı Çip Geliştirildi",
+        "narration": "Bilim insanları yüksek sıcaklığa dayanıklı yeni bir çip geliştirdi. Bu elektronik bellek cihazı, yedi yüz santigrat derecede dahi bozulmadan çalışabiliyor. Bu sıcaklık, erimiş lav sıcaklığından bile daha yüksek. Grafen, hafniyum oksit ve tungsten kullanılarak keşfedildi. Teknoloji, uzay görevleri ve yapay zeka sistemlerinde önemli bir potansiyel taşıyor.",
+        "audioPath": "http://127.0.0.1:59097/artifacts/audio/scene_2.mp3",
+        "imagePath": null,
+        "imageTimeline": null,
+        "durationSeconds": 27.6,
+        "category": null,
+        "publishedAt": "2026-04-03T14:36:25",
+        "sourceId": "6087188e-182f-4c45-9f7c-2a1946a6efca",
+        "sourceName": "Mynet Teknoloji"
+      }
+    ],
+    "subtitlesSrt": "/Users/huseyincoskun/Downloads/AntigravityProje/ContentHub/backend/workspace/users/boxingbox/jobs/8359717d-7de9-4784-a77f-4d9b1fd6be1c/artifacts/subtitles.srt",
+    "wordTimingPath": "/Users/huseyincoskun/Downloads/AntigravityProje/ContentHub/backend/workspace/users/boxingbox/jobs/8359717d-7de9-4784-a77f-4d9b1fd6be1c/artifacts/word_timing.json",
+    "timingMode": "whisper_word",
+    "subtitleStyle": {
+      "preset_id": "clean_white",
+      "preset_fallback_used": false,
+      "label": "Temiz Beyaz",
+      "font_size": 36,
+      "font_weight": "600",
+      "text_color": "#FFFFFF",
+      "active_color": "#FFD700",
+      "background": "rgba(0,0,0,0.35)",
+      "outline_width": 2,
+      "outline_color": "#000000",
+      "line_height": 1.4
+    },
+    "lowerThirdStyle": "broadcast",
+    "renderMode": "combined",
+    "totalDurationSeconds": 49.968,
+    "language": "tr",
+    "bulletinStyle": "breaking",
+    "networkName": "ContentHub Haber",
+    "showTicker": true,
+    "tickerItems": null,
+    "renderFormat": "portrait",
+    "karaokeAnimPreset": "hype",
+    "showDate": true,
+    "showSource": false,
+    "metadata": {
+      "title": "Teknoloji Bülteni: Apple'ın DRAM Hamlesi ve Yeni Çip",
+      "description": "Teknoloji devi Apple, kâr kaybını göze alarak piyasadaki tüm mobil DRAM'leri yüksek fiyatlardan satın alarak yeni bir strateji izliyor. Diğer yandan, bilim insanları yedi yüz santigrat derecede dahi bozulmadan çalışabilen yüksek sıcaklığa dayanıklı yeni bir çip geliştirdi. Teknoloji dünyasındaki son gelişmeleri bu bültende bulabilirsiniz.",
+      "tags": [
+        "teknoloji",
+        "Apple",
+        "DRAM",
+        "mobil teknoloji",
+        "yüksek sıcaklık çipi",
+        "çip teknolojisi",
+        "bilim",
+        "inovasyon",
+        "haber bülteni",
+        "gündem"
+      ],
+      "hashtags": [
+        "#TeknolojiHaberleri",
+        "#Apple",
+        "#DRAM",
+        "#YüksekSıcaklıkÇip",
+        "#BilimVeTeknoloji"
+      ]
+    }
+  },
+  "render_status": "rendered",
+  "created_at": "2026-04-08T11:30:40.570673+00:00",
+  "output_path": "/Users/huseyincoskun/Downloads/AntigravityProje/ContentHub/backend/workspace/users/boxingbox/jobs/8359717d-7de9-4784-a77f-4d9b1fd6be1c/artifacts/output.mp4",
+  "timing_mode_used": "cursor",
+  "word_timings_count": 83,
+  "duration_fallback_used": true,
+  "updated_at": "2026-04-08T11:31:08.700898+00:00"
+}

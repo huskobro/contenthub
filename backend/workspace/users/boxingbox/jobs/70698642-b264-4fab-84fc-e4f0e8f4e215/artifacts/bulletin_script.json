@@ -1,0 +1,41 @@
+{
+  "items": [
+    {
+      "item_number": 1,
+      "headline": "Apple, Rusya'da App Store ve iCloud ödemelerini durdurdu.",
+      "narration": "Teknoloji devi Apple, Rusya'daki hizmetleriyle ilgili önemli bir karar aldı. Şirket, App Store ve iCloud gibi servisler için ödemeleri durdurduğunu duyurdu. Bu gelişme, teknoloji dünyasında yakından takip ediliyor. Karar, küresel piyasalarda da yankı uyandırdı.",
+      "duration_seconds": 17,
+      "image_url": null,
+      "image_urls": [],
+      "published_at": "2026-04-03T08:03:14",
+      "source_id": "6087188e-182f-4c45-9f7c-2a1946a6efca",
+      "source_name": "Mynet Teknoloji"
+    },
+    {
+      "item_number": 2,
+      "headline": "Apple güncellemesi Time Machine sorununa yol açtı.",
+      "narration": "Apple'ın yeni macOS Tahoe yirmi altı nokta dört güncellemesi, Mac kullanıcılarını etkiledi. Güncelleme sonrası Time Machine, ağ depolama cihazlarına yedekleme yapamıyor. Bu durum, önemli bir sorun olarak görülüyor. Şirket, sorunu bir sonraki güncellemeyle çözeceğini açıkladı.",
+      "duration_seconds": 17,
+      "image_url": null,
+      "image_urls": [],
+      "published_at": "2026-04-03T08:29:53",
+      "source_id": "6087188e-182f-4c45-9f7c-2a1946a6efca",
+      "source_name": "Mynet Teknoloji"
+    },
+    {
+      "item_number": 3,
+      "headline": "AnTuTu, Mart iki bin yirmi altı en güçlü Android telefonları listesini açıkladı.",
+      "narration": "AnTuTu, Mart iki bin yirmi altı dönemi için en güçlü Android amiral gemisi telefonları sıraladı. Liste, Snapdragon Sekiz Elite Beş işlemcisinin yoğunluğunu ortaya koyuyor. Ancak listede dikkat çeken bir sürpriz de yer aldı. Detaylar, teknoloji meraklıları tarafından inceleniyor.",
+      "duration_seconds": 17,
+      "image_url": null,
+      "image_urls": [],
+      "published_at": "2026-04-03T09:11:54",
+      "source_id": "6087188e-182f-4c45-9f7c-2a1946a6efca",
+      "source_name": "Mynet Teknoloji"
+    }
+  ],
+  "transitions": [],
+  "total_duration_seconds": 51,
+  "language": "tr",
+  "bulletin_id": "2e2001c9-e10d-4a71-bf3d-1f56d57941f2"
+}
