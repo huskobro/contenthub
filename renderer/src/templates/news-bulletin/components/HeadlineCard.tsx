@@ -25,8 +25,8 @@ import {
   useCurrentFrame,
   useVideoConfig,
 } from "remotion";
-import { BulletinStyle } from "./StudioBackground";
-import { BULLETIN_ACCENT } from "../shared/palette";
+import { BulletinStyle, CategoryStyleMapping } from "./StudioBackground";
+import { BULLETIN_ACCENT, resolveAccent } from "../shared/palette";
 import { SubtitleEntry, renderSubtitleWords } from "../shared/subtitle-renderer";
 
 // ---------------------------------------------------------------------------
@@ -55,6 +55,12 @@ interface Props {
   item: HeadlineCardItem;
   index?: number;
   isPortrait?: boolean;
+  /** M43: Ken Burns efekti aktif mi */
+  imageKenBurns?: boolean;
+  /** M43: Kategori stil eşleme tablosu (admin panelden) */
+  categoryStyleMapping?: CategoryStyleMapping | null;
+  /** M43: Medya aspect ratio ipucu — layout seçimi için */
+  mediaAspect?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -239,7 +245,7 @@ const PortraitLayout169: React.FC<{
   currentTimeSec: number;
 }> = ({ item, accent, frame, fps, durationInFrames, index, currentTimeSec }) => {
 
-  const imgScale = lerp(frame, [0, 300], [1.0, 1.06]);
+  const imgScale = imageKenBurns ? lerp(frame, [0, 300], [1.0, 1.06]) : 1.0;
   const IMAGE_TOP = NETWORK_BAR_H + 8;
   const IMAGE_H   = 720; // ~37% of 1920
 
@@ -428,12 +434,15 @@ const PortraitLayoutNoMedia: React.FC<{
 // Ana HeadlineCard bileşeni
 // ---------------------------------------------------------------------------
 
-export const HeadlineCard: React.FC<Props> = ({ item, index = 0, isPortrait = false }) => {
+export const HeadlineCard: React.FC<Props> = ({
+  item, index = 0, isPortrait = false,
+  imageKenBurns = true, categoryStyleMapping, mediaAspect,
+}) => {
   const frame = useCurrentFrame();
   const { fps, durationInFrames } = useVideoConfig();
 
   const style  = item.bulletinStyle ?? "breaking";
-  const accent = BULLETIN_ACCENT[style] ?? BULLETIN_ACCENT.breaking;
+  const accent = resolveAccent(style, categoryStyleMapping);
 
   const currentTimeSec = frame / fps;
 
@@ -456,9 +465,17 @@ export const HeadlineCard: React.FC<Props> = ({ item, index = 0, isPortrait = fa
           durationInFrames={durationInFrames} index={index}
         />
       );
+    } else if (mediaAspect === "9:16" || mediaAspect === "9:16-focus") {
+      // M43: Full-bleed dikey görsel layout
+      layout = (
+        <PortraitLayout916
+          item={item} accent={accent} frame={frame} fps={fps}
+          durationInFrames={durationInFrames} index={index}
+          currentTimeSec={currentTimeSec}
+        />
+      );
     } else {
-      // 16:9 görsel → üst panel; aksi hâlde full-bleed
-      // (imageTimeline veya imagePath → varsayılan olarak Layout169)
+      // 16:9 görsel (varsayılan) veya 1:1 → üst panel layout
       layout = (
         <PortraitLayout169
           item={item} accent={accent} frame={frame} fps={fps}
