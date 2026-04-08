@@ -67,7 +67,7 @@ export function EffectiveSettingsPanel() {
     : settings;
 
   // Group filtered settings
-  const groupOrder = ["credentials", "providers", "execution", "source_scans", "publish", "ui", "jobs", "wizard", "standard_video", "news_bulletin", "modules"];
+  const groupOrder = ["credentials", "providers", "execution", "source_scans", "publish", "ui", "jobs", "wizard", "standard_video", "news_bulletin", "modules", "system"];
   const grouped: Record<string, EffectiveSetting[]> = {};
   for (const s of filtered) {
     const g = s.group || "general";

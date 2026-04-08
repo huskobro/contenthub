@@ -1245,11 +1245,13 @@ GROUP_LABELS: Dict[str, str] = {
     "ui": "Arayuz Ayarlari",
     "jobs": "Is Motoru Ayarlari",
     "news_bulletin": "Haber Bulteni",
-    "modules": "Modüller",
-    "wizard": "Wizard Yönetimi",
+    "standard_video": "Standart Video",
+    "modules": "Moduller",
+    "wizard": "Wizard Yonetimi",
+    "system": "Sistem",
 }
 
-GROUP_ORDER = ["credentials", "providers", "execution", "source_scans", "publish", "ui", "jobs", "wizard", "standard_video", "news_bulletin", "modules"]
+GROUP_ORDER = ["credentials", "providers", "execution", "source_scans", "publish", "ui", "jobs", "wizard", "standard_video", "news_bulletin", "modules", "system"]
 
 
 # ---------------------------------------------------------------------------

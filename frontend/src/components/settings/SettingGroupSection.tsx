@@ -24,6 +24,7 @@ export const GROUP_LABELS_MAP: Record<string, string> = {
   standard_video: "Standart Video",
   news_bulletin: "Haber Bulteni",
   modules: "Moduller",
+  system: "Sistem",
 };
 
 // ---------------------------------------------------------------------------
