@@ -428,6 +428,14 @@ class RenderStepExecutor(StepExecutor):
         workspace_root = ctx.workspace_root or (
             str(job.workspace_path) if getattr(job, "workspace_path", None) else ""
         )
+        # Fallback: workspace_root boşsa _resolve_artifact_path ile tutarlı temp dizin kullan
+        if not workspace_root:
+            import tempfile
+            workspace_root = str(Path(tempfile.gettempdir()) / "contenthub_workspace" / job.id)
+            logger.warning(
+                "RenderStepExecutor: workspace_root boş — temp fallback kullanılıyor: %s job=%s",
+                workspace_root, job.id,
+            )
 
         # composition_props.json oku
         composition_props = _read_artifact(workspace_root, job.id, "composition_props.json")
