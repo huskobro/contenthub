@@ -98,3 +98,16 @@ export function resolveKaraokeRenderBehavior(mode: TimingMode): KaraokeRenderBeh
     degraded_mode: mode === "cursor",
   };
 }
+
+/**
+ * Karaoke animasyon preset — her kelime için scale/color/glow efekti.
+ *
+ * hype      : zoom_in (0.8→1.05→1.0), gri→sarı→beyaz, 4-yön stroke + glow
+ * explosive : agresif pop (0.5→1.1→1.0), altın→beyaz+ateş glowu→altın
+ * vibrant   : bounce dip (0.95→0.9→1.05→1.0), yumuşak renk değişimi
+ * minimal   : scale yok, sadece renk değişimi
+ *
+ * ContentHub-native: YTRobot'un pycaps-inspired preset mantığından adapte edilmiştir.
+ * Doğrudan kopyalanmamış; SubtitleStylePreset ile entegre çalışır.
+ */
+export type KaraokeAnimPreset = "hype" | "explosive" | "vibrant" | "minimal";

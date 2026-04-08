@@ -46,6 +46,7 @@ import type {
   SubtitleStylePreset,
   TimingMode,
   WordTiming,
+  KaraokeAnimPreset,
 } from "../shared/subtitle-contracts";
 import { KaraokeSubtitle } from "./KaraokeSubtitle";
 
@@ -85,6 +86,8 @@ export interface StandardVideoProps {
   language: string;
   /** M41: Render formatı — "landscape" (16:9) veya "portrait" (9:16). Varsayılan: landscape. */
   renderFormat?: "landscape" | "portrait";
+  /** M42: Karaoke animasyon preset. Varsayılan: "hype". */
+  karaokeAnimPreset?: KaraokeAnimPreset;
   metadata: {
     title: string;
     description: string;
@@ -104,49 +107,52 @@ interface PortraitOverlayProps {
 function PortraitOverlay({ title }: PortraitOverlayProps) {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const titleOpacity = interpolate(
-    spring({ frame, fps, config: { damping: 20, stiffness: 120 } }),
-    [0, 1], [0, 1],
-  );
+
+  // Başlık spring entrance
+  const headProgress = spring({ frame, fps, config: { damping: 16, stiffness: 160 } });
+  const headY = interpolate(headProgress, [0, 1], [-20, 0]);
+  const headOpacity = interpolate(headProgress, [0, 0.5], [0, 1], { extrapolateRight: "clamp" });
 
   return (
     <>
-      {/* Top gradient — safe area */}
+      {/* Vignette — üst ve yan kenar karartma */}
       <div style={{
         position: "absolute",
-        top: 0,
-        left: 0,
-        right: 0,
-        height: "20%",
-        background: "linear-gradient(to bottom, rgba(0,0,0,0.75) 0%, transparent 100%)",
+        inset: 0,
+        background: [
+          "linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, transparent 20%)",
+          "linear-gradient(to bottom, transparent 55%, rgba(0,0,0,0.75) 75%, rgba(0,0,0,0.92) 100%)",
+        ].join(", "),
         pointerEvents: "none",
       }} />
 
-      {/* Bottom gradient — altyazı ve branding alanı */}
+      {/* Aksan çizgisi — metin alanı başlangıcında */}
       <div style={{
         position: "absolute",
-        bottom: 0,
-        left: 0,
-        right: 0,
-        height: "40%",
-        background: "linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 60%, transparent 100%)",
+        bottom: "42%",
+        left: "6%",
+        right: "6%",
+        height: 3,
+        background: "linear-gradient(to right, transparent, rgba(255,255,255,0.6), transparent)",
         pointerEvents: "none",
       }} />
 
-      {/* Başlık — portrait üst branding */}
+      {/* Başlık — portrait üst branding, spring entrance */}
       {title && (
         <div style={{
           position: "absolute",
           top: "4%",
           left: "5%",
           right: "5%",
-          opacity: titleOpacity,
+          opacity: headOpacity,
+          transform: `translateY(${headY}px)`,
           textAlign: "center",
-          fontSize: 28,
+          fontSize: 30,
           fontWeight: "700",
           color: "#FFFFFF",
-          textShadow: "0 2px 8px rgba(0,0,0,0.8)",
+          textShadow: "0 2px 12px rgba(0,0,0,0.9), 0 0 40px rgba(0,0,0,0.6)",
           lineHeight: 1.3,
+          letterSpacing: "0.04em",
         }}>
           {title}
         </div>
@@ -186,6 +192,7 @@ interface SceneComponentProps {
     totalDurationSeconds: number;
     subtitlesSrt: string | null;
     isPortrait: boolean;
+    animPreset: KaraokeAnimPreset;
   };
   isPortrait: boolean;
   showTitle?: string;
@@ -225,7 +232,7 @@ function SceneComponent({ scene, subtitleProps, isPortrait, showTitle }: SceneCo
       {/* Gradient overlay */}
       {isPortrait ? <PortraitOverlay title={showTitle} /> : <LandscapeOverlay />}
 
-      {/* Altyazı katmanı — whisper varsa karaoke, yoksa SRT cursor fallback */}
+      {/* Altyazı katmanı — whisper varsa karaoke animasyonlu, yoksa SRT cursor fallback */}
       <KaraokeSubtitle
         wordTimings={subtitleProps.wordTimings}
         style={subtitleProps.style}
@@ -233,6 +240,7 @@ function SceneComponent({ scene, subtitleProps, isPortrait, showTitle }: SceneCo
         totalDurationSeconds={subtitleProps.totalDurationSeconds}
         subtitlesSrt={subtitleProps.subtitlesSrt}
         isPortrait={subtitleProps.isPortrait}
+        animPreset={subtitleProps.animPreset}
       />
     </AbsoluteFill>
   );
@@ -252,6 +260,7 @@ export function StandardVideoComposition(props: StandardVideoProps) {
     total_duration_seconds,
     subtitles_srt,
     renderFormat,
+    karaokeAnimPreset,
     title,
   } = props;
 
@@ -273,6 +282,7 @@ export function StandardVideoComposition(props: StandardVideoProps) {
     totalDurationSeconds: total_duration_seconds,
     subtitlesSrt: subtitles_srt,
     isPortrait,
+    animPreset: (karaokeAnimPreset ?? "hype") as KaraokeAnimPreset,
   };
 
   return (

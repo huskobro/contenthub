@@ -1,39 +1,43 @@
 /**
- * Karaoke altyazı Remotion composition component'ı — M4-C2.
+ * Karaoke altyazı Remotion composition component'ı — M42.
  *
- * Gerçek kelime-düzeyi highlight ile altyazı render eder.
+ * Gerçek kelime-düzeyi highlight + animasyon preset sistemi.
  * word_timing.json artifact'ından gelen WordTiming verisini tüketir.
  *
- * KURULUM NOTU:
- *   Remotion M6-C1 kapsamında kuruldu ve bu component aktif edildi.
- *   Render pipeline'ı `composition_props.json`'u üretir (render_status: "props_ready");
- *   RenderStepExecutor bu dosyayı içeren renderer paketini subprocess ile çağırır.
+ * Animasyon preset sistemi (ContentHub-native):
+ *   hype      : zoom_in (0.8→1.05→1.0), gri→sarı→beyaz, 4-yön stroke + glow
+ *   explosive : agresif pop (0.5→1.1→1.0), altın→beyaz+ateş glow→altın
+ *   vibrant   : bounce dip (0.95→0.9→1.05→1.0), yumuşak renk
+ *   minimal   : scale yok, sadece renk değişimi
  *
  * Timing modu davranışı:
- *   whisper_word    → kelime bazında highlight (word.start ≤ currentTime < word.end)
- *   whisper_segment → satır bazında highlight (segment zamanlaması kullanılır)
+ *   whisper_word    → kelime bazında highlight + animasyon
+ *   whisper_segment → satır bazında highlight (tüm satır active_color)
  *   cursor          → SRT tabanlı fallback: aktif subtitle satırını düz metin gösterir
- *                     Operatöre ve kullanıcıya "degrade zamanlama modu" olarak yansıtılır.
+ *
+ * Düzeltilen bug'lar (M42):
+ *   - String match yerine index-based word tracking (tekrar eden kelimeler artık doğru highlight)
+ *   - Segment entrance animasyonu (slide-up 12px + fade-in 5 frame)
+ *   - 3-state word rengi: future(soluk) / active(vurgulu) / past(belirgin)
+ *   - Safe interpolate: sıfır-uzunluklu word'lerde crash yok
+ *   - fontWeight + letterSpacing aktif word'de artırılır
  *
  * Stil kontrolü:
- *   Stil alanları SubtitleStylePreset sözleşmesinden gelir.
- *   Component içinde magic string veya hardcoded renk yoktur.
- *   Tüm görsel kararlar preset katmanında alınır.
+ *   SubtitleStylePreset'ten gelir. animPreset ayrı parametre olarak geçirilir.
+ *   SubtitleStylePreset.active_color → karaoke highlight rengi.
  *
- * M41c: Portrait layout desteği eklendi.
- *   isPortrait=true olduğunda font boyutu ve konum portrait için optimize edilir.
- * M41c: Cursor modunda SRT parse fallback eklendi.
- *   subtitles_srt geçilirse cursor modda dahi altyazı görünür.
+ * M41c: Portrait layout desteği (font boyutu, konum).
+ * M41c: Cursor modunda SRT parse fallback.
  */
 
-// Remotion M6-C1 ile kuruldu — import'lar aktif edildi.
-import { useCurrentFrame, useVideoConfig } from "remotion";
+import { interpolate, useCurrentFrame, useVideoConfig } from "remotion";
 
 import type {
   WordTiming,
   SubtitleStylePreset,
   TimingMode,
   KaraokeRenderBehavior,
+  KaraokeAnimPreset,
 } from "../shared/subtitle-contracts";
 import { resolveKaraokeRenderBehavior } from "../shared/subtitle-contracts";
 
@@ -54,6 +58,12 @@ export interface KaraokeSubtitleProps {
   subtitlesSrt?: string | null;
   /** M41c: Portrait layout flag — font boyutu ve konumu ayarlar. */
   isPortrait?: boolean;
+  /**
+   * Karaoke animasyon preset.
+   * hype | explosive | vibrant | minimal
+   * Default: "hype"
+   */
+  animPreset?: KaraokeAnimPreset;
 }
 
 // ---------------------------------------------------------------------------
@@ -68,12 +78,10 @@ interface SrtEntry {
 
 function parseSrt(srt: string): SrtEntry[] {
   const entries: SrtEntry[] = [];
-  // SRT blokları boş satırlarla ayrılır
   const blocks = srt.trim().split(/\n\s*\n/);
   for (const block of blocks) {
     const lines = block.trim().split("\n");
     if (lines.length < 3) continue;
-    // lines[0] = index, lines[1] = timestamps, lines[2+] = text
     const timeLine = lines[1];
     const match = timeLine.match(
       /(\d+):(\d+):(\d+)[,.](\d+)\s*-->\s*(\d+):(\d+):(\d+)[,.](\d+)/
@@ -107,42 +115,115 @@ function findActiveSrtEntry(entries: SrtEntry[], currentTime: number): string | 
 }
 
 // ---------------------------------------------------------------------------
-// Yardımcı: aktif kelimeyi bul
+// Yardımcı: aktif kelimeyi index ile bul
 // ---------------------------------------------------------------------------
 
 /**
- * currentTime'a göre aktif WordTiming öğesini döner.
- * whisper_word modu için kullanılır.
+ * currentTime'a göre aktif WordTiming'in index'ini döner.
+ * String match yerine index kullanmak tekrar eden kelime bug'ını çözer.
  */
-function findActiveWord(
+function findActiveWordIndex(
   words: WordTiming[],
   currentTime: number
-): WordTiming | null {
-  for (const w of words) {
-    if (currentTime >= w.start && currentTime < w.end) {
-      return w;
+): number {
+  for (let i = 0; i < words.length; i++) {
+    if (currentTime >= words[i].start && currentTime < words[i].end) {
+      return i;
     }
   }
-  return null;
+  return -1;
 }
 
 /**
- * currentTime'a göre aktif metni döner (whisper_segment modu için).
+ * currentTime'a göre aktif metni döner (whisper_segment modu).
  */
 function findActiveSegmentText(
   words: WordTiming[],
   currentTime: number
 ): string | null {
-  const sceneWords = words.filter((w) => {
-    const sw = words.filter((sw) => sw.scene === w.scene);
-    if (sw.length === 0) return false;
-    const sceneStart = sw[0].start;
-    const sceneEnd = sw[sw.length - 1].end;
-    return currentTime >= sceneStart && currentTime < sceneEnd;
-  });
+  // Aktif sahneyi bul: currentTime'ı kapsayan ilk kelimeyi ara
+  let activeScene: number | null = null;
+  for (const w of words) {
+    if (currentTime >= w.start && currentTime < w.end) {
+      activeScene = w.scene;
+      break;
+    }
+  }
+  // Aktif kelime yok → en yakın sahneye bak (cümle arası boşluklar için)
+  if (activeScene === null) {
+    for (const w of words) {
+      if (currentTime >= w.start) {
+        activeScene = w.scene;
+      }
+    }
+  }
+  if (activeScene === null) return null;
 
-  if (sceneWords.length === 0) return null;
-  return sceneWords.map((w) => w.word).join(" ");
+  return words
+    .filter((w) => w.scene === activeScene)
+    .map((w) => w.word)
+    .join(" ");
+}
+
+// ---------------------------------------------------------------------------
+// Animasyon yardımcıları (ContentHub-native, YTRobot preset mantığından adapte)
+// ---------------------------------------------------------------------------
+
+/**
+ * Güvenli interpolate: inRange[0] >= inRange[1] durumunda crash olmaz.
+ */
+function lerp(
+  f: number,
+  inRange: [number, number],
+  outRange: [number, number]
+): number {
+  if (inRange[0] >= inRange[1]) return outRange[1];
+  return interpolate(f, inRange, outRange, {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+}
+
+/**
+ * zoom_in: initScale → (1 + overshoot) → 1.0
+ * peakFrac: 0.0–1.0, peak'in dur içindeki yeri
+ */
+function zoomIn(
+  f: number,
+  start: number,
+  dur: number,
+  initScale: number,
+  overshoot: number,
+  peakFrac: number
+): number {
+  if (dur <= 0) return 1.0;
+  const peak = start + Math.max(1, Math.floor(dur * peakFrac));
+  const end = start + dur;
+  if (f < peak) return lerp(f, [start, peak], [initScale, 1 + overshoot]);
+  return lerp(f, [peak, end], [1 + overshoot, 1.0]);
+}
+
+/**
+ * pop_in: initScale → minScale (dip) → (1 + overshoot) (peak) → 1.0
+ * pycaps PopInPrimitive'den adapte edilmiştir.
+ */
+function popIn(
+  f: number,
+  start: number,
+  dur: number,
+  initScale: number,
+  minScale: number,
+  minAt: number,
+  overshoot: number,
+  peakAt: number
+): number {
+  if (dur <= 0) return 1.0;
+  const dipFrame  = start + Math.max(1, Math.floor(dur * minAt));
+  const peakFrame = start + Math.max(2, Math.floor(dur * peakAt));
+  const end = start + dur;
+  if (f < dipFrame)  return lerp(f, [start, dipFrame],      [initScale, minScale]);
+  if (f < peakFrame) return lerp(f, [dipFrame, peakFrame],  [minScale, 1 + overshoot]);
+  return              lerp(f, [peakFrame, end],              [1 + overshoot, 1.0]);
 }
 
 // ---------------------------------------------------------------------------
@@ -157,6 +238,7 @@ export function KaraokeSubtitle(props: KaraokeSubtitleProps): JSX.Element {
     totalDurationSeconds: _total,
     subtitlesSrt,
     isPortrait = false,
+    animPreset = "hype",
   } = props;
 
   const frame = useCurrentFrame();
@@ -165,34 +247,11 @@ export function KaraokeSubtitle(props: KaraokeSubtitleProps): JSX.Element {
 
   const behavior: KaraokeRenderBehavior = resolveKaraokeRenderBehavior(timingMode);
 
-  // M41c: Portrait layout — font boyutu ve konum ayarları
+  // M41c: Portrait layout ayarları
   const portraitFontSize = Math.round(style.font_size * 0.75);
   const fontSize = isPortrait ? portraitFontSize : style.font_size;
   const bottomPct = isPortrait ? "12%" : "10%";
   const sidePct = isPortrait ? "4%" : "5%";
-
-  let displayText: string | null = null;
-  let activeWordText: string | null = null;
-
-  if (behavior.word_level_highlight) {
-    const activeWord = findActiveWord(wordTimings, currentTime);
-    if (activeWord) {
-      displayText = wordTimings
-        .filter((w) => w.scene === activeWord.scene)
-        .map((w) => w.word)
-        .join(" ");
-      activeWordText = activeWord.word;
-    }
-  } else if (behavior.segment_level_highlight) {
-    displayText = findActiveSegmentText(wordTimings, currentTime);
-  } else if (behavior.degraded_mode) {
-    // M41c: cursor mod — SRT fallback. Whisper yoksa bile altyazı göster.
-    if (subtitlesSrt) {
-      const entries = parseSrt(subtitlesSrt);
-      displayText = findActiveSrtEntry(entries, currentTime);
-    }
-    // SRT da yoksa boş kalır — sessiz render
-  }
 
   const containerStyle: React.CSSProperties = {
     position: "absolute",
@@ -200,9 +259,10 @@ export function KaraokeSubtitle(props: KaraokeSubtitleProps): JSX.Element {
     left: sidePct,
     right: sidePct,
     textAlign: "center",
+    pointerEvents: "none",
   };
 
-  const textStyle: React.CSSProperties = {
+  const baseTextStyle: React.CSSProperties = {
     fontSize: `${fontSize}px`,
     fontWeight: style.font_weight,
     color: style.text_color,
@@ -212,58 +272,177 @@ export function KaraokeSubtitle(props: KaraokeSubtitleProps): JSX.Element {
     borderRadius: "4px",
     textShadow:
       style.outline_width > 0
-        ? `${style.outline_width}px ${style.outline_width}px 0 ${style.outline_color},
-           -${style.outline_width}px ${style.outline_width}px 0 ${style.outline_color},
-           ${style.outline_width}px -${style.outline_width}px 0 ${style.outline_color},
-           -${style.outline_width}px -${style.outline_width}px 0 ${style.outline_color}`
+        ? `${style.outline_width}px ${style.outline_width}px 0 ${style.outline_color},` +
+          `-${style.outline_width}px ${style.outline_width}px 0 ${style.outline_color},` +
+          `${style.outline_width}px -${style.outline_width}px 0 ${style.outline_color},` +
+          `-${style.outline_width}px -${style.outline_width}px 0 ${style.outline_color}`
         : undefined,
+    fontFamily: "inherit",
   };
 
-  if (!displayText) {
-    return <div style={containerStyle} />;
-  }
-
-  // Kelime-düzeyi highlight
-  if (behavior.word_level_highlight && activeWordText) {
-    const words = displayText.split(" ");
+  // ── Cursor / degrade mod ───────────────────────────────────────────────────
+  if (behavior.degraded_mode) {
+    let displayText: string | null = null;
+    if (subtitlesSrt) {
+      const entries = parseSrt(subtitlesSrt);
+      displayText = findActiveSrtEntry(entries, currentTime);
+    }
+    if (!displayText) return <div style={containerStyle} />;
     return (
       <div style={containerStyle}>
-        <span style={textStyle}>
-          {words.map((word, index) => {
-            const isActive = word === activeWordText;
-            return (
-              <span
-                key={index}
-                style={{
-                  color: isActive ? style.active_color : style.text_color,
-                  transition: "color 0.05s ease",
-                }}
-              >
-                {word}
-                {index < words.length - 1 ? " " : ""}
-              </span>
-            );
-          })}
-        </span>
+        <span style={baseTextStyle}>{displayText}</span>
       </div>
     );
   }
 
-  // Segment highlight — tüm satır active_color ile
+  // ── Segment mod ────────────────────────────────────────────────────────────
   if (behavior.segment_level_highlight) {
+    const displayText = findActiveSegmentText(wordTimings, currentTime);
+    if (!displayText) return <div style={containerStyle} />;
     return (
       <div style={containerStyle}>
-        <span style={{ ...textStyle, color: style.active_color }}>
+        <span style={{ ...baseTextStyle, color: style.active_color }}>
           {displayText}
         </span>
       </div>
     );
   }
 
-  // Cursor/degrade mod — düz metin (SRT fallback)
+  // ── Whisper word mod — animasyonlu karaoke ────────────────────────────────
+  if (!behavior.word_level_highlight) return <div style={containerStyle} />;
+
+  // Aktif kelimeyi index ile bul (tekrar eden kelimelerde doğru highlight için)
+  const activeWordIdx = findActiveWordIndex(wordTimings, currentTime);
+  if (activeWordIdx === -1) return <div style={containerStyle} />;
+
+  const activeWord = wordTimings[activeWordIdx];
+
+  // Aktif sahnenin tüm kelimeleri → görüntülenecek cümle
+  const sceneWords = wordTimings.filter((w) => w.scene === activeWord.scene);
+  if (sceneWords.length === 0) return <div style={containerStyle} />;
+
+  // Aktif kelimenin sceneWords içindeki index'i
+  const activeInSceneIdx = sceneWords.findIndex(
+    (w) => w.start === activeWord.start && w.word === activeWord.word
+  );
+
+  // Segment süresi (frame cinsinden) — entrance animasyonu için
+  const sceneStartSec = sceneWords[0].start;
+  const sceneEndSec   = sceneWords[sceneWords.length - 1].end;
+  const segStartFrame = Math.round(sceneStartSec * fps);
+  const segEndFrame   = Math.round(sceneEndSec * fps);
+  const segDur = Math.max(1, segEndFrame - segStartFrame);
+  const introFrames = Math.min(5, Math.floor(segDur * 0.12));
+
+  // Segment-level entrance animasyonu: slide-up 12px + fade-in
+  const groupOpacity = lerp(frame, [segStartFrame, segStartFrame + introFrames], [0, 1]);
+  const groupY =
+    animPreset === "explosive"
+      ? 0  // explosive: yatay slide → translateX aşağıda yapılır
+      : lerp(frame, [segStartFrame, segStartFrame + introFrames], [12, 0]);
+  const groupX =
+    animPreset === "explosive"
+      ? lerp(frame, [segStartFrame, segStartFrame + introFrames], [-60, 0])
+      : 0;
+
+  const karaokeColor = style.active_color;
+
   return (
     <div style={containerStyle}>
-      <span style={textStyle}>{displayText}</span>
+      <span
+        style={{
+          ...baseTextStyle,
+          display: "inline",
+          opacity: groupOpacity,
+          transform:
+            animPreset === "explosive"
+              ? `translateX(${groupX}px)`
+              : `translateY(${groupY}px)`,
+        }}
+      >
+        {sceneWords.map((w, idx) => {
+          const wStartFrame = Math.round(w.start * fps);
+          const wEndFrame   = Math.round(w.end * fps);
+          const isActive = frame >= wStartFrame && frame < wEndFrame;
+          const isPast   = frame >= wEndFrame;
+          const wDur     = Math.max(1, wEndFrame - wStartFrame);
+          const animDur  = Math.min(5, wDur);
+
+          // ── Word-level scale animasyonu ──────────────────────────────────
+          let wordScale = 1.0;
+          if (isActive) {
+            if (animPreset === "hype") {
+              // zoom_in: 0.8 → 1.05 → 1.0
+              wordScale = zoomIn(frame, wStartFrame, animDur, 0.8, 0.05, 0.7);
+            } else if (animPreset === "explosive") {
+              // zoom_in agresif: 0.5 → 1.1 → 1.0
+              wordScale = zoomIn(frame, wStartFrame, animDur, 0.5, 0.1, 0.7);
+            } else if (animPreset === "vibrant") {
+              // pop_in: 0.95 → 0.9 → 1.05 → 1.0
+              wordScale = popIn(frame, wStartFrame, animDur, 0.95, 0.9, 0.5, 0.05, 0.8);
+            }
+            // minimal: wordScale = 1.0 (değişmez)
+          }
+
+          // ── 3-state renk ve glow ─────────────────────────────────────────
+          let wordColor   = style.text_color;
+          let wordOpacity = 1.0;
+          let wordShadow  = `0 2px 8px rgba(0,0,0,0.9)`;
+          let fontWeight: string | undefined = style.font_weight;
+          let letterSpacing: string | undefined = undefined;
+
+          if (animPreset === "hype") {
+            // future: soluk gri | active: karaoke rengi | past: beyaz
+            wordColor   = isActive ? karaokeColor : isPast ? "#FFFFFF" : "#DDDDDD";
+            wordOpacity = isActive ? 1.0 : isPast ? 0.9 : 0.45;
+            wordShadow  = isActive
+              ? `-2px -2px 0 #000,2px -2px 0 #000,-2px 2px 0 #000,2px 2px 0 #000,0 0 16px ${karaokeColor}99`
+              : "-2px -2px 0 #000,2px -2px 0 #000,-2px 2px 0 #000,2px 2px 0 #000,3px 3px 5px rgba(0,0,0,0.5)";
+            if (isActive) { fontWeight = "900"; letterSpacing = "0.03em"; }
+
+          } else if (animPreset === "explosive") {
+            // future: karaoke rengi soluk | active: beyaz + ateş glow | past: karaoke rengi
+            wordColor   = isActive ? "#FFFFFF" : karaokeColor;
+            wordOpacity = isActive ? 1.0 : isPast ? 0.9 : 0.5;
+            wordShadow  = isActive
+              ? `0 0 4px #FFAA00,0 0 8px #FF8800,0 0 12px #FF0000,0 0 20px #FF000088,1px 1px 1px #000`
+              : `0 0 3px #FF880066,0 0 6px #FF880044,1px 1px 1px #000`;
+            if (isActive) { fontWeight = "900"; letterSpacing = "0.03em"; }
+
+          } else if (animPreset === "vibrant") {
+            // future: text rengi soluk | active: karaoke rengi + yumuşak glow | past: text rengi
+            wordColor   = isActive ? karaokeColor : style.text_color;
+            wordOpacity = isActive ? 1.0 : isPast ? 0.85 : 0.4;
+            wordShadow  = isActive
+              ? `0 0 18px ${karaokeColor}88,0 2px 8px rgba(0,0,0,0.9)`
+              : "0 2px 8px rgba(0,0,0,0.9)";
+            if (isActive) { fontWeight = "900"; }
+
+          } else {
+            // minimal: sadece renk değişimi
+            wordColor   = isActive ? karaokeColor : style.text_color;
+            wordOpacity = isActive ? 1.0 : isPast ? 0.8 : 0.5;
+          }
+
+          return (
+            <span
+              key={`${w.scene}-${idx}`}
+              style={{
+                color: wordColor,
+                opacity: wordOpacity,
+                transform: `scale(${wordScale})`,
+                display: "inline-block",
+                marginRight: "0.22em",
+                textShadow: wordShadow,
+                fontWeight,
+                letterSpacing,
+              }}
+            >
+              {w.word}
+            </span>
+          );
+        })}
+      </span>
     </div>
   );
 }
