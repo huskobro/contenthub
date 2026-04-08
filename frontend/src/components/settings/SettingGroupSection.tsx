@@ -18,6 +18,12 @@ export const GROUP_LABELS_MAP: Record<string, string> = {
   execution: "Calisma Ortami",
   source_scans: "Kaynak Tarama",
   publish: "Yayin Ayarlari",
+  ui: "Arayuz Ayarlari",
+  jobs: "Is Motoru Ayarlari",
+  wizard: "Wizard Yonetimi",
+  standard_video: "Standart Video",
+  news_bulletin: "Haber Bulteni",
+  modules: "Moduller",
 };
 
 // ---------------------------------------------------------------------------
