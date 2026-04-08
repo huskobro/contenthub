@@ -1,7 +1,7 @@
 import React from "react";
 import { AbsoluteFill, interpolate, useCurrentFrame, useVideoConfig } from "remotion";
-import { BulletinStyle } from "./StudioBackground";
-import { BULLETIN_ACCENT } from "../shared/palette";
+import { BulletinStyle, CategoryStyleMapping } from "./StudioBackground";
+import { resolveAccent } from "../shared/palette";
 import { getCommonLabel } from "../utils/localization";
 
 interface TickerItem { text: string; }
@@ -11,6 +11,14 @@ interface Props {
   lang?: string;
   style?: BulletinStyle;
   isPortrait?: boolean;
+  /** M43: Ticker hızı (px/frame). Setting'den gelir. */
+  tickerSpeed?: number;
+  /** M43: Ticker arka plan rengi */
+  tickerBgColor?: string;
+  /** M43: Ticker yazı rengi */
+  tickerTextColor?: string;
+  /** M43: Kategori stil eşleme tablosu */
+  categoryStyleMapping?: CategoryStyleMapping | null;
 }
 
 const TICKER_HEIGHT_LANDSCAPE = 64;
@@ -19,10 +27,13 @@ const CHAR_WIDTH_LANDSCAPE = 18;
 const CHAR_WIDTH_PORTRAIT = 12;
 const SEPARATOR = "   ◆   ";
 
-export const NewsTicker: React.FC<Props> = ({ items, lang = "tr", style = "breaking", isPortrait = false }) => {
+export const NewsTicker: React.FC<Props> = ({
+  items, lang = "tr", style = "breaking", isPortrait = false,
+  tickerSpeed, tickerBgColor, tickerTextColor, categoryStyleMapping,
+}) => {
   const frame = useCurrentFrame();
   const { durationInFrames } = useVideoConfig();
-  const accent = BULLETIN_ACCENT[style] ?? BULLETIN_ACCENT.breaking;
+  const accent = resolveAccent(style, categoryStyleMapping);
 
   if (!items || items.length === 0) return null;
 
@@ -32,7 +43,7 @@ export const NewsTicker: React.FC<Props> = ({ items, lang = "tr", style = "break
   const rawText = items.map((t) => t.text).join(SEPARATOR) + SEPARATOR;
   const fullText = rawText + rawText + rawText;
 
-  const SPEED = isPortrait ? 3 : 4;
+  const SPEED = tickerSpeed ?? (isPortrait ? 3 : 4);
   const tickerX = interpolate(frame, [0, durationInFrames], [0, -SPEED * durationInFrames], { extrapolateRight: "clamp" });
   const rawWidth = rawText.length * CHAR_WIDTH;
   const wrappedX = ((tickerX % rawWidth) - rawWidth) % rawWidth;
@@ -46,7 +57,7 @@ export const NewsTicker: React.FC<Props> = ({ items, lang = "tr", style = "break
     <AbsoluteFill style={{ justifyContent: "flex-end", pointerEvents: "none" }}>
       <div style={{
         position: "absolute", bottom: 0, left: 0, right: 0,
-        height: TICKER_HEIGHT, backgroundColor: "rgba(10,10,10,0.94)",
+        height: TICKER_HEIGHT, backgroundColor: tickerBgColor ?? "rgba(10,10,10,0.94)",
         display: "flex", alignItems: "center", overflow: "hidden",
         borderTop: `2px solid ${accent}`, boxShadow: `0 -4px 24px ${accent}44`,
       }}>
@@ -61,13 +72,13 @@ export const NewsTicker: React.FC<Props> = ({ items, lang = "tr", style = "break
         </div>
         <div style={{ flex: 1, overflow: "hidden", height: "100%", display: "flex", alignItems: "center" }}>
           <div style={{ whiteSpace: "nowrap", transform: `translateX(${wrappedX}px)`, willChange: "transform" }}>
-            <span style={{ color: "#FFFFFF", fontSize: textFontSize, fontFamily: '"Montserrat", Arial, sans-serif', fontWeight: 500, letterSpacing: "0.03em" }}>
+            <span style={{ color: tickerTextColor ?? "#FFFFFF", fontSize: textFontSize, fontFamily: '"Montserrat", Arial, sans-serif', fontWeight: 500, letterSpacing: "0.03em" }}>
               {fullText}
             </span>
           </div>
         </div>
-        <div style={{ position: "absolute", left: fadeLeftOffset, top: 0, bottom: 0, width: 80, background: "linear-gradient(to right, rgba(10,10,10,0.94), transparent)", pointerEvents: "none", zIndex: 1 }} />
-        <div style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: isPortrait ? 80 : 120, background: "linear-gradient(to left, rgba(10,10,10,0.94), transparent)", pointerEvents: "none", zIndex: 1 }} />
+        <div style={{ position: "absolute", left: fadeLeftOffset, top: 0, bottom: 0, width: 80, background: `linear-gradient(to right, ${tickerBgColor ?? "rgba(10,10,10,0.94)"}, transparent)`, pointerEvents: "none", zIndex: 1 }} />
+        <div style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: isPortrait ? 80 : 120, background: `linear-gradient(to left, ${tickerBgColor ?? "rgba(10,10,10,0.94)"}, transparent)`, pointerEvents: "none", zIndex: 1 }} />
       </div>
     </AbsoluteFill>
   );
