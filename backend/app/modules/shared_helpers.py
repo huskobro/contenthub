@@ -368,8 +368,18 @@ def download_image_to_workspace(
     try:
         import urllib.request
         import urllib.error
+        import urllib.parse
 
-        req = urllib.request.Request(url, headers={
+        # URL'deki Unicode karakterleri encode et (Türkçe ç, ş, ı vb.)
+        # Sadece path ve query kısımlarını encode et, scheme/host dokunma
+        parsed = urllib.parse.urlsplit(url)
+        safe_path = urllib.parse.quote(parsed.path, safe="/-_.~!$&'()*+,;=:@")
+        safe_query = urllib.parse.quote(parsed.query, safe="/-_.~!$&'()*+,;=:@?")
+        safe_url = urllib.parse.urlunsplit((
+            parsed.scheme, parsed.netloc, safe_path, safe_query, parsed.fragment,
+        ))
+
+        req = urllib.request.Request(safe_url, headers={
             "User-Agent": "ContentHub/1.0 (image-downloader)",
         })
         with urllib.request.urlopen(req, timeout=_IMAGE_DOWNLOAD_TIMEOUT) as resp:

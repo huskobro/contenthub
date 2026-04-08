@@ -156,6 +156,10 @@ def _rewrite_asset_paths(props: dict, workspace_root: str, job_id: str, base_url
             item["imagePath"] = _to_url(item["imagePath"])
         if "audioUrl" in item:
             item["audioUrl"] = _to_url(item["audioUrl"])
+        # M41a: per-item imageTimeline[].url — local path'leri HTTP URL'ye çevir
+        for img_entry in item.get("imageTimeline", []) or []:
+            if "url" in img_entry:
+                img_entry["url"] = _to_url(img_entry["url"])
 
     # scenes array'ini dönüştür (SV)
     for scene in props.get("scenes", []):
@@ -169,10 +173,9 @@ def _rewrite_asset_paths(props: dict, workspace_root: str, job_id: str, base_url
     # Top level paths
     # M41c: subtitlesSrt artık _build_render_props tarafından içeriğe dönüştürülüyor
     # (dosya yolu → SRT metin içeriği). Bu noktada URL dönüşümü yapılmamalı.
-    # Eski path-tabanlı değerlerde (_to_url çağrısı) yanılgı olurdu.
     # subtitlesSrt burada atlanıyor.
 
-    # imageTimeline[].url — external https:// ise dokunma, local path ise HTTP yap
+    # Top-level imageTimeline[].url fallback (eski uyumluluk)
     for img_entry in props.get("imageTimeline", []) or []:
         if "url" in img_entry:
             img_entry["url"] = _to_url(img_entry["url"])

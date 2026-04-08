@@ -176,6 +176,72 @@ def _extract_image_urls(entry: object, max_count: int = 5) -> list:
     return urls
 
 
+# ---------------------------------------------------------------------------
+# OG Image Scraping — RSS'te görsel yoksa haber detay sayfasından çek
+# ---------------------------------------------------------------------------
+
+_OG_SCRAPE_TIMEOUT = 8  # saniye
+_OG_SCRAPE_MAX_BYTES = 100_000  # ilk 100KB HTML yeterli (meta tag'lar head'de)
+
+
+def _scrape_og_image(article_url: str) -> Optional[str]:
+    """
+    Haber detay sayfasından og:image veya twitter:image meta tag'ını scrape eder.
+
+    RSS feed'de media:content / enclosure gibi standart image alanları
+    olmayan kaynaklarda (ör. Mynet Teknoloji) fallback olarak kullanılır.
+
+    Lightweight: Sadece ilk 100KB HTML okunur (meta tag'lar head bölgesinde).
+    Timeout: 8 saniye.
+
+    Returns:
+        Image URL (str) veya bulunamazsa None.
+    """
+    if not article_url or not article_url.startswith(("http://", "https://")):
+        return None
+
+    try:
+        import urllib.request
+        from html.parser import HTMLParser
+
+        class _OGParser(HTMLParser):
+            def __init__(self) -> None:
+                super().__init__()
+                self.og_image: Optional[str] = None
+                self.tw_image: Optional[str] = None
+
+            def handle_starttag(self, tag: str, attrs: list) -> None:
+                if tag != "meta":
+                    return
+                d = dict(attrs)
+                if d.get("property") == "og:image" and d.get("content"):
+                    self.og_image = d["content"].strip()
+                if d.get("name") == "twitter:image" and d.get("content"):
+                    self.tw_image = d["content"].strip()
+
+        req = urllib.request.Request(article_url, headers={
+            "User-Agent": "Mozilla/5.0 (compatible; ContentHub/1.0)",
+        })
+        with urllib.request.urlopen(req, timeout=_OG_SCRAPE_TIMEOUT) as resp:
+            raw = resp.read(_OG_SCRAPE_MAX_BYTES)
+            html_text = raw.decode("utf-8", errors="replace")
+
+        parser = _OGParser()
+        parser.feed(html_text)
+
+        image_url = parser.og_image or parser.tw_image
+        if image_url and len(image_url) <= 2000:
+            return image_url
+        return None
+
+    except Exception as exc:
+        logger.debug(
+            "_scrape_og_image: scrape başarısız — %s url=%s",
+            type(exc).__name__, article_url[:80],
+        )
+        return None
+
+
 def normalize_entry(
     entry: object,
     source: object,
@@ -204,6 +270,18 @@ def normalize_entry(
     image_url = _extract_image_url(entry)
     # M41a: Çoklu görsel çıkarma (max 5)
     image_urls = _extract_image_urls(entry, max_count=5)
+
+    # Fallback: RSS'te görsel yoksa haber detay sayfasından og:image scrape et
+    if not image_url and url:
+        scraped = _scrape_og_image(url)
+        if scraped:
+            image_url = scraped
+            if not image_urls:
+                image_urls = [scraped]
+            logger.debug(
+                "normalize_entry: og:image fallback kullanıldı — %s",
+                scraped[:80],
+            )
 
     raw_preview: dict = {}
     for key in ("id", "link", "title", "published"):
