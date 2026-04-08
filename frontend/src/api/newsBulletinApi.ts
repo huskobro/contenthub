@@ -284,13 +284,16 @@ export interface SelectableNewsItemResponse {
   url: string;
   summary: string | null;
   source_id: string | null;
+  source_name: string | null;
+  category: string | null;
   published_at: string | null;
+  created_at: string | null;
   language: string | null;
 }
 
 export function fetchSelectableNewsItems(
   bulletinId: string,
-  params?: { source_id?: string; language?: string; limit?: number },
+  params?: { source_id?: string; language?: string; category?: string; limit?: number },
 ): Promise<SelectableNewsItemResponse[]> {
   return api.get<SelectableNewsItemResponse[]>(`${BASE_URL}/${bulletinId}/selectable-news`, params);
 }

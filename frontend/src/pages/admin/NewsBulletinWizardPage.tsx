@@ -43,6 +43,9 @@ import {
   type NewsItemResponse,
   fetchNewsItems,
 } from "../../api/newsItemsApi";
+import { fetchSources, type SourceResponse } from "../../api/sourcesApi";
+import { SOURCE_CATEGORIES, SOURCE_CATEGORY_LABELS } from "../../constants/statusOptions";
+import { timeAgo } from "../../lib/formatDate";
 
 const STEPS: WizardStep[] = [
   { id: "source", label: "Kaynak & Haber" },
@@ -78,12 +81,14 @@ export function NewsBulletinWizardPage() {
 
   // Step 0 state — news-first flow
   const [language, setLanguage] = useState("tr");
+  const [sourceFilter, setSourceFilter] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("");
   const [topic, setTopic] = useState("");
   const [tone, setTone] = useState("formal");
   const [duration, setDuration] = useState("120");
   // Local news selection before bulletin creation
   const [selectedItemsLocal, setSelectedItemsLocal] = useState<
-    { news_item_id: string; sort_order: number; title: string }[]
+    { news_item_id: string; sort_order: number; title: string; source_name?: string | null }[]
   >([]);
   const [showBulletinSettings, setShowBulletinSettings] = useState(false);
   // Track whether topic was auto-set (so we know if user manually changed it)
@@ -152,17 +157,32 @@ export function NewsBulletinWizardPage() {
     }
   }, [bulletin]);
 
+  // Sources list — for filter dropdown
+  const { data: sourcesList = [] } = useQuery({
+    queryKey: ["sources-active"],
+    queryFn: () => fetchSources({ status: "active" }),
+  });
+
   // Browse news items — available immediately (before bulletin creation)
   const { data: browseItems = [], isLoading: loadingBrowse } = useQuery({
-    queryKey: ["browse-news-items", language],
-    queryFn: () => fetchNewsItems({ status: "new", language: language || undefined }),
-    enabled: !bulletinId, // Only browse when bulletin doesn't exist yet
+    queryKey: ["browse-news-items", language, sourceFilter, categoryFilter],
+    queryFn: () => fetchNewsItems({
+      status: "new",
+      language: language || undefined,
+      source_id: sourceFilter || undefined,
+      category: categoryFilter || undefined,
+    }),
+    enabled: !bulletinId,
   });
 
   // Selectable news items — after bulletin exists
   const { data: selectableItems = [], isLoading: loadingSelectable } = useQuery({
-    queryKey: ["selectable-news", bulletinId, language],
-    queryFn: () => fetchSelectableNewsItems(bulletinId!, { language: language || undefined }),
+    queryKey: ["selectable-news", bulletinId, language, sourceFilter, categoryFilter],
+    queryFn: () => fetchSelectableNewsItems(bulletinId!, {
+      language: language || undefined,
+      source_id: sourceFilter || undefined,
+      category: categoryFilter || undefined,
+    }),
     enabled: !!bulletinId,
   });
 
@@ -204,7 +224,7 @@ export function NewsBulletinWizardPage() {
   function addLocalItem(item: NewsItemResponse) {
     setSelectedItemsLocal((prev) => {
       if (prev.some((s) => s.news_item_id === item.id)) return prev;
-      const next = [...prev, { news_item_id: item.id, sort_order: prev.length, title: item.title }];
+      const next = [...prev, { news_item_id: item.id, sort_order: prev.length, title: item.title, source_name: item.source_name }];
       // Auto-suggest topic from first selected news item
       if (next.length === 1 && !topic.trim()) {
         setTopic(item.title);
@@ -466,16 +486,40 @@ export function NewsBulletinWizardPage() {
       {/* ----------------------------------------------------------------- */}
       {step === 0 && (
         <div className="space-y-4">
-          {/* Language selector — always visible */}
-          <div className="flex items-center gap-3">
+          {/* Filter bar — language, source, category */}
+          <div className="flex items-center gap-3 flex-wrap">
             <label className="text-sm font-medium text-neutral-700 shrink-0">Dil</label>
             <select
-              className={cn(inputCls, "w-32")}
+              className={cn(inputCls, "w-28")}
               value={language}
               onChange={(e) => setLanguage(e.target.value)}
             >
               <option value="tr">Turkce</option>
               <option value="en">English</option>
+            </select>
+
+            <label className="text-sm font-medium text-neutral-700 shrink-0">Kaynak</label>
+            <select
+              className={cn(inputCls, "w-44")}
+              value={sourceFilter}
+              onChange={(e) => setSourceFilter(e.target.value)}
+            >
+              <option value="">Tum Kaynaklar</option>
+              {sourcesList.map((src) => (
+                <option key={src.id} value={src.id}>{src.name}</option>
+              ))}
+            </select>
+
+            <label className="text-sm font-medium text-neutral-700 shrink-0">Kategori</label>
+            <select
+              className={cn(inputCls, "w-36")}
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+            >
+              <option value="">Tum Kategoriler</option>
+              {SOURCE_CATEGORIES.filter((c) => c !== "").map((cat) => (
+                <option key={cat} value={cat}>{SOURCE_CATEGORY_LABELS[cat] ?? cat}</option>
+              ))}
             </select>
           </div>
 
@@ -495,6 +539,9 @@ export function NewsBulletinWizardPage() {
                     >
                       <span className="text-neutral-800 truncate flex-1 mr-2">
                         #{idx + 1} — {item.title || item.news_item_id.slice(0, 12)}
+                        {item.source_name && (
+                          <span className="ml-1.5 text-neutral-400 text-xs font-normal">({item.source_name})</span>
+                        )}
                       </span>
                       <button
                         type="button"
@@ -569,27 +616,58 @@ export function NewsBulletinWizardPage() {
                 </div>
               )}
 
+              {/* Inline create button — above the news list for quick access */}
+              {selectedItemsLocal.length > 0 && topic.trim().length > 0 && (
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => createBulletinMut.mutate()}
+                    disabled={createBulletinMut.isPending || !canGoNext()}
+                    className={cn(
+                      "px-4 py-1.5 text-sm font-medium text-white border-none rounded-sm",
+                      createBulletinMut.isPending || !canGoNext()
+                        ? "bg-neutral-300 cursor-not-allowed"
+                        : "bg-brand-500 cursor-pointer hover:bg-brand-600 transition-colors",
+                    )}
+                  >
+                    {createBulletinMut.isPending ? "Olusturuluyor..." : "Bulten Olustur"}
+                  </button>
+                </div>
+              )}
+
               {/* Browseable news items */}
               <div className="space-y-1.5">
                 <p className="m-0 text-xs font-medium text-neutral-500 uppercase tracking-wide">
-                  Mevcut Haberler {loadingBrowse && "(yukleniyor...)"}
+                  Mevcut Haberler ({browseItems.filter((ni) => !selectedItemsLocal.some((s) => s.news_item_id === ni.id)).length})
+                  {loadingBrowse && " — yukleniyor..."}
                 </p>
                 {browseItems.length === 0 && !loadingBrowse && (
                   <p className="text-sm text-neutral-400 italic">Secilebilir haber bulunamadi.</p>
                 )}
                 {browseItems
                   .filter((ni) => !selectedItemsLocal.some((s) => s.news_item_id === ni.id))
-                  .slice(0, 20)
+                  .slice(0, 30)
                   .map((item) => (
                     <div
                       key={item.id}
                       className="flex items-center justify-between p-2 bg-neutral-50 border border-neutral-200 rounded-md text-sm"
                     >
                       <div className="flex-1 mr-2 min-w-0">
-                        <span className="text-neutral-800 font-medium truncate block">{item.title || "(basliksiz)"}</span>
-                        {item.summary && (
-                          <span className="text-neutral-400 text-xs truncate block">{item.summary.slice(0, 100)}</span>
-                        )}
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-neutral-800 font-medium truncate">{item.title || "(basliksiz)"}</span>
+                        </div>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          {item.source_name && (
+                            <span className="text-xs text-brand-600 font-medium">{item.source_name}</span>
+                          )}
+                          {item.category && (
+                            <span className="text-xs text-neutral-400">{SOURCE_CATEGORY_LABELS[item.category] ?? item.category}</span>
+                          )}
+                          <span className="text-xs text-neutral-300">{timeAgo(item.created_at)}</span>
+                          {item.summary && (
+                            <span className="text-neutral-400 text-xs truncate">{item.summary.slice(0, 60)}</span>
+                          )}
+                        </div>
                       </div>
                       <button
                         type="button"
@@ -625,15 +703,19 @@ export function NewsBulletinWizardPage() {
                       key={item.id}
                       className="flex items-center justify-between p-2 bg-success-light border border-success rounded-md text-sm"
                     >
-                      <span className="text-neutral-800 truncate flex-1 mr-2">
-                        #{item.sort_order + 1} — {item.news_title || item.news_item_id.slice(0, 12)}
-                        {item.news_category && (
-                          <span className="ml-1 text-neutral-400 text-xs">[{item.news_category}]</span>
-                        )}
-                        {item.used_news_warning && (
-                          <span className="ml-1 text-warning-dark text-xs">(daha once kullanilmis)</span>
-                        )}
-                      </span>
+                      <div className="flex-1 mr-2 min-w-0">
+                        <span className="text-neutral-800 font-medium truncate block">
+                          #{item.sort_order + 1} — {item.news_title || item.news_item_id.slice(0, 12)}
+                        </span>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          {item.news_category && (
+                            <span className="text-xs text-neutral-500">{SOURCE_CATEGORY_LABELS[item.news_category] ?? item.news_category}</span>
+                          )}
+                          {item.used_news_warning && (
+                            <span className="text-xs text-warning-dark">(daha once kullanilmis)</span>
+                          )}
+                        </div>
+                      </div>
                       <button
                         type="button"
                         onClick={() => removeItemMut.mutate(item.id)}
@@ -650,14 +732,15 @@ export function NewsBulletinWizardPage() {
               {/* Available items */}
               <div className="space-y-1.5">
                 <p className="m-0 text-xs font-medium text-neutral-500 uppercase tracking-wide">
-                  Mevcut Haberler {loadingSelectable && "(yukleniyor...)"}
+                  Mevcut Haberler ({selectableItems.filter((si) => !selectedItems.some((sel) => sel.news_item_id === si.id)).length})
+                  {loadingSelectable && " — yukleniyor..."}
                 </p>
                 {selectableItems.length === 0 && !loadingSelectable && (
                   <p className="text-sm text-neutral-400 italic">Secilebilir haber bulunamadi.</p>
                 )}
                 {selectableItems
                   .filter((si) => !selectedItems.some((sel) => sel.news_item_id === si.id))
-                  .slice(0, 20)
+                  .slice(0, 30)
                   .map((item) => (
                     <div
                       key={item.id}
@@ -665,9 +748,18 @@ export function NewsBulletinWizardPage() {
                     >
                       <div className="flex-1 mr-2 min-w-0">
                         <span className="text-neutral-800 font-medium truncate block">{item.title || "(basliksiz)"}</span>
-                        {item.summary && (
-                          <span className="text-neutral-400 text-xs truncate block">{item.summary.slice(0, 100)}</span>
-                        )}
+                        <div className="flex items-center gap-2 mt-0.5">
+                          {item.source_name && (
+                            <span className="text-xs text-brand-600 font-medium">{item.source_name}</span>
+                          )}
+                          {item.category && (
+                            <span className="text-xs text-neutral-400">{SOURCE_CATEGORY_LABELS[item.category] ?? item.category}</span>
+                          )}
+                          <span className="text-xs text-neutral-300">{timeAgo(item.created_at)}</span>
+                          {item.summary && (
+                            <span className="text-neutral-400 text-xs truncate">{item.summary.slice(0, 60)}</span>
+                          )}
+                        </div>
                       </div>
                       <button
                         type="button"

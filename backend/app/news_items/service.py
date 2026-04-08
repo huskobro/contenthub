@@ -11,6 +11,7 @@ async def list_news_items(
     status: Optional[str] = None,
     source_id: Optional[str] = None,
     language: Optional[str] = None,
+    category: Optional[str] = None,
     search: Optional[str] = None,
     include_test_data: bool = False,
 ) -> List[NewsItem]:
@@ -23,6 +24,8 @@ async def list_news_items(
         q = q.where(NewsItem.source_id == source_id)
     if language is not None:
         q = q.where(NewsItem.language == language)
+    if category is not None:
+        q = q.where(NewsItem.category == category)
     if search:
         pattern = f"%{search}%"
         q = q.where(NewsItem.title.ilike(pattern))
@@ -35,12 +38,13 @@ async def list_news_items_with_usage_summary(
     status: Optional[str] = None,
     source_id: Optional[str] = None,
     language: Optional[str] = None,
+    category: Optional[str] = None,
     search: Optional[str] = None,
     include_test_data: bool = False,
 ) -> List[NewsItemResponse]:
     """Return news item list enriched with usage_count, last_usage_type, last_target_module."""
     from sqlalchemy import func as sqlfunc
-    items = await list_news_items(db, status=status, source_id=source_id, language=language, search=search, include_test_data=include_test_data)
+    items = await list_news_items(db, status=status, source_id=source_id, language=language, category=category, search=search, include_test_data=include_test_data)
 
     # Batch-load published used-news links (usage_type contains published/scheduled)
     if items:

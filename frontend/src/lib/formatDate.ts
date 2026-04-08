@@ -65,6 +65,28 @@ export function formatDateISO(
   return value.slice(0, 19).replace("T", " ");
 }
 
+/** Relative time: "3 dk once", "2 saat once", "1 gun once" */
+export function timeAgo(
+  value: string | null | undefined,
+  fallback: string = "—",
+): string {
+  if (!value) return fallback;
+  const d = new Date(value);
+  if (isNaN(d.getTime())) return fallback;
+  const now = Date.now();
+  const diffMs = now - d.getTime();
+  if (diffMs < 0) return "az once";
+  const diffMin = Math.floor(diffMs / 60000);
+  if (diffMin < 1) return "az once";
+  if (diffMin < 60) return `${diffMin} dk once`;
+  const diffHours = Math.floor(diffMin / 60);
+  if (diffHours < 24) return `${diffHours} saat once`;
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffDays < 30) return `${diffDays} gun once`;
+  const diffMonths = Math.floor(diffDays / 30);
+  return `${diffMonths} ay once`;
+}
+
 /** Normalize a date string for datetime-local input: "2026-04-03T14:30" */
 export function normalizeDateForInput(
   value: string | null | undefined,

@@ -60,7 +60,10 @@ class SelectableNewsItemResponse(BaseModel):
     url: str
     summary: Optional[str]
     source_id: Optional[str]
+    source_name: Optional[str] = None
+    category: Optional[str] = None
     published_at: Optional[str]
+    created_at: Optional[str] = None
     language: Optional[str]
 
 router = APIRouter(prefix="/modules/news-bulletin", tags=["news-bulletin"], dependencies=[Depends(require_visible("panel:news-bulletin"))])
@@ -276,6 +279,7 @@ async def list_selectable_news(
     item_id: str,
     source_id: Optional[str] = Query(None),
     language: Optional[str] = Query(None),
+    category: Optional[str] = Query(None),
     limit: int = Query(100, ge=1, le=500),
     db: AsyncSession = Depends(get_db),
 ):
@@ -288,7 +292,7 @@ async def list_selectable_news(
     bulletin = await service.get_news_bulletin(db, item_id)
     if bulletin is None:
         raise HTTPException(status_code=404, detail="News bulletin not found")
-    items = await get_selectable_news_items(db, source_id=source_id, language=language, limit=limit)
+    items = await get_selectable_news_items(db, source_id=source_id, language=language, category=category, limit=limit)
     return [
         SelectableNewsItemResponse(
             id=i["id"],
@@ -296,7 +300,10 @@ async def list_selectable_news(
             url=i["url"],
             summary=i["summary"],
             source_id=i["source_id"],
+            source_name=i.get("source_name"),
+            category=i.get("category"),
             published_at=str(i["published_at"]) if i["published_at"] else None,
+            created_at=str(i["created_at"]) if i.get("created_at") else None,
             language=i["language"],
         )
         for i in items

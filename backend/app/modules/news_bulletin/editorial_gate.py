@@ -56,6 +56,7 @@ from app.db.models import (
     NewsBulletin,
     NewsBulletinSelectedItem,
     NewsItem,
+    NewsSource,
     UsedNewsRegistry,
 )
 
@@ -310,6 +311,7 @@ async def get_selectable_news_items(
     db: AsyncSession,
     source_id: Optional[str] = None,
     language: Optional[str] = None,
+    category: Optional[str] = None,
     limit: int = 100,
 ) -> list[dict]:
     """
@@ -319,7 +321,7 @@ async def get_selectable_news_items(
     "deduped" bir item, scan sonrası DB'ye yazılmamışsa zaten bu listede yoktur.
     Scan sonrası DB'ye yazılmış bir item (örn. follow-up accepted) status='new' olarak burada görünür.
 
-    Döner: [{"id", "title", "url", "summary", "source_id", "published_at", "language"}]
+    Döner: [{"id", "title", "url", "summary", "source_id", "source_name", "published_at", "language"}]
     """
     q = (
         select(
@@ -330,15 +332,21 @@ async def get_selectable_news_items(
             NewsItem.source_id,
             NewsItem.published_at,
             NewsItem.language,
+            NewsSource.name.label("source_name"),
+            NewsItem.created_at,
+            NewsItem.category,
         )
+        .outerjoin(NewsSource, NewsItem.source_id == NewsSource.id)
         .where(NewsItem.status == "new")
-        .order_by(NewsItem.published_at.desc().nullslast())
+        .order_by(NewsItem.created_at.desc())
         .limit(limit)
     )
     if source_id is not None:
         q = q.where(NewsItem.source_id == source_id)
     if language is not None:
         q = q.where(NewsItem.language == language)
+    if category is not None:
+        q = q.where(NewsItem.category == category)
 
     rows = await db.execute(q)
     return [
@@ -350,6 +358,9 @@ async def get_selectable_news_items(
             "source_id": r[4],
             "published_at": r[5],
             "language": r[6],
+            "source_name": r[7],
+            "created_at": r[8],
+            "category": r[9],
         }
         for r in rows.all()
     ]
