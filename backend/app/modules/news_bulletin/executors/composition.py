@@ -159,6 +159,9 @@ def _build_render_outputs(
     ticker_items: list[str] | None = None,
     render_format: str = "landscape",
     karaoke_anim_preset: str = "hype",
+    *,
+    # M43: ek parametreler (keyword-only)
+    extra_props: dict | None = None,
 ) -> list[dict]:
     """
     render_mode'a göre çıktı planını oluşturur.
@@ -177,11 +180,46 @@ def _build_render_outputs(
     Bilinmeyen mod → combined fallback, WARNING logu.
     """
     def _make_output(key: str, label: str, items: list[dict], filename: str) -> dict:
-        # Audio süreleri + CATEGORY_FLASH_DUR (renderer'daki her item öncesi flash)
-        _CATEGORY_FLASH_DUR_SEC = 1.25  # 75 frames @ 60fps
+        # M43: Duration hesabı — setting'den gelen değerlerle
+        _ep = extra_props or {}
+        _flash_dur = float(_ep.get("categoryFlashDuration", 1.5))
+        _intro_dur = float(_ep.get("itemIntroDuration", 2.0))
+        _show_flash = _ep.get("showCategoryFlash", True)
+        _show_intro = _ep.get("showItemIntro", True)
+
         audio_dur = sum(i.get("durationSeconds", 0.0) for i in items)
-        flash_dur = _CATEGORY_FLASH_DUR_SEC * len(items)
-        total_dur = audio_dur + flash_dur
+        flash_dur = (_flash_dur if _show_flash else 0.0) * len(items)
+        intro_dur = (_intro_dur if _show_intro else 0.0) * len(items)
+        total_dur = audio_dur + flash_dur + intro_dur
+
+        base_props = {
+            "bulletinTitle": label,
+            "items": items,
+            "subtitlesSrt": subtitles_srt,
+            "wordTimingPath": word_timing_path,
+            "timingMode": timing_mode,
+            "subtitleStyle": resolved_subtitle_style,
+            "lowerThirdStyle": lower_third_style,
+            "renderMode": render_mode,
+            "totalDurationSeconds": round(total_dur, 3),
+            "language": language,
+            "bulletinStyle": bulletin_style,
+            "networkName": network_name,
+            "showTicker": show_ticker,
+            "tickerItems": ticker_items,
+            "renderFormat": render_format,
+            "karaokeAnimPreset": karaoke_anim_preset,
+            "metadata": {
+                "title": metadata_data.get("title", ""),
+                "description": metadata_data.get("description", ""),
+                "tags": metadata_data.get("tags", []),
+                "hashtags": metadata_data.get("hashtags", []),
+            },
+        }
+        # M43: extra_props'u merge et (ticker, lower third, subtitle, image params vs.)
+        if extra_props:
+            base_props.update({k: v for k, v in extra_props.items() if k not in base_props})
+
         return {
             "output_key": key,
             "output_label": label,
@@ -189,30 +227,7 @@ def _build_render_outputs(
             "items": items,
             "suggested_filename": filename,
             "total_duration_seconds": round(total_dur, 3),
-            "props": {
-                "bulletinTitle": label,
-                "items": items,
-                "subtitlesSrt": subtitles_srt,
-                "wordTimingPath": word_timing_path,
-                "timingMode": timing_mode,
-                "subtitleStyle": resolved_subtitle_style,
-                "lowerThirdStyle": lower_third_style,
-                "renderMode": render_mode,
-                "totalDurationSeconds": round(total_dur, 3),
-                "language": language,
-                "bulletinStyle": bulletin_style,
-                "networkName": network_name,
-                "showTicker": show_ticker,
-                "tickerItems": ticker_items,
-                "renderFormat": render_format,
-                "karaokeAnimPreset": karaoke_anim_preset,
-                "metadata": {
-                    "title": metadata_data.get("title", ""),
-                    "description": metadata_data.get("description", ""),
-                    "tags": metadata_data.get("tags", []),
-                    "hashtags": metadata_data.get("hashtags", []),
-                },
-            },
+            "props": base_props,
         }
 
     if render_mode == "per_item":
@@ -462,47 +477,105 @@ class BulletinCompositionExecutor(StepExecutor):
                 "sourceName": source_name,
             })
 
-        # Toplam süre: audio süreleri + renderer tarafındaki padding
-        # Renderer sabitleri (NewsBulletinComposition.tsx + Root.tsx ile senkron):
-        #   HEADLINES_START = fps * 2 = 2.0s (başlık kartı) — Root.tsx +2s olarak ekler
-        #   CATEGORY_FLASH_DUR = 75 frames @ 60fps = 1.25s (her item öncesi kategori flash)
-        # Root.tsx calculateMetadata totalSecs = raw + 2 → HEADLINES_START'ı karşılar
-        # Ama CATEGORY_FLASH_DUR'ları hesaba katmıyor → video erken kesiliyor
-        _CATEGORY_FLASH_DUR_SEC = 1.25  # 75 frames @ 60fps
-        audio_total = sum(item.get("durationSeconds", 0.0) for item in props_items)
-        flash_total = _CATEGORY_FLASH_DUR_SEC * len(props_items)
-        total_duration = audio_total + flash_total
         subtitles_srt = subtitle_metadata.get("srt_path")
         word_timing_path = subtitle_metadata.get("word_timing_path")
         timing_mode = subtitle_metadata.get("timing_mode", "cursor")
 
-        # M41: karaoke_enabled kapalıysa timing_mode'u cursor'a düşür
-        karaoke_enabled = raw_input.get("_settings_snapshot", {}).get(
-            "news_bulletin.config.karaoke_enabled", True
-        )
+        # --- Settings snapshot'tan tüm parametreleri oku ---
+        _snap = raw_input.get("_settings_snapshot", {})
+
+        # M41: karaoke
+        karaoke_enabled = _snap.get("news_bulletin.config.karaoke_enabled", True)
         if not karaoke_enabled:
             timing_mode = "cursor"
 
-        # M41: show_date ve show_source ayarlarını oku
-        show_date = raw_input.get("_settings_snapshot", {}).get(
-            "news_bulletin.config.show_date", True
-        )
-        show_source = raw_input.get("_settings_snapshot", {}).get(
-            "news_bulletin.config.show_source", False
-        )
+        # M41: gösterim ayarları
+        show_date = _snap.get("news_bulletin.config.show_date", True)
+        show_source = _snap.get("news_bulletin.config.show_source", False)
+
+        # M42: karaoke_anim_preset
+        karaoke_anim_preset = _snap.get("news_bulletin.config.karaoke_anim_preset", "hype")
+
+        # M41: render_format
+        render_format_val = _snap.get("news_bulletin.config.render_format", "landscape")
+
+        # M43: Ticker parametreleri
+        ticker_speed = _snap.get("news_bulletin.config.ticker_speed", 4)
+        ticker_bg_color = _snap.get("news_bulletin.config.ticker_bg_color", "#1E293B")
+        ticker_text_color = _snap.get("news_bulletin.config.ticker_text_color", "#FFFFFF")
+
+        # M43: Badge & flash
+        show_live_badge = _snap.get("news_bulletin.config.show_live_badge", True)
+        show_category_flash = _snap.get("news_bulletin.config.show_category_flash", True)
+        category_flash_duration = float(_snap.get("news_bulletin.config.category_flash_duration", 1.5))
+        show_item_intro = _snap.get("news_bulletin.config.show_item_intro", True)
+        item_intro_duration = float(_snap.get("news_bulletin.config.item_intro_duration", 2.0))
+
+        # M43: Lower third parametreleri
+        lower_third_font_family = _snap.get("news_bulletin.config.lower_third_font_family", "Inter")
+        lower_third_font_size = int(_snap.get("news_bulletin.config.lower_third_font_size", 18))
+        lower_third_bg_color = _snap.get("news_bulletin.config.lower_third_bg_color", "#000000CC")
+        lower_third_text_color = _snap.get("news_bulletin.config.lower_third_text_color", "#FFFFFF")
+
+        # M43: Subtitle parametreleri
+        subtitle_font_family = _snap.get("news_bulletin.config.subtitle_font_family", "Inter")
+        subtitle_font_size = int(_snap.get("news_bulletin.config.subtitle_font_size", 28))
+        subtitle_bg_color = _snap.get("news_bulletin.config.subtitle_bg_color", "#000000AA")
+        subtitle_text_color = _snap.get("news_bulletin.config.subtitle_text_color", "#FFFFFF")
+        subtitle_stroke_color = _snap.get("news_bulletin.config.subtitle_stroke_color", "#000000")
+        subtitle_stroke_width = int(_snap.get("news_bulletin.config.subtitle_stroke_width", 2))
+        subtitle_animation = _snap.get("news_bulletin.config.subtitle_animation", "karaoke")
+
+        # M43: Image & layout
+        image_ken_burns = _snap.get("news_bulletin.config.image_ken_burns", True)
+        image_transition = _snap.get("news_bulletin.config.image_transition", "crossfade")
+        auto_layout_selection = _snap.get("news_bulletin.config.auto_layout_selection", True)
+
+        # M43: Kategori stil eşleme tablosu
+        category_style_mapping = _snap.get("news_bulletin.config.category_style_mapping", None)
+
+        # --- Toplam süre hesaplama ---
+        # Renderer padding sabitleri (setting'den dinamik):
+        #   HEADLINES_START = 2.0s (Root.tsx +2s ekler)
+        #   CATEGORY_FLASH_DUR = category_flash_duration (her item öncesi, setting'den)
+        #   ITEM_INTRO_DUR = item_intro_duration (her item öncesi, opsiyonel)
+        audio_total = sum(item.get("durationSeconds", 0.0) for item in props_items)
+        flash_total = (category_flash_duration if show_category_flash else 0.0) * len(props_items)
+        intro_total = (item_intro_duration if show_item_intro else 0.0) * len(props_items)
+        total_duration = audio_total + flash_total + intro_total
 
         start_time = time.monotonic()
 
         bulletin_title = metadata_data.get("title", script_data.get("bulletin_id", ""))
 
-        # M42: karaoke_anim_preset — settings snapshot'tan oku
-        karaoke_anim_preset = raw_input.get("_settings_snapshot", {}).get(
-            "news_bulletin.config.karaoke_anim_preset", "hype"
-        )
-        # M41: render_format — settings snapshot'tan oku
-        render_format_val = raw_input.get("_settings_snapshot", {}).get(
-            "news_bulletin.config.render_format", "landscape"
-        )
+        # M43: Tüm ek parametreleri extra_props olarak paketle
+        _extra_props = {
+            "tickerSpeed": ticker_speed,
+            "tickerBgColor": ticker_bg_color,
+            "tickerTextColor": ticker_text_color,
+            "showLiveBadge": show_live_badge,
+            "showCategoryFlash": show_category_flash,
+            "categoryFlashDuration": category_flash_duration,
+            "showItemIntro": show_item_intro,
+            "itemIntroDuration": item_intro_duration,
+            "lowerThirdFontFamily": lower_third_font_family,
+            "lowerThirdFontSize": lower_third_font_size,
+            "lowerThirdBgColor": lower_third_bg_color,
+            "lowerThirdTextColor": lower_third_text_color,
+            "subtitleFontFamily": subtitle_font_family,
+            "subtitleFontSize": subtitle_font_size,
+            "subtitleBgColor": subtitle_bg_color,
+            "subtitleTextColor": subtitle_text_color,
+            "subtitleStrokeColor": subtitle_stroke_color,
+            "subtitleStrokeWidth": subtitle_stroke_width,
+            "subtitleAnimation": subtitle_animation,
+            "imageKenBurns": image_ken_burns,
+            "imageTransition": image_transition,
+            "autoLayoutSelection": auto_layout_selection,
+            "categoryStyleMapping": category_style_mapping,
+            "showDate": show_date,
+            "showSource": show_source,
+        }
 
         # M31: render_output dizisi — render moduna göre çıktı planı
         render_outputs = _build_render_outputs(
@@ -523,6 +596,7 @@ class BulletinCompositionExecutor(StepExecutor):
             ticker_items=ticker_items,
             render_format=render_format_val,
             karaoke_anim_preset=karaoke_anim_preset,
+            extra_props=_extra_props,
         )
 
         composition_props: dict = {
@@ -556,6 +630,35 @@ class BulletinCompositionExecutor(StepExecutor):
                 # M41: tarih ve kaynak gosterim ayarlari
                 "showDate": show_date,
                 "showSource": show_source,
+                # M43: Ticker parametreleri
+                "tickerSpeed": ticker_speed,
+                "tickerBgColor": ticker_bg_color,
+                "tickerTextColor": ticker_text_color,
+                # M43: Badge & flash
+                "showLiveBadge": show_live_badge,
+                "showCategoryFlash": show_category_flash,
+                "categoryFlashDuration": category_flash_duration,
+                "showItemIntro": show_item_intro,
+                "itemIntroDuration": item_intro_duration,
+                # M43: Lower third params
+                "lowerThirdFontFamily": lower_third_font_family,
+                "lowerThirdFontSize": lower_third_font_size,
+                "lowerThirdBgColor": lower_third_bg_color,
+                "lowerThirdTextColor": lower_third_text_color,
+                # M43: Subtitle params
+                "subtitleFontFamily": subtitle_font_family,
+                "subtitleFontSize": subtitle_font_size,
+                "subtitleBgColor": subtitle_bg_color,
+                "subtitleTextColor": subtitle_text_color,
+                "subtitleStrokeColor": subtitle_stroke_color,
+                "subtitleStrokeWidth": subtitle_stroke_width,
+                "subtitleAnimation": subtitle_animation,
+                # M43: Image & layout
+                "imageKenBurns": image_ken_burns,
+                "imageTransition": image_transition,
+                "autoLayoutSelection": auto_layout_selection,
+                # M43: Kategori stil eşleme
+                "categoryStyleMapping": category_style_mapping,
                 "metadata": {
                     "title": metadata_data.get("title", ""),
                     "description": metadata_data.get("description", ""),
