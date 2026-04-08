@@ -1,7 +1,71 @@
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCommandPaletteStore } from "../../stores/commandPaletteStore";
 import { NotificationBell } from "../design-system/NotificationCenter";
 import { cn } from "../../lib/cn";
+
+// ---------------------------------------------------------------------------
+// System clock — ticks every second, uses ui.timezone from settings
+// ---------------------------------------------------------------------------
+
+function useSystemClock() {
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(id);
+  }, []);
+  return now;
+}
+
+function getTimezone(): string {
+  try {
+    return localStorage.getItem("ui.timezone") || "Europe/Istanbul";
+  } catch {
+    return "Europe/Istanbul";
+  }
+}
+
+function SystemClock() {
+  const now = useSystemClock();
+  const tz = getTimezone();
+
+  const timeStr = now.toLocaleString("tr-TR", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    timeZone: tz,
+  });
+
+  const dateStr = now.toLocaleString("tr-TR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    timeZone: tz,
+  });
+
+  // Short tz label
+  const tzShort = tz.split("/").pop()?.replace(/_/g, " ") ?? tz;
+
+  return (
+    <div
+      className="flex items-center gap-1.5 mr-3 select-none"
+      title={`Sistem saati (${tz})`}
+      data-testid="header-system-clock"
+    >
+      <span className="text-sm font-mono font-semibold text-neutral-600 tabular-nums tracking-tight">
+        {timeStr}
+      </span>
+      <span className="text-[10px] text-neutral-400 leading-none">
+        {dateStr}
+      </span>
+      <span className="text-[9px] text-neutral-300 leading-none">
+        {tzShort}
+      </span>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 
 interface AppHeaderProps {
   area: "Admin" | "User";
@@ -41,6 +105,9 @@ export function AppHeader({ area }: AppHeaderProps) {
       </span>
 
       <div className="flex-1" />
+
+      {/* System Clock */}
+      <SystemClock />
 
       {/* Command Palette trigger */}
       <button
