@@ -10,6 +10,7 @@ import { AdminOverviewPage } from "../pages/AdminOverviewPage";
 import { UserDashboardPage } from "../pages/UserDashboardPage";
 import { UserContentEntryPage } from "../pages/UserContentEntryPage";
 import { UserPublishEntryPage } from "../pages/UserPublishEntryPage";
+import { LoginPage } from "../pages/LoginPage";
 import { SettingsRegistryPage } from "../pages/admin/SettingsRegistryPage";
 import { VisibilityRegistryPage } from "../pages/admin/VisibilityRegistryPage";
 import { JobsRegistryPage } from "../pages/admin/JobsRegistryPage";
@@ -60,6 +61,10 @@ const WizardSettingsPage = lazy(() => import("../pages/admin/WizardSettingsPage"
 const NewsBulletinWizardPage = lazy(() => import("../pages/admin/NewsBulletinWizardPage").then(m => ({ default: m.NewsBulletinWizardPage })));
 const NewsBulletinDetailPage = lazy(() => import("../pages/admin/NewsBulletinDetailPage").then(m => ({ default: m.NewsBulletinDetailPage })));
 
+// Lazy-loaded user pages (Faz 4)
+const MyProjectsPage = lazy(() => import("../pages/user/MyProjectsPage").then(m => ({ default: m.MyProjectsPage })));
+const MyChannelsPage = lazy(() => import("../pages/user/MyChannelsPage").then(m => ({ default: m.MyChannelsPage })));
+
 function LazyFallback() {
   return <div className="p-8 text-sm text-neutral-400">Yukleniyor...</div>;
 }
@@ -68,6 +73,11 @@ export const router = createBrowserRouter([
   {
     path: "/",
     element: <AppEntryGate />,
+    errorElement: <RootErrorBoundary />,
+  },
+  {
+    path: "/login",
+    element: <LoginPage />,
     errorElement: <RootErrorBoundary />,
   },
   {
@@ -135,6 +145,10 @@ export const router = createBrowserRouter([
       { path: "content", element: <UserContentEntryPage /> },
       { path: "publish", element: <UserPublishEntryPage /> },
       { path: "settings", element: <UserSettingsPage /> },
+      { path: "projects", element: <Suspense fallback={<LazyFallback />}><MyProjectsPage /></Suspense> },
+      { path: "projects/:projectId", element: <Suspense fallback={<LazyFallback />}><div className="p-8 text-neutral-500">Proje detayi yakinda eklenecek.</div></Suspense> },
+      { path: "channels", element: <Suspense fallback={<LazyFallback />}><MyChannelsPage /></Suspense> },
+      { path: "channels/:channelId", element: <Suspense fallback={<LazyFallback />}><div className="p-8 text-neutral-500">Kanal detayi yakinda eklenecek.</div></Suspense> },
     ],
   },
   {

@@ -68,6 +68,8 @@ export interface UserNavItem {
 
 export const USER_NAV: UserNavItem[] = [
   { label: "Anasayfa", to: "/user" },
+  { label: "Kanallarim", to: "/user/channels" },
+  { label: "Projelerim", to: "/user/projects" },
   { label: "Icerik", to: "/user/content" },
   { label: "Yayin", to: "/user/publish" },
   { label: "Ayarlarim", to: "/user/settings" },
@@ -171,6 +173,22 @@ export const HORIZON_USER_GROUPS: HorizonNavGroup[] = [
     ],
   },
   {
+    id: "channels",
+    label: "Kanallarim",
+    icon: "\u2261",
+    items: [
+      { label: "Kanallarim", to: "/user/channels" },
+    ],
+  },
+  {
+    id: "projects",
+    label: "Projelerim",
+    icon: "\u270E",
+    items: [
+      { label: "Projelerim", to: "/user/projects" },
+    ],
+  },
+  {
     id: "content",
     label: "Icerik",
     icon: "\u270E",
@@ -184,6 +202,14 @@ export const HORIZON_USER_GROUPS: HorizonNavGroup[] = [
     icon: "\u25B6",
     items: [
       { label: "Yayin", to: "/user/publish" },
+    ],
+  },
+  {
+    id: "settings",
+    label: "Ayarlarim",
+    icon: "\u2699",
+    items: [
+      { label: "Ayarlarim", to: "/user/settings" },
     ],
   },
 ];

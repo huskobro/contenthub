@@ -1,0 +1,157 @@
+/**
+ * MyProjectsPage — Faz 4.
+ *
+ * User-facing content projects list with filters.
+ */
+
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "../../stores/authStore";
+import { useContentProjects } from "../../hooks/useContentProjects";
+import { useChannelProfiles } from "../../hooks/useChannelProfiles";
+import {
+  PageShell,
+  SectionShell,
+  ActionButton,
+  StatusBadge,
+  FilterBar,
+  FilterSelect,
+  DataTable,
+} from "../../components/design-system/primitives";
+import type { ContentProjectResponse } from "../../api/contentProjectsApi";
+
+const MODULE_TYPES = [
+  { value: "", label: "Tum Moduller" },
+  { value: "standard_video", label: "Standart Video" },
+  { value: "news_bulletin", label: "Haber Bulteni" },
+];
+
+const CONTENT_STATUSES = [
+  { value: "", label: "Tum Durumlar" },
+  { value: "draft", label: "Taslak" },
+  { value: "in_progress", label: "Devam Ediyor" },
+  { value: "completed", label: "Tamamlandi" },
+  { value: "archived", label: "Arsivlendi" },
+];
+
+export function MyProjectsPage() {
+  const navigate = useNavigate();
+  const authUser = useAuthStore((s) => s.user);
+  const userId = authUser?.id;
+
+  const [moduleFilter, setModuleFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [channelFilter, setChannelFilter] = useState("");
+
+  const { data: channels } = useChannelProfiles(userId);
+
+  const { data: projects, isLoading, isError } = useContentProjects({
+    user_id: userId,
+    module_type: moduleFilter || undefined,
+    content_status: statusFilter || undefined,
+    channel_profile_id: channelFilter || undefined,
+  });
+
+  const columns = [
+    {
+      key: "title",
+      header: "Baslik",
+      render: (p: ContentProjectResponse) => (
+        <span className="font-medium text-neutral-800">{p.title}</span>
+      ),
+    },
+    {
+      key: "module_type",
+      header: "Modul",
+      render: (p: ContentProjectResponse) => (
+        <span className="text-sm text-neutral-600">{p.module_type}</span>
+      ),
+    },
+    {
+      key: "content_status",
+      header: "Durum",
+      render: (p: ContentProjectResponse) => (
+        <StatusBadge status={p.content_status} size="sm" />
+      ),
+    },
+    {
+      key: "publish_status",
+      header: "Yayin",
+      render: (p: ContentProjectResponse) => (
+        <StatusBadge status={p.publish_status} size="sm" />
+      ),
+    },
+    {
+      key: "created_at",
+      header: "Olusturma",
+      render: (p: ContentProjectResponse) => (
+        <span className="text-sm text-neutral-500 tabular-nums">
+          {new Date(p.created_at).toLocaleDateString("tr-TR")}
+        </span>
+      ),
+    },
+  ];
+
+  return (
+    <PageShell
+      title="Projelerim"
+      subtitle="Icerik projelerinizi goruntuleyip yonetebilirsiniz"
+      actions={
+        <ActionButton
+          variant="primary"
+          onClick={() => navigate("/admin/standard-videos/wizard")}
+        >
+          Yeni Proje
+        </ActionButton>
+      }
+      testId="my-projects"
+    >
+      <FilterBar testId="projects-filters">
+        <FilterSelect
+          value={channelFilter}
+          onChange={(e) => setChannelFilter(e.target.value)}
+        >
+          <option value="">Tum Kanallar</option>
+          {(channels ?? []).map((ch) => (
+            <option key={ch.id} value={ch.id}>
+              {ch.profile_name}
+            </option>
+          ))}
+        </FilterSelect>
+        <FilterSelect
+          value={moduleFilter}
+          onChange={(e) => setModuleFilter(e.target.value)}
+        >
+          {MODULE_TYPES.map((m) => (
+            <option key={m.value} value={m.value}>
+              {m.label}
+            </option>
+          ))}
+        </FilterSelect>
+        <FilterSelect
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+        >
+          {CONTENT_STATUSES.map((s) => (
+            <option key={s.value} value={s.value}>
+              {s.label}
+            </option>
+          ))}
+        </FilterSelect>
+      </FilterBar>
+
+      <SectionShell flush testId="projects-table">
+        <DataTable
+          columns={columns}
+          data={projects ?? []}
+          keyFn={(p) => p.id}
+          onRowClick={(p) => navigate(`/user/projects/${p.id}`)}
+          loading={isLoading}
+          error={isError}
+          emptyMessage="Henuz projeniz yok"
+          testId="projects-data-table"
+        />
+      </SectionShell>
+    </PageShell>
+  );
+}

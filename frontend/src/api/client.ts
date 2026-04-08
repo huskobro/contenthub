@@ -47,17 +47,23 @@ function buildUrl(
  * The userStore and localStorage share the same key — always in sync.
  */
 const USER_ID_STORAGE_KEY = "contenthub:active-user-id";
+const ACCESS_TOKEN_KEY = "contenthub:access-token";
 
 function getActiveUserHeaders(): Record<string, string> {
+  const headers: Record<string, string> = {};
   try {
     const userId = localStorage.getItem(USER_ID_STORAGE_KEY);
     if (userId && userId.length >= 32) {
-      return { "X-ContentHub-User-Id": userId };
+      headers["X-ContentHub-User-Id"] = userId;
+    }
+    const token = localStorage.getItem(ACCESS_TOKEN_KEY);
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
     }
   } catch {
     // localStorage not available
   }
-  return {};
+  return headers;
 }
 
 async function request<T>(
