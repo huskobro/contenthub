@@ -40,6 +40,7 @@ from app.jobs.exceptions import StepExecutionError
 from app.modules.standard_video.composition_map import get_composition_id
 from app.modules.standard_video.subtitle_presets import get_preset_for_composition
 
+from app.modules.shared_helpers import download_image_to_workspace
 from ._helpers import (
     _resolve_artifact_path,
     _write_artifact,
@@ -47,6 +48,15 @@ from ._helpers import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+def _guess_ext(url: str) -> str:
+    """URL'den görsel uzantısını tahmin et."""
+    clean = url.split("?")[0].split("#")[0].lower()
+    for ext in (".png", ".webp", ".gif", ".jpeg"):
+        if clean.endswith(ext):
+            return ext
+    return ".jpg"
 
 
 # ---------------------------------------------------------------------------
@@ -392,18 +402,36 @@ class BulletinCompositionExecutor(StepExecutor):
             # Max 5 görsel sınırı
             image_urls = image_urls[:MAX_IMAGES_PER_ITEM]
 
+            # Harici görselleri workspace'e indir — Remotion headless render
+            # harici URL'lere güvenilir erişim sağlayamaz (CORS, timeout, vb.)
+            local_image_paths: list[str] = []
+            for img_idx, img_url in enumerate(image_urls):
+                local_path = download_image_to_workspace(
+                    url=img_url,
+                    workspace_root=workspace_root,
+                    job_id=job.id,
+                    sub_dir="visuals",
+                    filename_hint=f"item_{i + 1}_img_{img_idx + 1}{_guess_ext(img_url)}",
+                )
+                if local_path:
+                    local_image_paths.append(local_path)
+                else:
+                    # İndirme başarısızsa orijinal URL'yi koru (fallback)
+                    local_image_paths.append(img_url)
+
             # M41a: image timeline hesaplaması — süreyi görseller arasında eşit böl
             image_timeline = None
-            if image_urls and item_duration > 0:
-                count = len(image_urls)
+            effective_urls = local_image_paths if local_image_paths else image_urls
+            if effective_urls and item_duration > 0:
+                count = len(effective_urls)
                 segment_duration = round(item_duration / count, 3)
                 image_timeline = []
-                for img_idx, img_url in enumerate(image_urls):
+                for img_idx, eff_url in enumerate(effective_urls):
                     start = round(img_idx * segment_duration, 3)
                     # Son segment kalan süreyi alır (yuvarlama farkları için)
                     dur = round(item_duration - start, 3) if img_idx == count - 1 else segment_duration
                     image_timeline.append({
-                        "url": img_url,
+                        "url": eff_url,
                         "startSeconds": start,
                         "durationSeconds": dur,
                     })
@@ -419,7 +447,7 @@ class BulletinCompositionExecutor(StepExecutor):
                 "headline": script_item.get("headline", ""),
                 "narration": script_item.get("narration", ""),
                 "audioPath": audio_scene.get("audio_path"),
-                "imagePath": image_urls[0] if image_urls else None,
+                "imagePath": local_image_paths[0] if local_image_paths else (image_urls[0] if image_urls else None),
                 "imageTimeline": image_timeline,
                 "durationSeconds": item_duration,
                 "category": script_item.get("category"),

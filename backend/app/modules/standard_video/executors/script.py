@@ -31,6 +31,7 @@ from app.providers.registry import ProviderRegistry
 from app.providers.resolution import resolve_and_invoke
 
 from app.providers.trace_helper import build_provider_trace
+from app.modules.shared_helpers import validate_script_data
 from ._helpers import _strip_markdown_json, _write_artifact
 
 logger = logging.getLogger(__name__)
@@ -212,6 +213,17 @@ class ScriptStepExecutor(StepExecutor):
 
         script_data["language"] = ctx.language.value
 
+        # Script doğrulaması — uyarılar loglanır, job durdurulmaz
+        script_warnings = validate_script_data(
+            script_data, "standard_video", job.id,
+            target_duration_seconds=ctx.duration_seconds,
+        )
+        if script_warnings:
+            logger.warning(
+                "ScriptStepExecutor: script doğrulama uyarıları — job=%s warnings=%s",
+                job.id, script_warnings,
+            )
+
         workspace_root = ctx.workspace_root or (
             str(job.workspace_path) if job.workspace_path else ""
         )
@@ -252,6 +264,7 @@ class ScriptStepExecutor(StepExecutor):
             "artifact_path": artifact_path,
             "language": ctx.language.value,
             "scene_count": scene_count,
+            "script_warnings": script_warnings,
             "provider": output.trace,
             "provider_trace": trace_info,
             "step": self.step_key(),

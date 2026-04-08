@@ -1,7 +1,10 @@
 """
-Ortak yardımcı fonksiyonlar — tüm executor modülleri tarafından paylaşılır.
+Ortak yardımcı fonksiyonlar — standard_video executor modülleri tarafından paylaşılır.
 
 Bu modül dışa aktarılmaz; yalnızca executor paketinin iç kullanımına yöneliktir.
+
+Modüller arası paylaşılan fonksiyonlar (audio measurement, narration cleanup,
+script validation) app.modules.shared_helpers içindedir.
 """
 
 from __future__ import annotations

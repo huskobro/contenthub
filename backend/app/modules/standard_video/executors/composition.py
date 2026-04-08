@@ -260,6 +260,10 @@ class CompositionStepExecutor(StepExecutor):
                     "standard_video.config.render_format",
                     "landscape",
                 ),
+                # M42: karaoke animasyon preset — modüller arası standart
+                "karaokeAnimPreset": raw_input.get("_settings_snapshot", {}).get(
+                    "standard_video.config.karaoke_anim_preset", "hype",
+                ),
                 "metadata": {
                     "title": metadata_data.get("title", ""),
                     "description": metadata_data.get("description", ""),

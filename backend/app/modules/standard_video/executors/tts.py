@@ -4,7 +4,8 @@ Ses üretimi (TTS) adımı executor'ı (TTSStepExecutor).
 Her sahne için narration metni → resolve_and_invoke(TTS) → ses dosyası üretir.
 artifact_check idempotency tipi: audio_manifest.json varsa adımı atlar.
 
-Ses süresi: karakter sayısı / 15 yaklaşımı (gerçek ölçüm M4'te Whisper ile).
+Ses süresi: TTS provider sonucu → post-TTS mutagen doğrulaması → heuristic fallback.
+Narration cleanup: TTS'e gönderilmeden önce markdown/URL temizliği yapılır.
 
 M3-C2: tts_provider → registry alıyor.
        resolve_and_invoke üzerinden fallback zinciri tam aktif.
@@ -27,6 +28,11 @@ from app.providers.registry import ProviderRegistry
 from app.providers.resolution import resolve_and_invoke
 
 from app.providers.trace_helper import build_provider_trace
+from app.modules.shared_helpers import (
+    measure_audio_duration,
+    validate_audio_duration,
+    clean_narration_for_tts,
+)
 from ._helpers import _resolve_artifact_path, _write_artifact, _read_artifact
 
 logger = logging.getLogger(__name__)
@@ -170,8 +176,23 @@ class TTSStepExecutor(StepExecutor):
         start_time = time.monotonic()
 
         for i, scene in enumerate(scenes, start=1):
-            narration: str = scene.get("narration", "").strip()
+            raw_narration: str = scene.get("narration", "").strip()
+            if not raw_narration:
+                manifest_scenes.append({
+                    "scene_number": i,
+                    "audio_path": None,
+                    "narration": "",
+                    "duration_seconds": 0.0,
+                })
+                continue
+
+            # TTS öncesi narration temizliği — markdown, URL, özel karakter kaldır
+            narration = clean_narration_for_tts(raw_narration)
             if not narration:
+                logger.warning(
+                    "TTSStepExecutor: sahne %d narration temizlik sonrası boş kaldı. "
+                    "raw=%s job=%s", i, raw_narration[:100], job.id,
+                )
                 manifest_scenes.append({
                     "scene_number": i,
                     "audio_path": None,
@@ -200,7 +221,19 @@ class TTSStepExecutor(StepExecutor):
                     f"Sahne {i} için TTS başarısız: {err}",
                 )
 
-            duration = output.result.get("duration_seconds", round(len(narration) / 15.0, 2))
+            # Provider'ın döndürdüğü süre (varsa)
+            provider_duration = output.result.get("duration_seconds")
+            heuristic_estimate = round(len(narration) / 15.0, 2)
+
+            # Post-TTS: gerçek dosya süresini ölç (provider-agnostic doğrulama)
+            measured = measure_audio_duration(str(audio_path))
+            duration = validate_audio_duration(
+                measured=measured,
+                estimated=provider_duration if provider_duration else heuristic_estimate,
+                file_path=str(audio_path),
+                job_id=job.id,
+            )
+
             total_chars += len(narration)
             total_duration += duration
 

@@ -34,6 +34,7 @@ from app.providers.capability import ProviderCapability
 from app.providers.registry import ProviderRegistry
 from app.providers.resolution import resolve_and_invoke
 from app.providers.trace_helper import build_provider_trace
+from app.modules.shared_helpers import validate_script_data
 
 from ._helpers import _strip_markdown_json, _write_artifact
 
@@ -242,6 +243,17 @@ class BulletinScriptExecutor(StepExecutor):
         script_data["language"] = language.value
         script_data["bulletin_id"] = bulletin_id
 
+        # Script doğrulaması — uyarılar loglanır, job durdurulmaz
+        script_warnings = validate_script_data(
+            script_data, "news_bulletin", job.id,
+            target_duration_seconds=int(duration) if duration else 120,
+        )
+        if script_warnings:
+            logger.warning(
+                "BulletinScriptExecutor: script doğrulama uyarıları — job=%s warnings=%s",
+                job.id, script_warnings,
+            )
+
         # M41/M41a: image_url, image_urls, published_at, source_id, source_name
         # selected_items snapshot'tan script items'a ekle
         script_items_list = script_data.get("items", [])
@@ -316,6 +328,7 @@ class BulletinScriptExecutor(StepExecutor):
             "language": language.value,
             "item_count": item_count,
             "bulletin_id": bulletin_id,
+            "script_warnings": script_warnings,
             "provider": output.trace,
             "provider_trace": trace_info,
             "step": self.step_key(),
