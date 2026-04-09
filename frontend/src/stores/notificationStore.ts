@@ -1,13 +1,16 @@
 /**
- * Notification Store — Persistent notification center
+ * Notification Store — Faz 16: Backend-backed notification center
  *
- * Zustand store for managing notifications (not toasts).
- * Notifications persist in the panel until dismissed.
- * Integrates with SSE events for real-time notifications.
+ * Zustand store for managing notification panel UI state.
+ * Notifications are stored in the backend (NotificationItem table).
+ * This store manages:
+ *   - panel open/close state
+ *   - local cache of notifications (synced via React Query externally)
+ *   - SSE-driven real-time additions
  *
  * Difference from Toast:
  * - Toasts are transient (auto-dismiss in 4s)
- * - Notifications persist until user reads/dismisses them
+ * - Notifications persist in DB until user reads/dismisses them
  */
 
 import { create } from "zustand";
@@ -30,37 +33,40 @@ export interface Notification {
   link?: string;
   /** Source category */
   category?: "job" | "publish" | "system" | "content" | "source";
+  /** Backend notification ID (if backend-backed) */
+  backendId?: string;
+  /** Related inbox item ID */
+  relatedInboxItemId?: string;
 }
 
 // ---------------------------------------------------------------------------
-// LocalStorage
+// Severity → NotificationType mapping
 // ---------------------------------------------------------------------------
 
-const STORAGE_KEY = "contenthub:notifications";
-const MAX_NOTIFICATIONS = 50;
-
-function loadNotifications(): Notification[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed.slice(0, MAX_NOTIFICATIONS) : [];
-  } catch {
-    return [];
+export function severityToType(severity: string): NotificationType {
+  switch (severity) {
+    case "error": return "error";
+    case "warning": return "warning";
+    case "success": return "success";
+    default: return "info";
   }
 }
 
-function saveNotifications(notifications: Notification[]): void {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(notifications.slice(0, MAX_NOTIFICATIONS)));
-  } catch {
-    // silently fail
-  }
+export function notificationTypeToCategory(
+  notifType: string,
+): "job" | "publish" | "system" | "content" | "source" | undefined {
+  if (notifType.startsWith("render_") || notifType.startsWith("job_")) return "job";
+  if (notifType.startsWith("publish_")) return "publish";
+  if (notifType.startsWith("source_")) return "source";
+  if (notifType === "system_info") return "system";
+  return undefined;
 }
 
 // ---------------------------------------------------------------------------
 // Store
 // ---------------------------------------------------------------------------
+
+const MAX_NOTIFICATIONS = 100;
 
 interface NotificationState {
   notifications: Notification[];
@@ -72,22 +78,24 @@ interface NotificationState {
   openPanel: () => void;
   closePanel: () => void;
   togglePanel: () => void;
-  /** Add a notification */
+  /** Add a notification (from SSE or local event) */
   addNotification: (n: Omit<Notification, "id" | "createdAt" | "read">) => void;
-  /** Mark one as read */
+  /** Replace entire notification list (from backend fetch) */
+  setNotifications: (items: Notification[]) => void;
+  /** Mark one as read (local state) */
   markAsRead: (id: string) => void;
-  /** Mark all as read */
+  /** Mark all as read (local state) */
   markAllAsRead: () => void;
-  /** Remove one notification */
+  /** Remove one notification (local state) */
   removeNotification: (id: string) => void;
-  /** Clear all notifications */
+  /** Clear all notifications (local state) */
   clearAll: () => void;
 }
 
 let notifCounter = 0;
 
 export const useNotificationStore = create<NotificationState>((set, get) => ({
-  notifications: loadNotifications(),
+  notifications: [],
   panelOpen: false,
 
   unreadCount: () => get().notifications.filter((n) => !n.read).length,
@@ -97,7 +105,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
   togglePanel: () => set((s) => ({ panelOpen: !s.panelOpen })),
 
   addNotification: (n) => {
-    const id = `notif-${++notifCounter}-${Date.now()}`;
+    const id = n.backendId || `notif-${++notifCounter}-${Date.now()}`;
     const notification: Notification = {
       ...n,
       id,
@@ -105,40 +113,40 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       read: false,
     };
     set((s) => {
+      // Dedupe: don't add if same backendId already exists
+      if (n.backendId && s.notifications.some((x) => x.backendId === n.backendId)) {
+        return s;
+      }
       const next = [notification, ...s.notifications].slice(0, MAX_NOTIFICATIONS);
-      saveNotifications(next);
       return { notifications: next };
     });
+  },
+
+  setNotifications: (items) => {
+    set({ notifications: items.slice(0, MAX_NOTIFICATIONS) });
   },
 
   markAsRead: (id) => {
-    set((s) => {
-      const next = s.notifications.map((n) =>
-        n.id === id ? { ...n, read: true } : n
-      );
-      saveNotifications(next);
-      return { notifications: next };
-    });
+    set((s) => ({
+      notifications: s.notifications.map((n) =>
+        n.id === id || n.backendId === id ? { ...n, read: true } : n
+      ),
+    }));
   },
 
   markAllAsRead: () => {
-    set((s) => {
-      const next = s.notifications.map((n) => ({ ...n, read: true }));
-      saveNotifications(next);
-      return { notifications: next };
-    });
+    set((s) => ({
+      notifications: s.notifications.map((n) => ({ ...n, read: true })),
+    }));
   },
 
   removeNotification: (id) => {
-    set((s) => {
-      const next = s.notifications.filter((n) => n.id !== id);
-      saveNotifications(next);
-      return { notifications: next };
-    });
+    set((s) => ({
+      notifications: s.notifications.filter((n) => n.id !== id && n.backendId !== id),
+    }));
   },
 
   clearAll: () => {
     set({ notifications: [] });
-    saveNotifications([]);
   },
 }));

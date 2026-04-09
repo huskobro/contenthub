@@ -1536,5 +1536,59 @@ class OperationsInboxItem(Base):
     )
 
 
+class NotificationItem(Base):
+    """
+    Notification Center ogesi — kullanici/admin bildirim katmani. Faz 16.
+
+    Inbox'tan farkli:
+      - Inbox = action queue (islem bekleyen)
+      - Notification = dikkat cekme / haber verme (okunur/dismiss edilir)
+
+    Her inbox item'in notification'a donusmesi zorunlu degil.
+    Sadece operator acisindan anlamli olaylar notification uretir.
+    """
+
+    __tablename__ = "notification_items"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    owner_user_id: Mapped[Optional[str]] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True, index=True
+    )
+    scope_type: Mapped[str] = mapped_column(
+        String(50), nullable=False, default="user", index=True
+    )
+    # user, admin, system
+    notification_type: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
+    # publish_review, publish_failure, render_failure, source_scan_error,
+    # overdue_publish, policy_review_required, job_completed, etc.
+    title: Mapped[str] = mapped_column(String(500), nullable=False)
+    body: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    severity: Mapped[str] = mapped_column(String(50), nullable=False, default="info")
+    # info, warning, error, success
+    status: Mapped[str] = mapped_column(String(50), nullable=False, default="unread", index=True)
+    # unread, read, dismissed
+    related_entity_type: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    related_entity_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True)
+    related_inbox_item_id: Mapped[Optional[str]] = mapped_column(
+        String(36), ForeignKey("operations_inbox_items.id", ondelete="SET NULL"),
+        nullable=True, index=True
+    )
+    related_channel_profile_id: Mapped[Optional[str]] = mapped_column(
+        String(36), ForeignKey("channel_profiles.id", ondelete="SET NULL"),
+        nullable=True, index=True
+    )
+    action_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now
+    )
+    read_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    dismissed_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+
+
 # Prompt Assembly Engine models (Alembic discovery)
 import app.prompt_assembly.models  # noqa: E402, F401

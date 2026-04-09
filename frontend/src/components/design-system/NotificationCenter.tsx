@@ -1,9 +1,12 @@
 /**
- * NotificationCenter — Persistent notification panel
+ * NotificationCenter — Faz 16: Backend-backed persistent notification panel
  *
  * Triggered from the bell icon in header/sidebar.
  * Slides in from the right with notification list.
  * All colors from CSS variables — fully theme-aware.
+ *
+ * Now integrates with backend notification API via useNotifications hook.
+ * Shows inbox cross-reference links where applicable.
  */
 
 import { useEffect, useRef } from "react";
@@ -13,6 +16,7 @@ import {
   type Notification,
   type NotificationType,
 } from "../../stores/notificationStore";
+import { useNotifications } from "../../hooks/useNotifications";
 import { cn } from "../../lib/cn";
 import { formatDateShort } from "../../lib/formatDate";
 
@@ -122,6 +126,11 @@ function NotificationItem({
                 {categoryLabels[notification.category] || notification.category}
               </span>
             )}
+            {notification.relatedInboxItemId && (
+              <span className="text-[10px] text-brand-600 px-1.5 py-0.5 bg-brand-50 rounded-sm">
+                Inbox
+              </span>
+            )}
           </div>
         </div>
 
@@ -151,11 +160,10 @@ export function NotificationCenter() {
   const panelOpen = useNotificationStore((s) => s.panelOpen);
   const notifications = useNotificationStore((s) => s.notifications);
   const closePanel = useNotificationStore((s) => s.closePanel);
-  const markAsRead = useNotificationStore((s) => s.markAsRead);
-  const markAllAsRead = useNotificationStore((s) => s.markAllAsRead);
-  const removeNotification = useNotificationStore((s) => s.removeNotification);
-  const clearAll = useNotificationStore((s) => s.clearAll);
   const unreadCount = useNotificationStore((s) => s.unreadCount);
+
+  // Backend-backed actions
+  const { markRead, dismiss, markAllRead } = useNotifications();
 
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -216,18 +224,10 @@ export function NotificationCenter() {
           <div className="flex items-center gap-1">
             {count > 0 && (
               <button
-                onClick={markAllAsRead}
+                onClick={() => markAllRead()}
                 className="px-2 py-1 text-xs text-brand-600 bg-transparent border-none cursor-pointer hover:text-brand-700 hover:bg-brand-50 rounded-md transition-colors duration-fast"
               >
                 Tumunu oku
-              </button>
-            )}
-            {notifications.length > 0 && (
-              <button
-                onClick={clearAll}
-                className="px-2 py-1 text-xs text-neutral-500 bg-transparent border-none cursor-pointer hover:text-error hover:bg-error-light rounded-md transition-colors duration-fast"
-              >
-                Temizle
               </button>
             )}
             <button
@@ -259,8 +259,16 @@ export function NotificationCenter() {
               <NotificationItem
                 key={n.id}
                 notification={n}
-                onRead={() => markAsRead(n.id)}
-                onRemove={() => removeNotification(n.id)}
+                onRead={() => {
+                  if (n.backendId) {
+                    markRead(n.backendId);
+                  }
+                }}
+                onRemove={() => {
+                  if (n.backendId) {
+                    dismiss(n.backendId);
+                  }
+                }}
                 onNavigate={
                   n.link
                     ? () => {
@@ -273,6 +281,21 @@ export function NotificationCenter() {
             ))
           )}
         </div>
+
+        {/* Footer — link to full notification page */}
+        {notifications.length > 0 && (
+          <div className="px-4 py-2 border-t border-border-subtle shrink-0 flex justify-center">
+            <button
+              onClick={() => {
+                closePanel();
+                navigate("/admin/notifications");
+              }}
+              className="text-xs text-brand-600 bg-transparent border-none cursor-pointer hover:text-brand-700 hover:underline"
+            >
+              Tum bildirimleri gor
+            </button>
+          </div>
+        )}
       </div>
     </>
   );

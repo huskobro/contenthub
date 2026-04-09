@@ -6,11 +6,14 @@ import { ThemeProvider } from "../../components/design-system/ThemeProvider";
 import { NotificationCenter } from "../../components/design-system/NotificationCenter";
 import { KeyboardShortcutsHelp } from "../../components/design-system/KeyboardShortcutsHelp";
 import { useGlobalSSE } from "../../hooks/useGlobalSSE";
+import { useNotifications } from "../../hooks/useNotifications";
 import { USER_NAV } from "./useLayoutNavigation";
 
 export function UserLayout() {
   // Global SSE for app-wide notifications and query invalidation
   useGlobalSSE();
+  // Backend-backed notification data sync
+  useNotifications();
   return (
     <ThemeProvider>
       <div className="flex flex-col min-h-screen">

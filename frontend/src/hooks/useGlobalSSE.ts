@@ -1,14 +1,22 @@
 /**
- * useGlobalSSE — Global SSE hook for app-wide notifications
+ * useGlobalSSE — Global SSE hook for app-wide notifications — Faz 16 upgrade
  *
- * Connects to the global SSE endpoint and maps job/step events
- * to persistent notifications via notificationStore.
+ * Connects to the global SSE endpoint and maps events to notifications.
+ * Now handles:
+ *   - job:status_changed → job completion/failure notifications
+ *   - job:step_changed → step failure notifications
+ *   - notification:created → backend-created notifications (inbox events)
+ *
  * Also invalidates React Query caches on relevant events.
  */
 
 import { useSSE } from "./useSSE";
 import type { SSEEvent } from "./useSSE";
-import { useNotificationStore } from "../stores/notificationStore";
+import {
+  useNotificationStore,
+  severityToType,
+  notificationTypeToCategory,
+} from "../stores/notificationStore";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 
@@ -24,6 +32,18 @@ interface StepStatusPayload {
   step_key: string;
   status: string;
   emitted_at: string;
+}
+
+interface NotificationCreatedPayload {
+  id: string;
+  notification_type: string;
+  title: string;
+  body: string | null;
+  severity: string;
+  scope_type: string;
+  owner_user_id: string | null;
+  action_url: string | null;
+  related_inbox_item_id: string | null;
 }
 
 function jobStatusLabel(status: string): string {
@@ -51,6 +71,7 @@ export function useGlobalSSE() {
 
   const handleEvent = useCallback(
     (event: SSEEvent) => {
+      // --- Job status changes (existing Faz 8 behavior) ---
       if (event.type === "job:status_changed") {
         const data = event.data as JobStatusPayload;
         // Only notify on terminal or significant states
@@ -67,6 +88,7 @@ export function useGlobalSSE() {
         qc.invalidateQueries({ queryKey: ["jobs"] });
       }
 
+      // --- Step failures (existing) ---
       if (event.type === "job:step_changed") {
         const data = event.data as StepStatusPayload;
         if (data.status === "failed") {
@@ -79,6 +101,25 @@ export function useGlobalSSE() {
           });
         }
       }
+
+      // --- Faz 16: Backend-created notifications (from event hooks) ---
+      if (event.type === "notification:created") {
+        const data = event.data as NotificationCreatedPayload;
+        addNotification({
+          type: severityToType(data.severity),
+          title: data.title,
+          message: data.body || "",
+          link: data.action_url || undefined,
+          category: notificationTypeToCategory(data.notification_type),
+          backendId: data.id,
+          relatedInboxItemId: data.related_inbox_item_id || undefined,
+        });
+        // Invalidate notification queries for fresh count
+        qc.invalidateQueries({ queryKey: ["notifications"] });
+        qc.invalidateQueries({ queryKey: ["notification-count"] });
+        // Also invalidate inbox since they're related
+        qc.invalidateQueries({ queryKey: ["operations-inbox"] });
+      }
     },
     [addNotification, qc],
   );
@@ -86,7 +127,11 @@ export function useGlobalSSE() {
   return useSSE({
     url: "/api/v1/sse/events",
     enabled: true,
-    eventTypes: ["job:status_changed", "job:step_changed"],
+    eventTypes: [
+      "job:status_changed",
+      "job:step_changed",
+      "notification:created",
+    ],
     onEvent: handleEvent,
   });
 }

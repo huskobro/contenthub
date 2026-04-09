@@ -93,6 +93,9 @@ const AdminInboxPage = lazy(() => import("../pages/admin/AdminInboxPage").then(m
 const UserCalendarPage = lazy(() => import("../pages/user/UserCalendarPage").then(m => ({ default: m.UserCalendarPage })));
 const AdminCalendarPage = lazy(() => import("../pages/admin/AdminCalendarPage").then(m => ({ default: m.AdminCalendarPage })));
 
+// Lazy-loaded Faz 16 pages
+const AdminNotificationsPage = lazy(() => import("../pages/admin/AdminNotificationsPage"));
+
 function LazyFallback() {
   return <div className="p-8 text-sm text-neutral-400">Yukleniyor...</div>;
 }
@@ -160,6 +163,7 @@ export const router = createBrowserRouter([
       { path: "automation", element: <Suspense fallback={<LazyFallback />}><AdminAutomationPoliciesPage /></Suspense> },
       { path: "inbox", element: <Suspense fallback={<LazyFallback />}><AdminInboxPage /></Suspense> },
       { path: "calendar", element: <Suspense fallback={<LazyFallback />}><AdminCalendarPage /></Suspense> },
+      { path: "notifications", element: <Suspense fallback={<LazyFallback />}><AdminNotificationsPage /></Suspense> },
       { path: "publish", element: <VisibilityGuard targetKey="panel:publish"><Suspense fallback={<LazyFallback />}><PublishCenterPage /></Suspense></VisibilityGuard> },
       { path: "publish/:recordId", element: <VisibilityGuard targetKey="panel:publish"><Suspense fallback={<LazyFallback />}><PublishDetailPage /></Suspense></VisibilityGuard> },
       { path: "audit-logs", element: <VisibilityGuard targetKey="panel:audit-logs"><Suspense fallback={<LazyFallback />}><AuditLogPage /></Suspense></VisibilityGuard> },

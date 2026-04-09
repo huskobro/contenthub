@@ -10,6 +10,7 @@ import { NotificationCenter } from "../../components/design-system/NotificationC
 import { KeyboardShortcutsHelp } from "../../components/design-system/KeyboardShortcutsHelp";
 import { useCommandPaletteShortcut } from "../../hooks/useCommandPaletteShortcut";
 import { useGlobalSSE } from "../../hooks/useGlobalSSE";
+import { useNotifications } from "../../hooks/useNotifications";
 import { useCommandPaletteStore } from "../../stores/commandPaletteStore";
 import { buildAdminNavigationCommands, buildAdminActionCommands } from "../../commands/adminCommands";
 import { buildContextualCommands } from "../../commands/contextualCommands";
@@ -28,6 +29,9 @@ export function AdminLayout() {
 
   // Global SSE for app-wide notifications and query invalidation
   useGlobalSSE();
+
+  // Backend-backed notification data sync
+  useNotifications();
 
   // Update command palette context on route change
   useEffect(() => {

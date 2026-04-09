@@ -39,6 +39,7 @@ from app.automation.router import router as automation_router
 from app.automation.router import inbox_router as operations_inbox_router
 from app.calendar.router import router as calendar_router
 from app.auth.router import router as auth_router
+from app.notifications.router import router as notifications_router
 
 api_router = APIRouter()
 api_router.include_router(health.router, tags=["health"])
@@ -80,4 +81,5 @@ api_router.include_router(modules_router)
 api_router.include_router(prompt_assembly_router)
 api_router.include_router(fs_router)
 api_router.include_router(calendar_router)
+api_router.include_router(notifications_router)
 api_router.include_router(auth_router)
