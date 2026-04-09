@@ -48,6 +48,7 @@ from app.source_scans.dedupe_service import (
     evaluate_entry,
     DedupeDecision,
 )
+from app.automation.event_hooks import emit_operation_event
 
 try:
     import feedparser  # type: ignore
@@ -617,6 +618,17 @@ async def _mark_failed(db: AsyncSession, scan: SourceScan, error_summary: str) -
     if scan.finished_at is None:
         scan.finished_at = now
     scan.error_summary = error_summary[:500]
+    # Faz 15: emit source_scan_error inbox item
+    await emit_operation_event(
+        db,
+        item_type="source_scan_error",
+        title=f"Kaynak tarama basarisiz: {getattr(scan, 'source_id', '')[:8] if getattr(scan, 'source_id', '') else 'bilinmeyen'}",
+        reason=error_summary[:200],
+        priority="normal",
+        related_entity_type="source_scan",
+        related_entity_id=scan.id,
+        action_url="/admin/source-scans",
+    )
     try:
         await db.commit()
     except Exception:

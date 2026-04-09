@@ -53,6 +53,7 @@ from app.jobs.exceptions import (
     StepNotFoundError,
 )
 from app.contracts.state_machine import JobStateMachine, StepStateMachine
+from app.automation.event_hooks import emit_operation_event
 
 
 def _now() -> datetime:
@@ -336,6 +337,18 @@ async def transition_job_status(
     elif next_status == "failed":
         job.finished_at = now
         job.last_error = last_error  # may be None if caller did not provide
+        # Faz 15: emit render_failure inbox item for job failures
+        await emit_operation_event(
+            db,
+            item_type="render_failure",
+            title=f"Is basarisiz: {job.module_type or 'bilinmeyen'}",
+            reason=(last_error or "Bilinmeyen hata")[:200],
+            priority="high",
+            owner_user_id=job.owner_id,
+            related_entity_type="job",
+            related_entity_id=job.id,
+            action_url=f"/admin/jobs/{job.id}",
+        )
 
     elif next_status == "cancelled":
         job.finished_at = now

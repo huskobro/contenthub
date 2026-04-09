@@ -42,6 +42,7 @@ from app.publish.exceptions import (
 from app.publish.schemas import PublishRecordCreate
 from app.audit.service import write_audit_log
 from app.publish.state_machine import PublishStateMachine
+from app.automation.event_hooks import emit_operation_event, evaluate_and_emit
 
 logger = logging.getLogger(__name__)
 
@@ -323,6 +324,18 @@ async def submit_for_review(
         actor_id=actor_id,
         note=note or "Review'a gönderildi.",
     )
+    # Faz 15: emit publish_review inbox item
+    await emit_operation_event(
+        session,
+        item_type="publish_review",
+        title=f"Yayin onay bekliyor: {record.content_ref_type}",
+        reason=f"PublishRecord {record.id[:8]} review'a gonderildi.",
+        priority="high",
+        related_entity_type="publish_record",
+        related_entity_id=record.id,
+        related_project_id=getattr(record, "content_project_id", None),
+        action_url=f"/admin/publish/{record.id}",
+    )
     await session.commit()
     await session.refresh(record)
     return record
@@ -586,6 +599,18 @@ async def mark_failed(
         actor_id=actor_id,
         detail={"event": "publish_failed", **detail},
         note=error_message,
+    )
+    # Faz 15: emit publish_failure inbox item
+    await emit_operation_event(
+        session,
+        item_type="publish_failure",
+        title=f"Yayin basarisiz: {record.content_ref_type}",
+        reason=error_message[:200] if error_message else "Bilinmeyen hata",
+        priority="urgent",
+        related_entity_type="publish_record",
+        related_entity_id=record.id,
+        related_project_id=getattr(record, "content_project_id", None),
+        action_url=f"/admin/publish/{record.id}",
     )
     await session.commit()
     await session.refresh(record)
