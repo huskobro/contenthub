@@ -18,6 +18,11 @@ function safeJsonKeys(json: string | null): string[] {
   }
 }
 
+function safeJsonParse<T = Record<string, unknown>>(json: string | null): T | null {
+  if (!json) return null;
+  try { return JSON.parse(json) as T; } catch { return null; }
+}
+
 const TYPE_COLORS: Record<string, string> = {
   style: "from-violet-500/20 to-violet-600/5",
   content: "from-sky-500/20 to-sky-600/5",
@@ -65,8 +70,35 @@ export function TemplatePreviewCard({
         <StatusBadge status={t.status === "active" ? "ready" : "draft"} label={t.status} size="sm" />
       </div>
 
-      {/* Mock preview area */}
-      <div className="bg-white/60 rounded border border-neutral-200/50 p-2 mb-2 min-h-[48px]">
+      {/* Visual preview area */}
+      <div className="bg-white/60 rounded border border-neutral-200/50 p-2 mb-2 min-h-[48px] space-y-1.5">
+        {/* Color swatch + gradient bar (from style_profile_json) */}
+        {(() => {
+          const sp = safeJsonParse<{ primary_color?: string; secondary_color?: string; font_style?: string }>(t.style_profile_json);
+          const primary = sp?.primary_color;
+          const secondary = sp?.secondary_color;
+          const fontStyle = sp?.font_style;
+          if (!primary && !fontStyle) return null;
+          return (
+            <div className="space-y-1">
+              {(primary || secondary) && (
+                <div className="flex items-center gap-1.5">
+                  {primary && <div className="w-4 h-4 rounded border border-neutral-300/50" style={{ backgroundColor: primary }} title={primary} />}
+                  {secondary && <div className="w-4 h-4 rounded border border-neutral-300/50" style={{ backgroundColor: secondary }} title={secondary} />}
+                  {primary && secondary && (
+                    <div className="flex-1 h-1.5 rounded-full" style={{ background: `linear-gradient(90deg, ${primary}, ${secondary})` }} />
+                  )}
+                </div>
+              )}
+              {fontStyle && (
+                <span className="inline-block px-1.5 py-0.5 bg-neutral-100 text-[10px] text-neutral-600 rounded" style={{ fontFamily: fontStyle }}>
+                  {fontStyle}
+                </span>
+              )}
+            </div>
+          );
+        })()}
+        {/* Description or key tags */}
         {t.description ? (
           <p className="m-0 text-xs text-neutral-600 line-clamp-2">{t.description}</p>
         ) : (
@@ -88,13 +120,20 @@ export function TemplatePreviewCard({
         )}
       </div>
 
-      {/* Footer */}
+      {/* Footer — version trace + metadata */}
       <div className="flex items-center justify-between text-[10px] text-neutral-400">
-        <span>{t.owner_scope}</span>
-        {t.module_scope && <span>{t.module_scope}</span>}
-        {t.style_link_count != null && t.style_link_count > 0 && (
-          <span>{t.style_link_count} stil baglantisi</span>
-        )}
+        <div className="flex items-center gap-1.5">
+          <span className="px-1 py-0.5 bg-neutral-100 rounded font-mono text-neutral-500" title={`Version ${t.version} · ${t.updated_at ? new Date(t.updated_at).toLocaleDateString("tr-TR") : ""}`}>
+            v{t.version}
+          </span>
+          <span>{t.owner_scope}</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          {t.module_scope && <span>{t.module_scope}</span>}
+          {t.style_link_count != null && t.style_link_count > 0 && (
+            <span>{t.style_link_count} stil</span>
+          )}
+        </div>
       </div>
 
       {/* Selected indicator */}

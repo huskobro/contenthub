@@ -20,6 +20,8 @@ import { StyleBlueprintSelector } from "../../components/preview/StyleBlueprintS
 import { CompositionDirectionPreview } from "../../components/preview/CompositionDirectionPreview";
 import { ThumbnailDirectionPreview } from "../../components/preview/ThumbnailDirectionPreview";
 import { SubtitleStylePicker } from "../../components/standard-video/SubtitleStylePicker";
+import { LowerThirdStylePreview } from "../../components/preview/LowerThirdStylePreview";
+import { MotionLevelPreview } from "../../components/preview/MotionLevelPreview";
 import { useSubtitlePresets } from "../../hooks/useSubtitlePresets";
 import { cn } from "../../lib/cn";
 
@@ -53,6 +55,8 @@ interface VideoWizardState {
   composition_direction: string;
   thumbnail_direction: string;
   subtitle_style: string;
+  lower_third_style: string;
+  motion_level: string;
   template_id: string;
   style_blueprint_id: string;
   render_format: string;
@@ -72,6 +76,8 @@ const initialState: VideoWizardState = {
   composition_direction: "",
   thumbnail_direction: "",
   subtitle_style: "",
+  lower_third_style: "",
+  motion_level: "",
   template_id: "",
   style_blueprint_id: "",
   render_format: "landscape",
@@ -105,6 +111,8 @@ async function createStandardVideo(
       composition_direction: values.composition_direction.trim() || null,
       thumbnail_direction: values.thumbnail_direction.trim() || null,
       subtitle_style: values.subtitle_style || null,
+      lower_third_style: values.lower_third_style || null,
+      motion_level: values.motion_level || null,
       template_id: values.template_id || null,
       style_blueprint_id: values.style_blueprint_id || null,
       render_format: values.render_format || "landscape",
@@ -355,6 +363,20 @@ export function CreateVideoWizardPage() {
             />
           </div>
           <div>
+            <h3 className="m-0 mb-2 text-md font-semibold text-neutral-800">Alt Bant Stili</h3>
+            <LowerThirdStylePreview
+              selected={values.lower_third_style || undefined}
+              onSelect={(style) => set("lower_third_style", style)}
+            />
+          </div>
+          <div>
+            <h3 className="m-0 mb-2 text-md font-semibold text-neutral-800">Hareket Seviyesi</h3>
+            <MotionLevelPreview
+              selected={values.motion_level || undefined}
+              onSelect={(level) => set("motion_level", level)}
+            />
+          </div>
+          <div>
             <h3 className="m-0 mb-2 text-md font-semibold text-neutral-800">Video Formati</h3>
             <div className="flex gap-2">
               {(
@@ -427,6 +449,8 @@ export function CreateVideoWizardPage() {
             <ReviewRow label="Kompozisyon" value={values.composition_direction} />
             <ReviewRow label="Thumbnail" value={values.thumbnail_direction} />
             <ReviewRow label="Altyazi" value={values.subtitle_style} />
+            <ReviewRow label="Alt Bant" value={values.lower_third_style} />
+            <ReviewRow label="Hareket" value={values.motion_level} />
             <ReviewRow
               label="Format"
               value={values.render_format === "portrait" ? "9:16 (Shorts)" : "16:9 (Yatay)"}

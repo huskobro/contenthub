@@ -14,10 +14,13 @@ import { useNavigate } from "react-router-dom";
 import { WizardShell, type WizardStep } from "../../components/wizard/WizardShell";
 import { ChannelProfileStep } from "../../components/wizard/ChannelProfileStep";
 import { ContentProjectStep } from "../../components/wizard/ContentProjectStep";
+import { LowerThirdStylePreview } from "../../components/preview/LowerThirdStylePreview";
+import { StyleBlueprintSelector } from "../../components/preview/StyleBlueprintSelector";
 
 const STEPS: WizardStep[] = [
   { id: "channel", label: "Kanal" },
   { id: "project", label: "Proje" },
+  { id: "style", label: "Stil Secimi" },
   { id: "continue", label: "Bulten Wizard" },
 ];
 
@@ -27,6 +30,8 @@ export function CreateBulletinWizardPage() {
   const [step, setStep] = useState(0);
   const [channelProfileId, setChannelProfileId] = useState<string | null>(null);
   const [contentProjectId, setContentProjectId] = useState<string | null>(null);
+  const [lowerThirdStyle, setLowerThirdStyle] = useState<string>("");
+  const [styleBlueprintId, setStyleBlueprintId] = useState<string | null>(null);
 
   const handleChannelSelect = useCallback(
     (id: string) => setChannelProfileId(id),
@@ -48,6 +53,8 @@ export function CreateBulletinWizardPage() {
       case 1:
         return !!contentProjectId;
       case 2:
+        return true; // style step is optional
+      case 3:
         return true;
       default:
         return false;
@@ -55,13 +62,15 @@ export function CreateBulletinWizardPage() {
   }
 
   function handleNext() {
-    if (step < 2) {
+    if (step < 3) {
       setStep(step + 1);
     } else {
-      // Navigate to bulletin wizard with context
+      // Navigate to bulletin wizard with context + style selections
       const params = new URLSearchParams();
       if (channelProfileId) params.set("channelProfileId", channelProfileId);
       if (contentProjectId) params.set("contentProjectId", contentProjectId);
+      if (lowerThirdStyle) params.set("lowerThirdStyle", lowerThirdStyle);
+      if (styleBlueprintId) params.set("styleBlueprintId", styleBlueprintId);
       navigate(`/admin/news-bulletins/wizard?${params.toString()}`);
     }
   }
@@ -75,8 +84,8 @@ export function CreateBulletinWizardPage() {
       onNext={handleNext}
       onCancel={() => navigate(-1)}
       nextDisabled={!canGoNext()}
-      isLastStep={step === 2}
-      nextLabel={step === 2 ? "Bulten Wizard'a Devam Et" : undefined}
+      isLastStep={step === 3}
+      nextLabel={step === 3 ? "Bulten Wizard'a Devam Et" : undefined}
       testId="create-bulletin-wizard"
     >
       {/* Step 0: Channel selection */}
@@ -97,8 +106,32 @@ export function CreateBulletinWizardPage() {
         />
       )}
 
-      {/* Step 2: Confirmation */}
+      {/* Step 2: Style selection */}
       {step === 2 && (
+        <div className="space-y-4">
+          <div>
+            <h3 className="m-0 mb-2 text-md font-semibold text-neutral-800">Stil Sablonu</h3>
+            <StyleBlueprintSelector
+              value={styleBlueprintId}
+              onChange={(id) => setStyleBlueprintId(id)}
+              moduleScope="news_bulletin"
+            />
+          </div>
+          <div>
+            <h3 className="m-0 mb-2 text-md font-semibold text-neutral-800">Alt Bant Stili</h3>
+            <LowerThirdStylePreview
+              selected={lowerThirdStyle || undefined}
+              onSelect={(style) => setLowerThirdStyle(style)}
+            />
+          </div>
+          <p className="m-0 text-[10px] text-neutral-400 italic">
+            Stil secimi opsiyoneldir — bulten wizard'da da degistirilebilir.
+          </p>
+        </div>
+      )}
+
+      {/* Step 3: Confirmation */}
+      {step === 3 && (
         <div className="space-y-3">
           <h3 className="m-0 mb-1 text-md font-semibold text-neutral-800">
             Hazir
@@ -118,6 +151,18 @@ export function CreateBulletinWizardPage() {
               <span className="w-[100px] shrink-0 text-neutral-500">Proje</span>
               <span className="text-neutral-800 font-mono text-xs">
                 {contentProjectId ? `...${contentProjectId.slice(-8)}` : "\u2014"}
+              </span>
+            </div>
+            <div className="flex">
+              <span className="w-[100px] shrink-0 text-neutral-500">Alt Bant</span>
+              <span className="text-neutral-800 text-xs">
+                {lowerThirdStyle || "\u2014"}
+              </span>
+            </div>
+            <div className="flex">
+              <span className="w-[100px] shrink-0 text-neutral-500">Stil</span>
+              <span className="text-neutral-800 font-mono text-xs">
+                {styleBlueprintId ? `...${styleBlueprintId.slice(-8)}` : "\u2014"}
               </span>
             </div>
           </div>
