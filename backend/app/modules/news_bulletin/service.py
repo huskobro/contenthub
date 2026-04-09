@@ -161,6 +161,8 @@ async def list_news_bulletins_with_artifacts(
                 subtitle_style=b.subtitle_style,
                 lower_third_style=b.lower_third_style,
                 trust_enforcement_level=b.trust_enforcement_level,
+                content_project_id=b.content_project_id,
+                channel_profile_id=b.channel_profile_id,
                 created_at=b.created_at,
                 updated_at=b.updated_at,
                 has_script=script_row.scalar_one_or_none() is not None,
@@ -251,6 +253,8 @@ async def create_news_bulletin(
         subtitle_style=payload.subtitle_style,
         lower_third_style=payload.lower_third_style,
         trust_enforcement_level=payload.trust_enforcement_level or "warn",
+        content_project_id=payload.content_project_id,
+        channel_profile_id=payload.channel_profile_id,
     )
     db.add(item)
     await db.commit()
@@ -683,17 +687,29 @@ async def start_production(
         user_row = (await db.execute(sa_select(User).where(User.id == owner_id))).scalar_one_or_none()
         user_slug = user_row.slug if user_row else None
 
-    # Job oluştur — M40a: owner_id from active user
+    # Job oluştur — M40a: owner_id from active user, Faz 5a: project/channel linkage
     job_payload = JobCreate(
         module_type="news_bulletin",
         owner_id=owner_id,
         input_data_json=json.dumps(input_data, ensure_ascii=False),
+        channel_profile_id=getattr(bulletin, "channel_profile_id", None),
+        content_project_id=getattr(bulletin, "content_project_id", None),
     )
     job = await create_job(db, job_payload)
 
     # Bulletin güncelle
     bulletin.job_id = job.id
     bulletin.status = "rendering"
+
+    # Faz 5a: ContentProject active_job_id güncelle
+    _project_id = getattr(bulletin, "content_project_id", None)
+    if _project_id:
+        from app.db.models import ContentProject
+        _proj = (await db.execute(sa_select(ContentProject).where(ContentProject.id == _project_id))).scalar_one_or_none()
+        if _proj:
+            _proj.active_job_id = job.id
+            _proj.current_stage = "rendering"
+
     await db.commit()
     await db.refresh(bulletin)
 

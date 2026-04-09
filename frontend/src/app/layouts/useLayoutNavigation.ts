@@ -70,6 +70,8 @@ export const USER_NAV: UserNavItem[] = [
   { label: "Anasayfa", to: "/user" },
   { label: "Kanallarim", to: "/user/channels" },
   { label: "Projelerim", to: "/user/projects" },
+  { label: "Video Olustur", to: "/user/create/video" },
+  { label: "Bulten Olustur", to: "/user/create/bulletin" },
   { label: "Icerik", to: "/user/content" },
   { label: "Yayin", to: "/user/publish" },
   { label: "Ayarlarim", to: "/user/settings" },
@@ -186,6 +188,15 @@ export const HORIZON_USER_GROUPS: HorizonNavGroup[] = [
     icon: "\u270E",
     items: [
       { label: "Projelerim", to: "/user/projects" },
+    ],
+  },
+  {
+    id: "create",
+    label: "Olustur",
+    icon: "\u2795",
+    items: [
+      { label: "Video Olustur", to: "/user/create/video" },
+      { label: "Bulten Olustur", to: "/user/create/bulletin" },
     ],
   },
   {

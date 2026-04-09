@@ -15,6 +15,7 @@ class StandardVideoCreate(BaseModel):
     visual_direction: Optional[str] = None
     subtitle_style: Optional[str] = None
     job_id: Optional[str] = None
+    content_project_id: Optional[str] = None  # Faz 5a
 
     @field_validator("target_duration_seconds")
     @classmethod
@@ -56,6 +57,7 @@ class StandardVideoResponse(BaseModel):
     subtitle_style: Optional[str] = None
     status: str
     job_id: Optional[str] = None
+    content_project_id: Optional[str] = None  # Faz 5a
     created_at: datetime
     updated_at: datetime
     # Artifact summary fields (populated by list_standard_videos_with_artifact_summary)

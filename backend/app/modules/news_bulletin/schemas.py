@@ -26,6 +26,8 @@ class NewsBulletinCreate(BaseModel):
     render_format: Optional[str] = None  # M41a
     karaoke_enabled: Optional[bool] = None  # M41a
     karaoke_anim_preset: Optional[str] = None  # M42
+    content_project_id: Optional[str] = None  # Faz 5a
+    channel_profile_id: Optional[str] = None  # Faz 5a
 
     @field_validator("topic")
     @classmethod
@@ -65,6 +67,8 @@ class NewsBulletinUpdate(BaseModel):
     render_format: Optional[str] = None  # M41a
     karaoke_enabled: Optional[bool] = None  # M41a
     karaoke_anim_preset: Optional[str] = None  # M42
+    content_project_id: Optional[str] = None  # Faz 5a
+    channel_profile_id: Optional[str] = None  # Faz 5a
 
     @field_validator("topic")
     @classmethod
@@ -105,6 +109,8 @@ class NewsBulletinResponse(BaseModel):
     render_format: Optional[str] = None  # M41a
     karaoke_enabled: Optional[bool] = None  # M41a
     karaoke_anim_preset: Optional[str] = None  # M42
+    content_project_id: Optional[str] = None  # Faz 5a
+    channel_profile_id: Optional[str] = None  # Faz 5a
     created_at: datetime
     updated_at: datetime
     has_script: bool = False

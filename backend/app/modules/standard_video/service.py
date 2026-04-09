@@ -76,6 +76,7 @@ async def list_standard_videos_with_artifact_summary(
             subtitle_style=v.subtitle_style,
             status=v.status,
             job_id=v.job_id,
+            content_project_id=v.content_project_id,
             created_at=v.created_at,
             updated_at=v.updated_at,
             has_script=has_script,

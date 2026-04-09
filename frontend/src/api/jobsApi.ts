@@ -36,6 +36,9 @@ export interface JobResponse {
   eta_seconds: number | null;
   workspace_path: string | null;
   last_error: string | null;
+  channel_profile_id?: string | null;
+  content_project_id?: string | null;
+  trigger_source?: string | null;
   created_at: string;
   started_at: string | null;
   finished_at: string | null;

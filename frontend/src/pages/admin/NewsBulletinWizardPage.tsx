@@ -105,6 +105,9 @@ export function NewsBulletinWizardPage() {
 
   // If resuming an existing bulletin
   const resumeId = searchParams.get("bulletinId");
+  // Faz 5a: channel/project context from user wizard
+  const contextChannelProfileId = searchParams.get("channelProfileId");
+  const contextContentProjectId = searchParams.get("contentProjectId");
 
   const [step, setStep] = useState(0);
   const [bulletinId, setBulletinId] = useState<string | null>(resumeId);
@@ -299,6 +302,9 @@ export function NewsBulletinWizardPage() {
         language: language || "tr",
         tone: tone || "formal",
         status: "draft",
+        // Faz 5a: channel/project linkage from user wizard context
+        ...(contextChannelProfileId ? { channel_profile_id: contextChannelProfileId } : {}),
+        ...(contextContentProjectId ? { content_project_id: contextContentProjectId } : {}),
       });
       // 2. Add all locally selected items
       for (const item of selectedItemsLocal) {
@@ -422,8 +428,14 @@ export function NewsBulletinWizardPage() {
     onSuccess: (res) => {
       qc.invalidateQueries({ queryKey: ["news-bulletins"] });
       qc.invalidateQueries({ queryKey: ["jobs"] });
+      qc.invalidateQueries({ queryKey: ["content-projects"] });
       toast.success(`Uretim baslatildi — Job: ${res.job_id.slice(0, 8)}...`);
-      navigate(`/admin/jobs/${res.job_id}`);
+      // Faz 5a: navigate to project detail if context project exists
+      if (contextContentProjectId) {
+        navigate(`/user/projects/${contextContentProjectId}`);
+      } else {
+        navigate(`/admin/jobs/${res.job_id}`);
+      }
     },
     onError: (err: any) => {
       const detail = err?.response?.data?.detail || err?.message || "Uretim baslatilamadi";

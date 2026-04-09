@@ -60,6 +60,8 @@ class JobCreate(BaseModel):
     input_data_json: Optional[str] = None
     workspace_path: Optional[str] = None
     is_test_data: Optional[bool] = None
+    channel_profile_id: Optional[str] = None  # Faz 5a
+    content_project_id: Optional[str] = None  # Faz 5a
 
 
 # Desteklenen dil kodları — wizard/API yoluyla job yaratılırken kullanılır
@@ -116,6 +118,9 @@ class JobResponse(BaseModel):
     workspace_path: Optional[str] = None
     last_error: Optional[str] = None
     is_test_data: bool = False
+    channel_profile_id: Optional[str] = None  # Faz 5a
+    content_project_id: Optional[str] = None  # Faz 5a
+    trigger_source: Optional[str] = None  # Faz 2
     created_at: datetime
     started_at: Optional[datetime] = None
     finished_at: Optional[datetime] = None

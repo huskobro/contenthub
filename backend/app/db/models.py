@@ -332,6 +332,8 @@ class StandardVideo(Base):
     subtitle_style: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     status: Mapped[str] = mapped_column(String(50), nullable=False, default="draft", index=True)
     job_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True)
+    # Faz 5a: project/channel linkage
+    content_project_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True, index=True)
     is_test_data: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, index=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=_now
@@ -722,6 +724,9 @@ class NewsBulletin(Base):
     karaoke_enabled: Mapped[Optional[bool]] = mapped_column(Boolean, nullable=True)
     # M42: Karaoke animasyon preset — 'hype' | 'explosive' | 'vibrant' | 'minimal'
     karaoke_anim_preset: Mapped[Optional[str]] = mapped_column(String(30), nullable=True)
+    # Faz 5a: project/channel linkage
+    content_project_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True, index=True)
+    channel_profile_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True, index=True)
     is_test_data: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, index=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=_now

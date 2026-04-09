@@ -65,6 +65,11 @@ const NewsBulletinDetailPage = lazy(() => import("../pages/admin/NewsBulletinDet
 const MyProjectsPage = lazy(() => import("../pages/user/MyProjectsPage").then(m => ({ default: m.MyProjectsPage })));
 const MyChannelsPage = lazy(() => import("../pages/user/MyChannelsPage").then(m => ({ default: m.MyChannelsPage })));
 
+// Lazy-loaded user wizard pages (Faz 5)
+const CreateVideoWizardPage = lazy(() => import("../pages/user/CreateVideoWizardPage").then(m => ({ default: m.CreateVideoWizardPage })));
+const CreateBulletinWizardPage = lazy(() => import("../pages/user/CreateBulletinWizardPage").then(m => ({ default: m.CreateBulletinWizardPage })));
+const ProjectDetailPage = lazy(() => import("../pages/user/ProjectDetailPage").then(m => ({ default: m.ProjectDetailPage })));
+
 function LazyFallback() {
   return <div className="p-8 text-sm text-neutral-400">Yukleniyor...</div>;
 }
@@ -146,9 +151,11 @@ export const router = createBrowserRouter([
       { path: "publish", element: <UserPublishEntryPage /> },
       { path: "settings", element: <UserSettingsPage /> },
       { path: "projects", element: <Suspense fallback={<LazyFallback />}><MyProjectsPage /></Suspense> },
-      { path: "projects/:projectId", element: <Suspense fallback={<LazyFallback />}><div className="p-8 text-neutral-500">Proje detayi yakinda eklenecek.</div></Suspense> },
+      { path: "projects/:projectId", element: <Suspense fallback={<LazyFallback />}><ProjectDetailPage /></Suspense> },
       { path: "channels", element: <Suspense fallback={<LazyFallback />}><MyChannelsPage /></Suspense> },
       { path: "channels/:channelId", element: <Suspense fallback={<LazyFallback />}><div className="p-8 text-neutral-500">Kanal detayi yakinda eklenecek.</div></Suspense> },
+      { path: "create/video", element: <Suspense fallback={<LazyFallback />}><CreateVideoWizardPage /></Suspense> },
+      { path: "create/bulletin", element: <Suspense fallback={<LazyFallback />}><CreateBulletinWizardPage /></Suspense> },
     ],
   },
   {

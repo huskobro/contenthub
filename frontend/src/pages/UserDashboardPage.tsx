@@ -60,13 +60,13 @@ export function UserDashboardPage() {
                 label="Video Olustur"
                 description="Standart video projesi baslat"
                 icon={"\u25B6"}
-                onClick={() => navigate("/admin/standard-videos/wizard")}
+                onClick={() => navigate("/user/create/video")}
               />
               <QuickCreateCard
                 label="Bulten Olustur"
                 description="Haber bulteni projesi baslat"
                 icon={"\u2139"}
-                onClick={() => navigate("/admin/news-bulletins/wizard")}
+                onClick={() => navigate("/user/create/bulletin")}
               />
             </div>
           </SectionShell>
