@@ -1262,6 +1262,122 @@ class EngagementTask(Base):
     )
 
 
+class SyncedComment(Base):
+    """
+    YouTube (veya diger platform) yorumlarinin yerel kopyasi.
+    Sync islemiyle cekilir, guncellenir.
+    """
+    __tablename__ = "synced_comments"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    platform: Mapped[str] = mapped_column(String(50), index=True, default="youtube")
+    platform_connection_id: Mapped[Optional[str]] = mapped_column(
+        String(36), ForeignKey("platform_connections.id", ondelete="SET NULL"),
+        nullable=True, index=True,
+    )
+    channel_profile_id: Mapped[Optional[str]] = mapped_column(
+        String(36), ForeignKey("channel_profiles.id", ondelete="SET NULL"),
+        nullable=True, index=True,
+    )
+    content_project_id: Mapped[Optional[str]] = mapped_column(
+        String(36), nullable=True, index=True,
+    )
+
+    # YouTube IDs
+    external_comment_id: Mapped[str] = mapped_column(String(500), unique=True, index=True)
+    external_video_id: Mapped[str] = mapped_column(String(500), index=True)
+    external_parent_id: Mapped[Optional[str]] = mapped_column(String(500), nullable=True, index=True)
+
+    # Comment data
+    author_name: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    author_channel_id: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    author_avatar_url: Mapped[Optional[str]] = mapped_column(String(1000), nullable=True)
+    text: Mapped[str] = mapped_column(Text, default="")
+    published_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    like_count: Mapped[int] = mapped_column(Integer, default=0)
+    reply_count: Mapped[int] = mapped_column(Integer, default=0)
+
+    # Status
+    is_reply: Mapped[bool] = mapped_column(Boolean, default=False)
+    reply_status: Mapped[str] = mapped_column(String(50), default="none")  # none, pending, replied, failed
+    our_reply_text: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    our_reply_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    # Sync
+    sync_status: Mapped[str] = mapped_column(String(50), default="synced")  # synced, stale, error
+    last_synced_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now,
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now, onupdate=_now,
+    )
+
+
+class SyncedPlaylist(Base):
+    """
+    YouTube (veya diger platform) playlist'lerinin yerel kopyasi.
+    Sync islemiyle cekilir, olusturulur, guncellenir. Faz 8.
+    """
+    __tablename__ = "synced_playlists"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    platform: Mapped[str] = mapped_column(String(50), index=True, default="youtube")
+    platform_connection_id: Mapped[Optional[str]] = mapped_column(
+        String(36), ForeignKey("platform_connections.id", ondelete="SET NULL"),
+        nullable=True, index=True,
+    )
+    channel_profile_id: Mapped[Optional[str]] = mapped_column(
+        String(36), ForeignKey("channel_profiles.id", ondelete="SET NULL"),
+        nullable=True, index=True,
+    )
+    external_playlist_id: Mapped[str] = mapped_column(String(500), unique=True, index=True)
+    title: Mapped[str] = mapped_column(String(500), default="")
+    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    privacy_status: Mapped[str] = mapped_column(String(50), default="private")  # public, unlisted, private
+    item_count: Mapped[int] = mapped_column(Integer, default=0)
+    thumbnail_url: Mapped[Optional[str]] = mapped_column(String(1000), nullable=True)
+
+    sync_status: Mapped[str] = mapped_column(String(50), default="synced")  # synced, stale, error
+    last_synced_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now,
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now, onupdate=_now,
+    )
+
+
+class SyncedPlaylistItem(Base):
+    """
+    Playlist icerisindeki video kayitlari. Faz 8.
+    """
+    __tablename__ = "synced_playlist_items"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    playlist_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("synced_playlists.id", ondelete="CASCADE"),
+        nullable=False, index=True,
+    )
+    external_video_id: Mapped[str] = mapped_column(String(500), index=True)
+    external_playlist_item_id: Mapped[Optional[str]] = mapped_column(String(500), nullable=True, unique=True)
+    content_project_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True, index=True)
+    publish_record_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True, index=True)
+    title: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    thumbnail_url: Mapped[Optional[str]] = mapped_column(String(1000), nullable=True)
+    position: Mapped[int] = mapped_column(Integer, default=0)
+
+    synced_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now,
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now, onupdate=_now,
+    )
+
+
 class BrandProfile(Base):
     """Marka kimlik profili — basit v1. Faz 2."""
 

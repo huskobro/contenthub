@@ -42,6 +42,9 @@ export const ADMIN_NAV: AdminNavItem[] = [
   { label: "Sablon-Stil Baglantilari", to: "/admin/template-style-links" },
   { label: "Yayin", section: true },
   { label: "Yayin Merkezi", to: "/admin/publish", visibilityKey: "panel:publish" },
+  { label: "Etkilesim", section: true },
+  { label: "Yorum Izleme", to: "/admin/comments" },
+  { label: "Playlist Izleme", to: "/admin/playlists" },
   { label: "Analytics", section: true },
   { label: "Analytics", to: "/admin/analytics", visibilityKey: "panel:analytics" },
   { label: "YouTube Analytics", to: "/admin/analytics/youtube" },
@@ -74,6 +77,8 @@ export const USER_NAV: UserNavItem[] = [
   { label: "Bulten Olustur", to: "/user/create/bulletin" },
   { label: "Icerik", to: "/user/content" },
   { label: "Yayin", to: "/user/publish" },
+  { label: "Yorumlar", to: "/user/comments" },
+  { label: "Playlist'lerim", to: "/user/playlists" },
   { label: "Ayarlarim", to: "/user/settings" },
 ];
 
@@ -128,6 +133,15 @@ export const HORIZON_ADMIN_GROUPS: HorizonNavGroup[] = [
     icon: "\u25B6",
     items: [
       { label: "Yayin Merkezi", to: "/admin/publish" },
+    ],
+  },
+  {
+    id: "engagement",
+    label: "Etkilesim",
+    icon: "\u2709",
+    items: [
+      { label: "Yorum Izleme", to: "/admin/comments" },
+      { label: "Playlist Izleme", to: "/admin/playlists" },
     ],
   },
   {
@@ -213,6 +227,15 @@ export const HORIZON_USER_GROUPS: HorizonNavGroup[] = [
     icon: "\u25B6",
     items: [
       { label: "Yayin", to: "/user/publish" },
+    ],
+  },
+  {
+    id: "engagement",
+    label: "Etkilesim",
+    icon: "\u2709",
+    items: [
+      { label: "Yorumlar", to: "/user/comments" },
+      { label: "Playlist'lerim", to: "/user/playlists" },
     ],
   },
   {

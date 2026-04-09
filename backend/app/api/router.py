@@ -31,6 +31,8 @@ from app.channels.router import router as channels_router
 from app.platform_connections.router import router as platform_connections_router
 from app.content_projects.router import router as content_projects_router
 from app.engagement.router import router as engagement_router
+from app.comments.router import router as comments_router
+from app.playlists.router import router as playlists_router
 from app.brand_profiles.router import router as brand_profiles_router
 from app.automation.router import router as automation_router
 from app.auth.router import router as auth_router
@@ -42,6 +44,8 @@ api_router.include_router(channels_router)
 api_router.include_router(platform_connections_router)
 api_router.include_router(content_projects_router)
 api_router.include_router(engagement_router)
+api_router.include_router(comments_router)
+api_router.include_router(playlists_router)
 api_router.include_router(brand_profiles_router)
 api_router.include_router(automation_router)
 api_router.include_router(providers_router)
