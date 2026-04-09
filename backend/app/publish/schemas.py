@@ -22,6 +22,10 @@ class PublishRecordCreate(BaseModel):
     platform: str
     payload_json: Optional[str] = None
     notes: Optional[str] = None
+    # V2 fields — Faz 11
+    content_project_id: Optional[str] = None
+    platform_connection_id: Optional[str] = None
+    publish_intent_json: Optional[str] = None
 
 
 class PublishRecordRead(BaseModel):
@@ -46,6 +50,11 @@ class PublishRecordRead(BaseModel):
     payload_json: Optional[str]
     result_json: Optional[str]
     notes: Optional[str]
+    # V2 fields — Faz 11
+    content_project_id: Optional[str] = None
+    platform_connection_id: Optional[str] = None
+    publish_intent_json: Optional[str] = None
+    publish_result_json: Optional[str] = None
     created_at: datetime
     updated_at: datetime
 
@@ -64,6 +73,9 @@ class PublishRecordSummary(BaseModel):
     publish_attempt_count: int
     published_at: Optional[datetime]
     platform_url: Optional[str]
+    # V2 fields — Faz 11
+    content_project_id: Optional[str] = None
+    platform_connection_id: Optional[str] = None
     created_at: datetime
     updated_at: datetime
 
@@ -110,6 +122,9 @@ class PublishFromJobRequest(BaseModel):
     platform: str
     content_ref_type: str
     content_ref_id: Optional[str] = None
+    # V2 fields — Faz 11
+    content_project_id: Optional[str] = None
+    platform_connection_id: Optional[str] = None
 
 
 class ScheduleRequest(BaseModel):
@@ -147,3 +162,37 @@ class ArtifactChangedRequest(BaseModel):
     """Artifact değişikliği bildirimi — review gate sıfırlar."""
     artifact_description: Optional[str] = None
     actor_id: Optional[str] = None
+
+
+# ---------------------------------------------------------------------------
+# V2 — Faz 11: Connection matching for publish
+# ---------------------------------------------------------------------------
+
+class ConnectionForPublish(BaseModel):
+    """Publish için uygun platform bağlantısı özeti."""
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    channel_profile_id: str
+    platform: str
+    external_account_name: Optional[str] = None
+    external_account_id: Optional[str] = None
+    connection_status: str
+    auth_state: str
+    token_state: str
+    scope_status: str
+    is_primary: bool
+    can_publish: bool  # computed: connection_status == "connected" and token_state == "valid"
+
+
+class PublishIntentData(BaseModel):
+    """Publish intent yapısı — planlanan publish bilgileri."""
+    title: Optional[str] = None
+    description: Optional[str] = None
+    tags: Optional[list[str]] = None
+    privacy_status: Optional[str] = None  # public / unlisted / private
+    scheduled_at: Optional[str] = None
+    category_id: Optional[str] = None
+    playlist_ids: Optional[list[str]] = None
+    thumbnail_path: Optional[str] = None
+    notify_subscribers: Optional[bool] = None

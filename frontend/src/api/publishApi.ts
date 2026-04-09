@@ -14,6 +14,9 @@ export interface PublishRecordSummary {
   scheduled_at: string | null;
   published_at: string | null;
   platform_url: string | null;
+  // V2 fields — Faz 11
+  content_project_id: string | null;
+  platform_connection_id: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -37,6 +40,11 @@ export interface PublishRecordRead {
   payload_json: string | null;
   result_json: string | null;
   notes: string | null;
+  // V2 fields — Faz 11
+  content_project_id: string | null;
+  platform_connection_id: string | null;
+  publish_intent_json: string | null;
+  publish_result_json: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -141,6 +149,9 @@ export interface PublishFromJobBody {
   platform: string;
   content_ref_type: string;
   content_ref_id?: string;
+  // V2 fields — Faz 11
+  content_project_id?: string;
+  platform_connection_id?: string;
 }
 
 export function createPublishRecordFromJob(
@@ -148,4 +159,38 @@ export function createPublishRecordFromJob(
   body: PublishFromJobBody,
 ): Promise<PublishRecordRead> {
   return api.post<PublishRecordRead>(`${BASE_URL}/from-job/${jobId}`, body);
+}
+
+
+// ---------------------------------------------------------------------------
+// V2 — Faz 11: Project-based listing + intent update
+// ---------------------------------------------------------------------------
+
+export function fetchPublishRecordsByProject(
+  contentProjectId: string,
+  limit = 50,
+): Promise<PublishRecordSummary[]> {
+  return api.get<PublishRecordSummary[]>(
+    `${BASE_URL}/by-project/${contentProjectId}`,
+    { limit },
+  );
+}
+
+export interface PublishIntentData {
+  title?: string;
+  description?: string;
+  tags?: string[];
+  privacy_status?: string;
+  scheduled_at?: string;
+  category_id?: string;
+  playlist_ids?: string[];
+  thumbnail_path?: string;
+  notify_subscribers?: boolean;
+}
+
+export function updatePublishIntent(
+  recordId: string,
+  intent: PublishIntentData,
+): Promise<PublishRecordRead> {
+  return api.patch<PublishRecordRead>(`${BASE_URL}/${recordId}/intent`, intent);
 }

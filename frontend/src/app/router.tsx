@@ -10,6 +10,9 @@ import { AdminOverviewPage } from "../pages/AdminOverviewPage";
 import { UserDashboardPage } from "../pages/UserDashboardPage";
 import { UserContentEntryPage } from "../pages/UserContentEntryPage";
 import { UserPublishEntryPage } from "../pages/UserPublishEntryPage";
+
+// Lazy-loaded user publish page (Faz 11)
+const UserPublishPage = lazy(() => import("../pages/user/UserPublishPage").then(m => ({ default: m.UserPublishPage })));
 import { LoginPage } from "../pages/LoginPage";
 import { SettingsRegistryPage } from "../pages/admin/SettingsRegistryPage";
 import { VisibilityRegistryPage } from "../pages/admin/VisibilityRegistryPage";
@@ -163,7 +166,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <UserDashboardPage /> },
       { path: "content", element: <UserContentEntryPage /> },
-      { path: "publish", element: <UserPublishEntryPage /> },
+      { path: "publish", element: <Suspense fallback={<LazyFallback />}><UserPublishPage /></Suspense> },
       { path: "settings", element: <UserSettingsPage /> },
       { path: "projects", element: <Suspense fallback={<LazyFallback />}><MyProjectsPage /></Suspense> },
       { path: "projects/:projectId", element: <Suspense fallback={<LazyFallback />}><ProjectDetailPage /></Suspense> },

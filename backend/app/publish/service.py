@@ -30,7 +30,7 @@ import os
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models import PublishRecord, PublishLog, Job
+from app.db.models import PublishRecord, PublishLog, Job, PlatformConnection, ChannelProfile
 from app.publish.enums import PublishStatus, PublishLogEvent
 from app.publish.exceptions import (
     PublishRecordNotFoundError,
@@ -184,6 +184,10 @@ async def create_publish_record(
         review_state="pending",
         payload_json=data.payload_json,
         notes=data.notes,
+        # V2 fields — Faz 11
+        content_project_id=getattr(data, "content_project_id", None),
+        platform_connection_id=getattr(data, "platform_connection_id", None),
+        publish_intent_json=getattr(data, "publish_intent_json", None),
     )
     session.add(record)
     await session.flush()  # ID'yi al
@@ -513,6 +517,15 @@ async def mark_published(
     if result_json:
         record.result_json = result_json
 
+    # V2 — Faz 11: populate publish_result_json with structured result
+    publish_result = {
+        "platform_video_id": platform_video_id,
+        "platform_url": platform_url,
+        "published_at": _now().isoformat(),
+        "attempt_count": record.publish_attempt_count,
+    }
+    record.publish_result_json = json.dumps(publish_result, ensure_ascii=False)
+
     await _transition_status(
         session=session,
         record=record,
@@ -710,6 +723,8 @@ async def create_publish_record_from_job(
     content_ref_type: str,
     content_ref_id: Optional[str] = None,
     actor_id: Optional[str] = None,
+    content_project_id: Optional[str] = None,
+    platform_connection_id: Optional[str] = None,
 ) -> PublishRecord:
     """
     Job'dan publish kaydı oluşturur.
@@ -751,6 +766,15 @@ async def create_publish_record_from_job(
         except Exception:
             pass
 
+    # V2 — Faz 11: build publish_intent_json from payload_data
+    publish_intent = {}
+    if payload_data.get("title"):
+        publish_intent["title"] = payload_data["title"]
+    if payload_data.get("description"):
+        publish_intent["description"] = payload_data["description"]
+    if payload_data.get("tags"):
+        publish_intent["tags"] = payload_data["tags"]
+
     from app.publish.schemas import PublishRecordCreate
     create_data = PublishRecordCreate(
         job_id=job_id,
@@ -759,6 +783,9 @@ async def create_publish_record_from_job(
         platform=platform,
         payload_json=json.dumps(payload_data, ensure_ascii=False) if payload_data else None,
         notes=f"Job'dan otomatik oluşturuldu: {job_id}",
+        content_project_id=content_project_id,
+        platform_connection_id=platform_connection_id,
+        publish_intent_json=json.dumps(publish_intent, ensure_ascii=False) if publish_intent else None,
     )
     return await create_publish_record(session=session, data=create_data, actor_id=actor_id)
 
@@ -869,4 +896,122 @@ async def reset_review_for_artifact_change(
         "PublishRecord %s: artifact değişikliği nedeniyle review gate sıfırlandı (artifact=%s).",
         record.id, artifact_description,
     )
+    return record
+
+
+# ---------------------------------------------------------------------------
+# V2 — Faz 11: Connection matching for publish
+# ---------------------------------------------------------------------------
+
+async def get_connections_for_publish(
+    session: AsyncSession,
+    channel_profile_id: str,
+    platform: Optional[str] = None,
+) -> list[dict]:
+    """
+    Bir kanal profili için publish'e uygun platform bağlantılarını döndürür.
+
+    Her bağlantı için can_publish flag'i hesaplanır:
+      connection_status == "connected" AND token_state == "valid"
+
+    Platform filtresi opsiyonel — belirtilirse yalnızca o platforma ait bağlantılar döner.
+    """
+    query = (
+        select(PlatformConnection)
+        .where(PlatformConnection.channel_profile_id == channel_profile_id)
+    )
+    if platform:
+        query = query.where(PlatformConnection.platform == platform)
+    query = query.order_by(PlatformConnection.is_primary.desc(), PlatformConnection.created_at.desc())
+
+    result = await session.execute(query)
+    connections = list(result.scalars().all())
+
+    items = []
+    for conn in connections:
+        can_publish = (
+            conn.connection_status == "connected"
+            and conn.token_state == "valid"
+        )
+        items.append({
+            "id": conn.id,
+            "channel_profile_id": conn.channel_profile_id,
+            "platform": conn.platform,
+            "external_account_name": conn.external_account_name,
+            "external_account_id": conn.external_account_id,
+            "connection_status": conn.connection_status,
+            "auth_state": conn.auth_state,
+            "token_state": conn.token_state,
+            "scope_status": conn.scope_status,
+            "is_primary": conn.is_primary,
+            "can_publish": can_publish,
+        })
+    return items
+
+
+async def list_publish_records_v2(
+    session: AsyncSession,
+    content_project_id: Optional[str] = None,
+    platform_connection_id: Optional[str] = None,
+    job_id: Optional[str] = None,
+    platform: Optional[str] = None,
+    status: Optional[str] = None,
+    content_ref_type: Optional[str] = None,
+    limit: int = 50,
+    offset: int = 0,
+) -> list[PublishRecord]:
+    """
+    V2 listeleme — content_project_id ve platform_connection_id filtresi ekler.
+    """
+    query = select(PublishRecord)
+    if content_project_id:
+        query = query.where(PublishRecord.content_project_id == content_project_id)
+    if platform_connection_id:
+        query = query.where(PublishRecord.platform_connection_id == platform_connection_id)
+    if job_id:
+        query = query.where(PublishRecord.job_id == job_id)
+    if platform:
+        query = query.where(PublishRecord.platform == platform)
+    if status:
+        query = query.where(PublishRecord.status == status)
+    if content_ref_type:
+        query = query.where(PublishRecord.content_ref_type == content_ref_type)
+    query = query.order_by(PublishRecord.created_at.desc()).limit(limit).offset(offset)
+    result = await session.execute(query)
+    return list(result.scalars().all())
+
+
+async def update_publish_intent(
+    session: AsyncSession,
+    record_id: str,
+    intent_json: str,
+    actor_id: Optional[str] = None,
+) -> PublishRecord:
+    """
+    Draft durumundaki publish kaydının publish_intent_json alanını günceller.
+
+    Yalnızca draft durumunda izin verilir.
+    """
+    record = await _get_record_or_404(session, record_id)
+
+    if record.status != PublishStatus.DRAFT.value:
+        raise PublishGateViolationError(
+            f"PublishRecord {record.id} intent güncellenemez. "
+            f"Mevcut durum: '{record.status}'. "
+            f"Intent yalnızca draft durumunda güncellenebilir."
+        )
+
+    record.publish_intent_json = intent_json
+    await _append_log(
+        session=session,
+        publish_record_id=record.id,
+        event_type=PublishLogEvent.NOTE,
+        actor_type="user",
+        actor_id=actor_id,
+        detail={"action": "intent_updated"},
+        note="Publish intent güncellendi (draft)",
+    )
+    await session.commit()
+    await session.refresh(record)
+    logger.info("PublishRecord %s: publish_intent güncellendi (draft).", record.id)
     return record

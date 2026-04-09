@@ -45,6 +45,8 @@ from app.publish.schemas import (
     ArtifactChangedRequest,
     PublishRecordPatchPayload,
     PublishFromJobRequest,
+    ConnectionForPublish,
+    PublishIntentData,
 )
 
 router = APIRouter(prefix="/publish", tags=["publish"], dependencies=[Depends(require_visible("panel:publish"))])
@@ -353,6 +355,8 @@ async def create_publish_record_from_job(
             platform=body.platform,
             content_ref_type=body.content_ref_type,
             content_ref_id=body.content_ref_id,
+            content_project_id=body.content_project_id,
+            platform_connection_id=body.platform_connection_id,
         )
         await write_audit_log(session, action="publish.create_from_job", entity_type="publish_record", entity_id=str(record.id), details={"job_id": job_id})
         return record
@@ -378,6 +382,69 @@ async def patch_publish_payload(
             payload_json=body.payload_json,
         )
         await write_audit_log(session, action="publish.patch_payload", entity_type="publish_record", entity_id=record_id)
+        return result
+    except PublishRecordNotFoundError as exc:
+        raise _handle_not_found(exc)
+    except PublishGateViolationError as exc:
+        raise _handle_gate_violation(exc)
+
+
+# ---------------------------------------------------------------------------
+# V2 — Faz 11: Connection matching + intent + project-based listing
+# ---------------------------------------------------------------------------
+
+@router.get("/connections-for-channel/{channel_profile_id}", response_model=list[ConnectionForPublish])
+async def get_connections_for_channel(
+    channel_profile_id: str,
+    platform: Optional[str] = Query(default=None),
+    session=Depends(get_db),
+):
+    """
+    Bir kanal profili için publish'e uygun platform bağlantılarını döndürür.
+    Her bağlantıda can_publish flag'i var.
+    """
+    return await service.get_connections_for_publish(
+        session=session,
+        channel_profile_id=channel_profile_id,
+        platform=platform,
+    )
+
+
+@router.get("/by-project/{content_project_id}", response_model=list[PublishRecordSummary])
+async def list_publish_records_by_project(
+    content_project_id: str,
+    limit: int = Query(default=50, ge=1, le=200),
+    offset: int = Query(default=0, ge=0),
+    session=Depends(get_db),
+):
+    """Content project'e ait publish kayıtlarını döndürür."""
+    records = await service.list_publish_records_v2(
+        session=session,
+        content_project_id=content_project_id,
+        limit=limit,
+        offset=offset,
+    )
+    return records
+
+
+@router.patch("/{record_id}/intent", response_model=PublishRecordRead)
+async def update_publish_intent(
+    record_id: str,
+    body: PublishIntentData,
+    session=Depends(get_db),
+):
+    """
+    Draft durumundaki publish kaydının publish_intent_json alanını günceller.
+    """
+    import json
+    intent_json = json.dumps(body.model_dump(exclude_none=True), ensure_ascii=False)
+    try:
+        result = await service.update_publish_intent(
+            session=session,
+            record_id=record_id,
+            intent_json=intent_json,
+        )
+        await write_audit_log(session, action="publish.update_intent", entity_type="publish_record", entity_id=record_id)
         return result
     except PublishRecordNotFoundError as exc:
         raise _handle_not_found(exc)
