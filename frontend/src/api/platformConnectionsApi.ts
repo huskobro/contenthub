@@ -1,7 +1,7 @@
 /**
- * Platform Connections API — Faz 11.
+ * Platform Connections API — Faz 11 + Faz 17 (Connection Center).
  *
- * CRUD + publish-oriented connection matching.
+ * CRUD + publish-oriented connection matching + Connection Center.
  */
 
 import { api } from "./client";
@@ -10,7 +10,7 @@ const BASE = "/api/v1/platform-connections";
 const PUBLISH_BASE = "/api/v1/publish";
 
 // ---------------------------------------------------------------------------
-// Types
+// Types (Faz 2/11 — preserved)
 // ---------------------------------------------------------------------------
 
 export interface PlatformConnectionResponse {
@@ -53,7 +53,52 @@ export interface ConnectionForPublish {
 }
 
 // ---------------------------------------------------------------------------
-// API functions
+// Faz 17 — Connection Center types
+// ---------------------------------------------------------------------------
+
+export interface HealthSummary {
+  health_level: string;
+  supported_count: number;
+  blocked_count: number;
+  total_applicable: number;
+  issues: string[];
+  capability_matrix: Record<string, string>;
+}
+
+export interface ConnectionWithHealth extends PlatformConnectionResponse {
+  health: HealthSummary;
+  channel_profile_name: string | null;
+  user_id: string | null;
+  user_display_name: string | null;
+}
+
+export interface ConnectionHealthKPIs {
+  total: number;
+  healthy: number;
+  partial: number;
+  disconnected: number;
+  reauth_required: number;
+  token_issue: number;
+  can_publish_ok: number;
+  can_read_comments_ok: number;
+  can_reply_comments_ok: number;
+  can_read_playlists_ok: number;
+  can_write_playlists_ok: number;
+  can_create_posts_ok: number;
+  can_read_analytics_ok: number;
+  can_sync_channel_info_ok: number;
+}
+
+export interface ConnectionCenterListResponse {
+  items: ConnectionWithHealth[];
+  total: number;
+  kpis: ConnectionHealthKPIs | null;
+}
+
+export type CapabilityMatrix = Record<string, string>;
+
+// ---------------------------------------------------------------------------
+// API functions (Faz 2/11 — preserved)
 // ---------------------------------------------------------------------------
 
 export function fetchPlatformConnections(
@@ -75,4 +120,41 @@ export function fetchConnectionsForPublish(
     `${PUBLISH_BASE}/connections-for-channel/${channelProfileId}`,
     Object.keys(params).length > 0 ? params : undefined,
   );
+}
+
+// ---------------------------------------------------------------------------
+// Faz 17 — Connection Center API functions
+// ---------------------------------------------------------------------------
+
+export function fetchMyConnections(params?: {
+  platform?: string;
+  health_level?: string;
+  skip?: number;
+  limit?: number;
+}): Promise<ConnectionCenterListResponse> {
+  return api.get<ConnectionCenterListResponse>(`${BASE}/center/my`, params);
+}
+
+export function fetchAdminConnections(params?: {
+  user_id?: string;
+  channel_profile_id?: string;
+  platform?: string;
+  health_level?: string;
+  requires_reauth?: boolean;
+  skip?: number;
+  limit?: number;
+}): Promise<ConnectionCenterListResponse> {
+  return api.get<ConnectionCenterListResponse>(`${BASE}/center/admin`, params);
+}
+
+export function fetchConnectionHealth(
+  connectionId: string,
+): Promise<ConnectionWithHealth> {
+  return api.get<ConnectionWithHealth>(`${BASE}/${connectionId}/health`);
+}
+
+export function fetchConnectionCapability(
+  connectionId: string,
+): Promise<CapabilityMatrix> {
+  return api.get<CapabilityMatrix>(`${BASE}/${connectionId}/capability`);
 }

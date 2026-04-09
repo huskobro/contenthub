@@ -96,6 +96,10 @@ const AdminCalendarPage = lazy(() => import("../pages/admin/AdminCalendarPage").
 // Lazy-loaded Faz 16 pages
 const AdminNotificationsPage = lazy(() => import("../pages/admin/AdminNotificationsPage"));
 
+// Lazy-loaded Faz 17 pages
+const UserConnectionsPage = lazy(() => import("../pages/user/UserConnectionsPage").then(m => ({ default: m.UserConnectionsPage })));
+const AdminConnectionsPage = lazy(() => import("../pages/admin/AdminConnectionsPage").then(m => ({ default: m.AdminConnectionsPage })));
+
 function LazyFallback() {
   return <div className="p-8 text-sm text-neutral-400">Yukleniyor...</div>;
 }
@@ -164,6 +168,7 @@ export const router = createBrowserRouter([
       { path: "inbox", element: <Suspense fallback={<LazyFallback />}><AdminInboxPage /></Suspense> },
       { path: "calendar", element: <Suspense fallback={<LazyFallback />}><AdminCalendarPage /></Suspense> },
       { path: "notifications", element: <Suspense fallback={<LazyFallback />}><AdminNotificationsPage /></Suspense> },
+      { path: "connections", element: <Suspense fallback={<LazyFallback />}><AdminConnectionsPage /></Suspense> },
       { path: "publish", element: <VisibilityGuard targetKey="panel:publish"><Suspense fallback={<LazyFallback />}><PublishCenterPage /></Suspense></VisibilityGuard> },
       { path: "publish/:recordId", element: <VisibilityGuard targetKey="panel:publish"><Suspense fallback={<LazyFallback />}><PublishDetailPage /></Suspense></VisibilityGuard> },
       { path: "audit-logs", element: <VisibilityGuard targetKey="panel:audit-logs"><Suspense fallback={<LazyFallback />}><AuditLogPage /></Suspense></VisibilityGuard> },
@@ -197,6 +202,7 @@ export const router = createBrowserRouter([
       { path: "automation", element: <Suspense fallback={<LazyFallback />}><UserAutomationPage /></Suspense> },
       { path: "inbox", element: <Suspense fallback={<LazyFallback />}><UserInboxPage /></Suspense> },
       { path: "calendar", element: <Suspense fallback={<LazyFallback />}><UserCalendarPage /></Suspense> },
+      { path: "connections", element: <Suspense fallback={<LazyFallback />}><UserConnectionsPage /></Suspense> },
       { path: "create/video", element: <Suspense fallback={<LazyFallback />}><CreateVideoWizardPage /></Suspense> },
       { path: "create/bulletin", element: <Suspense fallback={<LazyFallback />}><CreateBulletinWizardPage /></Suspense> },
     ],

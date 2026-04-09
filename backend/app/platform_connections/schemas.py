@@ -1,5 +1,5 @@
 """
-Platform Connection schemas — Faz 2.
+Platform Connection schemas — Faz 2 + Faz 17 (Connection Center).
 """
 
 from datetime import datetime
@@ -69,3 +69,53 @@ class PlatformConnectionResponse(BaseModel):
     updated_at: datetime
 
     model_config = {"from_attributes": True}
+
+
+# ---------------------------------------------------------------------------
+# Faz 17 — Connection Center enriched schemas
+# ---------------------------------------------------------------------------
+
+
+class HealthSummary(BaseModel):
+    """Derived health summary for a single connection."""
+    health_level: str  # healthy | partial | disconnected | reauth_required | token_issue | unknown
+    supported_count: int
+    blocked_count: int
+    total_applicable: int
+    issues: list[str] = []
+    capability_matrix: dict[str, str] = {}
+
+
+class ConnectionWithHealth(PlatformConnectionResponse):
+    """PlatformConnection + computed health + capability matrix."""
+    health: HealthSummary
+    # Enrichment: channel profile name for admin view
+    channel_profile_name: Optional[str] = None
+    user_id: Optional[str] = None
+    user_display_name: Optional[str] = None
+
+
+class ConnectionHealthKPIs(BaseModel):
+    """Aggregate health KPIs for admin monitoring."""
+    total: int = 0
+    healthy: int = 0
+    partial: int = 0
+    disconnected: int = 0
+    reauth_required: int = 0
+    token_issue: int = 0
+    # Per-capability aggregates
+    can_publish_ok: int = 0
+    can_read_comments_ok: int = 0
+    can_reply_comments_ok: int = 0
+    can_read_playlists_ok: int = 0
+    can_write_playlists_ok: int = 0
+    can_create_posts_ok: int = 0
+    can_read_analytics_ok: int = 0
+    can_sync_channel_info_ok: int = 0
+
+
+class ConnectionCenterListResponse(BaseModel):
+    """Paginated connection center response."""
+    items: list[ConnectionWithHealth] = []
+    total: int = 0
+    kpis: Optional[ConnectionHealthKPIs] = None
