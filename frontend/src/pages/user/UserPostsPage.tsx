@@ -23,6 +23,8 @@ import {
 import { fetchChannelProfiles, type ChannelProfileResponse } from "../../api/channelProfilesApi";
 import { useAuthStore } from "../../stores/authStore";
 import { AssistedComposer } from "../../components/engagement/AssistedComposer";
+import { ConnectionCapabilityWarning } from "../../components/connections/ConnectionCapabilityWarning";
+import { useChannelConnection } from "../../hooks/useChannelConnection";
 import {
   PageShell,
   SectionShell,
@@ -127,6 +129,9 @@ export function UserPostsPage() {
   // Capability
   const { data: capability } = usePostCapability();
 
+  // Faz 17a: Connection lookup for capability awareness
+  const { connectionId: activeConnectionId } = useChannelConnection(channelFilter || undefined);
+
   // Posts list
   const listParams: PostListParams = useMemo(() => {
     const p: PostListParams = { limit: 100 };
@@ -205,12 +210,16 @@ export function UserPostsPage() {
       subtitle="Topluluk gonderileri olusturun ve yonetin."
       testId="user-posts"
     >
-      {/* Platform capability notice */}
-      {capability && (
+      {/* Faz 17a: Connection-aware capability warning */}
+      {activeConnectionId ? (
+        <div className="mb-3" data-testid="capability-notice">
+          <ConnectionCapabilityWarning connectionId={activeConnectionId} requiredCapability="can_create_posts" context="user" />
+        </div>
+      ) : capability ? (
         <div className="mb-3 p-2 bg-warning-50 border border-warning-200 rounded-md text-xs text-warning-700" data-testid="capability-notice">
           {capability.note}
         </div>
-      )}
+      ) : null}
 
       {/* Filters + Actions */}
       <div className="flex flex-wrap items-center gap-3 mb-4" data-testid="post-filters">

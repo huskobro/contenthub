@@ -7,6 +7,7 @@
  */
 
 import { useState, useMemo } from "react";
+import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { usePlaylists, usePlaylistSyncStatus } from "../../hooks/usePlaylists";
 import { fetchChannelProfiles, type ChannelProfileResponse } from "../../api/channelProfilesApi";
@@ -118,6 +119,14 @@ export function AdminPlaylistMonitoringPage() {
       subtitle="Tum kullanici ve kanal playlist'lerini izleyin."
       testId="admin-playlist-monitoring"
     >
+      {/* Faz 17a: Connection context link */}
+      <div className="flex items-center gap-2 mb-3 text-xs text-neutral-500" data-testid="admin-playlist-connection-link">
+        <span>Playlist senkronizasyon sorunlari icin:</span>
+        <Link to="/admin/connections" className="text-brand-600 hover:text-brand-700 underline">
+          Baglanti Durumu
+        </Link>
+      </div>
+
       {/* Filters */}
       <div className="flex flex-wrap gap-3 mb-4" data-testid="admin-playlist-filters">
         <select

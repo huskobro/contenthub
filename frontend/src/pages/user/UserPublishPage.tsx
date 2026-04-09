@@ -17,6 +17,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchContentProjects, type ContentProjectResponse } from "../../api/contentProjectsApi";
 import { fetchChannelProfiles, type ChannelProfileResponse } from "../../api/channelProfilesApi";
 import { fetchConnectionsForPublish, type ConnectionForPublish } from "../../api/platformConnectionsApi";
+import { ConnectionCapabilityWarning, useCapabilityStatus } from "../../components/connections/ConnectionCapabilityWarning";
 import {
   createPublishRecordFromJob,
   fetchPublishRecordsByProject,
@@ -340,6 +341,12 @@ export function UserPublishPage() {
             ) : channelProfileId ? (
               <p className="text-xs text-neutral-400">Bu kanal icin platform baglantisi bulunamadi.</p>
             ) : null}
+            {/* Faz 17a: Capability warning for selected connection */}
+            {selectedConnectionId && (
+              <div className="mt-3">
+                <ConnectionCapabilityWarning connectionId={selectedConnectionId} requiredCapability="can_publish" context="user" />
+              </div>
+            )}
           </SectionShell>
 
           {/* Step 3: Publish Metadata Form */}

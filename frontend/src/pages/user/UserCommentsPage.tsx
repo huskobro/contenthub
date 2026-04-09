@@ -14,6 +14,8 @@ import { useComments, useReplyToComment, useSyncComments } from "../../hooks/use
 import { fetchChannelProfiles, type ChannelProfileResponse } from "../../api/channelProfilesApi";
 import { useAuthStore } from "../../stores/authStore";
 import { AssistedComposer } from "../../components/engagement/AssistedComposer";
+import { ConnectionCapabilityWarning, useCapabilityStatus } from "../../components/connections/ConnectionCapabilityWarning";
+import { useChannelConnection } from "../../hooks/useChannelConnection";
 import {
   PageShell,
   SectionShell,
@@ -103,6 +105,11 @@ export function UserCommentsPage() {
   const replyMutation = useReplyToComment();
   const syncMutation = useSyncComments();
 
+  // Faz 17a: Connection lookup for capability awareness
+  const { connectionId: activeConnectionId } = useChannelConnection(channelFilter || undefined);
+  const { isBlocked: readBlocked } = useCapabilityStatus(activeConnectionId, "can_read_comments");
+  const { isBlocked: replyBlocked } = useCapabilityStatus(activeConnectionId, "can_reply_comments");
+
   // Selected comment
   const selectedComment = useMemo(() => {
     if (!selectedCommentId || !comments) return null;
@@ -175,6 +182,14 @@ export function UserCommentsPage() {
           ))}
         </select>
       </div>
+
+      {/* Faz 17a: Capability warnings */}
+      {channelFilter && activeConnectionId && (
+        <div className="flex flex-col gap-2 mb-4">
+          <ConnectionCapabilityWarning connectionId={activeConnectionId} requiredCapability="can_read_comments" context="user" />
+          <ConnectionCapabilityWarning connectionId={activeConnectionId} requiredCapability="can_reply_comments" context="user" />
+        </div>
+      )}
 
       {/* Loading / Error */}
       {isLoading && (
@@ -349,27 +364,33 @@ export function UserCommentsPage() {
               {/* Reply composer */}
               {selectedComment.reply_status !== "replied" && (
                 <div className="border-t border-border-subtle pt-3">
-                  <AssistedComposer
-                    value={replyText}
-                    onChange={setReplyText}
-                    onSubmit={handleReply}
-                    placeholder="Yanit yazin..."
-                    submitLabel="YouTube'a Gonder"
-                    maxLength={10000}
-                    loading={replyMutation.isPending}
-                    contextLabel="Yorum Yaniti"
-                    testId="comment-reply-composer"
-                  />
-                  {replyMutation.isError && (
-                    <p className="text-xs text-error-base mt-1 m-0">Yanit gonderilemedi.</p>
-                  )}
-                  {replyMutation.isSuccess && replyMutation.data?.success && (
-                    <p className="text-xs text-success-600 mt-1 m-0">Yanit basariyla gonderildi.</p>
-                  )}
-                  {replyMutation.isSuccess && !replyMutation.data?.success && (
-                    <p className="text-xs text-error-base mt-1 m-0">
-                      {replyMutation.data?.error || "Bilinmeyen hata."}
-                    </p>
+                  {replyBlocked ? (
+                    <ConnectionCapabilityWarning connectionId={activeConnectionId} requiredCapability="can_reply_comments" mode="guard" context="user" />
+                  ) : (
+                    <>
+                      <AssistedComposer
+                        value={replyText}
+                        onChange={setReplyText}
+                        onSubmit={handleReply}
+                        placeholder="Yanit yazin..."
+                        submitLabel="YouTube'a Gonder"
+                        maxLength={10000}
+                        loading={replyMutation.isPending}
+                        contextLabel="Yorum Yaniti"
+                        testId="comment-reply-composer"
+                      />
+                      {replyMutation.isError && (
+                        <p className="text-xs text-error-base mt-1 m-0">Yanit gonderilemedi.</p>
+                      )}
+                      {replyMutation.isSuccess && replyMutation.data?.success && (
+                        <p className="text-xs text-success-600 mt-1 m-0">Yanit basariyla gonderildi.</p>
+                      )}
+                      {replyMutation.isSuccess && !replyMutation.data?.success && (
+                        <p className="text-xs text-error-base mt-1 m-0">
+                          {replyMutation.data?.error || "Bilinmeyen hata."}
+                        </p>
+                      )}
+                    </>
                   )}
                 </div>
               )}

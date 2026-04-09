@@ -22,6 +22,8 @@ import {
 } from "../../hooks/usePlaylists";
 import { fetchChannelProfiles, type ChannelProfileResponse } from "../../api/channelProfilesApi";
 import { useAuthStore } from "../../stores/authStore";
+import { ConnectionCapabilityWarning, useCapabilityStatus } from "../../components/connections/ConnectionCapabilityWarning";
+import { useChannelConnection } from "../../hooks/useChannelConnection";
 import {
   PageShell,
   SectionShell,
@@ -112,6 +114,11 @@ export function UserPlaylistsPage() {
   const createMutation = useCreatePlaylist();
   const addVideoMutation = useAddVideoToPlaylist();
   const removeVideoMutation = useRemoveVideoFromPlaylist();
+
+  // Faz 17a: Connection lookup for capability awareness
+  const { connectionId: activeConnectionId } = useChannelConnection(channelFilter || undefined);
+  const { isBlocked: readBlocked } = useCapabilityStatus(activeConnectionId, "can_read_playlists");
+  const { isBlocked: writeBlocked } = useCapabilityStatus(activeConnectionId, "can_write_playlists");
 
   const selectedPlaylist = useMemo(() => {
     if (!selectedPlaylistId || !playlists) return null;
@@ -215,21 +222,32 @@ export function UserPlaylistsPage() {
           type="button"
           className="px-3 py-1.5 text-xs font-medium rounded-md bg-brand-600 text-white hover:bg-brand-700 disabled:opacity-50"
           onClick={handleSync}
-          disabled={syncMutation.isPending}
+          disabled={syncMutation.isPending || readBlocked}
           data-testid="playlist-sync-btn"
+          title={readBlocked ? "Playlist okuma yetenegi kullanilamaz" : undefined}
         >
           {syncMutation.isPending ? "Sync ediliyor..." : "YouTube'dan Senkronla"}
         </button>
 
         <button
           type="button"
-          className="px-3 py-1.5 text-xs font-medium rounded-md border border-brand-200 text-brand-600 bg-surface-card hover:bg-brand-50"
+          className="px-3 py-1.5 text-xs font-medium rounded-md border border-brand-200 text-brand-600 bg-surface-card hover:bg-brand-50 disabled:opacity-50"
           onClick={() => setShowCreateForm(!showCreateForm)}
+          disabled={writeBlocked}
           data-testid="playlist-create-toggle"
+          title={writeBlocked ? "Playlist yazma yetenegi kullanilamaz" : undefined}
         >
           Yeni Playlist Olustur
         </button>
       </div>
+
+      {/* Faz 17a: Capability warnings */}
+      {channelFilter && activeConnectionId && (
+        <div className="flex flex-col gap-2 mb-3">
+          <ConnectionCapabilityWarning connectionId={activeConnectionId} requiredCapability="can_read_playlists" context="user" />
+          <ConnectionCapabilityWarning connectionId={activeConnectionId} requiredCapability="can_write_playlists" context="user" />
+        </div>
+      )}
 
       {/* Sync result */}
       {syncMutation.isSuccess && syncMutation.data && (

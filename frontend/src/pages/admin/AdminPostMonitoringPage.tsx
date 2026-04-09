@@ -7,6 +7,7 @@
  */
 
 import { useState, useMemo } from "react";
+import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { usePosts, usePostStats, usePostCapability } from "../../hooks/usePosts";
 import { fetchChannelProfiles, type ChannelProfileResponse } from "../../api/channelProfilesApi";
@@ -134,6 +135,14 @@ export function AdminPostMonitoringPage() {
       subtitle="Tum kullanici ve kanal gonderilerini izleyin."
       testId="admin-post-monitoring"
     >
+      {/* Faz 17a: Connection context link */}
+      <div className="flex items-center gap-2 mb-3 text-xs text-neutral-500" data-testid="admin-post-connection-link">
+        <span>Gonderi sorunlari icin:</span>
+        <Link to="/admin/connections" className="text-brand-600 hover:text-brand-700 underline">
+          Baglanti Durumu
+        </Link>
+      </div>
+
       {/* Capability notice */}
       {capability && (
         <div
