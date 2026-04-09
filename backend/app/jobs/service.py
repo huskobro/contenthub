@@ -39,8 +39,11 @@ Settings Registry integration note:
     enforces the state machine and its side effects.
 """
 
+import logging
 from datetime import datetime, timedelta, timezone
 from typing import Optional
+
+logger = logging.getLogger(__name__)
 
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -333,6 +336,31 @@ async def transition_job_status(
         job.finished_at = now
         job.current_step_key = None
         job.last_error = None
+        # Sprint 1: emit job_completed notification + auto-create draft publish record
+        await emit_operation_event(
+            db,
+            item_type="job_completed",
+            title=f"Is tamamlandi: {job.module_type or 'bilinmeyen'}",
+            reason="Icerik uretimi basariyla tamamlandi. Yayinlamaya hazir.",
+            priority="normal",
+            owner_user_id=job.owner_id,
+            related_entity_type="job",
+            related_entity_id=job.id,
+            action_url=f"/admin/jobs/{job.id}",
+        )
+        # Auto-create draft publish record (best-effort, non-blocking)
+        try:
+            from app.publish.service import create_publish_record_from_job
+            await create_publish_record_from_job(
+                db,
+                job_id=job.id,
+                platform="youtube",
+                content_ref_type=job.module_type or "unknown",
+                actor_id=job.owner_id,
+            )
+            logger.info("Auto-created draft publish record for job %s", job.id)
+        except Exception as exc:
+            logger.warning("Failed to auto-create publish record for job %s: %s", job.id, exc)
 
     elif next_status == "failed":
         job.finished_at = now

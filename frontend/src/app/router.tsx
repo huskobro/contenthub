@@ -3,6 +3,7 @@ import { createBrowserRouter } from "react-router-dom";
 import { DynamicAdminLayout } from "./layouts/DynamicAdminLayout";
 import { DynamicUserLayout } from "./layouts/DynamicUserLayout";
 import { AppEntryGate } from "./AppEntryGate";
+import { AuthGuard } from "./guards/AuthGuard";
 import { OnboardingPage } from "../pages/OnboardingPage";
 import { NotFoundPage } from "../pages/NotFoundPage";
 import { RootErrorBoundary } from "../components/RootErrorBoundary";
@@ -122,9 +123,11 @@ export const router = createBrowserRouter([
   },
   {
     path: "/admin",
-    element: <DynamicAdminLayout />,
+    element: <AuthGuard requiredRole="admin" />,
     errorElement: <RootErrorBoundary />,
-    children: [
+    children: [{
+      element: <DynamicAdminLayout />,
+      children: [
       { index: true, element: <AdminOverviewPage /> },
       { path: "settings", element: <VisibilityGuard targetKey="panel:settings"><SettingsRegistryPage /></VisibilityGuard> },
       { path: "visibility", element: <VisibilityGuard targetKey="panel:visibility"><VisibilityRegistryPage /></VisibilityGuard> },
@@ -179,13 +182,15 @@ export const router = createBrowserRouter([
       { path: "users", element: <UsersRegistryPage /> },
       { path: "users/:userId/settings", element: <UserSettingsDetailPage /> },
       { path: "settings/youtube-callback", element: <YouTubeCallbackPage /> },
-    ],
+    ]}],
   },
   {
     path: "/user",
-    element: <DynamicUserLayout />,
+    element: <AuthGuard />,
     errorElement: <RootErrorBoundary />,
-    children: [
+    children: [{
+      element: <DynamicUserLayout />,
+      children: [
       { index: true, element: <UserDashboardPage /> },
       { path: "content", element: <UserContentEntryPage /> },
       { path: "publish", element: <Suspense fallback={<LazyFallback />}><UserPublishPage /></Suspense> },
@@ -205,7 +210,7 @@ export const router = createBrowserRouter([
       { path: "connections", element: <Suspense fallback={<LazyFallback />}><UserConnectionsPage /></Suspense> },
       { path: "create/video", element: <Suspense fallback={<LazyFallback />}><CreateVideoWizardPage /></Suspense> },
       { path: "create/bulletin", element: <Suspense fallback={<LazyFallback />}><CreateBulletinWizardPage /></Suspense> },
-    ],
+    ]}],
   },
   {
     path: "*",

@@ -144,6 +144,13 @@ async def lifespan(app: FastAPI):
     async with AsyncSessionLocal() as auth_db:
         await seed_admin_user(auth_db)
 
+    # Sprint 1: Wizard config seed — ensure default wizard configs exist on fresh DB
+    from app.wizard_configs.seed import seed_wizard_configs
+    async with AsyncSessionLocal() as wiz_db:
+        wiz_count = await seed_wizard_configs(wiz_db)
+        if wiz_count > 0:
+            logger.info("WizardConfig seed: %d yeni wizard config eklendi.", wiz_count)
+
     # Credential + ayar cozumleme — DB -> .env -> builtin (M9-A / M10-B)
     async with AsyncSessionLocal() as cred_db:
         kie_ai_key = await resolve_credential("credential.kie_ai_api_key", cred_db) or settings.kie_ai_api_key

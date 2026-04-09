@@ -1,10 +1,11 @@
 """
-Auth dependencies for FastAPI endpoints — Faz 3.
+Auth dependencies for FastAPI endpoints — Faz 3 + Sprint 1 hardening.
 
 Provides get_current_user_optional, get_current_user, require_admin, require_user.
 
-Backward compatibility: If no JWT Bearer token is present, falls back to
-the existing header-based auth (X-ContentHub-User-Id) from the visibility layer.
+Sprint 1: Legacy X-ContentHub-User-Id header bypass is only active when
+CONTENTHUB_DEBUG=true (dev/localhost). In non-debug mode, only JWT tokens
+are accepted for authentication.
 """
 
 import logging
@@ -19,6 +20,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.session import get_db
 from app.db.models import User
 from app.auth.jwt import decode_token
+from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +36,7 @@ async def get_current_user_optional(
 
     Resolution order:
     1. JWT Bearer token from Authorization header
-    2. Legacy header-based auth (X-ContentHub-User-Id)
+    2. Legacy header-based auth (X-ContentHub-User-Id) — only if DEBUG mode
     3. None
     """
     # --- 1. Try JWT token ---
@@ -54,11 +56,12 @@ async def get_current_user_optional(
             # Invalid token — don't fall back, return None
             return None
 
-    # --- 2. Fall back to legacy header ---
-    if x_contenthub_user_id and len(x_contenthub_user_id.strip()) >= 32:
+    # --- 2. Fall back to legacy header (dev-only) ---
+    if settings.debug and x_contenthub_user_id and len(x_contenthub_user_id.strip()) >= 32:
         user_id_clean = x_contenthub_user_id.strip()
         user = await db.get(User, user_id_clean)
         if user and user.status == "active":
+            logger.debug("Legacy header auth for user %s (debug mode only)", user_id_clean)
             return user
 
     return None

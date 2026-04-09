@@ -1,7 +1,7 @@
 """m7_c1_add_publish_records_and_logs
 
 Revision ID: c1a2b3d4e5f6
-Revises: 9d97ec750399
+Revises: b1c2d3e4f5a6
 Create Date: 2026-04-04 18:00:00.000000
 
 Publish Center — M7-C1

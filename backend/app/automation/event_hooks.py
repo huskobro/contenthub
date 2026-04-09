@@ -37,6 +37,7 @@ _NOTIFICATION_MAP = {
     "publish_review": ("warning", "admin", "Yayin onay bekliyor"),
     "publish_failure": ("error", "admin", "Yayin basarisiz"),
     "render_failure": ("error", "user", "Is basarisiz"),
+    "job_completed": ("success", "user", "Is tamamlandi"),
     "source_scan_error": ("warning", "admin", "Kaynak tarama hatasi"),
     "overdue_publish": ("warning", "admin", "Geciken yayin"),
     "overdue_post": ("warning", "admin", "Geciken post"),

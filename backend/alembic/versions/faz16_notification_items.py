@@ -1,7 +1,7 @@
 """Faz 16: notification_items table
 
-Revision ID: faz16_notif
-Revises: faz13_auto_v2
+Revision ID: faz16_notif_001
+Revises: e6f7g8h9i0j1
 Create Date: 2026-04-09
 """
 from alembic import op

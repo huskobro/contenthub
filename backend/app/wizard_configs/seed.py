@@ -551,3 +551,45 @@ STANDARD_VIDEO_CONFIG = {
 
 
 ALL_WIZARD_CONFIGS = [NEWS_BULLETIN_CONFIG, STANDARD_VIDEO_CONFIG]
+
+
+# ---------------------------------------------------------------------------
+# Async seeder — called from main.py lifespan (Sprint 1 hardening)
+# ---------------------------------------------------------------------------
+
+async def seed_wizard_configs(db) -> int:
+    """
+    Seed wizard_configs table with default configs if they don't exist.
+    Returns the number of newly inserted configs.
+    """
+    import json
+    from sqlalchemy import select, text
+    from app.db.models import WizardConfig
+
+    inserted = 0
+    for config in ALL_WIZARD_CONFIGS:
+        wizard_type = config["wizard_type"]
+        # Check existence
+        result = await db.execute(
+            select(WizardConfig.id).where(WizardConfig.wizard_type == wizard_type)
+        )
+        if result.scalar_one_or_none():
+            continue
+
+        wc = WizardConfig(
+            wizard_type=wizard_type,
+            display_name=config["display_name"],
+            enabled=True,
+            steps_config_json=json.dumps(config["steps_config"], ensure_ascii=False),
+            field_defaults_json=json.dumps(config.get("field_defaults", {}), ensure_ascii=False),
+            module_scope=config.get("module_scope"),
+            status="active",
+            version=1,
+        )
+        db.add(wc)
+        inserted += 1
+
+    if inserted > 0:
+        await db.commit()
+
+    return inserted

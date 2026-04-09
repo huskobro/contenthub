@@ -30,6 +30,12 @@ class Settings(BaseSettings):
     youtube_client_id: str = ""
     youtube_client_secret: str = ""
 
+    # Sprint 1: JWT authentication settings — env'den okunur
+    jwt_secret: str = ""
+    jwt_algorithm: str = "HS256"
+    jwt_access_token_expire_minutes: int = 60
+    jwt_refresh_token_expire_days: int = 7
+
     @property
     def database_url(self) -> str:
         db_path = self.data_dir / "contenthub.db"

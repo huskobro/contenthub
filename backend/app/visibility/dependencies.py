@@ -41,12 +41,12 @@ def get_caller_role(
 ) -> str:
     """
     Extract caller role from request header.
-    For MVP (localhost-only): admin by default if header absent.
-    When auth is added later, this will read from JWT token.
+    Sprint 1 hardening: default to "user" (not "admin") when header absent.
+    This prevents unauthenticated requests from gaining admin visibility.
     """
     if x_contenthub_role in ("admin", "user"):
         return x_contenthub_role
-    return "admin"
+    return "user"
 
 
 def get_active_user_id(

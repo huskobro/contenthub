@@ -1,5 +1,6 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from app.api import health
+from app.auth.dependencies import require_user, require_admin
 from app.providers.router import router as providers_router
 from app.settings.router import router as settings_router
 from app.visibility.router import router as visibility_router
@@ -42,18 +43,27 @@ from app.auth.router import router as auth_router
 from app.notifications.router import router as notifications_router
 
 api_router = APIRouter()
+
+# --- Public / no-auth routers ---
 api_router.include_router(health.router, tags=["health"])
-api_router.include_router(users_router)
-api_router.include_router(channels_router)
-api_router.include_router(platform_connections_router)
-api_router.include_router(content_projects_router)
-api_router.include_router(engagement_router)
-api_router.include_router(comments_router)
-api_router.include_router(playlists_router)
-api_router.include_router(posts_router)
-api_router.include_router(brand_profiles_router)
-api_router.include_router(automation_router)
-api_router.include_router(operations_inbox_router)
+
+# --- Auth-protected routers (Sprint 1 hardening) ---
+# Admin-only: user management, filesystem
+api_router.include_router(users_router, dependencies=[Depends(require_admin)])
+api_router.include_router(fs_router, dependencies=[Depends(require_admin)])
+api_router.include_router(prompt_assembly_router, dependencies=[Depends(require_admin)])
+
+# User-level auth required
+api_router.include_router(channels_router, dependencies=[Depends(require_user)])
+api_router.include_router(platform_connections_router, dependencies=[Depends(require_user)])
+api_router.include_router(content_projects_router, dependencies=[Depends(require_user)])
+api_router.include_router(engagement_router, dependencies=[Depends(require_user)])
+api_router.include_router(comments_router, dependencies=[Depends(require_user)])
+api_router.include_router(playlists_router, dependencies=[Depends(require_user)])
+api_router.include_router(posts_router, dependencies=[Depends(require_user)])
+api_router.include_router(brand_profiles_router, dependencies=[Depends(require_user)])
+api_router.include_router(automation_router, dependencies=[Depends(require_user)])
+api_router.include_router(operations_inbox_router, dependencies=[Depends(require_user)])
 api_router.include_router(providers_router)
 api_router.include_router(settings_router)
 api_router.include_router(visibility_router)
@@ -76,10 +86,8 @@ api_router.include_router(audit_logs_router)
 api_router.include_router(assets_router)
 api_router.include_router(content_library_router)
 api_router.include_router(discovery_router)
-api_router.include_router(wizard_configs_router)
+api_router.include_router(wizard_configs_router, dependencies=[Depends(require_user)])
 api_router.include_router(modules_router)
-api_router.include_router(prompt_assembly_router)
-api_router.include_router(fs_router)
-api_router.include_router(calendar_router)
-api_router.include_router(notifications_router)
+api_router.include_router(calendar_router, dependencies=[Depends(require_user)])
+api_router.include_router(notifications_router, dependencies=[Depends(require_user)])
 api_router.include_router(auth_router)

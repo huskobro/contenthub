@@ -1,28 +1,39 @@
 """
-JWT token encode/decode utilities — Faz 3.
+JWT token encode/decode utilities — Faz 3 + Sprint 1 hardening.
 
 Creates and verifies access + refresh tokens using python-jose.
-Secret and expiry settings use hardcoded dev defaults for now;
-will be wired to Settings Registry keys later.
+Secret is loaded from CONTENTHUB_JWT_SECRET env var (via Settings).
+If env var is empty, a dev-only fallback is used with a startup warning.
 """
 
+import logging
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
-from jose import JWTError, jwt
+from jose import JWTError, jwt  # noqa: F401 — JWTError re-exported for consumers
+
+from app.core.config import settings
+
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
-# Settings keys (will be added to KNOWN_SETTINGS in a future step):
-#   auth.jwt_secret
-#   auth.jwt_algorithm
-#   auth.access_token_expire_minutes
-#   auth.refresh_token_expire_days
+# Resolved settings — read once at import time from env/config
 # ---------------------------------------------------------------------------
 
-SECRET_KEY = "contenthub-dev-secret-change-in-production"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60
-REFRESH_TOKEN_EXPIRE_DAYS = 7
+_DEV_FALLBACK_SECRET = "contenthub-dev-secret-DO-NOT-USE-IN-PRODUCTION"
+
+if settings.jwt_secret:
+    SECRET_KEY = settings.jwt_secret
+else:
+    SECRET_KEY = _DEV_FALLBACK_SECRET
+    logger.warning(
+        "CONTENTHUB_JWT_SECRET is not set — using insecure dev fallback. "
+        "Set CONTENTHUB_JWT_SECRET in .env or environment for production."
+    )
+
+ALGORITHM = settings.jwt_algorithm
+ACCESS_TOKEN_EXPIRE_MINUTES = settings.jwt_access_token_expire_minutes
+REFRESH_TOKEN_EXPIRE_DAYS = settings.jwt_refresh_token_expire_days
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
