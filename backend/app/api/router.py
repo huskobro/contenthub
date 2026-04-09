@@ -36,6 +36,7 @@ from app.playlists.router import router as playlists_router
 from app.posts.router import router as posts_router
 from app.brand_profiles.router import router as brand_profiles_router
 from app.automation.router import router as automation_router
+from app.automation.router import inbox_router as operations_inbox_router
 from app.auth.router import router as auth_router
 
 api_router = APIRouter()
@@ -50,6 +51,7 @@ api_router.include_router(playlists_router)
 api_router.include_router(posts_router)
 api_router.include_router(brand_profiles_router)
 api_router.include_router(automation_router)
+api_router.include_router(operations_inbox_router)
 api_router.include_router(providers_router)
 api_router.include_router(settings_router)
 api_router.include_router(visibility_router)

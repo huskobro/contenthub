@@ -1451,26 +1451,83 @@ class BrandProfile(Base):
 
 
 class AutomationPolicy(Base):
-    """Otomasyon politikasi — checkpoint bazli. Faz 2."""
+    """
+    Otomasyon politikasi — checkpoint bazli karar modeli. Faz 13.
+
+    Her checkpoint icin 3 mod:
+      disabled       — bu adim otomasyon disinda, elle tetiklenir
+      manual_review  — otomasyon oneriri, operator onaylar
+      automatic      — otomasyon tam yetkili
+
+    policy_decision ≠ execution_result: policy sadece karar verir, calistirma ayri.
+    """
 
     __tablename__ = "automation_policies"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    owner_user_id: Mapped[Optional[str]] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+    )
     channel_profile_id: Mapped[str] = mapped_column(
         String(36), ForeignKey("channel_profiles.id", ondelete="CASCADE"),
-        nullable=False, unique=True
+        nullable=False, unique=True, index=True
     )
-    automation_level: Mapped[str] = mapped_column(String(50), nullable=False, default="manual")
-    # Checkpoint controls: auto / review_required / disabled
-    cp_source_scan: Mapped[str] = mapped_column(String(50), nullable=False, default="disabled")
-    cp_draft_generation: Mapped[str] = mapped_column(String(50), nullable=False, default="review_required")
-    cp_render: Mapped[str] = mapped_column(String(50), nullable=False, default="disabled")
-    cp_publish: Mapped[str] = mapped_column(String(50), nullable=False, default="review_required")
-    cp_post_publish: Mapped[str] = mapped_column(String(50), nullable=False, default="disabled")
-    publish_windows: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    max_daily_posts: Mapped[int] = mapped_column(Integer, nullable=False, default=10)
-    platform_specific_rules: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    status: Mapped[str] = mapped_column(String(50), nullable=False, default="paused")
+    name: Mapped[str] = mapped_column(String(255), nullable=False, default="Varsayilan Politika")
+    is_enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+
+    # Checkpoint modes — enum: disabled | manual_review | automatic
+    source_scan_mode: Mapped[str] = mapped_column(String(50), nullable=False, default="disabled")
+    draft_generation_mode: Mapped[str] = mapped_column(String(50), nullable=False, default="manual_review")
+    render_mode: Mapped[str] = mapped_column(String(50), nullable=False, default="disabled")
+    publish_mode: Mapped[str] = mapped_column(String(50), nullable=False, default="manual_review")
+    post_publish_mode: Mapped[str] = mapped_column(String(50), nullable=False, default="disabled")
+
+    # Operational limits
+    max_daily_posts: Mapped[Optional[int]] = mapped_column(Integer, nullable=True, default=10)
+    publish_windows_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    platform_rules_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now, onupdate=_now
+    )
+
+
+class OperationsInboxItem(Base):
+    """
+    Operations Inbox ogesi — islem bekleyen veya dikkat gerektiren kayit. Faz 13.
+
+    Tek bir genel inbox dili ile tum islem ogelerini toplar.
+    """
+
+    __tablename__ = "operations_inbox_items"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    item_type: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
+    # e.g. publish_review, comment_reply, playlist_action, post_action,
+    #      render_failure, publish_failure, source_scan_error
+    channel_profile_id: Mapped[Optional[str]] = mapped_column(
+        String(36), ForeignKey("channel_profiles.id", ondelete="SET NULL"),
+        nullable=True, index=True
+    )
+    owner_user_id: Mapped[Optional[str]] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True, index=True
+    )
+    related_project_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True)
+    related_entity_type: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    related_entity_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True)
+    title: Mapped[str] = mapped_column(String(500), nullable=False)
+    reason: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    status: Mapped[str] = mapped_column(String(50), nullable=False, default="open", index=True)
+    # open, acknowledged, resolved, dismissed
+    priority: Mapped[str] = mapped_column(String(50), nullable=False, default="normal")
+    # low, normal, high, urgent
+    action_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    metadata_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    resolved_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=_now
     )

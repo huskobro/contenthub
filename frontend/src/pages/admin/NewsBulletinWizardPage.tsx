@@ -108,6 +108,9 @@ export function NewsBulletinWizardPage() {
   // Faz 5a: channel/project context from user wizard
   const contextChannelProfileId = searchParams.get("channelProfileId");
   const contextContentProjectId = searchParams.get("contentProjectId");
+  // Faz 13: style context from user bulletin wizard
+  const contextLowerThirdStyle = searchParams.get("lowerThirdStyle");
+  const contextStyleBlueprintId = searchParams.get("styleBlueprintId");
 
   const [step, setStep] = useState(0);
   const [bulletinId, setBulletinId] = useState<string | null>(resumeId);
@@ -131,11 +134,11 @@ export function NewsBulletinWizardPage() {
   const [compositionDirection, setCompositionDirection] = useState("");
   const [thumbnailDirection, setThumbnailDirection] = useState("");
   const [templateId, setTemplateId] = useState("");
-  const [styleBlueprintId, setStyleBlueprintId] = useState("");
+  const [styleBlueprintId, setStyleBlueprintId] = useState(contextStyleBlueprintId ?? "");
   // M31 pickers
   const [renderMode, setRenderMode] = useState("combined");
   const [subtitleStyle, setSubtitleStyle] = useState("clean_white");
-  const [lowerThirdStyle, setLowerThirdStyle] = useState("broadcast");
+  const [lowerThirdStyle, setLowerThirdStyle] = useState(contextLowerThirdStyle ?? "broadcast");
   const [trustEnforcementLevel, setTrustEnforcementLevel] = useState("warn");
   // Category suggestion dismiss state
   const [suggestionDismissed, setSuggestionDismissed] = useState(false);
