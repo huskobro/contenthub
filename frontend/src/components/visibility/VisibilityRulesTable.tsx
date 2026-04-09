@@ -103,8 +103,11 @@ export function VisibilityRulesTable({ rules, selectedId, onSelect, onBulkDelete
               <tr
                 key={r.id}
                 onClick={() => onSelect(r.id)}
+                tabIndex={0}
+                role="button"
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onSelect(r.id); } }}
                 className={cn(
-                  "border-b border-neutral-100 cursor-pointer transition-colors",
+                  "border-b border-neutral-100 cursor-pointer transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-500 focus-visible:outline-offset-[-2px]",
                   selectedId === r.id ? "bg-info-light" : "hover:bg-neutral-50",
                   sel.isSelected(r.id) && "bg-brand-500 bg-opacity-5",
                 )}

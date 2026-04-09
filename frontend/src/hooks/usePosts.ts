@@ -14,6 +14,7 @@ import {
   fetchPostCapability,
   type PostListParams,
 } from "../api/postsApi";
+import { useApiError } from "./useApiError";
 
 const POSTS_KEY = "posts";
 const POST_STATS_KEY = "post-stats";
@@ -38,8 +39,10 @@ export function usePost(postId: string | null) {
 
 export function useCreatePost() {
   const qc = useQueryClient();
+  const onError = useApiError();
   return useMutation({
     mutationFn: createPost,
+    onError,
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [POSTS_KEY] });
       qc.invalidateQueries({ queryKey: [POST_STATS_KEY] });
@@ -49,9 +52,11 @@ export function useCreatePost() {
 
 export function useUpdatePost() {
   const qc = useQueryClient();
+  const onError = useApiError();
   return useMutation({
     mutationFn: ({ postId, data }: { postId: string; data: { title?: string; body?: string } }) =>
       updatePost(postId, data),
+    onError,
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [POSTS_KEY] });
     },
@@ -60,9 +65,11 @@ export function useUpdatePost() {
 
 export function useSubmitPost() {
   const qc = useQueryClient();
+  const onError = useApiError();
   return useMutation({
     mutationFn: ({ postId, userId }: { postId: string; userId: string }) =>
       submitPost(postId, userId),
+    onError,
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [POSTS_KEY] });
       qc.invalidateQueries({ queryKey: [POST_STATS_KEY] });
@@ -72,8 +79,10 @@ export function useSubmitPost() {
 
 export function useDeletePost() {
   const qc = useQueryClient();
+  const onError = useApiError();
   return useMutation({
     mutationFn: (postId: string) => deletePost(postId),
+    onError,
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [POSTS_KEY] });
       qc.invalidateQueries({ queryKey: [POST_STATS_KEY] });

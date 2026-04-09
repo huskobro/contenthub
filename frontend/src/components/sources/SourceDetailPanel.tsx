@@ -189,35 +189,35 @@ export function SourceDetailPanel({ sourceId }: SourceDetailPanelProps) {
 
       {/* M41c: Son tarama ve otomatik tarama bilgisi */}
       <div className="mt-2 border-t border-border-subtle pt-2">
-        {(source as any).last_scan_finished_at && (
-          <Field label="Son Tarama" value={formatDateTime((source as any).last_scan_finished_at)} />
+        {source.last_scan_finished_at && (
+          <Field label="Son Tarama" value={formatDateTime(source.last_scan_finished_at)} />
         )}
-        {!(source as any).last_scan_finished_at && (
+        {!source.last_scan_finished_at && (
           <div className="mb-1">
             <span className="text-sm font-semibold text-neutral-500">Son Tarama: </span>
             <span className="text-sm text-neutral-500">Henüz taranmadı</span>
           </div>
         )}
-        {(source as any).last_scan_status && (
+        {source.last_scan_status && (
           <div className="mb-1">
             <span className="text-sm font-semibold text-neutral-500">Son Tarama Sonucu: </span>
             <span className={cn(
               "text-sm font-medium",
-              (source as any).last_scan_status === "completed" ? "text-success-dark" :
-              (source as any).last_scan_status === "failed" ? "text-error" : "text-neutral-600"
+              source.last_scan_status === "completed" ? "text-success-dark" :
+              source.last_scan_status === "failed" ? "text-error" : "text-neutral-600"
             )}>
-              {(source as any).last_scan_status === "completed" ? "Başarılı" :
-               (source as any).last_scan_status === "failed" ? "Hata" :
-               (source as any).last_scan_status}
+              {source.last_scan_status === "completed" ? "Başarılı" :
+               source.last_scan_status === "failed" ? "Hata" :
+               source.last_scan_status}
             </span>
           </div>
         )}
-        {source.scan_mode === "auto" && (source as any).last_scan_finished_at && (
+        {source.scan_mode === "auto" && source.last_scan_finished_at && (
           <div className="mb-1">
             <span className="text-sm font-semibold text-neutral-500">Sonraki Otomatik Tarama: </span>
             <span className="text-sm text-info-dark">
               {(() => {
-                const last = new Date((source as any).last_scan_finished_at);
+                const last = new Date(source.last_scan_finished_at);
                 const next = new Date(last.getTime() + 5 * 60 * 1000); // 5dk interval
                 const now = new Date();
                 if (next <= now) return "Yakında (bekleniyor)";
@@ -228,7 +228,7 @@ export function SourceDetailPanel({ sourceId }: SourceDetailPanelProps) {
             </span>
           </div>
         )}
-        {source.scan_mode === "auto" && !(source as any).last_scan_finished_at && (
+        {source.scan_mode === "auto" && !source.last_scan_finished_at && (
           <div className="mb-1">
             <span className="text-sm font-semibold text-neutral-500">Otomatik Tarama: </span>
             <span className="text-sm text-info-dark">Uygulama başlayınca ilk tarama tetiklenir</span>

@@ -26,6 +26,7 @@ import {
   severityToType,
   notificationTypeToCategory,
 } from "../stores/notificationStore";
+import { useApiError } from "./useApiError";
 import type { Notification } from "../stores/notificationStore";
 
 function backendToLocal(item: NotificationItem): Notification {
@@ -48,6 +49,7 @@ export function useNotifications(params?: {
 }) {
   const mode = params?.mode ?? "user";
   const qc = useQueryClient();
+  const onError = useApiError();
   const setNotifications = useNotificationStore((s) => s.setNotifications);
   const storeMarkAsRead = useNotificationStore((s) => s.markAsRead);
   const storeMarkAllAsRead = useNotificationStore((s) => s.markAllAsRead);
@@ -91,6 +93,7 @@ export function useNotifications(params?: {
   // Mark read mutation
   const markReadMutation = useMutation({
     mutationFn: markNotificationRead,
+    onError,
     onSuccess: (_data, id) => {
       storeMarkAsRead(id);
       qc.invalidateQueries({ queryKey: ["notifications"] });
@@ -101,6 +104,7 @@ export function useNotifications(params?: {
   // Mark dismissed mutation
   const dismissMutation = useMutation({
     mutationFn: markNotificationDismissed,
+    onError,
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["notifications"] });
       qc.invalidateQueries({ queryKey: ["notification-count"] });
@@ -110,6 +114,7 @@ export function useNotifications(params?: {
   // Mark all read mutation
   const markAllReadMutation = useMutation({
     mutationFn: () => markAllNotificationsRead(),
+    onError,
     onSuccess: () => {
       storeMarkAllAsRead();
       qc.invalidateQueries({ queryKey: ["notifications"] });

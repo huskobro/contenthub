@@ -1,9 +1,11 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createStandardVideoMetadata } from "../api/standardVideoApi";
 import type { StandardVideoMetadataCreatePayload } from "../api/standardVideoApi";
+import { useApiError } from "./useApiError";
 
 export function useCreateStandardVideoMetadata(videoId: string) {
   const queryClient = useQueryClient();
+  const onError = useApiError();
   return useMutation({
     mutationFn: (payload: StandardVideoMetadataCreatePayload) =>
       createStandardVideoMetadata(videoId, payload),
@@ -11,5 +13,6 @@ export function useCreateStandardVideoMetadata(videoId: string) {
       queryClient.invalidateQueries({ queryKey: ["standard-videos", videoId, "metadata"] });
       queryClient.invalidateQueries({ queryKey: ["standard-videos", videoId] });
     },
+    onError,
   });
 }

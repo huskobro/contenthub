@@ -41,7 +41,7 @@ export function StandardVideoCreatePage() {
       <StandardVideoForm
         onSubmit={handleSubmit}
         isSubmitting={isPending}
-        submitError={error ? error.message : null}
+        submitError={error ? (error instanceof Error ? error.message : "Bilinmeyen hata") : null}
         onCancel={() => navigate("/admin/standard-videos")}
         submitLabel="Oluştur"
       />

@@ -9,6 +9,7 @@ import {
   fetchGroups,
   updateSettingAdminValue,
 } from "../api/effectiveSettingsApi";
+import { useApiError } from "./useApiError";
 
 export function useEffectiveSettings(params?: {
   group?: string;
@@ -37,9 +38,11 @@ export function useSettingsGroups() {
 
 export function useUpdateSettingValue() {
   const queryClient = useQueryClient();
+  const onError = useApiError();
   return useMutation({
     mutationFn: ({ key, value }: { key: string; value: unknown }) =>
       updateSettingAdminValue(key, value),
+    onError,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["effective-settings"] });
       queryClient.invalidateQueries({ queryKey: ["settings-groups"] });

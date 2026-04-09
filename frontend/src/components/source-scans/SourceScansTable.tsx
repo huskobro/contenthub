@@ -105,8 +105,12 @@ export function SourceScansTable({ scans, selectedId, onSelect, onBulkDelete }: 
               return (
                 <tr
                   key={s.id}
+                  onClick={() => onSelect(s.id)}
+                  tabIndex={0}
+                  role="button"
+                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onSelect(s.id); } }}
                   className={cn(
-                    "border-b border-neutral-100 transition-colors",
+                    "border-b border-neutral-100 cursor-pointer transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-500 focus-visible:outline-offset-[-2px]",
                     selectedId === s.id ? "bg-info-light" : "hover:bg-neutral-50",
                     sel.isSelected(s.id) && "bg-brand-500 bg-opacity-5",
                   )}
@@ -115,31 +119,31 @@ export function SourceScansTable({ scans, selectedId, onSelect, onBulkDelete }: 
                     <input type="checkbox" checked={sel.isSelected(s.id)} onChange={() => sel.toggle(s.id)} className="cursor-pointer accent-brand-500" />
                   </td>
                   {col.isVisible("source") && (
-                    <td className="px-4 py-2.5 font-medium text-brand-600 min-w-[160px] cursor-pointer" onClick={() => onSelect(s.id)}>
+                    <td className="px-4 py-2.5 font-medium text-brand-600 min-w-[160px]">
                       <div className="truncate max-w-[200px]" title={s.source_name ?? s.source_id}>
                         {s.source_name ?? s.source_id?.slice(0, 8) ?? DASH}
                       </div>
                     </td>
                   )}
                   {col.isVisible("mode") && (
-                    <td className="px-3 py-2.5 cursor-pointer" onClick={() => onSelect(s.id)}>
+                    <td className="px-3 py-2.5">
                       <span className="inline-block px-2 py-0.5 rounded text-sm bg-neutral-100 text-neutral-700">
                         {s.scan_mode ?? DASH}
                       </span>
                     </td>
                   )}
                   {col.isVisible("status") && (
-                    <td className="px-3 py-2.5 cursor-pointer" onClick={() => onSelect(s.id)}>
+                    <td className="px-3 py-2.5">
                       <span className={cn("inline-block px-2 py-0.5 rounded-full text-sm", statusCls)}>{s.status}</span>
                     </td>
                   )}
                   {col.isVisible("result") && (
-                    <td className="px-3 py-2.5 text-right tabular-nums text-neutral-600 cursor-pointer" onClick={() => onSelect(s.id)}>
+                    <td className="px-3 py-2.5 text-right tabular-nums text-neutral-600">
                       {s.result_count ?? DASH}
                     </td>
                   )}
                   {col.isVisible("date") && (
-                    <td className="px-3 py-2.5 text-neutral-500 text-sm cursor-pointer" onClick={() => onSelect(s.id)}>
+                    <td className="px-3 py-2.5 text-neutral-500 text-sm">
                       {formatDateShort(s.created_at)}
                     </td>
                   )}

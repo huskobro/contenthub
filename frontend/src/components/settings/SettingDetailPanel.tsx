@@ -14,6 +14,14 @@ import { patchSetting, type SettingPatchPayload } from "../../api/settingsApi";
 
 const DASH = "\u2014";
 
+/** Settings whose changes require an app restart to take effect. */
+const RESTART_REQUIRED_PREFIXES = [
+  "system.workspace_root",
+  "system.output_dir",
+  "credential.youtube_client_id",
+  "credential.youtube_client_secret",
+];
+
 function BoolBadge({ value }: { value: boolean | null | undefined }) {
   if (value == null) {
     return (
@@ -156,6 +164,15 @@ export function SettingDetailPanel({ selectedId }: SettingDetailPanelProps) {
       <p className="m-0 mb-3 text-xs text-neutral-500" data-testid="setting-detail-note">
         Ayar bilgileri, degerleri ve governance durumu asagida gorunur.
       </p>
+
+      {data.key && RESTART_REQUIRED_PREFIXES.some((p) => data.key!.startsWith(p)) && (
+        <div
+          className="px-3 py-2 mb-3 bg-warning-light rounded text-xs text-warning-dark border border-warning"
+          data-testid="setting-restart-notice"
+        >
+          Bu ayarin degisikligi uygulama yeniden baslatildiginda gecerli olur.
+        </div>
+      )}
 
       <div className="mb-2 text-xs font-semibold text-neutral-600 uppercase tracking-wide" data-testid="setting-section-identity">
         Kimlik ve Deger

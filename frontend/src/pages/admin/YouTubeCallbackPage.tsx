@@ -10,6 +10,7 @@ import { useEffect, useRef, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { cn } from "../../lib/cn";
 import { ActionButton } from "../../components/design-system/primitives";
+import { api, ApiError } from "../../api/client";
 
 export function YouTubeCallbackPage() {
   const [searchParams] = useSearchParams();
@@ -41,21 +42,10 @@ export function YouTubeCallbackPage() {
     // Backend'e code'u gonder
     const redirectUri = `${window.location.origin}/admin/settings/youtube-callback`;
 
-    fetch("/api/v1/publish/youtube/auth-callback", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        code,
-        redirect_uri: redirectUri,
-      }),
+    api.post<{ status?: string; message?: string }>("/api/v1/publish/youtube/auth-callback", {
+      code,
+      redirect_uri: redirectUri,
     })
-      .then(async (res) => {
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({}));
-          throw new Error(err?.detail ?? `HTTP ${res.status}`);
-        }
-        return res.json();
-      })
       .then((data) => {
         if (data?.status === "scope_warning") {
           setStatus("error");
@@ -77,9 +67,10 @@ export function YouTubeCallbackPage() {
           }
         }, 1500);
       })
-      .catch((err) => {
+      .catch((err: unknown) => {
+        const message = err instanceof ApiError ? err.detail ?? err.message : err instanceof Error ? err.message : String(err);
         setStatus("error");
-        setMessage(`Token degisimi basarisiz: ${err.message}`);
+        setMessage(`Token degisimi basarisiz: ${message}`);
       });
   }, [searchParams, navigate]);
 

@@ -92,8 +92,12 @@ export function UsedNewsTable({ records, selectedId, onSelect, onBulkDelete }: P
             {filtered.map((r) => (
               <tr
                 key={r.id}
+                onClick={() => onSelect(r.id)}
+                tabIndex={0}
+                role="button"
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onSelect(r.id); } }}
                 className={cn(
-                  "border-b border-neutral-100 transition-colors",
+                  "border-b border-neutral-100 cursor-pointer transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-500 focus-visible:outline-offset-[-2px]",
                   selectedId === r.id ? "bg-info-light" : "hover:bg-neutral-50",
                   sel.isSelected(r.id) && "bg-brand-500 bg-opacity-5",
                 )}
@@ -102,25 +106,25 @@ export function UsedNewsTable({ records, selectedId, onSelect, onBulkDelete }: P
                   <input type="checkbox" checked={sel.isSelected(r.id)} onChange={() => sel.toggle(r.id)} className="cursor-pointer accent-brand-500" />
                 </td>
                 {col.isVisible("news_id") && (
-                  <td className="px-4 py-2.5 font-mono text-sm text-brand-600 cursor-pointer" onClick={() => onSelect(r.id)}>
+                  <td className="px-4 py-2.5 font-mono text-sm text-brand-600">
                     {r.news_item_id?.slice(0, 8) ?? DASH}
                   </td>
                 )}
                 {col.isVisible("usage_type") && (
-                  <td className="px-3 py-2.5 cursor-pointer" onClick={() => onSelect(r.id)}>
+                  <td className="px-3 py-2.5">
                     <span className="inline-block px-2 py-0.5 rounded text-sm bg-neutral-100 text-neutral-700">{r.usage_type ?? DASH}</span>
                   </td>
                 )}
                 {col.isVisible("target_module") && (
-                  <td className="px-3 py-2.5 text-neutral-600 cursor-pointer" onClick={() => onSelect(r.id)}>{r.target_module ?? DASH}</td>
+                  <td className="px-3 py-2.5 text-neutral-600">{r.target_module ?? DASH}</td>
                 )}
                 {col.isVisible("target_entity") && (
-                  <td className="px-3 py-2.5 font-mono text-sm text-neutral-500 cursor-pointer" onClick={() => onSelect(r.id)}>
+                  <td className="px-3 py-2.5 font-mono text-sm text-neutral-500">
                     {r.target_entity_id?.slice(0, 8) ?? DASH}
                   </td>
                 )}
                 {col.isVisible("date") && (
-                  <td className="px-3 py-2.5 text-neutral-500 text-sm cursor-pointer" onClick={() => onSelect(r.id)}>
+                  <td className="px-3 py-2.5 text-neutral-500 text-sm">
                     {formatDateShort(r.created_at)}
                   </td>
                 )}

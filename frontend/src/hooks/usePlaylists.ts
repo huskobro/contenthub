@@ -15,6 +15,7 @@ import {
   fetchPlaylistSyncStatus,
   type PlaylistListParams,
 } from "../api/playlistsApi";
+import { useApiError } from "./useApiError";
 
 const PLAYLISTS_KEY = "playlists";
 const PLAYLIST_ITEMS_KEY = "playlist-items";
@@ -48,9 +49,11 @@ export function usePlaylistItems(playlistId: string | null) {
 
 export function useSyncPlaylists() {
   const qc = useQueryClient();
+  const onError = useApiError();
   return useMutation({
     mutationFn: ({ platformConnectionId, channelProfileId }: { platformConnectionId?: string; channelProfileId?: string }) =>
       syncPlaylists(platformConnectionId, channelProfileId),
+    onError,
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [PLAYLISTS_KEY] });
       qc.invalidateQueries({ queryKey: [PLAYLIST_SYNC_STATUS_KEY] });
@@ -60,8 +63,10 @@ export function useSyncPlaylists() {
 
 export function useSyncPlaylistItems() {
   const qc = useQueryClient();
+  const onError = useApiError();
   return useMutation({
     mutationFn: (playlistId: string) => syncPlaylistItems(playlistId),
+    onError,
     onSuccess: (_data, playlistId) => {
       qc.invalidateQueries({ queryKey: [PLAYLIST_ITEMS_KEY, playlistId] });
       qc.invalidateQueries({ queryKey: [PLAYLISTS_KEY] });
@@ -71,6 +76,7 @@ export function useSyncPlaylistItems() {
 
 export function useCreatePlaylist() {
   const qc = useQueryClient();
+  const onError = useApiError();
   return useMutation({
     mutationFn: ({
       title,
@@ -85,6 +91,7 @@ export function useCreatePlaylist() {
       channelProfileId?: string;
       platformConnectionId?: string;
     }) => createPlaylist(title, description, privacyStatus, channelProfileId, platformConnectionId),
+    onError,
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [PLAYLISTS_KEY] });
     },
@@ -93,6 +100,7 @@ export function useCreatePlaylist() {
 
 export function useAddVideoToPlaylist() {
   const qc = useQueryClient();
+  const onError = useApiError();
   return useMutation({
     mutationFn: ({
       playlistId,
@@ -107,6 +115,7 @@ export function useAddVideoToPlaylist() {
       contentProjectId?: string;
       publishRecordId?: string;
     }) => addVideoToPlaylist(playlistId, videoId, userId, contentProjectId, publishRecordId),
+    onError,
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [PLAYLISTS_KEY] });
       qc.invalidateQueries({ queryKey: [PLAYLIST_ITEMS_KEY] });
@@ -116,9 +125,11 @@ export function useAddVideoToPlaylist() {
 
 export function useRemoveVideoFromPlaylist() {
   const qc = useQueryClient();
+  const onError = useApiError();
   return useMutation({
     mutationFn: ({ playlistId, externalPlaylistItemId }: { playlistId: string; externalPlaylistItemId: string }) =>
       removeVideoFromPlaylist(playlistId, externalPlaylistItemId),
+    onError,
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [PLAYLISTS_KEY] });
       qc.invalidateQueries({ queryKey: [PLAYLIST_ITEMS_KEY] });

@@ -102,8 +102,12 @@ export function TemplateStyleLinksTable({ links, selectedId, onSelect, onBulkDel
             {filtered.map((link) => (
               <tr
                 key={link.id}
+                onClick={() => onSelect(link.id)}
+                tabIndex={0}
+                role="button"
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onSelect(link.id); } }}
                 className={cn(
-                  "cursor-pointer border-b border-neutral-100 transition-colors",
+                  "cursor-pointer border-b border-neutral-100 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-500 focus-visible:outline-offset-[-2px]",
                   selectedId === link.id ? "bg-info-light" : "hover:bg-neutral-50",
                   sel.isSelected(link.id) && "bg-brand-500 bg-opacity-5",
                 )}
@@ -112,27 +116,27 @@ export function TemplateStyleLinksTable({ links, selectedId, onSelect, onBulkDel
                   <input type="checkbox" checked={sel.isSelected(link.id)} onChange={() => sel.toggle(link.id)} className="cursor-pointer accent-brand-500" />
                 </td>
                 {col.isVisible("template_id") && (
-                  <td className="px-3 py-2.5 font-mono text-sm text-neutral-600 cursor-pointer" onClick={() => onSelect(link.id)}>
+                  <td className="px-3 py-2.5 font-mono text-sm text-neutral-600">
                     {link.template_id.slice(0, 8)}…
                   </td>
                 )}
                 {col.isVisible("blueprint_id") && (
-                  <td className="px-3 py-2.5 font-mono text-sm text-neutral-600 cursor-pointer" onClick={() => onSelect(link.id)}>
+                  <td className="px-3 py-2.5 font-mono text-sm text-neutral-600">
                     {link.style_blueprint_id.slice(0, 8)}…
                   </td>
                 )}
                 {col.isVisible("role") && (
-                  <td className="px-3 py-2.5 text-neutral-600 cursor-pointer" onClick={() => onSelect(link.id)}>{link.link_role ?? "—"}</td>
+                  <td className="px-3 py-2.5 text-neutral-600">{link.link_role ?? "—"}</td>
                 )}
                 {col.isVisible("status") && (
-                  <td className="px-3 py-2.5 cursor-pointer" onClick={() => onSelect(link.id)}>
+                  <td className="px-3 py-2.5">
                     <span className={cn("px-2 py-0.5 rounded-full text-sm font-medium", STATUS_CLASSES[link.status] ?? "bg-neutral-100 text-neutral-600")}>
                       {link.status ?? "—"}
                     </span>
                   </td>
                 )}
                 {col.isVisible("readiness") && (
-                  <td className="px-3 py-2.5 cursor-pointer" onClick={() => onSelect(link.id)}>
+                  <td className="px-3 py-2.5">
                     <TemplateStyleLinkReadinessSummary
                       status={link.status}
                       linkRole={link.link_role}
@@ -142,7 +146,7 @@ export function TemplateStyleLinksTable({ links, selectedId, onSelect, onBulkDel
                   </td>
                 )}
                 {col.isVisible("date") && (
-                  <td className="px-3 py-2.5 text-neutral-500 text-sm cursor-pointer" onClick={() => onSelect(link.id)}>
+                  <td className="px-3 py-2.5 text-neutral-500 text-sm">
                     {formatDateShort(link.created_at)}
                   </td>
                 )}

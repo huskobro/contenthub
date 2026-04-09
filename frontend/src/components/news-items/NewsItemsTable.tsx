@@ -148,8 +148,12 @@ export function NewsItemsTable({ items, selectedId, onSelect, onBulkDelete }: Pr
             {filtered.map((item) => (
               <tr
                 key={item.id}
+                onClick={() => onSelect(item.id)}
+                tabIndex={0}
+                role="button"
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onSelect(item.id); } }}
                 className={cn(
-                  "border-b border-neutral-100 transition-colors",
+                  "border-b border-neutral-100 cursor-pointer transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-500 focus-visible:outline-offset-[-2px]",
                   selectedId === item.id ? "bg-info-light" : "hover:bg-neutral-50",
                   sel.isSelected(item.id) && "bg-brand-500 bg-opacity-5",
                 )}
@@ -158,30 +162,30 @@ export function NewsItemsTable({ items, selectedId, onSelect, onBulkDelete }: Pr
                   <input type="checkbox" checked={sel.isSelected(item.id)} onChange={() => sel.toggle(item.id)} className="cursor-pointer accent-brand-500" />
                 </td>
                 {col.isVisible("title") && (
-                  <td className={cn("px-4 py-2.5 min-w-[240px] cursor-pointer", selectedId === item.id ? "font-semibold text-brand-700" : "font-medium text-brand-600")} onClick={() => onSelect(item.id)}>
+                  <td className={cn("px-4 py-2.5 min-w-[240px]", selectedId === item.id ? "font-semibold text-brand-700" : "font-medium text-brand-600")}>
                     <div className="truncate max-w-[400px]" title={item.title ?? ""}>{item.title ?? DASH}</div>
                   </td>
                 )}
                 {col.isVisible("status") && (
-                  <td className="px-3 py-2.5 cursor-pointer" onClick={() => onSelect(item.id)}>
+                  <td className="px-3 py-2.5">
                     <span className={cn("inline-block px-2 py-0.5 rounded-full text-sm", statusColorMap[item.status] ?? "bg-neutral-100 text-neutral-600")}>
                       {item.status ?? DASH}
                     </span>
                   </td>
                 )}
                 {col.isVisible("source") && (
-                  <td className="px-3 py-2.5 text-neutral-600 text-sm cursor-pointer truncate max-w-[160px]" onClick={() => onSelect(item.id)}>
+                  <td className="px-3 py-2.5 text-neutral-600 text-sm truncate max-w-[160px]">
                     {item.source_name ?? DASH}
                   </td>
                 )}
                 {col.isVisible("category") && (
-                  <td className="px-3 py-2.5 text-neutral-600 cursor-pointer" onClick={() => onSelect(item.id)}>{item.category ?? DASH}</td>
+                  <td className="px-3 py-2.5 text-neutral-600">{item.category ?? DASH}</td>
                 )}
                 {col.isVisible("language") && (
-                  <td className="px-3 py-2.5 text-neutral-600 cursor-pointer" onClick={() => onSelect(item.id)}>{item.language?.toUpperCase() ?? DASH}</td>
+                  <td className="px-3 py-2.5 text-neutral-600">{item.language?.toUpperCase() ?? DASH}</td>
                 )}
                 {col.isVisible("date") && (
-                  <td className="px-3 py-2.5 text-neutral-500 text-sm cursor-pointer" onClick={() => onSelect(item.id)}>
+                  <td className="px-3 py-2.5 text-neutral-500 text-sm">
                     {formatDateShort(item.published_at ?? item.created_at)}
                   </td>
                 )}

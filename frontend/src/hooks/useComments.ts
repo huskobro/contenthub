@@ -11,6 +11,7 @@ import {
   fetchSyncStatus,
   type CommentListParams,
 } from "../api/commentsApi";
+import { useApiError } from "./useApiError";
 
 const COMMENTS_KEY = "comments";
 const SYNC_STATUS_KEY = "comments-sync-status";
@@ -34,9 +35,11 @@ export function useComment(commentId: string | null) {
 
 export function useSyncComments() {
   const qc = useQueryClient();
+  const onError = useApiError();
   return useMutation({
     mutationFn: ({ videoId, platformConnectionId }: { videoId: string; platformConnectionId?: string }) =>
       syncVideoComments(videoId, platformConnectionId),
+    onError,
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [COMMENTS_KEY] });
       qc.invalidateQueries({ queryKey: [SYNC_STATUS_KEY] });
@@ -46,9 +49,11 @@ export function useSyncComments() {
 
 export function useReplyToComment() {
   const qc = useQueryClient();
+  const onError = useApiError();
   return useMutation({
     mutationFn: ({ commentId, replyText, userId }: { commentId: string; replyText: string; userId: string }) =>
       replyToComment(commentId, replyText, userId),
+    onError,
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [COMMENTS_KEY] });
     },

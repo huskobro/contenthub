@@ -182,7 +182,7 @@ export function UserConnectionsPage() {
   const [platformFilter, setPlatformFilter] = useState("");
   const [healthFilter, setHealthFilter] = useState("");
 
-  const { data, isLoading } = useMyConnections({
+  const { data, isLoading, isError } = useMyConnections({
     platform: platformFilter || undefined,
     health_level: healthFilter || undefined,
   });
@@ -220,14 +220,23 @@ export function UserConnectionsPage() {
       </SectionShell>
 
       {/* Content */}
-      {isLoading ? (
+      {isError ? (
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <div className="w-12 h-12 rounded-full bg-error-light flex items-center justify-center mb-3">
+            <span className="text-error-base text-xl">!</span>
+          </div>
+          <h3 className="text-lg font-semibold text-neutral-800 mb-1">Yüklenemedi</h3>
+          <p className="text-sm text-neutral-500">Veriler yüklenirken bir hata oluştu. Lütfen sayfayı yenileyin.</p>
+        </div>
+      ) : isLoading ? (
         <div className="p-8 text-sm text-neutral-400">Yukleniyor...</div>
       ) : items.length === 0 ? (
-        <div className="p-8 text-center">
-          <p className="text-neutral-500 text-sm mb-2">Henuz platform baglantiniz yok.</p>
-          <p className="text-neutral-400 text-xs">
-            Yayin, yorum yonetimi ve analitik icin bir platform baglantisi olusturun.
-          </p>
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <div className="w-12 h-12 rounded-full bg-neutral-100 flex items-center justify-center mb-3">
+            <span className="text-neutral-400 text-xl">&empty;</span>
+          </div>
+          <h3 className="text-lg font-semibold text-neutral-800 mb-1">Henüz kayıt yok</h3>
+          <p className="text-sm text-neutral-500 max-w-xs">Henüz platform bağlantısı kurulmamış.</p>
         </div>
       ) : (
         <div className="grid gap-4 p-4 md:grid-cols-2 xl:grid-cols-3">

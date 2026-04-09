@@ -46,6 +46,8 @@ export function ColumnSelector({ columns, visible, onToggle }: Props) {
         ref={btnRef}
         type="button"
         onClick={() => setOpen((v) => !v)}
+        aria-haspopup="listbox"
+        aria-expanded={open}
         className={cn(
           "flex items-center gap-1.5 px-3 py-1.5 rounded text-sm border transition-colors",
           "border-border-subtle text-neutral-500 hover:text-neutral-900 hover:bg-neutral-50",
@@ -63,6 +65,7 @@ export function ColumnSelector({ columns, visible, onToggle }: Props) {
       {open && createPortal(
         <div
           ref={dropRef}
+          role="listbox"
           className="fixed z-dropdown min-w-[160px] bg-neutral-0 border border-border-subtle rounded-md shadow-lg py-1"
           style={{ top: pos.top, left: pos.left, transform: "translateX(-100%)" }}
         >
@@ -71,6 +74,8 @@ export function ColumnSelector({ columns, visible, onToggle }: Props) {
             return (
               <label
                 key={col.key}
+                role="option"
+                aria-selected={checked}
                 className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-neutral-50 text-sm text-neutral-900 select-none"
               >
                 <input

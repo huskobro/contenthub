@@ -11,6 +11,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import type { SubtitlePresetOption } from "../components/standard-video/SubtitleStylePicker";
+import { api } from "../api/client";
 
 interface SubtitlePresetsResponse {
   presets: SubtitlePresetOption[];
@@ -19,9 +20,7 @@ interface SubtitlePresetsResponse {
 }
 
 async function fetchSubtitlePresets(): Promise<SubtitlePresetsResponse> {
-  const res = await fetch("/api/v1/modules/standard-video/subtitle-presets");
-  if (!res.ok) throw new Error(`Subtitle presets yüklenemedi: ${res.status}`);
-  return res.json();
+  return api.get<SubtitlePresetsResponse>("/api/v1/modules/standard-video/subtitle-presets");
 }
 
 export function useSubtitlePresets() {

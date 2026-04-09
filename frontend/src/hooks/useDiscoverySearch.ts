@@ -9,6 +9,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import type { Command, CommandCategory } from "../stores/commandPaletteStore";
+import { api } from "../api/client";
 
 // ---------------------------------------------------------------------------
 // API types
@@ -55,12 +56,7 @@ function iconForCategory(category: string): string {
 // ---------------------------------------------------------------------------
 
 async function fetchDiscovery(query: string): Promise<DiscoveryResponse> {
-  const params = new URLSearchParams({ q: query, limit: "5" });
-  const res = await fetch(`/api/v1/discovery/search?${params.toString()}`);
-  if (!res.ok) {
-    throw new Error(`Discovery search failed: ${res.status}`);
-  }
-  return res.json();
+  return api.get<DiscoveryResponse>("/api/v1/discovery/search", { q: query, limit: "5" });
 }
 
 // ---------------------------------------------------------------------------

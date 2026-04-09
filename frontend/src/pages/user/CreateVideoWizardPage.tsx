@@ -23,6 +23,7 @@ import { SubtitleStylePicker } from "../../components/standard-video/SubtitleSty
 import { LowerThirdStylePreview } from "../../components/preview/LowerThirdStylePreview";
 import { MotionLevelPreview } from "../../components/preview/MotionLevelPreview";
 import { useSubtitlePresets } from "../../hooks/useSubtitlePresets";
+import { api } from "../../api/client";
 import { cn } from "../../lib/cn";
 
 // ---------------------------------------------------------------------------
@@ -93,39 +94,30 @@ const inputCls =
 
 async function createStandardVideo(
   values: VideoWizardState,
-  userId: string,
+  _userId: string,
 ): Promise<{ id: string }> {
-  const res = await fetch("/api/v1/modules/standard-video", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      topic: values.topic.trim(),
-      title: values.title.trim() || null,
-      brief: values.brief.trim() || null,
-      target_duration_seconds: values.target_duration_seconds
-        ? Number(values.target_duration_seconds)
-        : null,
-      tone: values.tone.trim() || null,
-      language: values.language.trim() || null,
-      visual_direction: values.visual_direction.trim() || null,
-      composition_direction: values.composition_direction.trim() || null,
-      thumbnail_direction: values.thumbnail_direction.trim() || null,
-      subtitle_style: values.subtitle_style || null,
-      lower_third_style: values.lower_third_style || null,
-      motion_level: values.motion_level || null,
-      template_id: values.template_id || null,
-      style_blueprint_id: values.style_blueprint_id || null,
-      render_format: values.render_format || "landscape",
-      karaoke_enabled: values.karaoke_enabled === "true",
-      status: "draft",
-      content_project_id: values.contentProjectId || null,
-    }),
+  return api.post<{ id: string }>("/api/v1/modules/standard-video", {
+    topic: values.topic.trim(),
+    title: values.title.trim() || null,
+    brief: values.brief.trim() || null,
+    target_duration_seconds: values.target_duration_seconds
+      ? Number(values.target_duration_seconds)
+      : null,
+    tone: values.tone.trim() || null,
+    language: values.language.trim() || null,
+    visual_direction: values.visual_direction.trim() || null,
+    composition_direction: values.composition_direction.trim() || null,
+    thumbnail_direction: values.thumbnail_direction.trim() || null,
+    subtitle_style: values.subtitle_style || null,
+    lower_third_style: values.lower_third_style || null,
+    motion_level: values.motion_level || null,
+    template_id: values.template_id || null,
+    style_blueprint_id: values.style_blueprint_id || null,
+    render_format: values.render_format || "landscape",
+    karaoke_enabled: values.karaoke_enabled === "true",
+    status: "draft",
+    content_project_id: values.contentProjectId || null,
   });
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(body.detail || `Olusturma basarisiz: ${res.status}`);
-  }
-  return res.json();
 }
 
 // ---------------------------------------------------------------------------

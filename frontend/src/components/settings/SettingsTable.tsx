@@ -101,8 +101,11 @@ export function SettingsTable({ settings, selectedId, onSelect, onBulkDelete }: 
               <tr
                 key={s.id}
                 onClick={() => onSelect(s.id)}
+                tabIndex={0}
+                role="button"
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onSelect(s.id); } }}
                 className={cn(
-                  "border-b border-neutral-100 cursor-pointer transition-colors",
+                  "border-b border-neutral-100 cursor-pointer transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-500 focus-visible:outline-offset-[-2px]",
                   selectedId === s.id ? "bg-info-light" : "hover:bg-neutral-50",
                   sel.isSelected(s.id) && "bg-brand-500 bg-opacity-5",
                 )}

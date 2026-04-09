@@ -17,6 +17,7 @@ import {
   type AutomationPolicyResponse,
   type CheckpointMode,
 } from "../../api/automationApi";
+import { api } from "../../api/client";
 import { cn } from "../../lib/cn";
 
 // ---------------------------------------------------------------------------
@@ -24,9 +25,7 @@ import { cn } from "../../lib/cn";
 // ---------------------------------------------------------------------------
 
 async function fetchMyChannels(userId: string) {
-  const res = await fetch(`/api/v1/channels?user_id=${userId}`);
-  if (!res.ok) return [];
-  return res.json();
+  return api.get<{ id: string; profile_name: string }[]>("/api/v1/channels", { user_id: userId });
 }
 
 // ---------------------------------------------------------------------------
@@ -67,18 +66,20 @@ export function UserAutomationPage() {
   const [selectedChannelId, setSelectedChannelId] = useState<string | null>(null);
 
   // Fetch user's channels
-  const { data: channels = [] } = useQuery({
+  const { data: channels = [], isError: channelsError } = useQuery({
     queryKey: ["channels", { user_id: userId }],
     queryFn: () => fetchMyChannels(userId!),
     enabled: !!userId,
   });
 
   // Fetch policies for the user
-  const { data: policies = [], isLoading } = useQuery({
+  const { data: policies = [], isLoading, isError: policiesError } = useQuery({
     queryKey: ["automation-policies", { owner_user_id: userId }],
     queryFn: () => fetchAutomationPolicies({ owner_user_id: userId! }),
     enabled: !!userId,
   });
+
+  const isError = channelsError || policiesError;
 
   // Find policy for selected channel
   const selectedPolicy = policies.find(
@@ -119,12 +120,31 @@ export function UserAutomationPage() {
     updateMut.mutate({ id: selectedPolicy.id, is_enabled: !selectedPolicy.is_enabled });
   }
 
+  if (isError) {
+    return (
+      <div className="space-y-6" data-testid="user-automation-page">
+        <h2 className="m-0 text-lg font-semibold text-neutral-800">Otomasyon Politikalari</h2>
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <div className="w-12 h-12 rounded-full bg-error-light flex items-center justify-center mb-3">
+            <span className="text-error-base text-xl">!</span>
+          </div>
+          <h3 className="text-lg font-semibold text-neutral-800 mb-1">Yüklenemedi</h3>
+          <p className="text-sm text-neutral-500">Veriler yüklenirken bir hata oluştu. Lütfen sayfayı yenileyin.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6" data-testid="user-automation-page">
       <h2 className="m-0 text-lg font-semibold text-neutral-800">Otomasyon Politikalari</h2>
       <p className="m-0 text-sm text-neutral-500">
         Kanal bazli otomasyon politikalarinizi yonetin. Her checkpoint icin modu secin.
       </p>
+
+      <div className="px-3 py-2 bg-warning-light rounded text-xs text-warning-dark" data-testid="automation-executor-notice">
+        Otomasyon politikalari tanimlanabilir ancak otomatik calistirma henuz aktif degildir. Politikalar su an sadece bilgi amaclidir.
+      </div>
 
       {/* Channel selector */}
       <div>
@@ -145,8 +165,14 @@ export function UserAutomationPage() {
               {ch.profile_name}
             </button>
           ))}
-          {channels.length === 0 && (
-            <p className="text-sm text-neutral-400 m-0">Kanal profili bulunamadi.</p>
+          {channels.length === 0 && !isLoading && (
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <div className="w-12 h-12 rounded-full bg-neutral-100 flex items-center justify-center mb-3">
+                <span className="text-neutral-400 text-xl">&empty;</span>
+              </div>
+              <h3 className="text-lg font-semibold text-neutral-800 mb-1">Henüz kayıt yok</h3>
+              <p className="text-sm text-neutral-500 max-w-xs">Henüz otomasyon politikası tanımlanmamış.</p>
+            </div>
           )}
         </div>
       </div>

@@ -10,6 +10,7 @@
  */
 
 import { useState, useMemo } from "react";
+import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "../../stores/authStore";
 import {
@@ -427,12 +428,12 @@ function PolicySummaryBar({
 
       {/* Open inbox count */}
       {context.open_inbox_count > 0 && (
-        <a
-          href={isAdmin ? "/admin/inbox" : "/user/inbox"}
+        <Link
+          to={isAdmin ? "/admin/inbox" : "/user/inbox"}
           className="flex items-center gap-1 px-2 py-0.5 bg-warning-light text-warning-dark rounded font-medium hover:bg-warning/20"
         >
           {context.open_inbox_count} acik inbox
-        </a>
+        </Link>
       )}
 
       {/* Policy enforcement note */}
@@ -668,12 +669,12 @@ function EventDetailPanel({
             <span className="font-medium text-warning-dark">
               Inbox: {event.inbox_item_status === "open" ? "Acik" : "Goruldu"}
             </span>
-            <a
-              href={isAdmin ? "/admin/inbox" : "/user/inbox"}
+            <Link
+              to={isAdmin ? "/admin/inbox" : "/user/inbox"}
               className="text-warning-dark hover:underline font-medium"
             >
               Git &rarr;
-            </a>
+            </Link>
           </div>
         </div>
       )}
@@ -788,28 +789,28 @@ function EventDetailPanel({
           </a>
         )}
         {event.related_post_id && (
-          <a
-            href="/user/posts"
+          <Link
+            to="/user/posts"
             className="block text-xs text-neutral-500 hover:text-neutral-700"
           >
             Post: {event.related_post_id.slice(0, 8)}...
-          </a>
+          </Link>
         )}
         {event.inbox_item_id && (
-          <a
-            href={isAdmin ? "/admin/inbox" : "/user/inbox"}
+          <Link
+            to={isAdmin ? "/admin/inbox" : "/user/inbox"}
             className="block text-xs text-warning-dark hover:text-warning font-medium"
           >
             Inbox Ogesi &rarr;
-          </a>
+          </Link>
         )}
         {event.channel_profile_id && (
-          <a
-            href={`/user/channels/${event.channel_profile_id}`}
+          <Link
+            to={`/user/channels/${event.channel_profile_id}`}
             className="block text-xs text-neutral-400 hover:text-neutral-600"
           >
             Kanal Profili
-          </a>
+          </Link>
         )}
       </div>
     </div>

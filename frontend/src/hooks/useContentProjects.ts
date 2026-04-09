@@ -12,6 +12,7 @@ import {
   type ContentProjectFilters,
   type CreateContentProject,
 } from "../api/contentProjectsApi";
+import { useApiError } from "./useApiError";
 
 export function useContentProjects(params?: ContentProjectFilters) {
   return useQuery({
@@ -30,8 +31,10 @@ export function useContentProject(projectId: string) {
 
 export function useCreateContentProject() {
   const queryClient = useQueryClient();
+  const onError = useApiError();
   return useMutation({
     mutationFn: (data: CreateContentProject) => createContentProject(data),
+    onError,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["content-projects"] });
     },

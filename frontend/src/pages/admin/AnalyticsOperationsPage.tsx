@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { useAnalyticsOperations } from "../../hooks/useAnalyticsOperations";
 import { useAnalyticsOverview } from "../../hooks/useAnalyticsOverview";
 import { useSourceImpact } from "../../hooks/useSourceImpact";
@@ -266,7 +267,7 @@ export function AnalyticsOperationsPage() {
       ]}
       testId="analytics-operations"
     >
-      <a href="/admin/analytics" rel="noopener" className="absolute w-px h-px overflow-hidden [clip:rect(0,0,0,0)]">{"\u2190"} Analytics'e don</a>
+      <Link to="/admin/analytics" className="absolute w-px h-px overflow-hidden [clip:rect(0,0,0,0)]">{"\u2190"} Analytics'e don</Link>
       <p className="m-0 mb-3 text-xs text-neutral-400" data-testid="analytics-operations-workflow-note">
         Is Basari &rarr; Retry/Hata &rarr; Provider Sagligi &rarr; Kaynak Etkisi &rarr; Karar Noktasi
       </p>

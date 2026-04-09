@@ -14,6 +14,7 @@ import { useVisibility } from "../hooks/useVisibility";
 import { useAnalyticsFilters } from "../hooks/useAnalyticsFilters";
 import { useDashboardSummary } from "../hooks/useDashboardSummary";
 import { useJobsList } from "../hooks/useJobsList";
+import type { JobResponse } from "../api/jobsApi";
 import { cn } from "../lib/cn";
 import {
   PageShell,
@@ -200,7 +201,7 @@ const JOB_STATUS_STYLE: Record<string, { dot: string; label: string }> = {
   cancelled: { dot: "bg-neutral-400", label: "Iptal" },
 };
 
-function RecentJobCard({ job, onClick }: { job: { id: number; module_type: string; status: string; created_at: string; context_summary?: string }; onClick: () => void }) {
+function RecentJobCard({ job, onClick }: { job: JobResponse; onClick: () => void }) {
   const style = JOB_STATUS_STYLE[job.status] || { dot: "bg-neutral-400", label: job.status };
   return (
     <div
@@ -213,7 +214,7 @@ function RecentJobCard({ job, onClick }: { job: { id: number; module_type: strin
       <div className={cn("w-2.5 h-2.5 rounded-full shrink-0", style.dot)} title={style.label} />
       <div className="flex-1 min-w-0">
         <p className="m-0 text-sm font-medium text-neutral-800 truncate">
-          {job.context_summary || `${job.module_type} #${job.id}`}
+          {`${job.module_type} #${job.id}`}
         </p>
         <p className="m-0 text-xs text-neutral-500 mt-0.5">
           {style.label} &middot; {timeAgo(job.created_at)}
@@ -264,8 +265,7 @@ export function AdminOverviewPage() {
   const { data, isLoading, isError } = useDashboardSummary(analyticsFilters.apiParams);
   const { data: jobsData, isLoading: jobsLoading } = useJobsList();
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const recentJobs = ((jobsData as any)?.items || jobsData || []).slice(0, 5);
+  const recentJobs = (jobsData ?? []).slice(0, 5);
 
   // Prepare trend chart data
   const trendData = (data?.daily_trend ?? []).map((d) => ({
@@ -518,7 +518,7 @@ export function AdminOverviewPage() {
             <div className="text-center py-8 text-neutral-500 text-sm">Henuz is olusturulmamis.</div>
           ) : (
             <div className="flex flex-col gap-1.5">
-              {recentJobs.map((job: { id: number; module_type: string; status: string; created_at: string; context_summary?: string }) => (
+              {recentJobs.map((job) => (
                 <RecentJobCard
                   key={job.id}
                   job={job}

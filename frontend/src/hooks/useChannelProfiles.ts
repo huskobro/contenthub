@@ -11,6 +11,7 @@ import {
   createChannelProfile,
   type CreateChannelProfile,
 } from "../api/channelProfilesApi";
+import { useApiError } from "./useApiError";
 
 export function useChannelProfiles(userId?: string) {
   return useQuery({
@@ -29,8 +30,10 @@ export function useChannelProfile(profileId: string) {
 
 export function useCreateChannelProfile() {
   const queryClient = useQueryClient();
+  const onError = useApiError();
   return useMutation({
     mutationFn: (data: CreateChannelProfile) => createChannelProfile(data),
+    onError,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["channel-profiles"] });
     },

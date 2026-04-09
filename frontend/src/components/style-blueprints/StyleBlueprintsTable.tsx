@@ -95,8 +95,12 @@ export function StyleBlueprintsTable({ blueprints, selectedId, onSelect, onBulkD
             {filtered.map((bp) => (
               <tr
                 key={bp.id}
+                onClick={() => onSelect(bp.id)}
+                tabIndex={0}
+                role="button"
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onSelect(bp.id); } }}
                 className={cn(
-                  "border-b border-neutral-100 transition-colors",
+                  "border-b border-neutral-100 cursor-pointer transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-500 focus-visible:outline-offset-[-2px]",
                   selectedId === bp.id ? "bg-info-light" : "hover:bg-neutral-50",
                   sel.isSelected(bp.id) && "bg-brand-500 bg-opacity-5",
                 )}
@@ -105,25 +109,25 @@ export function StyleBlueprintsTable({ blueprints, selectedId, onSelect, onBulkD
                   <input type="checkbox" checked={sel.isSelected(bp.id)} onChange={() => sel.toggle(bp.id)} className="cursor-pointer accent-brand-500" />
                 </td>
                 {col.isVisible("name") && (
-                  <td className={cn("px-4 py-2.5 min-w-[180px] cursor-pointer", selectedId === bp.id ? "font-semibold text-brand-700" : "font-medium text-brand-600")} onClick={() => onSelect(bp.id)}>
+                  <td className={cn("px-4 py-2.5 min-w-[180px]", selectedId === bp.id ? "font-semibold text-brand-700" : "font-medium text-brand-600")}>
                     <div className="truncate max-w-[250px]" title={bp.name ?? ""}>{bp.name ?? DASH}</div>
                   </td>
                 )}
                 {col.isVisible("module") && (
-                  <td className="px-3 py-2.5 text-neutral-600 text-sm cursor-pointer" onClick={() => onSelect(bp.id)}>{bp.module_scope ?? "global"}</td>
+                  <td className="px-3 py-2.5 text-neutral-600 text-sm">{bp.module_scope ?? "global"}</td>
                 )}
                 {col.isVisible("status") && (
-                  <td className="px-3 py-2.5 cursor-pointer" onClick={() => onSelect(bp.id)}>
+                  <td className="px-3 py-2.5">
                     <span className={cn("inline-block py-0.5 px-2 rounded-full text-sm", bp.status === "active" ? "bg-success-light text-success-text" : "bg-neutral-100 text-neutral-700")}>
                       {bp.status ?? DASH}
                     </span>
                   </td>
                 )}
                 {col.isVisible("version") && (
-                  <td className="px-3 py-2.5 text-right tabular-nums text-neutral-500 cursor-pointer" onClick={() => onSelect(bp.id)}>{bp.version ?? 0}</td>
+                  <td className="px-3 py-2.5 text-right tabular-nums text-neutral-500">{bp.version ?? 0}</td>
                 )}
                 {col.isVisible("date") && (
-                  <td className="px-3 py-2.5 text-neutral-500 text-sm cursor-pointer" onClick={() => onSelect(bp.id)}>{formatDateShort(bp.created_at)}</td>
+                  <td className="px-3 py-2.5 text-neutral-500 text-sm">{formatDateShort(bp.created_at)}</td>
                 )}
               </tr>
             ))}

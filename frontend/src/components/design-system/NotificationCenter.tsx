@@ -140,7 +140,7 @@ function NotificationItem({
             e.stopPropagation();
             onRemove();
           }}
-          className="opacity-0 group-hover:opacity-100 w-6 h-6 flex items-center justify-center text-neutral-400 hover:text-neutral-700 bg-transparent border-none cursor-pointer transition-opacity duration-fast rounded-md hover:bg-neutral-100 text-sm shrink-0"
+          className="opacity-0 group-hover:opacity-100 focus:opacity-100 w-6 h-6 flex items-center justify-center text-neutral-400 hover:text-neutral-700 bg-transparent border-none cursor-pointer transition-opacity duration-fast rounded-md hover:bg-neutral-100 text-sm shrink-0"
           title="Kaldir"
           aria-label="Bildirimi kaldir"
         >

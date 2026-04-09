@@ -66,9 +66,9 @@ export function StandardVideoDetailPage() {
       ]}
       actions={!editMode ? <ActionButton variant="secondary" size="sm" onClick={() => setEditMode(true)}>Düzenle</ActionButton> : undefined}
     >
-      <a href="/admin/library" data-testid="sv-detail-library-link" className="inline-block mb-2 text-sm text-brand-600 no-underline">
+      <Link to="/admin/library" data-testid="sv-detail-library-link" className="inline-block mb-2 text-sm text-brand-600 no-underline">
         &larr; Kütüphaneye dön
-      </a>
+      </Link>
       <p className="m-0 mb-2 text-neutral-600 text-sm">
         {video.topic} — <Mono>{video.id}</Mono>
       </p>
@@ -83,7 +83,7 @@ export function StandardVideoDetailPage() {
             initial={video}
             onSubmit={handleEditSubmit}
             isSubmitting={isUpdating}
-            submitError={updateError ? updateError.message : null}
+            submitError={updateError ? (updateError instanceof Error ? updateError.message : "Bilinmeyen hata") : null}
             onCancel={() => setEditMode(false)}
             submitLabel="Güncelle"
           />
@@ -100,8 +100,8 @@ export function StandardVideoDetailPage() {
             onUpdate={(payload) => updateScript(payload)}
             isCreating={isCreatingScript}
             isUpdating={isUpdatingScript}
-            createError={createScriptError ? createScriptError.message : null}
-            updateError={updateScriptError ? updateScriptError.message : null}
+            createError={createScriptError ? (createScriptError instanceof Error ? createScriptError.message : "Bilinmeyen hata") : null}
+            updateError={updateScriptError ? (updateScriptError instanceof Error ? updateScriptError.message : "Bilinmeyen hata") : null}
           />
           <StandardVideoMetadataPanel
             videoId={itemId ?? ""}
@@ -112,8 +112,8 @@ export function StandardVideoDetailPage() {
             onUpdate={(payload) => updateMeta(payload)}
             isCreating={isCreatingMeta}
             isUpdating={isUpdatingMeta}
-            createError={createMetaError ? createMetaError.message : null}
-            updateError={updateMetaError ? updateMetaError.message : null}
+            createError={createMetaError ? (createMetaError instanceof Error ? createMetaError.message : "Bilinmeyen hata") : null}
+            updateError={updateMetaError ? (updateMetaError instanceof Error ? updateMetaError.message : "Bilinmeyen hata") : null}
           />
         </>
       )}

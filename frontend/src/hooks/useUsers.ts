@@ -19,6 +19,7 @@ import {
   type UserResponse,
 } from "../api/usersApi";
 import { useUserStore } from "../stores/userStore";
+import { useApiError } from "./useApiError";
 
 // ---------------------------------------------------------------------------
 // User list + single user
@@ -65,8 +66,10 @@ export function useActiveUser(): {
 
 export function useCreateUser() {
   const queryClient = useQueryClient();
+  const onError = useApiError();
   return useMutation({
     mutationFn: (payload: UserCreatePayload) => createUser(payload),
+    onError,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
     },
@@ -75,9 +78,11 @@ export function useCreateUser() {
 
 export function useUpdateUser() {
   const queryClient = useQueryClient();
+  const onError = useApiError();
   return useMutation({
     mutationFn: ({ userId, payload }: { userId: string; payload: UserUpdatePayload }) =>
       updateUser(userId, payload),
+    onError,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
     },
@@ -86,8 +91,10 @@ export function useUpdateUser() {
 
 export function useDeleteUser() {
   const queryClient = useQueryClient();
+  const onError = useApiError();
   return useMutation({
     mutationFn: (userId: string) => deleteUser(userId),
+    onError,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
     },
@@ -108,6 +115,7 @@ export function useUserOverrides(userId: string) {
 
 export function useSetUserOverride() {
   const queryClient = useQueryClient();
+  const onError = useApiError();
   return useMutation({
     mutationFn: ({
       userId,
@@ -118,6 +126,7 @@ export function useSetUserOverride() {
       settingKey: string;
       value: unknown;
     }) => setUserOverride(userId, settingKey, value),
+    onError,
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["users", variables.userId, "overrides"] });
       queryClient.invalidateQueries({ queryKey: ["effective-settings"] });
@@ -127,9 +136,11 @@ export function useSetUserOverride() {
 
 export function useDeleteUserOverride() {
   const queryClient = useQueryClient();
+  const onError = useApiError();
   return useMutation({
     mutationFn: ({ userId, settingKey }: { userId: string; settingKey: string }) =>
       deleteUserOverride(userId, settingKey),
+    onError,
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["users", variables.userId, "overrides"] });
       queryClient.invalidateQueries({ queryKey: ["effective-settings"] });

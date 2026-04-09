@@ -10,6 +10,7 @@ import {
   fetchChannelVideos,
   revokeYouTubeCredentials,
 } from "../api/credentialsApi";
+import { useApiError } from "./useApiError";
 
 export function useCredentialsList() {
   return useQuery({
@@ -20,9 +21,11 @@ export function useCredentialsList() {
 
 export function useSaveCredential() {
   const queryClient = useQueryClient();
+  const onError = useApiError();
   return useMutation({
     mutationFn: ({ key, value }: { key: string; value: string }) =>
       saveCredential(key, value),
+    onError,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["credentials"] });
     },
@@ -30,8 +33,10 @@ export function useSaveCredential() {
 }
 
 export function useValidateCredential() {
+  const onError = useApiError();
   return useMutation({
     mutationFn: (key: string) => validateCredential(key),
+    onError,
   });
 }
 
@@ -80,8 +85,10 @@ export function useChannelVideos(enabled = true) {
 
 export function useRevokeYouTube() {
   const queryClient = useQueryClient();
+  const onError = useApiError();
   return useMutation({
     mutationFn: revokeYouTubeCredentials,
+    onError,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["youtube", "status"] });
       queryClient.invalidateQueries({ queryKey: ["credentials"] });
