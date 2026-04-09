@@ -1,3 +1,4 @@
+// @ts-nocheck — structural guard test that reads source files via Node fs
 /**
  * Sprint 4 — Pre-Launch Polish Smoke Tests
  *
@@ -12,8 +13,8 @@
  */
 
 import { describe, it, expect } from "vitest";
-import * as fs from "fs";
-import * as path from "path";
+import fs from "fs";
+import path from "path";
 
 const SRC = path.resolve(__dirname, "..");
 
