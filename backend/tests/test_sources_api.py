@@ -56,7 +56,7 @@ async def test_create_rss_source(client: AsyncClient):
         "feed_url": "https://example.com/feed.xml",
         "status": "active",
         "language": "tr",
-        "category": "general",
+        "category": "tech",
     }
     resp = await client.post(BASE, json=payload)
     assert resp.status_code == 201
