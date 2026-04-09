@@ -89,6 +89,10 @@ const UserInboxPage = lazy(() => import("../pages/user/UserInboxPage").then(m =>
 const AdminAutomationPoliciesPage = lazy(() => import("../pages/admin/AdminAutomationPoliciesPage").then(m => ({ default: m.AdminAutomationPoliciesPage })));
 const AdminInboxPage = lazy(() => import("../pages/admin/AdminInboxPage").then(m => ({ default: m.AdminInboxPage })));
 
+// Lazy-loaded Faz 14 pages
+const UserCalendarPage = lazy(() => import("../pages/user/UserCalendarPage").then(m => ({ default: m.UserCalendarPage })));
+const AdminCalendarPage = lazy(() => import("../pages/admin/AdminCalendarPage").then(m => ({ default: m.AdminCalendarPage })));
+
 function LazyFallback() {
   return <div className="p-8 text-sm text-neutral-400">Yukleniyor...</div>;
 }
@@ -155,6 +159,7 @@ export const router = createBrowserRouter([
       { path: "posts", element: <Suspense fallback={<LazyFallback />}><AdminPostMonitoringPage /></Suspense> },
       { path: "automation", element: <Suspense fallback={<LazyFallback />}><AdminAutomationPoliciesPage /></Suspense> },
       { path: "inbox", element: <Suspense fallback={<LazyFallback />}><AdminInboxPage /></Suspense> },
+      { path: "calendar", element: <Suspense fallback={<LazyFallback />}><AdminCalendarPage /></Suspense> },
       { path: "publish", element: <VisibilityGuard targetKey="panel:publish"><Suspense fallback={<LazyFallback />}><PublishCenterPage /></Suspense></VisibilityGuard> },
       { path: "publish/:recordId", element: <VisibilityGuard targetKey="panel:publish"><Suspense fallback={<LazyFallback />}><PublishDetailPage /></Suspense></VisibilityGuard> },
       { path: "audit-logs", element: <VisibilityGuard targetKey="panel:audit-logs"><Suspense fallback={<LazyFallback />}><AuditLogPage /></Suspense></VisibilityGuard> },
@@ -187,6 +192,7 @@ export const router = createBrowserRouter([
       { path: "posts", element: <Suspense fallback={<LazyFallback />}><UserPostsPage /></Suspense> },
       { path: "automation", element: <Suspense fallback={<LazyFallback />}><UserAutomationPage /></Suspense> },
       { path: "inbox", element: <Suspense fallback={<LazyFallback />}><UserInboxPage /></Suspense> },
+      { path: "calendar", element: <Suspense fallback={<LazyFallback />}><UserCalendarPage /></Suspense> },
       { path: "create/video", element: <Suspense fallback={<LazyFallback />}><CreateVideoWizardPage /></Suspense> },
       { path: "create/bulletin", element: <Suspense fallback={<LazyFallback />}><CreateBulletinWizardPage /></Suspense> },
     ],

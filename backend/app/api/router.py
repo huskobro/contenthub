@@ -37,6 +37,7 @@ from app.posts.router import router as posts_router
 from app.brand_profiles.router import router as brand_profiles_router
 from app.automation.router import router as automation_router
 from app.automation.router import inbox_router as operations_inbox_router
+from app.calendar.router import router as calendar_router
 from app.auth.router import router as auth_router
 
 api_router = APIRouter()
@@ -78,4 +79,5 @@ api_router.include_router(wizard_configs_router)
 api_router.include_router(modules_router)
 api_router.include_router(prompt_assembly_router)
 api_router.include_router(fs_router)
+api_router.include_router(calendar_router)
 api_router.include_router(auth_router)
