@@ -4,6 +4,19 @@ const BASE_URL = "/api/v1/analytics";
 
 export type AnalyticsWindow = "last_7d" | "last_30d" | "last_90d" | "all_time";
 
+// ---------------------------------------------------------------------------
+// Shared filter params (Faz 6)
+// ---------------------------------------------------------------------------
+
+export interface AnalyticsFilterParams {
+  window?: AnalyticsWindow;
+  date_from?: string;
+  date_to?: string;
+  user_id?: string;
+  channel_profile_id?: string;
+  platform?: string;
+}
+
 export interface StepStat {
   step_key: string;
   count: number;
@@ -230,4 +243,116 @@ export interface PromptAssemblyMetrics {
 
 export function fetchPromptAssemblyMetrics(window: AnalyticsWindow): Promise<PromptAssemblyMetrics> {
   return api.get<PromptAssemblyMetrics>(`${BASE_URL}/prompt-assembly`, { window });
+}
+
+// ---------------------------------------------------------------------------
+// Dashboard Summary (Faz 6)
+// ---------------------------------------------------------------------------
+
+export interface DailyTrendItem {
+  date: string;
+  job_count: number;
+  completed_count: number;
+  failed_count: number;
+  publish_count: number;
+  publish_success_count: number;
+}
+
+export interface DashboardSummary {
+  window: string;
+  total_projects: number;
+  total_jobs: number;
+  active_jobs: number;
+  total_publish: number;
+  publish_success_rate: number | null;
+  avg_production_duration_seconds: number | null;
+  retry_rate: number | null;
+  failed_job_count: number;
+  queue_size: number;
+  recent_errors: Array<{ job_id: string; module_type: string; error: string; created_at: string }>;
+  daily_trend: DailyTrendItem[];
+  module_distribution: ModuleDistribution[];
+  platform_distribution: Array<{ platform: string; count: number; published: number; failed: number }>;
+  filters_applied: Record<string, string>;
+}
+
+export function fetchDashboardSummary(
+  filters: AnalyticsFilterParams = {},
+): Promise<DashboardSummary> {
+  const params: Record<string, string> = { window: filters.window || "last_30d" };
+  if (filters.date_from) params.date_from = filters.date_from;
+  if (filters.date_to) params.date_to = filters.date_to;
+  if (filters.user_id) params.user_id = filters.user_id;
+  if (filters.channel_profile_id) params.channel_profile_id = filters.channel_profile_id;
+  if (filters.platform) params.platform = filters.platform;
+  return api.get<DashboardSummary>(`${BASE_URL}/dashboard`, params);
+}
+
+// ---------------------------------------------------------------------------
+// Publish Analytics (Faz 6)
+// ---------------------------------------------------------------------------
+
+export interface PublishAnalyticsData {
+  window: string;
+  total_publish_count: number;
+  published_count: number;
+  failed_count: number;
+  draft_count: number;
+  in_review_count: number;
+  scheduled_count: number;
+  publish_success_rate: number | null;
+  avg_time_to_publish_seconds: number | null;
+  platform_breakdown: Array<{ platform: string; count: number; published: number; failed: number }>;
+  daily_publish_trend: DailyTrendItem[];
+  filters_applied: Record<string, string>;
+}
+
+export function fetchPublishAnalytics(
+  filters: AnalyticsFilterParams = {},
+): Promise<PublishAnalyticsData> {
+  const params: Record<string, string> = { window: filters.window || "all_time" };
+  if (filters.date_from) params.date_from = filters.date_from;
+  if (filters.date_to) params.date_to = filters.date_to;
+  if (filters.user_id) params.user_id = filters.user_id;
+  if (filters.channel_profile_id) params.channel_profile_id = filters.channel_profile_id;
+  if (filters.platform) params.platform = filters.platform;
+  return api.get<PublishAnalyticsData>(`${BASE_URL}/publish`, params);
+}
+
+// ---------------------------------------------------------------------------
+// Filter-aware fetch wrappers (Faz 6)
+// ---------------------------------------------------------------------------
+
+export function fetchOverviewMetricsFiltered(
+  filters: AnalyticsFilterParams,
+): Promise<OverviewMetrics> {
+  const params: Record<string, string> = { window: filters.window || "all_time" };
+  if (filters.date_from) params.date_from = filters.date_from;
+  if (filters.date_to) params.date_to = filters.date_to;
+  if (filters.user_id) params.user_id = filters.user_id;
+  if (filters.channel_profile_id) params.channel_profile_id = filters.channel_profile_id;
+  if (filters.platform) params.platform = filters.platform;
+  return api.get<OverviewMetrics>(`${BASE_URL}/overview`, params);
+}
+
+export function fetchOperationsMetricsFiltered(
+  filters: AnalyticsFilterParams,
+): Promise<OperationsMetrics> {
+  const params: Record<string, string> = { window: filters.window || "all_time" };
+  if (filters.user_id) params.user_id = filters.user_id;
+  if (filters.channel_profile_id) params.channel_profile_id = filters.channel_profile_id;
+  if (filters.platform) params.platform = filters.platform;
+  return api.get<OperationsMetrics>(`${BASE_URL}/operations`, params);
+}
+
+export function fetchContentMetricsFiltered(
+  filters: AnalyticsFilterParams,
+): Promise<ContentMetrics> {
+  const params: Record<string, string> = { window: filters.window || "all_time" };
+  if (filters.date_from) params.date_from = filters.date_from;
+  if (filters.date_to) params.date_to = filters.date_to;
+  if (filters.user_id) params.user_id = filters.user_id;
+  if (filters.channel_profile_id) params.channel_profile_id = filters.channel_profile_id;
+  if (filters.platform) params.platform = filters.platform;
+  return api.get<ContentMetrics>(`${BASE_URL}/content`, params);
 }

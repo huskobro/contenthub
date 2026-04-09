@@ -53,6 +53,7 @@ const AnalyticsOverviewPage = lazy(() => import("../pages/admin/AnalyticsOvervie
 const AnalyticsContentPage = lazy(() => import("../pages/admin/AnalyticsContentPage").then(m => ({ default: m.AnalyticsContentPage })));
 const AnalyticsOperationsPage = lazy(() => import("../pages/admin/AnalyticsOperationsPage").then(m => ({ default: m.AnalyticsOperationsPage })));
 const YouTubeAnalyticsPage = lazy(() => import("../pages/admin/YouTubeAnalyticsPage").then(m => ({ default: m.YouTubeAnalyticsPage })));
+const PublishAnalyticsPage = lazy(() => import("../pages/admin/PublishAnalyticsPage").then(m => ({ default: m.PublishAnalyticsPage })));
 const JobDetailPage = lazy(() => import("../pages/admin/JobDetailPage").then(m => ({ default: m.JobDetailPage })));
 const StandardVideoDetailPage = lazy(() => import("../pages/admin/StandardVideoDetailPage").then(m => ({ default: m.StandardVideoDetailPage })));
 const StandardVideoWizardPage = lazy(() => import("../pages/admin/StandardVideoWizardPage").then(m => ({ default: m.StandardVideoWizardPage })));
@@ -69,6 +70,7 @@ const MyChannelsPage = lazy(() => import("../pages/user/MyChannelsPage").then(m 
 const CreateVideoWizardPage = lazy(() => import("../pages/user/CreateVideoWizardPage").then(m => ({ default: m.CreateVideoWizardPage })));
 const CreateBulletinWizardPage = lazy(() => import("../pages/user/CreateBulletinWizardPage").then(m => ({ default: m.CreateBulletinWizardPage })));
 const ProjectDetailPage = lazy(() => import("../pages/user/ProjectDetailPage").then(m => ({ default: m.ProjectDetailPage })));
+const UserAnalyticsPage = lazy(() => import("../pages/user/UserAnalyticsPage").then(m => ({ default: m.UserAnalyticsPage })));
 
 function LazyFallback() {
   return <div className="p-8 text-sm text-neutral-400">Yukleniyor...</div>;
@@ -129,6 +131,7 @@ export const router = createBrowserRouter([
       { path: "analytics/content", element: <VisibilityGuard targetKey="panel:analytics"><Suspense fallback={<LazyFallback />}><AnalyticsContentPage /></Suspense></VisibilityGuard> },
       { path: "analytics/operations", element: <VisibilityGuard targetKey="panel:analytics"><Suspense fallback={<LazyFallback />}><AnalyticsOperationsPage /></Suspense></VisibilityGuard> },
       { path: "analytics/youtube", element: <VisibilityGuard targetKey="panel:analytics"><Suspense fallback={<LazyFallback />}><YouTubeAnalyticsPage /></Suspense></VisibilityGuard> },
+      { path: "analytics/publish", element: <VisibilityGuard targetKey="panel:analytics"><Suspense fallback={<LazyFallback />}><PublishAnalyticsPage /></Suspense></VisibilityGuard> },
       { path: "publish", element: <VisibilityGuard targetKey="panel:publish"><Suspense fallback={<LazyFallback />}><PublishCenterPage /></Suspense></VisibilityGuard> },
       { path: "publish/:recordId", element: <VisibilityGuard targetKey="panel:publish"><Suspense fallback={<LazyFallback />}><PublishDetailPage /></Suspense></VisibilityGuard> },
       { path: "audit-logs", element: <VisibilityGuard targetKey="panel:audit-logs"><Suspense fallback={<LazyFallback />}><AuditLogPage /></Suspense></VisibilityGuard> },
@@ -154,6 +157,7 @@ export const router = createBrowserRouter([
       { path: "projects/:projectId", element: <Suspense fallback={<LazyFallback />}><ProjectDetailPage /></Suspense> },
       { path: "channels", element: <Suspense fallback={<LazyFallback />}><MyChannelsPage /></Suspense> },
       { path: "channels/:channelId", element: <Suspense fallback={<LazyFallback />}><div className="p-8 text-neutral-500">Kanal detayi yakinda eklenecek.</div></Suspense> },
+      { path: "analytics", element: <Suspense fallback={<LazyFallback />}><UserAnalyticsPage /></Suspense> },
       { path: "create/video", element: <Suspense fallback={<LazyFallback />}><CreateVideoWizardPage /></Suspense> },
       { path: "create/bulletin", element: <Suspense fallback={<LazyFallback />}><CreateBulletinWizardPage /></Suspense> },
     ],

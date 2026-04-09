@@ -1,5 +1,5 @@
 """
-Analytics Router — M8-C1, M16, M17, M18.
+Analytics Router — M8-C1, M16, M17, M18, Dashboard V2, Publish Analytics.
 
 HTTP katmanı: iş mantığı yok, yalnızca servis çağrıları.
 
@@ -9,6 +9,10 @@ Endpoint'ler:
   GET /analytics/source-impact  : Kaynak etki metrikleri (M17-A)
   GET /analytics/channel        : Kanal özet metrikleri (M17-C)
   GET /analytics/content        : İçerik analytics metrikleri (M18-A)
+  GET /analytics/template-impact: Template/blueprint etki metrikleri (Faz G)
+  GET /analytics/prompt-assembly: Prompt Assembly metrikleri (M37)
+  GET /analytics/dashboard      : Admin Dashboard V2 aggregated summary
+  GET /analytics/publish        : Publish-specific analytics
 """
 
 from datetime import datetime
@@ -27,6 +31,8 @@ from app.analytics.schemas import (
     ContentMetrics,
     TemplateImpactMetrics,
     PromptAssemblyMetrics,
+    DashboardSummary,
+    PublishAnalytics,
 )
 
 router = APIRouter(prefix="/analytics", tags=["analytics"], dependencies=[Depends(require_visible("panel:analytics"))])
@@ -60,6 +66,9 @@ async def get_overview(
     window: str = Query(default="all_time", description="Zaman penceresi: last_7d | last_30d | last_90d | all_time"),
     date_from: Optional[str] = Query(default=None, description="Baslangic tarihi (ISO 8601)"),
     date_to: Optional[str] = Query(default=None, description="Bitis tarihi (ISO 8601)"),
+    user_id: Optional[str] = Query(default=None, description="Kullanici filtresi"),
+    channel_profile_id: Optional[str] = Query(default=None, description="Kanal profil filtresi"),
+    platform: Optional[str] = Query(default=None, description="Platform filtresi (youtube, ...)"),
     session=Depends(get_db),
 ):
     """
@@ -72,12 +81,16 @@ async def get_overview(
     dt = _parse_date(date_to, "date_to")
     return await service.get_overview_metrics(
         session=session, window=window, date_from=df, date_to=dt,
+        user_id=user_id, channel_profile_id=channel_profile_id, platform=platform,
     )
 
 
 @router.get("/operations", response_model=OperationsMetrics)
 async def get_operations(
     window: str = Query(default="all_time", description="Zaman penceresi: last_7d | last_30d | last_90d | all_time"),
+    user_id: Optional[str] = Query(default=None, description="Kullanici filtresi"),
+    channel_profile_id: Optional[str] = Query(default=None, description="Kanal profil filtresi"),
+    platform: Optional[str] = Query(default=None, description="Platform filtresi (youtube, ...)"),
     session=Depends(get_db),
 ):
     """
@@ -88,12 +101,18 @@ async def get_operations(
     provider_error_rate: provider-dependent step basarisizlik orani.
     """
     _validate_window(window)
-    return await service.get_operations_metrics(session=session, window=window)
+    return await service.get_operations_metrics(
+        session=session, window=window,
+        user_id=user_id, channel_profile_id=channel_profile_id, platform=platform,
+    )
 
 
 @router.get("/source-impact", response_model=SourceImpactMetrics)
 async def get_source_impact(
     window: str = Query(default="all_time", description="Zaman penceresi: last_7d | last_30d | last_90d | all_time"),
+    user_id: Optional[str] = Query(default=None, description="Kullanici filtresi"),
+    channel_profile_id: Optional[str] = Query(default=None, description="Kanal profil filtresi"),
+    platform: Optional[str] = Query(default=None, description="Platform filtresi (youtube, ...)"),
     session=Depends(get_db),
 ):
     """
@@ -102,12 +121,18 @@ async def get_source_impact(
     Haber kaynagi bazli aggregation: kaynak sayisi, tarama, haber, kullanim.
     """
     _validate_window(window)
-    return await service.get_source_impact_metrics(session=session, window=window)
+    return await service.get_source_impact_metrics(
+        session=session, window=window,
+        user_id=user_id, channel_profile_id=channel_profile_id, platform=platform,
+    )
 
 
 @router.get("/channel", response_model=ChannelOverviewMetrics)
 async def get_channel_overview(
     window: str = Query(default="all_time", description="Zaman penceresi: last_7d | last_30d | last_90d | all_time"),
+    user_id: Optional[str] = Query(default=None, description="Kullanici filtresi"),
+    channel_profile_id: Optional[str] = Query(default=None, description="Kanal profil filtresi"),
+    platform: Optional[str] = Query(default=None, description="Platform filtresi (youtube, ...)"),
     session=Depends(get_db),
 ):
     """
@@ -116,12 +141,18 @@ async def get_channel_overview(
     YouTube yayin gecmisi ve basari durumu.
     """
     _validate_window(window)
-    return await service.get_channel_overview_metrics(session=session, window=window)
+    return await service.get_channel_overview_metrics(
+        session=session, window=window,
+        user_id=user_id, channel_profile_id=channel_profile_id, platform=platform,
+    )
 
 
 @router.get("/template-impact", response_model=TemplateImpactMetrics)
 async def get_template_impact(
     window: str = Query(default="all_time", description="Zaman penceresi: last_7d | last_30d | last_90d | all_time"),
+    user_id: Optional[str] = Query(default=None, description="Kullanici filtresi"),
+    channel_profile_id: Optional[str] = Query(default=None, description="Kanal profil filtresi"),
+    platform: Optional[str] = Query(default=None, description="Platform filtresi (youtube, ...)"),
     session=Depends(get_db),
 ):
     """
@@ -130,7 +161,10 @@ async def get_template_impact(
     Her template/blueprint icin toplam is, basari orani ve ortalama sure.
     """
     _validate_window(window)
-    return await service.get_template_impact_metrics(session=session, window=window)
+    return await service.get_template_impact_metrics(
+        session=session, window=window,
+        user_id=user_id, channel_profile_id=channel_profile_id, platform=platform,
+    )
 
 
 @router.get("/content", response_model=ContentMetrics)
@@ -138,6 +172,9 @@ async def get_content_metrics(
     window: str = Query(default="all_time", description="Zaman penceresi: last_7d | last_30d | last_90d | all_time"),
     date_from: Optional[str] = Query(default=None, description="Baslangic tarihi (ISO 8601)"),
     date_to: Optional[str] = Query(default=None, description="Bitis tarihi (ISO 8601)"),
+    user_id: Optional[str] = Query(default=None, description="Kullanici filtresi"),
+    channel_profile_id: Optional[str] = Query(default=None, description="Kanal profil filtresi"),
+    platform: Optional[str] = Query(default=None, description="Platform filtresi (youtube, ...)"),
     session=Depends(get_db),
 ):
     """
@@ -151,6 +188,7 @@ async def get_content_metrics(
     dt = _parse_date(date_to, "date_to")
     return await service.get_content_metrics(
         session=session, window=window, date_from=df, date_to=dt,
+        user_id=user_id, channel_profile_id=channel_profile_id, platform=platform,
     )
 
 
@@ -159,6 +197,9 @@ async def get_prompt_assembly_metrics(
     window: str = Query(default="all_time", description="Zaman penceresi: last_7d | last_30d | last_90d | all_time"),
     date_from: Optional[str] = Query(default=None, description="Baslangic tarihi (ISO 8601)"),
     date_to: Optional[str] = Query(default=None, description="Bitis tarihi (ISO 8601)"),
+    user_id: Optional[str] = Query(default=None, description="Kullanici filtresi"),
+    channel_profile_id: Optional[str] = Query(default=None, description="Kanal profil filtresi"),
+    platform: Optional[str] = Query(default=None, description="Platform filtresi (youtube, ...)"),
     session=Depends(get_db),
 ):
     """
@@ -172,4 +213,54 @@ async def get_prompt_assembly_metrics(
     dt = _parse_date(date_to, "date_to")
     return await service.get_prompt_assembly_metrics(
         session=session, window=window, date_from=df, date_to=dt,
+        user_id=user_id, channel_profile_id=channel_profile_id, platform=platform,
+    )
+
+
+@router.get("/dashboard", response_model=DashboardSummary)
+async def get_dashboard_summary(
+    window: str = Query(default="last_30d", description="Zaman penceresi: last_7d | last_30d | last_90d | all_time"),
+    date_from: Optional[str] = Query(default=None, description="Baslangic tarihi (ISO 8601)"),
+    date_to: Optional[str] = Query(default=None, description="Bitis tarihi (ISO 8601)"),
+    user_id: Optional[str] = Query(default=None, description="Kullanici filtresi"),
+    channel_profile_id: Optional[str] = Query(default=None, description="Kanal profil filtresi"),
+    platform: Optional[str] = Query(default=None, description="Platform filtresi (youtube, ...)"),
+    session=Depends(get_db),
+):
+    """
+    Admin Dashboard V2 aggregated summary.
+
+    KPI'lar, gunluk trend, modul dagilimi, platform dagilimi,
+    kuyruk durumu ve son hatalar.
+    """
+    _validate_window(window)
+    df = _parse_date(date_from, "date_from")
+    dt = _parse_date(date_to, "date_to")
+    return await service.get_dashboard_summary(
+        session=session, window=window, date_from=df, date_to=dt,
+        user_id=user_id, channel_profile_id=channel_profile_id, platform=platform,
+    )
+
+
+@router.get("/publish", response_model=PublishAnalytics)
+async def get_publish_analytics(
+    window: str = Query(default="last_30d", description="Zaman penceresi: last_7d | last_30d | last_90d | all_time"),
+    date_from: Optional[str] = Query(default=None, description="Baslangic tarihi (ISO 8601)"),
+    date_to: Optional[str] = Query(default=None, description="Bitis tarihi (ISO 8601)"),
+    user_id: Optional[str] = Query(default=None, description="Kullanici filtresi"),
+    channel_profile_id: Optional[str] = Query(default=None, description="Kanal profil filtresi"),
+    platform: Optional[str] = Query(default=None, description="Platform filtresi (youtube, ...)"),
+    session=Depends(get_db),
+):
+    """
+    Publish-specific analytics.
+
+    Platform kirilimi, gunluk publish trendi, basari orani.
+    """
+    _validate_window(window)
+    df = _parse_date(date_from, "date_from")
+    dt = _parse_date(date_to, "date_to")
+    return await service.get_publish_analytics(
+        session=session, window=window, date_from=df, date_to=dt,
+        user_id=user_id, channel_profile_id=channel_profile_id, platform=platform,
     )

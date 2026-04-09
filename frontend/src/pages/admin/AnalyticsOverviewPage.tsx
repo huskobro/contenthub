@@ -1,18 +1,15 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAnalyticsOverview } from "../../hooks/useAnalyticsOverview";
 import { useChannelOverview } from "../../hooks/useChannelOverview";
+import { useAnalyticsFilters } from "../../hooks/useAnalyticsFilters";
 import type { AnalyticsWindow } from "../../api/analyticsApi";
 import {
   PageShell,
   SectionShell,
   MetricTile,
   MetricGrid,
-  WindowSelector,
-  FilterBar,
-  FilterInput,
-  ActionButton,
 } from "../../components/design-system/primitives";
+import { AdminAnalyticsFilterBar } from "../../components/analytics/AdminAnalyticsFilterBar";
 import { formatDateShort } from "../../lib/formatDate";
 
 /* ------------------------------------------------------------------ */
@@ -36,35 +33,22 @@ function fmtCount(v: number | null | undefined): string {
 }
 
 /* ------------------------------------------------------------------ */
-/* Constants                                                          */
-/* ------------------------------------------------------------------ */
-
-const WINDOW_OPTIONS: { value: AnalyticsWindow; label: string }[] = [
-  { value: "last_7d", label: "Son 7 Gun" },
-  { value: "last_30d", label: "Son 30 Gun" },
-  { value: "last_90d", label: "Son 90 Gun" },
-  { value: "all_time", label: "Tum Zamanlar" },
-];
-
-/* ------------------------------------------------------------------ */
 /* Component                                                          */
 /* ------------------------------------------------------------------ */
 
 export function AnalyticsOverviewPage() {
-  const [window, setWindow] = useState<AnalyticsWindow>("last_30d");
-  const [dateFrom, setDateFrom] = useState<string>("");
-  const [dateTo, setDateTo] = useState<string>("");
+  const analyticsFilters = useAnalyticsFilters("last_30d");
+  const { filters } = analyticsFilters;
 
-  const hasDateRange = dateFrom !== "" || dateTo !== "";
-  const overviewOpts = hasDateRange
+  const overviewOpts = (filters.dateFrom || filters.dateTo)
     ? {
-        window,
-        ...(dateFrom ? { date_from: `${dateFrom}T00:00:00` } : {}),
-        ...(dateTo ? { date_to: `${dateTo}T23:59:59` } : {}),
+        window: filters.window,
+        ...(filters.dateFrom ? { date_from: `${filters.dateFrom}T00:00:00` } : {}),
+        ...(filters.dateTo ? { date_to: `${filters.dateTo}T23:59:59` } : {}),
       }
-    : window;
+    : filters.window;
   const { data, isLoading, isError } = useAnalyticsOverview(overviewOpts as AnalyticsWindow);
-  const { data: channelData, isLoading: channelLoading } = useChannelOverview(window);
+  const { data: channelData, isLoading: channelLoading } = useChannelOverview(filters.window);
 
   const yt = channelData?.youtube;
 
@@ -81,32 +65,8 @@ export function AnalyticsOverviewPage() {
         Analytics canli metrikleri gosterir. Raporlama karar destekleyici gorunum saglar.
       </p>
 
-      {/* Window Selector */}
-      <div className="mb-4">
-        <WindowSelector
-          options={WINDOW_OPTIONS}
-          value={window}
-          onChange={setWindow}
-          testId="analytics-window-selector"
-          buttonTestIdPrefix="window-btn-"
-        />
-      </div>
-
-      {/* Date Range Filter */}
-      <div data-testid="analytics-filter-area" className="mb-4">
-        <div data-testid="filter-heading" className="hidden">Filtre ve Tarih Araligi</div>
-        <div data-testid="filter-note" className="hidden">Metrikleri belirli bir tarih araligiyla filtreleyebilirsiniz.</div>
-        <FilterBar>
-          <FilterInput type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} data-testid="filter-date-start" placeholder="Baslangic" />
-          <FilterInput type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} data-testid="filter-date-end" placeholder="Bitis" />
-          {hasDateRange && (
-            <ActionButton variant="secondary" size="sm" onClick={() => { setDateFrom(""); setDateTo(""); }} data-testid="filter-date-clear">Temizle</ActionButton>
-          )}
-          {hasDateRange && (
-            <span className="text-xs text-brand-600" data-testid="filter-active-note">Tarih filtresi aktif</span>
-          )}
-        </FilterBar>
-      </div>
+      {/* Shared Filter Bar */}
+      <AdminAnalyticsFilterBar analyticsFilters={analyticsFilters} testId="analytics-overview-filter-bar" />
 
       {isError && (
         <div className="flex flex-col items-center py-8 gap-2 mb-4" data-testid="analytics-overview-error">
@@ -210,6 +170,10 @@ export function AnalyticsOverviewPage() {
           <Link to="/admin/analytics/operations" className="block py-4 px-5 bg-surface-card border border-border-subtle rounded-lg no-underline text-inherit transition-colors duration-normal hover:border-brand-300" data-testid="analytics-nav-operations">
             <p className="m-0 text-md font-semibold text-neutral-900 mb-1">Operasyon Metrikleri</p>
             <p className="m-0 text-sm text-neutral-600 leading-normal">Is basari orani, sure, retry ve provider hata detaylari. Operasyonel saglik raporu.</p>
+          </Link>
+          <Link to="/admin/analytics/publish" className="block py-4 px-5 bg-surface-card border border-border-subtle rounded-lg no-underline text-inherit transition-colors duration-normal hover:border-brand-300" data-testid="analytics-nav-publish">
+            <p className="m-0 text-md font-semibold text-neutral-900 mb-1">Yayin Analytics</p>
+            <p className="m-0 text-sm text-neutral-600 leading-normal">Yayin sureci, platform kirilimi, basari/basarisizlik trendi ve hunisi.</p>
           </Link>
         </div>
       </SectionShell>

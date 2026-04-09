@@ -1,8 +1,8 @@
-import { useState } from "react";
 import { useAnalyticsOperations } from "../../hooks/useAnalyticsOperations";
 import { useAnalyticsOverview } from "../../hooks/useAnalyticsOverview";
 import { useSourceImpact } from "../../hooks/useSourceImpact";
 import { usePromptAssemblyMetrics } from "../../hooks/usePromptAssemblyMetrics";
+import { useAnalyticsFilters } from "../../hooks/useAnalyticsFilters";
 import type { AnalyticsWindow, StepStat, ProviderStat, SourceStat, AssemblyModuleStat, AssemblyProviderStat } from "../../api/analyticsApi";
 import { cn } from "../../lib/cn";
 import {
@@ -11,10 +11,10 @@ import {
   MetricTile,
   MetricGrid,
   DataTable,
-  WindowSelector,
   Mono,
   StatusBadge,
 } from "../../components/design-system/primitives";
+import { AdminAnalyticsFilterBar } from "../../components/analytics/AdminAnalyticsFilterBar";
 import { ProviderLatencyChart } from "../../components/analytics/ProviderLatencyChart";
 import { StepDurationChart } from "../../components/analytics/StepDurationChart";
 
@@ -49,17 +49,6 @@ function fmtCost(p: ProviderStat): { text: string; badge: string; badgeStatus: s
   }
   return { text: "\u2014", badge: "unsupported", badgeStatus: "neutral" };
 }
-
-/* ------------------------------------------------------------------ */
-/* Constants                                                          */
-/* ------------------------------------------------------------------ */
-
-const WINDOW_OPTIONS: { value: AnalyticsWindow; label: string }[] = [
-  { value: "last_7d", label: "Son 7 Gun" },
-  { value: "last_30d", label: "Son 30 Gun" },
-  { value: "last_90d", label: "Son 90 Gun" },
-  { value: "all_time", label: "Tum Zamanlar" },
-];
 
 /* ------------------------------------------------------------------ */
 /* Column definitions                                                 */
@@ -252,7 +241,8 @@ const assemblyProviderColumns = [
 ];
 
 export function AnalyticsOperationsPage() {
-  const [window, setWindow] = useState<AnalyticsWindow>("last_30d");
+  const analyticsFilters = useAnalyticsFilters("last_30d");
+  const window = analyticsFilters.filters.window;
   const { data, isLoading, isError } = useAnalyticsOperations(window);
   const { data: overviewData, isLoading: overviewLoading } = useAnalyticsOverview(window);
   const { data: sourceData, isLoading: sourceLoading } = useSourceImpact(window);
@@ -281,16 +271,8 @@ export function AnalyticsOperationsPage() {
         Is Basari &rarr; Retry/Hata &rarr; Provider Sagligi &rarr; Kaynak Etkisi &rarr; Karar Noktasi
       </p>
 
-      {/* Window Selector */}
-      <div className="mb-5">
-        <WindowSelector
-          options={WINDOW_OPTIONS}
-          value={window}
-          onChange={setWindow}
-          testId="operations-window-selector"
-          buttonTestIdPrefix="window-btn-"
-        />
-      </div>
+      {/* Filter Bar */}
+      <AdminAnalyticsFilterBar analyticsFilters={analyticsFilters} testId="operations-filter-bar" />
 
       {isError && (
         <p className="text-error-base text-md mb-4" data-testid="analytics-operations-error">

@@ -1,18 +1,12 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useContentMetrics } from "../../hooks/useContentMetrics";
 import { useTemplateImpact } from "../../hooks/useTemplateImpact";
+import { useAnalyticsFilters } from "../../hooks/useAnalyticsFilters";
 import type { AnalyticsWindow, TemplateImpact, BlueprintImpact } from "../../api/analyticsApi";
-import { PageShell, SectionShell, MetricTile, MetricGrid, DataTable, WindowSelector } from "../../components/design-system/primitives";
+import { PageShell, SectionShell, MetricTile, MetricGrid, DataTable } from "../../components/design-system/primitives";
+import { AdminAnalyticsFilterBar } from "../../components/analytics/AdminAnalyticsFilterBar";
 import { ModuleDistributionChart } from "../../components/analytics/ModuleDistributionChart";
 import type { ReactNode } from "react";
-
-const WINDOW_OPTIONS: { value: AnalyticsWindow; label: string }[] = [
-  { value: "last_7d", label: "Son 7 Gun" },
-  { value: "last_30d", label: "Son 30 Gun" },
-  { value: "last_90d", label: "Son 90 Gun" },
-  { value: "all_time", label: "Tum Zamanlar" },
-];
 
 function fmtRate(rate: number | null): string {
   if (rate === null || rate === undefined) return "\u2014";
@@ -65,7 +59,8 @@ const BLUEPRINT_COLUMNS: { key: string; header: string; render: (item: Blueprint
 ];
 
 export function AnalyticsContentPage() {
-  const [window, setWindow] = useState<AnalyticsWindow>("all_time");
+  const analyticsFilters = useAnalyticsFilters("all_time");
+  const window = analyticsFilters.filters.window;
   const { data, isLoading, isError } = useContentMetrics(window);
   const { data: tplData, isLoading: tplLoading } = useTemplateImpact(window);
 
@@ -90,15 +85,8 @@ export function AnalyticsContentPage() {
         Modul Dagilimi &rarr; Uretim Orani &rarr; Yayin Basarisi &rarr; Sablon/Kaynak Etkisi &rarr; Verimlilik
       </p>
 
-      {/* Window selector */}
-      <div className="mb-4" data-testid="content-window-selector">
-        <WindowSelector
-          options={WINDOW_OPTIONS}
-          value={window}
-          onChange={setWindow}
-          testId="content-window-select"
-        />
-      </div>
+      {/* Filter Bar */}
+      <AdminAnalyticsFilterBar analyticsFilters={analyticsFilters} testId="content-filter-bar" />
 
       {isLoading && (
         <div className="flex items-center gap-2 py-8 justify-center text-neutral-500" data-testid="content-loading">

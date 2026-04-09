@@ -1,5 +1,5 @@
 """
-Analytics Servis Katmanı — M8-C1, M16, M17, M18, M37, M38.
+Analytics Servis Katmanı — M8-C1, M16, M17, M18, M37, M38, Dashboard V2.
 
 Mevcut tablolardan salt okunur aggregation sorguları.
 Şema değişikliği yok, migration yok, yazma yok.
@@ -33,6 +33,10 @@ Channel overview (M17-C):
 
 Provider cost model (M17-D):
   Provider bazlı maliyet görünürlüğü: actual/estimated/unsupported.
+
+Entity filtering:
+  user_id / channel_profile_id / platform — optional entity-level filters.
+  Applied via _apply_entity_filters after time filters.
 """
 
 import json as _json_module
@@ -49,6 +53,7 @@ from app.db.models import (
     Job, JobStep, PublishRecord,
     NewsSource, SourceScan, NewsItem, UsedNewsRegistry, NewsBulletin,
     StandardVideo, Template, StyleBlueprint, TemplateStyleLink,
+    ContentProject,
 )
 from app.prompt_assembly.models import PromptAssemblyRun
 
@@ -92,6 +97,58 @@ def _cutoff(window: str) -> Optional[datetime]:
 
 
 # ---------------------------------------------------------------------------
+# Entity filter yardımcısı
+# ---------------------------------------------------------------------------
+
+def _apply_entity_filters(
+    q,
+    *,
+    user_id: Optional[str] = None,
+    channel_profile_id: Optional[str] = None,
+    platform: Optional[str] = None,
+    entity: str = "job",  # "job" | "publish" | "step"
+):
+    """Apply user/channel/platform filters to a query.
+
+    For Job queries: filter via Job.channel_profile_id and ContentProject join for user_id.
+    For PublishRecord queries: filter via PublishRecord → Job → ContentProject.
+    For JobStep queries: filter via JobStep.job_id → Job → ContentProject.
+    """
+    if not any([user_id, channel_profile_id, platform]):
+        return q
+
+    if entity == "job":
+        if channel_profile_id:
+            q = q.where(Job.channel_profile_id == channel_profile_id)
+        if user_id:
+            user_project_ids = select(ContentProject.id).where(ContentProject.user_id == user_id)
+            q = q.where(Job.content_project_id.in_(user_project_ids))
+        # platform doesn't filter jobs directly
+    elif entity == "publish":
+        if platform:
+            q = q.where(PublishRecord.platform == platform)
+        if channel_profile_id:
+            job_ids = select(Job.id).where(Job.channel_profile_id == channel_profile_id)
+            q = q.where(PublishRecord.job_id.in_(job_ids))
+        if user_id:
+            user_project_ids = select(ContentProject.id).where(ContentProject.user_id == user_id)
+            job_ids = select(Job.id).where(Job.content_project_id.in_(user_project_ids))
+            q = q.where(PublishRecord.job_id.in_(job_ids))
+    elif entity == "step":
+        if channel_profile_id or user_id:
+            job_filter = select(Job.id)
+            if channel_profile_id:
+                job_filter = job_filter.where(Job.channel_profile_id == channel_profile_id)
+            if user_id:
+                user_project_ids = select(ContentProject.id).where(ContentProject.user_id == user_id)
+                job_filter = job_filter.where(Job.content_project_id.in_(user_project_ids))
+            q = q.where(JobStep.job_id.in_(job_filter))
+        # platform doesn't filter steps directly
+
+    return q
+
+
+# ---------------------------------------------------------------------------
 # Overview metrikleri
 # ---------------------------------------------------------------------------
 
@@ -100,6 +157,9 @@ async def get_overview_metrics(
     window: str = "all_time",
     date_from: Optional[datetime] = None,
     date_to: Optional[datetime] = None,
+    user_id: Optional[str] = None,
+    channel_profile_id: Optional[str] = None,
+    platform: Optional[str] = None,
 ) -> dict:
     """
     Platform genel metrikleri.
@@ -148,6 +208,7 @@ async def get_overview_metrics(
         job_q = job_q.where(Job.created_at >= cut)
     if date_to is not None:
         job_q = job_q.where(Job.created_at <= date_to)
+    job_q = _apply_entity_filters(job_q, user_id=user_id, channel_profile_id=channel_profile_id, platform=platform, entity="job")
 
     job_row = (await session.execute(job_q)).one()
 
@@ -177,6 +238,7 @@ async def get_overview_metrics(
         pub_q = pub_q.where(PublishRecord.created_at >= cut)
     if date_to is not None:
         pub_q = pub_q.where(PublishRecord.created_at <= date_to)
+    pub_q = _apply_entity_filters(pub_q, user_id=user_id, channel_profile_id=channel_profile_id, platform=platform, entity="publish")
 
     pub_row = (await session.execute(pub_q)).one()
 
@@ -191,12 +253,14 @@ async def get_overview_metrics(
     review_pending_q = select(
         func.count(PublishRecord.id).label("pending"),
     ).where(PublishRecord.status == "pending_review")
+    review_pending_q = _apply_entity_filters(review_pending_q, user_id=user_id, channel_profile_id=channel_profile_id, platform=platform, entity="publish")
     review_pending_row = (await session.execute(review_pending_q)).one()
     review_pending_count = int(review_pending_row.pending or 0)
 
     publish_backlog_q = select(
         func.count(PublishRecord.id).label("backlog"),
     ).where(PublishRecord.status.in_(["approved", "scheduled"]))
+    publish_backlog_q = _apply_entity_filters(publish_backlog_q, user_id=user_id, channel_profile_id=channel_profile_id, platform=platform, entity="publish")
     publish_backlog_row = (await session.execute(publish_backlog_q)).one()
     publish_backlog_count = int(publish_backlog_row.backlog or 0)
 
@@ -210,6 +274,7 @@ async def get_overview_metrics(
         review_rejected_q = review_rejected_q.where(PublishRecord.created_at >= cut)
     if date_to is not None:
         review_rejected_q = review_rejected_q.where(PublishRecord.created_at <= date_to)
+    review_rejected_q = _apply_entity_filters(review_rejected_q, user_id=user_id, channel_profile_id=channel_profile_id, platform=platform, entity="publish")
     review_rejected_row = (await session.execute(review_rejected_q)).one()
     review_rejected_count = int(review_rejected_row.rejected or 0)
 
@@ -238,6 +303,9 @@ async def get_overview_metrics(
 async def get_operations_metrics(
     session: AsyncSession,
     window: str = "all_time",
+    user_id: Optional[str] = None,
+    channel_profile_id: Optional[str] = None,
+    platform: Optional[str] = None,
 ) -> dict:
     """
     Operasyonel metrikler.
@@ -245,25 +313,18 @@ async def get_operations_metrics(
     Döndürülen alanlar:
       window                        : zaman penceresi
       avg_render_duration_seconds   : composition step'lerin ortalama süresi.
-                                      Canonical kaynak: step_key='composition'
-                                      (standard_video pipeline step_order=6).
-                                      RenderStepExecutor.step_key='render' pipeline'a
-                                      bağlı değil; bu metrik için kullanılmaz.
       step_stats                    : step_key başına {count, avg_elapsed, failed_count}
-      provider_error_rate           : Provider-dependent step'lerin (script,
-                                      metadata, tts, visuals) başarısızlık oranı.
-                                      Veri yoksa None döner.
+      provider_error_rate           : Provider-dependent step'lerin başarısızlık oranı.
     """
     cut = _cutoff(window)
 
     # --- Composition step ortalama süresi (canonical render proxy) ---
-    # standard_video pipeline'da render adımı 'composition' (step_order=6).
-    # RenderStepExecutor.step_key='render' pipeline'a bağlı değil.
     render_q = select(
         func.avg(JobStep.elapsed_seconds).label("avg_render"),
     ).where(JobStep.step_key == RENDER_STEP_KEY)
     if cut is not None:
         render_q = render_q.where(JobStep.created_at >= cut)
+    render_q = _apply_entity_filters(render_q, user_id=user_id, channel_profile_id=channel_profile_id, platform=platform, entity="step")
 
     render_row = (await session.execute(render_q)).one()
     avg_render = (
@@ -281,6 +342,7 @@ async def get_operations_metrics(
     ).group_by(JobStep.step_key)
     if cut is not None:
         step_q = step_q.where(JobStep.created_at >= cut)
+    step_q = _apply_entity_filters(step_q, user_id=user_id, channel_profile_id=channel_profile_id, platform=platform, entity="step")
 
     step_rows = (await session.execute(step_q)).all()
     step_stats = [
@@ -296,14 +358,13 @@ async def get_operations_metrics(
     ]
 
     # --- Provider error rate (M11) ---
-    # Provider-dependent steps: script, metadata, tts, visuals
-    # These steps use external provider APIs; their failure rate = provider error rate
     provider_step_q = select(
         func.count(JobStep.id).label("total"),
         func.sum(case((JobStep.status == "failed", 1), else_=0)).label("failed"),
     ).where(JobStep.step_key.in_(PROVIDER_STEP_KEYS))
     if cut is not None:
         provider_step_q = provider_step_q.where(JobStep.created_at >= cut)
+    provider_step_q = _apply_entity_filters(provider_step_q, user_id=user_id, channel_profile_id=channel_profile_id, platform=platform, entity="step")
 
     provider_row = (await session.execute(provider_step_q)).one()
     provider_total = provider_row.total or 0
@@ -313,8 +374,6 @@ async def get_operations_metrics(
     )
 
     # --- Provider bazlı özet (M16) ---
-    # provider_trace_json alanından gerçek trace verisi çıkar.
-    # JSON parse SQLite'da text fonksiyonlarıyla yapılır.
     provider_trace_q = select(
         JobStep.step_key,
         JobStep.provider_trace_json,
@@ -326,6 +385,7 @@ async def get_operations_metrics(
     )
     if cut is not None:
         provider_trace_q = provider_trace_q.where(JobStep.created_at >= cut)
+    provider_trace_q = _apply_entity_filters(provider_trace_q, user_id=user_id, channel_profile_id=channel_profile_id, platform=platform, entity="step")
 
     trace_rows = (await session.execute(provider_trace_q)).all()
 
@@ -478,20 +538,16 @@ async def get_operations_metrics(
 async def get_source_impact_metrics(
     session: AsyncSession,
     window: str = "all_time",
+    user_id: Optional[str] = None,
+    channel_profile_id: Optional[str] = None,
+    platform: Optional[str] = None,
 ) -> dict:
     """
     Kaynak bazlı etki metrikleri.
 
-    Döndürülen alanlar:
-      window              : zaman penceresi
-      total_sources       : toplam kaynak sayısı
-      active_sources      : status='active' kaynak sayısı
-      total_scans         : toplam tarama sayısı
-      successful_scans    : status='completed' tarama sayısı
-      total_news_items    : toplam haber öğesi sayısı
-      used_news_count     : kullanılan (used) haber sayısı
-      bulletin_count      : oluşturulan bulletin sayısı
-      source_stats        : kaynak bazlı detaylı istatistikler listesi
+    Note: source-impact is primarily about news sources, not directly
+    filterable by user/channel/platform. The params are accepted for
+    API consistency but currently have no effect on source-level queries.
     """
     cut = _cutoff(window)
 
@@ -537,7 +593,6 @@ async def get_source_impact_metrics(
     bulletin_count = bulletin_row.total or 0
 
     # --- Kaynak bazlı detaylı istatistikler ---
-    # Her kaynak için: scan sayısı, haber sayısı, kullanılan haber sayısı
     source_detail_q = (
         select(
             NewsSource.id,
@@ -555,7 +610,6 @@ async def get_source_impact_metrics(
 
     source_stats = []
     for row in source_rows:
-        # Kullanılan haber sayısı bu kaynak üzerinden
         used_from_source_q = (
             select(func.count(UsedNewsRegistry.id))
             .join(NewsItem, NewsItem.id == UsedNewsRegistry.news_item_id)
@@ -593,6 +647,9 @@ async def get_source_impact_metrics(
 async def get_channel_overview_metrics(
     session: AsyncSession,
     window: str = "all_time",
+    user_id: Optional[str] = None,
+    channel_profile_id: Optional[str] = None,
+    platform: Optional[str] = None,
 ) -> dict:
     """
     Kanal bazlı yayın özet metrikleri.
@@ -617,6 +674,7 @@ async def get_channel_overview_metrics(
     ).where(PublishRecord.platform == "youtube")
     if cut is not None:
         yt_q = yt_q.where(PublishRecord.created_at >= cut)
+    yt_q = _apply_entity_filters(yt_q, user_id=user_id, channel_profile_id=channel_profile_id, platform=platform, entity="publish")
 
     yt_row = (await session.execute(yt_q)).one()
 
@@ -627,8 +685,6 @@ async def get_channel_overview_metrics(
     in_progress_yt = int(yt_row.in_progress or 0)
     last_published_at = str(yt_row.last_published_at) if yt_row.last_published_at else None
 
-    # Bağlantı durumu — credentials tablosundan değil, publish record varlığından çıkarılır
-    # Gerçek YouTube OAuth durumu frontend'de useYouTubeStatus ile kontrol edilir
     has_publish_history = total_yt > 0
 
     return {
@@ -657,12 +713,12 @@ async def get_content_metrics(
     window: str = "all_time",
     date_from: Optional[datetime] = None,
     date_to: Optional[datetime] = None,
+    user_id: Optional[str] = None,
+    channel_profile_id: Optional[str] = None,
+    platform: Optional[str] = None,
 ) -> dict:
     """
     İçerik düzeyinde analytics metrikleri.
-
-    Modül dağılımı, içerik üretim sayıları, yayın durumu ve ortalama
-    yayına kadar geçen süre gibi metrikleri gerçek veriden üretir.
     """
     # date_from/date_to öncelikli
     if date_from is not None or date_to is not None:
@@ -698,6 +754,7 @@ async def get_content_metrics(
         ).label("avg_prod_duration"),
     ).where(Job.module_type.is_not(None)).group_by(Job.module_type)
     module_q = _apply_time_filter(module_q, Job.created_at)
+    module_q = _apply_entity_filters(module_q, user_id=user_id, channel_profile_id=channel_profile_id, platform=platform, entity="job")
 
     module_rows = (await session.execute(module_q)).all()
 
@@ -712,6 +769,7 @@ async def get_content_metrics(
         .group_by(Job.module_type)
     )
     render_by_module_q = _apply_time_filter(render_by_module_q, JobStep.created_at)
+    render_by_module_q = _apply_entity_filters(render_by_module_q, user_id=user_id, channel_profile_id=channel_profile_id, platform=platform, entity="step")
     render_by_module_rows = (await session.execute(render_by_module_q)).all()
     render_by_module = {r.module_type: r.avg_render for r in render_by_module_rows}
 
@@ -741,12 +799,10 @@ async def get_content_metrics(
         })
 
     # --- İçerik çıktı sayıları ---
-    # StandardVideo sayısı
     sv_q = select(func.count(StandardVideo.id).label("total"))
     sv_q = _apply_time_filter(sv_q, StandardVideo.created_at)
     sv_count = (await session.execute(sv_q)).scalar() or 0
 
-    # NewsBulletin sayısı
     nb_q = select(func.count(NewsBulletin.id).label("total"))
     nb_q = _apply_time_filter(nb_q, NewsBulletin.created_at)
     nb_count = (await session.execute(nb_q)).scalar() or 0
@@ -758,10 +814,10 @@ async def get_content_metrics(
         PublishRecord.status == "published"
     )
     pub_q = _apply_time_filter(pub_q, PublishRecord.created_at)
+    pub_q = _apply_entity_filters(pub_q, user_id=user_id, channel_profile_id=channel_profile_id, platform=platform, entity="publish")
     published_content_count = (await session.execute(pub_q)).scalar() or 0
 
     # --- Ortalama yayına kadar geçen süre ---
-    # Job oluşturma → publish_records.published_at arası ortalama (sadece published olanlar)
     time_to_pub_q = select(
         func.avg(
             func.julianday(PublishRecord.published_at) * 86400.0
@@ -773,6 +829,7 @@ async def get_content_metrics(
         Job.created_at.is_not(None),
     )
     time_to_pub_q = _apply_time_filter(time_to_pub_q, PublishRecord.created_at)
+    time_to_pub_q = _apply_entity_filters(time_to_pub_q, user_id=user_id, channel_profile_id=channel_profile_id, platform=platform, entity="publish")
     avg_time_to_publish = (await session.execute(time_to_pub_q)).scalar()
     avg_time_to_publish = (
         round(float(avg_time_to_publish), 2)
@@ -817,6 +874,9 @@ async def get_content_metrics(
 async def get_template_impact_metrics(
     session: AsyncSession,
     window: str = "all_time",
+    user_id: Optional[str] = None,
+    channel_profile_id: Optional[str] = None,
+    platform: Optional[str] = None,
 ) -> dict:
     """
     Per-template and per-blueprint job success rates and avg durations.
@@ -827,7 +887,6 @@ async def get_template_impact_metrics(
     cut = _cutoff(window)
 
     # --- Per-template stats ---
-    # Job.template_id is a direct column (not JSON extraction needed).
     tpl_q = (
         select(
             Job.template_id,
@@ -852,6 +911,7 @@ async def get_template_impact_metrics(
     )
     if cut is not None:
         tpl_q = tpl_q.where(Job.created_at >= cut)
+    tpl_q = _apply_entity_filters(tpl_q, user_id=user_id, channel_profile_id=channel_profile_id, platform=platform, entity="job")
 
     tpl_rows = (await session.execute(tpl_q)).all()
 
@@ -875,7 +935,6 @@ async def get_template_impact_metrics(
         })
 
     # --- Per-blueprint stats ---
-    # Join Job -> TemplateStyleLink (via template_id) -> StyleBlueprint
     bp_q = (
         select(
             TemplateStyleLink.style_blueprint_id.label("blueprint_id"),
@@ -890,6 +949,7 @@ async def get_template_impact_metrics(
     )
     if cut is not None:
         bp_q = bp_q.where(Job.created_at >= cut)
+    bp_q = _apply_entity_filters(bp_q, user_id=user_id, channel_profile_id=channel_profile_id, platform=platform, entity="job")
 
     bp_rows = (await session.execute(bp_q)).all()
 
@@ -921,19 +981,16 @@ async def get_prompt_assembly_metrics(
     window: str = "all_time",
     date_from: Optional[datetime] = None,
     date_to: Optional[datetime] = None,
+    user_id: Optional[str] = None,
+    channel_profile_id: Optional[str] = None,
+    platform: Optional[str] = None,
 ) -> dict:
     """
     Prompt Assembly çalışma metrikleri.
 
-    Döndürülen alanlar:
-      window                 : zaman penceresi
-      total_assembly_runs    : toplam assembly çalışması
-      dry_run_count          : is_dry_run=True olanlar
-      production_run_count   : is_dry_run=False olanlar
-      avg_included_blocks    : ortalama dahil edilen blok sayısı
-      avg_skipped_blocks     : ortalama atlanan blok sayısı
-      module_stats           : modül bazında aggregation
-      provider_stats         : provider bazında aggregation
+    Note: PromptAssemblyRun is not directly linked to Job/ContentProject,
+    so user_id/channel_profile_id/platform filters are accepted for API
+    consistency but currently have no effect on assembly-level queries.
     """
     if date_from is not None or date_to is not None:
         cut = None
@@ -1019,4 +1076,374 @@ async def get_prompt_assembly_metrics(
         "avg_skipped_blocks": avg_skipped,
         "module_stats": module_stats,
         "provider_stats": provider_stats,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Dashboard Summary (Admin Dashboard V2)
+# ---------------------------------------------------------------------------
+
+async def get_dashboard_summary(
+    session: AsyncSession,
+    window: str = "last_30d",
+    date_from: Optional[datetime] = None,
+    date_to: Optional[datetime] = None,
+    user_id: Optional[str] = None,
+    channel_profile_id: Optional[str] = None,
+    platform: Optional[str] = None,
+) -> dict:
+    """
+    Admin Dashboard V2 aggregated summary.
+
+    KPI'lar, gunluk trend, modul dagilimi, platform dagilimi,
+    kuyruk durumu ve son hatalar.
+    """
+    if date_from is not None or date_to is not None:
+        cut = None
+    else:
+        cut = _cutoff(window)
+
+    def _apply_time(q, col):
+        if date_from is not None:
+            q = q.where(col >= date_from)
+        elif cut is not None:
+            q = q.where(col >= cut)
+        if date_to is not None:
+            q = q.where(col <= date_to)
+        return q
+
+    filters_applied = {}
+    if user_id:
+        filters_applied["user_id"] = user_id
+    if channel_profile_id:
+        filters_applied["channel_profile_id"] = channel_profile_id
+    if platform:
+        filters_applied["platform"] = platform
+
+    # --- KPI: Projects ---
+    project_q = select(func.count(ContentProject.id).label("total"))
+    if user_id:
+        project_q = project_q.where(ContentProject.user_id == user_id)
+    if channel_profile_id:
+        project_q = project_q.where(ContentProject.channel_profile_id == channel_profile_id)
+    total_projects = (await session.execute(project_q)).scalar() or 0
+
+    # --- KPI: Jobs ---
+    job_q = select(
+        func.count(Job.id).label("total"),
+        func.sum(case((Job.status.in_(["pending", "running"]), 1), else_=0)).label("active"),
+        func.sum(case((Job.status == "failed", 1), else_=0)).label("failed"),
+        func.sum(case((Job.retry_count > 0, 1), else_=0)).label("retried"),
+        func.avg(
+            case(
+                (
+                    (Job.started_at.is_not(None)) & (Job.finished_at.is_not(None)),
+                    func.julianday(Job.finished_at) * 86400.0
+                    - func.julianday(Job.started_at) * 86400.0,
+                ),
+                else_=None,
+            )
+        ).label("avg_duration"),
+    )
+    job_q = _apply_time(job_q, Job.created_at)
+    job_q = _apply_entity_filters(job_q, user_id=user_id, channel_profile_id=channel_profile_id, platform=platform, entity="job")
+    job_row = (await session.execute(job_q)).one()
+
+    total_jobs = job_row.total or 0
+    active_jobs = int(job_row.active or 0)
+    failed_job_count = int(job_row.failed or 0)
+    retried_jobs = int(job_row.retried or 0)
+    avg_production = (
+        round(float(job_row.avg_duration), 2) if job_row.avg_duration is not None else None
+    )
+    retry_rate = round(retried_jobs / total_jobs, 4) if total_jobs > 0 else None
+
+    # --- KPI: Publish ---
+    pub_q = select(
+        func.count(PublishRecord.id).label("total"),
+        func.sum(case((PublishRecord.status == "published", 1), else_=0)).label("published"),
+    )
+    pub_q = _apply_time(pub_q, PublishRecord.created_at)
+    pub_q = _apply_entity_filters(pub_q, user_id=user_id, channel_profile_id=channel_profile_id, platform=platform, entity="publish")
+    pub_row = (await session.execute(pub_q)).one()
+    total_publish = pub_row.total or 0
+    published_count = int(pub_row.published or 0)
+    publish_success_rate = round(published_count / total_publish, 4) if total_publish > 0 else None
+
+    # --- Queue size (current pending/running jobs, no time filter) ---
+    queue_q = select(func.count(Job.id).label("total")).where(
+        Job.status.in_(["pending", "running"])
+    )
+    queue_q = _apply_entity_filters(queue_q, user_id=user_id, channel_profile_id=channel_profile_id, platform=platform, entity="job")
+    queue_size = (await session.execute(queue_q)).scalar() or 0
+
+    # --- Recent errors (last 5 failed jobs) ---
+    error_q = (
+        select(Job.id, Job.module_type, Job.last_error, Job.created_at)
+        .where(Job.status == "failed")
+        .order_by(Job.created_at.desc())
+        .limit(5)
+    )
+    error_q = _apply_entity_filters(error_q, user_id=user_id, channel_profile_id=channel_profile_id, platform=platform, entity="job")
+    error_rows = (await session.execute(error_q)).all()
+    recent_errors = [
+        {
+            "job_id": row.id,
+            "module_type": row.module_type,
+            "last_error": row.last_error,
+            "created_at": str(row.created_at) if row.created_at else None,
+        }
+        for row in error_rows
+    ]
+
+    # --- Daily trend (last 30 days or window) ---
+    # Job trend
+    job_trend_q = select(
+        func.date(Job.created_at).label("day"),
+        func.count(Job.id).label("job_count"),
+        func.sum(case((Job.status == "completed", 1), else_=0)).label("completed_count"),
+        func.sum(case((Job.status == "failed", 1), else_=0)).label("failed_count"),
+    ).group_by(func.date(Job.created_at)).order_by(func.date(Job.created_at))
+    job_trend_q = _apply_time(job_trend_q, Job.created_at)
+    job_trend_q = _apply_entity_filters(job_trend_q, user_id=user_id, channel_profile_id=channel_profile_id, platform=platform, entity="job")
+    job_trend_rows = (await session.execute(job_trend_q)).all()
+
+    # Publish trend (same window)
+    pub_trend_q = select(
+        func.date(PublishRecord.created_at).label("day"),
+        func.count(PublishRecord.id).label("publish_count"),
+        func.sum(case((PublishRecord.status == "published", 1), else_=0)).label("publish_success_count"),
+    ).group_by(func.date(PublishRecord.created_at)).order_by(func.date(PublishRecord.created_at))
+    pub_trend_q = _apply_time(pub_trend_q, PublishRecord.created_at)
+    pub_trend_q = _apply_entity_filters(pub_trend_q, user_id=user_id, channel_profile_id=channel_profile_id, platform=platform, entity="publish")
+    pub_trend_rows = (await session.execute(pub_trend_q)).all()
+
+    # Merge job + publish trends by date
+    trend_map: dict[str, dict] = {}
+    for row in job_trend_rows:
+        day = str(row.day)
+        trend_map[day] = {
+            "date": day,
+            "job_count": row.job_count or 0,
+            "completed_count": int(row.completed_count or 0),
+            "failed_count": int(row.failed_count or 0),
+            "publish_count": 0,
+            "publish_success_count": 0,
+        }
+    for row in pub_trend_rows:
+        day = str(row.day)
+        if day not in trend_map:
+            trend_map[day] = {
+                "date": day,
+                "job_count": 0,
+                "completed_count": 0,
+                "failed_count": 0,
+                "publish_count": 0,
+                "publish_success_count": 0,
+            }
+        trend_map[day]["publish_count"] = row.publish_count or 0
+        trend_map[day]["publish_success_count"] = int(row.publish_success_count or 0)
+
+    daily_trend = sorted(trend_map.values(), key=lambda x: x["date"])
+
+    # --- Module distribution ---
+    mod_q = select(
+        Job.module_type,
+        func.count(Job.id).label("total"),
+        func.sum(case((Job.status == "completed", 1), else_=0)).label("completed"),
+        func.sum(case((Job.status == "failed", 1), else_=0)).label("failed"),
+    ).where(Job.module_type.is_not(None)).group_by(Job.module_type)
+    mod_q = _apply_time(mod_q, Job.created_at)
+    mod_q = _apply_entity_filters(mod_q, user_id=user_id, channel_profile_id=channel_profile_id, platform=platform, entity="job")
+    mod_rows = (await session.execute(mod_q)).all()
+
+    module_distribution = [
+        {
+            "module_type": row.module_type,
+            "total_jobs": row.total or 0,
+            "completed_jobs": int(row.completed or 0),
+            "failed_jobs": int(row.failed or 0),
+            "success_rate": round(int(row.completed or 0) / (row.total or 1), 4) if (row.total or 0) > 0 else None,
+        }
+        for row in mod_rows
+    ]
+
+    # --- Platform distribution ---
+    plat_q = select(
+        PublishRecord.platform,
+        func.count(PublishRecord.id).label("total"),
+        func.sum(case((PublishRecord.status == "published", 1), else_=0)).label("published"),
+        func.sum(case((PublishRecord.status == "failed", 1), else_=0)).label("failed"),
+    ).group_by(PublishRecord.platform)
+    plat_q = _apply_time(plat_q, PublishRecord.created_at)
+    plat_q = _apply_entity_filters(plat_q, user_id=user_id, channel_profile_id=channel_profile_id, platform=platform, entity="publish")
+    plat_rows = (await session.execute(plat_q)).all()
+
+    platform_distribution = [
+        {
+            "platform": row.platform,
+            "total": row.total or 0,
+            "published": int(row.published or 0),
+            "failed": int(row.failed or 0),
+        }
+        for row in plat_rows
+    ]
+
+    return {
+        "window": window,
+        "total_projects": total_projects,
+        "total_jobs": total_jobs,
+        "active_jobs": active_jobs,
+        "total_publish": total_publish,
+        "publish_success_rate": publish_success_rate,
+        "avg_production_duration_seconds": avg_production,
+        "retry_rate": retry_rate,
+        "failed_job_count": failed_job_count,
+        "queue_size": queue_size,
+        "recent_errors": recent_errors,
+        "daily_trend": daily_trend,
+        "module_distribution": module_distribution,
+        "platform_distribution": platform_distribution,
+        "filters_applied": filters_applied,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Publish Analytics
+# ---------------------------------------------------------------------------
+
+async def get_publish_analytics(
+    session: AsyncSession,
+    window: str = "last_30d",
+    date_from: Optional[datetime] = None,
+    date_to: Optional[datetime] = None,
+    user_id: Optional[str] = None,
+    channel_profile_id: Optional[str] = None,
+    platform: Optional[str] = None,
+) -> dict:
+    """
+    Publish-specific analytics.
+
+    Platform kirilimi, gunluk publish trendi, basari orani.
+    """
+    if date_from is not None or date_to is not None:
+        cut = None
+    else:
+        cut = _cutoff(window)
+
+    def _apply_time(q, col):
+        if date_from is not None:
+            q = q.where(col >= date_from)
+        elif cut is not None:
+            q = q.where(col >= cut)
+        if date_to is not None:
+            q = q.where(col <= date_to)
+        return q
+
+    filters_applied = {}
+    if user_id:
+        filters_applied["user_id"] = user_id
+    if channel_profile_id:
+        filters_applied["channel_profile_id"] = channel_profile_id
+    if platform:
+        filters_applied["platform"] = platform
+
+    # --- Main publish metrics ---
+    main_q = select(
+        func.count(PublishRecord.id).label("total"),
+        func.sum(case((PublishRecord.status == "published", 1), else_=0)).label("published"),
+        func.sum(case((PublishRecord.status == "failed", 1), else_=0)).label("failed"),
+        func.sum(case((PublishRecord.status == "draft", 1), else_=0)).label("draft"),
+        func.sum(case((PublishRecord.status == "pending_review", 1), else_=0)).label("in_review"),
+        func.sum(case((PublishRecord.status == "scheduled", 1), else_=0)).label("scheduled"),
+    )
+    main_q = _apply_time(main_q, PublishRecord.created_at)
+    main_q = _apply_entity_filters(main_q, user_id=user_id, channel_profile_id=channel_profile_id, platform=platform, entity="publish")
+    main_row = (await session.execute(main_q)).one()
+
+    total_publish = main_row.total or 0
+    published_count = int(main_row.published or 0)
+    failed_count = int(main_row.failed or 0)
+    draft_count = int(main_row.draft or 0)
+    in_review_count = int(main_row.in_review or 0)
+    scheduled_count = int(main_row.scheduled or 0)
+    publish_success_rate = round(published_count / total_publish, 4) if total_publish > 0 else None
+
+    # --- Avg time to publish ---
+    time_q = select(
+        func.avg(
+            func.julianday(PublishRecord.published_at) * 86400.0
+            - func.julianday(Job.created_at) * 86400.0,
+        ).label("avg_time")
+    ).join(Job, Job.id == PublishRecord.job_id).where(
+        PublishRecord.status == "published",
+        PublishRecord.published_at.is_not(None),
+        Job.created_at.is_not(None),
+    )
+    time_q = _apply_time(time_q, PublishRecord.created_at)
+    time_q = _apply_entity_filters(time_q, user_id=user_id, channel_profile_id=channel_profile_id, platform=platform, entity="publish")
+    avg_time_to_publish = (await session.execute(time_q)).scalar()
+    avg_time_to_publish = (
+        round(float(avg_time_to_publish), 2)
+        if avg_time_to_publish is not None
+        else None
+    )
+
+    # --- Platform breakdown ---
+    plat_q = select(
+        PublishRecord.platform,
+        func.count(PublishRecord.id).label("total"),
+        func.sum(case((PublishRecord.status == "published", 1), else_=0)).label("published"),
+        func.sum(case((PublishRecord.status == "failed", 1), else_=0)).label("failed"),
+    ).group_by(PublishRecord.platform)
+    plat_q = _apply_time(plat_q, PublishRecord.created_at)
+    plat_q = _apply_entity_filters(plat_q, user_id=user_id, channel_profile_id=channel_profile_id, platform=platform, entity="publish")
+    plat_rows = (await session.execute(plat_q)).all()
+
+    platform_breakdown = [
+        {
+            "platform": row.platform,
+            "total": row.total or 0,
+            "published": int(row.published or 0),
+            "failed": int(row.failed or 0),
+        }
+        for row in plat_rows
+    ]
+
+    # --- Daily publish trend ---
+    trend_q = select(
+        func.date(PublishRecord.created_at).label("day"),
+        func.count(PublishRecord.id).label("publish_count"),
+        func.sum(case((PublishRecord.status == "published", 1), else_=0)).label("publish_success_count"),
+        func.sum(case((PublishRecord.status == "failed", 1), else_=0)).label("failed_count"),
+    ).group_by(func.date(PublishRecord.created_at)).order_by(func.date(PublishRecord.created_at))
+    trend_q = _apply_time(trend_q, PublishRecord.created_at)
+    trend_q = _apply_entity_filters(trend_q, user_id=user_id, channel_profile_id=channel_profile_id, platform=platform, entity="publish")
+    trend_rows = (await session.execute(trend_q)).all()
+
+    daily_publish_trend = [
+        {
+            "date": str(row.day),
+            "job_count": 0,
+            "completed_count": 0,
+            "failed_count": int(row.failed_count or 0),
+            "publish_count": row.publish_count or 0,
+            "publish_success_count": int(row.publish_success_count or 0),
+        }
+        for row in trend_rows
+    ]
+
+    return {
+        "window": window,
+        "total_publish_count": total_publish,
+        "published_count": published_count,
+        "failed_count": failed_count,
+        "draft_count": draft_count,
+        "in_review_count": in_review_count,
+        "scheduled_count": scheduled_count,
+        "publish_success_rate": publish_success_rate,
+        "avg_time_to_publish_seconds": avg_time_to_publish,
+        "platform_breakdown": platform_breakdown,
+        "daily_publish_trend": daily_publish_trend,
+        "filters_applied": filters_applied,
     }

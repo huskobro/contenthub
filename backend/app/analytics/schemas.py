@@ -174,6 +174,70 @@ class ContentMetrics(BaseModel):
 # Prompt Assembly Metrics (M37)
 # ---------------------------------------------------------------------------
 
+# ---------------------------------------------------------------------------
+# Daily Trend (shared by Dashboard & Publish)
+# ---------------------------------------------------------------------------
+
+class DailyTrendItem(BaseModel):
+    date: str
+    job_count: int = 0
+    completed_count: int = 0
+    failed_count: int = 0
+    publish_count: int = 0
+    publish_success_count: int = 0
+
+
+# ---------------------------------------------------------------------------
+# Dashboard Summary (Admin Dashboard V2)
+# ---------------------------------------------------------------------------
+
+class DashboardSummary(BaseModel):
+    """Admin Dashboard V2 aggregated summary."""
+    window: str
+    # KPIs
+    total_projects: int = 0
+    total_jobs: int = 0
+    active_jobs: int = 0
+    total_publish: int = 0
+    publish_success_rate: Optional[float] = None
+    avg_production_duration_seconds: Optional[float] = None
+    retry_rate: Optional[float] = None
+    failed_job_count: int = 0
+    # Operational
+    queue_size: int = 0
+    recent_errors: list[dict] = []
+    # Trends
+    daily_trend: list[DailyTrendItem] = []
+    module_distribution: list[ModuleDistribution] = []
+    platform_distribution: list[dict] = []
+    # Filters applied
+    filters_applied: dict = {}
+
+
+# ---------------------------------------------------------------------------
+# Publish Analytics
+# ---------------------------------------------------------------------------
+
+class PublishAnalytics(BaseModel):
+    """Publish-specific analytics."""
+    window: str
+    total_publish_count: int = 0
+    published_count: int = 0
+    failed_count: int = 0
+    draft_count: int = 0
+    in_review_count: int = 0
+    scheduled_count: int = 0
+    publish_success_rate: Optional[float] = None
+    avg_time_to_publish_seconds: Optional[float] = None
+    platform_breakdown: list[dict] = []
+    daily_publish_trend: list[DailyTrendItem] = []
+    filters_applied: dict = {}
+
+
+# ---------------------------------------------------------------------------
+# Prompt Assembly Metrics (M37)
+# ---------------------------------------------------------------------------
+
 class AssemblyModuleStat(BaseModel):
     module_scope: str
     run_count: int
