@@ -270,7 +270,7 @@ async def test_scan_failure_creates_inbox(db_session: AsyncSession):
 # 7. evaluate_and_emit with manual_review
 # ---------------------------------------------------------------------------
 
-async def test_policy_bridge_manual_review(client: AsyncClient, db_session: AsyncSession):
+async def test_policy_bridge_manual_review(client: AsyncClient, db_session: AsyncSession, user_headers: dict):
     """evaluate_and_emit creates inbox item when checkpoint is manual_review."""
     from app.automation.event_hooks import evaluate_and_emit
 
@@ -281,7 +281,8 @@ async def test_policy_bridge_manual_review(client: AsyncClient, db_session: Asyn
         "name": "Bridge Test",
         "is_enabled": True,
         "publish_mode": "manual_review",
-    })
+    },
+    headers=user_headers,)
 
     entity_id = _uuid()
     item = await evaluate_and_emit(
@@ -302,7 +303,7 @@ async def test_policy_bridge_manual_review(client: AsyncClient, db_session: Asyn
 # 8. evaluate_and_emit with automatic mode — no inbox
 # ---------------------------------------------------------------------------
 
-async def test_policy_bridge_automatic_no_inbox(client: AsyncClient, db_session: AsyncSession):
+async def test_policy_bridge_automatic_no_inbox(client: AsyncClient, db_session: AsyncSession, user_headers: dict):
     """evaluate_and_emit does NOT create inbox item when checkpoint is automatic."""
     from app.automation.event_hooks import evaluate_and_emit
 
@@ -312,7 +313,8 @@ async def test_policy_bridge_automatic_no_inbox(client: AsyncClient, db_session:
         "name": "Auto Test",
         "is_enabled": True,
         "publish_mode": "automatic",
-    })
+    },
+    headers=user_headers,)
 
     item = await evaluate_and_emit(
         db_session,
@@ -330,7 +332,7 @@ async def test_policy_bridge_automatic_no_inbox(client: AsyncClient, db_session:
 # 9. Calendar shows newly created inbox items
 # ---------------------------------------------------------------------------
 
-async def test_calendar_shows_new_inbox_items(client: AsyncClient, db_session: AsyncSession):
+async def test_calendar_shows_new_inbox_items(client: AsyncClient, db_session: AsyncSession, user_headers: dict):
     """Automatically created inbox items are visible in calendar cross-ref."""
     user_id = await _ensure_user(db_session)
     ch_id = await _ensure_channel(db_session, user_id)
@@ -360,7 +362,8 @@ async def test_calendar_shows_new_inbox_items(client: AsyncClient, db_session: A
     resp = await client.get(CAL_BASE, params={
         "start_date": (_now() - timedelta(days=1)).isoformat(),
         "end_date": (_now() + timedelta(days=7)).isoformat(),
-    })
+    },
+    headers=user_headers,)
     assert resp.status_code == 200
     proj_events = [e for e in resp.json() if e["related_project_id"] == proj_id]
     assert len(proj_events) >= 1
@@ -371,7 +374,7 @@ async def test_calendar_shows_new_inbox_items(client: AsyncClient, db_session: A
 # 10. Duplicate guard allows after resolution
 # ---------------------------------------------------------------------------
 
-async def test_duplicate_guard_allows_after_resolve(client: AsyncClient, db_session: AsyncSession):
+async def test_duplicate_guard_allows_after_resolve(client: AsyncClient, db_session: AsyncSession, user_headers: dict):
     """After resolving an inbox item, a new one can be created for same entity."""
     from app.automation.event_hooks import emit_operation_event
 

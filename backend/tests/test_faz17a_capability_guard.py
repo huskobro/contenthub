@@ -41,14 +41,13 @@ async def _override_get_db():
         yield session
 
 
-app.dependency_overrides[get_db] = _override_get_db
-
-
 @pytest.fixture(autouse=True)
 async def setup_db():
     async with test_engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+    app.dependency_overrides[get_db] = _override_get_db
     yield
+    app.dependency_overrides.pop(get_db, None)
     async with test_engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
 
@@ -78,9 +77,26 @@ ALL_YT_SCOPES = [
 ]
 
 
+def _make_token(user: User) -> str:
+    from app.auth.jwt import create_access_token
+    return create_access_token({"sub": user.id})
+
+
+def _auth_headers(user: User) -> dict:
+    return {"Authorization": f"Bearer {_make_token(user)}"}
+
+
 async def _create_user(db: AsyncSession, display_name: str = "Test User") -> User:
+    from app.auth.password import hash_password
     slug = f"user-{_uuid()[:8]}"
-    u = User(email=f"{slug}@test.com", display_name=display_name, slug=slug, role="user")
+    u = User(
+        email=f"{slug}@test.com",
+        display_name=display_name,
+        slug=slug,
+        role="user",
+        status="active",
+        password_hash=hash_password("testpass123"),
+    )
     db.add(u)
     await db.commit()
     return u
@@ -277,7 +293,10 @@ async def test_capability_endpoint_returns_matrix(db_session, client):
         scopes_granted=ALL_YT_SCOPES,
     )
 
-    resp = await client.get(f"/api/v1/platform-connections/{conn.id}/capability")
+    resp = await client.get(
+        f"/api/v1/platform-connections/{conn.id}/capability",
+        headers=_auth_headers(u),
+    )
     assert resp.status_code == 200
     data = resp.json()
     assert "can_publish" in data
@@ -299,7 +318,10 @@ async def test_health_endpoint_reflects_issues(db_session, client):
         scopes_granted=ALL_YT_SCOPES,
     )
 
-    resp = await client.get(f"/api/v1/platform-connections/{conn.id}/health")
+    resp = await client.get(
+        f"/api/v1/platform-connections/{conn.id}/health",
+        headers=_auth_headers(u),
+    )
     assert resp.status_code == 200
     data = resp.json()
     health = data["health"]

@@ -19,9 +19,9 @@ Covers:
 """
 
 import uuid
-import sqlite3
 import pytest
 from httpx import AsyncClient
+from sqlalchemy import inspect
 
 BASE = "/api/v1/used-news"
 NEWS_BASE = "/api/v1/news-items"
@@ -35,10 +35,11 @@ def _url() -> str:
     return f"https://example.com/news/{_uid()}"
 
 
-async def _create_news_item(client: AsyncClient) -> str:
+async def _create_news_item(client: AsyncClient, headers: dict) -> str:
     resp = await client.post(
         NEWS_BASE,
         json={"title": f"Item {_uid()}", "url": _url(), "status": "new"},
+        headers=headers,
     )
     assert resp.status_code == 201
     return resp.json()["id"]
@@ -48,16 +49,13 @@ async def _create_news_item(client: AsyncClient) -> str:
 # A) Table exists
 # ---------------------------------------------------------------------------
 
-def test_used_news_registry_table_exists():
-    from app.core.config import settings
-    db_path = settings.database_url.replace("sqlite+aiosqlite:///", "")
-    conn = sqlite3.connect(db_path)
-    cur = conn.execute(
-        "SELECT name FROM sqlite_master WHERE type='table' AND name='used_news_registry'"
-    )
-    row = cur.fetchone()
-    conn.close()
-    assert row is not None, "used_news_registry table should exist after migration"
+@pytest.mark.asyncio
+async def test_used_news_registry_table_exists(test_engine):
+    async with test_engine.connect() as conn:
+        tables = await conn.run_sync(
+            lambda sync_conn: set(inspect(sync_conn).get_table_names())
+        )
+    assert "used_news_registry" in tables
 
 
 # ---------------------------------------------------------------------------
@@ -65,15 +63,15 @@ def test_used_news_registry_table_exists():
 # ---------------------------------------------------------------------------
 
 @pytest.mark.asyncio
-async def test_create_used_news(client: AsyncClient):
-    news_id = await _create_news_item(client)
+async def test_create_used_news(client: AsyncClient, user_headers: dict):
+    news_id = await _create_news_item(client, user_headers)
     payload = {
         "news_item_id": news_id,
         "usage_type": "draft",
         "target_module": "news_bulletin",
         "usage_context": "Morning bulletin",
     }
-    resp = await client.post(BASE, json=payload)
+    resp = await client.post(BASE, json=payload, headers=user_headers)
     assert resp.status_code == 201
     data = resp.json()
     assert data["news_item_id"] == news_id
@@ -89,10 +87,10 @@ async def test_create_used_news(client: AsyncClient):
 # ---------------------------------------------------------------------------
 
 @pytest.mark.asyncio
-async def test_list_used_news(client: AsyncClient):
-    news_id = await _create_news_item(client)
-    await client.post(BASE, json={"news_item_id": news_id, "usage_type": "published", "target_module": "news_bulletin"})
-    resp = await client.get(BASE)
+async def test_list_used_news(client: AsyncClient, user_headers: dict):
+    news_id = await _create_news_item(client, user_headers)
+    await client.post(BASE, json={"news_item_id": news_id, "usage_type": "published", "target_module": "news_bulletin"}, headers=user_headers)
+    resp = await client.get(BASE, headers=user_headers)
     assert resp.status_code == 200
     assert isinstance(resp.json(), list)
     assert len(resp.json()) >= 1
@@ -103,10 +101,10 @@ async def test_list_used_news(client: AsyncClient):
 # ---------------------------------------------------------------------------
 
 @pytest.mark.asyncio
-async def test_get_used_news_by_id(client: AsyncClient):
-    news_id = await _create_news_item(client)
-    created = (await client.post(BASE, json={"news_item_id": news_id, "usage_type": "reserved", "target_module": "standard_video"})).json()
-    resp = await client.get(f"{BASE}/{created['id']}")
+async def test_get_used_news_by_id(client: AsyncClient, user_headers: dict):
+    news_id = await _create_news_item(client, user_headers)
+    created = (await client.post(BASE, json={"news_item_id": news_id, "usage_type": "reserved", "target_module": "standard_video"}, headers=user_headers)).json()
+    resp = await client.get(f"{BASE}/{created['id']}", headers=user_headers)
     assert resp.status_code == 200
     assert resp.json()["id"] == created["id"]
 
@@ -116,12 +114,13 @@ async def test_get_used_news_by_id(client: AsyncClient):
 # ---------------------------------------------------------------------------
 
 @pytest.mark.asyncio
-async def test_update_used_news(client: AsyncClient):
-    news_id = await _create_news_item(client)
-    created = (await client.post(BASE, json={"news_item_id": news_id, "usage_type": "draft", "target_module": "news_bulletin"})).json()
+async def test_update_used_news(client: AsyncClient, user_headers: dict):
+    news_id = await _create_news_item(client, user_headers)
+    created = (await client.post(BASE, json={"news_item_id": news_id, "usage_type": "draft", "target_module": "news_bulletin"}, headers=user_headers)).json()
     resp = await client.patch(
         f"{BASE}/{created['id']}",
         json={"usage_type": "published", "notes": "Updated note"},
+        headers=user_headers,
     )
     assert resp.status_code == 200
     data = resp.json()
@@ -134,8 +133,8 @@ async def test_update_used_news(client: AsyncClient):
 # ---------------------------------------------------------------------------
 
 @pytest.mark.asyncio
-async def test_create_missing_news_item_id(client: AsyncClient):
-    resp = await client.post(BASE, json={"usage_type": "draft", "target_module": "news_bulletin"})
+async def test_create_missing_news_item_id(client: AsyncClient, user_headers: dict):
+    resp = await client.post(BASE, json={"usage_type": "draft", "target_module": "news_bulletin"}, headers=user_headers)
     assert resp.status_code == 422
 
 
@@ -144,9 +143,9 @@ async def test_create_missing_news_item_id(client: AsyncClient):
 # ---------------------------------------------------------------------------
 
 @pytest.mark.asyncio
-async def test_create_missing_usage_type(client: AsyncClient):
-    news_id = await _create_news_item(client)
-    resp = await client.post(BASE, json={"news_item_id": news_id, "target_module": "news_bulletin"})
+async def test_create_missing_usage_type(client: AsyncClient, user_headers: dict):
+    news_id = await _create_news_item(client, user_headers)
+    resp = await client.post(BASE, json={"news_item_id": news_id, "target_module": "news_bulletin"}, headers=user_headers)
     assert resp.status_code == 422
 
 
@@ -155,9 +154,9 @@ async def test_create_missing_usage_type(client: AsyncClient):
 # ---------------------------------------------------------------------------
 
 @pytest.mark.asyncio
-async def test_create_missing_target_module(client: AsyncClient):
-    news_id = await _create_news_item(client)
-    resp = await client.post(BASE, json={"news_item_id": news_id, "usage_type": "draft"})
+async def test_create_missing_target_module(client: AsyncClient, user_headers: dict):
+    news_id = await _create_news_item(client, user_headers)
+    resp = await client.post(BASE, json={"news_item_id": news_id, "usage_type": "draft"}, headers=user_headers)
     assert resp.status_code == 422
 
 
@@ -166,9 +165,9 @@ async def test_create_missing_target_module(client: AsyncClient):
 # ---------------------------------------------------------------------------
 
 @pytest.mark.asyncio
-async def test_create_blank_usage_type(client: AsyncClient):
-    news_id = await _create_news_item(client)
-    resp = await client.post(BASE, json={"news_item_id": news_id, "usage_type": "  ", "target_module": "news_bulletin"})
+async def test_create_blank_usage_type(client: AsyncClient, user_headers: dict):
+    news_id = await _create_news_item(client, user_headers)
+    resp = await client.post(BASE, json={"news_item_id": news_id, "usage_type": "  ", "target_module": "news_bulletin"}, headers=user_headers)
     assert resp.status_code == 422
 
 
@@ -177,10 +176,10 @@ async def test_create_blank_usage_type(client: AsyncClient):
 # ---------------------------------------------------------------------------
 
 @pytest.mark.asyncio
-async def test_update_blank_target_module(client: AsyncClient):
-    news_id = await _create_news_item(client)
-    created = (await client.post(BASE, json={"news_item_id": news_id, "usage_type": "draft", "target_module": "news_bulletin"})).json()
-    resp = await client.patch(f"{BASE}/{created['id']}", json={"target_module": "   "})
+async def test_update_blank_target_module(client: AsyncClient, user_headers: dict):
+    news_id = await _create_news_item(client, user_headers)
+    created = (await client.post(BASE, json={"news_item_id": news_id, "usage_type": "draft", "target_module": "news_bulletin"}, headers=user_headers)).json()
+    resp = await client.patch(f"{BASE}/{created['id']}", json={"target_module": "   "}, headers=user_headers)
     assert resp.status_code == 422
 
 
@@ -189,8 +188,8 @@ async def test_update_blank_target_module(client: AsyncClient):
 # ---------------------------------------------------------------------------
 
 @pytest.mark.asyncio
-async def test_create_news_item_not_found(client: AsyncClient):
-    resp = await client.post(BASE, json={"news_item_id": uuid.uuid4().hex, "usage_type": "draft", "target_module": "news_bulletin"})
+async def test_create_news_item_not_found(client: AsyncClient, user_headers: dict):
+    resp = await client.post(BASE, json={"news_item_id": uuid.uuid4().hex, "usage_type": "draft", "target_module": "news_bulletin"}, headers=user_headers)
     assert resp.status_code == 404
 
 
@@ -199,8 +198,8 @@ async def test_create_news_item_not_found(client: AsyncClient):
 # ---------------------------------------------------------------------------
 
 @pytest.mark.asyncio
-async def test_get_used_news_not_found(client: AsyncClient):
-    resp = await client.get(f"{BASE}/{uuid.uuid4().hex}")
+async def test_get_used_news_not_found(client: AsyncClient, user_headers: dict):
+    resp = await client.get(f"{BASE}/{uuid.uuid4().hex}", headers=user_headers)
     assert resp.status_code == 404
 
 
@@ -209,8 +208,8 @@ async def test_get_used_news_not_found(client: AsyncClient):
 # ---------------------------------------------------------------------------
 
 @pytest.mark.asyncio
-async def test_update_used_news_not_found(client: AsyncClient):
-    resp = await client.patch(f"{BASE}/{uuid.uuid4().hex}", json={"usage_type": "published"})
+async def test_update_used_news_not_found(client: AsyncClient, user_headers: dict):
+    resp = await client.patch(f"{BASE}/{uuid.uuid4().hex}", json={"usage_type": "published"}, headers=user_headers)
     assert resp.status_code == 404
 
 
@@ -219,10 +218,10 @@ async def test_update_used_news_not_found(client: AsyncClient):
 # ---------------------------------------------------------------------------
 
 @pytest.mark.asyncio
-async def test_filter_by_news_item_id(client: AsyncClient):
-    news_id = await _create_news_item(client)
-    await client.post(BASE, json={"news_item_id": news_id, "usage_type": "draft", "target_module": "news_bulletin"})
-    resp = await client.get(f"{BASE}?news_item_id={news_id}")
+async def test_filter_by_news_item_id(client: AsyncClient, user_headers: dict):
+    news_id = await _create_news_item(client, user_headers)
+    await client.post(BASE, json={"news_item_id": news_id, "usage_type": "draft", "target_module": "news_bulletin"}, headers=user_headers)
+    resp = await client.get(f"{BASE}?news_item_id={news_id}", headers=user_headers)
     assert resp.status_code == 200
     items = resp.json()
     assert len(items) >= 1

@@ -17,6 +17,10 @@ from httpx import AsyncClient
 
 BASE = "/api/v1/settings"
 
+# Settings router uses get_caller_role() which defaults to "user" after Sprint 1.
+# Admin role is needed to see all settings and update them.
+ADMIN_ROLE = {"X-ContentHub-Role": "admin"}
+
 
 def _uid() -> str:
     """Short unique suffix so test keys never collide across runs."""
@@ -44,12 +48,10 @@ def _payload(**overrides) -> dict:
 # ---------------------------------------------------------------------------
 
 @pytest.mark.asyncio
-async def test_settings_table_exists():
-    """settings table must exist in the migrated database."""
-    from sqlalchemy import inspect, text
-    from app.db.session import engine
+async def test_settings_table_exists(test_engine):
+    from sqlalchemy import inspect
 
-    async with engine.connect() as conn:
+    async with test_engine.connect() as conn:
         tables = await conn.run_sync(
             lambda sync_conn: set(inspect(sync_conn).get_table_names())
         )
@@ -62,7 +64,7 @@ async def test_settings_table_exists():
 
 @pytest.mark.asyncio
 async def test_create_setting(client: AsyncClient):
-    response = await client.post(BASE, json=_payload())
+    response = await client.post(BASE, json=_payload(), headers=ADMIN_ROLE)
     assert response.status_code == 201
     body = response.json()
     assert body["key"].startswith("test.sample_key.")
@@ -80,11 +82,11 @@ async def test_create_setting(client: AsyncClient):
 @pytest.mark.asyncio
 async def test_list_settings_returns_list(client: AsyncClient):
     # Create one so list is non-empty
-    created = await client.post(BASE, json=_payload())
+    created = await client.post(BASE, json=_payload(), headers=ADMIN_ROLE)
     assert created.status_code == 201
     created_key = created.json()["key"]
 
-    response = await client.get(BASE)
+    response = await client.get(BASE, headers=ADMIN_ROLE)
     assert response.status_code == 200
     body = response.json()
     assert isinstance(body, list)
@@ -95,10 +97,10 @@ async def test_list_settings_returns_list(client: AsyncClient):
 @pytest.mark.asyncio
 async def test_list_settings_group_filter(client: AsyncClient):
     uid = _uid()
-    await client.post(BASE, json=_payload(key=f"test.gf_key.{uid}", group_name="groupA"))
-    await client.post(BASE, json=_payload(key=f"test.gf_key2.{uid}", group_name="groupB"))
+    await client.post(BASE, json=_payload(key=f"test.gf_key.{uid}", group_name="groupA"), headers=ADMIN_ROLE)
+    await client.post(BASE, json=_payload(key=f"test.gf_key2.{uid}", group_name="groupB"), headers=ADMIN_ROLE)
 
-    resp_a = await client.get(BASE, params={"group_name": "groupA"})
+    resp_a = await client.get(BASE, params={"group_name": "groupA"}, headers=ADMIN_ROLE)
     assert resp_a.status_code == 200
     groups_a = [s["group_name"] for s in resp_a.json()]
     assert all(g == "groupA" for g in groups_a)
@@ -112,11 +114,11 @@ async def test_list_settings_group_filter(client: AsyncClient):
 @pytest.mark.asyncio
 async def test_get_setting_by_id(client: AsyncClient):
     p = _payload()
-    create_resp = await client.post(BASE, json=p)
+    create_resp = await client.post(BASE, json=p, headers=ADMIN_ROLE)
     assert create_resp.status_code == 201
     setting_id = create_resp.json()["id"]
 
-    response = await client.get(f"{BASE}/{setting_id}")
+    response = await client.get(f"{BASE}/{setting_id}", headers=ADMIN_ROLE)
     assert response.status_code == 200
     assert response.json()["id"] == setting_id
     assert response.json()["key"] == p["key"]
@@ -124,7 +126,7 @@ async def test_get_setting_by_id(client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_get_setting_not_found(client: AsyncClient):
-    response = await client.get(f"{BASE}/nonexistent-id-000")
+    response = await client.get(f"{BASE}/nonexistent-id-000", headers=ADMIN_ROLE)
     assert response.status_code == 404
 
 
@@ -134,13 +136,14 @@ async def test_get_setting_not_found(client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_update_setting(client: AsyncClient):
-    create_resp = await client.post(BASE, json=_payload())
+    create_resp = await client.post(BASE, json=_payload(), headers=ADMIN_ROLE)
     assert create_resp.status_code == 201
     setting_id = create_resp.json()["id"]
 
     patch_resp = await client.patch(
         f"{BASE}/{setting_id}",
         json={"help_text": "Updated help", "status": "inactive"},
+        headers=ADMIN_ROLE,
     )
     assert patch_resp.status_code == 200
     body = patch_resp.json()
@@ -155,6 +158,7 @@ async def test_update_setting_not_found(client: AsyncClient):
     response = await client.patch(
         f"{BASE}/nonexistent-id-000",
         json={"status": "inactive"},
+        headers=ADMIN_ROLE,
     )
     assert response.status_code == 404
 
@@ -166,6 +170,6 @@ async def test_update_setting_not_found(client: AsyncClient):
 @pytest.mark.asyncio
 async def test_create_duplicate_key_returns_409(client: AsyncClient):
     dup_key = f"test.dup_key.{_uid()}"
-    await client.post(BASE, json=_payload(key=dup_key))
-    resp2 = await client.post(BASE, json=_payload(key=dup_key))
+    await client.post(BASE, json=_payload(key=dup_key), headers=ADMIN_ROLE)
+    resp2 = await client.post(BASE, json=_payload(key=dup_key), headers=ADMIN_ROLE)
     assert resp2.status_code == 409

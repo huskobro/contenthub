@@ -20,6 +20,7 @@ Bu dosyada YOKTUR:
 """
 
 import json
+import logging
 import mimetypes
 from pathlib import Path
 from typing import Optional
@@ -43,6 +44,8 @@ from app.modules.registry import module_registry
 from app.jobs import workspace as ws
 from app.audit.service import write_audit_log
 from app.settings.settings_resolver import KNOWN_SETTINGS, resolve
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/jobs", tags=["jobs"], dependencies=[Depends(require_visible("panel:jobs"))])
 
@@ -392,8 +395,8 @@ async def create_job(
                 "step_count": len(steps) if steps else 0,
             },
         )
-    except Exception:
-        pass  # Audit must not break job creation
+    except Exception as exc:
+        logger.warning("Audit log write failed (job.create): %s", exc)
 
     # Güncel adımları al ve response oluştur
     return await _build_job_response(db, job)

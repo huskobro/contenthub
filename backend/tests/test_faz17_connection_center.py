@@ -42,14 +42,13 @@ async def _override_get_db():
         yield session
 
 
-app.dependency_overrides[get_db] = _override_get_db
-
-
 @pytest.fixture(autouse=True)
 async def setup_db():
     async with test_engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+    app.dependency_overrides[get_db] = _override_get_db
     yield
+    app.dependency_overrides.pop(get_db, None)
     async with test_engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
 
@@ -71,9 +70,31 @@ async def client():
 # Helpers
 # ---------------------------------------------------------------------------
 
+def _make_token(user: User) -> str:
+    """JWT access token for test user."""
+    from app.auth.jwt import create_access_token
+    return create_access_token({"sub": user.id})
+
+
+def _auth_headers(user: User) -> dict:
+    """Authorization header with JWT + legacy X-ContentHub-User-Id."""
+    return {
+        "Authorization": f"Bearer {_make_token(user)}",
+        "X-ContentHub-User-Id": user.id,
+    }
+
+
 async def _create_user(db: AsyncSession, display_name: str = "Test User") -> User:
+    from app.auth.password import hash_password
     slug = f"user-{_uuid()[:8]}"
-    u = User(email=f"{slug}@test.com", display_name=display_name, slug=slug, role="user")
+    u = User(
+        email=f"{slug}@test.com",
+        display_name=display_name,
+        slug=slug,
+        role="user",
+        status="active",
+        password_hash=hash_password("testpass123"),
+    )
     db.add(u)
     await db.commit()
     return u
@@ -278,7 +299,7 @@ async def test_user_center_my(db_session, client: AsyncClient):
 
     resp = await client.get(
         "/api/v1/platform-connections/center/my",
-        headers={"X-ContentHub-User-Id": u.id},
+        headers=_auth_headers(u),
     )
     assert resp.status_code == 200
     data = resp.json()
@@ -308,7 +329,10 @@ async def test_admin_center_with_kpis(db_session, client: AsyncClient):
         external_account_name="Broken Account",
     )
 
-    resp = await client.get("/api/v1/platform-connections/center/admin")
+    resp = await client.get(
+        "/api/v1/platform-connections/center/admin",
+        headers=_auth_headers(u),
+    )
     assert resp.status_code == 200
     data = resp.json()
     assert data["total"] >= 2
@@ -329,7 +353,7 @@ async def test_empty_state(db_session, client: AsyncClient):
 
     resp = await client.get(
         "/api/v1/platform-connections/center/my",
-        headers={"X-ContentHub-User-Id": u.id},
+        headers=_auth_headers(u),
     )
     assert resp.status_code == 200
     data = resp.json()

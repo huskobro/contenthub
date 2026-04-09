@@ -28,13 +28,13 @@ BASE = "/api/v1/posts"
 # 1. Post create endpoint
 # ---------------------------------------------------------------------------
 
-async def test_create_post(client: AsyncClient):
+async def test_create_post(client: AsyncClient, user_headers: dict):
     """POST /posts should create a draft post."""
     resp = await client.post(BASE, json={
         "platform": "youtube",
         "body": "Test community post body",
         "post_type": "community_post",
-    })
+    }, headers=user_headers)
     assert resp.status_code == 201
     data = resp.json()
     assert data["status"] == "draft"
@@ -47,21 +47,21 @@ async def test_create_post(client: AsyncClient):
 # 2-3. Post list
 # ---------------------------------------------------------------------------
 
-async def test_post_list_returns_array(client: AsyncClient):
+async def test_post_list_returns_array(client: AsyncClient, user_headers: dict):
     """GET /posts should return array."""
-    resp = await client.get(BASE)
+    resp = await client.get(BASE, headers=user_headers)
     assert resp.status_code == 200
     assert isinstance(resp.json(), list)
 
 
-async def test_post_list_with_filters(client: AsyncClient):
+async def test_post_list_with_filters(client: AsyncClient, user_headers: dict):
     """GET /posts with filter params."""
     resp = await client.get(BASE, params={
         "platform": "youtube",
         "status": "draft",
         "limit": 50,
         "offset": 0,
-    })
+    }, headers=user_headers)
     assert resp.status_code == 200
     assert isinstance(resp.json(), list)
 
@@ -70,8 +70,8 @@ async def test_post_list_with_filters(client: AsyncClient):
 # 4. Post detail 404
 # ---------------------------------------------------------------------------
 
-async def test_post_detail_404(client: AsyncClient):
-    resp = await client.get(f"{BASE}/nonexistent-id-12345")
+async def test_post_detail_404(client: AsyncClient, user_headers: dict):
+    resp = await client.get(f"{BASE}/nonexistent-id-12345", headers=user_headers)
     assert resp.status_code == 404
 
 
@@ -79,8 +79,8 @@ async def test_post_detail_404(client: AsyncClient):
 # 5. Post stats
 # ---------------------------------------------------------------------------
 
-async def test_post_stats(client: AsyncClient):
-    resp = await client.get(f"{BASE}/stats")
+async def test_post_stats(client: AsyncClient, user_headers: dict):
+    resp = await client.get(f"{BASE}/stats", headers=user_headers)
     assert resp.status_code == 200
     data = resp.json()
     assert "total" in data
@@ -94,8 +94,8 @@ async def test_post_stats(client: AsyncClient):
 # 6. Capability endpoint
 # ---------------------------------------------------------------------------
 
-async def test_capability_endpoint(client: AsyncClient):
-    resp = await client.get(f"{BASE}/capability")
+async def test_capability_endpoint(client: AsyncClient, user_headers: dict):
+    resp = await client.get(f"{BASE}/capability", headers=user_headers)
     assert resp.status_code == 200
     data = resp.json()
     assert "capabilities" in data
@@ -108,13 +108,13 @@ async def test_capability_endpoint(client: AsyncClient):
 # 7. Post update (draft only)
 # ---------------------------------------------------------------------------
 
-async def test_update_draft_post(client: AsyncClient):
+async def test_update_draft_post(client: AsyncClient, user_headers: dict):
     """PATCH /posts/{id} should update draft."""
     # Create first
     create_resp = await client.post(BASE, json={
         "platform": "youtube",
         "body": "Original body",
-    })
+    }, headers=user_headers)
     assert create_resp.status_code == 201
     post_id = create_resp.json()["id"]
 
@@ -122,7 +122,7 @@ async def test_update_draft_post(client: AsyncClient):
     update_resp = await client.patch(f"{BASE}/{post_id}", json={
         "body": "Updated body",
         "title": "New title",
-    })
+    }, headers=user_headers)
     assert update_resp.status_code == 200
     data = update_resp.json()
     assert data["body"] == "Updated body"
@@ -133,20 +133,20 @@ async def test_update_draft_post(client: AsyncClient):
 # 8. Post delete (draft only)
 # ---------------------------------------------------------------------------
 
-async def test_delete_draft_post(client: AsyncClient):
+async def test_delete_draft_post(client: AsyncClient, user_headers: dict):
     """DELETE /posts/{id} should delete draft."""
     create_resp = await client.post(BASE, json={
         "platform": "youtube",
         "body": "To be deleted",
-    })
+    }, headers=user_headers)
     assert create_resp.status_code == 201
     post_id = create_resp.json()["id"]
 
-    del_resp = await client.delete(f"{BASE}/{post_id}")
+    del_resp = await client.delete(f"{BASE}/{post_id}", headers=user_headers)
     assert del_resp.status_code == 204
 
     # Verify gone
-    get_resp = await client.get(f"{BASE}/{post_id}")
+    get_resp = await client.get(f"{BASE}/{post_id}", headers=user_headers)
     assert get_resp.status_code == 404
 
 

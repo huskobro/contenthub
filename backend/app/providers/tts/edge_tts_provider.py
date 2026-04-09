@@ -111,8 +111,8 @@ class EdgeTTSProvider(BaseProvider):
             audio_info = MP3(cikis_yolu)
             if audio_info.info and audio_info.info.length > 0:
                 yaklasik_sure = round(audio_info.info.length, 2)
-        except Exception:
-            pass  # heuristic fallback kullan
+        except Exception as exc:
+            logger.debug("MP3 metadata read failed, using heuristic fallback: %s", exc)
 
         return ProviderOutput(
             result={

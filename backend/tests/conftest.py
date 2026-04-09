@@ -10,9 +10,13 @@ Strateji:
   proxy pattern sayesinde `from app.db.session import AsyncSessionLocal`
   yapan tüm test dosyaları (kendi client fixture'ını tanımlasalar bile)
   in-memory DB'yi kullanır.
+
+Sprint 2: Auth fixture'ları eklendi — admin_user, regular_user, admin_headers,
+user_headers. Tüm API testleri bu fixture'ları kullanarak JWT auth gönderir.
 """
 
 import pytest
+from uuid import uuid4 as _uuid4
 from httpx import AsyncClient, ASGITransport
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy import event
@@ -20,6 +24,7 @@ from sqlalchemy import event
 from app.main import app
 from app.db.session import get_db, override_engine
 from app.db.base import Base
+from app.db.models import User
 from app.modules.registry import module_registry
 from app.modules.standard_video.definition import STANDARD_VIDEO_MODULE
 from app.modules.news_bulletin.definition import NEWS_BULLETIN_MODULE
@@ -107,3 +112,55 @@ async def db_session(test_engine):
     )
     async with TestSessionLocal() as session:
         yield session
+
+
+# ---------------------------------------------------------------------------
+# Auth fixtures — Sprint 2
+# ---------------------------------------------------------------------------
+
+def _make_token(user: User) -> str:
+    """JWT access token üretir."""
+    from app.auth.jwt import create_access_token
+    return create_access_token({"sub": user.id})
+
+
+async def _create_test_user(db: AsyncSession, *, role: str = "user") -> User:
+    """In-memory DB'de test kullanıcısı oluşturur."""
+    from app.auth.password import hash_password
+    slug = f"{role}-{str(_uuid4())[:8]}"
+    u = User(
+        email=f"{slug}@test.local",
+        display_name=f"Test {role.title()}",
+        slug=slug,
+        role=role,
+        status="active",
+        password_hash=hash_password("testpass123"),
+    )
+    db.add(u)
+    await db.commit()
+    await db.refresh(u)
+    return u
+
+
+@pytest.fixture
+async def admin_user(db_session: AsyncSession) -> User:
+    """Test admin kullanıcısı."""
+    return await _create_test_user(db_session, role="admin")
+
+
+@pytest.fixture
+async def regular_user(db_session: AsyncSession) -> User:
+    """Test user kullanıcısı."""
+    return await _create_test_user(db_session, role="user")
+
+
+@pytest.fixture
+def admin_headers(admin_user: User) -> dict[str, str]:
+    """Admin JWT Authorization header."""
+    return {"Authorization": f"Bearer {_make_token(admin_user)}"}
+
+
+@pytest.fixture
+def user_headers(regular_user: User) -> dict[str, str]:
+    """User JWT Authorization header."""
+    return {"Authorization": f"Bearer {_make_token(regular_user)}"}

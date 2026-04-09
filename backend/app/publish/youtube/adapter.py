@@ -76,7 +76,8 @@ def _parse_youtube_error(response: httpx.Response) -> tuple[str, str]:
         reason = errors[0].get("reason", "unknown") if errors else "unknown"
         message = error.get("message", response.text[:200])
         return reason, message
-    except Exception:
+    except Exception as exc:
+        logger.warning("Failed to parse YouTube error response: %s", exc)
         return "unknown", response.text[:200]
 
 

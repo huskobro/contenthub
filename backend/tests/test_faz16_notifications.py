@@ -167,7 +167,7 @@ async def test_notification_duplicate_guard(db_session: AsyncSession):
 # 4. User notification center list endpoint
 # ---------------------------------------------------------------------------
 
-async def test_notification_list_endpoint(client: AsyncClient, db_session: AsyncSession):
+async def test_notification_list_endpoint(client: AsyncClient, db_session: AsyncSession, user_headers: dict):
     """GET /notifications returns created notifications."""
     # Create via API
     resp = await client.post(NOTIF_BASE, json={
@@ -175,11 +175,12 @@ async def test_notification_list_endpoint(client: AsyncClient, db_session: Async
         "title": "Review needed",
         "severity": "warning",
         "scope_type": "admin",
-    })
+    },
+    headers=user_headers,)
     assert resp.status_code == 201
 
     # List
-    list_resp = await client.get(NOTIF_BASE)
+    list_resp = await client.get(NOTIF_BASE, headers=user_headers)
     assert list_resp.status_code == 200
     items = list_resp.json()
     matched = [i for i in items if i["title"] == "Review needed"]
@@ -191,21 +192,23 @@ async def test_notification_list_endpoint(client: AsyncClient, db_session: Async
 # 5. Unread count endpoint
 # ---------------------------------------------------------------------------
 
-async def test_unread_count(client: AsyncClient, db_session: AsyncSession):
+async def test_unread_count(client: AsyncClient, db_session: AsyncSession, user_headers: dict):
     """GET /notifications/count returns correct unread count."""
     # Create two notifications
     await client.post(NOTIF_BASE, json={
         "notification_type": "render_failure",
         "title": "Count test 1",
         "severity": "error",
-    })
+    },
+    headers=user_headers,)
     await client.post(NOTIF_BASE, json={
         "notification_type": "source_scan_error",
         "title": "Count test 2",
         "severity": "warning",
-    })
+    },
+    headers=user_headers,)
 
-    resp = await client.get(f"{NOTIF_BASE}/count")
+    resp = await client.get(f"{NOTIF_BASE}/count", headers=user_headers)
     assert resp.status_code == 200
     data = resp.json()
     assert data["unread"] >= 2
@@ -216,24 +219,25 @@ async def test_unread_count(client: AsyncClient, db_session: AsyncSession):
 # 6. Read/dismiss action
 # ---------------------------------------------------------------------------
 
-async def test_read_dismiss_actions(client: AsyncClient, db_session: AsyncSession):
+async def test_read_dismiss_actions(client: AsyncClient, db_session: AsyncSession, user_headers: dict):
     """PATCH /notifications/{id} can mark as read or dismissed."""
     # Create
     create_resp = await client.post(NOTIF_BASE, json={
         "notification_type": "publish_review",
         "title": "Action test",
         "severity": "info",
-    })
+    },
+    headers=user_headers,)
     notif_id = create_resp.json()["id"]
 
     # Mark read
-    read_resp = await client.patch(f"{NOTIF_BASE}/{notif_id}", json={"status": "read"})
+    read_resp = await client.patch(f"{NOTIF_BASE}/{notif_id}", json={"status": "read"}, headers=user_headers)
     assert read_resp.status_code == 200
     assert read_resp.json()["status"] == "read"
     assert read_resp.json()["read_at"] is not None
 
     # Mark dismissed
-    dismiss_resp = await client.patch(f"{NOTIF_BASE}/{notif_id}", json={"status": "dismissed"})
+    dismiss_resp = await client.patch(f"{NOTIF_BASE}/{notif_id}", json={"status": "dismissed"}, headers=user_headers)
     assert dismiss_resp.status_code == 200
     assert dismiss_resp.json()["status"] == "dismissed"
     assert dismiss_resp.json()["dismissed_at"] is not None
@@ -309,7 +313,7 @@ async def test_notification_entity_refs(db_session: AsyncSession):
 # 9. Admin notification visibility (scope_type filter)
 # ---------------------------------------------------------------------------
 
-async def test_admin_scope_filter(client: AsyncClient, db_session: AsyncSession):
+async def test_admin_scope_filter(client: AsyncClient, db_session: AsyncSession, user_headers: dict):
     """GET /notifications?scope_type=admin returns only admin-scoped notifications."""
     # Create admin notification
     await client.post(NOTIF_BASE, json={
@@ -317,17 +321,19 @@ async def test_admin_scope_filter(client: AsyncClient, db_session: AsyncSession)
         "title": "Admin only",
         "severity": "error",
         "scope_type": "admin",
-    })
+    },
+    headers=user_headers,)
     # Create user notification
     await client.post(NOTIF_BASE, json={
         "notification_type": "render_failure",
         "title": "User only",
         "severity": "error",
         "scope_type": "user",
-    })
+    },
+    headers=user_headers,)
 
     # Filter admin
-    resp = await client.get(NOTIF_BASE, params={"scope_type": "admin"})
+    resp = await client.get(NOTIF_BASE, params={"scope_type": "admin"}, headers=user_headers)
     assert resp.status_code == 200
     items = resp.json()
     for item in items:
@@ -338,27 +344,29 @@ async def test_admin_scope_filter(client: AsyncClient, db_session: AsyncSession)
 # 10. Mark-all-read action
 # ---------------------------------------------------------------------------
 
-async def test_mark_all_read(client: AsyncClient, db_session: AsyncSession):
+async def test_mark_all_read(client: AsyncClient, db_session: AsyncSession, user_headers: dict):
     """POST /notifications/mark-all-read marks all unread as read."""
     # Create notifications
     await client.post(NOTIF_BASE, json={
         "notification_type": "publish_review",
         "title": "Bulk read 1",
         "severity": "info",
-    })
+    },
+    headers=user_headers,)
     await client.post(NOTIF_BASE, json={
         "notification_type": "publish_review",
         "title": "Bulk read 2",
         "severity": "warning",
-    })
+    },
+    headers=user_headers,)
 
     # Mark all read
-    resp = await client.post(f"{NOTIF_BASE}/mark-all-read")
+    resp = await client.post(f"{NOTIF_BASE}/mark-all-read", headers=user_headers)
     assert resp.status_code == 200
     assert resp.json()["marked_read"] >= 2
 
     # Verify count
-    count_resp = await client.get(f"{NOTIF_BASE}/count")
+    count_resp = await client.get(f"{NOTIF_BASE}/count", headers=user_headers)
     assert count_resp.json()["unread"] == 0
 
 
@@ -366,7 +374,7 @@ async def test_mark_all_read(client: AsyncClient, db_session: AsyncSession):
 # 11. By-entity lookup
 # ---------------------------------------------------------------------------
 
-async def test_by_entity_lookup(client: AsyncClient, db_session: AsyncSession):
+async def test_by_entity_lookup(client: AsyncClient, db_session: AsyncSession, user_headers: dict):
     """GET /notifications/by-entity/{type}/{id} returns matching notifications."""
     entity_id = _uuid()
     await client.post(NOTIF_BASE, json={
@@ -375,9 +383,10 @@ async def test_by_entity_lookup(client: AsyncClient, db_session: AsyncSession):
         "severity": "error",
         "related_entity_type": "job",
         "related_entity_id": entity_id,
-    })
+    },
+    headers=user_headers,)
 
-    resp = await client.get(f"{NOTIF_BASE}/by-entity/job/{entity_id}")
+    resp = await client.get(f"{NOTIF_BASE}/by-entity/job/{entity_id}", headers=user_headers)
     assert resp.status_code == 200
     items = resp.json()
     assert len(items) >= 1

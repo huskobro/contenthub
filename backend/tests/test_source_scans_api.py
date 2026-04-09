@@ -18,7 +18,6 @@ Covers:
 """
 
 import uuid
-import sqlite3
 import pytest
 from httpx import AsyncClient
 
@@ -46,16 +45,14 @@ async def _create_source(client: AsyncClient) -> str:
 # A) Table exists
 # ---------------------------------------------------------------------------
 
-def test_source_scans_table_exists():
-    from app.core.config import settings
-    db_path = settings.database_url.replace("sqlite+aiosqlite:///", "")
-    conn = sqlite3.connect(db_path)
-    cur = conn.execute(
-        "SELECT name FROM sqlite_master WHERE type='table' AND name='source_scans'"
-    )
-    row = cur.fetchone()
-    conn.close()
-    assert row is not None, "source_scans table should exist after migration"
+async def test_source_scans_table_exists(test_engine):
+    from sqlalchemy import inspect
+
+    async with test_engine.connect() as conn:
+        tables = await conn.run_sync(
+            lambda sync_conn: set(inspect(sync_conn).get_table_names())
+        )
+    assert "source_scans" in tables, "source_scans table should exist after migration"
 
 
 # ---------------------------------------------------------------------------

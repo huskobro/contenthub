@@ -28,9 +28,9 @@ BASE = "/api/v1/comments"
 # 1. Sync endpoint is reachable
 # ---------------------------------------------------------------------------
 
-async def test_sync_endpoint_reachable(client: AsyncClient):
+async def test_sync_endpoint_reachable(client: AsyncClient, user_headers: dict):
     """Sync endpoint should be registered and accept POST."""
-    resp = await client.post(f"{BASE}/sync", json={"video_id": "test123"})
+    resp = await client.post(f"{BASE}/sync", json={"video_id": "test123"}, headers=user_headers)
     # Expect either auth error (no YouTube token) or 200
     # 500 = token store not configured, which is expected in test env
     assert resp.status_code in (200, 500, 422), f"Unexpected status: {resp.status_code} — {resp.text}"
@@ -40,15 +40,15 @@ async def test_sync_endpoint_reachable(client: AsyncClient):
 # 2. Comment list endpoint
 # ---------------------------------------------------------------------------
 
-async def test_comment_list_returns_array(client: AsyncClient):
+async def test_comment_list_returns_array(client: AsyncClient, user_headers: dict):
     """Comment list should return an empty array when no comments exist."""
-    resp = await client.get(BASE)
+    resp = await client.get(BASE, headers=user_headers)
     assert resp.status_code == 200
     data = resp.json()
     assert isinstance(data, list)
 
 
-async def test_comment_list_with_filters(client: AsyncClient):
+async def test_comment_list_with_filters(client: AsyncClient, user_headers: dict):
     """Comment list should accept filter query params without error."""
     resp = await client.get(BASE, params={
         "platform": "youtube",
@@ -56,7 +56,7 @@ async def test_comment_list_with_filters(client: AsyncClient):
         "is_reply": False,
         "limit": 50,
         "offset": 0,
-    })
+    }, headers=user_headers)
     assert resp.status_code == 200
     data = resp.json()
     assert isinstance(data, list)
@@ -66,9 +66,9 @@ async def test_comment_list_with_filters(client: AsyncClient):
 # 3. Single comment 404
 # ---------------------------------------------------------------------------
 
-async def test_comment_detail_404(client: AsyncClient):
+async def test_comment_detail_404(client: AsyncClient, user_headers: dict):
     """Non-existent comment should return 404."""
-    resp = await client.get(f"{BASE}/nonexistent-id-12345")
+    resp = await client.get(f"{BASE}/nonexistent-id-12345", headers=user_headers)
     assert resp.status_code == 404
 
 
@@ -76,9 +76,9 @@ async def test_comment_detail_404(client: AsyncClient):
 # 4. Sync status endpoint
 # ---------------------------------------------------------------------------
 
-async def test_sync_status_returns_array(client: AsyncClient):
+async def test_sync_status_returns_array(client: AsyncClient, user_headers: dict):
     """Sync status should return array (empty when no synced comments)."""
-    resp = await client.get(f"{BASE}/sync-status")
+    resp = await client.get(f"{BASE}/sync-status", headers=user_headers)
     assert resp.status_code == 200
     data = resp.json()
     assert isinstance(data, list)
@@ -88,12 +88,13 @@ async def test_sync_status_returns_array(client: AsyncClient):
 # 5. Reply 404 on nonexistent comment
 # ---------------------------------------------------------------------------
 
-async def test_reply_404_on_nonexistent(client: AsyncClient):
+async def test_reply_404_on_nonexistent(client: AsyncClient, user_headers: dict):
     """Reply to non-existent comment should return error."""
     resp = await client.post(
         f"{BASE}/nonexistent-id-12345/reply",
         params={"user_id": "test-user"},
         json={"comment_id": "nonexistent-id-12345", "reply_text": "Test reply"},
+        headers=user_headers,
     )
     # Could be 200 with success=false or 404 depending on implementation
     assert resp.status_code in (200, 404), f"Unexpected: {resp.status_code}"

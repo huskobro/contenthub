@@ -149,9 +149,10 @@ class TestRunStartupRecovery:
         from app.jobs.recovery import run_startup_recovery
 
         mock_db = AsyncMock()
-        mock_result = MagicMock()
-        mock_result.scalars.return_value.all.return_value = []
-        mock_db.execute = AsyncMock(return_value=mock_result)
+        empty_result = MagicMock()
+        empty_result.scalars.return_value.all.return_value = []
+        # Two execute calls: running jobs + queued jobs
+        mock_db.execute = AsyncMock(side_effect=[empty_result, empty_result])
 
         summary = await run_startup_recovery(mock_db)
 
@@ -172,10 +173,13 @@ class TestRunStartupRecovery:
         healthy_job.heartbeat_at = datetime.now(timezone.utc) - timedelta(seconds=30)
         healthy_job.started_at = datetime.now(timezone.utc) - timedelta(minutes=2)
 
+        running_result = MagicMock()
+        running_result.scalars.return_value.all.return_value = [healthy_job]
+        empty_result = MagicMock()
+        empty_result.scalars.return_value.all.return_value = []
+
         mock_db = AsyncMock()
-        mock_result = MagicMock()
-        mock_result.scalars.return_value.all.return_value = [healthy_job]
-        mock_db.execute = AsyncMock(return_value=mock_result)
+        mock_db.execute = AsyncMock(side_effect=[running_result, empty_result])
 
         summary = await run_startup_recovery(mock_db)
 
@@ -194,16 +198,15 @@ class TestRunStartupRecovery:
         stale_job.heartbeat_at = datetime.now(timezone.utc) - timedelta(minutes=10)
         stale_job.started_at = datetime.now(timezone.utc) - timedelta(minutes=15)
 
-        # First execute call returns the running jobs list.
-        # Second execute call returns empty steps list.
+        # execute calls: 1) running jobs, 2) running steps, 3) queued jobs
         first_result = MagicMock()
         first_result.scalars.return_value.all.return_value = [stale_job]
 
-        second_result = MagicMock()
-        second_result.scalars.return_value.all.return_value = []
+        empty_result = MagicMock()
+        empty_result.scalars.return_value.all.return_value = []
 
         mock_db = AsyncMock()
-        mock_db.execute = AsyncMock(side_effect=[first_result, second_result])
+        mock_db.execute = AsyncMock(side_effect=[first_result, empty_result, empty_result])
 
         with patch("app.jobs.recovery.service") as mock_service:
             mock_service.transition_job_status = AsyncMock()
@@ -239,8 +242,11 @@ class TestRunStartupRecovery:
         second_result = MagicMock()
         second_result.scalars.return_value.all.return_value = [running_step]
 
+        empty_result = MagicMock()
+        empty_result.scalars.return_value.all.return_value = []
+
         mock_db = AsyncMock()
-        mock_db.execute = AsyncMock(side_effect=[first_result, second_result])
+        mock_db.execute = AsyncMock(side_effect=[first_result, second_result, empty_result])
 
         with patch("app.jobs.recovery.service") as mock_service:
             mock_service.transition_job_status = AsyncMock()
@@ -274,11 +280,11 @@ class TestRunStartupRecovery:
         first_result = MagicMock()
         first_result.scalars.return_value.all.return_value = [stale_job]
 
-        second_result = MagicMock()
-        second_result.scalars.return_value.all.return_value = []
+        empty_result = MagicMock()
+        empty_result.scalars.return_value.all.return_value = []
 
         mock_db = AsyncMock()
-        mock_db.execute = AsyncMock(side_effect=[first_result, second_result])
+        mock_db.execute = AsyncMock(side_effect=[first_result, empty_result, empty_result])
 
         with patch("app.jobs.recovery.service") as mock_service:
             mock_service.transition_job_status = AsyncMock()
@@ -304,11 +310,11 @@ class TestRunStartupRecovery:
         first_result = MagicMock()
         first_result.scalars.return_value.all.return_value = [stale_job]
 
-        second_result = MagicMock()
-        second_result.scalars.return_value.all.return_value = []
+        empty_result = MagicMock()
+        empty_result.scalars.return_value.all.return_value = []
 
         mock_db = AsyncMock()
-        mock_db.execute = AsyncMock(side_effect=[first_result, second_result])
+        mock_db.execute = AsyncMock(side_effect=[first_result, empty_result, empty_result])
 
         with patch("app.jobs.recovery.service") as mock_service:
             mock_service.transition_job_status = AsyncMock()
@@ -332,8 +338,11 @@ class TestRunStartupRecovery:
         first_result = MagicMock()
         first_result.scalars.return_value.all.return_value = [fresh_job]
 
+        empty_result = MagicMock()
+        empty_result.scalars.return_value.all.return_value = []
+
         mock_db = AsyncMock()
-        mock_db.execute = AsyncMock(return_value=first_result)
+        mock_db.execute = AsyncMock(side_effect=[first_result, empty_result])
 
         summary = await run_startup_recovery(mock_db, stale_threshold_minutes=1)
 

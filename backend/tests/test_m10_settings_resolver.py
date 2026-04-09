@@ -18,6 +18,9 @@ from app.db.models import Setting
 from app.main import create_app
 from app.db.session import AsyncSessionLocal, create_tables
 
+# Sprint 1 hardening: default caller role is "user"; admin role needed for full access
+ADMIN_ROLE = {"X-ContentHub-Role": "admin"}
+
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -337,7 +340,7 @@ class TestSeed:
 class TestEffectiveAPI:
     @pytest.mark.asyncio
     async def test_list_effective_endpoint(self, client: AsyncClient):
-        resp = await client.get("/api/v1/settings/effective")
+        resp = await client.get("/api/v1/settings/effective", headers=ADMIN_ROLE)
         assert resp.status_code == 200
         data = resp.json()
         assert isinstance(data, list)
@@ -352,7 +355,7 @@ class TestEffectiveAPI:
 
     @pytest.mark.asyncio
     async def test_list_effective_filter_group(self, client: AsyncClient):
-        resp = await client.get("/api/v1/settings/effective?group=providers")
+        resp = await client.get("/api/v1/settings/effective?group=providers", headers=ADMIN_ROLE)
         assert resp.status_code == 200
         data = resp.json()
         for item in data:
@@ -360,7 +363,7 @@ class TestEffectiveAPI:
 
     @pytest.mark.asyncio
     async def test_list_effective_wired_only(self, client: AsyncClient):
-        resp = await client.get("/api/v1/settings/effective?wired_only=true")
+        resp = await client.get("/api/v1/settings/effective?wired_only=true", headers=ADMIN_ROLE)
         assert resp.status_code == 200
         data = resp.json()
         for item in data:
@@ -369,7 +372,7 @@ class TestEffectiveAPI:
     @pytest.mark.asyncio
     async def test_get_effective_single(self, client: AsyncClient):
         # Use a key that other tests don't modify
-        resp = await client.get("/api/v1/settings/effective/provider.llm.kie_temperature")
+        resp = await client.get("/api/v1/settings/effective/provider.llm.kie_temperature", headers=ADMIN_ROLE)
         assert resp.status_code == 200
         data = resp.json()
         assert data["key"] == "provider.llm.kie_temperature"
@@ -380,12 +383,12 @@ class TestEffectiveAPI:
 
     @pytest.mark.asyncio
     async def test_get_effective_unknown_key(self, client: AsyncClient):
-        resp = await client.get("/api/v1/settings/effective/nonexistent.key")
+        resp = await client.get("/api/v1/settings/effective/nonexistent.key", headers=ADMIN_ROLE)
         assert resp.status_code == 404
 
     @pytest.mark.asyncio
     async def test_groups_endpoint(self, client: AsyncClient):
-        resp = await client.get("/api/v1/settings/groups")
+        resp = await client.get("/api/v1/settings/groups", headers=ADMIN_ROLE)
         assert resp.status_code == 200
         data = resp.json()
         assert isinstance(data, list)
@@ -403,6 +406,7 @@ class TestEffectiveAPI:
         resp = await client.put(
             "/api/v1/settings/effective/provider.llm.kie_model",
             json={"value": "gemini-3.0-ultra"},
+            headers=ADMIN_ROLE,
         )
         assert resp.status_code == 200
         data = resp.json()
@@ -411,7 +415,7 @@ class TestEffectiveAPI:
         assert data["has_admin_override"] is True
 
         # Verify it persisted
-        resp2 = await client.get("/api/v1/settings/effective/provider.llm.kie_model")
+        resp2 = await client.get("/api/v1/settings/effective/provider.llm.kie_model", headers=ADMIN_ROLE)
         assert resp2.json()["effective_value"] == "gemini-3.0-ultra"
 
     @pytest.mark.asyncio
@@ -419,6 +423,7 @@ class TestEffectiveAPI:
         resp = await client.put(
             "/api/v1/settings/effective/nonexistent.key",
             json={"value": "test"},
+            headers=ADMIN_ROLE,
         )
         assert resp.status_code == 404
 
@@ -428,6 +433,7 @@ class TestEffectiveAPI:
         resp = await client.put(
             "/api/v1/settings/effective/credential.pexels_api_key",
             json={"value": "test-pexels-key-12345"},
+            headers=ADMIN_ROLE,
         )
         assert resp.status_code == 200
         data = resp.json()

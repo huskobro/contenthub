@@ -204,7 +204,7 @@ async def test_overdue_duplicate_guard(db_session: AsyncSession):
 # 4. User scope list (GET /notifications/my)
 # ---------------------------------------------------------------------------
 
-async def test_user_scope_my_endpoint(client: AsyncClient, db_session: AsyncSession):
+async def test_user_scope_my_endpoint(client: AsyncClient, db_session: AsyncSession, user_headers: dict):
     """GET /notifications/my returns only user-scoped notifications."""
     # Create admin-scoped notification
     await client.post(NOTIF_BASE, json={
@@ -212,17 +212,19 @@ async def test_user_scope_my_endpoint(client: AsyncClient, db_session: AsyncSess
         "title": "Admin only scope test",
         "severity": "error",
         "scope_type": "admin",
-    })
+    },
+    headers=user_headers,)
     # Create user-scoped notification
     await client.post(NOTIF_BASE, json={
         "notification_type": "render_failure",
         "title": "User scope test",
         "severity": "error",
         "scope_type": "user",
-    })
+    },
+    headers=user_headers,)
 
     # /my endpoint should NOT return admin-scoped
-    resp = await client.get(f"{NOTIF_BASE}/my")
+    resp = await client.get(f"{NOTIF_BASE}/my", headers=user_headers)
     assert resp.status_code == 200
     items = resp.json()
     for item in items:
@@ -234,7 +236,7 @@ async def test_user_scope_my_endpoint(client: AsyncClient, db_session: AsyncSess
 # 5. Admin scope list
 # ---------------------------------------------------------------------------
 
-async def test_admin_scope_list(client: AsyncClient, db_session: AsyncSession):
+async def test_admin_scope_list(client: AsyncClient, db_session: AsyncSession, user_headers: dict):
     """GET /notifications returns all notifications for admin."""
     # Create both scopes
     await client.post(NOTIF_BASE, json={
@@ -242,15 +244,17 @@ async def test_admin_scope_list(client: AsyncClient, db_session: AsyncSession):
         "title": "Admin list test - admin",
         "severity": "error",
         "scope_type": "admin",
-    })
+    },
+    headers=user_headers,)
     await client.post(NOTIF_BASE, json={
         "notification_type": "render_failure",
         "title": "Admin list test - user",
         "severity": "error",
         "scope_type": "user",
-    })
+    },
+    headers=user_headers,)
 
-    resp = await client.get(NOTIF_BASE)
+    resp = await client.get(NOTIF_BASE, headers=user_headers)
     assert resp.status_code == 200
     items = resp.json()
     scope_types = {i["scope_type"] for i in items}
@@ -262,24 +266,25 @@ async def test_admin_scope_list(client: AsyncClient, db_session: AsyncSession):
 # 6. Unread count scope (mode=my)
 # ---------------------------------------------------------------------------
 
-async def test_unread_count_scope(client: AsyncClient, db_session: AsyncSession):
+async def test_unread_count_scope(client: AsyncClient, db_session: AsyncSession, user_headers: dict):
     """GET /notifications/count?mode=my returns only user-scoped count."""
     # Create admin notification
     await client.post(NOTIF_BASE, json={
         "notification_type": "publish_failure",
         "title": "Count scope - admin",
         "scope_type": "admin",
-    })
+    },
+    headers=user_headers,)
 
     # mode=my should not count admin notifications
-    resp = await client.get(f"{NOTIF_BASE}/count", params={"mode": "my"})
+    resp = await client.get(f"{NOTIF_BASE}/count", params={"mode": "my"}, headers=user_headers)
     assert resp.status_code == 200
     data = resp.json()
     # This is a soft check — count should NOT include admin-scoped items
     assert data["unread"] >= 0  # At least valid response
 
     # Compare with full count
-    full_resp = await client.get(f"{NOTIF_BASE}/count")
+    full_resp = await client.get(f"{NOTIF_BASE}/count", headers=user_headers)
     full_data = full_resp.json()
     assert full_data["total"] >= data["total"]
 

@@ -98,8 +98,8 @@ async def _check_and_trigger(db_session_factory) -> int:
                         entity_id=record.id,
                         details={"scheduled_at": str(record.scheduled_at)},
                     )
-                except Exception:
-                    pass  # Audit failure must not break scheduler
+                except Exception as exc:
+                    logger.warning("Audit log write failed (publish.scheduler): %s", exc)
 
             except Exception as exc:
                 logger.warning(

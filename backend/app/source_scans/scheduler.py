@@ -144,8 +144,8 @@ async def _check_and_scan(db_session_factory, interval: float) -> int:
                         details={"source_id": source.id, "source_name": source.name},
                     )
                     await db.commit()
-                except Exception:
-                    pass
+                except Exception as exc:
+                    logger.warning("Audit log write failed (source_scan.auto_trigger): %s", exc)
 
             except Exception as exc:
                 logger.warning(

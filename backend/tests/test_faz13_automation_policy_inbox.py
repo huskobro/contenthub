@@ -60,7 +60,7 @@ async def _ensure_channel(db_session: AsyncSession) -> str:
 # 1. AutomationPolicy create with V2 fields
 # ---------------------------------------------------------------------------
 
-async def test_policy_create_v2(client: AsyncClient, db_session: AsyncSession):
+async def test_policy_create_v2(client: AsyncClient, db_session: AsyncSession, user_headers: dict):
     """Create policy with V2 checkpoint fields."""
     channel_id = await _ensure_channel(db_session)
     resp = await client.post(POLICY_BASE, json={
@@ -73,7 +73,8 @@ async def test_policy_create_v2(client: AsyncClient, db_session: AsyncSession):
         "publish_mode": "manual_review",
         "post_publish_mode": "disabled",
         "max_daily_posts": 5,
-    })
+    },
+    headers=user_headers,)
     assert resp.status_code == 201
     data = resp.json()
     assert data["name"] == "Test Politika"
@@ -90,19 +91,21 @@ async def test_policy_create_v2(client: AsyncClient, db_session: AsyncSession):
 # 2. AutomationPolicy update checkpoint modes
 # ---------------------------------------------------------------------------
 
-async def test_policy_update_modes(client: AsyncClient, db_session: AsyncSession):
+async def test_policy_update_modes(client: AsyncClient, db_session: AsyncSession, user_headers: dict):
     """Update individual checkpoint modes."""
     channel_id = await _ensure_channel(db_session)
     create_resp = await client.post(POLICY_BASE, json={
         "channel_profile_id": channel_id,
         "name": "Update Test",
-    })
+    },
+    headers=user_headers,)
     pid = create_resp.json()["id"]
 
     resp = await client.patch(f"{POLICY_BASE}/{pid}", json={
         "source_scan_mode": "automatic",
         "publish_mode": "automatic",
-    })
+    },
+    headers=user_headers,)
     assert resp.status_code == 200
     data = resp.json()
     assert data["source_scan_mode"] == "automatic"
@@ -196,7 +199,7 @@ async def test_evaluate_automatic(db_session: AsyncSession):
 # 7. Operations Inbox item create
 # ---------------------------------------------------------------------------
 
-async def test_inbox_item_create(client: AsyncClient):
+async def test_inbox_item_create(client: AsyncClient, user_headers: dict):
     """Create an inbox item."""
     resp = await client.post(INBOX_BASE, json={
         "item_type": "publish_review",
@@ -204,7 +207,8 @@ async def test_inbox_item_create(client: AsyncClient):
         "reason": "Publish record pending review",
         "priority": "high",
         "action_url": "/admin/publish/test-123",
-    })
+    },
+    headers=user_headers,)
     assert resp.status_code == 201
     data = resp.json()
     assert data["item_type"] == "publish_review"
@@ -217,15 +221,16 @@ async def test_inbox_item_create(client: AsyncClient):
 # 8. Inbox item status update + resolved_at auto-set
 # ---------------------------------------------------------------------------
 
-async def test_inbox_resolve_sets_timestamp(client: AsyncClient):
+async def test_inbox_resolve_sets_timestamp(client: AsyncClient, user_headers: dict):
     """Resolving an inbox item auto-sets resolved_at."""
     create_resp = await client.post(INBOX_BASE, json={
         "item_type": "render_failure",
         "title": "Render basarisiz",
-    })
+    },
+    headers=user_headers,)
     item_id = create_resp.json()["id"]
 
-    resp = await client.patch(f"{INBOX_BASE}/{item_id}", json={"status": "resolved"})
+    resp = await client.patch(f"{INBOX_BASE}/{item_id}", json={"status": "resolved"}, headers=user_headers)
     assert resp.status_code == 200
     data = resp.json()
     assert data["status"] == "resolved"
@@ -236,7 +241,7 @@ async def test_inbox_resolve_sets_timestamp(client: AsyncClient):
 # 9. Inbox list filtering by owner_user_id
 # ---------------------------------------------------------------------------
 
-async def test_inbox_filter_by_owner(client: AsyncClient, db_session: AsyncSession):
+async def test_inbox_filter_by_owner(client: AsyncClient, db_session: AsyncSession, user_headers: dict):
     """Inbox list filters by owner_user_id."""
     owner = await _ensure_user(db_session)
     other = await _ensure_user(db_session)
@@ -245,14 +250,16 @@ async def test_inbox_filter_by_owner(client: AsyncClient, db_session: AsyncSessi
         "item_type": "comment_reply",
         "title": "Yorum cevabi bekliyor",
         "owner_user_id": owner,
-    })
+    },
+    headers=user_headers,)
     await client.post(INBOX_BASE, json={
         "item_type": "post_action",
         "title": "Post gonderimi",
         "owner_user_id": other,
-    })
+    },
+    headers=user_headers,)
 
-    resp = await client.get(INBOX_BASE, params={"owner_user_id": owner})
+    resp = await client.get(INBOX_BASE, params={"owner_user_id": owner}, headers=user_headers)
     assert resp.status_code == 200
     items = resp.json()
     for item in items:
@@ -263,7 +270,7 @@ async def test_inbox_filter_by_owner(client: AsyncClient, db_session: AsyncSessi
 # 10. Policy by-channel + evaluate endpoint
 # ---------------------------------------------------------------------------
 
-async def test_policy_by_channel_and_evaluate(client: AsyncClient, db_session: AsyncSession):
+async def test_policy_by_channel_and_evaluate(client: AsyncClient, db_session: AsyncSession, user_headers: dict):
     """by-channel endpoint returns policy; evaluate returns all checkpoint decisions."""
     channel_id = await _ensure_channel(db_session)
     create_resp = await client.post(POLICY_BASE, json={
@@ -275,16 +282,17 @@ async def test_policy_by_channel_and_evaluate(client: AsyncClient, db_session: A
         "render_mode": "disabled",
         "publish_mode": "manual_review",
         "post_publish_mode": "automatic",
-    })
+    },
+    headers=user_headers,)
     pid = create_resp.json()["id"]
 
     # by-channel
-    resp = await client.get(f"{POLICY_BASE}/by-channel/{channel_id}")
+    resp = await client.get(f"{POLICY_BASE}/by-channel/{channel_id}", headers=user_headers)
     assert resp.status_code == 200
     assert resp.json()["id"] == pid
 
     # evaluate
-    resp2 = await client.get(f"{POLICY_BASE}/{pid}/evaluate")
+    resp2 = await client.get(f"{POLICY_BASE}/{pid}/evaluate", headers=user_headers)
     assert resp2.status_code == 200
     decisions = resp2.json()
     assert len(decisions) == 5

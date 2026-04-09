@@ -16,7 +16,6 @@ Covers:
 """
 
 import uuid
-import sqlite3
 import pytest
 from httpx import AsyncClient
 
@@ -37,16 +36,14 @@ def _payload(**overrides) -> dict:
 # A) Table exists
 # ---------------------------------------------------------------------------
 
-def test_style_blueprints_table_exists():
-    from app.core.config import settings
-    db_path = settings.database_url.replace("sqlite+aiosqlite:///", "")
-    conn = sqlite3.connect(db_path)
-    cur = conn.execute(
-        "SELECT name FROM sqlite_master WHERE type='table' AND name='style_blueprints'"
-    )
-    row = cur.fetchone()
-    conn.close()
-    assert row is not None, "style_blueprints table should exist after migration"
+async def test_style_blueprints_table_exists(test_engine):
+    from sqlalchemy import inspect
+
+    async with test_engine.connect() as conn:
+        tables = await conn.run_sync(
+            lambda sync_conn: set(inspect(sync_conn).get_table_names())
+        )
+    assert "style_blueprints" in tables, "style_blueprints table should exist after migration"
 
 
 # ---------------------------------------------------------------------------

@@ -788,8 +788,8 @@ async def create_publish_record_from_job(
             input_data = json.loads(job.input_data_json)
             if "topic" in input_data:
                 payload_data.setdefault("title", input_data["topic"])
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.warning("Failed to parse input_data for publish record title: %s", exc)
 
     # V2 — Faz 11: build publish_intent_json from payload_data
     publish_intent = {}

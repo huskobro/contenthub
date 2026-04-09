@@ -29,9 +29,9 @@ BASE = "/api/v1/playlists"
 # 1. Sync endpoint reachable
 # ---------------------------------------------------------------------------
 
-async def test_sync_endpoint_reachable(client: AsyncClient):
+async def test_sync_endpoint_reachable(client: AsyncClient, user_headers: dict):
     """Sync endpoint should be registered and accept POST."""
-    resp = await client.post(f"{BASE}/sync", json={})
+    resp = await client.post(f"{BASE}/sync", json={}, headers=user_headers)
     # Expect auth error (no YouTube token) or 200 or 500 (token store not configured)
     assert resp.status_code in (200, 500, 422), f"Unexpected: {resp.status_code} — {resp.text}"
 
@@ -40,20 +40,20 @@ async def test_sync_endpoint_reachable(client: AsyncClient):
 # 2-3. Playlist list
 # ---------------------------------------------------------------------------
 
-async def test_playlist_list_returns_array(client: AsyncClient):
+async def test_playlist_list_returns_array(client: AsyncClient, user_headers: dict):
     """Playlist list should return empty array."""
-    resp = await client.get(BASE)
+    resp = await client.get(BASE, headers=user_headers)
     assert resp.status_code == 200
     assert isinstance(resp.json(), list)
 
 
-async def test_playlist_list_with_filters(client: AsyncClient):
+async def test_playlist_list_with_filters(client: AsyncClient, user_headers: dict):
     """Playlist list accepts filter params."""
     resp = await client.get(BASE, params={
         "platform": "youtube",
         "limit": 50,
         "offset": 0,
-    })
+    }, headers=user_headers)
     assert resp.status_code == 200
     assert isinstance(resp.json(), list)
 
@@ -62,8 +62,8 @@ async def test_playlist_list_with_filters(client: AsyncClient):
 # 4. Playlist detail 404
 # ---------------------------------------------------------------------------
 
-async def test_playlist_detail_404(client: AsyncClient):
-    resp = await client.get(f"{BASE}/nonexistent-id-12345")
+async def test_playlist_detail_404(client: AsyncClient, user_headers: dict):
+    resp = await client.get(f"{BASE}/nonexistent-id-12345", headers=user_headers)
     assert resp.status_code == 404
 
 
@@ -71,8 +71,8 @@ async def test_playlist_detail_404(client: AsyncClient):
 # 5. Sync status
 # ---------------------------------------------------------------------------
 
-async def test_sync_status_returns_array(client: AsyncClient):
-    resp = await client.get(f"{BASE}/sync-status")
+async def test_sync_status_returns_array(client: AsyncClient, user_headers: dict):
+    resp = await client.get(f"{BASE}/sync-status", headers=user_headers)
     assert resp.status_code == 200
     assert isinstance(resp.json(), list)
 
@@ -81,7 +81,7 @@ async def test_sync_status_returns_array(client: AsyncClient):
 # 6. Playlist items (empty playlist)
 # ---------------------------------------------------------------------------
 
-async def test_playlist_items_empty(client: AsyncClient, db_session: AsyncSession):
+async def test_playlist_items_empty(client: AsyncClient, db_session: AsyncSession, user_headers: dict):
     """Items endpoint for a real playlist should return empty list."""
     from app.db.models import SyncedPlaylist
     from datetime import datetime, timezone
@@ -99,7 +99,7 @@ async def test_playlist_items_empty(client: AsyncClient, db_session: AsyncSessio
     db_session.add(pl)
     await db_session.commit()
 
-    resp = await client.get(f"{BASE}/{pl.id}/items")
+    resp = await client.get(f"{BASE}/{pl.id}/items", headers=user_headers)
     assert resp.status_code == 200
     assert isinstance(resp.json(), list)
     assert len(resp.json()) == 0
@@ -109,7 +109,7 @@ async def test_playlist_items_empty(client: AsyncClient, db_session: AsyncSessio
 # 7. Add video to nonexistent playlist
 # ---------------------------------------------------------------------------
 
-async def test_add_video_nonexistent_playlist(client: AsyncClient):
+async def test_add_video_nonexistent_playlist(client: AsyncClient, user_headers: dict):
     resp = await client.post(
         f"{BASE}/nonexistent-id-12345/add-video",
         params={"user_id": "test-user"},
@@ -117,6 +117,7 @@ async def test_add_video_nonexistent_playlist(client: AsyncClient):
             "playlist_id": "nonexistent-id-12345",
             "video_id": "dQw4w9WgXcQ",
         },
+        headers=user_headers,
     )
     assert resp.status_code in (200, 404)
     if resp.status_code == 200:

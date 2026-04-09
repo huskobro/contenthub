@@ -82,8 +82,8 @@ def measure_audio_duration(file_path: str) -> Optional[float]:
         audio = mutagen.File(file_path)
         if audio and audio.info and hasattr(audio.info, "length") and audio.info.length > 0:
             return round(audio.info.length, 3)
-    except Exception:
-        pass
+    except Exception as exc:
+        logger.debug("Audio duration extraction failed: %s", exc)
 
     return None
 

@@ -102,8 +102,8 @@ class PipelineRunner:
                 actor_type="system",
                 details={"status": "running"},
             )
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.warning("Audit log write failed (%s): %s", "job.pipeline_start", exc)
 
         # Fetch steps ordered by step_order ascending
         steps = await service.get_job_steps(self._db, job_id)
@@ -142,8 +142,8 @@ class PipelineRunner:
                         actor_type="system",
                         details={"status": "failed", "failed_step": step.step_key},
                     )
-                except Exception:
-                    pass
+                except Exception as exc:
+                    logger.warning("Audit log write failed (%s): %s", "job.pipeline_fail", exc)
                 await self._update_heartbeat(job_id)
                 return
 
@@ -158,8 +158,8 @@ class PipelineRunner:
                 actor_type="system",
                 details={"status": "completed"},
             )
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.warning("Audit log write failed (%s): %s", "job.pipeline_complete", exc)
         await self._update_heartbeat(job_id)
 
     async def _run_step(self, job: Job, step: JobStep) -> bool:
@@ -186,8 +186,8 @@ class PipelineRunner:
                 actor_type="system",
                 details={"job_id": str(job.id), "step_key": step.step_key},
             )
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.warning("Audit log write failed (%s): %s", "job.step_start", exc)
         await self._update_heartbeat(job.id)
 
         # Update job's current_step_key pointer directly — this is a data field
@@ -215,8 +215,8 @@ class PipelineRunner:
                     actor_type="system",
                     details={"job_id": str(job.id), "step_key": step_key, "error": error_msg[:500]},
                 )
-            except Exception:
-                pass
+            except Exception as exc:
+                logger.warning("Audit log write failed (%s): %s", "job.step_fail", exc)
             return False
 
         try:
@@ -241,8 +241,8 @@ class PipelineRunner:
                     actor_type="system",
                     details={"job_id": str(job.id), "step_key": step_key, "error": str(exc)[:500]},
                 )
-            except Exception:
-                pass
+            except Exception as exc_audit:
+                logger.warning("Audit log write failed (%s): %s", "job.step_fail", exc_audit)
             return False
         except Exception as exc:
             # Unexpected exception — wrap and fail the step
@@ -264,8 +264,8 @@ class PipelineRunner:
                     actor_type="system",
                     details={"job_id": str(job.id), "step_key": step_key, "error": str(exc)[:500]},
                 )
-            except Exception:
-                pass
+            except Exception as exc:
+                logger.warning("Audit log write failed (%s): %s", "job.step_fail", exc)
             return False
 
         # Store result as provider_trace_json and transition to completed
@@ -286,8 +286,8 @@ class PipelineRunner:
                 actor_type="system",
                 details={"job_id": str(job.id), "step_key": step.step_key},
             )
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.warning("Audit log write failed (%s): %s", "job.step_complete", exc)
         # Also persist provider_trace_json on the step directly via a targeted update
         await self._store_provider_trace(job.id, step_key, trace_json)
         await self._update_heartbeat(job.id)

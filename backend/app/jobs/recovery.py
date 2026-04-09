@@ -38,11 +38,14 @@ class RecoverySummary:
     recovered_jobs: int = 0
     recovered_steps: int = 0
     job_ids: list[str] = field(default_factory=list)
+    stale_queued_jobs: int = 0
+    stale_queued_job_ids: list[str] = field(default_factory=list)
 
 
 async def run_startup_recovery(
     db: AsyncSession,
     stale_threshold_minutes: int = DEFAULT_STALE_THRESHOLD_MINUTES,
+    queued_stale_threshold_minutes: int = 30,  # Queued jobs get longer grace period
 ) -> RecoverySummary:
     """
     Scan for jobs/steps interrupted mid-run and mark them as failed.
@@ -131,15 +134,48 @@ async def run_startup_recovery(
                 exc,
             )
 
-    if summary.recovered_jobs == 0:
+    # --- Queued job staleness check ---
+    queued_cutoff = now - timedelta(minutes=queued_stale_threshold_minutes)
+    queued_result = await db.execute(
+        select(Job).where(Job.status == "queued")
+    )
+    queued_jobs: list[Job] = list(queued_result.scalars().all())
+
+    for job in queued_jobs:
+        created = job.created_at
+        if created is None:
+            is_stale = True
+        else:
+            if created.tzinfo is None:
+                created = created.replace(tzinfo=timezone.utc)
+            is_stale = created < queued_cutoff
+
+        if is_stale:
+            summary.stale_queued_jobs += 1
+            summary.stale_queued_job_ids.append(job.id)
+            logger.warning(
+                "Recovery: stale queued job found — id=%s, created_at=%s (queued for >%d min)",
+                job.id, job.created_at, queued_stale_threshold_minutes,
+            )
+
+    if summary.recovered_jobs == 0 and summary.stale_queued_jobs == 0:
         logger.info("Recovery: no stale jobs found.")
     else:
-        logger.warning(
-            "Recovery complete: %d job(s) recovered, %d step(s) recovered. Job IDs: %s",
-            summary.recovered_jobs,
-            summary.recovered_steps,
-            summary.job_ids,
-        )
+        if summary.recovered_jobs > 0:
+            logger.warning(
+                "Recovery complete: %d job(s) recovered, %d step(s) recovered. Job IDs: %s",
+                summary.recovered_jobs,
+                summary.recovered_steps,
+                summary.job_ids,
+            )
+        if summary.stale_queued_jobs > 0:
+            logger.warning(
+                "Recovery: %d queued job(s) appear stuck (>%d min). IDs: %s. "
+                "Consider manual retry or cancellation.",
+                summary.stale_queued_jobs,
+                queued_stale_threshold_minutes,
+                summary.stale_queued_job_ids,
+            )
 
     return summary
 

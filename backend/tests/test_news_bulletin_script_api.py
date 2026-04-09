@@ -14,7 +14,6 @@ Covers:
 """
 
 import uuid
-import sqlite3
 import pytest
 from httpx import AsyncClient
 
@@ -39,16 +38,14 @@ def _script_url(bulletin_id: str) -> str:
 # A) Table exists
 # ---------------------------------------------------------------------------
 
-def test_news_bulletin_scripts_table_exists():
-    from app.core.config import settings
-    db_path = settings.database_url.replace("sqlite+aiosqlite:///", "")
-    conn = sqlite3.connect(db_path)
-    cur = conn.execute(
-        "SELECT name FROM sqlite_master WHERE type='table' AND name='news_bulletin_scripts'"
-    )
-    row = cur.fetchone()
-    conn.close()
-    assert row is not None, "news_bulletin_scripts table should exist after migration"
+async def test_news_bulletin_scripts_table_exists(test_engine):
+    from sqlalchemy import inspect
+
+    async with test_engine.connect() as conn:
+        tables = await conn.run_sync(
+            lambda sync_conn: set(inspect(sync_conn).get_table_names())
+        )
+    assert "news_bulletin_scripts" in tables, "news_bulletin_scripts table should exist after migration"
 
 
 # ---------------------------------------------------------------------------

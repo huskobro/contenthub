@@ -159,8 +159,8 @@ async def _check_and_retry(
                         },
                     )
                     await db.commit()
-                except Exception:
-                    pass  # Audit failure must not break scheduler
+                except Exception as exc:
+                    logger.warning("Audit log write failed (job.retry): %s", exc)
 
             except Exception as exc:
                 logger.warning(

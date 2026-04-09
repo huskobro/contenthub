@@ -7,6 +7,7 @@ style_blueprints, sources, news_items.
 Uses ilike pattern matching. Caps results per category at `limit`.
 """
 
+import logging
 from typing import Optional
 
 from sqlalchemy import select
@@ -22,6 +23,8 @@ from app.db.models import (
     NewsItem,
 )
 from app.discovery.schemas import DiscoveryResult
+
+logger = logging.getLogger(__name__)
 
 
 async def search_all(
@@ -196,7 +199,7 @@ async def search_all(
                 snippet=f"{asset.get('asset_type', '')} — {asset.get('job_id', 'uploads')}",
                 icon="file",
             ))
-    except Exception:
-        pass  # Asset taraması başarısız olursa discovery kırılmamalı
+    except Exception as exc:
+        logger.warning("Asset discovery scan failed: %s", exc)
 
     return results
