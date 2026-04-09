@@ -53,9 +53,18 @@ export function fetchNotifications(params?: {
   return api.get<NotificationItem[]>(BASE, params);
 }
 
+/** Fetch current user's notifications (scope-aware via X-ContentHub-User-Id header) */
+export function fetchMyNotifications(params?: {
+  status?: string;
+  limit?: number;
+}): Promise<NotificationItem[]> {
+  return api.get<NotificationItem[]>(`${BASE}/my`, params);
+}
+
 export function fetchNotificationCount(params?: {
   owner_user_id?: string;
   scope_type?: string;
+  mode?: string;
 }): Promise<NotificationCount> {
   return api.get<NotificationCount>(`${BASE}/count`, params);
 }

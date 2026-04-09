@@ -12,8 +12,8 @@ import { USER_NAV } from "./useLayoutNavigation";
 export function UserLayout() {
   // Global SSE for app-wide notifications and query invalidation
   useGlobalSSE();
-  // Backend-backed notification data sync
-  useNotifications();
+  // Backend-backed notification data sync (user scope — only my notifications)
+  useNotifications({ mode: "user" });
   return (
     <ThemeProvider>
       <div className="flex flex-col min-h-screen">

@@ -39,6 +39,7 @@ _NOTIFICATION_MAP = {
     "render_failure": ("error", "user", "Is basarisiz"),
     "source_scan_error": ("warning", "admin", "Kaynak tarama hatasi"),
     "overdue_publish": ("warning", "admin", "Geciken yayin"),
+    "overdue_post": ("warning", "admin", "Geciken post"),
     "policy_review_required": ("info", "admin", "Policy inceleme gerekli"),
 }
 

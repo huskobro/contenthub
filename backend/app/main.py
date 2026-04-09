@@ -309,6 +309,14 @@ async def lifespan(app: FastAPI):
     else:
         logger.info("Job auto-retry scheduler disabled (jobs.auto_retry_enabled=False).")
 
+    # Overdue notification scheduler — background task (Faz 16a)
+    from app.notifications.overdue_scheduler import poll_overdue_notifications
+    overdue_task = asyncio.create_task(
+        poll_overdue_notifications(AsyncSessionLocal, interval=300)
+    )
+    app.state.overdue_scheduler_task = overdue_task
+    logger.info("Overdue notification scheduler task created.")
+
     yield
 
     # Shutdown: cancel publish scheduler
@@ -337,6 +345,15 @@ async def lifespan(app: FastAPI):
         except asyncio.CancelledError:
             pass
         logger.info("Job retry scheduler cancelled.")
+
+    # Shutdown: cancel overdue notification scheduler
+    if hasattr(app.state, "overdue_scheduler_task"):
+        app.state.overdue_scheduler_task.cancel()
+        try:
+            await app.state.overdue_scheduler_task
+        except asyncio.CancelledError:
+            pass
+        logger.info("Overdue notification scheduler cancelled.")
 
 
 def _register_exception_handlers(app: FastAPI) -> None:

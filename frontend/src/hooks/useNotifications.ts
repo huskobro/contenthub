@@ -1,14 +1,20 @@
 /**
- * useNotifications — Backend-backed notification data hook — Faz 16.
+ * useNotifications — Backend-backed notification data hook — Faz 16 + 16a scope closure.
  *
  * Fetches notifications from the backend API and syncs to Zustand store.
  * Provides mutation helpers for read/dismiss actions.
+ *
+ * Scope modes:
+ *   - mode="user" → fetches /notifications/my (current user's notifications only)
+ *   - mode="admin" → fetches /notifications (all, admin-facing)
+ *   - default → fetches /notifications/my (safe default)
  */
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import {
   fetchNotifications,
+  fetchMyNotifications,
   fetchNotificationCount,
   markNotificationRead,
   markNotificationDismissed,
@@ -38,33 +44,38 @@ function backendToLocal(item: NotificationItem): Notification {
 }
 
 export function useNotifications(params?: {
-  scope_type?: string;
-  owner_user_id?: string;
+  mode?: "user" | "admin";
 }) {
+  const mode = params?.mode ?? "user";
   const qc = useQueryClient();
   const setNotifications = useNotificationStore((s) => s.setNotifications);
   const storeMarkAsRead = useNotificationStore((s) => s.markAsRead);
   const storeMarkAllAsRead = useNotificationStore((s) => s.markAllAsRead);
 
-  // Fetch notifications from backend
+  // Fetch notifications from backend — scope-aware
   const notifQuery = useQuery({
-    queryKey: ["notifications", params?.scope_type, params?.owner_user_id],
-    queryFn: () => fetchNotifications({
-      scope_type: params?.scope_type,
-      owner_user_id: params?.owner_user_id,
-      limit: 100,
-    }),
-    refetchInterval: 30_000, // 30s fallback polling (SSE is primary)
+    queryKey: ["notifications", mode],
+    queryFn: () => {
+      if (mode === "admin") {
+        return fetchNotifications({ limit: 100 });
+      }
+      // User mode: fetch only my notifications
+      return fetchMyNotifications({ limit: 100 });
+    },
+    refetchInterval: 30_000,
     staleTime: 10_000,
   });
 
-  // Fetch unread count
+  // Fetch unread count — scope-aware
   const countQuery = useQuery({
-    queryKey: ["notification-count", params?.scope_type, params?.owner_user_id],
-    queryFn: () => fetchNotificationCount({
-      scope_type: params?.scope_type,
-      owner_user_id: params?.owner_user_id,
-    }),
+    queryKey: ["notification-count", mode],
+    queryFn: () => {
+      if (mode === "admin") {
+        return fetchNotificationCount();
+      }
+      // User mode: count only my notifications
+      return fetchNotificationCount({ mode: "my" });
+    },
     refetchInterval: 15_000,
     staleTime: 5_000,
   });
@@ -98,10 +109,7 @@ export function useNotifications(params?: {
 
   // Mark all read mutation
   const markAllReadMutation = useMutation({
-    mutationFn: () => markAllNotificationsRead({
-      scope_type: params?.scope_type,
-      owner_user_id: params?.owner_user_id,
-    }),
+    mutationFn: () => markAllNotificationsRead(),
     onSuccess: () => {
       storeMarkAllAsRead();
       qc.invalidateQueries({ queryKey: ["notifications"] });

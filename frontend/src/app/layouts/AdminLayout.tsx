@@ -30,8 +30,8 @@ export function AdminLayout() {
   // Global SSE for app-wide notifications and query invalidation
   useGlobalSSE();
 
-  // Backend-backed notification data sync
-  useNotifications();
+  // Backend-backed notification data sync (admin scope — all notifications)
+  useNotifications({ mode: "admin" });
 
   // Update command palette context on route change
   useEffect(() => {

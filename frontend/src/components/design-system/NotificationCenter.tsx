@@ -9,8 +9,8 @@
  * Shows inbox cross-reference links where applicable.
  */
 
-import { useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useRef, useMemo } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   useNotificationStore,
   type Notification,
@@ -157,13 +157,17 @@ function NotificationItem({
 
 export function NotificationCenter() {
   const navigate = useNavigate();
+  const location = useLocation();
   const panelOpen = useNotificationStore((s) => s.panelOpen);
   const notifications = useNotificationStore((s) => s.notifications);
   const closePanel = useNotificationStore((s) => s.closePanel);
   const unreadCount = useNotificationStore((s) => s.unreadCount);
 
-  // Backend-backed actions
-  const { markRead, dismiss, markAllRead } = useNotifications();
+  // Scope-aware: admin layout → admin mode, user layout → user mode
+  const isAdmin = useMemo(() => location.pathname.startsWith("/admin"), [location.pathname]);
+  const { markRead, dismiss, markAllRead } = useNotifications({
+    mode: isAdmin ? "admin" : "user",
+  });
 
   const panelRef = useRef<HTMLDivElement>(null);
 

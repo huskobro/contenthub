@@ -1,18 +1,20 @@
 """
-Notification Center router — Faz 16.
+Notification Center router — Faz 16 + 16a scope closure.
 
 Endpoints:
   GET    /notifications            — list notifications (filter by owner/scope/status/type)
-  GET    /notifications/count      — unread + total count
+  GET    /notifications/my         — current user's notifications (scope-aware)
+  GET    /notifications/count      — unread + total count (scope-aware if user header present)
   POST   /notifications            — create notification (internal/admin)
   GET    /notifications/{id}       — get single notification
   PATCH  /notifications/{id}       — update status (read/dismissed)
+  GET    /notifications/by-entity/{type}/{id} — entity cross-reference
   POST   /notifications/mark-all-read — mark all unread as read
 """
 
 from typing import Optional, List
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Header, Query, status
 
 from app.db.session import get_db
 from app.notifications import service
@@ -28,7 +30,18 @@ router = APIRouter(prefix="/notifications", tags=["notifications"])
 
 
 # ---------------------------------------------------------------------------
-# List
+# Helper: extract current user ID from header (soft auth)
+# ---------------------------------------------------------------------------
+
+def _extract_user_id(header_val: Optional[str]) -> Optional[str]:
+    """Extract user ID from X-ContentHub-User-Id header if valid."""
+    if header_val and len(header_val.strip()) >= 32:
+        return header_val.strip()
+    return None
+
+
+# ---------------------------------------------------------------------------
+# List (admin-facing, full filter)
 # ---------------------------------------------------------------------------
 
 @router.get("", response_model=List[NotificationResponse])
@@ -43,7 +56,7 @@ async def list_notifications(
     offset: int = Query(0, ge=0),
     session=Depends(get_db),
 ):
-    """List notifications with optional filters."""
+    """List notifications with optional filters (admin-facing)."""
     items = await service.list_notifications(
         session,
         owner_user_id=owner_user_id,
@@ -59,16 +72,75 @@ async def list_notifications(
 
 
 # ---------------------------------------------------------------------------
-# Count
+# My notifications (user-facing, scope-aware)
+# ---------------------------------------------------------------------------
+
+@router.get("/my", response_model=List[NotificationResponse])
+async def my_notifications(
+    status_filter: Optional[str] = Query(None, alias="status"),
+    limit: int = Query(50, ge=1, le=200),
+    x_contenthub_user_id: Optional[str] = Header(None, alias="X-ContentHub-User-Id"),
+    session=Depends(get_db),
+):
+    """
+    Current user's notifications. Faz 16a scope closure.
+
+    Returns notifications where:
+    - owner_user_id matches the current user, OR
+    - scope_type is 'user' and owner_user_id is NULL (broadcast)
+
+    Admin-scoped notifications are excluded.
+    """
+    user_id = _extract_user_id(x_contenthub_user_id)
+
+    # Fetch user-scoped notifications for this user
+    user_items = await service.list_notifications(
+        session,
+        owner_user_id=user_id,
+        scope_type="user",
+        status=status_filter,
+        limit=limit,
+    )
+    # Also include system-wide broadcasts (no owner, scope=system)
+    system_items = await service.list_notifications(
+        session,
+        scope_type="system",
+        status=status_filter,
+        limit=20,
+    )
+    # Merge and sort by created_at desc
+    combined = user_items + system_items
+    combined.sort(key=lambda x: x.created_at, reverse=True)
+    return combined[:limit]
+
+
+# ---------------------------------------------------------------------------
+# Count (scope-aware)
 # ---------------------------------------------------------------------------
 
 @router.get("/count", response_model=NotificationCountResponse)
 async def count_notifications(
     owner_user_id: Optional[str] = Query(None),
     scope_type: Optional[str] = Query(None),
+    mode: Optional[str] = Query(None, description="'my' for current user scope"),
+    x_contenthub_user_id: Optional[str] = Header(None, alias="X-ContentHub-User-Id"),
     session=Depends(get_db),
 ):
-    """Get unread and total notification counts."""
+    """
+    Get unread and total notification counts.
+
+    mode=my: returns count for current user's notifications only.
+    Otherwise: returns count with explicit filters.
+    """
+    if mode == "my":
+        user_id = _extract_user_id(x_contenthub_user_id)
+        counts = await service.count_notifications(
+            session,
+            owner_user_id=user_id,
+            scope_type="user",
+        )
+        return counts
+
     counts = await service.count_notifications(
         session,
         owner_user_id=owner_user_id,
@@ -156,7 +228,7 @@ async def update_notification(
 
 
 # ---------------------------------------------------------------------------
-# Mark all read
+# By-entity lookup
 # ---------------------------------------------------------------------------
 
 @router.get("/by-entity/{entity_type}/{entity_id}", response_model=List[NotificationResponse])
@@ -171,13 +243,16 @@ async def get_notifications_by_entity(
         notification_type=None,
         limit=20,
     )
-    # Filter in Python (simple; entity columns not directly filterable in service yet)
     matched = [
         i for i in items
         if i.related_entity_type == entity_type and i.related_entity_id == entity_id
     ]
     return matched
 
+
+# ---------------------------------------------------------------------------
+# Mark all read
+# ---------------------------------------------------------------------------
 
 @router.post("/mark-all-read")
 async def mark_all_read(
