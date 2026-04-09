@@ -53,7 +53,8 @@ from app.db.models import (
     Job, JobStep, PublishRecord,
     NewsSource, SourceScan, NewsItem, UsedNewsRegistry, NewsBulletin,
     StandardVideo, Template, StyleBlueprint, TemplateStyleLink,
-    ContentProject,
+    ContentProject, ChannelProfile, PlatformConnection,
+    SyncedComment, SyncedPlaylist, PlatformPost, EngagementTask,
 )
 from app.prompt_assembly.models import PromptAssemblyRun
 
@@ -1446,4 +1447,348 @@ async def get_publish_analytics(
         "platform_breakdown": platform_breakdown,
         "daily_publish_trend": daily_publish_trend,
         "filters_applied": filters_applied,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Channel Performance Analytics (Faz 10)
+# ---------------------------------------------------------------------------
+
+async def get_channel_performance(
+    session: AsyncSession,
+    window: str = "last_30d",
+    date_from: Optional[datetime] = None,
+    date_to: Optional[datetime] = None,
+    user_id: Optional[str] = None,
+    channel_profile_id: Optional[str] = None,
+    platform: Optional[str] = None,
+) -> dict:
+    """
+    Kanal bazli performans analytics.
+
+    Tek bir channel_profile_id seciliyse o kanalin detayi,
+    secilmemisse tum kanallarin ozet + siralama listesi.
+
+    Metrik gruplari:
+      A) Production — ContentProject + Job
+      B) Publish — PublishRecord
+      C) Engagement — SyncedComment + EngagementTask + PlatformPost
+      D) Channel Health — PlatformConnection durumu
+    """
+    if date_from is not None or date_to is not None:
+        cut = None
+    else:
+        cut = _cutoff(window)
+
+    def _apply_time(q, col):
+        if date_from is not None:
+            q = q.where(col >= date_from)
+        elif cut is not None:
+            q = q.where(col >= cut)
+        if date_to is not None:
+            q = q.where(col <= date_to)
+        return q
+
+    filters_applied = {}
+    if user_id:
+        filters_applied["user_id"] = user_id
+    if channel_profile_id:
+        filters_applied["channel_profile_id"] = channel_profile_id
+    if platform:
+        filters_applied["platform"] = platform
+
+    # -----------------------------------------------------------------------
+    # A) Production metrics — Job + ContentProject
+    # -----------------------------------------------------------------------
+    job_q = select(
+        func.count(Job.id).label("total"),
+        func.sum(case((Job.status == "completed", 1), else_=0)).label("completed"),
+        func.sum(case((Job.status == "failed", 1), else_=0)).label("failed"),
+        func.sum(case((Job.retry_count > 0, 1), else_=0)).label("retried"),
+        func.avg(
+            case(
+                (
+                    (Job.started_at.is_not(None)) & (Job.finished_at.is_not(None)),
+                    func.julianday(Job.finished_at) * 86400.0
+                    - func.julianday(Job.started_at) * 86400.0,
+                ),
+                else_=None,
+            )
+        ).label("avg_duration"),
+    )
+    job_q = _apply_time(job_q, Job.created_at)
+    job_q = _apply_entity_filters(
+        job_q, user_id=user_id, channel_profile_id=channel_profile_id,
+        platform=platform, entity="job",
+    )
+    job_row = (await session.execute(job_q)).one()
+
+    total_jobs = job_row.total or 0
+    completed_jobs = int(job_row.completed or 0)
+    failed_jobs = int(job_row.failed or 0)
+    retried_jobs = int(job_row.retried or 0)
+    avg_production = (
+        round(float(job_row.avg_duration), 2) if job_row.avg_duration is not None else None
+    )
+    job_success_rate = round(completed_jobs / total_jobs, 4) if total_jobs > 0 else None
+    retry_rate = round(retried_jobs / total_jobs, 4) if total_jobs > 0 else None
+
+    # Content project count
+    cp_q = select(func.count(ContentProject.id).label("total"))
+    cp_q = _apply_time(cp_q, ContentProject.created_at)
+    if channel_profile_id:
+        cp_q = cp_q.where(ContentProject.channel_profile_id == channel_profile_id)
+    if user_id:
+        cp_q = cp_q.where(ContentProject.user_id == user_id)
+    total_content = (await session.execute(cp_q)).scalar() or 0
+
+    # Module distribution
+    mod_q = select(
+        Job.module_type,
+        func.count(Job.id).label("count"),
+    ).group_by(Job.module_type)
+    mod_q = _apply_time(mod_q, Job.created_at)
+    mod_q = _apply_entity_filters(
+        mod_q, user_id=user_id, channel_profile_id=channel_profile_id,
+        platform=platform, entity="job",
+    )
+    mod_rows = (await session.execute(mod_q)).all()
+    module_distribution = [
+        {"module_type": r.module_type or "unknown", "count": r.count}
+        for r in mod_rows
+    ]
+
+    # -----------------------------------------------------------------------
+    # B) Publish metrics — PublishRecord
+    # -----------------------------------------------------------------------
+    pub_q = select(
+        func.count(PublishRecord.id).label("total"),
+        func.sum(case((PublishRecord.status == "published", 1), else_=0)).label("published"),
+        func.sum(case((PublishRecord.status == "failed", 1), else_=0)).label("failed"),
+    )
+    pub_q = _apply_time(pub_q, PublishRecord.created_at)
+    pub_q = _apply_entity_filters(
+        pub_q, user_id=user_id, channel_profile_id=channel_profile_id,
+        platform=platform, entity="publish",
+    )
+    pub_row = (await session.execute(pub_q)).one()
+    total_publish = pub_row.total or 0
+    published_count = int(pub_row.published or 0)
+    failed_publish = int(pub_row.failed or 0)
+    publish_success_rate = round(published_count / total_publish, 4) if total_publish > 0 else None
+
+    # -----------------------------------------------------------------------
+    # C) Engagement metrics — SyncedComment, EngagementTask, PlatformPost
+    # -----------------------------------------------------------------------
+
+    # Comments
+    comment_q = select(
+        func.count(SyncedComment.id).label("total"),
+        func.sum(case((SyncedComment.reply_status == "replied", 1), else_=0)).label("replied"),
+        func.sum(case((SyncedComment.reply_status == "pending", 1), else_=0)).label("pending"),
+    )
+    comment_q = _apply_time(comment_q, SyncedComment.created_at)
+    if channel_profile_id:
+        comment_q = comment_q.where(SyncedComment.channel_profile_id == channel_profile_id)
+    comment_row = (await session.execute(comment_q)).one()
+    total_comments = comment_row.total or 0
+    replied_comments = int(comment_row.replied or 0)
+    pending_comments = int(comment_row.pending or 0)
+    reply_rate = round(replied_comments / total_comments, 4) if total_comments > 0 else None
+
+    # Engagement tasks
+    task_q = select(
+        func.count(EngagementTask.id).label("total"),
+        func.sum(case((EngagementTask.status == "executed", 1), else_=0)).label("executed"),
+        func.sum(case((EngagementTask.status == "failed", 1), else_=0)).label("failed"),
+    )
+    task_q = _apply_time(task_q, EngagementTask.created_at)
+    if channel_profile_id:
+        task_q = task_q.where(EngagementTask.channel_profile_id == channel_profile_id)
+    if user_id:
+        task_q = task_q.where(EngagementTask.user_id == user_id)
+    task_row = (await session.execute(task_q)).one()
+    total_tasks = task_row.total or 0
+    executed_tasks = int(task_row.executed or 0)
+    failed_tasks = int(task_row.failed or 0)
+
+    # Engagement task type distribution
+    task_type_q = select(
+        EngagementTask.type,
+        func.count(EngagementTask.id).label("count"),
+    ).group_by(EngagementTask.type)
+    task_type_q = _apply_time(task_type_q, EngagementTask.created_at)
+    if channel_profile_id:
+        task_type_q = task_type_q.where(EngagementTask.channel_profile_id == channel_profile_id)
+    if user_id:
+        task_type_q = task_type_q.where(EngagementTask.user_id == user_id)
+    task_type_rows = (await session.execute(task_type_q)).all()
+    engagement_type_distribution = [
+        {"type": r.type, "count": r.count} for r in task_type_rows
+    ]
+
+    # Platform posts
+    post_q = select(
+        func.count(PlatformPost.id).label("total"),
+        func.sum(case((PlatformPost.status == "draft", 1), else_=0)).label("draft"),
+        func.sum(case((PlatformPost.status == "queued", 1), else_=0)).label("queued"),
+        func.sum(case((PlatformPost.status == "posted", 1), else_=0)).label("posted"),
+    )
+    post_q = _apply_time(post_q, PlatformPost.created_at)
+    if channel_profile_id:
+        post_q = post_q.where(PlatformPost.channel_profile_id == channel_profile_id)
+    post_row = (await session.execute(post_q)).one()
+    total_posts = post_row.total or 0
+    draft_posts = int(post_row.draft or 0)
+    queued_posts = int(post_row.queued or 0)
+    posted_posts = int(post_row.posted or 0)
+
+    # Playlists
+    playlist_q = select(
+        func.count(SyncedPlaylist.id).label("total"),
+        func.sum(SyncedPlaylist.item_count).label("total_items"),
+    )
+    if channel_profile_id:
+        playlist_q = playlist_q.where(SyncedPlaylist.channel_profile_id == channel_profile_id)
+    playlist_row = (await session.execute(playlist_q)).one()
+    total_playlists = playlist_row.total or 0
+    total_playlist_items = int(playlist_row.total_items or 0)
+
+    # -----------------------------------------------------------------------
+    # D) Channel health — PlatformConnection
+    # -----------------------------------------------------------------------
+    conn_q = select(
+        func.count(PlatformConnection.id).label("total"),
+        func.sum(case((PlatformConnection.connection_status == "connected", 1), else_=0)).label("connected"),
+    )
+    if channel_profile_id:
+        conn_q = conn_q.where(PlatformConnection.channel_profile_id == channel_profile_id)
+    conn_row = (await session.execute(conn_q)).one()
+    total_connections = conn_row.total or 0
+    connected_count = int(conn_row.connected or 0)
+
+    # -----------------------------------------------------------------------
+    # Daily trend (job + publish combined)
+    # -----------------------------------------------------------------------
+    trend_q = select(
+        func.date(Job.created_at).label("day"),
+        func.count(Job.id).label("job_count"),
+        func.sum(case((Job.status == "completed", 1), else_=0)).label("completed_count"),
+        func.sum(case((Job.status == "failed", 1), else_=0)).label("failed_count"),
+    ).group_by(func.date(Job.created_at)).order_by(func.date(Job.created_at))
+    trend_q = _apply_time(trend_q, Job.created_at)
+    trend_q = _apply_entity_filters(
+        trend_q, user_id=user_id, channel_profile_id=channel_profile_id,
+        platform=platform, entity="job",
+    )
+    trend_rows = (await session.execute(trend_q)).all()
+    daily_trend = [
+        {
+            "date": str(r.day),
+            "job_count": r.job_count or 0,
+            "completed_count": int(r.completed_count or 0),
+            "failed_count": int(r.failed_count or 0),
+        }
+        for r in trend_rows
+    ]
+
+    # -----------------------------------------------------------------------
+    # Channel list with per-channel summary (if no specific channel selected)
+    # -----------------------------------------------------------------------
+    channel_rankings = []
+    if not channel_profile_id:
+        rank_q = select(
+            ChannelProfile.id,
+            ChannelProfile.profile_name,
+            ChannelProfile.channel_slug,
+            ChannelProfile.status,
+            func.count(Job.id).label("job_count"),
+            func.sum(case((Job.status == "completed", 1), else_=0)).label("completed"),
+            func.sum(case((Job.status == "failed", 1), else_=0)).label("failed"),
+        ).outerjoin(Job, Job.channel_profile_id == ChannelProfile.id)
+        rank_q = rank_q.group_by(ChannelProfile.id)
+        rank_q = rank_q.order_by(func.count(Job.id).desc())
+
+        if user_id:
+            rank_q = rank_q.where(ChannelProfile.user_id == user_id)
+
+        rank_rows = (await session.execute(rank_q)).all()
+        for r in rank_rows:
+            j_total = r.job_count or 0
+            j_completed = int(r.completed or 0)
+            j_failed = int(r.failed or 0)
+            channel_rankings.append({
+                "channel_id": r.id,
+                "profile_name": r.profile_name,
+                "channel_slug": r.channel_slug,
+                "status": r.status,
+                "job_count": j_total,
+                "completed_count": j_completed,
+                "failed_count": j_failed,
+                "success_rate": round(j_completed / j_total, 4) if j_total > 0 else None,
+            })
+
+    # -----------------------------------------------------------------------
+    # Recent errors
+    # -----------------------------------------------------------------------
+    err_q = select(
+        Job.id, Job.module_type, Job.last_error, Job.created_at,
+    ).where(
+        Job.status == "failed",
+        Job.last_error.is_not(None),
+    ).order_by(Job.created_at.desc()).limit(5)
+    err_q = _apply_entity_filters(
+        err_q, user_id=user_id, channel_profile_id=channel_profile_id,
+        platform=platform, entity="job",
+    )
+    err_rows = (await session.execute(err_q)).all()
+    recent_errors = [
+        {
+            "job_id": r.id,
+            "module_type": r.module_type,
+            "error": (r.last_error or "")[:200],
+            "created_at": r.created_at.isoformat() if r.created_at else None,
+        }
+        for r in err_rows
+    ]
+
+    return {
+        "window": window,
+        "filters_applied": filters_applied,
+        # Production
+        "total_content": total_content,
+        "total_jobs": total_jobs,
+        "completed_jobs": completed_jobs,
+        "failed_jobs": failed_jobs,
+        "job_success_rate": job_success_rate,
+        "avg_production_duration_seconds": avg_production,
+        "retry_rate": retry_rate,
+        "module_distribution": module_distribution,
+        # Publish
+        "total_publish": total_publish,
+        "published_count": published_count,
+        "failed_publish": failed_publish,
+        "publish_success_rate": publish_success_rate,
+        # Engagement
+        "total_comments": total_comments,
+        "replied_comments": replied_comments,
+        "pending_comments": pending_comments,
+        "reply_rate": reply_rate,
+        "total_engagement_tasks": total_tasks,
+        "executed_tasks": executed_tasks,
+        "failed_tasks": failed_tasks,
+        "engagement_type_distribution": engagement_type_distribution,
+        "total_posts": total_posts,
+        "draft_posts": draft_posts,
+        "queued_posts": queued_posts,
+        "posted_posts": posted_posts,
+        "total_playlists": total_playlists,
+        "total_playlist_items": total_playlist_items,
+        # Channel health
+        "total_connections": total_connections,
+        "connected_connections": connected_count,
+        # Trends & rankings
+        "daily_trend": daily_trend,
+        "channel_rankings": channel_rankings,
+        "recent_errors": recent_errors,
     }

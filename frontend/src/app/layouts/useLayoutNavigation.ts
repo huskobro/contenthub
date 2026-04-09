@@ -49,6 +49,7 @@ export const ADMIN_NAV: AdminNavItem[] = [
   { label: "Analytics", section: true },
   { label: "Analytics", to: "/admin/analytics", visibilityKey: "panel:analytics" },
   { label: "YouTube Analytics", to: "/admin/analytics/youtube" },
+  { label: "Kanal Performansi", to: "/admin/analytics/channel-performance" },
   { label: "Haber", section: true },
   { label: "Kaynaklar", to: "/admin/sources", visibilityKey: "panel:sources" },
   { label: "Kaynak Taramalari", to: "/admin/source-scans" },
@@ -81,6 +82,7 @@ export const USER_NAV: UserNavItem[] = [
   { label: "Yorumlar", to: "/user/comments" },
   { label: "Playlist'lerim", to: "/user/playlists" },
   { label: "Gonderilerim", to: "/user/posts" },
+  { label: "Kanal Performansim", to: "/user/analytics/channels" },
   { label: "Ayarlarim", to: "/user/settings" },
 ];
 
@@ -154,6 +156,7 @@ export const HORIZON_ADMIN_GROUPS: HorizonNavGroup[] = [
     items: [
       { label: "Analytics", to: "/admin/analytics" },
       { label: "YouTube Analytics", to: "/admin/analytics/youtube" },
+      { label: "Kanal Performansi", to: "/admin/analytics/channel-performance" },
     ],
   },
   {
@@ -240,6 +243,7 @@ export const HORIZON_USER_GROUPS: HorizonNavGroup[] = [
       { label: "Yorumlar", to: "/user/comments" },
       { label: "Playlist'lerim", to: "/user/playlists" },
       { label: "Gonderilerim", to: "/user/posts" },
+      { label: "Kanal Performansim", to: "/user/analytics/channels" },
     ],
   },
   {
@@ -326,6 +330,7 @@ const ROUTE_VISIBILITY: Record<string, AdminVisibilityKey> = {
   "/admin/templates": "panel:templates",
   "/admin/analytics": "panel:analytics",
   "/admin/analytics/youtube": "panel:analytics",
+  "/admin/analytics/channel-performance": "panel:analytics",
   "/admin/sources": "panel:sources",
   "/admin/publish": "panel:publish",
 };

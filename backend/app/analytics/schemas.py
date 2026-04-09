@@ -261,3 +261,84 @@ class PromptAssemblyMetrics(BaseModel):
     avg_skipped_blocks: float = 0.0
     module_stats: list[AssemblyModuleStat] = []
     provider_stats: list[AssemblyProviderStat] = []
+
+
+# ---------------------------------------------------------------------------
+# Channel Performance Analytics (Faz 10)
+# ---------------------------------------------------------------------------
+
+class ModuleCount(BaseModel):
+    module_type: str
+    count: int
+
+
+class EngagementTypeCount(BaseModel):
+    type: str
+    count: int
+
+
+class ChannelRanking(BaseModel):
+    channel_id: str
+    profile_name: str
+    channel_slug: str
+    status: str
+    job_count: int
+    completed_count: int
+    failed_count: int
+    success_rate: Optional[float] = None
+
+
+class ChannelDailyTrend(BaseModel):
+    date: str
+    job_count: int = 0
+    completed_count: int = 0
+    failed_count: int = 0
+
+
+class RecentError(BaseModel):
+    job_id: str
+    module_type: Optional[str] = None
+    error: str
+    created_at: Optional[str] = None
+
+
+class ChannelPerformance(BaseModel):
+    """Kanal bazli performans analytics."""
+    window: str
+    filters_applied: dict = {}
+    # Production
+    total_content: int = 0
+    total_jobs: int = 0
+    completed_jobs: int = 0
+    failed_jobs: int = 0
+    job_success_rate: Optional[float] = None
+    avg_production_duration_seconds: Optional[float] = None
+    retry_rate: Optional[float] = None
+    module_distribution: list[ModuleCount] = []
+    # Publish
+    total_publish: int = 0
+    published_count: int = 0
+    failed_publish: int = 0
+    publish_success_rate: Optional[float] = None
+    # Engagement
+    total_comments: int = 0
+    replied_comments: int = 0
+    pending_comments: int = 0
+    reply_rate: Optional[float] = None
+    total_engagement_tasks: int = 0
+    executed_tasks: int = 0
+    failed_tasks: int = 0
+    engagement_type_distribution: list[EngagementTypeCount] = []
+    total_posts: int = 0
+    draft_posts: int = 0
+    queued_posts: int = 0
+    posted_posts: int = 0
+    total_playlists: int = 0
+    total_playlist_items: int = 0
+    # Channel health
+    total_connections: int = 0
+    connected_connections: int = 0
+    # Trends & rankings
+    daily_trend: list[ChannelDailyTrend] = []
+    channel_rankings: list[ChannelRanking] = []
+    recent_errors: list[RecentError] = []

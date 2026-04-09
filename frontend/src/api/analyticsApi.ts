@@ -356,3 +356,88 @@ export function fetchContentMetricsFiltered(
   if (filters.platform) params.platform = filters.platform;
   return api.get<ContentMetrics>(`${BASE_URL}/content`, params);
 }
+
+// ---------------------------------------------------------------------------
+// Channel Performance Analytics (Faz 10)
+// ---------------------------------------------------------------------------
+
+export interface ModuleCount {
+  module_type: string;
+  count: number;
+}
+
+export interface EngagementTypeCount {
+  type: string;
+  count: number;
+}
+
+export interface ChannelRanking {
+  channel_id: string;
+  profile_name: string;
+  channel_slug: string;
+  status: string;
+  job_count: number;
+  completed_count: number;
+  failed_count: number;
+  success_rate: number | null;
+}
+
+export interface ChannelDailyTrend {
+  date: string;
+  job_count: number;
+  completed_count: number;
+  failed_count: number;
+}
+
+export interface ChannelPerformanceData {
+  window: string;
+  filters_applied: Record<string, string>;
+  // Production
+  total_content: number;
+  total_jobs: number;
+  completed_jobs: number;
+  failed_jobs: number;
+  job_success_rate: number | null;
+  avg_production_duration_seconds: number | null;
+  retry_rate: number | null;
+  module_distribution: ModuleCount[];
+  // Publish
+  total_publish: number;
+  published_count: number;
+  failed_publish: number;
+  publish_success_rate: number | null;
+  // Engagement
+  total_comments: number;
+  replied_comments: number;
+  pending_comments: number;
+  reply_rate: number | null;
+  total_engagement_tasks: number;
+  executed_tasks: number;
+  failed_tasks: number;
+  engagement_type_distribution: EngagementTypeCount[];
+  total_posts: number;
+  draft_posts: number;
+  queued_posts: number;
+  posted_posts: number;
+  total_playlists: number;
+  total_playlist_items: number;
+  // Channel health
+  total_connections: number;
+  connected_connections: number;
+  // Trends & rankings
+  daily_trend: ChannelDailyTrend[];
+  channel_rankings: ChannelRanking[];
+  recent_errors: Array<{ job_id: string; module_type: string | null; error: string; created_at: string | null }>;
+}
+
+export function fetchChannelPerformance(
+  filters: AnalyticsFilterParams = {},
+): Promise<ChannelPerformanceData> {
+  const params: Record<string, string> = { window: filters.window || "last_30d" };
+  if (filters.date_from) params.date_from = filters.date_from;
+  if (filters.date_to) params.date_to = filters.date_to;
+  if (filters.user_id) params.user_id = filters.user_id;
+  if (filters.channel_profile_id) params.channel_profile_id = filters.channel_profile_id;
+  if (filters.platform) params.platform = filters.platform;
+  return api.get<ChannelPerformanceData>(`${BASE_URL}/channel-performance`, params);
+}

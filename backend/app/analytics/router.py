@@ -33,6 +33,7 @@ from app.analytics.schemas import (
     PromptAssemblyMetrics,
     DashboardSummary,
     PublishAnalytics,
+    ChannelPerformance,
 )
 
 router = APIRouter(prefix="/analytics", tags=["analytics"], dependencies=[Depends(require_visible("panel:analytics"))])
@@ -261,6 +262,31 @@ async def get_publish_analytics(
     df = _parse_date(date_from, "date_from")
     dt = _parse_date(date_to, "date_to")
     return await service.get_publish_analytics(
+        session=session, window=window, date_from=df, date_to=dt,
+        user_id=user_id, channel_profile_id=channel_profile_id, platform=platform,
+    )
+
+
+@router.get("/channel-performance", response_model=ChannelPerformance)
+async def get_channel_performance(
+    window: str = Query(default="last_30d", description="Zaman penceresi: last_7d | last_30d | last_90d | all_time"),
+    date_from: Optional[str] = Query(default=None, description="Baslangic tarihi (ISO 8601)"),
+    date_to: Optional[str] = Query(default=None, description="Bitis tarihi (ISO 8601)"),
+    user_id: Optional[str] = Query(default=None, description="Kullanici filtresi"),
+    channel_profile_id: Optional[str] = Query(default=None, description="Kanal profil filtresi"),
+    platform: Optional[str] = Query(default=None, description="Platform filtresi (youtube, ...)"),
+    session=Depends(get_db),
+):
+    """
+    Kanal bazli performans analytics.
+
+    Production + publish + engagement + channel health metrikleri.
+    channel_profile_id verilmemisse tum kanallarin siralama listesi de doner.
+    """
+    _validate_window(window)
+    df = _parse_date(date_from, "date_from")
+    dt = _parse_date(date_to, "date_to")
+    return await service.get_channel_performance(
         session=session, window=window, date_from=df, date_to=dt,
         user_id=user_id, channel_profile_id=channel_profile_id, platform=platform,
     )
