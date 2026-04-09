@@ -1378,6 +1378,51 @@ class SyncedPlaylistItem(Base):
     )
 
 
+class PlatformPost(Base):
+    """
+    Platform gonderisi — community post, share post, announcement vb.
+    YouTube community post API ucuncu taraflara acik olmadigi icin
+    draft/orchestration modeli olarak calisir. Gercek delivery
+    platform adapter'i hazirlanginda eklenecek. Faz 9.
+    """
+    __tablename__ = "platform_posts"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    platform: Mapped[str] = mapped_column(String(50), index=True, default="youtube")
+    platform_connection_id: Mapped[Optional[str]] = mapped_column(
+        String(36), ForeignKey("platform_connections.id", ondelete="SET NULL"),
+        nullable=True, index=True,
+    )
+    channel_profile_id: Mapped[Optional[str]] = mapped_column(
+        String(36), ForeignKey("channel_profiles.id", ondelete="SET NULL"),
+        nullable=True, index=True,
+    )
+    content_project_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True, index=True)
+    publish_record_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True, index=True)
+
+    external_post_id: Mapped[Optional[str]] = mapped_column(String(500), nullable=True, unique=True, index=True)
+    post_type: Mapped[str] = mapped_column(String(100), index=True, default="community_post")
+    # community_post, share_post, announcement — future-safe
+
+    title: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    body: Mapped[str] = mapped_column(Text, default="")
+    status: Mapped[str] = mapped_column(String(50), default="draft", index=True)
+    # draft, queued, posted, failed
+
+    scheduled_for: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    posted_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    delivery_status: Mapped[str] = mapped_column(String(50), default="pending")
+    # pending, delivered, failed, not_available (platform API not supported)
+    delivery_error: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now,
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now, onupdate=_now,
+    )
+
+
 class BrandProfile(Base):
     """Marka kimlik profili — basit v1. Faz 2."""
 

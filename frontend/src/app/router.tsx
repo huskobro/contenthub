@@ -75,6 +75,8 @@ const UserCommentsPage = lazy(() => import("../pages/user/UserCommentsPage").the
 const UserPlaylistsPage = lazy(() => import("../pages/user/UserPlaylistsPage").then(m => ({ default: m.UserPlaylistsPage })));
 const AdminCommentMonitoringPage = lazy(() => import("../pages/admin/AdminCommentMonitoringPage").then(m => ({ default: m.AdminCommentMonitoringPage })));
 const AdminPlaylistMonitoringPage = lazy(() => import("../pages/admin/AdminPlaylistMonitoringPage").then(m => ({ default: m.AdminPlaylistMonitoringPage })));
+const UserPostsPage = lazy(() => import("../pages/user/UserPostsPage").then(m => ({ default: m.UserPostsPage })));
+const AdminPostMonitoringPage = lazy(() => import("../pages/admin/AdminPostMonitoringPage").then(m => ({ default: m.AdminPostMonitoringPage })));
 
 function LazyFallback() {
   return <div className="p-8 text-sm text-neutral-400">Yukleniyor...</div>;
@@ -138,6 +140,7 @@ export const router = createBrowserRouter([
       { path: "analytics/publish", element: <VisibilityGuard targetKey="panel:analytics"><Suspense fallback={<LazyFallback />}><PublishAnalyticsPage /></Suspense></VisibilityGuard> },
       { path: "comments", element: <Suspense fallback={<LazyFallback />}><AdminCommentMonitoringPage /></Suspense> },
       { path: "playlists", element: <Suspense fallback={<LazyFallback />}><AdminPlaylistMonitoringPage /></Suspense> },
+      { path: "posts", element: <Suspense fallback={<LazyFallback />}><AdminPostMonitoringPage /></Suspense> },
       { path: "publish", element: <VisibilityGuard targetKey="panel:publish"><Suspense fallback={<LazyFallback />}><PublishCenterPage /></Suspense></VisibilityGuard> },
       { path: "publish/:recordId", element: <VisibilityGuard targetKey="panel:publish"><Suspense fallback={<LazyFallback />}><PublishDetailPage /></Suspense></VisibilityGuard> },
       { path: "audit-logs", element: <VisibilityGuard targetKey="panel:audit-logs"><Suspense fallback={<LazyFallback />}><AuditLogPage /></Suspense></VisibilityGuard> },
@@ -166,6 +169,7 @@ export const router = createBrowserRouter([
       { path: "analytics", element: <Suspense fallback={<LazyFallback />}><UserAnalyticsPage /></Suspense> },
       { path: "comments", element: <Suspense fallback={<LazyFallback />}><UserCommentsPage /></Suspense> },
       { path: "playlists", element: <Suspense fallback={<LazyFallback />}><UserPlaylistsPage /></Suspense> },
+      { path: "posts", element: <Suspense fallback={<LazyFallback />}><UserPostsPage /></Suspense> },
       { path: "create/video", element: <Suspense fallback={<LazyFallback />}><CreateVideoWizardPage /></Suspense> },
       { path: "create/bulletin", element: <Suspense fallback={<LazyFallback />}><CreateBulletinWizardPage /></Suspense> },
     ],

@@ -45,6 +45,7 @@ export const ADMIN_NAV: AdminNavItem[] = [
   { label: "Etkilesim", section: true },
   { label: "Yorum Izleme", to: "/admin/comments" },
   { label: "Playlist Izleme", to: "/admin/playlists" },
+  { label: "Gonderi Izleme", to: "/admin/posts" },
   { label: "Analytics", section: true },
   { label: "Analytics", to: "/admin/analytics", visibilityKey: "panel:analytics" },
   { label: "YouTube Analytics", to: "/admin/analytics/youtube" },
@@ -79,6 +80,7 @@ export const USER_NAV: UserNavItem[] = [
   { label: "Yayin", to: "/user/publish" },
   { label: "Yorumlar", to: "/user/comments" },
   { label: "Playlist'lerim", to: "/user/playlists" },
+  { label: "Gonderilerim", to: "/user/posts" },
   { label: "Ayarlarim", to: "/user/settings" },
 ];
 
@@ -142,6 +144,7 @@ export const HORIZON_ADMIN_GROUPS: HorizonNavGroup[] = [
     items: [
       { label: "Yorum Izleme", to: "/admin/comments" },
       { label: "Playlist Izleme", to: "/admin/playlists" },
+      { label: "Gonderi Izleme", to: "/admin/posts" },
     ],
   },
   {
@@ -236,6 +239,7 @@ export const HORIZON_USER_GROUPS: HorizonNavGroup[] = [
     items: [
       { label: "Yorumlar", to: "/user/comments" },
       { label: "Playlist'lerim", to: "/user/playlists" },
+      { label: "Gonderilerim", to: "/user/posts" },
     ],
   },
   {
