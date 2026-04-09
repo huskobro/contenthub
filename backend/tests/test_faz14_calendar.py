@@ -1,18 +1,18 @@
 """
-Faz 14 — Content Calendar + Scheduling Surface tests.
+Faz 14 + 14a — Content Calendar + Scheduling Surface + Policy/Inbox Closure tests.
 
-Tests:
-1. Calendar events endpoint returns empty list for no data
-2. ContentProject deadline events appear in calendar
-3. PublishRecord scheduled events appear in calendar
-4. PlatformPost scheduled events appear in calendar
-5. Date range filtering works (out-of-range excluded)
-6. Channel filter works
-7. Event type filter works
-8. Overdue flag set for past-deadline projects
-9. Events sorted by start_at
-10. Owner user filter works
-11. Mixed event sources aggregated correctly
+Tests 1-11: Faz 14 original tests
+Tests 12-21: Faz 14a closure tests
+  12. Channel calendar context returns policy summary
+  13. Channel context with publish_windows_json display
+  14. Channel context with max_daily_posts
+  15. Calendar ↔ inbox relation (inbox_item_id enrichment)
+  16. Overdue event detail includes all fields
+  17. ContentProject platform filter via primary_platform
+  18. Detail panel upgraded fields present in response
+  19. Admin/user scope — channel context respects channel ID
+  20. Channel context with no policy returns defaults
+  21. Inbox cross-ref only matches open items
 """
 
 import uuid
@@ -26,6 +26,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 pytestmark = pytest.mark.asyncio
 
 CAL_BASE = "/api/v1/calendar/events"
+CTX_BASE = "/api/v1/calendar/channel-context"
+POLICY_BASE = "/api/v1/automation-policies"
+INBOX_BASE = "/api/v1/operations-inbox"
 
 
 # ---------------------------------------------------------------------------
@@ -77,6 +80,7 @@ async def _ensure_job(db: AsyncSession) -> str:
 async def _create_project(
     db: AsyncSession, user_id: str, channel_id: str,
     deadline_at: datetime, status: str = "draft",
+    primary_platform: Optional[str] = None,
 ) -> str:
     from app.db.models import ContentProject
     pid = _uuid()
@@ -84,6 +88,7 @@ async def _create_project(
         id=pid, user_id=user_id, channel_profile_id=channel_id,
         module_type="standard_video", title=f"Test Proje {pid[:6]}",
         content_status=status, deadline_at=deadline_at,
+        primary_platform=primary_platform,
     )
     db.add(proj)
     await db.commit()
@@ -359,3 +364,265 @@ async def test_mixed_aggregation(client: AsyncClient, db_session: AsyncSession):
     assert "content_project" in types
     assert "publish_record" in types
     assert "platform_post" in types
+
+
+# ===========================================================================
+# Faz 14a — Policy/Inbox Closure tests
+# ===========================================================================
+
+
+# ---------------------------------------------------------------------------
+# 12. Channel calendar context returns policy summary
+# ---------------------------------------------------------------------------
+
+async def test_channel_context_policy_summary(client: AsyncClient, db_session: AsyncSession):
+    """Channel context endpoint returns policy summary."""
+    channel_id = await _ensure_channel(db_session)
+    # Create a policy for this channel
+    await client.post(POLICY_BASE, json={
+        "channel_profile_id": channel_id,
+        "name": "Cal Context Test",
+        "is_enabled": True,
+        "source_scan_mode": "automatic",
+        "draft_generation_mode": "manual_review",
+        "render_mode": "disabled",
+        "publish_mode": "manual_review",
+        "post_publish_mode": "automatic",
+    })
+
+    resp = await client.get(f"{CTX_BASE}/{channel_id}")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["channel_profile_id"] == channel_id
+    assert data["policy_enabled"] is True
+    assert data["publish_mode"] == "manual_review"
+    assert data["checkpoint_summary"] is not None
+    assert "otomatik" in data["checkpoint_summary"]
+
+
+# ---------------------------------------------------------------------------
+# 13. Channel context with publish_windows_json display
+# ---------------------------------------------------------------------------
+
+async def test_channel_context_publish_windows(client: AsyncClient, db_session: AsyncSession):
+    """publish_windows_json is parsed and displayed."""
+    channel_id = await _ensure_channel(db_session)
+    import json
+    windows = json.dumps([{"days": "Pzt-Cum", "start": "09:00", "end": "18:00"}])
+    await client.post(POLICY_BASE, json={
+        "channel_profile_id": channel_id,
+        "name": "Windows Test",
+        "is_enabled": True,
+        "publish_windows_json": windows,
+    })
+
+    resp = await client.get(f"{CTX_BASE}/{channel_id}")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["publish_windows_display"] is not None
+    assert "09:00" in data["publish_windows_display"]
+    assert "18:00" in data["publish_windows_display"]
+
+
+# ---------------------------------------------------------------------------
+# 14. Channel context with max_daily_posts
+# ---------------------------------------------------------------------------
+
+async def test_channel_context_max_daily_posts(client: AsyncClient, db_session: AsyncSession):
+    """max_daily_posts shown in channel context."""
+    channel_id = await _ensure_channel(db_session)
+    await client.post(POLICY_BASE, json={
+        "channel_profile_id": channel_id,
+        "name": "Max Posts Test",
+        "is_enabled": True,
+        "max_daily_posts": 3,
+    })
+
+    resp = await client.get(f"{CTX_BASE}/{channel_id}")
+    assert resp.status_code == 200
+    assert resp.json()["max_daily_posts"] == 3
+
+
+# ---------------------------------------------------------------------------
+# 15. Calendar ↔ inbox relation (inbox_item_id enrichment)
+# ---------------------------------------------------------------------------
+
+async def test_calendar_inbox_relation(client: AsyncClient, db_session: AsyncSession):
+    """Events with matching inbox items get inbox_item_id populated."""
+    user_id = await _ensure_user(db_session)
+    ch_id = await _ensure_channel(db_session, user_id)
+    deadline = _now() + timedelta(days=2)
+    proj_id = await _create_project(db_session, user_id, ch_id, deadline)
+
+    # Create an inbox item linked to this project
+    inbox_resp = await client.post(INBOX_BASE, json={
+        "item_type": "publish_review",
+        "title": "Proje onay bekliyor",
+        "owner_user_id": user_id,
+        "related_entity_type": "content_project",
+        "related_entity_id": proj_id,
+    })
+    assert inbox_resp.status_code == 201
+
+    # Get calendar events
+    resp = await client.get(CAL_BASE, params=_params(
+        _now() - timedelta(days=1), _now() + timedelta(days=7),
+    ))
+    assert resp.status_code == 200
+    proj_events = [e for e in resp.json() if e["event_type"] == "content_project" and e["related_project_id"] == proj_id]
+    assert len(proj_events) >= 1
+    assert proj_events[0]["inbox_item_id"] is not None
+    assert proj_events[0]["inbox_item_status"] == "open"
+
+
+# ---------------------------------------------------------------------------
+# 16. Overdue event detail includes all fields
+# ---------------------------------------------------------------------------
+
+async def test_overdue_event_detail_fields(client: AsyncClient, db_session: AsyncSession):
+    """Overdue event has correct fields in response."""
+    user_id = await _ensure_user(db_session)
+    ch_id = await _ensure_channel(db_session, user_id)
+    past = _now() - timedelta(hours=3)
+    await _create_project(db_session, user_id, ch_id, past, status="draft")
+
+    resp = await client.get(CAL_BASE, params=_params(
+        _now() - timedelta(days=2), _now() + timedelta(days=1),
+    ))
+    assert resp.status_code == 200
+    overdue = [e for e in resp.json() if e["is_overdue"]]
+    assert len(overdue) >= 1
+    ev = overdue[0]
+    assert ev["event_type"] == "content_project"
+    assert ev["channel_profile_id"] is not None
+    assert ev["owner_user_id"] is not None
+    assert ev["status"] == "draft"
+    assert ev["action_url"] is not None
+    assert ev["meta_summary"] is not None
+
+
+# ---------------------------------------------------------------------------
+# 17. ContentProject platform filter via primary_platform
+# ---------------------------------------------------------------------------
+
+async def test_project_platform_filter(client: AsyncClient, db_session: AsyncSession):
+    """Platform filter restricts ContentProject events via primary_platform."""
+    user_id = await _ensure_user(db_session)
+    ch_id = await _ensure_channel(db_session, user_id)
+    deadline = _now() + timedelta(days=2)
+    await _create_project(db_session, user_id, ch_id, deadline, primary_platform="youtube")
+    await _create_project(db_session, user_id, ch_id, deadline, primary_platform="tiktok")
+
+    resp = await client.get(CAL_BASE, params=_params(
+        _now() - timedelta(days=1), _now() + timedelta(days=7),
+        platform="youtube", event_type="content_project",
+    ))
+    assert resp.status_code == 200
+    for ev in resp.json():
+        assert ev["primary_platform"] == "youtube" or ev["platform"] == "youtube"
+
+
+# ---------------------------------------------------------------------------
+# 18. Detail panel upgraded fields present in response
+# ---------------------------------------------------------------------------
+
+async def test_detail_upgraded_fields(client: AsyncClient, db_session: AsyncSession):
+    """CalendarEvent response includes Faz 14a fields."""
+    user_id = await _ensure_user(db_session)
+    ch_id = await _ensure_channel(db_session, user_id)
+    proj_id = await _create_project(db_session, user_id, ch_id, _now() + timedelta(days=1), primary_platform="youtube")
+
+    resp = await client.get(CAL_BASE, params=_params(
+        _now() - timedelta(days=1), _now() + timedelta(days=7),
+        event_type="content_project", platform="youtube",
+    ))
+    assert resp.status_code == 200
+    data = resp.json()
+    # Find our specific project
+    matched = [e for e in data if e["related_project_id"] == proj_id]
+    assert len(matched) >= 1
+    ev = matched[0]
+    # Faz 14a fields exist in response
+    assert "primary_platform" in ev
+    assert "inbox_item_id" in ev
+    assert "inbox_item_status" in ev
+    assert ev["primary_platform"] == "youtube"
+
+
+# ---------------------------------------------------------------------------
+# 19. Admin/user scope — channel context respects channel ID
+# ---------------------------------------------------------------------------
+
+async def test_channel_context_scope(client: AsyncClient, db_session: AsyncSession):
+    """Channel context returns data for the specific channel only."""
+    user_id = await _ensure_user(db_session)
+    ch_a = await _ensure_channel(db_session, user_id)
+    ch_b = await _ensure_channel(db_session, user_id)
+
+    await client.post(POLICY_BASE, json={
+        "channel_profile_id": ch_a,
+        "name": "Policy A",
+        "is_enabled": True,
+        "max_daily_posts": 10,
+    })
+
+    # ch_a has policy
+    resp_a = await client.get(f"{CTX_BASE}/{ch_a}")
+    assert resp_a.status_code == 200
+    assert resp_a.json()["max_daily_posts"] == 10
+    assert resp_a.json()["policy_id"] is not None
+
+    # ch_b has no policy
+    resp_b = await client.get(f"{CTX_BASE}/{ch_b}")
+    assert resp_b.status_code == 200
+    assert resp_b.json()["policy_id"] is None
+    assert resp_b.json()["max_daily_posts"] is None
+
+
+# ---------------------------------------------------------------------------
+# 20. Channel context with no policy returns defaults
+# ---------------------------------------------------------------------------
+
+async def test_channel_context_no_policy(client: AsyncClient, db_session: AsyncSession):
+    """Channel with no policy returns sensible defaults."""
+    ch_id = await _ensure_channel(db_session)
+
+    resp = await client.get(f"{CTX_BASE}/{ch_id}")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["policy_id"] is None
+    assert data["policy_enabled"] is False
+    assert data["publish_mode"] == "disabled"
+    assert data["open_inbox_count"] == 0
+
+
+# ---------------------------------------------------------------------------
+# 21. Inbox cross-ref only matches open items
+# ---------------------------------------------------------------------------
+
+async def test_inbox_crossref_only_open(client: AsyncClient, db_session: AsyncSession):
+    """Resolved inbox items are not cross-referenced in calendar events."""
+    user_id = await _ensure_user(db_session)
+    ch_id = await _ensure_channel(db_session, user_id)
+    deadline = _now() + timedelta(days=2)
+    proj_id = await _create_project(db_session, user_id, ch_id, deadline)
+
+    # Create and then resolve an inbox item
+    inbox_resp = await client.post(INBOX_BASE, json={
+        "item_type": "publish_review",
+        "title": "Resolved item",
+        "owner_user_id": user_id,
+        "related_entity_type": "content_project",
+        "related_entity_id": proj_id,
+    })
+    item_id = inbox_resp.json()["id"]
+    await client.patch(f"{INBOX_BASE}/{item_id}", json={"status": "resolved"})
+
+    # Calendar events should NOT have this resolved item
+    resp = await client.get(CAL_BASE, params=_params(
+        _now() - timedelta(days=1), _now() + timedelta(days=7),
+    ))
+    assert resp.status_code == 200
+    proj_events = [e for e in resp.json() if e["related_project_id"] == proj_id]
+    assert len(proj_events) >= 1
+    assert proj_events[0]["inbox_item_id"] is None

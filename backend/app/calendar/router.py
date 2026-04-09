@@ -1,8 +1,10 @@
 """
-Calendar router — Faz 14.
+Calendar router — Faz 14 + 14a.
 
 Exposes unified calendar events aggregated from
 ContentProject, PublishRecord, PlatformPost.
+
+Faz 14a: Added channel-context endpoint for policy/inbox summary.
 """
 
 from datetime import datetime, timezone
@@ -12,8 +14,8 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
-from app.calendar.schemas import CalendarEvent
-from app.calendar.service import get_calendar_events
+from app.calendar.schemas import CalendarEvent, ChannelCalendarContext
+from app.calendar.service import get_calendar_events, get_channel_calendar_context
 
 router = APIRouter(prefix="/calendar", tags=["calendar"])
 
@@ -38,3 +40,12 @@ async def list_calendar_events(
         platform=platform,
         event_type=event_type,
     )
+
+
+@router.get("/channel-context/{channel_profile_id}", response_model=ChannelCalendarContext)
+async def get_channel_context(
+    channel_profile_id: str,
+    db: AsyncSession = Depends(get_db),
+) -> ChannelCalendarContext:
+    """Return policy + inbox summary for a channel — used by calendar UI."""
+    return await get_channel_calendar_context(db, channel_profile_id)

@@ -1,19 +1,26 @@
 """
-Calendar aggregation service — Faz 14.
+Calendar aggregation service — Faz 14 + 14a.
 
 Aggregates scheduling data from ContentProject, PublishRecord, PlatformPost
 into unified CalendarEvent list.
+
+Faz 14a: Added policy/inbox context, platform filter for projects,
+inbox cross-reference, and channel context endpoint support.
 """
 
+import json
 import logging
 from datetime import datetime, timezone
 from typing import Optional
 
-from sqlalchemy import select, and_, or_
+from sqlalchemy import select, and_, or_, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models import ContentProject, PublishRecord, PlatformPost
-from app.calendar.schemas import CalendarEvent
+from app.db.models import (
+    ContentProject, PublishRecord, PlatformPost,
+    OperationsInboxItem, AutomationPolicy, ChannelProfile,
+)
+from app.calendar.schemas import CalendarEvent, ChannelCalendarContext
 
 logger = logging.getLogger(__name__)
 
@@ -27,6 +34,26 @@ def _safe_lt(dt_a: datetime, dt_b: datetime) -> bool:
     a = dt_a.replace(tzinfo=None) if dt_a.tzinfo else dt_a
     b = dt_b.replace(tzinfo=None) if dt_b.tzinfo else dt_b
     return a < b
+
+
+def _parse_publish_windows(raw: Optional[str]) -> Optional[str]:
+    """Parse publish_windows_json into human-readable Turkish summary."""
+    if not raw:
+        return None
+    try:
+        windows = json.loads(raw)
+        if not isinstance(windows, list) or len(windows) == 0:
+            return None
+        parts = []
+        for w in windows:
+            days = w.get("days", "")
+            start = w.get("start", "")
+            end = w.get("end", "")
+            if start and end:
+                parts.append(f"{days} {start}-{end}" if days else f"{start}-{end}")
+        return " | ".join(parts) if parts else raw
+    except (json.JSONDecodeError, TypeError):
+        return raw
 
 
 async def get_calendar_events(
@@ -51,7 +78,7 @@ async def get_calendar_events(
         events.extend(
             await _collect_project_events(
                 db, start_date, end_date, owner_user_id,
-                channel_profile_id, now,
+                channel_profile_id, platform, now,
             )
         )
 
@@ -73,6 +100,9 @@ async def get_calendar_events(
             )
         )
 
+    # --- Enrich with inbox cross-references ---
+    await _enrich_inbox_relations(db, events)
+
     # Sort by start_at
     events.sort(key=lambda e: e.start_at)
     return events
@@ -84,6 +114,7 @@ async def _collect_project_events(
     end_date: datetime,
     owner_user_id: Optional[str],
     channel_profile_id: Optional[str],
+    platform: Optional[str],
     now: datetime,
 ) -> list[CalendarEvent]:
     """Collect ContentProject deadline events."""
@@ -96,6 +127,9 @@ async def _collect_project_events(
         q = q.where(ContentProject.user_id == owner_user_id)
     if channel_profile_id:
         q = q.where(ContentProject.channel_profile_id == channel_profile_id)
+    # Faz 14a: platform filter via primary_platform
+    if platform:
+        q = q.where(ContentProject.primary_platform == platform)
     q = q.limit(200)
 
     result = await db.execute(q)
@@ -116,6 +150,8 @@ async def _collect_project_events(
             related_project_id=p.id,
             start_at=p.deadline_at,
             status=p.content_status,
+            platform=p.primary_platform,
+            primary_platform=p.primary_platform,
             module_type=p.module_type,
             action_url=f"/user/projects/{p.id}",
             meta_summary=f"Durum: {p.content_status} · Asama: {p.current_stage or '—'}",
@@ -134,7 +170,6 @@ async def _collect_publish_events(
     now: datetime,
 ) -> list[CalendarEvent]:
     """Collect PublishRecord scheduled/published events."""
-    # Get records with scheduled_at or published_at in range
     q = select(PublishRecord).where(
         or_(
             and_(
@@ -158,7 +193,6 @@ async def _collect_publish_events(
 
     events = []
     for r in records:
-        # Use scheduled_at if available, otherwise published_at, otherwise created_at
         start = r.scheduled_at or r.published_at or r.created_at
         is_overdue = (
             r.scheduled_at is not None
@@ -170,7 +204,7 @@ async def _collect_publish_events(
             id=f"pub-{r.id}",
             event_type="publish_record",
             title=f"{title_prefix}: {r.content_ref_type}",
-            channel_profile_id=None,  # PublishRecord doesn't have direct channel FK
+            channel_profile_id=None,
             owner_user_id=None,
             related_project_id=getattr(r, "content_project_id", None),
             related_publish_record_id=r.id,
@@ -239,8 +273,132 @@ async def _collect_post_events(
             end_at=p.posted_at if p.scheduled_for else None,
             status=p.status,
             platform=p.platform,
-            action_url=f"/user/posts",
+            action_url="/user/posts",
             meta_summary=f"Durum: {p.status} · Tip: {p.post_type}",
             is_overdue=is_overdue,
         ))
     return events
+
+
+async def _enrich_inbox_relations(
+    db: AsyncSession, events: list[CalendarEvent],
+) -> None:
+    """
+    Cross-reference calendar events with OperationsInboxItem.
+
+    Matches by related_entity_type + related_entity_id against event source IDs.
+    Only matches open/acknowledged inbox items (resolved ones are ignored).
+    """
+    if not events:
+        return
+
+    # Build lookup: (entity_type, entity_id) -> event indices
+    entity_map: dict[tuple[str, str], list[int]] = {}
+    for idx, ev in enumerate(events):
+        if ev.related_project_id:
+            key = ("content_project", ev.related_project_id)
+            entity_map.setdefault(key, []).append(idx)
+        if ev.related_publish_record_id:
+            key = ("publish_record", ev.related_publish_record_id)
+            entity_map.setdefault(key, []).append(idx)
+        if ev.related_post_id:
+            key = ("platform_post", ev.related_post_id)
+            entity_map.setdefault(key, []).append(idx)
+
+    if not entity_map:
+        return
+
+    # Query open inbox items matching these entities
+    entity_type_ids = list(entity_map.keys())
+    conditions = []
+    for etype, eid in entity_type_ids:
+        conditions.append(
+            and_(
+                OperationsInboxItem.related_entity_type == etype,
+                OperationsInboxItem.related_entity_id == eid,
+            )
+        )
+
+    if not conditions:
+        return
+
+    q = (
+        select(OperationsInboxItem)
+        .where(
+            OperationsInboxItem.status.in_(["open", "acknowledged"]),
+            or_(*conditions),
+        )
+        .limit(500)
+    )
+    result = await db.execute(q)
+    inbox_items = result.scalars().all()
+
+    # Enrich events
+    for item in inbox_items:
+        key = (item.related_entity_type, item.related_entity_id)
+        indices = entity_map.get(key, [])
+        for idx in indices:
+            events[idx].inbox_item_id = item.id
+            events[idx].inbox_item_status = item.status
+
+
+async def get_channel_calendar_context(
+    db: AsyncSession,
+    channel_profile_id: str,
+) -> ChannelCalendarContext:
+    """
+    Get policy + inbox summary for a channel — used by calendar detail panel.
+
+    Returns policy state, publish constraints, and open inbox count.
+    """
+    # Channel name
+    channel = await db.get(ChannelProfile, channel_profile_id)
+    channel_name = channel.profile_name if channel else None
+
+    # Policy
+    q = select(AutomationPolicy).where(
+        AutomationPolicy.channel_profile_id == channel_profile_id
+    )
+    result = await db.execute(q)
+    policy = result.scalar_one_or_none()
+
+    # Open inbox count for this channel
+    count_q = select(func.count(OperationsInboxItem.id)).where(
+        OperationsInboxItem.channel_profile_id == channel_profile_id,
+        OperationsInboxItem.status.in_(["open", "acknowledged"]),
+    )
+    count_result = await db.execute(count_q)
+    open_count = count_result.scalar() or 0
+
+    if not policy:
+        return ChannelCalendarContext(
+            channel_profile_id=channel_profile_id,
+            channel_name=channel_name,
+            open_inbox_count=open_count,
+        )
+
+    # Build checkpoint summary
+    modes = {
+        "source_scan": policy.source_scan_mode,
+        "draft": policy.draft_generation_mode,
+        "render": policy.render_mode,
+        "publish": policy.publish_mode,
+        "post_publish": policy.post_publish_mode,
+    }
+    auto_count = sum(1 for m in modes.values() if m == "automatic")
+    review_count = sum(1 for m in modes.values() if m == "manual_review")
+    disabled_count = sum(1 for m in modes.values() if m == "disabled")
+    checkpoint_summary = f"{auto_count} otomatik · {review_count} onay · {disabled_count} devre disi"
+
+    return ChannelCalendarContext(
+        channel_profile_id=channel_profile_id,
+        channel_name=channel_name,
+        policy_id=policy.id,
+        policy_enabled=policy.is_enabled,
+        publish_mode=policy.publish_mode,
+        max_daily_posts=policy.max_daily_posts,
+        publish_windows_json=policy.publish_windows_json,
+        publish_windows_display=_parse_publish_windows(policy.publish_windows_json),
+        checkpoint_summary=checkpoint_summary,
+        open_inbox_count=open_count,
+    )

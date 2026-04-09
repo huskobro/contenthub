@@ -23,6 +23,10 @@ export interface CalendarEvent {
   action_url: string | null;
   meta_summary: string | null;
   is_overdue: boolean;
+  // Faz 14a — policy/inbox context
+  primary_platform: string | null;
+  inbox_item_id: string | null;
+  inbox_item_status: string | null;
 }
 
 export interface CalendarEventsParams {
@@ -34,6 +38,19 @@ export interface CalendarEventsParams {
   event_type?: string;
 }
 
+export interface ChannelCalendarContext {
+  channel_profile_id: string;
+  channel_name: string | null;
+  policy_id: string | null;
+  policy_enabled: boolean;
+  publish_mode: string;
+  max_daily_posts: number | null;
+  publish_windows_json: string | null;
+  publish_windows_display: string | null;
+  checkpoint_summary: string | null;
+  open_inbox_count: number;
+}
+
 // ---------------------------------------------------------------------------
 // API calls
 // ---------------------------------------------------------------------------
@@ -42,4 +59,12 @@ export function fetchCalendarEvents(
   params: CalendarEventsParams,
 ): Promise<CalendarEvent[]> {
   return api.get<CalendarEvent[]>(`${BASE}/events`, params);
+}
+
+export function fetchChannelCalendarContext(
+  channelProfileId: string,
+): Promise<ChannelCalendarContext> {
+  return api.get<ChannelCalendarContext>(
+    `${BASE}/channel-context/${channelProfileId}`,
+  );
 }
