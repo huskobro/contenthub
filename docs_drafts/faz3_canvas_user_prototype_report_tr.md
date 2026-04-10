@@ -340,9 +340,10 @@ disinda.)
 
 6. **Commit hash & push durumu**
 
-   Commit hash: faz 3 dosyalari staged + commit edildi, ardindan
-   `main`'e push'landi. Commit ve push sonuclari git log'dan
-   dogrulanabilir (bir sonraki bolum).
+   Commit hash: `72e6614` — `feat(surfaces): Faz 3 — Canvas user
+   prototype (user dashboard/projects/detail overrides)`. 14 dosya
+   degisti (+2384 / -14). `git push origin main` basarili:
+   `143177a..72e6614  main -> main`.
 
 ## 7. Bilinen sinirlar / teknik borc
 
