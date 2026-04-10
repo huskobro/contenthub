@@ -73,18 +73,22 @@ interface AppHeaderProps {
   area: "Admin" | "User";
 }
 
+// F48 fix: panel switch copy standardizasyonu — tum surface'lerde
+// ayni etiket: "Yönetim Paneli" (admin'e git) / "Kullanıcı Paneli"
+// (user'a git). Legacy AppHeader daha once "Yonetim Paneline Gec" /
+// "Kullanici Paneline Gec" kullaniyordu; birincil fix-pack'te atlanmis.
 const AREA_LABELS: Record<string, { label: string; switchLabel: string; switchTo: string; switchTitle: string }> = {
   Admin: {
-    label: "Yonetim Paneli",
-    switchLabel: "Kullanici Paneline Gec",
+    label: "Yönetim Paneli",
+    switchLabel: "Kullanıcı Paneli",
     switchTo: "/user",
-    switchTitle: "Kullanici paneline gecis yapin",
+    switchTitle: "Kullanıcı Paneli",
   },
   User: {
-    label: "Kullanici Paneli",
-    switchLabel: "Yonetim Paneline Gec",
+    label: "Kullanıcı Paneli",
+    switchLabel: "Yönetim Paneli",
     switchTo: "/admin",
-    switchTitle: "Yonetim paneline gecis yapin",
+    switchTitle: "Yönetim Paneli",
   },
 };
 
