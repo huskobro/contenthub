@@ -189,11 +189,18 @@ Delta:
 
 ## 9. Commit hash
 
-`TBD` — commit asamasinda doldurulacak.
+`2c80cec` — `feat(surfaces): Faz 4B — default surface strategy (admin=bridge, user=canvas)`
+
+```
+[main 2c80cec] feat(surfaces): Faz 4B — default surface strategy (admin=bridge, user=canvas)
+ 3 files changed, 585 insertions(+), 6 deletions(-)
+ create mode 100644 docs_drafts/default_surface_strategy_report_tr.md
+ create mode 100644 frontend/src/tests/default-surface-strategy.unit.test.ts
+```
 
 ## 10. Push durumu
 
-`TBD` — push asamasinda doldurulacak.
+`55e24c8..2c80cec  main -> main` — `origin/main` basariyla guncellendi.
 
 ---
 
@@ -227,5 +234,5 @@ Delta:
 5. **Ayar degisimi:** sadece iki `builtin_default` (admin → bridge, user → canvas) + genisletilmis help_text. Kill-switch, enabled flag'ler, admin_value_json, activate script — dokunulmadi
 6. **Explicit secim korundu mu:** EVET (5 test senaryosuyla dogrulandi — atrium, horizon, legacy, kill-switch, gate-off)
 7. **Test sonucu:** tsc ✓ | vite build ✓ | 15/15 yeni unit test ✓ | 168/168 targeted regression ✓ | full suite 243 baseline (+15 yeni passing test, zero regresyon)
-8. **Commit hash:** TBD
-9. **Push durumu:** TBD
+8. **Commit hash:** `2c80cec`
+9. **Push durumu:** `55e24c8..2c80cec  main -> main` — origin/main guncellendi
