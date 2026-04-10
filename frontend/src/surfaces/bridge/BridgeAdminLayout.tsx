@@ -24,7 +24,8 @@
  *     simply renders AdminLayout instead of this component.
  */
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import type { KeyboardEvent as ReactKeyboardEvent } from "react";
 import { Outlet, useNavigate, useLocation, NavLink } from "react-router-dom";
 import { ThemeProvider } from "../../components/design-system/ThemeProvider";
 import { ToastContainer } from "../../components/design-system/Toast";
@@ -157,12 +158,119 @@ export function BridgeAdminLayout() {
   }, [navigate]);
 
   const activeSlot = pickActiveSlot(location.pathname);
+  const activeSlotIndex = BRIDGE_RAIL.findIndex((s) => s.id === activeSlot.id);
 
   // Context panel items = every horizon group whose id matches the active slot,
   // flattened into a single list of (groupLabel, items[]) sections.
   const contextSections = useMemo(() => {
     return groups.filter((g) => activeSlot.groupIds.includes(g.id));
   }, [groups, activeSlot]);
+
+  // ----- Keyboard navigation on the rail ----------------------------------
+  // Roving tabindex: only one rail button is tabbable at a time. Arrow keys
+  // move focus, Enter/Space activates. Digits 1..6 are global hotkeys when
+  // the user is NOT typing into an input/textarea/contenteditable field.
+  const railRef = useRef<HTMLElement | null>(null);
+  const [focusedRailIndex, setFocusedRailIndex] = useState<number>(
+    activeSlotIndex >= 0 ? activeSlotIndex : 0,
+  );
+
+  // Keep focused rail index synced with the active route so roving tabindex
+  // lands on the visually-active slot after a route change.
+  useEffect(() => {
+    if (activeSlotIndex >= 0) {
+      setFocusedRailIndex(activeSlotIndex);
+    }
+  }, [activeSlotIndex]);
+
+  /**
+   * Resolve the navigation target for a rail slot. Prefers the first visible
+   * nav item inside that slot's horizon group, falls back to the slot's own
+   * prefix if no items are visible (visibility engine could have hidden them).
+   */
+  const navigateToSlot = useCallback(
+    (slot: BridgeRailSlot) => {
+      const slotGroup = groups.find((g) => slot.groupIds.includes(g.id));
+      const slotTarget = slotGroup?.items?.[0]?.to ?? slot.matchPrefix;
+      navigate(slotTarget);
+    },
+    [groups, navigate],
+  );
+
+  const focusRailButton = useCallback((index: number) => {
+    const root = railRef.current;
+    if (!root) return;
+    const btn = root.querySelector<HTMLButtonElement>(
+      `[data-testid="bridge-rail-${BRIDGE_RAIL[index]?.id}"]`,
+    );
+    btn?.focus();
+  }, []);
+
+  const handleRailKeyDown = useCallback(
+    (event: ReactKeyboardEvent<HTMLElement>) => {
+      const n = BRIDGE_RAIL.length;
+      if (n === 0) return;
+      let nextIndex = focusedRailIndex;
+      switch (event.key) {
+        case "ArrowDown":
+        case "ArrowRight":
+          nextIndex = (focusedRailIndex + 1) % n;
+          break;
+        case "ArrowUp":
+        case "ArrowLeft":
+          nextIndex = (focusedRailIndex - 1 + n) % n;
+          break;
+        case "Home":
+          nextIndex = 0;
+          break;
+        case "End":
+          nextIndex = n - 1;
+          break;
+        case "Enter":
+        case " ": {
+          event.preventDefault();
+          const slot = BRIDGE_RAIL[focusedRailIndex];
+          if (slot) navigateToSlot(slot);
+          return;
+        }
+        default:
+          return;
+      }
+      event.preventDefault();
+      setFocusedRailIndex(nextIndex);
+      // Defer focus to next tick so the tabIndex update is applied first.
+      requestAnimationFrame(() => focusRailButton(nextIndex));
+    },
+    [focusedRailIndex, navigateToSlot, focusRailButton],
+  );
+
+  // Document-level digit hotkey: 1..6 jump directly to the matching slot,
+  // but only when the user is not typing in an editable element. This makes
+  // the rail feel native for keyboard-first operators.
+  useEffect(() => {
+    const isEditable = (el: EventTarget | null): boolean => {
+      if (!(el instanceof HTMLElement)) return false;
+      const tag = el.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return true;
+      if (el.isContentEditable) return true;
+      return false;
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      if (isEditable(e.target)) return;
+      const digit = parseInt(e.key, 10);
+      if (!Number.isNaN(digit) && digit >= 1 && digit <= BRIDGE_RAIL.length) {
+        const slot = BRIDGE_RAIL[digit - 1];
+        if (slot) {
+          e.preventDefault();
+          setFocusedRailIndex(digit - 1);
+          navigateToSlot(slot);
+        }
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [navigateToSlot]);
 
   return (
     <ThemeProvider>
@@ -185,26 +293,34 @@ export function BridgeAdminLayout() {
           <div className="h-header flex items-center justify-center w-full border-b border-border-subtle">
             <span className="text-[10px] font-mono tracking-widest text-neutral-500">CH</span>
           </div>
-          <nav className="flex flex-col gap-1 py-2 w-full items-center">
-            {BRIDGE_RAIL.map((slot) => {
+          <nav
+            ref={(el) => {
+              railRef.current = el;
+            }}
+            className="flex flex-col gap-1 py-2 w-full items-center"
+            role="navigation"
+            aria-label="Bridge operasyon rayi"
+            onKeyDown={handleRailKeyDown}
+            data-testid="bridge-rail-nav"
+          >
+            {BRIDGE_RAIL.map((slot, index) => {
               const isActive = slot.id === activeSlot.id;
+              const isFocused = index === focusedRailIndex;
               return (
                 <button
                   key={slot.id}
                   onClick={() => {
-                    // Navigate to the first concrete item of the slot's first group,
-                    // or fall back to the prefix itself if no items are visible.
-                    const group = groups.find((g) => activeSlot.groupIds.includes(g.id));
-                    const target = group?.items?.[0]?.to ?? slot.matchPrefix;
-                    // For the current slot, prefer its own default
-                    const slotGroup = groups.find((g) => slot.groupIds.includes(g.id));
-                    const slotTarget = slotGroup?.items?.[0]?.to ?? slot.matchPrefix;
-                    navigate(slot.id === activeSlot.id ? target : slotTarget);
+                    setFocusedRailIndex(index);
+                    navigateToSlot(slot);
                   }}
-                  title={slot.label}
+                  onFocus={() => setFocusedRailIndex(index)}
+                  title={`${slot.label} (${index + 1})`}
                   data-testid={`bridge-rail-${slot.id}`}
                   data-active={isActive ? "true" : undefined}
-                  className={`w-10 h-10 flex items-center justify-center rounded-md text-[11px] font-mono font-semibold tracking-wide transition-colors cursor-pointer border ${
+                  aria-label={slot.label}
+                  aria-current={isActive ? "page" : undefined}
+                  tabIndex={isFocused ? 0 : -1}
+                  className={`w-10 h-10 flex items-center justify-center rounded-md text-[11px] font-mono font-semibold tracking-wide transition-colors cursor-pointer border focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 ${
                     isActive
                       ? "bg-brand-600 text-white border-brand-600"
                       : "bg-transparent text-neutral-500 border-transparent hover:bg-neutral-100 hover:text-neutral-800"
@@ -280,8 +396,11 @@ export function BridgeAdminLayout() {
             data-testid="bridge-header"
           >
             <div className="flex items-center gap-2 text-xs text-neutral-500 min-w-0 flex-1">
-              <span className="font-mono uppercase tracking-wider text-[10px] text-neutral-400">
-                bridge / ops
+              <span
+                className="font-mono uppercase tracking-wider text-[10px] text-neutral-400"
+                data-testid="bridge-breadcrumb"
+              >
+                bridge / {activeSlot.label.toLowerCase()}
               </span>
               <span className="text-neutral-300">|</span>
               <span className="font-medium text-neutral-700 truncate">{location.pathname}</span>

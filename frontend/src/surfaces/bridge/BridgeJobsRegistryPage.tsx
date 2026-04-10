@@ -21,11 +21,20 @@
  *     and the legacy page renders instead. No code path here runs.
  */
 
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { KeyboardEvent as ReactKeyboardEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useJobsList } from "../../hooks/useJobsList";
-import { markJobsAsTestData, cloneJob, type JobResponse } from "../../api/jobsApi";
+import {
+  markJobsAsTestData,
+  cloneJob,
+  cancelJob,
+  retryJob,
+  fetchAllowedActions,
+  type AllowedActions,
+  type JobResponse,
+} from "../../api/jobsApi";
 import { JobDetailPanel } from "../../components/jobs/JobDetailPanel";
 import { useToast } from "../../hooks/useToast";
 
@@ -97,6 +106,47 @@ export function BridgeJobsRegistryPage() {
     onError: () => toast.error("Klonlama basarisiz"),
   });
 
+  // Capability-gated inline actions. We intentionally reuse the existing
+  // allowed-actions endpoint — the backend owns the state machine, and this
+  // page is forbidden from fabricating new transitions. Disabled buttons are
+  // rendered with a title explaining why, so the operator always knows.
+  const cancelMutation = useMutation({
+    mutationFn: (jobId: string) => cancelJob(jobId),
+    onSuccess: (_data, jobId) => {
+      queryClient.invalidateQueries({ queryKey: ["jobs"] });
+      queryClient.invalidateQueries({ queryKey: ["job-detail", jobId] });
+      queryClient.invalidateQueries({ queryKey: ["job-actions", jobId] });
+      toast.success("Job iptal talebi gonderildi");
+    },
+    onError: (err: unknown) => {
+      const msg = err instanceof Error ? err.message : "Iptal basarisiz";
+      toast.error(msg);
+    },
+  });
+
+  const retryMutation = useMutation({
+    mutationFn: (jobId: string) => retryJob(jobId),
+    onSuccess: (_data, jobId) => {
+      queryClient.invalidateQueries({ queryKey: ["jobs"] });
+      queryClient.invalidateQueries({ queryKey: ["job-detail", jobId] });
+      queryClient.invalidateQueries({ queryKey: ["job-actions", jobId] });
+      toast.success("Retry tetiklendi");
+    },
+    onError: (err: unknown) => {
+      const msg = err instanceof Error ? err.message : "Retry basarisiz";
+      toast.error(msg);
+    },
+  });
+
+  // Allowed actions for the currently selected job. Gated entirely by
+  // capability flags from the backend — no client-side guessing.
+  const { data: allowedActions } = useQuery<AllowedActions>({
+    queryKey: ["job-actions", selectedId, includeArchived],
+    queryFn: () => fetchAllowedActions(selectedId as string),
+    enabled: !!selectedId,
+    staleTime: 5_000,
+  });
+
   const rawJobs: JobResponse[] = jobs ?? [];
 
   const bucketCounts = useMemo(() => {
@@ -126,6 +176,73 @@ export function BridgeJobsRegistryPage() {
       return true;
     });
   }, [rawJobs, bucketFilter, moduleFilter]);
+
+  // ----- Keyboard navigation inside the job list -------------------------
+  // ArrowUp/Down move the selection, Enter opens the cockpit. Focus is kept
+  // on a single tabbable container so Tab still moves the user out cleanly.
+  const listRef = useRef<HTMLUListElement | null>(null);
+  const selectedIndex = useMemo(() => {
+    if (!selectedId) return -1;
+    return filteredJobs.findIndex((j) => j.id === selectedId);
+  }, [filteredJobs, selectedId]);
+
+  const moveSelection = useCallback(
+    (delta: number) => {
+      if (filteredJobs.length === 0) return;
+      const current = selectedIndex >= 0 ? selectedIndex : 0;
+      const next = Math.max(0, Math.min(filteredJobs.length - 1, current + delta));
+      const nextJob = filteredJobs[next];
+      if (nextJob) setSelectedId(nextJob.id);
+    },
+    [filteredJobs, selectedIndex],
+  );
+
+  const handleListKeyDown = useCallback(
+    (event: ReactKeyboardEvent<HTMLUListElement>) => {
+      if (filteredJobs.length === 0) return;
+      switch (event.key) {
+        case "ArrowDown":
+        case "j":
+          event.preventDefault();
+          moveSelection(1);
+          break;
+        case "ArrowUp":
+        case "k":
+          event.preventDefault();
+          moveSelection(-1);
+          break;
+        case "Home":
+          event.preventDefault();
+          setSelectedId(filteredJobs[0]?.id ?? null);
+          break;
+        case "End":
+          event.preventDefault();
+          setSelectedId(filteredJobs[filteredJobs.length - 1]?.id ?? null);
+          break;
+        case "Enter":
+          if (selectedId) {
+            event.preventDefault();
+            navigate(`/admin/jobs/${selectedId}`);
+          }
+          break;
+        default:
+          break;
+      }
+    },
+    [filteredJobs, moveSelection, navigate, selectedId],
+  );
+
+  // Scroll the selected row into view after keyboard navigation changes it.
+  // jsdom (test env) does not implement scrollIntoView, so guard the call.
+  useEffect(() => {
+    if (!selectedId) return;
+    const root = listRef.current;
+    if (!root) return;
+    const row = root.querySelector<HTMLLIElement>(`[data-testid="bridge-jobs-row-${selectedId}"]`);
+    if (row && typeof row.scrollIntoView === "function") {
+      row.scrollIntoView({ block: "nearest" });
+    }
+  }, [selectedId]);
 
   return (
     <div className="flex flex-col gap-3" data-testid="bridge-jobs-registry">
@@ -194,10 +311,13 @@ export function BridgeJobsRegistryPage() {
       {/* ---- Split view: list (left) + inline drawer (right) ------------- */}
       <div className="grid gap-3" style={{ gridTemplateColumns: "minmax(0, 3fr) minmax(0, 2fr)" }}>
         {/* ---- Dense job list --------------------------------------------- */}
-        <div className="border border-border-subtle rounded-md bg-surface-page overflow-hidden">
-          <div className="px-3 py-2 border-b border-border-subtle bg-surface-inset flex items-center justify-between">
+        <div className="border border-border-subtle rounded-md bg-surface-page overflow-hidden flex flex-col">
+          <div className="px-3 py-2 border-b border-border-subtle bg-surface-inset flex items-center justify-between sticky top-0 z-10">
             <span className="text-[11px] font-semibold uppercase tracking-wider text-neutral-600">
               Isler ({filteredJobs.length})
+              <span className="ml-2 text-[10px] font-mono text-neutral-400 normal-case tracking-normal">
+                ↑↓ gezin · Enter kokpit
+              </span>
             </span>
             {bucketFilter && (
               <button
@@ -209,7 +329,18 @@ export function BridgeJobsRegistryPage() {
               </button>
             )}
           </div>
-          <div className="max-h-[calc(100vh-300px)] overflow-y-auto">
+          {/* Column headers — tabular alignment guide */}
+          <div
+            className="px-3 py-1 border-b border-border-subtle bg-surface-page flex items-center gap-2 text-[10px] font-mono uppercase tracking-wider text-neutral-400"
+            data-testid="bridge-jobs-column-headers"
+          >
+            <span className="shrink-0" style={{ width: "84px" }}>durum</span>
+            <span className="shrink-0" style={{ width: "110px" }}>modul</span>
+            <span className="shrink-0" style={{ width: "40px" }}>yas</span>
+            <span className="flex-1 min-w-0">adim / hata</span>
+            <span className="shrink-0" style={{ width: "64px" }}>id</span>
+          </div>
+          <div className="max-h-[calc(100vh-320px)] overflow-y-auto flex-1">
             {isLoading && <p className="m-0 p-4 text-sm text-neutral-500">Yukleniyor...</p>}
             {isError && (
               <p className="m-0 p-4 text-sm text-error">
@@ -219,44 +350,72 @@ export function BridgeJobsRegistryPage() {
             {!isLoading && !isError && filteredJobs.length === 0 && (
               <p className="m-0 p-4 text-sm text-neutral-500">Filtreye uygun kayit yok.</p>
             )}
-            <ul className="list-none m-0 p-0">
+            <ul
+              ref={listRef}
+              className="list-none m-0 p-0 focus:outline-none"
+              role="listbox"
+              aria-label="Is listesi"
+              tabIndex={filteredJobs.length > 0 ? 0 : -1}
+              onKeyDown={handleListKeyDown}
+              data-testid="bridge-jobs-list"
+            >
               {filteredJobs.map((job) => {
                 const isSelected = selectedId === job.id;
                 return (
                   <li
                     key={job.id}
                     onClick={() => setSelectedId(job.id)}
-                    className={`px-3 py-2 border-b border-border-subtle cursor-pointer ${
-                      isSelected ? "bg-brand-50" : "hover:bg-neutral-50"
+                    role="option"
+                    aria-selected={isSelected}
+                    className={`px-3 py-2 border-b border-border-subtle cursor-pointer flex flex-col gap-1 border-l-2 ${
+                      isSelected
+                        ? "bg-brand-50 border-l-brand-500"
+                        : "border-l-transparent hover:bg-neutral-50"
                     }`}
                     data-testid={`bridge-jobs-row-${job.id}`}
+                    data-selected={isSelected ? "true" : undefined}
                   >
                     <div className="flex items-center gap-2 min-w-0">
                       <span
-                        className={`shrink-0 px-1.5 py-0.5 text-[10px] font-mono uppercase tracking-wider rounded border ${statusTint(job.status)}`}
+                        className={`shrink-0 text-center px-1.5 py-0.5 text-[10px] font-mono uppercase tracking-wider rounded border ${statusTint(job.status)}`}
+                        style={{ width: "84px" }}
                       >
                         {job.status}
                       </span>
-                      <span className="text-xs text-neutral-500 font-mono shrink-0">
+                      <span
+                        className="text-xs text-neutral-500 font-mono shrink-0 truncate"
+                        style={{ width: "110px" }}
+                      >
                         {job.module_type}
                       </span>
-                      <span className="text-xs text-neutral-400 shrink-0">
+                      <span
+                        className="text-xs text-neutral-400 shrink-0 tabular-nums"
+                        style={{ width: "40px" }}
+                      >
                         {formatAge(job.created_at)}
                       </span>
-                      <span className="text-xs text-neutral-600 font-mono truncate ml-auto">
+                      <span className="flex-1 min-w-0 text-[11px] text-neutral-500 truncate">
+                        {job.current_step_key ? (
+                          <>
+                            <span className="font-mono text-neutral-700">{job.current_step_key}</span>
+                            {job.retry_count > 0 && (
+                              <span className="ml-2 text-warning-dark">retry:{job.retry_count}</span>
+                            )}
+                          </>
+                        ) : (
+                          <span className="text-neutral-400">—</span>
+                        )}
+                      </span>
+                      <span
+                        className="text-xs text-neutral-600 font-mono truncate shrink-0 text-right"
+                        style={{ width: "64px" }}
+                        title={job.id}
+                      >
                         {job.id.slice(0, 8)}
                       </span>
                     </div>
-                    {job.current_step_key && (
-                      <div className="mt-1 text-[11px] text-neutral-500 truncate">
-                        adim: <span className="font-mono text-neutral-700">{job.current_step_key}</span>
-                        {job.retry_count > 0 && (
-                          <span className="ml-2 text-warning-dark">retry: {job.retry_count}</span>
-                        )}
-                      </div>
-                    )}
                     {job.last_error && (
-                      <div className="mt-1 text-[11px] text-error truncate" title={job.last_error}>
+                      <div className="text-[11px] text-error truncate pl-[86px]" title={job.last_error}>
                         err: {job.last_error}
                       </div>
                     )}
@@ -269,16 +428,49 @@ export function BridgeJobsRegistryPage() {
 
         {/* ---- Inline detail drawer ---------------------------------------- */}
         <div className="border border-border-subtle rounded-md bg-surface-page flex flex-col" data-testid="bridge-jobs-drawer">
-          <div className="px-3 py-2 border-b border-border-subtle bg-surface-inset flex items-center justify-between">
+          <div className="px-3 py-2 border-b border-border-subtle bg-surface-inset flex items-center justify-between gap-2 flex-wrap">
             <span className="text-[11px] font-semibold uppercase tracking-wider text-neutral-600">
               Detay
             </span>
             {selectedId && (
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 flex-wrap">
+                {/* Capability-gated inline actions. Backend state machine owns
+                    the truth via /allowed-actions — we only mirror it. */}
+                <button
+                  onClick={() => cancelMutation.mutate(selectedId)}
+                  disabled={!allowedActions?.can_cancel || cancelMutation.isPending}
+                  title={
+                    !allowedActions?.can_cancel
+                      ? "Bu durumda iptal edilemez"
+                      : "Isi iptal et"
+                  }
+                  className="text-[10px] px-2 py-0.5 rounded border border-border-subtle bg-surface-page hover:bg-neutral-100 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                  data-testid="bridge-jobs-drawer-cancel"
+                >
+                  Iptal
+                </button>
+                <button
+                  onClick={() => retryMutation.mutate(selectedId)}
+                  disabled={!allowedActions?.can_retry || retryMutation.isPending}
+                  title={
+                    !allowedActions?.can_retry
+                      ? "Bu durumda retry yok"
+                      : "Retry tetikle"
+                  }
+                  className="text-[10px] px-2 py-0.5 rounded border border-border-subtle bg-surface-page hover:bg-neutral-100 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                  data-testid="bridge-jobs-drawer-retry"
+                >
+                  Retry
+                </button>
                 <button
                   onClick={() => cloneMutation.mutate(selectedId)}
-                  disabled={cloneMutation.isPending}
-                  className="text-[10px] px-2 py-0.5 rounded border border-border-subtle bg-surface-page hover:bg-neutral-100 cursor-pointer disabled:opacity-50"
+                  disabled={!(allowedActions?.can_clone ?? true) || cloneMutation.isPending}
+                  title={
+                    allowedActions && !allowedActions.can_clone
+                      ? "Bu job klonlanamaz"
+                      : "Isi klonla"
+                  }
+                  className="text-[10px] px-2 py-0.5 rounded border border-border-subtle bg-surface-page hover:bg-neutral-100 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                   data-testid="bridge-jobs-drawer-clone"
                 >
                   Klonla

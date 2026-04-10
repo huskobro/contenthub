@@ -20,6 +20,7 @@
  *     NOT bypass the review state machine.
  */
 
+import { useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useJobDetail } from "../../hooks/useJobDetail";
 import { useSSE } from "../../hooks/useSSE";
@@ -121,6 +122,43 @@ export function BridgeJobDetailPage() {
 
   const publish = publishRecords?.[0];
 
+  // ----- Derived values for the vitals strip ------------------------------
+  // Current step vs total elapsed clarity: we want to show BOTH, so an
+  // operator can tell "this step has been running for X out of total Y".
+  const currentStep = useMemo(() => {
+    if (!job.current_step_key) return null;
+    return job.steps.find((s) => s.step_key === job.current_step_key) ?? null;
+  }, [job.current_step_key, job.steps]);
+
+  const currentStepElapsed = currentStep?.elapsed_seconds_live ?? currentStep?.elapsed_seconds ?? null;
+  const currentStepEta = currentStep?.eta_seconds ?? null;
+
+  // Provider trace summary — count provider calls, cost, error count.
+  // We only compute from what's already on the steps payload; no extra fetch.
+  const providerSummary = useMemo(() => {
+    let calls = 0;
+    let errors = 0;
+    let costUsd = 0;
+    let latencyMs = 0;
+    for (const step of job.steps) {
+      const raw = step.provider_trace_json;
+      if (!raw) continue;
+      try {
+        const parsed = JSON.parse(raw);
+        const entries: Array<Record<string, unknown>> = Array.isArray(parsed) ? parsed : [];
+        for (const entry of entries) {
+          calls += 1;
+          if (entry.success === false) errors += 1;
+          if (typeof entry.cost_usd_estimate === "number") costUsd += entry.cost_usd_estimate;
+          if (typeof entry.latency_ms === "number") latencyMs += entry.latency_ms;
+        }
+      } catch {
+        // Malformed trace JSON is a data issue, not a UI problem — skip.
+      }
+    }
+    return { calls, errors, costUsd, latencyMs };
+  }, [job.steps]);
+
   return (
     <div className="flex flex-col gap-3" data-testid="bridge-job-detail">
       {/* ---- Breadcrumb + title ----------------------------------------- */}
@@ -164,21 +202,57 @@ export function BridgeJobDetailPage() {
       )}
 
       {/* ---- Vitals strip ----------------------------------------------- */}
-      <div
-        className="grid gap-2"
-        style={{ gridTemplateColumns: "repeat(6, minmax(0, 1fr))" }}
-        data-testid="bridge-job-vitals"
-      >
-        <Vital label="Job ID" value={job.id.slice(0, 8)} mono />
-        <Vital label="Modul" value={job.module_type} mono />
-        <Vital label="Adim" value={job.current_step_key ?? "\u2014"} mono />
-        <Vital label="Gecti" value={fmtSeconds(job.elapsed_total_seconds ?? job.elapsed_seconds)} />
-        <Vital label="ETA" value={fmtSeconds(job.estimated_remaining_seconds ?? job.eta_seconds)} />
-        <Vital
-          label="Retry"
-          value={String(job.retry_count ?? 0)}
-          warn={(job.retry_count ?? 0) > 0}
-        />
+      {/* Dual elapsed display: top row = job-level totals,                 */}
+      {/* bottom row = current step focus so the operator can see "this    */}
+      {/* step has been running for X of the total Y".                     */}
+      <div className="flex flex-col gap-2" data-testid="bridge-job-vitals">
+        <div
+          className="grid gap-2"
+          style={{ gridTemplateColumns: "repeat(6, minmax(0, 1fr))" }}
+          data-testid="bridge-job-vitals-primary"
+        >
+          <Vital label="Job ID" value={job.id.slice(0, 8)} mono />
+          <Vital label="Modul" value={job.module_type} mono />
+          <Vital label="Adim" value={job.current_step_key ?? "\u2014"} mono />
+          <Vital
+            label="Job Gecti"
+            value={fmtSeconds(job.elapsed_total_seconds ?? job.elapsed_seconds)}
+          />
+          <Vital
+            label="Job ETA"
+            value={fmtSeconds(job.estimated_remaining_seconds ?? job.eta_seconds)}
+          />
+          <Vital
+            label="Retry"
+            value={String(job.retry_count ?? 0)}
+            warn={(job.retry_count ?? 0) > 0}
+          />
+        </div>
+        {currentStep && (
+          <div
+            className="grid gap-2"
+            style={{ gridTemplateColumns: "repeat(6, minmax(0, 1fr))" }}
+            data-testid="bridge-job-vitals-step"
+          >
+            <Vital label="Adim Durum" value={currentStep.status} mono />
+            <Vital label="Adim Gecti" value={fmtSeconds(currentStepElapsed)} />
+            <Vital label="Adim ETA" value={fmtSeconds(currentStepEta)} />
+            <Vital label="Prov. Call" value={String(providerSummary.calls)} />
+            <Vital
+              label="Prov. Hata"
+              value={String(providerSummary.errors)}
+              warn={providerSummary.errors > 0}
+            />
+            <Vital
+              label="Prov. $"
+              value={
+                providerSummary.costUsd > 0
+                  ? `$${providerSummary.costUsd.toFixed(4)}`
+                  : "—"
+              }
+            />
+          </div>
+        )}
       </div>
 
       {/* ---- 2-column ops grid ------------------------------------------ */}
@@ -214,27 +288,41 @@ export function BridgeJobDetailPage() {
             className="border border-border-subtle rounded-md bg-surface-page p-3"
             data-testid="bridge-cockpit-publish"
           >
-            <div className="text-[11px] font-semibold uppercase tracking-wider text-neutral-600 mb-2">
-              Yayin Baglantisi
+            <div className="flex items-center justify-between mb-2">
+              <div className="text-[11px] font-semibold uppercase tracking-wider text-neutral-600">
+                Yayin Baglantisi
+              </div>
+              {publish && (
+                <span className="text-[10px] font-mono text-neutral-400 uppercase tracking-wider">
+                  review gate korundu
+                </span>
+              )}
             </div>
             {publish ? (
-              <div className="flex items-center gap-2">
-                <span
-                  className={`px-2 py-0.5 text-[10px] font-mono uppercase tracking-wider rounded border ${publishStatusTint(
-                    publish.status,
-                  )}`}
-                  data-testid="bridge-cockpit-publish-status"
-                >
-                  {publish.status}
-                </span>
-                <span className="text-xs text-neutral-600 capitalize">{publish.platform}</span>
-                <button
-                  onClick={() => navigate(`/admin/publish/${publish.id}`)}
-                  className="ml-auto text-[10px] px-2 py-0.5 rounded border border-brand-400 bg-brand-50 text-brand-700 hover:bg-brand-100 cursor-pointer"
-                  data-testid="bridge-cockpit-publish-open"
-                >
-                  Detay &rarr;
-                </button>
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`px-2 py-0.5 text-[10px] font-mono uppercase tracking-wider rounded border ${publishStatusTint(
+                      publish.status,
+                    )}`}
+                    data-testid="bridge-cockpit-publish-status"
+                  >
+                    {publish.status}
+                  </span>
+                  <span className="text-xs text-neutral-600 capitalize font-medium">
+                    {publish.platform}
+                  </span>
+                  <button
+                    onClick={() => navigate(`/admin/publish/${publish.id}`)}
+                    className="ml-auto text-[10px] px-2 py-0.5 rounded border border-brand-400 bg-brand-50 text-brand-700 hover:bg-brand-100 cursor-pointer"
+                    data-testid="bridge-cockpit-publish-open"
+                  >
+                    Yayin Detayi &rarr;
+                  </button>
+                </div>
+                <div className="text-[10px] font-mono text-neutral-400 truncate" title={publish.id}>
+                  publish id: {publish.id.slice(0, 12)}
+                </div>
               </div>
             ) : job.status === "completed" ? (
               <div className="flex items-center gap-2">
