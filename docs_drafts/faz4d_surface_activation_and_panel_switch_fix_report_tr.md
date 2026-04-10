@@ -238,8 +238,10 @@ Scope-mismatch kartlari ineligible kalir, sadece metni zenginlesti.
 
 ## 6. Commit / push
 
-- Commit hash: **TBD — commit asamasinda guncellenecek**
-- Push: **TBD**
+- Commit hash: **`4389e16`** (`feat(surfaces): Faz 4D — activation + panel
+  switch + UX clarity fix`)
+- Push: **basarili** — `c519b5a..4389e16 main -> main`
+  (origin: `github.com:huskobro/contenthub.git`)
 
 ## 7. Teslim ozeti (7 madde)
 
@@ -274,5 +276,6 @@ Scope-mismatch kartlari ineligible kalir, sadece metni zenginlesti.
     `LegacyUserDashboardPage` `useContentProjects` mock sekli — Faz 4D
     ellemedi).
   - `npx tsc --noEmit` Faz 4D dosyalarinda sifir hata.
-- **commit hash**: commit asamasinda eklenecek.
-- **push durumu**: push asamasinda eklenecek.
+- **commit hash**: `4389e16`.
+- **push durumu**: basarili (`c519b5a..4389e16 main -> main`,
+  `github.com:huskobro/contenthub.git`).
