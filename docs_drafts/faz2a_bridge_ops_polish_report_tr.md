@@ -162,7 +162,8 @@ Test Files  48 failed | 144 passed (192)
    - Full suite: 2181 passed / 243 failed — **baseline ile IDENTICAL** (diff ile dogrulandi), zero regresyon.
 
 6. **Commit hash**
-   (Commit sonrasi doldurulacak)
+   `50d0f64` — `feat(surfaces): Faz 2A — Bridge ops polish (keyboard nav + capability-gated actions)`
+   7 dosya, +1235 / -83 satir.
 
 7. **Push durumu**
    (Push sonrasi doldurulacak)
