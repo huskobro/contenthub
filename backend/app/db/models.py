@@ -304,19 +304,36 @@ class StandardVideo(Base):
     """Standard Video module — input record.
 
     Stores the user-defined parameters for a standard video production job.
-    Does not drive job automation at this stage; job_id is a loose reference
-    that will be wired once the pipeline runner is introduced.
+    job_id is populated once the production pipeline is started (see
+    standard_video.service.start_production).
 
-    title             : human-friendly label; nullable
-    topic             : main subject of the video; required
-    brief             : additional direction or context; nullable
-    target_duration_seconds : desired output length in seconds; nullable, not negative
-    tone              : e.g. 'formal', 'casual', 'dramatic'
-    language          : e.g. 'tr', 'en'
-    visual_direction  : e.g. 'clean', 'cinematic', 'minimal'
-    subtitle_style    : e.g. 'standard', 'bold', 'news'
-    status            : lifecycle state; starts as 'draft'
-    job_id            : loose reference to a Job; no hard FK constraint yet
+    Core fields:
+      title             : human-friendly label; nullable
+      topic             : main subject of the video; required
+      brief             : additional direction or context; nullable
+      target_duration_seconds : desired output length in seconds; nullable, not negative
+      tone              : e.g. 'formal', 'casual', 'dramatic'
+      language          : e.g. 'tr', 'en'
+      visual_direction  : e.g. 'clean', 'cinematic', 'minimal'
+
+    Style/layout fields (parity with NewsBulletin):
+      composition_direction : e.g. 'classic', 'dynamic', 'fullscreen'
+      thumbnail_direction   : e.g. 'text_heavy', 'image_heavy', 'minimal'
+      subtitle_style        : subtitle preset id e.g. 'clean_white'
+      lower_third_style     : lower-third style id e.g. 'broadcast'
+      motion_level          : 'minimal' | 'moderate' | 'dynamic'
+      render_format         : 'landscape' | 'portrait'
+      karaoke_enabled       : nullable boolean — wizard override
+      template_id           : nullable reference to templates.id
+      style_blueprint_id    : nullable reference to style_blueprints.id
+
+    Linkage:
+      job_id             : loose reference to jobs.id (no hard FK)
+      content_project_id : reference to content_projects.id (Faz 5a)
+      channel_profile_id : reference to channel_profiles.id (Faz 5a)
+
+    Lifecycle:
+      status : 'draft' | 'script_ready' | 'metadata_ready' | 'rendering' | 'completed' | 'failed'
     """
 
     __tablename__ = "standard_videos"
@@ -330,10 +347,20 @@ class StandardVideo(Base):
     language: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
     visual_direction: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     subtitle_style: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    # Style/layout fields — production pipeline parity with NewsBulletin
+    composition_direction: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    thumbnail_direction: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    lower_third_style: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    motion_level: Mapped[Optional[str]] = mapped_column(String(30), nullable=True)
+    render_format: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
+    karaoke_enabled: Mapped[Optional[bool]] = mapped_column(Boolean, nullable=True)
+    template_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True)
+    style_blueprint_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True)
     status: Mapped[str] = mapped_column(String(50), nullable=False, default="draft", index=True)
     job_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True)
     # Faz 5a: project/channel linkage
     content_project_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True, index=True)
+    channel_profile_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True, index=True)
     is_test_data: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, index=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=_now

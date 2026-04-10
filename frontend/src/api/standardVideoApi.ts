@@ -11,12 +11,19 @@ export interface StandardVideoResponse {
   tone: string | null;
   language: string | null;
   visual_direction: string | null;
+  composition_direction: string | null;
+  thumbnail_direction: string | null;
   subtitle_style: string | null;
+  lower_third_style: string | null;
+  motion_level: string | null;
+  render_format: string | null;
+  karaoke_enabled: boolean | null;
   template_id: string | null;
   style_blueprint_id: string | null;
   status: string;
   job_id: string | null;
   content_project_id: string | null;
+  channel_profile_id: string | null;
   created_at: string;
   updated_at: string;
   has_script?: boolean;
@@ -88,8 +95,18 @@ export interface StandardVideoCreatePayload {
   tone?: string | null;
   language?: string | null;
   visual_direction?: string | null;
+  composition_direction?: string | null;
+  thumbnail_direction?: string | null;
   subtitle_style?: string | null;
+  lower_third_style?: string | null;
+  motion_level?: string | null;
+  render_format?: string | null;
+  karaoke_enabled?: boolean | null;
+  template_id?: string | null;
+  style_blueprint_id?: string | null;
   job_id?: string | null;
+  content_project_id?: string | null;
+  channel_profile_id?: string | null;
 }
 
 export interface StandardVideoUpdatePayload {
@@ -100,9 +117,19 @@ export interface StandardVideoUpdatePayload {
   tone?: string | null;
   language?: string | null;
   visual_direction?: string | null;
+  composition_direction?: string | null;
+  thumbnail_direction?: string | null;
   subtitle_style?: string | null;
+  lower_third_style?: string | null;
+  motion_level?: string | null;
+  render_format?: string | null;
+  karaoke_enabled?: boolean | null;
+  template_id?: string | null;
+  style_blueprint_id?: string | null;
   status?: string | null;
   job_id?: string | null;
+  content_project_id?: string | null;
+  channel_profile_id?: string | null;
 }
 
 export function createStandardVideo(

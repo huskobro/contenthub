@@ -78,10 +78,19 @@ async def list_standard_videos_with_artifact_summary(
             tone=v.tone,
             language=v.language,
             visual_direction=v.visual_direction,
+            composition_direction=v.composition_direction,
+            thumbnail_direction=v.thumbnail_direction,
             subtitle_style=v.subtitle_style,
+            lower_third_style=v.lower_third_style,
+            motion_level=v.motion_level,
+            render_format=v.render_format,
+            karaoke_enabled=v.karaoke_enabled,
+            template_id=v.template_id,
+            style_blueprint_id=v.style_blueprint_id,
             status=v.status,
             job_id=v.job_id,
             content_project_id=v.content_project_id,
+            channel_profile_id=v.channel_profile_id,
             created_at=v.created_at,
             updated_at=v.updated_at,
             has_script=has_script,
@@ -319,7 +328,7 @@ async def start_production(
         if sys_val is not None:
             settings_snapshot[sys_key] = sys_val
 
-    # Job input data — tum video config alanlari + settings snapshot
+    # Job input data — video config (tum alanlar artik modelde mevcut) + settings snapshot
     input_data: dict = {
         "video_id": video_id,
         "topic": video.topic,
@@ -329,31 +338,37 @@ async def start_production(
         "tone": video.tone or settings_snapshot.get("standard_video.config.default_tone", "neutral"),
         "target_duration_seconds": video.target_duration_seconds or settings_snapshot.get("standard_video.config.default_duration_seconds", 120),
         "visual_direction": video.visual_direction or "",
-        "composition_direction": getattr(video, "composition_direction", None) or "",
-        "thumbnail_direction": getattr(video, "thumbnail_direction", None) or "",
+        "composition_direction": video.composition_direction or "",
+        "thumbnail_direction": video.thumbnail_direction or "",
         "subtitle_style": video.subtitle_style or "",
-        "lower_third_style": getattr(video, "lower_third_style", None) or "",
-        "motion_level": getattr(video, "motion_level", None) or "",
-        "render_format": getattr(video, "render_format", None) or "landscape",
-        "karaoke_enabled": getattr(video, "karaoke_enabled", False) or False,
-        "template_id": video.template_id if hasattr(video, "template_id") else None,
-        "style_blueprint_id": video.style_blueprint_id if hasattr(video, "style_blueprint_id") else None,
+        "lower_third_style": video.lower_third_style or "",
+        "motion_level": video.motion_level or "",
+        "render_format": video.render_format or "landscape",
+        "karaoke_enabled": bool(video.karaoke_enabled) if video.karaoke_enabled is not None else False,
+        "template_id": video.template_id,
+        "style_blueprint_id": video.style_blueprint_id,
         "_settings_snapshot": settings_snapshot,
     }
 
-    # User slug coz
+    # Wizard-level override'lari settings snapshot'a yaz (news_bulletin pattern)
+    if video.render_format:
+        input_data["_settings_snapshot"]["standard_video.config.render_format"] = video.render_format
+    if video.karaoke_enabled is not None:
+        input_data["_settings_snapshot"]["standard_video.config.karaoke_enabled"] = video.karaoke_enabled
+
+    # User slug coz — workspace user-scoped olacak
     user_slug: Optional[str] = None
     if owner_id:
         user_row = (await db.execute(sa_select(User).where(User.id == owner_id))).scalar_one_or_none()
         user_slug = user_row.slug if user_row else None
 
-    # Job olustur
+    # Job olustur — M40a: owner_id from active user, Faz 5a: project/channel linkage
     job_payload = JobCreate(
         module_type="standard_video",
         owner_id=owner_id,
         input_data_json=json.dumps(input_data, ensure_ascii=False),
-        channel_profile_id=getattr(video, "channel_profile_id", None),
-        content_project_id=getattr(video, "content_project_id", None),
+        channel_profile_id=video.channel_profile_id,
+        content_project_id=video.content_project_id,
     )
     job = await create_job(db, job_payload)
 
@@ -361,11 +376,10 @@ async def start_production(
     video.job_id = job.id
     video.status = "rendering"
 
-    # ContentProject active_job_id guncelle
-    _project_id = getattr(video, "content_project_id", None)
-    if _project_id:
+    # Faz 5a: ContentProject active_job_id guncelle
+    if video.content_project_id:
         from app.db.models import ContentProject
-        _proj = (await db.execute(sa_select(ContentProject).where(ContentProject.id == _project_id))).scalar_one_or_none()
+        _proj = (await db.execute(sa_select(ContentProject).where(ContentProject.id == video.content_project_id))).scalar_one_or_none()
         if _proj:
             _proj.active_job_id = job.id
             _proj.current_stage = "rendering"
@@ -378,7 +392,15 @@ async def start_production(
         action="standard_video.production.started",
         entity_type="standard_video",
         entity_id=video_id,
-        details={"job_id": job.id, "topic": video.topic},
+        details={
+            "job_id": job.id,
+            "topic": video.topic,
+            "language": input_data["language"],
+            "tone": input_data["tone"],
+            "render_format": input_data["render_format"],
+            "template_id": video.template_id,
+            "style_blueprint_id": video.style_blueprint_id,
+        },
     )
     await db.commit()
 
@@ -425,53 +447,77 @@ async def _watch_video_job(
     session_factory,
     video_id: str,
     job_id: str,
-    poll_interval: float = 10.0,
-    timeout: float = 3600.0,
+    poll_interval: float = 3.0,
+    timeout: float = 1800.0,
 ) -> None:
     """
-    Job tamamlandiginda StandardVideo.status'u gunceller.
+    Job tamamlanmasini izler ve StandardVideo.status'u gunceller.
 
-    start_production tarafindan asyncio.create_task ile baslatilir.
+    Bu async task start_production tarafindan olusturulur.
+    Job completed  -> video.status = "completed"
+    Job failed     -> video.status = "failed"
+
+    Pattern: news_bulletin._watch_bulletin_job ile ayni.
     """
-    from app.db.models import Job as JobModel
+    from app.audit.service import write_audit_log
+    from app.jobs.service import get_job
 
     elapsed = 0.0
     while elapsed < timeout:
         await asyncio.sleep(poll_interval)
         elapsed += poll_interval
+
         try:
-            async with session_factory() as session:
-                job = (await session.execute(
-                    select(JobModel).where(JobModel.id == job_id)
-                )).scalar_one_or_none()
+            async with session_factory() as db:
+                job = await get_job(db, job_id)
                 if job is None:
-                    logger.warning("_watch_video_job: job bulunamadi. job_id=%s video_id=%s", job_id, video_id)
+                    logger.error(
+                        "_watch_video_job: job bulunamadi. job_id=%s video_id=%s",
+                        job_id, video_id,
+                    )
                     return
 
                 if job.status == "completed":
-                    video = (await session.execute(
-                        select(StandardVideo).where(StandardVideo.id == video_id)
-                    )).scalar_one_or_none()
-                    if video:
+                    video = await get_standard_video(db, video_id)
+                    if video and video.status == "rendering":
                         video.status = "completed"
-                        await session.commit()
-                    logger.info("_watch_video_job: video tamamlandi. video=%s job=%s", video_id, job_id)
+                        await write_audit_log(
+                            db,
+                            action="standard_video.production.completed",
+                            entity_type="standard_video",
+                            entity_id=video_id,
+                            details={"job_id": job_id},
+                        )
+                        await db.commit()
+                        logger.info(
+                            "_watch_video_job: video tamamlandi. video=%s job=%s",
+                            video_id, job_id,
+                        )
                     return
 
-                if job.status in ("failed", "cancelled"):
-                    video = (await session.execute(
-                        select(StandardVideo).where(StandardVideo.id == video_id)
-                    )).scalar_one_or_none()
-                    if video:
+                if job.status == "failed":
+                    video = await get_standard_video(db, video_id)
+                    if video and video.status == "rendering":
                         video.status = "failed"
-                        await session.commit()
-                    logger.warning("_watch_video_job: video basarisiz. video=%s job=%s status=%s", video_id, job_id, job.status)
+                        await write_audit_log(
+                            db,
+                            action="standard_video.production.failed",
+                            entity_type="standard_video",
+                            entity_id=video_id,
+                            details={"job_id": job_id},
+                        )
+                        await db.commit()
+                        logger.warning(
+                            "_watch_video_job: video basarisiz. video=%s job=%s",
+                            video_id, job_id,
+                        )
                     return
-
         except Exception as exc:
+            # DB hatasi vs — loop'u kirmayalim
             logger.warning("_watch_video_job hata (non-fatal): %s", exc)
 
-    logger.warning(
+    # Timeout
+    logger.error(
         "_watch_video_job: timeout (%.0fs). video=%s job=%s — video may be stuck in 'rendering'.",
         timeout, video_id, job_id,
     )

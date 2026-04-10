@@ -13,9 +13,19 @@ class StandardVideoCreate(BaseModel):
     tone: Optional[str] = None
     language: Optional[str] = None
     visual_direction: Optional[str] = None
+    # Style / layout fields (NewsBulletin parity)
+    composition_direction: Optional[str] = None
+    thumbnail_direction: Optional[str] = None
     subtitle_style: Optional[str] = None
+    lower_third_style: Optional[str] = None
+    motion_level: Optional[str] = None
+    render_format: Optional[str] = None
+    karaoke_enabled: Optional[bool] = None
+    template_id: Optional[str] = None
+    style_blueprint_id: Optional[str] = None
     job_id: Optional[str] = None
     content_project_id: Optional[str] = None  # Faz 5a
+    channel_profile_id: Optional[str] = None  # Faz 5a
 
     @field_validator("target_duration_seconds")
     @classmethod
@@ -33,9 +43,19 @@ class StandardVideoUpdate(BaseModel):
     tone: Optional[str] = None
     language: Optional[str] = None
     visual_direction: Optional[str] = None
+    composition_direction: Optional[str] = None
+    thumbnail_direction: Optional[str] = None
     subtitle_style: Optional[str] = None
+    lower_third_style: Optional[str] = None
+    motion_level: Optional[str] = None
+    render_format: Optional[str] = None
+    karaoke_enabled: Optional[bool] = None
+    template_id: Optional[str] = None
+    style_blueprint_id: Optional[str] = None
     status: Optional[str] = None
     job_id: Optional[str] = None
+    content_project_id: Optional[str] = None
+    channel_profile_id: Optional[str] = None
 
     @field_validator("target_duration_seconds")
     @classmethod
@@ -54,10 +74,19 @@ class StandardVideoResponse(BaseModel):
     tone: Optional[str] = None
     language: Optional[str] = None
     visual_direction: Optional[str] = None
+    composition_direction: Optional[str] = None
+    thumbnail_direction: Optional[str] = None
     subtitle_style: Optional[str] = None
+    lower_third_style: Optional[str] = None
+    motion_level: Optional[str] = None
+    render_format: Optional[str] = None
+    karaoke_enabled: Optional[bool] = None
+    template_id: Optional[str] = None
+    style_blueprint_id: Optional[str] = None
     status: str
     job_id: Optional[str] = None
     content_project_id: Optional[str] = None  # Faz 5a
+    channel_profile_id: Optional[str] = None  # Faz 5a
     created_at: datetime
     updated_at: datetime
     # Artifact summary fields (populated by list_standard_videos_with_artifact_summary)

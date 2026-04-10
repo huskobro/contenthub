@@ -119,13 +119,23 @@ async def start_production(
     db: AsyncSession = Depends(get_db),
     user_id: Optional[str] = Depends(get_active_user_id),
 ):
-    """Standard Video uretim pipeline'ini baslatir."""
+    """
+    Standard Video uretim pipeline'ini baslatir.
+
+    Preconditions:
+      - Video kaydi mevcut olmali
+      - Video.status 'rendering' / 'completed' / 'published' olmamali
+
+    Job olusturur, dispatcher'a gonderir, video.status = "rendering" yapar.
+    Pattern: news_bulletin.router.start_production_endpoint ile ayni.
+    """
     dispatcher = getattr(request.app.state, "job_dispatcher", None)
     if dispatcher is None:
         raise HTTPException(status_code=503, detail="JobDispatcher hazir degil.")
 
     session_factory = getattr(request.app.state, "session_factory", None)
     if session_factory is None:
+        # Fallback: get_db session factory'den kullan
         from app.db.session import AsyncSessionLocal
         session_factory = AsyncSessionLocal
 
