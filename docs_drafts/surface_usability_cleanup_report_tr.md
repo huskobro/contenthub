@@ -221,4 +221,6 @@ Vite build Faz 4C disi calisma kaynakli TS hatalari yuzunden zaten cipta calismi
 
 ## 7. Commit / push durumu
 
-_Commit hash ve push durumu commit sonrasi bu bolume eklenecek._
+- **Commit:** `77fc85a` — `feat(surfaces): Faz 4C — usability cleanup (header badge + picker reason + bestFor)`
+- **Push:** `origin/main` (`0608190..77fc85a`) — basarili
+- **Takip commit:** bu raporun commit hash + push durumu guncellemesi icin.
