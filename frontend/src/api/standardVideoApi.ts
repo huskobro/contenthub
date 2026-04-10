@@ -16,6 +16,7 @@ export interface StandardVideoResponse {
   style_blueprint_id: string | null;
   status: string;
   job_id: string | null;
+  content_project_id: string | null;
   created_at: string;
   updated_at: string;
   has_script?: boolean;
@@ -179,4 +180,17 @@ export function updateStandardVideoMetadata(
   payload: StandardVideoMetadataUpdatePayload
 ): Promise<StandardVideoMetadataResponse> {
   return api.patch<StandardVideoMetadataResponse>(`${BASE_URL}/${videoId}/metadata`, payload);
+}
+
+export interface StartProductionResponse {
+  job_id: string;
+  video_id: string;
+  video_status: string;
+  message: string;
+}
+
+export function startStandardVideoProduction(
+  videoId: string,
+): Promise<StartProductionResponse> {
+  return api.post<StartProductionResponse>(`${BASE_URL}/${videoId}/start-production`, {});
 }

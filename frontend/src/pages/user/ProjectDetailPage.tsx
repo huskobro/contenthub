@@ -5,10 +5,13 @@
  * This is the "home base" for a user's content project.
  */
 
+import { useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useContentProject } from "../../hooks/useContentProjects";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchJobs, type JobResponse } from "../../api/jobsApi";
+import { fetchStandardVideos, startStandardVideoProduction } from "../../api/standardVideoApi";
+import { useToast } from "../../hooks/useToast";
 import {
   PageShell,
   SectionShell,
@@ -50,6 +53,8 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
 export function ProjectDetailPage() {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
+  const qc = useQueryClient();
+  const toast = useToast();
   const { data: project, isLoading, isError, error } = useContentProject(projectId ?? "");
 
   // Fetch jobs linked to this project
@@ -59,9 +64,36 @@ export function ProjectDetailPage() {
     enabled: !!projectId,
   });
 
+  // Fetch standard videos linked to this project (for start-production button)
+  const { data: linkedVideos } = useQuery({
+    queryKey: ["standard-videos", { content_project_id: projectId }],
+    queryFn: () => fetchStandardVideos({ limit: 10 }),
+    enabled: !!projectId && project?.module_type === "standard_video",
+    select: (videos) => videos.filter((v) => v.content_project_id === projectId),
+  });
+
   const linkedJobs = (allJobs ?? []).filter(
     (j: JobResponse) => j.content_project_id === projectId,
   );
+
+  // The latest non-rendering/completed video eligible for production start
+  const pendingVideo = linkedVideos?.find(
+    (v) => !["rendering", "completed", "published"].includes(v.status),
+  );
+
+  const { mutate: startProduction, isPending: isStarting } = useMutation({
+    mutationFn: (videoId: string) => startStandardVideoProduction(videoId),
+    onSuccess: (data) => {
+      toast.success("Üretim başlatıldı!");
+      qc.invalidateQueries({ queryKey: ["jobs"] });
+      qc.invalidateQueries({ queryKey: ["standard-videos"] });
+      qc.invalidateQueries({ queryKey: ["content-projects"] });
+      navigate(`/admin/jobs/${data.job_id}`);
+    },
+    onError: (err: Error) => {
+      toast.error(err.message ?? "Üretim başlatılamadı.");
+    },
+  });
 
   if (isLoading) {
     return (
@@ -178,7 +210,24 @@ export function ProjectDetailPage() {
 
       {/* Quick Actions */}
       <SectionShell title="Aksiyonlar" testId="project-actions">
-        <div className="flex gap-3 flex-wrap">
+        <div className="flex gap-3 flex-wrap items-center">
+          {/* Üretime Başla — yalnızca standard_video ve bekleyen video varsa */}
+          {project.module_type === "standard_video" && pendingVideo && (
+            <button
+              onClick={() => startProduction(pendingVideo.id)}
+              disabled={isStarting}
+              className="px-4 py-1.5 text-sm font-medium text-white bg-brand-600 border border-brand-600 rounded-sm cursor-pointer hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isStarting ? "Başlatılıyor..." : "▶ Üretime Başla"}
+            </button>
+          )}
+          {/* Rendering durumunda bilgi */}
+          {project.module_type === "standard_video" &&
+            linkedVideos?.some((v) => v.status === "rendering") && (
+            <span className="text-sm text-neutral-500">
+              ⏳ Render devam ediyor...
+            </span>
+          )}
           <button
             onClick={() => navigate("/user/projects")}
             className="px-4 py-1.5 text-sm text-neutral-600 bg-transparent border border-border rounded-sm cursor-pointer hover:bg-neutral-50"

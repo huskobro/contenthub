@@ -1,11 +1,12 @@
 """HTTP router for the Standard Video module."""
 
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
-from app.visibility.dependencies import require_visible
+from app.visibility.dependencies import require_visible, get_active_user_id
 from app.modules.standard_video import service
 from app.modules.standard_video.schemas import (
     StandardVideoCreate,
@@ -102,6 +103,44 @@ async def create_standard_video(
     db: AsyncSession = Depends(get_db),
 ) -> StandardVideoResponse:
     return await service.create_standard_video(db, payload)
+
+
+class StartProductionResponse(BaseModel):
+    job_id: str
+    video_id: str
+    video_status: str
+    message: str
+
+
+@router.post("/{item_id}/start-production", response_model=StartProductionResponse)
+async def start_production(
+    item_id: str,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+    user_id: Optional[str] = Depends(get_active_user_id),
+):
+    """Standard Video uretim pipeline'ini baslatir."""
+    dispatcher = getattr(request.app.state, "job_dispatcher", None)
+    if dispatcher is None:
+        raise HTTPException(status_code=503, detail="JobDispatcher hazir degil.")
+
+    session_factory = getattr(request.app.state, "session_factory", None)
+    if session_factory is None:
+        from app.db.session import AsyncSessionLocal
+        session_factory = AsyncSessionLocal
+
+    try:
+        result = await service.start_production(
+            db=db,
+            video_id=item_id,
+            dispatcher=dispatcher,
+            session_factory=session_factory,
+            owner_id=user_id,
+        )
+    except ValueError as err:
+        raise HTTPException(status_code=400, detail=str(err))
+
+    return StartProductionResponse(**result)
 
 
 @router.post("/{item_id}/clone", response_model=StandardVideoResponse, status_code=201)
