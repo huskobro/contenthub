@@ -90,6 +90,7 @@ const CANVAS_NAV: CanvasNavZone[] = [
     items: [
       { label: "Anasayfa", to: "/user", canvasOverride: true, end: true },
       { label: "Projelerim", to: "/user/projects", canvasOverride: true, end: true },
+      { label: "Takvim", to: "/user/calendar", canvasOverride: true },
       { label: "Video Olustur", to: "/user/create/video" },
       { label: "Bulten Olustur", to: "/user/create/bulletin" },
     ],
@@ -98,9 +99,10 @@ const CANVAS_NAV: CanvasNavZone[] = [
     id: "distribution",
     label: "Dagitim",
     items: [
-      { label: "Kanallarim", to: "/user/channels" },
+      { label: "Kanallarim", to: "/user/channels", canvasOverride: true, end: true },
       { label: "Icerik", to: "/user/content" },
-      { label: "Yayin", to: "/user/publish" },
+      { label: "Yayin", to: "/user/publish", canvasOverride: true },
+      { label: "Baglantilar", to: "/user/connections", canvasOverride: true },
       { label: "Yorumlar", to: "/user/comments" },
       { label: "Playlist'lerim", to: "/user/playlists" },
       { label: "Gonderilerim", to: "/user/posts" },
@@ -110,6 +112,7 @@ const CANVAS_NAV: CanvasNavZone[] = [
     id: "insights",
     label: "Analiz & Ayarlar",
     items: [
+      { label: "Analiz", to: "/user/analytics", canvasOverride: true, end: true },
       { label: "Kanal Performansim", to: "/user/analytics/channels" },
       { label: "Ayarlarim", to: "/user/settings" },
     ],
@@ -126,15 +129,22 @@ function useWorkspaceBreadcrumb(): string {
   const path = location.pathname;
   if (path === "/user" || path === "/user/") return "workspace / anasayfa";
   if (path.startsWith("/user/projects")) return "workspace / projelerim";
+  if (path.startsWith("/user/calendar")) return "workspace / takvim";
   if (path.startsWith("/user/create/video")) return "workspace / video olustur";
   if (path.startsWith("/user/create/bulletin")) return "workspace / bulten olustur";
+  // Channel detail → "dagitim / kanal studyosu"; channels list → "dagitim / kanallarim"
+  if (/^\/user\/channels\/[^/]+$/.test(path))
+    return "dagitim / kanal studyosu";
   if (path.startsWith("/user/channels")) return "dagitim / kanallarim";
   if (path.startsWith("/user/publish")) return "dagitim / yayin";
+  if (path.startsWith("/user/connections")) return "dagitim / baglantilar";
   if (path.startsWith("/user/content")) return "dagitim / icerik";
   if (path.startsWith("/user/comments")) return "dagitim / yorumlar";
   if (path.startsWith("/user/playlists")) return "dagitim / playlistler";
   if (path.startsWith("/user/posts")) return "dagitim / gonderilerim";
-  if (path.startsWith("/user/analytics")) return "analiz / kanal performansim";
+  if (path.startsWith("/user/analytics/channels"))
+    return "analiz / kanal performansim";
+  if (path.startsWith("/user/analytics")) return "analiz / ozet";
   if (path.startsWith("/user/settings")) return "analiz / ayarlarim";
   return "workspace";
 }

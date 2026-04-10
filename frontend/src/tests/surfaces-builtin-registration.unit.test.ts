@@ -64,16 +64,19 @@ describe("surfaces — built-in registration", () => {
     expect(typeof bridge?.pageOverrides?.["admin.publish.center"]).toBe("function");
   });
 
-  it("canvas is promoted to beta (Faz 3 + 3A) with user-only layout + flow-completion overrides", () => {
+  it("canvas is promoted to beta (Faz 3 + 3A + 3B) with user-only layout + workspace overrides", () => {
     // Faz 3 promotes canvas to "beta" with user scope. It provides:
     //   - a userLayout forwarder (workspace shell)
     //   - NO adminLayout (canvas is user-only)
     //   - pageOverrides for user.dashboard / user.projects.list /
     //     user.projects.detail
     // Faz 3A (flow completion) adds four more overrides so the user
-    // experience no longer drops into legacy at the main distribution + analysis
-    // surfaces: user.publish, user.channels.list, user.connections.list,
-    // user.analytics.overview.
+    // experience no longer drops into legacy at the main distribution +
+    // analysis surfaces: user.publish, user.channels.list,
+    // user.connections.list, user.analytics.overview.
+    // Faz 3B (workspace completion) adds two more so calendar planning +
+    // per-channel studio live inside canvas as well:
+    // user.calendar, user.channels.detail.
     const canvas = getSurface("canvas");
     expect(canvas).toBeDefined();
     expect(canvas?.manifest.status).toBe("beta");
@@ -92,6 +95,11 @@ describe("surfaces — built-in registration", () => {
       "function",
     );
     expect(typeof canvas?.pageOverrides?.["user.analytics.overview"]).toBe(
+      "function",
+    );
+    // Faz 3B workspace completion
+    expect(typeof canvas?.pageOverrides?.["user.calendar"]).toBe("function");
+    expect(typeof canvas?.pageOverrides?.["user.channels.detail"]).toBe(
       "function",
     );
   });

@@ -71,14 +71,26 @@ describe("Canvas surface — Faz 3 registration", () => {
     );
   });
 
+  it("canvas declares the Faz 3B workspace-completion overrides", () => {
+    const canvas = getSurface("canvas")!;
+    // Faz 3B — workspace completion: calendar + channel detail studio
+    expect(typeof canvas.pageOverrides!["user.calendar"]).toBe("function");
+    expect(typeof canvas.pageOverrides!["user.channels.detail"]).toBe(
+      "function",
+    );
+  });
+
   it("canvas does NOT override unrelated pages (explicit contract)", () => {
     const canvas = getSurface("canvas")!;
     const overrides = canvas.pageOverrides ?? {};
     const keys = Object.keys(overrides).sort();
-    // Exactly seven overrides after Faz 3A — three core + four flow-completion.
-    // Still intentionally scoped: user-wide takeover is NOT a goal.
+    // Exactly nine overrides after Faz 3B — three core + four flow-completion
+    // + two workspace-completion. Still intentionally scoped: user-wide
+    // takeover is NOT a goal.
     expect(keys).toEqual([
       "user.analytics.overview",
+      "user.calendar",
+      "user.channels.detail",
       "user.channels.list",
       "user.connections.list",
       "user.dashboard",

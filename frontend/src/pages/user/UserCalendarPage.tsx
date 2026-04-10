@@ -13,6 +13,7 @@ import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "../../stores/authStore";
+import { useSurfacePageOverride } from "../../surfaces";
 import {
   fetchCalendarEvents,
   fetchChannelCalendarContext,
@@ -130,7 +131,15 @@ interface CalendarPageProps {
   isAdmin?: boolean;
 }
 
-export function UserCalendarPage({ isAdmin }: CalendarPageProps) {
+export function UserCalendarPage(props: CalendarPageProps = {}) {
+  // Admin caller (if any) never uses canvas overrides — canvas scope is user.
+  // Only user-scope callers go through the override trampoline.
+  const Override = useSurfacePageOverride("user.calendar");
+  if (Override && !props.isAdmin) return <Override />;
+  return <LegacyUserCalendarPage {...props} />;
+}
+
+function LegacyUserCalendarPage({ isAdmin }: CalendarPageProps) {
   const userId = useAuthStore((s) => s.user?.id);
   const [view, setView] = useState<ViewMode>("month");
   const [baseDate, setBaseDate] = useState(() => new Date());

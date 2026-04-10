@@ -60,6 +60,10 @@ import * as CanvasUserPublishModule from "../canvas/CanvasUserPublishPage";
 import * as CanvasMyChannelsModule from "../canvas/CanvasMyChannelsPage";
 import * as CanvasUserConnectionsModule from "../canvas/CanvasUserConnectionsPage";
 import * as CanvasUserAnalyticsModule from "../canvas/CanvasUserAnalyticsPage";
+// Canvas Faz 3B — workspace completion overrides: calendar + channel detail
+// studio. Same namespace-import + forwarder style as earlier canvas phases.
+import * as CanvasUserCalendarModule from "../canvas/CanvasUserCalendarPage";
+import * as CanvasChannelDetailModule from "../canvas/CanvasChannelDetailPage";
 
 // --- Lazy forwarders -------------------------------------------------------
 // Each wrapper reads the real component from the module namespace at render
@@ -145,6 +149,15 @@ function CanvasUserAnalyticsForwarder() {
   const Impl = CanvasUserAnalyticsModule.CanvasUserAnalyticsPage;
   return <Impl />;
 }
+// Faz 3B forwarders -----------------------------------------------------
+function CanvasUserCalendarForwarder() {
+  const Impl = CanvasUserCalendarModule.CanvasUserCalendarPage;
+  return <Impl />;
+}
+function CanvasChannelDetailForwarder() {
+  const Impl = CanvasChannelDetailModule.CanvasChannelDetailPage;
+  return <Impl />;
+}
 
 const CANVAS_PAGE_OVERRIDES: SurfacePageOverrideMap = {
   // Faz 3 (project core) — dashboard + projects list + project detail
@@ -156,6 +169,9 @@ const CANVAS_PAGE_OVERRIDES: SurfacePageOverrideMap = {
   "user.channels.list": CanvasMyChannelsForwarder,
   "user.connections.list": CanvasUserConnectionsForwarder,
   "user.analytics.overview": CanvasUserAnalyticsForwarder,
+  // Faz 3B (workspace completion) — takvim + kanal studyosu
+  "user.calendar": CanvasUserCalendarForwarder,
+  "user.channels.detail": CanvasChannelDetailForwarder,
 };
 
 const LEGACY_SURFACE: Surface = {
