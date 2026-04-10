@@ -53,6 +53,13 @@ import * as CanvasUserLayoutModule from "../canvas/CanvasUserLayout";
 import * as CanvasUserDashboardModule from "../canvas/CanvasUserDashboardPage";
 import * as CanvasMyProjectsModule from "../canvas/CanvasMyProjectsPage";
 import * as CanvasProjectDetailModule from "../canvas/CanvasProjectDetailPage";
+// Canvas Faz 3A — flow-completion overrides: publish, channels, connections,
+// analytics. Namespace-imported + render-time forwarders for the same reason
+// the Faz 3 overrides use that style.
+import * as CanvasUserPublishModule from "../canvas/CanvasUserPublishPage";
+import * as CanvasMyChannelsModule from "../canvas/CanvasMyChannelsPage";
+import * as CanvasUserConnectionsModule from "../canvas/CanvasUserConnectionsPage";
+import * as CanvasUserAnalyticsModule from "../canvas/CanvasUserAnalyticsPage";
 
 // --- Lazy forwarders -------------------------------------------------------
 // Each wrapper reads the real component from the module namespace at render
@@ -121,11 +128,34 @@ function CanvasProjectDetailForwarder() {
   const Impl = CanvasProjectDetailModule.CanvasProjectDetailPage;
   return <Impl />;
 }
+// Faz 3A forwarders -----------------------------------------------------
+function CanvasUserPublishForwarder() {
+  const Impl = CanvasUserPublishModule.CanvasUserPublishPage;
+  return <Impl />;
+}
+function CanvasMyChannelsForwarder() {
+  const Impl = CanvasMyChannelsModule.CanvasMyChannelsPage;
+  return <Impl />;
+}
+function CanvasUserConnectionsForwarder() {
+  const Impl = CanvasUserConnectionsModule.CanvasUserConnectionsPage;
+  return <Impl />;
+}
+function CanvasUserAnalyticsForwarder() {
+  const Impl = CanvasUserAnalyticsModule.CanvasUserAnalyticsPage;
+  return <Impl />;
+}
 
 const CANVAS_PAGE_OVERRIDES: SurfacePageOverrideMap = {
+  // Faz 3 (project core) — dashboard + projects list + project detail
   "user.dashboard": CanvasUserDashboardForwarder,
   "user.projects.list": CanvasMyProjectsForwarder,
   "user.projects.detail": CanvasProjectDetailForwarder,
+  // Faz 3A (flow completion) — dagitim + analiz yuzeyleri
+  "user.publish": CanvasUserPublishForwarder,
+  "user.channels.list": CanvasMyChannelsForwarder,
+  "user.connections.list": CanvasUserConnectionsForwarder,
+  "user.analytics.overview": CanvasUserAnalyticsForwarder,
 };
 
 const LEGACY_SURFACE: Surface = {

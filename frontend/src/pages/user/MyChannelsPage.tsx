@@ -2,9 +2,14 @@
  * MyChannelsPage — Faz 4.
  *
  * User-facing channel profiles list with create form.
+ *
+ * Faz 3A (Canvas): trampoline — delegates to the Canvas channel studio
+ * when Canvas registers an override for `user.channels.list`, falls
+ * through to the legacy grid + form otherwise.
  */
 
 import { useState } from "react";
+import { useSurfacePageOverride } from "../../surfaces";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../stores/authStore";
 import { useChannelProfiles, useCreateChannelProfile } from "../../hooks/useChannelProfiles";
@@ -20,6 +25,12 @@ import { SkeletonTable } from "../../components/design-system/Skeleton";
 import { cn } from "../../lib/cn";
 
 export function MyChannelsPage() {
+  const Override = useSurfacePageOverride("user.channels.list");
+  if (Override) return <Override />;
+  return <LegacyMyChannelsPage />;
+}
+
+function LegacyMyChannelsPage() {
   const navigate = useNavigate();
   const authUser = useAuthStore((s) => s.user);
   const userId = authUser?.id;

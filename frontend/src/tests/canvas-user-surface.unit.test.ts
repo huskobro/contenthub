@@ -49,23 +49,42 @@ describe("Canvas surface — Faz 3 registration", () => {
     expect(canvas.adminLayout).toBeUndefined();
   });
 
-  it("canvas declares the three Faz 3 page overrides", () => {
+  it("canvas declares the Faz 3 core page overrides", () => {
     const canvas = getSurface("canvas")!;
     expect(canvas.pageOverrides).toBeDefined();
+    // Faz 3 — project core
     expect(typeof canvas.pageOverrides!["user.dashboard"]).toBe("function");
     expect(typeof canvas.pageOverrides!["user.projects.list"]).toBe("function");
     expect(typeof canvas.pageOverrides!["user.projects.detail"]).toBe("function");
+  });
+
+  it("canvas declares the Faz 3A flow-completion overrides", () => {
+    const canvas = getSurface("canvas")!;
+    // Faz 3A — distribution + analytics surfaces
+    expect(typeof canvas.pageOverrides!["user.publish"]).toBe("function");
+    expect(typeof canvas.pageOverrides!["user.channels.list"]).toBe("function");
+    expect(typeof canvas.pageOverrides!["user.connections.list"]).toBe(
+      "function",
+    );
+    expect(typeof canvas.pageOverrides!["user.analytics.overview"]).toBe(
+      "function",
+    );
   });
 
   it("canvas does NOT override unrelated pages (explicit contract)", () => {
     const canvas = getSurface("canvas")!;
     const overrides = canvas.pageOverrides ?? {};
     const keys = Object.keys(overrides).sort();
-    // Exactly three overrides — no accidental user-wide takeover.
+    // Exactly seven overrides after Faz 3A — three core + four flow-completion.
+    // Still intentionally scoped: user-wide takeover is NOT a goal.
     expect(keys).toEqual([
+      "user.analytics.overview",
+      "user.channels.list",
+      "user.connections.list",
       "user.dashboard",
       "user.projects.detail",
       "user.projects.list",
+      "user.publish",
     ]);
   });
 

@@ -4,9 +4,14 @@
  * User-scoped analytics entry point.
  * Reuses the same analytics API and shared chart components as admin,
  * but automatically scopes to the authenticated user's data.
+ *
+ * Faz 3A (Canvas): trampoline — delegates to the Canvas performance studio
+ * when Canvas registers an override for `user.analytics.overview`, falls
+ * through to the legacy body otherwise.
  */
 
 import { useQuery } from "@tanstack/react-query";
+import { useSurfacePageOverride } from "../../surfaces";
 import { fetchDashboardSummary, type AnalyticsFilterParams } from "../../api/analyticsApi";
 import { useAuthStore } from "../../stores/authStore";
 import {
@@ -46,6 +51,12 @@ function fmtDuration(seconds: number | null | undefined): string {
 }
 
 export function UserAnalyticsPage() {
+  const Override = useSurfacePageOverride("user.analytics.overview");
+  if (Override) return <Override />;
+  return <LegacyUserAnalyticsPage />;
+}
+
+function LegacyUserAnalyticsPage() {
   const [window, setWindow] = useState<AnalyticsWindow>("last_30d");
   const userId = useAuthStore((s) => s.user?.id ?? null);
 

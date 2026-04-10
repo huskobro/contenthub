@@ -3,6 +3,10 @@
  *
  * User Connection Center: all platform connections for the current user.
  * Shows health status, capability matrix summary, reconnect CTAs.
+ *
+ * Faz 3A (Canvas): trampoline — delegates to the Canvas connection board
+ * when Canvas registers an override for `user.connections.list`, falls
+ * through to the legacy center otherwise.
  */
 
 import { useState } from "react";
@@ -12,6 +16,7 @@ import {
   SectionShell,
 } from "../../components/design-system/primitives";
 import type { ConnectionWithHealth } from "../../api/platformConnectionsApi";
+import { useSurfacePageOverride } from "../../surfaces";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -179,6 +184,12 @@ function ConnectionCard({ conn }: { conn: ConnectionWithHealth }) {
 // ---------------------------------------------------------------------------
 
 export function UserConnectionsPage() {
+  const Override = useSurfacePageOverride("user.connections.list");
+  if (Override) return <Override />;
+  return <LegacyUserConnectionsPage />;
+}
+
+function LegacyUserConnectionsPage() {
   const [platformFilter, setPlatformFilter] = useState("");
   const [healthFilter, setHealthFilter] = useState("");
 
@@ -191,7 +202,11 @@ export function UserConnectionsPage() {
   const total = data?.total || 0;
 
   return (
-    <PageShell title="Baglantilarim" subtitle="Platform baglantilarinizi ve yeteneklerini goruntuleyebilirsiniz.">
+    <PageShell
+      title="Baglantilarim"
+      subtitle="Platform baglantilarinizi ve yeteneklerini goruntuleyebilirsiniz."
+      testId="user-connections"
+    >
       {/* Filters */}
       <SectionShell flush>
         <div className="flex gap-3 flex-wrap px-4 py-3">

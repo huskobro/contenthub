@@ -10,9 +10,14 @@
  *   5. View publish status + result
  *
  * Replaces the old UserPublishEntryPage placeholder.
+ *
+ * Faz 3A (Canvas): this module is now a trampoline — it asks the surface
+ * registry whether `user.publish` is overridden, delegates to the override
+ * component if so, or falls through to the legacy body below otherwise.
  */
 
 import { useState, useMemo, useCallback } from "react";
+import { useSurfacePageOverride } from "../../surfaces";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchContentProjects, type ContentProjectResponse } from "../../api/contentProjectsApi";
 import { fetchChannelProfiles, type ChannelProfileResponse } from "../../api/channelProfilesApi";
@@ -64,6 +69,12 @@ function StatusBadge({ status }: { status: string }) {
 // ---------------------------------------------------------------------------
 
 export function UserPublishPage() {
+  const Override = useSurfacePageOverride("user.publish");
+  if (Override) return <Override />;
+  return <LegacyUserPublishPage />;
+}
+
+function LegacyUserPublishPage() {
   const queryClient = useQueryClient();
 
   // Step state
