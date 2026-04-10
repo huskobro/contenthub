@@ -22,6 +22,7 @@ import {
 } from "../components/design-system/primitives";
 import { EmptyState } from "../components/design-system/EmptyState";
 import { SkeletonTable } from "../components/design-system/Skeleton";
+import { SurfacePickerSection } from "../components/surfaces/SurfacePickerSection";
 
 function SettingEditor({
   settingKey,
@@ -187,6 +188,9 @@ export function UserSettingsPage() {
       subtitle={`${activeUser.display_name} — kisisel ayarlari goruntule ve duzenle`}
       testId="user-settings"
     >
+      {/* Surface picker — Faz 4A. Kullanici kendi paneli icin yuzey secer. */}
+      <SurfacePickerSection scope="user" />
+
       {settingsLoading ? (
         <SectionShell flush>
           <SkeletonTable columns={3} rows={4} />

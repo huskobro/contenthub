@@ -32,6 +32,7 @@ import { applyThemeToDOM } from "../../components/design-system/themeEngine";
 import { ThemePreviewPanel } from "../../components/themes/ThemePreviewPanel";
 import { ThemeImportForm } from "../../components/themes/ThemeImportForm";
 import { ThemeExportButton } from "../../components/themes/ThemeExportButton";
+import { SurfacePickerSection } from "../../components/surfaces/SurfacePickerSection";
 
 // ---------------------------------------------------------------------------
 // Theme Card
@@ -190,6 +191,9 @@ export function ThemeRegistryPage() {
       subtitle="Aktif temayi degistirin, yeni tema import edin."
       testId="theme-registry"
     >
+      {/* Surface picker — Faz 4A. Admin panelinde surface (yuzey) secimi. */}
+      <SurfacePickerSection scope="admin" />
+
       {/* Active theme info */}
       <SectionShell
         title="Aktif Tema"
