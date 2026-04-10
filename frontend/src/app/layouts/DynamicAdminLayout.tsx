@@ -1,22 +1,42 @@
 /**
- * DynamicAdminLayout — Selects Classic or Horizon layout based on active theme
+ * DynamicAdminLayout — Surface Registry aware (Faz 1)
  *
- * Reads the active theme's layoutMode to decide which layout shell to render.
- * This allows themes to control not just colors but the entire UI structure.
+ * Before Faz 1: switched between AdminLayout and HorizonAdminLayout based on
+ * `theme.layoutMode`.
+ *
+ * After Faz 1:
+ *  - Calls `useSurfaceResolution` directly (not through context), because
+ *    this component renders at the router level — ABOVE the layout tree that
+ *    mounts ThemeProvider / SurfaceProvider.
+ *  - When the Surface Registry kill switch is OFF (default), the resolver
+ *    short-circuits to legacy/horizon using the active theme's layoutMode,
+ *    so behavior is identical to the pre-Faz-1 implementation.
+ *  - When the kill switch is ON, the resolver additionally consults
+ *    user preference → role default → global default → legacy.
+ *  - If the resolved surface has no adminLayout (should never happen because
+ *    the resolver filters on scope), we fall back to legacy as a hard safety
+ *    net.
  */
 
-import { useThemeStore } from "../../stores/themeStore";
+import { useSurfaceResolution } from "../../surfaces/useSurfaceResolution";
+// Import the surfaces barrel for its registration side-effect. This is the
+// first router-level consumer of the registry, so by importing here we
+// guarantee built-in surfaces are registered exactly once before the
+// resolver ever runs. The barrel does NOT pull in ThemeProvider, so there
+// is no circular dependency with AdminLayout.
+import "../../surfaces";
 import { AdminLayout } from "./AdminLayout";
-import { HorizonAdminLayout } from "./HorizonAdminLayout";
 
 export function DynamicAdminLayout() {
-  const activeTheme = useThemeStore((s) => s.activeTheme);
-  const theme = activeTheme();
-  const layoutMode = theme.layoutMode || "classic";
+  const { admin } = useSurfaceResolution();
+  const Layout = admin.surface.adminLayout;
+  const surfaceId = admin.surface.manifest.id;
 
-  if (layoutMode === "horizon") {
-    return <HorizonAdminLayout key="horizon" />;
+  if (!Layout) {
+    return <AdminLayout key="legacy-safety" />;
   }
 
-  return <AdminLayout key="classic" />;
+  // key=surfaceId forces React to remount when the surface changes, so
+  // outgoing layout effects get properly torn down.
+  return <Layout key={surfaceId} />;
 }

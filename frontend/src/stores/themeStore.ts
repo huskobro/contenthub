@@ -27,6 +27,11 @@ import { updateSettingAdminValue, fetchEffectiveSetting } from "../api/effective
 
 const STORAGE_KEY_ACTIVE = "contenthub:active-theme-id";
 const STORAGE_KEY_CUSTOM = "contenthub:custom-themes";
+// Surface Registry (Faz 1) — versioned surface preference storage.
+// Format: { v: 1, id: string | null }
+// Migration from v0 (no surface field) is handled in loadActiveSurfaceId().
+const STORAGE_KEY_SURFACE = "contenthub:active-surface-id";
+const SURFACE_STORAGE_VERSION = 1;
 
 // ---------------------------------------------------------------------------
 // Built-in themes (cannot be deleted)
@@ -82,6 +87,78 @@ function saveActiveThemeId(id: string): void {
 }
 
 // ---------------------------------------------------------------------------
+// Surface preference persistence (Faz 1)
+// ---------------------------------------------------------------------------
+
+/**
+ * Load the persisted active surface id, running the v0 → v1 migration if a
+ * legacy payload is encountered.
+ *
+ * Migration rules:
+ *   - No payload at all            → return null (resolver will use defaults)
+ *   - Corrupt JSON                 → clear slot, return null
+ *   - Payload without `v`          → treat as v0 and migrate
+ *   - v0 migration                 → if themeStore previously selected a
+ *                                    horizon-flagged theme the caller will
+ *                                    pass the layoutMode in; we store null
+ *                                    here so the resolver inherits naturally.
+ */
+function loadActiveSurfaceId(): string | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY_SURFACE);
+    if (!raw) return null;
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      // Corrupt → clean up and fall through.
+      try {
+        localStorage.removeItem(STORAGE_KEY_SURFACE);
+      } catch {
+        /* ignore */
+      }
+      return null;
+    }
+    if (!parsed || typeof parsed !== "object") return null;
+    const obj = parsed as { v?: unknown; id?: unknown };
+    // v0 migration: payload existed but lacked version field.
+    if (typeof obj.v !== "number") {
+      // Try the legacy shape where the slot held a bare string.
+      if (typeof parsed === "string") {
+        const migratedId = parsed as unknown as string;
+        saveActiveSurfaceId(migratedId || null);
+        return migratedId || null;
+      }
+      // Unknown legacy shape — drop it.
+      try {
+        localStorage.removeItem(STORAGE_KEY_SURFACE);
+      } catch {
+        /* ignore */
+      }
+      return null;
+    }
+    if (obj.v !== SURFACE_STORAGE_VERSION) {
+      // Future-version downgrade: be conservative and ignore.
+      return null;
+    }
+    if (obj.id === null) return null;
+    if (typeof obj.id === "string" && obj.id.length > 0) return obj.id;
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+function saveActiveSurfaceId(id: string | null): void {
+  try {
+    const payload = JSON.stringify({ v: SURFACE_STORAGE_VERSION, id });
+    localStorage.setItem(STORAGE_KEY_SURFACE, payload);
+  } catch {
+    // silently fail
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Store
 // ---------------------------------------------------------------------------
 
@@ -90,10 +167,22 @@ interface ThemeState {
   activeThemeId: string;
   /** All available themes (builtin + custom) */
   themes: ThemeManifest[];
+  /**
+   * Active surface id (Surface Registry — Faz 1).
+   * `null` means "no explicit user preference, let the resolver decide".
+   * This field is persisted separately from the active theme (v1 payload).
+   */
+  activeSurfaceId: string | null;
   /** Get the active theme manifest */
   activeTheme: () => ThemeManifest;
   /** Switch to a different theme */
   setActiveTheme: (id: string) => void;
+  /**
+   * Set the active surface id. Pass `null` to clear the preference and fall
+   * back to role/global defaults. The resolver decides whether the id is
+   * usable — invalid ids still persist but result in a legacy fallback.
+   */
+  setActiveSurface: (id: string | null) => void;
   /** Import a new theme. Returns validation errors (empty = success). */
   importTheme: (manifest: unknown) => ThemeValidationError[];
   /** Remove a custom theme by id. Built-in themes cannot be removed. */
@@ -111,10 +200,12 @@ export const useThemeStore = create<ThemeState>((set, get) => {
   const allThemes = [...BUILTIN_THEMES, ...customThemes];
   const savedId = loadActiveThemeId();
   const initialId = allThemes.some((t) => t.id === savedId) ? savedId : DEFAULT_THEME.id;
+  const initialSurfaceId = loadActiveSurfaceId();
 
   return {
     activeThemeId: initialId,
     themes: allThemes,
+    activeSurfaceId: initialSurfaceId,
 
     activeTheme: () => {
       const state = get();
@@ -126,6 +217,11 @@ export const useThemeStore = create<ThemeState>((set, get) => {
       if (!themes.some((t) => t.id === id)) return;
       set({ activeThemeId: id });
       saveActiveThemeId(id);
+    },
+
+    setActiveSurface: (id: string | null) => {
+      set({ activeSurfaceId: id });
+      saveActiveSurfaceId(id);
     },
 
     importTheme: (manifest: unknown) => {

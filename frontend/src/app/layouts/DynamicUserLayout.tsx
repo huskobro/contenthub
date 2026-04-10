@@ -1,19 +1,23 @@
 /**
- * DynamicUserLayout — Selects Classic or Horizon layout based on active theme
+ * DynamicUserLayout — Surface Registry aware (Faz 1)
+ *
+ * Mirror of DynamicAdminLayout but scoped to the user panel. See that file
+ * for the full design rationale.
  */
 
-import { useThemeStore } from "../../stores/themeStore";
+import { useSurfaceResolution } from "../../surfaces/useSurfaceResolution";
+// Mirror DynamicAdminLayout: import the surfaces barrel for registration.
+import "../../surfaces";
 import { UserLayout } from "./UserLayout";
-import { HorizonUserLayout } from "./HorizonUserLayout";
 
 export function DynamicUserLayout() {
-  const activeTheme = useThemeStore((s) => s.activeTheme);
-  const theme = activeTheme();
-  const layoutMode = theme.layoutMode || "classic";
+  const { user } = useSurfaceResolution();
+  const Layout = user.surface.userLayout;
+  const surfaceId = user.surface.manifest.id;
 
-  if (layoutMode === "horizon") {
-    return <HorizonUserLayout key="horizon" />;
+  if (!Layout) {
+    return <UserLayout key="legacy-safety" />;
   }
 
-  return <UserLayout key="classic" />;
+  return <Layout key={surfaceId} />;
 }

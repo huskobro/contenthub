@@ -400,6 +400,104 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "wired_to": "frontend.date_formatting",
     },
 
+    # --- UI Surface Registry (Faz 1 — Infrastructure) ---
+    # Surface Registry altyapisinin kill-switch'i. Default: false (altyapi kapali,
+    # legacy/horizon davranisi aynen korunur). true yapildiginda resolver
+    # user-preference/role-default/global-default zincirini degerlendirir.
+    "ui.surface.infrastructure.enabled": {
+        "group": "ui",
+        "type": "boolean",
+        "label": "Surface Registry Altyapisi Aktif",
+        "help_text": (
+            "Surface Registry altyapisi icin kill-switch. Kapaliyken (varsayilan) "
+            "arayuz eski classic/horizon davranisiyla calisir. Acildiginda resolver "
+            "kullanici tercihi -> rol varsayilani -> global varsayilan -> legacy "
+            "zincirini degerlendirir. Hatalar her zaman legacy'ye dusurur."
+        ),
+        "module_scope": None,
+        "env_var": None,
+        "builtin_default": False,
+        "wired": True,
+        "wired_to": "frontend.surfaces.resolver",
+    },
+    "ui.surface.default.admin": {
+        "group": "ui",
+        "type": "string",
+        "label": "Admin Paneli Varsayilan Yuzey",
+        "help_text": (
+            "Kullanici kendi tercihini belirtmemisse admin panelinde varsayilan olarak "
+            "hangi yuzey gosterilsin? Gecerli degerler: legacy, horizon, atrium, bridge, "
+            "canvas. Bos veya tanimsiz birakilirsa resolver 'legacy' kullanir. "
+            "Kill-switch kapaliyken bu ayar yoksayilir."
+        ),
+        "module_scope": None,
+        "env_var": None,
+        "builtin_default": "legacy",
+        "wired": True,
+        "wired_to": "frontend.surfaces.resolver",
+    },
+    "ui.surface.default.user": {
+        "group": "ui",
+        "type": "string",
+        "label": "Kullanici Paneli Varsayilan Yuzey",
+        "help_text": (
+            "Kullanici kendi tercihini belirtmemisse kullanici panelinde varsayilan olarak "
+            "hangi yuzey gosterilsin? Gecerli degerler: legacy, horizon, atrium, bridge, "
+            "canvas. Bos veya tanimsiz birakilirsa resolver 'legacy' kullanir. "
+            "Kill-switch kapaliyken bu ayar yoksayilir."
+        ),
+        "module_scope": None,
+        "env_var": None,
+        "builtin_default": "legacy",
+        "wired": True,
+        "wired_to": "frontend.surfaces.resolver",
+    },
+    "ui.surface.atrium.enabled": {
+        "group": "ui",
+        "type": "boolean",
+        "label": "Atrium Yuzeyi Aktif",
+        "help_text": (
+            "Atrium (Premium Media OS) yuzeyini admin/kullanicilara acar. Faz 1'de "
+            "yalnizca placeholder olarak kayitlidir, gercek kabuk mevcut degildir; "
+            "secilmesi durumunda resolver legacy'ye duser."
+        ),
+        "module_scope": None,
+        "env_var": None,
+        "builtin_default": False,
+        "wired": True,
+        "wired_to": "frontend.surfaces.registry",
+    },
+    "ui.surface.bridge.enabled": {
+        "group": "ui",
+        "type": "boolean",
+        "label": "Bridge Yuzeyi Aktif",
+        "help_text": (
+            "Bridge (Operations Command Center) yuzeyini admin/kullanicilara acar. "
+            "Faz 1'de yalnizca placeholder olarak kayitlidir, gercek kabuk mevcut "
+            "degildir; secilmesi durumunda resolver legacy'ye duser."
+        ),
+        "module_scope": None,
+        "env_var": None,
+        "builtin_default": False,
+        "wired": True,
+        "wired_to": "frontend.surfaces.registry",
+    },
+    "ui.surface.canvas.enabled": {
+        "group": "ui",
+        "type": "boolean",
+        "label": "Canvas Yuzeyi Aktif",
+        "help_text": (
+            "Canvas (Creator Workspace Pro) yuzeyini admin/kullanicilara acar. Faz 1'de "
+            "yalnizca placeholder olarak kayitlidir, gercek kabuk mevcut degildir; "
+            "secilmesi durumunda resolver legacy'ye duser."
+        ),
+        "module_scope": None,
+        "env_var": None,
+        "builtin_default": False,
+        "wired": True,
+        "wired_to": "frontend.surfaces.registry",
+    },
+
     # --- Wizard Governance Settings ---
     "wizard.standard_video.entry_mode": {
         "group": "wizard",

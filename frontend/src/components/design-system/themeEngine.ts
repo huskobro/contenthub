@@ -108,8 +108,23 @@ export function generateCSSVariables(theme: ThemeManifest): Record<string, strin
 // Apply theme to DOM
 // ---------------------------------------------------------------------------
 
+/**
+ * Surface token override plumbing — Faz 1.
+ *
+ * When the Surface Registry resolves a surface whose manifest provides
+ * `tokenOverrides`, the keys set by the previous surface must be rolled back
+ * before the new overrides are applied. We track the currently applied
+ * override keys in this module so `applyThemeToDOM` can cleanly switch
+ * between surfaces without leaking stale variables.
+ */
+let currentSurfaceId: string | null = null;
+let currentSurfaceOverrideKeys: string[] = [];
+
 /** Apply all CSS custom properties from a theme to the document root */
-export function applyThemeToDOM(theme: ThemeManifest): void {
+export function applyThemeToDOM(
+  theme: ThemeManifest,
+  options?: { surfaceId?: string | null; surfaceOverrides?: Record<string, string> | null },
+): void {
   const root = document.documentElement;
   const vars = generateCSSVariables(theme);
 
@@ -133,6 +148,39 @@ export function applyThemeToDOM(theme: ThemeManifest): void {
 
   // Update Google Fonts link if fonts changed
   updateGoogleFontsLink(theme);
+
+  // ---- Surface overrides (Faz 1) ----------------------------------------
+  // Roll back previous surface overrides that are NOT in the new set.
+  const nextOverrides = options?.surfaceOverrides ?? null;
+  const nextKeys = nextOverrides ? Object.keys(nextOverrides) : [];
+  for (const key of currentSurfaceOverrideKeys) {
+    if (!nextKeys.includes(key)) {
+      root.style.removeProperty(key);
+    }
+  }
+  // Apply the new overrides (guarded to only touch --ch-* custom props).
+  if (nextOverrides) {
+    for (const [key, val] of Object.entries(nextOverrides)) {
+      if (key.startsWith("--ch-")) {
+        root.style.setProperty(key, val);
+      }
+    }
+  }
+  currentSurfaceOverrideKeys = nextKeys;
+
+  // data-surface attribute for surface-specific CSS selectors.
+  const nextSurfaceId = options?.surfaceId ?? null;
+  currentSurfaceId = nextSurfaceId;
+  if (nextSurfaceId) {
+    root.setAttribute("data-surface", nextSurfaceId);
+  } else {
+    root.removeAttribute("data-surface");
+  }
+}
+
+/** Return the currently applied surface id (or null). Used by tests. */
+export function getCurrentSurfaceId(): string | null {
+  return currentSurfaceId;
 }
 
 /** Remove all CSS custom properties (reset) */
