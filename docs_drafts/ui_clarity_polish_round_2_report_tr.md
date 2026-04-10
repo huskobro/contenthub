@@ -150,5 +150,6 @@ Ancak tsc derleme sıfır hata ile geçtiği ve tüm değişiklikler yalnızca k
 
 ## Commit + push
 
-- Commit hash: (bu rapor yazıldıktan sonra commit oluşturulacak, hash buraya yazılacak)
-- Push status: (commit sonrası `git push origin main` denenecek)
+- Commit hash: `b9f3dc9` — `docs(ui): UI clarity + polish round 2 — Türkçe karakter + copy tutarlılığı`
+- 33 dosya, +1044 / -869 satır (net ~+175; çoğu rapor dosyası)
+- Push status: ✅ `git push origin main` başarılı → `9466a1e..b9f3dc9  main -> main`
