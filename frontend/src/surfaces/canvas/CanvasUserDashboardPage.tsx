@@ -40,10 +40,10 @@ import { cn } from "../../lib/cn";
 
 const MODULE_LABELS: Record<string, string> = {
   standard_video: "Standart Video",
-  news_bulletin: "Haber Bulteni",
-  product_review: "Urun Degerlendirme",
-  educational_video: "Egitim Videosu",
-  howto_video: "Nasil Yapilir",
+  news_bulletin: "Haber Bülteni",
+  product_review: "Ürün Değerlendirme",
+  educational_video: "Eğitim Videosu",
+  howto_video: "Nasıl Yapılır",
 };
 
 // ---------------------------------------------------------------------------
@@ -120,7 +120,7 @@ function ProjectPreviewTile({
         data-testid={`canvas-project-preview-slot-${project.id}`}
       >
         <span className="text-[9px] font-mono uppercase text-neutral-400">
-          on izleme
+          ön izleme
         </span>
       </div>
       <div className="flex-1 min-w-0">
@@ -138,7 +138,7 @@ function ProjectPreviewTile({
           <StatusBadge status={project.publish_status} size="sm" />
           {project.active_job_id ? (
             <span className="text-[10px] font-mono text-brand-600">
-              aktif job
+              aktif iş
             </span>
           ) : null}
         </div>
@@ -191,7 +191,7 @@ export function CanvasUserDashboardPage() {
   const authUser = useAuthStore((s) => s.user);
 
   const userId = authUser?.id;
-  const displayName = authUser?.display_name ?? "Kullanici";
+  const displayName = authUser?.display_name ?? "Kullanıcı";
 
   const { data: projects, isLoading: projectsLoading } = useContentProjects(
     userId ? { user_id: userId, limit: 12 } : undefined,
@@ -252,14 +252,14 @@ export function CanvasUserDashboardPage() {
       >
         <div className="flex-1 min-w-0">
           <p className="m-0 text-[10px] font-semibold uppercase tracking-wider text-brand-600">
-            Canvas Workspace
+            Canvas Çalışma Alanı
           </p>
           <h1 className="m-0 mt-1 text-xl font-semibold text-neutral-900">
-            Hosgeldin, {displayName}
+            Hoş geldin, {displayName}
           </h1>
           <p className="m-0 mt-1 text-sm text-neutral-500">
-            Proje merkezli yaratici calisma alanin. Buradan yeni icerik
-            baslat, aktif isleri takip et, yayinlanan icerigi gor.
+            Proje merkezli yaratıcı çalışma alanın. Buradan yeni içerik
+            başlat, aktif işleri takip et, yayınlanan içeriği gör.
           </p>
         </div>
         <div className="flex gap-2 shrink-0">
@@ -283,7 +283,7 @@ export function CanvasUserDashboardPage() {
             )}
             data-testid="canvas-dashboard-create-bulletin"
           >
-            + Yeni Bulten
+            + Yeni Bülten
           </button>
         </div>
       </section>
@@ -295,17 +295,17 @@ export function CanvasUserDashboardPage() {
           data-testid="canvas-onboarding-pending"
         >
           <p className="m-0 text-sm font-semibold text-neutral-800">
-            Kurulum tamamlanmadi
+            Kurulum tamamlanmadı
           </p>
           <p className="m-0 mt-1 text-xs text-neutral-600">
-            Canvas workspace'i kullanmak icin once kurulum adimlarini tamamla.
+            Canvas çalışma alanını kullanmak için önce kurulum adımlarını tamamla.
           </p>
           <button
             type="button"
             onClick={() => navigate("/onboarding")}
             className="mt-3 px-3 py-1.5 rounded-md text-xs font-semibold bg-warning-base text-white"
           >
-            Kuruluma Basla
+            Kuruluma Başla
           </button>
         </div>
       ) : null}
@@ -327,7 +327,7 @@ export function CanvasUserDashboardPage() {
         {/* Active projects */}
         <WorkspaceCard
           title="Aktif Projelerim"
-          subtitle="Son calistigin projeler"
+          subtitle="Son çalıştığın projeler"
           testId="canvas-dashboard-active-projects"
           action={
             activeProjects.length > 0 ? (
@@ -336,23 +336,23 @@ export function CanvasUserDashboardPage() {
                 onClick={() => navigate("/user/projects")}
                 className="text-xs font-semibold text-brand-600 hover:text-brand-700"
               >
-                Tumunu Gor
+                Tümünü Gör
               </button>
             ) : undefined
           }
         >
           {projectsLoading ? (
-            <div className="p-5 text-sm text-neutral-500">Yukleniyor...</div>
+            <div className="p-5 text-sm text-neutral-500">Yükleniyor...</div>
           ) : activeProjects.length === 0 ? (
             <div
               className="p-6 text-center"
               data-testid="canvas-dashboard-projects-empty"
             >
               <p className="m-0 text-sm text-neutral-600">
-                Henuz projen yok.
+                Henüz projen yok.
               </p>
               <p className="m-0 mt-1 text-xs text-neutral-500">
-                Yukaridaki butonlardan ilk projeni baslatabilirsin.
+                Yukarıdaki butonlardan ilk projeni başlatabilirsin.
               </p>
             </div>
           ) : (
@@ -370,8 +370,8 @@ export function CanvasUserDashboardPage() {
 
         {/* In-flight work */}
         <WorkspaceCard
-          title="Calisan Isler"
-          subtitle="Suanda kuyrukta veya devam eden render/uretim isleri"
+          title="Çalışan İşler"
+          subtitle="Şu anda kuyrukta veya devam eden render/üretim işleri"
           testId="canvas-dashboard-inflight"
         >
           {inFlightJobs.length === 0 ? (
@@ -380,10 +380,10 @@ export function CanvasUserDashboardPage() {
               data-testid="canvas-dashboard-inflight-empty"
             >
               <p className="m-0 text-sm text-neutral-600">
-                Suanda calisan bir is yok.
+                Şu anda çalışan bir iş yok.
               </p>
               <p className="m-0 mt-1 text-xs text-neutral-500">
-                Yeni bir proje baslattiginda burada gorunur.
+                Yeni bir proje başlattığında burada görünür.
               </p>
             </div>
           ) : (

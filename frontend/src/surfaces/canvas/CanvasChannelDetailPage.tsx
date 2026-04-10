@@ -136,7 +136,7 @@ export function CanvasChannelDetailPage() {
       const authUrl = await getYouTubeAuthUrl(redirectUri, channelId);
       window.open(authUrl, "_blank", "width=600,height=700");
     } catch (err) {
-      setConnectError(err instanceof Error ? err.message : "Baglanti hatasi.");
+      setConnectError(err instanceof Error ? err.message : "Bağlantı hatası.");
       setConnecting(false);
     }
   }
@@ -144,7 +144,7 @@ export function CanvasChannelDetailPage() {
   function handleDisconnect() {
     if (
       !window.confirm(
-        "YouTube baglantisinizi kesmek istediginizden emin misiniz?",
+        "YouTube bağlantınızı kesmek istediğinizden emin misiniz?",
       )
     )
       return;
@@ -175,7 +175,7 @@ export function CanvasChannelDetailPage() {
           className="rounded-xl border border-border-subtle bg-surface-card p-8 text-center text-sm text-neutral-500"
           data-testid="canvas-channel-detail-loading"
         >
-          Kanal yukleniyor...
+          Kanal yükleniyor...
         </div>
       </div>
     );
@@ -192,17 +192,17 @@ export function CanvasChannelDetailPage() {
           data-testid="canvas-channel-detail-empty"
         >
           <p className="m-0 text-sm font-semibold text-neutral-700">
-            Kanal bulunamadi
+            Kanal bulunamadı
           </p>
           <p className="m-0 mt-1 text-xs text-neutral-500">
-            Bu kanal silinmis veya artik erisilebilir degil.
+            Bu kanal silinmiş veya artık erişilebilir değil.
           </p>
           <Link
             to="/user/channels"
             className="inline-block mt-3 text-xs font-semibold text-brand-600 hover:text-brand-700"
             data-testid="canvas-channel-detail-back-empty"
           >
-            &larr; Kanal studyoma don
+            &larr; Kanal stüdyoma dön
           </Link>
         </div>
       </div>
@@ -241,7 +241,7 @@ export function CanvasChannelDetailPage() {
         </div>
         <div className="flex-1 min-w-0">
           <p className="m-0 text-[10px] font-semibold uppercase tracking-wider text-brand-600">
-            Canvas Workspace &middot; Kanal Studyosu
+            Canvas Workspace &middot; Kanal Stüdyosu
           </p>
           <h1 className="m-0 mt-1 text-xl font-semibold text-neutral-900 truncate">
             {channel.profile_name}
@@ -268,7 +268,7 @@ export function CanvasChannelDetailPage() {
             className="text-[11px] font-semibold text-neutral-500 hover:text-brand-600"
             data-testid="canvas-channel-detail-back"
           >
-            &larr; Kanal studyoma don
+            &larr; Kanal stüdyoma dön
           </Link>
         </div>
       </section>
@@ -284,7 +284,7 @@ export function CanvasChannelDetailPage() {
           note={
             channel.default_language
               ? `dil ${channel.default_language}`
-              : "dil tanimsiz"
+              : "dil tanımsız"
           }
           testId="canvas-channel-health-identity"
         />
@@ -307,8 +307,8 @@ export function CanvasChannelDetailPage() {
             health.scopeWarn
               ? "scope yetersiz"
               : health.oauthOk
-                ? "baglanti hazir"
-                : "baglanti yok"
+                ? "bağlantı hazır"
+                : "bağlantı yok"
           }
           testId="canvas-channel-health-oauth"
         />
@@ -331,17 +331,17 @@ export function CanvasChannelDetailPage() {
           >
             <header className="px-5 py-3 border-b border-border-subtle bg-neutral-50/50">
               <p className="m-0 text-sm font-semibold text-neutral-800">
-                Kanal Kimligi
+                Kanal Kimliği
               </p>
               <p className="m-0 mt-0.5 text-xs text-neutral-500">
-                Studyonun temel meta bilgisi.
+                Stüdyonun temel meta bilgisi.
               </p>
             </header>
             <dl className="px-5 py-4 grid grid-cols-2 gap-4 text-xs">
               <DetailRow label="Durum">
                 <StatusBadge status={channel.status} size="sm" />
               </DetailRow>
-              <DetailRow label="Varsayilan Dil">
+              <DetailRow label="Varsayılan Dil">
                 <span className="font-medium text-neutral-800">
                   {channel.default_language || "—"}
                 </span>
@@ -353,7 +353,7 @@ export function CanvasChannelDetailPage() {
                   </span>
                 </DetailRow>
               ) : null}
-              <DetailRow label="Olusturulma">
+              <DetailRow label="Oluşturulma">
                 <span className="font-medium text-neutral-800">
                   {new Date(channel.created_at).toLocaleDateString("tr-TR")}
                 </span>
@@ -371,8 +371,8 @@ export function CanvasChannelDetailPage() {
                 YouTube API Kimlik Bilgileri
               </p>
               <p className="m-0 mt-0.5 text-xs text-neutral-500">
-                Google Cloud Console&apos;dan bu kanal icin OAuth2 client id /
-                secret alin.
+                Google Cloud Console&apos;dan bu kanal için OAuth2 client id /
+                secret alın.
               </p>
             </header>
             <div className="px-5 py-4 flex flex-col gap-3">
@@ -463,10 +463,10 @@ export function CanvasChannelDetailPage() {
           >
             <header className="px-5 py-3 border-b border-border-subtle bg-neutral-50/50">
               <p className="m-0 text-sm font-semibold text-neutral-800">
-                YouTube Baglantisi
+                YouTube Bağlantısı
               </p>
               <p className="m-0 mt-0.5 text-xs text-neutral-500">
-                Yayinlama icin OAuth2 token durumu.
+                Yayınlama için OAuth2 token durumu.
               </p>
             </header>
             <div className="px-5 py-4 flex flex-col gap-3">
@@ -519,14 +519,14 @@ export function CanvasChannelDetailPage() {
                       className="rounded-md border border-warning/30 bg-warning-light/40 px-3 py-2 text-xs text-warning-dark"
                       data-testid="canvas-channel-oauth-scope-warn"
                     >
-                      Mevcut token yetersiz izinlerle alinmis. Lutfen
-                      baglantiyi kesip yeniden baglanin.
+                      Mevcut token yetersiz izinlerle alınmış. Lütfen
+                      bağlantıyı kesip yeniden bağlanın.
                     </div>
                   ) : null}
 
                   <div className="flex items-center gap-3">
                     <span className="text-xs text-success-dark">
-                      OAuth token mevcut — yayinlama hazir.
+                      OAuth token mevcut — yayınlama hazır.
                     </span>
                     <button
                       type="button"
@@ -543,14 +543,14 @@ export function CanvasChannelDetailPage() {
                     >
                       {revokeMutation.isPending
                         ? "..."
-                        : "Baglantiyi Kes"}
+                        : "Bağlantıyı Kes"}
                     </button>
                   </div>
                 </>
               ) : channelCreds?.has_credentials ? (
                 <>
                   <p className="m-0 text-xs text-neutral-600">
-                    Bu kanali YouTube&apos;a baglamak icin OAuth2
+                    Bu kanalı YouTube&apos;a bağlamak için OAuth2
                     yetkilendirmesi gereklidir.
                   </p>
                   <button
@@ -566,8 +566,8 @@ export function CanvasChannelDetailPage() {
                     data-testid="canvas-channel-oauth-connect"
                   >
                     {connecting
-                      ? "Yonlendiriliyor..."
-                      : "YouTube Baglantisi Baslat"}
+                      ? "Yönlendiriliyor..."
+                      : "YouTube Bağlantısı Başlat"}
                   </button>
                 </>
               ) : (
@@ -575,7 +575,7 @@ export function CanvasChannelDetailPage() {
                   className="m-0 text-xs text-neutral-500"
                   data-testid="canvas-channel-oauth-needs-creds"
                 >
-                  Once yandaki bolumden API kimlik bilgilerini girin.
+                  Önce yandaki bölümden API kimlik bilgilerini girin.
                 </p>
               )}
               {connectError ? (
@@ -583,7 +583,7 @@ export function CanvasChannelDetailPage() {
               ) : null}
               {revokeMutation.isSuccess ? (
                 <p className="m-0 text-xs text-success-dark">
-                  Baglanti basariyla kesildi.
+                  Bağlantı başarıyla kesildi.
                 </p>
               ) : null}
             </div>
@@ -596,7 +596,7 @@ export function CanvasChannelDetailPage() {
           >
             <header className="px-5 py-3 border-b border-border-subtle bg-neutral-50/50 flex items-center gap-2">
               <p className="m-0 text-sm font-semibold text-neutral-800">
-                Bu Kanalin Projeleri
+                Bu Kanalın Projeleri
               </p>
               <span className="ml-auto text-[11px] text-neutral-500">
                 {projectRows.length} proje
@@ -608,7 +608,7 @@ export function CanvasChannelDetailPage() {
                 data-testid="canvas-channel-projects-empty"
               >
                 <p className="m-0 text-xs text-neutral-500">
-                  Bu kanalda henuz proje yok.
+                  Bu kanalda henüz proje yok.
                 </p>
                 <div className="mt-3 flex items-center justify-center gap-2">
                   <button
@@ -620,7 +620,7 @@ export function CanvasChannelDetailPage() {
                     )}
                     data-testid="canvas-channel-projects-create-video"
                   >
-                    + Video Olustur
+                    + Video Oluştur
                   </button>
                   <button
                     type="button"
@@ -632,7 +632,7 @@ export function CanvasChannelDetailPage() {
                     )}
                     data-testid="canvas-channel-projects-create-bulletin"
                   >
-                    + Bulten Olustur
+                    + Bülten Oluştur
                   </button>
                 </div>
               </div>
@@ -689,7 +689,7 @@ export function CanvasChannelDetailPage() {
                       to="/user/projects"
                       className="text-[11px] font-semibold text-brand-600 hover:text-brand-700"
                     >
-                      Tum projeler ({projectRows.length}) &rarr;
+                      Tüm projeler ({projectRows.length}) &rarr;
                     </Link>
                   </li>
                 ) : null}

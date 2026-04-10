@@ -35,10 +35,10 @@ import { DistributionDonut } from "../../components/shared/charts/DistributionDo
 import { cn } from "../../lib/cn";
 
 const WINDOW_OPTIONS: Array<{ value: AnalyticsWindow; label: string }> = [
-  { value: "last_7d", label: "Son 7 Gun" },
-  { value: "last_30d", label: "Son 30 Gun" },
-  { value: "last_90d", label: "Son 90 Gun" },
-  { value: "all_time", label: "Tum Zamanlar" },
+  { value: "last_7d", label: "Son 7 Gün" },
+  { value: "last_30d", label: "Son 30 Gün" },
+  { value: "last_90d", label: "Son 90 Gün" },
+  { value: "all_time", label: "Tüm Zamanlar" },
 ];
 
 function fmtRate(v: number | null | undefined): string {
@@ -90,7 +90,7 @@ export function CanvasUserAnalyticsPage() {
           m.module_type === "standard_video"
             ? "Standart Video"
             : m.module_type === "news_bulletin"
-            ? "Haber Bulteni"
+            ? "Haber Bülteni"
             : m.module_type,
         value: m.total_jobs,
       })),
@@ -115,18 +115,18 @@ export function CanvasUserAnalyticsPage() {
             Canvas Workspace &middot; Analiz
           </p>
           <h1 className="m-0 mt-1 text-xl font-semibold text-neutral-900">
-            Performans Studyom
+            Performans Stüdyom
           </h1>
           <p className="m-0 mt-1 text-sm text-neutral-500">
-            Kendi icerik uretim ve yayin performansin. Donemi degistirerek
-            trendleri karsilastirabilirsin.
+            Kendi içerik üretim ve yayın performansın. Dönemi değiştirerek
+            trendleri karşılaştırabilirsin.
           </p>
         </div>
         <div
           className="shrink-0 flex flex-wrap gap-1"
           data-testid="canvas-analytics-window-selector"
           role="group"
-          aria-label="Analitik zaman araligi"
+          aria-label="Analitik zaman aralığı"
         >
           {WINDOW_OPTIONS.map((opt) => {
             const active = opt.value === window;
@@ -156,7 +156,7 @@ export function CanvasUserAnalyticsPage() {
           className="rounded-xl border border-warning-base/30 bg-warning-light/30 px-4 py-3 text-sm text-warning-dark"
           data-testid="canvas-analytics-no-user"
         >
-          Kullanici bilgisi bulunamadi.
+          Kullanıcı bilgisi bulunamadı.
         </div>
       ) : null}
 
@@ -165,7 +165,7 @@ export function CanvasUserAnalyticsPage() {
           className="rounded-xl border border-error-base/30 bg-error-light/30 px-4 py-3 text-sm text-error-dark"
           data-testid="canvas-analytics-error"
         >
-          Veriler yuklenemedi.
+          Veriler yüklenemedi.
         </div>
       ) : null}
 
@@ -182,24 +182,24 @@ export function CanvasUserAnalyticsPage() {
           testId="canvas-analytics-kpi-projects"
         />
         <KpiTile
-          label="Islerim"
+          label="İşlerim"
           value={fmtCount(data?.total_jobs)}
-          note="Toplam is"
+          note="Toplam iş"
           loading={isLoading}
           testId="canvas-analytics-kpi-jobs"
         />
         <KpiTile
-          label="Yayin Basari"
+          label="Yayın Başarı"
           value={fmtRate(data?.publish_success_rate)}
-          note="Basarili yayin"
+          note="Başarılı yayın"
           loading={isLoading}
           testId="canvas-analytics-kpi-publish"
           tone="success"
         />
         <KpiTile
-          label="Ort. Uretim"
+          label="Ort. Üretim"
           value={fmtDuration(data?.avg_production_duration_seconds)}
-          note="Is basi ortalama"
+          note="İş başı ortalama"
           loading={isLoading}
           testId="canvas-analytics-kpi-duration"
         />
@@ -213,23 +213,23 @@ export function CanvasUserAnalyticsPage() {
         >
           <header className="px-5 py-3 border-b border-border-subtle bg-neutral-50/50">
             <p className="m-0 text-sm font-semibold text-neutral-800">
-              Uretim Trendi
+              Üretim Trendi
             </p>
             <p className="m-0 mt-0.5 text-xs text-neutral-500">
-              Gunluk is sayisi
+              Günlük iş sayısı
             </p>
           </header>
           <div className="p-4 min-h-[220px]">
             {isLoading ? (
               <p className="text-sm text-neutral-500 py-8 text-center">
-                Yukleniyor...
+                Yükleniyor...
               </p>
             ) : trendData.length > 0 ? (
               <TrendChart
                 data={trendData}
                 xKey="dateLabel"
                 yKey="job_count"
-                yLabel="Is Sayisi"
+                yLabel="İş Sayısı"
                 height={200}
                 showArea
                 testId="canvas-analytics-trend-chart"
@@ -239,7 +239,7 @@ export function CanvasUserAnalyticsPage() {
                 className="text-sm text-neutral-500 py-8 text-center"
                 data-testid="canvas-analytics-trend-empty"
               >
-                Secilen donemde veri yok.
+                Seçilen dönemde veri yok.
               </p>
             )}
           </div>
@@ -251,16 +251,16 @@ export function CanvasUserAnalyticsPage() {
         >
           <header className="px-5 py-3 border-b border-border-subtle bg-neutral-50/50">
             <p className="m-0 text-sm font-semibold text-neutral-800">
-              Modul Dagilimi
+              Modül Dağılımı
             </p>
             <p className="m-0 mt-0.5 text-xs text-neutral-500">
-              Projelerinin modul cesitliligi
+              Projelerinin modül çeşitliliği
             </p>
           </header>
           <div className="p-4 min-h-[220px]">
             {isLoading ? (
               <p className="text-sm text-neutral-500 py-8 text-center">
-                Yukleniyor...
+                Yükleniyor...
               </p>
             ) : moduleDonutData.length > 0 ? (
               <DistributionDonut data={moduleDonutData} height={200} />
@@ -269,7 +269,7 @@ export function CanvasUserAnalyticsPage() {
                 className="text-sm text-neutral-500 py-8 text-center"
                 data-testid="canvas-analytics-distribution-empty"
               >
-                Modul verisi yok.
+                Modül verisi yok.
               </p>
             )}
           </div>

@@ -29,25 +29,25 @@ import { StatusBadge } from "../../components/design-system/primitives";
 import { cn } from "../../lib/cn";
 
 const MODULE_TYPES: Array<{ value: string; label: string }> = [
-  { value: "", label: "Tum moduller" },
+  { value: "", label: "Tüm modüller" },
   { value: "standard_video", label: "Standart Video" },
-  { value: "news_bulletin", label: "Haber Bulteni" },
+  { value: "news_bulletin", label: "Haber Bülteni" },
 ];
 
 const CONTENT_STATUSES: Array<{ value: string; label: string }> = [
-  { value: "", label: "Tum durumlar" },
+  { value: "", label: "Tüm durumlar" },
   { value: "draft", label: "Taslak" },
   { value: "in_progress", label: "Devam Ediyor" },
-  { value: "completed", label: "Tamamlandi" },
-  { value: "archived", label: "Arsivlendi" },
+  { value: "completed", label: "Tamamlandı" },
+  { value: "archived", label: "Arşivlendi" },
 ];
 
 const MODULE_LABELS: Record<string, string> = {
   standard_video: "Standart Video",
-  news_bulletin: "Haber Bulteni",
-  product_review: "Urun Degerlendirme",
-  educational_video: "Egitim Videosu",
-  howto_video: "Nasil Yapilir",
+  news_bulletin: "Haber Bülteni",
+  product_review: "Ürün Değerlendirme",
+  educational_video: "Eğitim Videosu",
+  howto_video: "Nasıl Yapılır",
 };
 
 function PortfolioCard({
@@ -126,9 +126,9 @@ function PortfolioCard({
         </div>
 
         <div className="flex items-center justify-between text-[10px] font-mono uppercase text-neutral-400">
-          <span>oncelik: {project.priority}</span>
+          <span>öncelik: {project.priority}</span>
           <span className="text-indigo-600 font-semibold group-hover:text-indigo-700">
-            stuyoya git →
+            stüdyoya git →
           </span>
         </div>
       </div>
@@ -196,11 +196,11 @@ export function AtriumProjectsListPage() {
               Portfolio
             </p>
             <h1 className="m-0 mt-2 text-3xl md:text-4xl font-bold text-white">
-              Tum yapimlarim
+              Tüm yapımlarım
             </h1>
             <p className="m-0 mt-2 text-sm text-neutral-300 max-w-xl">
-              Editorial bir bakisla butun yapimlarin. Modul, durum ve kanal
-              filtreleriyle daralt, kartlardan direkt stuyoya dal.
+              Editoryal bir bakışla bütün yapımların. Modül, durum ve kanal
+              filtreleriyle daralt, kartlardan direkt stüdyoya dal.
             </p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
@@ -218,7 +218,7 @@ export function AtriumProjectsListPage() {
               className="px-4 py-2 rounded-full text-xs font-semibold border border-white/40 text-white hover:bg-white/10 transition-colors"
               data-testid="atrium-projects-create-bulletin"
             >
-              + Bulten
+              + Bülten
             </button>
           </div>
         </div>
@@ -228,7 +228,7 @@ export function AtriumProjectsListPage() {
             <span className="text-neutral-200 text-sm font-semibold">
               {rows.length}
             </span>{" "}
-            yapim gosteriliyor
+            yapım gösteriliyor
           </span>
           <span>·</span>
           <span>
@@ -284,7 +284,7 @@ export function AtriumProjectsListPage() {
           )}
           data-testid="atrium-projects-filter-channel"
         >
-          <option value="">Tum kanallar</option>
+          <option value="">Tüm kanallar</option>
           {(channels ?? []).map((c) => (
             <option key={c.id} value={c.id}>
               {c.profile_name}
@@ -316,14 +316,14 @@ export function AtriumProjectsListPage() {
           className="rounded-2xl border border-neutral-200 bg-white px-6 py-10 text-sm text-neutral-500 text-center"
           data-testid="atrium-projects-loading"
         >
-          Yapimlar yukleniyor...
+          Yapımlar yükleniyor...
         </div>
       ) : isError ? (
         <div
           className="rounded-2xl border border-red-300 bg-red-50 px-6 py-10 text-sm text-red-700 text-center"
           data-testid="atrium-projects-error"
         >
-          Yapimlar yuklenemedi. Lutfen birazdan tekrar dene.
+          Yapımlar yüklenemedi. Lütfen birazdan tekrar dene.
         </div>
       ) : rows.length === 0 ? (
         <div
@@ -335,13 +335,13 @@ export function AtriumProjectsListPage() {
         >
           <p className="m-0 text-base font-semibold text-neutral-800">
             {activeFilterCount > 0
-              ? "Filtrelerle eslesen yapim yok."
-              : "Henuz portfolyonda yapim yok."}
+              ? "Filtrelerle eşleşen yapım yok."
+              : "Henüz portföyünde yapım yok."}
           </p>
           <p className="m-0 mt-1 text-xs text-neutral-500">
             {activeFilterCount > 0
-              ? "Filtreleri temizle veya yeni bir yapim baslat."
-              : "Ilk yapimini baslatmak icin yukaridaki butonlari kullan."}
+              ? "Filtreleri temizle veya yeni bir yapım başlat."
+              : "İlk yapımını başlatmak için yukarıdaki butonları kullan."}
           </p>
         </div>
       ) : (

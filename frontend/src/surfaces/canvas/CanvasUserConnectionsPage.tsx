@@ -32,30 +32,30 @@ import { cn } from "../../lib/cn";
 // ---------------------------------------------------------------------------
 
 const PLATFORM_OPTIONS: Array<{ value: string; label: string }> = [
-  { value: "", label: "Tum Platformlar" },
+  { value: "", label: "Tüm Platformlar" },
   { value: "youtube", label: "YouTube" },
 ];
 
 const HEALTH_OPTIONS: Array<{ value: string; label: string }> = [
-  { value: "", label: "Tum Durumlar" },
-  { value: "healthy", label: "Saglikli" },
-  { value: "partial", label: "Kismi" },
-  { value: "disconnected", label: "Baglanti Yok" },
+  { value: "", label: "Tüm Durumlar" },
+  { value: "healthy", label: "Sağlıklı" },
+  { value: "partial", label: "Kısmi" },
+  { value: "disconnected", label: "Bağlantı Yok" },
   { value: "reauth_required", label: "Yeniden Yetkilendir" },
   { value: "token_issue", label: "Token Sorunu" },
 ];
 
 const HEALTH_BADGE: Record<string, { label: string; className: string }> = {
   healthy: {
-    label: "Saglikli",
+    label: "Sağlıklı",
     className: "bg-success-light text-success-dark border-success-base/30",
   },
   partial: {
-    label: "Kismi",
+    label: "Kısmi",
     className: "bg-warning-light text-warning-dark border-warning-base/30",
   },
   disconnected: {
-    label: "Baglanti Yok",
+    label: "Bağlantı Yok",
     className: "bg-neutral-100 text-neutral-600 border-neutral-200",
   },
   reauth_required: {
@@ -73,9 +73,9 @@ const HEALTH_BADGE: Record<string, { label: string; className: string }> = {
 };
 
 const CAPABILITY_LABELS: Record<string, string> = {
-  can_publish: "Yayin",
+  can_publish: "Yayın",
   can_read_comments: "Yorum",
-  can_reply_comments: "Yanit",
+  can_reply_comments: "Yanıt",
   can_read_playlists: "Playlist",
   can_write_playlists: "Playlist Yaz",
   can_create_posts: "Post",
@@ -118,12 +118,12 @@ function timeAgo(dateStr: string | null): string {
   if (!dateStr) return "—";
   const diff = Date.now() - new Date(dateStr).getTime();
   const mins = Math.floor(diff / 60_000);
-  if (mins < 1) return "az once";
-  if (mins < 60) return `${mins}dk once`;
+  if (mins < 1) return "az önce";
+  if (mins < 60) return `${mins}dk önce`;
   const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}sa once`;
+  if (hours < 24) return `${hours}sa önce`;
   const days = Math.floor(hours / 24);
-  return `${days}g once`;
+  return `${days}g önce`;
 }
 
 // ---------------------------------------------------------------------------
@@ -174,27 +174,27 @@ export function CanvasUserConnectionsPage() {
       >
         <div className="flex-1 min-w-0">
           <p className="m-0 text-[10px] font-semibold uppercase tracking-wider text-brand-600">
-            Canvas Workspace &middot; Dagitim
+            Canvas Workspace &middot; Dağıtım
           </p>
           <h1 className="m-0 mt-1 text-xl font-semibold text-neutral-900">
-            Baglanti Merkezim
+            Bağlantı Merkezim
           </h1>
           <p className="m-0 mt-1 text-sm text-neutral-500">
-            Her platform baglantisi bir yayin kanalinin uc noktasi. Yetenek
-            matrisini ve saglik durumunu buradan takip et.
+            Her platform bağlantısı bir yayın kanalının uç noktası. Yetenek
+            matrisini ve sağlık durumunu buradan takip et.
           </p>
         </div>
         <div
           className="shrink-0 text-xs text-neutral-500 text-right"
           data-testid="canvas-connections-hero-summary"
         >
-          <div>{total} baglanti</div>
+          <div>{total} bağlantı</div>
           {health.reauth_required > 0 ? (
             <div className="mt-1 text-error-dark font-semibold">
               {health.reauth_required} yeniden yetkilendirme bekliyor
             </div>
           ) : (
-            <div className="mt-1 text-neutral-400">tum baglantilar stabil</div>
+            <div className="mt-1 text-neutral-400">tüm bağlantılar stabil</div>
           )}
         </div>
       </section>
@@ -204,10 +204,10 @@ export function CanvasUserConnectionsPage() {
         className="grid grid-cols-2 sm:grid-cols-5 gap-2"
         data-testid="canvas-connections-health-ribbon"
       >
-        <HealthTile label="Saglikli" value={health.healthy} tone="success" />
-        <HealthTile label="Kismi" value={health.partial} tone="warning" />
+        <HealthTile label="Sağlıklı" value={health.healthy} tone="success" />
+        <HealthTile label="Kısmi" value={health.partial} tone="warning" />
         <HealthTile
-          label="Baglanti Yok"
+          label="Bağlantı Yok"
           value={health.disconnected}
           tone="neutral"
         />
@@ -274,14 +274,14 @@ export function CanvasUserConnectionsPage() {
           className="rounded-xl border border-error-base/30 bg-error-light/30 p-6 text-center text-sm text-error-dark"
           data-testid="canvas-connections-error"
         >
-          Baglantilar yuklenemedi.
+          Bağlantılar yüklenemedi.
         </div>
       ) : isLoading ? (
         <div
           className="rounded-xl border border-border-subtle bg-surface-card p-8 text-center text-sm text-neutral-500"
           data-testid="canvas-connections-loading"
         >
-          Baglantilar yukleniyor...
+          Bağlantılar yükleniyor...
         </div>
       ) : items.length === 0 ? (
         <div
@@ -289,10 +289,10 @@ export function CanvasUserConnectionsPage() {
           data-testid="canvas-connections-empty"
         >
           <p className="m-0 text-sm font-semibold text-neutral-700">
-            Baglanti bulunamadi
+            Bağlantı bulunamadı
           </p>
           <p className="m-0 mt-1 text-xs text-neutral-500">
-            Filtreleri gevset veya kanal detayindan yeni baglanti kur.
+            Filtreleri gevşet veya kanal detayından yeni bağlantı kur.
           </p>
         </div>
       ) : (
@@ -377,7 +377,7 @@ function ConnectionWorkspaceCard({ conn }: { conn: ConnectionWithHealth }) {
           <p className="m-0 text-sm font-semibold text-neutral-900 truncate">
             {conn.external_account_name ??
               conn.external_account_id ??
-              "Isimsiz Baglanti"}
+              "İsimsiz Bağlantı"}
           </p>
           <p className="m-0 text-[11px] text-neutral-500">
             {conn.platform}
@@ -437,14 +437,14 @@ function ConnectionWorkspaceCard({ conn }: { conn: ConnectionWithHealth }) {
 
       {/* Footer */}
       <footer className="flex items-center justify-between px-4 py-2 text-[11px] text-neutral-500 border-t border-border-subtle">
-        <span>Son basarili: {timeAgo(conn.last_success_at)}</span>
+        <span>Son başarılı: {timeAgo(conn.last_success_at)}</span>
         <div className="flex gap-2">
           {conn.requires_reauth ? (
             <button
               type="button"
               className="px-2 py-0.5 rounded text-[10px] font-semibold bg-error-light text-error-dark border border-error-base/30"
             >
-              Yeniden Bagla
+              Yeniden Bağla
             </button>
           ) : null}
           <button

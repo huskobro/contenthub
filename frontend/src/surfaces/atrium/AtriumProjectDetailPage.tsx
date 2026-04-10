@@ -42,20 +42,20 @@ import { cn } from "../../lib/cn";
 
 const MODULE_LABELS: Record<string, string> = {
   standard_video: "Standart Video",
-  news_bulletin: "Haber Bulteni",
-  product_review: "Urun Degerlendirme",
-  educational_video: "Egitim Videosu",
-  howto_video: "Nasil Yapilir",
+  news_bulletin: "Haber Bülteni",
+  product_review: "Ürün Değerlendirme",
+  educational_video: "Eğitim Videosu",
+  howto_video: "Nasıl Yapılır",
 };
 
 const STATUS_LABELS: Record<string, string> = {
   draft: "Taslak",
   in_progress: "Devam Ediyor",
   rendering: "Render Ediliyor",
-  completed: "Tamamlandi",
-  failed: "Basarisiz",
-  published: "Yayinlandi",
-  unpublished: "Yayinlanmadi",
+  completed: "Tamamlandı",
+  failed: "Başarısız",
+  published: "Yayınlandı",
+  unpublished: "Yayınlanmadı",
   not_required: "Gerekmiyor",
 };
 
@@ -193,14 +193,14 @@ export function AtriumProjectDetailPage() {
   const { mutate: startProduction, isPending: isStarting } = useMutation({
     mutationFn: (videoId: string) => startStandardVideoProduction(videoId),
     onSuccess: (data) => {
-      toast.success("Uretim baslatildi.");
+      toast.success("Üretim başlatıldı.");
       qc.invalidateQueries({ queryKey: ["jobs"] });
       qc.invalidateQueries({ queryKey: ["standard-videos"] });
       qc.invalidateQueries({ queryKey: ["content-projects"] });
       navigate(`/admin/jobs/${data.job_id}`);
     },
     onError: (err: Error) => {
-      toast.error(err.message ?? "Uretim baslatilamadi.");
+      toast.error(err.message ?? "Üretim başlatılamadı.");
     },
   });
 
@@ -211,7 +211,7 @@ export function AtriumProjectDetailPage() {
         data-testid="atrium-project-detail-loading"
       >
         <div className="rounded-3xl border border-neutral-200 bg-white p-12 text-center text-sm text-neutral-500">
-          Stuyo yukleniyor...
+          Stüdyo yükleniyor...
         </div>
       </div>
     );
@@ -224,14 +224,14 @@ export function AtriumProjectDetailPage() {
         data-testid="atrium-project-detail-error"
       >
         <div className="rounded-3xl border border-red-300 bg-red-50 p-8 text-sm text-red-700">
-          {error instanceof Error ? error.message : "Proje bulunamadi."}
+          {error instanceof Error ? error.message : "Proje bulunamadı."}
         </div>
         <button
           type="button"
           onClick={() => navigate("/user/projects")}
           className="self-start px-4 py-2 rounded-full text-xs font-semibold border border-neutral-300 hover:bg-neutral-100"
         >
-          ← Portfolyoya Don
+          ← Portföye Dön
         </button>
       </div>
     );
@@ -277,7 +277,7 @@ export function AtriumProjectDetailPage() {
             portfolio
           </Link>
           <span>/</span>
-          <span className="text-neutral-200">stuyo</span>
+          <span className="text-neutral-200">stüdyo</span>
         </nav>
 
         {/* Preview band (showcase hero) ---------------------------------- */}
@@ -297,7 +297,7 @@ export function AtriumProjectDetailPage() {
               className="absolute inset-0 bg-[radial-gradient(circle_at_40%_30%,rgba(255,255,255,0.35),transparent_60%)]"
             />
             <span className="relative text-xs font-mono uppercase tracking-[0.2em] text-white/80">
-              on izleme · pending render
+              ön izleme · pending render
             </span>
           </div>
         </div>
@@ -325,7 +325,7 @@ export function AtriumProjectDetailPage() {
                 }
               />
               <span className="text-[10px] font-mono uppercase text-indigo-200">
-                oncelik: {project.priority}
+                öncelik: {project.priority}
               </span>
               {project.active_job_id ? (
                 <span className="text-[10px] font-mono uppercase text-amber-300">
@@ -348,7 +348,7 @@ export function AtriumProjectDetailPage() {
                 )}
                 data-testid="atrium-project-start-production"
               >
-                {isStarting ? "Baslatiliyor..." : "▶ Uretime Basla"}
+                {isStarting ? "Başlatılıyor..." : "▶ Üretime Başla"}
               </button>
             ) : null}
             {project.module_type === "standard_video" && isRendering ? (
@@ -368,7 +368,7 @@ export function AtriumProjectDetailPage() {
               )}
               data-testid="atrium-project-open-publish"
             >
-              Dagitim Atolyesi →
+              Dağıtım Atölyesi →
             </button>
             <button
               type="button"
@@ -379,7 +379,7 @@ export function AtriumProjectDetailPage() {
               )}
               data-testid="atrium-project-back-link"
             >
-              ← Portfolyo
+              ← Portföy
             </button>
           </div>
         </div>
@@ -397,7 +397,7 @@ export function AtriumProjectDetailPage() {
               Production Timeline
             </p>
             <h2 className="m-0 mt-0.5 text-lg font-semibold text-neutral-900">
-              Bagli isler
+              Bağlı işler
             </h2>
           </div>
 
@@ -406,8 +406,8 @@ export function AtriumProjectDetailPage() {
               className="rounded-2xl border border-dashed border-neutral-300 bg-white px-6 py-10 text-center text-sm text-neutral-500"
               data-testid="atrium-project-jobs-empty"
             >
-              Henuz bu yapima bagli is yok. Uretim baslatildiginda burada
-              gorunur.
+              Henüz bu yapıma bağlı iş yok. Üretim başlatıldığında burada
+              görünür.
             </div>
           ) : (
             <div className="flex flex-col gap-5">
@@ -418,7 +418,7 @@ export function AtriumProjectDetailPage() {
                 >
                   <div className="px-4 py-2.5 bg-indigo-50 border-b border-indigo-200">
                     <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-indigo-700">
-                      Canli ({liveJobs.length})
+                      Canlı ({liveJobs.length})
                     </span>
                   </div>
                   {liveJobs.map((job) => (
@@ -437,7 +437,7 @@ export function AtriumProjectDetailPage() {
                 >
                   <div className="px-4 py-2.5 bg-neutral-50 border-b border-neutral-200">
                     <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-neutral-600">
-                      Gecmis ({historyJobs.length})
+                      Geçmiş ({historyJobs.length})
                     </span>
                   </div>
                   {historyJobs.map((job) => (
@@ -460,18 +460,18 @@ export function AtriumProjectDetailPage() {
         >
           <div className="border-b border-neutral-200 pb-2">
             <p className="m-0 text-[10px] font-semibold uppercase tracking-[0.2em] text-indigo-600">
-              Editorial Bilgi
+              Editoryal Bilgi
             </p>
             <h2 className="m-0 mt-0.5 text-lg font-semibold text-neutral-900">
-              Yapim detaylari
+              Yapım detayları
             </h2>
           </div>
 
           <dl className="m-0 rounded-2xl border border-neutral-200 bg-white px-5 py-2">
-            <MetaRow label="Yapim ID">
+            <MetaRow label="Yapım ID">
               <Mono>{project.id}</Mono>
             </MetaRow>
-            <MetaRow label="Modul">
+            <MetaRow label="Modül">
               {MODULE_LABELS[project.module_type] ?? project.module_type}
             </MetaRow>
             <MetaRow label="Kanal">
@@ -486,7 +486,7 @@ export function AtriumProjectDetailPage() {
                 <span className="text-neutral-500">—</span>
               )}
             </MetaRow>
-            <MetaRow label="Inceleme">
+            <MetaRow label="İnceleme">
               <StatusBadge
                 status={project.review_status}
                 label={
@@ -495,10 +495,10 @@ export function AtriumProjectDetailPage() {
                 size="sm"
               />
             </MetaRow>
-            <MetaRow label="Olusturulma">
+            <MetaRow label="Oluşturulma">
               {formatDateISO(project.created_at) || "—"}
             </MetaRow>
-            <MetaRow label="Guncelleme">
+            <MetaRow label="Güncelleme">
               {formatDateISO(project.updated_at) || "—"}
             </MetaRow>
             {project.deadline_at ? (
@@ -517,7 +517,7 @@ export function AtriumProjectDetailPage() {
               </MetaRow>
             ) : null}
             {project.description ? (
-              <MetaRow label="Aciklama">
+              <MetaRow label="Açıklama">
                 <span className="text-neutral-700">{project.description}</span>
               </MetaRow>
             ) : null}

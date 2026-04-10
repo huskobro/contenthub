@@ -36,21 +36,21 @@ import type { PlatformPost, PostListParams } from "../../api/postsApi";
 // ---------------------------------------------------------------------------
 
 const STATUS_OPTIONS = [
-  { value: "", label: "Tum Durumlar" },
+  { value: "", label: "Tüm Durumlar" },
   { value: "draft", label: "Taslak" },
   { value: "queued", label: "Kuyrukta" },
-  { value: "posted", label: "Gonderildi" },
-  { value: "failed", label: "Basarisiz" },
+  { value: "posted", label: "Gönderildi" },
+  { value: "failed", label: "Başarısız" },
 ];
 
 const PLATFORM_OPTIONS = [
-  { value: "", label: "Tum Platformlar" },
+  { value: "", label: "Tüm Platformlar" },
   { value: "youtube", label: "YouTube" },
 ];
 
 const POST_TYPE_LABELS: Record<string, string> = {
-  community_post: "Topluluk Gonderisi",
-  share_post: "Paylasim",
+  community_post: "Topluluk Gönderisi",
+  share_post: "Paylaşım",
   announcement: "Duyuru",
 };
 
@@ -62,22 +62,22 @@ function timeAgo(dateStr: string | null): string {
   if (!dateStr) return "\u2014";
   const diff = Date.now() - new Date(dateStr).getTime();
   const mins = Math.floor(diff / 60_000);
-  if (mins < 1) return "az once";
-  if (mins < 60) return `${mins}dk once`;
+  if (mins < 1) return "az önce";
+  if (mins < 60) return `${mins}dk önce`;
   const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}sa once`;
+  if (hours < 24) return `${hours}sa önce`;
   const days = Math.floor(hours / 24);
-  return `${days}g once`;
+  return `${days}g önce`;
 }
 
 function statusBadge(s: string): { label: string; className: string } {
   switch (s) {
     case "posted":
-      return { label: "Gonderildi", className: "bg-success-50 text-success-700 border-success-200" };
+      return { label: "Gönderildi", className: "bg-success-50 text-success-700 border-success-200" };
     case "queued":
       return { label: "Kuyrukta", className: "bg-warning-50 text-warning-700 border-warning-200" };
     case "failed":
-      return { label: "Basarisiz", className: "bg-error-50 text-error-700 border-error-200" };
+      return { label: "Başarısız", className: "bg-error-50 text-error-700 border-error-200" };
     default:
       return { label: "Taslak", className: "bg-neutral-50 text-neutral-600 border-neutral-200" };
   }
@@ -86,11 +86,11 @@ function statusBadge(s: string): { label: string; className: string } {
 function deliveryBadge(s: string): { label: string; className: string } {
   switch (s) {
     case "delivered":
-      return { label: "Iletildi", className: "text-success-600" };
+      return { label: "İletildi", className: "text-success-600" };
     case "not_available":
-      return { label: "Platform destegi yok", className: "text-warning-600" };
+      return { label: "Platform desteği yok", className: "text-warning-600" };
     case "failed":
-      return { label: "Iletim hatasi", className: "text-error-600" };
+      return { label: "İletim hatası", className: "text-error-600" };
     default:
       return { label: "Bekliyor", className: "text-neutral-500" };
   }
@@ -206,12 +206,12 @@ export function UserPostsPage() {
 
   return (
     <PageShell
-      title="Gonderilerim"
-      subtitle="Topluluk gonderileri olusturun ve yonetin."
+      title="Gönderilerim"
+      subtitle="Topluluk gönderileri oluşturun ve yönetin."
       testId="user-posts"
     >
       <div className="px-3 py-2 bg-info-light rounded text-xs text-info-dark mb-4" data-testid="posts-api-limitation-notice">
-        YouTube Community Posts API'si kisitlidir. Gonderi olusturma ve duzenleme islemleri tam olarak desteklenmeyebilir.
+        YouTube Community Posts API'si kısıtlıdır. Gönderi oluşturma ve düzenleme işlemleri tam olarak desteklenmeyebilir.
       </div>
 
       {/* Faz 17a: Connection-aware capability warning */}
@@ -233,7 +233,7 @@ export function UserPostsPage() {
           onChange={(e) => setChannelFilter(e.target.value)}
           data-testid="post-filter-channel"
         >
-          <option value="">Tum Kanallar</option>
+          <option value="">Tüm Kanallar</option>
           {channels?.map((ch: ChannelProfileResponse) => (
             <option key={ch.id} value={ch.id}>{ch.profile_name}</option>
           ))}
@@ -267,18 +267,18 @@ export function UserPostsPage() {
           onClick={() => setShowCreate(!showCreate)}
           data-testid="post-create-toggle"
         >
-          Yeni Gonderi Olustur
+          Yeni Gönderi Oluştur
         </button>
       </div>
 
       {/* Create form */}
       {showCreate && (
-        <SectionShell title="Yeni Gonderi" testId="create-post-form">
+        <SectionShell title="Yeni Gönderi" testId="create-post-form">
           <div className="max-w-lg">
             <input
               type="text"
               className="w-full px-3 py-1.5 text-sm border border-border-default rounded-md mb-2"
-              placeholder="Baslik (opsiyonel)"
+              placeholder="Başlık (opsiyonel)"
               value={newTitle}
               onChange={(e) => setNewTitle(e.target.value)}
               data-testid="create-post-title"
@@ -287,22 +287,22 @@ export function UserPostsPage() {
               value={newBody}
               onChange={setNewBody}
               onSubmit={handleCreate}
-              placeholder="Gonderi metninizi yazin..."
+              placeholder="Gönderi metninizi yazın..."
               submitLabel="Taslak Kaydet"
               maxLength={5000}
               loading={createMutation.isPending}
-              contextLabel="Topluluk Gonderisi"
+              contextLabel="Topluluk Gönderisi"
               testId="create-post-composer"
             />
             {createMutation.isSuccess && (
-              <p className="text-xs text-success-600 mt-1">Taslak basariyla kaydedildi.</p>
+              <p className="text-xs text-success-600 mt-1">Taslak başarıyla kaydedildi.</p>
             )}
           </div>
         </SectionShell>
       )}
 
       {/* Loading / Error */}
-      {isLoading && <p className="text-sm text-neutral-500 text-center py-8">Gonderiler yukleniyor...</p>}
+      {isLoading && <p className="text-sm text-neutral-500 text-center py-8">Gönderiler yükleniyor...</p>}
       {isError && (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <div className="w-12 h-12 rounded-full bg-error-light flex items-center justify-center mb-3">
@@ -317,7 +317,7 @@ export function UserPostsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
         {/* Post list */}
         <div className="lg:col-span-2">
-          <SectionShell title={`Gonderiler${posts ? ` (${posts.length})` : ""}`} testId="post-list-section">
+          <SectionShell title={`Gönderiler${posts ? ` (${posts.length})` : ""}`} testId="post-list-section">
             {posts && posts.length === 0 && (
               <div className="flex flex-col items-center justify-center py-16 text-center">
                 <div className="w-12 h-12 rounded-full bg-neutral-100 flex items-center justify-center mb-3">
@@ -369,7 +369,7 @@ export function UserPostsPage() {
         {/* Detail panel */}
         <div className="lg:col-span-3">
           {selectedPost ? (
-            <SectionShell title="Gonderi Detayi" testId="post-detail-panel">
+            <SectionShell title="Gönderi Detayı" testId="post-detail-panel">
               {/* Status + delivery */}
               <div className="flex items-center gap-2 mb-3">
                 <span className={`text-xs px-2 py-1 rounded border ${statusBadge(selectedPost.status).className}`}>
@@ -395,11 +395,11 @@ export function UserPostsPage() {
                     value={editBody}
                     onChange={setEditBody}
                     onSubmit={handleUpdate}
-                    placeholder="Gonderi metnini duzenleyin..."
-                    submitLabel="Guncelle"
+                    placeholder="Gönderi metnini düzenleyin..."
+                    submitLabel="Güncelle"
                     maxLength={5000}
                     loading={updateMutation.isPending}
-                    contextLabel="Gonderi Duzenleme"
+                    contextLabel="Gönderi Düzenleme"
                     testId="edit-post-composer"
                   />
                   <button
@@ -407,7 +407,7 @@ export function UserPostsPage() {
                     className="text-xs text-neutral-500 mt-1 underline"
                     onClick={() => setEditMode(false)}
                   >
-                    Iptal
+                    İptal
                   </button>
                 </div>
               ) : (
@@ -425,9 +425,9 @@ export function UserPostsPage() {
                   <span>Proje: {selectedPost.content_project_id.slice(0, 8)}...</span>
                 )}
                 {selectedPost.publish_record_id && (
-                  <span>Yayin: {selectedPost.publish_record_id.slice(0, 8)}...</span>
+                  <span>Yayın: {selectedPost.publish_record_id.slice(0, 8)}...</span>
                 )}
-                <span>Olusturulma: {timeAgo(selectedPost.created_at)}</span>
+                <span>Oluşturulma: {timeAgo(selectedPost.created_at)}</span>
               </div>
 
               {/* Delivery error */}
@@ -447,7 +447,7 @@ export function UserPostsPage() {
                       onClick={startEdit}
                       data-testid="post-edit-btn"
                     >
-                      Duzenle
+                      Düzenle
                     </button>
                     <button
                       type="button"
@@ -456,7 +456,7 @@ export function UserPostsPage() {
                       disabled={submitMutation.isPending}
                       data-testid="post-submit-btn"
                     >
-                      {submitMutation.isPending ? "Gonderiliyor..." : "Gonder"}
+                      {submitMutation.isPending ? "Gönderiliyor..." : "Gönder"}
                     </button>
                     <button
                       type="button"
@@ -488,15 +488,15 @@ export function UserPostsPage() {
                   {submitMutation.data.error ? (
                     <p className="text-xs text-warning-600">{submitMutation.data.error}</p>
                   ) : (
-                    <p className="text-xs text-success-600">Gonderi basariyla islendi.</p>
+                    <p className="text-xs text-success-600">Gönderi başarıyla işlendi.</p>
                   )}
                 </div>
               )}
             </SectionShell>
           ) : (
-            <SectionShell title="Gonderi Detayi" testId="post-detail-empty">
+            <SectionShell title="Gönderi Detayı" testId="post-detail-empty">
               <p className="text-sm text-neutral-500 text-center py-8">
-                Detayini gormek icin bir gonderi secin.
+                Detayını görmek için bir gönderi seçin.
               </p>
             </SectionShell>
           )}

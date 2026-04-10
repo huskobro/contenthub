@@ -45,20 +45,20 @@ import { cn } from "../../lib/cn";
 
 const MODULE_LABELS: Record<string, string> = {
   standard_video: "Standart Video",
-  news_bulletin: "Haber Bulteni",
-  product_review: "Urun Degerlendirme",
-  educational_video: "Egitim Videosu",
-  howto_video: "Nasil Yapilir",
+  news_bulletin: "Haber Bülteni",
+  product_review: "Ürün Değerlendirme",
+  educational_video: "Eğitim Videosu",
+  howto_video: "Nasıl Yapılır",
 };
 
 const STATUS_LABELS: Record<string, string> = {
   draft: "Taslak",
   in_progress: "Devam Ediyor",
   rendering: "Render Ediliyor",
-  completed: "Tamamlandi",
-  failed: "Basarisiz",
-  published: "Yayinlandi",
-  unpublished: "Yayinlanmadi",
+  completed: "Tamamlandı",
+  failed: "Başarısız",
+  published: "Yayınlandı",
+  unpublished: "Yayınlanmadı",
   not_required: "Gerekmiyor",
 };
 
@@ -131,14 +131,14 @@ export function CanvasProjectDetailPage() {
   const { mutate: startProduction, isPending: isStarting } = useMutation({
     mutationFn: (videoId: string) => startStandardVideoProduction(videoId),
     onSuccess: (data) => {
-      toast.success("Uretim baslatildi.");
+      toast.success("Üretim başlatıldı.");
       qc.invalidateQueries({ queryKey: ["jobs"] });
       qc.invalidateQueries({ queryKey: ["standard-videos"] });
       qc.invalidateQueries({ queryKey: ["content-projects"] });
       navigate(`/admin/jobs/${data.job_id}`);
     },
     onError: (err: Error) => {
-      toast.error(err.message ?? "Uretim baslatilamadi.");
+      toast.error(err.message ?? "Üretim başlatılamadı.");
     },
   });
 
@@ -149,7 +149,7 @@ export function CanvasProjectDetailPage() {
         data-testid="canvas-project-detail-loading"
       >
         <div className="rounded-xl border border-border-subtle bg-surface-card p-8 text-sm text-neutral-500">
-          Proje yukleniyor...
+          Proje yükleniyor...
         </div>
       </div>
     );
@@ -162,14 +162,14 @@ export function CanvasProjectDetailPage() {
         data-testid="canvas-project-detail-error"
       >
         <div className="rounded-xl border border-error-base/30 bg-error-light/40 p-6 text-sm text-error-dark">
-          {error instanceof Error ? error.message : "Proje bulunamadi."}
+          {error instanceof Error ? error.message : "Proje bulunamadı."}
         </div>
         <button
           type="button"
           onClick={() => navigate("/user/projects")}
           className="self-start px-3 py-1.5 text-xs font-semibold rounded-md border border-border-subtle hover:bg-neutral-50"
         >
-          &larr; Projelere Don
+          &larr; Projelere Dön
         </button>
       </div>
     );
@@ -220,7 +220,7 @@ export function CanvasProjectDetailPage() {
                 label={STATUS_LABELS[project.publish_status] ?? project.publish_status}
               />
               <span className="text-[10px] font-mono uppercase text-neutral-500">
-                oncelik: {project.priority}
+                öncelik: {project.priority}
               </span>
             </div>
           </div>
@@ -239,7 +239,7 @@ export function CanvasProjectDetailPage() {
                 )}
                 data-testid="canvas-project-start-production"
               >
-                {isStarting ? "Baslatiliyor..." : "▶ Uretime Basla"}
+                {isStarting ? "Başlatılıyor..." : "▶ Üretime Başla"}
               </button>
             ) : null}
             {project.module_type === "standard_video" && isRendering ? (
@@ -259,7 +259,7 @@ export function CanvasProjectDetailPage() {
               )}
               data-testid="canvas-project-back-link"
             >
-              &larr; Projelere Don
+              &larr; Projelere Dön
             </button>
           </div>
         </div>
@@ -274,10 +274,10 @@ export function CanvasProjectDetailPage() {
         >
           <header className="px-5 py-3 border-b border-border-subtle bg-neutral-50/50">
             <h2 className="m-0 text-sm font-semibold text-neutral-800">
-              On Izleme
+              Ön İzleme
             </h2>
             <p className="m-0 mt-0.5 text-xs text-neutral-500">
-              Render cikti olustugunda burada gosterilir.
+              Render çıktı oluştuğunda burada gösterilir.
             </p>
           </header>
           <div
@@ -287,7 +287,7 @@ export function CanvasProjectDetailPage() {
             )}
           >
             <span className="text-xs font-mono uppercase text-neutral-400">
-              on izleme &middot; pending render
+              ön izleme &middot; pending render
             </span>
           </div>
         </section>
@@ -306,13 +306,13 @@ export function CanvasProjectDetailPage() {
             <MetaRow label="Proje ID">
               <Mono>{project.id}</Mono>
             </MetaRow>
-            <MetaRow label="Modul">
+            <MetaRow label="Modül">
               {MODULE_LABELS[project.module_type] ?? project.module_type}
             </MetaRow>
-            <MetaRow label="Olusturulma">
+            <MetaRow label="Oluşturulma">
               {formatDateISO(project.created_at) || "—"}
             </MetaRow>
-            <MetaRow label="Guncelleme">
+            <MetaRow label="Güncelleme">
               {formatDateISO(project.updated_at) || "—"}
             </MetaRow>
             {project.active_job_id ? (
@@ -326,7 +326,7 @@ export function CanvasProjectDetailPage() {
               </MetaRow>
             ) : null}
             {project.description ? (
-              <MetaRow label="Aciklama">
+              <MetaRow label="Açıklama">
                 <span className="text-neutral-700">{project.description}</span>
               </MetaRow>
             ) : null}
@@ -474,10 +474,10 @@ export function CanvasProjectDetailPage() {
       >
         <header className="px-5 py-3 border-b border-border-subtle bg-neutral-50/50 flex items-center gap-3">
           <h2 className="m-0 text-sm font-semibold text-neutral-800 flex-1">
-            Bagli Isler
+            Bağlı İşler
           </h2>
           <span className="text-xs text-neutral-500 font-mono">
-            {linkedJobs.length} kayit
+            {linkedJobs.length} kayıt
           </span>
         </header>
         {linkedJobs.length === 0 ? (
@@ -485,7 +485,7 @@ export function CanvasProjectDetailPage() {
             className="px-5 py-6 text-center text-sm text-neutral-500"
             data-testid="canvas-project-jobs-empty"
           >
-            Henuz bu projeye bagli is yok.
+            Henüz bu projeye bağlı iş yok.
           </div>
         ) : (
           <ul className="list-none m-0 p-0">

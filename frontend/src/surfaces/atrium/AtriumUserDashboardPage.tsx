@@ -44,10 +44,10 @@ import { cn } from "../../lib/cn";
 
 const MODULE_LABELS: Record<string, string> = {
   standard_video: "Standart Video",
-  news_bulletin: "Haber Bulteni",
-  product_review: "Urun Degerlendirme",
-  educational_video: "Egitim Videosu",
-  howto_video: "Nasil Yapilir",
+  news_bulletin: "Haber Bülteni",
+  product_review: "Ürün Değerlendirme",
+  educational_video: "Eğitim Videosu",
+  howto_video: "Nasıl Yapılır",
 };
 
 const IN_FLIGHT_STATUSES = new Set([
@@ -138,7 +138,7 @@ function LineupCard({
         />
         <div className="absolute inset-x-0 bottom-0 px-3 py-2 flex items-center justify-between">
           <span className="text-[9px] font-mono uppercase text-white/80">
-            on izleme &middot; pending render
+            ön izleme &middot; henüz render yok
           </span>
           <span className="text-[9px] font-mono uppercase text-white/80">
             {moduleLabel}
@@ -154,7 +154,7 @@ function LineupCard({
           <StatusBadge status={project.publish_status} size="sm" />
           {project.active_job_id ? (
             <span className="text-[9px] font-mono uppercase text-indigo-600 border border-indigo-200 rounded px-1">
-              live job
+              canlı iş
             </span>
           ) : null}
         </div>
@@ -332,15 +332,15 @@ export function AtriumUserDashboardPage() {
           <div className="flex-1 min-w-0 flex flex-col justify-between">
             <div>
               <p className="m-0 text-[10px] font-semibold uppercase tracking-[0.25em] text-indigo-300">
-                Bu Hafta On Planda
+                Bu Hafta Ön Planda
               </p>
               <h1 className="m-0 mt-3 text-3xl md:text-4xl font-bold leading-tight text-white">
-                Hosgeldin, {displayName}.
+                Hoş geldin, {displayName}.
               </h1>
               <p className="m-0 mt-3 text-sm md:text-base text-neutral-300 max-w-xl">
-                Atrium editorial studyona. Bugun yayinlanmaya hazir yapimlarin,
-                dikkat bekleyen projeler ve dagitim akisin — hepsi tek bir
-                editorial cerceveden.
+                Atrium editoryal stüdyona. Bugün yayınlanmaya hazır yapımların,
+                dikkat bekleyen projeler ve dağıtım akışın — hepsi tek bir
+                editoryal çerçeveden.
               </p>
             </div>
 
@@ -354,7 +354,7 @@ export function AtriumUserDashboardPage() {
                 data-testid="atrium-dashboard-headline"
               >
                 <p className="m-0 text-[10px] font-semibold uppercase tracking-[0.2em] text-amber-300">
-                  Headline Yapim
+                  Öne Çıkan Yapım
                 </p>
                 <h2 className="m-0 text-xl md:text-2xl font-semibold text-white truncate">
                   {headline.title}
@@ -367,7 +367,7 @@ export function AtriumUserDashboardPage() {
                     &middot;
                   </span>
                   <span className="text-[10px] font-mono uppercase text-indigo-200">
-                    oncelik: {headline.priority}
+                    öncelik: {headline.priority}
                   </span>
                   {headline.active_job_id ? (
                     <>
@@ -375,7 +375,7 @@ export function AtriumUserDashboardPage() {
                         &middot;
                       </span>
                       <span className="text-[10px] font-mono uppercase text-amber-300">
-                        live job
+                        canlı iş
                       </span>
                     </>
                   ) : null}
@@ -390,7 +390,7 @@ export function AtriumUserDashboardPage() {
                     )}
                     data-testid="atrium-dashboard-headline-open"
                   >
-                    Stuyoya Goz At →
+                    Stüdyoya Göz At →
                   </button>
                   <button
                     type="button"
@@ -400,7 +400,7 @@ export function AtriumUserDashboardPage() {
                       "border border-white/30 text-white hover:bg-white/10 transition-colors",
                     )}
                   >
-                    Tum Yapimlar
+                    Tüm Yapımlar
                   </button>
                 </div>
               </div>
@@ -412,11 +412,11 @@ export function AtriumUserDashboardPage() {
                 data-testid="atrium-dashboard-headline-empty"
               >
                 <p className="m-0 text-sm text-neutral-200">
-                  Henuz yapim yok.
+                  Henüz yapım yok.
                 </p>
                 <p className="m-0 mt-1 text-xs text-neutral-400">
-                  Yukaridaki + Video / + Bulten butonlari ile ilk yapimini
-                  baslatabilirsin.
+                  Aşağıdaki + Video / + Bülten butonları ile ilk yapımını
+                  başlatabilirsin.
                 </p>
                 <div className="mt-3 flex gap-2">
                   <button
@@ -433,7 +433,7 @@ export function AtriumUserDashboardPage() {
                     className="px-4 py-2 rounded-full text-xs font-semibold border border-white/30 text-white hover:bg-white/10 transition-colors"
                     data-testid="atrium-dashboard-empty-create-bulletin"
                   >
-                    + Bulten
+                    + Bülten
                   </button>
                 </div>
               </div>
@@ -447,12 +447,12 @@ export function AtriumUserDashboardPage() {
           >
             <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm p-4">
               <p className="m-0 text-[10px] font-semibold uppercase tracking-[0.2em] text-neutral-400">
-                Studyo Ozeti
+                Stüdyo Özeti
               </p>
               <div className="mt-3 grid grid-cols-2 gap-3">
                 <div>
                   <div className="text-[9px] uppercase tracking-wider text-neutral-500">
-                    Toplam yapim
+                    Toplam yapım
                   </div>
                   <div className="text-2xl font-semibold tabular-nums text-white">
                     {stats.total}
@@ -468,7 +468,7 @@ export function AtriumUserDashboardPage() {
                 </div>
                 <div>
                   <div className="text-[9px] uppercase tracking-wider text-neutral-500">
-                    Yayinlanan
+                    Yayınlanan
                   </div>
                   <div className="text-2xl font-semibold tabular-nums text-white">
                     {stats.published}
@@ -476,7 +476,7 @@ export function AtriumUserDashboardPage() {
                 </div>
                 <div>
                   <div className="text-[9px] uppercase tracking-wider text-neutral-500">
-                    Canli is
+                    Canlı iş
                   </div>
                   <div className="text-2xl font-semibold tabular-nums text-white">
                     {stats.inFlight}
@@ -486,17 +486,17 @@ export function AtriumUserDashboardPage() {
             </div>
             <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm p-4">
               <p className="m-0 text-[10px] font-semibold uppercase tracking-[0.2em] text-neutral-400">
-                Yayin Kimlikleri
+                Yayın Kimlikleri
               </p>
               <p className="m-0 mt-2 text-sm text-neutral-100">
-                {stats.channels} kanal baglanmis
+                {stats.channels} kanal bağlı
               </p>
               <button
                 type="button"
                 onClick={() => navigate("/user/channels")}
                 className="mt-2 text-[11px] font-semibold text-indigo-300 hover:text-indigo-200"
               >
-                Kanallara goz at →
+                Kanallara göz at →
               </button>
             </div>
           </div>
@@ -514,11 +514,11 @@ export function AtriumUserDashboardPage() {
           </div>
           <div className="flex-1">
             <p className="m-0 text-sm font-semibold text-neutral-900">
-              Stuyo kurulumu tamamlanmadi
+              Stüdyo kurulumu tamamlanmadı
             </p>
             <p className="m-0 mt-0.5 text-xs text-neutral-700">
-              Atrium editorial deneyimini sorunsuz kullanabilmek icin kurulumu
-              tamamlayip kanallarini bagla.
+              Atrium editoryal deneyimini sorunsuz kullanabilmek için kurulumu
+              tamamlayıp kanallarını bağla.
             </p>
           </div>
           <button
@@ -526,7 +526,7 @@ export function AtriumUserDashboardPage() {
             onClick={() => navigate("/onboarding")}
             className="px-3 py-1.5 rounded-full text-xs font-semibold bg-neutral-900 text-white"
           >
-            Kuruluma Basla
+            Kuruluma Başla
           </button>
         </div>
       ) : null}
@@ -535,26 +535,26 @@ export function AtriumUserDashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-[1.4fr,1fr] gap-10">
         {/* Lineup column */}
         <EditorialBlock
-          kicker="LINEUP"
-          title="Sonraki yapimlar"
+          kicker="YAPIM PLANI"
+          title="Sonraki yapımlar"
           testId="atrium-dashboard-lineup"
           action={
             <Link
               to="/user/projects"
               className="text-[11px] font-semibold text-indigo-600 hover:text-indigo-700 no-underline"
             >
-              Tum yapimlar →
+              Tüm yapımlar →
             </Link>
           }
         >
           {projectsLoading ? (
-            <div className="text-sm text-neutral-500 py-6">Yukleniyor...</div>
+            <div className="text-sm text-neutral-500 py-6">Yükleniyor...</div>
           ) : lineup.length === 0 ? (
             <div
               className="text-sm text-neutral-600 border border-dashed border-neutral-300 rounded-xl p-6 text-center"
               data-testid="atrium-dashboard-lineup-empty"
             >
-              Sıradaki yapim yok. Bugun yeni bir senaryo baslat.
+              Sıradaki yapım yok. Bugün yeni bir senaryo başlat.
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -572,8 +572,8 @@ export function AtriumUserDashboardPage() {
         {/* Attention + in-production pane */}
         <div className="flex flex-col gap-10">
           <EditorialBlock
-            kicker="IN PRODUCTION"
-            title="Canli stuyo"
+            kicker="ÜRETİMDE"
+            title="Canlı stüdyo"
             testId="atrium-dashboard-in-production"
           >
             {inProduction.length === 0 ? (
@@ -581,7 +581,7 @@ export function AtriumUserDashboardPage() {
                 className="text-sm text-neutral-600 border border-dashed border-neutral-300 rounded-xl p-6 text-center"
                 data-testid="atrium-dashboard-in-production-empty"
               >
-                Suanda calisan bir is yok.
+                Şu anda çalışan bir iş yok.
               </div>
             ) : (
               <div className="rounded-xl border border-neutral-200 bg-white overflow-hidden">
@@ -597,7 +597,7 @@ export function AtriumUserDashboardPage() {
           </EditorialBlock>
 
           <EditorialBlock
-            kicker="ATTENTION"
+            kicker="DİKKAT"
             title="Elini bekleyenler"
             testId="atrium-dashboard-attention"
           >
@@ -606,7 +606,7 @@ export function AtriumUserDashboardPage() {
                 className="text-sm text-neutral-600 border border-dashed border-neutral-300 rounded-xl p-6 text-center"
                 data-testid="atrium-dashboard-attention-empty"
               >
-                Dikkat isteyen bir proje yok. Editorial stuyo sakin.
+                Dikkat isteyen bir proje yok. Editoryal stüdyo sakin.
               </div>
             ) : (
               <div className="flex flex-col gap-2">
@@ -642,10 +642,10 @@ export function AtriumUserDashboardPage() {
         className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-3"
         data-testid="atrium-dashboard-stats"
       >
-        <StatPill label="Yapim" value={stats.total} />
+        <StatPill label="Yapım" value={stats.total} />
         <StatPill label="Devam" value={stats.inProgress} />
-        <StatPill label="Yayinlanan" value={stats.published} />
-        <StatPill label="Canli Is" value={stats.inFlight} />
+        <StatPill label="Yayınlanan" value={stats.published} />
+        <StatPill label="Canlı İş" value={stats.inFlight} />
         <StatPill label="Kanal" value={stats.channels} />
       </section>
     </div>

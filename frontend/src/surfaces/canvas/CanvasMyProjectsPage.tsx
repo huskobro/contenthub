@@ -23,22 +23,22 @@ import { StatusBadge } from "../../components/design-system/primitives";
 import { cn } from "../../lib/cn";
 
 const MODULE_TYPES: Array<{ value: string; label: string }> = [
-  { value: "", label: "Tum Moduller" },
+  { value: "", label: "Tüm Modüller" },
   { value: "standard_video", label: "Standart Video" },
-  { value: "news_bulletin", label: "Haber Bulteni" },
+  { value: "news_bulletin", label: "Haber Bülteni" },
 ];
 
 const CONTENT_STATUSES: Array<{ value: string; label: string }> = [
-  { value: "", label: "Tum Durumlar" },
+  { value: "", label: "Tüm Durumlar" },
   { value: "draft", label: "Taslak" },
   { value: "in_progress", label: "Devam Ediyor" },
-  { value: "completed", label: "Tamamlandi" },
-  { value: "archived", label: "Arsivlendi" },
+  { value: "completed", label: "Tamamlandı" },
+  { value: "archived", label: "Arşivlendi" },
 ];
 
 const MODULE_LABELS: Record<string, string> = {
   standard_video: "Standart Video",
-  news_bulletin: "Haber Bulteni",
+  news_bulletin: "Haber Bülteni",
 };
 
 export function CanvasMyProjectsPage() {
@@ -81,8 +81,8 @@ export function CanvasMyProjectsPage() {
             Projelerim
           </h1>
           <p className="m-0 mt-1 text-sm text-neutral-500">
-            Tum icerik projelerin bir yaratici atolyesi gibi. Filtrelemek icin
-            ustteki secenekleri kullan, bir projeye girmek icin karta tikla.
+            Tüm içerik projelerin bir yaratıcı atölyesi gibi. Filtrelemek için
+            üstteki seçenekleri kullan, bir projeye girmek için karta tıkla.
           </p>
         </div>
         <button
@@ -111,7 +111,7 @@ export function CanvasMyProjectsPage() {
           value={channelFilter}
           onChange={setChannelFilter}
         >
-          <option value="">Tum Kanallar</option>
+          <option value="">Tüm Kanallar</option>
           {(channels ?? []).map((ch) => (
             <option key={ch.id} value={ch.id}>
               {ch.profile_name}
@@ -155,14 +155,14 @@ export function CanvasMyProjectsPage() {
           className="rounded-xl border border-border-subtle bg-surface-card p-8 text-center text-sm text-neutral-500"
           data-testid="canvas-projects-loading"
         >
-          Projeler yukleniyor...
+          Projeler yükleniyor...
         </div>
       ) : isError ? (
         <div
           className="rounded-xl border border-error-base/30 bg-error-light/40 p-6 text-center text-sm text-error-dark"
           data-testid="canvas-projects-error"
         >
-          Projeler yuklenemedi.
+          Projeler yüklenemedi.
         </div>
       ) : rows.length === 0 ? (
         <div
@@ -170,10 +170,10 @@ export function CanvasMyProjectsPage() {
           data-testid="canvas-projects-empty"
         >
           <p className="m-0 text-sm font-semibold text-neutral-700">
-            Hic proje bulunamadi
+            Hiç proje bulunamadı
           </p>
           <p className="m-0 mt-1 text-xs text-neutral-500">
-            Filtreleri gevsetmeyi dene, ya da yeni bir proje baslat.
+            Filtreleri gevşetmeyi dene, ya da yeni bir proje başlat.
           </p>
         </div>
       ) : (
@@ -252,7 +252,7 @@ function ProjectCard({
         )}
       >
         <span className="text-[10px] font-mono uppercase text-neutral-400">
-          on izleme &middot; pending
+          ön izleme &middot; pending
         </span>
       </div>
       <div className="p-4">

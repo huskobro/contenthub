@@ -35,34 +35,34 @@ import type { SyncedPlaylist, PlaylistListParams } from "../../api/playlistsApi"
 // ---------------------------------------------------------------------------
 
 const PLATFORM_OPTIONS = [
-  { value: "", label: "Tum Platformlar" },
+  { value: "", label: "Tüm Platformlar" },
   { value: "youtube", label: "YouTube" },
 ];
 
 const PRIVACY_OPTIONS = [
   { value: "private", label: "Gizli" },
-  { value: "unlisted", label: "Liste Disi" },
-  { value: "public", label: "Herkese Acik" },
+  { value: "unlisted", label: "Liste Dışı" },
+  { value: "public", label: "Herkese Açık" },
 ];
 
 function timeAgo(dateStr: string | null): string {
   if (!dateStr) return "\u2014";
   const diff = Date.now() - new Date(dateStr).getTime();
   const mins = Math.floor(diff / 60_000);
-  if (mins < 1) return "az once";
-  if (mins < 60) return `${mins}dk once`;
+  if (mins < 1) return "az önce";
+  if (mins < 60) return `${mins}dk önce`;
   const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}sa once`;
+  if (hours < 24) return `${hours}sa önce`;
   const days = Math.floor(hours / 24);
-  return `${days}g once`;
+  return `${days}g önce`;
 }
 
 function privacyBadge(status: string): { label: string; className: string } {
   switch (status) {
     case "public":
-      return { label: "Herkese Acik", className: "bg-success-50 text-success-700 border-success-200" };
+      return { label: "Herkese Açık", className: "bg-success-50 text-success-700 border-success-200" };
     case "unlisted":
-      return { label: "Liste Disi", className: "bg-warning-50 text-warning-700 border-warning-200" };
+      return { label: "Liste Dışı", className: "bg-warning-50 text-warning-700 border-warning-200" };
     default:
       return { label: "Gizli", className: "bg-neutral-50 text-neutral-600 border-neutral-200" };
   }
@@ -190,11 +190,11 @@ export function UserPlaylistsPage() {
   return (
     <PageShell
       title="Playlist'lerim"
-      subtitle="YouTube playlist'lerinizi yonetin ve videolari organize edin."
+      subtitle="YouTube playlist'lerinizi yönetin ve videoları organize edin."
       testId="user-playlists"
     >
       <div className="px-3 py-2 bg-info-light rounded text-xs text-info-dark mb-4" data-testid="playlist-sync-limitation-notice">
-        Playlist senkronizasyonu temel CRUD duzeyindedir. Tam engagement entegrasyonu ilerleyen surumlerde eklenecektir.
+        Playlist senkronizasyonu temel CRUD düzeyindedir. Tam engagement entegrasyonu ilerleyen sürümlerde eklenecektir.
       </div>
 
       {/* Filters + Actions */}
@@ -205,7 +205,7 @@ export function UserPlaylistsPage() {
           onChange={(e) => setChannelFilter(e.target.value)}
           data-testid="playlist-filter-channel"
         >
-          <option value="">Tum Kanallar</option>
+          <option value="">Tüm Kanallar</option>
           {channels?.map((ch: ChannelProfileResponse) => (
             <option key={ch.id} value={ch.id}>{ch.profile_name}</option>
           ))}
@@ -228,7 +228,7 @@ export function UserPlaylistsPage() {
           onClick={handleSync}
           disabled={syncMutation.isPending || readBlocked}
           data-testid="playlist-sync-btn"
-          title={readBlocked ? "Playlist okuma yetenegi kullanilamaz" : undefined}
+          title={readBlocked ? "Playlist okuma yeteneği kullanılamaz" : undefined}
         >
           {syncMutation.isPending ? "Sync ediliyor..." : "YouTube'dan Senkronla"}
         </button>
@@ -239,9 +239,9 @@ export function UserPlaylistsPage() {
           onClick={() => setShowCreateForm(!showCreateForm)}
           disabled={writeBlocked}
           data-testid="playlist-create-toggle"
-          title={writeBlocked ? "Playlist yazma yetenegi kullanilamaz" : undefined}
+          title={writeBlocked ? "Playlist yazma yeteneği kullanılamaz" : undefined}
         >
-          Yeni Playlist Olustur
+          Yeni Playlist Oluştur
         </button>
       </div>
 
@@ -256,7 +256,7 @@ export function UserPlaylistsPage() {
       {/* Sync result */}
       {syncMutation.isSuccess && syncMutation.data && (
         <p className="text-xs text-success-600 mb-2" data-testid="sync-result">
-          {syncMutation.data.new_playlists} yeni, {syncMutation.data.updated_playlists} guncellendi
+          {syncMutation.data.new_playlists} yeni, {syncMutation.data.updated_playlists} güncellendi
           {syncMutation.data.errors.length > 0 && ` — ${syncMutation.data.errors.length} hata`}
         </p>
       )}
@@ -268,14 +268,14 @@ export function UserPlaylistsPage() {
             <input
               type="text"
               className="px-3 py-1.5 text-sm border border-border-default rounded-md"
-              placeholder="Playlist adi"
+              placeholder="Playlist adı"
               value={newTitle}
               onChange={(e) => setNewTitle(e.target.value)}
               data-testid="create-playlist-title"
             />
             <textarea
               className="px-3 py-1.5 text-sm border border-border-default rounded-md resize-y min-h-[60px]"
-              placeholder="Aciklama (opsiyonel)"
+              placeholder="Açıklama (opsiyonel)"
               value={newDesc}
               onChange={(e) => setNewDesc(e.target.value)}
               data-testid="create-playlist-desc"
@@ -298,18 +298,18 @@ export function UserPlaylistsPage() {
                 disabled={createMutation.isPending || !newTitle.trim()}
                 data-testid="create-playlist-submit"
               >
-                {createMutation.isPending ? "Olusturuluyor..." : "Olustur"}
+                {createMutation.isPending ? "Oluşturuluyor..." : "Oluştur"}
               </button>
               <button
                 type="button"
                 className="px-4 py-1.5 text-xs rounded-md border border-border-default text-neutral-600"
                 onClick={() => setShowCreateForm(false)}
               >
-                Iptal
+                İptal
               </button>
             </div>
             {createMutation.isSuccess && createMutation.data?.success && (
-              <p className="text-xs text-success-600">Playlist basariyla olusturuldu.</p>
+              <p className="text-xs text-success-600">Playlist başarıyla oluşturuldu.</p>
             )}
             {createMutation.isSuccess && !createMutation.data?.success && (
               <p className="text-xs text-error-base">{createMutation.data?.error}</p>
@@ -319,7 +319,7 @@ export function UserPlaylistsPage() {
       )}
 
       {/* Loading / Error */}
-      {isLoading && <p className="text-sm text-neutral-500 text-center py-8">Playlist'ler yukleniyor...</p>}
+      {isLoading && <p className="text-sm text-neutral-500 text-center py-8">Playlist'ler yükleniyor...</p>}
       {isError && (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <div className="w-12 h-12 rounded-full bg-error-light flex items-center justify-center mb-3">
@@ -390,7 +390,7 @@ export function UserPlaylistsPage() {
         {/* Detail panel */}
         <div className="lg:col-span-3">
           {selectedPlaylist ? (
-            <SectionShell title="Playlist Detayi" testId="playlist-detail-panel">
+            <SectionShell title="Playlist Detayı" testId="playlist-detail-panel">
               {/* Header */}
               <div className="flex items-start gap-3 mb-3">
                 {selectedPlaylist.thumbnail_url ? (
@@ -418,7 +418,7 @@ export function UserPlaylistsPage() {
                   disabled={syncItemsMutation.isPending}
                   data-testid="sync-items-btn"
                 >
-                  {syncItemsMutation.isPending ? "Sync ediliyor..." : "Item'lari Senkronla"}
+                  {syncItemsMutation.isPending ? "Sync ediliyor..." : "Item'ları Senkronla"}
                 </button>
                 <button
                   type="button"
@@ -432,7 +432,7 @@ export function UserPlaylistsPage() {
 
               {syncItemsMutation.isSuccess && syncItemsMutation.data && (
                 <p className="text-xs text-success-600 mb-2">
-                  {syncItemsMutation.data.new_items} yeni, {syncItemsMutation.data.updated_items} guncellendi
+                  {syncItemsMutation.data.new_items} yeni, {syncItemsMutation.data.updated_items} güncellendi
                 </p>
               )}
 
@@ -444,7 +444,7 @@ export function UserPlaylistsPage() {
                     <input
                       type="text"
                       className="flex-1 px-3 py-1.5 text-sm border border-border-default rounded-md"
-                      placeholder="YouTube Video ID (orn: dQw4w9WgXcQ)"
+                      placeholder="YouTube Video ID (örn: dQw4w9WgXcQ)"
                       value={addVideoId}
                       onChange={(e) => setAddVideoId(e.target.value)}
                       data-testid="add-video-id-input"
@@ -460,7 +460,7 @@ export function UserPlaylistsPage() {
                     </button>
                   </div>
                   {addVideoMutation.isSuccess && addVideoMutation.data?.success && (
-                    <p className="text-xs text-success-600 mt-1">Video basariyla eklendi.</p>
+                    <p className="text-xs text-success-600 mt-1">Video başarıyla eklendi.</p>
                   )}
                   {addVideoMutation.isSuccess && !addVideoMutation.data?.success && (
                     <p className="text-xs text-error-base mt-1">{addVideoMutation.data?.error}</p>
@@ -473,9 +473,9 @@ export function UserPlaylistsPage() {
                 <p className="text-xs font-medium text-neutral-600 m-0 mb-2">
                   Videolar ({playlistItems?.length ?? 0})
                 </p>
-                {itemsLoading && <p className="text-xs text-neutral-500">Yukleniyor...</p>}
+                {itemsLoading && <p className="text-xs text-neutral-500">Yükleniyor...</p>}
                 {playlistItems && playlistItems.length === 0 && (
-                  <p className="text-xs text-neutral-500">Bu playlist'te henuz video yok. Item'lari senkronlayin veya video ekleyin.</p>
+                  <p className="text-xs text-neutral-500">Bu playlist'te henüz video yok. Item'ları senkronlayın veya video ekleyin.</p>
                 )}
                 <div className="flex flex-col gap-1 max-h-[400px] overflow-y-auto">
                   {playlistItems?.map((item) => (
@@ -503,7 +503,7 @@ export function UserPlaylistsPage() {
                           disabled={removeVideoMutation.isPending}
                           data-testid={`remove-video-${item.id}`}
                         >
-                          Cikar
+                          Çıkar
                         </button>
                       )}
                     </div>
@@ -512,9 +512,9 @@ export function UserPlaylistsPage() {
               </div>
             </SectionShell>
           ) : (
-            <SectionShell title="Playlist Detayi" testId="playlist-detail-empty">
+            <SectionShell title="Playlist Detayı" testId="playlist-detail-empty">
               <p className="text-sm text-neutral-500 text-center py-8">
-                Detayini gormek icin bir playlist secin.
+                Detayını görmek için bir playlist seçin.
               </p>
             </SectionShell>
           )}

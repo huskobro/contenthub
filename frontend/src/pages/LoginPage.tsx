@@ -41,7 +41,7 @@ export function LoginPage() {
       const role = useAuthStore.getState().user?.role ?? null;
       navigate(role === "admin" ? "/admin" : "/user", { replace: true });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Bir hata olustu");
+      setError(err instanceof Error ? err.message : "Bir hata oluştu");
     } finally {
       setLoading(false);
     }
@@ -62,8 +62,8 @@ export function LoginPage() {
           </h1>
           <p className="mt-2 text-sm text-neutral-500">
             {mode === "login"
-              ? "Hesabiniza giris yapin"
-              : "Yeni hesap olusturun"}
+              ? "Hesabınıza giriş yapın"
+              : "Yeni hesap oluşturun"}
           </p>
         </div>
 
@@ -84,7 +84,7 @@ export function LoginPage() {
                   htmlFor="displayName"
                   className="block text-sm font-medium text-neutral-700 mb-1.5"
                 >
-                  Gorunen Ad
+                  Görünen Ad
                 </label>
                 <input
                   id="displayName"
@@ -93,7 +93,7 @@ export function LoginPage() {
                   onChange={(e) => setDisplayName(e.target.value)}
                   required
                   autoComplete="name"
-                  placeholder="Adiniz Soyadiniz"
+                  placeholder="Adınız Soyadınız"
                   className={cn(
                     "w-full py-2.5 px-3 border border-border rounded-lg text-base bg-surface-card text-neutral-800 outline-none",
                     "transition-all duration-fast",
@@ -133,7 +133,7 @@ export function LoginPage() {
                 htmlFor="password"
                 className="block text-sm font-medium text-neutral-700 mb-1.5"
               >
-                Sifre
+                Şifre
               </label>
               <input
                 id="password"
@@ -166,8 +166,8 @@ export function LoginPage() {
               {loading
                 ? "..."
                 : mode === "login"
-                  ? "Giris Yap"
-                  : "Hesap Olustur"}
+                  ? "Giriş Yap"
+                  : "Hesap Oluştur"}
             </button>
           </form>
 
@@ -175,24 +175,24 @@ export function LoginPage() {
           <div className="mt-4 text-center text-sm text-neutral-500">
             {mode === "login" ? (
               <>
-                Hesabiniz yok mu?{" "}
+                Hesabınız yok mu?{" "}
                 <button
                   type="button"
                   onClick={switchMode}
                   className="text-brand-600 font-medium bg-transparent border-none cursor-pointer hover:text-brand-700 transition-colors duration-fast"
                 >
-                  Hesap olustur
+                  Hesap oluştur
                 </button>
               </>
             ) : (
               <>
-                Zaten hesabiniz var mi?{" "}
+                Zaten hesabınız var mı?{" "}
                 <button
                   type="button"
                   onClick={switchMode}
                   className="text-brand-600 font-medium bg-transparent border-none cursor-pointer hover:text-brand-700 transition-colors duration-fast"
                 >
-                  Giris yap
+                  Giriş yap
                 </button>
               </>
             )}

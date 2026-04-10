@@ -27,15 +27,15 @@ import type { SyncedComment, CommentListParams } from "../../api/commentsApi";
 // ---------------------------------------------------------------------------
 
 const REPLY_STATUS_OPTIONS = [
-  { value: "", label: "Tum Durumlar" },
-  { value: "none", label: "Cevaplanmamis" },
+  { value: "", label: "Tüm Durumlar" },
+  { value: "none", label: "Cevaplanmamış" },
   { value: "pending", label: "Bekliyor" },
-  { value: "replied", label: "Cevaplanmis" },
-  { value: "failed", label: "Basarisiz" },
+  { value: "replied", label: "Cevaplanmış" },
+  { value: "failed", label: "Başarısız" },
 ];
 
 const PLATFORM_OPTIONS = [
-  { value: "", label: "Tum Platformlar" },
+  { value: "", label: "Tüm Platformlar" },
   { value: "youtube", label: "YouTube" },
 ];
 
@@ -47,24 +47,24 @@ function timeAgo(dateStr: string | null): string {
   if (!dateStr) return "\u2014";
   const diff = Date.now() - new Date(dateStr).getTime();
   const mins = Math.floor(diff / 60_000);
-  if (mins < 1) return "az once";
-  if (mins < 60) return `${mins}dk once`;
+  if (mins < 1) return "az önce";
+  if (mins < 60) return `${mins}dk önce`;
   const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}sa once`;
+  if (hours < 24) return `${hours}sa önce`;
   const days = Math.floor(hours / 24);
-  return `${days}g once`;
+  return `${days}g önce`;
 }
 
 function replyStatusBadge(status: string): { label: string; className: string } {
   switch (status) {
     case "replied":
-      return { label: "Cevaplanmis", className: "bg-success-50 text-success-700 border-success-200" };
+      return { label: "Cevaplanmış", className: "bg-success-50 text-success-700 border-success-200" };
     case "pending":
       return { label: "Bekliyor", className: "bg-warning-50 text-warning-700 border-warning-200" };
     case "failed":
-      return { label: "Basarisiz", className: "bg-error-50 text-error-700 border-error-200" };
+      return { label: "Başarısız", className: "bg-error-50 text-error-700 border-error-200" };
     default:
-      return { label: "Cevaplanmamis", className: "bg-neutral-50 text-neutral-600 border-neutral-200" };
+      return { label: "Cevaplanmamış", className: "bg-neutral-50 text-neutral-600 border-neutral-200" };
   }
 }
 
@@ -138,7 +138,7 @@ export function UserCommentsPage() {
   return (
     <PageShell
       title="Yorumlar"
-      subtitle="Kanallariniza gelen yorumlari yonetin ve cevap verin."
+      subtitle="Kanallarınıza gelen yorumları yönetin ve cevap verin."
       testId="user-comments"
     >
       {/* Filters */}
@@ -150,7 +150,7 @@ export function UserCommentsPage() {
           onChange={(e) => setChannelFilter(e.target.value)}
           data-testid="comment-filter-channel"
         >
-          <option value="">Tum Kanallar</option>
+          <option value="">Tüm Kanallar</option>
           {channels?.map((ch: ChannelProfileResponse) => (
             <option key={ch.id} value={ch.id}>
               {ch.profile_name}
@@ -193,7 +193,7 @@ export function UserCommentsPage() {
 
       {/* Loading / Error */}
       {isLoading && (
-        <p className="text-sm text-neutral-500 text-center py-8">Yorumlar yukleniyor...</p>
+        <p className="text-sm text-neutral-500 text-center py-8">Yorumlar yükleniyor...</p>
       )}
       {isError && (
         <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -258,14 +258,14 @@ export function UserCommentsPage() {
                             {timeAgo(c.published_at)}
                           </span>
                           {c.is_reply && (
-                            <span className="text-xs text-neutral-400 flex-shrink-0">yanit</span>
+                            <span className="text-xs text-neutral-400 flex-shrink-0">yanıt</span>
                           )}
                         </div>
                         <p className="text-sm text-neutral-700 m-0 line-clamp-2">{c.text}</p>
                         <div className="flex items-center gap-3 mt-1">
-                          <span className="text-xs text-neutral-400">{c.like_count} begeni</span>
+                          <span className="text-xs text-neutral-400">{c.like_count} beğeni</span>
                           {c.reply_count > 0 && (
-                            <span className="text-xs text-neutral-400">{c.reply_count} yanit</span>
+                            <span className="text-xs text-neutral-400">{c.reply_count} yanıt</span>
                           )}
                           <span
                             className={`text-xs px-1.5 py-0.5 rounded border ${badge.className}`}
@@ -285,7 +285,7 @@ export function UserCommentsPage() {
         {/* Detail + Reply panel — 2 columns on large */}
         <div className="lg:col-span-2">
           {selectedComment ? (
-            <SectionShell title="Yorum Detayi" testId="comment-detail-panel">
+            <SectionShell title="Yorum Detayı" testId="comment-detail-panel">
               {/* Author */}
               <div className="flex items-center gap-2 mb-3">
                 {selectedComment.author_avatar_url ? (
@@ -322,8 +322,8 @@ export function UserCommentsPage() {
               <div className="flex flex-wrap gap-3 text-xs text-neutral-500 mb-3">
                 <span>Platform: {selectedComment.platform}</span>
                 <span>Video: {selectedComment.external_video_id}</span>
-                <span>Begeni: {selectedComment.like_count}</span>
-                <span>Yanit: {selectedComment.reply_count}</span>
+                <span>Beğeni: {selectedComment.like_count}</span>
+                <span>Yanıt: {selectedComment.reply_count}</span>
               </div>
 
               {/* Reply status badge */}
@@ -341,7 +341,7 @@ export function UserCommentsPage() {
               {/* Previous reply (if any) */}
               {selectedComment.our_reply_text && (
                 <div className="p-3 bg-brand-50 rounded-md border border-brand-200 mb-3" data-testid="comment-our-reply">
-                  <p className="text-xs font-medium text-brand-600 m-0 mb-1">Bizim Yanitimiz</p>
+                  <p className="text-xs font-medium text-brand-600 m-0 mb-1">Bizim Yanıtımız</p>
                   <p className="text-sm text-neutral-700 m-0 whitespace-pre-wrap">
                     {selectedComment.our_reply_text}
                   </p>
@@ -366,7 +366,7 @@ export function UserCommentsPage() {
                 </button>
                 {syncMutation.isSuccess && syncMutation.data && (
                   <p className="text-xs text-success-600 mt-1 m-0">
-                    {syncMutation.data.new_comments} yeni, {syncMutation.data.updated_comments} guncellendi
+                    {syncMutation.data.new_comments} yeni, {syncMutation.data.updated_comments} güncellendi
                   </p>
                 )}
               </div>
@@ -382,18 +382,18 @@ export function UserCommentsPage() {
                         value={replyText}
                         onChange={setReplyText}
                         onSubmit={handleReply}
-                        placeholder="Yanit yazin..."
-                        submitLabel="YouTube'a Gonder"
+                        placeholder="Yanıt yazın..."
+                        submitLabel="YouTube'a Gönder"
                         maxLength={10000}
                         loading={replyMutation.isPending}
-                        contextLabel="Yorum Yaniti"
+                        contextLabel="Yorum Yanıtı"
                         testId="comment-reply-composer"
                       />
                       {replyMutation.isError && (
-                        <p className="text-xs text-error-base mt-1 m-0">Yanit gonderilemedi.</p>
+                        <p className="text-xs text-error-base mt-1 m-0">Yanıt gönderilemedi.</p>
                       )}
                       {replyMutation.isSuccess && replyMutation.data?.success && (
-                        <p className="text-xs text-success-600 mt-1 m-0">Yanit basariyla gonderildi.</p>
+                        <p className="text-xs text-success-600 mt-1 m-0">Yanıt başarıyla gönderildi.</p>
                       )}
                       {replyMutation.isSuccess && !replyMutation.data?.success && (
                         <p className="text-xs text-error-base mt-1 m-0">
@@ -406,9 +406,9 @@ export function UserCommentsPage() {
               )}
             </SectionShell>
           ) : (
-            <SectionShell title="Yorum Detayi" testId="comment-detail-empty">
+            <SectionShell title="Yorum Detayı" testId="comment-detail-empty">
               <p className="text-sm text-neutral-500 text-center py-8">
-                Detayini gormek icin bir yorum secin.
+                Detayını görmek için bir yorum seçin.
               </p>
             </SectionShell>
           )}

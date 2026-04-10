@@ -70,7 +70,7 @@ import { cn } from "../../lib/cn";
 
 const MODULE_LABELS: Record<string, string> = {
   standard_video: "Standart Video",
-  news_bulletin: "Haber Bulteni",
+  news_bulletin: "Haber Bülteni",
 };
 
 // ---------------------------------------------------------------------------
@@ -185,7 +185,7 @@ export function CanvasUserPublishPage() {
   const submitMutation = useMutation({
     mutationFn: async () => {
       if (!selectedProject || !selectedProject.active_job_id) {
-        throw new Error("Proje secilmedi veya aktif job yok.");
+        throw new Error("Proje seçilmedi veya aktif job yok.");
       }
       const record = await createPublishRecordFromJob(
         selectedProject.active_job_id,
@@ -217,14 +217,14 @@ export function CanvasUserPublishPage() {
       return record;
     },
     onSuccess: () => {
-      setSuccessMsg("Yayin kaydi olusturuldu ve onaya gonderildi.");
+      setSuccessMsg("Yayın kaydı oluşturuldu ve onaya gönderildi.");
       setErrorMsg("");
       queryClient.invalidateQueries({
         queryKey: ["canvas-publish-existing", selectedProjectId],
       });
     },
     onError: (err: Error) => {
-      setErrorMsg(err.message || "Yayin kaydi olusturulamadi.");
+      setErrorMsg(err.message || "Yayın kaydı oluşturulamadı.");
       setSuccessMsg("");
     },
   });
@@ -250,27 +250,27 @@ export function CanvasUserPublishPage() {
       >
         <div className="flex-1 min-w-0">
           <p className="m-0 text-[10px] font-semibold uppercase tracking-wider text-brand-600">
-            Canvas Workspace &middot; Dagitim
+            Canvas Workspace &middot; Dağıtım
           </p>
           <h1 className="m-0 mt-1 text-xl font-semibold text-neutral-900">
-            Yayin Atolyesi
+            Yayın Atölyesi
           </h1>
           <p className="m-0 mt-1 text-sm text-neutral-500">
-            Hazir projelerini sec, baglanti ve yayin bilgilerini duzenle,
-            onaya gonder. Yayin operator onayindan sonra kuyruga girer.
+            Hazır projelerini seç, bağlantı ve yayın bilgilerini düzenle,
+            onaya gönder. Yayın operatör onayından sonra kuyruğa girer.
           </p>
         </div>
         <div
           className="shrink-0 text-xs text-neutral-500 text-right"
           data-testid="canvas-publish-hero-summary"
         >
-          <div>{projects.length} hazir proje</div>
+          <div>{projects.length} hazır proje</div>
           {selectedProject ? (
             <div className="mt-1 text-brand-600 font-semibold">
-              secilen: {selectedProject.title}
+              seçilen: {selectedProject.title}
             </div>
           ) : (
-            <div className="mt-1 text-neutral-400">proje secilmedi</div>
+            <div className="mt-1 text-neutral-400">proje seçilmedi</div>
           )}
         </div>
       </section>
@@ -287,10 +287,10 @@ export function CanvasUserPublishPage() {
         >
           <header className="px-4 py-3 border-b border-border-subtle bg-neutral-50/50">
             <p className="m-0 text-xs font-semibold text-neutral-800">
-              Hazir Projeler
+              Hazır Projeler
             </p>
             <p className="m-0 mt-0.5 text-[10px] text-neutral-500">
-              Aktif job'i olan veya tamamlanmis projeler
+              Aktif job'ı olan veya tamamlanmış projeler
             </p>
           </header>
           {projects.length === 0 ? (
@@ -299,10 +299,10 @@ export function CanvasUserPublishPage() {
               data-testid="canvas-publish-projects-empty"
             >
               <p className="m-0 text-sm text-neutral-600">
-                Yayin icin uygun proje yok
+                Yayın için uygun proje yok
               </p>
               <p className="m-0 mt-1 text-xs text-neutral-500">
-                Once bir projeyi tamamlayip uretimi bitir.
+                Önce bir projeyi tamamlayıp üretimi bitir.
               </p>
             </div>
           ) : (
@@ -362,10 +362,10 @@ export function CanvasUserPublishPage() {
               data-testid="canvas-publish-placeholder"
             >
               <p className="m-0 text-sm font-semibold text-neutral-700">
-                Sol sutundan bir proje sec
+                Sol sütundan bir proje seç
               </p>
               <p className="m-0 mt-1 text-xs text-neutral-500">
-                Secilen proje icin yayin atolyesi burada acilacak.
+                Seçilen proje için yayın atölyesi burada açılacak.
               </p>
             </div>
           ) : (
@@ -385,7 +385,7 @@ export function CanvasUserPublishPage() {
                     data-testid="canvas-publish-preview-slot"
                   >
                     <span className="text-[9px] font-mono uppercase text-neutral-400">
-                      on izleme
+                      ön izleme
                     </span>
                   </div>
                   <div className="flex-1 min-w-0">
@@ -418,7 +418,7 @@ export function CanvasUserPublishPage() {
                     data-testid="canvas-publish-existing-records"
                   >
                     <p className="m-0 mb-2 text-[10px] uppercase font-semibold tracking-wider text-neutral-500">
-                      Mevcut Yayin Kayitlari
+                      Mevcut Yayın Kayıtları
                     </p>
                     <ul className="list-none m-0 p-0 flex flex-col gap-1">
                       {existingRecords.map((rec: PublishRecordSummary) => (
@@ -440,7 +440,7 @@ export function CanvasUserPublishPage() {
                               rel="noopener noreferrer"
                               className="text-brand-600 hover:text-brand-700 ml-auto"
                             >
-                              Goruntule
+                              Görüntüle
                             </a>
                           ) : null}
                         </li>
@@ -457,10 +457,10 @@ export function CanvasUserPublishPage() {
               >
                 <header className="px-5 py-3 border-b border-border-subtle bg-neutral-50/50">
                   <p className="m-0 text-sm font-semibold text-neutral-800">
-                    Platform Baglantisi
+                    Platform Bağlantısı
                   </p>
                   <p className="m-0 mt-0.5 text-xs text-neutral-500">
-                    Bu yayin hangi baglanti uzerinden yapilacak?
+                    Bu yayın hangi bağlantı üzerinden yapılacak?
                   </p>
                 </header>
                 <div className="px-5 py-4">
@@ -504,8 +504,8 @@ export function CanvasUserPublishPage() {
                                 {conn.is_primary ? " · birincil" : ""}
                                 {" · "}
                                 {conn.can_publish
-                                  ? "yayinlanabilir"
-                                  : "yetersiz baglanti"}
+                                  ? "yayınlanabilir"
+                                  : "yetersiz bağlantı"}
                               </p>
                             </div>
                           </label>
@@ -517,11 +517,11 @@ export function CanvasUserPublishPage() {
                       className="m-0 text-xs text-neutral-500"
                       data-testid="canvas-publish-no-connections"
                     >
-                      Bu kanal icin platform baglantisi bulunamadi.
+                      Bu kanal için platform bağlantısı bulunamadı.
                     </p>
                   ) : (
                     <p className="m-0 text-xs text-neutral-500">
-                      Baglanti listesi yukleniyor...
+                      Bağlantı listesi yükleniyor...
                     </p>
                   )}
                 </div>
@@ -534,16 +534,16 @@ export function CanvasUserPublishPage() {
               >
                 <header className="px-5 py-3 border-b border-border-subtle bg-neutral-50/50">
                   <p className="m-0 text-sm font-semibold text-neutral-800">
-                    Yayin Bilgileri
+                    Yayın Bilgileri
                   </p>
                   <p className="m-0 mt-0.5 text-xs text-neutral-500">
-                    Platforma gidecek meta veriyi duzenle.
+                    Platforma gidecek meta veriyi düzenle.
                   </p>
                 </header>
                 <div className="px-5 py-4 flex flex-col gap-3">
                   <div>
                     <label className="block text-[11px] font-semibold uppercase tracking-wider text-neutral-500 mb-1">
-                      Baslik
+                      Başlık
                     </label>
                     <input
                       type="text"
@@ -554,14 +554,14 @@ export function CanvasUserPublishPage() {
                         "border border-border-subtle bg-surface-card",
                         "focus:outline-none focus:border-brand-400",
                       )}
-                      placeholder="Video basligi..."
+                      placeholder="Video başlığı..."
                       maxLength={100}
                       data-testid="canvas-publish-title-input"
                     />
                   </div>
                   <div>
                     <label className="block text-[11px] font-semibold uppercase tracking-wider text-neutral-500 mb-1">
-                      Aciklama
+                      Açıklama
                     </label>
                     <textarea
                       value={intentDescription}
@@ -572,7 +572,7 @@ export function CanvasUserPublishPage() {
                         "focus:outline-none focus:border-brand-400",
                         "min-h-[96px] resize-y",
                       )}
-                      placeholder="Video aciklamasi..."
+                      placeholder="Video açıklaması..."
                       maxLength={5000}
                       data-testid="canvas-publish-desc-input"
                     />
@@ -580,7 +580,7 @@ export function CanvasUserPublishPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="block text-[11px] font-semibold uppercase tracking-wider text-neutral-500 mb-1">
-                        Etiketler (virgul ile)
+                        Etiketler (virgül ile)
                       </label>
                       <input
                         type="text"
@@ -609,7 +609,7 @@ export function CanvasUserPublishPage() {
                         )}
                         data-testid="canvas-publish-privacy-select"
                       >
-                        <option value="public">Herkese Acik</option>
+                        <option value="public">Herkese Açık</option>
                         <option value="unlisted">Listede Yok</option>
                         <option value="private">Gizli</option>
                       </select>
@@ -649,12 +649,12 @@ export function CanvasUserPublishPage() {
                       data-testid="canvas-publish-submit"
                     >
                       {submitMutation.isPending
-                        ? "Gonderiliyor..."
-                        : "Olustur ve Onaya Gonder"}
+                        ? "Gönderiliyor..."
+                        : "Oluştur ve Onaya Gönder"}
                     </button>
                     {!selectedProject.active_job_id ? (
                       <span className="text-[11px] text-warning-base">
-                        Bu projenin aktif bir isi yok — once uretimi tamamla.
+                        Bu projenin aktif bir işi yok — önce üretimi tamamla.
                       </span>
                     ) : null}
                   </div>

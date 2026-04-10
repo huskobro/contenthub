@@ -93,7 +93,7 @@ export function CanvasMyChannelsPage() {
       setChannelSlug("");
       setDefaultLanguage("tr");
     } catch (err) {
-      setCreateError(err instanceof Error ? err.message : "Olusturulamadi");
+      setCreateError(err instanceof Error ? err.message : "Oluşturulamadı");
     }
   }
 
@@ -112,14 +112,14 @@ export function CanvasMyChannelsPage() {
       >
         <div className="flex-1 min-w-0">
           <p className="m-0 text-[10px] font-semibold uppercase tracking-wider text-brand-600">
-            Canvas Workspace &middot; Dagitim
+            Canvas Workspace &middot; Dağıtım
           </p>
           <h1 className="m-0 mt-1 text-xl font-semibold text-neutral-900">
-            Kanal Studyom
+            Kanal Stüdyom
           </h1>
           <p className="m-0 mt-1 text-sm text-neutral-500">
-            Her kanal projelerinin yayinlandigi bir dagitim agzi. Kanal
-            olustur, detay sayfasindan platform baglantilarini yonet.
+            Her kanal projelerinin yayınlandığı bir dağıtım ağzı. Kanal
+            oluştur, detay sayfasından platform bağlantılarını yönet.
           </p>
         </div>
         <button
@@ -131,7 +131,7 @@ export function CanvasMyChannelsPage() {
           )}
           data-testid="canvas-channels-create-toggle"
         >
-          {showCreate ? "Iptal" : "+ Kanal Olustur"}
+          {showCreate ? "İptal" : "+ Kanal Oluştur"}
         </button>
       </section>
 
@@ -142,7 +142,7 @@ export function CanvasMyChannelsPage() {
       >
         <ChannelStatTile label="Toplam Kanal" value={stats.total} />
         <ChannelStatTile label="Aktif" value={stats.active} />
-        <ChannelStatTile label="Farkli Dil" value={stats.languages} />
+        <ChannelStatTile label="Farklı Dil" value={stats.languages} />
       </div>
 
       {/* Inline create drawer -------------------------------------------- */}
@@ -156,7 +156,7 @@ export function CanvasMyChannelsPage() {
               Yeni Kanal
             </p>
             <p className="m-0 mt-0.5 text-xs text-neutral-500">
-              Kanal, projelerin platform baglantilarina gruplanir.
+              Kanal, projelerin platform bağlantılarına gruplanır.
             </p>
           </header>
           <form onSubmit={handleCreate} className="px-5 py-4 flex flex-col gap-3">
@@ -171,14 +171,14 @@ export function CanvasMyChannelsPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-[11px] font-semibold uppercase tracking-wider text-neutral-500 mb-1">
-                  Kanal Adi
+                  Kanal Adı
                 </label>
                 <input
                   type="text"
                   value={profileName}
                   onChange={(e) => setProfileName(e.target.value)}
                   required
-                  placeholder="Ornek: Ana YouTube Kanali"
+                  placeholder="Örnek: Ana YouTube Kanalı"
                   className={cn(
                     "w-full px-3 py-2 text-sm rounded-md",
                     "border border-border-subtle bg-surface-card",
@@ -207,7 +207,7 @@ export function CanvasMyChannelsPage() {
               </div>
               <div>
                 <label className="block text-[11px] font-semibold uppercase tracking-wider text-neutral-500 mb-1">
-                  Varsayilan Dil
+                  Varsayılan Dil
                 </label>
                 <input
                   type="text"
@@ -235,7 +235,7 @@ export function CanvasMyChannelsPage() {
                 )}
                 data-testid="canvas-channels-create-submit"
               >
-                {createMutation.isPending ? "Olusturuluyor..." : "Olustur"}
+                {createMutation.isPending ? "Oluşturuluyor..." : "Oluştur"}
               </button>
               <button
                 type="button"
@@ -245,7 +245,7 @@ export function CanvasMyChannelsPage() {
                 }}
                 className="px-3 py-2 text-xs text-neutral-500 hover:text-neutral-800"
               >
-                Vazgec
+                Vazgeç
               </button>
             </div>
           </form>
@@ -258,7 +258,7 @@ export function CanvasMyChannelsPage() {
           className="rounded-xl border border-border-subtle bg-surface-card p-8 text-center text-sm text-neutral-500"
           data-testid="canvas-channels-loading"
         >
-          Kanallar yukleniyor...
+          Kanallar yükleniyor...
         </div>
       ) : rows.length === 0 ? (
         <div
@@ -266,10 +266,10 @@ export function CanvasMyChannelsPage() {
           data-testid="canvas-channels-empty"
         >
           <p className="m-0 text-sm font-semibold text-neutral-700">
-            Henuz kanalin yok
+            Henüz kanalın yok
           </p>
           <p className="m-0 mt-1 text-xs text-neutral-500">
-            Yukaridaki butondan ilk kanal profilini olusturabilirsin.
+            Yukarıdaki butondan ilk kanal profilini oluşturabilirsin.
           </p>
         </div>
       ) : (
@@ -324,7 +324,7 @@ export function CanvasMyChannelsPage() {
                   {projectCountByChannel.get(ch.id) ?? 0}
                 </p>
                 <p className="m-0 text-[10px] text-neutral-400 mt-2">
-                  Olusturulma:{" "}
+                  Oluşturulma:{" "}
                   {new Date(ch.created_at).toLocaleDateString("tr-TR")}
                 </p>
               </div>

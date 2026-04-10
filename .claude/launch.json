@@ -4,13 +4,13 @@
     {
       "name": "Backend (FastAPI)",
       "runtimeExecutable": "/bin/bash",
-      "runtimeArgs": ["-c", "export PATH=/opt/homebrew/bin:$PATH && cd /Users/huseyincoskun/Downloads/AntigravityProje/ContentHub/backend && .venv/bin/python -m uvicorn app.main:create_app --factory --host 127.0.0.1 --port 8000 --reload"],
+      "runtimeArgs": ["-c", "cd /Users/huseyincoskun/Downloads/AntigravityProje/ContentHub/backend && export PATH=/opt/homebrew/bin:$PATH && exec .venv/bin/python -m uvicorn app.main:create_app --factory --host 127.0.0.1 --port 8000 --reload"],
       "port": 8000
     },
     {
       "name": "Frontend (Vite)",
       "runtimeExecutable": "/bin/bash",
-      "runtimeArgs": ["-c", "export PATH=/opt/homebrew/bin:$PATH && cd /Users/huseyincoskun/Downloads/AntigravityProje/ContentHub/frontend && node node_modules/.bin/vite --port 5173"],
+      "runtimeArgs": ["-c", "cd /Users/huseyincoskun/Downloads/AntigravityProje/ContentHub/frontend && export PATH=/opt/homebrew/bin:$PATH && exec node node_modules/.bin/vite --port 5173"],
       "port": 5173
     }
   ]

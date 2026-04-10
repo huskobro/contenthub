@@ -46,8 +46,8 @@ interface QuickLink {
 
 const QUICK_LINKS: QuickLink[] = [
   {
-    title: "Icerik Kutuphanesi",
-    desc: "Tum icerik kayitlarini tek yuzeyden goruntuleyip yonetin",
+    title: "İçerik Kütüphanesi",
+    desc: "Tüm içerik kayıtlarını tek yüzeyden görüntüleyip yönetin",
     to: "/admin/library",
     testId: "quick-link-library",
     iconPath: "M3 5h14M3 10h14M3 15h9",
@@ -55,8 +55,8 @@ const QUICK_LINKS: QuickLink[] = [
     iconColor: "var(--ch-brand-600, #4c6ef5)",
   },
   {
-    title: "Yeni Video Olustur",
-    desc: "Ana uretim akisi: standart video icerigi olusturmaya basla",
+    title: "Yeni Video Oluştur",
+    desc: "Ana üretim akışı: standart video içeriği oluşturmaya başlayın",
     to: "/admin/standard-videos/new",
     testId: "quick-link-new-video",
     iconPath: "M15.91 11.672a.375.375 0 010 .656l-7.5 4.5A.375.375 0 018 16.5v-9a.375.375 0 01.41-.328l7.5 4.5z",
@@ -64,8 +64,8 @@ const QUICK_LINKS: QuickLink[] = [
     iconColor: "var(--ch-success-dark, #2b8a3e)",
   },
   {
-    title: "Isler",
-    desc: "Uretim islerini, kuyruk durumunu ve toplu operasyonlari takip et",
+    title: "İşler",
+    desc: "Üretim işlerini, kuyruk durumunu ve toplu operasyonları takip edin",
     to: "/admin/jobs",
     testId: "quick-link-jobs",
     iconPath: "M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.573-1.066zM15 12a3 3 0 11-6 0 3 3 0 016 0z",
@@ -74,7 +74,7 @@ const QUICK_LINKS: QuickLink[] = [
   },
   {
     title: "Analytics",
-    desc: "Uretim metrikleri, raporlama ve karar destek ozetlerini goruntule",
+    desc: "Üretim metrikleri, raporlama ve karar destek özetlerini görüntüleyin",
     to: "/admin/analytics",
     testId: "quick-link-analytics",
     visibilityKey: "panel:analytics",
@@ -84,7 +84,7 @@ const QUICK_LINKS: QuickLink[] = [
   },
   {
     title: "Kaynaklar",
-    desc: "Haber kaynaklarini yonet ve tara",
+    desc: "Haber kaynaklarını yönetin ve tarayın",
     to: "/admin/sources",
     testId: "quick-link-sources",
     visibilityKey: "panel:sources",
@@ -94,7 +94,7 @@ const QUICK_LINKS: QuickLink[] = [
   },
   {
     title: "Ayarlar",
-    desc: "Ayar kayitlarini ve governance durumunu yonet",
+    desc: "Ayar kayıtlarını ve yönetişim durumunu yönetin",
     to: "/admin/settings",
     testId: "quick-link-settings",
     visibilityKey: "panel:settings",
@@ -129,10 +129,10 @@ function timeAgo(dateStr: string): string {
   const now = Date.now();
   const then = new Date(dateStr).getTime();
   const diff = Math.floor((now - then) / 1000);
-  if (diff < 60) return "Az once";
-  if (diff < 3600) return `${Math.floor(diff / 60)} dk once`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)} saat once`;
-  return `${Math.floor(diff / 86400)} gun once`;
+  if (diff < 60) return "Az önce";
+  if (diff < 3600) return `${Math.floor(diff / 60)} dk önce`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)} saat önce`;
+  return `${Math.floor(diff / 86400)} gün önce`;
 }
 
 function useFilteredQuickLinks(): QuickLink[] {
@@ -194,11 +194,11 @@ function QuickCard({ link, onClick }: { link: QuickLink; onClick: () => void }) 
 /* ------------------------------------------------------------------ */
 
 const JOB_STATUS_STYLE: Record<string, { dot: string; label: string }> = {
-  completed: { dot: "bg-success-base", label: "Tamamlandi" },
-  failed: { dot: "bg-error", label: "Basarisiz" },
-  running: { dot: "bg-brand-500 animate-pulse", label: "Calisiyor" },
+  completed: { dot: "bg-success-base", label: "Tamamlandı" },
+  failed: { dot: "bg-error", label: "Başarısız" },
+  running: { dot: "bg-brand-500 animate-pulse", label: "Çalışıyor" },
   pending: { dot: "bg-warning-base", label: "Bekliyor" },
-  cancelled: { dot: "bg-neutral-400", label: "Iptal" },
+  cancelled: { dot: "bg-neutral-400", label: "İptal" },
 };
 
 function RecentJobCard({ job, onClick }: { job: JobResponse; onClick: () => void }) {
@@ -275,7 +275,7 @@ export function AdminOverviewPage() {
 
   // Prepare module distribution for donut
   const moduleDonutData = (data?.module_distribution ?? []).map((m) => ({
-    name: m.module_type === "standard_video" ? "Standart Video" : m.module_type === "news_bulletin" ? "Haber Bulteni" : m.module_type,
+    name: m.module_type === "standard_video" ? "Standart Video" : m.module_type === "news_bulletin" ? "Haber Bülteni" : m.module_type,
     value: m.total_jobs,
   }));
 
@@ -288,8 +288,8 @@ export function AdminOverviewPage() {
 
   return (
     <PageShell
-      title="Yonetim Paneli"
-      subtitle="Operasyonel gozlem merkezi. Filtreleyerek karar verin."
+      title="Yönetim Paneli"
+      subtitle="Operasyonel gözlem merkezi. Filtreleyerek karar verin."
       testId="admin-overview"
     >
       {/* Filter Bar */}
@@ -298,7 +298,7 @@ export function AdminOverviewPage() {
       {isError && (
         <div className="flex flex-col items-center py-6 gap-2 mb-4" data-testid="dashboard-error">
           <span className="text-error-base text-2xl">&#9888;</span>
-          <p className="text-error-base text-md m-0">Dashboard verileri yuklenemedi.</p>
+          <p className="text-error-base text-md m-0">Dashboard verileri yüklenemedi.</p>
         </div>
       )}
 
@@ -311,7 +311,7 @@ export function AdminOverviewPage() {
               Platform Metrikleri
             </h2>
             <p className="mt-0.5 mb-0 text-xs text-brand-600">
-              {analyticsFilters.hasEntityFilter ? "Filtreli gorunum" : "Kumulatif gorunum"}
+              {analyticsFilters.hasEntityFilter ? "Filtreli görünüm" : "Kümülatif görünüm"}
             </p>
           </div>
           <div className={cn(
@@ -329,28 +329,28 @@ export function AdminOverviewPage() {
             <MetricTile
               label="Toplam Proje"
               value={fmtCount(data?.total_projects)}
-              note="ContentProject kaydi"
+              note="ContentProject kaydı"
               testId="kpi-total-projects"
               accentColor="var(--ch-brand-500, #4c6ef5)"
             />
             <MetricTile
-              label="Toplam Is"
+              label="Toplam İş"
               value={fmtCount(data?.total_jobs)}
-              note="Olusturulan tum isler"
+              note="Oluşturulan tüm işler"
               testId="kpi-total-jobs"
               accentColor="var(--ch-info-base, #1971c2)"
             />
             <MetricTile
-              label="Aktif Is"
+              label="Aktif İş"
               value={fmtCount(data?.active_jobs)}
-              note="Calisan / kuyrukta"
+              note="Çalışan / kuyrukta"
               testId="kpi-active-jobs"
               accentColor="var(--ch-warning-base, #e67700)"
             />
             <MetricTile
-              label="Yayin Basari"
+              label="Yayın Başarı"
               value={fmtRate(data?.publish_success_rate)}
-              note="Basarili / toplam yayin"
+              note="Başarılı / toplam yayın"
               testId="kpi-publish-success"
               accentColor="var(--ch-success-base, #2b8a3e)"
             />
@@ -360,30 +360,30 @@ export function AdminOverviewPage() {
         {!isLoading && data && (
           <div className="grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-3 mt-3">
             <MetricTile
-              label="Ort. Uretim Suresi"
+              label="Ort. Üretim Süresi"
               value={fmtDuration(data.avg_production_duration_seconds)}
-              note="Is basina ortalama"
+              note="İş başına ortalama"
               testId="kpi-avg-duration"
               accentColor="var(--ch-neutral-500, #adb5bd)"
             />
             <MetricTile
-              label="Retry Orani"
+              label="Retry Oranı"
               value={fmtRate(data.retry_rate)}
-              note="Tekrar eden isler"
+              note="Tekrar eden işler"
               testId="kpi-retry-rate"
               accentColor="var(--ch-warning-base, #e67700)"
             />
             <MetricTile
-              label="Basarisiz Is"
+              label="Başarısız İş"
               value={fmtCount(data.failed_job_count)}
-              note="Hata ile sonuclanan"
+              note="Hata ile sonuçlanan"
               testId="kpi-failed-jobs"
               accentColor="var(--ch-error, #e03131)"
             />
             <MetricTile
-              label="Toplam Yayin"
+              label="Toplam Yayın"
               value={fmtCount(data.total_publish)}
-              note="Yayin kaydi sayisi"
+              note="Yayın kaydı sayısı"
               testId="kpi-total-publish"
               accentColor="var(--ch-success-base, #2b8a3e)"
             />
@@ -394,7 +394,7 @@ export function AdminOverviewPage() {
       {/* ---- Charts Row ---- */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
         {/* Daily Production Trend */}
-        <SectionShell title="Gunluk Uretim Trendi" testId="dashboard-daily-trend">
+        <SectionShell title="Günlük Üretim Trendi" testId="dashboard-daily-trend">
           {isLoading ? (
             <SkeletonCard lines={4} hasIcon={false} />
           ) : trendData.length > 0 ? (
@@ -402,24 +402,24 @@ export function AdminOverviewPage() {
               data={trendData}
               xKey="dateLabel"
               yKey="job_count"
-              yLabel="Is Sayisi"
+              yLabel="İş Sayısı"
               height={220}
               showArea
               testId="trend-chart-production"
             />
           ) : (
-            <p className="text-sm text-neutral-500 py-8 text-center">Secilen donemde veri yok.</p>
+            <p className="text-sm text-neutral-500 py-8 text-center">Seçilen dönemde veri yok.</p>
           )}
         </SectionShell>
 
         {/* Module Distribution */}
-        <SectionShell title="Modul Dagilimi" testId="dashboard-module-dist">
+        <SectionShell title="Modül Dağılımı" testId="dashboard-module-dist">
           {isLoading ? (
             <SkeletonCard lines={4} hasIcon={false} />
           ) : moduleDonutData.length > 0 ? (
             <DistributionDonut data={moduleDonutData} height={220} />
           ) : (
-            <p className="text-sm text-neutral-500 py-8 text-center">Modul verisi yok.</p>
+            <p className="text-sm text-neutral-500 py-8 text-center">Modül verisi yok.</p>
           )}
         </SectionShell>
       </div>
@@ -427,7 +427,7 @@ export function AdminOverviewPage() {
       {/* Platform Distribution + Publish Trend */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
         {/* Platform Publish Distribution */}
-        <SectionShell title="Platform Yayin Dagilimi" testId="dashboard-platform-dist">
+        <SectionShell title="Platform Yayın Dağılımı" testId="dashboard-platform-dist">
           {isLoading ? (
             <SkeletonCard lines={3} hasIcon={false} />
           ) : platformBarData.length > 0 ? (
@@ -444,7 +444,7 @@ export function AdminOverviewPage() {
         </SectionShell>
 
         {/* Publish Success/Fail Trend */}
-        <SectionShell title="Yayin Basari Trendi" testId="dashboard-publish-trend">
+        <SectionShell title="Yayın Başarı Trendi" testId="dashboard-publish-trend">
           {isLoading ? (
             <SkeletonCard lines={3} hasIcon={false} />
           ) : trendData.length > 0 ? (
@@ -452,14 +452,14 @@ export function AdminOverviewPage() {
               data={trendData}
               xKey="dateLabel"
               yKey="publish_success_count"
-              yLabel="Basarili Yayin"
+              yLabel="Başarılı Yayın"
               color="#2b8a3e"
               height={180}
               showArea
               testId="trend-chart-publish"
             />
           ) : (
-            <p className="text-sm text-neutral-500 py-8 text-center">Yayin trendi yok.</p>
+            <p className="text-sm text-neutral-500 py-8 text-center">Yayın trendi yok.</p>
           )}
         </SectionShell>
       </div>
@@ -475,7 +475,7 @@ export function AdminOverviewPage() {
               <div className="flex items-center gap-3 py-2 px-3 rounded-md bg-surface-inset border border-border-subtle">
                 <span className="text-sm font-semibold text-neutral-700">Kuyruk</span>
                 <span className="ml-auto text-lg font-bold text-brand-600">{data?.queue_size ?? 0}</span>
-                <span className="text-xs text-neutral-500">bekleyen is</span>
+                <span className="text-xs text-neutral-500">bekleyen iş</span>
               </div>
 
               {(data?.recent_errors ?? []).length > 0 ? (
@@ -490,7 +490,7 @@ export function AdminOverviewPage() {
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-neutral-500 text-center py-4">Yakin zamanda hata yok.</p>
+                <p className="text-sm text-neutral-500 text-center py-4">Yakın zamanda hata yok.</p>
               )}
             </div>
           )}
@@ -498,15 +498,15 @@ export function AdminOverviewPage() {
 
         {/* Recent Jobs */}
         <SectionShell
-          title="Son Isler"
-          description="En son olusturulan isler"
+          title="Son İşler"
+          description="En son oluşturulan işler"
           testId="recent-jobs-section"
           actions={
             <button
               onClick={() => navigate("/admin/jobs")}
               className="text-xs text-brand-600 font-medium bg-transparent border-none cursor-pointer hover:text-brand-700 transition-colors duration-fast"
             >
-              Tumunu gor &rarr;
+              Tümünü gör &rarr;
             </button>
           }
         >
@@ -515,7 +515,7 @@ export function AdminOverviewPage() {
               {[0, 1, 2, 3, 4].map((i) => <SkeletonCard key={i} hasIcon={false} lines={1} />)}
             </div>
           ) : recentJobs.length === 0 ? (
-            <div className="text-center py-8 text-neutral-500 text-sm">Henuz is olusturulmamis.</div>
+            <div className="text-center py-8 text-neutral-500 text-sm">Henüz iş oluşturulmamış.</div>
           ) : (
             <div className="flex flex-col gap-1.5">
               {recentJobs.map((job) => (
@@ -533,7 +533,7 @@ export function AdminOverviewPage() {
       {/* ---- Quick Access ---- */}
       <SectionShell testId="admin-quick-access-section">
         <h3 data-testid="admin-quick-access-heading" className="m-0 text-md font-semibold text-neutral-900 mb-3">
-          Hizli Erisim
+          Hızlı Erişim
         </h3>
         <div className="grid grid-cols-3 gap-3 stagger-children">
           {filteredLinks.map((link) => (

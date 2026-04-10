@@ -79,10 +79,10 @@ interface AtriumNavItem {
 }
 
 const ATRIUM_NAV: AtriumNavItem[] = [
-  { label: "Showcase", to: "/user", end: true, atriumOverride: true },
+  { label: "Vitrin", to: "/user", end: true, atriumOverride: true },
   { label: "Projeler", to: "/user/projects", end: true, atriumOverride: true },
   { label: "Takvim", to: "/user/calendar" },
-  { label: "Dagitim", to: "/user/publish" },
+  { label: "Dağıtım", to: "/user/publish" },
   { label: "Kanallar", to: "/user/channels", end: true },
   { label: "Analiz", to: "/user/analytics", end: true },
   { label: "Ayarlar", to: "/user/settings" },
@@ -98,43 +98,43 @@ function useEditorialMoment(): { kicker: string; title: string } {
   const path = location.pathname;
   if (path === "/user" || path === "/user/")
     return {
-      kicker: "SHOWCASE",
-      title: "Bugunun one cikan yapimlari",
+      kicker: "VİTRİN",
+      title: "Bugünün öne çıkan yapımları",
     };
   if (/^\/user\/projects\/[^/]+/.test(path))
     return {
-      kicker: "EDITORIAL",
-      title: "Proje stuyosu",
+      kicker: "EDİTORYAL",
+      title: "Proje stüdyosu",
     };
   if (path.startsWith("/user/projects"))
     return {
-      kicker: "PORTFOLIO",
-      title: "Tum yapimlarin",
+      kicker: "PORTFÖY",
+      title: "Tüm yapımların",
     };
   if (path.startsWith("/user/calendar"))
     return {
       kicker: "PROGRAM",
-      title: "Yayin akisi",
+      title: "Yayın akışı",
     };
   if (path.startsWith("/user/publish"))
     return {
-      kicker: "DISTRIBUTION",
-      title: "Dagitim atolyesi",
+      kicker: "DAĞITIM",
+      title: "Dağıtım atölyesi",
     };
   if (path.startsWith("/user/channels"))
     return {
-      kicker: "BRANDS",
-      title: "Kanal dunyalarin",
+      kicker: "MARKALAR",
+      title: "Kanal dünyaların",
     };
   if (path.startsWith("/user/analytics"))
     return {
-      kicker: "INSIGHTS",
+      kicker: "İÇGÖRÜ",
       title: "Performans editoryali",
     };
   if (path.startsWith("/user/settings"))
     return {
-      kicker: "STUDIO",
-      title: "Yapim ayarlari",
+      kicker: "STÜDYO",
+      title: "Yapım ayarları",
     };
   return { kicker: "ATRIUM", title: "Premium media OS" };
 }
@@ -275,7 +275,7 @@ export function AtriumUserLayout() {
               )}
               data-testid="atrium-marquee-create-bulletin"
             >
-              + Bulten
+              + Bülten
             </button>
 
             <div className="w-px h-7 bg-neutral-700 mx-1" />
@@ -320,7 +320,7 @@ export function AtriumUserLayout() {
                   {displayName}
                 </span>
                 <span className="text-[9px] uppercase tracking-wider text-neutral-400">
-                  {projectCount} yapim
+                  {projectCount} yapım
                 </span>
               </div>
             </div>

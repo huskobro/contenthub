@@ -44,18 +44,37 @@ import { useToast } from "../../hooks/useToast";
 
 const STATUS_BUCKETS: { key: string; label: string; match: (s: string) => boolean }[] = [
   { key: "queued", label: "Kuyruk", match: (s) => s === "queued" },
-  { key: "running", label: "Calisiyor", match: (s) => s === "running" || s === "processing" || s === "retrying" },
-  { key: "review", label: "Review", match: (s) => s === "pending_review" || s === "review" },
-  { key: "completed", label: "Tamamlandi", match: (s) => s === "completed" },
+  { key: "running", label: "Çalışıyor", match: (s) => s === "running" || s === "processing" || s === "retrying" },
+  { key: "review", label: "İnceleme", match: (s) => s === "pending_review" || s === "review" },
+  { key: "completed", label: "Tamamlandı", match: (s) => s === "completed" },
   { key: "failed", label: "Hata", match: (s) => s === "failed" || s === "cancelled" },
 ];
+
+// Round 2 polish (B): status string'lerini kullanıcıya Türkçe göster.
+// Backend hâlâ ham status'u üretiyor (state machine aynı); bu yalnızca bir
+// sunum katmanı eşlemesi.
+const STATUS_LABELS: Record<string, string> = {
+  queued: "Kuyruk",
+  running: "Çalışıyor",
+  processing: "Çalışıyor",
+  retrying: "Yeniden",
+  pending_review: "İnceleme",
+  review: "İnceleme",
+  completed: "Tamamlandı",
+  failed: "Hata",
+  cancelled: "İptal",
+};
+
+function localizeStatus(status: string): string {
+  return STATUS_LABELS[status] ?? status;
+}
 
 function formatAge(iso: string): string {
   const then = new Date(iso).getTime();
   const now = Date.now();
   const diff = Math.max(0, now - then);
   const m = Math.floor(diff / 60000);
-  if (m < 1) return "simdi";
+  if (m < 1) return "şimdi";
   if (m < 60) return `${m}d`;
   const h = Math.floor(m / 60);
   if (h < 24) return `${h}sa`;
@@ -91,19 +110,19 @@ export function BridgeJobsRegistryPage() {
     mutationFn: (jobIds: string[]) => markJobsAsTestData(jobIds),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["jobs"] });
-      toast.success("Job arsivlendi");
+      toast.success("İş arşivlendi");
     },
-    onError: () => toast.error("Arsivleme basarisiz"),
+    onError: () => toast.error("Arşivleme başarısız"),
   });
 
   const cloneMutation = useMutation({
     mutationFn: (jobId: string) => cloneJob(jobId),
     onSuccess: (newJob) => {
       queryClient.invalidateQueries({ queryKey: ["jobs"] });
-      toast.success("Job klonlandi");
+      toast.success("İş klonlandı");
       navigate(`/admin/jobs/${newJob.id}`);
     },
-    onError: () => toast.error("Klonlama basarisiz"),
+    onError: () => toast.error("Klonlama başarısız"),
   });
 
   // Capability-gated inline actions. We intentionally reuse the existing
@@ -116,10 +135,10 @@ export function BridgeJobsRegistryPage() {
       queryClient.invalidateQueries({ queryKey: ["jobs"] });
       queryClient.invalidateQueries({ queryKey: ["job-detail", jobId] });
       queryClient.invalidateQueries({ queryKey: ["job-actions", jobId] });
-      toast.success("Job iptal talebi gonderildi");
+      toast.success("İş iptal talebi gönderildi");
     },
     onError: (err: unknown) => {
-      const msg = err instanceof Error ? err.message : "Iptal basarisiz";
+      const msg = err instanceof Error ? err.message : "İptal başarısız";
       toast.error(msg);
     },
   });
@@ -130,10 +149,10 @@ export function BridgeJobsRegistryPage() {
       queryClient.invalidateQueries({ queryKey: ["jobs"] });
       queryClient.invalidateQueries({ queryKey: ["job-detail", jobId] });
       queryClient.invalidateQueries({ queryKey: ["job-actions", jobId] });
-      toast.success("Retry tetiklendi");
+      toast.success("Yeniden deneme tetiklendi");
     },
     onError: (err: unknown) => {
-      const msg = err instanceof Error ? err.message : "Retry basarisiz";
+      const msg = err instanceof Error ? err.message : "Yeniden deneme başarısız";
       toast.error(msg);
     },
   });
@@ -249,9 +268,9 @@ export function BridgeJobsRegistryPage() {
       {/* ---- Header strip ------------------------------------------------ */}
       <div className="flex items-baseline justify-between flex-wrap gap-2">
         <div>
-          <h1 className="m-0 text-lg font-semibold text-neutral-900">Uretim Kokpiti</h1>
+          <h1 className="m-0 text-lg font-semibold text-neutral-900">Üretim Kokpiti</h1>
           <p className="m-0 text-xs text-neutral-500">
-            Job kuyrugu, adim durumu ve operasyonel aksiyonlar. Ops-dense gorunum.
+            İş kuyruğu, adım durumu ve operasyonel aksiyonlar. Operasyonel yoğun görünüm.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -262,7 +281,7 @@ export function BridgeJobsRegistryPage() {
               onChange={(e) => setIncludeArchived(e.target.checked)}
               data-testid="bridge-jobs-archived-toggle"
             />
-            Arsivi dahil et
+            Arşivi dahil et
           </label>
           <select
             value={moduleFilter}
@@ -270,7 +289,7 @@ export function BridgeJobsRegistryPage() {
             className="px-2 py-1 text-xs border border-border-subtle rounded-md bg-surface-page text-neutral-700"
             data-testid="bridge-jobs-module-filter"
           >
-            <option value="">Tum moduller</option>
+            <option value="">Tüm modüller</option>
             {moduleOptions.map((m) => (
               <option key={m} value={m}>{m}</option>
             ))}
@@ -314,9 +333,9 @@ export function BridgeJobsRegistryPage() {
         <div className="border border-border-subtle rounded-md bg-surface-page overflow-hidden flex flex-col">
           <div className="px-3 py-2 border-b border-border-subtle bg-surface-inset flex items-center justify-between sticky top-0 z-10">
             <span className="text-[11px] font-semibold uppercase tracking-wider text-neutral-600">
-              Isler ({filteredJobs.length})
+              İşler ({filteredJobs.length})
               <span className="ml-2 text-[10px] font-mono text-neutral-400 normal-case tracking-normal">
-                ↑↓ gezin · Enter kokpit
+                ↑↓ ile gez · Enter ile kokpit
               </span>
             </span>
             {bucketFilter && (
@@ -335,26 +354,26 @@ export function BridgeJobsRegistryPage() {
             data-testid="bridge-jobs-column-headers"
           >
             <span className="shrink-0" style={{ width: "84px" }}>durum</span>
-            <span className="shrink-0" style={{ width: "110px" }}>modul</span>
-            <span className="shrink-0" style={{ width: "40px" }}>yas</span>
-            <span className="flex-1 min-w-0">adim / hata</span>
+            <span className="shrink-0" style={{ width: "110px" }}>modül</span>
+            <span className="shrink-0" style={{ width: "40px" }}>yaş</span>
+            <span className="flex-1 min-w-0">adım / hata</span>
             <span className="shrink-0" style={{ width: "64px" }}>id</span>
           </div>
           <div className="max-h-[calc(100vh-320px)] overflow-y-auto flex-1">
-            {isLoading && <p className="m-0 p-4 text-sm text-neutral-500">Yukleniyor...</p>}
+            {isLoading && <p className="m-0 p-4 text-sm text-neutral-500">Yükleniyor...</p>}
             {isError && (
               <p className="m-0 p-4 text-sm text-error">
                 Hata: {error instanceof Error ? error.message : "Bilinmeyen hata"}
               </p>
             )}
             {!isLoading && !isError && filteredJobs.length === 0 && (
-              <p className="m-0 p-4 text-sm text-neutral-500">Filtreye uygun kayit yok.</p>
+              <p className="m-0 p-4 text-sm text-neutral-500">Bu filtreye uyan kayıt yok. Filtreyi değiştirin ya da temizleyin.</p>
             )}
             <ul
               ref={listRef}
               className="list-none m-0 p-0 focus:outline-none"
               role="listbox"
-              aria-label="Is listesi"
+              aria-label="İş listesi"
               tabIndex={filteredJobs.length > 0 ? 0 : -1}
               onKeyDown={handleListKeyDown}
               data-testid="bridge-jobs-list"
@@ -379,8 +398,9 @@ export function BridgeJobsRegistryPage() {
                       <span
                         className={`shrink-0 text-center px-1.5 py-0.5 text-[10px] font-mono uppercase tracking-wider rounded border ${statusTint(job.status)}`}
                         style={{ width: "84px" }}
+                        title={job.status}
                       >
-                        {job.status}
+                        {localizeStatus(job.status)}
                       </span>
                       <span
                         className="text-xs text-neutral-500 font-mono shrink-0 truncate"
@@ -442,33 +462,33 @@ export function BridgeJobsRegistryPage() {
                   title={
                     !allowedActions?.can_cancel
                       ? "Bu durumda iptal edilemez"
-                      : "Isi iptal et"
+                      : "İşi iptal et"
                   }
                   className="text-[10px] px-2 py-0.5 rounded border border-border-subtle bg-surface-page hover:bg-neutral-100 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                   data-testid="bridge-jobs-drawer-cancel"
                 >
-                  Iptal
+                  İptal et
                 </button>
                 <button
                   onClick={() => retryMutation.mutate(selectedId)}
                   disabled={!allowedActions?.can_retry || retryMutation.isPending}
                   title={
                     !allowedActions?.can_retry
-                      ? "Bu durumda retry yok"
-                      : "Retry tetikle"
+                      ? "Bu durumda yeniden deneme yok"
+                      : "Yeniden dene"
                   }
                   className="text-[10px] px-2 py-0.5 rounded border border-border-subtle bg-surface-page hover:bg-neutral-100 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                   data-testid="bridge-jobs-drawer-retry"
                 >
-                  Retry
+                  Yeniden dene
                 </button>
                 <button
                   onClick={() => cloneMutation.mutate(selectedId)}
                   disabled={!(allowedActions?.can_clone ?? true) || cloneMutation.isPending}
                   title={
                     allowedActions && !allowedActions.can_clone
-                      ? "Bu job klonlanamaz"
-                      : "Isi klonla"
+                      ? "Bu iş klonlanamaz"
+                      : "İşi klonla"
                   }
                   className="text-[10px] px-2 py-0.5 rounded border border-border-subtle bg-surface-page hover:bg-neutral-100 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                   data-testid="bridge-jobs-drawer-clone"
@@ -481,7 +501,7 @@ export function BridgeJobsRegistryPage() {
                   className="text-[10px] px-2 py-0.5 rounded border border-border-subtle bg-surface-page hover:bg-neutral-100 cursor-pointer disabled:opacity-50"
                   data-testid="bridge-jobs-drawer-archive"
                 >
-                  Arsivle
+                  Arşivle
                 </button>
                 <button
                   onClick={() => navigate(`/admin/jobs/${selectedId}`)}
@@ -495,7 +515,7 @@ export function BridgeJobsRegistryPage() {
           </div>
           <div className="flex-1 overflow-y-auto p-3">
             {!selectedId && (
-              <p className="m-0 text-xs text-neutral-500">Detayi gormek icin bir job sec.</p>
+              <p className="m-0 text-xs text-neutral-500">Detayı görmek için bir iş seçin.</p>
             )}
             {selectedId && <JobDetailPanel selectedId={selectedId} />}
           </div>

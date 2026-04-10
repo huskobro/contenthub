@@ -46,12 +46,12 @@ import {
 const PUBLISH_STATUS_MAP: Record<string, { label: string; color: string }> = {
   draft: { label: "Taslak", color: "bg-neutral-100 text-neutral-600" },
   pending_review: { label: "Onay Bekliyor", color: "bg-warning-50 text-warning-700" },
-  approved: { label: "Onaylandi", color: "bg-success-50 text-success-700" },
-  scheduled: { label: "Zamanlanmis", color: "bg-brand-50 text-brand-700" },
-  publishing: { label: "Yayinlaniyor", color: "bg-brand-100 text-brand-800" },
-  published: { label: "Yayinlandi", color: "bg-success-100 text-success-800" },
-  failed: { label: "Basarisiz", color: "bg-error-50 text-error-700" },
-  cancelled: { label: "Iptal", color: "bg-neutral-50 text-neutral-500" },
+  approved: { label: "Onaylandı", color: "bg-success-50 text-success-700" },
+  scheduled: { label: "Zamanlanmış", color: "bg-brand-50 text-brand-700" },
+  publishing: { label: "Yayınlanıyor", color: "bg-brand-100 text-brand-800" },
+  published: { label: "Yayınlandı", color: "bg-success-100 text-success-800" },
+  failed: { label: "Başarısız", color: "bg-error-50 text-error-700" },
+  cancelled: { label: "İptal", color: "bg-neutral-50 text-neutral-500" },
   review_rejected: { label: "Reddedildi", color: "bg-error-50 text-error-600" },
 };
 
@@ -181,7 +181,7 @@ function LegacyUserPublishPage() {
   const createMutation = useMutation({
     mutationFn: async () => {
       if (!selectedProject || !selectedProject.active_job_id) {
-        throw new Error("Proje secilmedi veya aktif job yok.");
+        throw new Error("Proje seçilmedi veya aktif job yok.");
       }
 
       // Create publish record from job
@@ -210,13 +210,13 @@ function LegacyUserPublishPage() {
       return record;
     },
     onSuccess: () => {
-      setSuccessMsg("Yayin kaydi olusturuldu ve onaya gonderildi!");
+      setSuccessMsg("Yayın kaydı oluşturuldu ve onaya gönderildi!");
       setErrorMsg("");
       setShowForm(false);
       queryClient.invalidateQueries({ queryKey: ["publish-records-by-project", selectedProjectId] });
     },
     onError: (err: Error) => {
-      setErrorMsg(err.message || "Yayin kaydi olusturulamadi.");
+      setErrorMsg(err.message || "Yayın kaydı oluşturulamadı.");
       setSuccessMsg("");
     },
   });
@@ -229,19 +229,19 @@ function LegacyUserPublishPage() {
 
   return (
     <PageShell
-      title="Yayin"
-      subtitle="Projelerinizi secin, yayin bilgilerini doldurun ve onaya gonderin."
+      title="Yayın"
+      subtitle="Projelerinizi seçin, yayın bilgilerini doldurun ve onaya gönderin."
       testId="user-publish-page"
     >
       {/* Step 1: Project Selection */}
-      <SectionShell title="1. Proje Secin" testId="publish-step-project">
+      <SectionShell title="1. Proje Seçin" testId="publish-step-project">
         <select
           className="w-full max-w-md px-3 py-2 text-sm border border-border-default rounded-md bg-surface-page"
           value={selectedProjectId}
           onChange={(e) => handleProjectSelect(e.target.value)}
           data-testid="publish-project-selector"
         >
-          <option value="">-- Proje secin --</option>
+          <option value="">-- Proje seçin --</option>
           {projects.map((p) => (
             <option key={p.id} value={p.id}>
               {p.title} ({p.module_type}) — {p.content_status}
@@ -251,7 +251,7 @@ function LegacyUserPublishPage() {
 
         {projects.length === 0 && (
           <p className="text-xs text-neutral-400 mt-2">
-            Yayin icin uygun proje bulunamadi. Once icerik uretin.
+            Yayın için uygun proje bulunamadı. Önce içerik üretin.
           </p>
         )}
       </SectionShell>
@@ -259,10 +259,10 @@ function LegacyUserPublishPage() {
       {/* Project summary + existing records */}
       {selectedProject && (
         <>
-          <SectionShell title="Proje Ozeti" testId="publish-project-summary">
+          <SectionShell title="Proje Özeti" testId="publish-project-summary">
             <MetricGrid>
-              <MetricTile label="Baslik" value={selectedProject.title} testId="pub-title" />
-              <MetricTile label="Modul" value={selectedProject.module_type} testId="pub-module" />
+              <MetricTile label="Başlık" value={selectedProject.title} testId="pub-title" />
+              <MetricTile label="Modül" value={selectedProject.module_type} testId="pub-module" />
               <MetricTile label="Kanal" value={channelName || "-"} testId="pub-channel" />
               <MetricTile label="Durum" value={selectedProject.publish_status || "draft"} testId="pub-status" />
             </MetricGrid>
@@ -270,7 +270,7 @@ function LegacyUserPublishPage() {
 
           {/* Existing publish records for this project */}
           {existingRecords && existingRecords.length > 0 && (
-            <SectionShell title="Mevcut Yayin Kayitlari" testId="publish-existing-records">
+            <SectionShell title="Mevcut Yayın Kayıtları" testId="publish-existing-records">
               <div className="overflow-x-auto">
                 <table className="w-full text-sm" data-testid="existing-records-table">
                   <thead>
@@ -292,7 +292,7 @@ function LegacyUserPublishPage() {
                         <td className="py-2 px-3">
                           {rec.platform_url ? (
                             <a href={rec.platform_url} target="_blank" rel="noopener noreferrer" className="text-brand-600 underline text-xs">
-                              Goruntule
+                              Görüntüle
                             </a>
                           ) : (
                             <span className="text-neutral-400 text-xs">—</span>
@@ -307,7 +307,7 @@ function LegacyUserPublishPage() {
           )}
 
           {/* Step 2: Connection Selection */}
-          <SectionShell title="2. Platform Baglantisi Secin" testId="publish-step-connection">
+          <SectionShell title="2. Platform Bağlantısı Seçin" testId="publish-step-connection">
             {connections && connections.length > 0 ? (
               <div className="flex flex-col gap-2 max-w-md">
                 {connections.map((conn: ConnectionForPublish) => (
@@ -341,7 +341,7 @@ function LegacyUserPublishPage() {
                       </div>
                       <div className="flex items-center gap-2 mt-0.5">
                         <span className={`text-xs ${conn.can_publish ? "text-success-600" : "text-error-500"}`}>
-                          {conn.can_publish ? "Yayin yapabilir" : "Baglanti yetersiz"}
+                          {conn.can_publish ? "Yayın yapabilir" : "Bağlantı yetersiz"}
                         </span>
                         <span className="text-xs text-neutral-400">({conn.connection_status})</span>
                       </div>
@@ -350,7 +350,7 @@ function LegacyUserPublishPage() {
                 ))}
               </div>
             ) : channelProfileId ? (
-              <p className="text-xs text-neutral-400">Bu kanal icin platform baglantisi bulunamadi.</p>
+              <p className="text-xs text-neutral-400">Bu kanal için platform bağlantısı bulunamadı.</p>
             ) : null}
             {/* Faz 17a: Capability warning for selected connection */}
             {selectedConnectionId && (
@@ -370,52 +370,52 @@ function LegacyUserPublishPage() {
                 disabled={!selectedProjectId || !selectedProject.active_job_id}
                 data-testid="publish-start-btn"
               >
-                Yayin Bilgilerini Doldur
+                Yayın Bilgilerini Doldur
               </button>
               {!selectedProject.active_job_id && (
                 <p className="text-xs text-warning-600 mt-1">
-                  Bu projenin aktif bir isi yok. Once uretimi tamamlayin.
+                  Bu projenin aktif bir işi yok. Önce üretimi tamamlayın.
                 </p>
               )}
             </div>
           )}
 
           {showForm && (
-            <SectionShell title="3. Yayin Bilgileri" testId="publish-step-metadata">
+            <SectionShell title="3. Yayın Bilgileri" testId="publish-step-metadata">
               <div className="flex flex-col gap-4 max-w-lg">
                 {/* Title */}
                 <div>
-                  <label className="block text-xs font-medium text-neutral-500 mb-1">Baslik</label>
+                  <label className="block text-xs font-medium text-neutral-500 mb-1">Başlık</label>
                   <AssistedComposer
                     value={intentTitle}
                     onChange={setIntentTitle}
                     onSubmit={() => {}} // no-op — submit from main button
-                    placeholder="Video basligi..."
+                    placeholder="Video başlığı..."
                     submitLabel=""
                     maxLength={100}
-                    contextLabel="Yayin Basligi"
+                    contextLabel="Yayın Başlığı"
                     testId="publish-title-composer"
                   />
                 </div>
 
                 {/* Description */}
                 <div>
-                  <label className="block text-xs font-medium text-neutral-500 mb-1">Aciklama</label>
+                  <label className="block text-xs font-medium text-neutral-500 mb-1">Açıklama</label>
                   <AssistedComposer
                     value={intentDescription}
                     onChange={setIntentDescription}
                     onSubmit={() => {}}
-                    placeholder="Video aciklamasi..."
+                    placeholder="Video açıklaması..."
                     submitLabel=""
                     maxLength={5000}
-                    contextLabel="Yayin Aciklamasi"
+                    contextLabel="Yayın Açıklaması"
                     testId="publish-desc-composer"
                   />
                 </div>
 
                 {/* Tags */}
                 <div>
-                  <label className="block text-xs font-medium text-neutral-500 mb-1">Etiketler (virgul ile ayirin)</label>
+                  <label className="block text-xs font-medium text-neutral-500 mb-1">Etiketler (virgül ile ayırın)</label>
                   <input
                     type="text"
                     className="w-full px-3 py-2 text-sm border border-border-default rounded-md bg-surface-page"
@@ -435,7 +435,7 @@ function LegacyUserPublishPage() {
                     onChange={(e) => setIntentPrivacy(e.target.value)}
                     data-testid="publish-privacy-select"
                   >
-                    <option value="public">Herkese Acik</option>
+                    <option value="public">Herkese Açık</option>
                     <option value="unlisted">Listede Yok</option>
                     <option value="private">Gizli</option>
                   </select>
@@ -444,8 +444,8 @@ function LegacyUserPublishPage() {
                 {/* Connection summary */}
                 {selectedConnection && (
                   <div className="p-2 bg-neutral-50 border border-border-subtle rounded-md text-xs text-neutral-600">
-                    <strong>Baglanti:</strong> {selectedConnection.external_account_name || selectedConnection.platform}
-                    {" — "}{selectedConnection.can_publish ? "Yayin yapabilir" : "Baglanti yetersiz"}
+                    <strong>Bağlantı:</strong> {selectedConnection.external_account_name || selectedConnection.platform}
+                    {" — "}{selectedConnection.can_publish ? "Yayın yapabilir" : "Bağlantı yetersiz"}
                   </div>
                 )}
 
@@ -458,7 +458,7 @@ function LegacyUserPublishPage() {
                     disabled={createMutation.isPending || !intentTitle.trim()}
                     data-testid="publish-submit-btn"
                   >
-                    {createMutation.isPending ? "Gonderiliyor..." : "Olustur ve Onaya Gonder"}
+                    {createMutation.isPending ? "Gönderiliyor..." : "Oluştur ve Onaya Gönder"}
                   </button>
                   <button
                     type="button"
@@ -466,7 +466,7 @@ function LegacyUserPublishPage() {
                     onClick={() => setShowForm(false)}
                     data-testid="publish-cancel-btn"
                   >
-                    Vazgec
+                    Vazgeç
                   </button>
                 </div>
 
@@ -487,8 +487,8 @@ function LegacyUserPublishPage() {
 
       {/* Workflow note */}
       <div className="mt-6 p-3 bg-neutral-50 border border-border-subtle rounded-md text-xs text-neutral-500 max-w-2xl" data-testid="publish-workflow-note">
-        <strong>Yayin Akisi:</strong> Proje Sec &rarr; Baglanti Sec &rarr; Bilgileri Doldur &rarr; Onaya Gonder &rarr; Operatör Onayi &rarr; Yayin.
-        Platform API kisitlamalari nedeniyle bazi metrikler sinirli olabilir.
+        <strong>Yayın Akışı:</strong> Proje Seç &rarr; Bağlantı Seç &rarr; Bilgileri Doldur &rarr; Onaya Gönder &rarr; Operatör Onayı &rarr; Yayın.
+        Platform API kısıtlamaları nedeniyle bazı metrikler sınırlı olabilir.
       </div>
     </PageShell>
   );

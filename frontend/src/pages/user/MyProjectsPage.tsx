@@ -26,17 +26,17 @@ import type { ContentProjectResponse } from "../../api/contentProjectsApi";
 import { useSurfacePageOverride } from "../../surfaces";
 
 const MODULE_TYPES = [
-  { value: "", label: "Tum Moduller" },
+  { value: "", label: "Tüm Modüller" },
   { value: "standard_video", label: "Standart Video" },
-  { value: "news_bulletin", label: "Haber Bulteni" },
+  { value: "news_bulletin", label: "Haber Bülteni" },
 ];
 
 const CONTENT_STATUSES = [
-  { value: "", label: "Tum Durumlar" },
+  { value: "", label: "Tüm Durumlar" },
   { value: "draft", label: "Taslak" },
   { value: "in_progress", label: "Devam Ediyor" },
-  { value: "completed", label: "Tamamlandi" },
-  { value: "archived", label: "Arsivlendi" },
+  { value: "completed", label: "Tamamlandı" },
+  { value: "archived", label: "Arşivlendi" },
 ];
 
 export function MyProjectsPage() {
@@ -66,14 +66,14 @@ function LegacyMyProjectsPage() {
   const columns = [
     {
       key: "title",
-      header: "Baslik",
+      header: "Başlık",
       render: (p: ContentProjectResponse) => (
         <span className="font-medium text-neutral-800">{p.title}</span>
       ),
     },
     {
       key: "module_type",
-      header: "Modul",
+      header: "Modül",
       render: (p: ContentProjectResponse) => (
         <span className="text-sm text-neutral-600">{p.module_type}</span>
       ),
@@ -87,14 +87,14 @@ function LegacyMyProjectsPage() {
     },
     {
       key: "publish_status",
-      header: "Yayin",
+      header: "Yayın",
       render: (p: ContentProjectResponse) => (
         <StatusBadge status={p.publish_status} size="sm" />
       ),
     },
     {
       key: "created_at",
-      header: "Olusturma",
+      header: "Oluşturma",
       render: (p: ContentProjectResponse) => (
         <span className="text-sm text-neutral-500 tabular-nums">
           {new Date(p.created_at).toLocaleDateString("tr-TR")}
@@ -106,7 +106,7 @@ function LegacyMyProjectsPage() {
   return (
     <PageShell
       title="Projelerim"
-      subtitle="Icerik projelerinizi goruntuleyip yonetebilirsiniz"
+      subtitle="İçerik projelerinizi görüntüleyip yönetebilirsiniz"
       actions={
         <ActionButton
           variant="primary"
@@ -122,7 +122,7 @@ function LegacyMyProjectsPage() {
           value={channelFilter}
           onChange={(e) => setChannelFilter(e.target.value)}
         >
-          <option value="">Tum Kanallar</option>
+          <option value="">Tüm Kanallar</option>
           {(channels ?? []).map((ch) => (
             <option key={ch.id} value={ch.id}>
               {ch.profile_name}
@@ -159,7 +159,7 @@ function LegacyMyProjectsPage() {
           onRowClick={(p) => navigate(`/user/projects/${p.id}`)}
           loading={isLoading}
           error={isError}
-          emptyMessage="Henuz projeniz yok"
+          emptyMessage="Henüz projeniz yok"
           testId="projects-data-table"
         />
       </SectionShell>

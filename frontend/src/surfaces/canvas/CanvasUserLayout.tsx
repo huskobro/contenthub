@@ -86,35 +86,35 @@ interface CanvasNavZone {
 const CANVAS_NAV: CanvasNavZone[] = [
   {
     id: "workspace",
-    label: "Workspace",
+    label: "Çalışma Alanı",
     items: [
       { label: "Anasayfa", to: "/user", canvasOverride: true, end: true },
       { label: "Projelerim", to: "/user/projects", canvasOverride: true, end: true },
       { label: "Takvim", to: "/user/calendar", canvasOverride: true },
-      { label: "Video Olustur", to: "/user/create/video" },
-      { label: "Bulten Olustur", to: "/user/create/bulletin" },
+      { label: "Video Oluştur", to: "/user/create/video" },
+      { label: "Bülten Oluştur", to: "/user/create/bulletin" },
     ],
   },
   {
     id: "distribution",
-    label: "Dagitim",
+    label: "Dağıtım",
     items: [
-      { label: "Kanallarim", to: "/user/channels", canvasOverride: true, end: true },
-      { label: "Icerik", to: "/user/content" },
-      { label: "Yayin", to: "/user/publish", canvasOverride: true },
-      { label: "Baglantilar", to: "/user/connections", canvasOverride: true },
+      { label: "Kanallarım", to: "/user/channels", canvasOverride: true, end: true },
+      { label: "İçerik", to: "/user/content" },
+      { label: "Yayın", to: "/user/publish", canvasOverride: true },
+      { label: "Bağlantılar", to: "/user/connections", canvasOverride: true },
       { label: "Yorumlar", to: "/user/comments" },
       { label: "Playlist'lerim", to: "/user/playlists" },
-      { label: "Gonderilerim", to: "/user/posts" },
+      { label: "Gönderilerim", to: "/user/posts" },
     ],
   },
   {
     id: "insights",
-    label: "Analiz & Ayarlar",
+    label: "Analiz ve Ayarlar",
     items: [
       { label: "Analiz", to: "/user/analytics", canvasOverride: true, end: true },
-      { label: "Kanal Performansim", to: "/user/analytics/channels" },
-      { label: "Ayarlarim", to: "/user/settings" },
+      { label: "Kanal Performansım", to: "/user/analytics/channels" },
+      { label: "Ayarlarım", to: "/user/settings" },
     ],
   },
 ];
@@ -127,26 +127,26 @@ const CANVAS_NAV: CanvasNavZone[] = [
 function useWorkspaceBreadcrumb(): string {
   const location = useLocation();
   const path = location.pathname;
-  if (path === "/user" || path === "/user/") return "workspace / anasayfa";
-  if (path.startsWith("/user/projects")) return "workspace / projelerim";
-  if (path.startsWith("/user/calendar")) return "workspace / takvim";
-  if (path.startsWith("/user/create/video")) return "workspace / video olustur";
-  if (path.startsWith("/user/create/bulletin")) return "workspace / bulten olustur";
-  // Channel detail → "dagitim / kanal studyosu"; channels list → "dagitim / kanallarim"
+  if (path === "/user" || path === "/user/") return "çalışma alanı / anasayfa";
+  if (path.startsWith("/user/projects")) return "çalışma alanı / projelerim";
+  if (path.startsWith("/user/calendar")) return "çalışma alanı / takvim";
+  if (path.startsWith("/user/create/video")) return "çalışma alanı / video oluştur";
+  if (path.startsWith("/user/create/bulletin")) return "çalışma alanı / bülten oluştur";
+  // Channel detail → "dağıtım / kanal stüdyosu"; channels list → "dağıtım / kanallarım"
   if (/^\/user\/channels\/[^/]+$/.test(path))
-    return "dagitim / kanal studyosu";
-  if (path.startsWith("/user/channels")) return "dagitim / kanallarim";
-  if (path.startsWith("/user/publish")) return "dagitim / yayin";
-  if (path.startsWith("/user/connections")) return "dagitim / baglantilar";
-  if (path.startsWith("/user/content")) return "dagitim / icerik";
-  if (path.startsWith("/user/comments")) return "dagitim / yorumlar";
-  if (path.startsWith("/user/playlists")) return "dagitim / playlistler";
-  if (path.startsWith("/user/posts")) return "dagitim / gonderilerim";
+    return "dağıtım / kanal stüdyosu";
+  if (path.startsWith("/user/channels")) return "dağıtım / kanallarım";
+  if (path.startsWith("/user/publish")) return "dağıtım / yayın";
+  if (path.startsWith("/user/connections")) return "dağıtım / bağlantılar";
+  if (path.startsWith("/user/content")) return "dağıtım / içerik";
+  if (path.startsWith("/user/comments")) return "dağıtım / yorumlar";
+  if (path.startsWith("/user/playlists")) return "dağıtım / playlistler";
+  if (path.startsWith("/user/posts")) return "dağıtım / gönderilerim";
   if (path.startsWith("/user/analytics/channels"))
-    return "analiz / kanal performansim";
-  if (path.startsWith("/user/analytics")) return "analiz / ozet";
-  if (path.startsWith("/user/settings")) return "analiz / ayarlarim";
-  return "workspace";
+    return "analiz / kanal performansım";
+  if (path.startsWith("/user/analytics")) return "analiz / özet";
+  if (path.startsWith("/user/settings")) return "analiz / ayarlarım";
+  return "çalışma alanı";
 }
 
 // ---------------------------------------------------------------------------
@@ -197,7 +197,7 @@ export function CanvasUserLayout() {
   const projectCount = (projects ?? []).length;
 
   const breadcrumb = useWorkspaceBreadcrumb();
-  const displayName = authUser?.display_name ?? "Kullanici";
+  const displayName = authUser?.display_name ?? "Kullanıcı";
 
   const sidebarZones = useMemo(() => CANVAS_NAV, []);
 
@@ -257,7 +257,7 @@ export function CanvasUserLayout() {
             )}
             data-testid="canvas-header-create-bulletin"
           >
-            + Bulten
+            + Bülten
           </button>
           <div className="w-px h-6 bg-border-subtle mx-1" />
           <NotificationBell />

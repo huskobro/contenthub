@@ -57,11 +57,11 @@ import { cn } from "../../lib/cn";
 type ViewMode = "week" | "month";
 type EventTypeFilter = "" | "content_project" | "publish_record" | "platform_post";
 
-const DAY_NAMES = ["Pzt", "Sal", "Car", "Per", "Cum", "Cmt", "Paz"];
+const DAY_NAMES = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"];
 
 const EVENT_TYPE_LABELS: Record<string, string> = {
   content_project: "Proje",
-  publish_record: "Yayin",
+  publish_record: "Yayın",
   platform_post: "Post",
 };
 
@@ -240,15 +240,15 @@ export function CanvasUserCalendarPage() {
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div className="min-w-0">
             <div className="text-[10px] font-semibold uppercase tracking-wider text-brand-600">
-              Calisma takvimi
+              Çalışma takvimi
             </div>
             <h1 className="m-0 mt-1 text-xl font-semibold text-neutral-900">
-              Projeler, yayinlar ve postlar tek akista
+              Projeler, yayınlar ve postlar tek akışta
             </h1>
             <p className="m-0 mt-1 text-sm text-neutral-500 max-w-xl">
-              Workspace icinde planladigin her seyi ayni yerde gor. Canvas takvimi
-              farkli sayfalar arasinda ziplamadan proje deadline'larini, yayin
-              kayitlarini ve platform postlarini yan yana gosterir.
+              Workspace içinde planladığın her şeyi aynı yerde gör. Canvas takvimi
+              farklı sayfalar arasında zıplamadan proje deadline'larını, yayın
+              kayıtlarını ve platform postlarını yan yana gösterir.
             </p>
           </div>
         </div>
@@ -260,9 +260,9 @@ export function CanvasUserCalendarPage() {
         >
           <StatTile label="Toplam etkinlik" value={counts.total} tone="brand" testId="canvas-calendar-stat-total" />
           <StatTile label="Proje" value={counts.byType.content_project ?? 0} tone="brand" testId="canvas-calendar-stat-project" />
-          <StatTile label="Yayin" value={counts.byType.publish_record ?? 0} tone="info" testId="canvas-calendar-stat-publish" />
+          <StatTile label="Yayın" value={counts.byType.publish_record ?? 0} tone="info" testId="canvas-calendar-stat-publish" />
           <StatTile label="Gecikme" value={counts.overdue} tone="error" testId="canvas-calendar-stat-overdue" />
-          <StatTile label="Inbox bagli" value={counts.inbox} tone="warning" testId="canvas-calendar-stat-inbox" />
+          <StatTile label="Inbox bağlı" value={counts.inbox} tone="warning" testId="canvas-calendar-stat-inbox" />
         </div>
       </section>
 
@@ -316,7 +316,7 @@ export function CanvasUserCalendarPage() {
             className="px-2 py-1 text-xs border border-border-subtle rounded bg-surface-card hover:bg-neutral-50"
             data-testid="canvas-calendar-today"
           >
-            Bugun
+            Bugün
           </button>
           <button
             type="button"
@@ -339,7 +339,7 @@ export function CanvasUserCalendarPage() {
           {/* Type filter ribbon */}
           <div className="inline-flex gap-1">
             <TypePill
-              label="Tumu"
+              label="Tümü"
               active={typeFilter === ""}
               onClick={() => setTypeFilter("")}
               testId="canvas-calendar-type-all"
@@ -351,7 +351,7 @@ export function CanvasUserCalendarPage() {
               testId="canvas-calendar-type-project"
             />
             <TypePill
-              label="Yayin"
+              label="Yayın"
               active={typeFilter === "publish_record"}
               onClick={() => setTypeFilter("publish_record")}
               testId="canvas-calendar-type-publish"
@@ -371,7 +371,7 @@ export function CanvasUserCalendarPage() {
             className="px-2 py-1.5 text-xs border border-border-subtle rounded bg-surface-card text-neutral-700"
             data-testid="canvas-calendar-channel-filter"
           >
-            <option value="">Tum kanallar</option>
+            <option value="">Tüm kanallar</option>
             {channels.map((ch: ChannelProfileResponse) => (
               <option key={ch.id} value={ch.id}>
                 {ch.profile_name}
@@ -385,7 +385,7 @@ export function CanvasUserCalendarPage() {
             className="m-0 mt-2 text-xs text-neutral-400"
             data-testid="canvas-calendar-loading"
           >
-            Yukleniyor...
+            Yükleniyor...
           </p>
         )}
       </section>
@@ -424,8 +424,8 @@ export function CanvasUserCalendarPage() {
             channelContextNote={
               channelContext && channelContext.channel_profile_id === selectedEvent.channel_profile_id
                 ? channelContext.policy_id
-                  ? "Kanal politikasi aktif"
-                  : "Kanal politikasi tanimli degil"
+                  ? "Kanal politikası aktif"
+                  : "Kanal politikası tanımlı değil"
                 : undefined
             }
             onClose={() => setSelectedEvent(null)}
@@ -736,7 +736,7 @@ function EventDetailCard({
           className="px-2 py-1.5 bg-error-light text-error-dark rounded text-xs font-medium border border-error/30"
           data-testid="canvas-calendar-event-overdue"
         >
-          Gecikme — planlanan tarih gecti ve islem tamamlanmadi.
+          Gecikme — planlanan tarih geçti ve işlem tamamlanmadı.
         </div>
       )}
 
@@ -746,11 +746,11 @@ function EventDetailCard({
             {channelName || event.channel_profile_id?.slice(0, 8)}
           </DetailRow>
         )}
-        <DetailRow label="Baslangic">
+        <DetailRow label="Başlangıç">
           {formatDateTR(event.start_at)} · {formatTime(event.start_at)}
         </DetailRow>
         {event.end_at && (
-          <DetailRow label="Bitis">
+          <DetailRow label="Bitiş">
             {formatDateTR(event.end_at)} · {formatTime(event.end_at)}
           </DetailRow>
         )}
@@ -760,10 +760,10 @@ function EventDetailCard({
             {event.platform || event.primary_platform || "—"}
           </DetailRow>
         )}
-        {event.module_type && <DetailRow label="Modul">{event.module_type}</DetailRow>}
+        {event.module_type && <DetailRow label="Modül">{event.module_type}</DetailRow>}
         {event.meta_summary && (
           <div className="pt-1 border-t border-neutral-100">
-            <div className="text-neutral-400 mb-0.5">Ozet</div>
+            <div className="text-neutral-400 mb-0.5">Özet</div>
             <div className="text-neutral-600">{event.meta_summary}</div>
           </div>
         )}
@@ -794,7 +794,7 @@ function EventDetailCard({
             className="block text-xs text-neutral-500 hover:text-neutral-700"
             data-testid="canvas-calendar-event-channel-link"
           >
-            Kanal studyosuna git &rarr;
+            Kanal stüdyosuna git &rarr;
           </Link>
         )}
         {event.related_publish_record_id && (
@@ -803,7 +803,7 @@ function EventDetailCard({
             className="block text-xs text-neutral-500 hover:text-neutral-700"
             data-testid="canvas-calendar-event-publish-link"
           >
-            Yayin atolyesine git &rarr;
+            Yayın atölyesine git &rarr;
           </Link>
         )}
       </div>

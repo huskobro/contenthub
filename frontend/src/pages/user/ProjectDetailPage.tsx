@@ -26,20 +26,20 @@ import { useSurfacePageOverride } from "../../surfaces";
 
 const MODULE_LABELS: Record<string, string> = {
   standard_video: "Standart Video",
-  news_bulletin: "Haber Bulteni",
-  product_review: "Urun Degerlendirme",
-  educational_video: "Egitim Videosu",
-  howto_video: "Nasil Yapilir Videosu",
+  news_bulletin: "Haber Bülteni",
+  product_review: "Ürün Değerlendirme",
+  educational_video: "Eğitim Videosu",
+  howto_video: "Nasıl Yapılır Videosu",
 };
 
 const STATUS_LABELS: Record<string, string> = {
   draft: "Taslak",
   in_progress: "Devam Ediyor",
   rendering: "Render Ediliyor",
-  completed: "Tamamlandi",
-  failed: "Basarisiz",
-  published: "Yayinlandi",
-  unpublished: "Yayinlanmadi",
+  completed: "Tamamlandı",
+  failed: "Başarısız",
+  published: "Yayınlandı",
+  unpublished: "Yayınlanmadı",
   not_required: "Gerekmiyor",
 };
 
@@ -108,11 +108,11 @@ function LegacyProjectDetailPage() {
   if (isLoading) {
     return (
       <PageShell
-        title="Proje Detayi"
+        title="Proje Detayı"
         breadcrumb={[{ label: "Projelerim", to: "/user/projects" }, { label: "Detay" }]}
         testId="project-detail-loading"
       >
-        <p className="text-neutral-500">Yukleniyor...</p>
+        <p className="text-neutral-500">Yükleniyor...</p>
       </PageShell>
     );
   }
@@ -120,12 +120,12 @@ function LegacyProjectDetailPage() {
   if (isError || !project) {
     return (
       <PageShell
-        title="Proje Detayi"
+        title="Proje Detayı"
         breadcrumb={[{ label: "Projelerim", to: "/user/projects" }, { label: "Detay" }]}
         testId="project-detail-error"
       >
         <p className="text-error-dark">
-          {error instanceof Error ? error.message : "Proje bulunamadi."}
+          {error instanceof Error ? error.message : "Proje bulunamadı."}
         </p>
       </PageShell>
     );
@@ -148,31 +148,31 @@ function LegacyProjectDetailPage() {
         <Row label="Proje ID">
           <Mono>{project.id}</Mono>
         </Row>
-        <Row label="Modul">
+        <Row label="Modül">
           <span className="font-medium">
             {MODULE_LABELS[project.module_type] ?? project.module_type}
           </span>
         </Row>
-        <Row label="Icerik Durumu">
+        <Row label="İçerik Durumu">
           <StatusBadge
             status={project.content_status}
             label={STATUS_LABELS[project.content_status] ?? project.content_status}
           />
         </Row>
-        <Row label="Yayin Durumu">
+        <Row label="Yayın Durumu">
           <StatusBadge
             status={project.publish_status}
             label={STATUS_LABELS[project.publish_status] ?? project.publish_status}
           />
         </Row>
-        <Row label="Oncellik">
+        <Row label="Öncelik">
           <span className="capitalize">{project.priority}</span>
         </Row>
-        <Row label="Olusturulma">
+        <Row label="Oluşturulma">
           {formatDateISO(project.created_at) || em}
         </Row>
         {project.description && (
-          <Row label="Aciklama">
+          <Row label="Açıklama">
             <span className="text-neutral-700">{project.description}</span>
           </Row>
         )}
@@ -189,10 +189,10 @@ function LegacyProjectDetailPage() {
       </SectionShell>
 
       {/* Linked Jobs */}
-      <SectionShell title="Bagli Isler" testId="project-jobs">
+      <SectionShell title="Bağlı İşler" testId="project-jobs">
         {linkedJobs.length === 0 ? (
           <p className="text-sm text-neutral-400 m-0 py-2">
-            Henuz bu projeye bagli is yok.
+            Henüz bu projeye bağlı iş yok.
           </p>
         ) : (
           <div className="divide-y divide-border-subtle">
@@ -242,7 +242,7 @@ function LegacyProjectDetailPage() {
             onClick={() => navigate("/user/projects")}
             className="px-4 py-1.5 text-sm text-neutral-600 bg-transparent border border-border rounded-sm cursor-pointer hover:bg-neutral-50"
           >
-            Projelere Don
+            Projelere Dön
           </button>
         </div>
       </SectionShell>

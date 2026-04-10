@@ -50,7 +50,7 @@ function LegacyUserDashboardPage() {
   const authUser = useAuthStore((s) => s.user);
 
   const userId = authUser?.id;
-  const displayName = authUser?.display_name ?? "Kullanici";
+  const displayName = authUser?.display_name ?? "Kullanıcı";
 
   const { data: projects, isLoading: projectsLoading } = useContentProjects(
     userId ? { user_id: userId, limit: 5 } : undefined,
@@ -65,24 +65,24 @@ function LegacyUserDashboardPage() {
 
   return (
     <PageShell
-      title={`Hosgeldin, ${displayName}`}
-      subtitle="Kullanici kontrol paneli"
+      title={`Hoşgeldin, ${displayName}`}
+      subtitle="Kullanıcı kontrol paneli"
       testId="dashboard"
     >
       {onboardingCompleted ? (
         <div className="space-y-5">
           {/* Quick Create */}
-          <SectionShell title="Hizli Olustur" testId="quick-create">
+          <SectionShell title="Hızlı Oluştur" testId="quick-create">
             <div className="flex gap-3 flex-wrap">
               <QuickCreateCard
-                label="Video Olustur"
-                description="Standart video projesi baslat"
+                label="Video Oluştur"
+                description="Standart video projesi başlat"
                 icon={"\u25B6"}
                 onClick={() => navigate("/user/create/video")}
               />
               <QuickCreateCard
-                label="Bulten Olustur"
-                description="Haber bulteni projesi baslat"
+                label="Bülten Oluştur"
+                description="Haber bülteni projesi başlat"
                 icon={"\u2139"}
                 onClick={() => navigate("/user/create/bulletin")}
               />
@@ -98,7 +98,7 @@ function LegacyUserDashboardPage() {
                   onClick={() => navigate("/user/projects")}
                   className="text-sm text-brand-600 bg-transparent border-none cursor-pointer hover:text-brand-700 transition-colors duration-fast font-medium"
                 >
-                  Tumunu Gor
+                  Tümünü Gör
                 </button>
               ) : undefined
             }
@@ -109,10 +109,10 @@ function LegacyUserDashboardPage() {
             ) : recentProjects.length === 0 ? (
               <EmptyState
                 illustration="no-content"
-                title="Henuz projeniz yok"
-                description="Hizli olustur butonlarindan ilk projenizi baslatabilirsiniz."
+                title="Henüz projeniz yok"
+                description="Hızlı oluştur butonlarından ilk projenizi başlatabilirsiniz."
                 action={{
-                  label: "Video Olustur",
+                  label: "Video Oluştur",
                   onClick: () => navigate("/admin/standard-videos/wizard"),
                   variant: "primary",
                 }}
@@ -146,14 +146,14 @@ function LegacyUserDashboardPage() {
 
           {/* My Channels */}
           <SectionShell
-            title="Kanallarim"
+            title="Kanallarım"
             actions={
               recentChannels.length > 0 ? (
                 <button
                   onClick={() => navigate("/user/channels")}
                   className="text-sm text-brand-600 bg-transparent border-none cursor-pointer hover:text-brand-700 transition-colors duration-fast font-medium"
                 >
-                  Tumunu Gor
+                  Tümünü Gör
                 </button>
               ) : undefined
             }
@@ -164,8 +164,8 @@ function LegacyUserDashboardPage() {
             ) : recentChannels.length === 0 ? (
               <EmptyState
                 illustration="no-sources"
-                title="Henuz kanaliniz yok"
-                description="Bir kanal ekleyerek icerik yayinlamaya baslayabilirsiniz."
+                title="Henüz kanalınız yok"
+                description="Bir kanal ekleyerek içerik yayınlamaya başlayabilirsiniz."
                 action={{
                   label: "Kanal Ekle",
                   onClick: () => navigate("/user/channels"),
@@ -201,7 +201,7 @@ function LegacyUserDashboardPage() {
           {/* Job Tracker */}
           <div>
             <p className="m-0 mb-2 text-xs font-semibold text-neutral-500 uppercase tracking-wider">
-              Is Takibi
+              İş Takibi
             </p>
             <UserJobTracker />
           </div>
@@ -220,17 +220,17 @@ function LegacyUserDashboardPage() {
             </div>
             <div>
               <p className="m-0 text-md font-semibold text-neutral-900">
-                Kurulum Tamamlanmadi
+                Kurulum Tamamlanmadı
               </p>
               <p className="m-0 mt-1 text-sm text-neutral-600 leading-relaxed">
-                ContentHub'a hosgeldiniz. Sistemi kullanmaya baslamak icin once
-                kurulum adimlarini tamamlayin.
+                ContentHub'a hoşgeldiniz. Sistemi kullanmaya başlamak için önce
+                kurulum adımlarını tamamlayın.
               </p>
               <button
                 onClick={() => navigate("/onboarding")}
                 className="mt-3 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-brand-600 to-brand-700 border-none rounded-lg cursor-pointer hover:from-brand-700 hover:to-brand-800 shadow-sm transition-all duration-fast"
               >
-                Kuruluma Basla
+                Kuruluma Başla
               </button>
             </div>
           </div>

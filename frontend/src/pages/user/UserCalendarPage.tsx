@@ -35,7 +35,7 @@ type EventTypeFilter = "" | "content_project" | "publish_record" | "platform_pos
 
 const EVENT_TYPE_LABELS: Record<string, string> = {
   content_project: "Proje",
-  publish_record: "Yayin",
+  publish_record: "Yayın",
   platform_post: "Post",
 };
 
@@ -52,7 +52,7 @@ const EVENT_TYPE_DOT: Record<string, string> = {
 };
 
 const PUBLISH_MODE_LABELS: Record<string, string> = {
-  disabled: "Devre Disi",
+  disabled: "Devre Dışı",
   manual_review: "Onay Gerekli",
   automatic: "Otomatik",
 };
@@ -121,7 +121,7 @@ function getMonthWeeks(base: Date): Date[][] {
   return weeks;
 }
 
-const DAY_NAMES = ["Pzt", "Sal", "Car", "Per", "Cum", "Cmt", "Paz"];
+const DAY_NAMES = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"];
 
 // ---------------------------------------------------------------------------
 // Component
@@ -230,10 +230,10 @@ function LegacyUserCalendarPage({ isAdmin }: CalendarPageProps) {
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div>
           <h2 className="m-0 text-lg font-semibold text-neutral-800">
-            {isAdmin ? "Takvim (Admin)" : "Icerik Takvimi"}
+            {isAdmin ? "Takvim (Admin)" : "İçerik Takvimi"}
           </h2>
           <p className="m-0 text-sm text-neutral-500">
-            Projeler, yayinlar ve postlar tek gorunumde
+            Projeler, yayınlar ve postlar tek görünümde
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -286,7 +286,7 @@ function LegacyUserCalendarPage({ isAdmin }: CalendarPageProps) {
 
         {/* Navigation */}
         <button type="button" onClick={goPrev} className="px-2 py-1 bg-white border border-neutral-200 rounded text-xs hover:bg-neutral-50">&larr;</button>
-        <button type="button" onClick={goToday} className="px-2 py-1 bg-white border border-neutral-200 rounded text-xs hover:bg-neutral-50">Bugun</button>
+        <button type="button" onClick={goToday} className="px-2 py-1 bg-white border border-neutral-200 rounded text-xs hover:bg-neutral-50">Bugün</button>
         <button type="button" onClick={goNext} className="px-2 py-1 bg-white border border-neutral-200 rounded text-xs hover:bg-neutral-50">&rarr;</button>
 
         <span className="text-sm font-medium text-neutral-700 ml-1">{title}</span>
@@ -299,7 +299,7 @@ function LegacyUserCalendarPage({ isAdmin }: CalendarPageProps) {
           onChange={(e) => setChannelFilter(e.target.value)}
           className="px-2 py-1 border border-neutral-200 rounded text-xs bg-white text-neutral-600"
         >
-          <option value="">Tum Kanallar</option>
+          <option value="">Tüm Kanallar</option>
           {channels.map((ch: ChannelProfileResponse) => (
             <option key={ch.id} value={ch.id}>{ch.profile_name}</option>
           ))}
@@ -311,9 +311,9 @@ function LegacyUserCalendarPage({ isAdmin }: CalendarPageProps) {
           onChange={(e) => setTypeFilter(e.target.value as EventTypeFilter)}
           className="px-2 py-1 border border-neutral-200 rounded text-xs bg-white text-neutral-600"
         >
-          <option value="">Tum Tipler</option>
+          <option value="">Tüm Tipler</option>
           <option value="content_project">Projeler</option>
-          <option value="publish_record">Yayinlar</option>
+          <option value="publish_record">Yayınlar</option>
           <option value="platform_post">Postlar</option>
         </select>
       </div>
@@ -321,13 +321,13 @@ function LegacyUserCalendarPage({ isAdmin }: CalendarPageProps) {
       {/* Legend */}
       <div className="flex items-center gap-4 text-[11px] text-neutral-500">
         <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-brand-500 inline-block" /> Proje Deadline</span>
-        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-info inline-block" /> Yayin</span>
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-info inline-block" /> Yayın</span>
         <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" /> Post</span>
         <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-error inline-block" /> Gecikme</span>
-        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-warning inline-block" /> Inbox Bagli</span>
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-warning inline-block" /> Inbox Bağlı</span>
       </div>
 
-      {isLoading && <p className="text-sm text-neutral-400">Yukleniyor...</p>}
+      {isLoading && <p className="text-sm text-neutral-400">Yükleniyor...</p>}
 
       {/* Main content: calendar + detail */}
       <div className="flex gap-4">
@@ -394,17 +394,17 @@ function PolicySummaryBar({
         <span className="text-neutral-400">Politika:</span>
         {context.policy_id ? (
           <span className={cn("font-medium", context.policy_enabled ? "text-success-dark" : "text-neutral-400")}>
-            {context.policy_enabled ? "Aktif" : "Devre Disi"}
+            {context.policy_enabled ? "Aktif" : "Devre Dışı"}
           </span>
         ) : (
-          <span className="text-neutral-400 italic">Tanimli degil</span>
+          <span className="text-neutral-400 italic">Tanımlı değil</span>
         )}
       </div>
 
       {/* Publish mode */}
       {context.policy_id && (
         <div className="flex items-center gap-1.5">
-          <span className="text-neutral-400">Yayin Modu:</span>
+          <span className="text-neutral-400">Yayın Modu:</span>
           <span className={cn("font-medium", PUBLISH_MODE_COLORS[context.publish_mode] ?? "text-neutral-500")}>
             {PUBLISH_MODE_LABELS[context.publish_mode] ?? context.publish_mode}
           </span>
@@ -414,7 +414,7 @@ function PolicySummaryBar({
       {/* Max daily posts */}
       {context.max_daily_posts != null && (
         <div className="flex items-center gap-1.5" data-testid="max-daily-posts-display">
-          <span className="text-neutral-400">Gunluk Maks:</span>
+          <span className="text-neutral-400">Günlük Maks:</span>
           <span className="font-medium text-neutral-700">{context.max_daily_posts}</span>
         </div>
       )}
@@ -422,7 +422,7 @@ function PolicySummaryBar({
       {/* Publish windows */}
       {context.publish_windows_display && (
         <div className="flex items-center gap-1.5" data-testid="publish-windows-display">
-          <span className="text-neutral-400">Yayin Penceresi:</span>
+          <span className="text-neutral-400">Yayın Penceresi:</span>
           <span className="font-medium text-neutral-600">{context.publish_windows_display}</span>
         </div>
       )}
@@ -441,14 +441,14 @@ function PolicySummaryBar({
           to={isAdmin ? "/admin/inbox" : "/user/inbox"}
           className="flex items-center gap-1 px-2 py-0.5 bg-warning-light text-warning-dark rounded font-medium hover:bg-warning/20"
         >
-          {context.open_inbox_count} acik inbox
+          {context.open_inbox_count} açık inbox
         </Link>
       )}
 
       {/* Policy enforcement note */}
       {context.policy_id && (
         <span className="text-neutral-300 italic ml-auto">
-          Politika karar verir, otomatik calistirma aktif degil
+          Politika karar verir, otomatik çalıştırma aktif değil
         </span>
       )}
     </div>
@@ -667,7 +667,7 @@ function EventDetailPanel({
       {/* Overdue warning */}
       {event.is_overdue && (
         <div className="px-2 py-1.5 bg-error-light text-error-dark rounded text-xs font-medium">
-          Gecikme — planlanan tarih gecti ve islem tamamlanmadi.
+          Gecikme — planlanan tarih geçti ve işlem tamamlanmadı.
         </div>
       )}
 
@@ -676,7 +676,7 @@ function EventDetailPanel({
         <div className="px-2 py-1.5 bg-warning-light rounded text-xs" data-testid="inbox-relation">
           <div className="flex items-center justify-between">
             <span className="font-medium text-warning-dark">
-              Inbox: {event.inbox_item_status === "open" ? "Acik" : "Goruldu"}
+              Inbox: {event.inbox_item_status === "open" ? "Açık" : "Görüldü"}
             </span>
             <Link
               to={isAdmin ? "/admin/inbox" : "/user/inbox"}
@@ -698,12 +698,12 @@ function EventDetailPanel({
           </div>
         )}
         <div className="flex justify-between">
-          <span className="text-neutral-400">Baslangic</span>
+          <span className="text-neutral-400">Başlangıç</span>
           <span>{formatDateTR(event.start_at)} {formatTime(event.start_at)}</span>
         </div>
         {event.end_at && (
           <div className="flex justify-between">
-            <span className="text-neutral-400">Bitis</span>
+            <span className="text-neutral-400">Bitiş</span>
             <span>{formatDateTR(event.end_at)} {formatTime(event.end_at)}</span>
           </div>
         )}
@@ -719,13 +719,13 @@ function EventDetailPanel({
         )}
         {event.module_type && (
           <div className="flex justify-between">
-            <span className="text-neutral-400">Modul</span>
+            <span className="text-neutral-400">Modül</span>
             <span>{event.module_type}</span>
           </div>
         )}
         {event.meta_summary && (
           <div className="pt-1 border-t border-neutral-100">
-            <span className="text-neutral-400 block mb-0.5">Ozet</span>
+            <span className="text-neutral-400 block mb-0.5">Özet</span>
             <span className="text-neutral-600">{event.meta_summary}</span>
           </div>
         )}
@@ -734,28 +734,28 @@ function EventDetailPanel({
       {/* Policy context — show when channel context available */}
       {channelContext && channelContext.policy_id && (
         <div className="pt-2 border-t border-neutral-100 space-y-1.5 text-xs" data-testid="policy-context">
-          <div className="text-neutral-400 font-medium mb-1">Otomasyon Politikasi</div>
+          <div className="text-neutral-400 font-medium mb-1">Otomasyon Politikası</div>
           <div className="flex justify-between">
             <span className="text-neutral-400">Durum</span>
             <span className={cn("font-medium", channelContext.policy_enabled ? "text-success-dark" : "text-neutral-400")}>
-              {channelContext.policy_enabled ? "Aktif" : "Devre Disi"}
+              {channelContext.policy_enabled ? "Aktif" : "Devre Dışı"}
             </span>
           </div>
           <div className="flex justify-between">
-            <span className="text-neutral-400">Yayin Modu</span>
+            <span className="text-neutral-400">Yayın Modu</span>
             <span className={cn("font-medium", PUBLISH_MODE_COLORS[channelContext.publish_mode])}>
               {PUBLISH_MODE_LABELS[channelContext.publish_mode] ?? channelContext.publish_mode}
             </span>
           </div>
           {channelContext.max_daily_posts != null && (
             <div className="flex justify-between">
-              <span className="text-neutral-400">Gunluk Maks</span>
+              <span className="text-neutral-400">Günlük Maks</span>
               <span className="font-medium text-neutral-700">{channelContext.max_daily_posts}</span>
             </div>
           )}
           {channelContext.publish_windows_display && (
             <div className="flex justify-between">
-              <span className="text-neutral-400">Yayin Penceresi</span>
+              <span className="text-neutral-400">Yayın Penceresi</span>
               <span className="text-neutral-600">{channelContext.publish_windows_display}</span>
             </div>
           )}
@@ -766,7 +766,7 @@ function EventDetailPanel({
             </div>
           )}
           <div className="text-[10px] text-neutral-300 italic mt-1">
-            Politika karar verir, otomatik calistirma aktif degil
+            Politika karar verir, otomatik çalıştırma aktif değil
           </div>
         </div>
       )}
@@ -794,7 +794,7 @@ function EventDetailPanel({
             href={`/admin/publish/${event.related_publish_record_id}`}
             className="block text-xs text-neutral-500 hover:text-neutral-700"
           >
-            Yayin Kaydi: {event.related_publish_record_id.slice(0, 8)}...
+            Yayın Kaydı: {event.related_publish_record_id.slice(0, 8)}...
           </a>
         )}
         {event.related_post_id && (
@@ -810,7 +810,7 @@ function EventDetailPanel({
             to={isAdmin ? "/admin/inbox" : "/user/inbox"}
             className="block text-xs text-warning-dark hover:text-warning font-medium"
           >
-            Inbox Ogesi &rarr;
+            Inbox Öğesi &rarr;
           </Link>
         )}
         {event.channel_profile_id && (

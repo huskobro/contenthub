@@ -20,14 +20,14 @@ import {
 } from "../design-system/primitives";
 
 const WINDOW_OPTIONS: { value: AnalyticsWindow; label: string }[] = [
-  { value: "last_7d", label: "Son 7 Gun" },
-  { value: "last_30d", label: "Son 30 Gun" },
-  { value: "last_90d", label: "Son 90 Gun" },
-  { value: "all_time", label: "Tum Zamanlar" },
+  { value: "last_7d", label: "Son 7 Gün" },
+  { value: "last_30d", label: "Son 30 Gün" },
+  { value: "last_90d", label: "Son 90 Gün" },
+  { value: "all_time", label: "Tüm Zamanlar" },
 ];
 
 const PLATFORM_OPTIONS = [
-  { value: "", label: "Tum Platformlar" },
+  { value: "", label: "Tüm Platformlar" },
   { value: "youtube", label: "YouTube" },
 ];
 
@@ -103,7 +103,7 @@ export function AdminAnalyticsFilterBar({
             className="h-8 px-2 text-sm border border-border-subtle rounded-md bg-surface-card text-neutral-800 focus:outline-none focus:ring-1 focus:ring-brand-400"
             data-testid="filter-user"
           >
-            <option value="">Tum Kullanicilar</option>
+            <option value="">Tüm Kullanıcılar</option>
             {users.map((u) => (
               <option key={u.id} value={u.id}>
                 {u.display_name || u.email}
@@ -120,7 +120,7 @@ export function AdminAnalyticsFilterBar({
             className="h-8 px-2 text-sm border border-border-subtle rounded-md bg-surface-card text-neutral-800 focus:outline-none focus:ring-1 focus:ring-brand-400"
             data-testid="filter-channel-profile"
           >
-            <option value="">Tum Kanallar</option>
+            <option value="">Tüm Kanallar</option>
             {filteredChannels.map((cp) => (
               <option key={cp.id} value={cp.id}>
                 {cp.profile_name} ({cp.channel_slug})
@@ -153,14 +153,14 @@ export function AdminAnalyticsFilterBar({
               value={filters.dateFrom}
               onChange={(e) => setDateFrom(e.target.value)}
               data-testid="filter-date-start"
-              placeholder="Baslangic"
+              placeholder="Başlangıç"
             />
             <FilterInput
               type="date"
               value={filters.dateTo}
               onChange={(e) => setDateTo(e.target.value)}
               data-testid="filter-date-end"
-              placeholder="Bitis"
+              placeholder="Bitiş"
             />
             {hasDateFilter && (
               <ActionButton
@@ -183,7 +183,7 @@ export function AdminAnalyticsFilterBar({
             onClick={clearFilters}
             data-testid="filter-clear-all"
           >
-            Tum Filtreleri Temizle
+            Tüm Filtreleri Temizle
           </ActionButton>
         )}
 

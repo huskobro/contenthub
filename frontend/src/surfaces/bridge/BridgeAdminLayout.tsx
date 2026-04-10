@@ -61,44 +61,44 @@ interface BridgeRailSlot {
 const BRIDGE_RAIL: BridgeRailSlot[] = [
   {
     id: "ops",
-    label: "Ops",
+    label: "Operasyonlar",
     glyph: "OP",
     matchPrefix: "/admin/jobs",
-    // Ops rail pulls from system group (which contains "Isler") — we filter to
+    // Ops rail pulls from system group (which contains "İşler") — we filter to
     // job-related items in the context panel builder below.
     groupIds: ["system"],
   },
   {
     id: "publish",
-    label: "Publish",
+    label: "Yayın",
     glyph: "PB",
     matchPrefix: "/admin/publish",
     groupIds: ["publish", "engagement"],
   },
   {
     id: "content",
-    label: "Content",
+    label: "İçerik",
     glyph: "CT",
     matchPrefix: "/admin/library",
     groupIds: ["content"],
   },
   {
     id: "news",
-    label: "News",
+    label: "Haber",
     glyph: "NW",
     matchPrefix: "/admin/sources",
     groupIds: ["news"],
   },
   {
     id: "insights",
-    label: "Insights",
+    label: "İçgörü",
     glyph: "IN",
     matchPrefix: "/admin/analytics",
     groupIds: ["analytics", "overview"],
   },
   {
     id: "system",
-    label: "System",
+    label: "Sistem",
     glyph: "SY",
     matchPrefix: "/admin/settings",
     groupIds: ["system", "appearance"],
@@ -299,7 +299,7 @@ export function BridgeAdminLayout() {
             }}
             className="flex flex-col gap-1 py-2 w-full items-center"
             role="navigation"
-            aria-label="Bridge operasyon rayi"
+            aria-label="Bridge operasyon rayı"
             onKeyDown={handleRailKeyDown}
             data-testid="bridge-rail-nav"
           >
@@ -366,7 +366,7 @@ export function BridgeAdminLayout() {
           </div>
           <div className="flex-1 overflow-y-auto py-2">
             {contextSections.length === 0 && (
-              <p className="text-xs text-neutral-400 px-4 py-2 m-0">Bu alanda gorunur oge yok.</p>
+              <p className="text-xs text-neutral-400 px-4 py-2 m-0">Bu alanda görünür öge yok.</p>
             )}
             {contextSections.map((section) => (
               <div key={section.id} className="mb-3">
@@ -405,15 +405,16 @@ export function BridgeAdminLayout() {
             style={{ padding: "0 var(--ch-page-padding)" }}
             data-testid="bridge-header"
           >
+            {/* Round 2 polish (D): crumb sadeleştirildi — raw pathname operasyonel
+                panel içinde gürültü yaratıyordu, kaldırıldı. Surface + aktif alan
+                etiketi yeterli; tam yol hâlâ tarayıcı adres çubuğunda. */}
             <div className="flex items-center gap-2 text-xs text-neutral-500 min-w-0 flex-1">
               <span
                 className="font-mono uppercase tracking-wider text-[10px] text-neutral-400"
                 data-testid="bridge-breadcrumb"
               >
-                bridge / {activeSlot.label.toLowerCase()}
+                BRIDGE · {activeSlot.label.toUpperCase()}
               </span>
-              <span className="text-neutral-300">|</span>
-              <span className="font-medium text-neutral-700 truncate">{location.pathname}</span>
             </div>
             <div className="flex items-center gap-2 shrink-0">
               <button
@@ -422,7 +423,7 @@ export function BridgeAdminLayout() {
                 data-testid="bridge-command-trigger"
                 title="Komut Paleti (⌘K)"
               >
-                <span>Komut...</span>
+                <span>Komut ara</span>
                 <kbd className="text-[10px] font-mono bg-neutral-100 px-1 rounded border border-border-subtle text-neutral-500">
                   ⌘K
                 </kbd>

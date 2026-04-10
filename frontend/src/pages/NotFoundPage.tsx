@@ -11,17 +11,17 @@ export function NotFoundPage() {
       <div className="text-center max-w-md px-6">
         <h1 className="text-6xl font-bold text-neutral-300 mb-2">404</h1>
         <h2 className="text-xl font-semibold text-neutral-700 mb-2">
-          Sayfa Bulunamadi
+          Sayfa Bulunamadı
         </h2>
         <p className="text-sm text-neutral-500 mb-6">
-          Aradiginiz sayfa mevcut degil veya tasinmis olabilir.
+          Aradığınız sayfa mevcut değil veya taşınmış olabilir.
         </p>
         <div className="flex gap-3 justify-center">
           <button
             onClick={() => navigate("/admin")}
             className="px-4 py-2 text-sm font-medium text-white bg-brand-600 border-none rounded-lg cursor-pointer hover:bg-brand-700 transition-colors"
           >
-            Yonetim Paneli
+            Yönetim Paneli
           </button>
           <button
             onClick={() => navigate("/")}

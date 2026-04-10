@@ -26,10 +26,10 @@ import type { AnalyticsWindow, AnalyticsFilterParams } from "../../api/analytics
 // ---------------------------------------------------------------------------
 
 const WINDOW_OPTIONS: { value: AnalyticsWindow; label: string }[] = [
-  { value: "last_7d", label: "Son 7 Gun" },
-  { value: "last_30d", label: "Son 30 Gun" },
-  { value: "last_90d", label: "Son 90 Gun" },
-  { value: "all_time", label: "Tum Zamanlar" },
+  { value: "last_7d", label: "Son 7 Gün" },
+  { value: "last_30d", label: "Son 30 Gün" },
+  { value: "last_90d", label: "Son 90 Gün" },
+  { value: "all_time", label: "Tüm Zamanlar" },
 ];
 
 function pct(value: number | null): string {
@@ -78,7 +78,7 @@ export function UserChannelAnalyticsPage() {
   const engagementDonut = useMemo(() => {
     if (!data?.engagement_type_distribution) return [];
     return data.engagement_type_distribution.map((e) => ({
-      name: e.type === "comment_reply" ? "Yorum Yaniti" : e.type === "playlist_add" ? "Playlist" : e.type === "community_post" ? "Gonderi" : e.type,
+      name: e.type === "comment_reply" ? "Yorum Yanıtı" : e.type === "playlist_add" ? "Playlist" : e.type === "community_post" ? "Gönderi" : e.type,
       value: e.count,
     }));
   }, [data?.engagement_type_distribution]);
@@ -87,7 +87,7 @@ export function UserChannelAnalyticsPage() {
   const moduleDonut = useMemo(() => {
     if (!data?.module_distribution) return [];
     return data.module_distribution.map((m) => ({
-      name: m.module_type === "standard_video" ? "Video" : m.module_type === "news_bulletin" ? "Bulten" : m.module_type,
+      name: m.module_type === "standard_video" ? "Video" : m.module_type === "news_bulletin" ? "Bülten" : m.module_type,
       value: m.count,
     }));
   }, [data?.module_distribution]);
@@ -100,8 +100,8 @@ export function UserChannelAnalyticsPage() {
 
   return (
     <PageShell
-      title="Kanal Performansim"
-      subtitle={selectedChannelName ? `${selectedChannelName} icin performans metrikleri` : "Kanallarinizin uretim, yayin ve etkilesim performansi."}
+      title="Kanal Performansım"
+      subtitle={selectedChannelName ? `${selectedChannelName} için performans metrikleri` : "Kanallarınızın üretim, yayın ve etkileşim performansı."}
       testId="user-channel-analytics"
     >
       {/* Controls */}
@@ -119,7 +119,7 @@ export function UserChannelAnalyticsPage() {
             onChange={(e) => setSelectedChannel(e.target.value)}
             data-testid="user-channel-selector"
           >
-            <option value="">Tum Kanallarim</option>
+            <option value="">Tüm Kanallarım</option>
             {channels?.map((ch: ChannelProfileResponse) => (
               <option key={ch.id} value={ch.id}>{ch.profile_name}</option>
             ))}
@@ -127,60 +127,60 @@ export function UserChannelAnalyticsPage() {
         </div>
       </div>
 
-      {isLoading && <p className="text-sm text-neutral-500 text-center py-8">Veriler yukleniyor...</p>}
-      {isError && <p className="text-sm text-error-base text-center py-8">Veriler yuklenirken hata olustu.</p>}
+      {isLoading && <p className="text-sm text-neutral-500 text-center py-8">Veriler yükleniyor...</p>}
+      {isError && <p className="text-sm text-error-base text-center py-8">Veriler yüklenirken hata oluştu.</p>}
 
       {data && (
         <>
           {/* ---- Summary KPIs ---- */}
-          <SectionShell title="Ozet" testId="user-summary-kpi">
+          <SectionShell title="Özet" testId="user-summary-kpi">
             <MetricGrid>
-              <MetricTile label="Icerik" value={String(data.total_content)} testId="u-metric-content" />
-              <MetricTile label="Toplam Is" value={String(data.total_jobs)} testId="u-metric-jobs" />
-              <MetricTile label="Basari" value={pct(data.job_success_rate)} testId="u-metric-success" accentColor="var(--ch-success-base)" />
-              <MetricTile label="Ort. Sure" value={dur(data.avg_production_duration_seconds)} testId="u-metric-duration" />
+              <MetricTile label="İçerik" value={String(data.total_content)} testId="u-metric-content" />
+              <MetricTile label="Toplam İş" value={String(data.total_jobs)} testId="u-metric-jobs" />
+              <MetricTile label="Başarı" value={pct(data.job_success_rate)} testId="u-metric-success" accentColor="var(--ch-success-base)" />
+              <MetricTile label="Ort. Süre" value={dur(data.avg_production_duration_seconds)} testId="u-metric-duration" />
             </MetricGrid>
           </SectionShell>
 
           {/* ---- Publish KPIs ---- */}
-          <SectionShell title="Yayinlarim" testId="user-publish-kpi">
+          <SectionShell title="Yayınlarım" testId="user-publish-kpi">
             <MetricGrid>
-              <MetricTile label="Toplam Yayin" value={String(data.total_publish)} testId="u-metric-publish" />
-              <MetricTile label="Basarili" value={String(data.published_count)} testId="u-metric-pub-ok" accentColor="var(--ch-success-base)" />
-              <MetricTile label="Basarisiz" value={String(data.failed_publish)} testId="u-metric-pub-fail" accentColor="var(--ch-error-base)" />
-              <MetricTile label="Basari Orani" value={pct(data.publish_success_rate)} testId="u-metric-pub-rate" />
+              <MetricTile label="Toplam Yayın" value={String(data.total_publish)} testId="u-metric-publish" />
+              <MetricTile label="Başarılı" value={String(data.published_count)} testId="u-metric-pub-ok" accentColor="var(--ch-success-base)" />
+              <MetricTile label="Başarısız" value={String(data.failed_publish)} testId="u-metric-pub-fail" accentColor="var(--ch-error-base)" />
+              <MetricTile label="Başarı Oranı" value={pct(data.publish_success_rate)} testId="u-metric-pub-rate" />
             </MetricGrid>
           </SectionShell>
 
           {/* ---- Engagement KPIs ---- */}
-          <SectionShell title="Etkilesim" testId="user-engagement-kpi">
+          <SectionShell title="Etkileşim" testId="user-engagement-kpi">
             <MetricGrid>
               <MetricTile label="Yorum" value={String(data.total_comments)} testId="u-metric-comments" />
-              <MetricTile label="Yanitlanan" value={String(data.replied_comments)} testId="u-metric-replied" accentColor="var(--ch-success-base)" />
-              <MetricTile label="Yanit Orani" value={pct(data.reply_rate)} testId="u-metric-reply-rate" />
+              <MetricTile label="Yanıtlanan" value={String(data.replied_comments)} testId="u-metric-replied" accentColor="var(--ch-success-base)" />
+              <MetricTile label="Yanıt Oranı" value={pct(data.reply_rate)} testId="u-metric-reply-rate" />
               <MetricTile label="Playlist" value={String(data.total_playlists)} testId="u-metric-playlists" />
-              <MetricTile label="Gonderi" value={String(data.total_posts)} testId="u-metric-posts" />
+              <MetricTile label="Gönderi" value={String(data.total_posts)} testId="u-metric-posts" />
             </MetricGrid>
           </SectionShell>
 
           {/* ---- Charts ---- */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
-            <SectionShell title="Uretim Trendi" testId="user-trend-section">
+            <SectionShell title="Üretim Trendi" testId="user-trend-section">
               <TrendChart
                 data={data.daily_trend as unknown as Record<string, unknown>[]}
                 xKey="date"
                 yKey="job_count"
-                yLabel="Is Sayisi"
+                yLabel="İş Sayısı"
                 formatX={formatDate}
                 testId="user-trend-chart"
               />
             </SectionShell>
 
-            <SectionShell title="Modul Dagilimi" testId="user-module-section">
+            <SectionShell title="Modül Dağılımı" testId="user-module-section">
               <DistributionDonut
                 data={moduleDonut}
                 testId="user-module-donut"
-                emptyMessage="Henuz icerik uretimi yok"
+                emptyMessage="Henüz içerik üretimi yok"
               />
             </SectionShell>
           </div>
@@ -188,28 +188,28 @@ export function UserChannelAnalyticsPage() {
           {/* ---- Engagement Distribution ---- */}
           {engagementDonut.length > 0 && (
             <div className="mt-4">
-              <SectionShell title="Etkilesim Dagilimi" testId="user-engagement-dist-section">
+              <SectionShell title="Etkileşim Dağılımı" testId="user-engagement-dist-section">
                 <DistributionDonut
                   data={engagementDonut}
                   testId="user-engagement-donut"
-                  emptyMessage="Henuz etkilesim verisi yok"
+                  emptyMessage="Henüz etkileşim verisi yok"
                 />
               </SectionShell>
             </div>
           )}
 
           {/* ---- Channel Health ---- */}
-          <SectionShell title="Baglanti Durumu" testId="user-health">
+          <SectionShell title="Bağlantı Durumu" testId="user-health">
             <MetricGrid>
-              <MetricTile label="Platform Baglantisi" value={String(data.total_connections)} testId="u-metric-connections" />
+              <MetricTile label="Platform Bağlantısı" value={String(data.total_connections)} testId="u-metric-connections" />
               <MetricTile label="Aktif" value={String(data.connected_connections)} testId="u-metric-active-conn" accentColor="var(--ch-success-base)" />
             </MetricGrid>
           </SectionShell>
 
           {/* ---- Limitations ---- */}
           <div className="mt-4 p-3 bg-neutral-50 border border-border-subtle rounded-md text-xs text-neutral-500" data-testid="user-limitations">
-            <strong>Not:</strong> Bazi metrikler platform API kisitlamalari nedeniyle sinirli olabilir.
-            Retention ve izlenme suresi gibi veriler henuz entegre degil.
+            <strong>Not:</strong> Bazı metrikler platform API kısıtlamaları nedeniyle sınırlı olabilir.
+            Retention ve izlenme süresi gibi veriler henüz entegre değil.
           </div>
         </>
       )}
