@@ -243,5 +243,5 @@ Yani her sey normal legacy davranisina 1 komutla (`--revert`) geri alinabilir.
 - **test sonucu:** tsc clean / vite build clean (2.88s) / 15 surface test dosyasi
   102/102 pass / full suite 245 failed - 2202 passed (Faz 3A 243/2204 baseline ile
   ±2 flake, tamamen pre-existing analytics+governance+app.smoke testleri).
-- **commit hash:** `<PENDING>`
-- **push durumu:** `<PENDING>`
+- **commit hash:** `6c61a2088b65fbc46abd6222f4378ab7fd0e45f9` (kisa: `6c61a20`)
+- **push durumu:** **basarili** — `git push origin main` → `7b4f2da..6c61a20  main -> main`
