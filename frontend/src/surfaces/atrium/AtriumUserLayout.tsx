@@ -284,11 +284,12 @@ export function AtriumUserLayout() {
                 paneline gecis. Atrium'da daha once panel switch butonu yoktu;
                 kullanici admin'e donemiyordu. Premium hisse uyan, koyu
                 tema-uyumlu pill buton. */}
+            {/* F48 fix: panel switch copy standardizasyonu. */}
             <button
               type="button"
               onClick={() => navigate("/admin")}
-              title="Yonetim paneline gecis yapin"
-              aria-label="Yonetim paneline gecis yapin"
+              title="Yönetim Paneli"
+              aria-label="Yönetim Paneli"
               data-testid="atrium-panel-switch"
               className={cn(
                 "hidden sm:inline-flex items-center gap-1 px-3 py-1.5 rounded-full",
@@ -297,7 +298,7 @@ export function AtriumUserLayout() {
                 "hover:bg-neutral-800 transition-colors",
               )}
             >
-              Yonetim Paneli
+              Yönetim Paneli
             </button>
 
             <div className="w-px h-7 bg-neutral-700 mx-1" />

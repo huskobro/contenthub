@@ -18,13 +18,15 @@ Kısıtlar:
 from __future__ import annotations
 
 import logging
-import os
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.db.session import get_db
 from app.providers.capability import ProviderCapability
 from app.providers.registry import provider_registry
+from app.settings.credential_resolver import resolve_credential
 from app.visibility.dependencies import require_visible
 
 logger = logging.getLogger(__name__)
@@ -52,11 +54,24 @@ class ProviderActionResponse(BaseModel):
 # Endpoint'ler
 # ---------------------------------------------------------------------------
 
-CREDENTIAL_ENV_MAP: dict[str, str | None] = {
-    "kieai_gemini": "KIEAI_API_KEY",
-    "openai_compat": "OPENAI_API_KEY",
-    "pexels": "PEXELS_API_KEY",
-    "pixabay": "PIXABAY_API_KEY",
+# Provider_id → settings credential key eşlemesi.
+#
+# F15 (critical UX fix pack): Providers sayfası credential durumunu kendi
+# başına hesaplamıyordu — yalnızca os.environ kontrol ediyordu ve DB'de
+# tanımlı credential'ları göremiyor, Settings sayfasıyla çelişkili durum
+# gösteriyordu.
+#
+# Tek otorite: app.settings.credential_resolver.resolve_credential (DB →
+# env öncelik zinciri). Providers sayfası da aynı fonksiyonu kullanıyor.
+# Böylece Pexels "Yapılandırıldı" (Settings) vs "eksik" (Providers)
+# çelişkisi ortadan kalkıyor.
+#
+# None değerli provider'lar credential istemeyen local provider'lar.
+PROVIDER_CREDENTIAL_KEY_MAP: dict[str, str | None] = {
+    "kieai_gemini": "credential.kie_ai_api_key",
+    "openai_compat": "credential.openai_api_key",
+    "pexels": "credential.pexels_api_key",
+    "pixabay": "credential.pixabay_api_key",
     "edge_tts": None,
     "system_tts": None,
     "local_whisper": None,
@@ -64,9 +79,13 @@ CREDENTIAL_ENV_MAP: dict[str, str | None] = {
 
 
 @router.get("")
-async def list_providers():
+async def list_providers(db: AsyncSession = Depends(get_db)):
     """
     Tüm kayıtlı provider'ların listesini ve runtime health snapshot'ını döner.
+
+    Credential durumu credential_resolver üzerinden hesaplanır — böylece
+    Settings/Credentials sayfası ile Providers sayfası aynı source of
+    truth'u paylaşır (F15).
 
     Dönüş:
       - capabilities: capability bazlı provider listesi + health alanları + credential durumu
@@ -80,17 +99,37 @@ async def list_providers():
     for cap_entries in snapshot.values():
         for entry in cap_entries:
             pid = entry["provider_id"]
-            env_var = CREDENTIAL_ENV_MAP.get(pid)
-            if env_var is None:
+            credential_key = PROVIDER_CREDENTIAL_KEY_MAP.get(pid)
+            if credential_key is None:
                 entry["credential_source"] = "not_required"
                 entry["credential_status"] = "ok"
-            elif os.environ.get(env_var):
-                entry["credential_source"] = "env"
-                entry["credential_status"] = "ok"
+                entry["credential_key"] = None
             else:
-                entry["credential_source"] = "missing"
-                entry["credential_status"] = "missing"
-            entry["credential_env_var"] = env_var
+                # Tek otorite: DB → env öncelik zinciri.
+                value = await resolve_credential(credential_key, db)
+                if value:
+                    entry["credential_status"] = "ok"
+                    # resolve_credential nereden geldiğini söylemiyor; kısa
+                    # bir DB kontrolü ile source bilgisini türetiyoruz.
+                    from sqlalchemy import select
+                    from app.db.models import Setting
+                    row_result = await db.execute(
+                        select(Setting).where(Setting.key == credential_key)
+                    )
+                    row = row_result.scalar_one_or_none()
+                    has_db_value = False
+                    if row and row.admin_value_json and row.admin_value_json not in ("null", ""):
+                        import json as _json
+                        try:
+                            parsed = _json.loads(row.admin_value_json)
+                            has_db_value = isinstance(parsed, str) and bool(parsed.strip())
+                        except (ValueError, TypeError):
+                            has_db_value = False
+                    entry["credential_source"] = "db" if has_db_value else "env"
+                else:
+                    entry["credential_source"] = "missing"
+                    entry["credential_status"] = "missing"
+                entry["credential_key"] = credential_key
 
     return {
         "capabilities": snapshot,

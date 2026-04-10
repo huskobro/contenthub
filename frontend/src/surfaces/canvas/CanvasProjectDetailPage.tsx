@@ -31,6 +31,8 @@ import { useMemo } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useContentProject } from "../../hooks/useContentProjects";
+import { useJobDetail } from "../../hooks/useJobDetail";
+import { usePublishRecordForJob } from "../../hooks/usePublish";
 import { fetchJobs, type JobResponse } from "../../api/jobsApi";
 import {
   fetchStandardVideos,
@@ -96,6 +98,30 @@ export function CanvasProjectDetailPage() {
       ),
     [allJobs, projectId],
   );
+
+  // En son job (created_at DESC). active_job_id varsa onu, yoksa
+  // listedeki ilk kaydı seçiyoruz — bu, ilerleme durumunu ve son
+  // yayın bağlantısını göstermek için yeterli.
+  //
+  // F33 (critical UX fix pack): Önceki tasarım yalnızca job id'lerini
+  // listeliyordu; kullanıcı bir sonraki aksiyonu, canlı ilerlemeyi ve
+  // yayın durumunu göremiyordu. Bu ek, mevcut hook'larla yeni bir
+  // backend çağrısı eklemeden durumu okunabilir hale getirir.
+  const focusJobId = useMemo(() => {
+    if (project?.active_job_id) return project.active_job_id;
+    if (linkedJobs.length === 0) return null;
+    const sorted = [...linkedJobs].sort(
+      (a, b) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+    );
+    return sorted[0]?.id ?? null;
+  }, [project?.active_job_id, linkedJobs]);
+
+  const { data: focusJob } = useJobDetail(focusJobId);
+  const { data: focusJobPublishRecords } = usePublishRecordForJob(
+    focusJobId ?? undefined,
+  );
+  const focusPublish = focusJobPublishRecords?.[0];
 
   const pendingVideo = linkedVideos?.find(
     (v) => !["rendering", "completed", "published"].includes(v.status),
@@ -307,6 +333,139 @@ export function CanvasProjectDetailPage() {
           </dl>
         </section>
       </div>
+
+      {/* Üretim + Yayın durumu (F33 — daha zengin detay) ------------------- */}
+      {focusJob && (
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr,1fr] gap-4">
+          {/* Üretim özeti — son job'ın adım ilerlemesi */}
+          <section
+            className="rounded-xl border border-border-subtle bg-surface-card shadow-sm overflow-hidden"
+            data-testid="canvas-project-production-summary"
+          >
+            <header className="px-5 py-3 border-b border-border-subtle bg-neutral-50/50 flex items-center gap-2">
+              <h2 className="m-0 text-sm font-semibold text-neutral-800 flex-1">
+                Üretim Durumu
+              </h2>
+              <StatusBadge status={focusJob.status} size="sm" />
+            </header>
+            <div className="px-5 py-3 text-sm text-neutral-800">
+              <div className="flex items-center justify-between mb-2 text-xs text-neutral-500">
+                <span>
+                  Aktif adım:{" "}
+                  <Mono>{focusJob.current_step_key ?? "—"}</Mono>
+                </span>
+                <span>
+                  {focusJob.steps.filter((s) => s.status === "completed").length}
+                  {" / "}
+                  {focusJob.steps.length} tamamlandı
+                </span>
+              </div>
+              <ul className="list-none m-0 p-0 space-y-1">
+                {focusJob.steps.map((step) => (
+                  <li
+                    key={step.step_key}
+                    className={cn(
+                      "flex items-center gap-2 text-xs",
+                      step.status === "completed" && "text-success-text",
+                      step.status === "running" && "text-brand-600 font-semibold",
+                      step.status === "failed" && "text-error-dark",
+                      (step.status === "pending" || step.status === "queued") &&
+                        "text-neutral-500",
+                    )}
+                  >
+                    <span className="w-4 shrink-0 text-center">
+                      {step.status === "completed"
+                        ? "✓"
+                        : step.status === "running"
+                          ? "▶"
+                          : step.status === "failed"
+                            ? "✗"
+                            : "·"}
+                    </span>
+                    <Mono>{step.step_key}</Mono>
+                    <span className="ml-auto text-[10px] text-neutral-400 font-mono">
+                      {step.status}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-3 pt-3 border-t border-border-subtle flex items-center justify-between text-[11px] text-neutral-500">
+                <span>
+                  Toplam:{" "}
+                  <Mono>
+                    {focusJob.elapsed_total_seconds != null
+                      ? `${Math.round(focusJob.elapsed_total_seconds)}s`
+                      : "—"}
+                  </Mono>
+                </span>
+                {focusJob.retry_count > 0 && (
+                  <span className="text-warning-dark">
+                    retry: {focusJob.retry_count}
+                  </span>
+                )}
+              </div>
+            </div>
+          </section>
+
+          {/* Yayın bağlantısı */}
+          <section
+            className="rounded-xl border border-border-subtle bg-surface-card shadow-sm overflow-hidden"
+            data-testid="canvas-project-publish-summary"
+          >
+            <header className="px-5 py-3 border-b border-border-subtle bg-neutral-50/50 flex items-center gap-2">
+              <h2 className="m-0 text-sm font-semibold text-neutral-800 flex-1">
+                Yayın Durumu
+              </h2>
+              {focusPublish ? (
+                <StatusBadge status={focusPublish.status} size="sm" />
+              ) : (
+                <span className="text-[10px] font-mono uppercase text-neutral-400">
+                  henüz yok
+                </span>
+              )}
+            </header>
+            <div className="px-5 py-4 text-sm text-neutral-800">
+              {focusPublish ? (
+                <div className="flex flex-col gap-2">
+                  <div className="text-xs text-neutral-600">
+                    <span className="capitalize font-semibold">
+                      {focusPublish.platform}
+                    </span>{" "}
+                    üzerinde yayın kaydı mevcut.
+                  </div>
+                  <div className="text-[11px] text-neutral-500 font-mono truncate">
+                    id: {focusPublish.id.slice(0, 12)}…
+                  </div>
+                  <Link
+                    to="/user/publish"
+                    className="self-start mt-1 px-3 py-1.5 text-xs font-semibold rounded-md border border-brand-400 bg-brand-50 text-brand-700 hover:bg-brand-100 no-underline"
+                    data-testid="canvas-project-publish-open"
+                  >
+                    Yayın Atölyesi'ne Git →
+                  </Link>
+                </div>
+              ) : focusJob.status === "completed" ? (
+                <div className="flex flex-col gap-2">
+                  <p className="m-0 text-xs text-neutral-600">
+                    Üretim tamamlandı. Yayına hazırlamak için{" "}
+                    <strong>Yayın Atölyesi</strong>'ni kullanın.
+                  </p>
+                  <Link
+                    to="/user/publish"
+                    className="self-start px-3 py-1.5 text-xs font-semibold rounded-md border border-brand-400 bg-brand-50 text-brand-700 hover:bg-brand-100 no-underline"
+                  >
+                    Yayın Atölyesi'ne Git →
+                  </Link>
+                </div>
+              ) : (
+                <p className="m-0 text-xs text-neutral-500">
+                  Üretim tamamlandığında burada yayın bağlantısı görünecek.
+                </p>
+              )}
+            </div>
+          </section>
+        </div>
+      )}
 
       {/* Linked jobs timeline ------------------------------------------------ */}
       <section

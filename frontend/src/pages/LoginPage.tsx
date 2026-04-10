@@ -35,7 +35,11 @@ export function LoginPage() {
       } else {
         await register(email, password, displayName);
       }
-      navigate("/user", { replace: true });
+      // Role-aware landing (F1 fix): admin → /admin, others → /user.
+      // Read role directly from the store after login succeeds so the
+      // redirect reflects the freshly-authenticated user, not stale state.
+      const role = useAuthStore.getState().user?.role ?? null;
+      navigate(role === "admin" ? "/admin" : "/user", { replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Bir hata olustu");
     } finally {

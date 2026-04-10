@@ -21,9 +21,9 @@ export interface ProviderEntry {
   last_error: string | null;
   last_used_at: string | null;
   last_latency_ms: number | null;
-  credential_source: "env" | "missing" | "not_required";
+  credential_source: "db" | "env" | "missing" | "not_required";
   credential_status: "ok" | "missing";
-  credential_env_var: string | null;
+  credential_key: string | null;
 }
 
 export interface ProvidersResponse {

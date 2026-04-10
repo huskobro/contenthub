@@ -169,10 +169,26 @@ export function UserSettingsPage() {
 
   const overrideKeys = new Set((overrides ?? []).map((o) => o.setting_key));
 
-  // Filter to visible_to_user settings
-  const visibleSettings = (settings ?? []).filter(
-    (s) => s.visible_to_user === true,
-  );
+  // Groups that must never appear in the user panel even if backend
+  // `visible_to_user` flags accidentally allow them. These are admin-only
+  // technical concerns (workspace paths, exports directory, pipeline
+  // timeouts) that leak in M22/M23 migrations.
+  //
+  // F45 (critical UX fix pack): Kullanıcı ayarlar sayfasında
+  // "Çıktı Klasörü" gibi sunucu tarafı path ayarları görünüyordu.
+  // CLAUDE.md: "User panel must stay simple. Do not expose unnecessary
+  // technical detail by default." — burası son kapı.
+  const USER_SETTINGS_DENYLIST_GROUPS = new Set<string>([
+    "execution",
+  ]);
+
+  // Filter to visible_to_user settings AND drop admin-only groups.
+  const visibleSettings = (settings ?? []).filter((s) => {
+    if (s.visible_to_user !== true) return false;
+    const group = (s.group as string | undefined) ?? "";
+    if (USER_SETTINGS_DENYLIST_GROUPS.has(group.toLowerCase())) return false;
+    return true;
+  });
 
   // Group by group
   const groups = new Map<string, EffectiveSetting[]>();

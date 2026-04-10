@@ -187,61 +187,118 @@ export function ThemeRegistryPage() {
 
   return (
     <PageShell
-      title="Tema Yonetimi"
-      subtitle="Aktif temayi degistirin, yeni tema import edin."
+      title="Görünüm ve Tema"
+      subtitle="Arayüz yüzeyi (shell) ve renk teması ayrı kavramlardır. İkisini de buradan yönetebilirsiniz."
       testId="theme-registry"
     >
-      {/* Surface picker — Faz 4A. Admin panelinde surface (yuzey) secimi. */}
-      <SurfacePickerSection scope="admin" />
-
-      {/* Active theme info */}
-      <SectionShell
-        title="Aktif Tema"
-        testId="theme-active-section"
+      {/* -------------------------------------------------------------- */}
+      {/* Concept disambiguation banner (F21 fix):                       */}
+      {/* "Yüzey" = shell/layout seçimi (Bridge/Horizon/Legacy).         */}
+      {/* "Tema"  = renk paleti (Obsidian Slate, Horizon Midnight...).   */}
+      {/* -------------------------------------------------------------- */}
+      <div
+        className="mb-4 rounded-md border border-border-subtle bg-surface-card p-4 text-xs leading-relaxed text-neutral-700"
+        data-testid="theme-concept-banner"
       >
-        {(() => {
-          const active = themes.find((t) => t.id === activeThemeId);
-          if (!active) return <p className="text-neutral-500">Aktif tema bulunamadi.</p>;
-          return (
-            <div className="flex items-center gap-3">
-              <div className="flex gap-0.5">
-                {[active.colors.brand[500], active.colors.neutral[700], active.colors.success.base].map((c, i) => (
-                  <div key={i} className="w-5 h-5 rounded-sm" style={{ background: c }} />
-                ))}
-              </div>
-              <div>
-                <span className="text-md font-semibold text-neutral-900">
-                  {active.name}
-                </span>
-                <span className="ml-2 text-sm text-neutral-500">
-                  v{active.version} — {active.typography.body.family}
-                </span>
-              </div>
-            </div>
-          );
-        })()}
-      </SectionShell>
-
-      {/* Theme list */}
-      <SectionShell
-        title="Kayitli Temalar"
-        description={`${themes.length} tema mevcut`}
-        testId="theme-list-section"
-      >
-        <div className="grid gap-4">
-          {themes.map((theme) => (
-            <ThemeCard
-              key={theme.id}
-              theme={theme}
-              isActive={theme.id === activeThemeId}
-              isBuiltin={isBuiltin(theme.id)}
-              onActivate={() => handleActivate(theme.id)}
-              onRemove={() => handleRemove(theme.id)}
-              onPreview={() => setPreviewTheme(theme)}
-            />
-          ))}
+        <div className="font-semibold text-neutral-900 text-sm mb-1">
+          İki farklı ayar — karıştırmayın
         </div>
-      </SectionShell>
+        <div className="grid gap-2 sm:grid-cols-2">
+          <div>
+            <span className="font-mono text-[10px] uppercase tracking-wider text-brand-700">Bölüm 1 · Arayüz Yüzeyi</span>
+            <p className="m-0 mt-1">
+              Panelin <strong>şeklini</strong> belirler: sol rail, üst bar, sayfa yerleşimi. Örn. Bridge, Horizon, Legacy.
+            </p>
+          </div>
+          <div>
+            <span className="font-mono text-[10px] uppercase tracking-wider text-brand-700">Bölüm 2 · Renk Teması</span>
+            <p className="m-0 mt-1">
+              Arayüzün <strong>renklerini ve tipografisini</strong> belirler: paletler, tonlar, yazı tipi. Örn. Obsidian Slate, Horizon Midnight.
+            </p>
+          </div>
+        </div>
+        <p className="m-0 mt-2 text-[11px] text-neutral-500">
+          Yüzey ve tema bağımsızdır — Bridge yüzeyinde Horizon Midnight teması çalışabilir.
+        </p>
+      </div>
+
+      {/* ============================================================= */}
+      {/* Bölüm 1 — Arayüz Yüzeyi (Surface)                              */}
+      {/* ============================================================= */}
+      <div data-testid="theme-page-surface-section" className="mb-6">
+        <div className="mb-2">
+          <h2 className="m-0 text-base font-semibold text-neutral-900">
+            1 · Arayüz Yüzeyi
+          </h2>
+          <p className="m-0 text-xs text-neutral-500">
+            Admin panelinin shell yapısını seçin. Bu seçim yalnızca admin panelini etkiler.
+          </p>
+        </div>
+        <SurfacePickerSection scope="admin" />
+      </div>
+
+      {/* ============================================================= */}
+      {/* Bölüm 2 — Renk Teması (Color Theme)                            */}
+      {/* ============================================================= */}
+      <div data-testid="theme-page-color-section">
+        <div className="mb-2">
+          <h2 className="m-0 text-base font-semibold text-neutral-900">
+            2 · Renk Teması
+          </h2>
+          <p className="m-0 text-xs text-neutral-500">
+            Arayüzün renk paletini ve tipografisini seçin. Seçim tüm panellere uygulanır.
+          </p>
+        </div>
+
+        {/* Active theme info */}
+        <SectionShell
+          title="Aktif Tema"
+          testId="theme-active-section"
+        >
+          {(() => {
+            const active = themes.find((t) => t.id === activeThemeId);
+            if (!active) return <p className="text-neutral-500">Aktif tema bulunamadi.</p>;
+            return (
+              <div className="flex items-center gap-3">
+                <div className="flex gap-0.5">
+                  {[active.colors.brand[500], active.colors.neutral[700], active.colors.success.base].map((c, i) => (
+                    <div key={i} className="w-5 h-5 rounded-sm" style={{ background: c }} />
+                  ))}
+                </div>
+                <div>
+                  <span className="text-md font-semibold text-neutral-900">
+                    {active.name}
+                  </span>
+                  <span className="ml-2 text-sm text-neutral-500">
+                    v{active.version} — {active.typography.body.family}
+                  </span>
+                </div>
+              </div>
+            );
+          })()}
+        </SectionShell>
+
+        {/* Theme list */}
+        <SectionShell
+          title="Kayitli Temalar"
+          description={`${themes.length} tema mevcut`}
+          testId="theme-list-section"
+        >
+          <div className="grid gap-4">
+            {themes.map((theme) => (
+              <ThemeCard
+                key={theme.id}
+                theme={theme}
+                isActive={theme.id === activeThemeId}
+                isBuiltin={isBuiltin(theme.id)}
+                onActivate={() => handleActivate(theme.id)}
+                onRemove={() => handleRemove(theme.id)}
+                onPreview={() => setPreviewTheme(theme)}
+              />
+            ))}
+          </div>
+        </SectionShell>
+      </div>
 
       {/* Preview */}
       {previewTheme && (

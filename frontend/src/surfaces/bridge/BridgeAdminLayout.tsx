@@ -336,11 +336,15 @@ export function BridgeAdminLayout() {
                 getirildi; mevcut data-testid="bridge-scope-switch" korunur
                 (regresyon olmasin). Yeni ikinci testid eklendi ki tum
                 surface'lerde testler ayni isim uzerinden switch'i bulabilsin. */}
+            {/* F48 fix: panel switch copy standardizasyonu —
+                tüm surface'lerde aynı kelimelerle: "Kullanıcı Paneli" /
+                "Yönetim Paneli". Bridge rail dar olduğu için etikette
+                3-harf kod korunuyor ama tooltip + aria-label tam isim. */}
             <button
               onClick={() => navigate("/user")}
               className="w-10 h-10 flex items-center justify-center rounded-md text-[10px] font-mono text-neutral-500 bg-transparent border border-border-subtle hover:bg-neutral-100 hover:text-neutral-800 cursor-pointer"
-              title="Kullanici paneline gecis yapin"
-              aria-label="Kullanici paneline gecis yapin"
+              title="Kullanıcı Paneli"
+              aria-label="Kullanıcı Paneli"
               data-testid="bridge-scope-switch"
               data-panel-switch="bridge"
             >

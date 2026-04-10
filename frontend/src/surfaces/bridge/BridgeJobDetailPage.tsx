@@ -90,6 +90,40 @@ export function BridgeJobDetailPage() {
     eventTypes: ["job:status_changed", "job:step_changed"],
   });
 
+  // ---- Derived values (hooks MUST be called before any early return) ------
+  // Rules of Hooks: useMemo calls must run on every render in a stable order.
+  // These memos tolerate the loading/error/null-job states because we always
+  // destructure from a fallback when `job` is not yet available.
+  const currentStep = useMemo(() => {
+    if (!job || !job.current_step_key) return null;
+    return job.steps.find((s) => s.step_key === job.current_step_key) ?? null;
+  }, [job]);
+
+  const providerSummary = useMemo(() => {
+    let calls = 0;
+    let errors = 0;
+    let costUsd = 0;
+    let latencyMs = 0;
+    if (!job) return { calls, errors, costUsd, latencyMs };
+    for (const step of job.steps) {
+      const raw = step.provider_trace_json;
+      if (!raw) continue;
+      try {
+        const parsed = JSON.parse(raw);
+        const entries: Array<Record<string, unknown>> = Array.isArray(parsed) ? parsed : [];
+        for (const entry of entries) {
+          calls += 1;
+          if (entry.success === false) errors += 1;
+          if (typeof entry.cost_usd_estimate === "number") costUsd += entry.cost_usd_estimate;
+          if (typeof entry.latency_ms === "number") latencyMs += entry.latency_ms;
+        }
+      } catch {
+        // Malformed trace JSON is a data issue, not a UI problem — skip.
+      }
+    }
+    return { calls, errors, costUsd, latencyMs };
+  }, [job]);
+
   // ---- Loading / error states ---------------------------------------------
   if (isLoading) {
     return (
@@ -121,43 +155,8 @@ export function BridgeJobDetailPage() {
   }
 
   const publish = publishRecords?.[0];
-
-  // ----- Derived values for the vitals strip ------------------------------
-  // Current step vs total elapsed clarity: we want to show BOTH, so an
-  // operator can tell "this step has been running for X out of total Y".
-  const currentStep = useMemo(() => {
-    if (!job.current_step_key) return null;
-    return job.steps.find((s) => s.step_key === job.current_step_key) ?? null;
-  }, [job.current_step_key, job.steps]);
-
   const currentStepElapsed = currentStep?.elapsed_seconds_live ?? currentStep?.elapsed_seconds ?? null;
   const currentStepEta = currentStep?.eta_seconds ?? null;
-
-  // Provider trace summary — count provider calls, cost, error count.
-  // We only compute from what's already on the steps payload; no extra fetch.
-  const providerSummary = useMemo(() => {
-    let calls = 0;
-    let errors = 0;
-    let costUsd = 0;
-    let latencyMs = 0;
-    for (const step of job.steps) {
-      const raw = step.provider_trace_json;
-      if (!raw) continue;
-      try {
-        const parsed = JSON.parse(raw);
-        const entries: Array<Record<string, unknown>> = Array.isArray(parsed) ? parsed : [];
-        for (const entry of entries) {
-          calls += 1;
-          if (entry.success === false) errors += 1;
-          if (typeof entry.cost_usd_estimate === "number") costUsd += entry.cost_usd_estimate;
-          if (typeof entry.latency_ms === "number") latencyMs += entry.latency_ms;
-        }
-      } catch {
-        // Malformed trace JSON is a data issue, not a UI problem — skip.
-      }
-    }
-    return { calls, errors, costUsd, latencyMs };
-  }, [job.steps]);
 
   return (
     <div className="flex flex-col gap-3" data-testid="bridge-job-detail">

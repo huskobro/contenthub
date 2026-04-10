@@ -274,11 +274,13 @@ export function CanvasUserLayout() {
               dogrulandi; kullanici admin'e donemiyordu. Basit link butonu,
               yeni nav sistemi degil. */}
           <div className="w-px h-6 bg-border-subtle mx-1" />
+          {/* F48 fix: panel switch copy standardizasyonu — "Yönetim Paneli"
+              tüm surface'lerde aynı etiket. */}
           <button
             type="button"
             onClick={() => navigate("/admin")}
-            title="Yonetim paneline gecis yapin"
-            aria-label="Yonetim paneline gecis yapin"
+            title="Yönetim Paneli"
+            aria-label="Yönetim Paneli"
             data-testid="canvas-panel-switch"
             className={cn(
               "px-3 py-1.5 text-xs font-semibold rounded-md",
@@ -287,7 +289,7 @@ export function CanvasUserLayout() {
               "transition-colors duration-fast",
             )}
           >
-            Yonetim Paneline Gec
+            Yönetim Paneli
           </button>
         </header>
 

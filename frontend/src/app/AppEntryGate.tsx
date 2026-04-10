@@ -20,6 +20,7 @@ import { useAuthStore } from "../stores/authStore";
 export function AppEntryGate() {
   const hasHydrated = useAuthStore((s) => s.hasHydrated);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const userRole = useAuthStore((s) => s.user?.role ?? null);
 
   // Step 1 — wait for auth bootstrap.
   if (!hasHydrated) {
@@ -40,15 +41,21 @@ export function AppEntryGate() {
   }
 
   // Step 3 — authenticated: now (and only now) consult onboarding status.
-  return <AuthenticatedEntryRedirect />;
+  return <AuthenticatedEntryRedirect role={userRole} />;
 }
 
 /**
  * Split out so that `useOnboardingStatus` only mounts after the store has
  * confirmed an authenticated user — guaranteeing the request carries an
  * Authorization header and never races with hydration.
+ *
+ * Role-aware default (F1 fix — critical UX navigation pack):
+ *   - admin → /admin  (operators land on the admin cockpit)
+ *   - anything else → /user  (creators land on the canvas workspace)
+ *
+ * Onboarding still takes precedence for first-run users regardless of role.
  */
-function AuthenticatedEntryRedirect() {
+function AuthenticatedEntryRedirect({ role }: { role: string | null }) {
   const { data, isLoading, isError } = useOnboardingStatus();
 
   if (isLoading) {
@@ -63,11 +70,12 @@ function AuthenticatedEntryRedirect() {
     );
   }
 
-  // On error or completed onboarding: go to normal app.
-  if (isError || !data || !data.onboarding_required) {
-    return <Navigate to="/user" replace />;
+  // Onboarding is a first-run flow; it wins over role-based defaults.
+  if (!isError && data && data.onboarding_required) {
+    return <Navigate to="/onboarding" replace />;
   }
 
-  // Onboarding required.
-  return <Navigate to="/onboarding" replace />;
+  // Role-aware default landing: admin → admin panel, users → user panel.
+  const defaultPath = role === "admin" ? "/admin" : "/user";
+  return <Navigate to={defaultPath} replace />;
 }

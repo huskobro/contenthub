@@ -41,16 +41,19 @@ export function HorizonUserLayout() {
               style={{ background: "linear-gradient(90deg, transparent 0%, color-mix(in srgb, var(--ch-brand-400) 12%, transparent) 50%, transparent 100%)" }}
             />
 
-            <span className="font-medium text-neutral-700 text-xs flex-1">Kullanici Paneli</span>
+            <span className="font-medium text-neutral-700 text-xs flex-1">Kullanıcı Paneli</span>
 
             <div className="flex items-center gap-2 shrink-0">
               <NotificationBell />
+              {/* F48 fix: panel switch copy standardizasyonu. */}
               <button
                 onClick={() => navigate("/admin")}
+                title="Yönetim Paneli"
+                aria-label="Yönetim Paneli"
                 className="px-3 py-1 text-xs font-medium text-neutral-600 bg-surface-inset border border-border-subtle rounded-lg cursor-pointer transition-all duration-fast hover:bg-neutral-100 hover:border-brand-400"
                 data-testid="horizon-panel-switch"
               >
-                Yonetim Paneli
+                Yönetim Paneli
               </button>
             </div>
           </header>

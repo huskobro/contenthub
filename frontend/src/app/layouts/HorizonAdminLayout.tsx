@@ -158,12 +158,15 @@ export function HorizonAdminLayout() {
 
               <NotificationBell />
 
+              {/* F48 fix: panel switch copy standardizasyonu. */}
               <button
                 onClick={() => navigate("/user")}
+                title="Kullanıcı Paneli"
+                aria-label="Kullanıcı Paneli"
                 className="px-3 py-1 text-xs font-medium text-neutral-600 bg-surface-inset border border-border-subtle rounded-lg cursor-pointer transition-all duration-fast hover:bg-neutral-100 hover:border-brand-400"
                 data-testid="horizon-panel-switch"
               >
-                Kullanici Paneli
+                Kullanıcı Paneli
               </button>
             </div>
           </header>

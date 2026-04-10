@@ -42,15 +42,19 @@ function CredentialBadge({ entry }: { entry: ProviderEntry }) {
     );
   }
   if (entry.credential_status === "ok") {
+    // F15 fix: Settings/Providers credential tutarlılığı — kaynağı açıkça
+    // göster (DB vs env) ki admin hangi otoritenin değeri sağladığını
+    // bilsin. "✓ DB" veya "✓ env" olarak gösterilir.
+    const sourceLabel = entry.credential_source === "db" ? "DB" : "env";
     return (
-      <span className="text-xs text-success-text">
-        {entry.credential_env_var} ✓
+      <span className="text-xs text-success-text" title={entry.credential_key ?? undefined}>
+        ✓ Yapılandırıldı <span className="text-neutral-500">({sourceLabel})</span>
       </span>
     );
   }
   return (
-    <span className="text-xs text-error font-medium">
-      {entry.credential_env_var} — eksik
+    <span className="text-xs text-error font-medium" title={entry.credential_key ?? undefined}>
+      Eksik — kimlik bilgisi gerekiyor
     </span>
   );
 }
