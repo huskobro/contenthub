@@ -225,5 +225,5 @@ ui.surface.canvas.enabled        type=boolean builtin_default=False
    - Vite build: PASS (EXIT 0)
    - Backend KNOWN_SETTINGS dogrulamasi: 6/6 anahtar kayitli
    - Regression: Yok. `app.smoke.test.tsx` 3 failure **pre-existing** (stash ile dogrulandi).
-6. **Commit hash:** Asagida `git commit` adimindan sonra eklenecektir.
-7. **Push durumu:** Asagida `git push` adimindan sonra eklenecektir.
+6. **Commit hash:** `2f994bf` — `feat(surfaces): Faz 1 — Surface Registry infrastructure (kill-switch off)` — 25 files changed, 2576 insertions(+), 27 deletions(-).
+7. **Push durumu:** BASARILI. `9c2fa95..2f994bf  main -> main` (github.com:huskobro/contenthub.git).
