@@ -182,6 +182,12 @@ export function SubtitleStylePicker({
   loading = false,
   error = null,
 }: SubtitleStylePickerProps) {
+  // Defensive: even though the prop is typed as an array, React Query cache
+  // collisions (e.g. same queryKey used by two callers with different response
+  // shapes) can leak an object in here. Coerce to an array so the component
+  // fails soft instead of taking the whole app down with
+  // `presets.map is not a function`.
+  const presetList: SubtitlePresetOption[] = Array.isArray(presets) ? presets : [];
   if (loading) {
     return (
       <div>
@@ -220,7 +226,7 @@ export function SubtitleStylePicker({
       )}
 
       <div className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-2.5 mt-2">
-        {presets.map((preset) => (
+        {presetList.map((preset) => (
           <SubtitleStyleCard
             key={preset.preset_id}
             preset={preset}

@@ -29,11 +29,28 @@ interface AuthState {
   refreshToken: string | null;
   user: AuthUser | null;
   isAuthenticated: boolean;
+  /**
+   * Bootstrap flag — becomes `true` once the store has attempted to hydrate
+   * itself from localStorage (synchronously during store creation).
+   *
+   * Route guards MUST wait for this to be `true` before making redirect
+   * decisions. In a browser environment this flips to `true` on the very
+   * first render (hydration happens inside the Zustand lazy initializer),
+   * so the flag only matters for defensive guarding and for tests where
+   * the store can be reset between cases.
+   */
+  hasHydrated: boolean;
 
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, displayName: string) => Promise<void>;
   logout: () => void;
   refreshAuth: () => Promise<void>;
+  /**
+   * @deprecated Since the refresh-bootstrap fix, the store hydrates itself
+   * synchronously inside the Zustand initializer. This method is retained
+   * only for backward compatibility with older call sites and tests — it
+   * is now a safe idempotent re-read from localStorage.
+   */
   loadFromStorage: () => void;
 }
 
@@ -86,6 +103,40 @@ function loadUser(): AuthUser | null {
   }
 }
 
+/**
+ * Synchronously read the persisted auth snapshot from localStorage.
+ *
+ * Called once by the Zustand lazy initializer (and also by the legacy
+ * `loadFromStorage` action). Returns a partial state blob that the store
+ * can spread into its initial value so `isAuthenticated` is correct on
+ * the very first render — no effect race, no guard bounce.
+ *
+ * Contract:
+ *   - If access token, refresh token AND persisted user are all present
+ *     and valid JSON → authenticated snapshot.
+ *   - Anything else (missing, corrupt) → unauthenticated snapshot.
+ *   - Never throws. Never mutates tokens — validation is the refresh
+ *     interceptor's job on the first real request.
+ */
+function readAuthSnapshot(): {
+  accessToken: string | null;
+  refreshToken: string | null;
+  user: AuthUser | null;
+  isAuthenticated: boolean;
+} {
+  try {
+    const accessToken = localStorage.getItem(STORAGE_KEYS.accessToken);
+    const refreshToken = localStorage.getItem(STORAGE_KEYS.refreshToken);
+    const user = loadUser();
+    if (accessToken && refreshToken && user) {
+      return { accessToken, refreshToken, user, isAuthenticated: true };
+    }
+  } catch {
+    // localStorage unavailable (SSR, private mode, tests) — fall through.
+  }
+  return { accessToken: null, refreshToken: null, user: null, isAuthenticated: false };
+}
+
 // ---------------------------------------------------------------------------
 // Store
 // ---------------------------------------------------------------------------
@@ -118,61 +169,69 @@ function applyTokenResponse(
   });
 }
 
-export const useAuthStore = create<AuthState>((set, get) => ({
-  accessToken: null,
-  refreshToken: null,
-  user: null,
-  isAuthenticated: false,
+export const useAuthStore = create<AuthState>((set, get) => {
+  // Synchronous hydration from localStorage happens HERE — inside the
+  // Zustand lazy initializer — so `isAuthenticated` carries the correct
+  // value on the very first render of any component that reads it.
+  // This is the fix for the F5/refresh-bounce bug where useEffect-based
+  // hydration lost the race against route guards.
+  const snapshot = readAuthSnapshot();
 
-  login: async (email, password) => {
-    const data = await loginApi(email, password);
-    applyTokenResponse(set, data, email);
-  },
+  return {
+    accessToken: snapshot.accessToken,
+    refreshToken: snapshot.refreshToken,
+    user: snapshot.user,
+    isAuthenticated: snapshot.isAuthenticated,
+    hasHydrated: true,
 
-  register: async (email, password, displayName) => {
-    const data = await registerApi(email, password, displayName);
-    applyTokenResponse(set, data, email);
-  },
+    login: async (email, password) => {
+      const data = await loginApi(email, password);
+      applyTokenResponse(set, data, email);
+    },
 
-  logout: () => {
-    clearStorage();
-    set({
-      accessToken: null,
-      refreshToken: null,
-      user: null,
-      isAuthenticated: false,
-    });
-  },
+    register: async (email, password, displayName) => {
+      const data = await registerApi(email, password, displayName);
+      applyTokenResponse(set, data, email);
+    },
 
-  refreshAuth: async () => {
-    const rt = get().refreshToken;
-    if (!rt) {
-      get().logout();
-      return;
-    }
-    try {
-      const data = await refreshTokenApi(rt);
-      applyTokenResponse(set, data, get().user?.email);
-    } catch {
-      get().logout();
-    }
-  },
+    logout: () => {
+      clearStorage();
+      set({
+        accessToken: null,
+        refreshToken: null,
+        user: null,
+        isAuthenticated: false,
+        // hasHydrated stays `true` — logout does not un-bootstrap the store.
+      });
+    },
 
-  loadFromStorage: () => {
-    try {
-      const accessToken = localStorage.getItem(STORAGE_KEYS.accessToken);
-      const refreshToken = localStorage.getItem(STORAGE_KEYS.refreshToken);
-      const user = loadUser();
-      if (accessToken && refreshToken && user) {
-        set({
-          accessToken,
-          refreshToken,
-          user,
-          isAuthenticated: true,
-        });
+    refreshAuth: async () => {
+      const rt = get().refreshToken;
+      if (!rt) {
+        get().logout();
+        return;
       }
-    } catch {
-      // localStorage not available
-    }
-  },
-}));
+      try {
+        const data = await refreshTokenApi(rt);
+        applyTokenResponse(set, data, get().user?.email);
+      } catch {
+        get().logout();
+      }
+    },
+
+    /**
+     * Legacy idempotent re-read. The store already hydrates synchronously
+     * inside the Zustand initializer — this method exists for backward
+     * compatibility with any caller (or test) that still invokes it.
+     */
+    loadFromStorage: () => {
+      const fresh = readAuthSnapshot();
+      set({
+        accessToken: fresh.accessToken,
+        refreshToken: fresh.refreshToken,
+        user: fresh.user,
+        isAuthenticated: fresh.isAuthenticated,
+      });
+    },
+  };
+});

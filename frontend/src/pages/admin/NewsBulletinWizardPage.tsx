@@ -250,14 +250,22 @@ export function NewsBulletinWizardPage() {
     enabled: !!bulletinId && step === 2,
   });
 
-  // M32: Subtitle presets — fetched when on step 2
+  // M32: Subtitle presets — fetched when on step 2.
+  //
+  // NOTE: queryKey is intentionally NOT "subtitle-presets" — that key is owned
+  // by `useSubtitlePresets` which caches the full `{presets, default_preset_id,
+  // preview_scope}` response object. Sharing the key caused a shape collision:
+  // whoever populated the cache first won, and the other consumer would read a
+  // value in the wrong shape (e.g. an object where an array was expected),
+  // producing `presets.map is not a function` on the news bulletin wizard.
   const { data: subtitlePresets = [], isLoading: loadingPresets, error: presetsError } = useQuery({
-    queryKey: ["subtitle-presets"],
+    queryKey: ["news-bulletin-subtitle-presets"],
     queryFn: async () => {
       const res = await fetch("/api/v1/modules/standard-video/subtitle-presets");
       if (!res.ok) throw new Error("Preset yukleme hatasi");
       const data = await res.json();
-      return data.presets ?? [];
+      const list = data?.presets;
+      return Array.isArray(list) ? list : [];
     },
     enabled: step === 2,
   });
