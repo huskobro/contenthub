@@ -319,7 +319,7 @@ header'i ile dokumante edildi.
 
 ## Commit + push durumu
 
-- **Commit mesaji:**
-  `feat(surfaces): promote atrium to beta user-scope premium prototype (Faz 4)`
-- **Commit hash:** _(commit asamasinda asagiya yazilacak)_
-- **Push durumu:** _(push asamasinda asagiya yazilacak)_
+- **Commit mesaji:** `feat(surfaces): Faz 4 — Atrium premium user prototype`
+- **Commit hash:** `7a4f119`
+- **Push durumu:** `origin/main` uzerine basarili push
+  (`4b74130..7a4f119  main -> main`)
