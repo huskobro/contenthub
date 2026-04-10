@@ -38,12 +38,27 @@ describe("surfaces — built-in registration", () => {
     expect(typeof horizon?.userLayout).toBe("function");
   });
 
-  it("atrium is disabled and has no layouts", () => {
+  it("atrium is promoted to beta (Faz 4) with user-only layout + editorial overrides", () => {
+    // Faz 4 promotes atrium from a disabled placeholder to a real user-scope
+    // premium/editorial surface. It provides:
+    //   - a userLayout forwarder (editorial marquee + top-nav shell)
+    //   - NO adminLayout (atrium is user-only, just like canvas)
+    //   - pageOverrides for user.dashboard / user.projects.list /
+    //     user.projects.detail
     const atrium = getSurface("atrium");
     expect(atrium).toBeDefined();
-    expect(atrium?.manifest.status).toBe("disabled");
+    expect(atrium?.manifest.status).toBe("beta");
+    expect(atrium?.manifest.scope).toBe("user");
+    expect(typeof atrium?.userLayout).toBe("function");
     expect(atrium?.adminLayout).toBeUndefined();
-    expect(atrium?.userLayout).toBeUndefined();
+    expect(atrium?.pageOverrides).toBeDefined();
+    expect(typeof atrium?.pageOverrides?.["user.dashboard"]).toBe("function");
+    expect(typeof atrium?.pageOverrides?.["user.projects.list"]).toBe(
+      "function",
+    );
+    expect(typeof atrium?.pageOverrides?.["user.projects.detail"]).toBe(
+      "function",
+    );
   });
 
   it("bridge is promoted to beta (Faz 2) with admin-only layout + page overrides", () => {

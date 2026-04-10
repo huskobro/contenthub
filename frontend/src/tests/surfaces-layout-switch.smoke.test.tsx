@@ -144,16 +144,19 @@ describe("Dynamic layouts — Faz 1 surface resolution", () => {
     });
   });
 
-  it("falls back to legacy when user picks a disabled surface (atrium)", async () => {
+  it("falls back to legacy admin when a user-only surface (atrium) is picked on admin scope", async () => {
+    // Faz 4: atrium is now a real beta user-scope surface (was a disabled
+    // placeholder in Faz 1). That means the OLD "disabled-fallback" path no
+    // longer triggers for atrium; instead, the scope-mismatch path must kick
+    // in when someone tries to mount atrium on the ADMIN scope. This test
+    // asserts the scope guard: an enabled user-only surface can never hijack
+    // the admin panel.
     settingsMock.next({
       "ui.surface.infrastructure.enabled": true,
-      "ui.surface.atrium.enabled": true, // settings allow it...
+      "ui.surface.atrium.enabled": true,
     });
     const { admin, resolver, store } = await freshImport();
-    // ...but the atrium manifest in the registry is disabled, so resolver
-    // must fall back to legacy.
     store.useThemeStore.getState().setActiveSurface("atrium");
-    // Ensure snapshot is loaded (seeded by hook) — drive a direct override:
     resolver.__setSurfaceSettingsSnapshot({
       infrastructureEnabled: true,
       defaultAdmin: "legacy",
@@ -171,6 +174,7 @@ describe("Dynamic layouts — Faz 1 surface resolution", () => {
       </MemoryRouter>,
     );
     await waitFor(() => {
+      // Atrium is user-scope → admin must still render legacy admin layout.
       expect(screen.getByTestId("admin-layout-classic")).toBeDefined();
     });
   });

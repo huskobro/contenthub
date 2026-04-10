@@ -64,6 +64,14 @@ import * as CanvasUserAnalyticsModule from "../canvas/CanvasUserAnalyticsPage";
 // studio. Same namespace-import + forwarder style as earlier canvas phases.
 import * as CanvasUserCalendarModule from "../canvas/CanvasUserCalendarPage";
 import * as CanvasChannelDetailModule from "../canvas/CanvasChannelDetailPage";
+// Atrium Faz 4 — "Premium Media OS" user surface. Three page overrides:
+// dashboard (editorial cover), projects list (portfolio), project detail
+// (showcase + control). Same namespace-import + forwarder style as canvas
+// so the registrar never trips a circular import through ThemeProvider.
+import * as AtriumUserLayoutModule from "../atrium/AtriumUserLayout";
+import * as AtriumUserDashboardModule from "../atrium/AtriumUserDashboardPage";
+import * as AtriumProjectsListModule from "../atrium/AtriumProjectsListPage";
+import * as AtriumProjectDetailModule from "../atrium/AtriumProjectDetailPage";
 
 // --- Lazy forwarders -------------------------------------------------------
 // Each wrapper reads the real component from the module namespace at render
@@ -159,6 +167,39 @@ function CanvasChannelDetailForwarder() {
   return <Impl />;
 }
 
+// --- Atrium forwarders (Faz 4) ---------------------------------------------
+// User shell + three page overrides. No admin scope — Atrium is user-only.
+// Atrium co-exists with Canvas: both are user-scope surfaces, and the
+// resolver picks whichever one matches `ui.surface.default.user` + enabled
+// set. Both shells share Cmd+K / SSE / notification infra, just like Canvas.
+
+function AtriumUserForwarder(_props: SurfaceLayoutProps) {
+  const Impl = AtriumUserLayoutModule.AtriumUserLayout;
+  return <Impl />;
+}
+function AtriumUserDashboardForwarder() {
+  const Impl = AtriumUserDashboardModule.AtriumUserDashboardPage;
+  return <Impl />;
+}
+function AtriumProjectsListForwarder() {
+  const Impl = AtriumProjectsListModule.AtriumProjectsListPage;
+  return <Impl />;
+}
+function AtriumProjectDetailForwarder() {
+  const Impl = AtriumProjectDetailModule.AtriumProjectDetailPage;
+  return <Impl />;
+}
+
+const ATRIUM_PAGE_OVERRIDES: SurfacePageOverrideMap = {
+  // Faz 4 — editorial premium prototype: dashboard, projects list, project
+  // detail. Intentionally scoped to three pages so the first visibly-new
+  // atrium pass stays reviewable and never blocks legacy/canvas fallbacks on
+  // un-overridden routes.
+  "user.dashboard": AtriumUserDashboardForwarder,
+  "user.projects.list": AtriumProjectsListForwarder,
+  "user.projects.detail": AtriumProjectDetailForwarder,
+};
+
 const CANVAS_PAGE_OVERRIDES: SurfacePageOverrideMap = {
   // Faz 3 (project core) — dashboard + projects list + project detail
   "user.dashboard": CanvasUserDashboardForwarder,
@@ -186,7 +227,11 @@ const HORIZON_SURFACE: Surface = {
   userLayout: HorizonUserForwarder,
 };
 
-const ATRIUM_SURFACE: Surface = { manifest: ATRIUM_MANIFEST };
+const ATRIUM_SURFACE: Surface = {
+  manifest: ATRIUM_MANIFEST,
+  userLayout: AtriumUserForwarder,
+  pageOverrides: ATRIUM_PAGE_OVERRIDES,
+};
 const BRIDGE_SURFACE: Surface = {
   manifest: BRIDGE_MANIFEST,
   adminLayout: BridgeAdminForwarder,
