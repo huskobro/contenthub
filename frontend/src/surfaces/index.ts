@@ -18,6 +18,8 @@ export type {
   SurfaceLayoutComponent,
   SurfaceNavigationProfile,
   SurfaceTokenOverrides,
+  SurfacePageKey,
+  SurfacePageOverrideMap,
   SurfaceResolutionReason,
   ResolvedSurface,
   SurfaceResolutionInput,
@@ -39,6 +41,7 @@ export {
   useSurfaceContext,
   useActiveSurface,
   useSurfaceEnabled,
+  useSurfacePageOverride,
 } from "./SurfaceContext";
 
 export type { SurfaceTelemetryEvent } from "./telemetry";

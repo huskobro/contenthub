@@ -16,6 +16,7 @@ import {
 import { useToast } from "../../hooks/useToast";
 import { VideoPlayer } from "../../components/shared/VideoPlayer";
 import type { JobStepResponse } from "../../api/jobsApi";
+import { useSurfacePageOverride } from "../../surfaces/SurfaceContext";
 
 const VIDEO_EXTS = ["mp4", "webm", "mov"];
 const IMAGE_EXTS = ["png", "jpg", "jpeg", "gif", "webp"];
@@ -63,7 +64,18 @@ function publishStatusVariant(status: string): string {
   }
 }
 
+/**
+ * Public entry point. Delegates to a surface override when the active admin
+ * surface declares one for `admin.jobs.detail` (Faz 2: Bridge cockpit).
+ * Otherwise falls through to the legacy implementation below.
+ */
 export function JobDetailPage() {
+  const Override = useSurfacePageOverride("admin.jobs.detail");
+  if (Override) return <Override />;
+  return <LegacyJobDetailPage />;
+}
+
+function LegacyJobDetailPage() {
   const { jobId } = useParams<{ jobId: string }>();
   const navigate = useNavigate();
   const toast = useToast();

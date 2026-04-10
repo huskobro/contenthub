@@ -15,8 +15,25 @@ import {
 } from "../../components/design-system/primitives";
 import { useScopedKeyboardNavigation } from "../../hooks/useScopedKeyboardNavigation";
 import { useToast } from "../../hooks/useToast";
+import { useSurfacePageOverride } from "../../surfaces/SurfaceContext";
 
+/**
+ * Public entry point. Delegates to a surface override when the active admin
+ * surface declares one for `admin.jobs.registry` (Faz 2: Bridge). Otherwise
+ * falls through to the legacy implementation below.
+ *
+ * The override path is ALWAYS safe:
+ *   - Kill switch off → hook returns null → legacy renders.
+ *   - Surface has no override → hook returns null → legacy renders.
+ *   - Bridge isn't the resolved admin surface → hook returns null → legacy.
+ */
 export function JobsRegistryPage() {
+  const Override = useSurfacePageOverride("admin.jobs.registry");
+  if (Override) return <Override />;
+  return <LegacyJobsRegistryPage />;
+}
+
+function LegacyJobsRegistryPage() {
   const [includeArchived, setIncludeArchived] = useState(false);
   const { data: jobs, isLoading, isError, error } = useJobsList(includeArchived);
   const [selectedId, setSelectedId] = useState<string | null>(null);

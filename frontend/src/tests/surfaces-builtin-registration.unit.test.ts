@@ -46,12 +46,22 @@ describe("surfaces — built-in registration", () => {
     expect(atrium?.userLayout).toBeUndefined();
   });
 
-  it("bridge is disabled and has no layouts", () => {
+  it("bridge is promoted to beta (Faz 2) with admin-only layout + page overrides", () => {
+    // Faz 2 promotes bridge to "beta" with admin scope. It provides:
+    //   - an adminLayout forwarder (3-panel ops shell)
+    //   - NO userLayout (bridge is admin-only)
+    //   - pageOverrides for admin.jobs.registry / admin.jobs.detail /
+    //     admin.publish.center
     const bridge = getSurface("bridge");
     expect(bridge).toBeDefined();
-    expect(bridge?.manifest.status).toBe("disabled");
-    expect(bridge?.adminLayout).toBeUndefined();
+    expect(bridge?.manifest.status).toBe("beta");
+    expect(bridge?.manifest.scope).toBe("admin");
+    expect(typeof bridge?.adminLayout).toBe("function");
     expect(bridge?.userLayout).toBeUndefined();
+    expect(bridge?.pageOverrides).toBeDefined();
+    expect(typeof bridge?.pageOverrides?.["admin.jobs.registry"]).toBe("function");
+    expect(typeof bridge?.pageOverrides?.["admin.jobs.detail"]).toBe("function");
+    expect(typeof bridge?.pageOverrides?.["admin.publish.center"]).toBe("function");
   });
 
   it("canvas is disabled and has no layouts", () => {

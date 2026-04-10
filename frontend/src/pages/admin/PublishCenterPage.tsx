@@ -13,6 +13,7 @@ import {
   Pagination,
 } from "../../components/design-system/primitives";
 import { formatDateShort } from "../../lib/formatDate";
+import { useSurfacePageOverride } from "../../surfaces/SurfaceContext";
 
 const PAGE_SIZE = 50;
 
@@ -50,7 +51,22 @@ function statusLabel(status: string): string {
   return map[status] ?? status;
 }
 
+/**
+ * Public entry point. Delegates to a surface override when the active admin
+ * surface declares one for `admin.publish.center` (Faz 2: Bridge review board).
+ * Otherwise falls through to the legacy implementation below.
+ *
+ * The override does NOT bypass the review-gate state machine — it only
+ * re-presents the same records. All mutations still happen on the Publish
+ * Detail page.
+ */
 export function PublishCenterPage() {
+  const Override = useSurfacePageOverride("admin.publish.center");
+  if (Override) return <Override />;
+  return <LegacyPublishCenterPage />;
+}
+
+function LegacyPublishCenterPage() {
   const navigate = useNavigate();
   const [statusFilter, setStatusFilter] = useState("");
   const [platformFilter, setPlatformFilter] = useState("");

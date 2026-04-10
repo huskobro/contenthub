@@ -167,6 +167,40 @@ export interface SurfaceManifest {
  * `disabled` surfaces intentionally have NO layout bindings: they exist only
  * as placeholders so the resolver can detect them and fall back to legacy.
  */
+/**
+ * Stable identifier for a page slot that a surface may override.
+ *
+ * Format: `{scope}.{area}.{page}`. Keeping ids stable lets surfaces provide
+ * targeted overrides without knowing about router paths or file locations.
+ *
+ * Faz 2 (Bridge) introduces:
+ *   - "admin.jobs.registry"
+ *   - "admin.jobs.detail"
+ *   - "admin.publish.center"
+ *
+ * Additional slots can be added in future phases without contract migration.
+ */
+export type SurfacePageKey =
+  | "admin.jobs.registry"
+  | "admin.jobs.detail"
+  | "admin.publish.center"
+  | (string & { __surfacePageKeyBrand?: never });
+
+/**
+ * Page override registry for a surface.
+ *
+ * Each entry is a React component the surface offers as a replacement for the
+ * legacy page that lives at the same router path. The legacy page itself calls
+ * `useSurfacePageOverride(key, LegacyComponent)` at render time; if the active
+ * surface registered an override for `key`, the hook returns the override;
+ * otherwise it returns the legacy component unchanged.
+ *
+ * This indirection is deliberate: router.tsx is immutable, so surfaces cannot
+ * swap routes. Instead, legacy pages become dumb trampolines that defer to the
+ * override when one exists. Fallback is automatic and total.
+ */
+export type SurfacePageOverrideMap = Partial<Record<SurfacePageKey, ComponentType>>;
+
 export interface Surface {
   manifest: SurfaceManifest;
   /** Admin panel layout component. Required when scope is "admin" or "both". */
@@ -178,6 +212,13 @@ export interface Surface {
    * Applied by themeEngine when this surface is the resolved active surface.
    */
   tokenOverrides?: SurfaceTokenOverrides;
+  /**
+   * Optional page-level overrides keyed by `SurfacePageKey`. Faz 1 surfaces
+   * (legacy, horizon) do NOT populate this — the entire point of a surface
+   * in Faz 1 was a shell swap. Faz 2 (Bridge) uses this to selectively replace
+   * a handful of admin pages while falling back to legacy for everything else.
+   */
+  pageOverrides?: SurfacePageOverrideMap;
 }
 
 // ---------------------------------------------------------------------------

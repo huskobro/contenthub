@@ -21,7 +21,7 @@
  */
 
 import { registerSurface } from "../registry";
-import type { Surface, SurfaceLayoutProps } from "../contract";
+import type { Surface, SurfaceLayoutProps, SurfacePageOverrideMap } from "../contract";
 import { LEGACY_MANIFEST } from "./legacy";
 import { HORIZON_MANIFEST } from "./horizon";
 import { ATRIUM_MANIFEST } from "./atrium";
@@ -36,6 +36,14 @@ import * as AdminLayoutModule from "../../app/layouts/AdminLayout";
 import * as UserLayoutModule from "../../app/layouts/UserLayout";
 import * as HorizonAdminLayoutModule from "../../app/layouts/HorizonAdminLayout";
 import * as HorizonUserLayoutModule from "../../app/layouts/HorizonUserLayout";
+// Bridge (Faz 2). Bridge is a brand-new module that does not import back into
+// AdminLayout/ThemeProvider, so a direct import would also work — but we keep
+// the namespace + forwarder style for consistency with legacy/horizon and to
+// leave room for HMR-friendly re-registration.
+import * as BridgeAdminLayoutModule from "../bridge/BridgeAdminLayout";
+import * as BridgeJobsRegistryModule from "../bridge/BridgeJobsRegistryPage";
+import * as BridgeJobDetailModule from "../bridge/BridgeJobDetailPage";
+import * as BridgePublishCenterModule from "../bridge/BridgePublishCenterPage";
 
 // --- Lazy forwarders -------------------------------------------------------
 // Each wrapper reads the real component from the module namespace at render
@@ -59,6 +67,32 @@ function HorizonUserForwarder(_props: SurfaceLayoutProps) {
   return <Impl />;
 }
 
+// --- Bridge forwarders (Faz 2) --------------------------------------------
+// Admin shell + three page overrides. No user scope — Bridge is admin-only.
+
+function BridgeAdminForwarder(_props: SurfaceLayoutProps) {
+  const Impl = BridgeAdminLayoutModule.BridgeAdminLayout;
+  return <Impl />;
+}
+function BridgeJobsRegistryForwarder() {
+  const Impl = BridgeJobsRegistryModule.BridgeJobsRegistryPage;
+  return <Impl />;
+}
+function BridgeJobDetailForwarder() {
+  const Impl = BridgeJobDetailModule.BridgeJobDetailPage;
+  return <Impl />;
+}
+function BridgePublishCenterForwarder() {
+  const Impl = BridgePublishCenterModule.BridgePublishCenterPage;
+  return <Impl />;
+}
+
+const BRIDGE_PAGE_OVERRIDES: SurfacePageOverrideMap = {
+  "admin.jobs.registry": BridgeJobsRegistryForwarder,
+  "admin.jobs.detail": BridgeJobDetailForwarder,
+  "admin.publish.center": BridgePublishCenterForwarder,
+};
+
 const LEGACY_SURFACE: Surface = {
   manifest: LEGACY_MANIFEST,
   adminLayout: LegacyAdminForwarder,
@@ -72,7 +106,11 @@ const HORIZON_SURFACE: Surface = {
 };
 
 const ATRIUM_SURFACE: Surface = { manifest: ATRIUM_MANIFEST };
-const BRIDGE_SURFACE: Surface = { manifest: BRIDGE_MANIFEST };
+const BRIDGE_SURFACE: Surface = {
+  manifest: BRIDGE_MANIFEST,
+  adminLayout: BridgeAdminForwarder,
+  pageOverrides: BRIDGE_PAGE_OVERRIDES,
+};
 const CANVAS_SURFACE: Surface = { manifest: CANVAS_MANIFEST };
 
 registerSurface(LEGACY_SURFACE);

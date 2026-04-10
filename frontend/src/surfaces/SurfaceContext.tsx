@@ -15,8 +15,8 @@
  * exists for consumers inside the layout.
  */
 
-import { createContext, useContext, type ReactNode } from "react";
-import type { ResolvedSurface, SurfaceId } from "./contract";
+import { createContext, useContext, type ComponentType, type ReactNode } from "react";
+import type { ResolvedSurface, SurfaceId, SurfacePageKey } from "./contract";
 import { listSurfaces } from "./registry";
 import {
   useSurfaceResolution,
@@ -78,4 +78,51 @@ export function useSurfaceEnabled(id: SurfaceId, scope: "admin" | "user"): boole
   if (id === "bridge") return ctx.settings.bridgeEnabled;
   if (id === "canvas") return ctx.settings.canvasEnabled;
   return false;
+}
+
+// ---------------------------------------------------------------------------
+// Page override hook — Faz 2
+// ---------------------------------------------------------------------------
+
+/**
+ * Page override hook — router-agnostic page swap mechanism.
+ *
+ * Faz 2 introduces this to let surfaces (Bridge first) replace individual
+ * admin pages WITHOUT touching router.tsx. Usage inside a legacy page:
+ *
+ *     export function JobsRegistryPage() {
+ *       const Override = useSurfacePageOverride("admin.jobs.registry");
+ *       if (Override) return <Override />;
+ *       return <LegacyJobsRegistryPage />;
+ *     }
+ *
+ * Rules:
+ * - Only resolves overrides when the kill switch is on.
+ * - Only admin-scope surfaces can provide admin page overrides.
+ * - Scope is inferred from the page key prefix ("admin." or "user.").
+ * - Returns null when no override exists → caller falls back to legacy.
+ * - Returns null if `useSurfaceContext` is unavailable (tests / bootstrap),
+ *   so the hook is safe to call from any page.
+ *
+ * The hook is intentionally NOT wrapped in `useMemo`: the override component
+ * reference comes straight from the (stable) registry, so React's referential
+ * equality already prevents unnecessary re-renders.
+ */
+export function useSurfacePageOverride(
+  key: SurfacePageKey,
+): ComponentType | null {
+  // Best-effort read: during unit tests or legacy code paths the provider may
+  // not exist. In that case we silently return null (→ legacy renders).
+  const ctx = useContext(SurfaceContext);
+  if (!ctx) return null;
+  if (!ctx.infrastructureEnabled) return null;
+
+  const scope: "admin" | "user" = key.startsWith("user.") ? "user" : "admin";
+  const resolved = scope === "admin" ? ctx.admin : ctx.user;
+
+  const overrides = resolved.surface.pageOverrides;
+  if (!overrides) return null;
+
+  const Component = overrides[key];
+  return Component ?? null;
 }
