@@ -164,28 +164,23 @@ Zero regression dogrulanmis.
 
 ## 6. Commit hash
 
-`(bekliyor — bu rapor commit'e dahil)`
+`c459b3e` — `feat(surfaces): Faz 4A — theme management surface picker`
 
-Commit mesaj draft:
 ```
-feat(surfaces): Faz 4A — theme management surface picker
-
-- selectableSurfaces helper: resolver ile birebir ayni 4-katmanli eligibility
-- SurfacePickerSection: admin+user scope, status/scope rozetleri,
-  ineligible reason etiketleri, preview-honest (sahte thumbnail yok)
-- ThemeRegistryPage'e admin-scope picker section entegre edildi
-- UserSettingsPage'e user-scope picker section entegre edildi
-- Secim mevcut useThemeStore.setActiveSurface API'sine baglandi
-  (yeni persistence mekanizmasi YOK, Faz 1 v1 localStorage chain'i kullaniliyor)
-- Varsayilana don butonu explicit tercihi temizler
-- 22 unit test (selectableSurfaces) + 8 smoke test (SurfacePickerSection)
+[main c459b3e] feat(surfaces): Faz 4A — theme management surface picker
+ 7 files changed, 1433 insertions(+)
+ create mode 100644 docs_drafts/faz4a_theme_management_surface_picker_report_tr.md
+ create mode 100644 frontend/src/components/surfaces/SurfacePickerSection.tsx
+ create mode 100644 frontend/src/surfaces/selectableSurfaces.ts
+ create mode 100644 frontend/src/tests/selectable-surfaces.unit.test.ts
+ create mode 100644 frontend/src/tests/surface-picker-section.smoke.test.tsx
 ```
 
 ---
 
 ## 7. Push durumu
 
-`(bekliyor — commit sonrasi)`
+`ae52869..c459b3e  main -> main` — `origin/main` basariyla guncellendi.
 
 ---
 
