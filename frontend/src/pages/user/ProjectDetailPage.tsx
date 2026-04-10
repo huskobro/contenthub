@@ -3,9 +3,12 @@
  *
  * Shows ContentProject info, linked jobs, and linked content entity status.
  * This is the "home base" for a user's content project.
+ *
+ * Faz 3 (Canvas): trampoline — delegates to the Canvas project workspace
+ * when Canvas registers an override for `user.projects.detail`, falls
+ * through to the legacy body otherwise.
  */
 
-import { useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useContentProject } from "../../hooks/useContentProjects";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -19,6 +22,7 @@ import {
   Mono,
 } from "../../components/design-system/primitives";
 import { formatDateISO } from "../../lib/formatDate";
+import { useSurfacePageOverride } from "../../surfaces";
 
 const MODULE_LABELS: Record<string, string> = {
   standard_video: "Standart Video",
@@ -51,6 +55,12 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
 }
 
 export function ProjectDetailPage() {
+  const Override = useSurfacePageOverride("user.projects.detail");
+  if (Override) return <Override />;
+  return <LegacyProjectDetailPage />;
+}
+
+function LegacyProjectDetailPage() {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
   const qc = useQueryClient();

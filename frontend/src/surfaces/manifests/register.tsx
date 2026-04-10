@@ -44,6 +44,15 @@ import * as BridgeAdminLayoutModule from "../bridge/BridgeAdminLayout";
 import * as BridgeJobsRegistryModule from "../bridge/BridgeJobsRegistryPage";
 import * as BridgeJobDetailModule from "../bridge/BridgeJobDetailPage";
 import * as BridgePublishCenterModule from "../bridge/BridgePublishCenterPage";
+// Canvas (Faz 3). User-scope workspace shell with three page overrides:
+// user dashboard, my projects, and project detail. Same namespace import
+// style as bridge — the forwarders dereference the real components at
+// render time, not at module-eval, to avoid ever tripping a circular import
+// through ThemeProvider.
+import * as CanvasUserLayoutModule from "../canvas/CanvasUserLayout";
+import * as CanvasUserDashboardModule from "../canvas/CanvasUserDashboardPage";
+import * as CanvasMyProjectsModule from "../canvas/CanvasMyProjectsPage";
+import * as CanvasProjectDetailModule from "../canvas/CanvasProjectDetailPage";
 
 // --- Lazy forwarders -------------------------------------------------------
 // Each wrapper reads the real component from the module namespace at render
@@ -93,6 +102,32 @@ const BRIDGE_PAGE_OVERRIDES: SurfacePageOverrideMap = {
   "admin.publish.center": BridgePublishCenterForwarder,
 };
 
+// --- Canvas forwarders (Faz 3) --------------------------------------------
+// User shell + three page overrides. No admin scope — Canvas is user-only.
+
+function CanvasUserForwarder(_props: SurfaceLayoutProps) {
+  const Impl = CanvasUserLayoutModule.CanvasUserLayout;
+  return <Impl />;
+}
+function CanvasUserDashboardForwarder() {
+  const Impl = CanvasUserDashboardModule.CanvasUserDashboardPage;
+  return <Impl />;
+}
+function CanvasMyProjectsForwarder() {
+  const Impl = CanvasMyProjectsModule.CanvasMyProjectsPage;
+  return <Impl />;
+}
+function CanvasProjectDetailForwarder() {
+  const Impl = CanvasProjectDetailModule.CanvasProjectDetailPage;
+  return <Impl />;
+}
+
+const CANVAS_PAGE_OVERRIDES: SurfacePageOverrideMap = {
+  "user.dashboard": CanvasUserDashboardForwarder,
+  "user.projects.list": CanvasMyProjectsForwarder,
+  "user.projects.detail": CanvasProjectDetailForwarder,
+};
+
 const LEGACY_SURFACE: Surface = {
   manifest: LEGACY_MANIFEST,
   adminLayout: LegacyAdminForwarder,
@@ -111,7 +146,11 @@ const BRIDGE_SURFACE: Surface = {
   adminLayout: BridgeAdminForwarder,
   pageOverrides: BRIDGE_PAGE_OVERRIDES,
 };
-const CANVAS_SURFACE: Surface = { manifest: CANVAS_MANIFEST };
+const CANVAS_SURFACE: Surface = {
+  manifest: CANVAS_MANIFEST,
+  userLayout: CanvasUserForwarder,
+  pageOverrides: CANVAS_PAGE_OVERRIDES,
+};
 
 registerSurface(LEGACY_SURFACE);
 registerSurface(HORIZON_SURFACE);

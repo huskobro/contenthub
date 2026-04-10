@@ -8,6 +8,13 @@
  * - My channels (last 3)
  * - Onboarding notice if not completed
  * - Job tracker
+ *
+ * Faz 3 (Canvas): this module is now a trampoline. The exported
+ * `UserDashboardPage` checks for a surface-level override at render time and
+ * delegates to the Canvas dashboard when the active user surface registers
+ * one. The legacy body lives below as `LegacyUserDashboardPage` and is
+ * returned unchanged whenever no override exists — preserving the fallback
+ * contract for kill-switch-off, canvas-disabled, or scope-mismatch cases.
  */
 
 import { useNavigate } from "react-router-dom";
@@ -25,8 +32,19 @@ import {
 import { EmptyState } from "../components/design-system/EmptyState";
 import { SkeletonTable } from "../components/design-system/Skeleton";
 import { cn } from "../lib/cn";
+import { useSurfacePageOverride } from "../surfaces";
 
 export function UserDashboardPage() {
+  // Canvas (or any future user-scope surface) can replace this page by
+  // registering an override under "user.dashboard". Fallback is automatic
+  // when the override hook returns null (kill switch off, canvas disabled,
+  // wrong scope, etc.) — the legacy body below renders unchanged.
+  const Override = useSurfacePageOverride("user.dashboard");
+  if (Override) return <Override />;
+  return <LegacyUserDashboardPage />;
+}
+
+function LegacyUserDashboardPage() {
   const navigate = useNavigate();
   const { data: onboardingStatus } = useOnboardingStatus();
   const authUser = useAuthStore((s) => s.user);

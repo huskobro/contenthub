@@ -2,6 +2,10 @@
  * MyProjectsPage — Faz 4.
  *
  * User-facing content projects list with filters.
+ *
+ * Faz 3 (Canvas): trampoline — delegates to the Canvas workspace grid when
+ * Canvas registers an override for `user.projects.list`, falls through to
+ * the legacy data table otherwise.
  */
 
 import { useState } from "react";
@@ -19,6 +23,7 @@ import {
   DataTable,
 } from "../../components/design-system/primitives";
 import type { ContentProjectResponse } from "../../api/contentProjectsApi";
+import { useSurfacePageOverride } from "../../surfaces";
 
 const MODULE_TYPES = [
   { value: "", label: "Tum Moduller" },
@@ -35,6 +40,12 @@ const CONTENT_STATUSES = [
 ];
 
 export function MyProjectsPage() {
+  const Override = useSurfacePageOverride("user.projects.list");
+  if (Override) return <Override />;
+  return <LegacyMyProjectsPage />;
+}
+
+function LegacyMyProjectsPage() {
   const navigate = useNavigate();
   const authUser = useAuthStore((s) => s.user);
   const userId = authUser?.id;

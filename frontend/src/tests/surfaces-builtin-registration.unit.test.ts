@@ -64,11 +64,21 @@ describe("surfaces — built-in registration", () => {
     expect(typeof bridge?.pageOverrides?.["admin.publish.center"]).toBe("function");
   });
 
-  it("canvas is disabled and has no layouts", () => {
+  it("canvas is promoted to beta (Faz 3) with user-only layout + page overrides", () => {
+    // Faz 3 promotes canvas to "beta" with user scope. It provides:
+    //   - a userLayout forwarder (workspace shell)
+    //   - NO adminLayout (canvas is user-only)
+    //   - pageOverrides for user.dashboard / user.projects.list /
+    //     user.projects.detail
     const canvas = getSurface("canvas");
     expect(canvas).toBeDefined();
-    expect(canvas?.manifest.status).toBe("disabled");
+    expect(canvas?.manifest.status).toBe("beta");
+    expect(canvas?.manifest.scope).toBe("user");
+    expect(typeof canvas?.userLayout).toBe("function");
     expect(canvas?.adminLayout).toBeUndefined();
-    expect(canvas?.userLayout).toBeUndefined();
+    expect(canvas?.pageOverrides).toBeDefined();
+    expect(typeof canvas?.pageOverrides?.["user.dashboard"]).toBe("function");
+    expect(typeof canvas?.pageOverrides?.["user.projects.list"]).toBe("function");
+    expect(typeof canvas?.pageOverrides?.["user.projects.detail"]).toBe("function");
   });
 });
