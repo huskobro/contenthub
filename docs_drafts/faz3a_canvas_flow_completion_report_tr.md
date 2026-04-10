@@ -243,7 +243,7 @@ Degismis dosyalar (minimal trampolin/registry/test guncellemeleri):
 
 ## 10. Commit hash & push durumu
 
-Commit hash: `<PENDING>` — commit olusturulup `main`'e push edildikten
-sonra bu alan gercek sha ile guncellenecek.
+Commit hash: `7364f941940051bd75d911c951442d17fd7919cf`
+(kisa: `7364f94`)
 
-Push: `<PENDING>` — git log + `git push origin main`.
+Push: **basarili** — `git push origin main` → `b8f371f..7364f94  main -> main`.
