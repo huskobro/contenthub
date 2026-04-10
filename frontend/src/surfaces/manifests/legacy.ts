@@ -32,5 +32,10 @@ export const LEGACY_MANIFEST: SurfaceManifest = {
   density: "comfortable",
   navigation: { primary: "sidebar", secondary: "topbar", ownsCommandPalette: true },
   tone: ["classic", "operations", "default"],
+  bestFor: [
+    "Klasik ContentHub deneyimi",
+    "En saglam, en uzun test edilmis yuzey",
+    "Fallback / acil durum sigici",
+  ],
   hidden: false,
 };

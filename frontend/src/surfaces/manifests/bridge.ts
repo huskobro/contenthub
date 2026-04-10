@@ -33,5 +33,10 @@ export const BRIDGE_MANIFEST: SurfaceManifest = {
     ownsCommandPalette: false,
   },
   tone: ["operations", "dense", "command"],
+  bestFor: [
+    "Job / pipeline / publish izleme",
+    "Operasyon komut merkezi",
+    "Admin panelinde yogun gunluk is akisi",
+  ],
   hidden: false,
 };

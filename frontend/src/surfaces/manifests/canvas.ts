@@ -42,5 +42,10 @@ export const CANVAS_MANIFEST: SurfaceManifest = {
     ownsCommandPalette: false,
   },
   tone: ["creative", "preview-first", "studio", "workspace"],
+  bestFor: [
+    "Proje merkezli yaratici akis",
+    "On izleme oncelikli calisma",
+    "Kullanici paneli icin gunluk icerik uretimi",
+  ],
   hidden: false,
 };

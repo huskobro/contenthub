@@ -439,7 +439,7 @@ describe("describeIneligibleReason", () => {
   });
 
   it("returns distinct strings for distinct reasons", () => {
-    const strings = new Set(reasons.map(describeIneligibleReason));
+    const strings = new Set(reasons.map((r) => describeIneligibleReason(r)));
     expect(strings.size).toBe(reasons.length);
   });
 });

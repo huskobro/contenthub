@@ -249,20 +249,114 @@ export function findActivePickerEntry(
  * UI dogrudan bu string'i gosterebilir. Degistirilebilir olmasi sart degil;
  * testler bu string'leri ezmeden "dogru sebep kodu uretiliyor mu" sorusuna
  * bakar (daha saglam).
+ *
+ * Faz 4C: `panelScope` + `surfaceScope` opsiyonel parametreleri eklendi;
+ * mevcut olursa scope-mismatch mesaji "bu yuzey yalniz X panelinde calisir"
+ * seklinde zenginlestirilir. Yoksa eski genel metin korunur (geriye donuk
+ * uyumluluk).
  */
 export function describeIneligibleReason(
   reason: PickerIneligibleReason,
+  opts?: {
+    panelScope?: Exclude<SurfaceScope, "both">;
+    surfaceScope?: SurfaceScope;
+  },
 ): string {
   switch (reason) {
     case "status-disabled":
       return "Bu yuzey henuz hazirlik asamasinda. Admin registry'de disabled olarak kayitli.";
-    case "scope-mismatch":
+    case "scope-mismatch": {
+      const ss = opts?.surfaceScope;
+      const ps = opts?.panelScope;
+      if (ss && ps) {
+        if (ss === "admin" && ps === "user") {
+          return "Bu yuzey yalnizca yonetim panelinde calisir. Siz kullanici panelindesiniz, bu yuzden bu yuzey kullanici panelinizde gorunmez.";
+        }
+        if (ss === "user" && ps === "admin") {
+          return "Bu yuzey yalnizca kullanici panelinde calisir. Siz yonetim panelindesiniz, bu yuzden bu yuzey yonetim panelinizde gorunmez.";
+        }
+      }
       return "Bu yuzey bu panel icin uygun degil (scope mismatch).";
+    }
     case "admin-gate-off":
       return "Yonetici bu yuzeyi henuz acmadi. Admin panelinden `ui.surface.{id}.enabled` ayariyla acilabilir.";
     case "hidden":
       return "Bu yuzey yalnizca dahili kullanim icin isaretli.";
     default:
       return "Bu yuzey secilebilir degil.";
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Resolution reason — kullaniciya "hangi yol ile aktif oldu" anlaticisi
+// ---------------------------------------------------------------------------
+
+/**
+ * `SurfaceResolutionReason` enum'u resolver tarafi bir telemetry kodu. Bunu
+ * kullaniciya dogrudan gostermek manalarinin yarisini kaybettiriyor; kullanici
+ * "explicit tercihi kendi mi yapti, varsayilan mi, fallback mi?" ayrimini
+ * anlamak ister.
+ *
+ * `resolutionReasonCategory` o kodu UI'nin anlayabildigi bir kategoriye indirir:
+ *
+ *   - "explicit": kullanici acikca bu yuzeyi secti (`user-preference`)
+ *   - "default":  urunsel varsayilanla aktif (`role-default`, `global-default`,
+ *                 `feature-flag-forced`)
+ *   - "fallback": istenen yuzey calisamiyor, guvenli moda donus
+ *                 (`kill-switch-off`, `legacy-fallback`, `scope-mismatch-fallback`,
+ *                 `disabled-fallback`, `missing-fallback`, `error-fallback`)
+ */
+export type ResolutionReasonCategory = "explicit" | "default" | "fallback";
+
+export function resolutionReasonCategory(
+  reason: string,
+): ResolutionReasonCategory {
+  switch (reason) {
+    case "user-preference":
+      return "explicit";
+    case "role-default":
+    case "global-default":
+    case "feature-flag-forced":
+      return "default";
+    case "kill-switch-off":
+    case "legacy-fallback":
+    case "scope-mismatch-fallback":
+    case "disabled-fallback":
+    case "missing-fallback":
+    case "error-fallback":
+      return "fallback";
+    default:
+      return "fallback";
+  }
+}
+
+/**
+ * Kullanici dostu (Turkce) kisa metin — header badge ve picker "aktif" karta
+ * eklenir. `reason` `SurfaceResolutionReason` enum'un degeridir.
+ */
+export function describeResolutionReason(reason: string): string {
+  switch (reason) {
+    case "user-preference":
+      return "Sizin tercihiniz ile aktif";
+    case "role-default":
+      return "Varsayilan olarak aktif";
+    case "global-default":
+      return "Sistem geneli varsayilan olarak aktif";
+    case "feature-flag-forced":
+      return "Gelistirici override'i ile aktif";
+    case "kill-switch-off":
+      return "Kill switch kapali — guvenli mod (legacy) aktif";
+    case "legacy-fallback":
+      return "Fallback olarak aktif (istenen yuzey kullanilamadi)";
+    case "scope-mismatch-fallback":
+      return "Fallback: istenen yuzey bu panel scope'una uymuyor";
+    case "disabled-fallback":
+      return "Fallback: istenen yuzey henuz hazir degil (disabled)";
+    case "missing-fallback":
+      return "Fallback: istenen yuzey kayitli degil";
+    case "error-fallback":
+      return "Fallback: cozumlenemeyen bir hata nedeniyle legacy acildi";
+    default:
+      return "Aktif yuzey";
   }
 }

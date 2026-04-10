@@ -25,5 +25,10 @@ export const HORIZON_MANIFEST: SurfaceManifest = {
   density: "comfortable",
   navigation: { primary: "rail", secondary: "context-panel", ownsCommandPalette: true },
   tone: ["modern", "calm", "focused"],
+  bestFor: [
+    "Sakin, odakli dikey akis",
+    "Modern yonetim hissi",
+    "Legacy'den daha temiz klasik alternatif",
+  ],
   hidden: false,
 };

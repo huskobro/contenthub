@@ -49,5 +49,10 @@ export const ATRIUM_MANIFEST: SurfaceManifest = {
     ownsCommandPalette: false,
   },
   tone: ["premium", "cinematic", "editorial", "showcase"],
+  bestFor: [
+    "Sinematik editorial sunum",
+    "Showcase / premium hissi",
+    "Opt-in premium kullanici alternatifi",
+  ],
   hidden: false,
 };

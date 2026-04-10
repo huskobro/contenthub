@@ -148,6 +148,16 @@ export interface SurfaceManifest {
   /** Optional tonal tags (e.g. "premium", "operations") */
   tone?: string[];
   /**
+   * Optional "best-for" use-cases rendered in the Surface Picker. Short
+   * Turkish phrases that help the user decide whether this surface matches
+   * their needs (e.g. "Operasyon / job izleme", "Proje merkezli yaratici
+   * akis"). Surfaces that omit this still render normally — the picker just
+   * falls back to tagline + tone.
+   *
+   * Faz 4C — usability cleanup.
+   */
+  bestFor?: string[];
+  /**
    * If true, this surface should not be advertised in switcher UIs even when
    * enabled (reserved for legacy / internal surfaces).
    */

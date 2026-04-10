@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCommandPaletteStore } from "../../stores/commandPaletteStore";
+import { useAuthStore } from "../../stores/authStore";
 import { NotificationBell } from "../design-system/NotificationCenter";
+import { SurfaceActiveBadge } from "../surfaces/SurfaceActiveBadge";
 import { cn } from "../../lib/cn";
 
 // ---------------------------------------------------------------------------
@@ -86,6 +88,45 @@ const AREA_LABELS: Record<string, { label: string; switchLabel: string; switchTo
   },
 };
 
+// ---------------------------------------------------------------------------
+// Role hint — "ana roluniz" (Faz 4C)
+// ---------------------------------------------------------------------------
+
+/**
+ * Panel gecis butonunun sol ustunde kucuk bir "Ana roluniz: Admin / Kullanici"
+ * etiketi. Kullanicinin auth role'u ile o anda bulundugu panelin farkli
+ * oldugu durumlarda netlik saglar (ornek: admin user paneline gezmiyor —
+ * hala admin'dir, sadece panel baska). Bu etiket YALNIZ bir bilgi rozetidir;
+ * hicbir seyi degistirmez, navigation'a mudahale etmez.
+ */
+function RoleHintBadge() {
+  const user = useAuthStore((s) => s.user);
+  if (!user) return null;
+  const isAdminRole = user.role === "admin" || user.role === "superadmin";
+  const label = isAdminRole ? "Admin" : "Kullanici";
+  const tooltip = `Ana roluniz: ${label}. Panel gecisi kimliginizi degistirmez, sadece hangi panelde calistiginiz degisir.`;
+  return (
+    <div
+      className="flex items-center gap-1.5 px-2 py-0.5 mr-2 rounded-md border border-border-subtle bg-surface-inset select-none"
+      title={tooltip}
+      aria-label={tooltip}
+      data-testid="header-role-hint"
+      data-role={isAdminRole ? "admin" : "user"}
+    >
+      <span
+        className={cn(
+          "inline-block w-1.5 h-1.5 rounded-full",
+          isAdminRole ? "bg-brand-500" : "bg-success",
+        )}
+        aria-hidden="true"
+      />
+      <span className="text-[10px] font-medium text-neutral-500 whitespace-nowrap">
+        Rol: {label}
+      </span>
+    </div>
+  );
+}
+
 export function AppHeader({ area }: AppHeaderProps) {
   const navigate = useNavigate();
   const config = AREA_LABELS[area];
@@ -103,6 +144,9 @@ export function AppHeader({ area }: AppHeaderProps) {
       >
         {config.label}
       </span>
+
+      {/* Faz 4C: aktif surface rozeti — area label'in hemen yaninda. */}
+      <SurfaceActiveBadge area={area} className="ml-3" />
 
       <div className="flex-1" />
 
@@ -125,6 +169,9 @@ export function AppHeader({ area }: AppHeaderProps) {
 
       {/* Notification Bell */}
       <NotificationBell className="mr-3" />
+
+      {/* Faz 4C: kullanicinin ana role'unu kisaca belirt. */}
+      <RoleHintBadge />
 
       <button
         onClick={() => navigate(config.switchTo)}

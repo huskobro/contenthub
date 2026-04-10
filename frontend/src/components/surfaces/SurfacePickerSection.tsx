@@ -36,6 +36,8 @@ import { useSurfaceResolution } from "../../surfaces/useSurfaceResolution";
 import {
   buildVisibleSurfacePickerEntries,
   describeIneligibleReason,
+  describeResolutionReason,
+  resolutionReasonCategory,
   type SurfacePickerEntry,
 } from "../../surfaces/selectableSurfaces";
 import type { SurfaceId, SurfaceStatus } from "../../surfaces/contract";
@@ -97,15 +99,56 @@ function scopeLabel(surfaceScope: string): string {
 function SurfacePickerCard({
   entry,
   scope,
+  isResolvedActive,
+  activeResolutionReason,
+  userPreferenceUnusable,
   onActivate,
 }: {
   entry: SurfacePickerEntry;
   scope: "admin" | "user";
+  /**
+   * `true` ise bu kart, resolver'in SU ANDA fiilen gosterdigi yuzeydir.
+   * `entry.isActive` yalnizca explicit tercih ile eslesir — fallback
+   * durumunda (ornek: explicit atrium secildi ama gate kapali → canvas
+   * resolved), explicit tercih karti isActive=true kalirken fiili resolved
+   * kart (canvas) `isResolvedActive=true` olur.
+   */
+  isResolvedActive: boolean;
+  /**
+   * Resolver'in o an dondugu reason kodu — yalnizca `isResolvedActive` olan
+   * kartta reason etiketi olarak render edilir.
+   */
+  activeResolutionReason: string | null;
+  /**
+   * `true` ise kullanicinin explicit tercihi bu kartti (entry.isActive=true)
+   * ama resolver onu kullanamadi (isResolvedActive=false). Kullaniciya
+   * "Tercihinizdi ama simdi kullanilamiyor" mesaji gosteririz.
+   */
+  userPreferenceUnusable: boolean;
   onActivate: (id: SurfaceId) => void;
 }) {
   const { manifest } = entry;
   const status = statusBadgeVariant(manifest.status);
   const tone = manifest.tone ?? [];
+  const bestFor = manifest.bestFor ?? [];
+
+  // Reason badge sinifi — explicit/default/fallback'e gore renk.
+  const reasonCategory =
+    isResolvedActive && activeResolutionReason
+      ? resolutionReasonCategory(activeResolutionReason)
+      : null;
+  const reasonBadgeClasses =
+    reasonCategory === "explicit"
+      ? "border-brand-400 bg-brand-50 text-brand-700"
+      : reasonCategory === "default"
+        ? "border-success bg-success-light text-success-text"
+        : reasonCategory === "fallback"
+          ? "border-warning bg-warning-light text-warning-text"
+          : "border-border-subtle bg-surface-inset text-neutral-600";
+  const reasonText =
+    isResolvedActive && activeResolutionReason
+      ? describeResolutionReason(activeResolutionReason)
+      : null;
 
   return (
     <div
@@ -126,9 +169,17 @@ function SurfacePickerCard({
             <h4 className="m-0 text-base font-semibold text-neutral-900">
               {manifest.name}
             </h4>
-            {entry.isActive && (
+            {isResolvedActive && (
               <span data-testid={`surface-picker-active-marker-${manifest.id}`}>
                 <StatusBadge status="active" label="Aktif" size="sm" />
+              </span>
+            )}
+            {entry.isActive && !isResolvedActive && (
+              <span
+                data-testid={`surface-picker-preference-marker-${manifest.id}`}
+                title="Secimiz bu yuzeydi ancak resolver su anda baska bir yuzey gosteriyor (fallback)."
+              >
+                <StatusBadge status="warning" label="Tercih (kullanilmiyor)" size="sm" />
               </span>
             )}
             {entry.alwaysOn && (
@@ -161,12 +212,63 @@ function SurfacePickerCard({
         </div>
       </div>
 
+      {/* Faz 4C: "Ne icin uygun?" bolgesi — bestFor bullet'lari */}
+      {bestFor.length > 0 && (
+        <div
+          className="mb-3"
+          data-testid={`surface-picker-bestfor-${manifest.id}`}
+        >
+          <p className="m-0 mb-1 text-xs font-semibold text-neutral-500 uppercase tracking-wide">
+            Ne icin uygun?
+          </p>
+          <ul className="m-0 pl-4 list-disc text-sm text-neutral-600 leading-snug">
+            {bestFor.map((item) => (
+              <li
+                key={item}
+                data-testid={`surface-picker-bestfor-item-${manifest.id}`}
+              >
+                {item}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {/* Meta strip */}
       <div className="flex gap-2 text-xs text-neutral-500 mb-3 flex-wrap">
         <span>v{manifest.version}</span>
         {manifest.author && <span>{manifest.author}</span>}
         {tone.length > 0 && <span>{tone.join(", ")}</span>}
       </div>
+
+      {/* Faz 4C: aktif kartta resolver reason etiketi */}
+      {isResolvedActive && reasonText && (
+        <div
+          className={cn(
+            "mb-3 rounded-md border px-2.5 py-1.5 text-xs font-medium",
+            reasonBadgeClasses,
+          )}
+          data-testid={`surface-picker-reason-${manifest.id}`}
+          data-reason={activeResolutionReason ?? ""}
+          data-reason-category={reasonCategory ?? ""}
+          role="note"
+        >
+          {reasonText}
+        </div>
+      )}
+
+      {/* Faz 4C: explicit tercih kullanilamiyorsa kullaniciyi uyar */}
+      {userPreferenceUnusable && (
+        <div
+          className="mb-3 rounded-md border border-warning bg-warning-light px-2.5 py-1.5 text-xs text-warning-text"
+          data-testid={`surface-picker-preference-unusable-${manifest.id}`}
+          role="note"
+        >
+          Bu yuzey sizin tercihinizdi, ancak resolver su an kullanamiyor
+          (gate kapali, scope uymuyor veya kill-switch aktif). Resolver
+          varsayilana ya da fallback'a dustu.
+        </div>
+      )}
 
       {/* Actions / state */}
       <div className="flex items-center justify-between gap-2 flex-wrap">
@@ -191,7 +293,10 @@ function SurfacePickerCard({
             data-testid={`surface-picker-ineligible-${manifest.id}`}
           >
             {entry.ineligibleReason
-              ? describeIneligibleReason(entry.ineligibleReason)
+              ? describeIneligibleReason(entry.ineligibleReason, {
+                  panelScope: scope,
+                  surfaceScope: manifest.scope,
+                })
               : "Bu yuzey secilebilir degil."}
           </p>
         )}
@@ -220,7 +325,14 @@ function SurfacePickerCard({
 export function SurfacePickerSection({ scope }: SurfacePickerSectionProps) {
   const activeSurfaceId = useThemeStore((s) => s.activeSurfaceId);
   const setActiveSurface = useThemeStore((s) => s.setActiveSurface);
-  const { settings } = useSurfaceResolution();
+  const resolution = useSurfaceResolution();
+  const { settings } = resolution;
+
+  // Resolver'dan gelen reason — bu picker'in scope'u icin hangi yuzey
+  // aktif, neden aktif bilgisini karta iletebilmek icin.
+  const activeResolved = scope === "admin" ? resolution.admin : resolution.user;
+  const activeResolvedId = activeResolved.surface.manifest.id;
+  const activeResolutionReason = activeResolved.reason;
 
   // Resolver hook'unun hesapladigi ayni enabledSurfaceIds setini biz de
   // yeniden uretiyoruz. Legacy + horizon her zaman acik; digerleri admin
@@ -286,14 +398,25 @@ export function SurfacePickerSection({ scope }: SurfacePickerSectionProps) {
         </p>
       ) : (
         <div className="grid gap-3">
-          {entries.map((entry) => (
-            <SurfacePickerCard
-              key={entry.id}
-              entry={entry}
-              scope={scope}
-              onActivate={handleActivate}
-            />
-          ))}
+          {entries.map((entry) => {
+            const isResolvedActive = entry.id === activeResolvedId;
+            // Explicit tercih var ama resolver onu kullanmadi.
+            const userPreferenceUnusable =
+              entry.isActive && !isResolvedActive;
+            return (
+              <SurfacePickerCard
+                key={entry.id}
+                entry={entry}
+                scope={scope}
+                isResolvedActive={isResolvedActive}
+                activeResolutionReason={
+                  isResolvedActive ? activeResolutionReason : null
+                }
+                userPreferenceUnusable={userPreferenceUnusable}
+                onActivate={handleActivate}
+              />
+            );
+          })}
         </div>
       )}
     </SectionShell>
