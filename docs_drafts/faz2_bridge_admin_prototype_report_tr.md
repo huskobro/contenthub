@@ -421,8 +421,8 @@ adimlarinin tamami yapildiginda Bridge admin scope'ta aktive olur. Hicbir adim a
 | 3 | Publish Center override'landi (review board) | ✅ `BridgePublishCenterPage` 6-kolonlu read-only board, state machine bypass *yok* |
 | 4 | Legacy fallback sorunsuz | ✅ `surfaces-page-override-hook` ve `bridge-legacy-fallback` testleri tum fallback yollarini (context yok / switch kapali / override yok / key yok) dogruluyor |
 | 5 | Test sonuclari | ✅ 20 yeni test (20/20 pass) + 66/66 total surface test pass + tsc clean + vite build clean + 0 yeni regression (243 pre-existing failure degismedi) |
-| 6 | Commit hash | `<TO_BE_FILLED_ON_COMMIT>` |
-| 7 | Push status | `<TO_BE_FILLED_ON_PUSH>` |
+| 6 | Commit hash | `dde2208` — `feat(surfaces): Faz 2 — Bridge admin prototype with page overrides` |
+| 7 | Push status | ✅ Pushed to `origin/main` (`8ab015a..dde2208`) |
 
 ---
 
