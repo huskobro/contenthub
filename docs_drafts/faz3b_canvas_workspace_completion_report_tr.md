@@ -359,6 +359,9 @@ komutla (activate_surfaces.py --revert) geri alinabiliyor.
   - Full suite: **2205 pass / 247 fail / 2452** — baseline ±4 flake
     bandinda; yeni canvas workspace test dosyalari yesil.
 
-- **commit hash:** _(commit yapildiktan sonra doldurulacak)_
+- **commit hash:** `a8e5656` — `feat(surfaces): Faz 3B — Canvas
+  workspace completion (calendar + channel studio)` (11 dosya,
+  +2597/-10 satir).
 
-- **push durumu:** _(push yapildiktan sonra doldurulacak)_
+- **push durumu:** `origin/main` → `4b20f9f..a8e5656` push edildi,
+  basarili.
