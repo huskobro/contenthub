@@ -144,5 +144,5 @@ Tests       14 passed (14)
 | F5 sonrası atma | GİTTİ — manual + automated doğrulandı |
 | Onboarding / auth sırası | DÜZELDİ — useOnboardingStatus sadece authenticated tree içinde mount olur |
 | Test sonucu | 14/14 new tests passing, tsc clean |
-| Commit hash | (bu rapor yazıldıktan sonra eklenecek) |
-| Push durumu | (commit'ten sonra) |
+| Commit hash | `16a223b` |
+| Push durumu | `origin/main` — `f8bda7d..16a223b` başarılı |

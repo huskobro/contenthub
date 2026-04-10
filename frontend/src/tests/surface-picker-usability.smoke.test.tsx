@@ -161,19 +161,25 @@ describe("SurfacePickerSection — Faz 4C usability", () => {
   });
 
   // -------------------------------------------------------------------------
-  // 4. Scope mismatch zenginlesmis mesaji
+  // 4. Faz 4E — scope-disallowed surfaces are hidden entirely
   // -------------------------------------------------------------------------
+  //
+  // Before Faz 4E this block tested the scope-mismatch "positive guidance"
+  // text (Faz 4D). After Faz 4E the product decision flipped: user panel
+  // must show ONLY user+both scope surfaces, admin panel must show ONLY
+  // admin+both scope surfaces. Scope-disallowed entries are dropped from
+  // the list — not even rendered as informational ineligible cards.
 
-  it("admin panel shows scope-aware mismatch message for atrium (user-only)", () => {
+  it("admin panel does not list user-scope surfaces at all (atrium hidden)", () => {
     render(<SurfacePickerSection scope="admin" />);
-    const msg = screen.getByTestId("surface-picker-ineligible-atrium");
-    expect(msg.textContent ?? "").toMatch(/yalnizca kullanici panelinde/i);
+    expect(screen.queryByTestId("surface-picker-card-atrium")).toBeNull();
+    expect(screen.queryByTestId("surface-picker-ineligible-atrium")).toBeNull();
   });
 
-  it("user panel shows scope-aware mismatch message for bridge (admin-only)", () => {
+  it("user panel does not list admin-scope surfaces at all (bridge hidden)", () => {
     render(<SurfacePickerSection scope="user" />);
-    const msg = screen.getByTestId("surface-picker-ineligible-bridge");
-    expect(msg.textContent ?? "").toMatch(/yalnizca yonetim panelinde/i);
+    expect(screen.queryByTestId("surface-picker-card-bridge")).toBeNull();
+    expect(screen.queryByTestId("surface-picker-ineligible-bridge")).toBeNull();
   });
 
   // -------------------------------------------------------------------------

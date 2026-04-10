@@ -196,12 +196,13 @@ describe("Faz 4D — scope mismatch positive guidance (Task C)", () => {
     expect(msg.toLowerCase()).toMatch(/scope mismatch/);
   });
 
-  it("rendered ineligible card (admin scope, canvas) shows positive guidance text", () => {
+  // Faz 4E: scope-mismatch cards are no longer rendered at all. The
+  // describeIneligibleReason("scope-mismatch", ...) helper still exists for
+  // backward compatibility (callers may build their own labels), but the
+  // picker UI never surfaces it. Verify absence.
+  it("admin panel does not render scope-mismatch card for canvas", () => {
     render(<SurfacePickerSection scope="admin" />);
-
-    // Canvas admin panelinde scope-mismatch (user-only) — ineligible label bulmaliyiz.
-    const ineligible = screen.getByTestId("surface-picker-ineligible-canvas");
-    expect(ineligible.textContent?.toLowerCase()).toMatch(/bridge/);
-    expect(ineligible.textContent?.toLowerCase()).toMatch(/kullanabilirsiniz/);
+    expect(screen.queryByTestId("surface-picker-card-canvas")).toBeNull();
+    expect(screen.queryByTestId("surface-picker-ineligible-canvas")).toBeNull();
   });
 });

@@ -228,6 +228,32 @@ export function buildVisibleSurfacePickerEntries(
 }
 
 /**
+ * Picker UI'si icin "scope'a kilitli" liste — panel scope'una uymayan
+ * yuzeyleri TAMAMEN gizler, bilgi karti olarak dahi gostermez.
+ *
+ * Fark — `buildVisibleSurfacePickerEntries` scope-mismatch kayitlarini
+ * `ineligibleReason: "scope-mismatch"` olarak tutuyor ve UI bunlari
+ * "bu yuzey yalniz admin panelinde" acikmalasiyla kart olarak ciziyordu.
+ * Faz 4E karariyla (kullanici istegi "option a") artik:
+ *
+ *   - user panelde      → yalniz user-scope + both-scope surfaces
+ *   - admin panelde     → yalniz admin-scope + both-scope surfaces
+ *   - scope-disallowed  → hiclerden hic, liste bile degil
+ *
+ * Hidden kayitlar da her zaman oldugu gibi atlanir.
+ *
+ * Bootstrap surfaces (`legacy`, `horizon`) her iki scope icin de `both`
+ * oldugundan bu filtreye takilmaz.
+ */
+export function buildScopedSurfacePickerEntries(
+  input: BuildSelectableSurfacesInput,
+): SurfacePickerEntry[] {
+  return buildSurfacePickerEntries(input).filter(
+    (e) => !e.hidden && e.ineligibleReason !== "scope-mismatch",
+  );
+}
+
+/**
  * "Aktif olan entry hangisi?" — `SurfacePickerSection`'in aktif isareti icin
  * kullanir. Kullanici hicbir secim yapmamissa (`activeSurfaceId === null`)
  * null doner; bu "resolver default'a dusecek" demektir.

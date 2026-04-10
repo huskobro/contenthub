@@ -34,7 +34,7 @@ import {
 import { useThemeStore } from "../../stores/themeStore";
 import { useSurfaceResolution } from "../../surfaces/useSurfaceResolution";
 import {
-  buildVisibleSurfacePickerEntries,
+  buildScopedSurfacePickerEntries,
   describeIneligibleReason,
   describeResolutionReason,
   resolutionReasonCategory,
@@ -371,9 +371,12 @@ export function SurfacePickerSection({ scope }: SurfacePickerSectionProps) {
     return set;
   }, [settings.atriumEnabled, settings.bridgeEnabled, settings.canvasEnabled]);
 
+  // Faz 4E: scope-disallowed yuzeyler listede hic gozukmez. User panel sadece
+  // user + both scope yuzeyleri, admin panel sadece admin + both scope
+  // yuzeyleri gosterir. Bkz. `buildScopedSurfacePickerEntries`.
   const entries = useMemo(
     () =>
-      buildVisibleSurfacePickerEntries({
+      buildScopedSurfacePickerEntries({
         scope,
         enabledSurfaceIds,
         activeSurfaceId,
@@ -479,7 +482,7 @@ export function SurfacePickerSection({ scope }: SurfacePickerSectionProps) {
   return (
     <SectionShell
       title="Arayuz Yuzeyleri"
-      description="Kendi panel scope'unuza uygun, registry'de kayitli yuzeyler listelenir. Disabled/scope-mismatch olanlar secilemez — sebep aciklamasi altlarinda gosterilir."
+      description="Sadece bu panel icin uygun yuzeyler listelenir. Hazirlik asamasindaki veya yonetici tarafindan acilmamis olanlar secilemez olarak gosterilir."
       testId={`surface-picker-${scope}`}
       actions={
         hasPreference ? (

@@ -26,6 +26,7 @@ import {
   buildSurfacePickerEntry,
   buildSurfacePickerEntries,
   buildVisibleSurfacePickerEntries,
+  buildScopedSurfacePickerEntries,
   findActivePickerEntry,
   describeIneligibleReason,
   type PickerIneligibleReason,
@@ -441,5 +442,123 @@ describe("describeIneligibleReason", () => {
   it("returns distinct strings for distinct reasons", () => {
     const strings = new Set(reasons.map((r) => describeIneligibleReason(r)));
     expect(strings.size).toBe(reasons.length);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// buildScopedSurfacePickerEntries — Faz 4E scope hard-filter
+// ---------------------------------------------------------------------------
+//
+// Option (a) semantics: user panel shows only user + both; admin panel shows
+// only admin + both; scope-mismatch surfaces are dropped entirely from the
+// list (not even rendered as an "unavailable" card). Hidden surfaces remain
+// dropped as before.
+
+describe("buildScopedSurfacePickerEntries — Faz 4E", () => {
+  function fullRegistry() {
+    return [
+      makeSurface("legacy", { scope: "both" }),
+      makeSurface("horizon", { scope: "both" }),
+      makeSurface("atrium", { scope: "user" }),
+      makeSurface("canvas", { scope: "user" }),
+      makeSurface("bridge", { scope: "admin" }),
+      makeSurface("internal", { scope: "both", hidden: true }),
+    ];
+  }
+
+  it("user panel: hides admin-scope surfaces entirely", () => {
+    const entries = buildScopedSurfacePickerEntries({
+      scope: "user",
+      enabledSurfaceIds: allEnabled(),
+      activeSurfaceId: null,
+      surfaceProvider: fullRegistry,
+    });
+    const ids = entries.map((e) => e.id);
+    expect(ids).not.toContain("bridge");
+    expect(ids).not.toContain("internal");
+    expect(ids).toContain("legacy");
+    expect(ids).toContain("horizon");
+    expect(ids).toContain("atrium");
+    expect(ids).toContain("canvas");
+  });
+
+  it("admin panel: hides user-scope surfaces entirely", () => {
+    const entries = buildScopedSurfacePickerEntries({
+      scope: "admin",
+      enabledSurfaceIds: allEnabled(),
+      activeSurfaceId: null,
+      surfaceProvider: fullRegistry,
+    });
+    const ids = entries.map((e) => e.id);
+    expect(ids).not.toContain("atrium");
+    expect(ids).not.toContain("canvas");
+    expect(ids).not.toContain("internal");
+    expect(ids).toContain("legacy");
+    expect(ids).toContain("horizon");
+    expect(ids).toContain("bridge");
+  });
+
+  it("keeps ineligible-but-scope-ok entries (e.g. admin-gate-off)", () => {
+    // atrium is user-scope, so it passes scope filter for user panel. But
+    // it's NOT in enabledSurfaceIds → should remain in the list as a
+    // non-selectable entry with admin-gate-off reason.
+    const gated: ReadonlySet<string> = new Set(["legacy", "horizon"]);
+    const entries = buildScopedSurfacePickerEntries({
+      scope: "user",
+      enabledSurfaceIds: gated,
+      activeSurfaceId: null,
+      surfaceProvider: fullRegistry,
+    });
+    const atrium = entries.find((e) => e.id === "atrium");
+    expect(atrium).toBeTruthy();
+    expect(atrium!.selectable).toBe(false);
+    expect(atrium!.ineligibleReason).toBe("admin-gate-off");
+  });
+
+  it("keeps status-disabled scope-ok entries", () => {
+    const provider = () => [
+      makeSurface("legacy", { scope: "both" }),
+      makeSurface("horizon", { scope: "both" }),
+      makeSurface("atrium", { scope: "user", status: "disabled" }),
+    ];
+    const entries = buildScopedSurfacePickerEntries({
+      scope: "user",
+      enabledSurfaceIds: allEnabled(),
+      activeSurfaceId: null,
+      surfaceProvider: provider,
+    });
+    const atrium = entries.find((e) => e.id === "atrium");
+    expect(atrium).toBeTruthy();
+    expect(atrium!.selectable).toBe(false);
+    expect(atrium!.ineligibleReason).toBe("status-disabled");
+  });
+
+  it("never exposes scope-mismatch as a visible reason", () => {
+    const entries = buildScopedSurfacePickerEntries({
+      scope: "user",
+      enabledSurfaceIds: allEnabled(),
+      activeSurfaceId: null,
+      surfaceProvider: fullRegistry,
+    });
+    for (const e of entries) {
+      expect(e.ineligibleReason).not.toBe("scope-mismatch");
+    }
+  });
+
+  it("hides hidden entries in both scopes", () => {
+    const userEntries = buildScopedSurfacePickerEntries({
+      scope: "user",
+      enabledSurfaceIds: allEnabled(),
+      activeSurfaceId: null,
+      surfaceProvider: fullRegistry,
+    });
+    const adminEntries = buildScopedSurfacePickerEntries({
+      scope: "admin",
+      enabledSurfaceIds: allEnabled(),
+      activeSurfaceId: null,
+      surfaceProvider: fullRegistry,
+    });
+    expect(userEntries.map((e) => e.id)).not.toContain("internal");
+    expect(adminEntries.map((e) => e.id)).not.toContain("internal");
   });
 });
