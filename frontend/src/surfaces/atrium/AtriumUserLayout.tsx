@@ -280,6 +280,28 @@ export function AtriumUserLayout() {
 
             <div className="w-px h-7 bg-neutral-700 mx-1" />
 
+            {/* Faz 4D: panel switch — Atrium kullanici shell'inden yonetim
+                paneline gecis. Atrium'da daha once panel switch butonu yoktu;
+                kullanici admin'e donemiyordu. Premium hisse uyan, koyu
+                tema-uyumlu pill buton. */}
+            <button
+              type="button"
+              onClick={() => navigate("/admin")}
+              title="Yonetim paneline gecis yapin"
+              aria-label="Yonetim paneline gecis yapin"
+              data-testid="atrium-panel-switch"
+              className={cn(
+                "hidden sm:inline-flex items-center gap-1 px-3 py-1.5 rounded-full",
+                "text-xs font-semibold",
+                "border border-neutral-600 text-neutral-100",
+                "hover:bg-neutral-800 transition-colors",
+              )}
+            >
+              Yonetim Paneli
+            </button>
+
+            <div className="w-px h-7 bg-neutral-700 mx-1" />
+
             <NotificationBell />
 
             <div

@@ -269,6 +269,26 @@ export function CanvasUserLayout() {
             <span className="ml-2 text-neutral-400">&middot;</span>
             <span className="ml-2 text-neutral-500">{projectCount} proje</span>
           </div>
+          {/* Faz 4D: panel switch — Canvas user shell'inden yonetim paneline
+              gecis. Daha once bu butonun Canvas'ta hic render edilmedigi
+              dogrulandi; kullanici admin'e donemiyordu. Basit link butonu,
+              yeni nav sistemi degil. */}
+          <div className="w-px h-6 bg-border-subtle mx-1" />
+          <button
+            type="button"
+            onClick={() => navigate("/admin")}
+            title="Yonetim paneline gecis yapin"
+            aria-label="Yonetim paneline gecis yapin"
+            data-testid="canvas-panel-switch"
+            className={cn(
+              "px-3 py-1.5 text-xs font-semibold rounded-md",
+              "border border-border bg-transparent text-neutral-600",
+              "hover:bg-neutral-50 hover:border-brand-400 hover:text-neutral-800",
+              "transition-colors duration-fast",
+            )}
+          >
+            Yonetim Paneline Gec
+          </button>
         </header>
 
         <div className="flex flex-1 min-h-0">

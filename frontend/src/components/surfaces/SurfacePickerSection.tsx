@@ -24,7 +24,7 @@
  *    minyatur thumbnail'larla kullaniciyi yanlis yonlendirmiyoruz.
  */
 
-import { useMemo, useCallback } from "react";
+import { useMemo, useCallback, useState, useEffect } from "react";
 import { cn } from "../../lib/cn";
 import {
   SectionShell,
@@ -102,6 +102,7 @@ function SurfacePickerCard({
   isResolvedActive,
   activeResolutionReason,
   userPreferenceUnusable,
+  isRecommended,
   onActivate,
 }: {
   entry: SurfacePickerEntry;
@@ -125,6 +126,11 @@ function SurfacePickerCard({
    * "Tercihinizdi ama simdi kullanilamiyor" mesaji gosteririz.
    */
   userPreferenceUnusable: boolean;
+  /**
+   * Faz 4D: `true` ise bu kart, bu panel icin sistem varsayilani olarak
+   * onerilen yuzey. Kart altinda kucuk "Bu panel icin onerilen" notu gosterilir.
+   */
+  isRecommended: boolean;
   onActivate: (id: SurfaceId) => void;
 }) {
   const { manifest } = entry;
@@ -189,6 +195,18 @@ function SurfacePickerCard({
                 data-testid={`surface-picker-bootstrap-${manifest.id}`}
               >
                 bootstrap
+              </span>
+            )}
+            {/* Faz 4D: "Bu panel icin onerilen" etiketi — yalniz sistem
+                varsayilani olan ve secilebilir kartlara eklenir. Kullanici
+                hangi yuzeyin "resmi onerilen" oldugunu gormeli. */}
+            {isRecommended && entry.selectable && (
+              <span
+                className="text-[10px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded border border-success bg-success-light text-success-text"
+                title="Bu panel icin sistem varsayilani olarak onerilen yuzey."
+                data-testid={`surface-picker-recommended-${manifest.id}`}
+              >
+                onerilen
               </span>
             )}
           </div>
@@ -326,13 +344,19 @@ export function SurfacePickerSection({ scope }: SurfacePickerSectionProps) {
   const activeSurfaceId = useThemeStore((s) => s.activeSurfaceId);
   const setActiveSurface = useThemeStore((s) => s.setActiveSurface);
   const resolution = useSurfaceResolution();
-  const { settings } = resolution;
+  const { settings, infrastructureEnabled } = resolution;
 
   // Resolver'dan gelen reason — bu picker'in scope'u icin hangi yuzey
   // aktif, neden aktif bilgisini karta iletebilmek icin.
   const activeResolved = scope === "admin" ? resolution.admin : resolution.user;
   const activeResolvedId = activeResolved.surface.manifest.id;
+  const activeResolvedName = activeResolved.surface.manifest.name;
   const activeResolutionReason = activeResolved.reason;
+
+  // Faz 4D: bu panel icin sistem varsayilani (role-default). Picker'da
+  // "onerilen" etiketi icin kullanilir.
+  const roleDefaultId: SurfaceId | null =
+    scope === "admin" ? settings.defaultAdmin : settings.defaultUser;
 
   // Resolver hook'unun hesapladigi ayni enabledSurfaceIds setini biz de
   // yeniden uretiyoruz. Legacy + horizon her zaman acik; digerleri admin
@@ -357,18 +381,100 @@ export function SurfacePickerSection({ scope }: SurfacePickerSectionProps) {
     [scope, enabledSurfaceIds, activeSurfaceId],
   );
 
+  // Faz 4D — inline activation feedback. Toast kullanmiyoruz; kucuk, local,
+  // gercek state tabanli bir satir. Kullanici "Aktif Et" basinca ne oldu,
+  // anlasilir sekilde gozukur. `handleActivate` / `handleReset` tetikler,
+  // resolver degisince feedback cumlesi guncel state'ten tekrar uretilir.
+  type ActivationAction =
+    | { kind: "activated"; id: SurfaceId }
+    | { kind: "reset" }
+    | null;
+  const [lastAction, setLastAction] = useState<ActivationAction>(null);
+
   const handleActivate = useCallback(
     (id: SurfaceId) => {
       setActiveSurface(id);
+      setLastAction({ kind: "activated", id });
     },
     [setActiveSurface],
   );
 
   const handleReset = useCallback(() => {
     setActiveSurface(null);
+    setLastAction({ kind: "reset" });
   }, [setActiveSurface]);
 
+  // scope degisirse eski feedback'i sifirla (yanliskarikanlik olmasin).
+  useEffect(() => {
+    setLastAction(null);
+  }, [scope]);
+
   const hasPreference = activeSurfaceId !== null;
+
+  // Feedback metnini gercek resolver state'inden tureten yardimci.
+  const feedback = useMemo<
+    { tone: "success" | "warning"; text: string } | null
+  >(() => {
+    if (!lastAction) return null;
+    if (lastAction.kind === "reset") {
+      return {
+        tone: "success",
+        text: `Tercihiniz temizlendi. Bu panel artik varsayilanla "${activeResolvedName}" yuzeyini gosteriyor.`,
+      };
+    }
+    // activated
+    if (lastAction.id === activeResolvedId) {
+      // Resolver tercihi kabul etti.
+      return {
+        tone: "success",
+        text: `Bu panel artik "${activeResolvedName}" ile goruntuleniyor.`,
+      };
+    }
+    // Explicit tercih resolver tarafindan kullanilmadi — fallback.
+    return {
+      tone: "warning",
+      text: `Tercihiniz "${lastAction.id}" alindi ancak bu panelde su an kullanilamiyor. Resolver varsayilan/fallback olarak "${activeResolvedName}" gosteriyor.`,
+    };
+  }, [lastAction, activeResolvedId, activeResolvedName]);
+
+  // Faz 4D — status panel: "hangi yuzey, neden, tercihiniz ne?" sorularinin
+  // tek cevabi. Dort satir, resolver raporundan dogrudan okunur.
+  const statusPanelRows: Array<{
+    label: string;
+    value: string;
+    testId: string;
+    valueClassName?: string;
+  }> = [
+    {
+      label: "Altyapi",
+      value: infrastructureEnabled ? "Acik" : "Kapali",
+      testId: "surface-picker-status-infra",
+      valueClassName: infrastructureEnabled
+        ? "text-success-text"
+        : "text-warning-text",
+    },
+    {
+      label: "Bu panelde aktif",
+      value: `${activeResolvedName} (${activeResolvedId})`,
+      testId: "surface-picker-status-active",
+    },
+    {
+      label: "Neden",
+      value: describeResolutionReason(activeResolutionReason),
+      testId: "surface-picker-status-reason",
+    },
+    {
+      label: "Tercihiniz",
+      value: activeSurfaceId
+        ? `${activeSurfaceId}${
+            activeSurfaceId === activeResolvedId
+              ? ""
+              : " (resolver tarafindan kullanilmiyor)"
+          }`
+        : "yok — varsayilana giyoruz",
+      testId: "surface-picker-status-preference",
+    },
+  ];
 
   return (
     <SectionShell
@@ -389,6 +495,56 @@ export function SurfacePickerSection({ scope }: SurfacePickerSectionProps) {
         ) : undefined
       }
     >
+      {/* Faz 4D — aktif durum ozeti. Tek bakista: altyapi, aktif yuzey,
+          neden, kullanicinin tercihi. */}
+      <div
+        className="mb-4 rounded-md border border-border-subtle bg-surface-inset p-3"
+        data-testid={`surface-picker-status-panel-${scope}`}
+        role="note"
+        aria-label="Surface aktivasyon durumu"
+      >
+        <p className="m-0 mb-2 text-xs font-semibold text-neutral-500 uppercase tracking-wide">
+          Aktivasyon durumu
+        </p>
+        <dl className="m-0 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
+          {statusPanelRows.map((row) => (
+            <div
+              key={row.testId}
+              className="contents"
+              data-testid={row.testId}
+            >
+              <dt className="text-neutral-500 font-medium">{row.label}</dt>
+              <dd
+                className={cn(
+                  "m-0 text-neutral-800",
+                  row.valueClassName,
+                )}
+              >
+                {row.value}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+
+      {/* Faz 4D — inline activation feedback. Toast degil; local state'e bagli
+          kisa bilgi satiri. Hicbir seyi saklamiyor — sadece soyluyor. */}
+      {feedback && (
+        <div
+          className={cn(
+            "mb-4 rounded-md border px-3 py-2 text-sm",
+            feedback.tone === "success"
+              ? "border-success bg-success-light text-success-text"
+              : "border-warning bg-warning-light text-warning-text",
+          )}
+          data-testid={`surface-picker-activation-feedback-${scope}`}
+          data-tone={feedback.tone}
+          role="status"
+        >
+          {feedback.text}
+        </div>
+      )}
+
       {entries.length === 0 ? (
         <p
           className="text-sm text-neutral-500 italic"
@@ -403,6 +559,8 @@ export function SurfacePickerSection({ scope }: SurfacePickerSectionProps) {
             // Explicit tercih var ama resolver onu kullanmadi.
             const userPreferenceUnusable =
               entry.isActive && !isResolvedActive;
+            const isRecommended =
+              roleDefaultId !== null && entry.id === roleDefaultId;
             return (
               <SurfacePickerCard
                 key={entry.id}
@@ -413,6 +571,7 @@ export function SurfacePickerSection({ scope }: SurfacePickerSectionProps) {
                   isResolvedActive ? activeResolutionReason : null
                 }
                 userPreferenceUnusable={userPreferenceUnusable}
+                isRecommended={isRecommended}
                 onActivate={handleActivate}
               />
             );

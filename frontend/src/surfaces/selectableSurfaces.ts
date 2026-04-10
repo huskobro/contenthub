@@ -269,11 +269,14 @@ export function describeIneligibleReason(
       const ss = opts?.surfaceScope;
       const ps = opts?.panelScope;
       if (ss && ps) {
+        // Faz 4D: yonlendirici (positive guidance) metinleri. Kullaniciya
+        // yalnizca "scope uymuyor" demek yerine "bu panelde hangileri
+        // kullanilabilir" bilgisini da veriyoruz.
         if (ss === "admin" && ps === "user") {
-          return "Bu yuzey yalnizca yonetim panelinde calisir. Siz kullanici panelindesiniz, bu yuzden bu yuzey kullanici panelinizde gorunmez.";
+          return "Bu yuzey yalnizca yonetim panelinde calisir (ornek: Bridge). Kullanici panelinde Canvas, Atrium, Legacy veya Horizon kullanabilirsiniz.";
         }
         if (ss === "user" && ps === "admin") {
-          return "Bu yuzey yalnizca kullanici panelinde calisir. Siz yonetim panelindesiniz, bu yuzden bu yuzey yonetim panelinizde gorunmez.";
+          return "Bu yuzey yalnizca kullanici panelinde calisir (ornek: Canvas, Atrium). Yonetim panelinde Bridge, Legacy veya Horizon kullanabilirsiniz.";
         }
       }
       return "Bu yuzey bu panel icin uygun degil (scope mismatch).";

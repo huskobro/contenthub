@@ -332,11 +332,17 @@ export function BridgeAdminLayout() {
             })}
           </nav>
           <div className="mt-auto mb-3 flex flex-col items-center gap-1">
+            {/* Faz 4D: panel switch — tooltip + aria-label daha net hale
+                getirildi; mevcut data-testid="bridge-scope-switch" korunur
+                (regresyon olmasin). Yeni ikinci testid eklendi ki tum
+                surface'lerde testler ayni isim uzerinden switch'i bulabilsin. */}
             <button
               onClick={() => navigate("/user")}
               className="w-10 h-10 flex items-center justify-center rounded-md text-[10px] font-mono text-neutral-500 bg-transparent border border-border-subtle hover:bg-neutral-100 hover:text-neutral-800 cursor-pointer"
-              title="Kullanici Paneline gec"
+              title="Kullanici paneline gecis yapin"
+              aria-label="Kullanici paneline gecis yapin"
               data-testid="bridge-scope-switch"
+              data-panel-switch="bridge"
             >
               USR
             </button>
