@@ -427,12 +427,15 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "help_text": (
             "Kullanici kendi tercihini belirtmemisse admin panelinde varsayilan olarak "
             "hangi yuzey gosterilsin? Gecerli degerler: legacy, horizon, atrium, bridge, "
-            "canvas. Bos veya tanimsiz birakilirsa resolver 'legacy' kullanir. "
-            "Kill-switch kapaliyken bu ayar yoksayilir."
+            "canvas. Urunsel varsayilan 'bridge' (Operations Command Center) — admin "
+            "scope'undaki tek beta yuzey ve Faz 2'de uc sayfa override'i (jobs registry/"
+            "jobs detail/publish center) ile teslim edildi. Resolver layer-3 role-default "
+            "olarak kullanir; `ui.surface.bridge.enabled=false` veya kill-switch kapaliysa "
+            "otomatik olarak legacy'e duser. Bos/tanimsiz birakilirsa yine legacy kullanilir."
         ),
         "module_scope": None,
         "env_var": None,
-        "builtin_default": "legacy",
+        "builtin_default": "bridge",
         "wired": True,
         "wired_to": "frontend.surfaces.resolver",
     },
@@ -443,12 +446,17 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "help_text": (
             "Kullanici kendi tercihini belirtmemisse kullanici panelinde varsayilan olarak "
             "hangi yuzey gosterilsin? Gecerli degerler: legacy, horizon, atrium, bridge, "
-            "canvas. Bos veya tanimsiz birakilirsa resolver 'legacy' kullanir. "
-            "Kill-switch kapaliyken bu ayar yoksayilir."
+            "canvas. Urunsel varsayilan 'canvas' (Creator Workspace Pro) — Faz 3/3A/3B'de "
+            "dokuz sayfa override'i (dashboard, projects list/detail, publish, channels "
+            "list/detail, connections, analytics, calendar) ile teslim edildi ve user "
+            "scope'undaki en kapsamli yuzey. Atrium premium alternatif olarak opt-in "
+            "kalir (yalnizca uc override). Resolver layer-3 role-default olarak kullanir; "
+            "`ui.surface.canvas.enabled=false` veya kill-switch kapaliysa otomatik olarak "
+            "legacy'e duser. Bos/tanimsiz birakilirsa yine legacy kullanilir."
         ),
         "module_scope": None,
         "env_var": None,
-        "builtin_default": "legacy",
+        "builtin_default": "canvas",
         "wired": True,
         "wired_to": "frontend.surfaces.resolver",
     },
