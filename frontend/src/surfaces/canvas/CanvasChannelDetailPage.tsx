@@ -43,7 +43,7 @@
 
 import { useState, useEffect, useMemo, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "../../stores/authStore";
 import {
   useChannelProfile,
@@ -57,9 +57,16 @@ import {
   useSaveChannelCredentials,
 } from "../../hooks/useCredentials";
 import { useContentProjects } from "../../hooks/useContentProjects";
+import { useJobDetail } from "../../hooks/useJobDetail";
+import { fetchJobs, type JobResponse } from "../../api/jobsApi";
 import { getYouTubeAuthUrl } from "../../api/credentialsApi";
 import { StatusBadge } from "../../components/design-system/primitives";
 import { YouTubeChannelBrandingSection } from "../../components/settings/YouTubeChannelBrandingSection";
+import { VideoPlayer } from "../../components/shared/VideoPlayer";
+import {
+  buildJobArtifactUrl,
+  findFirstVideoArtifact,
+} from "../../lib/jobArtifacts";
 import { cn } from "../../lib/cn";
 
 // ---------------------------------------------------------------------------
@@ -193,6 +200,104 @@ export function CanvasChannelDetailPage() {
   }
 
   const projectRows = useMemo(() => projects ?? [], [projects]);
+
+  // ---------------------------------------------------------------
+  // Latest render preview — show the most recently completed render
+  // belonging to any project under this channel, with full VideoPlayer
+  // keyboard controls. Falls back to a gentle placeholder when nothing
+  // has been rendered yet. All data comes from existing hooks — no
+  // new endpoints.
+  //
+  // Pipeline:
+  //   1. Pull all jobs for the signed-in user (same query used by the
+  //      Canvas project dashboard; React Query dedupes).
+  //   2. Build the project→preview map via the shared lib helper so the
+  //      artifact-schema logic stays in one place (jobArtifacts.ts).
+  //   3. Pick the preview whose job.finished_at is most recent among
+  //      this channel's projects.
+  // ---------------------------------------------------------------
+  const { data: allJobs } = useQuery({
+    queryKey: ["jobs", { canvasChannelDetail: channelId ?? null }],
+    queryFn: () => fetchJobs(),
+    enabled: !!channelId,
+  });
+
+  const channelProjectIds = useMemo(
+    () => new Set(projectRows.map((p) => p.id)),
+    [projectRows],
+  );
+
+  const latestRenderJobId = useMemo(() => {
+    if (!allJobs || channelProjectIds.size === 0) return null;
+    // Pick the most recent job whose content_project_id maps into this
+    // channel. We prefer finished_at but fall back to created_at so
+    // still-running jobs can surface too. The job list endpoint
+    // already returns steps, so the caller can walk artifact_refs
+    // without an extra backend call.
+    const candidates = (allJobs as JobResponse[])
+      .filter(
+        (j) =>
+          j.content_project_id &&
+          channelProjectIds.has(j.content_project_id),
+      )
+      .sort((a, b) => {
+        const ta = Date.parse(a.finished_at ?? a.created_at ?? "") || 0;
+        const tb = Date.parse(b.finished_at ?? b.created_at ?? "") || 0;
+        return tb - ta;
+      });
+    return candidates[0]?.id ?? null;
+  }, [allJobs, channelProjectIds]);
+
+  // Fallback path: if no job has content_project_id linked, walk the
+  // projects themselves and pick the one with the most recent
+  // active_job_id.
+  const fallbackJobId = useMemo(() => {
+    if (latestRenderJobId) return null;
+    const active = projectRows
+      .filter((p) => p.active_job_id)
+      .sort((a, b) => {
+        const ta = Date.parse(a.updated_at ?? a.created_at ?? "") || 0;
+        const tb = Date.parse(b.updated_at ?? b.created_at ?? "") || 0;
+        return tb - ta;
+      });
+    return active[0]?.active_job_id ?? null;
+  }, [latestRenderJobId, projectRows]);
+
+  const previewJobId = latestRenderJobId ?? fallbackJobId;
+
+  // useJobDetail gives us the full job row with `steps[]` that carry
+  // artifact_refs_json — the list endpoint returns steps too, but going
+  // through the single-job hook keeps us consistent with
+  // CanvasProjectDetailPage and ensures we don't miss partial loads.
+  const { data: previewJob } = useJobDetail(previewJobId);
+
+  const previewArtifactPath = useMemo(
+    () => findFirstVideoArtifact(previewJob?.steps),
+    [previewJob?.steps],
+  );
+  const previewVideoUrl = useMemo(
+    () => buildJobArtifactUrl(previewJobId, previewArtifactPath),
+    [previewJobId, previewArtifactPath],
+  );
+
+  // The owning project — used to link "Aç" from the preview card back
+  // into the project workspace so the user can keep editing.
+  const previewProject = useMemo(() => {
+    if (!previewJob?.content_project_id) return null;
+    return (
+      projectRows.find((p) => p.id === previewJob.content_project_id) ?? null
+    );
+  }, [previewJob?.content_project_id, projectRows]);
+
+  // Click-to-play: match the CanvasProjectDetailPage UX — show a muted
+  // poster <video> first and swap to the fully-controlled player only
+  // after the user clicks ▶. Keeps the page quiet on first paint.
+  const [previewPlaying, setPreviewPlaying] = useState(false);
+  useEffect(() => {
+    // Reset to thumbnail whenever the underlying artifact changes so
+    // stale playback state never sticks across channel switches.
+    setPreviewPlaying(false);
+  }, [previewVideoUrl]);
 
   // Health snapshot — all derived from existing hooks, no fake data.
   const health = useMemo(() => {
@@ -376,6 +481,97 @@ export function CanvasChannelDetailPage() {
           testId="canvas-channel-health-projects"
         />
       </div>
+
+      {/* Latest render preview ------------------------------------------
+          Shows the most recently completed render belonging to any
+          project under this channel. Uses the shared VideoPlayer so the
+          full keyboard shortcut set (space/K, J/L, arrows, M, F, 0-9,
+          , . , Home/End) works inside the channel studio. When nothing
+          has been rendered yet we show a gentle "pending render"
+          placeholder instead of hiding the card — this keeps the layout
+          stable and signposts the next step for the user. */}
+      <section
+        className="rounded-xl border border-border-subtle bg-surface-card shadow-sm overflow-hidden"
+        data-testid="canvas-channel-latest-render"
+      >
+        <header className="px-5 py-3 border-b border-border-subtle bg-neutral-50/50 flex items-center gap-2">
+          <div className="min-w-0">
+            <p className="m-0 text-sm font-semibold text-neutral-800">
+              Son Render
+            </p>
+            <p className="m-0 mt-0.5 text-xs text-neutral-500">
+              Bu kanalın projelerinden üretilen en son video.
+            </p>
+          </div>
+          {previewProject ? (
+            <Link
+              to={`/user/projects/${previewProject.id}`}
+              className="ml-auto text-[11px] font-semibold text-brand-600 hover:text-brand-700"
+              data-testid="canvas-channel-latest-render-open-project"
+            >
+              {previewProject.title} &rarr;
+            </Link>
+          ) : null}
+        </header>
+        <div className="p-4">
+          {previewVideoUrl ? (
+            previewPlaying ? (
+              <div data-testid="canvas-channel-latest-render-player">
+                <VideoPlayer
+                  src={previewVideoUrl}
+                  title={previewProject?.title}
+                  compact
+                  autoPlay
+                  showDownload
+                  testId="canvas-channel-latest-render-video"
+                />
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setPreviewPlaying(true)}
+                className={cn(
+                  "relative w-full aspect-video rounded-md overflow-hidden",
+                  "border border-border-subtle bg-neutral-900",
+                  "group cursor-pointer",
+                )}
+                data-testid="canvas-channel-latest-render-thumbnail"
+                aria-label="Son render önizlemesini oynat"
+              >
+                <video
+                  src={previewVideoUrl}
+                  muted
+                  playsInline
+                  preload="metadata"
+                  className="w-full h-full object-contain"
+                />
+                <span
+                  aria-hidden="true"
+                  className={cn(
+                    "absolute inset-0 flex items-center justify-center",
+                    "text-white text-4xl",
+                    "bg-black/20 group-hover:bg-black/10 transition-colors",
+                  )}
+                >
+                  ▶
+                </span>
+              </button>
+            )
+          ) : (
+            <div
+              className={cn(
+                "rounded-md border border-dashed border-border-subtle",
+                "bg-neutral-50/40 px-4 py-8 text-center text-xs text-neutral-500",
+              )}
+              data-testid="canvas-channel-latest-render-placeholder"
+            >
+              Bu kanalda henüz render alınmış bir video yok. Bir proje
+              başlatıp üretimini tamamladığınızda en son çıktı burada
+              görünecek.
+            </div>
+          )}
+        </div>
+      </section>
 
       {/* Two-column studio body ----------------------------------------- */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">

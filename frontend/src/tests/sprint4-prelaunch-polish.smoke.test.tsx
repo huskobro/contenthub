@@ -155,12 +155,14 @@ describe("Sprint 4 — Link/route cleanup", () => {
     expect(content).not.toMatch(/<a\s+href="\/user\/posts"/);
   });
 
-  it("Channel detail stub route shows proper placeholder", () => {
+  it("Channel detail route mounts the real ChannelDetailPage (no stub)", () => {
     const content = readFile("app/router.tsx");
-    // Should not have the raw placeholder text
+    // Historic placeholder text must be gone
     expect(content).not.toContain("Kanal detayi yakinda eklenecek.");
-    // Should have a proper placeholder with back link
-    expect(content).toContain("Kanal Detay");
+    expect(content).not.toContain("Bu sayfa henuz tamamlanmadi");
+    // Router must lazy-load the real ChannelDetailPage and wire it to /channels/:channelId
+    expect(content).toContain("ChannelDetailPage");
+    expect(content).toMatch(/channels\/:channelId[\s\S]*ChannelDetailPage/);
   });
 });
 
