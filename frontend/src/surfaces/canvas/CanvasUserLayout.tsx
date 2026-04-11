@@ -198,6 +198,22 @@ export function CanvasUserLayout() {
 
   const breadcrumb = useWorkspaceBreadcrumb();
   const displayName = authUser?.display_name ?? "Kullanıcı";
+  const isAdmin = authUser?.role === "admin";
+
+  // Cmd/Ctrl+Shift+A: admin panele hizli gecis (sadece admin rolu icin).
+  // Canvas'ta sag ustteki "Yonetim Paneli" butonunun klavye kisayoludur.
+  useEffect(() => {
+    if (!isAdmin) return undefined;
+    function onKey(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && (e.key === "A" || e.key === "a")) {
+        e.preventDefault();
+        e.stopPropagation();
+        navigate("/admin");
+      }
+    }
+    document.addEventListener("keydown", onKey, { capture: true });
+    return () => document.removeEventListener("keydown", onKey, { capture: true });
+  }, [isAdmin, navigate]);
 
   const sidebarZones = useMemo(() => CANVAS_NAV, []);
 
@@ -272,25 +288,33 @@ export function CanvasUserLayout() {
           {/* Faz 4D: panel switch — Canvas user shell'inden yonetim paneline
               gecis. Daha once bu butonun Canvas'ta hic render edilmedigi
               dogrulandi; kullanici admin'e donemiyordu. Basit link butonu,
-              yeni nav sistemi degil. */}
-          <div className="w-px h-6 bg-border-subtle mx-1" />
-          {/* F48 fix: panel switch copy standardizasyonu — "Yönetim Paneli"
-              tüm surface'lerde aynı etiket. */}
-          <button
-            type="button"
-            onClick={() => navigate("/admin")}
-            title="Yönetim Paneli"
-            aria-label="Yönetim Paneli"
-            data-testid="canvas-panel-switch"
-            className={cn(
-              "px-3 py-1.5 text-xs font-semibold rounded-md",
-              "border border-border bg-transparent text-neutral-600",
-              "hover:bg-neutral-50 hover:border-brand-400 hover:text-neutral-800",
-              "transition-colors duration-fast",
-            )}
-          >
-            Yönetim Paneli
-          </button>
+              yeni nav sistemi degil.
+              2026-04-11: role guard eklendi — sadece admin rolu olan
+              kullanicilar gorur; normal user'lar icin giziler (AuthGuard
+              zaten non-admin'i /admin'e sokmaz, ama UX icin butonu da
+              gostermiyoruz). */}
+          {isAdmin && (
+            <>
+              <div className="w-px h-6 bg-border-subtle mx-1" />
+              {/* F48 fix: panel switch copy standardizasyonu — "Yönetim Paneli"
+                  tüm surface'lerde aynı etiket. */}
+              <button
+                type="button"
+                onClick={() => navigate("/admin")}
+                title="Yönetim Paneli (Cmd+Shift+A)"
+                aria-label="Yönetim Paneli"
+                data-testid="canvas-panel-switch"
+                className={cn(
+                  "px-3 py-1.5 text-xs font-semibold rounded-md",
+                  "border border-border bg-transparent text-neutral-600",
+                  "hover:bg-neutral-50 hover:border-brand-400 hover:text-neutral-800",
+                  "transition-colors duration-fast",
+                )}
+              >
+                Yönetim Paneli
+              </button>
+            </>
+          )}
         </header>
 
         <div className="flex flex-1 min-h-0">

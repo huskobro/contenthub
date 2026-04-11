@@ -41,6 +41,7 @@ import * as HorizonUserLayoutModule from "../../app/layouts/HorizonUserLayout";
 // the namespace + forwarder style for consistency with legacy/horizon and to
 // leave room for HMR-friendly re-registration.
 import * as BridgeAdminLayoutModule from "../bridge/BridgeAdminLayout";
+import * as BridgeUserLayoutModule from "../bridge/BridgeUserLayout";
 import * as BridgeJobsRegistryModule from "../bridge/BridgeJobsRegistryPage";
 import * as BridgeJobDetailModule from "../bridge/BridgeJobDetailPage";
 import * as BridgePublishCenterModule from "../bridge/BridgePublishCenterPage";
@@ -50,6 +51,7 @@ import * as BridgePublishCenterModule from "../bridge/BridgePublishCenterPage";
 // render time, not at module-eval, to avoid ever tripping a circular import
 // through ThemeProvider.
 import * as CanvasUserLayoutModule from "../canvas/CanvasUserLayout";
+import * as CanvasAdminLayoutModule from "../canvas/CanvasAdminLayout";
 import * as CanvasUserDashboardModule from "../canvas/CanvasUserDashboardPage";
 import * as CanvasMyProjectsModule from "../canvas/CanvasMyProjectsPage";
 import * as CanvasProjectDetailModule from "../canvas/CanvasProjectDetailPage";
@@ -69,6 +71,7 @@ import * as CanvasChannelDetailModule from "../canvas/CanvasChannelDetailPage";
 // (showcase + control). Same namespace-import + forwarder style as canvas
 // so the registrar never trips a circular import through ThemeProvider.
 import * as AtriumUserLayoutModule from "../atrium/AtriumUserLayout";
+import * as AtriumAdminLayoutModule from "../atrium/AtriumAdminLayout";
 import * as AtriumUserDashboardModule from "../atrium/AtriumUserDashboardPage";
 import * as AtriumProjectsListModule from "../atrium/AtriumProjectsListPage";
 import * as AtriumProjectDetailModule from "../atrium/AtriumProjectDetailPage";
@@ -102,6 +105,10 @@ function BridgeAdminForwarder(_props: SurfaceLayoutProps) {
   const Impl = BridgeAdminLayoutModule.BridgeAdminLayout;
   return <Impl />;
 }
+function BridgeUserForwarder(_props: SurfaceLayoutProps) {
+  const Impl = BridgeUserLayoutModule.BridgeUserLayout;
+  return <Impl />;
+}
 function BridgeJobsRegistryForwarder() {
   const Impl = BridgeJobsRegistryModule.BridgeJobsRegistryPage;
   return <Impl />;
@@ -126,6 +133,10 @@ const BRIDGE_PAGE_OVERRIDES: SurfacePageOverrideMap = {
 
 function CanvasUserForwarder(_props: SurfaceLayoutProps) {
   const Impl = CanvasUserLayoutModule.CanvasUserLayout;
+  return <Impl />;
+}
+function CanvasAdminForwarder(_props: SurfaceLayoutProps) {
+  const Impl = CanvasAdminLayoutModule.CanvasAdminLayout;
   return <Impl />;
 }
 function CanvasUserDashboardForwarder() {
@@ -175,6 +186,10 @@ function CanvasChannelDetailForwarder() {
 
 function AtriumUserForwarder(_props: SurfaceLayoutProps) {
   const Impl = AtriumUserLayoutModule.AtriumUserLayout;
+  return <Impl />;
+}
+function AtriumAdminForwarder(_props: SurfaceLayoutProps) {
+  const Impl = AtriumAdminLayoutModule.AtriumAdminLayout;
   return <Impl />;
 }
 function AtriumUserDashboardForwarder() {
@@ -227,19 +242,26 @@ const HORIZON_SURFACE: Surface = {
   userLayout: HorizonUserForwarder,
 };
 
+// Faz 5 — Canvas/Atrium/Bridge scope="both": her surface artık hem admin hem
+// user paneli için kendi bağımsız tasarımıyla çalışır. Horizon user shell'ine
+// hiçbir bağımlılık kalmamıştır; her surface kendi admin/user layout'unu
+// register.tsx forwarder'ları üzerinden sunar.
 const ATRIUM_SURFACE: Surface = {
   manifest: ATRIUM_MANIFEST,
   userLayout: AtriumUserForwarder,
+  adminLayout: AtriumAdminForwarder,
   pageOverrides: ATRIUM_PAGE_OVERRIDES,
 };
 const BRIDGE_SURFACE: Surface = {
   manifest: BRIDGE_MANIFEST,
   adminLayout: BridgeAdminForwarder,
+  userLayout: BridgeUserForwarder,
   pageOverrides: BRIDGE_PAGE_OVERRIDES,
 };
 const CANVAS_SURFACE: Surface = {
   manifest: CANVAS_MANIFEST,
   userLayout: CanvasUserForwarder,
+  adminLayout: CanvasAdminForwarder,
   pageOverrides: CANVAS_PAGE_OVERRIDES,
 };
 

@@ -17,6 +17,7 @@ import { NotificationCenter, NotificationBell } from "../../components/design-sy
 import { KeyboardShortcutsHelp } from "../../components/design-system/KeyboardShortcutsHelp";
 import { useCommandPaletteShortcut } from "../../hooks/useCommandPaletteShortcut";
 import { useGlobalSSE } from "../../hooks/useGlobalSSE";
+import { useNotifications } from "../../hooks/useNotifications";
 import { useCommandPaletteStore } from "../../stores/commandPaletteStore";
 import { buildAdminNavigationCommands, buildAdminActionCommands } from "../../commands/adminCommands";
 import { buildContextualCommands } from "../../commands/contextualCommands";
@@ -81,6 +82,10 @@ export function HorizonAdminLayout() {
 
   useCommandPaletteShortcut();
   useGlobalSSE();
+  // Backend-backed notification sync (admin scope). AdminLayout already does
+  // this; Horizon forgot to wire it in, leaving the bell empty until another
+  // code path triggered a fetch.
+  useNotifications({ mode: "admin" });
 
   useEffect(() => {
     useCommandPaletteStore.getState().setContext({ currentRoute: location.pathname });

@@ -41,9 +41,14 @@ Tarih: 2026-04-11.
 │       └── /admin/publish/:publishId       — Publish Detail
 │
 ├── [Etkileşim]
-│   ├── /admin/comments                     — Yorum İzleme (partial / shell)
-│   ├── /admin/playlists                    — Playlist İzleme (partial / shell)
-│   └── /admin/posts                        — Gönderi İzleme (partial / shell)
+│   ├── /admin/comments                     — Yorum İzleme (tam)
+│   ├── /admin/playlists                    — Playlist İzleme (tam)
+│   ├── /admin/posts                        — Gönderi İzleme (tam)
+│   ├── /admin/automation                   — Otomasyon Politikaları (tam)
+│   ├── /admin/inbox                        — Admin Inbox (tam)
+│   ├── /admin/connections                  — Bağlantılar (tam)
+│   ├── /admin/calendar                     — Admin Takvim (tam)
+│   └── /admin/notifications                — Bildirimler (tam)
 │
 ├── [Analytics]
 │   ├── /admin/analytics                    — Analytics (partial)
@@ -91,7 +96,7 @@ Tarih: 2026-04-11.
 ├── /user                                   — Anasayfa / Dashboard (tam — Atrium default)
 │
 ├── /user/channels                          — Kanallarım (büyük ölçüde hazır)
-│   └── /user/channels/:channelId           — Kanal Detay (Canvas: zengin / diğerleri: shell)
+│   └── /user/channels/:channelId           — Kanal Detay (326 LoC tam; YouTube OAuth + credentials)
 │
 ├── /user/projects                          — Projelerim (tam)
 │   └── /user/projects/:projectId           — Proje Detay (büyük ölçüde hazır)
@@ -100,15 +105,18 @@ Tarih: 2026-04-11.
 │   ├── /user/create/video                  — Video Oluştur (büyük ölçüde hazır)
 │   └── /user/create/bulletin               — Bülten Oluştur (büyük ölçüde hazır)
 │
-├── /user/content                           — İçerik (partial)
+├── /user/content                           — İçerik giriş sayfası (tam)
 │
 ├── /user/publish                           — Yayın (büyük ölçüde hazır)
 │
 ├── [Etkileşim]
-│   ├── /user/comments                      — Yorumlar (partial / shell)
-│   ├── /user/playlists                     — Playlist'lerim (partial / shell)
-│   ├── /user/posts                         — Gönderilerim (partial / shell)
-│   └── /user/analytics/channels            — Kanal Performansım (partial)
+│   ├── /user/comments                      — Yorumlar (tam — 420 LoC)
+│   ├── /user/playlists                     — Playlist'lerim (tam — 526 LoC)
+│   ├── /user/posts                         — Gönderilerim (tam — 507 LoC)
+│   ├── /user/automation                    — Otomasyonlarım (tam — 293 LoC)
+│   ├── /user/inbox                         — Gelen Kutusu (tam — 202 LoC)
+│   ├── /user/connections                   — Bağlantılarım (tam — 267 LoC)
+│   └── /user/analytics/channels            — Kanal Performansım (tam — 218 LoC)
 │
 ├── /user/analytics                         — Analitiğim (tam — shell düzeyinde)
 │

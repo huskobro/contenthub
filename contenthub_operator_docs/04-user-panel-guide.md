@@ -288,6 +288,64 @@ User panel seçilen **surface**'a (Legacy / Horizon / Canvas / Atrium) göre far
 
 ---
 
+## /user/content — İçerik Hub'ı
+
+**Route:** `/user/content`
+**Amaç:** Kullanıcının tüm içerik türlerini (video / bülten / taslak) tek bir giriş sayfasından keşfetmesi.
+
+**Ana bölümler:**
+- Module kartları (Standart Video / Haber Bülteni / diğer aktif modüller)
+- Hızlı "yeni içerik" shortcut'ları
+- Son düzenlenen içerikler önizlemesi
+
+**Durum:** **tam**
+
+---
+
+## /user/automation — Otomasyonlarım
+
+**Route:** `/user/automation`
+**Amaç:** Kullanıcının kendi kanalları için aktif otomasyon politikalarını görmesi ve yönetmesi.
+
+**Ana bölümler:**
+- Aktif otomasyon listesi (trigger + action + kapsam)
+- Yeni otomasyon oluştur butonu
+- Durum rozetleri (aktif / duraklatıldı / hata)
+- Politikanın son çalıştırma zamanı + sonuç özeti
+
+**Durum:** **tam** (293 LoC)
+
+---
+
+## /user/inbox — Gelen Kutusu
+
+**Route:** `/user/inbox`
+**Amaç:** Kullanıcıya ait bildirim ve aksiyon gerektiren öğeleri (review davetleri, sistem mesajları, otomasyon uyarıları) tek yerde göstermek.
+
+**Ana bölümler:**
+- Okunmamış / tümü filtresi
+- Kategori bazlı gruplar (review, sistem, otomasyon)
+- Aksiyon linkleri (yaklaşık detay sayfasına götürür)
+
+**Durum:** **tam** (202 LoC)
+
+---
+
+## /user/connections — Bağlantılarım
+
+**Route:** `/user/connections`
+**Amaç:** Kullanıcının dış platform entegrasyonlarını (YouTube OAuth, ileride Instagram / TikTok / X) tek panelden yönetmesi.
+
+**Ana bölümler:**
+- Platform kartları (bağlı / bağlı değil)
+- Bağla / Yeniden Yetkilendir / Bağlantıyı Kes butonları
+- Token expire uyarısı
+- Scope / yetki bilgisi
+
+**Durum:** **tam** (267 LoC). Şu an yalnızca YouTube aktif; diğer platformlar planlı.
+
+---
+
 ## Guided Mode vs Advanced Mode
 
 User panel iki kullanım modunu destekler:

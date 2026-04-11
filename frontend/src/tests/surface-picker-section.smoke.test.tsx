@@ -1,15 +1,20 @@
 /**
- * SurfacePickerSection smoke test — Faz 4A + Faz 4E update.
+ * SurfacePickerSection smoke test — Faz 4A + Faz 4E + Faz 5 update.
+ *
+ * Faz 5: Canvas, Atrium ve Bridge surface'ları artık scope="both" — her üçü
+ * de hem admin hem user paneli için kendi bağımsız shell'lerini sunar. Bu
+ * yüzden surface picker her üç surface'ı hem admin hem user scope'unda
+ * seçilebilir olarak listelemelidir. Eski Faz 4E "user-scope surfaces admin
+ * panelinde görünmez" assertion'ları artık geçersiz — kaldırıldı.
  *
  * Mounts the component in isolation against a stubbed
  * `useSurfaceResolution` (so the module-level snapshot is deterministic)
  * and asserts:
  *
- *   1. admin scope → shows legacy + horizon + bridge cards. atrium/canvas
- *      are user-scope → Faz 4E: NOT rendered at all (not even as
- *      ineligible cards).
- *   2. user scope → atrium/canvas are selectable. bridge is admin-scope →
- *      Faz 4E: NOT rendered at all.
+ *   1. admin scope → shows legacy + horizon + bridge + canvas + atrium.
+ *      Faz 5: canvas/atrium artık admin panelinde de seçilebilir.
+ *   2. user scope → atrium/canvas/bridge hepsi seçilebilir. Faz 5: bridge
+ *      artık user panelinde de seçilebilir.
  *   3. clicking "Aktif Et" on an entry calls themeStore.setActiveSurface
  *      with the manifest id (wires into existing persistence path)
  *   4. clicking "Varsayilana don" calls setActiveSurface(null)
@@ -83,33 +88,34 @@ describe("SurfacePickerSection — Faz 4A smoke", () => {
     resetThemeStoreSurface(null);
   });
 
-  it("renders admin scope — bridge + legacy + horizon are present, user-scope hidden entirely", async () => {
+  it("renders admin scope — legacy + horizon + bridge + canvas + atrium all present (Faz 5 both-scope)", async () => {
     render(<SurfacePickerSection scope="admin" />);
     expect(screen.getByTestId("surface-picker-admin")).toBeDefined();
     expect(screen.getByTestId("surface-picker-card-legacy")).toBeDefined();
     expect(screen.getByTestId("surface-picker-card-horizon")).toBeDefined();
     expect(screen.getByTestId("surface-picker-card-bridge")).toBeDefined();
-    // Faz 4E: atrium / canvas are user-scope and must NOT appear in the
-    // admin panel — not even as an "ineligible" card.
-    expect(screen.queryByTestId("surface-picker-card-atrium")).toBeNull();
-    expect(screen.queryByTestId("surface-picker-card-canvas")).toBeNull();
-    expect(screen.queryByTestId("surface-picker-ineligible-atrium")).toBeNull();
-    expect(screen.queryByTestId("surface-picker-ineligible-canvas")).toBeNull();
+    // Faz 5: canvas ve atrium artık scope="both" — admin panelinde de
+    // seçilebilir olarak görünmeli (her ikisinin de kendi bağımsız admin
+    // shell'i var).
+    expect(screen.getByTestId("surface-picker-card-canvas")).toBeDefined();
+    expect(screen.getByTestId("surface-picker-card-atrium")).toBeDefined();
+    expect(screen.getByTestId("surface-picker-activate-canvas")).toBeDefined();
+    expect(screen.getByTestId("surface-picker-activate-atrium")).toBeDefined();
   });
 
-  it("renders user scope — atrium + canvas selectable, admin-scope hidden entirely", async () => {
+  it("renders user scope — legacy + horizon + atrium + canvas + bridge all selectable (Faz 5 both-scope)", async () => {
     render(<SurfacePickerSection scope="user" />);
     expect(screen.getByTestId("surface-picker-user")).toBeDefined();
     // Bootstrap surfaces always present.
     expect(screen.getByTestId("surface-picker-card-legacy")).toBeDefined();
     expect(screen.getByTestId("surface-picker-card-horizon")).toBeDefined();
-    // User-scope surfaces: atrium + canvas have activate buttons.
+    // Both-scope surfaces: atrium + canvas + bridge have activate buttons.
     expect(screen.getByTestId("surface-picker-activate-atrium")).toBeDefined();
     expect(screen.getByTestId("surface-picker-activate-canvas")).toBeDefined();
-    // Faz 4E: bridge is admin-scope and must NOT appear in the user panel
-    // — not even as an "ineligible" card.
-    expect(screen.queryByTestId("surface-picker-card-bridge")).toBeNull();
-    expect(screen.queryByTestId("surface-picker-ineligible-bridge")).toBeNull();
+    // Faz 5: bridge artık scope="both" — user panelinde de kendi bağımsız
+    // user shell'i ile seçilebilir olarak görünmeli.
+    expect(screen.getByTestId("surface-picker-card-bridge")).toBeDefined();
+    expect(screen.getByTestId("surface-picker-activate-bridge")).toBeDefined();
   });
 
   it("clicking Aktif Et calls setActiveSurface with the picked id", async () => {

@@ -39,9 +39,34 @@ import {
   startStandardVideoProduction,
 } from "../../api/standardVideoApi";
 import { useToast } from "../../hooks/useToast";
+import { useAuthStore } from "../../stores/authStore";
 import { StatusBadge, Mono } from "../../components/design-system/primitives";
+import { VideoPlayer } from "../../components/shared/VideoPlayer";
 import { formatDateISO } from "../../lib/formatDate";
 import { cn } from "../../lib/cn";
+
+const VIDEO_EXTS = ["mp4", "webm", "mov"];
+
+/** Walk a job's steps and pull the first video artifact path, if any. */
+function findFirstVideoArtifact(
+  steps: ReadonlyArray<{ artifact_refs_json?: string | null }> | null | undefined,
+): string | null {
+  if (!steps) return null;
+  for (const step of steps) {
+    if (!step.artifact_refs_json) continue;
+    try {
+      const parsed = JSON.parse(step.artifact_refs_json);
+      const paths: string[] = parsed.output_paths ?? [];
+      for (const p of paths) {
+        const ext = p.split(".").pop()?.toLowerCase() ?? "";
+        if (VIDEO_EXTS.includes(ext)) return p;
+      }
+    } catch {
+      /* skip malformed json */
+    }
+  }
+  return null;
+}
 
 const MODULE_LABELS: Record<string, string> = {
   standard_video: "Standart Video",
@@ -67,6 +92,16 @@ export function CanvasProjectDetailPage() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const toast = useToast();
+  // Non-admin users cannot reach /admin/jobs/:id; route them to their own
+  // project workspace and keep admin-only links out of their DOM.
+  const isAdmin = useAuthStore((s) => s.user?.role === "admin");
+  const openJob = (jobId: string) => {
+    if (isAdmin) {
+      navigate(`/admin/jobs/${jobId}`);
+    } else if (projectId) {
+      navigate(`/user/projects/${projectId}`);
+    }
+  };
 
   const {
     data: project,
@@ -123,6 +158,19 @@ export function CanvasProjectDetailPage() {
   );
   const focusPublish = focusJobPublishRecords?.[0];
 
+  // Preview: focus job'un ilk video artifact'ini bulup VideoPlayer'a baglar.
+  // Artifact yoksa veya job henuz tamamlanmamissa placeholder gosterilir.
+  const focusVideoArtifactPath = useMemo(
+    () => findFirstVideoArtifact(focusJob?.steps),
+    [focusJob?.steps],
+  );
+  const focusVideoUrl = useMemo(() => {
+    if (!focusJobId || !focusVideoArtifactPath) return null;
+    const basename =
+      focusVideoArtifactPath.split("/").pop() ?? focusVideoArtifactPath;
+    return `/api/v1/jobs/${focusJobId}/artifacts/${encodeURIComponent(basename)}`;
+  }, [focusJobId, focusVideoArtifactPath]);
+
   const pendingVideo = linkedVideos?.find(
     (v) => !["rendering", "completed", "published"].includes(v.status),
   );
@@ -135,7 +183,9 @@ export function CanvasProjectDetailPage() {
       qc.invalidateQueries({ queryKey: ["jobs"] });
       qc.invalidateQueries({ queryKey: ["standard-videos"] });
       qc.invalidateQueries({ queryKey: ["content-projects"] });
-      navigate(`/admin/jobs/${data.job_id}`);
+      if (isAdmin) {
+        navigate(`/admin/jobs/${data.job_id}`);
+      }
     },
     onError: (err: Error) => {
       toast.error(err.message ?? "Üretim başlatılamadı.");
@@ -267,7 +317,8 @@ export function CanvasProjectDetailPage() {
 
       {/* Preview + metadata rail --------------------------------------------- */}
       <div className="grid grid-cols-1 lg:grid-cols-[1.4fr,1fr] gap-4">
-        {/* Preview slot — labeled placeholder, never a fake render */}
+        {/* Preview slot — real VideoPlayer when final render exists,
+            labeled placeholder otherwise. Never a fake render. */}
         <section
           className="rounded-xl border border-border-subtle bg-surface-card shadow-sm overflow-hidden"
           data-testid="canvas-project-preview-slot"
@@ -277,19 +328,32 @@ export function CanvasProjectDetailPage() {
               Ön İzleme
             </h2>
             <p className="m-0 mt-0.5 text-xs text-neutral-500">
-              Render çıktı oluştuğunda burada gösterilir.
+              {focusVideoUrl
+                ? "Son render çıktısı. Oynatma ve klavye kontrolleri aktif."
+                : "Render çıktı oluştuğunda burada gösterilir."}
             </p>
           </header>
-          <div
-            className={cn(
-              "h-[240px] flex items-center justify-center",
-              "bg-gradient-to-br from-brand-50 via-neutral-50 to-neutral-100",
-            )}
-          >
-            <span className="text-xs font-mono uppercase text-neutral-400">
-              ön izleme &middot; pending render
-            </span>
-          </div>
+          {focusVideoUrl ? (
+            <div className="p-4" data-testid="canvas-project-preview-player">
+              <VideoPlayer
+                src={focusVideoUrl}
+                title={project.title}
+                showDownload
+                testId="canvas-project-preview-video"
+              />
+            </div>
+          ) : (
+            <div
+              className={cn(
+                "h-[240px] flex items-center justify-center",
+                "bg-gradient-to-br from-brand-50 via-neutral-50 to-neutral-100",
+              )}
+            >
+              <span className="text-xs font-mono uppercase text-neutral-400">
+                ön izleme &middot; pending render
+              </span>
+            </div>
+          )}
         </section>
 
         {/* Metadata rail */}
@@ -315,7 +379,7 @@ export function CanvasProjectDetailPage() {
             <MetaRow label="Güncelleme">
               {formatDateISO(project.updated_at) || "—"}
             </MetaRow>
-            {project.active_job_id ? (
+            {project.active_job_id && isAdmin ? (
               <MetaRow label="Aktif Job">
                 <Link
                   to={`/admin/jobs/${project.active_job_id}`}
@@ -323,6 +387,12 @@ export function CanvasProjectDetailPage() {
                 >
                   {project.active_job_id.slice(0, 12)}&hellip;
                 </Link>
+              </MetaRow>
+            ) : project.active_job_id ? (
+              <MetaRow label="Aktif Job">
+                <span className="text-neutral-600 text-sm font-mono">
+                  {project.active_job_id.slice(0, 12)}&hellip;
+                </span>
               </MetaRow>
             ) : null}
             {project.description ? (
@@ -497,7 +567,7 @@ export function CanvasProjectDetailPage() {
                   "border-b border-border-subtle last:border-b-0",
                   "hover:bg-brand-50 cursor-pointer transition-colors",
                 )}
-                onClick={() => navigate(`/admin/jobs/${job.id}`)}
+                onClick={() => openJob(job.id)}
                 data-testid={`canvas-project-job-${job.id}`}
               >
                 <StatusBadge status={job.status} size="sm" />

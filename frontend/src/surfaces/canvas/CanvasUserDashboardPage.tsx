@@ -46,6 +46,16 @@ const MODULE_LABELS: Record<string, string> = {
   howto_video: "Nasıl Yapılır",
 };
 
+// Hoisted to module scope so we don't allocate a new Set on every render.
+const IN_FLIGHT_STATUSES = new Set<string>([
+  "queued",
+  "running",
+  "pending",
+  "scheduled",
+  "waiting",
+  "waiting_review",
+]);
+
 // ---------------------------------------------------------------------------
 // Small presentational primitives — kept local so the dashboard is a single
 // readable unit and we don't accidentally spawn a new design system.
@@ -192,9 +202,24 @@ export function CanvasUserDashboardPage() {
 
   const userId = authUser?.id;
   const displayName = authUser?.display_name ?? "Kullanıcı";
+  const isAdmin = authUser?.role === "admin";
 
+  // Non-admin users don't have access to /admin/jobs/:id — send them to the
+  // parent project workspace instead (which is their own scope).
+  const openJob = (job: JobResponse) => {
+    if (isAdmin) {
+      navigate(`/admin/jobs/${job.id}`);
+    } else if (job.content_project_id) {
+      navigate(`/user/projects/${job.content_project_id}`);
+    } else {
+      navigate("/user/projects");
+    }
+  };
+
+  // Match the layout query (limit: 50) so React Query can dedupe; the
+  // dashboard still renders only the top-N via `activeProjects.slice(0, 6)`.
   const { data: projects, isLoading: projectsLoading } = useContentProjects(
-    userId ? { user_id: userId, limit: 12 } : undefined,
+    userId ? { user_id: userId, limit: 50 } : undefined,
   );
   const { data: channels } = useChannelProfiles(userId);
   const { data: allJobs } = useQuery({
@@ -207,17 +232,6 @@ export function CanvasUserDashboardPage() {
 
   const activeProjects = useMemo(() => (projects ?? []).slice(0, 6), [projects]);
 
-  // Jobs that are still moving — pending/running/queued are the "in flight"
-  // bucket. Completed / failed etc fall into history and are hidden from the
-  // workspace dashboard (the detail page still shows everything).
-  const IN_FLIGHT_STATUSES = new Set([
-    "queued",
-    "running",
-    "pending",
-    "scheduled",
-    "waiting",
-    "waiting_review",
-  ]);
   const inFlightJobs = useMemo(() => {
     const rows = allJobs ?? [];
     return rows
@@ -392,7 +406,7 @@ export function CanvasUserDashboardPage() {
                 <InFlightRow
                   key={job.id}
                   job={job}
-                  onOpen={() => navigate(`/admin/jobs/${job.id}`)}
+                  onOpen={() => openJob(job)}
                 />
               ))}
             </div>

@@ -224,9 +224,24 @@ export function AtriumUserDashboardPage() {
 
   const userId = authUser?.id;
   const displayName = authUser?.display_name ?? "Editor";
+  const isAdmin = authUser?.role === "admin";
 
+  // Non-admin users cannot reach /admin/jobs/:id. For them, open the parent
+  // project detail instead (live-studio strip shows mostly their own jobs).
+  const openJob = (job: JobResponse) => {
+    if (isAdmin) {
+      navigate(`/admin/jobs/${job.id}`);
+    } else if (job.content_project_id) {
+      navigate(`/user/projects/${job.content_project_id}`);
+    } else {
+      navigate("/user/projects");
+    }
+  };
+
+  // Match the layout query (limit: 50) so React Query dedupes across the
+  // layout header chip and the dashboard body.
   const { data: projects, isLoading: projectsLoading } = useContentProjects(
-    userId ? { user_id: userId, limit: 25 } : undefined,
+    userId ? { user_id: userId, limit: 50 } : undefined,
   );
   const { data: channels } = useChannelProfiles(userId);
   const { data: allJobs } = useQuery({
@@ -589,7 +604,7 @@ export function AtriumUserDashboardPage() {
                   <InProductionRow
                     key={job.id}
                     job={job}
-                    onOpen={() => navigate(`/admin/jobs/${job.id}`)}
+                    onOpen={() => openJob(job)}
                   />
                 ))}
               </div>

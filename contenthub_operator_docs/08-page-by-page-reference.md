@@ -13,30 +13,35 @@ Durum: **tam** / **büyük ölçüde hazır** / **partial** / **shell** / **plan
 | `/admin` | Yönetim Paneli | KPI + operasyonel durum + son işler + hızlı erişim | **tam** |
 | `/admin/settings` | Ayarlar | Settings Registry UI — tab'lı: Genel, Kimlik Bilgileri, Prompts, Wizard | **büyük ölçüde hazır** |
 | `/admin/visibility` | Görünürlük | Visibility Engine rule editor | **tam** |
-| `/admin/wizard-settings` | Wizard Ayarları | Wizard step governance per module | **partial** |
+| `/admin/wizard-settings` | Wizard Ayarları | Wizard step governance per module | **tam** (445 LoC) |
 | `/admin/jobs` | İşler | Jobs Registry — buckets + tablo | **tam** |
 | `/admin/jobs/:jobId` | İş Kokpiti | Job Detail — timeline, logs, artifacts, provider trace | **tam** |
 | `/admin/audit-logs` | Audit Log | Kritik operasyon denetim kayıtları | **büyük ölçüde hazır** |
 | `/admin/modules` | Modüller | Module enable/disable | **tam** |
 | `/admin/providers` | Sağlayıcılar | LLM/TTS/Image/Speech provider + credential + metrik | **tam** |
 | `/admin/prompts` | Prompt Yönetimi | Master Prompt Editor (type:prompt setting'ler) | **büyük ölçüde hazır** |
-| `/admin/library` | İçerik Kütüphanesi | Tüm user içerik projelerinin admin görünümü | **partial** |
-| `/admin/assets` | Varlık Kütüphanesi | Media asset registry | **partial** |
-| `/admin/standard-videos` | Standart Video | Standard Video modül liste (admin) | **partial** |
-| `/admin/standard-videos/wizard` | Video Wizard (admin) | Admin-side creation flow | **partial** |
+| `/admin/library` | İçerik Kütüphanesi | Tüm user içerik projelerinin admin görünümü | **büyük ölçüde hazır** (445 LoC) |
+| `/admin/assets` | Varlık Kütüphanesi | Media asset registry | **büyük ölçüde hazır** (164+193 LoC) |
+| `/admin/standard-videos` | Standart Video | Standard Video modül liste (admin) | **tam** |
+| `/admin/standard-videos/wizard` | Video Wizard (admin) | Admin-side creation flow | **tam** (Content Creation Wizard 5170 LoC) |
 | `/admin/templates` | Şablonlar | Template Engine CRUD | **büyük ölçüde hazır** |
 | `/admin/templates/:templateId` | Template Detail | Tek template editör + versiyon | **büyük ölçüde hazır** |
 | `/admin/style-blueprints` | Stil Şablonları | Style Blueprint CRUD | **büyük ölçüde hazır** |
 | `/admin/style-blueprints/:blueprintId` | Blueprint Detail | Blueprint rules + preview strategy | **büyük ölçüde hazır** |
-| `/admin/template-style-links` | Şablon-Stil Bağlantıları | Template ↔ Blueprint binding | **partial** |
+| `/admin/template-style-links` | Şablon-Stil Bağlantıları | Template ↔ Blueprint binding (create form + list) | **partial** (detail/edit view eksik) |
 | `/admin/publish` | Yayın Merkezi | Publish Review Board — state machine buckets | **büyük ölçüde hazır** |
 | `/admin/publish/:publishId` | Publish Detail | Tek PublishRecord detayı + review actions | **büyük ölçüde hazır** |
-| `/admin/comments` | Yorum İzleme | Comment moderation | **partial / shell** |
-| `/admin/playlists` | Playlist İzleme | YouTube playlist monitoring | **partial / shell** |
-| `/admin/posts` | Gönderi İzleme | Community post monitoring | **partial / shell** |
-| `/admin/analytics` | Analytics | Platform Overview | **partial** |
-| `/admin/analytics/youtube` | YouTube Analytics | Platform-specific analytics | **partial** |
-| `/admin/analytics/channel-performance` | Kanal Performansı | Channel-level performance | **partial** |
+| `/admin/comments` | Yorum İzleme | Comment moderation | **tam** (300 LoC) |
+| `/admin/playlists` | Playlist İzleme | YouTube playlist monitoring | **tam** (260 LoC) |
+| `/admin/posts` | Gönderi İzleme | Community post monitoring | **tam** (275 LoC) |
+| `/admin/automation` | Otomasyon Politikaları | Admin automation policies | **tam** |
+| `/admin/inbox` | Admin Inbox | Admin review inbox | **tam** |
+| `/admin/connections` | Bağlantılar | Platform OAuth bağlantıları (admin görünüm) | **tam** |
+| `/admin/calendar` | Admin Takvim | Admin yayın takvimi | **tam** |
+| `/admin/notifications` | Bildirimler | Admin notification center | **tam** |
+| `/admin/analytics` | Analytics | Platform Overview | **büyük ölçüde tam** (443 LoC + 72 KB backend) |
+| `/admin/analytics/youtube` | YouTube Analytics | Platform-specific analytics | **partial** (retention/watch time eksik) |
+| `/admin/analytics/channel-performance` | Kanal Performansı | Channel-level performance | **büyük ölçüde tam** |
 | `/admin/sources` | Kaynaklar | Source Registry CRUD | **büyük ölçüde hazır** |
 | `/admin/sources/:sourceId` | Source Detail | Tek source detay + scan history | **büyük ölçüde hazır** |
 | `/admin/source-scans` | Kaynak Taramaları | SourceScan log | **büyük ölçüde hazır** |
@@ -55,17 +60,20 @@ Durum: **tam** / **büyük ölçüde hazır** / **partial** / **shell** / **plan
 |---|---|---|---|
 | `/user` | Anasayfa (Vitrin / Portfolio) | Dashboard — stüdyo özeti, aktif üretimler | **tam** (Atrium) |
 | `/user/channels` | Kanallarım | ChannelProfile liste | **büyük ölçüde hazır** |
-| `/user/channels/:channelId` | Kanal Detay | Tek kanal detayı | **büyük ölçüde hazır** (Canvas) / **shell** (diğer) |
+| `/user/channels/:channelId` | Kanal Detay | Tek kanal detayı (YouTube OAuth + credentials) | **tam** (326 LoC) |
 | `/user/projects` | Projelerim | ContentProject liste (editorial / portfolio) | **tam** |
 | `/user/projects/:projectId` | Proje Detay | Proje + job + publish bağlantısı | **büyük ölçüde hazır** |
 | `/user/create/video` | Video Oluştur | Standard Video wizard | **büyük ölçüde hazır** |
 | `/user/create/bulletin` | Bülten Oluştur | News Bulletin wizard | **büyük ölçüde hazır** |
-| `/user/content` | İçerik | Tüm içerik öğelerinin birleşik görünümü | **partial** |
+| `/user/content` | İçerik | İçerik hub giriş sayfası | **tam** |
 | `/user/publish` | Yayın | Publish wizard + user publish history | **büyük ölçüde hazır** |
-| `/user/comments` | Yorumlar | User-level comment view | **partial / shell** |
-| `/user/playlists` | Playlist'lerim | User playlist view | **partial / shell** |
-| `/user/posts` | Gönderilerim | User post view | **partial / shell** |
-| `/user/analytics/channels` | Kanal Performansım | User-scope channel analytics | **partial** |
+| `/user/comments` | Yorumlar | User-level comment view | **tam** (420 LoC) |
+| `/user/playlists` | Playlist'lerim | User playlist view | **tam** (526 LoC) |
+| `/user/posts` | Gönderilerim | User post view | **tam** (507 LoC) |
+| `/user/automation` | Otomasyonlarım | Kullanıcı otomasyon politikaları | **tam** (293 LoC) |
+| `/user/inbox` | Gelen Kutusu | Bildirimler + review davetleri | **tam** (202 LoC) |
+| `/user/connections` | Bağlantılarım | Platform OAuth bağlantıları | **tam** (267 LoC) |
+| `/user/analytics/channels` | Kanal Performansım | User-scope channel analytics | **tam** (218 LoC) |
 | `/user/analytics` | Analitiğim | User-scope analytics overview | **tam** (shell seviyesinde) |
 | `/user/calendar` | Takvim | Yayın takvimi (week/month) | **tam** |
 | `/user/settings` | Ayarlarım | Surface picker + user override ayarları | **büyük ölçüde hazır** |

@@ -95,16 +95,23 @@ export function CanvasUserPublishPage() {
   const [errorMsg, setErrorMsg] = useState("");
 
   // Candidate projects — same two-query merge the legacy page uses.
-  const { data: completedProjects } = useQuery({
+  const {
+    data: completedProjects,
+    isError: completedError,
+  } = useQuery({
     queryKey: ["canvas-publish-projects-completed"],
     queryFn: () => fetchContentProjects({ content_status: "completed" }),
     staleTime: 30_000,
   });
-  const { data: productionProjects } = useQuery({
+  const {
+    data: productionProjects,
+    isError: productionError,
+  } = useQuery({
     queryKey: ["canvas-publish-projects-production"],
     queryFn: () => fetchContentProjects({ content_status: "in_production" }),
     staleTime: 30_000,
   });
+  const projectsLoadError = completedError || productionError;
 
   const projects = useMemo<ContentProjectResponse[]>(() => {
     const completed = completedProjects ?? [];
@@ -240,6 +247,17 @@ export function CanvasUserPublishPage() {
       className="flex flex-col gap-5 max-w-[1280px]"
       data-testid="canvas-user-publish"
     >
+      {projectsLoadError && (
+        <div
+          className="rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700"
+          data-testid="canvas-publish-projects-load-error"
+          role="alert"
+        >
+          Yayına hazır projeler yüklenemedi. Bağlantınızı kontrol edip sayfayı
+          yenileyin.
+        </div>
+      )}
+
       {/* Hero -------------------------------------------------------------- */}
       <section
         className={cn(

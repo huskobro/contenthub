@@ -4,11 +4,15 @@
  * Verifies the Canvas surface registration after promotion from a disabled
  * placeholder. Canvas must:
  *
- *   1. Register as a beta user-scope surface (not "both", not admin).
- *   2. Expose a userLayout forwarder and NO adminLayout.
- *   3. Declare exactly the three Faz 3 page overrides (user.dashboard,
- *      user.projects.list, user.projects.detail) — no more, no less.
- *   4. Never leak admin.* keys into its override map.
+ *   1. Register as a beta "both"-scope surface (Faz 5 — Canvas artık hem
+ *      admin hem user paneli için kendi bağımsız shell'ini sunar).
+ *   2. Expose BOTH a userLayout AND an adminLayout forwarder.
+ *   3. Declare the Faz 3+3A+3B page overrides (user.dashboard,
+ *      user.projects.list, user.projects.detail, user.publish,
+ *      user.channels.list, user.connections.list, user.analytics.overview,
+ *      user.calendar, user.channels.detail) — no more, no less.
+ *   4. Never leak admin.* keys into its override map (admin shell için
+ *      override yok; admin routes legacy/horizon fallback'a düşer).
  *   5. Carry the navigation profile declared in the manifest.
  *
  * These tests mirror the bridge Faz 2 checks so any regression in the
@@ -31,22 +35,20 @@ describe("Canvas surface — Faz 3 registration", () => {
     mod.registerBuiltinSurfaces();
   });
 
-  it("registers canvas as a beta user-scope surface", () => {
+  it("registers canvas as a beta 'both'-scope surface (Faz 5)", () => {
     const canvas = getSurface("canvas");
     expect(canvas).toBeDefined();
     expect(canvas!.manifest.id).toBe("canvas");
     expect(canvas!.manifest.status).toBe("beta");
-    expect(canvas!.manifest.scope).toBe("user");
-    // Canvas should NOT be "both" — we must not accidentally mount Canvas in
-    // the admin panel.
-    expect(canvas!.manifest.scope).not.toBe("both");
-    expect(canvas!.manifest.scope).not.toBe("admin");
+    // Faz 5: Canvas artık hem admin hem user panel için kendi bağımsız
+    // shell'ini sunar.
+    expect(canvas!.manifest.scope).toBe("both");
   });
 
-  it("canvas provides a userLayout forwarder and NO adminLayout", () => {
+  it("canvas provides BOTH a userLayout and an adminLayout forwarder (Faz 5)", () => {
     const canvas = getSurface("canvas")!;
     expect(typeof canvas.userLayout).toBe("function");
-    expect(canvas.adminLayout).toBeUndefined();
+    expect(typeof canvas.adminLayout).toBe("function");
   });
 
   it("canvas declares the Faz 3 core page overrides", () => {
@@ -115,16 +117,17 @@ describe("Canvas surface — Faz 3 registration", () => {
     expect(canvas.manifest.navigation!.ownsCommandPalette).toBe(false);
   });
 
-  it("bridge (admin) and canvas (user) co-exist without scope collision", () => {
+  it("bridge and canvas co-exist with both=scope without override collision (Faz 5)", () => {
     const all = listSurfaces();
     const bridge = all.find((s) => s.manifest.id === "bridge");
     const canvas = all.find((s) => s.manifest.id === "canvas");
     expect(bridge).toBeDefined();
     expect(canvas).toBeDefined();
-    expect(bridge!.manifest.scope).toBe("admin");
-    expect(canvas!.manifest.scope).toBe("user");
-    // Their page override maps must not share any keys — bridge owns admin.*,
-    // canvas owns user.*.
+    // Faz 5: her ikisi de "both"-scope. Bridge admin.* override'ları sunar,
+    // Canvas user.* override'ları — ayrı namespace'lerde yaşadıkları için
+    // çakışma yoktur.
+    expect(bridge!.manifest.scope).toBe("both");
+    expect(canvas!.manifest.scope).toBe("both");
     const bridgeKeys = new Set(Object.keys(bridge!.pageOverrides ?? {}));
     const canvasKeys = new Set(Object.keys(canvas!.pageOverrides ?? {}));
     for (const k of canvasKeys) {

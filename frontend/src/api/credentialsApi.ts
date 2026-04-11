@@ -52,12 +52,27 @@ export interface YouTubeTokenStatus {
   message: string;
 }
 
-export function fetchYouTubeStatus(): Promise<YouTubeTokenStatus> {
-  return api.get<YouTubeTokenStatus>(`${YT_BASE}/status`);
+export function fetchYouTubeStatus(connectionId?: string): Promise<YouTubeTokenStatus> {
+  const params: Record<string, string> = {};
+  if (connectionId) params.connection_id = connectionId;
+  return api.get<YouTubeTokenStatus>(`${YT_BASE}/status`, Object.keys(params).length ? params : undefined);
 }
 
-export function revokeYouTubeCredentials(): Promise<void> {
-  return api.delete<void>(`${YT_BASE}/revoke`);
+export function revokeYouTubeCredentials(connectionId?: string): Promise<void> {
+  const url = connectionId
+    ? `${YT_BASE}/revoke?connection_id=${encodeURIComponent(connectionId)}`
+    : `${YT_BASE}/revoke`;
+  return api.delete<void>(url);
+}
+
+// Per-channel YouTube status
+export function fetchYouTubeStatusByChannel(channelProfileId: string): Promise<YouTubeTokenStatus> {
+  return api.get<YouTubeTokenStatus>(`${YT_BASE}/status`, { channel_profile_id: channelProfileId });
+}
+
+// Per-channel YouTube channel info
+export function fetchYouTubeChannelInfoByChannel(channelProfileId: string): Promise<YouTubeChannelInfo> {
+  return api.get<YouTubeChannelInfo>(`${YT_BASE}/channel-info`, { channel_profile_id: channelProfileId });
 }
 
 export interface YouTubeChannelInfo {
@@ -70,8 +85,10 @@ export interface YouTubeChannelInfo {
   message: string;
 }
 
-export function fetchYouTubeChannelInfo(): Promise<YouTubeChannelInfo> {
-  return api.get<YouTubeChannelInfo>(`${YT_BASE}/channel-info`);
+export function fetchYouTubeChannelInfo(connectionId?: string): Promise<YouTubeChannelInfo> {
+  const params: Record<string, string> = {};
+  if (connectionId) params.connection_id = connectionId;
+  return api.get<YouTubeChannelInfo>(`${YT_BASE}/channel-info`, Object.keys(params).length ? params : undefined);
 }
 
 // YouTube Video Stats
@@ -134,11 +151,38 @@ export interface ChannelVideosResponse {
   fetched_count: number;
 }
 
-export function fetchChannelVideos(maxResults = 50): Promise<ChannelVideosResponse> {
-  return api.get<ChannelVideosResponse>(`${YT_BASE}/channel-videos`, { max_results: maxResults });
+export function fetchChannelVideos(maxResults = 50, channelProfileId?: string): Promise<ChannelVideosResponse> {
+  const params: Record<string, string | number> = { max_results: maxResults };
+  if (channelProfileId) params.channel_profile_id = channelProfileId;
+  return api.get<ChannelVideosResponse>(`${YT_BASE}/channel-videos`, params);
 }
 
-export async function getYouTubeAuthUrl(redirectUri: string): Promise<string> {
-  const data = await api.get<{ auth_url: string }>(`${YT_BASE}/auth-url`, { redirect_uri: redirectUri });
+export async function getYouTubeAuthUrl(redirectUri: string, channelProfileId?: string): Promise<string> {
+  const params: Record<string, string> = { redirect_uri: redirectUri };
+  if (channelProfileId) params.channel_profile_id = channelProfileId;
+  const data = await api.get<{ auth_url: string }>(`${YT_BASE}/auth-url`, params);
   return data.auth_url;
+}
+
+// Per-channel YouTube API credentials
+export interface ChannelCredentialsResponse {
+  channel_profile_id: string;
+  has_credentials: boolean;
+  masked_client_id: string | null;
+  message: string;
+}
+
+export function fetchChannelCredentials(channelProfileId: string): Promise<ChannelCredentialsResponse> {
+  return api.get<ChannelCredentialsResponse>(`${YT_BASE}/channel-credentials/${encodeURIComponent(channelProfileId)}`);
+}
+
+export function saveChannelCredentials(
+  channelProfileId: string,
+  clientId: string,
+  clientSecret: string,
+): Promise<ChannelCredentialsResponse> {
+  return api.put<ChannelCredentialsResponse>(
+    `${YT_BASE}/channel-credentials/${encodeURIComponent(channelProfileId)}`,
+    { client_id: clientId, client_secret: clientSecret },
+  );
 }

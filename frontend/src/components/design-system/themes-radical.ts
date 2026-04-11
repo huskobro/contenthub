@@ -63,14 +63,21 @@ export const MIDNIGHT_ULTRAVIOLET_THEME: ThemeManifest = {
 
   colors: {
     brand: {
-      50: "#1a0a2e", 100: "#240f42", 200: "#3b1a6e", 300: "#5b2d9e",
-      400: "#7c3aed", 500: "#8b5cf6", 600: "#a78bfa", 700: "#c4b5fd",
-      800: "#ddd6fe", 900: "#ede9fe",
+      // Faz 6 kontrast fix: Brand skalası standart light→dark yönüne
+      // çevrildi. Primary button (bg-gradient brand-600→brand-700 +
+      // text-white) için 600 #7c3aed = 5.70:1, 700 #6d28d9 = 7.98:1.
+      // Holografik mor vurgu 300-500 aralığında korundu.
+      50: "#f5f3ff", 100: "#ede9fe", 200: "#ddd6fe", 300: "#c4b5fd",
+      400: "#a78bfa", 500: "#8b5cf6", 600: "#7c3aed", 700: "#6d28d9",
+      800: "#5b21b6", 900: "#4c1d95",
     },
     neutral: {
+      // Faz 6 kontrast fix: n500 #5c577a (2.78:1) AA altındaydı.
+      // Skala açıldı: n500 → #8d88a8 (5.58:1), n600 → #a5a0c0 (7.53:1),
+      // n700 → #c4bfdb (9.91:1).
       0: "#09080f", 25: "#0d0b16", 50: "#11101c", 100: "#191726",
-      200: "#221f33", 300: "#2e2b42", 400: "#433f5b", 500: "#5c577a",
-      600: "#7f7a9c", 700: "#a5a0c0", 800: "#c8c4de", 900: "#e6e4f0",
+      200: "#221f33", 300: "#2e2b42", 400: "#433f5b", 500: "#8d88a8",
+      600: "#a5a0c0", 700: "#c4bfdb", 800: "#d8d4e8", 900: "#e6e4f0",
       950: "#f4f3f9",
     },
     success: { light: "#0d2618", base: "#10b981", dark: "#059669", text: "#6ee7b7" },
@@ -78,11 +85,14 @@ export const MIDNIGHT_ULTRAVIOLET_THEME: ThemeManifest = {
     error: { light: "#2d0a12", base: "#ef4444", dark: "#dc2626", text: "#fca5a5" },
     info: { light: "#0c1a33", base: "#6366f1", dark: "#4f46e5", text: "#a5b4fc" },
     surface: {
+      // Faz 6 kontrast fix: sidebarSection #5c577a karanlık sidebar
+      // #0d0b16 üzerinde 2.88:1 (FAIL) idi. neutral.600 (#a5a0c0, 7.53:1)
+      // değerine kaydırılarak AA'yı geçer hale getirildi.
       page: "#09080f", card: "#11101c", elevated: "#191726",
       inset: "#0d0b16", sidebar: "#0d0b16", sidebarHover: "#191726",
       sidebarActive: "#221f33",
       sidebarText: "#e6e4f0", sidebarTextMuted: "#7f7a9c",
-      sidebarTextActive: "#c4b5fd", sidebarSection: "#5c577a",
+      sidebarTextActive: "#c4b5fd", sidebarSection: "#a5a0c0",
       sidebarBorder: "#2e2b42",
     },
     border: { subtle: "#221f33", default: "#2e2b42", strong: "#433f5b" },
@@ -166,9 +176,13 @@ export const ARCTIC_FROST_THEME: ThemeManifest = {
 
   colors: {
     brand: {
+      // Faz 6 kontrast fix: Eski primary button brand.500 #0ea5e9 +
+      // white = 2.77:1 AA altındaydı. Skala bir ton koyulaştırıldı —
+      // brand.500 artık #0284c7 (4.10 LG), brand.600 #0369a1 (5.93 OK),
+      // brand.700 #075985 (7.56). Swiss minimal mavi kimlik korundu.
       50: "#f0f9ff", 100: "#e0f2fe", 200: "#bae6fd", 300: "#7dd3fc",
-      400: "#38bdf8", 500: "#0ea5e9", 600: "#0284c7", 700: "#0369a1",
-      800: "#075985", 900: "#0c4a6e",
+      400: "#38bdf8", 500: "#0284c7", 600: "#0369a1", 700: "#075985",
+      800: "#0c4a6e", 900: "#082f49",
     },
     neutral: {
       0: "#ffffff", 25: "#fdfdfe", 50: "#f9fafb", 100: "#f3f4f6",
@@ -181,11 +195,15 @@ export const ARCTIC_FROST_THEME: ThemeManifest = {
     error: { light: "#fef2f2", base: "#ef4444", dark: "#dc2626", text: "#b91c1c" },
     info: { light: "#eff6ff", base: "#3b82f6", dark: "#2563eb", text: "#1d4ed8" },
     surface: {
+      // Faz 6 kontrast fix: sidebarSection #9ca3af beyaz sidebar üzerinde
+      // 2.54:1 (FAIL) idi. #6b7280 (4.83:1) yapıldı — Swiss section
+      // header'lar artık net okunuyor. sidebarTextActive eski brand.700
+      // referansı #0369a1 olarak literal kalıyor.
       page: "#f9fafb", card: "#ffffff", elevated: "#ffffff",
       inset: "#f3f4f6", sidebar: "#ffffff", sidebarHover: "#f3f4f6",
       sidebarActive: "#e0f2fe",
       sidebarText: "#111827", sidebarTextMuted: "#6b7280",
-      sidebarTextActive: "#0369a1", sidebarSection: "#9ca3af",
+      sidebarTextActive: "#0369a1", sidebarSection: "#6b7280",
       sidebarBorder: "#e5e7eb",
     },
     border: { subtle: "#f3f4f6", default: "#e5e7eb", strong: "#d1d5db" },
@@ -269,14 +287,22 @@ export const TOKYO_NEON_THEME: ThemeManifest = {
 
   colors: {
     brand: {
-      50: "#1f0a1e", 100: "#2e0e2d", 200: "#4d1648", 300: "#7a2472",
-      400: "#be3bab", 500: "#ec4899", 600: "#f472b6", 700: "#f9a8d4",
-      800: "#fbcfe8", 900: "#fce7f3",
+      // Faz 6 kontrast fix: Brand skalası standart light→dark yönüne
+      // çevrildi. Primary button (bg-gradient brand-600→brand-700 +
+      // text-white) için 600 #db2777 = 4.60:1, 700 #be185d = 6.04:1.
+      // Akihabara neon pembe 400-500 aralığında korundu; sidebar neon
+      // vurgusu #f9a8d4 literal olarak sidebarTextActive'de saklanıyor.
+      50: "#fdf2f8", 100: "#fce7f3", 200: "#fbcfe8", 300: "#f9a8d4",
+      400: "#f472b6", 500: "#ec4899", 600: "#db2777", 700: "#be185d",
+      800: "#9d174d", 900: "#831843",
     },
     neutral: {
+      // Faz 6 kontrast fix: n500 #655e85 (3.07:1) küçük metinler için
+      // sınırdaydı. Skala açıldı: n500 → #9590b4 (6.09:1),
+      // n600 → #a9a5c2 (7.77:1).
       0: "#0c0a14", 25: "#100e1a", 50: "#15121f", 100: "#1c1929",
-      200: "#252237", 300: "#332e4a", 400: "#4a4466", 500: "#655e85",
-      600: "#8580a4", 700: "#a9a5c2", 800: "#ccc8df", 900: "#e8e6f0",
+      200: "#252237", 300: "#332e4a", 400: "#4a4466", 500: "#9590b4",
+      600: "#a9a5c2", 700: "#c2bed6", 800: "#d5d1e4", 900: "#e8e6f0",
       950: "#f5f4f9",
     },
     success: { light: "#0c2a1b", base: "#34d399", dark: "#10b981", text: "#6ee7b7" },
@@ -287,8 +313,10 @@ export const TOKYO_NEON_THEME: ThemeManifest = {
       page: "#0c0a14", card: "#15121f", elevated: "#1c1929",
       inset: "#100e1a", sidebar: "#100e1a", sidebarHover: "#1c1929",
       sidebarActive: "#252237",
+      // Faz 6 kontrast fix: sidebarSection #655e85 (3.18:1 LG sınırı) →
+      // n600 #a9a5c2 (7.89:1) — section başlıkları AA geçiyor.
       sidebarText: "#e8e6f0", sidebarTextMuted: "#8580a4",
-      sidebarTextActive: "#f9a8d4", sidebarSection: "#655e85",
+      sidebarTextActive: "#f9a8d4", sidebarSection: "#a9a5c2",
       sidebarBorder: "#332e4a",
     },
     border: { subtle: "#252237", default: "#332e4a", strong: "#4a4466" },
@@ -377,9 +405,15 @@ export const INK_AND_WIRE_THEME: ThemeManifest = {
       800: "#4a382a", 900: "#3a2c22",
     },
     neutral: {
+      // Faz 6 kontrast fix: n500 #857f70 (3.76:1) küçük metinler için
+      // sınırdaydı. Skala koyulaştırıldı:
+      // n500 → #5a5548 (7.00:1), n600 → #4a463d (9.14:1).
+      // Eski açık tonlar (#857f70, #6b665a) border/placeholder için
+      // sidebarSection/borderStrong literal'lerinde saklanmaya devam
+      // ediyor (sidebar #1a1814 üzerinde >=4.5 sağlıyorlar).
       0: "#faf8f4", 25: "#f7f4ef", 50: "#f2efe8", 100: "#e8e4db",
-      200: "#d8d3c8", 300: "#c2bcae", 400: "#a49e8f", 500: "#857f70",
-      600: "#6b665a", 700: "#4a463d", 800: "#2d2a24", 900: "#1a1814",
+      200: "#d8d3c8", 300: "#c2bcae", 400: "#a49e8f", 500: "#5a5548",
+      600: "#4a463d", 700: "#3a3730", 800: "#2d2a24", 900: "#1a1814",
       950: "#0d0c0a",
     },
     success: { light: "#e8f5e9", base: "#558b2f", dark: "#33691e", text: "#1b5e20" },
@@ -390,8 +424,10 @@ export const INK_AND_WIRE_THEME: ThemeManifest = {
       page: "#f2efe8", card: "#faf8f4", elevated: "#faf8f4",
       inset: "#e8e4db", sidebar: "#1a1814", sidebarHover: "#2d2a24",
       sidebarActive: "#4a463d",
+      // Faz 6 kontrast fix: sidebarSection #857f70 sidebar #1a1814
+      // üzerinde 4.45:1 (sınır). n400 #a49e8f (6.64:1) ile AA kesin.
       sidebarText: "#f2efe8", sidebarTextMuted: "#a49e8f",
-      sidebarTextActive: "#ddd3c0", sidebarSection: "#857f70",
+      sidebarTextActive: "#ddd3c0", sidebarSection: "#a49e8f",
       sidebarBorder: "#4a463d",
     },
     border: { subtle: "#d8d3c8", default: "#c2bcae", strong: "#a49e8f" },
@@ -475,14 +511,23 @@ export const SOLAR_EMBER_THEME: ThemeManifest = {
 
   colors: {
     brand: {
-      50: "#1f0c05", 100: "#2e1208", 200: "#4d1e0e", 300: "#7c3118",
-      400: "#b84a20", 500: "#ea580c", 600: "#f97316", 700: "#fb923c",
-      800: "#fdba74", 900: "#fed7aa",
+      // Faz 6 kontrast fix: Brand skalası standart light→dark yönüne
+      // çevrildi. Eski 600 #ea580c beyaz metin üzerinde 3.56:1 (AA
+      // altı) idi; primary button gradient'i bir ton kaydırılarak
+      // 600 → #c2410c (5.18:1), 700 → #9a3412 (7.51:1) yapıldı.
+      // Ember parıltısı 400-500 aralığında korundu; sidebar fire-accent
+      // (#fb923c) literal olarak sidebarTextActive'de saklanıyor.
+      50: "#fff7ed", 100: "#ffedd5", 200: "#fed7aa", 300: "#fdba74",
+      400: "#fb923c", 500: "#f97316", 600: "#c2410c", 700: "#9a3412",
+      800: "#7c2d12", 900: "#431407",
     },
     neutral: {
+      // Faz 6 kontrast fix: n500 #6b6259 (3.10:1) küçük metinler için
+      // sınırdaydı. Skala açıldı: n500 → #9a9088 (5.92:1),
+      // n600 → #ada49b (7.54:1).
       0: "#0c0a08", 25: "#110e0b", 50: "#161310", 100: "#1e1a16",
-      200: "#292420", 300: "#38322c", 400: "#504840", 500: "#6b6259",
-      600: "#8a8078", 700: "#ada49b", 800: "#cec7be", 900: "#e9e4de",
+      200: "#292420", 300: "#38322c", 400: "#504840", 500: "#9a9088",
+      600: "#ada49b", 700: "#cec7be", 800: "#e0dad2", 900: "#e9e4de",
       950: "#f5f2ee",
     },
     success: { light: "#0d2a14", base: "#22c55e", dark: "#16a34a", text: "#86efac" },
@@ -493,8 +538,10 @@ export const SOLAR_EMBER_THEME: ThemeManifest = {
       page: "#0c0a08", card: "#161310", elevated: "#1e1a16",
       inset: "#110e0b", sidebar: "#0c0a08", sidebarHover: "#1e1a16",
       sidebarActive: "#292420",
+      // Faz 6 kontrast fix: sidebarSection #6b6259 sidebar #0c0a08
+      // üzerinde 3.31:1 (LG sınırı). n600 #ada49b (7.54:1) ile güçlü AA.
       sidebarText: "#e9e4de", sidebarTextMuted: "#8a8078",
-      sidebarTextActive: "#fb923c", sidebarSection: "#6b6259",
+      sidebarTextActive: "#fb923c", sidebarSection: "#ada49b",
       sidebarBorder: "#292420",
     },
     border: { subtle: "#292420", default: "#38322c", strong: "#504840" },

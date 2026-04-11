@@ -32,7 +32,10 @@ export const CANVAS_MANIFEST: SurfaceManifest = {
     "arayuzle acilmaya devam eder. Admin panelini hicbir sekilde etkilemez.",
   author: "system",
   version: "0.1.0",
-  scope: "user",
+  // Faz 5: Canvas artık hem admin hem user paneli için çalışır. User tarafı
+  // workspace sidebar + header layout'unu korur, admin tarafı aynı görsel
+  // dil üzerinde zone-gruplu admin nav ile çalışır.
+  scope: "both",
   status: "beta",
   coverage: "full",
   density: "spacious",

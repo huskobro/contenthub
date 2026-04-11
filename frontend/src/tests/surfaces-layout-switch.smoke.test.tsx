@@ -144,16 +144,16 @@ describe("Dynamic layouts — Faz 1 surface resolution", () => {
     });
   });
 
-  it("falls back to legacy admin when a user-only surface (atrium) is picked on admin scope", async () => {
-    // Faz 4: atrium is now a real beta user-scope surface (was a disabled
-    // placeholder in Faz 1). That means the OLD "disabled-fallback" path no
-    // longer triggers for atrium; instead, the scope-mismatch path must kick
-    // in when someone tries to mount atrium on the ADMIN scope. This test
-    // asserts the scope guard: an enabled user-only surface can never hijack
-    // the admin panel.
+  it("falls back to legacy admin when atrium gate is OFF even with atrium picked", async () => {
+    // Faz 5: atrium is now scope="both" and owns its own admin shell, so the
+    // old "user-only scope mismatch" assertion no longer applies. Instead we
+    // test the admin-gate path: when the admin preference points at atrium
+    // but `ui.surface.atrium.enabled` is false, the resolver must fall
+    // through to legacy — the admin panel must never render an ungated
+    // surface.
     settingsMock.next({
       "ui.surface.infrastructure.enabled": true,
-      "ui.surface.atrium.enabled": true,
+      "ui.surface.atrium.enabled": false,
     });
     const { admin, resolver, store } = await freshImport();
     store.useThemeStore.getState().setActiveSurface("atrium");
@@ -161,7 +161,7 @@ describe("Dynamic layouts — Faz 1 surface resolution", () => {
       infrastructureEnabled: true,
       defaultAdmin: "legacy",
       defaultUser: "legacy",
-      atriumEnabled: true,
+      atriumEnabled: false,
       bridgeEnabled: false,
       canvasEnabled: false,
       loaded: true,
@@ -174,7 +174,7 @@ describe("Dynamic layouts — Faz 1 surface resolution", () => {
       </MemoryRouter>,
     );
     await waitFor(() => {
-      // Atrium is user-scope → admin must still render legacy admin layout.
+      // Atrium gate OFF → admin must still render legacy admin layout.
       expect(screen.getByTestId("admin-layout-classic")).toBeDefined();
     });
   });

@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 async def seed_admin_user(db: AsyncSession) -> None:
     """Create initial admin user if no admin exists."""
     stmt = select(User).where(User.role == "admin")
-    existing_admin = (await db.execute(stmt)).scalar_one_or_none()
+    existing_admin = (await db.execute(stmt)).scalars().first()
 
     if existing_admin:
         logger.debug("Admin user already exists: id=%s", existing_admin.id)

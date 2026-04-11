@@ -30,6 +30,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useContentProject } from "../../hooks/useContentProjects";
 import { useChannelProfile } from "../../hooks/useChannelProfiles";
+import { useAuthStore } from "../../stores/authStore";
 import { fetchJobs, type JobResponse } from "../../api/jobsApi";
 import {
   fetchStandardVideos,
@@ -140,6 +141,17 @@ export function AtriumProjectDetailPage() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const toast = useToast();
+  // Role guard: only admins can access /admin/jobs/:id — non-admin users
+  // should stay in their own project workspace.
+  const isAdmin = useAuthStore((s) => s.user?.role === "admin");
+  const openJob = (jobId: string) => {
+    if (isAdmin) {
+      navigate(`/admin/jobs/${jobId}`);
+    } else if (projectId) {
+      // Non-admin: stay on the project detail page (refresh scroll)
+      navigate(`/user/projects/${projectId}`);
+    }
+  };
 
   const {
     data: project,
@@ -197,7 +209,11 @@ export function AtriumProjectDetailPage() {
       qc.invalidateQueries({ queryKey: ["jobs"] });
       qc.invalidateQueries({ queryKey: ["standard-videos"] });
       qc.invalidateQueries({ queryKey: ["content-projects"] });
-      navigate(`/admin/jobs/${data.job_id}`);
+      // Admins hop into job cockpit; non-admin users stay on the project
+      // detail (they don't have /admin access).
+      if (isAdmin) {
+        navigate(`/admin/jobs/${data.job_id}`);
+      }
     },
     onError: (err: Error) => {
       toast.error(err.message ?? "Üretim başlatılamadı.");
@@ -425,7 +441,7 @@ export function AtriumProjectDetailPage() {
                     <JobRow
                       key={job.id}
                       job={job}
-                      onOpen={() => navigate(`/admin/jobs/${job.id}`)}
+                      onOpen={() => openJob(job.id)}
                     />
                   ))}
                 </div>
@@ -444,7 +460,7 @@ export function AtriumProjectDetailPage() {
                     <JobRow
                       key={job.id}
                       job={job}
-                      onOpen={() => navigate(`/admin/jobs/${job.id}`)}
+                      onOpen={() => openJob(job.id)}
                     />
                   ))}
                 </div>
@@ -506,7 +522,7 @@ export function AtriumProjectDetailPage() {
                 {formatDateISO(project.deadline_at) || "—"}
               </MetaRow>
             ) : null}
-            {project.active_job_id ? (
+            {project.active_job_id && isAdmin ? (
               <MetaRow label="Aktif Job">
                 <Link
                   to={`/admin/jobs/${project.active_job_id}`}
@@ -514,6 +530,12 @@ export function AtriumProjectDetailPage() {
                 >
                   {project.active_job_id.slice(0, 12)}&hellip;
                 </Link>
+              </MetaRow>
+            ) : project.active_job_id ? (
+              <MetaRow label="Aktif Job">
+                <span className="text-neutral-600 text-sm font-mono">
+                  {project.active_job_id.slice(0, 12)}&hellip;
+                </span>
               </MetaRow>
             ) : null}
             {project.description ? (

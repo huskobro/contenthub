@@ -40,12 +40,35 @@ Tarih: 2026-04-11. Final acceptance turu sonrası.
 - ✅ `/admin/providers` — Provider registry + credentials + metrics
 - ✅ `/admin/modules` — Module enable/disable
 - ✅ `/admin/themes` — Surface + Theme picker (iki bölüm)
+- ✅ `/admin/wizard-settings` — Wizard governance (445 LoC, backend + frontend tam)
+- ✅ `/admin/library` — İçerik Kütüphanesi (445 LoC: list + filter + clone + detail)
+- ✅ `/admin/assets` — Asset registry (164 LoC list + 193 LoC detail)
+- ✅ `/admin/standard-videos` — Standard Video registry (tam)
+- ✅ `/admin/standard-videos/wizard` — Content Creation Wizard (5170 LoC)
+- ✅ `/admin/analytics` — Platform Overview (443 LoC + ~72 KB backend analytics service)
+- ✅ `/admin/analytics/channel-performance` — Channel Performance (backend tam, frontend chart'lar çalışıyor)
+- ✅ `/admin/comments` — Yorum izleme (300 LoC: liste + filtre + moderation)
+- ✅ `/admin/playlists` — Playlist izleme (260 LoC)
+- ✅ `/admin/posts` — Gönderi izleme (275 LoC)
+- ✅ `/admin/automation` — Automation Policies
+- ✅ `/admin/inbox` — Admin inbox
+- ✅ `/admin/connections` — Admin connections
+- ✅ `/admin/calendar` — Admin takvimi
 
 ### User sayfalar (tam)
 - ✅ `/user` — Anasayfa (Atrium editorial dashboard)
 - ✅ `/user/projects` — Projelerim (Atrium editorial list)
 - ✅ `/user/calendar` — Yayın takvimi (week/month)
 - ✅ `/user/analytics` — Analitiğim (shell seviyesinde tam)
+- ✅ `/user/comments` — Yorumlarım (420 LoC)
+- ✅ `/user/playlists` — Playlist'lerim (526 LoC)
+- ✅ `/user/posts` — Gönderilerim (507 LoC)
+- ✅ `/user/analytics/channels` — Kanal analytics'im (218 LoC)
+- ✅ `/user/automation` — Automation (293 LoC)
+- ✅ `/user/inbox` — Inbox (202 LoC)
+- ✅ `/user/connections` — Connections (267 LoC)
+- ✅ `/user/content` — İçerik giriş sayfası
+- ✅ `/user/channels/:channelId` — Kanal detay (326 LoC, router orphan bug düzeltildi 2026-04-11)
 
 ### UI altyapı
 - ✅ Atrium top-nav (Türkçe uppercase + izolasyon çalışıyor)
@@ -74,7 +97,7 @@ Tarih: 2026-04-11. Final acceptance turu sonrası.
 
 ### User
 - **`/user/channels`** — Channel liste çalışıyor, ASCII-only Türkçe pürüzü var (`Kanallarim`, `Kanal Olustur`, `Olusturulma`)
-- **`/user/channels/:channelId`** — Canvas'ta zengin, diğer surface'larda stub
+- **`/user/channels/:channelId`** — 326 LoC tam sayfa: YouTube OAuth flow + credentials management + surface override desteği (router orphan bug'ı 2026-04-11'de fix edildi)
 - **`/user/projects/:projectId`** — Proje detay + job bağlantısı + publish linkage
 - **`/user/create/video`** — Standard Video wizard
 - **`/user/create/bulletin`** — Bulletin wizard
@@ -86,33 +109,8 @@ Tarih: 2026-04-11. Final acceptance turu sonrası.
 ## Partial (iskelet var, tüm akışlar tam değil)
 
 ### Admin
-- **`/admin/wizard-settings`** — Wizard step governance v1, tüm wizard'lara yayılmamış
-- **`/admin/library`** — İçerik kütüphanesi liste ve filtre var, derin operasyonel aksiyonlar eksik
-- **`/admin/assets`** — Asset registry iskelet
-- **`/admin/standard-videos`** — Modül liste partial
-- **`/admin/standard-videos/wizard`** — Admin-side wizard partial
-- **`/admin/template-style-links`** — Template ↔ blueprint binding iskelet
-- **`/admin/analytics`** — Platform Overview partial (M34 backend bekliyor)
-- **`/admin/analytics/youtube`** — Partial
-- **`/admin/analytics/channel-performance`** — Partial
-
-### User
-- **`/user/content`** — Tüm içerik birleşik görünümü partial
-- **`/user/analytics/channels`** — User channel analytics partial
-
----
-
-## Shell / placeholder (iskelet var, içerik yok)
-
-### Admin
-- **`/admin/comments`** — Yorum izleme shell
-- **`/admin/playlists`** — Playlist izleme shell
-- **`/admin/posts`** — Gönderi izleme shell
-
-### User
-- **`/user/comments`** — User yorumlar shell
-- **`/user/playlists`** — User playlist'ler shell
-- **`/user/posts`** — User post'lar shell
+- **`/admin/template-style-links`** — Sadece create form (48 LoC) + list page var; detail/edit view + gelişmiş bağlama UI'ı eksik
+- **`/admin/analytics/youtube`** — Temel metrik var (view/like/comment); retention curve, audience demographics, watch time dağılımı eksik (YouTube Analytics API v2 entegrasyonu bekliyor)
 
 ---
 
@@ -129,11 +127,11 @@ Tarih: 2026-04-11. Final acceptance turu sonrası.
 - X (Twitter) adapter — planlı
 
 ### Advanced özellikler
-- Semantic dedupe (news) — planlı
+- Semantic dedupe (news) — planlı (dedupe_key alanı schema'da mevcut, embedding service yok)
 - Preview analytics — planlı
 - Multi-language narration optimization — planlı
-- Advanced retry strategies — planlı
-- Scheduled publish cron polling optimizasyonu — partial
+- Advanced retry strategies — kısmen hazır (retry_scheduler.py 171 LoC exponential backoff + batch limit tamam; DLQ + circuit breaker eksik)
+- Scheduled publish cron — **tam** (scheduler.py 111 LoC hazır)
 
 ---
 
@@ -151,11 +149,11 @@ CLAUDE.md'nin Phased Delivery Order listesine göre:
 | 30-31 | Publish Center + YouTube v1 | ✅ büyük ölçüde tam |
 | 32 | Review gate / manual override | ⚠ polish devam |
 | 33 | Rerun / clone / recovery | ✅ tam |
-| 34 | Analytics backend | ⏸ sırada |
-| 35 | Platform Overview + Ops Analytics | ⏸ sırada |
-| 36 | Platform Detail + Content Analytics | ⏸ sırada |
-| 37 | Future module expansion | ⏸ sırada |
-| 38 | Hardening | ⏸ sırada |
+| 34 | Analytics backend | ✅ büyük ölçüde tam (~72 KB service.py) |
+| 35 | Platform Overview + Ops Analytics | ✅ büyük ölçüde tam |
+| 36 | Platform Detail + Content Analytics | ✅ büyük ölçüde tam (YouTube Analytics v2 retention eksik) |
+| 37 | Future module expansion | ⏸ sırada (product_review / educational / howto) |
+| 38 | Hardening | ⏸ kısmen (DLQ + circuit breaker eksik, retry_scheduler tamam) |
 | 39 | Documentation + operator guide | 🚧 bu doc seti |
 | 40 | MVP final acceptance gate | ⏸ sırada |
 

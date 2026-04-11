@@ -129,18 +129,20 @@ describe("Built-in bridge surface registration — Faz 2", () => {
     mod.registerBuiltinSurfaces();
   });
 
-  it("registers bridge with admin scope and beta status", () => {
+  it("registers bridge with both-scope (Faz 5) and beta status", () => {
     const bridge = getSurface("bridge");
     expect(bridge).toBeDefined();
     expect(bridge!.manifest.id).toBe("bridge");
-    expect(bridge!.manifest.scope).toBe("admin");
+    // Faz 5: Bridge artık scope="both" — hem admin hem user paneli için
+    // kendi bağımsız ops-style shell'ini sunar.
+    expect(bridge!.manifest.scope).toBe("both");
     expect(bridge!.manifest.status).toBe("beta");
   });
 
-  it("bridge provides an adminLayout forwarder (no userLayout)", () => {
+  it("bridge provides BOTH adminLayout and userLayout forwarders (Faz 5)", () => {
     const bridge = getSurface("bridge")!;
     expect(typeof bridge.adminLayout).toBe("function");
-    expect(bridge.userLayout).toBeUndefined();
+    expect(typeof bridge.userLayout).toBe("function");
   });
 
   it("bridge declares the three Faz 2 page overrides", () => {

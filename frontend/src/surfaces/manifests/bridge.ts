@@ -23,7 +23,11 @@ export const BRIDGE_MANIFEST: SurfaceManifest = {
     "gibi sayfalar eski arayuzle acilmaya devam eder.",
   author: "system",
   version: "0.1.0",
-  scope: "admin",
+  // Faz 5: Bridge artık hem admin hem user paneli için çalışır. Her iki
+  // taraf da aynı 3-kolonlu ops dilini kullanır (64 px rail + 240 px
+  // context panel + content column). User tarafı horizon user grupları
+  // üzerinden, admin tarafı admin grupları üzerinden çalışır.
+  scope: "both",
   status: "beta",
   coverage: "full",
   density: "compact",

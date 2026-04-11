@@ -67,6 +67,10 @@ export const HORIZON_CHALK_THEME: ThemeManifest = {
       800: "#1e40af", 900: "#1e3a8a",
     },
     neutral: {
+      // Faz 6 kontrast notu: n400 #a3a3a3 beyaz kart üzerinde 2.52:1
+      // (AA altı) — ana metin rengi olarak KULLANMAYIN. Yalnızca
+      // placeholder, disabled ve ikon için geçerlidir. Muted metin
+      // rengi olarak n500 (#737373, 4.74:1) ya da n600 tercih edin.
       0: "#ffffff", 25: "#fdfdfd", 50: "#fafafa", 100: "#f5f5f5",
       200: "#e5e5e5", 300: "#d4d4d4", 400: "#a3a3a3", 500: "#737373",
       600: "#525252", 700: "#404040", 800: "#262626", 900: "#171717",
@@ -85,9 +89,13 @@ export const HORIZON_CHALK_THEME: ThemeManifest = {
       sidebarHover: "#262626",
       sidebarActive: "#404040",
       sidebarText: "#e5e5e5",
-      sidebarTextMuted: "#737373",
+      // Faz 6 kontrast fix: sidebarTextMuted #737373 (3.78:1) ve
+      // sidebarSection #525252 (2.29:1) karanlık sidebar üzerinde AA'yı
+      // geçmiyordu. sidebarTextMuted → #a3a3a3 (5.48:1) ve sidebarSection
+      // → #a3a3a3 (5.48:1) olarak kaldırıldı.
+      sidebarTextMuted: "#a3a3a3",
       sidebarTextActive: "#93c5fd",
-      sidebarSection: "#525252",
+      sidebarSection: "#a3a3a3",
       sidebarBorder: "#262626",
     },
     border: { subtle: "#f0f0f0", default: "#e5e5e5", strong: "#d4d4d4" },
@@ -167,14 +175,28 @@ export const HORIZON_OBSIDIAN_THEME: ThemeManifest = {
 
   colors: {
     brand: {
-      50: "#0d1f12", 100: "#0f2d16", 200: "#134d22", 300: "#1a7a35",
-      400: "#22a84a", 500: "#2dd55b", 600: "#4ae775", 700: "#7cf0a0",
-      800: "#adf7c5", 900: "#d8fce4",
+      // Faz 6 kontrast fix: Eski brand skalası 50→900 ters dizilmişti
+      // (50=koyu, 900=açık). Bu, tailwind/primitives'in standart
+      // "bg-brand-600 text-white" varsayımını kırıyor ve primary button
+      // okunmaz yapıyordu. Skala standart light→dark yönüne çevrildi.
+      // Neon terminal yeşil kimliği 400-500 aralığında korundu; sidebar
+      // active color (#7cf0a0) artık literal olarak sidebarTextActive'de
+      // saklanıyor.
+      // Ayrıca: brand.600 #16a34a beyaz metin üzerinde 3.30:1 (AA altı)
+      // idi; primary button gradient'ini koyulaştırmak için 600/700 bir
+      // ton kaydırıldı. Böylece gradient brand-600 → brand-700 +
+      // text-white artık 5.02:1 / 7.60:1 ile AA'yı geçiyor.
+      50: "#f0fdf4", 100: "#dcfce7", 200: "#bbf7d0", 300: "#86efac",
+      400: "#4ade80", 500: "#22c55e", 600: "#15803d", 700: "#166534",
+      800: "#14532d", 900: "#052e16",
     },
     neutral: {
+      // Faz 6 kontrast fix: n500 #52525b (2.44:1) ve n600 #71717a (3.90:1)
+      // kart #111114 üzerinde WCAG AA'yı geçmiyordu. Skala açılarak
+      // n500 → #858590 (4.52:1), n600 → #a1a1aa (7.35:1).
       0: "#09090b", 25: "#0c0c0f", 50: "#111114", 100: "#18181b",
-      200: "#202024", 300: "#2a2a30", 400: "#3f3f46", 500: "#52525b",
-      600: "#71717a", 700: "#a1a1aa", 800: "#d4d4d8", 900: "#e4e4e7",
+      200: "#202024", 300: "#2a2a30", 400: "#3f3f46", 500: "#858590",
+      600: "#a1a1aa", 700: "#c2c2c9", 800: "#d4d4d8", 900: "#e4e4e7",
       950: "#fafafa",
     },
     success: { light: "#0d2818", base: "#2dd55b", dark: "#22a84a", text: "#7cf0a0" },
@@ -190,9 +212,13 @@ export const HORIZON_OBSIDIAN_THEME: ThemeManifest = {
       sidebarHover: "#18181b",
       sidebarActive: "#202024",
       sidebarText: "#e4e4e7",
-      sidebarTextMuted: "#71717a",
+      // Faz 6 kontrast fix: sidebarTextMuted #71717a (3.73:1) ve
+      // sidebarSection #52525b (2.57:1) karanlık sidebar üzerinde AA'yı
+      // geçmiyordu. sidebarTextMuted → #a1a1aa (7.74:1),
+      // sidebarSection → #858590 (5.45:1).
+      sidebarTextMuted: "#a1a1aa",
       sidebarTextActive: "#7cf0a0",
-      sidebarSection: "#52525b",
+      sidebarSection: "#858590",
       sidebarBorder: "#202024",
     },
     border: { subtle: "#202024", default: "#2a2a30", strong: "#3f3f46" },
@@ -272,14 +298,24 @@ export const HORIZON_SAND_THEME: ThemeManifest = {
 
   colors: {
     brand: {
+      // Faz 6 kontrast fix: Primary button (bg-gradient brand-600→brand-700
+      // + text-white) kontrastı AA'yı geçmiyordu (2.15-3.19). Koyu tonlar
+      // bir adım kaydırıldı: brand.600 → #b45309 (5.02:1 w/ white),
+      // brand.700 → #92400e (7.09:1). Amber kimlik 50/100/200/300/400/500
+      // açık tonlarda korundu.
       50: "#fffbeb", 100: "#fef3c7", 200: "#fde68a", 300: "#fcd34d",
-      400: "#fbbf24", 500: "#f59e0b", 600: "#d97706", 700: "#b45309",
-      800: "#92400e", 900: "#78350f",
+      400: "#fbbf24", 500: "#f59e0b", 600: "#b45309", 700: "#92400e",
+      800: "#78350f", 900: "#451a03",
     },
     neutral: {
+      // Faz 6 kontrast fix: n500 #a09788 (2.84:1) ve n600 #807768 (4.34:1)
+      // light kart üzerinde AA'yı geçmiyordu. Skala koyulaştırıldı:
+      // n500 → #6e6558 (5.64:1), n600 → #5c5448 (7.33:1). Eski n400
+      // (#c2b8a5) placeholder/disabled için bırakıldı — yalnızca büyük
+      // metin ve ikon amaçlı kullanılmalıdır.
       0: "#fefdfb", 25: "#fcfaf6", 50: "#faf7f2", 100: "#f5f0e8",
-      200: "#ebe4d8", 300: "#ddd4c4", 400: "#c2b8a5", 500: "#a09788",
-      600: "#807768", 700: "#5c5448", 800: "#3b352c", 900: "#211e18",
+      200: "#ebe4d8", 300: "#ddd4c4", 400: "#a09788", 500: "#6e6558",
+      600: "#5c5448", 700: "#47402f", 800: "#3b352c", 900: "#211e18",
       950: "#14120e",
     },
     success: { light: "#ecfdf5", base: "#22c55e", dark: "#16a34a", text: "#15803d" },
@@ -295,9 +331,12 @@ export const HORIZON_SAND_THEME: ThemeManifest = {
       sidebarHover: "#3b352c",
       sidebarActive: "#5c5448",
       sidebarText: "#f5f0e8",
+      // Faz 6 kontrast fix: sidebarSection #807768 (3.76:1 sınır LG) →
+      // #b8aea0 (5.57:1) olarak açıldı; section başlıkları artık küçük
+      // metin olsa da AA'yı geçiyor.
       sidebarTextMuted: "#a09788",
       sidebarTextActive: "#fcd34d",
-      sidebarSection: "#807768",
+      sidebarSection: "#b8aea0",
       sidebarBorder: "#3b352c",
     },
     border: { subtle: "#ebe4d8", default: "#ddd4c4", strong: "#c2b8a5" },
@@ -377,14 +416,24 @@ export const HORIZON_MIDNIGHT_THEME: ThemeManifest = {
 
   colors: {
     brand: {
-      50: "#1a1608", 100: "#2a240d", 200: "#443a15", 300: "#6b5a20",
-      400: "#a08930", 500: "#d4b642", 600: "#e5ca5a", 700: "#f0dd7e",
-      800: "#f7ecab", 900: "#fdf6d8",
+      // Faz 6 kontrast fix: Brand skalası standart light→dark yönüne
+      // çevrildi. 600 #b45309 ve 700 #92400e primary button üzerinde
+      // beyaz metin için 5.02:1 / 7.09:1 sağlar. Gold vurgu 400-500
+      // aralığında korundu; premium altın rengi (eski 700 #f0dd7e)
+      // sidebarTextActive olarak literal tutulmaya devam ediyor.
+      50: "#fffbeb", 100: "#fef3c7", 200: "#fde68a", 300: "#fcd34d",
+      400: "#fbbf24", 500: "#f59e0b", 600: "#b45309", 700: "#92400e",
+      800: "#78350f", 900: "#451a03",
     },
     neutral: {
+      // Faz 6 kontrast fix: n500 #565e80 (2.83:1) AA altındaydı ve
+      // n600 #747c9c (4.36:1) sınırdaydı. Skala açıldı:
+      // n500 → #8a90b0 (5.72:1), n600 → #a8afc6 (8.21:1),
+      // n700 → #c0c6db (10.54:1). Eski koyu tonlar border/elevated için
+      // 200-400 aralığında saklandı.
       0: "#0b0e1a", 25: "#0e1120", 50: "#121628", 100: "#181d32",
-      200: "#1f2540", 300: "#2a3052", 400: "#3d4568", 500: "#565e80",
-      600: "#747c9c", 700: "#9ca3bc", 800: "#c4c9da", 900: "#e4e6ee",
+      200: "#1f2540", 300: "#2a3052", 400: "#3d4568", 500: "#8a90b0",
+      600: "#a8afc6", 700: "#c0c6db", 800: "#d4d8e5", 900: "#e4e6ee",
       950: "#f4f5f8",
     },
     success: { light: "#0d2818", base: "#22c55e", dark: "#16a34a", text: "#86efac" },
@@ -400,9 +449,11 @@ export const HORIZON_MIDNIGHT_THEME: ThemeManifest = {
       sidebarHover: "#181d32",
       sidebarActive: "#1f2540",
       sidebarText: "#e4e6ee",
+      // Faz 6 kontrast fix: sidebarSection #565e80 karanlık #0b0e1a
+      // üzerinde 3.03:1 (LG sınırı). n600 #a8afc6 (8.21:1) ile güçlü AA.
       sidebarTextMuted: "#747c9c",
       sidebarTextActive: "#f0dd7e",
-      sidebarSection: "#565e80",
+      sidebarSection: "#a8afc6",
       sidebarBorder: "#1f2540",
     },
     border: { subtle: "#1f2540", default: "#2a3052", strong: "#3d4568" },

@@ -54,6 +54,11 @@ Admin nav `useLayoutNavigation.ts` içinde tanımlı. Section başlıkları (bö
 - `/admin/comments` — **Yorum İzleme**
 - `/admin/playlists` — **Playlist İzleme**
 - `/admin/posts` — **Gönderi İzleme**
+- `/admin/automation` — **Otomasyon Politikaları**
+- `/admin/inbox` — **Admin Inbox**
+- `/admin/connections` — **Bağlantılar** (platform OAuth admin görünüm)
+- `/admin/calendar` — **Admin Takvim**
+- `/admin/notifications` — **Bildirim Merkezi**
 
 ### Analytics (bölüm)
 - `/admin/analytics` — **Analytics** (Platform Overview)
@@ -86,7 +91,7 @@ User nav `USER_NAV`'dan gelir. Seçilen surface'a göre aynı route'lar farklı 
 
 ### Kanallarım
 - `/user/channels` — **Kanallarım** (ChannelProfile listesi)
-  - `/user/channels/:channelId` — **Kanal detay** (Canvas'ta zengin; diğer surface'larda stub olabilir)
+  - `/user/channels/:channelId` — **Kanal detay** (326 LoC; YouTube OAuth + credentials; surface override desteği)
 
 ### Projelerim
 - `/user/projects` — **Projelerim** (ContentProject listesi — Atrium: editorial cards; Canvas: portfolio)
@@ -107,6 +112,11 @@ User nav `USER_NAV`'dan gelir. Seçilen surface'a göre aynı route'lar farklı 
 - `/user/playlists` — **Playlist'lerim**
 - `/user/posts` — **Gönderilerim**
 - `/user/analytics/channels` — **Kanal Performansım**
+
+### Otomasyon & İletişim
+- `/user/automation` — **Otomasyonlarım** (trigger + action politikaları)
+- `/user/inbox` — **Gelen Kutusu** (bildirim + review davetleri)
+- `/user/connections` — **Bağlantılarım** (YouTube OAuth + ileride diğer platformlar)
 
 ### Ek user sayfaları (surface'a göre görünür)
 - `/user/analytics` — **Analitiğim** (Atrium/Canvas surface'larında)

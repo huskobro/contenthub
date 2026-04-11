@@ -39,7 +39,11 @@ export const ATRIUM_MANIFEST: SurfaceManifest = {
     "acilmaya devam eder. Admin panelini hicbir sekilde etkilemez.",
   author: "system",
   version: "0.1.0",
-  scope: "user",
+  // Faz 5: Atrium artık hem admin hem user paneli için çalışır. Her iki
+  // taraf da aynı sinematik editorial dili kullanır (koyu marquee, top-nav,
+  // editorial moment kicker) ama veri tarafı ayrı: user = user commands +
+  // user notifications, admin = admin commands + admin notifications.
+  scope: "both",
   status: "beta",
   coverage: "full",
   density: "spacious",

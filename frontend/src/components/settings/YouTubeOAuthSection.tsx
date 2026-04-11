@@ -89,7 +89,9 @@ export function YouTubeOAuthSection() {
 
   function handleDisconnect() {
     if (!window.confirm("YouTube baglantisinizi kesmek istediginizden emin misiniz?")) return;
-    revokeMutation.mutate();
+    // Per-connection DB store: bu legacy admin-settings panelinde connectionId
+    // yok — global/default baglanti icin undefined gecilir.
+    revokeMutation.mutate(undefined);
   }
 
   return (

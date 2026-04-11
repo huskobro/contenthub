@@ -156,6 +156,7 @@ Bunlar test mock shape sorunları (`users` ve `projects` bazı mock'larda object
 ---
 
 ## Commit
-Tek commit halinde push edilecek. Mesaj: `fix(ui-audit): close 8 critical UX + navigation findings from full audit`.
-
-Commit hash ve push durumu aşağıda güncellenir.
+- **Hash:** `b7462b4`
+- **Mesaj:** `fix(ui-audit): close 8 critical UX + navigation findings from full audit`
+- **Dosya sayısı:** 17 değişti (656 satır eklendi, 136 satır silindi)
+- **Push:** ✅ `origin/main` (5274cbb..b7462b4)

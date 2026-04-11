@@ -41,7 +41,7 @@
  * when Canvas is off.
  */
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "../../stores/authStore";
@@ -94,6 +94,19 @@ export function CanvasChannelDetailPage() {
   const [saveCredsSuccess, setSaveCredsSuccess] = useState(false);
   const [connecting, setConnecting] = useState(false);
   const [connectError, setConnectError] = useState<string | null>(null);
+  // Track the success-banner auto-hide timer so we can cancel it on unmount
+  // and avoid state updates on unmounted components.
+  const saveCredsSuccessTimerRef = useRef<number | null>(null);
+
+  // Cleanup the timer on unmount.
+  useEffect(() => {
+    return () => {
+      if (saveCredsSuccessTimerRef.current !== null) {
+        window.clearTimeout(saveCredsSuccessTimerRef.current);
+        saveCredsSuccessTimerRef.current = null;
+      }
+    };
+  }, []);
 
   // OAuth popup success listener (identical to legacy).
   useEffect(() => {
@@ -121,7 +134,14 @@ export function CanvasChannelDetailPage() {
       setClientId("");
       setClientSecret("");
       setSaveCredsSuccess(true);
-      setTimeout(() => setSaveCredsSuccess(false), 4000);
+      // Cancel any previously scheduled hide before scheduling a new one.
+      if (saveCredsSuccessTimerRef.current !== null) {
+        window.clearTimeout(saveCredsSuccessTimerRef.current);
+      }
+      saveCredsSuccessTimerRef.current = window.setTimeout(() => {
+        setSaveCredsSuccess(false);
+        saveCredsSuccessTimerRef.current = null;
+      }, 4000);
     } catch {
       // useApiError handles the error toast
     }

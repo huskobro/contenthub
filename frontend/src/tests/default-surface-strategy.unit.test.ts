@@ -236,37 +236,42 @@ describe("Default surface strategy — Faz 4B", () => {
   // 5. Role-default that points at a disabled surface / scope mismatch
   // -------------------------------------------------------------------------
 
-  it("admin role-default=canvas (scope mismatch) → legacy fallback, never user-only shell in admin", () => {
+  // Faz 5: Canvas, Atrium, Bridge artık "both"-scope. Daha önce "admin
+  // role-default=canvas" veya "user role-default=bridge" gibi konfigürasyonlar
+  // scope-mismatch üreterek legacy'ye düşürüyordu; artık her üç surface de
+  // hem admin hem user paneli için kendi bağımsız shell'ini sunduğu için bu
+  // tercihler DOĞRUDAN başarılı role-default resolve'una dönüşür.
+  it("admin role-default=canvas (Faz 5: both-scope) → canvas resolves with role-default", () => {
     const result = resolveActiveSurface({
       scope: "admin",
       infrastructureEnabled: true,
       forcedSurfaceId: null,
       userSurfaceId: null,
-      roleDefaultId: "canvas", // wrong: canvas is user-only
+      roleDefaultId: "canvas",
       globalDefaultId: null,
       enabledSurfaceIds: enabledAll(),
       legacyLayoutMode: "classic",
     });
-    expect(result.surface.manifest.id).toBe("legacy");
-    expect(result.reason).toBe("legacy-fallback");
+    expect(result.surface.manifest.id).toBe("canvas");
+    expect(result.reason).toBe("role-default");
   });
 
-  it("user role-default=bridge (scope mismatch) → legacy fallback, never admin-only shell in user", () => {
+  it("user role-default=bridge (Faz 5: both-scope) → bridge resolves with role-default", () => {
     const result = resolveActiveSurface({
       scope: "user",
       infrastructureEnabled: true,
       forcedSurfaceId: null,
       userSurfaceId: null,
-      roleDefaultId: "bridge", // wrong: bridge is admin-only
+      roleDefaultId: "bridge",
       globalDefaultId: null,
       enabledSurfaceIds: enabledAll(),
       legacyLayoutMode: "classic",
     });
-    expect(result.surface.manifest.id).toBe("legacy");
-    expect(result.reason).toBe("legacy-fallback");
+    expect(result.surface.manifest.id).toBe("bridge");
+    expect(result.reason).toBe("role-default");
   });
 
-  it("admin role-default=atrium (user-scope) → legacy fallback", () => {
+  it("admin role-default=atrium (Faz 5: both-scope) → atrium resolves with role-default", () => {
     const result = resolveActiveSurface({
       scope: "admin",
       infrastructureEnabled: true,
@@ -277,8 +282,8 @@ describe("Default surface strategy — Faz 4B", () => {
       enabledSurfaceIds: enabledAll(),
       legacyLayoutMode: "classic",
     });
-    expect(result.surface.manifest.id).toBe("legacy");
-    expect(result.reason).toBe("legacy-fallback");
+    expect(result.surface.manifest.id).toBe("atrium");
+    expect(result.reason).toBe("role-default");
   });
 
   it("role-default pointing at a never-registered surface id → legacy fallback", () => {

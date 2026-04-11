@@ -189,6 +189,6 @@ Sayfa artik "sparse" degil — proje yasam dongusunun tam hikayesi tek yerde.
 - Backend endpoints live-tested: `/api/v1/providers`, `/api/v1/settings/credentials`, `/api/v1/jobs`, `/api/v1/content-projects`
 
 ## Commit + Push
-- Hash: (asagida guncellenir)
-- Mesaj: `fix(f48): standardize panel switch copy in Legacy AppHeader (verification-pass gap)`
-- Push: origin/main
+- Hash: `9466a1e`
+- Mesaj: `fix(ui-audit-f48): legacy AppHeader panel switch copy standardize`
+- Push: ✅ `origin/main` (b7462b4..9466a1e)

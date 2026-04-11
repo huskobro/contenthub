@@ -59,11 +59,13 @@ function fmtDuration(seconds: number | null | undefined): string {
 }
 
 export function CanvasUserAnalyticsPage() {
-  const [window, setWindow] = useState<AnalyticsWindow>("last_30d");
+  // NOTE: do not use `window` as the state name — it shadows the DOM global.
+  const [analyticsWindow, setAnalyticsWindow] =
+    useState<AnalyticsWindow>("last_30d");
   const userId = useAuthStore((s) => s.user?.id ?? null);
 
   const filters: AnalyticsFilterParams = {
-    window,
+    window: analyticsWindow,
     user_id: userId ?? undefined,
   };
 
@@ -129,12 +131,12 @@ export function CanvasUserAnalyticsPage() {
           aria-label="Analitik zaman aralığı"
         >
           {WINDOW_OPTIONS.map((opt) => {
-            const active = opt.value === window;
+            const active = opt.value === analyticsWindow;
             return (
               <button
                 key={opt.value}
                 type="button"
-                onClick={() => setWindow(opt.value)}
+                onClick={() => setAnalyticsWindow(opt.value)}
                 className={cn(
                   "px-3 py-1.5 rounded-md text-xs font-semibold",
                   "border transition-colors duration-fast",

@@ -33,22 +33,20 @@ describe("Atrium surface — Faz 4 registration", () => {
     mod.registerBuiltinSurfaces();
   });
 
-  it("registers atrium as a beta user-scope surface", () => {
+  it("registers atrium as a beta 'both'-scope surface (Faz 5)", () => {
     const atrium = getSurface("atrium");
     expect(atrium).toBeDefined();
     expect(atrium!.manifest.id).toBe("atrium");
     expect(atrium!.manifest.status).toBe("beta");
-    expect(atrium!.manifest.scope).toBe("user");
-    // Atrium must not be "both" — we must not accidentally mount Atrium in
-    // the admin panel. Atrium is a user-only editorial/premium shell.
-    expect(atrium!.manifest.scope).not.toBe("both");
-    expect(atrium!.manifest.scope).not.toBe("admin");
+    // Faz 5: Atrium artık hem admin hem user panel için kendi bağımsız
+    // editorial shell'ini sunar.
+    expect(atrium!.manifest.scope).toBe("both");
   });
 
-  it("atrium provides a userLayout forwarder and NO adminLayout", () => {
+  it("atrium provides BOTH a userLayout and an adminLayout forwarder (Faz 5)", () => {
     const atrium = getSurface("atrium")!;
     expect(typeof atrium.userLayout).toBe("function");
-    expect(atrium.adminLayout).toBeUndefined();
+    expect(typeof atrium.adminLayout).toBe("function");
   });
 
   it("atrium declares exactly the Faz 4 premium page overrides", () => {
@@ -106,14 +104,17 @@ describe("Atrium surface — Faz 4 registration", () => {
     expect(tone).toContain("editorial");
   });
 
-  it("canvas (user) and atrium (user) co-exist without override collision", () => {
+  it("canvas and atrium co-exist with both=scope without override collision", () => {
     const all = listSurfaces();
     const canvas = all.find((s) => s.manifest.id === "canvas");
     const atrium = all.find((s) => s.manifest.id === "atrium");
     expect(canvas).toBeDefined();
     expect(atrium).toBeDefined();
-    expect(canvas!.manifest.scope).toBe("user");
-    expect(atrium!.manifest.scope).toBe("user");
+    // Faz 5: her iki surface de "both"-scope. Aynı user.* override anahtarları
+    // üzerinde yarışır — resolver `ui.surface.default.user` üzerinden bir
+    // kazananı seçer.
+    expect(canvas!.manifest.scope).toBe("both");
+    expect(atrium!.manifest.scope).toBe("both");
     // Two user-scope surfaces may share override keys — that's WHY the
     // resolver exists (pick one via `ui.surface.default.user`). The test is:
     // both declare `user.dashboard`, `user.projects.list`, `user.projects.detail`
@@ -129,14 +130,14 @@ describe("Atrium surface — Faz 4 registration", () => {
     expect(atriumKeys.size).toBeLessThan(canvasKeys.size);
   });
 
-  it("bridge (admin) is not affected by atrium promotion", () => {
-    // Sanity: Faz 4 must not accidentally touch bridge/canvas shape. We only
-    // check bridge here; canvas co-existence is asserted above.
+  it("bridge is in 'both' scope (Faz 5) and still only owns admin.* overrides", () => {
+    // Faz 5: Bridge hem admin hem user paneli için kendi ops-style shell'ini
+    // sunar, ama page override'ları hâlâ sadece admin.* anahtarlarında —
+    // user tarafında override yok; user routes legacy fallback'a düşer.
     const bridge = getSurface("bridge")!;
-    expect(bridge.manifest.scope).toBe("admin");
+    expect(bridge.manifest.scope).toBe("both");
     expect(bridge.manifest.status).toBe("beta");
     const bridgeKeys = new Set(Object.keys(bridge.pageOverrides ?? {}));
-    // Bridge must still only own admin.* keys.
     for (const k of bridgeKeys) {
       expect(k.startsWith("admin.")).toBe(true);
     }

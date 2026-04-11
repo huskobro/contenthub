@@ -43,7 +43,7 @@ export function CanvasMyChannelsPage() {
   const authUser = useAuthStore((s) => s.user);
   const userId = authUser?.id;
 
-  const { data: channels, isLoading } = useChannelProfiles(userId);
+  const { data: channels, isLoading, isError } = useChannelProfiles(userId);
   const { data: projects } = useContentProjects(
     userId ? { user_id: userId, limit: 200 } : undefined,
   );
@@ -253,7 +253,15 @@ export function CanvasMyChannelsPage() {
       ) : null}
 
       {/* Channel grid ----------------------------------------------------- */}
-      {isLoading ? (
+      {isError ? (
+        <div
+          className="rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700"
+          data-testid="canvas-channels-error"
+          role="alert"
+        >
+          Kanallar yüklenemedi. Bağlantınızı kontrol edip sayfayı yenileyin.
+        </div>
+      ) : isLoading ? (
         <div
           className="rounded-xl border border-border-subtle bg-surface-card p-8 text-center text-sm text-neutral-500"
           data-testid="canvas-channels-loading"

@@ -9,6 +9,10 @@ import {
   fetchVideoStatsTrend,
   fetchChannelVideos,
   revokeYouTubeCredentials,
+  fetchYouTubeStatusByChannel,
+  fetchYouTubeChannelInfoByChannel,
+  fetchChannelCredentials,
+  saveChannelCredentials,
 } from "../api/credentialsApi";
 import { useApiError } from "./useApiError";
 
@@ -43,14 +47,14 @@ export function useValidateCredential() {
 export function useYouTubeStatus() {
   return useQuery({
     queryKey: ["youtube", "status"],
-    queryFn: fetchYouTubeStatus,
+    queryFn: () => fetchYouTubeStatus(),
   });
 }
 
 export function useYouTubeChannelInfo() {
   return useQuery({
     queryKey: ["youtube", "channel-info"],
-    queryFn: fetchYouTubeChannelInfo,
+    queryFn: () => fetchYouTubeChannelInfo(),
   });
 }
 
@@ -73,10 +77,10 @@ export function useVideoStatsTrend(videoId: string | null) {
   });
 }
 
-export function useChannelVideos(enabled = true) {
+export function useChannelVideos(enabled = true, channelProfileId?: string) {
   return useQuery({
-    queryKey: ["youtube", "channel-videos"],
-    queryFn: () => fetchChannelVideos(50),
+    queryKey: ["youtube", "channel-videos", channelProfileId],
+    queryFn: () => fetchChannelVideos(50, channelProfileId),
     enabled,
     staleTime: 120_000,
     retry: false,
@@ -87,11 +91,63 @@ export function useRevokeYouTube() {
   const queryClient = useQueryClient();
   const onError = useApiError();
   return useMutation({
-    mutationFn: revokeYouTubeCredentials,
+    mutationFn: (connectionId?: string) => revokeYouTubeCredentials(connectionId),
     onError,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["youtube", "status"] });
+      queryClient.invalidateQueries({ queryKey: ["youtube"] });
       queryClient.invalidateQueries({ queryKey: ["credentials"] });
+      queryClient.invalidateQueries({ queryKey: ["my-connections"] });
+    },
+  });
+}
+
+// Per-channel YouTube hooks
+export function useYouTubeStatusByChannel(channelProfileId: string | null) {
+  return useQuery({
+    queryKey: ["youtube", "status", channelProfileId],
+    queryFn: () => fetchYouTubeStatusByChannel(channelProfileId!),
+    enabled: !!channelProfileId,
+  });
+}
+
+export function useYouTubeChannelInfoByChannel(channelProfileId: string | null) {
+  return useQuery({
+    queryKey: ["youtube", "channel-info", channelProfileId],
+    queryFn: () => fetchYouTubeChannelInfoByChannel(channelProfileId!),
+    enabled: !!channelProfileId,
+  });
+}
+
+// Per-channel YouTube API credential hooks
+export function useChannelCredentials(channelProfileId: string | null) {
+  return useQuery({
+    queryKey: ["youtube", "channel-credentials", channelProfileId],
+    queryFn: () => fetchChannelCredentials(channelProfileId!),
+    enabled: !!channelProfileId,
+  });
+}
+
+export function useSaveChannelCredentials() {
+  const queryClient = useQueryClient();
+  const onError = useApiError();
+  return useMutation({
+    mutationFn: ({
+      channelProfileId,
+      clientId,
+      clientSecret,
+    }: {
+      channelProfileId: string;
+      clientId: string;
+      clientSecret: string;
+    }) => saveChannelCredentials(channelProfileId, clientId, clientSecret),
+    onError,
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ["youtube", "channel-credentials", variables.channelProfileId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["youtube", "status", variables.channelProfileId],
+      });
     },
   });
 }
