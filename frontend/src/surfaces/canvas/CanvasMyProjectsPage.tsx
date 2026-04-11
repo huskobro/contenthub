@@ -13,13 +13,17 @@
  *   - No fake preview images — preview slot is an explicit placeholder.
  */
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "../../stores/authStore";
 import { useContentProjects } from "../../hooks/useContentProjects";
 import { useChannelProfiles } from "../../hooks/useChannelProfiles";
 import type { ContentProjectResponse } from "../../api/contentProjectsApi";
+import { fetchJobs } from "../../api/jobsApi";
 import { StatusBadge } from "../../components/design-system/primitives";
+import { VideoPlayer } from "../../components/shared/VideoPlayer";
+import { buildProjectPreviewMap } from "../../lib/jobArtifacts";
 import { cn } from "../../lib/cn";
 
 const MODULE_TYPES: Array<{ value: string; label: string }> = [
@@ -59,6 +63,33 @@ export function CanvasMyProjectsPage() {
   });
 
   const rows = useMemo(() => projects ?? [], [projects]);
+
+  // Fetch all jobs once so each project card can show its latest video as
+  // a real preview. This reuses the same React Query cache key shape that
+  // the dashboard uses, so the jobs list is deduped across pages.
+  const { data: allJobs } = useQuery({
+    queryKey: ["jobs", { canvasProjectsList: true }],
+    queryFn: () => fetchJobs(),
+  });
+  const projectPreviewMap = useMemo(
+    () => buildProjectPreviewMap(allJobs),
+    [allJobs],
+  );
+
+  // Shared lightbox state — any card's preview click opens it.
+  const [lightboxVideo, setLightboxVideo] = useState<{
+    url: string;
+    title: string;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!lightboxVideo) return undefined;
+    function handleKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setLightboxVideo(null);
+    }
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [lightboxVideo]);
 
   return (
     <div
@@ -181,15 +212,79 @@ export function CanvasMyProjectsPage() {
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"
           data-testid="canvas-projects-grid"
         >
-          {rows.map((project) => (
-            <ProjectCard
-              key={project.id}
-              project={project}
-              onOpen={() => navigate(`/user/projects/${project.id}`)}
-            />
-          ))}
+          {rows.map((project) => {
+            const preview = projectPreviewMap.get(project.id);
+            return (
+              <ProjectCard
+                key={project.id}
+                project={project}
+                onOpen={() => navigate(`/user/projects/${project.id}`)}
+                previewUrl={preview?.videoUrl ?? null}
+                onPreviewClick={
+                  preview
+                    ? () =>
+                        setLightboxVideo({
+                          url: preview.videoUrl,
+                          title: project.title,
+                        })
+                    : undefined
+                }
+              />
+            );
+          })}
         </div>
       )}
+
+      {/* Shared preview lightbox */}
+      {lightboxVideo ? (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Ön izleme"
+          className={cn(
+            "fixed inset-0 z-50 flex items-center justify-center",
+            "bg-black/80 backdrop-blur-sm p-4",
+          )}
+          onClick={() => setLightboxVideo(null)}
+          data-testid="canvas-projects-preview-lightbox"
+        >
+          <div
+            className={cn(
+              "relative max-w-[min(90vw,800px)] max-h-[90vh]",
+              "bg-neutral-900 rounded-xl shadow-2xl overflow-hidden",
+              "flex flex-col",
+            )}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-4 py-2 border-b border-neutral-800">
+              <p className="m-0 text-sm font-semibold text-neutral-100 truncate">
+                {lightboxVideo.title}
+              </p>
+              <button
+                type="button"
+                onClick={() => setLightboxVideo(null)}
+                className={cn(
+                  "ml-4 w-8 h-8 rounded-md shrink-0",
+                  "text-neutral-300 hover:text-white hover:bg-neutral-800",
+                  "flex items-center justify-center text-lg font-bold",
+                )}
+                aria-label="Kapat"
+              >
+                ×
+              </button>
+            </div>
+            <div className="p-4 overflow-auto">
+              <VideoPlayer
+                src={lightboxVideo.url}
+                title={lightboxVideo.title}
+                showDownload
+                autoPlay
+                testId="canvas-projects-preview-video"
+              />
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -228,33 +323,80 @@ function FilterSelect({
 function ProjectCard({
   project,
   onOpen,
+  previewUrl,
+  onPreviewClick,
 }: {
   project: ContentProjectResponse;
   onOpen: () => void;
+  previewUrl?: string | null;
+  onPreviewClick?: () => void;
 }) {
   return (
-    <button
-      type="button"
+    // div[role=button] so we can nest a real <button> for the preview.
+    <div
+      role="button"
+      tabIndex={0}
       onClick={onOpen}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onOpen();
+        }
+      }}
       className={cn(
         "group text-left rounded-xl border border-border-subtle bg-surface-card",
         "hover:border-brand-400 hover:shadow-md transition-all duration-fast",
         "overflow-hidden cursor-pointer",
+        "focus:outline-none focus:border-brand-400",
       )}
       data-testid={`canvas-project-card-${project.id}`}
     >
-      {/* Preview slot — labeled placeholder, never a fake render */}
-      <div
-        className={cn(
-          "h-[108px] flex items-center justify-center",
-          "bg-gradient-to-br from-brand-50 via-neutral-50 to-neutral-100",
-          "border-b border-border-subtle",
-        )}
-      >
-        <span className="text-[10px] font-mono uppercase text-neutral-400">
-          ön izleme &middot; pending
-        </span>
-      </div>
+      {previewUrl ? (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onPreviewClick?.();
+          }}
+          className={cn(
+            "relative block w-full h-[108px] border-b border-border-subtle",
+            "bg-neutral-900 overflow-hidden cursor-zoom-in",
+            "focus:outline-none focus:ring-2 focus:ring-brand-400",
+          )}
+          aria-label="Ön izlemeyi büyüt"
+        >
+          <video
+            src={previewUrl}
+            muted
+            playsInline
+            preload="metadata"
+            className="block w-full h-full object-cover"
+          />
+          <span
+            className={cn(
+              "absolute inset-0 flex items-center justify-center",
+              "bg-black/25 group-hover:bg-black/40 transition-colors",
+            )}
+            aria-hidden="true"
+          >
+            <span className="w-9 h-9 rounded-full bg-white/90 text-neutral-900 flex items-center justify-center text-base font-bold shadow">
+              ▶
+            </span>
+          </span>
+        </button>
+      ) : (
+        <div
+          className={cn(
+            "h-[108px] flex items-center justify-center",
+            "bg-gradient-to-br from-brand-50 via-neutral-50 to-neutral-100",
+            "border-b border-border-subtle",
+          )}
+        >
+          <span className="text-[10px] font-mono uppercase text-neutral-400">
+            ön izleme &middot; pending
+          </span>
+        </div>
+      )}
       <div className="p-4">
         <div className="flex items-start justify-between gap-2">
           <p className="m-0 text-sm font-semibold text-neutral-800 truncate">
@@ -275,6 +417,6 @@ function ProjectCard({
           ) : null}
         </div>
       </div>
-    </button>
+    </div>
   );
 }

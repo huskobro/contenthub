@@ -27,7 +27,7 @@
  *     Never pretend a render exists when it doesn't.
  */
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useContentProject } from "../../hooks/useContentProjects";
@@ -192,6 +192,21 @@ export function CanvasProjectDetailPage() {
     return `/api/v1/jobs/${focusJobId}/artifacts/${encodeURIComponent(basename)}`;
   }, [focusJobId, focusVideoArtifactPath]);
 
+  // Lightbox state for the preview slot — clicking the compact thumbnail
+  // opens a full-screen overlay with the real keyboard-controlled VideoPlayer.
+  const [previewLightboxOpen, setPreviewLightboxOpen] = useState(false);
+
+  // ESC to close the lightbox. Guarded by open state so we only attach when
+  // the overlay is actually visible.
+  useEffect(() => {
+    if (!previewLightboxOpen) return undefined;
+    function handleKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setPreviewLightboxOpen(false);
+    }
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [previewLightboxOpen]);
+
   const pendingVideo = linkedVideos?.find(
     (v) => !["rendering", "completed", "published"].includes(v.status),
   );
@@ -336,8 +351,13 @@ export function CanvasProjectDetailPage() {
         </div>
       </section>
 
-      {/* Preview + metadata rail --------------------------------------------- */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1.4fr,1fr] gap-4">
+      {/* Preview + metadata rail ---------------------------------------------
+          Preview slot shows a compact thumbnail-sized player (max ~320px wide)
+          so vertical (9:16) renders don't dominate the page. Clicking the
+          player opens a full-screen lightbox overlay for comfortable viewing.
+          The metadata rail now expands to fill the remaining horizontal space
+          so the right side of the page is no longer empty. */}
+      <div className="grid grid-cols-1 lg:grid-cols-[360px,1fr] gap-4 items-start">
         {/* Preview slot — real VideoPlayer when final render exists,
             labeled placeholder otherwise. Never a fake render. */}
         <section
@@ -350,18 +370,56 @@ export function CanvasProjectDetailPage() {
             </h2>
             <p className="m-0 mt-0.5 text-xs text-neutral-500">
               {focusVideoUrl
-                ? "Son render çıktısı. Oynatma ve klavye kontrolleri aktif."
+                ? "Büyütmek için tıklayın."
                 : "Render çıktı oluştuğunda burada gösterilir."}
             </p>
           </header>
           {focusVideoUrl ? (
             <div className="p-4" data-testid="canvas-project-preview-player">
-              <VideoPlayer
-                src={focusVideoUrl}
-                title={project.title}
-                showDownload
-                testId="canvas-project-preview-video"
-              />
+              <button
+                type="button"
+                onClick={() => setPreviewLightboxOpen(true)}
+                className={cn(
+                  "relative group block w-full rounded-lg overflow-hidden",
+                  "bg-neutral-900 border border-border-subtle",
+                  "cursor-zoom-in focus:outline-none focus:ring-2 focus:ring-brand-400",
+                )}
+                style={{ maxHeight: "420px" }}
+                data-testid="canvas-project-preview-thumb-button"
+                aria-label="Ön izlemeyi büyüt"
+              >
+                <video
+                  src={focusVideoUrl}
+                  muted
+                  playsInline
+                  preload="metadata"
+                  className="block w-full h-auto max-h-[420px] object-contain mx-auto"
+                  data-testid="canvas-project-preview-thumb-video"
+                />
+                {/* Play overlay */}
+                <div
+                  className={cn(
+                    "absolute inset-0 flex items-center justify-center",
+                    "bg-black/20 group-hover:bg-black/40 transition-colors",
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "w-12 h-12 rounded-full bg-white/90 text-neutral-900",
+                      "flex items-center justify-center text-xl font-bold",
+                      "shadow-lg group-hover:scale-110 transition-transform",
+                    )}
+                    aria-hidden="true"
+                  >
+                    ▶
+                  </span>
+                </div>
+              </button>
+              <p className="mt-2 mb-0 text-[11px] text-neutral-500 text-center">
+                {focusVideoArtifactPath
+                  ? focusVideoArtifactPath.split("/").pop()
+                  : ""}
+              </p>
             </div>
           ) : (
             <div
@@ -608,6 +666,59 @@ export function CanvasProjectDetailPage() {
           </ul>
         )}
       </section>
+
+      {/* Lightbox overlay — full-size VideoPlayer with keyboard controls.
+          Clicking the backdrop or pressing ESC closes it. */}
+      {previewLightboxOpen && focusVideoUrl ? (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Ön izleme"
+          className={cn(
+            "fixed inset-0 z-50 flex items-center justify-center",
+            "bg-black/80 backdrop-blur-sm p-4",
+          )}
+          onClick={() => setPreviewLightboxOpen(false)}
+          data-testid="canvas-project-preview-lightbox"
+        >
+          <div
+            className={cn(
+              "relative max-w-[min(90vw,800px)] max-h-[90vh]",
+              "bg-neutral-900 rounded-xl shadow-2xl overflow-hidden",
+              "flex flex-col",
+            )}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-4 py-2 border-b border-neutral-800">
+              <p className="m-0 text-sm font-semibold text-neutral-100 truncate">
+                {project.title}
+              </p>
+              <button
+                type="button"
+                onClick={() => setPreviewLightboxOpen(false)}
+                className={cn(
+                  "ml-4 w-8 h-8 rounded-md shrink-0",
+                  "text-neutral-300 hover:text-white hover:bg-neutral-800",
+                  "flex items-center justify-center text-lg font-bold",
+                )}
+                aria-label="Kapat"
+                data-testid="canvas-project-preview-lightbox-close"
+              >
+                ×
+              </button>
+            </div>
+            <div className="p-4 overflow-auto">
+              <VideoPlayer
+                src={focusVideoUrl}
+                title={project.title}
+                showDownload
+                autoPlay
+                testId="canvas-project-preview-video"
+              />
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

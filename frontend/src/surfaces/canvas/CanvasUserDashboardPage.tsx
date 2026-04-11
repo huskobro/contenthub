@@ -26,7 +26,7 @@
  *     is off, scope-mismatched, or disabled.
  */
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "../../stores/authStore";
@@ -36,6 +36,8 @@ import { useChannelProfiles } from "../../hooks/useChannelProfiles";
 import { fetchJobs, type JobResponse } from "../../api/jobsApi";
 import type { ContentProjectResponse } from "../../api/contentProjectsApi";
 import { StatusBadge } from "../../components/design-system/primitives";
+import { VideoPlayer } from "../../components/shared/VideoPlayer";
+import { buildProjectPreviewMap } from "../../lib/jobArtifacts";
 import { cn } from "../../lib/cn";
 
 const MODULE_LABELS: Record<string, string> = {
@@ -100,39 +102,91 @@ function WorkspaceCard({
 function ProjectPreviewTile({
   project,
   onOpen,
+  previewUrl,
+  onPreviewClick,
 }: {
   project: ContentProjectResponse;
   onOpen: () => void;
+  /**
+   * When the project has a rendered video artifact, the caller passes the
+   * backend URL here. The tile then renders a real muted <video> thumbnail
+   * instead of the static placeholder. Nothing is faked: the URL is derived
+   * from the jobs list already fetched for the dashboard.
+   */
+  previewUrl?: string | null;
+  /** Invoked when the user clicks the preview thumbnail itself (lightbox). */
+  onPreviewClick?: () => void;
 }) {
-  // Canvas is preview-first: the tile shows a preview slot even if we don't
-  // have a thumbnail yet. The empty slot is LABELED as a pending state — we
-  // never pretend a render exists when it doesn't.
   const moduleLabel = MODULE_LABELS[project.module_type] ?? project.module_type;
 
   return (
-    <button
-      type="button"
+    // Outer wrapper must NOT be a <button> so we can nest a real preview
+    // <button> next to the main "open project" button without producing
+    // invalid nested-button HTML. A div+role=button keeps keyboard + a11y.
+    <div
+      role="button"
+      tabIndex={0}
       onClick={onOpen}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onOpen();
+        }
+      }}
       className={cn(
         "group text-left w-full rounded-lg border border-border-subtle bg-surface-card",
         "hover:border-brand-400 hover:shadow-md transition-all duration-fast",
         "flex gap-3 p-3 cursor-pointer",
+        "focus:outline-none focus:border-brand-400",
       )}
       data-testid={`canvas-project-tile-${project.id}`}
     >
-      {/* Preview slot — labeled placeholder, not a fake render. */}
-      <div
-        className={cn(
-          "w-[96px] h-[54px] shrink-0 rounded-md border border-dashed border-border-subtle",
-          "bg-gradient-to-br from-brand-50 to-neutral-50",
-          "flex items-center justify-center",
-        )}
-        data-testid={`canvas-project-preview-slot-${project.id}`}
-      >
-        <span className="text-[9px] font-mono uppercase text-neutral-400">
-          ön izleme
-        </span>
-      </div>
+      {previewUrl ? (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onPreviewClick?.();
+          }}
+          className={cn(
+            "relative w-[96px] h-[54px] shrink-0 rounded-md overflow-hidden",
+            "bg-neutral-900 border border-border-subtle",
+            "cursor-zoom-in focus:outline-none focus:ring-2 focus:ring-brand-400",
+          )}
+          data-testid={`canvas-project-preview-slot-${project.id}`}
+          aria-label="Ön izlemeyi büyüt"
+        >
+          <video
+            src={previewUrl}
+            muted
+            playsInline
+            preload="metadata"
+            className="block w-full h-full object-cover"
+          />
+          <span
+            className={cn(
+              "absolute inset-0 flex items-center justify-center",
+              "bg-black/25 group-hover:bg-black/40 transition-colors",
+            )}
+            aria-hidden="true"
+          >
+            <span className="text-white text-sm font-bold">▶</span>
+          </span>
+        </button>
+      ) : (
+        <div
+          className={cn(
+            "w-[96px] h-[54px] shrink-0 rounded-md border border-dashed border-border-subtle",
+            "bg-gradient-to-br from-brand-50 to-neutral-50",
+            "flex items-center justify-center",
+          )}
+          data-testid={`canvas-project-preview-slot-${project.id}`}
+        >
+          <span className="text-[9px] font-mono uppercase text-neutral-400">
+            ön izleme
+          </span>
+        </div>
+      )}
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-2">
           <p className="m-0 text-sm font-semibold text-neutral-800 truncate">
@@ -153,7 +207,7 @@ function ProjectPreviewTile({
           ) : null}
         </div>
       </div>
-    </button>
+    </div>
   );
 }
 
@@ -238,6 +292,28 @@ export function CanvasUserDashboardPage() {
       .filter((j) => IN_FLIGHT_STATUSES.has(j.status))
       .slice(0, 8);
   }, [allJobs]);
+
+  // Build per-project preview URL map once — dashboards can then render a
+  // real thumbnail per tile without fanning out additional job requests.
+  const projectPreviewMap = useMemo(
+    () => buildProjectPreviewMap(allJobs),
+    [allJobs],
+  );
+
+  // Lightbox state for inline preview playback from tiles.
+  const [lightboxVideo, setLightboxVideo] = useState<{
+    url: string;
+    title: string;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!lightboxVideo) return undefined;
+    function handleKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setLightboxVideo(null);
+    }
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [lightboxVideo]);
 
   // Project counts by status — workspace health ribbon.
   const projectStats = useMemo(() => {
@@ -371,13 +447,26 @@ export function CanvasUserDashboardPage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 p-3">
-              {activeProjects.map((project) => (
-                <ProjectPreviewTile
-                  key={project.id}
-                  project={project}
-                  onOpen={() => navigate(`/user/projects/${project.id}`)}
-                />
-              ))}
+              {activeProjects.map((project) => {
+                const preview = projectPreviewMap.get(project.id);
+                return (
+                  <ProjectPreviewTile
+                    key={project.id}
+                    project={project}
+                    onOpen={() => navigate(`/user/projects/${project.id}`)}
+                    previewUrl={preview?.videoUrl ?? null}
+                    onPreviewClick={
+                      preview
+                        ? () =>
+                            setLightboxVideo({
+                              url: preview.videoUrl,
+                              title: project.title,
+                            })
+                        : undefined
+                    }
+                  />
+                );
+              })}
             </div>
           )}
         </WorkspaceCard>
@@ -413,6 +502,58 @@ export function CanvasUserDashboardPage() {
           )}
         </WorkspaceCard>
       </div>
+
+      {/* Shared preview lightbox — opened from any tile's thumbnail click. */}
+      {lightboxVideo ? (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Ön izleme"
+          className={cn(
+            "fixed inset-0 z-50 flex items-center justify-center",
+            "bg-black/80 backdrop-blur-sm p-4",
+          )}
+          onClick={() => setLightboxVideo(null)}
+          data-testid="canvas-dashboard-preview-lightbox"
+        >
+          <div
+            className={cn(
+              "relative max-w-[min(90vw,800px)] max-h-[90vh]",
+              "bg-neutral-900 rounded-xl shadow-2xl overflow-hidden",
+              "flex flex-col",
+            )}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-4 py-2 border-b border-neutral-800">
+              <p className="m-0 text-sm font-semibold text-neutral-100 truncate">
+                {lightboxVideo.title}
+              </p>
+              <button
+                type="button"
+                onClick={() => setLightboxVideo(null)}
+                className={cn(
+                  "ml-4 w-8 h-8 rounded-md shrink-0",
+                  "text-neutral-300 hover:text-white hover:bg-neutral-800",
+                  "flex items-center justify-center text-lg font-bold",
+                )}
+                aria-label="Kapat"
+                data-testid="canvas-dashboard-preview-lightbox-close"
+              >
+                ×
+              </button>
+            </div>
+            <div className="p-4 overflow-auto">
+              <VideoPlayer
+                src={lightboxVideo.url}
+                title={lightboxVideo.title}
+                showDownload
+                autoPlay
+                testId="canvas-dashboard-preview-video"
+              />
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
