@@ -1112,3 +1112,42 @@ body[style*="#0a0a0c"] [data-testid="command-palette-input"]::placeholder {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+/* ===========================================================================
+   Quiet Hover Override — kullanıcı UX isteği
+   ---------------------------------------------------------------------------
+   Daha önce her tema (horizon-*, midnight-ultraviolet, arctic-frost,
+   tokyo-neon, ink-and-wire, solar-ember ve genel obsidian-slate) kendi
+   `[data-testid*="metric"]:hover`, `section:hover` ve
+   `[class*="bg-surface-card"]:hover` kurallarıyla `translate / scale`
+   tabanlı mikro-lift uyguluyordu. Bunların toplamı, mouse'u hareket
+   ettirirken her kartın zıplamasına neden oluyor ve kullanıcı deneyimini
+   bozuyordu.
+   Bu blok, bütün hover transform'larını merkezi olarak sakinleştirir
+   (transform: none !important). Box-shadow / border hover vurguları
+   bilinçli olarak bırakıldı; sadece hareket kaldırıldı.
+   Geri açmak için bu bloğu kaldırmak yeterlidir — tema başına tek tek
+   dokunmaya gerek yok.
+   =========================================================================== */
+[data-theme] section:hover,
+[data-theme] [class*="bg-surface-card"]:hover,
+[data-theme] [data-testid*="metric"]:hover,
+[data-theme] [data-testid*="quick-link"]:hover {
+  transform: none !important;
+}
+
+/* Section/card transition'ının kendisi de artık sadece shadow/border için
+   çalışsın — transform eğrisi kalsa bile hareket yok, fakat transition
+   süresini kısaltıp daha hafif bir hissiyat verelim. */
+[data-theme^="horizon-"] [class*="bg-surface-card"] {
+  transition: box-shadow 150ms ease-out, border-color 150ms ease-out;
+}
+
+/* Sayfa açılışındaki stagger fade-up animasyonu da her route değişiminde
+   bütün kartları aşağıdan yukarı yükselterek UX'i ağırlaştırıyordu.
+   Opaklık geçişi korunur, çeviri (translateY) kaldırılır. */
+@keyframes horizonFadeUp {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+

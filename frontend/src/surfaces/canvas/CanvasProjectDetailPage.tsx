@@ -412,7 +412,7 @@ export function CanvasProjectDetailPage() {
                       className={cn(
                         "w-11 h-11 rounded-full bg-white/90 text-neutral-900",
                         "flex items-center justify-center text-lg font-bold",
-                        "shadow-lg group-hover:scale-110 transition-transform",
+                        "shadow-lg transition-opacity",
                       )}
                       aria-hidden="true"
                     >
