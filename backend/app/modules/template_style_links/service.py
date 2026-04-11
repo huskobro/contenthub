@@ -76,3 +76,19 @@ async def update_template_style_link(
     await db.commit()
     await db.refresh(link)
     return link
+
+
+async def delete_template_style_link(db: AsyncSession, link_id: str) -> bool:
+    """
+    Permanently remove a template/style-blueprint link.
+
+    Returns True on success, False if the link did not exist. Jobs that
+    already snapshot-locked this link at start time are unaffected —
+    snapshots live on the job row.
+    """
+    link = await get_template_style_link(db, link_id)
+    if link is None:
+        return False
+    await db.delete(link)
+    await db.commit()
+    return True

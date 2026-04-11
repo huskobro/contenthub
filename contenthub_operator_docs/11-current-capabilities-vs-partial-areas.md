@@ -109,8 +109,13 @@ Tarih: 2026-04-11. Final acceptance turu sonrası.
 ## Partial (iskelet var, tüm akışlar tam değil)
 
 ### Admin
-- **`/admin/template-style-links`** — Sadece create form (48 LoC) + list page var; detail/edit view + gelişmiş bağlama UI'ı eksik
-- **`/admin/analytics/youtube`** — Temel metrik var (view/like/comment); retention curve, audience demographics, watch time dağılımı eksik (YouTube Analytics API v2 entegrasyonu bekliyor)
+- (boş — 2026-04-11'deki Sprint 3-4 turu ile kalan partial başlıklar kapatıldı)
+
+### Kapatılmış partial'lar (2026-04-11)
+- **`/admin/template-style-links`** — Sprint 4: detail panel zaten vardı; artık DELETE endpoint + frontend hook + detail panelde "Sil" aksiyonu da var → tam CRUD
+- **`/admin/analytics/youtube`** — Sprint 1 / M14: YouTube Analytics API v2 entegrasyonu tamamlandı (retention, watch time, subscriber delta, impressions CTR, audience demographics)
+- **YouTube video yönetimi** — Sprint 2: admin analytics sayfasından her video için thumbnails.set / videos.update / captions.insert/delete işlemleri
+- **YouTube engagement advanced** — Sprint 3: comment moderation (heldForReview/published/rejected + banAuthor + markAsSpam), playlist update/delete/reorder, channel brandingSettings
 
 ---
 

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useTemplateStyleLinkDetail } from "../../hooks/useTemplateStyleLinkDetail";
 import { useUpdateTemplateStyleLink } from "../../hooks/useUpdateTemplateStyleLink";
+import { useDeleteTemplateStyleLink } from "../../hooks/useDeleteTemplateStyleLink";
 import { TemplateStyleLinkForm } from "./TemplateStyleLinkForm";
 import { formatDateTime } from "../../lib/formatDate";
 import type { TemplateStyleLinkFormValues } from "./TemplateStyleLinkForm";
@@ -8,6 +9,7 @@ import { cn } from "../../lib/cn";
 
 interface TemplateStyleLinkDetailPanelProps {
   linkId: string | null;
+  onDeleted?: () => void;
 }
 
 function Field({ label, value }: { label: string; value: string | number | null }) {
@@ -21,10 +23,21 @@ function Field({ label, value }: { label: string; value: string | number | null 
   );
 }
 
-export function TemplateStyleLinkDetailPanel({ linkId }: TemplateStyleLinkDetailPanelProps) {
+export function TemplateStyleLinkDetailPanel({ linkId, onDeleted }: TemplateStyleLinkDetailPanelProps) {
   const [editing, setEditing] = useState(false);
   const { data: link, isLoading, isError, error } = useTemplateStyleLinkDetail(linkId);
   const { mutate, isPending, error: updateError } = useUpdateTemplateStyleLink(linkId ?? "");
+  const deleteMut = useDeleteTemplateStyleLink();
+
+  function handleDelete() {
+    if (!linkId) return;
+    if (!window.confirm("Bu baglanti silinsin mi? Islem geri alinamaz.")) return;
+    deleteMut.mutate(linkId, {
+      onSuccess: () => {
+        onDeleted?.();
+      },
+    });
+  }
 
   if (!linkId) {
     return (
@@ -78,12 +91,28 @@ export function TemplateStyleLinkDetailPanel({ linkId }: TemplateStyleLinkDetail
     <div>
       <div className="flex justify-between items-center mb-4">
         <h3 className="m-0 text-lg text-neutral-900" data-testid="tsl-detail-heading">Sablon-Stil Baglanti Detayı</h3>
-        <button
-          onClick={() => setEditing(true)}
-          className="px-3 py-1 text-base bg-neutral-100 text-neutral-700 border border-border-subtle rounded-sm cursor-pointer"
-        >
-          Düzenle
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setEditing(true)}
+            className="px-3 py-1 text-base bg-neutral-100 text-neutral-700 border border-border-subtle rounded-sm cursor-pointer"
+            data-testid="tsl-detail-edit"
+          >
+            Düzenle
+          </button>
+          <button
+            onClick={handleDelete}
+            disabled={deleteMut.isPending}
+            className={cn(
+              "px-3 py-1 text-base text-white border rounded-sm",
+              deleteMut.isPending
+                ? "bg-neutral-400 border-neutral-400 cursor-not-allowed"
+                : "bg-error border-error hover:bg-error-dark cursor-pointer",
+            )}
+            data-testid="tsl-detail-delete"
+          >
+            {deleteMut.isPending ? "Siliniyor..." : "Sil"}
+          </button>
+        </div>
       </div>
       <p
         className="m-0 mb-4 text-base text-neutral-500 leading-normal"

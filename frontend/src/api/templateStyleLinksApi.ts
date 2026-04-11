@@ -53,3 +53,7 @@ export function updateTemplateStyleLink(
 ): Promise<TemplateStyleLinkResponse> {
   return api.patch<TemplateStyleLinkResponse>(`${BASE_URL}/${linkId}`, payload);
 }
+
+export function deleteTemplateStyleLink(linkId: string): Promise<void> {
+  return api.delete<void>(`${BASE_URL}/${linkId}`);
+}

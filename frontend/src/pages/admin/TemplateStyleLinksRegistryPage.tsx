@@ -52,7 +52,10 @@ export function TemplateStyleLinksRegistryPage() {
         </div>
 
         <div className="flex-1 min-w-[260px]">
-          <TemplateStyleLinkDetailPanel linkId={selectedId} />
+          <TemplateStyleLinkDetailPanel
+            linkId={selectedId}
+            onDeleted={() => setSelectedId(null)}
+          />
         </div>
       </div>
     </PageShell>

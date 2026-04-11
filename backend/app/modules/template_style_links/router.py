@@ -64,3 +64,20 @@ async def update_template_style_link(
     if link is None:
         raise HTTPException(status_code=404, detail="Template style link not found")
     return link
+
+
+@router.delete("/{link_id}", status_code=204)
+async def delete_template_style_link(
+    link_id: str,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Delete a template/style-blueprint link.
+
+    Running jobs are unaffected because their template/blueprint snapshots
+    are already locked on the job row at start time.
+    """
+    ok = await service.delete_template_style_link(db, link_id)
+    if not ok:
+        raise HTTPException(status_code=404, detail="Template style link not found")
+    return None
