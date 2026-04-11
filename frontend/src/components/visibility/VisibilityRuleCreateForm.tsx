@@ -1,6 +1,11 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createVisibilityRule, type VisibilityRuleCreate } from "../../api/visibilityApi";
+import {
+  filterTargetCatalog,
+  flattenTargetCatalog,
+  type VisibilityTargetOption,
+} from "./visibilityTargetCatalog";
 
 interface VisibilityRuleCreateFormProps {
   onSuccess?: (id: string) => void;
@@ -51,6 +56,35 @@ export function VisibilityRuleCreateForm({ onSuccess, onCancel }: VisibilityRule
     notes: "",
   });
 
+  // Target picker state — browse-first UX.
+  //
+  // The free-text input stays available (`manualMode`) so admins can still
+  // type a key that isn't in the catalog yet. This keeps the form a proper
+  // superset of the old one: nothing that worked before breaks.
+  const [targetQuery, setTargetQuery] = useState("");
+  const [manualMode, setManualMode] = useState(false);
+  const filteredGroups = useMemo(
+    () => filterTargetCatalog(targetQuery),
+    [targetQuery],
+  );
+  const selectedCatalogEntry = useMemo(() => {
+    if (!form.target_key) return null;
+    return (
+      flattenTargetCatalog().find((o) => o.key === form.target_key) ?? null
+    );
+  }, [form.target_key]);
+
+  function selectCatalogOption(opt: VisibilityTargetOption) {
+    setForm((p) => ({
+      ...p,
+      target_key: opt.key,
+      // The catalog entry knows the canonical rule_type; syncing here
+      // means admins don't have to re-pick it manually.
+      rule_type: opt.rule_type,
+    }));
+    setManualMode(false);
+  }
+
   const mut = useMutation({
     mutationFn: (payload: VisibilityRuleCreate) => createVisibilityRule(payload),
     onSuccess: (data) => {
@@ -80,38 +114,157 @@ export function VisibilityRuleCreateForm({ onSuccess, onCancel }: VisibilityRule
     <form onSubmit={handleSubmit} className="p-4 space-y-4">
       <h3 className="m-0 text-lg font-bold text-neutral-900">Yeni Kural Ekle</h3>
 
-      {/* Kural tipi */}
+      {/* Hedef seçici — gruplu katalog + arama + manuel giriş modu */}
       <div>
-        <label className="block text-sm font-medium text-neutral-700 mb-1">
-          Kural Tipi <span className="text-error">*</span>
-        </label>
-        <select
-          value={form.rule_type}
-          onChange={(e) => setForm((p) => ({ ...p, rule_type: e.target.value }))}
-          className="w-full border border-border rounded-md px-3 py-2 text-sm bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-brand-300"
-        >
-          {RULE_TYPE_OPTIONS.map((o) => (
-            <option key={o.value} value={o.value}>{o.label}</option>
-          ))}
-        </select>
-      </div>
+        <div className="flex items-center justify-between mb-1">
+          <label className="block text-sm font-medium text-neutral-700">
+            Hedef Anahtar <span className="text-error">*</span>
+          </label>
+          <button
+            type="button"
+            onClick={() => setManualMode((m) => !m)}
+            className="text-[11px] font-semibold text-brand-600 hover:text-brand-700 underline-offset-2 hover:underline bg-transparent border-0 cursor-pointer"
+            data-testid="visibility-target-manual-toggle"
+          >
+            {manualMode ? "← Kataloğa dön" : "Manuel anahtar gir"}
+          </button>
+        </div>
 
-      {/* Hedef anahtar */}
-      <div>
-        <label className="block text-sm font-medium text-neutral-700 mb-1">
-          Hedef Anahtar <span className="text-error">*</span>
-        </label>
-        <input
-          type="text"
-          value={form.target_key}
-          onChange={(e) => setForm((p) => ({ ...p, target_key: e.target.value }))}
-          placeholder="örn: panel:jobs, field:subtitle_style, page:analytics"
-          className="w-full border border-border rounded-md px-3 py-2 text-sm font-mono bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-brand-300"
-          required
-        />
-        <p className="text-xs text-neutral-500 mt-1">
-          Format: <code>tip:alt_anahtar</code> — panel, page, field, widget veya wizard_step
-        </p>
+        {manualMode ? (
+          <div className="space-y-2">
+            <input
+              type="text"
+              value={form.target_key}
+              onChange={(e) =>
+                setForm((p) => ({ ...p, target_key: e.target.value }))
+              }
+              placeholder="örn: panel:jobs, field:subtitle_style, page:analytics"
+              className="w-full border border-border rounded-md px-3 py-2 text-sm font-mono bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-brand-300"
+              data-testid="visibility-target-manual-input"
+              required
+            />
+            <p className="text-xs text-neutral-500">
+              Format: <code>tip:alt_anahtar</code>. Katalogda olmayan yeni
+              anahtarlar için kullanın. Kural tipini aşağıdan elle seçin.
+            </p>
+            <div>
+              <label className="block text-xs font-semibold text-neutral-600 mb-1 uppercase tracking-wider">
+                Kural Tipi
+              </label>
+              <select
+                value={form.rule_type}
+                onChange={(e) =>
+                  setForm((p) => ({ ...p, rule_type: e.target.value }))
+                }
+                className="w-full border border-border rounded-md px-3 py-2 text-sm bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-brand-300"
+                data-testid="visibility-target-manual-rule-type"
+              >
+                {RULE_TYPE_OPTIONS.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <input
+              type="search"
+              value={targetQuery}
+              onChange={(e) => setTargetQuery(e.target.value)}
+              placeholder="Ara: örn. jobs, analytics, provider trace…"
+              className="w-full border border-border rounded-md px-3 py-2 text-sm bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-brand-300"
+              data-testid="visibility-target-search"
+            />
+
+            {selectedCatalogEntry && (
+              <div
+                className="flex items-center gap-2 px-3 py-2 rounded-md border border-brand-300 bg-brand-50 text-xs"
+                data-testid="visibility-target-selected-banner"
+              >
+                <span className="text-brand-700 font-semibold uppercase tracking-wider">
+                  seçili
+                </span>
+                <code className="font-mono text-neutral-900">
+                  {selectedCatalogEntry.key}
+                </code>
+                <span className="text-neutral-600 flex-1 truncate">
+                  {selectedCatalogEntry.label} — {selectedCatalogEntry.description}
+                </span>
+              </div>
+            )}
+
+            <div
+              className="max-h-[320px] overflow-y-auto border border-border-subtle rounded-md bg-white"
+              data-testid="visibility-target-catalog"
+            >
+              {filteredGroups.length === 0 ? (
+                <div className="px-3 py-6 text-center text-xs text-neutral-500">
+                  Eşleşen anahtar yok. İsterseniz <em>Manuel anahtar gir</em>'i
+                  kullanın.
+                </div>
+              ) : (
+                filteredGroups.map((group) => (
+                  <div
+                    key={group.id}
+                    className="border-b border-border-subtle last:border-b-0"
+                    data-testid={`visibility-target-group-${group.id}`}
+                  >
+                    <div className="sticky top-0 px-3 py-1.5 bg-neutral-100 border-b border-border-subtle">
+                      <p className="m-0 text-[11px] font-bold uppercase tracking-wider text-neutral-700">
+                        {group.title}
+                      </p>
+                      <p className="m-0 text-[10px] text-neutral-500 truncate">
+                        {group.summary}
+                      </p>
+                    </div>
+                    <ul className="list-none m-0 p-0">
+                      {group.options.map((opt) => {
+                        const isSelected = form.target_key === opt.key;
+                        return (
+                          <li key={opt.key}>
+                            <button
+                              type="button"
+                              onClick={() => selectCatalogOption(opt)}
+                              className={
+                                "w-full text-left px-3 py-2 border-b border-border-subtle last:border-b-0 cursor-pointer transition-colors " +
+                                (isSelected
+                                  ? "bg-brand-100 hover:bg-brand-100"
+                                  : "bg-white hover:bg-brand-50")
+                              }
+                              data-testid={`visibility-target-option-${opt.key}`}
+                            >
+                              <div className="flex items-center gap-2">
+                                <code className="font-mono text-[11px] text-neutral-900">
+                                  {opt.key}
+                                </code>
+                                <span className="text-[9px] font-mono uppercase text-neutral-500 border border-border-subtle rounded px-1">
+                                  {opt.rule_type}
+                                </span>
+                                {isSelected && (
+                                  <span className="ml-auto text-[10px] font-bold text-brand-700 uppercase">
+                                    seçili
+                                  </span>
+                                )}
+                              </div>
+                              <p className="m-0 mt-0.5 text-[11px] text-neutral-600">
+                                <span className="font-semibold text-neutral-800">
+                                  {opt.label}
+                                </span>{" "}
+                                — {opt.description}
+                              </p>
+                            </button>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Modül kapsamı */}
