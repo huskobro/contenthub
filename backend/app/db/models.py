@@ -1047,6 +1047,309 @@ class VideoStatsSnapshot(Base):
     platform_connection_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True, index=True)
 
 
+# ============================================================================
+# Sprint 1 — YouTube Analytics API v2 (yt-analytics.readonly)
+# ============================================================================
+#
+# Alttaki tablolar YouTube Analytics API v2'den cekilen gercek metrikleri
+# tutar. Mevcut VideoStatsSnapshot (Data API v3) ile ayri yasar: birisi
+# publish pipeline'i icin temel counter'lari, digerleri analitik dashboard
+# icin detayli metrikleri tutar. Snapshot_date kolonu PK'nin parcasi
+# olarak upsert semantigi saglar.
+#
+# Scope gereksinimi: https://www.googleapis.com/auth/yt-analytics.readonly
+# Daily sync job bu tablolari per-connection doldurur; mevcut publish
+# flow'unu hic etkilemez.
+
+
+class YouTubeChannelAnalyticsDaily(Base):
+    """
+    Kanal seviyesi gunluk YouTube Analytics snapshot'i.
+
+    Bir (platform_connection_id, date) cifti icin tek satir.
+    channel==MINE icin gunluk metrikler (views, watch time, subscribers).
+
+    Metrics (from YouTubeAnalyticsClient.CHANNEL_CORE_METRICS):
+      - views, estimatedMinutesWatched, averageViewDuration
+      - averageViewPercentage, subscribersGained/Lost, likes, shares, comments
+    """
+
+    __tablename__ = "youtube_channel_analytics_daily"
+    __table_args__ = (
+        UniqueConstraint(
+            "platform_connection_id", "snapshot_date",
+            name="uq_yt_channel_analytics_conn_date",
+        ),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    platform_connection_id: Mapped[str] = mapped_column(
+        String(36), nullable=False, index=True
+    )
+    snapshot_date: Mapped[str] = mapped_column(
+        String(10), nullable=False, index=True
+    )  # YYYY-MM-DD
+    views: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    estimated_minutes_watched: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=0
+    )
+    average_view_duration_seconds: Mapped[float] = mapped_column(
+        Float, nullable=False, default=0.0
+    )
+    average_view_percentage: Mapped[float] = mapped_column(
+        Float, nullable=False, default=0.0
+    )  # 0..1 (scaled from API 0..100)
+    subscribers_gained: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    subscribers_lost: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    likes: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    shares: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    comments: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    fetched_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now
+    )
+
+
+class YouTubeVideoAnalyticsDaily(Base):
+    """
+    Video seviyesi gunluk YouTube Analytics snapshot'i.
+
+    Bir (platform_connection_id, platform_video_id, snapshot_date)
+    uclusu icin tek satir.
+
+    Metrics (from YouTubeAnalyticsClient.VIDEO_DETAIL_METRICS):
+      views, estimatedMinutesWatched, averageViewDuration,
+      averageViewPercentage, likes, shares, comments, subscribersGained,
+      cardImpressions/Clicks/ClickRate
+    """
+
+    __tablename__ = "youtube_video_analytics_daily"
+    __table_args__ = (
+        UniqueConstraint(
+            "platform_connection_id", "platform_video_id", "snapshot_date",
+            name="uq_yt_video_analytics_conn_vid_date",
+        ),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    platform_connection_id: Mapped[str] = mapped_column(
+        String(36), nullable=False, index=True
+    )
+    platform_video_id: Mapped[str] = mapped_column(
+        String(128), nullable=False, index=True
+    )
+    snapshot_date: Mapped[str] = mapped_column(
+        String(10), nullable=False, index=True
+    )
+    views: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    estimated_minutes_watched: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=0
+    )
+    average_view_duration_seconds: Mapped[float] = mapped_column(
+        Float, nullable=False, default=0.0
+    )
+    average_view_percentage: Mapped[float] = mapped_column(
+        Float, nullable=False, default=0.0
+    )
+    likes: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    shares: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    comments: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    subscribers_gained: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    card_impressions: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    card_clicks: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    card_click_rate: Mapped[float] = mapped_column(
+        Float, nullable=False, default=0.0
+    )
+    fetched_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now
+    )
+
+
+class YouTubeAudienceRetention(Base):
+    """
+    Video audience retention curve (elapsedVideoTimeRatio dimension).
+
+    Her satir: (connection, video, ratio bucket) — ratio 0.0 ile 1.0 arasinda,
+    YouTube 100 bucket donuyor (0.00, 0.01, ..., 1.00).
+
+    audienceWatchRatio 0..1 (scaled). Yeni sorgu oncesi eski satirlar
+    silinir (last-writer-wins) — retention curve snapshot bazli degil,
+    window bazli cekilir.
+    """
+
+    __tablename__ = "youtube_audience_retention"
+    __table_args__ = (
+        UniqueConstraint(
+            "platform_connection_id", "platform_video_id", "elapsed_ratio",
+            "window_start", "window_end",
+            name="uq_yt_retention_conn_vid_ratio_window",
+        ),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    platform_connection_id: Mapped[str] = mapped_column(
+        String(36), nullable=False, index=True
+    )
+    platform_video_id: Mapped[str] = mapped_column(
+        String(128), nullable=False, index=True
+    )
+    elapsed_ratio: Mapped[float] = mapped_column(Float, nullable=False)
+    audience_watch_ratio: Mapped[float] = mapped_column(
+        Float, nullable=False, default=0.0
+    )
+    relative_retention_performance: Mapped[float] = mapped_column(
+        Float, nullable=False, default=0.0
+    )
+    window_start: Mapped[str] = mapped_column(String(10), nullable=False)
+    window_end: Mapped[str] = mapped_column(String(10), nullable=False)
+    fetched_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now
+    )
+
+
+class YouTubeDemographicsSnapshot(Base):
+    """
+    YouTube demographics breakdown — ageGroup + gender.
+
+    Her satir: (connection, video_id|'', age_group, gender, window).
+    video_id bos string ise kanal-geneli.
+    viewer_percentage 0..1 (scaled from API 0..100).
+    """
+
+    __tablename__ = "youtube_demographics_snapshot"
+    __table_args__ = (
+        UniqueConstraint(
+            "platform_connection_id", "platform_video_id",
+            "age_group", "gender", "window_start", "window_end",
+            name="uq_yt_demographics_keys",
+        ),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    platform_connection_id: Mapped[str] = mapped_column(
+        String(36), nullable=False, index=True
+    )
+    platform_video_id: Mapped[str] = mapped_column(
+        String(128), nullable=False, default="", index=True
+    )
+    age_group: Mapped[str] = mapped_column(String(20), nullable=False)
+    gender: Mapped[str] = mapped_column(String(20), nullable=False)
+    viewer_percentage: Mapped[float] = mapped_column(
+        Float, nullable=False, default=0.0
+    )
+    window_start: Mapped[str] = mapped_column(String(10), nullable=False)
+    window_end: Mapped[str] = mapped_column(String(10), nullable=False)
+    fetched_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now
+    )
+
+
+class YouTubeTrafficSourceSnapshot(Base):
+    """
+    YouTube traffic source breakdown (insightTrafficSourceType).
+
+    Source types: YT_SEARCH, EXT_URL, SUGGESTED_VIDEO, BROWSE, PLAYLIST,
+    NO_LINK_OTHER, SUBSCRIBER, NOTIFICATION, END_SCREEN, ADVERTISING vb.
+    video_id bos string ise kanal-geneli.
+    """
+
+    __tablename__ = "youtube_traffic_source_snapshot"
+    __table_args__ = (
+        UniqueConstraint(
+            "platform_connection_id", "platform_video_id",
+            "traffic_source_type", "window_start", "window_end",
+            name="uq_yt_traffic_keys",
+        ),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    platform_connection_id: Mapped[str] = mapped_column(
+        String(36), nullable=False, index=True
+    )
+    platform_video_id: Mapped[str] = mapped_column(
+        String(128), nullable=False, default="", index=True
+    )
+    traffic_source_type: Mapped[str] = mapped_column(String(50), nullable=False)
+    views: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    estimated_minutes_watched: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=0
+    )
+    window_start: Mapped[str] = mapped_column(String(10), nullable=False)
+    window_end: Mapped[str] = mapped_column(String(10), nullable=False)
+    fetched_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now
+    )
+
+
+class YouTubeDeviceSnapshot(Base):
+    """
+    YouTube device + OS breakdown (deviceType dimension).
+
+    Device types: MOBILE, DESKTOP, TV, TABLET, GAME_CONSOLE, UNKNOWN_PLATFORM.
+    video_id bos string ise kanal-geneli.
+    """
+
+    __tablename__ = "youtube_device_snapshot"
+    __table_args__ = (
+        UniqueConstraint(
+            "platform_connection_id", "platform_video_id",
+            "device_type", "window_start", "window_end",
+            name="uq_yt_device_keys",
+        ),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    platform_connection_id: Mapped[str] = mapped_column(
+        String(36), nullable=False, index=True
+    )
+    platform_video_id: Mapped[str] = mapped_column(
+        String(128), nullable=False, default="", index=True
+    )
+    device_type: Mapped[str] = mapped_column(String(30), nullable=False)
+    views: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    estimated_minutes_watched: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=0
+    )
+    window_start: Mapped[str] = mapped_column(String(10), nullable=False)
+    window_end: Mapped[str] = mapped_column(String(10), nullable=False)
+    fetched_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now
+    )
+
+
+class YouTubeAnalyticsSyncLog(Base):
+    """
+    Per-run sync log (audit trail).
+
+    Her scheduler run'i icin bir satir: baslangic, bitis, basarili video
+    sayisi, hata mesaji. Dashboard'da 'son sync' kartinda goster.
+    """
+
+    __tablename__ = "youtube_analytics_sync_log"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    platform_connection_id: Mapped[str] = mapped_column(
+        String(36), nullable=False, index=True
+    )
+    run_kind: Mapped[str] = mapped_column(
+        String(30), nullable=False, default="daily"
+    )  # daily / manual / backfill
+    status: Mapped[str] = mapped_column(
+        String(20), nullable=False, default="running"
+    )  # running / ok / partial / failed
+    started_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now
+    )
+    finished_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    videos_synced: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    rows_written: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    error_message: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    trigger_source: Mapped[str] = mapped_column(
+        String(30), nullable=False, default="scheduler"
+    )
+
+
 class PublishLog(Base):
     """
     Publish Center — Denetim izi (Phase M7).

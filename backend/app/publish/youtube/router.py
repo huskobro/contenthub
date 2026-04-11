@@ -439,18 +439,26 @@ async def auth_callback(
         auth_response=token_data,
     )
 
-    # Determine scope status
+    # Determine scope status — hem youtube hem yt-analytics.readonly istiyoruz
+    from app.publish.youtube.token_store import (
+        YOUTUBE_ANALYTICS_SCOPE,
+        YOUTUBE_SCOPE_STRING,
+    )
     granted_scope = token_data.get("scope", "")
-    scope_ok = YOUTUBE_SCOPE in granted_scope.split()
+    granted_set = set(granted_scope.split())
+    youtube_ok = YOUTUBE_SCOPE in granted_set
+    # Analytics scope opsiyonel degerlendirilir — eksikligi publish'i bloklamaz,
+    # sadece capability matrix'inde can_read_analytics blocked_by_scope isaretler.
+    analytics_ok = YOUTUBE_ANALYTICS_SCOPE in granted_set
 
     # Update PlatformConnection fields
     connection.auth_state = "authorized"
     connection.token_state = "valid"
     connection.connection_status = "connected"
     connection.scopes_granted = granted_scope
-    connection.scopes_required = YOUTUBE_SCOPE
-    connection.scope_status = "sufficient" if scope_ok else "insufficient"
-    connection.requires_reauth = not scope_ok
+    connection.scopes_required = YOUTUBE_SCOPE_STRING
+    connection.scope_status = "sufficient" if youtube_ok else "insufficient"
+    connection.requires_reauth = not youtube_ok
 
     # Fetch channel info from YouTube and update connection
     access_token = token_data.get("access_token", "")

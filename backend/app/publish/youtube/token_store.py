@@ -1,33 +1,28 @@
 """
-YouTube OAuth2 Token Store — M7-C2.
+YouTube OAuth2 Token Store — M7-C2 / Per-Connection DB Store.
 
-OAuth2 credential'larını yerel dosyada saklar ve yeniler.
-Token dosyası: data/youtube_tokens.json
-
-Tasarım kuralları (M7):
-  - Token dosyası yolu config üzerinden okunur; hardcode edilmez.
-  - Token yoksa YouTubeAuthError fırlatılır — sessiz başarısızlık yok.
-  - Refresh token mevcutsa access token otomatik yenilenir.
-  - Bu modül HTTP çağrısı yapar (Google OAuth2 token endpoint).
-    Bağımlılığı test edilebilir: httpx.AsyncClient dışarıdan inject edilebilir.
-  - Token dosyası credential içerdiğinden .gitignore'da olmalıdır.
+İki store sınıfı:
+  - LegacyFileTokenStore: Eski global JSON dosyası (artık kullanılmıyor, referans için duruyor).
+  - DBYouTubeTokenStore : PlatformCredential DB tablosu üzerinden per-connection token yönetimi.
 
 OAuth2 akışı:
-  1. Admin /publish/youtube/auth-url endpoint'ini çağırır.
+  1. Admin /publish/youtube/auth-url endpoint'ini çağırır (channel_profile_id ile).
   2. Browser'da Google consent sayfası açılır.
   3. Redirect URL'deki code parametresi /publish/youtube/auth-callback endpoint'ine POST edilir.
-  4. Token dosyası oluşturulur.
-  5. Bundan sonra upload/activate zinciri token_store üzerinden çalışır.
+  4. PlatformConnection + PlatformCredential kayıtları oluşturulur/güncellenir.
+  5. Bundan sonra upload/activate zinciri DBYouTubeTokenStore üzerinden çalışır.
 """
 
 import json
 import logging
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Optional
 from urllib.parse import quote, urlencode
 
 import httpx
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.publish.youtube.errors import YouTubeAuthError
@@ -40,8 +35,13 @@ GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
 # youtube: tam YouTube yönetimi (kanal/video okuma + upload)
 # youtube.upload tek başına channels?mine=true için yetersiz (HTTP 403)
 YOUTUBE_SCOPE = "https://www.googleapis.com/auth/youtube"
+# yt-analytics.readonly: Analytics API v2 reports.query erisimi (Sprint 1 / Faz YT-A1)
+YOUTUBE_ANALYTICS_SCOPE = "https://www.googleapis.com/auth/yt-analytics.readonly"
+# Butunlesik scope listesi — OAuth consent'te her iki scope birlikte istenir.
+YOUTUBE_SCOPES = [YOUTUBE_SCOPE, YOUTUBE_ANALYTICS_SCOPE]
+YOUTUBE_SCOPE_STRING = " ".join(YOUTUBE_SCOPES)
 
-# Token dosyası adı — data_dir altında
+# Token dosyası adı — data_dir altında (legacy)
 TOKEN_FILENAME = "youtube_tokens.json"
 
 
@@ -53,23 +53,230 @@ def _now_ts() -> float:
     return datetime.now(timezone.utc).timestamp()
 
 
-class YouTubeTokenStore:
+# ============================================================================
+# DB-backed per-connection token store (active)
+# ============================================================================
+
+
+class DBYouTubeTokenStore:
+    """Per-connection YouTube token store backed by PlatformCredential DB table."""
+
+    def __init__(self, http_client: Optional[httpx.AsyncClient] = None):
+        self._http_client = http_client
+
+    def _get_client(self) -> httpx.AsyncClient:
+        if self._http_client is not None:
+            return self._http_client
+        return httpx.AsyncClient(timeout=30.0)
+
+    # -- Credential read helpers ------------------------------------------
+
+    async def load_credential(
+        self, db: AsyncSession, connection_id: str,
+    ) -> Optional["PlatformCredential"]:
+        """Load PlatformCredential for a connection."""
+        from app.db.models import PlatformCredential
+
+        stmt = select(PlatformCredential).where(
+            PlatformCredential.platform_connection_id == connection_id
+        )
+        result = await db.execute(stmt)
+        return result.scalars().first()
+
+    async def has_credentials(self, db: AsyncSession, connection_id: str) -> bool:
+        cred = await self.load_credential(db, connection_id)
+        return cred is not None and bool(cred.refresh_token) and bool(cred.client_id)
+
+    async def has_required_scope(self, db: AsyncSession, connection_id: str) -> bool:
+        cred = await self.load_credential(db, connection_id)
+        if not cred or not cred.scopes:
+            return False
+        granted_scopes = cred.scopes.split()
+        return YOUTUBE_SCOPE in granted_scopes
+
+    async def has_analytics_scope(self, db: AsyncSession, connection_id: str) -> bool:
+        """yt-analytics.readonly scope grant edilmis mi?"""
+        cred = await self.load_credential(db, connection_id)
+        if not cred or not cred.scopes:
+            return False
+        granted_scopes = cred.scopes.split()
+        return YOUTUBE_ANALYTICS_SCOPE in granted_scopes
+
+    # -- Credential write ------------------------------------------------
+
+    async def save_from_auth_response(
+        self,
+        db: AsyncSession,
+        connection_id: str,
+        client_id: str,
+        client_secret: str,
+        auth_response: dict,
+    ) -> None:
+        """Save OAuth tokens to PlatformCredential table (upsert)."""
+        from app.db.models import PlatformCredential
+
+        expires_in = auth_response.get("expires_in", 3600)
+        expiry = datetime.now(timezone.utc) + timedelta(seconds=expires_in - 60)
+        scope = auth_response.get("scope", YOUTUBE_SCOPE)
+
+        cred = await self.load_credential(db, connection_id)
+        if cred:
+            cred.access_token = auth_response["access_token"]
+            cred.refresh_token = auth_response.get("refresh_token", cred.refresh_token or "")
+            cred.token_expiry = expiry
+            cred.client_id = client_id
+            cred.client_secret = client_secret
+            cred.scopes = scope
+            cred.raw_token_response = json.dumps(auth_response)
+        else:
+            cred = PlatformCredential(
+                platform_connection_id=connection_id,
+                access_token=auth_response["access_token"],
+                refresh_token=auth_response.get("refresh_token", ""),
+                token_expiry=expiry,
+                client_id=client_id,
+                client_secret=client_secret,
+                scopes=scope,
+                raw_token_response=json.dumps(auth_response),
+            )
+            db.add(cred)
+        await db.commit()
+
+    # -- Access token (with auto-refresh) --------------------------------
+
+    async def get_access_token(self, db: AsyncSession, connection_id: str) -> str:
+        """Get valid access token, refreshing if needed."""
+        cred = await self.load_credential(db, connection_id)
+        if not cred or not cred.refresh_token:
+            raise YouTubeAuthError(
+                "YouTube OAuth2 credential bulunamadi. Kanal ayarlarindan yeniden yetkilendirme yapin."
+            )
+
+        now = datetime.now(timezone.utc)
+        if cred.token_expiry and now < cred.token_expiry:
+            return cred.access_token
+
+        logger.info(
+            "YouTube access token suresi dolmus (connection=%s) — yenileniyor.",
+            connection_id,
+        )
+        return await self._refresh_access_token(db, cred)
+
+    async def _refresh_access_token(
+        self, db: AsyncSession, cred: "PlatformCredential",
+    ) -> str:
+        payload = {
+            "client_id": cred.client_id,
+            "client_secret": cred.client_secret,
+            "refresh_token": cred.refresh_token,
+            "grant_type": "refresh_token",
+        }
+        client = self._get_client()
+        should_close = self._http_client is None
+        try:
+            resp = await client.post(GOOGLE_TOKEN_URL, data=payload)
+        finally:
+            if should_close:
+                await client.aclose()
+
+        if resp.status_code != 200:
+            raise YouTubeAuthError(
+                f"Token yenileme basarisiz: HTTP {resp.status_code} — {resp.text[:200]}",
+                error_code="token_refresh_failed",
+            )
+
+        data = resp.json()
+        if "access_token" not in data:
+            raise YouTubeAuthError(
+                f"Token yanitinda access_token yok: {data}",
+                error_code="token_refresh_invalid_response",
+            )
+
+        expires_in = data.get("expires_in", 3600)
+        cred.access_token = data["access_token"]
+        cred.token_expiry = datetime.now(timezone.utc) + timedelta(seconds=expires_in - 60)
+        if "refresh_token" in data:
+            cred.refresh_token = data["refresh_token"]
+        await db.commit()
+
+        logger.info(
+            "YouTube access token basariyla yenilendi (connection=%s).",
+            cred.platform_connection_id,
+        )
+        return cred.access_token
+
+    # -- OAuth URL & code exchange (no DB, pure HTTP) --------------------
+
+    def get_auth_url(
+        self, client_id: str, redirect_uri: str, state: str = "",
+    ) -> str:
+        """Google OAuth2 consent URL'i uretir (youtube + yt-analytics.readonly)."""
+        params = {
+            "client_id": client_id,
+            "redirect_uri": redirect_uri,
+            "response_type": "code",
+            "scope": YOUTUBE_SCOPE_STRING,
+            "access_type": "offline",
+            "prompt": "select_account consent",
+        }
+        if state:
+            params["state"] = state
+        return f"{GOOGLE_AUTH_URL}?{urlencode(params, quote_via=quote)}"
+
+    async def exchange_code_for_tokens(
+        self,
+        client_id: str,
+        client_secret: str,
+        code: str,
+        redirect_uri: str,
+    ) -> dict:
+        """Authorization code'u access + refresh token ile takas eder."""
+        payload = {
+            "client_id": client_id,
+            "client_secret": client_secret,
+            "code": code,
+            "redirect_uri": redirect_uri,
+            "grant_type": "authorization_code",
+        }
+        client = self._get_client()
+        should_close = self._http_client is None
+        try:
+            resp = await client.post(GOOGLE_TOKEN_URL, data=payload)
+        finally:
+            if should_close:
+                await client.aclose()
+
+        if resp.status_code != 200:
+            raise YouTubeAuthError(
+                f"Code exchange basarisiz: HTTP {resp.status_code} — {resp.text[:200]}",
+                error_code="code_exchange_failed",
+            )
+
+        data = resp.json()
+        logger.info(
+            "Google token exchange yaniti — scope: %s, keys: %s",
+            data.get("scope", "<yok>"),
+            list(data.keys()),
+        )
+        if "access_token" not in data:
+            raise YouTubeAuthError(
+                f"Code exchange yanitinda access_token yok: {data}",
+                error_code="code_exchange_invalid_response",
+            )
+        return data
+
+
+# ============================================================================
+# Legacy file-based token store (kept for reference / potential migration)
+# ============================================================================
+
+
+class LegacyFileTokenStore:
     """
-    YouTube OAuth2 credential saklama ve yenileme.
+    [LEGACY] Eski global JSON dosya tabanli YouTube OAuth2 token store.
 
-    Token dosyası yapısı:
-    {
-        "access_token": "ya29.xxx",
-        "refresh_token": "1//xxx",
-        "client_id": "xxx.apps.googleusercontent.com",
-        "client_secret": "xxx",
-        "token_expiry": 1700000000.0,   # Unix timestamp (UTC)
-        "scope": "https://www.googleapis.com/auth/youtube.upload"
-    }
-
-    Güvenlik notu:
-      Token dosyası hassas veri içerir. data/ dizini .gitignore'da olmalıdır.
-      Bu ContentHub'ın localhost-first mimarisinin parçasıdır.
+    Artik kullanilmiyor — DBYouTubeTokenStore aktif store.
+    Potansiyel migrasyon veya referans icin duruyor.
     """
 
     def __init__(self, http_client: Optional[httpx.AsyncClient] = None):
@@ -228,7 +435,7 @@ class YouTubeTokenStore:
             "client_id": client_id,
             "redirect_uri": redirect_uri,
             "response_type": "code",
-            "scope": YOUTUBE_SCOPE,
+            "scope": YOUTUBE_SCOPE_STRING,
             "access_type": "offline",
             "prompt": "select_account consent",
             # include_granted_scopes kaldırıldı — eski scope inherit edilmesin,
@@ -284,3 +491,8 @@ class YouTubeTokenStore:
                 error_code="code_exchange_invalid_response",
             )
         return data
+
+
+# Backward-compat alias — adapter.py, playlists/service.py, comments/service.py
+# still import YouTubeTokenStore. They use the legacy file-based store until migrated.
+YouTubeTokenStore = LegacyFileTokenStore

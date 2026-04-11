@@ -324,6 +324,14 @@ async def lifespan(app: FastAPI):
     app.state.overdue_scheduler_task = overdue_task
     logger.info("Overdue notification scheduler task created.")
 
+    # YouTube Analytics daily sync — background task (Sprint 1 / Faz YT-A1)
+    from app.publish.scheduler import poll_youtube_analytics_daily
+    yt_analytics_task = asyncio.create_task(
+        poll_youtube_analytics_daily(AsyncSessionLocal, interval=3600)
+    )
+    app.state.youtube_analytics_task = yt_analytics_task
+    logger.info("YouTube Analytics daily sync task created.")
+
     yield
 
     # Shutdown: cancel publish scheduler
@@ -361,6 +369,15 @@ async def lifespan(app: FastAPI):
         except asyncio.CancelledError:
             pass
         logger.info("Overdue notification scheduler cancelled.")
+
+    # Shutdown: cancel YouTube Analytics sync task
+    if hasattr(app.state, "youtube_analytics_task"):
+        app.state.youtube_analytics_task.cancel()
+        try:
+            await app.state.youtube_analytics_task
+        except asyncio.CancelledError:
+            pass
+        logger.info("YouTube Analytics sync task cancelled.")
 
 
 def _register_exception_handlers(app: FastAPI) -> None:

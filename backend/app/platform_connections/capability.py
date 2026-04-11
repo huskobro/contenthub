@@ -76,17 +76,25 @@ PLATFORM_UNSUPPORTED: dict[str, set[str]] = {
 }
 
 
-def _parse_scopes(scopes_json: Optional[str]) -> set[str]:
-    """Parse a JSON-encoded list of scopes into a set."""
-    if not scopes_json:
+def _parse_scopes(scopes_raw: Optional[str]) -> set[str]:
+    """
+    Parse scopes from either JSON list format or OAuth space-separated format.
+
+    - Admin UI / manual entry   -> JSON list: '["scope1","scope2"]'
+    - Google OAuth response     -> space-separated string: 'scope1 scope2'
+    """
+    if not scopes_raw:
         return set()
-    try:
-        parsed = json.loads(scopes_json)
-        if isinstance(parsed, list):
-            return set(parsed)
-    except (json.JSONDecodeError, TypeError):
-        pass
-    return set()
+    stripped = scopes_raw.strip()
+    if stripped.startswith("["):
+        try:
+            parsed = json.loads(stripped)
+            if isinstance(parsed, list):
+                return {str(s) for s in parsed}
+        except (json.JSONDecodeError, TypeError):
+            pass
+    # Fallback: treat as space-separated (OAuth standard)
+    return {s for s in stripped.split() if s}
 
 
 def _check_scope_for_capability(

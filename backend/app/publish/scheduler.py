@@ -16,7 +16,7 @@ Safety:
 
 import asyncio
 import logging
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from sqlalchemy import select
@@ -27,6 +27,10 @@ from app.db.models import PublishRecord
 logger = logging.getLogger(__name__)
 
 _DEFAULT_INTERVAL = 60  # seconds
+# YouTube Analytics daily sync — cekme sikligi ve en son sync bilgisini
+# YouTubeAnalyticsSyncLog'dan okuyarak gun basina en fazla bir kez calistiririz.
+_ANALYTICS_POLL_INTERVAL = 3600  # her saatte bir durum kontrol
+_ANALYTICS_DEFAULT_INTERVAL_HOURS = 24  # settings yoksa 24 saat
 
 
 async def poll_scheduled_publishes(
@@ -108,3 +112,79 @@ async def _check_and_trigger(db_session_factory) -> int:
                 )
 
     return triggered
+
+
+# ============================================================================
+# YouTube Analytics daily sync (Sprint 1 / Faz YT-A1)
+# ============================================================================
+
+
+async def poll_youtube_analytics_daily(
+    db_session_factory,
+    interval: float = _ANALYTICS_POLL_INTERVAL,
+) -> None:
+    """
+    Background loop that runs YouTubeAnalyticsService.run_daily_sync_all
+    approximately every `publish.youtube.analytics.sync_interval_hours`
+    hours. Per-connection tracking uses YouTubeAnalyticsSyncLog rows.
+    """
+    logger.info(
+        "YouTube Analytics daily sync loop started (poll interval=%ss).", interval,
+    )
+    while True:
+        try:
+            await asyncio.sleep(interval)
+            await _maybe_run_analytics_sync(db_session_factory)
+        except asyncio.CancelledError:
+            logger.info("YouTube Analytics sync loop cancelled.")
+            break
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("YouTube Analytics sync loop error: %s", exc)
+
+
+async def _maybe_run_analytics_sync(db_session_factory) -> None:
+    """Run analytics sync if enough time passed since last run."""
+    from app.analytics.youtube_analytics_service import YouTubeAnalyticsService
+    from app.db.models import YouTubeAnalyticsSyncLog
+    from app.settings.settings_resolver import resolve as resolve_setting
+
+    async with db_session_factory() as db:
+        # Read desired interval from settings registry (fallback 24h)
+        try:
+            interval_raw = await resolve_setting(
+                "publish.youtube.analytics.sync_interval_hours", db,
+            )
+            interval_hours = float(
+                interval_raw if interval_raw is not None
+                else _ANALYTICS_DEFAULT_INTERVAL_HOURS
+            )
+        except Exception:
+            interval_hours = _ANALYTICS_DEFAULT_INTERVAL_HOURS
+
+        # Find newest sync log row across all connections
+        stmt = (
+            select(YouTubeAnalyticsSyncLog)
+            .order_by(YouTubeAnalyticsSyncLog.started_at.desc())
+            .limit(1)
+        )
+        last = (await db.execute(stmt)).scalars().first()
+        now = datetime.now(timezone.utc)
+        if last and last.started_at:
+            # Normalize timezone: SQLite returns naive datetime
+            started = last.started_at
+            if started.tzinfo is None:
+                started = started.replace(tzinfo=timezone.utc)
+            if now - started < timedelta(hours=interval_hours):
+                return  # too soon
+
+        logger.info(
+            "YouTube Analytics daily sync — triggering run_daily_sync_all.",
+        )
+        service = YouTubeAnalyticsService()
+        results = await service.run_daily_sync_all(
+            db, trigger_source="scheduler",
+        )
+        logger.info(
+            "YouTube Analytics daily sync completed: %d connections processed.",
+            len(results),
+        )
