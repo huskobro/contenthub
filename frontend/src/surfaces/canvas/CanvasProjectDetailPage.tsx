@@ -391,7 +391,6 @@ export function CanvasProjectDetailPage() {
                     "bg-neutral-900 border border-border-subtle",
                     "cursor-pointer focus:outline-none focus:ring-2 focus:ring-brand-400",
                   )}
-                  style={{ maxHeight: "320px" }}
                   data-testid="canvas-project-preview-thumb-button"
                   aria-label="Ön izlemeyi oynat"
                 >
@@ -400,7 +399,7 @@ export function CanvasProjectDetailPage() {
                     muted
                     playsInline
                     preload="metadata"
-                    className="block w-full h-auto max-h-[320px] object-contain mx-auto"
+                    className="block w-full h-auto"
                     data-testid="canvas-project-preview-thumb-video"
                   />
                   <div
