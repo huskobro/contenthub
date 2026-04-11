@@ -149,5 +149,5 @@ Her biri **1-2 dosyalık, sıfır davranış değişikliği, sıfır risk** içe
 Bu tur **sadece değerlendirme ve rapor** — kod değişikliği yok. Commit yalnızca bu raporu içerecek.
 
 - Rapor: `docs_drafts/final_acceptance_ui_clarity_report_tr.md`
-- Commit hash: (commit sonrası eklenecek)
-- Push status: (push sonrası eklenecek)
+- Commit hash: `61f0b2b` — `docs(ui): final acceptance / final clarity pass raporu`
+- Push status: ✅ `git push origin main` başarılı → `ee2be52..61f0b2b  main -> main`
