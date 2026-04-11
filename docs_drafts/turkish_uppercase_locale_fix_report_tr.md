@@ -229,5 +229,5 @@ Uppercase + İngilizce değer içeren yerlerin `lang="en"` izolasyonu sonrası h
 
 ## Commit + push
 
-- Commit hash: `e5e75bc`
-- Push status: ✅ `git push origin main` başarılı → `abfff86..e5e75bc  main -> main`
+- Commit hash: `63d7a90` — `fix(ui): Türkçe uppercase locale sorunu — html lang=tr + izole lang=en`
+- Push status: ✅ `git push origin main` başarılı → `abfff86..63d7a90  main -> main`
