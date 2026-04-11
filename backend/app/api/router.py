@@ -19,6 +19,7 @@ from app.sse.router import router as sse_router
 from app.publish.router import router as publish_router
 from app.publish.youtube.router import router as youtube_oauth_router
 from app.publish.youtube.video_management_router import router as youtube_video_mgmt_router
+from app.publish.youtube.engagement_advanced_router import router as youtube_engagement_advanced_router
 from app.analytics.router import router as analytics_router
 from app.analytics.youtube_analytics_router import router as youtube_analytics_router
 from app.audit.router import router as audit_logs_router
@@ -84,6 +85,7 @@ api_router.include_router(sse_router)
 api_router.include_router(publish_router)
 api_router.include_router(youtube_oauth_router)
 api_router.include_router(youtube_video_mgmt_router)
+api_router.include_router(youtube_engagement_advanced_router)
 api_router.include_router(analytics_router)
 api_router.include_router(youtube_analytics_router)
 api_router.include_router(audit_logs_router)

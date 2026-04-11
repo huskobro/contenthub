@@ -17,8 +17,14 @@ import {
   SectionShell,
   MetricGrid,
   MetricTile,
+  ActionButton,
+  FeedbackBanner,
 } from "../../components/design-system/primitives";
 import type { SyncedPlaylist, PlaylistListParams } from "../../api/playlistsApi";
+import {
+  useDeleteYtPlaylist,
+  useUpdateYtPlaylist,
+} from "../../hooks/useYoutubeEngagementAdvanced";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -96,6 +102,95 @@ export function AdminPlaylistMonitoringPage() {
   }, [channelFilter, platformFilter]);
 
   const { data: playlists, isLoading, isError } = usePlaylists(listParams);
+
+  // --- Sprint 3: playlist edit/delete state ----------------------------
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editPrivacy, setEditPrivacy] = useState<"" | "public" | "unlisted" | "private">("");
+  const [feedback, setFeedback] = useState<{ type: "success" | "error"; msg: string } | null>(null);
+
+  // The selected playlist row (for connection context)
+  const editingPlaylist = useMemo<SyncedPlaylist | null>(() => {
+    if (!editingId || !playlists) return null;
+    return playlists.find((p) => p.id === editingId) ?? null;
+  }, [editingId, playlists]);
+
+  const editingConnId = editingPlaylist?.platform_connection_id ?? undefined;
+  const updateMut = useUpdateYtPlaylist(editingConnId);
+  const deleteMut = useDeleteYtPlaylist(editingConnId);
+
+  function beginEdit(p: SyncedPlaylist) {
+    setEditingId(p.id);
+    setEditTitle(p.title);
+    setEditDescription(p.description ?? "");
+    setEditPrivacy("");
+    setFeedback(null);
+  }
+
+  function cancelEdit() {
+    setEditingId(null);
+    setEditTitle("");
+    setEditDescription("");
+    setEditPrivacy("");
+  }
+
+  async function savePlaylistEdit() {
+    if (!editingPlaylist || editingPlaylist.platform !== "youtube") return;
+    if (!editingConnId) {
+      setFeedback({ type: "error", msg: "Bu playlist icin YouTube baglantisi bulunamadi." });
+      return;
+    }
+    const patch: { title?: string; description?: string; privacy_status?: "public" | "unlisted" | "private" } = {};
+    if (editTitle.trim() && editTitle.trim() !== editingPlaylist.title) patch.title = editTitle.trim();
+    if (editDescription !== (editingPlaylist.description ?? "")) patch.description = editDescription;
+    if (editPrivacy) patch.privacy_status = editPrivacy;
+    if (Object.keys(patch).length === 0) {
+      setFeedback({ type: "success", msg: "Degisiklik yok." });
+      return;
+    }
+    try {
+      const res = await updateMut.mutateAsync({
+        externalPlaylistId: editingPlaylist.external_playlist_id,
+        patch,
+      });
+      setFeedback({
+        type: "success",
+        msg: `Playlist guncellendi: ${res.updated_fields.join(", ") || "(yok)"}`,
+      });
+      setEditingId(null);
+    } catch (err: unknown) {
+      setFeedback({
+        type: "error",
+        msg: `Guncelleme hatasi: ${err instanceof Error ? err.message : String(err)}`,
+      });
+    }
+  }
+
+  async function deletePlaylist(p: SyncedPlaylist) {
+    if (p.platform !== "youtube") {
+      setFeedback({ type: "error", msg: "Yalniz YouTube playlist'leri silinebilir." });
+      return;
+    }
+    if (!p.platform_connection_id) {
+      setFeedback({ type: "error", msg: "Bu playlist icin YouTube baglantisi bulunamadi." });
+      return;
+    }
+    if (!window.confirm(`"${p.title}" YouTube'dan ve yerel DB'den silinsin mi? Bu islem geri alinamaz.`)) return;
+    // We intentionally call via the mutation hook — because `deleteMut` is
+    // bound to `editingConnId`, force an edit-context first.
+    setEditingId(p.id);
+    try {
+      await deleteMut.mutateAsync(p.external_playlist_id);
+      setFeedback({ type: "success", msg: `Playlist silindi: ${p.title}` });
+      setEditingId(null);
+    } catch (err: unknown) {
+      setFeedback({
+        type: "error",
+        msg: `Silme hatasi: ${err instanceof Error ? err.message : String(err)}`,
+      });
+    }
+  }
 
   // KPIs
   const kpis = useMemo(() => {
@@ -203,8 +298,75 @@ export function AdminPlaylistMonitoringPage() {
       {isLoading && <p className="text-sm text-neutral-500 text-center py-8">Playlist'ler yukleniyor...</p>}
       {isError && <p className="text-sm text-error-base text-center py-8">Playlist'ler yuklenirken hata olustu.</p>}
 
+      {/* Sprint 3: inline edit form */}
+      {editingPlaylist && (
+        <SectionShell
+          title={`Playlist Duzenle — ${editingPlaylist.title}`}
+          description="Bos birakilan alanlar degistirilmez. Gizlilik '(Degistirme)' ise dokunulmaz."
+          testId="admin-playlist-edit-form"
+        >
+          <div className="flex flex-col gap-3">
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="font-medium text-neutral-700">Baslik</span>
+              <input
+                type="text"
+                value={editTitle}
+                maxLength={150}
+                onChange={(e) => setEditTitle(e.target.value)}
+                className="px-3 py-2 rounded-md border border-border-default bg-surface-page"
+                data-testid="admin-playlist-edit-title"
+              />
+            </label>
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="font-medium text-neutral-700">Aciklama</span>
+              <textarea
+                value={editDescription}
+                maxLength={5000}
+                rows={4}
+                onChange={(e) => setEditDescription(e.target.value)}
+                className="px-3 py-2 rounded-md border border-border-default bg-surface-page font-mono text-xs"
+                data-testid="admin-playlist-edit-description"
+              />
+            </label>
+            <label className="flex flex-col gap-1 text-sm max-w-xs">
+              <span className="font-medium text-neutral-700">Gizlilik</span>
+              <select
+                value={editPrivacy}
+                onChange={(e) => setEditPrivacy(e.target.value as typeof editPrivacy)}
+                className="px-3 py-2 rounded-md border border-border-default bg-surface-page"
+                data-testid="admin-playlist-edit-privacy"
+              >
+                <option value="">(Degistirme)</option>
+                <option value="public">Herkese Acik</option>
+                <option value="unlisted">Liste Disi</option>
+                <option value="private">Gizli</option>
+              </select>
+            </label>
+            <div className="flex justify-end gap-2">
+              <ActionButton variant="ghost" size="sm" onClick={cancelEdit} disabled={updateMut.isPending}>
+                Iptal
+              </ActionButton>
+              <ActionButton
+                variant="primary"
+                size="sm"
+                onClick={savePlaylistEdit}
+                loading={updateMut.isPending}
+                data-testid="admin-playlist-edit-save"
+              >
+                Kaydet
+              </ActionButton>
+            </div>
+          </div>
+        </SectionShell>
+      )}
+
       {/* Playlist table */}
-      <SectionShell title="Playlist Listesi" testId="admin-playlist-list">
+      <SectionShell
+        title="Playlist Listesi"
+        description="Duzenle ile YouTube baslik/aciklama/gizlilik guncellenir. Sil YouTube'dan da kaldirir."
+        testId="admin-playlist-list"
+      >
+        {feedback && <FeedbackBanner type={feedback.type} message={feedback.msg} /> }
         {playlists && playlists.length === 0 && (
           <p className="text-sm text-neutral-500 text-center py-4">Secilen filtrelerde playlist bulunamadi.</p>
         )}
@@ -219,6 +381,7 @@ export function AdminPlaylistMonitoringPage() {
                   <th className="py-2 px-3 text-xs font-medium text-neutral-500">Platform</th>
                   <th className="py-2 px-3 text-xs font-medium text-neutral-500">Sync</th>
                   <th className="py-2 px-3 text-xs font-medium text-neutral-500">Son Sync</th>
+                  <th className="py-2 px-3 text-xs font-medium text-neutral-500 text-right">Islem</th>
                 </tr>
               </thead>
               <tbody>
@@ -247,6 +410,29 @@ export function AdminPlaylistMonitoringPage() {
                         <span className={`text-xs px-1.5 py-0.5 rounded border ${sBadge.className}`}>{sBadge.label}</span>
                       </td>
                       <td className="py-2 px-3 text-xs text-neutral-400">{timeAgo(p.last_synced_at)}</td>
+                      <td className="py-2 px-3 text-right">
+                        <div className="inline-flex gap-1">
+                          <ActionButton
+                            size="sm"
+                            variant="secondary"
+                            onClick={() => beginEdit(p)}
+                            disabled={p.platform !== "youtube" || !p.platform_connection_id}
+                            data-testid={`admin-playlist-edit-${p.id}`}
+                          >
+                            Duzenle
+                          </ActionButton>
+                          <ActionButton
+                            size="sm"
+                            variant="danger"
+                            onClick={() => deletePlaylist(p)}
+                            loading={editingId === p.id && deleteMut.isPending}
+                            disabled={p.platform !== "youtube" || !p.platform_connection_id || deleteMut.isPending}
+                            data-testid={`admin-playlist-delete-${p.id}`}
+                          >
+                            Sil
+                          </ActionButton>
+                        </div>
+                      </td>
                     </tr>
                   );
                 })}

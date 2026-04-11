@@ -17,8 +17,15 @@ import {
   SectionShell,
   MetricGrid,
   MetricTile,
+  ActionButton,
+  FeedbackBanner,
 } from "../../components/design-system/primitives";
 import type { SyncedComment, CommentListParams } from "../../api/commentsApi";
+import {
+  useMarkYtCommentsAsSpam,
+  useModerateYtComments,
+} from "../../hooks/useYoutubeEngagementAdvanced";
+import type { CommentModerationStatus } from "../../api/youtubeEngagementAdvancedApi";
 
 // ---------------------------------------------------------------------------
 // Filter options
@@ -103,6 +110,101 @@ export function AdminCommentMonitoringPage() {
   }, [channelFilter, platformFilter, replyStatusFilter]);
 
   const { data: comments, isLoading, isError } = useComments(listParams);
+
+  // --- Sprint 3: bulk YouTube moderation state ----------------------------
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [moderationFeedback, setModerationFeedback] = useState<
+    { type: "success" | "error"; msg: string } | null
+  >(null);
+
+  // All currently-selected comments (derived from visible comment list)
+  const selectedComments = useMemo<SyncedComment[]>(() => {
+    if (!comments) return [];
+    return comments.filter((c) => selectedIds.has(c.id));
+  }, [comments, selectedIds]);
+
+  // Every selected comment must share the same platform_connection_id for
+  // a single YouTube API batch call. We derive it here and disable the
+  // moderation bar if the selection is empty or mixed.
+  const batchConnectionId = useMemo<string | null>(() => {
+    if (selectedComments.length === 0) return null;
+    const first = selectedComments[0].platform_connection_id;
+    if (!first) return null;
+    return selectedComments.every((c) => c.platform_connection_id === first)
+      ? first
+      : null;
+  }, [selectedComments]);
+
+  const onlyYoutubeSelected = useMemo(
+    () => selectedComments.length > 0 && selectedComments.every((c) => c.platform === "youtube"),
+    [selectedComments],
+  );
+
+  const moderateMut = useModerateYtComments(batchConnectionId ?? undefined);
+  const spamMut = useMarkYtCommentsAsSpam(batchConnectionId ?? undefined);
+  const moderationBusy = moderateMut.isPending || spamMut.isPending;
+
+  const toggleRow = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleAllVisible = () => {
+    if (!comments) return;
+    setSelectedIds((prev) => {
+      // If every visible row is already selected, clear. Otherwise select all.
+      const allSelected = comments.every((c) => prev.has(c.id));
+      if (allSelected) return new Set();
+      const next = new Set(prev);
+      comments.forEach((c) => next.add(c.id));
+      return next;
+    });
+  };
+
+  async function runModeration(status: CommentModerationStatus, banAuthor = false) {
+    if (!batchConnectionId || selectedComments.length === 0) return;
+    const externalIds = selectedComments.map((c) => c.external_comment_id);
+    try {
+      const res = await moderateMut.mutateAsync({
+        external_comment_ids: externalIds,
+        moderation_status: status,
+        ban_author: banAuthor,
+      });
+      setModerationFeedback({
+        type: "success",
+        msg: `${res.moderated_count} yorum '${res.moderation_status}' olarak isaretlendi.`,
+      });
+      setSelectedIds(new Set());
+    } catch (err: unknown) {
+      setModerationFeedback({
+        type: "error",
+        msg: `Moderasyon hatasi: ${err instanceof Error ? err.message : String(err)}`,
+      });
+    }
+  }
+
+  async function runMarkAsSpam() {
+    if (!batchConnectionId || selectedComments.length === 0) return;
+    if (!window.confirm(`${selectedComments.length} yorum spam olarak isaretlensin mi?`)) return;
+    const externalIds = selectedComments.map((c) => c.external_comment_id);
+    try {
+      const res = await spamMut.mutateAsync({ external_comment_ids: externalIds });
+      setModerationFeedback({
+        type: "success",
+        msg: `${res.marked_count} yorum spam olarak isaretlendi.`,
+      });
+      setSelectedIds(new Set());
+    } catch (err: unknown) {
+      setModerationFeedback({
+        type: "error",
+        msg: `Spam isaretleme hatasi: ${err instanceof Error ? err.message : String(err)}`,
+      });
+    }
+  }
 
   // KPI calculations
   const kpis = useMemo(() => {
@@ -231,6 +333,92 @@ export function AdminCommentMonitoringPage() {
         <p className="text-sm text-error-base text-center py-8">Yorumlar yuklenirken hata olustu.</p>
       )}
 
+      {/* Bulk moderation bar (Sprint 3) */}
+      {selectedComments.length > 0 && (
+        <SectionShell
+          title={`Toplu Moderasyon (${selectedComments.length} secili)`}
+          description="YouTube yorumlari icin moderasyon durumu, spam ve ban islemleri."
+          testId="admin-comment-moderation-bar"
+        >
+          {!onlyYoutubeSelected && (
+            <FeedbackBanner
+              type="error"
+              message="Toplu moderasyon yalniz YouTube yorumlari icin destekleniyor. Secimi daraltin."
+            />
+          )}
+          {onlyYoutubeSelected && !batchConnectionId && (
+            <FeedbackBanner
+              type="error"
+              message="Secili yorumlar farkli YouTube baglantilarina ait. Ayni baglantiya ait yorumlari secin."
+            />
+          )}
+          {moderationFeedback && (
+            <FeedbackBanner type={moderationFeedback.type} message={moderationFeedback.msg} />
+          )}
+          <div className="flex flex-wrap gap-2 mt-3">
+            <ActionButton
+              variant="secondary"
+              size="sm"
+              onClick={() => runModeration("heldForReview")}
+              disabled={!batchConnectionId || !onlyYoutubeSelected || moderationBusy}
+              loading={moderateMut.isPending}
+              data-testid="admin-comment-mod-hold"
+            >
+              Incelemeye Al
+            </ActionButton>
+            <ActionButton
+              variant="secondary"
+              size="sm"
+              onClick={() => runModeration("published")}
+              disabled={!batchConnectionId || !onlyYoutubeSelected || moderationBusy}
+              loading={moderateMut.isPending}
+              data-testid="admin-comment-mod-publish"
+            >
+              Yayinla
+            </ActionButton>
+            <ActionButton
+              variant="danger"
+              size="sm"
+              onClick={() => runModeration("rejected")}
+              disabled={!batchConnectionId || !onlyYoutubeSelected || moderationBusy}
+              loading={moderateMut.isPending}
+              data-testid="admin-comment-mod-reject"
+            >
+              Reddet
+            </ActionButton>
+            <ActionButton
+              variant="danger"
+              size="sm"
+              onClick={() => runModeration("rejected", true)}
+              disabled={!batchConnectionId || !onlyYoutubeSelected || moderationBusy}
+              loading={moderateMut.isPending}
+              data-testid="admin-comment-mod-reject-ban"
+            >
+              Reddet + Yazari Engelle
+            </ActionButton>
+            <ActionButton
+              variant="danger"
+              size="sm"
+              onClick={runMarkAsSpam}
+              disabled={!batchConnectionId || !onlyYoutubeSelected || moderationBusy}
+              loading={spamMut.isPending}
+              data-testid="admin-comment-mod-spam"
+            >
+              Spam Isaretle
+            </ActionButton>
+            <ActionButton
+              variant="ghost"
+              size="sm"
+              onClick={() => setSelectedIds(new Set())}
+              disabled={moderationBusy}
+              data-testid="admin-comment-mod-clear"
+            >
+              Secimi Temizle
+            </ActionButton>
+          </div>
+        </SectionShell>
+      )}
+
       {/* Comment table */}
       <SectionShell title="Yorum Listesi" testId="admin-comment-list">
         {comments && comments.length === 0 && (
@@ -241,6 +429,15 @@ export function AdminCommentMonitoringPage() {
             <table className="w-full text-sm" data-testid="comment-table">
               <thead>
                 <tr className="border-b border-border-subtle text-left">
+                  <th className="py-2 px-3 text-xs font-medium text-neutral-500 w-8">
+                    <input
+                      type="checkbox"
+                      aria-label="Tum goruntulenenleri sec"
+                      checked={comments.length > 0 && comments.every((c) => selectedIds.has(c.id))}
+                      onChange={toggleAllVisible}
+                      data-testid="admin-comment-select-all"
+                    />
+                  </th>
                   <th className="py-2 px-3 text-xs font-medium text-neutral-500">Yazar</th>
                   <th className="py-2 px-3 text-xs font-medium text-neutral-500">Yorum</th>
                   <th className="py-2 px-3 text-xs font-medium text-neutral-500">Video</th>
@@ -259,6 +456,15 @@ export function AdminCommentMonitoringPage() {
                       className="border-b border-border-subtle hover:bg-surface-hover transition-colors"
                       data-testid={`admin-comment-row-${c.id}`}
                     >
+                      <td className="py-2 px-3">
+                        <input
+                          type="checkbox"
+                          aria-label={`Yorum ${c.id} sec`}
+                          checked={selectedIds.has(c.id)}
+                          onChange={() => toggleRow(c.id)}
+                          data-testid={`admin-comment-select-${c.id}`}
+                        />
+                      </td>
                       <td className="py-2 px-3">
                         <div className="flex items-center gap-2">
                           {c.author_avatar_url ? (

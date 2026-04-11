@@ -13,6 +13,7 @@ import { useCredentialsList } from "../../hooks/useCredentials";
 import type { CredentialStatus } from "../../api/credentialsApi";
 import { ApiKeyField } from "./ApiKeyField";
 import { YouTubeOAuthSection } from "./YouTubeOAuthSection";
+import { YouTubeChannelBrandingSection } from "./YouTubeChannelBrandingSection";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -69,7 +70,14 @@ export function CredentialsPanel() {
               <ApiKeyField key={cred.key} cred={cred} />
             ))}
             {/* YouTube connection section after YouTube credentials */}
-            {groupKey === "youtube" && <YouTubeOAuthSection />}
+            {groupKey === "youtube" && (
+              <>
+                <YouTubeOAuthSection />
+                <div className="mt-4">
+                  <YouTubeChannelBrandingSection />
+                </div>
+              </>
+            )}
           </div>
         );
       })}
