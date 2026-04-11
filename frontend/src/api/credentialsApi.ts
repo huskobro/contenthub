@@ -50,6 +50,7 @@ export interface YouTubeTokenStatus {
   has_credentials: boolean;
   scope_ok: boolean;
   message: string;
+  connection_id?: string | null;
 }
 
 export function fetchYouTubeStatus(connectionId?: string): Promise<YouTubeTokenStatus> {
@@ -83,6 +84,7 @@ export interface YouTubeChannelInfo {
   subscriber_count: string | null;
   video_count: string | null;
   message: string;
+  connection_id?: string | null;
 }
 
 export function fetchYouTubeChannelInfo(connectionId?: string): Promise<YouTubeChannelInfo> {

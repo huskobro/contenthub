@@ -37,6 +37,7 @@ import {
 } from "../../components/design-system/primitives";
 import { Sheet } from "../../components/design-system/Sheet";
 import { EmptyState } from "../../components/design-system/EmptyState";
+import { YouTubeVideoManagementSheet } from "../../components/youtube/YouTubeVideoManagementSheet";
 import { cn } from "../../lib/cn";
 import { formatDateShort, formatDateTime } from "../../lib/formatDate";
 
@@ -403,7 +404,7 @@ function TrendSparkline({ snapshots }: { snapshots: { view_count: number }[] }) 
   );
 }
 
-function VideoDetailPanel({ video }: { video: ChannelVideoItem | null }) {
+function VideoDetailPanel({ video, onManage }: { video: ChannelVideoItem | null; onManage?: () => void }) {
   const trendQuery = useVideoStatsTrend(video?.video_id ?? null);
 
   if (!video) {
@@ -513,7 +514,7 @@ function VideoDetailPanel({ video }: { video: ChannelVideoItem | null }) {
       )}
 
       {/* Actions */}
-      <div className="flex gap-2 mt-3">
+      <div className="flex gap-2 mt-3 flex-wrap">
         <a
           href={`https://www.youtube.com/watch?v=${video.video_id}`}
           target="_blank"
@@ -522,6 +523,16 @@ function VideoDetailPanel({ video }: { video: ChannelVideoItem | null }) {
         >
           ▶ YouTube'da Aç
         </a>
+        {onManage && (
+          <ActionButton
+            variant="primary"
+            size="sm"
+            onClick={onManage}
+            data-testid="yt-open-video-management"
+          >
+            ✎ Yönet
+          </ActionButton>
+        )}
       </div>
     </div>
   );
@@ -539,6 +550,7 @@ export function YouTubeAnalyticsPage() {
   const [page, setPage] = useState(0);
   const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [mgmtSheetOpen, setMgmtSheetOpen] = useState(false);
 
   // Data fetching
   const { data: ytStatus, isLoading: statusLoading } = useYouTubeStatus();
@@ -975,8 +987,30 @@ export function YouTubeAnalyticsPage() {
         width="440px"
         testId="yt-detail-sheet"
       >
-        <VideoDetailPanel video={selectedVideo} />
+        <VideoDetailPanel
+          video={selectedVideo}
+          onManage={() => {
+            setSheetOpen(false);
+            setMgmtSheetOpen(true);
+          }}
+        />
       </Sheet>
+
+      {/* Management Sheet — thumbnails.set / captions / videos.update */}
+      <YouTubeVideoManagementSheet
+        open={mgmtSheetOpen}
+        onClose={() => setMgmtSheetOpen(false)}
+        connectionId={ytStatus?.connection_id ?? undefined}
+        video={
+          selectedVideo
+            ? {
+                video_id: selectedVideo.video_id,
+                title: selectedVideo.title,
+                thumbnail_url: selectedVideo.thumbnail_url,
+              }
+            : null
+        }
+      />
     </PageShell>
   );
 }
