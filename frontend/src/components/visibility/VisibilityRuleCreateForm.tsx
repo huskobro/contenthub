@@ -110,14 +110,29 @@ export function VisibilityRuleCreateForm({ onSuccess, onCancel }: VisibilityRule
     });
   }
 
+  // Shared Tailwind class strings. Every colour here comes from
+  // tema-semantic tokens so the form is legible under Chalk/Obsidian/Sand/
+  // Midnight without per-tema overrides. (design-tokens-guide.md)
+  //
+  // Rules applied:
+  //  - inputs/selects: bg-neutral-0 (tema arka plan) + text-neutral-900
+  //  - cards/lists: bg-neutral-0 surface, bg-neutral-100 for inset headers
+  //  - secondary text: text-neutral-600 (body) / text-neutral-500 (muted)
+  //  - no bg-white, no bg-brand-50 (light-mode sabitleri) — seçili satır
+  //    için bg-info-light kullanıyoruz, o tema semantik.
+  const inputCls =
+    "w-full border border-border rounded-md px-3 py-2 text-sm bg-neutral-0 text-neutral-900 placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-brand-300";
+  const monoInputCls = inputCls + " font-mono";
+  const labelCls = "block text-sm font-medium text-neutral-700 mb-1";
+
   return (
-    <form onSubmit={handleSubmit} className="p-4 space-y-4">
+    <form onSubmit={handleSubmit} className="p-4 space-y-4 text-neutral-900">
       <h3 className="m-0 text-lg font-bold text-neutral-900">Yeni Kural Ekle</h3>
 
       {/* Hedef seçici — gruplu katalog + arama + manuel giriş modu */}
       <div>
         <div className="flex items-center justify-between mb-1">
-          <label className="block text-sm font-medium text-neutral-700">
+          <label className={labelCls + " mb-0"}>
             Hedef Anahtar <span className="text-error">*</span>
           </label>
           <button
@@ -139,13 +154,14 @@ export function VisibilityRuleCreateForm({ onSuccess, onCancel }: VisibilityRule
                 setForm((p) => ({ ...p, target_key: e.target.value }))
               }
               placeholder="örn: panel:jobs, field:subtitle_style, page:analytics"
-              className="w-full border border-border rounded-md px-3 py-2 text-sm font-mono bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-brand-300"
+              className={monoInputCls}
               data-testid="visibility-target-manual-input"
               required
             />
-            <p className="text-xs text-neutral-500">
-              Format: <code>tip:alt_anahtar</code>. Katalogda olmayan yeni
-              anahtarlar için kullanın. Kural tipini aşağıdan elle seçin.
+            <p className="text-xs text-neutral-600">
+              Format: <code className="font-mono text-neutral-800">tip:alt_anahtar</code>.
+              Katalogda olmayan yeni anahtarlar için kullanın. Kural tipini
+              aşağıdan elle seçin.
             </p>
             <div>
               <label className="block text-xs font-semibold text-neutral-600 mb-1 uppercase tracking-wider">
@@ -156,7 +172,7 @@ export function VisibilityRuleCreateForm({ onSuccess, onCancel }: VisibilityRule
                 onChange={(e) =>
                   setForm((p) => ({ ...p, rule_type: e.target.value }))
                 }
-                className="w-full border border-border rounded-md px-3 py-2 text-sm bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-brand-300"
+                className={inputCls}
                 data-testid="visibility-target-manual-rule-type"
               >
                 {RULE_TYPE_OPTIONS.map((o) => (
@@ -174,29 +190,29 @@ export function VisibilityRuleCreateForm({ onSuccess, onCancel }: VisibilityRule
               value={targetQuery}
               onChange={(e) => setTargetQuery(e.target.value)}
               placeholder="Ara: örn. jobs, analytics, provider trace…"
-              className="w-full border border-border rounded-md px-3 py-2 text-sm bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-brand-300"
+              className={inputCls}
               data-testid="visibility-target-search"
             />
 
             {selectedCatalogEntry && (
               <div
-                className="flex items-center gap-2 px-3 py-2 rounded-md border border-brand-300 bg-brand-50 text-xs"
+                className="flex items-center gap-2 px-3 py-2 rounded-md border border-info bg-info-light text-xs"
                 data-testid="visibility-target-selected-banner"
               >
-                <span className="text-brand-700 font-semibold uppercase tracking-wider">
+                <span className="text-info-text font-semibold uppercase tracking-wider">
                   seçili
                 </span>
                 <code className="font-mono text-neutral-900">
                   {selectedCatalogEntry.key}
                 </code>
-                <span className="text-neutral-600 flex-1 truncate">
+                <span className="text-neutral-700 flex-1 truncate">
                   {selectedCatalogEntry.label} — {selectedCatalogEntry.description}
                 </span>
               </div>
             )}
 
             <div
-              className="max-h-[320px] overflow-y-auto border border-border-subtle rounded-md bg-white"
+              className="max-h-[340px] overflow-y-auto border border-border rounded-md bg-neutral-0"
               data-testid="visibility-target-catalog"
             >
               {filteredGroups.length === 0 ? (
@@ -211,11 +227,11 @@ export function VisibilityRuleCreateForm({ onSuccess, onCancel }: VisibilityRule
                     className="border-b border-border-subtle last:border-b-0"
                     data-testid={`visibility-target-group-${group.id}`}
                   >
-                    <div className="sticky top-0 px-3 py-1.5 bg-neutral-100 border-b border-border-subtle">
-                      <p className="m-0 text-[11px] font-bold uppercase tracking-wider text-neutral-700">
+                    <div className="sticky top-0 z-10 px-3 py-1.5 bg-neutral-100 border-b border-border-subtle">
+                      <p className="m-0 text-[11px] font-bold uppercase tracking-wider text-neutral-800">
                         {group.title}
                       </p>
-                      <p className="m-0 text-[10px] text-neutral-500 truncate">
+                      <p className="m-0 text-[10px] text-neutral-600 truncate">
                         {group.summary}
                       </p>
                     </div>
@@ -230,26 +246,26 @@ export function VisibilityRuleCreateForm({ onSuccess, onCancel }: VisibilityRule
                               className={
                                 "w-full text-left px-3 py-2 border-b border-border-subtle last:border-b-0 cursor-pointer transition-colors " +
                                 (isSelected
-                                  ? "bg-brand-100 hover:bg-brand-100"
-                                  : "bg-white hover:bg-brand-50")
+                                  ? "bg-info-light hover:bg-info-light"
+                                  : "bg-neutral-0 hover:bg-neutral-100")
                               }
                               data-testid={`visibility-target-option-${opt.key}`}
                             >
                               <div className="flex items-center gap-2">
-                                <code className="font-mono text-[11px] text-neutral-900">
+                                <code className="font-mono text-[12px] text-neutral-900 font-semibold">
                                   {opt.key}
                                 </code>
-                                <span className="text-[9px] font-mono uppercase text-neutral-500 border border-border-subtle rounded px-1">
+                                <span className="text-[9px] font-mono uppercase text-neutral-600 border border-border-subtle rounded px-1">
                                   {opt.rule_type}
                                 </span>
                                 {isSelected && (
-                                  <span className="ml-auto text-[10px] font-bold text-brand-700 uppercase">
+                                  <span className="ml-auto text-[10px] font-bold text-info-text uppercase">
                                     seçili
                                   </span>
                                 )}
                               </div>
-                              <p className="m-0 mt-0.5 text-[11px] text-neutral-600">
-                                <span className="font-semibold text-neutral-800">
+                              <p className="m-0 mt-1 text-[12px] text-neutral-700 leading-snug">
+                                <span className="font-semibold text-neutral-900">
                                   {opt.label}
                                 </span>{" "}
                                 — {opt.description}
@@ -269,13 +285,11 @@ export function VisibilityRuleCreateForm({ onSuccess, onCancel }: VisibilityRule
 
       {/* Modül kapsamı */}
       <div>
-        <label className="block text-sm font-medium text-neutral-700 mb-1">
-          Modül Kapsamı
-        </label>
+        <label className={labelCls}>Modül Kapsamı</label>
         <select
           value={form.module_scope}
           onChange={(e) => setForm((p) => ({ ...p, module_scope: e.target.value }))}
-          className="w-full border border-border rounded-md px-3 py-2 text-sm bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-brand-300"
+          className={inputCls}
         >
           {MODULE_OPTIONS.map((o) => (
             <option key={o.value} value={o.value}>{o.label}</option>
@@ -285,13 +299,11 @@ export function VisibilityRuleCreateForm({ onSuccess, onCancel }: VisibilityRule
 
       {/* Rol kapsamı */}
       <div>
-        <label className="block text-sm font-medium text-neutral-700 mb-1">
-          Rol Kapsamı
-        </label>
+        <label className={labelCls}>Rol Kapsamı</label>
         <select
           value={form.role_scope}
           onChange={(e) => setForm((p) => ({ ...p, role_scope: e.target.value }))}
-          className="w-full border border-border rounded-md px-3 py-2 text-sm bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-brand-300"
+          className={inputCls}
         >
           {ROLE_OPTIONS.map((o) => (
             <option key={o.value} value={o.value}>{o.label}</option>
@@ -300,8 +312,10 @@ export function VisibilityRuleCreateForm({ onSuccess, onCancel }: VisibilityRule
       </div>
 
       {/* Governance checkboxlar */}
-      <div className="border border-border-subtle rounded-lg p-3 space-y-2">
-        <div className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2">Davranış</div>
+      <div className="border border-border-subtle rounded-lg p-3 space-y-2 bg-neutral-50">
+        <div className="text-xs font-semibold text-neutral-600 uppercase tracking-wider mb-2">
+          Davranış
+        </div>
         <label className="flex items-center gap-2 cursor-pointer">
           <input
             type="checkbox"
@@ -309,8 +323,8 @@ export function VisibilityRuleCreateForm({ onSuccess, onCancel }: VisibilityRule
             onChange={(e) => setForm((p) => ({ ...p, visible: e.target.checked }))}
             className="cursor-pointer accent-brand-500"
           />
-          <span className="text-sm text-neutral-800">Görünür</span>
-          <span className="text-xs text-neutral-500">— hedef bu kapsam için gösterilsin mi?</span>
+          <span className="text-sm text-neutral-900">Görünür</span>
+          <span className="text-xs text-neutral-600">— hedef bu kapsam için gösterilsin mi?</span>
         </label>
         <label className="flex items-center gap-2 cursor-pointer">
           <input
@@ -319,8 +333,8 @@ export function VisibilityRuleCreateForm({ onSuccess, onCancel }: VisibilityRule
             onChange={(e) => setForm((p) => ({ ...p, read_only: e.target.checked }))}
             className="cursor-pointer accent-brand-500"
           />
-          <span className="text-sm text-neutral-800">Salt Okunur</span>
-          <span className="text-xs text-neutral-500">— düzenleme devre dışı</span>
+          <span className="text-sm text-neutral-900">Salt Okunur</span>
+          <span className="text-xs text-neutral-600">— düzenleme devre dışı</span>
         </label>
         <label className="flex items-center gap-2 cursor-pointer">
           <input
@@ -329,43 +343,39 @@ export function VisibilityRuleCreateForm({ onSuccess, onCancel }: VisibilityRule
             onChange={(e) => setForm((p) => ({ ...p, wizard_visible: e.target.checked }))}
             className="cursor-pointer accent-brand-500"
           />
-          <span className="text-sm text-neutral-800">Wizard'da Görünür</span>
-          <span className="text-xs text-neutral-500">— wizard akışında gösterilsin mi?</span>
+          <span className="text-sm text-neutral-900">Wizard'da Görünür</span>
+          <span className="text-xs text-neutral-600">— wizard akışında gösterilsin mi?</span>
         </label>
       </div>
 
       {/* Öncelik */}
       <div>
-        <label className="block text-sm font-medium text-neutral-700 mb-1">
-          Öncelik
-        </label>
+        <label className={labelCls}>Öncelik</label>
         <input
           type="number"
           value={form.priority}
           onChange={(e) => setForm((p) => ({ ...p, priority: parseInt(e.target.value) || 100 }))}
           min={0}
           max={9999}
-          className="w-full border border-border rounded-md px-3 py-2 text-sm bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-brand-300"
+          className={inputCls}
         />
-        <p className="text-xs text-neutral-500 mt-1">Düşük sayı = daha yüksek öncelik</p>
+        <p className="text-xs text-neutral-600 mt-1">Düşük sayı = daha yüksek öncelik</p>
       </div>
 
       {/* Notlar */}
       <div>
-        <label className="block text-sm font-medium text-neutral-700 mb-1">
-          Notlar
-        </label>
+        <label className={labelCls}>Notlar</label>
         <textarea
           value={form.notes}
           onChange={(e) => setForm((p) => ({ ...p, notes: e.target.value }))}
           placeholder="Bu kuralın amacı ve kapsamı hakkında açıklama..."
           rows={3}
-          className="w-full border border-border rounded-md px-3 py-2 text-sm bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-brand-300 resize-y"
+          className={inputCls + " resize-y"}
         />
       </div>
 
       {mut.isError && (
-        <div className="text-error text-sm bg-error-light border border-error-border rounded px-3 py-2">
+        <div className="text-error-text text-sm bg-error-light border border-error-border rounded px-3 py-2">
           {mut.error instanceof Error ? mut.error.message : "Kural oluşturulamadı."}
         </div>
       )}
@@ -382,7 +392,7 @@ export function VisibilityRuleCreateForm({ onSuccess, onCancel }: VisibilityRule
           <button
             type="button"
             onClick={onCancel}
-            className="px-4 py-2 rounded-md border border-border text-sm text-neutral-700 bg-white hover:bg-neutral-50 cursor-pointer transition-colors"
+            className="px-4 py-2 rounded-md border border-border text-sm text-neutral-800 bg-neutral-0 hover:bg-neutral-100 cursor-pointer transition-colors"
           >
             İptal
           </button>
