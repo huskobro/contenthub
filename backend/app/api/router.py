@@ -41,6 +41,7 @@ from app.posts.router import router as posts_router
 from app.brand_profiles.router import router as brand_profiles_router
 from app.automation.router import router as automation_router
 from app.automation.router import inbox_router as operations_inbox_router
+from app.full_auto.router import router as full_auto_router
 from app.calendar.router import router as calendar_router
 from app.auth.router import router as auth_router
 from app.notifications.router import router as notifications_router
@@ -67,6 +68,7 @@ api_router.include_router(posts_router, dependencies=[Depends(require_user)])
 api_router.include_router(brand_profiles_router, dependencies=[Depends(require_user)])
 api_router.include_router(automation_router, dependencies=[Depends(require_user)])
 api_router.include_router(operations_inbox_router, dependencies=[Depends(require_user)])
+api_router.include_router(full_auto_router, dependencies=[Depends(require_user)])
 api_router.include_router(providers_router)
 api_router.include_router(settings_router)
 api_router.include_router(visibility_router)

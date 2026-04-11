@@ -332,6 +332,23 @@ async def lifespan(app: FastAPI):
     app.state.youtube_analytics_task = yt_analytics_task
     logger.info("YouTube Analytics daily sync task created.")
 
+    # Full-Auto project scheduler — background task (Full-Auto v1).
+    # The loop itself gates on automation.scheduler.enabled at each tick, so
+    # we can start it unconditionally: when the kill switch is off it is a
+    # no-op per tick.
+    from app.full_auto.scheduler import poll_full_auto_projects
+    async with AsyncSessionLocal() as _fa_db:
+        fa_interval = await resolve("automation.scheduler.poll_interval_seconds", _fa_db)
+    full_auto_task = asyncio.create_task(
+        poll_full_auto_projects(
+            AsyncSessionLocal,
+            app.state.job_dispatcher,
+            interval=float(fa_interval or 60),
+        )
+    )
+    app.state.full_auto_scheduler_task = full_auto_task
+    logger.info("Full-Auto scheduler task created (interval=%ss).", fa_interval or 60)
+
     yield
 
     # Shutdown: cancel publish scheduler
@@ -378,6 +395,15 @@ async def lifespan(app: FastAPI):
         except asyncio.CancelledError:
             pass
         logger.info("YouTube Analytics sync task cancelled.")
+
+    # Shutdown: cancel Full-Auto project scheduler
+    if hasattr(app.state, "full_auto_scheduler_task"):
+        app.state.full_auto_scheduler_task.cancel()
+        try:
+            await app.state.full_auto_scheduler_task
+        except asyncio.CancelledError:
+            pass
+        logger.info("Full-Auto scheduler cancelled.")
 
 
 def _register_exception_handlers(app: FastAPI) -> None:
