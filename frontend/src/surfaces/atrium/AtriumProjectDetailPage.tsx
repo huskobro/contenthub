@@ -325,11 +325,11 @@ export function AtriumProjectDetailPage() {
                 }
               />
               <span className="text-[10px] font-mono uppercase text-indigo-200">
-                öncelik: {project.priority}
+                öncelik: <span lang="en">{project.priority}</span>
               </span>
               {project.active_job_id ? (
                 <span className="text-[10px] font-mono uppercase text-amber-300">
-                  ⚡ live job
+                  ⚡ canlı iş
                 </span>
               ) : null}
             </div>

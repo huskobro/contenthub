@@ -204,7 +204,7 @@ function ChannelCard({
       <span className="text-sm font-medium">{profile.profile_name}</span>
       <span className="text-xs text-neutral-400">@{profile.channel_slug}</span>
       {profile.default_language && (
-        <span className="text-[11px] text-neutral-400 uppercase">
+        <span lang="en" className="text-[11px] text-neutral-400 uppercase">
           {profile.default_language}
         </span>
       )}

@@ -220,7 +220,7 @@ export function CanvasProjectDetailPage() {
                 label={STATUS_LABELS[project.publish_status] ?? project.publish_status}
               />
               <span className="text-[10px] font-mono uppercase text-neutral-500">
-                öncelik: {project.priority}
+                öncelik: <span lang="en">{project.priority}</span>
               </span>
             </div>
           </div>

@@ -246,7 +246,7 @@ export function CanvasChannelDetailPage() {
           <h1 className="m-0 mt-1 text-xl font-semibold text-neutral-900 truncate">
             {channel.profile_name}
           </h1>
-          <p className="m-0 mt-0.5 text-xs font-mono uppercase text-neutral-500">
+          <p lang="en" className="m-0 mt-0.5 text-xs font-mono uppercase text-neutral-500">
             @{channel.channel_slug}
           </p>
           {channelInfo?.connected && channelInfo.channel_title ? (
@@ -656,7 +656,7 @@ export function CanvasChannelDetailPage() {
                           {p.title}
                         </p>
                         <p className="m-0 mt-0.5 text-[11px] text-neutral-500 flex items-center gap-2">
-                          <span className="uppercase font-mono tracking-wider">
+                          <span lang="en" className="uppercase font-mono tracking-wider">
                             {p.module_type}
                           </span>
                           <span>&middot;</span>

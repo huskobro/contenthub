@@ -367,7 +367,7 @@ export function AtriumUserDashboardPage() {
                     &middot;
                   </span>
                   <span className="text-[10px] font-mono uppercase text-indigo-200">
-                    öncelik: {headline.priority}
+                    öncelik: <span lang="en">{headline.priority}</span>
                   </span>
                   {headline.active_job_id ? (
                     <>

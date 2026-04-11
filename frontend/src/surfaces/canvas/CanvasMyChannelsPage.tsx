@@ -300,7 +300,7 @@ export function CanvasMyChannelsPage() {
                   <p className="m-0 text-sm font-semibold text-neutral-900 truncate">
                     {ch.profile_name}
                   </p>
-                  <p className="m-0 text-[10px] font-mono uppercase text-neutral-500">
+                  <p lang="en" className="m-0 text-[10px] font-mono uppercase text-neutral-500">
                     {ch.channel_slug}
                   </p>
                 </div>

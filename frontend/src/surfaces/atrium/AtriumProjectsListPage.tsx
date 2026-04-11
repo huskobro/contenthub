@@ -126,7 +126,7 @@ function PortfolioCard({
         </div>
 
         <div className="flex items-center justify-between text-[10px] font-mono uppercase text-neutral-400">
-          <span>öncelik: {project.priority}</span>
+          <span>öncelik: <span lang="en">{project.priority}</span></span>
           <span className="text-indigo-600 font-semibold group-hover:text-indigo-700">
             stüdyoya git →
           </span>

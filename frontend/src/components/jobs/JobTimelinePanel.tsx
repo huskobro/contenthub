@@ -48,7 +48,10 @@ function StepRow({ step, isLast }: { step: JobStepResponse; isLast: boolean }) {
           <span className="font-mono text-sm font-medium text-neutral-800">
             {step.step_key}
           </span>
-          <span className={`text-xs font-semibold uppercase tracking-wide ${STATUS_TEXT[step.status] ?? "text-neutral-500"}`}>
+          <span
+            lang="en"
+            className={`text-xs font-semibold uppercase tracking-wide ${STATUS_TEXT[step.status] ?? "text-neutral-500"}`}
+          >
             {step.status}
           </span>
         </div>

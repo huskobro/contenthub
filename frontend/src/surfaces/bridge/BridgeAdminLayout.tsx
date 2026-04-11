@@ -413,7 +413,14 @@ export function BridgeAdminLayout() {
                 className="font-mono uppercase tracking-wider text-[10px] text-neutral-400"
                 data-testid="bridge-breadcrumb"
               >
-                BRIDGE · {activeSlot.label.toUpperCase()}
+                {/* Turkish uppercase fix: `.toUpperCase()` default Unicode
+                    kurallarıyla çalıştığı için `i` → `I` yapıyor (doğrusu
+                    Türkçe'de `i` → `İ`). `toLocaleUpperCase("tr-TR")` Türkçe
+                    locale kuralını uygular. Etiket zaten CSS uppercase ile
+                    de gösteriliyor, yani aynı string iki kez büyük harfe
+                    çevriliyor; CSS katmanı `<html lang="tr">` sayesinde
+                    doğru çalışacak. */}
+                BRIDGE · {activeSlot.label.toLocaleUpperCase("tr-TR")}
               </span>
             </div>
             <div className="flex items-center gap-2 shrink-0">

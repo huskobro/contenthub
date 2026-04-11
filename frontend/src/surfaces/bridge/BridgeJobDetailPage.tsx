@@ -176,6 +176,7 @@ export function BridgeJobDetailPage() {
         </div>
         <div className="flex items-center gap-2">
           <span
+            lang="en"
             className={`px-2 py-0.5 text-[10px] font-mono uppercase tracking-wider rounded border ${statusTint(
               job.status,
             )}`}
@@ -183,7 +184,7 @@ export function BridgeJobDetailPage() {
           >
             {job.status}
           </span>
-          <span className="text-xs text-neutral-500 font-mono">{job.module_type}</span>
+          <span lang="en" className="text-xs text-neutral-500 font-mono">{job.module_type}</span>
         </div>
       </div>
 
@@ -301,6 +302,7 @@ export function BridgeJobDetailPage() {
               <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-2">
                   <span
+                    lang="en"
                     className={`px-2 py-0.5 text-[10px] font-mono uppercase tracking-wider rounded border ${publishStatusTint(
                       publish.status,
                     )}`}
