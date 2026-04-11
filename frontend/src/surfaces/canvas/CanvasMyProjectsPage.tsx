@@ -13,7 +13,7 @@
  *   - No fake preview images — preview slot is an explicit placeholder.
  */
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "../../stores/authStore";
@@ -22,7 +22,6 @@ import { useChannelProfiles } from "../../hooks/useChannelProfiles";
 import type { ContentProjectResponse } from "../../api/contentProjectsApi";
 import { fetchJobs } from "../../api/jobsApi";
 import { StatusBadge } from "../../components/design-system/primitives";
-import { VideoPlayer } from "../../components/shared/VideoPlayer";
 import { buildProjectPreviewMap } from "../../lib/jobArtifacts";
 import { cn } from "../../lib/cn";
 
@@ -72,24 +71,9 @@ export function CanvasMyProjectsPage() {
     queryFn: () => fetchJobs(),
   });
   const projectPreviewMap = useMemo(
-    () => buildProjectPreviewMap(allJobs),
-    [allJobs],
+    () => buildProjectPreviewMap(allJobs, rows),
+    [allJobs, rows],
   );
-
-  // Shared lightbox state — any card's preview click opens it.
-  const [lightboxVideo, setLightboxVideo] = useState<{
-    url: string;
-    title: string;
-  } | null>(null);
-
-  useEffect(() => {
-    if (!lightboxVideo) return undefined;
-    function handleKey(e: KeyboardEvent) {
-      if (e.key === "Escape") setLightboxVideo(null);
-    }
-    window.addEventListener("keydown", handleKey);
-    return () => window.removeEventListener("keydown", handleKey);
-  }, [lightboxVideo]);
 
   return (
     <div
@@ -220,71 +204,12 @@ export function CanvasMyProjectsPage() {
                 project={project}
                 onOpen={() => navigate(`/user/projects/${project.id}`)}
                 previewUrl={preview?.videoUrl ?? null}
-                onPreviewClick={
-                  preview
-                    ? () =>
-                        setLightboxVideo({
-                          url: preview.videoUrl,
-                          title: project.title,
-                        })
-                    : undefined
-                }
               />
             );
           })}
         </div>
       )}
 
-      {/* Shared preview lightbox */}
-      {lightboxVideo ? (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label="Ön izleme"
-          className={cn(
-            "fixed inset-0 z-50 flex items-center justify-center",
-            "bg-black/80 backdrop-blur-sm p-4",
-          )}
-          onClick={() => setLightboxVideo(null)}
-          data-testid="canvas-projects-preview-lightbox"
-        >
-          <div
-            className={cn(
-              "relative max-w-[min(90vw,800px)] max-h-[90vh]",
-              "bg-neutral-900 rounded-xl shadow-2xl overflow-hidden",
-              "flex flex-col",
-            )}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between px-4 py-2 border-b border-neutral-800">
-              <p className="m-0 text-sm font-semibold text-neutral-100 truncate">
-                {lightboxVideo.title}
-              </p>
-              <button
-                type="button"
-                onClick={() => setLightboxVideo(null)}
-                className={cn(
-                  "ml-4 w-8 h-8 rounded-md shrink-0",
-                  "text-neutral-300 hover:text-white hover:bg-neutral-800",
-                  "flex items-center justify-center text-lg font-bold",
-                )}
-                aria-label="Kapat"
-              >
-                ×
-              </button>
-            </div>
-            <div className="p-4 overflow-auto">
-              <VideoPlayer
-                src={lightboxVideo.url}
-                title={lightboxVideo.title}
-                showDownload
-                autoPlay
-                testId="canvas-projects-preview-video"
-              />
-            </div>
-          </div>
-        </div>
-      ) : null}
     </div>
   );
 }
@@ -324,46 +249,30 @@ function ProjectCard({
   project,
   onOpen,
   previewUrl,
-  onPreviewClick,
 }: {
   project: ContentProjectResponse;
   onOpen: () => void;
   previewUrl?: string | null;
-  onPreviewClick?: () => void;
 }) {
   return (
-    // div[role=button] so we can nest a real <button> for the preview.
-    <div
-      role="button"
-      tabIndex={0}
+    <button
+      type="button"
       onClick={onOpen}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          onOpen();
-        }
-      }}
       className={cn(
         "group text-left rounded-xl border border-border-subtle bg-surface-card",
         "hover:border-brand-400 hover:shadow-md transition-all duration-fast",
         "overflow-hidden cursor-pointer",
         "focus:outline-none focus:border-brand-400",
+        "block w-full",
       )}
       data-testid={`canvas-project-card-${project.id}`}
     >
       {previewUrl ? (
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onPreviewClick?.();
-          }}
+        <div
           className={cn(
             "relative block w-full h-[108px] border-b border-border-subtle",
-            "bg-neutral-900 overflow-hidden cursor-zoom-in",
-            "focus:outline-none focus:ring-2 focus:ring-brand-400",
+            "bg-neutral-900 overflow-hidden",
           )}
-          aria-label="Ön izlemeyi büyüt"
         >
           <video
             src={previewUrl}
@@ -383,7 +292,7 @@ function ProjectCard({
               ▶
             </span>
           </span>
-        </button>
+        </div>
       ) : (
         <div
           className={cn(
@@ -417,6 +326,6 @@ function ProjectCard({
           ) : null}
         </div>
       </div>
-    </div>
+    </button>
   );
 }

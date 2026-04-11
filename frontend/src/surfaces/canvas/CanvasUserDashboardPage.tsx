@@ -26,7 +26,7 @@
  *     is off, scope-mismatched, or disabled.
  */
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "../../stores/authStore";
@@ -36,7 +36,6 @@ import { useChannelProfiles } from "../../hooks/useChannelProfiles";
 import { fetchJobs, type JobResponse } from "../../api/jobsApi";
 import type { ContentProjectResponse } from "../../api/contentProjectsApi";
 import { StatusBadge } from "../../components/design-system/primitives";
-import { VideoPlayer } from "../../components/shared/VideoPlayer";
 import { buildProjectPreviewMap } from "../../lib/jobArtifacts";
 import { cn } from "../../lib/cn";
 
@@ -103,7 +102,6 @@ function ProjectPreviewTile({
   project,
   onOpen,
   previewUrl,
-  onPreviewClick,
 }: {
   project: ContentProjectResponse;
   onOpen: () => void;
@@ -114,25 +112,13 @@ function ProjectPreviewTile({
    * from the jobs list already fetched for the dashboard.
    */
   previewUrl?: string | null;
-  /** Invoked when the user clicks the preview thumbnail itself (lightbox). */
-  onPreviewClick?: () => void;
 }) {
   const moduleLabel = MODULE_LABELS[project.module_type] ?? project.module_type;
 
   return (
-    // Outer wrapper must NOT be a <button> so we can nest a real preview
-    // <button> next to the main "open project" button without producing
-    // invalid nested-button HTML. A div+role=button keeps keyboard + a11y.
-    <div
-      role="button"
-      tabIndex={0}
+    <button
+      type="button"
       onClick={onOpen}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          onOpen();
-        }
-      }}
       className={cn(
         "group text-left w-full rounded-lg border border-border-subtle bg-surface-card",
         "hover:border-brand-400 hover:shadow-md transition-all duration-fast",
@@ -142,19 +128,12 @@ function ProjectPreviewTile({
       data-testid={`canvas-project-tile-${project.id}`}
     >
       {previewUrl ? (
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onPreviewClick?.();
-          }}
+        <div
           className={cn(
             "relative w-[96px] h-[54px] shrink-0 rounded-md overflow-hidden",
             "bg-neutral-900 border border-border-subtle",
-            "cursor-zoom-in focus:outline-none focus:ring-2 focus:ring-brand-400",
           )}
           data-testid={`canvas-project-preview-slot-${project.id}`}
-          aria-label="Ön izlemeyi büyüt"
         >
           <video
             src={previewUrl}
@@ -172,7 +151,7 @@ function ProjectPreviewTile({
           >
             <span className="text-white text-sm font-bold">▶</span>
           </span>
-        </button>
+        </div>
       ) : (
         <div
           className={cn(
@@ -207,7 +186,7 @@ function ProjectPreviewTile({
           ) : null}
         </div>
       </div>
-    </div>
+    </button>
   );
 }
 
@@ -295,25 +274,13 @@ export function CanvasUserDashboardPage() {
 
   // Build per-project preview URL map once — dashboards can then render a
   // real thumbnail per tile without fanning out additional job requests.
+  // We pass `projects` so the map can resolve preview jobs via
+  // `project.active_job_id` (the authoritative link) in addition to the
+  // legacy `job.content_project_id` back-link.
   const projectPreviewMap = useMemo(
-    () => buildProjectPreviewMap(allJobs),
-    [allJobs],
+    () => buildProjectPreviewMap(allJobs, projects),
+    [allJobs, projects],
   );
-
-  // Lightbox state for inline preview playback from tiles.
-  const [lightboxVideo, setLightboxVideo] = useState<{
-    url: string;
-    title: string;
-  } | null>(null);
-
-  useEffect(() => {
-    if (!lightboxVideo) return undefined;
-    function handleKey(e: KeyboardEvent) {
-      if (e.key === "Escape") setLightboxVideo(null);
-    }
-    window.addEventListener("keydown", handleKey);
-    return () => window.removeEventListener("keydown", handleKey);
-  }, [lightboxVideo]);
 
   // Project counts by status — workspace health ribbon.
   const projectStats = useMemo(() => {
@@ -455,15 +422,6 @@ export function CanvasUserDashboardPage() {
                     project={project}
                     onOpen={() => navigate(`/user/projects/${project.id}`)}
                     previewUrl={preview?.videoUrl ?? null}
-                    onPreviewClick={
-                      preview
-                        ? () =>
-                            setLightboxVideo({
-                              url: preview.videoUrl,
-                              title: project.title,
-                            })
-                        : undefined
-                    }
                   />
                 );
               })}
@@ -502,58 +460,6 @@ export function CanvasUserDashboardPage() {
           )}
         </WorkspaceCard>
       </div>
-
-      {/* Shared preview lightbox — opened from any tile's thumbnail click. */}
-      {lightboxVideo ? (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label="Ön izleme"
-          className={cn(
-            "fixed inset-0 z-50 flex items-center justify-center",
-            "bg-black/80 backdrop-blur-sm p-4",
-          )}
-          onClick={() => setLightboxVideo(null)}
-          data-testid="canvas-dashboard-preview-lightbox"
-        >
-          <div
-            className={cn(
-              "relative max-w-[min(90vw,800px)] max-h-[90vh]",
-              "bg-neutral-900 rounded-xl shadow-2xl overflow-hidden",
-              "flex flex-col",
-            )}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between px-4 py-2 border-b border-neutral-800">
-              <p className="m-0 text-sm font-semibold text-neutral-100 truncate">
-                {lightboxVideo.title}
-              </p>
-              <button
-                type="button"
-                onClick={() => setLightboxVideo(null)}
-                className={cn(
-                  "ml-4 w-8 h-8 rounded-md shrink-0",
-                  "text-neutral-300 hover:text-white hover:bg-neutral-800",
-                  "flex items-center justify-center text-lg font-bold",
-                )}
-                aria-label="Kapat"
-                data-testid="canvas-dashboard-preview-lightbox-close"
-              >
-                ×
-              </button>
-            </div>
-            <div className="p-4 overflow-auto">
-              <VideoPlayer
-                src={lightboxVideo.url}
-                title={lightboxVideo.title}
-                showDownload
-                autoPlay
-                testId="canvas-dashboard-preview-video"
-              />
-            </div>
-          </div>
-        </div>
-      ) : null}
     </div>
   );
 }

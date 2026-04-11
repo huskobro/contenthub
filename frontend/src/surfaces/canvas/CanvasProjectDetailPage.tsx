@@ -192,20 +192,16 @@ export function CanvasProjectDetailPage() {
     return `/api/v1/jobs/${focusJobId}/artifacts/${encodeURIComponent(basename)}`;
   }, [focusJobId, focusVideoArtifactPath]);
 
-  // Lightbox state for the preview slot — clicking the compact thumbnail
-  // opens a full-screen overlay with the real keyboard-controlled VideoPlayer.
-  const [previewLightboxOpen, setPreviewLightboxOpen] = useState(false);
+  // Inline preview state — clicking the compact thumbnail swaps to a real
+  // keyboard-controlled VideoPlayer in place. No modal overlay: the user
+  // explicitly asked for inline playback to keep the page compact.
+  const [previewPlaying, setPreviewPlaying] = useState(false);
 
-  // ESC to close the lightbox. Guarded by open state so we only attach when
-  // the overlay is actually visible.
+  // Reset to thumbnail when the underlying artifact changes (e.g. new render
+  // finishes). Prevents stale player pointing at the wrong URL.
   useEffect(() => {
-    if (!previewLightboxOpen) return undefined;
-    function handleKey(e: KeyboardEvent) {
-      if (e.key === "Escape") setPreviewLightboxOpen(false);
-    }
-    window.addEventListener("keydown", handleKey);
-    return () => window.removeEventListener("keydown", handleKey);
-  }, [previewLightboxOpen]);
+    setPreviewPlaying(false);
+  }, [focusVideoUrl]);
 
   const pendingVideo = linkedVideos?.find(
     (v) => !["rendering", "completed", "published"].includes(v.status),
@@ -352,14 +348,13 @@ export function CanvasProjectDetailPage() {
       </section>
 
       {/* Preview + metadata rail ---------------------------------------------
-          Preview slot shows a compact thumbnail-sized player (max ~320px wide)
-          so vertical (9:16) renders don't dominate the page. Clicking the
-          player opens a full-screen lightbox overlay for comfortable viewing.
-          The metadata rail now expands to fill the remaining horizontal space
-          so the right side of the page is no longer empty. */}
+          Left: compact inline preview player (max ~360px wide) so vertical
+          (9:16) renders don't dominate the page. Right column stacks
+          Proje Bilgileri, Üretim Durumu and Yayın Durumu together so the
+          empty space next to the preview is filled. */}
       <div className="grid grid-cols-1 lg:grid-cols-[360px,1fr] gap-4 items-start">
-        {/* Preview slot — real VideoPlayer when final render exists,
-            labeled placeholder otherwise. Never a fake render. */}
+        {/* Preview slot — inline player when render exists, placeholder
+            otherwise. Never a fake render. */}
         <section
           className="rounded-xl border border-border-subtle bg-surface-card shadow-sm overflow-hidden"
           data-testid="canvas-project-preview-slot"
@@ -370,52 +365,64 @@ export function CanvasProjectDetailPage() {
             </h2>
             <p className="m-0 mt-0.5 text-xs text-neutral-500">
               {focusVideoUrl
-                ? "Büyütmek için tıklayın."
+                ? previewPlaying
+                  ? "Oynatılıyor."
+                  : "Oynatmak için tıklayın."
                 : "Render çıktı oluştuğunda burada gösterilir."}
             </p>
           </header>
           {focusVideoUrl ? (
             <div className="p-4" data-testid="canvas-project-preview-player">
-              <button
-                type="button"
-                onClick={() => setPreviewLightboxOpen(true)}
-                className={cn(
-                  "relative group block w-full rounded-lg overflow-hidden",
-                  "bg-neutral-900 border border-border-subtle",
-                  "cursor-zoom-in focus:outline-none focus:ring-2 focus:ring-brand-400",
-                )}
-                style={{ maxHeight: "420px" }}
-                data-testid="canvas-project-preview-thumb-button"
-                aria-label="Ön izlemeyi büyüt"
-              >
-                <video
+              {previewPlaying ? (
+                <VideoPlayer
                   src={focusVideoUrl}
-                  muted
-                  playsInline
-                  preload="metadata"
-                  className="block w-full h-auto max-h-[420px] object-contain mx-auto"
-                  data-testid="canvas-project-preview-thumb-video"
+                  title={project.title}
+                  compact
+                  autoPlay
+                  showDownload
+                  testId="canvas-project-preview-video"
                 />
-                {/* Play overlay */}
-                <div
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setPreviewPlaying(true)}
                   className={cn(
-                    "absolute inset-0 flex items-center justify-center",
-                    "bg-black/20 group-hover:bg-black/40 transition-colors",
+                    "relative group block w-full rounded-lg overflow-hidden",
+                    "bg-neutral-900 border border-border-subtle",
+                    "cursor-pointer focus:outline-none focus:ring-2 focus:ring-brand-400",
                   )}
+                  style={{ maxHeight: "320px" }}
+                  data-testid="canvas-project-preview-thumb-button"
+                  aria-label="Ön izlemeyi oynat"
                 >
-                  <span
+                  <video
+                    src={focusVideoUrl}
+                    muted
+                    playsInline
+                    preload="metadata"
+                    className="block w-full h-auto max-h-[320px] object-contain mx-auto"
+                    data-testid="canvas-project-preview-thumb-video"
+                  />
+                  <div
                     className={cn(
-                      "w-12 h-12 rounded-full bg-white/90 text-neutral-900",
-                      "flex items-center justify-center text-xl font-bold",
-                      "shadow-lg group-hover:scale-110 transition-transform",
+                      "absolute inset-0 flex items-center justify-center",
+                      "bg-black/20 group-hover:bg-black/40 transition-colors",
                     )}
-                    aria-hidden="true"
                   >
-                    ▶
-                  </span>
-                </div>
-              </button>
-              <p className="mt-2 mb-0 text-[11px] text-neutral-500 text-center">
+                    <span
+                      className={cn(
+                        "w-11 h-11 rounded-full bg-white/90 text-neutral-900",
+                        "flex items-center justify-center text-lg font-bold",
+                        "shadow-lg group-hover:scale-110 transition-transform",
+                      )}
+                      aria-hidden="true"
+                    >
+                      ▶
+                    </span>
+                  </div>
+                </button>
+              )}
+              <p className="mt-2 mb-0 text-[11px] text-neutral-500 text-center truncate">
                 {focusVideoArtifactPath
                   ? focusVideoArtifactPath.split("/").pop()
                   : ""}
@@ -435,186 +442,188 @@ export function CanvasProjectDetailPage() {
           )}
         </section>
 
-        {/* Metadata rail */}
-        <section
-          className="rounded-xl border border-border-subtle bg-surface-card shadow-sm overflow-hidden"
-          data-testid="canvas-project-metadata"
-        >
-          <header className="px-5 py-3 border-b border-border-subtle bg-neutral-50/50">
-            <h2 className="m-0 text-sm font-semibold text-neutral-800">
-              Proje Bilgileri
-            </h2>
-          </header>
-          <dl className="m-0 px-5 py-3 text-sm text-neutral-800">
-            <MetaRow label="Proje ID">
-              <Mono>{project.id}</Mono>
-            </MetaRow>
-            <MetaRow label="Modül">
-              {MODULE_LABELS[project.module_type] ?? project.module_type}
-            </MetaRow>
-            <MetaRow label="Oluşturulma">
-              {formatDateISO(project.created_at) || "—"}
-            </MetaRow>
-            <MetaRow label="Güncelleme">
-              {formatDateISO(project.updated_at) || "—"}
-            </MetaRow>
-            {project.active_job_id && isAdmin ? (
-              <MetaRow label="Aktif Job">
-                <Link
-                  to={`/admin/jobs/${project.active_job_id}`}
-                  className="text-brand-600 hover:text-brand-700 underline text-sm"
-                >
-                  {project.active_job_id.slice(0, 12)}&hellip;
-                </Link>
-              </MetaRow>
-            ) : project.active_job_id ? (
-              <MetaRow label="Aktif Job">
-                <span className="text-neutral-600 text-sm font-mono">
-                  {project.active_job_id.slice(0, 12)}&hellip;
-                </span>
-              </MetaRow>
-            ) : null}
-            {project.description ? (
-              <MetaRow label="Açıklama">
-                <span className="text-neutral-700">{project.description}</span>
-              </MetaRow>
-            ) : null}
-          </dl>
-        </section>
-      </div>
-
-      {/* Üretim + Yayın durumu (F33 — daha zengin detay) ------------------- */}
-      {focusJob && (
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr,1fr] gap-4">
-          {/* Üretim özeti — son job'ın adım ilerlemesi */}
+        {/* Right column — metadata + production + publish stacked. */}
+        <div className="flex flex-col gap-4">
+          {/* Metadata rail */}
           <section
             className="rounded-xl border border-border-subtle bg-surface-card shadow-sm overflow-hidden"
-            data-testid="canvas-project-production-summary"
+            data-testid="canvas-project-metadata"
           >
-            <header className="px-5 py-3 border-b border-border-subtle bg-neutral-50/50 flex items-center gap-2">
-              <h2 className="m-0 text-sm font-semibold text-neutral-800 flex-1">
-                Üretim Durumu
+            <header className="px-5 py-3 border-b border-border-subtle bg-neutral-50/50">
+              <h2 className="m-0 text-sm font-semibold text-neutral-800">
+                Proje Bilgileri
               </h2>
-              <StatusBadge status={focusJob.status} size="sm" />
             </header>
-            <div className="px-5 py-3 text-sm text-neutral-800">
-              <div className="flex items-center justify-between mb-2 text-xs text-neutral-500">
-                <span>
-                  Aktif adım:{" "}
-                  <Mono>{focusJob.current_step_key ?? "—"}</Mono>
-                </span>
-                <span>
-                  {focusJob.steps.filter((s) => s.status === "completed").length}
-                  {" / "}
-                  {focusJob.steps.length} tamamlandı
-                </span>
-              </div>
-              <ul className="list-none m-0 p-0 space-y-1">
-                {focusJob.steps.map((step) => (
-                  <li
-                    key={step.step_key}
-                    className={cn(
-                      "flex items-center gap-2 text-xs",
-                      step.status === "completed" && "text-success-text",
-                      step.status === "running" && "text-brand-600 font-semibold",
-                      step.status === "failed" && "text-error-dark",
-                      (step.status === "pending" || step.status === "queued") &&
-                        "text-neutral-500",
-                    )}
+            <dl className="m-0 px-5 py-3 text-sm text-neutral-800">
+              <MetaRow label="Proje ID">
+                <Mono>{project.id}</Mono>
+              </MetaRow>
+              <MetaRow label="Modül">
+                {MODULE_LABELS[project.module_type] ?? project.module_type}
+              </MetaRow>
+              <MetaRow label="Oluşturulma">
+                {formatDateISO(project.created_at) || "—"}
+              </MetaRow>
+              <MetaRow label="Güncelleme">
+                {formatDateISO(project.updated_at) || "—"}
+              </MetaRow>
+              {project.active_job_id && isAdmin ? (
+                <MetaRow label="Aktif Job">
+                  <Link
+                    to={`/admin/jobs/${project.active_job_id}`}
+                    className="text-brand-600 hover:text-brand-700 underline text-sm"
                   >
-                    <span className="w-4 shrink-0 text-center">
-                      {step.status === "completed"
-                        ? "✓"
-                        : step.status === "running"
-                          ? "▶"
-                          : step.status === "failed"
-                            ? "✗"
-                            : "·"}
-                    </span>
-                    <Mono>{step.step_key}</Mono>
-                    <span className="ml-auto text-[10px] text-neutral-400 font-mono">
-                      {step.status}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-              <div className="mt-3 pt-3 border-t border-border-subtle flex items-center justify-between text-[11px] text-neutral-500">
-                <span>
-                  Toplam:{" "}
-                  <Mono>
-                    {focusJob.elapsed_total_seconds != null
-                      ? `${Math.round(focusJob.elapsed_total_seconds)}s`
-                      : "—"}
-                  </Mono>
-                </span>
-                {focusJob.retry_count > 0 && (
-                  <span className="text-warning-dark">
-                    retry: {focusJob.retry_count}
+                    {project.active_job_id.slice(0, 12)}&hellip;
+                  </Link>
+                </MetaRow>
+              ) : project.active_job_id ? (
+                <MetaRow label="Aktif Job">
+                  <span className="text-neutral-600 text-sm font-mono">
+                    {project.active_job_id.slice(0, 12)}&hellip;
                   </span>
-                )}
-              </div>
-            </div>
+                </MetaRow>
+              ) : null}
+              {project.description ? (
+                <MetaRow label="Açıklama">
+                  <span className="text-neutral-700">{project.description}</span>
+                </MetaRow>
+              ) : null}
+            </dl>
           </section>
 
-          {/* Yayın bağlantısı */}
-          <section
-            className="rounded-xl border border-border-subtle bg-surface-card shadow-sm overflow-hidden"
-            data-testid="canvas-project-publish-summary"
-          >
-            <header className="px-5 py-3 border-b border-border-subtle bg-neutral-50/50 flex items-center gap-2">
-              <h2 className="m-0 text-sm font-semibold text-neutral-800 flex-1">
-                Yayın Durumu
-              </h2>
-              {focusPublish ? (
-                <StatusBadge status={focusPublish.status} size="sm" />
-              ) : (
-                <span className="text-[10px] font-mono uppercase text-neutral-400">
-                  henüz yok
-                </span>
-              )}
-            </header>
-            <div className="px-5 py-4 text-sm text-neutral-800">
-              {focusPublish ? (
-                <div className="flex flex-col gap-2">
-                  <div className="text-xs text-neutral-600">
-                    <span className="capitalize font-semibold">
-                      {focusPublish.platform}
-                    </span>{" "}
-                    üzerinde yayın kaydı mevcut.
+          {/* Üretim + Yayın durumu — now in the right column so the empty
+              space next to the preview is filled. */}
+          {focusJob && (
+            <>
+              <section
+                className="rounded-xl border border-border-subtle bg-surface-card shadow-sm overflow-hidden"
+                data-testid="canvas-project-production-summary"
+              >
+                <header className="px-5 py-3 border-b border-border-subtle bg-neutral-50/50 flex items-center gap-2">
+                  <h2 className="m-0 text-sm font-semibold text-neutral-800 flex-1">
+                    Üretim Durumu
+                  </h2>
+                  <StatusBadge status={focusJob.status} size="sm" />
+                </header>
+                <div className="px-5 py-3 text-sm text-neutral-800">
+                  <div className="flex items-center justify-between mb-2 text-xs text-neutral-500">
+                    <span>
+                      Aktif adım:{" "}
+                      <Mono>{focusJob.current_step_key ?? "—"}</Mono>
+                    </span>
+                    <span>
+                      {focusJob.steps.filter((s) => s.status === "completed").length}
+                      {" / "}
+                      {focusJob.steps.length} tamamlandı
+                    </span>
                   </div>
-                  <div className="text-[11px] text-neutral-500 font-mono truncate">
-                    id: {focusPublish.id.slice(0, 12)}…
+                  <ul className="list-none m-0 p-0 space-y-1">
+                    {focusJob.steps.map((step) => (
+                      <li
+                        key={step.step_key}
+                        className={cn(
+                          "flex items-center gap-2 text-xs",
+                          step.status === "completed" && "text-success-text",
+                          step.status === "running" && "text-brand-600 font-semibold",
+                          step.status === "failed" && "text-error-dark",
+                          (step.status === "pending" || step.status === "queued") &&
+                            "text-neutral-500",
+                        )}
+                      >
+                        <span className="w-4 shrink-0 text-center">
+                          {step.status === "completed"
+                            ? "✓"
+                            : step.status === "running"
+                              ? "▶"
+                              : step.status === "failed"
+                                ? "✗"
+                                : "·"}
+                        </span>
+                        <Mono>{step.step_key}</Mono>
+                        <span className="ml-auto text-[10px] text-neutral-400 font-mono">
+                          {step.status}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="mt-3 pt-3 border-t border-border-subtle flex items-center justify-between text-[11px] text-neutral-500">
+                    <span>
+                      Toplam:{" "}
+                      <Mono>
+                        {focusJob.elapsed_total_seconds != null
+                          ? `${Math.round(focusJob.elapsed_total_seconds)}s`
+                          : "—"}
+                      </Mono>
+                    </span>
+                    {focusJob.retry_count > 0 && (
+                      <span className="text-warning-dark">
+                        retry: {focusJob.retry_count}
+                      </span>
+                    )}
                   </div>
-                  <Link
-                    to="/user/publish"
-                    className="self-start mt-1 px-3 py-1.5 text-xs font-semibold rounded-md border border-brand-400 bg-brand-50 text-brand-700 hover:bg-brand-100 no-underline"
-                    data-testid="canvas-project-publish-open"
-                  >
-                    Yayın Atölyesi'ne Git →
-                  </Link>
                 </div>
-              ) : focusJob.status === "completed" ? (
-                <div className="flex flex-col gap-2">
-                  <p className="m-0 text-xs text-neutral-600">
-                    Üretim tamamlandı. Yayına hazırlamak için{" "}
-                    <strong>Yayın Atölyesi</strong>'ni kullanın.
-                  </p>
-                  <Link
-                    to="/user/publish"
-                    className="self-start px-3 py-1.5 text-xs font-semibold rounded-md border border-brand-400 bg-brand-50 text-brand-700 hover:bg-brand-100 no-underline"
-                  >
-                    Yayın Atölyesi'ne Git →
-                  </Link>
+              </section>
+
+              <section
+                className="rounded-xl border border-border-subtle bg-surface-card shadow-sm overflow-hidden"
+                data-testid="canvas-project-publish-summary"
+              >
+                <header className="px-5 py-3 border-b border-border-subtle bg-neutral-50/50 flex items-center gap-2">
+                  <h2 className="m-0 text-sm font-semibold text-neutral-800 flex-1">
+                    Yayın Durumu
+                  </h2>
+                  {focusPublish ? (
+                    <StatusBadge status={focusPublish.status} size="sm" />
+                  ) : (
+                    <span className="text-[10px] font-mono uppercase text-neutral-400">
+                      henüz yok
+                    </span>
+                  )}
+                </header>
+                <div className="px-5 py-4 text-sm text-neutral-800">
+                  {focusPublish ? (
+                    <div className="flex flex-col gap-2">
+                      <div className="text-xs text-neutral-600">
+                        <span className="capitalize font-semibold">
+                          {focusPublish.platform}
+                        </span>{" "}
+                        üzerinde yayın kaydı mevcut.
+                      </div>
+                      <div className="text-[11px] text-neutral-500 font-mono truncate">
+                        id: {focusPublish.id.slice(0, 12)}…
+                      </div>
+                      <Link
+                        to="/user/publish"
+                        className="self-start mt-1 px-3 py-1.5 text-xs font-semibold rounded-md border border-brand-400 bg-brand-50 text-brand-700 hover:bg-brand-100 no-underline"
+                        data-testid="canvas-project-publish-open"
+                      >
+                        Yayın Atölyesi'ne Git →
+                      </Link>
+                    </div>
+                  ) : focusJob.status === "completed" ? (
+                    <div className="flex flex-col gap-2">
+                      <p className="m-0 text-xs text-neutral-600">
+                        Üretim tamamlandı. Yayına hazırlamak için{" "}
+                        <strong>Yayın Atölyesi</strong>'ni kullanın.
+                      </p>
+                      <Link
+                        to="/user/publish"
+                        className="self-start px-3 py-1.5 text-xs font-semibold rounded-md border border-brand-400 bg-brand-50 text-brand-700 hover:bg-brand-100 no-underline"
+                      >
+                        Yayın Atölyesi'ne Git →
+                      </Link>
+                    </div>
+                  ) : (
+                    <p className="m-0 text-xs text-neutral-500">
+                      Üretim tamamlandığında burada yayın bağlantısı görünecek.
+                    </p>
+                  )}
                 </div>
-              ) : (
-                <p className="m-0 text-xs text-neutral-500">
-                  Üretim tamamlandığında burada yayın bağlantısı görünecek.
-                </p>
-              )}
-            </div>
-          </section>
+              </section>
+            </>
+          )}
         </div>
-      )}
+      </div>
 
       {/* Linked jobs timeline ------------------------------------------------ */}
       <section
@@ -667,58 +676,6 @@ export function CanvasProjectDetailPage() {
         )}
       </section>
 
-      {/* Lightbox overlay — full-size VideoPlayer with keyboard controls.
-          Clicking the backdrop or pressing ESC closes it. */}
-      {previewLightboxOpen && focusVideoUrl ? (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label="Ön izleme"
-          className={cn(
-            "fixed inset-0 z-50 flex items-center justify-center",
-            "bg-black/80 backdrop-blur-sm p-4",
-          )}
-          onClick={() => setPreviewLightboxOpen(false)}
-          data-testid="canvas-project-preview-lightbox"
-        >
-          <div
-            className={cn(
-              "relative max-w-[min(90vw,800px)] max-h-[90vh]",
-              "bg-neutral-900 rounded-xl shadow-2xl overflow-hidden",
-              "flex flex-col",
-            )}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between px-4 py-2 border-b border-neutral-800">
-              <p className="m-0 text-sm font-semibold text-neutral-100 truncate">
-                {project.title}
-              </p>
-              <button
-                type="button"
-                onClick={() => setPreviewLightboxOpen(false)}
-                className={cn(
-                  "ml-4 w-8 h-8 rounded-md shrink-0",
-                  "text-neutral-300 hover:text-white hover:bg-neutral-800",
-                  "flex items-center justify-center text-lg font-bold",
-                )}
-                aria-label="Kapat"
-                data-testid="canvas-project-preview-lightbox-close"
-              >
-                ×
-              </button>
-            </div>
-            <div className="p-4 overflow-auto">
-              <VideoPlayer
-                src={focusVideoUrl}
-                title={project.title}
-                showDownload
-                autoPlay
-                testId="canvas-project-preview-video"
-              />
-            </div>
-          </div>
-        </div>
-      ) : null}
     </div>
   );
 }

@@ -89,19 +89,61 @@ export interface JobWithSteps extends StepArtifactLike {
   steps?: ReadonlyArray<StepArtifactLike>;
 }
 
+export interface ProjectLike {
+  id: string;
+  active_job_id?: string | null;
+}
+
 export interface ProjectPreviewEntry {
   jobId: string;
   videoUrl: string;
   artifactPath: string;
 }
 
+/**
+ * Build a project→preview map by joining two sources, in this priority:
+ *
+ *   1. Project.active_job_id → Job.id (authoritative — this is how
+ *      CanvasProjectDetailPage resolves the current render, and it
+ *      works even when the Job row has no content_project_id set).
+ *   2. Job.content_project_id → Project.id (fallback — works when
+ *      jobs are actually back-linked to projects).
+ *
+ * In practice path (1) is the one that fires today because the job
+ * engine doesn't always populate Job.content_project_id when it kicks
+ * off a render from the wizard. Keeping the fallback means any future
+ * backend change that starts populating content_project_id will
+ * automatically upgrade the preview experience.
+ */
 export function buildProjectPreviewMap(
   jobs: ReadonlyArray<JobWithSteps> | null | undefined,
+  projects?: ReadonlyArray<ProjectLike> | null,
 ): Map<string, ProjectPreviewEntry> {
   const map = new Map<string, ProjectPreviewEntry>();
-  if (!jobs) return map;
-  // Sort newest-first by finished_at || created_at so the first video we
-  // discover per project is the most recent render.
+  if (!jobs || jobs.length === 0) return map;
+
+  // Index jobs by id for fast active_job_id lookup.
+  const jobsById = new Map<string, JobWithSteps>();
+  for (const j of jobs) jobsById.set(j.id, j);
+
+  const tryRecord = (projectId: string, job: JobWithSteps | undefined) => {
+    if (!job || map.has(projectId)) return;
+    const artifactPath = findFirstVideoArtifact(job.steps);
+    if (!artifactPath) return;
+    const videoUrl = buildJobArtifactUrl(job.id, artifactPath);
+    if (!videoUrl) return;
+    map.set(projectId, { jobId: job.id, videoUrl, artifactPath });
+  };
+
+  // Path 1: project.active_job_id — authoritative.
+  if (projects) {
+    for (const p of projects) {
+      if (!p.active_job_id) continue;
+      tryRecord(p.id, jobsById.get(p.active_job_id));
+    }
+  }
+
+  // Path 2: job.content_project_id — fallback for future back-links.
   const sorted = [...jobs].sort((a, b) => {
     const ta = Date.parse(a.finished_at ?? a.created_at ?? "") || 0;
     const tb = Date.parse(b.finished_at ?? b.created_at ?? "") || 0;
@@ -110,15 +152,8 @@ export function buildProjectPreviewMap(
   for (const job of sorted) {
     if (!job.content_project_id) continue;
     if (map.has(job.content_project_id)) continue;
-    const artifactPath = findFirstVideoArtifact(job.steps);
-    if (!artifactPath) continue;
-    const videoUrl = buildJobArtifactUrl(job.id, artifactPath);
-    if (!videoUrl) continue;
-    map.set(job.content_project_id, {
-      jobId: job.id,
-      videoUrl,
-      artifactPath,
-    });
+    tryRecord(job.content_project_id, job);
   }
+
   return map;
 }
