@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react";
-import { createBrowserRouter, Link } from "react-router-dom";
+import { createBrowserRouter } from "react-router-dom";
 import { DynamicAdminLayout } from "./layouts/DynamicAdminLayout";
 import { DynamicUserLayout } from "./layouts/DynamicUserLayout";
 import { AppEntryGate } from "./AppEntryGate";
@@ -69,6 +69,7 @@ const NewsBulletinDetailPage = lazy(() => import("../pages/admin/NewsBulletinDet
 // Lazy-loaded user pages (Faz 4)
 const MyProjectsPage = lazy(() => import("../pages/user/MyProjectsPage").then(m => ({ default: m.MyProjectsPage })));
 const MyChannelsPage = lazy(() => import("../pages/user/MyChannelsPage").then(m => ({ default: m.MyChannelsPage })));
+const ChannelDetailPage = lazy(() => import("../pages/user/ChannelDetailPage").then(m => ({ default: m.ChannelDetailPage })));
 
 // Lazy-loaded user wizard pages (Faz 5)
 const CreateVideoWizardPage = lazy(() => import("../pages/user/CreateVideoWizardPage").then(m => ({ default: m.CreateVideoWizardPage })));
@@ -83,6 +84,7 @@ const UserPostsPage = lazy(() => import("../pages/user/UserPostsPage").then(m =>
 const AdminPostMonitoringPage = lazy(() => import("../pages/admin/AdminPostMonitoringPage").then(m => ({ default: m.AdminPostMonitoringPage })));
 const AdminChannelPerformancePage = lazy(() => import("../pages/admin/AdminChannelPerformancePage").then(m => ({ default: m.AdminChannelPerformancePage })));
 const UserChannelAnalyticsPage = lazy(() => import("../pages/user/UserChannelAnalyticsPage").then(m => ({ default: m.UserChannelAnalyticsPage })));
+const UserYouTubeAnalyticsPage = lazy(() => import("../pages/user/UserYouTubeAnalyticsPage").then(m => ({ default: m.UserYouTubeAnalyticsPage })));
 
 // Lazy-loaded Faz 13 pages
 const UserAutomationPage = lazy(() => import("../pages/user/UserAutomationPage").then(m => ({ default: m.UserAutomationPage })));
@@ -198,9 +200,10 @@ export const router = createBrowserRouter([
       { path: "projects", element: <Suspense fallback={<LazyFallback />}><MyProjectsPage /></Suspense> },
       { path: "projects/:projectId", element: <Suspense fallback={<LazyFallback />}><ProjectDetailPage /></Suspense> },
       { path: "channels", element: <Suspense fallback={<LazyFallback />}><MyChannelsPage /></Suspense> },
-      { path: "channels/:channelId", element: <Suspense fallback={<LazyFallback />}><div className="flex flex-col items-center justify-center py-20 px-8 text-center"><svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-neutral-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg><h2 className="text-lg font-semibold text-neutral-700 mb-2">Kanal Detayi</h2><p className="text-sm text-neutral-500 max-w-md mb-6">Bu sayfa henuz tamamlanmadi. Kanal bilgilerinizi Kanallarim sayfasindan goruntuleyebilirsiniz.</p><Link to="/user/channels" className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-brand-600 bg-brand-50 hover:bg-brand-100 rounded-lg transition-colors">&larr; Kanallarima Don</Link></div></Suspense> },
+      { path: "channels/:channelId", element: <Suspense fallback={<LazyFallback />}><ChannelDetailPage /></Suspense> },
       { path: "analytics", element: <Suspense fallback={<LazyFallback />}><UserAnalyticsPage /></Suspense> },
       { path: "analytics/channels", element: <Suspense fallback={<LazyFallback />}><UserChannelAnalyticsPage /></Suspense> },
+      { path: "analytics/youtube", element: <Suspense fallback={<LazyFallback />}><UserYouTubeAnalyticsPage /></Suspense> },
       { path: "comments", element: <Suspense fallback={<LazyFallback />}><UserCommentsPage /></Suspense> },
       { path: "playlists", element: <Suspense fallback={<LazyFallback />}><UserPlaylistsPage /></Suspense> },
       { path: "posts", element: <Suspense fallback={<LazyFallback />}><UserPostsPage /></Suspense> },

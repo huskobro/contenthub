@@ -215,8 +215,8 @@ export const HORIZON_USER_GROUPS: HorizonNavGroup[] = [
     label: "Oluştur",
     icon: "\u2795",
     items: [
-      { label: "Video Oluştur", to: "/user/create/video" },
-      { label: "Bülten Oluştur", to: "/user/create/bulletin" },
+      { label: "Video Oluştur", to: "/user/create/video", moduleId: "standard_video" },
+      { label: "Bülten Oluştur", to: "/user/create/bulletin", moduleId: "news_bulletin" },
     ],
   },
   {
@@ -244,6 +244,27 @@ export const HORIZON_USER_GROUPS: HorizonNavGroup[] = [
       { label: "Playlist'lerim", to: "/user/playlists" },
       { label: "Gönderilerim", to: "/user/posts" },
       { label: "Kanal Performansım", to: "/user/analytics/channels" },
+    ],
+  },
+  {
+    id: "automation",
+    label: "Otomasyon",
+    icon: "\u25B2",
+    items: [
+      { label: "Otomasyonlarım", to: "/user/automation" },
+      { label: "Gelen Kutusu", to: "/user/inbox" },
+      { label: "Bağlantılarım", to: "/user/connections" },
+    ],
+  },
+  {
+    id: "analytics",
+    label: "Analiz",
+    icon: "\u2263",
+    items: [
+      { label: "Analitiğim", to: "/user/analytics" },
+      { label: "Kanal Performansı", to: "/user/analytics/channels" },
+      { label: "YouTube Analitikleri", to: "/user/analytics/youtube" },
+      { label: "Takvim", to: "/user/calendar" },
     ],
   },
   {
@@ -349,6 +370,24 @@ export function filterHorizonAdminGroups(
     items: group.items.filter((item) => {
       const key = ROUTE_VISIBILITY[item.to];
       if (key && visibilityMap[key] === false) return false;
+      if (item.moduleId && moduleEnabledMap && moduleEnabledMap[item.moduleId] === false) return false;
+      return true;
+    }),
+  })).filter((group) => group.items.length > 0);
+}
+
+/**
+ * Filter Horizon user groups using the module enabled map.
+ * User-side nav has no visibility keys currently, but module toggles
+ * (e.g. module.standard_video.enabled) must still prune the "Create video"
+ * entry and similar module-gated items. Empty groups are dropped.
+ */
+export function filterHorizonUserGroups(
+  moduleEnabledMap?: Record<string, boolean>,
+): HorizonNavGroup[] {
+  return HORIZON_USER_GROUPS.map((group) => ({
+    ...group,
+    items: group.items.filter((item) => {
       if (item.moduleId && moduleEnabledMap && moduleEnabledMap[item.moduleId] === false) return false;
       return true;
     }),
