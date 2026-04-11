@@ -281,6 +281,92 @@ export function HorizonUserRailButton() {
 // Horizon context panel user info (expanded — name + role + switch)
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Canvas workspace header switcher — compact, theme-semantic, sits in the
+// top bar of CanvasAdminLayout / CanvasUserLayout. Uses `bg-surface-card`
+// chrome so it reads correctly under every tema (Chalk/Obsidian/Sand/Midnight)
+// and never hardcodes light-mode colors.
+// ---------------------------------------------------------------------------
+
+export function CanvasHeaderUserSwitcher() {
+  const { activeUser, users, setActiveUser } = useActiveUser();
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [open]);
+
+  useEffect(() => {
+    if (!activeUser && users.length > 0) {
+      setActiveUser(users[0].id);
+    }
+  }, [activeUser, users, setActiveUser]);
+
+  const displayName = activeUser?.display_name ?? "Kullanıcı Seç";
+  const roleLabel =
+    activeUser?.role === "admin" ? "Yönetici" : "Kullanıcı";
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        title={displayName}
+        data-testid="canvas-header-user-switcher"
+        className={cn(
+          "flex items-center gap-2 px-2 py-1 rounded-md",
+          "border border-border-subtle bg-neutral-0",
+          "hover:border-brand-400 transition-colors duration-fast cursor-pointer",
+          open && "border-brand-400",
+        )}
+      >
+        <UserAvatar name={displayName} size="sm" />
+        <div className="min-w-0 text-left">
+          <div className="text-xs font-medium text-neutral-800 truncate max-w-[120px]">
+            {displayName}
+          </div>
+          {activeUser && (
+            <div className="text-[10px] text-neutral-500 truncate max-w-[120px]">
+              {roleLabel}
+            </div>
+          )}
+        </div>
+        <svg
+          className={cn(
+            "w-3 h-3 text-neutral-500 transition-transform duration-fast shrink-0",
+            open && "rotate-180",
+          )}
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={2}
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      {open && (
+        <UserDropdown
+          users={users}
+          activeUser={activeUser}
+          setActiveUser={setActiveUser}
+          onClose={() => setOpen(false)}
+          position="below"
+          align="right"
+        />
+      )}
+    </div>
+  );
+}
+
 export function HorizonUserPanelSection() {
   const { activeUser, users, setActiveUser } = useActiveUser();
   const [open, setOpen] = useState(false);

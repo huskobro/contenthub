@@ -22,7 +22,10 @@ import { useOnboardingStatus } from "../hooks/useOnboardingStatus";
 import { useAuthStore } from "../stores/authStore";
 import { useContentProjects } from "../hooks/useContentProjects";
 import { useChannelProfiles } from "../hooks/useChannelProfiles";
+// Pasife alındı — import korunuyor ki geri açmak tek satır değişiklik olsun.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { PostOnboardingHandoff } from "../components/dashboard/PostOnboardingHandoff";
+void PostOnboardingHandoff;
 import { UserJobTracker } from "../components/dashboard/UserJobTracker";
 import {
   PageShell,
@@ -206,8 +209,10 @@ function LegacyUserDashboardPage() {
             <UserJobTracker />
           </div>
 
-          {/* Post-onboarding handoff */}
-          <PostOnboardingHandoff />
+          {/* Post-onboarding handoff — kullanici isteği üzerine pasife
+              alındı (neredeyse kullanılmıyordu). Component ve importu
+              silinmedi; geri açmak için aşağıdaki satırı uncomment et. */}
+          {/* <PostOnboardingHandoff /> */}
         </div>
       ) : (
         <div className="mt-4">

@@ -57,6 +57,7 @@ import {
 } from "../../commands/userCommands";
 import { useAuthStore } from "../../stores/authStore";
 import { useContentProjects } from "../../hooks/useContentProjects";
+import { CanvasHeaderUserSwitcher } from "../../components/layout/UserSwitcher";
 import { cn } from "../../lib/cn";
 
 // ---------------------------------------------------------------------------
@@ -197,7 +198,6 @@ export function CanvasUserLayout() {
   const projectCount = (projects ?? []).length;
 
   const breadcrumb = useWorkspaceBreadcrumb();
-  const displayName = authUser?.display_name ?? "Kullanıcı";
   const isAdmin = authUser?.role === "admin";
 
   // Cmd/Ctrl+Shift+A: admin panele hizli gecis (sadece admin rolu icin).
@@ -232,7 +232,7 @@ export function CanvasUserLayout() {
         {/* Workspace header ------------------------------------------------- */}
         <header
           className={cn(
-            "flex items-center gap-4 px-6 py-3 border-b border-border-subtle",
+            "relative z-30 flex items-center gap-4 px-6 py-3 border-b border-border-subtle",
             "bg-surface-card",
           )}
           data-testid="canvas-workspace-header"
@@ -277,13 +277,12 @@ export function CanvasUserLayout() {
           </button>
           <div className="w-px h-6 bg-border-subtle mx-1" />
           <NotificationBell />
+          <CanvasHeaderUserSwitcher />
           <div
-            className="text-xs text-neutral-600"
-            data-testid="canvas-header-user"
+            className="text-[10px] text-neutral-500 font-mono"
+            data-testid="canvas-header-project-count"
           >
-            {displayName}
-            <span className="ml-2 text-neutral-400">&middot;</span>
-            <span className="ml-2 text-neutral-500">{projectCount} proje</span>
+            {projectCount} proje
           </div>
           {/* Faz 4D: panel switch — Canvas user shell'inden yonetim paneline
               gecis. Daha once bu butonun Canvas'ta hic render edilmedigi

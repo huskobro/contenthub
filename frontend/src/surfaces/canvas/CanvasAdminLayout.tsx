@@ -58,7 +58,7 @@ import {
 } from "../../app/layouts/useLayoutNavigation";
 import { useEnabledModules } from "../../hooks/useEnabledModules";
 import type { HorizonNavGroup } from "../../components/layout/HorizonSidebar";
-import { useAuthStore } from "../../stores/authStore";
+import { CanvasHeaderUserSwitcher } from "../../components/layout/UserSwitcher";
 import { cn } from "../../lib/cn";
 
 // ---------------------------------------------------------------------------
@@ -182,8 +182,8 @@ function useAdminBreadcrumb(): string {
 export function CanvasAdminLayout() {
   const navigate = useNavigate();
   const location = useLocation();
-  const authUser = useAuthStore((s) => s.user);
-  const displayName = authUser?.display_name ?? "Yönetici";
+  // authUser is intentionally not read here — CanvasHeaderUserSwitcher
+  // pulls active user via useActiveUser() directly.
 
   // Shared admin infra
   useCommandPaletteShortcut();
@@ -250,7 +250,7 @@ export function CanvasAdminLayout() {
         {/* Workspace header ------------------------------------------------- */}
         <header
           className={cn(
-            "flex items-center gap-4 px-6 py-3 border-b border-border-subtle",
+            "relative z-30 flex items-center gap-4 px-6 py-3 border-b border-border-subtle",
             "bg-surface-card",
           )}
           data-testid="canvas-admin-header"
@@ -288,14 +288,7 @@ export function CanvasAdminLayout() {
 
           <NotificationBell />
 
-          <div
-            className="text-xs text-neutral-600"
-            data-testid="canvas-admin-user"
-          >
-            {displayName}
-            <span className="ml-2 text-neutral-400">&middot;</span>
-            <span className="ml-2 text-neutral-500">yönetim</span>
-          </div>
+          <CanvasHeaderUserSwitcher />
 
           <div className="w-px h-6 bg-border-subtle mx-1" />
 
