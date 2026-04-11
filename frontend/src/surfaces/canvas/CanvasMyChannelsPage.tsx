@@ -33,6 +33,7 @@ import { useAuthStore } from "../../stores/authStore";
 import {
   useChannelProfiles,
   useCreateChannelProfile,
+  useDeleteChannelProfile,
 } from "../../hooks/useChannelProfiles";
 import { useContentProjects } from "../../hooks/useContentProjects";
 import { StatusBadge } from "../../components/design-system/primitives";
@@ -48,6 +49,24 @@ export function CanvasMyChannelsPage() {
     userId ? { user_id: userId, limit: 200 } : undefined,
   );
   const createMutation = useCreateChannelProfile();
+  const deleteMutation = useDeleteChannelProfile();
+
+  function handleDeleteChannel(
+    e: React.MouseEvent | React.KeyboardEvent,
+    channelId: string,
+    name: string,
+  ) {
+    e.stopPropagation();
+    e.preventDefault();
+    if (
+      !window.confirm(
+        `"${name}" kanalini silmek istediginize emin misiniz? Kanal arsivlenecek (soft delete); gecmis isler ve publish kayitlari korunur.`,
+      )
+    ) {
+      return;
+    }
+    deleteMutation.mutate(channelId);
+  }
 
   const [showCreate, setShowCreate] = useState(false);
   const [profileName, setProfileName] = useState("");
@@ -286,20 +305,27 @@ export function CanvasMyChannelsPage() {
           data-testid="canvas-channels-grid"
         >
           {rows.map((ch) => (
-            <button
+            <div
               key={ch.id}
-              type="button"
+              role="button"
+              tabIndex={0}
               onClick={() => navigate(`/user/channels/${ch.id}`)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  navigate(`/user/channels/${ch.id}`);
+                }
+              }}
               className={cn(
                 "group text-left rounded-xl border border-border-subtle bg-surface-card",
                 "hover:border-brand-400 hover:shadow-md transition-all duration-fast",
-                "overflow-hidden cursor-pointer",
+                "overflow-hidden cursor-pointer focus:outline-none focus:ring-2 focus:ring-brand-400",
               )}
               data-testid={`canvas-channel-card-${ch.id}`}
             >
               <div
                 className={cn(
-                  "h-[72px] flex items-center justify-between px-4",
+                  "h-[72px] flex items-center justify-between px-4 gap-2",
                   "bg-gradient-to-br from-brand-50 via-neutral-50 to-neutral-100",
                   "border-b border-border-subtle",
                 )}
@@ -335,8 +361,27 @@ export function CanvasMyChannelsPage() {
                   Oluşturulma:{" "}
                   {new Date(ch.created_at).toLocaleDateString("tr-TR")}
                 </p>
+                {ch.status !== "archived" && (
+                  <div className="pt-2 mt-2 border-t border-border-subtle flex justify-end">
+                    <button
+                      type="button"
+                      onClick={(e) => handleDeleteChannel(e, ch.id, ch.profile_name)}
+                      disabled={deleteMutation.isPending}
+                      className={cn(
+                        "px-2 py-1 text-[11px] rounded-sm border",
+                        deleteMutation.isPending
+                          ? "bg-neutral-100 text-neutral-400 border-neutral-200 cursor-not-allowed"
+                          : "bg-white text-error border-error/40 hover:bg-error-light cursor-pointer",
+                      )}
+                      data-testid={`canvas-channel-delete-${ch.id}`}
+                      aria-label={`${ch.profile_name} kanalini sil`}
+                    >
+                      Sil
+                    </button>
+                  </div>
+                )}
               </div>
-            </button>
+            </div>
           ))}
         </div>
       )}

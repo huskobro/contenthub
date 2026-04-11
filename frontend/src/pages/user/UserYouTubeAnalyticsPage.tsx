@@ -35,6 +35,7 @@ import {
   MetricTile,
 } from "../../components/design-system/primitives";
 import { TrendChart } from "../../components/shared/charts/TrendChart";
+import { YouTubeVideoManagementSheet } from "../../components/youtube/YouTubeVideoManagementSheet";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -88,6 +89,17 @@ function formatIsoDateTime(v: string | null): string {
 export function UserYouTubeAnalyticsPage() {
   const [windowDays, setWindowDays] = useState<number>(28);
   const [selectedConnectionId, setSelectedConnectionId] = useState<string>("");
+
+  // User parity: video management Sheet (thumbnails / metadata / captions)
+  const [mgmtSheetOpen, setMgmtSheetOpen] = useState(false);
+  const [mgmtVideo, setMgmtVideo] = useState<
+    | {
+        video_id: string;
+        title: string;
+        thumbnail_url?: string | null;
+      }
+    | null
+  >(null);
 
   // Load the user's YouTube connections
   const connectionsQuery = useMyConnections({ platform: "youtube" });
@@ -315,6 +327,9 @@ export function UserYouTubeAnalyticsPage() {
                     <th className="px-3 py-2 text-right font-medium text-neutral-600">
                       Beğeni
                     </th>
+                    <th className="px-3 py-2 text-right font-medium text-neutral-600">
+                      Aksiyon
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-neutral-100">
@@ -334,6 +349,23 @@ export function UserYouTubeAnalyticsPage() {
                         {formatPercent(v.average_view_percentage)}
                       </td>
                       <td className="px-3 py-2 text-right">{formatNumber(v.likes)}</td>
+                      <td className="px-3 py-2 text-right">
+                        <button
+                          type="button"
+                          className="px-2 py-1 text-xs rounded-md border border-brand-200 text-brand-600 hover:bg-brand-50"
+                          onClick={() => {
+                            setMgmtVideo({
+                              video_id: v.platform_video_id,
+                              title: v.platform_video_id,
+                              thumbnail_url: null,
+                            });
+                            setMgmtSheetOpen(true);
+                          }}
+                          data-testid={`user-yt-manage-${v.platform_video_id}`}
+                        >
+                          Yönet
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -487,6 +519,14 @@ export function UserYouTubeAnalyticsPage() {
           )}
         </SectionShell>
       )}
+
+      {/* User parity: video management Sheet */}
+      <YouTubeVideoManagementSheet
+        open={mgmtSheetOpen}
+        onClose={() => setMgmtSheetOpen(false)}
+        connectionId={activeConnectionId || undefined}
+        video={mgmtVideo}
+      />
     </PageShell>
   );
 }

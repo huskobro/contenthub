@@ -12,7 +12,11 @@ import { useState } from "react";
 import { useSurfacePageOverride } from "../../surfaces";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../stores/authStore";
-import { useChannelProfiles, useCreateChannelProfile } from "../../hooks/useChannelProfiles";
+import {
+  useChannelProfiles,
+  useCreateChannelProfile,
+  useDeleteChannelProfile,
+} from "../../hooks/useChannelProfiles";
 import {
   PageShell,
   SectionShell,
@@ -37,6 +41,19 @@ function LegacyMyChannelsPage() {
 
   const { data: channels, isLoading } = useChannelProfiles(userId);
   const createMutation = useCreateChannelProfile();
+  const deleteMutation = useDeleteChannelProfile();
+
+  function handleDelete(e: React.MouseEvent, channelId: string, name: string) {
+    e.stopPropagation();
+    if (
+      !window.confirm(
+        `"${name}" kanalini silmek istediginize emin misiniz? Kanal arsivlenecek (soft delete); gecmis isler ve publish kayitlari korunur.`,
+      )
+    ) {
+      return;
+    }
+    deleteMutation.mutate(channelId);
+  }
 
   const [showCreate, setShowCreate] = useState(false);
   const [profileName, setProfileName] = useState("");
@@ -169,11 +186,30 @@ function LegacyMyChannelsPage() {
                 )}
                 onClick={() => navigate(`/user/channels/${ch.id}`)}
               >
-                <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center justify-between mb-3 gap-2">
                   <h3 className="m-0 text-base font-semibold text-neutral-800 truncate">
                     {ch.profile_name}
                   </h3>
-                  <StatusBadge status={ch.status} size="sm" />
+                  <div className="flex items-center gap-2 shrink-0">
+                    <StatusBadge status={ch.status} size="sm" />
+                    {ch.status !== "archived" && (
+                      <button
+                        type="button"
+                        onClick={(e) => handleDelete(e, ch.id, ch.profile_name)}
+                        disabled={deleteMutation.isPending}
+                        className={cn(
+                          "px-2 py-1 text-xs rounded-sm border",
+                          deleteMutation.isPending
+                            ? "bg-neutral-100 text-neutral-400 border-neutral-200 cursor-not-allowed"
+                            : "bg-white text-error border-error/40 hover:bg-error-light cursor-pointer",
+                        )}
+                        data-testid="channel-card-delete"
+                        aria-label={`${ch.profile_name} kanalini sil`}
+                      >
+                        Sil
+                      </button>
+                    )}
+                  </div>
                 </div>
                 <div className="space-y-1 text-sm text-neutral-500">
                   <p className="m-0">

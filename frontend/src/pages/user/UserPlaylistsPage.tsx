@@ -20,6 +20,11 @@ import {
   useAddVideoToPlaylist,
   useRemoveVideoFromPlaylist,
 } from "../../hooks/usePlaylists";
+import {
+  useDeleteYtPlaylist,
+  useReorderYtPlaylistItem,
+  useUpdateYtPlaylist,
+} from "../../hooks/useYoutubeEngagementAdvanced";
 import { fetchChannelProfiles, type ChannelProfileResponse } from "../../api/channelProfilesApi";
 import { useAuthStore } from "../../stores/authStore";
 import { ConnectionCapabilityWarning, useCapabilityStatus } from "../../components/connections/ConnectionCapabilityWarning";
@@ -27,6 +32,8 @@ import { useChannelConnection } from "../../hooks/useChannelConnection";
 import {
   PageShell,
   SectionShell,
+  ActionButton,
+  FeedbackBanner,
 } from "../../components/design-system/primitives";
 import type { SyncedPlaylist, PlaylistListParams } from "../../api/playlistsApi";
 
@@ -115,6 +122,15 @@ export function UserPlaylistsPage() {
   const addVideoMutation = useAddVideoToPlaylist();
   const removeVideoMutation = useRemoveVideoFromPlaylist();
 
+  // --- User parity: playlist edit/delete/reorder ------------------------
+  const [isEditing, setIsEditing] = useState(false);
+  const [editTitle, setEditTitle] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editPrivacy, setEditPrivacy] = useState<"" | "public" | "unlisted" | "private">("");
+  const [playlistFeedback, setPlaylistFeedback] = useState<
+    { type: "success" | "error"; msg: string } | null
+  >(null);
+
   // Faz 17a: Connection lookup for capability awareness
   const { connectionId: activeConnectionId } = useChannelConnection(channelFilter || undefined);
   const { isBlocked: readBlocked } = useCapabilityStatus(activeConnectionId, "can_read_playlists");
@@ -124,6 +140,128 @@ export function UserPlaylistsPage() {
     if (!selectedPlaylistId || !playlists) return null;
     return playlists.find((p) => p.id === selectedPlaylistId) ?? null;
   }, [selectedPlaylistId, playlists]);
+
+  // Bind playlist write mutations to the selected playlist's YouTube connection.
+  const selectedConnId = selectedPlaylist?.platform_connection_id ?? undefined;
+  const updatePlaylistMut = useUpdateYtPlaylist(selectedConnId);
+  const deletePlaylistMut = useDeleteYtPlaylist(selectedConnId);
+  const reorderItemMut = useReorderYtPlaylistItem(selectedConnId);
+  const playlistWriteBusy =
+    updatePlaylistMut.isPending ||
+    deletePlaylistMut.isPending ||
+    reorderItemMut.isPending;
+
+  function beginEditPlaylist() {
+    if (!selectedPlaylist) return;
+    setIsEditing(true);
+    setEditTitle(selectedPlaylist.title);
+    setEditDescription(selectedPlaylist.description ?? "");
+    setEditPrivacy("");
+    setPlaylistFeedback(null);
+  }
+
+  function cancelEditPlaylist() {
+    setIsEditing(false);
+    setEditTitle("");
+    setEditDescription("");
+    setEditPrivacy("");
+  }
+
+  async function savePlaylistEdit() {
+    if (!selectedPlaylist || selectedPlaylist.platform !== "youtube") return;
+    if (!selectedConnId) {
+      setPlaylistFeedback({
+        type: "error",
+        msg: "Bu playlist için YouTube bağlantısı bulunamadı.",
+      });
+      return;
+    }
+    const patch: {
+      title?: string;
+      description?: string;
+      privacy_status?: "public" | "unlisted" | "private";
+    } = {};
+    if (editTitle.trim() && editTitle.trim() !== selectedPlaylist.title)
+      patch.title = editTitle.trim();
+    if (editDescription !== (selectedPlaylist.description ?? ""))
+      patch.description = editDescription;
+    if (editPrivacy) patch.privacy_status = editPrivacy;
+    if (Object.keys(patch).length === 0) {
+      setPlaylistFeedback({ type: "success", msg: "Değişiklik yok." });
+      return;
+    }
+    try {
+      const res = await updatePlaylistMut.mutateAsync({
+        externalPlaylistId: selectedPlaylist.external_playlist_id,
+        patch,
+      });
+      setPlaylistFeedback({
+        type: "success",
+        msg: `Playlist güncellendi: ${res.updated_fields.join(", ") || "(yok)"}`,
+      });
+      setIsEditing(false);
+    } catch (err: unknown) {
+      setPlaylistFeedback({
+        type: "error",
+        msg: `Güncelleme hatası: ${err instanceof Error ? err.message : String(err)}`,
+      });
+    }
+  }
+
+  async function deleteSelectedPlaylist() {
+    if (!selectedPlaylist || selectedPlaylist.platform !== "youtube") return;
+    if (!selectedConnId) {
+      setPlaylistFeedback({
+        type: "error",
+        msg: "Bu playlist için YouTube bağlantısı bulunamadı.",
+      });
+      return;
+    }
+    if (
+      !window.confirm(
+        `"${selectedPlaylist.title}" YouTube'dan ve yerel DB'den silinsin mi? Bu işlem geri alınamaz.`,
+      )
+    ) {
+      return;
+    }
+    try {
+      await deletePlaylistMut.mutateAsync(selectedPlaylist.external_playlist_id);
+      setPlaylistFeedback({
+        type: "success",
+        msg: `Playlist silindi: ${selectedPlaylist.title}`,
+      });
+      setSelectedPlaylistId(null);
+      setIsEditing(false);
+    } catch (err: unknown) {
+      setPlaylistFeedback({
+        type: "error",
+        msg: `Silme hatası: ${err instanceof Error ? err.message : String(err)}`,
+      });
+    }
+  }
+
+  async function reorderPlaylistItem(
+    externalVideoId: string,
+    newPosition: number,
+  ) {
+    if (!selectedPlaylist || !selectedConnId) return;
+    try {
+      await reorderItemMut.mutateAsync({
+        external_playlist_id: selectedPlaylist.external_playlist_id,
+        external_video_id: externalVideoId,
+        position: newPosition,
+      });
+      setPlaylistFeedback({
+        type: "success",
+        msg: `Video pozisyonu güncellendi: ${newPosition + 1}`,
+      });
+    } catch (err: unknown) {
+      setPlaylistFeedback({
+        type: "error",
+        msg: `Pozisyon güncelleme hatası: ${err instanceof Error ? err.message : String(err)}`,
+      });
+    }
+  }
 
   // Handlers
   const handleSync = () => {
@@ -428,7 +566,100 @@ export function UserPlaylistsPage() {
                 >
                   Video Ekle
                 </button>
+                {selectedPlaylist.platform === "youtube" && (
+                  <>
+                    <ActionButton
+                      variant="secondary"
+                      size="sm"
+                      onClick={beginEditPlaylist}
+                      disabled={playlistWriteBusy || writeBlocked}
+                      data-testid="user-playlist-edit"
+                    >
+                      Düzenle
+                    </ActionButton>
+                    <ActionButton
+                      variant="danger"
+                      size="sm"
+                      onClick={deleteSelectedPlaylist}
+                      disabled={playlistWriteBusy || writeBlocked}
+                      loading={deletePlaylistMut.isPending}
+                      data-testid="user-playlist-delete"
+                    >
+                      Playlist'i Sil
+                    </ActionButton>
+                  </>
+                )}
               </div>
+
+              {playlistFeedback && (
+                <div className="mb-3">
+                  <FeedbackBanner
+                    type={playlistFeedback.type}
+                    message={playlistFeedback.msg}
+                  />
+                </div>
+              )}
+
+              {isEditing && selectedPlaylist.platform === "youtube" && (
+                <SectionShell
+                  title="Playlist'i Düzenle"
+                  testId="user-playlist-edit-form"
+                >
+                  <div className="flex flex-col gap-2 max-w-md">
+                    <input
+                      type="text"
+                      className="px-3 py-1.5 text-sm border border-border-default rounded-md"
+                      placeholder="Playlist adı"
+                      value={editTitle}
+                      onChange={(e) => setEditTitle(e.target.value)}
+                      data-testid="user-playlist-edit-title"
+                    />
+                    <textarea
+                      className="px-3 py-1.5 text-sm border border-border-default rounded-md resize-y min-h-[60px]"
+                      placeholder="Açıklama (opsiyonel)"
+                      value={editDescription}
+                      onChange={(e) => setEditDescription(e.target.value)}
+                      data-testid="user-playlist-edit-desc"
+                    />
+                    <select
+                      className="px-3 py-1.5 text-sm border border-border-default rounded-md"
+                      value={editPrivacy}
+                      onChange={(e) =>
+                        setEditPrivacy(e.target.value as typeof editPrivacy)
+                      }
+                      data-testid="user-playlist-edit-privacy"
+                    >
+                      <option value="">Gizlilik değiştirme</option>
+                      {PRIVACY_OPTIONS.map((o) => (
+                        <option key={o.value} value={o.value}>
+                          {o.label}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="flex gap-2">
+                      <ActionButton
+                        variant="primary"
+                        size="sm"
+                        onClick={savePlaylistEdit}
+                        disabled={playlistWriteBusy}
+                        loading={updatePlaylistMut.isPending}
+                        data-testid="user-playlist-edit-save"
+                      >
+                        Kaydet
+                      </ActionButton>
+                      <ActionButton
+                        variant="ghost"
+                        size="sm"
+                        onClick={cancelEditPlaylist}
+                        disabled={playlistWriteBusy}
+                        data-testid="user-playlist-edit-cancel"
+                      >
+                        İptal
+                      </ActionButton>
+                    </div>
+                  </div>
+                </SectionShell>
+              )}
 
               {syncItemsMutation.isSuccess && syncItemsMutation.data && (
                 <p className="text-xs text-success-600 mb-2">
@@ -478,36 +709,91 @@ export function UserPlaylistsPage() {
                   <p className="text-xs text-neutral-500">Bu playlist'te henüz video yok. Item'ları senkronlayın veya video ekleyin.</p>
                 )}
                 <div className="flex flex-col gap-1 max-h-[400px] overflow-y-auto">
-                  {playlistItems?.map((item) => (
-                    <div
-                      key={item.id}
-                      className="flex items-center gap-2 p-2 rounded-md border border-border-subtle bg-surface-card"
-                      data-testid={`playlist-video-${item.id}`}
-                    >
-                      {item.thumbnail_url ? (
-                        <img src={item.thumbnail_url} alt="" className="w-16 h-10 rounded object-cover flex-shrink-0" />
-                      ) : (
-                        <div className="w-16 h-10 rounded bg-neutral-200 flex-shrink-0 flex items-center justify-center text-xs text-neutral-400">
-                          VID
+                  {playlistItems?.map((item, idx) => {
+                    const canReorder =
+                      selectedPlaylist?.platform === "youtube" &&
+                      !!item.external_playlist_item_id &&
+                      !!selectedConnId;
+                    const canMoveUp = canReorder && idx > 0;
+                    const canMoveDown =
+                      canReorder &&
+                      playlistItems !== undefined &&
+                      idx < playlistItems.length - 1;
+                    return (
+                      <div
+                        key={item.id}
+                        className="flex items-center gap-2 p-2 rounded-md border border-border-subtle bg-surface-card"
+                        data-testid={`playlist-video-${item.id}`}
+                      >
+                        {item.thumbnail_url ? (
+                          <img
+                            src={item.thumbnail_url}
+                            alt=""
+                            className="w-16 h-10 rounded object-cover flex-shrink-0"
+                          />
+                        ) : (
+                          <div className="w-16 h-10 rounded bg-neutral-200 flex-shrink-0 flex items-center justify-center text-xs text-neutral-400">
+                            VID
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm text-neutral-800 m-0 truncate">
+                            {item.title || item.external_video_id}
+                          </p>
+                          <p className="text-xs text-neutral-400 m-0">
+                            #{item.position} &middot; {item.external_video_id}
+                          </p>
                         </div>
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm text-neutral-800 m-0 truncate">{item.title || item.external_video_id}</p>
-                        <p className="text-xs text-neutral-400 m-0">#{item.position} &middot; {item.external_video_id}</p>
+                        {canReorder && (
+                          <div className="flex items-center gap-1 shrink-0">
+                            <button
+                              type="button"
+                              className="text-xs text-neutral-500 hover:text-brand-600 disabled:text-neutral-300 px-1"
+                              onClick={() =>
+                                reorderPlaylistItem(
+                                  item.external_video_id,
+                                  Math.max(0, item.position - 1),
+                                )
+                              }
+                              disabled={!canMoveUp || reorderItemMut.isPending}
+                              aria-label="Yukarı taşı"
+                              data-testid={`user-playlist-reorder-up-${item.id}`}
+                            >
+                              ↑
+                            </button>
+                            <button
+                              type="button"
+                              className="text-xs text-neutral-500 hover:text-brand-600 disabled:text-neutral-300 px-1"
+                              onClick={() =>
+                                reorderPlaylistItem(
+                                  item.external_video_id,
+                                  item.position + 1,
+                                )
+                              }
+                              disabled={!canMoveDown || reorderItemMut.isPending}
+                              aria-label="Aşağı taşı"
+                              data-testid={`user-playlist-reorder-down-${item.id}`}
+                            >
+                              ↓
+                            </button>
+                          </div>
+                        )}
+                        {item.external_playlist_item_id && (
+                          <button
+                            type="button"
+                            className="text-xs text-error-base hover:text-error-700 px-2 py-1"
+                            onClick={() =>
+                              handleRemoveVideo(item.external_playlist_item_id!)
+                            }
+                            disabled={removeVideoMutation.isPending}
+                            data-testid={`remove-video-${item.id}`}
+                          >
+                            Çıkar
+                          </button>
+                        )}
                       </div>
-                      {item.external_playlist_item_id && (
-                        <button
-                          type="button"
-                          className="text-xs text-error-base hover:text-error-700 px-2 py-1"
-                          onClick={() => handleRemoveVideo(item.external_playlist_item_id!)}
-                          disabled={removeVideoMutation.isPending}
-                          data-testid={`remove-video-${item.id}`}
-                        >
-                          Çıkar
-                        </button>
-                      )}
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             </SectionShell>

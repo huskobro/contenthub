@@ -45,7 +45,10 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "../../stores/authStore";
-import { useChannelProfile } from "../../hooks/useChannelProfiles";
+import {
+  useChannelProfile,
+  useDeleteChannelProfile,
+} from "../../hooks/useChannelProfiles";
 import {
   useYouTubeStatusByChannel,
   useYouTubeChannelInfoByChannel,
@@ -56,6 +59,7 @@ import {
 import { useContentProjects } from "../../hooks/useContentProjects";
 import { getYouTubeAuthUrl } from "../../api/credentialsApi";
 import { StatusBadge } from "../../components/design-system/primitives";
+import { YouTubeChannelBrandingSection } from "../../components/settings/YouTubeChannelBrandingSection";
 import { cn } from "../../lib/cn";
 
 // ---------------------------------------------------------------------------
@@ -81,6 +85,23 @@ export function CanvasChannelDetailPage() {
   const { data: channelCreds } = useChannelCredentials(channelId ?? null);
   const saveCredsMutation = useSaveChannelCredentials();
   const revokeMutation = useRevokeYouTube();
+  const deleteChannelMutation = useDeleteChannelProfile();
+
+  function handleDeleteChannel() {
+    if (!channel) return;
+    if (
+      !window.confirm(
+        `"${channel.profile_name}" kanalini silmek istediginize emin misiniz? Kanal arsivlenecek (soft delete); gecmis isler ve publish kayitlari korunur.`,
+      )
+    ) {
+      return;
+    }
+    deleteChannelMutation.mutate(channel.id, {
+      onSuccess: () => {
+        navigate("/user/channels");
+      },
+    });
+  }
 
   // Projects living under this channel (for workspace feel).
   const { data: projects } = useContentProjects(
@@ -290,6 +311,22 @@ export function CanvasChannelDetailPage() {
           >
             &larr; Kanal stüdyoma dön
           </Link>
+          {channel.status !== "archived" && (
+            <button
+              type="button"
+              onClick={handleDeleteChannel}
+              disabled={deleteChannelMutation.isPending}
+              className={cn(
+                "mt-1 px-2 py-1 text-[11px] rounded-sm border",
+                deleteChannelMutation.isPending
+                  ? "bg-neutral-100 text-neutral-400 border-neutral-200 cursor-not-allowed"
+                  : "bg-white text-error border-error/40 hover:bg-error-light cursor-pointer",
+              )}
+              data-testid="canvas-channel-detail-delete"
+            >
+              {deleteChannelMutation.isPending ? "Siliniyor..." : "Kanalı Sil"}
+            </button>
+          )}
         </div>
       </section>
 
@@ -718,6 +755,16 @@ export function CanvasChannelDetailPage() {
           </section>
         </div>
       </div>
+
+      {/* Channel branding (only when OAuth connected) */}
+      {ytStatus?.has_credentials && ytStatus?.scope_ok && channelId ? (
+        <section
+          className="rounded-xl border border-border-subtle bg-surface-card shadow-sm overflow-hidden"
+          data-testid="canvas-channel-branding"
+        >
+          <YouTubeChannelBrandingSection channelProfileId={channelId} />
+        </section>
+      ) : null}
     </div>
   );
 }

@@ -26,16 +26,33 @@ function extractOutputArtifacts(steps: JobStepResponse[]): { videos: string[]; i
   const images: string[] = [];
   const others: string[] = [];
 
+  const classify = (p: unknown) => {
+    if (typeof p !== "string") return;
+    const ext = p.split(".").pop()?.toLowerCase() ?? "";
+    if (VIDEO_EXTS.includes(ext)) videos.push(p);
+    else if (IMAGE_EXTS.includes(ext)) images.push(p);
+    else others.push(p);
+  };
+
   for (const step of steps) {
     if (!step.artifact_refs_json) continue;
     try {
       const parsed = JSON.parse(step.artifact_refs_json);
-      const paths: string[] = parsed.output_paths || [];
-      for (const p of paths) {
-        const ext = p.split(".").pop()?.toLowerCase() || "";
-        if (VIDEO_EXTS.includes(ext)) videos.push(p);
-        else if (IMAGE_EXTS.includes(ext)) images.push(p);
-        else others.push(p);
+      if (!parsed || typeof parsed !== "object") continue;
+      const obj = parsed as Record<string, unknown>;
+      // Singular string keys (current schema)
+      for (const key of ["output_path", "exported_path", "artifact_path"]) {
+        classify(obj[key]);
+      }
+      // Legacy array fallback
+      const arr = obj.output_paths;
+      if (Array.isArray(arr)) {
+        for (const p of arr) classify(p);
+      }
+      // Generic string scan (catches thumbnail_path, poster_path etc.)
+      for (const [k, v] of Object.entries(obj)) {
+        if (k === "output_path" || k === "exported_path" || k === "artifact_path" || k === "output_paths") continue;
+        classify(v);
       }
     } catch { /* skip malformed JSON */ }
   }

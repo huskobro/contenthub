@@ -11,7 +11,12 @@
  */
 
 import { useEffect, useState } from "react";
-import { useYouTubeStatus, useYouTubeChannelInfo } from "../../hooks/useCredentials";
+import {
+  useYouTubeStatus,
+  useYouTubeChannelInfo,
+  useYouTubeStatusByChannel,
+  useYouTubeChannelInfoByChannel,
+} from "../../hooks/useCredentials";
 import { useUpdateYtChannelBranding } from "../../hooks/useYoutubeEngagementAdvanced";
 import type { ChannelBrandingRequest } from "../../api/youtubeEngagementAdvancedApi";
 import {
@@ -20,9 +25,27 @@ import {
   FeedbackBanner,
 } from "../design-system/primitives";
 
-export function YouTubeChannelBrandingSection() {
-  const { data: status } = useYouTubeStatus();
-  const { data: channelInfo } = useYouTubeChannelInfo();
+interface Props {
+  /**
+   * Optional channel profile id to scope the branding editor to a specific
+   * user channel. When omitted, falls back to the legacy global
+   * `useYouTubeStatus()` path so the admin Credentials panel keeps working
+   * unchanged.
+   */
+  channelProfileId?: string;
+}
+
+export function YouTubeChannelBrandingSection({ channelProfileId }: Props = {}) {
+  const globalStatus = useYouTubeStatus();
+  const globalChannelInfo = useYouTubeChannelInfo();
+  const perChannelStatus = useYouTubeStatusByChannel(channelProfileId ?? null);
+  const perChannelInfo = useYouTubeChannelInfoByChannel(channelProfileId ?? null);
+
+  const status = channelProfileId ? perChannelStatus.data : globalStatus.data;
+  const channelInfo = channelProfileId
+    ? perChannelInfo.data
+    : globalChannelInfo.data;
+
   const connectionId = status?.connection_id ?? undefined;
   const connected = Boolean(status?.has_credentials && status?.scope_ok && connectionId);
 

@@ -6,10 +6,13 @@
  */
 
 import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSurfacePageOverride } from "../../surfaces";
-import { useChannelProfile } from "../../hooks/useChannelProfiles";
+import {
+  useChannelProfile,
+  useDeleteChannelProfile,
+} from "../../hooks/useChannelProfiles";
 import {
   useYouTubeStatusByChannel,
   useYouTubeChannelInfoByChannel,
@@ -23,6 +26,7 @@ import {
   SectionShell,
   StatusBadge,
 } from "../../components/design-system/primitives";
+import { YouTubeChannelBrandingSection } from "../../components/settings/YouTubeChannelBrandingSection";
 import { cn } from "../../lib/cn";
 
 export function ChannelDetailPage() {
@@ -33,6 +37,7 @@ export function ChannelDetailPage() {
 
 function LegacyChannelDetailPage() {
   const { channelId } = useParams<{ channelId: string }>();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { data: channel, isLoading: channelLoading } = useChannelProfile(channelId ?? "");
   const { data: ytStatus, isLoading: ytLoading } = useYouTubeStatusByChannel(channelId ?? null);
@@ -40,6 +45,23 @@ function LegacyChannelDetailPage() {
   const { data: channelCreds } = useChannelCredentials(channelId ?? null);
   const saveCredsMutation = useSaveChannelCredentials();
   const revokeMutation = useRevokeYouTube();
+  const deleteChannelMutation = useDeleteChannelProfile();
+
+  function handleDeleteChannel() {
+    if (!channel) return;
+    if (
+      !window.confirm(
+        `"${channel.profile_name}" kanalini silmek istediginize emin misiniz? Kanal arsivlenecek (soft delete); gecmis isler ve publish kayitlari korunur.`,
+      )
+    ) {
+      return;
+    }
+    deleteChannelMutation.mutate(channel.id, {
+      onSuccess: () => {
+        navigate("/user/channels");
+      },
+    });
+  }
 
   const [clientId, setClientId] = useState("");
   const [clientSecret, setClientSecret] = useState("");
@@ -129,12 +151,30 @@ function LegacyChannelDetailPage() {
       title={channel.profile_name}
       subtitle={`@${channel.channel_slug}`}
       actions={
-        <Link
-          to="/user/channels"
-          className="text-sm text-neutral-500 hover:text-neutral-700"
-        >
-          &larr; Kanallara Don
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+            to="/user/channels"
+            className="text-sm text-neutral-500 hover:text-neutral-700"
+          >
+            &larr; Kanallara Don
+          </Link>
+          {channel.status !== "archived" && (
+            <button
+              type="button"
+              onClick={handleDeleteChannel}
+              disabled={deleteChannelMutation.isPending}
+              className={cn(
+                "px-3 py-1.5 text-sm rounded-sm border",
+                deleteChannelMutation.isPending
+                  ? "bg-neutral-100 text-neutral-400 border-neutral-200 cursor-not-allowed"
+                  : "bg-white text-error border-error/40 hover:bg-error-light cursor-pointer",
+              )}
+              data-testid="channel-detail-delete"
+            >
+              {deleteChannelMutation.isPending ? "Siliniyor..." : "Kanali Sil"}
+            </button>
+          )}
+        </div>
       }
     >
       {/* Channel Info */}
@@ -320,6 +360,11 @@ function LegacyChannelDetailPage() {
           )}
         </div>
       </SectionShell>
+
+      {/* Channel Branding (only when connected) */}
+      {ytStatus?.has_credentials && ytStatus?.scope_ok && channelId && (
+        <YouTubeChannelBrandingSection channelProfileId={channelId} />
+      )}
     </PageShell>
   );
 }

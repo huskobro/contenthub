@@ -9,6 +9,7 @@ import {
   fetchChannelProfiles,
   fetchChannelProfile,
   createChannelProfile,
+  deleteChannelProfile,
   type CreateChannelProfile,
 } from "../api/channelProfilesApi";
 import { useApiError } from "./useApiError";
@@ -33,6 +34,23 @@ export function useCreateChannelProfile() {
   const onError = useApiError();
   return useMutation({
     mutationFn: (data: CreateChannelProfile) => createChannelProfile(data),
+    onError,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["channel-profiles"] });
+    },
+  });
+}
+
+/**
+ * Soft-delete a channel profile (backend sets status='archived'; no hard delete).
+ * Jobs and prior artifacts tied to the profile remain intact so audit history
+ * is preserved.
+ */
+export function useDeleteChannelProfile() {
+  const queryClient = useQueryClient();
+  const onError = useApiError();
+  return useMutation({
+    mutationFn: (profileId: string) => deleteChannelProfile(profileId),
     onError,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["channel-profiles"] });

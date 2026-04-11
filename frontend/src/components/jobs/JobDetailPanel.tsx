@@ -43,16 +43,31 @@ const STATUS_LABELS: Record<string, string> = {
 const VIDEO_EXTS = ["mp4", "webm", "mov"];
 
 function findFirstVideoArtifact(steps: JobStepResponse[]): string | null {
-  for (const step of steps) {
+  const isVideoPath = (p: unknown): p is string =>
+    typeof p === "string" &&
+    VIDEO_EXTS.includes(p.split(".").pop()?.toLowerCase() ?? "");
+  // Walk in reverse — final render is usually the last step.
+  for (const step of [...steps].reverse()) {
     if (!step.artifact_refs_json) continue;
     try {
       const parsed = JSON.parse(step.artifact_refs_json);
-      const paths: string[] = parsed.output_paths || [];
-      for (const p of paths) {
-        const ext = p.split(".").pop()?.toLowerCase() || "";
-        if (VIDEO_EXTS.includes(ext)) return p;
+      if (!parsed || typeof parsed !== "object") continue;
+      const obj = parsed as Record<string, unknown>;
+      // Singular string keys (current schema)
+      for (const key of ["output_path", "exported_path", "artifact_path"]) {
+        const v = obj[key];
+        if (isVideoPath(v)) return v;
       }
-    } catch { /* skip */ }
+      // Legacy array fallback
+      const arr = obj.output_paths;
+      if (Array.isArray(arr)) {
+        for (const v of arr) if (isVideoPath(v)) return v;
+      }
+      // Generic scan
+      for (const v of Object.values(obj)) {
+        if (isVideoPath(v)) return v;
+      }
+    } catch { /* skip malformed json */ }
   }
   return null;
 }

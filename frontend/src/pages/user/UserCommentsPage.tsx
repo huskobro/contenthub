@@ -11,6 +11,11 @@
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useComments, useReplyToComment, useSyncComments } from "../../hooks/useComments";
+import {
+  useMarkYtCommentsAsSpam,
+  useModerateYtComments,
+} from "../../hooks/useYoutubeEngagementAdvanced";
+import type { CommentModerationStatus } from "../../api/youtubeEngagementAdvancedApi";
 import { fetchChannelProfiles, type ChannelProfileResponse } from "../../api/channelProfilesApi";
 import { useAuthStore } from "../../stores/authStore";
 import { AssistedComposer } from "../../components/engagement/AssistedComposer";
@@ -19,6 +24,8 @@ import { useChannelConnection } from "../../hooks/useChannelConnection";
 import {
   PageShell,
   SectionShell,
+  ActionButton,
+  FeedbackBanner,
 } from "../../components/design-system/primitives";
 import type { SyncedComment, CommentListParams } from "../../api/commentsApi";
 
@@ -104,6 +111,99 @@ export function UserCommentsPage() {
   const { data: comments, isLoading, isError } = useComments(listParams);
   const replyMutation = useReplyToComment();
   const syncMutation = useSyncComments();
+
+  // --- User parity: bulk YouTube moderation (Sprint 3 parity) -------------
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [moderationFeedback, setModerationFeedback] = useState<
+    { type: "success" | "error"; msg: string } | null
+  >(null);
+
+  const selectedComments = useMemo<SyncedComment[]>(() => {
+    if (!comments) return [];
+    return comments.filter((c) => selectedIds.has(c.id));
+  }, [comments, selectedIds]);
+
+  // All selected comments must share the same platform_connection_id.
+  const batchConnectionId = useMemo<string | null>(() => {
+    if (selectedComments.length === 0) return null;
+    const first = selectedComments[0].platform_connection_id;
+    if (!first) return null;
+    return selectedComments.every((c) => c.platform_connection_id === first)
+      ? first
+      : null;
+  }, [selectedComments]);
+
+  const onlyYoutubeSelected = useMemo(
+    () =>
+      selectedComments.length > 0 &&
+      selectedComments.every((c) => c.platform === "youtube"),
+    [selectedComments],
+  );
+
+  const moderateMut = useModerateYtComments(batchConnectionId ?? undefined);
+  const spamMut = useMarkYtCommentsAsSpam(batchConnectionId ?? undefined);
+  const moderationBusy = moderateMut.isPending || spamMut.isPending;
+
+  const toggleRow = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  async function runModeration(
+    status: CommentModerationStatus,
+    banAuthor = false,
+  ) {
+    if (!batchConnectionId || selectedComments.length === 0) return;
+    const externalIds = selectedComments.map((c) => c.external_comment_id);
+    try {
+      const res = await moderateMut.mutateAsync({
+        external_comment_ids: externalIds,
+        moderation_status: status,
+        ban_author: banAuthor,
+      });
+      setModerationFeedback({
+        type: "success",
+        msg: `${res.moderated_count} yorum '${res.moderation_status}' olarak işaretlendi.`,
+      });
+      setSelectedIds(new Set());
+    } catch (err: unknown) {
+      setModerationFeedback({
+        type: "error",
+        msg: `Moderasyon hatası: ${err instanceof Error ? err.message : String(err)}`,
+      });
+    }
+  }
+
+  async function runMarkAsSpam() {
+    if (!batchConnectionId || selectedComments.length === 0) return;
+    if (
+      !window.confirm(
+        `${selectedComments.length} yorum spam olarak işaretlensin mi?`,
+      )
+    ) {
+      return;
+    }
+    const externalIds = selectedComments.map((c) => c.external_comment_id);
+    try {
+      const res = await spamMut.mutateAsync({
+        external_comment_ids: externalIds,
+      });
+      setModerationFeedback({
+        type: "success",
+        msg: `${res.marked_count} yorum spam olarak işaretlendi.`,
+      });
+      setSelectedIds(new Set());
+    } catch (err: unknown) {
+      setModerationFeedback({
+        type: "error",
+        msg: `Spam işaretleme hatası: ${err instanceof Error ? err.message : String(err)}`,
+      });
+    }
+  }
 
   // Faz 17a: Connection lookup for capability awareness
   const { connectionId: activeConnectionId } = useChannelConnection(channelFilter || undefined);
@@ -191,6 +291,95 @@ export function UserCommentsPage() {
         </div>
       )}
 
+      {/* User parity: bulk moderation bar (own comments only) */}
+      {selectedComments.length > 0 && (
+        <SectionShell
+          title={`Toplu Moderasyon (${selectedComments.length} seçili)`}
+          description="Kendi kanallarınızdaki YouTube yorumlarını toplu olarak moderasyon durumu, spam veya ban aksiyonlarıyla yönetin."
+          testId="user-comment-moderation-bar"
+        >
+          {!onlyYoutubeSelected && (
+            <FeedbackBanner
+              type="error"
+              message="Toplu moderasyon yalnızca YouTube yorumları için destekleniyor. Seçimi daraltın."
+            />
+          )}
+          {onlyYoutubeSelected && !batchConnectionId && (
+            <FeedbackBanner
+              type="error"
+              message="Seçili yorumlar farklı YouTube bağlantılarına ait. Aynı bağlantıya ait yorumları seçin."
+            />
+          )}
+          {moderationFeedback && (
+            <FeedbackBanner
+              type={moderationFeedback.type}
+              message={moderationFeedback.msg}
+            />
+          )}
+          <div className="flex flex-wrap gap-2 mt-3">
+            <ActionButton
+              variant="secondary"
+              size="sm"
+              onClick={() => runModeration("heldForReview")}
+              disabled={!batchConnectionId || !onlyYoutubeSelected || moderationBusy}
+              loading={moderateMut.isPending}
+              data-testid="user-comment-mod-hold"
+            >
+              İncelemeye Al
+            </ActionButton>
+            <ActionButton
+              variant="secondary"
+              size="sm"
+              onClick={() => runModeration("published")}
+              disabled={!batchConnectionId || !onlyYoutubeSelected || moderationBusy}
+              loading={moderateMut.isPending}
+              data-testid="user-comment-mod-publish"
+            >
+              Yayınla
+            </ActionButton>
+            <ActionButton
+              variant="danger"
+              size="sm"
+              onClick={() => runModeration("rejected")}
+              disabled={!batchConnectionId || !onlyYoutubeSelected || moderationBusy}
+              loading={moderateMut.isPending}
+              data-testid="user-comment-mod-reject"
+            >
+              Reddet
+            </ActionButton>
+            <ActionButton
+              variant="danger"
+              size="sm"
+              onClick={() => runModeration("rejected", true)}
+              disabled={!batchConnectionId || !onlyYoutubeSelected || moderationBusy}
+              loading={moderateMut.isPending}
+              data-testid="user-comment-mod-reject-ban"
+            >
+              Reddet + Yazarı Engelle
+            </ActionButton>
+            <ActionButton
+              variant="danger"
+              size="sm"
+              onClick={runMarkAsSpam}
+              disabled={!batchConnectionId || !onlyYoutubeSelected || moderationBusy}
+              loading={spamMut.isPending}
+              data-testid="user-comment-mod-spam"
+            >
+              Spam İşaretle
+            </ActionButton>
+            <ActionButton
+              variant="ghost"
+              size="sm"
+              onClick={() => setSelectedIds(new Set())}
+              disabled={moderationBusy}
+              data-testid="user-comment-mod-clear"
+            >
+              Seçimi Temizle
+            </ActionButton>
+          </div>
+        </SectionShell>
+      )}
+
       {/* Loading / Error */}
       {isLoading && (
         <p className="text-sm text-neutral-500 text-center py-8">Yorumlar yükleniyor...</p>
@@ -223,18 +412,31 @@ export function UserCommentsPage() {
               {comments?.map((c: SyncedComment) => {
                 const badge = replyStatusBadge(c.reply_status);
                 const isSelected = selectedCommentId === c.id;
+                const isChecked = selectedIds.has(c.id);
                 return (
-                  <button
+                  <div
                     key={c.id}
-                    type="button"
-                    className={`w-full text-left p-3 rounded-md border transition-colors ${
+                    className={`w-full flex items-start gap-2 p-3 rounded-md border transition-colors ${
                       isSelected
                         ? "border-brand-400 bg-brand-50"
                         : "border-border-subtle bg-surface-card hover:bg-surface-hover"
                     }`}
-                    onClick={() => setSelectedCommentId(c.id)}
                     data-testid={`comment-item-${c.id}`}
                   >
+                    <input
+                      type="checkbox"
+                      aria-label={`Yorum ${c.id} seç`}
+                      checked={isChecked}
+                      onChange={() => toggleRow(c.id)}
+                      className="mt-1 shrink-0"
+                      data-testid={`user-comment-select-${c.id}`}
+                    />
+                    <button
+                      type="button"
+                      className="flex-1 text-left min-w-0"
+                      onClick={() => setSelectedCommentId(c.id)}
+                      data-testid={`comment-item-button-${c.id}`}
+                    >
                     <div className="flex items-start gap-2">
                       {/* Avatar */}
                       {c.author_avatar_url ? (
@@ -275,7 +477,8 @@ export function UserCommentsPage() {
                         </div>
                       </div>
                     </div>
-                  </button>
+                    </button>
+                  </div>
                 );
               })}
             </div>
