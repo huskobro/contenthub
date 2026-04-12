@@ -25,7 +25,7 @@
  *     render exists. Never a fake thumbnail.
  */
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useContentProject } from "../../hooks/useContentProjects";
@@ -548,33 +548,72 @@ export function AtriumProjectDetailPage() {
         </section>
       </div>
 
-      {/* Automation -------------------------------------------------------- */}
+      {/* Automation — collapsible (#11) ------------------------------------ */}
       {projectId && (
-        <section
-          className={cn(
-            "rounded-3xl border border-border-subtle bg-surface-card shadow-sm",
-            "overflow-hidden",
-          )}
-          data-testid="atrium-project-automation-section"
-        >
-          <header className="px-6 py-4 border-b border-border-subtle bg-gradient-to-r from-brand-50/50 to-neutral-50">
-            <p className="m-0 text-sm font-semibold text-neutral-800">
-              Otomasyon
-            </p>
-            <p className="m-0 mt-0.5 text-[10px] text-neutral-500">
-              Proje bazli tam otomatik mod, zamanlama ve koruma ayarlari.
-            </p>
-          </header>
-          <div className="px-6 py-5">
-            <ProjectAutomationPanel
-              projectId={projectId}
-              moduleType={project.module_type}
-              testId="atrium-project-automation"
-            />
-          </div>
-        </section>
+        <CollapsibleAutomationSection
+          projectId={projectId}
+          moduleType={project.module_type}
+        />
       )}
 
     </div>
+  );
+}
+
+/**
+ * Collapsible automation section (#11) — Atrium style.
+ * Header always visible, content toggles. Default: closed.
+ */
+function CollapsibleAutomationSection({
+  projectId,
+  moduleType,
+}: {
+  projectId: string;
+  moduleType: string;
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <section
+      className="rounded-3xl border border-border-subtle bg-surface-card shadow-sm overflow-hidden"
+      data-testid="atrium-project-automation-section"
+    >
+      <button
+        type="button"
+        onClick={() => setOpen((v: boolean) => !v)}
+        className={cn(
+          "w-full flex items-center justify-between px-6 py-4 text-left cursor-pointer",
+          "bg-gradient-to-r from-brand-50/50 to-neutral-50",
+          "hover:from-brand-50/70 hover:to-neutral-100/60 transition-colors",
+          open && "border-b border-border-subtle",
+        )}
+        data-testid="atrium-project-automation-toggle"
+      >
+        <div>
+          <p className="m-0 text-sm font-semibold text-neutral-800">
+            Otomasyon
+          </p>
+          <p className="m-0 mt-0.5 text-[10px] text-neutral-500">
+            Proje bazli tam otomatik mod, zamanlama ve koruma ayarlari.
+          </p>
+        </div>
+        <span
+          className={cn(
+            "text-neutral-400 text-xs transition-transform duration-200",
+            open && "rotate-180",
+          )}
+        >
+          ▼
+        </span>
+      </button>
+      {open && (
+        <div className="px-6 py-5">
+          <ProjectAutomationPanel
+            projectId={projectId}
+            moduleType={moduleType}
+            testId="atrium-project-automation"
+          />
+        </div>
+      )}
+    </section>
   );
 }

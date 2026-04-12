@@ -676,31 +676,13 @@ export function CanvasProjectDetailPage() {
         )}
       </section>
 
-      {/* Automation -------------------------------------------------------- */}
+      {/* Automation — collapsible (#11) ------------------------------------ */}
       {projectId && (
-        <section
-          className={cn(
-            "rounded-xl border border-border-subtle bg-surface-card shadow-sm",
-            "overflow-hidden",
-          )}
-          data-testid="canvas-project-automation-section"
-        >
-          <header className="px-5 py-3 border-b border-border-subtle bg-neutral-50/50">
-            <p className="m-0 text-sm font-semibold text-neutral-800">
-              Otomasyon
-            </p>
-            <p className="m-0 mt-0.5 text-[10px] text-neutral-500">
-              Proje bazli tam otomatik mod, zamanlama ve koruma ayarlari.
-            </p>
-          </header>
-          <div className="px-5 py-4">
-            <ProjectAutomationPanel
-              projectId={projectId}
-              moduleType={project.module_type}
-              testId="canvas-project-automation"
-            />
-          </div>
-        </section>
+        <CollapsibleAutomationSection
+          projectId={projectId}
+          moduleType={project.module_type}
+          surface="canvas"
+        />
       )}
 
     </div>
@@ -721,5 +703,68 @@ function MetaRow({
       </dt>
       <dd className="m-0 text-sm text-neutral-800">{children}</dd>
     </div>
+  );
+}
+
+/**
+ * Collapsible automation section (#11) — header always visible,
+ * content toggles open/closed. Default: closed.
+ */
+function CollapsibleAutomationSection({
+  projectId,
+  moduleType,
+  surface,
+}: {
+  projectId: string;
+  moduleType: string;
+  surface: "canvas" | "atrium";
+}) {
+  const [open, setOpen] = useState(false);
+  const rounding = surface === "atrium" ? "rounded-3xl" : "rounded-xl";
+  return (
+    <section
+      className={cn(
+        rounding,
+        "border border-border-subtle bg-surface-card shadow-sm overflow-hidden",
+      )}
+      data-testid={`${surface}-project-automation-section`}
+    >
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className={cn(
+          "w-full flex items-center justify-between px-5 py-3 text-left cursor-pointer",
+          "bg-neutral-50/50 hover:bg-neutral-100/60 transition-colors",
+          open && "border-b border-border-subtle",
+        )}
+        data-testid={`${surface}-project-automation-toggle`}
+      >
+        <div>
+          <p className="m-0 text-sm font-semibold text-neutral-800">
+            Otomasyon
+          </p>
+          <p className="m-0 mt-0.5 text-[10px] text-neutral-500">
+            Proje bazli tam otomatik mod, zamanlama ve koruma ayarlari.
+          </p>
+        </div>
+        <span
+          className={cn(
+            "text-neutral-400 text-xs transition-transform duration-200",
+            open && "rotate-180",
+          )}
+        >
+          ▼
+        </span>
+      </button>
+      {open && (
+        <div className="px-5 py-4">
+          <ProjectAutomationPanel
+            projectId={projectId}
+            moduleType={moduleType}
+            testId={`${surface}-project-automation`}
+          />
+        </div>
+      )}
+    </section>
   );
 }

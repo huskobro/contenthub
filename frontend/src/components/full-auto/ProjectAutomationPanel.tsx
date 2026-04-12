@@ -61,6 +61,20 @@ const FALLBACK_DESCRIPTIONS: Record<FullAutoFallback, string> = {
 /** Faz 1'de desteklenen modul listesi (backend ile senkron). */
 const SUPPORTED_MODULES_V1: ReadonlySet<string> = new Set(["standard_video"]);
 
+/** Yaygın cron presetleri — kullanıcı dostu etiketler + cron ifadeleri. */
+const CRON_PRESETS: { label: string; value: string }[] = [
+  { label: "Her gun 09:00", value: "0 9 * * *" },
+  { label: "Her gun 12:00", value: "0 12 * * *" },
+  { label: "Her gun 18:00", value: "0 18 * * *" },
+  { label: "Hafta ici 09:00", value: "0 9 * * 1-5" },
+  { label: "Hafta ici 18:00", value: "0 18 * * 1-5" },
+  { label: "Hafta sonu 10:00", value: "0 10 * * 0,6" },
+  { label: "Her saat basi", value: "0 * * * *" },
+  { label: "Her 6 saatte bir", value: "0 */6 * * *" },
+  { label: "Her 12 saatte bir", value: "0 */12 * * *" },
+  { label: "Haftada bir (Pazartesi 09:00)", value: "0 9 * * 1" },
+];
+
 // ---------------------------------------------------------------------------
 // Props
 // ---------------------------------------------------------------------------
@@ -276,7 +290,9 @@ export function ProjectAutomationPanel({
                   Zamanlama
                 </p>
                 <p className="m-0 mt-0.5 text-xs text-neutral-500">
-                  Cron ifadesi ile otomatik calistirma zamanlari.
+                  {config.automation_schedule_enabled
+                    ? "Cron ifadesi ile otomatik calistirma zamanlari."
+                    : "Kapali — zamanlanmis otomatik calistirmalar duraklatildi."}
                 </p>
               </div>
               <button
@@ -313,6 +329,37 @@ export function ProjectAutomationPanel({
 
             {config.automation_schedule_enabled && (
               <div className="flex flex-col gap-3">
+                {/* #5: Cron preset dropdown */}
+                <div>
+                  <label className="block text-[11px] font-semibold uppercase tracking-wider text-neutral-500 mb-1">
+                    Hazir Sablonlar
+                  </label>
+                  <select
+                    value={
+                      CRON_PRESETS.some((p) => p.value === cronDraft)
+                        ? cronDraft
+                        : ""
+                    }
+                    onChange={(e) => {
+                      if (e.target.value) handleCronChange(e.target.value);
+                    }}
+                    disabled={isBusy}
+                    className={cn(
+                      "w-full px-3 py-2 text-sm rounded-md",
+                      "border border-border-subtle bg-surface-card",
+                      "focus:outline-none focus:border-brand-400",
+                    )}
+                    data-testid={`${testId}-cron-preset`}
+                  >
+                    <option value="">Sablon sec veya asagiya manuel yaz...</option>
+                    {CRON_PRESETS.map((p) => (
+                      <option key={p.value} value={p.value}>
+                        {p.label} ({p.value})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
                 <div>
                   <label className="block text-[11px] font-semibold uppercase tracking-wider text-neutral-500 mb-1">
                     Cron Ifadesi
