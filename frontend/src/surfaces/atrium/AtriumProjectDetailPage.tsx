@@ -568,6 +568,7 @@ export function AtriumProjectDetailPage() {
           <div className="px-6 py-5">
             <ProjectAutomationPanel
               projectId={projectId}
+              moduleType={project.module_type}
               testId="atrium-project-automation"
             />
           </div>

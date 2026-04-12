@@ -201,7 +201,7 @@ export function JobDetailPanel({ selectedId }: JobDetailPanelProps) {
                   : "Manuel"}
             </span>
             {data.auto_advanced && (
-              <span className="ml-1 text-[10px] text-neutral-500">auto-advance</span>
+              <span className="ml-1 text-[10px] text-neutral-500">Otomatik ilerleme</span>
             )}
           </Row>
         )}

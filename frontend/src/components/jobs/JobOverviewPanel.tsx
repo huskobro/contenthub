@@ -72,7 +72,7 @@ export function JobOverviewPanel({ job }: JobOverviewPanelProps) {
         <Row label="Calistirma Modu">
           <AutoBadge {...(RUN_MODE_BADGE[job.run_mode] ?? { label: job.run_mode, cls: "bg-neutral-100 text-neutral-600 border-neutral-200" })} />
           {job.auto_advanced && (
-            <span className="ml-2 text-[10px] text-neutral-500">auto-advance aktif</span>
+            <span className="ml-2 text-[10px] text-neutral-500">Otomatik ilerleme aktif</span>
           )}
         </Row>
       )}

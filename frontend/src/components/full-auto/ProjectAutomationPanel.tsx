@@ -52,12 +52,23 @@ const FALLBACK_LABELS: Record<FullAutoFallback, string> = {
   stop: "Durdur",
 };
 
+const FALLBACK_DESCRIPTIONS: Record<FullAutoFallback, string> = {
+  pause: "Hata olursa zamanlama durur, admin mudahale edene kadar bekler.",
+  retry_once: "Hata olursa ayni is bir kez daha denenir, tekrar basarisiz olursa durur.",
+  stop: "Hata olursa is iptal edilir, sonraki zamanlanmis calismalara dokunulmaz.",
+};
+
+/** Faz 1'de desteklenen modul listesi (backend ile senkron). */
+const SUPPORTED_MODULES_V1: ReadonlySet<string> = new Set(["standard_video"]);
+
 // ---------------------------------------------------------------------------
 // Props
 // ---------------------------------------------------------------------------
 
 interface ProjectAutomationPanelProps {
   projectId: string;
+  /** Projenin modul tipi — desteklenmeyen modul icin uyari gosterir. */
+  moduleType?: string;
   className?: string;
   testId?: string;
 }
@@ -68,6 +79,7 @@ interface ProjectAutomationPanelProps {
 
 export function ProjectAutomationPanel({
   projectId,
+  moduleType,
   className,
   testId = "project-automation-panel",
 }: ProjectAutomationPanelProps) {
@@ -198,6 +210,20 @@ export function ProjectAutomationPanel({
           </button>
         </div>
       </section>
+
+      {/* #3: Desteklenmeyen modul uyarisi */}
+      {moduleType && !SUPPORTED_MODULES_V1.has(moduleType) && (
+        <div
+          className="rounded-lg border border-warning bg-warning-light/40 px-4 py-3 text-xs text-warning-dark"
+          data-testid={`${testId}-module-unsupported`}
+        >
+          <p className="m-0 font-semibold">Bu modul henuz tam otomatik modu desteklemiyor.</p>
+          <p className="m-0 mt-0.5">
+            Faz 1 yalnizca <strong>Standart Video</strong> modulunu destekler.
+            Otomasyon ayarlarini gorebilirsiniz ancak zamanlama ve tetikleme islemi calismaz.
+          </p>
+        </div>
+      )}
 
       {!config.automation_enabled ? (
         <div className="px-5 py-4 text-xs text-neutral-500 text-center">
@@ -418,6 +444,13 @@ export function ProjectAutomationPanel({
                     </button>
                   ))}
                 </div>
+                {/* #4: Faz 1 draft davranisi uyarisi */}
+                {config.automation_publish_policy === "publish_now" && (
+                  <p className="m-0 mt-1.5 text-[10px] text-warning-dark">
+                    Faz 1: &quot;Hemen Yayinla&quot; secili olsa bile uretim sonucu taslak olarak kalir.
+                    Otomatik yayin ileri fazda aktif olacaktir.
+                  </p>
+                )}
               </div>
 
               {/* Fallback on error */}
@@ -449,6 +482,10 @@ export function ProjectAutomationPanel({
                     </button>
                   ))}
                 </div>
+                {/* #13: Secili fallback'in aciklamasi */}
+                <p className="m-0 mt-1.5 text-[10px] text-neutral-500">
+                  {FALLBACK_DESCRIPTIONS[config.automation_fallback_on_error]}
+                </p>
               </div>
 
               {/* Max daily runs */}
@@ -599,7 +636,7 @@ export function ProjectAutomationPanel({
                   )}
                   data-testid={`${testId}-evaluate-btn`}
                 >
-                  {evaluateMut.isPending ? "Denetleniyor..." : "Denetle"}
+                  {evaluateMut.isPending ? "Kontrol ediliyor..." : "Hazirlik Kontrolu"}
                 </button>
 
                 <button

@@ -110,7 +110,7 @@ async def evaluate_guards(
     # 1. Global kill switch
     if not bool(global_config.get("automation.full_auto.enabled")):
         violations.append(
-            "Global tam otomatik mod kapali (automation.full_auto.enabled=false)."
+            "Global tam otomatik mod kapali. Admin ayarlarindan etkinlestirilmeli."
         )
 
     # 2. Module allowlist
@@ -122,18 +122,17 @@ async def evaluate_guards(
             allowed = [allowed]
     if project.module_type not in allowed:
         violations.append(
-            f"Proje modulu '{project.module_type}' tam otomatik icin izinli degil. "
-            f"Izinli moduller: {allowed}."
+            f"Bu projenin modulu ({project.module_type}) tam otomatik icin izinli degil."
         )
     if project.module_type not in SUPPORTED_MODULES_V1:
         violations.append(
-            f"Faz 1 destegi yalnizca {SUPPORTED_MODULES_V1}. "
-            f"'{project.module_type}' henuz tam otomatik calistirilamaz."
+            f"Faz 1 yalnizca Standart Video modulunu destekler. "
+            f"Bu projenin modulu ({project.module_type}) henuz otomatik calistirilamaz."
         )
 
     # 3. Per-project toggle
     if not project.automation_enabled:
-        violations.append("Proje otomasyonu kapali (automation_enabled=false).")
+        violations.append("Proje otomasyonu kapali. Proje ayarlarindan etkinlestirilmeli.")
 
     # 4. Required fields (policy-driven)
     require_template = bool(global_config.get("automation.full_auto.require_template"))
@@ -141,11 +140,11 @@ async def evaluate_guards(
     require_blueprint = bool(global_config.get("automation.full_auto.require_blueprint"))
 
     if require_template and not project.automation_default_template_id:
-        violations.append("Varsayilan template tanimli degil (automation_default_template_id).")
+        violations.append("Varsayilan sablon tanimli degil. Proje ayarlarindan bir sablon secilmeli.")
     if require_channel and not project.channel_profile_id:
-        violations.append("Proje icin kanal bagli degil (channel_profile_id).")
+        violations.append("Proje icin kanal profili bagli degil. Bir kanal secilmeli.")
     if require_blueprint and not project.automation_default_blueprint_id:
-        violations.append("Varsayilan style blueprint tanimli degil.")
+        violations.append("Varsayilan stil rehberi tanimli degil.")
 
     # 5. Concurrency — per project
     proj_limit = int(global_config.get("automation.full_auto.max_concurrent_per_project") or 1)
@@ -160,7 +159,7 @@ async def evaluate_guards(
     )
     if (running_for_project or 0) >= proj_limit:
         violations.append(
-            f"Proje icin calisan full-auto is sayisi limiti asildi ({running_for_project}/{proj_limit})."
+            f"Bu projede zaten {running_for_project} otomatik is calisiyor (limit: {proj_limit})."
         )
 
     # 6. Concurrency — per user
@@ -176,7 +175,7 @@ async def evaluate_guards(
     )
     if (running_for_user or 0) >= user_limit:
         violations.append(
-            f"Kullanici basi full-auto limiti asildi ({running_for_user}/{user_limit})."
+            f"Kullanicinin toplam {running_for_user} otomatik isi calisiyor (limit: {user_limit})."
         )
 
     # 7. Daily quota
@@ -190,14 +189,15 @@ async def evaluate_guards(
     else:
         if project.automation_runs_today >= effective_daily:
             violations.append(
-                f"Gunluk tam otomatik calisma limiti asildi "
-                f"({project.automation_runs_today}/{effective_daily})."
+                f"Bugun {project.automation_runs_today} is calistirildi, "
+                f"gunluk limit ({effective_daily}) doldu."
             )
 
     # 8. Optional integrity checks — warnings
     if project.automation_publish_policy == "publish_now":
         warnings.append(
-            "Faz 1: 'publish_now' politikasi draft olarak uygulanir (review gate oncelikli)."
+            "Faz 1: \"Hemen Yayinla\" secili olsa bile uretim sonucu taslak olarak kalir. "
+            "Otomatik yayin ileri fazda aktif olacaktir."
         )
 
     return GuardCheckResult(

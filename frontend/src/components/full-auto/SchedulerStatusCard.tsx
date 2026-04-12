@@ -29,7 +29,7 @@ export function SchedulerStatusCard({
         data-testid={testId}
       >
         <p className="m-0 text-sm text-neutral-500">
-          Scheduler durumu yukleniyor...
+          Zamanlayici durumu yukleniyor...
         </p>
       </div>
     );
@@ -45,7 +45,7 @@ export function SchedulerStatusCard({
         data-testid={testId}
       >
         <p className="m-0 text-sm text-error-dark">
-          Scheduler durumu alinamadi.
+          Zamanlayici durumu alinamadi.
         </p>
       </div>
     );
@@ -68,7 +68,7 @@ export function SchedulerStatusCard({
     >
       <div className="flex items-center justify-between mb-3">
         <p className="m-0 text-sm font-semibold text-neutral-800">
-          Full-Auto Scheduler
+          Otomatik Zamanlayici
         </p>
         <span
           className={cn(
@@ -84,10 +84,10 @@ export function SchedulerStatusCard({
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-        <Stat label="Poll Araligi" value={`${data.poll_interval_seconds}s`} />
-        <Stat label="Son Tick" value={lastTickFormatted} />
+        <Stat label="Kontrol Sikligi" value={`${data.poll_interval_seconds}s`} />
+        <Stat label="Son Kontrol" value={lastTickFormatted} />
         <Stat
-          label="Tick Durumu"
+          label="Kontrol Durumu"
           value={
             data.last_tick_ok === null
               ? "-"
@@ -111,7 +111,7 @@ export function SchedulerStatusCard({
 
       {data.next_candidate_project_id && (
         <div className="mt-3 text-xs text-neutral-600">
-          Sonraki aday:{" "}
+          Siradaki proje:{" "}
           <span className="font-mono">
             {data.next_candidate_project_id.slice(0, 12)}&hellip;
           </span>{" "}

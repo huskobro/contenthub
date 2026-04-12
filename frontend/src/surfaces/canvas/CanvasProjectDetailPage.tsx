@@ -696,6 +696,7 @@ export function CanvasProjectDetailPage() {
           <div className="px-5 py-4">
             <ProjectAutomationPanel
               projectId={projectId}
+              moduleType={project.module_type}
               testId="canvas-project-automation"
             />
           </div>

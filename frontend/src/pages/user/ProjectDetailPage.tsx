@@ -163,6 +163,7 @@ function LegacyProjectDetailPage() {
       {activeTab === "automation" && projectId ? (
         <ProjectAutomationPanel
           projectId={projectId}
+          moduleType={project.module_type}
           testId="project-detail-automation"
         />
       ) : null}
