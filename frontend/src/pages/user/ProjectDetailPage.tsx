@@ -9,6 +9,7 @@
  * through to the legacy body otherwise.
  */
 
+import { useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useContentProject } from "../../hooks/useContentProjects";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -20,9 +21,11 @@ import {
   SectionShell,
   StatusBadge,
   Mono,
+  TabBar,
 } from "../../components/design-system/primitives";
 import { formatDateISO } from "../../lib/formatDate";
 import { useSurfacePageOverride } from "../../surfaces";
+import { ProjectAutomationPanel } from "../../components/full-auto/ProjectAutomationPanel";
 
 const MODULE_LABELS: Record<string, string> = {
   standard_video: "Standart Video",
@@ -60,11 +63,18 @@ export function ProjectDetailPage() {
   return <LegacyProjectDetailPage />;
 }
 
+type DetailTab = "general" | "automation";
+const DETAIL_TABS: { key: DetailTab; label: string }[] = [
+  { key: "general", label: "Genel" },
+  { key: "automation", label: "Otomasyon" },
+];
+
 function LegacyProjectDetailPage() {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
   const qc = useQueryClient();
   const toast = useToast();
+  const [activeTab, setActiveTab] = useState<DetailTab>("general");
   const { data: project, isLoading, isError, error } = useContentProject(projectId ?? "");
 
   // Fetch jobs linked to this project
@@ -143,6 +153,22 @@ function LegacyProjectDetailPage() {
       ]}
       testId="project-detail"
     >
+      <TabBar<DetailTab>
+        tabs={DETAIL_TABS}
+        active={activeTab}
+        onChange={setActiveTab}
+        testId="project-detail-tabs"
+      />
+
+      {activeTab === "automation" && projectId ? (
+        <ProjectAutomationPanel
+          projectId={projectId}
+          testId="project-detail-automation"
+        />
+      ) : null}
+
+      {activeTab === "general" ? (
+        <>
       {/* Overview */}
       <SectionShell title="Proje Bilgileri" testId="project-overview">
         <Row label="Proje ID">
@@ -246,6 +272,8 @@ function LegacyProjectDetailPage() {
           </button>
         </div>
       </SectionShell>
+        </>
+      ) : null}
     </PageShell>
   );
 }

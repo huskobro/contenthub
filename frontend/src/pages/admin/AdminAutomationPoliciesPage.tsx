@@ -10,6 +10,7 @@ import {
   type AutomationPolicyResponse,
   type CheckpointMode,
 } from "../../api/automationApi";
+import { SchedulerStatusCard } from "../../components/full-auto/SchedulerStatusCard";
 import { cn } from "../../lib/cn";
 
 const MODE_LABELS: Record<CheckpointMode, string> = {
@@ -40,6 +41,9 @@ export function AdminAutomationPoliciesPage() {
 
   return (
     <div className="space-y-4" data-testid="admin-automation-policies-page">
+      {/* Full-Auto Scheduler Status */}
+      <SchedulerStatusCard testId="admin-scheduler-status" />
+
       <div className="flex items-center justify-between">
         <h2 className="m-0 text-lg font-semibold text-neutral-800">Otomasyon Politikalari</h2>
         <span className="text-sm text-neutral-400">{policies.length} politika</span>
