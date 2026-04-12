@@ -62,6 +62,12 @@ import {
   type PublishIntentData,
 } from "../../api/publishApi";
 import { StatusBadge } from "../../components/design-system/primitives";
+import { VideoPlayer } from "../../components/shared/VideoPlayer";
+import { useJobDetail } from "../../hooks/useJobDetail";
+import {
+  buildJobArtifactUrl,
+  findFirstVideoArtifact,
+} from "../../lib/jobArtifacts";
 import { cn } from "../../lib/cn";
 
 // ---------------------------------------------------------------------------
@@ -153,6 +159,29 @@ export function CanvasUserPublishPage() {
     [connections, selectedConnectionId],
   );
 
+  // Preview of the selected project's active render. Operators asked
+  // for real playback before submitting publish, not a "coming soon"
+  // placeholder — if the project has a finished video artifact we show
+  // it inline with full keyboard controls (space/K, J/L, arrows, M, F,
+  // 0-9, Home/End) via the shared VideoPlayer. When no artifact exists
+  // yet we fall back to a gentle placeholder so the card layout stays
+  // stable across selections.
+  const selectedJobId = selectedProject?.active_job_id ?? null;
+  const { data: selectedJob } = useJobDetail(selectedJobId);
+  const previewArtifactPath = useMemo(
+    () => findFirstVideoArtifact(selectedJob?.steps),
+    [selectedJob?.steps],
+  );
+  const previewVideoUrl = useMemo(
+    () => buildJobArtifactUrl(selectedJobId, previewArtifactPath),
+    [selectedJobId, previewArtifactPath],
+  );
+  const [previewPlaying, setPreviewPlaying] = useState(false);
+
+  // Whenever the user switches project the thumbnail should reset —
+  // no stale "paused player" bleeding across selections.
+  const resetPreview = useCallback(() => setPreviewPlaying(false), []);
+
   // Existing publish records for the selected project
   const { data: existingRecords } = useQuery({
     queryKey: ["canvas-publish-existing", selectedProjectId],
@@ -177,6 +206,7 @@ export function CanvasUserPublishPage() {
       setSelectedConnectionId("");
       setSuccessMsg("");
       setErrorMsg("");
+      resetPreview();
       const proj = projects.find((p) => p.id === projectId);
       if (proj) {
         setIntentTitle(proj.title ?? "");
@@ -185,7 +215,7 @@ export function CanvasUserPublishPage() {
         setIntentPrivacy("public");
       }
     },
-    [projects],
+    [projects, resetPreview],
   );
 
   // Mutation: same chain as legacy
@@ -394,18 +424,50 @@ export function CanvasUserPublishPage() {
                 data-testid="canvas-publish-project-summary"
               >
                 <header className="flex items-start gap-4 px-5 py-4 border-b border-border-subtle bg-neutral-50/50">
-                  <div
-                    className={cn(
-                      "w-[96px] h-[54px] shrink-0 rounded-md border border-dashed border-border-subtle",
-                      "bg-gradient-to-br from-brand-50 to-neutral-50",
-                      "flex items-center justify-center",
-                    )}
-                    data-testid="canvas-publish-preview-slot"
-                  >
-                    <span className="text-[9px] font-mono uppercase text-neutral-400">
-                      ön izleme
-                    </span>
-                  </div>
+                  {previewVideoUrl ? (
+                    <button
+                      type="button"
+                      onClick={() => setPreviewPlaying(true)}
+                      className={cn(
+                        "w-[96px] h-[54px] shrink-0 rounded-md border border-border-subtle",
+                        "relative overflow-hidden bg-black",
+                        "focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-500",
+                      )}
+                      data-testid="canvas-publish-preview-slot"
+                      aria-label="Ön izlemeyi aç"
+                      title="Ön izlemeyi aç"
+                    >
+                      <video
+                        src={previewVideoUrl}
+                        muted
+                        playsInline
+                        preload="metadata"
+                        className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+                        data-testid="canvas-publish-preview-thumbnail"
+                      />
+                      <span
+                        className={cn(
+                          "absolute inset-0 flex items-center justify-center",
+                          "bg-black/30 text-white text-lg",
+                        )}
+                      >
+                        ▶
+                      </span>
+                    </button>
+                  ) : (
+                    <div
+                      className={cn(
+                        "w-[96px] h-[54px] shrink-0 rounded-md border border-dashed border-border-subtle",
+                        "bg-gradient-to-br from-brand-50 to-neutral-50",
+                        "flex items-center justify-center",
+                      )}
+                      data-testid="canvas-publish-preview-slot"
+                    >
+                      <span className="text-[9px] font-mono uppercase text-neutral-400">
+                        ön izleme
+                      </span>
+                    </div>
+                  )}
                   <div className="flex-1 min-w-0">
                     <p className="m-0 text-sm font-semibold text-neutral-900 truncate">
                       {selectedProject.title}
@@ -428,6 +490,39 @@ export function CanvasUserPublishPage() {
                     </div>
                   </div>
                 </header>
+
+                {/* Inline full preview — appears on thumbnail click */}
+                {previewPlaying && previewVideoUrl ? (
+                  <div
+                    className="px-5 py-4 border-b border-border-subtle bg-neutral-50/40"
+                    data-testid="canvas-publish-preview-player"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="m-0 text-[10px] uppercase font-semibold tracking-wider text-neutral-500">
+                        Aktif Render Ön İzleme
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => setPreviewPlaying(false)}
+                        className="text-[11px] text-neutral-500 hover:text-neutral-800"
+                        data-testid="canvas-publish-preview-close"
+                      >
+                        Kapat
+                      </button>
+                    </div>
+                    <VideoPlayer
+                      src={previewVideoUrl}
+                      title={selectedProject.title}
+                      className="w-full"
+                      keyboardControls
+                      testId="canvas-publish-preview-video"
+                    />
+                    <p className="m-0 mt-2 text-[10px] text-neutral-500">
+                      Space/K oynat-duraklat · ←→ ±5s · ↑↓ ses · M sessiz · F
+                      tam ekran · 0-9 yüzde atla
+                    </p>
+                  </div>
+                ) : null}
 
                 {/* Existing records */}
                 {existingRecords && existingRecords.length > 0 ? (
