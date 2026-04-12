@@ -6,6 +6,7 @@ import { formatDateISO } from "../../lib/formatDate";
 import { Link } from "react-router-dom";
 import { MediaPreview } from "../shared/MediaPreview";
 import type { JobStepResponse } from "../../api/jobsApi";
+import { cn } from "../../lib/cn";
 
 interface JobDetailPanelProps {
   selectedId: string | null;
@@ -181,6 +182,47 @@ export function JobDetailPanel({ selectedId }: JobDetailPanelProps) {
             {statusLabel}
           </span>
         </Row>
+        {data.run_mode && (
+          <Row label="Mod">
+            <span
+              className={cn(
+                "inline-flex items-center px-2 py-0.5 rounded-full border text-[10px] font-semibold uppercase tracking-wider",
+                data.run_mode === "full_auto"
+                  ? "bg-success-light text-success-dark border-success"
+                  : data.run_mode === "assisted"
+                    ? "bg-warning-light text-warning-dark border-warning"
+                    : "bg-neutral-100 text-neutral-600 border-neutral-200",
+              )}
+            >
+              {data.run_mode === "full_auto"
+                ? "Tam Otomatik"
+                : data.run_mode === "assisted"
+                  ? "Asistanli"
+                  : "Manuel"}
+            </span>
+            {data.auto_advanced && (
+              <span className="ml-1 text-[10px] text-neutral-500">auto-advance</span>
+            )}
+          </Row>
+        )}
+        {data.trigger_source && (
+          <Row label="Tetik">
+            <span
+              className={cn(
+                "inline-flex items-center px-2 py-0.5 rounded-full border text-[10px] font-semibold uppercase tracking-wider",
+                data.trigger_source === "scheduled"
+                  ? "bg-brand-50 text-brand-700 border-brand-200"
+                  : "bg-neutral-100 text-neutral-600 border-neutral-200",
+              )}
+            >
+              {data.trigger_source === "scheduled"
+                ? "Zamanlanmis"
+                : data.trigger_source === "manual_click" || data.trigger_source === "manual"
+                  ? "Manuel"
+                  : data.trigger_source}
+            </span>
+          </Row>
+        )}
         {data.current_step_key && (
           <Row label="Aktif Adım">
             <span className="text-neutral-700">{data.current_step_key}</span>

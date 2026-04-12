@@ -239,6 +239,10 @@ class Job(Base):
     channel_profile_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True, index=True)
     content_project_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True, index=True)
     trigger_source: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    # Full-Auto Mode v1 — per-job run mode (manual | assisted | full_auto)
+    run_mode: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    auto_advanced: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    scheduled_run_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True)
     is_test_data: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, index=True)
     heartbeat_at: Mapped[Optional[datetime]] = mapped_column(
         DateTime(timezone=True), nullable=True
@@ -1550,6 +1554,22 @@ class ContentProject(Base):
     deadline_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     active_job_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True)
     latest_output_ref: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    # --- Full-Auto Mode v1 — per-project automation config -----------------
+    automation_enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    automation_run_mode: Mapped[str] = mapped_column(String(50), nullable=False, default="manual")
+    automation_schedule_enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    automation_cron_expression: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    automation_timezone: Mapped[str] = mapped_column(String(50), nullable=False, default="UTC")
+    automation_default_template_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True)
+    automation_default_blueprint_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True)
+    automation_require_review_gate: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    automation_publish_policy: Mapped[str] = mapped_column(String(50), nullable=False, default="draft")
+    automation_fallback_on_error: Mapped[str] = mapped_column(String(50), nullable=False, default="pause")
+    automation_max_runs_per_day: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    automation_last_run_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    automation_next_run_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    automation_runs_today: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    automation_runs_today_date: Mapped[Optional[str]] = mapped_column(String(10), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=_now
     )

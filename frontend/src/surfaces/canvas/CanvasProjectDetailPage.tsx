@@ -42,6 +42,7 @@ import { useToast } from "../../hooks/useToast";
 import { useAuthStore } from "../../stores/authStore";
 import { StatusBadge, Mono } from "../../components/design-system/primitives";
 import { VideoPlayer } from "../../components/shared/VideoPlayer";
+import { ProjectAutomationPanel } from "../../components/full-auto/ProjectAutomationPanel";
 import { formatDateISO } from "../../lib/formatDate";
 import { cn } from "../../lib/cn";
 
@@ -674,6 +675,32 @@ export function CanvasProjectDetailPage() {
           </ul>
         )}
       </section>
+
+      {/* Automation -------------------------------------------------------- */}
+      {projectId && (
+        <section
+          className={cn(
+            "rounded-xl border border-border-subtle bg-surface-card shadow-sm",
+            "overflow-hidden",
+          )}
+          data-testid="canvas-project-automation-section"
+        >
+          <header className="px-5 py-3 border-b border-border-subtle bg-neutral-50/50">
+            <p className="m-0 text-sm font-semibold text-neutral-800">
+              Otomasyon
+            </p>
+            <p className="m-0 mt-0.5 text-[10px] text-neutral-500">
+              Proje bazli tam otomatik mod, zamanlama ve koruma ayarlari.
+            </p>
+          </header>
+          <div className="px-5 py-4">
+            <ProjectAutomationPanel
+              projectId={projectId}
+              testId="canvas-project-automation"
+            />
+          </div>
+        </section>
+      )}
 
     </div>
   );

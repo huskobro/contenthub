@@ -160,6 +160,20 @@ class PipelineRunner:
             )
         except Exception as exc:
             logger.warning("Audit log write failed (%s): %s", "job.pipeline_complete", exc)
+
+        # Full-Auto post-completion hook (v1): no-op except for audit
+        # trail when run_mode=='full_auto'. Guard against any exception so
+        # the pipeline never fails after success.
+        try:
+            from app.full_auto.service import on_job_completed
+            # Reload the job row so we see run_mode / content_project_id.
+            fresh_job = await self._db.get(Job, job_id)
+            if fresh_job is not None:
+                await on_job_completed(self._db, fresh_job)
+                await self._db.commit()
+        except Exception as exc:
+            logger.warning("Full-Auto post-completion hook failed: %s", exc)
+
         await self._update_heartbeat(job_id)
 
     async def _run_step(self, job: Job, step: JobStep) -> bool:

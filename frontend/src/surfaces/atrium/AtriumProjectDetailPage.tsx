@@ -38,6 +38,7 @@ import {
 } from "../../api/standardVideoApi";
 import { useToast } from "../../hooks/useToast";
 import { StatusBadge, Mono } from "../../components/design-system/primitives";
+import { ProjectAutomationPanel } from "../../components/full-auto/ProjectAutomationPanel";
 import { formatDateISO } from "../../lib/formatDate";
 import { cn } from "../../lib/cn";
 
@@ -546,6 +547,33 @@ export function AtriumProjectDetailPage() {
           </dl>
         </section>
       </div>
+
+      {/* Automation -------------------------------------------------------- */}
+      {projectId && (
+        <section
+          className={cn(
+            "rounded-3xl border border-border-subtle bg-surface-card shadow-sm",
+            "overflow-hidden",
+          )}
+          data-testid="atrium-project-automation-section"
+        >
+          <header className="px-6 py-4 border-b border-border-subtle bg-gradient-to-r from-brand-50/50 to-neutral-50">
+            <p className="m-0 text-sm font-semibold text-neutral-800">
+              Otomasyon
+            </p>
+            <p className="m-0 mt-0.5 text-[10px] text-neutral-500">
+              Proje bazli tam otomatik mod, zamanlama ve koruma ayarlari.
+            </p>
+          </header>
+          <div className="px-6 py-5">
+            <ProjectAutomationPanel
+              projectId={projectId}
+              testId="atrium-project-automation"
+            />
+          </div>
+        </section>
+      )}
+
     </div>
   );
 }

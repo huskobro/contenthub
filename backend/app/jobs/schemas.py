@@ -121,6 +121,9 @@ class JobResponse(BaseModel):
     channel_profile_id: Optional[str] = None  # Faz 5a
     content_project_id: Optional[str] = None  # Faz 5a
     trigger_source: Optional[str] = None  # Faz 2
+    run_mode: Optional[str] = None  # Full-Auto v1
+    auto_advanced: bool = False  # Full-Auto v1
+    scheduled_run_id: Optional[str] = None  # Full-Auto v1
     created_at: datetime
     started_at: Optional[datetime] = None
     finished_at: Optional[datetime] = None
