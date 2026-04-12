@@ -73,9 +73,27 @@
 
 Branch: `feature/full-auto-mode-with-project-cron`
 
+## Invariant Doğrulama (Finishing Pass)
+
+| # | Invariant | Durum | Kanıt |
+|---|-----------|-------|-------|
+| 1 | Review gate precedence publish policy'den üstte mi? | ✅ | `on_job_completed()` (service.py:402-407) publish_policy ne olursa olsun hiçbir zaman otomatik yayın yapmaz, her zaman draft kalır |
+| 2 | Duplicate scheduler fire engelleniyor mu? | ✅ | `trigger_full_auto()` (service.py:262-276) aynı `scheduled_run_id` varsa "duplicate fire" ile reddeder |
+| 3 | Global guardrail project-level override'ın üstünde mi? | ✅ | `evaluate_guards()` global kill switch'i (satır 111) proje toggle'ından (satır 135) önce kontrol eder; global kapalıysa proje açık olsa da bloklanır |
+| 4 | Missed cron run davranışı: skip mi catch-up mi? | ✅ Catch-up | Scheduler stale `next_run_at` olan projeyi BİR KEZ tetikler, sonra `compute_next_run(now=utcnow)` ile bir sonraki zamana resync eder. Birden fazla kaçırılan fire biriktirilmez |
+| 5 | blocked_by_policy sebepleri audit log'da okunur mu? | ✅ | Guard rejection'da violations listesi `write_audit_log()` ile `details_json`'a yazılır (service.py:281-294); her ihlal sebebi Türkçe okunur metin |
+
+## Job Detail Rozetleri (Finishing Commit)
+
+`JobOverviewPanel` ve `JobDetailPanel` bileşenlerine eklenen:
+
+- **Çalıştırma Modu** rozeti: `Tam Otomatik` (yeşil) / `Asistanlı` (sarı) / `Manuel` (gri) + auto-advance bilgisi
+- **Tetikleme Kaynağı** rozeti: `Zamanlanmış` (brand) / `Manuel Tetik` / `API` / `Yeniden Deneme` / `Admin` + scheduled_run_id kısa hash
+- Backend `JobResponse` schema'ya 3 alan eklendi: `run_mode`, `auto_advanced`, `scheduled_run_id`
+- Frontend `JobResponse` type'a aynı 3 alan eklendi
+
 ## Bilerek Defer Edilen
 
-- Job Detail'da run_mode/trigger_source rozeti (küçük UX iyileştirme, ikinci fazda)
 - news_bulletin full-auto desteği
 - Otomatik konu seçme / A/B test
 - Multi-platform full auto publish

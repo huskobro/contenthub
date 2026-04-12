@@ -39,6 +39,9 @@ export interface JobResponse {
   channel_profile_id?: string | null;
   content_project_id?: string | null;
   trigger_source?: string | null;
+  run_mode?: string | null;
+  auto_advanced?: boolean;
+  scheduled_run_id?: string | null;
   created_at: string;
   started_at: string | null;
   finished_at: string | null;
