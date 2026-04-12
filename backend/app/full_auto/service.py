@@ -357,6 +357,7 @@ async def trigger_full_auto(
             job.trigger_source = trigger_source
             job.scheduled_run_id = scheduled_run_id
             job.auto_advanced = True
+            job.content_project_id = project.id
 
     # Update project quota + timestamps
     _bump_runs_today(project)
