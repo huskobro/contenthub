@@ -286,12 +286,47 @@ source .venv/bin/activate
 | Otomatik tarama | 5 dk | Aktif | RSS kaynak taramasi |
 | Is yeniden deneme | 2 dk | **Kapali** | Basarisiz isleri yeniden dener |
 | Gecikme bildirimi | 5 dk | Aktif | Geciken planlamalar icin bildirim |
+| Full-Auto zamanlayicisi | 60 sn | **Kapali** | Zamanlanmis proje otomasyonunu tetikler |
 
 Is yeniden deneme zamanlayicisi varsayilan olarak kapalidir. Etkinlestirmek icin Admin panelde **Ayarlar** > `jobs.auto_retry_enabled` degerini `true` yapin.
 
 ---
 
-## 11. Onemli Notlar
+## 11. Full-Auto / Proje Otomasyonu
+
+Full-Auto, bir projeye tanimli otomasyon ayarlariyla (zamanlama, guard'lar, yayin politikasi) tam otomatik icerik uretimi baslatir.
+
+### Onkosullar
+
+1. Admin > Ayarlar'dan `automation.full_auto.enabled` = `true` yapin
+2. Zamanlanmis calistirma icin `automation.scheduler.enabled` = `true` yapin
+
+### Proje Hazirligi
+
+1. `standard_video` tipinde bir proje olusturun (v1 sadece bu modulu destekler)
+2. Projeye bir channel_profile ve default template baglayin
+3. Proje detay sayfasinda **Otomasyon** bolumunu acin, toggle'i etkinlestirin
+
+### Kullanim
+
+- **Manuel tetikleme:** "Hazirlik Kontrolu" ile guard'lari dogrulayin, ardindan "Simdi Tetikle"
+- **Zamanli tetikleme:** Zamanlama toggle'ini acin, cron preset secin veya manuel cron girin
+
+### Guard Sistemi
+
+8 guard sirali degerlendirme yapilir: global enabled, modul destegi, proje enabled, template atanmis, kanal baglanmis, proje concurrency, kullanici concurrency, gunluk kota. Herhangi biri fail ederse tetikleme reddedilir ve audit log'a yazilir.
+
+### Sinirlamalar (v1)
+
+- Sadece `standard_video` modulu desteklenir
+- Publish step Faz 1: uretim sonucu her zaman taslak kalir
+- Scheduler durumu ilk tick'e kadar (~60sn) `enabled: false` gosterir
+
+Detayli dokumantasyon: `docs/full-auto-v1-closure.md`
+
+---
+
+## 12. Onemli Notlar
 
 - **Localhost-only:** Sistem su an sadece tek makine uzerinde calisacak sekilde tasarlanmistir
 - **SSE auth yok:** Gercek zamanli bildirim kanali (SSE) localhost-only olarak auth gerektirmez
