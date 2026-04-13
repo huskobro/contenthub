@@ -261,6 +261,78 @@ class CompositionStepExecutor(StepExecutor):
 
         start_time = time.monotonic()
 
+        # ── B3: visual_direction preset mapping ──────────────────────────
+        # Per-video seçim → varsayılan değerleri belirler.
+        # Admin settings (snap) hala en üst otorite — burada sadece base preset.
+        _VISUAL_DIRECTION_PRESETS = {
+            "clean": {
+                "gradientIntensity": 0.5,
+                "titleFontSize": 26,
+                "watermarkOpacity": 0.15,
+                "bgColor": "#0a0a0a",
+                "showTitleOverlay": True,
+            },
+            "cinematic": {
+                "gradientIntensity": 0.8,
+                "titleFontSize": 34,
+                "watermarkOpacity": 0.35,
+                "bgColor": "#050508",
+                "showTitleOverlay": True,
+            },
+            "minimal": {
+                "gradientIntensity": 0.3,
+                "titleFontSize": 22,
+                "watermarkOpacity": 0.0,
+                "bgColor": "#0a0a0a",
+                "showTitleOverlay": False,
+            },
+        }
+        vd = raw_input.get("visual_direction", "").lower().strip()
+        vd_preset = _VISUAL_DIRECTION_PRESETS.get(vd, {})
+
+        # ── B4: motion_level preset mapping ──────────────────────────────
+        _MOTION_LEVEL_PRESETS = {
+            "minimal": {
+                "sceneTransitionDuration": 0.3,
+                "imageKenBurns": False,
+                "imageTransition": "cut",
+                "kenBurnsIntensity": 0.0,
+                "introDuration": 1.5,
+                "outroDuration": 1.5,
+            },
+            "moderate": {
+                "sceneTransitionDuration": 0.5,
+                "imageKenBurns": True,
+                "imageTransition": "crossfade",
+                "kenBurnsIntensity": 0.5,
+                "introDuration": 2.5,
+                "outroDuration": 2.5,
+            },
+            "dynamic": {
+                "sceneTransitionDuration": 0.8,
+                "imageKenBurns": True,
+                "imageTransition": "crossfade",
+                "kenBurnsIntensity": 1.0,
+                "introDuration": 3.0,
+                "outroDuration": 3.0,
+            },
+        }
+        ml = raw_input.get("motion_level", "").lower().strip()
+        ml_preset = _MOTION_LEVEL_PRESETS.get(ml, {})
+
+        # Merge zinciri: builtin default → visual_direction preset → motion_level preset → admin settings
+        # Admin settings (snap.get) her zaman son söz — ama sadece admin açıkça ayarladıysa.
+        def _pick(setting_key: str, vd_val, ml_val, builtin_default):
+            """Admin setting varsa onu kullan, yoksa vd/ml preset, yoksa builtin."""
+            admin_val = snap.get(setting_key)
+            if admin_val is not None:
+                return admin_val
+            if ml_val is not None:
+                return ml_val
+            if vd_val is not None:
+                return vd_val
+            return builtin_default
+
         composition_props: dict = {
             "job_id": job.id,
             "module_id": ctx.module_id,
@@ -283,20 +355,50 @@ class CompositionStepExecutor(StepExecutor):
                 "karaokeAnimPreset": snap.get(
                     "standard_video.config.karaoke_anim_preset", "hype",
                 ),
-                # M44: Visual & overlay parameters
+                # Visual & overlay parameters — B3/B4 merge zinciri
                 "renderFps": snap.get("standard_video.config.render_fps", 30),
-                "imageKenBurns": snap.get("standard_video.config.image_ken_burns", True),
-                "imageTransition": snap.get("standard_video.config.image_transition", "crossfade"),
-                "sceneTransitionDuration": snap.get("standard_video.config.scene_transition_duration", 0.5),
-                "bgColor": snap.get("standard_video.config.bg_color", "#0a0a0a"),
-                "showTitleOverlay": snap.get("standard_video.config.show_title_overlay", True),
-                "titleFontSize": snap.get("standard_video.config.title_font_size", 30),
+                "imageKenBurns": _pick(
+                    "standard_video.config.image_ken_burns",
+                    None, ml_preset.get("imageKenBurns"), True,
+                ),
+                "imageTransition": _pick(
+                    "standard_video.config.image_transition",
+                    None, ml_preset.get("imageTransition"), "crossfade",
+                ),
+                "sceneTransitionDuration": _pick(
+                    "standard_video.config.scene_transition_duration",
+                    None, ml_preset.get("sceneTransitionDuration"), 0.5,
+                ),
+                "bgColor": _pick(
+                    "standard_video.config.bg_color",
+                    vd_preset.get("bgColor"), None, "#0a0a0a",
+                ),
+                "showTitleOverlay": _pick(
+                    "standard_video.config.show_title_overlay",
+                    vd_preset.get("showTitleOverlay"), None, True,
+                ),
+                "titleFontSize": _pick(
+                    "standard_video.config.title_font_size",
+                    vd_preset.get("titleFontSize"), None, 30,
+                ),
                 "titleColor": snap.get("standard_video.config.title_color", "#FFFFFF"),
-                "gradientIntensity": snap.get("standard_video.config.gradient_intensity", 0.65),
+                "gradientIntensity": _pick(
+                    "standard_video.config.gradient_intensity",
+                    vd_preset.get("gradientIntensity"), None, 0.65,
+                ),
                 "watermarkText": snap.get("standard_video.config.watermark_text", ""),
-                "watermarkOpacity": snap.get("standard_video.config.watermark_opacity", 0.3),
+                "watermarkOpacity": _pick(
+                    "standard_video.config.watermark_opacity",
+                    vd_preset.get("watermarkOpacity"), None, 0.3,
+                ),
                 "watermarkPosition": snap.get("standard_video.config.watermark_position", "bottom-right"),
                 "subtitleFontFamily": _sub_font_family,
+                # B4: motion parametreleri — renderer'a geçirilir
+                "kenBurnsIntensity": ml_preset.get("kenBurnsIntensity", 0.5),
+                "introDuration": ml_preset.get("introDuration", 2.5),
+                "outroDuration": ml_preset.get("outroDuration", 2.5),
+                # B6: visual_cue overlay kontrolü
+                "showVisualCue": snap.get("standard_video.config.show_visual_cue", True),
                 "metadata": {
                     "title": metadata_data.get("title", ""),
                     "description": metadata_data.get("description", ""),

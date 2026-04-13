@@ -117,6 +117,14 @@ export interface StandardVideoProps {
   watermarkOpacity?: number;
   watermarkPosition?: "top-left" | "top-right" | "bottom-left" | "bottom-right";
   subtitleFontFamily?: string;
+  /** B4: Ken Burns hareket şiddeti — 0.0 (yok) ile 1.0 (agresif) arası. */
+  kenBurnsIntensity?: number;
+  /** B4: Intro süre (saniye) — motion_level'e bağlı. Varsayılan: 2.5. */
+  introDuration?: number;
+  /** B4: Outro süre (saniye) — motion_level'e bağlı. Varsayılan: 2.5. */
+  outroDuration?: number;
+  /** B6: Sahne visual_cue metnini overlay olarak göster. */
+  showVisualCue?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -134,22 +142,27 @@ function getKenBurnsDirection(sceneNumber: number): KenBurnsDirection {
 /**
  * Ken Burns transform hesabı — yöne göre scale ve translate üretir.
  * Her sahne farklı kamera hareketi alır.
+ * B4: intensity (0.0–1.0) hareketin büyüklüğünü kontrol eder.
  */
 function computeKenBurnsTransform(
   frame: number,
   durationInFrames: number,
-  direction: KenBurnsDirection
+  direction: KenBurnsDirection,
+  intensity: number = 0.5
 ): { scale: number; translateX: number; translateY: number } {
   const progress = interpolate(frame, [0, durationInFrames], [0, 1], { extrapolateRight: "clamp" });
+  // intensity: 0 = sabit, 0.5 = normal, 1.0 = agresif
+  const zoomRange = 0.04 + intensity * 0.16; // 0.04–0.20 arası zoom
+  const panRange = 1 + intensity * 4;         // 1–5px arası pan
   switch (direction) {
     case "zoom-in":
-      return { scale: interpolate(progress, [0, 1], [1.0, 1.12]), translateX: 0, translateY: 0 };
+      return { scale: interpolate(progress, [0, 1], [1.0, 1.0 + zoomRange]), translateX: 0, translateY: 0 };
     case "zoom-out":
-      return { scale: interpolate(progress, [0, 1], [1.12, 1.0]), translateX: 0, translateY: 0 };
+      return { scale: interpolate(progress, [0, 1], [1.0 + zoomRange, 1.0]), translateX: 0, translateY: 0 };
     case "pan-left":
-      return { scale: 1.1, translateX: interpolate(progress, [0, 1], [2, -2]), translateY: 0 };
+      return { scale: 1.0 + zoomRange * 0.5, translateX: interpolate(progress, [0, 1], [panRange, -panRange]), translateY: 0 };
     case "pan-right":
-      return { scale: 1.1, translateX: interpolate(progress, [0, 1], [-2, 2]), translateY: 0 };
+      return { scale: 1.0 + zoomRange * 0.5, translateX: interpolate(progress, [0, 1], [-panRange, panRange]), translateY: 0 };
     default:
       return { scale: 1.0, translateX: 0, translateY: 0 };
   }
@@ -463,6 +476,64 @@ function WatermarkOverlay({ text, opacity = 0.3, position = "bottom-right" }: Wa
 }
 
 // ---------------------------------------------------------------------------
+// B6: Visual Cue Tag — sahne başında kısa süreli bilgi overlay
+// ---------------------------------------------------------------------------
+
+interface VisualCueTagProps {
+  text: string;
+  isPortrait: boolean;
+  titleColor: string;
+  subtitleFontSize: number;
+}
+
+function VisualCueTag({ text, isPortrait, titleColor, subtitleFontSize }: VisualCueTagProps) {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+
+  if (!text) return null;
+
+  // İlk 60 karakter
+  const displayText = text.length > 60 ? text.slice(0, 57) + "..." : text;
+
+  // Fade-in 10 frame, visible ~2s, fade-out 15 frame
+  const visibleFrames = Math.round(2.0 * fps);
+  const fadeInEnd = 10;
+  const fadeOutStart = visibleFrames - 15;
+
+  const opacity = frame > visibleFrames
+    ? 0
+    : frame < fadeInEnd
+      ? interpolate(frame, [0, fadeInEnd], [0, 0.45], { extrapolateRight: "clamp" })
+      : frame > fadeOutStart
+        ? interpolate(frame, [fadeOutStart, visibleFrames], [0.45, 0], { extrapolateRight: "clamp" })
+        : 0.45;
+
+  if (opacity <= 0) return null;
+
+  const fontSize = Math.round(subtitleFontSize * 0.45);
+
+  const posStyle: React.CSSProperties = isPortrait
+    ? { position: "absolute", top: "14%", left: "6%", right: "6%", textAlign: "center" }
+    : { position: "absolute", bottom: "18%", left: "3%", right: "50%" };
+
+  return (
+    <div style={{
+      ...posStyle,
+      opacity,
+      fontSize,
+      fontWeight: "500",
+      fontStyle: "italic",
+      color: titleColor,
+      textShadow: "0 1px 6px rgba(0,0,0,0.9)",
+      letterSpacing: "0.02em",
+      pointerEvents: "none",
+    }}>
+      {displayText}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Tek sahne bileşeni
 // ---------------------------------------------------------------------------
 
@@ -494,6 +565,10 @@ interface SceneComponentProps {
   watermarkText?: string;
   watermarkOpacity?: number;
   watermarkPosition?: "top-left" | "top-right" | "bottom-left" | "bottom-right";
+  /** B4: Ken Burns hareket şiddeti */
+  kenBurnsIntensity?: number;
+  /** B6: Visual cue overlay göster */
+  showVisualCue?: boolean;
 }
 
 function SceneComponent({
@@ -504,13 +579,15 @@ function SceneComponent({
   bgColor = "#0a0a0a", gradientIntensity = 0.65,
   titleFontSize = 30, titleColor = "#FFFFFF",
   watermarkText = "", watermarkOpacity = 0.3, watermarkPosition = "bottom-right",
+  kenBurnsIntensity = 0.5,
+  showVisualCue = true,
 }: SceneComponentProps) {
   const frame = useCurrentFrame();
   const { fps, durationInFrames } = useVideoConfig();
 
-  // A4: Ken Burns with direction variety
+  // A4+B4: Ken Burns with direction variety + intensity
   const { scale: kbScale, translateX: kbTx, translateY: kbTy } = imageKenBurns
-    ? computeKenBurnsTransform(frame, durationInFrames, kenBurnsDirection)
+    ? computeKenBurnsTransform(frame, durationInFrames, kenBurnsDirection, kenBurnsIntensity)
     : { scale: 1.0, translateX: 0, translateY: 0 };
 
   // A1+A5: Transition — sahne girişinde fade-in efekti (props'tan süre)
@@ -583,6 +660,16 @@ function SceneComponent({
       {/* Watermark */}
       <WatermarkOverlay text={watermarkText} opacity={watermarkOpacity} position={watermarkPosition} />
 
+      {/* B6: Visual Cue Tag — sahne başında kısa bilgi overlay */}
+      {showVisualCue && scene.visual_cue && (
+        <VisualCueTag
+          text={scene.visual_cue}
+          isPortrait={isPortrait}
+          titleColor={titleColor}
+          subtitleFontSize={subtitleProps.style.font_size}
+        />
+      )}
+
       {/* Altyazı katmanı — whisper varsa karaoke animasyonlu, yoksa SRT cursor fallback */}
       <KaraokeSubtitle
         wordTimings={subtitleProps.wordTimings}
@@ -627,6 +714,11 @@ export function StandardVideoComposition(props: StandardVideoProps) {
     watermarkOpacity = 0.3,
     watermarkPosition = "bottom-right",
     subtitleFontFamily,
+    // B4+B6 props
+    kenBurnsIntensity = 0.5,
+    introDuration = 2.5,
+    outroDuration = 2.5,
+    showVisualCue = true,
   } = props;
 
   // M41c: Portrait detection — renderFormat prop veya canvas boyutundan
@@ -636,14 +728,12 @@ export function StandardVideoComposition(props: StandardVideoProps) {
   const transitionSec = sceneTransitionDuration ?? 0.5;
   const transitionFrames = Math.max(1, Math.round(transitionSec * fps));
 
-  // A2: Intro süre — 2.5 saniye
-  const INTRO_SECONDS = 2.5;
-  const introFrames = Math.round(INTRO_SECONDS * fps);
+  // A2+B4: Intro süre — motion_level'e bağlı
+  const introFrames = Math.round(introDuration * fps);
   const hasIntro = !!title && scenes.length > 0;
 
-  // A3: Outro süre — 2.5 saniye
-  const OUTRO_SECONDS = 2.5;
-  const outroFrames = Math.round(OUTRO_SECONDS * fps);
+  // A3+B4: Outro süre — motion_level'e bağlı
+  const outroFrames = Math.round(outroDuration * fps);
   // Outro text: watermarkText (kanal adı) veya title
   const outroText = watermarkText || title || "";
   const hasOutro = !!outroText && scenes.length > 0;
@@ -726,6 +816,8 @@ export function StandardVideoComposition(props: StandardVideoProps) {
               watermarkText={watermarkText}
               watermarkOpacity={watermarkOpacity}
               watermarkPosition={watermarkPosition}
+              kenBurnsIntensity={kenBurnsIntensity}
+              showVisualCue={showVisualCue}
             />
           </Sequence>
         );

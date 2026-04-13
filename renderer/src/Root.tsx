@@ -157,8 +157,9 @@ export function RemotionRoot() {
           const sceneCount = hasScenes ? typed.scenes.length : 0;
           const transSec = typeof typed.sceneTransitionDuration === "number" ? typed.sceneTransitionDuration : 0.5;
           const trFrames = Math.max(1, Math.round(transSec * activeFps));
-          const INTRO_SEC = 2.5;
-          const OUTRO_SEC = 2.5;
+          // B4: introDuration/outroDuration prop'larından oku — yoksa 2.5s
+          const INTRO_SEC = typeof typed.introDuration === "number" ? typed.introDuration : 2.5;
+          const OUTRO_SEC = typeof typed.outroDuration === "number" ? typed.outroDuration : 2.5;
           const hasIntro = hasScenes && !!typed.title;
           const hasOutro = hasScenes && !!(typed.watermarkText || typed.title);
           const introFrames = hasIntro ? Math.round(INTRO_SEC * activeFps) : 0;

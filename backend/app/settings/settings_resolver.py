@@ -1594,6 +1594,18 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "wired": True,
         "wired_to": "CompositionStepExecutor → composition_props.watermarkPosition → WatermarkOverlay",
     },
+    # B6: Visual cue overlay kontrolü
+    "standard_video.config.show_visual_cue": {
+        "group": "standard_video",
+        "type": "boolean",
+        "label": "Sahne Gorsel Ipucu Goster",
+        "help_text": "Aktif ise sahne basinda visual_cue metni kisa sureligine goruntulenir.",
+        "module_scope": "standard_video",
+        "env_var": "",
+        "builtin_default": True,
+        "wired": True,
+        "wired_to": "CompositionStepExecutor → composition_props.showVisualCue → VisualCueTag",
+    },
 
     # --- Module Registry Settings (Phase 2 — Faz A) ---
     "module.standard_video.enabled": {
