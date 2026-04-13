@@ -31,6 +31,8 @@ export interface WizardValues {
   tone: string;
   language: string;
   visual_direction: string;
+  /** Hareket seviyesi — minimal / moderate / dynamic */
+  motion_level: string;
   composition_direction: string;
   thumbnail_direction: string;
   subtitle_style: string;
@@ -61,7 +63,8 @@ export function ContentCreationWizard({
     target_duration_seconds: "",
     tone: "",
     language: "tr",
-    visual_direction: "",
+    visual_direction: "clean",
+    motion_level: "moderate",
     composition_direction: "",
     thumbnail_direction: "",
     subtitle_style: "",
@@ -156,24 +159,67 @@ export function ContentCreationWizard({
               </select>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-1">Ton</label>
-              <input
-                className={inputCls}
-                value={values.tone}
-                onChange={(e) => set("tone", e.target.value)}
-                placeholder="formal, casual, dramatic"
-              />
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 mb-1">Ton</label>
+            <input
+              className={inputCls}
+              value={values.tone}
+              onChange={(e) => set("tone", e.target.value)}
+              placeholder="formal, casual, dramatic"
+            />
+          </div>
+
+          {/* Gorsel Yon — select card'lar */}
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 mb-1">Gorsel Yon</label>
+            <div className="flex gap-2">
+              {([
+                { value: "clean", label: "Temiz", desc: "Sade, minimal watermark, acik ton" },
+                { value: "cinematic", label: "Sinematik", desc: "Koyu, yoğun gradient, belirgin watermark" },
+                { value: "minimal", label: "Minimal", desc: "Baslik yok, watermark yok, en sade" },
+              ] as const).map(({ value, label, desc }) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => set("visual_direction", value)}
+                  className={cn(
+                    "flex-1 flex flex-col items-center gap-1 px-3 py-3 border rounded-md cursor-pointer transition-colors text-center",
+                    values.visual_direction === value
+                      ? "bg-brand-50 text-brand-700 border-brand-400 ring-1 ring-brand-200"
+                      : "bg-white text-neutral-600 border-border hover:bg-neutral-50",
+                  )}
+                >
+                  <span className="text-sm font-medium">{label}</span>
+                  <span className="text-[11px] text-neutral-400">{desc}</span>
+                </button>
+              ))}
             </div>
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-1">Gorsel Yon</label>
-              <input
-                className={inputCls}
-                value={values.visual_direction}
-                onChange={(e) => set("visual_direction", e.target.value)}
-                placeholder="clean, cinematic, minimal"
-              />
+          </div>
+
+          {/* Hareket Seviyesi */}
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 mb-1">Hareket Seviyesi</label>
+            <div className="flex gap-2">
+              {([
+                { value: "minimal", label: "Minimal", desc: "Kesme gecis, sabit gorsel, kisa intro" },
+                { value: "moderate", label: "Orta", desc: "Crossfade, hafif Ken Burns, standart intro" },
+                { value: "dynamic", label: "Dinamik", desc: "Agresif hareket, uzun intro, canli gecisler" },
+              ] as const).map(({ value, label, desc }) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => set("motion_level", value)}
+                  className={cn(
+                    "flex-1 flex flex-col items-center gap-1 px-3 py-3 border rounded-md cursor-pointer transition-colors text-center",
+                    values.motion_level === value
+                      ? "bg-brand-50 text-brand-700 border-brand-400 ring-1 ring-brand-200"
+                      : "bg-white text-neutral-600 border-border hover:bg-neutral-50",
+                  )}
+                >
+                  <span className="text-sm font-medium">{label}</span>
+                  <span className="text-[11px] text-neutral-400">{desc}</span>
+                </button>
+              ))}
             </div>
           </div>
         </div>
@@ -288,6 +334,7 @@ export function ContentCreationWizard({
             <Row label="Dil" value={values.language} />
             <Row label="Ton" value={values.tone} />
             <Row label="Gorsel Yon" value={values.visual_direction} />
+            <Row label="Hareket" value={values.motion_level} />
             <Row label="Kompozisyon" value={values.composition_direction} />
             <Row label="Thumbnail" value={values.thumbnail_direction} />
             <Row label="Altyazi" value={values.subtitle_style} />

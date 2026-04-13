@@ -73,12 +73,12 @@ const initialState: VideoWizardState = {
   target_duration_seconds: "",
   tone: "",
   language: "tr",
-  visual_direction: "",
+  visual_direction: "clean",
   composition_direction: "",
   thumbnail_direction: "",
   subtitle_style: "",
   lower_third_style: "",
-  motion_level: "",
+  motion_level: "moderate",
   template_id: "",
   style_blueprint_id: "",
   render_format: "landscape",
@@ -288,26 +288,40 @@ export function CreateVideoWizardPage() {
               </select>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-1">Ton</label>
-              <input
-                className={inputCls}
-                value={values.tone}
-                onChange={(e) => set("tone", e.target.value)}
-                placeholder="formal, casual, dramatic"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-1">
-                Gorsel Yon
-              </label>
-              <input
-                className={inputCls}
-                value={values.visual_direction}
-                onChange={(e) => set("visual_direction", e.target.value)}
-                placeholder="clean, cinematic, minimal"
-              />
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 mb-1">Ton</label>
+            <input
+              className={inputCls}
+              value={values.tone}
+              onChange={(e) => set("tone", e.target.value)}
+              placeholder="formal, casual, dramatic"
+            />
+          </div>
+
+          {/* Gorsel Yon — select card'lar */}
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 mb-1">Gorsel Yon</label>
+            <div className="flex gap-2">
+              {([
+                { value: "clean", label: "Temiz", desc: "Sade, minimal watermark, acik ton" },
+                { value: "cinematic", label: "Sinematik", desc: "Koyu, yoğun gradient, belirgin watermark" },
+                { value: "minimal", label: "Minimal", desc: "Baslik yok, watermark yok, en sade" },
+              ] as const).map(({ value, label, desc }) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => set("visual_direction", value)}
+                  className={cn(
+                    "flex-1 flex flex-col items-center gap-1 px-3 py-3 border rounded-md cursor-pointer transition-colors text-center",
+                    values.visual_direction === value
+                      ? "bg-brand-50 text-brand-700 border-brand-400 ring-1 ring-brand-200"
+                      : "bg-white text-neutral-600 border-border hover:bg-neutral-50",
+                  )}
+                >
+                  <span className="text-sm font-medium">{label}</span>
+                  <span className="text-[11px] text-neutral-400">{desc}</span>
+                </button>
+              ))}
             </div>
           </div>
         </div>

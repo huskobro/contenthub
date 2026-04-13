@@ -10,8 +10,9 @@ Pipeline adımları (sırasıyla):
   3. tts         — Anlatım → Ses dosyaları (TTS provider)
   4. visuals     — Görsel ipuçları → Medya indirme (görsel provider)
   5. subtitle    — Ses → SRT / kelime hizalaması (Whisper)
-  6. composition — Tüm varlıklar → Video render (Remotion)
-  7. publish     — Render çıktısı → Platform yayını (YouTube, operator_confirm)
+  6. composition — Tüm varlıklar → Remotion props hazırlığı
+  7. render      — Remotion CLI → Final video (.mp4)
+  8. publish     — Render çıktısı → Platform yayını (YouTube, operator_confirm)
 
 operator_confirm semantiği (M7-C3):
   publish step'i operator_confirm tipindedir.
@@ -28,6 +29,7 @@ from app.modules.standard_video.executors import (
     VisualsStepExecutor,
     SubtitleStepExecutor,
     CompositionStepExecutor,
+    RenderStepExecutor,
 )
 from app.publish.executor import PublishStepExecutor
 
@@ -82,11 +84,19 @@ STANDARD_VIDEO_MODULE = ModuleDefinition(
             idempotency_type="artifact_check",
             executor_class=CompositionStepExecutor,
             display_name="Kompozisyon",
-            description="Tüm varlıkları birleştirerek final video dosyasını render eder.",
+            description="Tüm varlıkları birleştirerek Remotion props dosyasını hazırlar.",
+        ),
+        StepDefinition(
+            step_key="render",
+            step_order=7,
+            idempotency_type="artifact_check",
+            executor_class=RenderStepExecutor,
+            display_name="Video Render",
+            description="Remotion CLI ile composition_props.json'dan final video (.mp4) dosyasını üretir.",
         ),
         StepDefinition(
             step_key="publish",
-            step_order=7,
+            step_order=8,
             idempotency_type="operator_confirm",
             executor_class=PublishStepExecutor,
             display_name="Yayın",
