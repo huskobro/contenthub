@@ -30,6 +30,15 @@
  *   Portrait (9:16) layout desteği eklendi.
  *   isPortrait=true → metin safe area, overlay konum, gradient farklılaşır.
  *   Görsel object-fit ve blur katmanı portrait-safe alan için ayarlanır.
+ *
+ * Creative Output Pack:
+ *   A1: Gerçek sahne geçişi — Sequence overlap ile crossfade/dissolve
+ *   A2: Intro sequence — başlık kartı + gradient + spring/fade
+ *   A3: Outro / end card — kanal adı + fade-out
+ *   A4: Ken Burns çeşitliliği — sahne bazlı yön (zoom-in/out, pan-left/right)
+ *   A5: sceneTransitionDuration prop'tan okunur (hardcoded değil)
+ *   B2: subtitleFontFamily KaraokeSubtitle'a geçirilir
+ *   B5: Landscape modda da başlık overlay
  */
 
 import {
@@ -111,6 +120,193 @@ export interface StandardVideoProps {
 }
 
 // ---------------------------------------------------------------------------
+// Ken Burns yön sistemi (A4) — sahne numarasına göre deterministik
+// ---------------------------------------------------------------------------
+
+type KenBurnsDirection = "zoom-in" | "zoom-out" | "pan-left" | "pan-right";
+
+const KB_DIRECTIONS: KenBurnsDirection[] = ["zoom-in", "zoom-out", "pan-left", "pan-right"];
+
+function getKenBurnsDirection(sceneNumber: number): KenBurnsDirection {
+  return KB_DIRECTIONS[sceneNumber % KB_DIRECTIONS.length];
+}
+
+/**
+ * Ken Burns transform hesabı — yöne göre scale ve translate üretir.
+ * Her sahne farklı kamera hareketi alır.
+ */
+function computeKenBurnsTransform(
+  frame: number,
+  durationInFrames: number,
+  direction: KenBurnsDirection
+): { scale: number; translateX: number; translateY: number } {
+  const progress = interpolate(frame, [0, durationInFrames], [0, 1], { extrapolateRight: "clamp" });
+  switch (direction) {
+    case "zoom-in":
+      return { scale: interpolate(progress, [0, 1], [1.0, 1.12]), translateX: 0, translateY: 0 };
+    case "zoom-out":
+      return { scale: interpolate(progress, [0, 1], [1.12, 1.0]), translateX: 0, translateY: 0 };
+    case "pan-left":
+      return { scale: 1.1, translateX: interpolate(progress, [0, 1], [2, -2]), translateY: 0 };
+    case "pan-right":
+      return { scale: 1.1, translateX: interpolate(progress, [0, 1], [-2, 2]), translateY: 0 };
+    default:
+      return { scale: 1.0, translateX: 0, translateY: 0 };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Intro Card component (A2) — başlık kartı, gradient arka plan, spring giriş
+// ---------------------------------------------------------------------------
+
+interface IntroCardProps {
+  title: string;
+  bgColor: string;
+  titleColor: string;
+  titleFontSize: number;
+  isPortrait: boolean;
+  gradientIntensity: number;
+}
+
+function IntroCard({ title, bgColor, titleColor, titleFontSize, isPortrait, gradientIntensity }: IntroCardProps) {
+  const frame = useCurrentFrame();
+  const { fps, durationInFrames } = useVideoConfig();
+
+  // Spring entrance for title
+  const titleProgress = spring({ frame, fps, config: { damping: 14, stiffness: 120 } });
+  const titleScale = interpolate(titleProgress, [0, 1], [0.7, 1.0]);
+  const titleOpacity = interpolate(titleProgress, [0, 0.4], [0, 1], { extrapolateRight: "clamp" });
+
+  // Fade out in the last 15 frames
+  const fadeOutFrames = Math.min(15, Math.floor(durationInFrames * 0.3));
+  const fadeOutStart = durationInFrames - fadeOutFrames;
+  const fadeOut = interpolate(frame, [fadeOutStart, durationInFrames], [1, 0], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+
+  // Subtle gradient background
+  const gi = Math.max(0, Math.min(1, gradientIntensity));
+  const gradientBg = `radial-gradient(ellipse at center, ${bgColor} 0%, rgba(0,0,0,${(gi * 1.2).toFixed(2)}) 100%)`;
+
+  // Accent line spring
+  const lineWidth = interpolate(titleProgress, [0, 1], [0, isPortrait ? 50 : 30], { extrapolateRight: "clamp" });
+
+  const introFontSize = isPortrait ? Math.round(titleFontSize * 1.4) : Math.round(titleFontSize * 1.6);
+
+  return (
+    <AbsoluteFill style={{ background: gradientBg, opacity: fadeOut }}>
+      <div style={{
+        position: "absolute",
+        inset: 0,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: isPortrait ? "8% 6%" : "5% 10%",
+      }}>
+        {/* Title text */}
+        <div style={{
+          opacity: titleOpacity,
+          transform: `scale(${titleScale})`,
+          fontSize: introFontSize,
+          fontWeight: "800",
+          color: titleColor,
+          textAlign: "center",
+          lineHeight: 1.3,
+          letterSpacing: "0.02em",
+          textShadow: "0 4px 20px rgba(0,0,0,0.8), 0 0 60px rgba(0,0,0,0.4)",
+          maxWidth: isPortrait ? "90%" : "80%",
+        }}>
+          {title}
+        </div>
+
+        {/* Accent line */}
+        <div style={{
+          marginTop: 24,
+          width: `${lineWidth}%`,
+          height: 3,
+          background: `linear-gradient(to right, transparent, ${titleColor}99, transparent)`,
+          opacity: titleOpacity,
+        }} />
+      </div>
+    </AbsoluteFill>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Outro Card component (A3) — bitiş kartı, kanal/CTA + fade-out
+// ---------------------------------------------------------------------------
+
+interface OutroCardProps {
+  channelName: string;
+  bgColor: string;
+  titleColor: string;
+  isPortrait: boolean;
+  gradientIntensity: number;
+}
+
+function OutroCard({ channelName, bgColor, titleColor, isPortrait, gradientIntensity }: OutroCardProps) {
+  const frame = useCurrentFrame();
+  const { fps, durationInFrames } = useVideoConfig();
+
+  // Fade in over first 20 frames
+  const fadeInFrames = Math.min(20, Math.floor(durationInFrames * 0.35));
+  const fadeIn = interpolate(frame, [0, fadeInFrames], [0, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+
+  // Spring entrance
+  const entryProgress = spring({ frame, fps, config: { damping: 18, stiffness: 100 } });
+  const entryY = interpolate(entryProgress, [0, 1], [30, 0]);
+
+  const gi = Math.max(0, Math.min(1, gradientIntensity));
+  const gradientBg = `radial-gradient(ellipse at center, ${bgColor} 0%, rgba(0,0,0,${(gi * 1.2).toFixed(2)}) 100%)`;
+
+  const outroFontSize = isPortrait ? 28 : 32;
+
+  return (
+    <AbsoluteFill style={{ background: gradientBg, opacity: fadeIn }}>
+      <div style={{
+        position: "absolute",
+        inset: 0,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: isPortrait ? "8% 6%" : "5% 10%",
+      }}>
+        {/* Channel / watermark branding */}
+        {channelName && (
+          <div style={{
+            opacity: fadeIn,
+            transform: `translateY(${entryY}px)`,
+            fontSize: outroFontSize,
+            fontWeight: "700",
+            color: titleColor,
+            textAlign: "center",
+            letterSpacing: "0.06em",
+            textShadow: "0 2px 12px rgba(0,0,0,0.8)",
+          }}>
+            {channelName}
+          </div>
+        )}
+
+        {/* Accent line */}
+        <div style={{
+          marginTop: 16,
+          width: isPortrait ? "40%" : "20%",
+          height: 2,
+          background: `linear-gradient(to right, transparent, ${titleColor}66, transparent)`,
+          opacity: fadeIn,
+        }} />
+      </div>
+    </AbsoluteFill>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Portrait overlay — gradient + safe area overlay for 9:16
 // ---------------------------------------------------------------------------
 
@@ -181,25 +377,59 @@ function PortraitOverlay({ title, gradientIntensity = 0.65, titleFontSize = 30, 
 }
 
 // ---------------------------------------------------------------------------
-// Landscape overlay — minimal top gradient
+// Landscape overlay — gradient + optional title (B5)
 // ---------------------------------------------------------------------------
 
 interface LandscapeOverlayProps {
   gradientIntensity?: number;
+  title?: string;
+  titleFontSize?: number;
+  titleColor?: string;
 }
 
-function LandscapeOverlay({ gradientIntensity = 0.65 }: LandscapeOverlayProps) {
+function LandscapeOverlay({ gradientIntensity = 0.65, title, titleFontSize = 26, titleColor = "#FFFFFF" }: LandscapeOverlayProps) {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
   const gi = Math.max(0, Math.min(1, gradientIntensity));
+
+  // Title spring entrance (B5)
+  const headProgress = spring({ frame, fps, config: { damping: 16, stiffness: 160 } });
+  const headOpacity = interpolate(headProgress, [0, 0.5], [0, 1], { extrapolateRight: "clamp" });
+  const headY = interpolate(headProgress, [0, 1], [-12, 0]);
+
   return (
-    <div style={{
-      position: "absolute",
-      bottom: 0,
-      left: 0,
-      right: 0,
-      height: "35%",
-      background: `linear-gradient(to top, rgba(0,0,0,${gi.toFixed(2)}) 0%, transparent 100%)`,
-      pointerEvents: "none",
-    }} />
+    <>
+      <div style={{
+        position: "absolute",
+        bottom: 0,
+        left: 0,
+        right: 0,
+        height: "35%",
+        background: `linear-gradient(to top, rgba(0,0,0,${gi.toFixed(2)}) 0%, transparent 100%)`,
+        pointerEvents: "none",
+      }} />
+
+      {/* B5: Landscape title overlay — top-left branding */}
+      {title && (
+        <div style={{
+          position: "absolute",
+          top: "4%",
+          left: "3%",
+          right: "40%",
+          opacity: headOpacity,
+          transform: `translateY(${headY}px)`,
+          fontSize: titleFontSize,
+          fontWeight: "700",
+          color: titleColor,
+          textShadow: "0 2px 10px rgba(0,0,0,0.9), 0 0 30px rgba(0,0,0,0.5)",
+          lineHeight: 1.3,
+          letterSpacing: "0.03em",
+          pointerEvents: "none",
+        }}>
+          {title}
+        </div>
+      )}
+    </>
   );
 }
 
@@ -246,9 +476,14 @@ interface SceneComponentProps {
     subtitlesSrt: string | null;
     isPortrait: boolean;
     animPreset: KaraokeAnimPreset;
+    fontFamily?: string;
   };
   isPortrait: boolean;
   showTitle?: string;
+  /** A4: Ken Burns yönü — deterministik sahne bazlı */
+  kenBurnsDirection: KenBurnsDirection;
+  /** A1: Geçiş süresi (frame) — overlap bölgesinde crossfade */
+  transitionDurationFrames: number;
   /** M44 props */
   imageKenBurns?: boolean;
   imageTransition?: "crossfade" | "cut" | "slide" | "zoom";
@@ -263,6 +498,8 @@ interface SceneComponentProps {
 
 function SceneComponent({
   scene, subtitleProps, isPortrait, showTitle,
+  kenBurnsDirection,
+  transitionDurationFrames,
   imageKenBurns = true, imageTransition = "crossfade",
   bgColor = "#0a0a0a", gradientIntensity = 0.65,
   titleFontSize = 30, titleColor = "#FFFFFF",
@@ -271,34 +508,43 @@ function SceneComponent({
   const frame = useCurrentFrame();
   const { fps, durationInFrames } = useVideoConfig();
 
-  // Ken Burns: yavaş zoom (1.0 → 1.08 arası lerp)
-  const kenBurnsScale = imageKenBurns
-    ? interpolate(frame, [0, durationInFrames], [1.0, 1.08], { extrapolateRight: "clamp" })
-    : 1.0;
+  // A4: Ken Burns with direction variety
+  const { scale: kbScale, translateX: kbTx, translateY: kbTy } = imageKenBurns
+    ? computeKenBurnsTransform(frame, durationInFrames, kenBurnsDirection)
+    : { scale: 1.0, translateX: 0, translateY: 0 };
 
-  // Transition: sahne girişinde fade-in efekti
-  const transitionFrames = Math.round(fps * 0.5);
+  // A1+A5: Transition — sahne girişinde fade-in efekti (props'tan süre)
+  const trFrames = Math.max(1, transitionDurationFrames);
   let entryOpacity = 1;
   if (imageTransition === "crossfade") {
-    entryOpacity = interpolate(frame, [0, transitionFrames], [0, 1], { extrapolateRight: "clamp" });
+    entryOpacity = interpolate(frame, [0, trFrames], [0, 1], { extrapolateRight: "clamp" });
   } else if (imageTransition === "slide") {
-    entryOpacity = interpolate(frame, [0, Math.round(transitionFrames * 0.6)], [0, 1], { extrapolateRight: "clamp" });
+    entryOpacity = interpolate(frame, [0, Math.round(trFrames * 0.6)], [0, 1], { extrapolateRight: "clamp" });
   } else if (imageTransition === "zoom") {
-    entryOpacity = interpolate(frame, [0, transitionFrames], [0, 1], { extrapolateRight: "clamp" });
+    entryOpacity = interpolate(frame, [0, trFrames], [0, 1], { extrapolateRight: "clamp" });
   }
 
   const slideX = imageTransition === "slide"
-    ? interpolate(frame, [0, transitionFrames], [40, 0], { extrapolateRight: "clamp" })
+    ? interpolate(frame, [0, trFrames], [40, 0], { extrapolateRight: "clamp" })
     : 0;
 
   const zoomEntry = imageTransition === "zoom"
-    ? interpolate(frame, [0, transitionFrames], [1.15, 1.0], { extrapolateRight: "clamp" })
+    ? interpolate(frame, [0, trFrames], [1.15, 1.0], { extrapolateRight: "clamp" })
     : 1.0;
 
-  const totalScale = kenBurnsScale * zoomEntry;
+  const totalScale = kbScale * zoomEntry;
+
+  // A1: Exit fade-out for overlap — son N frame'de opacity düşer
+  const exitFadeStart = durationInFrames - trFrames;
+  const exitOpacity = durationInFrames > trFrames * 2
+    ? interpolate(frame, [exitFadeStart, durationInFrames], [1, 0], {
+        extrapolateLeft: "clamp",
+        extrapolateRight: "clamp",
+      })
+    : 1;
 
   return (
-    <AbsoluteFill style={{ backgroundColor: bgColor }}>
+    <AbsoluteFill style={{ backgroundColor: bgColor, opacity: exitOpacity }}>
       {/* Arka plan görseli */}
       {scene.image_path && (
         <Img
@@ -309,7 +555,7 @@ function SceneComponent({
             objectFit: "cover",
             objectPosition: isPortrait ? "center 20%" : "center center",
             opacity: entryOpacity,
-            transform: `scale(${totalScale}) translateX(${slideX}px)`,
+            transform: `scale(${totalScale}) translateX(${slideX + kbTx}px) translateY(${kbTy}px)`,
           }}
         />
       )}
@@ -331,7 +577,7 @@ function SceneComponent({
       {/* Gradient overlay */}
       {isPortrait
         ? <PortraitOverlay title={showTitle} gradientIntensity={gradientIntensity} titleFontSize={titleFontSize} titleColor={titleColor} />
-        : <LandscapeOverlay gradientIntensity={gradientIntensity} />
+        : <LandscapeOverlay gradientIntensity={gradientIntensity} title={showTitle} titleFontSize={titleFontSize} titleColor={titleColor} />
       }
 
       {/* Watermark */}
@@ -346,6 +592,7 @@ function SceneComponent({
         subtitlesSrt={subtitleProps.subtitlesSrt}
         isPortrait={subtitleProps.isPortrait}
         animPreset={subtitleProps.animPreset}
+        fontFamily={subtitleProps.fontFamily}
       />
     </AbsoluteFill>
   );
@@ -370,6 +617,7 @@ export function StandardVideoComposition(props: StandardVideoProps) {
     // M44 props
     imageKenBurns = true,
     imageTransition = "crossfade",
+    sceneTransitionDuration,
     bgColor = "#0a0a0a",
     showTitleOverlay = true,
     titleFontSize = 30,
@@ -378,18 +626,48 @@ export function StandardVideoComposition(props: StandardVideoProps) {
     watermarkText = "",
     watermarkOpacity = 0.3,
     watermarkPosition = "bottom-right",
+    subtitleFontFamily,
   } = props;
 
   // M41c: Portrait detection — renderFormat prop veya canvas boyutundan
   const isPortrait = renderFormat === "portrait" || height > width;
 
-  // Sahne frame offsetlerini hesapla
+  // A5: Geçiş süresi — prop'tan veya varsayılan 0.5s
+  const transitionSec = sceneTransitionDuration ?? 0.5;
+  const transitionFrames = Math.max(1, Math.round(transitionSec * fps));
+
+  // A2: Intro süre — 2.5 saniye
+  const INTRO_SECONDS = 2.5;
+  const introFrames = Math.round(INTRO_SECONDS * fps);
+  const hasIntro = !!title && scenes.length > 0;
+
+  // A3: Outro süre — 2.5 saniye
+  const OUTRO_SECONDS = 2.5;
+  const outroFrames = Math.round(OUTRO_SECONDS * fps);
+  // Outro text: watermarkText (kanal adı) veya title
+  const outroText = watermarkText || title || "";
+  const hasOutro = !!outroText && scenes.length > 0;
+
+  // A1: Sahne frame offsetlerini hesapla — overlap ile
+  // Intro → scene0 → scene1 → ... → sceneN → outro
+  // Her sahne arası transitionFrames kadar overlap var
+  const sceneFrameLengths: number[] = scenes.map(s => Math.round(s.duration_seconds * fps));
+
+  // Intro offset: intro başlangıcı = 0
+  const introStart = 0;
+  // İlk sahne, intro bitmeden transitionFrames önce başlar (overlap)
+  let currentOffset = hasIntro ? introFrames - transitionFrames : 0;
+
   const sceneOffsets: number[] = [];
-  let offset = 0;
-  for (const scene of scenes) {
-    sceneOffsets.push(offset);
-    offset += Math.round(scene.duration_seconds * fps);
+  for (let i = 0; i < scenes.length; i++) {
+    sceneOffsets.push(Math.max(0, currentOffset));
+    currentOffset += sceneFrameLengths[i] - (i < scenes.length - 1 ? transitionFrames : 0);
   }
+
+  // Outro offset: son sahne bitmeden transitionFrames önce
+  const outroStart = hasOutro && scenes.length > 0
+    ? sceneOffsets[scenes.length - 1] + sceneFrameLengths[scenes.length - 1] - transitionFrames
+    : currentOffset;
 
   const subtitleProps = {
     wordTimings,
@@ -399,12 +677,31 @@ export function StandardVideoComposition(props: StandardVideoProps) {
     subtitlesSrt: subtitles_srt,
     isPortrait,
     animPreset: (karaokeAnimPreset ?? "hype") as KaraokeAnimPreset,
+    fontFamily: subtitleFontFamily,
   };
 
   return (
     <AbsoluteFill style={{ backgroundColor: bgColor }}>
+      {/* A2: Intro card */}
+      {hasIntro && (
+        <Sequence
+          from={introStart}
+          durationInFrames={introFrames}
+        >
+          <IntroCard
+            title={title}
+            bgColor={bgColor}
+            titleColor={titleColor}
+            titleFontSize={titleFontSize}
+            isPortrait={isPortrait}
+            gradientIntensity={gradientIntensity}
+          />
+        </Sequence>
+      )}
+
+      {/* Sahneler — A1: overlap ile gerçek geçiş */}
       {scenes.map((scene, index) => {
-        const durationFrames = Math.round(scene.duration_seconds * fps);
+        const durationFrames = sceneFrameLengths[index];
         if (durationFrames <= 0) return null;
 
         return (
@@ -418,6 +715,8 @@ export function StandardVideoComposition(props: StandardVideoProps) {
               subtitleProps={subtitleProps}
               isPortrait={isPortrait}
               showTitle={showTitleOverlay && index === 0 ? title : undefined}
+              kenBurnsDirection={getKenBurnsDirection(scene.scene_number)}
+              transitionDurationFrames={transitionFrames}
               imageKenBurns={imageKenBurns}
               imageTransition={imageTransition}
               bgColor={bgColor}
@@ -431,6 +730,22 @@ export function StandardVideoComposition(props: StandardVideoProps) {
           </Sequence>
         );
       })}
+
+      {/* A3: Outro card */}
+      {hasOutro && (
+        <Sequence
+          from={outroStart}
+          durationInFrames={outroFrames}
+        >
+          <OutroCard
+            channelName={outroText}
+            bgColor={bgColor}
+            titleColor={titleColor}
+            isPortrait={isPortrait}
+            gradientIntensity={gradientIntensity}
+          />
+        </Sequence>
+      )}
     </AbsoluteFill>
   );
 }

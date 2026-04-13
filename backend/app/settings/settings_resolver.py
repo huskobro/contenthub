@@ -1837,7 +1837,7 @@ KNOWN_VALIDATION_RULES: Dict[str, str] = {
     "news_bulletin.config.image_ken_burns": '{"type": "boolean"}',
     "news_bulletin.config.auto_layout_selection": '{"type": "boolean"}',
     # M44: Standard Video yeni parametreler
-    "standard_video.config.karaoke_anim_preset": '{"type": "string", "enum": ["hype", "smooth", "bounce", "typewriter", "glow"]}',
+    "standard_video.config.karaoke_anim_preset": '{"type": "string", "enum": ["hype", "explosive", "vibrant", "minimal"]}',
     "standard_video.config.render_fps": '{"type": "integer", "min": 15, "max": 60}',
     "standard_video.config.subtitle_font_size": '{"type": "integer", "min": 0, "max": 80}',
     "standard_video.config.subtitle_stroke_width": '{"type": "integer", "min": -1, "max": 10}',

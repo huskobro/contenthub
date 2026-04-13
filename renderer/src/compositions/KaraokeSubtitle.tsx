@@ -64,6 +64,8 @@ export interface KaraokeSubtitleProps {
    * Default: "hype"
    */
   animPreset?: KaraokeAnimPreset;
+  /** B2: Admin panelden kontrol edilen font ailesi. Varsayılan: "inherit". */
+  fontFamily?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -239,6 +241,7 @@ export function KaraokeSubtitle(props: KaraokeSubtitleProps): JSX.Element {
     subtitlesSrt,
     isPortrait = false,
     animPreset = "hype",
+    fontFamily,
   } = props;
 
   const frame = useCurrentFrame();
@@ -277,7 +280,7 @@ export function KaraokeSubtitle(props: KaraokeSubtitleProps): JSX.Element {
           `${style.outline_width}px -${style.outline_width}px 0 ${style.outline_color},` +
           `-${style.outline_width}px -${style.outline_width}px 0 ${style.outline_color}`
         : undefined,
-    fontFamily: "inherit",
+    fontFamily: fontFamily || "inherit",
   };
 
   // ── Cursor / degrade mod ───────────────────────────────────────────────────

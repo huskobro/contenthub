@@ -147,11 +147,24 @@ export function RemotionRoot() {
           } else {
             totalSecs = raw;
           }
-          const durationInFrames = Math.max(1, Math.round(totalSecs * FPS));
+          // A6: renderFps prop'tan oku — yoksa global FPS sabiti
+          const activeFps =
+            typeof typed.renderFps === "number" && typed.renderFps >= 15 && typed.renderFps <= 60
+              ? typed.renderFps
+              : FPS;
+          // Intro (2.5s) + outro (2.5s) ek süre — overlap düşülür
+          const hasScenes = Array.isArray(typed.scenes) && typed.scenes.length > 0;
+          const transSec = typeof typed.sceneTransitionDuration === "number" ? typed.sceneTransitionDuration : 0.5;
+          // Net ek süre: (intro - overlap) + (outro - overlap)
+          const introExtra = hasScenes && typed.title ? Math.max(0, 2.5 - transSec) : 0;
+          const outroExtra = hasScenes ? Math.max(0, 2.5 - transSec) : 0;
+          const extraSeconds = introExtra + outroExtra;
+          const durationInFrames = Math.max(1, Math.round((totalSecs + extraSeconds) * activeFps));
           // M41: 9:16 portrait desteği
           const isPortrait = typed.renderFormat === "portrait";
           return {
             durationInFrames,
+            fps: activeFps,
             width: isPortrait ? 1080 : 1920,
             height: isPortrait ? 1920 : 1080,
           };
