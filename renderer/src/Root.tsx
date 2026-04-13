@@ -152,14 +152,23 @@ export function RemotionRoot() {
             typeof typed.renderFps === "number" && typed.renderFps >= 15 && typed.renderFps <= 60
               ? typed.renderFps
               : FPS;
-          // Intro (2.5s) + outro (2.5s) ek süre — overlap düşülür
+          // Duration hesabı — composition layout ile senkron olmalı
           const hasScenes = Array.isArray(typed.scenes) && typed.scenes.length > 0;
+          const sceneCount = hasScenes ? typed.scenes.length : 0;
           const transSec = typeof typed.sceneTransitionDuration === "number" ? typed.sceneTransitionDuration : 0.5;
-          // Net ek süre: (intro - overlap) + (outro - overlap)
-          const introExtra = hasScenes && typed.title ? Math.max(0, 2.5 - transSec) : 0;
-          const outroExtra = hasScenes ? Math.max(0, 2.5 - transSec) : 0;
-          const extraSeconds = introExtra + outroExtra;
-          const durationInFrames = Math.max(1, Math.round((totalSecs + extraSeconds) * activeFps));
+          const trFrames = Math.max(1, Math.round(transSec * activeFps));
+          const INTRO_SEC = 2.5;
+          const OUTRO_SEC = 2.5;
+          const hasIntro = hasScenes && !!typed.title;
+          const hasOutro = hasScenes && !!(typed.watermarkText || typed.title);
+          const introFrames = hasIntro ? Math.round(INTRO_SEC * activeFps) : 0;
+          const outroFrames = hasOutro ? Math.round(OUTRO_SEC * activeFps) : 0;
+          // total_content_frames - scene_overlaps + intro_net + outro_net
+          const totalContentFrames = Math.round(totalSecs * activeFps);
+          const sceneOverlaps = sceneCount > 1 ? (sceneCount - 1) * trFrames : 0;
+          const introNet = hasIntro ? introFrames - trFrames : 0;
+          const outroNet = hasOutro ? outroFrames - trFrames : 0;
+          const durationInFrames = Math.max(1, totalContentFrames - sceneOverlaps + introNet + outroNet);
           // M41: 9:16 portrait desteği
           const isPortrait = typed.renderFormat === "portrait";
           return {
