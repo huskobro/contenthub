@@ -36,7 +36,7 @@ import { NewsItemsRegistryPage } from "../pages/admin/NewsItemsRegistryPage";
 import { NewsItemCreatePage } from "../pages/admin/NewsItemCreatePage";
 import { TemplateStyleLinksRegistryPage } from "../pages/admin/TemplateStyleLinksRegistryPage";
 import { TemplateStyleLinkCreatePage } from "../pages/admin/TemplateStyleLinkCreatePage";
-import { YouTubeCallbackPage } from "../pages/admin/YouTubeCallbackPage";
+import { UserYouTubeCallbackPage } from "../pages/user/UserYouTubeCallbackPage";
 import { VisibilityGuard } from "../components/visibility/VisibilityGuard";
 import { ModuleManagementPage } from "../pages/admin/ModuleManagementPage";
 import { ProviderManagementPage } from "../pages/admin/ProviderManagementPage";
@@ -183,7 +183,6 @@ export const router = createBrowserRouter([
       { path: "prompts", element: <VisibilityGuard targetKey="panel:settings"><PromptEditorPage /></VisibilityGuard> },
       { path: "users", element: <UsersRegistryPage /> },
       { path: "users/:userId/settings", element: <UserSettingsDetailPage /> },
-      { path: "settings/youtube-callback", element: <YouTubeCallbackPage /> },
     ]}],
   },
   {
@@ -213,6 +212,7 @@ export const router = createBrowserRouter([
       { path: "connections", element: <Suspense fallback={<LazyFallback />}><UserConnectionsPage /></Suspense> },
       { path: "create/video", element: <Suspense fallback={<LazyFallback />}><CreateVideoWizardPage /></Suspense> },
       { path: "create/bulletin", element: <Suspense fallback={<LazyFallback />}><CreateBulletinWizardPage /></Suspense> },
+      { path: "settings/youtube-callback", element: <UserYouTubeCallbackPage /> },
     ]}],
   },
   {

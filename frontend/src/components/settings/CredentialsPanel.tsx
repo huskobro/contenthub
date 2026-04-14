@@ -12,7 +12,6 @@
 import { useCredentialsList } from "../../hooks/useCredentials";
 import type { CredentialStatus } from "../../api/credentialsApi";
 import { ApiKeyField } from "./ApiKeyField";
-import { YouTubeOAuthSection } from "./YouTubeOAuthSection";
 import { YouTubeChannelBrandingSection } from "./YouTubeChannelBrandingSection";
 
 // ---------------------------------------------------------------------------
@@ -69,14 +68,14 @@ export function CredentialsPanel() {
             {items.map((cred) => (
               <ApiKeyField key={cred.key} cred={cred} />
             ))}
-            {/* YouTube connection section after YouTube credentials */}
+            {/* YouTube connection is per-channel from the user panel:
+                 /user/channels/:id → "YouTube'a Bağlan".
+                 Admin settings only manages global credentials (client_id/secret);
+                 account binding belongs to the channel owner. */}
             {groupKey === "youtube" && (
-              <>
-                <YouTubeOAuthSection />
-                <div className="mt-4">
-                  <YouTubeChannelBrandingSection />
-                </div>
-              </>
+              <div className="mt-4">
+                <YouTubeChannelBrandingSection />
+              </div>
             )}
           </div>
         );

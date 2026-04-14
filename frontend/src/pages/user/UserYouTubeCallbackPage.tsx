@@ -24,7 +24,12 @@ export function UserYouTubeCallbackPage() {
 
     const code = searchParams.get("code");
     const error = searchParams.get("error");
-    const state = searchParams.get("state"); // channel_profile_id
+    const rawState = searchParams.get("state");
+    // Account-selector hardening: state is now `{channel_profile_id}:{nonce}`.
+    // Recover the profile id by splitting on the first ':'.
+    const channelProfileId = rawState
+      ? rawState.includes(":") ? rawState.split(":", 1)[0] : rawState
+      : null;
 
     if (error) {
       setStatus("error");
@@ -46,7 +51,7 @@ export function UserYouTubeCallbackPage() {
         {
           code,
           redirect_uri: redirectUri,
-          channel_profile_id: state || undefined,
+          channel_profile_id: channelProfileId || undefined,
         },
       )
       .then((data) => {
@@ -66,7 +71,7 @@ export function UserYouTubeCallbackPage() {
             window.close();
           } else {
             navigate(
-              state ? `/user/channels/${state}` : "/user/channels",
+              channelProfileId ? `/user/channels/${channelProfileId}` : "/user/channels",
               { replace: true },
             );
           }
