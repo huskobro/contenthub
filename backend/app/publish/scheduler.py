@@ -94,6 +94,10 @@ async def _check_and_trigger(db_session_factory) -> int:
                 )
 
                 # Audit log
+                # write_audit_log only flushes — caller must commit so the
+                # AuditLog row survives session close. Without this commit,
+                # the trigger itself was committed (inside trigger_publish)
+                # but the audit row would silently roll back.
                 try:
                     from app.audit.service import write_audit_log
                     await write_audit_log(
@@ -102,6 +106,7 @@ async def _check_and_trigger(db_session_factory) -> int:
                         entity_id=record.id,
                         details={"scheduled_at": str(record.scheduled_at)},
                     )
+                    await db.commit()
                 except Exception as exc:
                     logger.warning("Audit log write failed (publish.scheduler): %s", exc)
 
