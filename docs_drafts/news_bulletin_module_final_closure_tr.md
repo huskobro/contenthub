@@ -3,7 +3,7 @@
 **Tarih:** 2026-04-14
 **Modül:** `news_bulletin`
 **Durum:** **Büyük ölçüde tamamlandı** (closure kararı için §12'ye bakın)
-**Son commit:** `{commit_hash_placeholder}` (bu closure dokümanı)
+**Son commit:** `1e51079` (bu closure dokümanı)
 
 Bu doküman `news_bulletin` modülünü "closure" aşamasına alır. Modülün bugün
 tam olarak ne yaptığını netleştirir, kapanmış zincirleri kayıt altına alır,
@@ -501,7 +501,7 @@ kickoff, publish center v2, analytics v1) önüne geçmemeli.
 | `91a2ebd` | FAZ1 E2E pipeline acceptance test report (dokümantasyon) |
 | `07821fc` | FAZ1 4-bug fix pack (content_project linkage, duration field, enriched GET, artifact_refs) |
 | `81b5399` | Publish Adapter Pack (formatter + persistence + endpoint) |
-| *(bu commit)* | News Bulletin Module Final Closure dokümanı |
+| `1e51079` | News Bulletin Module Final Closure dokümanı |
 
 ---
 
