@@ -26,6 +26,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
 from app.audit.service import write_audit_log
+from app.core.crypto import get_token_cipher
 from app.db.models import PlatformConnection, PlatformCredential, ChannelProfile
 from app.publish.youtube.token_store import DBYouTubeTokenStore, YOUTUBE_SCOPE
 from app.publish.youtube.errors import YouTubeAuthError
@@ -256,16 +257,18 @@ async def save_channel_credentials(
 
     normalized_cid = _normalize_credential_value("credential.youtube_client_id", body.client_id)
 
-    # Upsert PlatformCredential
+    # Upsert PlatformCredential — encrypt client_secret at rest.
+    _cipher = get_token_cipher()
+    encrypted_secret = _cipher.encrypt(body.client_secret.strip())
     cred = await _token_store.load_credential(db, conn.id)
     if cred:
         cred.client_id = normalized_cid
-        cred.client_secret = body.client_secret.strip()
+        cred.client_secret = encrypted_secret
     else:
         cred = PlatformCredential(
             platform_connection_id=conn.id,
             client_id=normalized_cid,
-            client_secret=body.client_secret.strip(),
+            client_secret=encrypted_secret,
         )
         db.add(cred)
 
@@ -388,7 +391,8 @@ async def auth_callback(
                 if not resolved_client_id and existing_cred.client_id:
                     resolved_client_id = expand_youtube_client_id(existing_cred.client_id)
                 if not resolved_client_secret and existing_cred.client_secret:
-                    resolved_client_secret = existing_cred.client_secret
+                    # Decrypt at-rest ciphertext (legacy plaintext passes through).
+                    resolved_client_secret = get_token_cipher().decrypt(existing_cred.client_secret)
 
     if not resolved_client_id:
         resolved_client_id = await resolve_credential("credential.youtube_client_id", db)
@@ -483,7 +487,9 @@ async def auth_callback(
         entity_id=connection.id,
     )
 
-    if not scope_ok:
+    # Publish Core Hardening Pack — Gate 1: fix undefined scope_ok reference.
+    # In this callback scope the scope-ok flag is called youtube_ok (line 449).
+    if not youtube_ok:
         logger.warning(
             "YouTube OAuth scope yetersiz. Istenen: %s — Alinan: %s",
             YOUTUBE_SCOPE,

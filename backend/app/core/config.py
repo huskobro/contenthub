@@ -30,11 +30,20 @@ class Settings(BaseSettings):
     youtube_client_id: str = ""
     youtube_client_secret: str = ""
 
+    # Dev bypass — true ise JWT doğrulaması atlanır, tüm istekler admin olarak işlenir
+    auth_disabled: bool = False
+
     # Sprint 1: JWT authentication settings — env'den okunur
     jwt_secret: str = ""
     jwt_algorithm: str = "HS256"
     jwt_access_token_expire_minutes: int = 60
     jwt_refresh_token_expire_days: int = 7
+
+    # Publish Core Hardening Pack — OAuth token encryption at rest.
+    # Generate with: python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+    # Empty in debug mode → deterministic dev fallback (warning logged).
+    # Empty in production mode → app must fail fast on first cipher access.
+    encryption_key: str = ""
 
     @property
     def database_url(self) -> str:

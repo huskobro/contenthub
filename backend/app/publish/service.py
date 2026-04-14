@@ -768,19 +768,42 @@ async def create_publish_record_from_job(
     # content_ref_id verilmemişse job_id'yi kullan
     effective_content_ref_id = content_ref_id or job_id
 
-    # Workspace'ten metadata.json okumayı dene
+    # Workspace'ten metadata.json okumayı dene.
+    # Publish Core Hardening Pack — Gate 2: tek otorite okuma.
+    # Modüller (standard_video + news_bulletin) artifact'ı
+    # `{workspace}/artifacts/metadata.json` altına yazıyor. Eski job'lar için
+    # `{workspace}/metadata.json` legacy fallback olarak korunuyor.
     payload_data: dict = {}
     if job.workspace_path:
-        metadata_path = os.path.join(job.workspace_path, "metadata.json")
-        if os.path.isfile(metadata_path):
-            try:
-                with open(metadata_path, "r", encoding="utf-8") as f:
-                    meta = json.load(f)
-                for key in ("title", "description", "tags"):
-                    if key in meta:
-                        payload_data[key] = meta[key]
-            except Exception as exc:
-                logger.warning("create_publish_record_from_job: metadata.json okunamadı (job=%s): %s", job_id, exc)
+        candidate_paths = [
+            os.path.join(job.workspace_path, "artifacts", "metadata.json"),  # primary
+            os.path.join(job.workspace_path, "metadata.json"),               # legacy
+        ]
+        meta_source: Optional[str] = None
+        for metadata_path in candidate_paths:
+            if os.path.isfile(metadata_path):
+                try:
+                    with open(metadata_path, "r", encoding="utf-8") as f:
+                        meta = json.load(f)
+                    for key in ("title", "description", "tags"):
+                        if key in meta:
+                            payload_data[key] = meta[key]
+                    # Preserve common auxiliary fields if present (category/language)
+                    for key in ("category", "language"):
+                        if key in meta and key not in payload_data:
+                            payload_data[key] = meta[key]
+                    meta_source = metadata_path
+                    break
+                except Exception as exc:
+                    logger.warning(
+                        "create_publish_record_from_job: metadata.json okunamadı "
+                        "(job=%s, path=%s): %s", job_id, metadata_path, exc,
+                    )
+        if meta_source is not None:
+            logger.info(
+                "create_publish_record_from_job: metadata source (job=%s): %s",
+                job_id, meta_source,
+            )
 
     # input_data_json'dan da başlık almayı dene (fallback)
     if not payload_data.get("title") and job.input_data_json:

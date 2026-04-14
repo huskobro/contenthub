@@ -25,6 +25,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
+from app.core.crypto import get_token_cipher
 from app.publish.youtube.errors import YouTubeAuthError
 
 logger = logging.getLogger(__name__)
@@ -112,30 +113,43 @@ class DBYouTubeTokenStore:
         client_secret: str,
         auth_response: dict,
     ) -> None:
-        """Save OAuth tokens to PlatformCredential table (upsert)."""
+        """Save OAuth tokens to PlatformCredential table (upsert).
+
+        Tokens and client_secret are encrypted at rest via TokenCipher
+        (Publish Core Hardening Pack — Gate 1).
+        """
         from app.db.models import PlatformCredential
 
         expires_in = auth_response.get("expires_in", 3600)
         expiry = datetime.now(timezone.utc) + timedelta(seconds=expires_in - 60)
         scope = auth_response.get("scope", YOUTUBE_SCOPE)
 
+        cipher = get_token_cipher()
+        enc_access = cipher.encrypt(auth_response["access_token"])
+        enc_refresh_raw = auth_response.get("refresh_token", "")
+        enc_client_secret = cipher.encrypt(client_secret) if client_secret else client_secret
+
         cred = await self.load_credential(db, connection_id)
         if cred:
-            cred.access_token = auth_response["access_token"]
-            cred.refresh_token = auth_response.get("refresh_token", cred.refresh_token or "")
+            cred.access_token = enc_access
+            # If Google did not return a new refresh_token, keep existing one (already encrypted).
+            if enc_refresh_raw:
+                cred.refresh_token = cipher.encrypt(enc_refresh_raw)
+            elif not cred.refresh_token:
+                cred.refresh_token = ""
             cred.token_expiry = expiry
             cred.client_id = client_id
-            cred.client_secret = client_secret
+            cred.client_secret = enc_client_secret
             cred.scopes = scope
             cred.raw_token_response = json.dumps(auth_response)
         else:
             cred = PlatformCredential(
                 platform_connection_id=connection_id,
-                access_token=auth_response["access_token"],
-                refresh_token=auth_response.get("refresh_token", ""),
+                access_token=enc_access,
+                refresh_token=cipher.encrypt(enc_refresh_raw) if enc_refresh_raw else "",
                 token_expiry=expiry,
                 client_id=client_id,
-                client_secret=client_secret,
+                client_secret=enc_client_secret,
                 scopes=scope,
                 raw_token_response=json.dumps(auth_response),
             )
@@ -145,16 +159,23 @@ class DBYouTubeTokenStore:
     # -- Access token (with auto-refresh) --------------------------------
 
     async def get_access_token(self, db: AsyncSession, connection_id: str) -> str:
-        """Get valid access token, refreshing if needed."""
+        """Get valid access token, refreshing if needed.
+
+        Transparently decrypts at-rest ciphertext (or legacy plaintext) before
+        returning. Legacy plaintext rows are left untouched here; they get
+        encrypted on the next refresh cycle (lazy migration).
+        """
         cred = await self.load_credential(db, connection_id)
         if not cred or not cred.refresh_token:
             raise YouTubeAuthError(
                 "YouTube OAuth2 credential bulunamadi. Kanal ayarlarindan yeniden yetkilendirme yapin."
             )
 
+        cipher = get_token_cipher()
+
         now = datetime.now(timezone.utc)
         if cred.token_expiry and now < cred.token_expiry:
-            return cred.access_token
+            return cipher.decrypt(cred.access_token)
 
         logger.info(
             "YouTube access token suresi dolmus (connection=%s) — yenileniyor.",
@@ -165,10 +186,11 @@ class DBYouTubeTokenStore:
     async def _refresh_access_token(
         self, db: AsyncSession, cred: "PlatformCredential",
     ) -> str:
+        cipher = get_token_cipher()
         payload = {
             "client_id": cred.client_id,
-            "client_secret": cred.client_secret,
-            "refresh_token": cred.refresh_token,
+            "client_secret": cipher.decrypt(cred.client_secret),
+            "refresh_token": cipher.decrypt(cred.refresh_token),
             "grant_type": "refresh_token",
         }
         client = self._get_client()
@@ -193,17 +215,22 @@ class DBYouTubeTokenStore:
             )
 
         expires_in = data.get("expires_in", 3600)
-        cred.access_token = data["access_token"]
+        new_access_token = data["access_token"]
+        # Store encrypted at rest.
+        cred.access_token = cipher.encrypt(new_access_token)
         cred.token_expiry = datetime.now(timezone.utc) + timedelta(seconds=expires_in - 60)
         if "refresh_token" in data:
-            cred.refresh_token = data["refresh_token"]
+            cred.refresh_token = cipher.encrypt(data["refresh_token"])
+        # Also re-encrypt client_secret if it was legacy plaintext — opportunistic.
+        if cred.client_secret and not cred.client_secret.startswith("enc:v1:"):
+            cred.client_secret = cipher.encrypt(cred.client_secret)
         await db.commit()
 
         logger.info(
             "YouTube access token basariyla yenilendi (connection=%s).",
             cred.platform_connection_id,
         )
-        return cred.access_token
+        return new_access_token
 
     # -- OAuth URL & code exchange (no DB, pure HTTP) --------------------
 

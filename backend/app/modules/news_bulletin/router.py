@@ -465,13 +465,11 @@ async def create_bulletin_publish_record(
         platform_connection_id=request_body.platform_connection_id,
     )
 
-    # create_publish_record_from_job reads {workspace_path}/metadata.json,
-    # but the news_bulletin pipeline writes it under
-    # {workspace_path}/artifacts/metadata.json — so the generic service
-    # can only fill the title (via input_data_json topic fallback).
-    # Enrich the payload with the canonical formatted description + tags
-    # from news_bulletin_metadata DB row that the metadata executor
-    # persisted (post-LLM description override already applied there).
+    # Publish Core Hardening Pack — Gate 2:
+    # The generic publish core now reads `{workspace}/artifacts/metadata.json`
+    # first, which matches where the news_bulletin pipeline writes.
+    # Keep a best-effort DB-row fallback in case the artifact was unreadable
+    # but the metadata row was persisted — fills only missing keys.
     try:
         bulletin_metadata = await service.get_bulletin_metadata(db, item_id)
     except Exception:  # pragma: no cover — defensive
@@ -485,36 +483,40 @@ async def create_bulletin_publish_record(
         except (TypeError, ValueError):
             current_payload = {}
 
-        if bulletin_metadata.title:
-            current_payload.setdefault("title", bulletin_metadata.title)
-        if bulletin_metadata.description:
+        mutated = False
+        if bulletin_metadata.title and not current_payload.get("title"):
+            current_payload["title"] = bulletin_metadata.title
+            mutated = True
+        if bulletin_metadata.description and not current_payload.get("description"):
             current_payload["description"] = bulletin_metadata.description
-        tags_payload = None
-        if bulletin_metadata.tags_json:
+            mutated = True
+        if not current_payload.get("tags") and bulletin_metadata.tags_json:
             try:
                 tags_payload = json.loads(bulletin_metadata.tags_json)
             except ValueError:
                 tags_payload = None
-        if tags_payload:
-            current_payload["tags"] = tags_payload
-        if bulletin_metadata.category:
-            current_payload.setdefault("category", bulletin_metadata.category)
-        if bulletin_metadata.language:
-            current_payload.setdefault("language", bulletin_metadata.language)
+            if tags_payload:
+                current_payload["tags"] = tags_payload
+                mutated = True
+        if bulletin_metadata.category and not current_payload.get("category"):
+            current_payload["category"] = bulletin_metadata.category
+            mutated = True
+        if bulletin_metadata.language and not current_payload.get("language"):
+            current_payload["language"] = bulletin_metadata.language
+            mutated = True
 
-        record.payload_json = json.dumps(current_payload, ensure_ascii=False)
-        # Mirror into publish_intent_json so the publish adapter picks up
-        # the final copy via the v2 intent channel.
-        publish_intent = {
-            k: current_payload[k]
-            for k in ("title", "description", "tags")
-            if k in current_payload
-        }
-        record.publish_intent_json = json.dumps(
-            publish_intent, ensure_ascii=False
-        )
-        await db.commit()
-        await db.refresh(record)
+        if mutated:
+            record.payload_json = json.dumps(current_payload, ensure_ascii=False)
+            publish_intent = {
+                k: current_payload[k]
+                for k in ("title", "description", "tags")
+                if k in current_payload
+            }
+            record.publish_intent_json = json.dumps(
+                publish_intent, ensure_ascii=False
+            )
+            await db.commit()
+            await db.refresh(record)
 
     return PublishRecordShim(
         id=record.id,
