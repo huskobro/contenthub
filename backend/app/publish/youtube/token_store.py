@@ -237,7 +237,19 @@ class DBYouTubeTokenStore:
     def get_auth_url(
         self, client_id: str, redirect_uri: str, state: str = "",
     ) -> str:
-        """Google OAuth2 consent URL'i uretir (youtube + yt-analytics.readonly)."""
+        """Google OAuth2 consent URL'i uretir (youtube + yt-analytics.readonly).
+
+        Account-selector hardening — regression-proof:
+        Three independent layers force Google to show the account chooser
+        on every call, even when a Google session cookie exists:
+
+          1. ``prompt=select_account consent`` — explicit chooser + consent
+          2. ``max_age=0``                      — "session must be fresh" (OIDC)
+          3. ``include_granted_scopes=false``   — do not inherit prior grants
+
+        Any CI test removing one of these layers is caught by
+        ``test_youtube_oauth_account_selector.py``.
+        """
         params = {
             "client_id": client_id,
             "redirect_uri": redirect_uri,
@@ -245,6 +257,8 @@ class DBYouTubeTokenStore:
             "scope": YOUTUBE_SCOPE_STRING,
             "access_type": "offline",
             "prompt": "select_account consent",
+            "max_age": "0",
+            "include_granted_scopes": "false",
         }
         if state:
             params["state"] = state
@@ -451,12 +465,9 @@ class LegacyFileTokenStore:
         """
         Kullanıcıyı Google consent sayfasına yönlendirmek için URL üretir.
 
-        Args:
-            client_id    : Google API Console'dan alınan client ID.
-            redirect_uri : OAuth callback URL'i.
-
-        Returns:
-            Google OAuth2 yetkilendirme URL'i.
+        Legacy file-store variant — keeps the same 3-layer account-selector
+        hardening as the DB-store implementation above to prevent regression
+        on any code path still reaching here.
         """
         params = {
             "client_id": client_id,
@@ -465,8 +476,8 @@ class LegacyFileTokenStore:
             "scope": YOUTUBE_SCOPE_STRING,
             "access_type": "offline",
             "prompt": "select_account consent",
-            # include_granted_scopes kaldırıldı — eski scope inherit edilmesin,
-            # tam scope listesi her seferinde yeniden istenir
+            "max_age": "0",
+            "include_granted_scopes": "false",
         }
         return f"{GOOGLE_AUTH_URL}?{urlencode(params, quote_via=quote)}"
 

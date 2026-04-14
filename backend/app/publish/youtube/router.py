@@ -17,6 +17,7 @@ Endpoint'ler:
 from __future__ import annotations
 
 import logging
+import secrets
 from typing import List, Optional, Set
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -336,10 +337,17 @@ async def get_auth_url(
     resolved_client_id = expand_youtube_client_id(resolved_client_id)
 
     try:
+        # Account-selector hardening: append a fresh random nonce to the state
+        # so every auth-url call is unique. This prevents Google's session
+        # heuristics from silently re-using a prior consent decision tied to
+        # the same state value. Callback still recovers `channel_profile_id`
+        # by splitting on the first ":".
+        nonce = secrets.token_urlsafe(16)
+        state_value = f"{channel_profile_id}:{nonce}"
         auth_url = _token_store.get_auth_url(
             client_id=resolved_client_id,
             redirect_uri=redirect_uri,
-            state=channel_profile_id,
+            state=state_value,
         )
     except Exception as exc:
         logger.error("auth-url uretme hatasi: %s", exc)
@@ -362,8 +370,13 @@ async def auth_callback(
     channel_profile_id body'den veya state query param'dan alinir.
     Basarili exchange sonrasi PlatformConnection + PlatformCredential olusturulur/guncellenir.
     """
-    # Resolve channel_profile_id: body > state query param
-    channel_profile_id = body.channel_profile_id or state
+    # Resolve channel_profile_id: body > state query param.
+    # State may be `channel_profile_id:nonce` (account-selector hardening) or
+    # bare channel_profile_id (legacy clients). Split on first ":" and keep
+    # the UUID-shaped prefix.
+    channel_profile_id = body.channel_profile_id
+    if not channel_profile_id and state:
+        channel_profile_id = state.split(":", 1)[0] if ":" in state else state
     if not channel_profile_id:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

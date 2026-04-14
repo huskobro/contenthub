@@ -74,17 +74,18 @@ export function YouTubeOAuthSection() {
   }, [queryClient]);
 
   async function handleConnect() {
-    setConnecting(true);
-    setConnectError(null);
-    try {
-      const redirectUri = `${window.location.origin}/admin/settings/youtube-callback`;
-      const authUrl = await getYouTubeAuthUrl(redirectUri);
-      window.open(authUrl, "_blank", "width=600,height=700");
-    } catch (err) {
-      setConnectError(err instanceof Error ? err.message : "Baglanti hatasi.");
-    } finally {
-      setConnecting(false);
-    }
+    // Publish Core Hardening Pack — account-selector regression guard.
+    // The backend /auth-url endpoint requires channel_profile_id, but this
+    // legacy admin-settings section has no channel context. Silently calling
+    // getYouTubeAuthUrl(redirectUri) without it would 422 on the backend and
+    // break the "always show account chooser" invariant if anyone relaxed the
+    // backend to accept missing channel_profile_id. Redirect operators to the
+    // per-channel connect flow, where channel_profile_id is always present.
+    setConnectError(
+      "Kanal bazlı bağlantı için kullanıcı panelinde kanal detay " +
+      "sayfasından bağlayın (Kanallar → seçili kanal → YouTube'a Bağlan). " +
+      "Bu bölüm salt bilgilendirme amaçlıdır."
+    );
   }
 
   function handleDisconnect() {
