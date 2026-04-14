@@ -1011,6 +1011,12 @@ class PublishRecord(Base):
     platform_url: Mapped[Optional[str]] = mapped_column(String(1000), nullable=True)
     publish_attempt_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     last_error: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    # Gate 4 (Publish Closure): mapped error category for triage UX.
+    # Allowed values: app.publish.enums.PublishErrorCategory.
+    # Default 'unknown' for legacy rows; categorize_publish_error() fills it.
+    last_error_category: Mapped[Optional[str]] = mapped_column(
+        String(50), nullable=True, default=None
+    )
     payload_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     result_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)

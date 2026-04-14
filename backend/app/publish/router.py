@@ -17,13 +17,14 @@ Endpoint'ler:
   POST   /publish/{record_id}/reset-to-draft: Draft'a döndür
 """
 
+from datetime import datetime, timezone
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 
-from app.db.session import get_db
+from app.db.session import AsyncSessionLocal, get_db
 from app.audit.service import write_audit_log
 from app.visibility.dependencies import require_visible, get_active_user_id
-from app.publish import service
+from app.publish import bulk_service, service
 from app.publish.exceptions import (
     PublishRecordNotFoundError,
     InvalidPublishTransitionError,
@@ -31,13 +32,26 @@ from app.publish.exceptions import (
     PublishAlreadyTerminalError,
     ReviewGateViolationError,
 )
+from app.publish.scheduler import (
+    SCHEDULER_STALE_THRESHOLD_SECONDS,
+    snapshot_scheduler_status,
+)
+from app.publish.token_preflight import (
+    get_connection_token_status,
+    suggested_action_for_severity,
+)
 from app.publish.schemas import (
+    BulkActionRequest,
+    BulkActionResponse,
+    BulkRejectRequest,
     PublishRecordCreate,
     PublishRecordRead,
     PublishRecordSummary,
     PublishLogRead,
     ReviewActionRequest,
     ScheduleRequest,
+    SchedulerHealthResponse,
+    TokenStatusResponse,
     PublishTriggerRequest,
     CancelRequest,
     TransitionRequest,
@@ -85,6 +99,10 @@ async def list_publish_records(
     platform: Optional[str] = Query(default=None),
     status: Optional[str] = Query(default=None),
     content_ref_type: Optional[str] = Query(default=None),
+    error_category: Optional[str] = Query(
+        default=None,
+        description="Gate 4: filter failed records by last_error_category.",
+    ),
     limit: int = Query(default=50, ge=1, le=200),
     offset: int = Query(default=0, ge=0),
     session=Depends(get_db),
@@ -96,6 +114,7 @@ async def list_publish_records(
         platform=platform,
         status=status,
         content_ref_type=content_ref_type,
+        error_category=error_category,
         limit=limit,
         offset=offset,
     )
@@ -479,3 +498,161 @@ async def reset_review_for_artifact_change(
         raise _handle_not_found(exc)
     except (InvalidPublishTransitionError, PublishAlreadyTerminalError) as exc:
         raise _handle_invalid_transition(exc)
+
+
+# ---------------------------------------------------------------------------
+# Gate 4 (Publish Closure) — Bulk action endpoints
+# ---------------------------------------------------------------------------
+#
+# Each endpoint accepts a small batch (1..100) of record_ids and runs the
+# corresponding single-record service inside its own transaction.
+# Per-record results + summary are returned. The state machine is NOT
+# bypassed.
+#
+# bulk/reject requires `rejection_reason` (router-enforced + service-enforced).
+
+def _validate_bulk_request(record_ids: list[str]) -> None:
+    if not record_ids:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="record_ids boş olamaz.",
+        )
+    if len(record_ids) > bulk_service.MAX_BULK_RECORDS:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=(
+                f"Bulk istek limiti aşıldı: {len(record_ids)} > "
+                f"{bulk_service.MAX_BULK_RECORDS}."
+            ),
+        )
+
+
+@router.post("/bulk/approve", response_model=BulkActionResponse)
+async def bulk_approve(
+    body: BulkActionRequest,
+    user_id: Optional[str] = Depends(get_active_user_id),
+):
+    """Bulk approve — pending_review kayıtları toplu onaylar."""
+    _validate_bulk_request(body.record_ids)
+    return await bulk_service.bulk_approve(
+        session_factory=AsyncSessionLocal,
+        record_ids=body.record_ids,
+        reviewer_id=body.actor_id or user_id,
+        note=body.note,
+    )
+
+
+@router.post("/bulk/reject", response_model=BulkActionResponse)
+async def bulk_reject(
+    body: BulkRejectRequest,
+    user_id: Optional[str] = Depends(get_active_user_id),
+):
+    """Bulk reject — pending_review kayıtları toplu reddeder. reason zorunlu."""
+    _validate_bulk_request(body.record_ids)
+    if not body.rejection_reason or not body.rejection_reason.strip():
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Bulk reddetme için rejection_reason zorunludur.",
+        )
+    return await bulk_service.bulk_reject(
+        session_factory=AsyncSessionLocal,
+        record_ids=body.record_ids,
+        reviewer_id=body.actor_id or user_id,
+        rejection_reason=body.rejection_reason,
+        note=body.note,
+    )
+
+
+@router.post("/bulk/cancel", response_model=BulkActionResponse)
+async def bulk_cancel(
+    body: BulkActionRequest,
+    user_id: Optional[str] = Depends(get_active_user_id),
+):
+    """Bulk cancel — non-terminal kayıtları toplu iptal eder."""
+    _validate_bulk_request(body.record_ids)
+    return await bulk_service.bulk_cancel(
+        session_factory=AsyncSessionLocal,
+        record_ids=body.record_ids,
+        actor_id=body.actor_id or user_id,
+        note=body.note,
+    )
+
+
+@router.post("/bulk/retry", response_model=BulkActionResponse)
+async def bulk_retry(
+    body: BulkActionRequest,
+    user_id: Optional[str] = Depends(get_active_user_id),
+):
+    """Bulk retry — yalnızca failed kayıtlar; diğerleri publish_gate ile reddedilir."""
+    _validate_bulk_request(body.record_ids)
+    return await bulk_service.bulk_retry(
+        session_factory=AsyncSessionLocal,
+        record_ids=body.record_ids,
+        actor_id=body.actor_id or user_id,
+        note=body.note,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Gate 4 (Publish Closure) — Scheduler health endpoint
+# ---------------------------------------------------------------------------
+
+@router.get("/scheduler/status", response_model=SchedulerHealthResponse)
+async def scheduler_status(request: Request):
+    """
+    Publish scheduler arka plan görevi sağlık durumu.
+
+    state:
+      'unknown' : Henüz hiç tick atılmadı (uygulama yeni başlatıldı).
+      'healthy' : last_tick_at son `stale_threshold_seconds` içinde.
+      'stale'   : last_tick_at threshold'u geçti — scheduler donmuş olabilir.
+    """
+    raw = getattr(request.app.state, "publish_scheduler_status", None)
+    snapshot = snapshot_scheduler_status(raw, now=datetime.now(timezone.utc))
+    return SchedulerHealthResponse(
+        state=snapshot["state"],
+        started_at=snapshot.get("started_at"),
+        last_tick_at=snapshot.get("last_tick_at"),
+        last_due_count=snapshot.get("last_due_count", 0),
+        last_triggered_count=snapshot.get("last_triggered_count", 0),
+        last_skipped_count=snapshot.get("last_skipped_count", 0),
+        total_ticks=snapshot.get("total_ticks", 0),
+        total_triggered=snapshot.get("total_triggered", 0),
+        total_skipped=snapshot.get("total_skipped", 0),
+        consecutive_errors=snapshot.get("consecutive_errors", 0),
+        last_error=snapshot.get("last_error"),
+        interval_seconds=snapshot.get("interval_seconds", 0.0),
+        stale_threshold_seconds=SCHEDULER_STALE_THRESHOLD_SECONDS,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Gate 4 (Publish Closure) — Token expiry pre-flight visibility (Z-4)
+# ---------------------------------------------------------------------------
+
+@router.get(
+    "/connections/{connection_id}/token-status",
+    response_model=TokenStatusResponse,
+)
+async def connection_token_status(
+    connection_id: str,
+    db=Depends(get_db),
+):
+    """
+    Bir PlatformConnection için token sağlık durumu.
+
+    NON-AGGRESSIVE: platform API'ye gitmez, sadece DB'deki token_expiry +
+    requires_reauth alanlarını okur. UI badge ve scheduler aynı eşikleri
+    kullanır (warn=7g, critical=24s).
+    """
+    status_obj = await get_connection_token_status(db, connection_id)
+    return TokenStatusResponse(
+        connection_id=connection_id,
+        severity=status_obj.severity,
+        seconds_remaining=status_obj.seconds_remaining,
+        expires_at=status_obj.expires_at,
+        requires_reauth=status_obj.requires_reauth,
+        has_refresh_token=status_obj.has_refresh_token,
+        is_blocking=status_obj.is_blocking,
+        suggested_action=suggested_action_for_severity(status_obj.severity),
+    )

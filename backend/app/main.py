@@ -273,10 +273,18 @@ async def lifespan(app: FastAPI):
     # Session factory'yi app.state'e ekle (M28 — _watch_bulletin_job için)
     app.state.session_factory = _session_factory
 
-    # Publish scheduler — background task (M11)
+    # Publish scheduler — background task (M11) + Gate 4 health snapshot.
+    # The scheduler updates this dict in place every tick. The
+    # /publish/scheduler/status endpoint reads it and reports
+    # {unknown, healthy, stale}.
     from app.publish.scheduler import poll_scheduled_publishes
+    app.state.publish_scheduler_status = {}
     scheduler_task = asyncio.create_task(
-        poll_scheduled_publishes(AsyncSessionLocal, interval=60)
+        poll_scheduled_publishes(
+            AsyncSessionLocal,
+            interval=60,
+            status_holder=app.state.publish_scheduler_status,
+        )
     )
     app.state.scheduler_task = scheduler_task
     logger.info("Publish scheduler task created.")

@@ -81,8 +81,10 @@ async def test_scheduler_tick_transitions_due_record_to_publishing(engine_and_fa
     past = datetime.now(timezone.utc) - timedelta(seconds=1)
     await _insert_due_scheduled_record(factory, scheduled_at=past)
 
-    triggered = await _check_and_trigger(factory)
+    triggered, due, skipped = await _check_and_trigger(factory)
     assert triggered == 1, f"expected 1 record triggered, got {triggered}"
+    assert due == 1
+    assert skipped == 0
 
     async with factory() as db:
         rec = (await db.execute(
@@ -110,8 +112,10 @@ async def test_scheduler_tick_skips_future_scheduled(engine_and_factory):
         factory, scheduled_at=future, record_id="pub-smoke-future",
     )
 
-    triggered = await _check_and_trigger(factory)
+    triggered, due, skipped = await _check_and_trigger(factory)
     assert triggered == 0, "future-scheduled record must not be triggered"
+    assert due == 0
+    assert skipped == 0
 
     async with factory() as db:
         rec = (await db.execute(
@@ -126,8 +130,10 @@ async def test_scheduler_tick_skips_future_scheduled(engine_and_factory):
 async def test_scheduler_tick_empty_db_returns_zero(engine_and_factory):
     """No scheduled records → 0 triggered, no exception."""
     _, factory = engine_and_factory
-    triggered = await _check_and_trigger(factory)
+    triggered, due, skipped = await _check_and_trigger(factory)
     assert triggered == 0
+    assert due == 0
+    assert skipped == 0
 
 
 @pytest.mark.asyncio
@@ -165,11 +171,13 @@ async def test_scheduler_tick_ignores_non_scheduled_status(engine_and_factory):
             ))
         await db.commit()
 
-    triggered = await _check_and_trigger(factory)
+    triggered, due, skipped = await _check_and_trigger(factory)
     assert triggered == 0, (
         f"records with status!=scheduled must be ignored, but {triggered} "
         "were triggered — scheduler is leaking into non-scheduled states"
     )
+    assert due == 0
+    assert skipped == 0
 
 
 @pytest.mark.asyncio
@@ -202,8 +210,10 @@ async def test_scheduler_tick_continues_on_individual_failure(
 
     monkeypatch.setattr(svc, "trigger_publish", _flaky)
 
-    triggered = await _check_and_trigger(factory)
+    triggered, due, skipped = await _check_and_trigger(factory)
     # Only the second record succeeded.
     assert triggered == 1
+    assert due == 2
+    assert skipped == 0
     # Both were attempted — per-record isolation.
     assert set(call_order) == {"pub-will-fail", "pub-will-succeed"}

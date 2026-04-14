@@ -18,6 +18,7 @@ import {
   MetricTile,
 } from "../../components/design-system/primitives";
 import type { ConnectionWithHealth, ConnectionHealthKPIs } from "../../api/platformConnectionsApi";
+import { TokenExpiryBadge } from "../../components/publish/TokenExpiryBadge";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -148,6 +149,9 @@ function ConnectionRow({ conn }: { conn: ConnectionWithHealth }) {
         </span>
       </td>
       <td className="px-3 py-2.5">
+        <TokenExpiryBadge connectionId={conn.id} />
+      </td>
+      <td className="px-3 py-2.5">
         <div className="flex gap-1.5 flex-wrap">
           {Object.entries(matrix).map(([key, status]) => {
             const cfg = CAP_STATUS_ICON[status] || CAP_STATUS_ICON.unknown;
@@ -252,6 +256,7 @@ export function AdminConnectionsPage() {
                   <th className="px-3 py-2 font-medium">Kanal</th>
                   <th className="px-3 py-2 font-medium">Kullanici</th>
                   <th className="px-3 py-2 font-medium">Durum</th>
+                  <th className="px-3 py-2 font-medium">Token</th>
                   <th className="px-3 py-2 font-medium">Yetenekler</th>
                   <th className="px-3 py-2 font-medium">Son Basari</th>
                   <th className="px-3 py-2 font-medium">Sorunlar</th>

@@ -52,6 +52,7 @@ const ThemeRegistryPage = lazy(() => import("../pages/admin/ThemeRegistryPage").
 const ContentLibraryPage = lazy(() => import("../pages/admin/ContentLibraryPage").then(m => ({ default: m.ContentLibraryPage })));
 const AssetLibraryPage = lazy(() => import("../pages/admin/AssetLibraryPage").then(m => ({ default: m.AssetLibraryPage })));
 const PublishCenterPage = lazy(() => import("../pages/admin/PublishCenterPage").then(m => ({ default: m.PublishCenterPage })));
+const PublishReviewQueuePage = lazy(() => import("../pages/admin/PublishReviewQueuePage").then(m => ({ default: m.PublishReviewQueuePage })));
 const PublishDetailPage = lazy(() => import("../pages/admin/PublishDetailPage").then(m => ({ default: m.PublishDetailPage })));
 const AnalyticsOverviewPage = lazy(() => import("../pages/admin/AnalyticsOverviewPage").then(m => ({ default: m.AnalyticsOverviewPage })));
 const AnalyticsContentPage = lazy(() => import("../pages/admin/AnalyticsContentPage").then(m => ({ default: m.AnalyticsContentPage })));
@@ -175,6 +176,7 @@ export const router = createBrowserRouter([
       { path: "notifications", element: <Suspense fallback={<LazyFallback />}><AdminNotificationsPage /></Suspense> },
       { path: "connections", element: <Suspense fallback={<LazyFallback />}><AdminConnectionsPage /></Suspense> },
       { path: "publish", element: <VisibilityGuard targetKey="panel:publish"><Suspense fallback={<LazyFallback />}><PublishCenterPage /></Suspense></VisibilityGuard> },
+      { path: "publish/review", element: <VisibilityGuard targetKey="panel:publish"><Suspense fallback={<LazyFallback />}><PublishReviewQueuePage /></Suspense></VisibilityGuard> },
       { path: "publish/:recordId", element: <VisibilityGuard targetKey="panel:publish"><Suspense fallback={<LazyFallback />}><PublishDetailPage /></Suspense></VisibilityGuard> },
       { path: "audit-logs", element: <VisibilityGuard targetKey="panel:audit-logs"><Suspense fallback={<LazyFallback />}><AuditLogPage /></Suspense></VisibilityGuard> },
       { path: "themes", element: <Suspense fallback={<LazyFallback />}><ThemeRegistryPage /></Suspense> },

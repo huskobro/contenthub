@@ -47,6 +47,8 @@ class PublishRecordRead(BaseModel):
     platform_url: Optional[str]
     publish_attempt_count: int
     last_error: Optional[str]
+    # Gate 4 (Publish Closure): operator-actionable error category.
+    last_error_category: Optional[str] = None
     payload_json: Optional[str]
     result_json: Optional[str]
     notes: Optional[str]
@@ -73,6 +75,8 @@ class PublishRecordSummary(BaseModel):
     publish_attempt_count: int
     published_at: Optional[datetime]
     platform_url: Optional[str]
+    # Gate 4 (Publish Closure): expose category in lists for triage filters.
+    last_error_category: Optional[str] = None
     # V2 fields — Faz 11
     content_project_id: Optional[str] = None
     platform_connection_id: Optional[str] = None
@@ -196,3 +200,117 @@ class PublishIntentData(BaseModel):
     playlist_ids: Optional[list[str]] = None
     thumbnail_path: Optional[str] = None
     notify_subscribers: Optional[bool] = None
+
+
+# ---------------------------------------------------------------------------
+# Gate 4 (Publish Closure) — Bulk action schemas
+# ---------------------------------------------------------------------------
+
+class BulkActionRequest(BaseModel):
+    """
+    Bulk publish aksiyon isteği.
+
+    record_ids   : 1..100 publish kaydı (boş liste yasak).
+    actor_id     : Aksiyonu tetikleyen kullanıcı (opsiyonel; header'dan da alınır).
+    note         : Opsiyonel açıklama; her log/audit kaydına yazılır.
+    """
+    record_ids: list[str]
+    actor_id: Optional[str] = None
+    note: Optional[str] = None
+
+
+class BulkRejectRequest(BulkActionRequest):
+    """
+    Bulk reject — `rejection_reason` ZORUNLU.
+
+    Boş / whitespace olamaz. Router katmanında 422 ile reddedilir.
+    """
+    rejection_reason: str
+
+
+class BulkActionItemResult(BaseModel):
+    """Tek bir record için bulk aksiyon sonucu."""
+    record_id: str
+    ok: bool
+    status_after: Optional[str] = None
+    error_code: Optional[str] = None  # 'not_found' | 'invalid_transition' | 'gate_violation' | 'terminal' | 'internal'
+    error_message: Optional[str] = None
+
+
+class BulkActionResponse(BaseModel):
+    """
+    Bulk aksiyon yanıtı — per-record sonuç + özet.
+
+    Her record için ayrı transaction kullanılır; partial fail tipiktir.
+    """
+    action: str  # 'approve' | 'reject' | 'cancel' | 'retry'
+    requested: int
+    succeeded: int
+    failed: int
+    results: list[BulkActionItemResult]
+
+
+# ---------------------------------------------------------------------------
+# Gate 4 — Scheduler health schemas
+# ---------------------------------------------------------------------------
+
+class SchedulerHealthResponse(BaseModel):
+    """
+    Publish scheduler arka plan görevi sağlık durumu.
+
+    state                : 'healthy' | 'stale' | 'unknown'
+    started_at           : Uygulama başladığında scheduler'ın start zamanı (UTC).
+    last_tick_at         : En son polling tick zamanı (UTC). None ise hiç tick atılmadı.
+    last_due_count       : Son tick'te bulunan due record sayısı.
+    last_triggered_count : Son tick'te tetiklenen publish sayısı.
+    last_skipped_count   : Son tick'te token pre-flight nedeniyle atlanan sayısı.
+    total_ticks          : Süreç boyunca toplam tick sayısı.
+    total_triggered      : Süreç boyunca toplam tetikleme sayısı.
+    total_skipped        : Süreç boyunca toplam pre-flight skip sayısı.
+    consecutive_errors   : Üst üste başarısız tick sayısı.
+    last_error           : Son tick'in hata mesajı (varsa).
+    interval_seconds     : Polling aralığı (saniye).
+    stale_threshold_seconds : Stale sayılma eşiği (saniye).
+    """
+    state: str
+    started_at: Optional[datetime] = None
+    last_tick_at: Optional[datetime] = None
+    last_due_count: int = 0
+    last_triggered_count: int = 0
+    last_skipped_count: int = 0
+    total_ticks: int = 0
+    total_triggered: int = 0
+    total_skipped: int = 0
+    consecutive_errors: int = 0
+    last_error: Optional[str] = None
+    interval_seconds: float
+    stale_threshold_seconds: float
+
+
+# ---------------------------------------------------------------------------
+# Gate 4 (Z-4) — Token expiry / pre-flight schemas
+# ---------------------------------------------------------------------------
+
+class TokenStatusResponse(BaseModel):
+    """
+    Bir PlatformConnection için token sağlık durumu — UI badge için.
+
+    severity:
+      'ok'       — eylem gerekmiyor.
+      'warn'     — `warn_threshold` (varsayılan 7g) içinde sona eriyor.
+      'critical' — `critical_threshold` (varsayılan 24s) içinde sona eriyor.
+      'expired'  — süresi geçmiş; refresh_token varsa otomatik yenilenir.
+      'reauth'   — connection.requires_reauth True; kullanıcı reauth yapmalı.
+      'unknown'  — kayıt veya expiry bilgisi yok.
+
+    seconds_remaining: pozitif (henüz geçmedi) / negatif (geçti) / None.
+    is_blocking: scheduler bu kaydı atlar (yalnızca 'reauth' durumunda True).
+    """
+    connection_id: str
+    severity: str
+    seconds_remaining: Optional[int] = None
+    expires_at: Optional[datetime] = None
+    requires_reauth: bool = False
+    has_refresh_token: bool = False
+    is_blocking: bool = False
+    suggested_action: Optional[str] = None

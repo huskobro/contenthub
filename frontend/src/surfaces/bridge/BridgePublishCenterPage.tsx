@@ -20,6 +20,8 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { usePublishRecords } from "../../hooks/usePublish";
 import type { PublishRecordSummary } from "../../api/publishApi";
+import { SchedulerHealthBadge } from "../../components/publish/SchedulerHealthBadge";
+import { PublishErrorChip } from "../../components/publish/PublishErrorChip";
 
 // ---------------------------------------------------------------------------
 // Board model — each column maps to backend statuses. We DO NOT invent new
@@ -163,6 +165,9 @@ export function BridgePublishCenterPage() {
           <p className="m-0 text-xs text-neutral-500">
             Review gate'e sadik, state-machine uyumlu ops gorunumu.
           </p>
+          <div className="mt-1">
+            <SchedulerHealthBadge />
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <select
@@ -322,6 +327,11 @@ export function BridgePublishCenterPage() {
                       <span>sch: {formatDateShort(r.scheduled_at)}</span>
                       <span>pub: {formatDateShort(r.published_at)}</span>
                     </div>
+                    {r.status === "failed" && r.last_error_category && (
+                      <div className="mt-1">
+                        <PublishErrorChip category={r.last_error_category} />
+                      </div>
+                    )}
                   </button>
                 ))}
               </div>

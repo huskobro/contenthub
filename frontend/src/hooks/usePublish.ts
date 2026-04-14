@@ -1,23 +1,33 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  fetchPublishRecords,
-  fetchPublishRecord,
-  fetchPublishLogs,
-  submitForReview,
-  reviewAction,
-  triggerPublish,
+  bulkApprovePublishRecords,
+  bulkCancelPublishRecords,
+  bulkRejectPublishRecords,
+  bulkRetryPublishRecords,
   cancelPublish,
-  retryPublish,
-  resetToDraft,
-  schedulePublish,
-  patchPublishPayload,
   createPublishRecordFromJob,
-  type PublishListParams,
+  fetchConnectionTokenStatus,
+  fetchPublishLogs,
+  fetchPublishRecord,
+  fetchPublishRecords,
+  fetchSchedulerHealth,
+  patchPublishPayload,
+  resetToDraft,
+  retryPublish,
+  reviewAction,
+  schedulePublish,
+  submitForReview,
+  triggerPublish,
+  type BulkActionBody,
+  type BulkRejectBody,
   type PublishFromJobBody,
+  type PublishListParams,
 } from "../api/publishApi";
 import { useApiError } from "./useApiError";
 
 const KEY = "publish-records";
+const SCHEDULER_KEY = "publish-scheduler-status";
+const TOKEN_STATUS_KEY = "publish-connection-token-status";
 
 export function usePublishRecords(params: PublishListParams = {}) {
   return useQuery({
@@ -144,5 +154,91 @@ export function usePublishRecordForJob(jobId: string | undefined) {
     queryKey: [KEY, "by-job", jobId],
     queryFn: () => fetchPublishRecords({ job_id: jobId! }),
     enabled: !!jobId,
+  });
+}
+
+
+// ---------------------------------------------------------------------------
+// Gate 4 (Publish Closure) — Bulk actions (Z-1)
+// ---------------------------------------------------------------------------
+//
+// All bulk hooks invalidate the publish-records cache once the request
+// resolves. Per-record results are returned as part of the response
+// (see BulkActionResponse) so the caller can render partial-fail UX.
+
+export function useBulkApprovePublishRecords() {
+  const qc = useQueryClient();
+  const onError = useApiError();
+  return useMutation({
+    mutationFn: (body: BulkActionBody) => bulkApprovePublishRecords(body),
+    onError,
+    onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
+  });
+}
+
+export function useBulkRejectPublishRecords() {
+  const qc = useQueryClient();
+  const onError = useApiError();
+  return useMutation({
+    mutationFn: (body: BulkRejectBody) => bulkRejectPublishRecords(body),
+    onError,
+    onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
+  });
+}
+
+export function useBulkCancelPublishRecords() {
+  const qc = useQueryClient();
+  const onError = useApiError();
+  return useMutation({
+    mutationFn: (body: BulkActionBody) => bulkCancelPublishRecords(body),
+    onError,
+    onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
+  });
+}
+
+export function useBulkRetryPublishRecords() {
+  const qc = useQueryClient();
+  const onError = useApiError();
+  return useMutation({
+    mutationFn: (body: BulkActionBody) => bulkRetryPublishRecords(body),
+    onError,
+    onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
+  });
+}
+
+
+// ---------------------------------------------------------------------------
+// Gate 4 (Publish Closure) — Scheduler health (Z-3)
+// ---------------------------------------------------------------------------
+
+/**
+ * Polls scheduler health every 30s. The badge shows whether the scheduler
+ * loop is alive (healthy) or stuck (stale). 'unknown' = no tick yet.
+ */
+export function useSchedulerHealth() {
+  return useQuery({
+    queryKey: [SCHEDULER_KEY],
+    queryFn: fetchSchedulerHealth,
+    refetchInterval: 30_000,
+    refetchOnWindowFocus: true,
+  });
+}
+
+
+// ---------------------------------------------------------------------------
+// Gate 4 (Publish Closure) — Token expiry pre-flight (Z-4)
+// ---------------------------------------------------------------------------
+
+/**
+ * Returns the connection's token expiry status. Cached for 60s — the
+ * value rarely changes between page loads, but stale data is harmless
+ * (severity is non-blocking unless requires_reauth=true).
+ */
+export function useConnectionTokenStatus(connectionId: string | undefined) {
+  return useQuery({
+    queryKey: [TOKEN_STATUS_KEY, connectionId],
+    queryFn: () => fetchConnectionTokenStatus(connectionId!),
+    enabled: !!connectionId,
+    staleTime: 60_000,
   });
 }

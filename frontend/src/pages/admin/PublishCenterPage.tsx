@@ -1,17 +1,29 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { usePublishRecords } from "../../hooks/usePublish";
-import type { PublishRecordSummary } from "../../api/publishApi";
 import {
-  PageShell,
-  SectionShell,
+  useBulkApprovePublishRecords,
+  useBulkCancelPublishRecords,
+  useBulkRejectPublishRecords,
+  useBulkRetryPublishRecords,
+  usePublishRecords,
+} from "../../hooks/usePublish";
+import type {
+  BulkActionResponse,
+  PublishRecordSummary,
+} from "../../api/publishApi";
+import {
+  ActionButton,
   DataTable,
   FilterBar,
   FilterSelect,
-  ActionButton,
-  StatusBadge,
+  PageShell,
   Pagination,
+  SectionShell,
+  StatusBadge,
 } from "../../components/design-system/primitives";
+import { BulkActionBar } from "../../components/design-system/BulkActionBar";
+import { PublishErrorChip } from "../../components/publish/PublishErrorChip";
+import { SchedulerHealthBadge } from "../../components/publish/SchedulerHealthBadge";
 import { formatDateShort } from "../../lib/formatDate";
 import { useSurfacePageOverride } from "../../surfaces/SurfaceContext";
 
@@ -66,25 +78,143 @@ export function PublishCenterPage() {
   return <LegacyPublishCenterPage />;
 }
 
+function summarizeBulk(resp: BulkActionResponse | undefined): string {
+  if (!resp) return "";
+  if (resp.failed === 0) {
+    return `${resp.succeeded} kayıt başarıyla işlendi.`;
+  }
+  if (resp.succeeded === 0) {
+    return `${resp.failed} kayıt başarısız oldu.`;
+  }
+  return `${resp.succeeded} başarılı, ${resp.failed} başarısız.`;
+}
+
 function LegacyPublishCenterPage() {
   const navigate = useNavigate();
   const [statusFilter, setStatusFilter] = useState("");
   const [platformFilter, setPlatformFilter] = useState("");
   const [moduleFilter, setModuleFilter] = useState("");
+  const [errorFilter, setErrorFilter] = useState("");
   const [offset, setOffset] = useState(0);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkBanner, setBulkBanner] = useState<string | null>(null);
 
   const { data, isLoading, isError } = usePublishRecords({
     status: statusFilter || undefined,
     platform: platformFilter || undefined,
     content_ref_type: moduleFilter || undefined,
+    error_category: errorFilter || undefined,
     limit: PAGE_SIZE,
     offset,
   });
 
   const items = data ?? [];
-  const hasFilters = !!(statusFilter || platformFilter || moduleFilter);
+  const hasFilters = !!(statusFilter || platformFilter || moduleFilter || errorFilter);
+
+  const bulkApprove = useBulkApprovePublishRecords();
+  const bulkReject = useBulkRejectPublishRecords();
+  const bulkCancel = useBulkCancelPublishRecords();
+  const bulkRetry = useBulkRetryPublishRecords();
+
+  const allSelected = useMemo(
+    () => items.length > 0 && items.every((i) => selected.has(i.id)),
+    [items, selected],
+  );
+  const someSelected = useMemo(
+    () => items.some((i) => selected.has(i.id)) && !allSelected,
+    [items, selected, allSelected],
+  );
+
+  function toggleAll() {
+    if (allSelected) {
+      setSelected(new Set());
+    } else {
+      setSelected(new Set(items.map((i) => i.id)));
+    }
+  }
+
+  function toggleOne(id: string) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function clearSelection() {
+    setSelected(new Set());
+  }
+
+  async function runBulkApprove() {
+    const ids = [...selected];
+    if (ids.length === 0) return;
+    const resp = await bulkApprove.mutateAsync({ record_ids: ids });
+    setBulkBanner(`Onay: ${summarizeBulk(resp)}`);
+    clearSelection();
+  }
+
+  async function runBulkReject() {
+    const ids = [...selected];
+    if (ids.length === 0) return;
+    const reason = window.prompt(
+      "Reddetme nedeni (zorunlu, en az bir karakter):",
+      "",
+    );
+    if (!reason || !reason.trim()) {
+      setBulkBanner("Reddetme iptal edildi: neden girilmedi.");
+      return;
+    }
+    const resp = await bulkReject.mutateAsync({
+      record_ids: ids,
+      rejection_reason: reason.trim(),
+    });
+    setBulkBanner(`Reddetme: ${summarizeBulk(resp)}`);
+    clearSelection();
+  }
+
+  async function runBulkCancel() {
+    const ids = [...selected];
+    if (ids.length === 0) return;
+    const resp = await bulkCancel.mutateAsync({ record_ids: ids });
+    setBulkBanner(`İptal: ${summarizeBulk(resp)}`);
+    clearSelection();
+  }
+
+  async function runBulkRetry() {
+    const ids = [...selected];
+    if (ids.length === 0) return;
+    const resp = await bulkRetry.mutateAsync({ record_ids: ids });
+    setBulkBanner(`Tekrar dene: ${summarizeBulk(resp)}`);
+    clearSelection();
+  }
 
   const columns = [
+    {
+      key: "_select",
+      header: (
+        <input
+          type="checkbox"
+          aria-label="Tümünü seç"
+          checked={allSelected}
+          ref={(el) => {
+            if (el) el.indeterminate = someSelected;
+          }}
+          onChange={toggleAll}
+          data-testid="publish-select-all"
+        />
+      ) as unknown as string,
+      render: (r: PublishRecordSummary) => (
+        <input
+          type="checkbox"
+          aria-label={`Seç ${r.id.slice(0, 8)}`}
+          checked={selected.has(r.id)}
+          onClick={(e) => e.stopPropagation()}
+          onChange={() => toggleOne(r.id)}
+          data-testid={`publish-select-${r.id}`}
+        />
+      ),
+    },
     {
       key: "content",
       header: "Icerik",
@@ -112,6 +242,9 @@ function LegacyPublishCenterPage() {
           <StatusBadge status={publishStatusVariant(r.status)} label={statusLabel(r.status)} />
           {r.status === "scheduled" && r.scheduled_at && (
             <span className="text-xs text-neutral-500">Zamanlandi: {formatDate(r.scheduled_at)}</span>
+          )}
+          {r.status === "failed" && r.last_error_category && (
+            <PublishErrorChip category={r.last_error_category} />
           )}
         </div>
       ),
@@ -164,15 +297,45 @@ function LegacyPublishCenterPage() {
     },
   ];
 
+  const bulkPending =
+    bulkApprove.isPending ||
+    bulkReject.isPending ||
+    bulkCancel.isPending ||
+    bulkRetry.isPending;
+
+  const bulkActions = [
+    { label: "Onayla", onClick: runBulkApprove },
+    { label: "Reddet", variant: "danger" as const, onClick: runBulkReject },
+    { label: "İptal", variant: "danger" as const, onClick: runBulkCancel },
+    { label: "Tekrar dene", onClick: runBulkRetry },
+  ];
+
   return (
     <PageShell
       title="Yayin Merkezi"
       subtitle="Publish kayitlari, review gate, zamanlama ve yayin durumu."
       testId="publish-center"
+      actions={<SchedulerHealthBadge />}
     >
       <p className="m-0 mb-3 text-xs text-neutral-400" data-testid="publish-workflow-note">
         Taslak &rarr; Review &rarr; Onay &rarr; Zamanlama/Yayin &rarr; Platform
       </p>
+
+      {bulkBanner && (
+        <div
+          className="mb-3 px-3 py-2 text-xs rounded-sm border border-info/30 bg-info/10 text-info"
+          data-testid="publish-bulk-banner"
+        >
+          {bulkBanner}
+          <button
+            type="button"
+            onClick={() => setBulkBanner(null)}
+            className="ml-3 text-neutral-500 hover:text-neutral-700 bg-transparent border-none cursor-pointer"
+          >
+            kapat
+          </button>
+        </div>
+      )}
 
       <div className="mb-4">
         <FilterBar testId="publish-filters">
@@ -208,11 +371,31 @@ function LegacyPublishCenterPage() {
             <option value="standard_video">Standart Video</option>
             <option value="news_bulletin">Haber Bulteni</option>
           </FilterSelect>
+          <FilterSelect
+            value={errorFilter}
+            onChange={(e) => { setErrorFilter(e.target.value); setOffset(0); }}
+            data-testid="publish-error-filter"
+          >
+            <option value="">Tüm Hatalar</option>
+            <option value="token_error">Token hatası</option>
+            <option value="quota_exceeded">Kota</option>
+            <option value="network">Ağ</option>
+            <option value="validation">Doğrulama</option>
+            <option value="permission">İzin</option>
+            <option value="asset_missing">Asset</option>
+            <option value="unknown">Bilinmiyor</option>
+          </FilterSelect>
           {hasFilters && (
             <ActionButton
               variant="secondary"
               size="sm"
-              onClick={() => { setStatusFilter(""); setPlatformFilter(""); setModuleFilter(""); setOffset(0); }}
+              onClick={() => {
+                setStatusFilter("");
+                setPlatformFilter("");
+                setModuleFilter("");
+                setErrorFilter("");
+                setOffset(0);
+              }}
               data-testid="publish-filter-clear"
             >
               Temizle
@@ -220,6 +403,15 @@ function LegacyPublishCenterPage() {
           )}
         </FilterBar>
       </div>
+
+      <BulkActionBar
+        selectedCount={selected.size}
+        actions={bulkActions.map((a) => ({
+          ...a,
+          onClick: bulkPending ? () => {} : a.onClick,
+        }))}
+        onClear={clearSelection}
+      />
 
       <SectionShell flush title={`Yayin Kayitlari (${items.length})`} testId="publish-list">
         <DataTable<PublishRecordSummary>

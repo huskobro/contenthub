@@ -20,6 +20,7 @@ import {
 } from "../../components/design-system/primitives";
 import { useToast } from "../../hooks/useToast";
 import { formatDateTime } from "../../lib/formatDate";
+import { PublishErrorChip } from "../../components/publish/PublishErrorChip";
 
 function formatDate(iso: string | null | undefined) {
   return formatDateTime(iso, "\u2014");
@@ -133,6 +134,14 @@ export function PublishDetailPage() {
           ) : em}
         </Row>
         <Row label="Deneme Sayisi">{record.publish_attempt_count}</Row>
+        <Row label="Hata Kategorisi">
+          {record.last_error_category ? (
+            <PublishErrorChip
+              category={record.last_error_category}
+              message={record.last_error}
+            />
+          ) : em}
+        </Row>
         <Row label="Son Hata">
           {record.last_error ? <span className="text-error-dark">{record.last_error}</span> : em}
         </Row>

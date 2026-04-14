@@ -39,6 +39,13 @@ vi.mock("../hooks/usePublish", () => ({
   usePublishRecords: () => ({ data: [], isLoading: false, isError: false }),
   usePublishRecordForJob: () => ({ data: [] }),
   useCreatePublishRecordFromJob: () => ({ mutateAsync: async () => ({}), isPending: false }),
+  // Gate 4 (Z-1) bulk hooks
+  useBulkApprovePublishRecords: () => ({ mutateAsync: async () => ({ succeeded: 0, failed: 0, results: [] }), isPending: false }),
+  useBulkRejectPublishRecords: () => ({ mutateAsync: async () => ({ succeeded: 0, failed: 0, results: [] }), isPending: false }),
+  useBulkCancelPublishRecords: () => ({ mutateAsync: async () => ({ succeeded: 0, failed: 0, results: [] }), isPending: false }),
+  useBulkRetryPublishRecords: () => ({ mutateAsync: async () => ({ succeeded: 0, failed: 0, results: [] }), isPending: false }),
+  // Gate 4 (Z-3) scheduler health
+  useSchedulerHealth: () => ({ data: null, isLoading: false, isError: false }),
 }));
 
 vi.mock("../hooks/useToast", () => ({

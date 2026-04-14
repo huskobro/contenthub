@@ -72,3 +72,35 @@ class PublishLogEvent(str, Enum):
     SCHEDULE_SET = "schedule_set"
     SCHEDULE_CHANGED = "schedule_changed"
     NOTE = "note"
+
+
+class PublishErrorCategory(str, Enum):
+    """
+    Yayınlama hatası kategorileri — Gate 4 (Publish Closure).
+
+    Bir publish kaydı `failed` durumuna geçtiğinde son hata mesajı
+    bir kategoriye eşlenerek `publish_records.last_error_category` alanına
+    yazılır. Operatörler kategori bazlı önerilen aksiyonu görür ve
+    körü körüne retry yerine bilinçli karar verir.
+
+    token_error    : Token expire oldu / scope eksik / refresh başarısız.
+                     Önerilen aksiyon: bağlantıyı yeniden yetkilendir.
+    quota_exceeded : Platform quota / rate limit aşıldı.
+                     Önerilen aksiyon: quota dolumunu bekle (genelde 24h).
+    network        : Geçici ağ / 5xx / timeout.
+                     Önerilen aksiyon: kısa süre sonra retry et.
+    validation     : Platform metadata reddetti (başlık / etiket / format).
+                     Önerilen aksiyon: payload'ı düzelt, draft'a döndür.
+    permission     : Hesap yetkisi / kanal izni eksik.
+                     Önerilen aksiyon: bağlantı sahibinin izinlerini doğrula.
+    asset_missing  : Workspace artifact yok / video dosyası okunamadı.
+                     Önerilen aksiyon: işi yeniden render et.
+    unknown        : Eşleme yapılamadı; hata mesajını manuel incele.
+    """
+    TOKEN_ERROR = "token_error"
+    QUOTA_EXCEEDED = "quota_exceeded"
+    NETWORK = "network"
+    VALIDATION = "validation"
+    PERMISSION = "permission"
+    ASSET_MISSING = "asset_missing"
+    UNKNOWN = "unknown"

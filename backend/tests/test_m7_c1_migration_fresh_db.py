@@ -32,13 +32,21 @@ import pytest
 
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
-ALEMBIC_TARGET = "c1a2b3d4e5f6"
+# Gate 4 (Publish Closure) güncellemesi: head revision artık gate4_001.
+# Önceki target c1a2b3d4e5f6 → catchup_001 → gate4_001 zinciri çalışıyor.
+ALEMBIC_TARGET = "gate4_001"
 
 EXPECTED_PR_COLUMNS = {
     "id", "job_id", "content_ref_type", "content_ref_id", "platform",
     "status", "review_state", "reviewer_id", "reviewed_at", "scheduled_at",
     "published_at", "platform_video_id", "platform_url", "publish_attempt_count",
-    "last_error", "payload_json", "result_json", "notes", "created_at", "updated_at",
+    "last_error",
+    # Gate 4: error category for triage UX (categorize_publish_error fills it).
+    "last_error_category",
+    "payload_json", "result_json", "notes", "created_at", "updated_at",
+    # Faz 2: project/connection linkage and test-data flag.
+    "content_project_id", "platform_connection_id",
+    "publish_intent_json", "publish_result_json", "is_test_data",
 }
 
 EXPECTED_PL_COLUMNS = {
@@ -231,10 +239,11 @@ def test_h_alembic_version_is_target(migrated_db):
 # I) downgrade: publish_records ve publish_logs kaldırılır
 # ---------------------------------------------------------------------------
 
-def test_i_downgrade_removes_publish_tables(fresh_db_dir):
+def test_i_downgrade_removes_last_error_category(fresh_db_dir):
     """
-    alembic upgrade head → downgrade -1: publish tabloları kaldırılır,
-    önceki revision'a dönülür.
+    Gate 4 sonrası head migration sadece publish_records.last_error_category
+    sütununu ekler. downgrade -1 bu sütunu kaldırmalı; publish_records ve
+    publish_logs tabloları hâlâ var olmalı.
     """
     # Önce tüm migration'ları uygula
     up = _run_alembic(["upgrade", "head"], fresh_db_dir)
@@ -244,21 +253,24 @@ def test_i_downgrade_removes_publish_tables(fresh_db_dir):
     tables_before = _get_tables(db_path)
     assert "publish_records" in tables_before
     assert "publish_logs" in tables_before
+    cols_before = _get_columns(db_path, "publish_records")
+    assert "last_error_category" in cols_before
 
-    # Bir adım geri al
+    # Bir adım geri al — gate4_001 → catchup_001
     down = _run_alembic(["downgrade", "-1"], fresh_db_dir)
     assert down.returncode == 0, f"downgrade -1 başarısız: {down.stderr}"
 
     tables_after = _get_tables(db_path)
-    assert "publish_records" not in tables_after, (
-        "publish_records downgrade sonrası hâlâ mevcut"
-    )
-    assert "publish_logs" not in tables_after, (
-        "publish_logs downgrade sonrası hâlâ mevcut"
+    # Tablolar HÂLÂ var — sadece son sütun kalktı.
+    assert "publish_records" in tables_after
+    assert "publish_logs" in tables_after
+    cols_after = _get_columns(db_path, "publish_records")
+    assert "last_error_category" not in cols_after, (
+        "last_error_category downgrade sonrası hâlâ mevcut"
     )
 
-    # Revision b1c2d3e4f5a6'ya dönülmeli
+    # Revision catchup_001'e dönülmeli
     version_after = _get_version(db_path)
-    assert version_after == "b1c2d3e4f5a6", (
-        f"Beklenen downgrade target b1c2d3e4f5a6, alınan {version_after}"
+    assert version_after == "catchup_001", (
+        f"Beklenen downgrade target catchup_001, alınan {version_after}"
     )

@@ -42,6 +42,7 @@ from app.publish.exceptions import (
 from app.publish.schemas import PublishRecordCreate
 from app.audit.service import write_audit_log
 from app.publish.state_machine import PublishStateMachine
+from app.publish.error_classifier import categorize_publish_error
 from app.automation.event_hooks import emit_operation_event, evaluate_and_emit
 
 logger = logging.getLogger(__name__)
@@ -132,9 +133,13 @@ async def _transition_status(
     if next_status == PublishStatus.PUBLISHED.value:
         record.published_at = _now()
         record.last_error = None
+        record.last_error_category = None
     elif next_status == PublishStatus.PUBLISHING.value:
         record.publish_attempt_count = (record.publish_attempt_count or 0) + 1
         record.last_error = None
+        # Gate 4: a fresh attempt clears the previous category until the
+        # next failure (if any) re-classifies it.
+        record.last_error_category = None
     elif next_status in (PublishStatus.FAILED.value,):
         record.last_error = note or (detail or {}).get("error")
 
@@ -222,13 +227,16 @@ async def list_publish_records(
     platform: Optional[str] = None,
     status: Optional[str] = None,
     content_ref_type: Optional[str] = None,
+    error_category: Optional[str] = None,
     limit: int = 50,
     offset: int = 0,
 ) -> list[PublishRecord]:
     """
     Filtrelenmiş publish kayıtlarını döndürür.
 
-    job_id, platform, status veya content_ref_type ile filtrelenebilir.
+    job_id, platform, status, content_ref_type veya error_category ile
+    filtrelenebilir. error_category Gate 4 closure paketinde eklendi —
+    failed kayıtları kategori bazlı triage etmek için kullanılır.
     """
     query = select(PublishRecord)
     if job_id:
@@ -239,6 +247,8 @@ async def list_publish_records(
         query = query.where(PublishRecord.status == status)
     if content_ref_type:
         query = query.where(PublishRecord.content_ref_type == content_ref_type)
+    if error_category:
+        query = query.where(PublishRecord.last_error_category == error_category)
     query = query.order_by(PublishRecord.created_at.desc()).limit(limit).offset(offset)
     result = await session.execute(query)
     return list(result.scalars().all())
@@ -578,7 +588,16 @@ async def mark_failed(
       bu bilgi korunur; servis/çalışan yeniden trigger_publish() çağırabilir.
     """
     record = await _get_record_or_404(session, record_id)
-    detail: dict = {"error_message": error_message}
+    # Gate 4: classify the failure so the UI/operator can act on it.
+    status_code: Optional[int] = None
+    if error_code is not None:
+        try:
+            status_code = int(error_code)
+        except (TypeError, ValueError):
+            status_code = None
+    category = categorize_publish_error(error_message, status_code=status_code)
+    record.last_error_category = category.value
+    detail: dict = {"error_message": error_message, "error_category": category.value}
     if error_code:
         detail["error_code"] = error_code
 
