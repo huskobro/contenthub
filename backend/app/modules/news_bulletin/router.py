@@ -1,3 +1,4 @@
+import json
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import BaseModel
@@ -354,6 +355,180 @@ async def start_production_endpoint(
         raise HTTPException(status_code=400, detail=error_msg)
 
     return StartProductionResponse(**result)
+
+
+# ---------------------------------------------------------------------------
+# Publish adapter — create/lookup PublishRecord for a bulletin
+# (Generic publish core untouched; this is a thin shim that attaches the
+# bulletin context before delegating to publish.service.)
+# ---------------------------------------------------------------------------
+
+class PublishRecordShim(BaseModel):
+    """Subset of PublishRecord we expose through the bulletin shim."""
+    id: str
+    job_id: Optional[str] = None
+    content_ref_type: str
+    content_ref_id: Optional[str] = None
+    content_project_id: Optional[str] = None
+    platform: str
+    status: str
+    review_state: Optional[str] = None
+    payload_json: Optional[str] = None
+    publish_intent_json: Optional[str] = None
+    notes: Optional[str] = None
+
+
+class CreateBulletinPublishRecordRequest(BaseModel):
+    platform: str = "youtube"
+    platform_connection_id: Optional[str] = None
+
+
+@router.post(
+    "/{item_id}/publish-record",
+    response_model=PublishRecordShim,
+    status_code=201,
+)
+async def create_bulletin_publish_record(
+    item_id: str,
+    payload: Optional[CreateBulletinPublishRecordRequest] = None,
+    db: AsyncSession = Depends(get_db),
+    user_id: Optional[str] = Depends(get_active_user_id),
+):
+    """
+    Create a PublishRecord for a completed news bulletin.
+
+    Preconditions:
+      * Bulletin exists and has a ``job_id`` (pipeline ran).
+      * No live PublishRecord for this bulletin/platform combination.
+
+    The underlying payload (title/description/tags) is assembled by
+    ``publish.service.create_publish_record_from_job`` from the
+    ``metadata.json`` artifact that the metadata step wrote — which is
+    already formatted with chapters + source citations.
+
+    Returns 409 when a draft/pending record already exists for this
+    bulletin on the same platform — duplicates are rejected here, not
+    fixed up silently.
+    """
+    from app.publish import service as publish_service
+
+    bulletin = await service.get_news_bulletin(db, item_id)
+    if bulletin is None:
+        raise HTTPException(status_code=404, detail="News bulletin not found")
+    if not bulletin.job_id:
+        raise HTTPException(
+            status_code=422,
+            detail="Bülten henüz üretilmedi (job_id yok). Önce start-production.",
+        )
+
+    request_body = payload or CreateBulletinPublishRecordRequest()
+    platform = (request_body.platform or "youtube").strip().lower()
+
+    # Duplicate guard — per bulletin + platform.
+    existing = await publish_service.list_publish_records(
+        db,
+        job_id=bulletin.job_id,
+        platform=platform,
+        content_ref_type="news_bulletin",
+        limit=50,
+        offset=0,
+    )
+    # Consider anything that is not terminally failed/cancelled as "live".
+    live_statuses = {
+        "draft", "pending_review", "approved", "scheduled",
+        "publishing", "published",
+    }
+    for record in existing:
+        if (record.content_ref_id == item_id
+                and record.status in live_statuses):
+            raise HTTPException(
+                status_code=409,
+                detail={
+                    "error": "publish_record_exists",
+                    "message": (
+                        "Bu bülten için aynı platformda aktif bir publish "
+                        "kaydı var."
+                    ),
+                    "publish_record_id": record.id,
+                    "status": record.status,
+                },
+            )
+
+    record = await publish_service.create_publish_record_from_job(
+        session=db,
+        job_id=bulletin.job_id,
+        platform=platform,
+        content_ref_type="news_bulletin",
+        content_ref_id=item_id,
+        actor_id=user_id,
+        content_project_id=bulletin.content_project_id,
+        platform_connection_id=request_body.platform_connection_id,
+    )
+
+    # create_publish_record_from_job reads {workspace_path}/metadata.json,
+    # but the news_bulletin pipeline writes it under
+    # {workspace_path}/artifacts/metadata.json — so the generic service
+    # can only fill the title (via input_data_json topic fallback).
+    # Enrich the payload with the canonical formatted description + tags
+    # from news_bulletin_metadata DB row that the metadata executor
+    # persisted (post-LLM description override already applied there).
+    try:
+        bulletin_metadata = await service.get_bulletin_metadata(db, item_id)
+    except Exception:  # pragma: no cover — defensive
+        bulletin_metadata = None
+
+    if bulletin_metadata is not None:
+        try:
+            current_payload = (
+                json.loads(record.payload_json) if record.payload_json else {}
+            )
+        except (TypeError, ValueError):
+            current_payload = {}
+
+        if bulletin_metadata.title:
+            current_payload.setdefault("title", bulletin_metadata.title)
+        if bulletin_metadata.description:
+            current_payload["description"] = bulletin_metadata.description
+        tags_payload = None
+        if bulletin_metadata.tags_json:
+            try:
+                tags_payload = json.loads(bulletin_metadata.tags_json)
+            except ValueError:
+                tags_payload = None
+        if tags_payload:
+            current_payload["tags"] = tags_payload
+        if bulletin_metadata.category:
+            current_payload.setdefault("category", bulletin_metadata.category)
+        if bulletin_metadata.language:
+            current_payload.setdefault("language", bulletin_metadata.language)
+
+        record.payload_json = json.dumps(current_payload, ensure_ascii=False)
+        # Mirror into publish_intent_json so the publish adapter picks up
+        # the final copy via the v2 intent channel.
+        publish_intent = {
+            k: current_payload[k]
+            for k in ("title", "description", "tags")
+            if k in current_payload
+        }
+        record.publish_intent_json = json.dumps(
+            publish_intent, ensure_ascii=False
+        )
+        await db.commit()
+        await db.refresh(record)
+
+    return PublishRecordShim(
+        id=record.id,
+        job_id=record.job_id,
+        content_ref_type=record.content_ref_type,
+        content_ref_id=record.content_ref_id,
+        content_project_id=getattr(record, "content_project_id", None),
+        platform=record.platform,
+        status=record.status,
+        review_state=getattr(record, "review_state", None),
+        payload_json=record.payload_json,
+        publish_intent_json=getattr(record, "publish_intent_json", None),
+        notes=record.notes,
+    )
 
 
 # ---------------------------------------------------------------------------
