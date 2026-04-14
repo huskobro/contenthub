@@ -85,7 +85,10 @@ async def list_news_bulletins(
 
 @router.get("/{item_id}", response_model=NewsBulletinResponse)
 async def get_news_bulletin(item_id: str, db: AsyncSession = Depends(get_db)):
-    item = await service.get_news_bulletin(db, item_id)
+    # Bug #4 fix: single-bulletin GET de list endpoint ile aynı enriched
+    # alanları (selected_news_count, has_script, warning_count, quality
+    # breakdown vb.) döndürmeli ki UI tarafında veri tutarlı olsun.
+    item = await service.get_news_bulletin_enriched(db, item_id)
     if item is None:
         raise HTTPException(status_code=404, detail="News bulletin not found")
     return item

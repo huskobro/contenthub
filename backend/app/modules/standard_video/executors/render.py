@@ -498,8 +498,16 @@ class RenderStepExecutor(StepExecutor):
         word_timings_count = len(render_props.get("wordTimings", []))
 
         # Duration fallback kontrolü — sessiz fallback yok (M6-C3 kuralı).
+        # Bug #2 fix: news_bulletin composition writes camelCase `totalDurationSeconds`
+        # inside props; standard_video composition writes snake_case `total_duration_seconds`.
+        # Render must accept both spellings before applying fallback.
         duration_fallback_used = False
         raw_duration = render_props.get("total_duration_seconds")
+        if not isinstance(raw_duration, (int, float)) or raw_duration <= 0:
+            raw_duration = render_props.get("totalDurationSeconds")
+            if isinstance(raw_duration, (int, float)) and raw_duration > 0:
+                # Normalize to snake_case downstream consumers (render_props.json readers).
+                render_props["total_duration_seconds"] = raw_duration
         _DURATION_FALLBACK_SECONDS = 60.0
         if not isinstance(raw_duration, (int, float)) or raw_duration <= 0:
             logger.warning(

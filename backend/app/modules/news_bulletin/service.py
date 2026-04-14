@@ -70,6 +70,120 @@ async def list_news_bulletins(
     return list(result.scalars().all())
 
 
+async def _enrich_bulletin(
+    db: AsyncSession, b: NewsBulletin
+) -> NewsBulletinResponse:
+    """
+    Bug #4 fix: enrichment helper shared by list and single-GET endpoints.
+
+    Computes has_script, has_metadata, selected_news_count, warning counts,
+    source coverage, and quality breakdown for a single bulletin ORM object.
+    Previously this logic lived only inside list_news_bulletins_with_artifacts
+    so single-bulletin GET returned selected_news_count=0.
+    """
+    from sqlalchemy import func as sqlfunc
+
+    script_row = await db.execute(
+        select(NewsBulletinScript).where(NewsBulletinScript.news_bulletin_id == b.id).limit(1)
+    )
+    meta_row = await db.execute(
+        select(NewsBulletinMetadata).where(NewsBulletinMetadata.news_bulletin_id == b.id).limit(1)
+    )
+    count_row = await db.execute(
+        select(sqlfunc.count()).select_from(NewsBulletinSelectedItem)
+        .where(NewsBulletinSelectedItem.news_bulletin_id == b.id)
+    )
+    selected_news_count = count_row.scalar() or 0
+
+    items_row = await db.execute(
+        select(NewsBulletinSelectedItem.news_item_id)
+        .where(NewsBulletinSelectedItem.news_bulletin_id == b.id)
+    )
+    news_item_ids = [row[0] for row in items_row.fetchall()]
+
+    warning_count = 0
+    selected_news_source_count = 0
+    has_selected_news_missing_source = False
+    quality_complete_count = 0
+    quality_partial_count = 0
+    quality_weak_count = 0
+    if news_item_ids:
+        warn_row = await db.execute(
+            select(sqlfunc.count(sqlfunc.distinct(UsedNewsRegistry.news_item_id)))
+            .where(UsedNewsRegistry.news_item_id.in_(news_item_ids))
+        )
+        warning_count = warn_row.scalar() or 0
+
+        news_items_row = await db.execute(
+            select(NewsItem.source_id, NewsItem.title, NewsItem.url, NewsItem.summary)
+            .where(NewsItem.id.in_(news_item_ids))
+        )
+        news_rows = news_items_row.fetchall()
+        source_ids = [row[0] for row in news_rows]
+        distinct_sources = set(s for s in source_ids if s)
+        selected_news_source_count = len(distinct_sources)
+        has_selected_news_missing_source = any(s is None for s in source_ids)
+
+        for row in news_rows:
+            _source_id, title, url, summary = row
+            has_title = bool(title and title.strip())
+            has_url = bool(url and url.strip())
+            has_summary = bool(summary and summary.strip())
+            if not has_title or not has_url:
+                quality_weak_count += 1
+            elif not has_summary:
+                quality_partial_count += 1
+            else:
+                quality_complete_count += 1
+
+    return NewsBulletinResponse(
+        id=b.id,
+        title=b.title,
+        topic=b.topic,
+        brief=b.brief,
+        target_duration_seconds=b.target_duration_seconds,
+        language=b.language,
+        tone=b.tone,
+        bulletin_style=b.bulletin_style,
+        source_mode=b.source_mode,
+        selected_news_ids_json=b.selected_news_ids_json,
+        status=b.status,
+        job_id=b.job_id,
+        composition_direction=b.composition_direction,
+        thumbnail_direction=b.thumbnail_direction,
+        template_id=b.template_id,
+        style_blueprint_id=b.style_blueprint_id,
+        render_mode=b.render_mode,
+        subtitle_style=b.subtitle_style,
+        lower_third_style=b.lower_third_style,
+        trust_enforcement_level=b.trust_enforcement_level,
+        content_project_id=b.content_project_id,
+        channel_profile_id=b.channel_profile_id,
+        created_at=b.created_at,
+        updated_at=b.updated_at,
+        has_script=script_row.scalar_one_or_none() is not None,
+        has_metadata=meta_row.scalar_one_or_none() is not None,
+        selected_news_count=selected_news_count,
+        has_selected_news_warning=warning_count > 0,
+        selected_news_warning_count=warning_count,
+        selected_news_source_count=selected_news_source_count,
+        has_selected_news_missing_source=has_selected_news_missing_source,
+        selected_news_quality_complete_count=quality_complete_count,
+        selected_news_quality_partial_count=quality_partial_count,
+        selected_news_quality_weak_count=quality_weak_count,
+    )
+
+
+async def get_news_bulletin_enriched(
+    db: AsyncSession, item_id: str
+) -> Optional[NewsBulletinResponse]:
+    """Bug #4 fix: single-bulletin GET with same enrichment as the list view."""
+    bulletin = await get_news_bulletin(db, item_id)
+    if bulletin is None:
+        return None
+    return await _enrich_bulletin(db, bulletin)
+
+
 async def list_news_bulletins_with_artifacts(
     db: AsyncSession,
     status: Optional[str] = None,
@@ -79,104 +193,10 @@ async def list_news_bulletins_with_artifacts(
     include_test_data: bool = False,
 ) -> List[NewsBulletinResponse]:
     """Return bulletin list enriched with has_script, has_metadata, selected_news_count, and warning aggregate."""
-    from sqlalchemy import func as sqlfunc
     bulletins = await list_news_bulletins(db, status=status, search=search, limit=limit, offset=offset, include_test_data=include_test_data)
     result = []
     for b in bulletins:
-        script_row = await db.execute(
-            select(NewsBulletinScript).where(NewsBulletinScript.news_bulletin_id == b.id).limit(1)
-        )
-        meta_row = await db.execute(
-            select(NewsBulletinMetadata).where(NewsBulletinMetadata.news_bulletin_id == b.id).limit(1)
-        )
-        count_row = await db.execute(
-            select(sqlfunc.count()).select_from(NewsBulletinSelectedItem)
-            .where(NewsBulletinSelectedItem.news_bulletin_id == b.id)
-        )
-        selected_news_count = count_row.scalar() or 0
-
-        # Count selected items whose news_item_id appears in UsedNewsRegistry
-        items_row = await db.execute(
-            select(NewsBulletinSelectedItem.news_item_id)
-            .where(NewsBulletinSelectedItem.news_bulletin_id == b.id)
-        )
-        news_item_ids = [row[0] for row in items_row.fetchall()]
-
-        warning_count = 0
-        selected_news_source_count = 0
-        has_selected_news_missing_source = False
-        quality_complete_count = 0
-        quality_partial_count = 0
-        quality_weak_count = 0
-        if news_item_ids:
-            warn_row = await db.execute(
-                select(sqlfunc.count(sqlfunc.distinct(UsedNewsRegistry.news_item_id)))
-                .where(UsedNewsRegistry.news_item_id.in_(news_item_ids))
-            )
-            warning_count = warn_row.scalar() or 0
-
-            # Batch fetch title, url, summary, source_id for quality + source coverage
-            news_items_row = await db.execute(
-                select(NewsItem.source_id, NewsItem.title, NewsItem.url, NewsItem.summary)
-                .where(NewsItem.id.in_(news_item_ids))
-            )
-            news_rows = news_items_row.fetchall()
-            source_ids = [row[0] for row in news_rows]
-            distinct_sources = set(s for s in source_ids if s)
-            selected_news_source_count = len(distinct_sources)
-            has_selected_news_missing_source = any(s is None for s in source_ids)
-
-            # Quality classification: weak = no title/url, partial = title+url but no summary, complete = title+url+summary
-            for row in news_rows:
-                _source_id, title, url, summary = row
-                has_title = bool(title and title.strip())
-                has_url = bool(url and url.strip())
-                has_summary = bool(summary and summary.strip())
-                if not has_title or not has_url:
-                    quality_weak_count += 1
-                elif not has_summary:
-                    quality_partial_count += 1
-                else:
-                    quality_complete_count += 1
-
-        result.append(
-            NewsBulletinResponse(
-                id=b.id,
-                title=b.title,
-                topic=b.topic,
-                brief=b.brief,
-                target_duration_seconds=b.target_duration_seconds,
-                language=b.language,
-                tone=b.tone,
-                bulletin_style=b.bulletin_style,
-                source_mode=b.source_mode,
-                selected_news_ids_json=b.selected_news_ids_json,
-                status=b.status,
-                job_id=b.job_id,
-                composition_direction=b.composition_direction,
-                thumbnail_direction=b.thumbnail_direction,
-                template_id=b.template_id,
-                style_blueprint_id=b.style_blueprint_id,
-                render_mode=b.render_mode,
-                subtitle_style=b.subtitle_style,
-                lower_third_style=b.lower_third_style,
-                trust_enforcement_level=b.trust_enforcement_level,
-                content_project_id=b.content_project_id,
-                channel_profile_id=b.channel_profile_id,
-                created_at=b.created_at,
-                updated_at=b.updated_at,
-                has_script=script_row.scalar_one_or_none() is not None,
-                has_metadata=meta_row.scalar_one_or_none() is not None,
-                selected_news_count=selected_news_count,
-                has_selected_news_warning=warning_count > 0,
-                selected_news_warning_count=warning_count,
-                selected_news_source_count=selected_news_source_count,
-                has_selected_news_missing_source=has_selected_news_missing_source,
-                selected_news_quality_complete_count=quality_complete_count,
-                selected_news_quality_partial_count=quality_partial_count,
-                selected_news_quality_weak_count=quality_weak_count,
-            )
-        )
+        result.append(await _enrich_bulletin(db, b))
     return result
 
 

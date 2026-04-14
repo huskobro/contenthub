@@ -1,7 +1,9 @@
 """Pydantic schemas for the Job Engine."""
 
+import json
+import logging
 from datetime import datetime
-from typing import Optional
+from typing import Any, Optional
 from pydantic import BaseModel, model_validator
 
 from app.jobs.timing import (
@@ -10,6 +12,32 @@ from app.jobs.timing import (
     step_progress_fraction as _step_fraction,
 )
 
+logger = logging.getLogger(__name__)
+
+
+def _safe_parse_json(raw: Optional[str]) -> Optional[Any]:
+    """
+    Parse a JSON string stored in the DB; return None on failure or empty input.
+
+    We log at DEBUG only to avoid flooding logs if any step rows contain
+    malformed payloads — the raw string remains available via the *_json field.
+    """
+    if raw is None:
+        return None
+    if isinstance(raw, (dict, list)):
+        # Defensive: if upstream ever hands us parsed data, pass it through.
+        return raw
+    if not isinstance(raw, str):
+        return None
+    stripped = raw.strip()
+    if not stripped:
+        return None
+    try:
+        return json.loads(stripped)
+    except (ValueError, TypeError) as exc:
+        logger.debug("JobStepResponse JSON parse failed: %s", exc)
+        return None
+
 
 class JobStepResponse(BaseModel):
     id: str
@@ -17,6 +45,7 @@ class JobStepResponse(BaseModel):
     step_key: str
     step_order: int
     status: str
+    # Raw JSON strings as stored in the ORM — kept for backwards compatibility.
     artifact_refs_json: Optional[str] = None
     provider_trace_json: Optional[str] = None
     log_text: Optional[str] = None
@@ -26,6 +55,14 @@ class JobStepResponse(BaseModel):
     started_at: Optional[datetime] = None
     finished_at: Optional[datetime] = None
     updated_at: datetime
+
+    # Bug #1 fix: parsed convenience views of *_json payloads.
+    # Frontend expects `artifact_refs` (already-parsed dict/list) but the ORM
+    # stores a raw TEXT JSON string. We derive these in the validator below so
+    # existing consumers of *_json keep working while new consumers get the
+    # structured form without having to parse JSON in the browser.
+    artifact_refs: Optional[Any] = None
+    provider_trace: Optional[Any] = None
 
     # Computed timing fields — not stored in the ORM model.
     # elapsed_seconds_live: live elapsed seconds (None if step not started or already finished)
@@ -38,17 +75,21 @@ class JobStepResponse(BaseModel):
     @model_validator(mode="after")
     def _compute_timing(self) -> "JobStepResponse":
         """
-        Compute live elapsed time for steps that are actively running.
-
-        For completed/failed/skipped steps elapsed_seconds is already stored
-        in the ORM (set by the side-effect in transition_step_status). For
-        running steps it is not yet persisted, so we compute it live here.
+        Compute live elapsed time for steps that are actively running AND
+        derive parsed views of the JSON payloads stored as raw strings in the
+        ORM (Bug #1 — artifact_refs was showing up as `{}` in responses).
         """
         if self.status == "running" and self.started_at is not None:
             self.elapsed_seconds_live = _elapsed_seconds(self.started_at)
         elif self.elapsed_seconds is not None:
             # Use the stored value for terminal steps
             self.elapsed_seconds_live = self.elapsed_seconds
+
+        # Derive parsed JSON views once per serialization.
+        if self.artifact_refs is None:
+            self.artifact_refs = _safe_parse_json(self.artifact_refs_json)
+        if self.provider_trace is None:
+            self.provider_trace = _safe_parse_json(self.provider_trace_json)
         return self
 
 

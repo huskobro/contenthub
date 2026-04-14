@@ -131,6 +131,9 @@ async def check_module_enabled(db: AsyncSession, module_id: str) -> None:
 
 
 async def create_job(db: AsyncSession, payload: JobCreate) -> Job:
+    # Bug #3 fix: Faz 5a linkage fields must be propagated from JobCreate payload
+    # to the Job ORM object. Previously these were silently dropped, breaking the
+    # dashboard preview chain (content_projects.active_job_id → job → artifacts).
     job = Job(
         module_type=payload.module_type,
         owner_id=payload.owner_id,
@@ -138,6 +141,9 @@ async def create_job(db: AsyncSession, payload: JobCreate) -> Job:
         source_context_json=payload.source_context_json,
         input_data_json=payload.input_data_json,
         workspace_path=payload.workspace_path,
+        channel_profile_id=payload.channel_profile_id,
+        content_project_id=payload.content_project_id,
+        is_test_data=bool(payload.is_test_data) if payload.is_test_data is not None else False,
         status="queued",
         retry_count=0,
     )
