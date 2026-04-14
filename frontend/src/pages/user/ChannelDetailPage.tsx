@@ -116,8 +116,11 @@ function LegacyChannelDetailPage() {
   }
 
   function handleDisconnect() {
+    if (!channelId) return;
     if (!window.confirm("YouTube baglantisinizi kesmek istediginizden emin misiniz?")) return;
-    revokeMutation.mutate(channelId ?? "");
+    // Per-channel revoke: backend resolves the connection from channel_profile_id.
+    // (Previously we passed channelId as connectionId → 404.)
+    revokeMutation.mutate({ channelProfileId: channelId });
   }
 
   if (channelLoading) {

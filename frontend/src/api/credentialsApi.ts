@@ -59,10 +59,30 @@ export function fetchYouTubeStatus(connectionId?: string): Promise<YouTubeTokenS
   return api.get<YouTubeTokenStatus>(`${YT_BASE}/status`, Object.keys(params).length ? params : undefined);
 }
 
-export function revokeYouTubeCredentials(connectionId?: string): Promise<void> {
-  const url = connectionId
-    ? `${YT_BASE}/revoke?connection_id=${encodeURIComponent(connectionId)}`
-    : `${YT_BASE}/revoke`;
+/**
+ * Revoke a YouTube connection's stored credentials.
+ *
+ * Pass either a raw PlatformConnection id (`connectionId`) OR a channel
+ * profile id (`channelProfileId`). Historically callers passed
+ * channel_profile_id as `connectionId`, which silently 404'd on the backend
+ * — channelProfileId is now the canonical per-channel path.
+ */
+export function revokeYouTubeCredentials(
+  opts?: string | { connectionId?: string; channelProfileId?: string },
+): Promise<void> {
+  let connectionId: string | undefined;
+  let channelProfileId: string | undefined;
+  if (typeof opts === "string") {
+    connectionId = opts;
+  } else if (opts) {
+    connectionId = opts.connectionId;
+    channelProfileId = opts.channelProfileId;
+  }
+  const params = new URLSearchParams();
+  if (connectionId) params.set("connection_id", connectionId);
+  if (channelProfileId) params.set("channel_profile_id", channelProfileId);
+  const qs = params.toString();
+  const url = qs ? `${YT_BASE}/revoke?${qs}` : `${YT_BASE}/revoke`;
   return api.delete<void>(url);
 }
 

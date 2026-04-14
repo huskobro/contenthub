@@ -1092,21 +1092,46 @@ async def get_video_stats_trend(video_id: str, db: AsyncSession = Depends(get_db
 
 @router.delete("/revoke", status_code=status.HTTP_204_NO_CONTENT)
 async def revoke_credentials(
-    connection_id: str = Query(..., description="Silinecek PlatformConnection ID"),
+    connection_id: Optional[str] = Query(
+        None, description="Silinecek PlatformConnection ID",
+    ),
+    channel_profile_id: Optional[str] = Query(
+        None,
+        description=(
+            "Alternatif: ChannelProfile ID. connection_id verilmemisse bu "
+            "profil altindaki YouTube baglantisi bulunup silinir."
+        ),
+    ),
     db: AsyncSession = Depends(get_db),
 ):
     """
     Belirtilen YouTube baglantisinin kimlik bilgilerini siler.
 
+    connection_id verilirse o connection; aksi halde channel_profile_id'ye
+    bagli YouTube connection'i silinir. En az biri gereklidir.
+
     PlatformCredential kaydini siler, PlatformConnection durumunu gunceller.
     Eski JSON token dosyasina dokunmaz (legacy cleanup icin kalir).
     """
-    conn = await db.get(PlatformConnection, connection_id)
+    if not connection_id and not channel_profile_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="connection_id veya channel_profile_id gereklidir.",
+        )
+
+    # Resolve connection
+    conn = await _resolve_connection(
+        db,
+        connection_id=connection_id,
+        channel_profile_id=channel_profile_id,
+    )
     if not conn or conn.platform != "youtube":
+        identifier = connection_id or f"channel_profile_id={channel_profile_id}"
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"YouTube baglantisi bulunamadi: {connection_id}",
+            detail=f"YouTube baglantisi bulunamadi: {identifier}",
         )
+    connection_id = conn.id
 
     # Delete PlatformCredential
     cred_stmt = select(PlatformCredential).where(

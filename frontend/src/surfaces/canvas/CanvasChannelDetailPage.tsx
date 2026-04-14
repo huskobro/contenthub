@@ -190,13 +190,16 @@ export function CanvasChannelDetailPage() {
   }
 
   function handleDisconnect() {
+    if (!channelId) return;
     if (
       !window.confirm(
         "YouTube bağlantınızı kesmek istediğinizden emin misiniz?",
       )
     )
       return;
-    revokeMutation.mutate(channelId ?? "");
+    // Per-channel revoke: backend resolves the connection from channel_profile_id.
+    // (Previously we passed channelId as connectionId → 404.)
+    revokeMutation.mutate({ channelProfileId: channelId });
   }
 
   const projectRows = useMemo(() => projects ?? [], [projects]);

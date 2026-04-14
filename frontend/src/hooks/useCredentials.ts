@@ -91,7 +91,9 @@ export function useRevokeYouTube() {
   const queryClient = useQueryClient();
   const onError = useApiError();
   return useMutation({
-    mutationFn: (connectionId?: string) => revokeYouTubeCredentials(connectionId),
+    mutationFn: (
+      opts?: string | { connectionId?: string; channelProfileId?: string },
+    ) => revokeYouTubeCredentials(opts),
     onError,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["youtube"] });

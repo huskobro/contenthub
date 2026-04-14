@@ -115,6 +115,7 @@ const CANVAS_NAV: CanvasNavZone[] = [
     items: [
       { label: "Analiz", to: "/user/analytics", canvasOverride: true, end: true },
       { label: "Kanal Performansım", to: "/user/analytics/channels" },
+      { label: "YouTube Analitikleri", to: "/user/analytics/youtube" },
       { label: "Ayarlarım", to: "/user/settings" },
     ],
   },
@@ -145,6 +146,8 @@ function useWorkspaceBreadcrumb(): string {
   if (path.startsWith("/user/posts")) return "dağıtım / gönderilerim";
   if (path.startsWith("/user/analytics/channels"))
     return "analiz / kanal performansım";
+  if (path.startsWith("/user/analytics/youtube"))
+    return "analiz / youtube";
   if (path.startsWith("/user/analytics")) return "analiz / özet";
   if (path.startsWith("/user/settings")) return "analiz / ayarlarım";
   return "çalışma alanı";
