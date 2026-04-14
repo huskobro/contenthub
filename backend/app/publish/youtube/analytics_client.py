@@ -288,7 +288,11 @@ CHANNEL_CORE_METRICS = [
     "comments",
 ]
 
-# Video-level detailed metrics
+# Video-level detailed metrics — "Top videos (Basic stats)" report.
+# Not: Kart metrikleri (cardImpressions/cardClicks/cardClickRate) bu raporda
+# desteklenmez; YouTube Analytics'te "Engagement reports" altinda ayri bir
+# sorgu gerektirir. Karistirildiginda Google 400 "query is not supported"
+# dondurur, bu yuzden burada kapsam disinda birakiyoruz.
 VIDEO_DETAIL_METRICS = [
     "views",
     "estimatedMinutesWatched",
@@ -298,9 +302,6 @@ VIDEO_DETAIL_METRICS = [
     "shares",
     "comments",
     "subscribersGained",
-    "cardClickRate",
-    "cardImpressions",
-    "cardClicks",
 ]
 
 # Engagement card / end-screen metrics

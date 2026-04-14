@@ -194,6 +194,10 @@ async def _upsert_video_daily(
     row.shares = int(metrics.get("shares", 0) or 0)
     row.comments = int(metrics.get("comments", 0) or 0)
     row.subscribers_gained = int(metrics.get("subscribersGained", 0) or 0)
+    # Kart metrikleri bu raporda dondurulmuyor (YouTube Analytics "Top
+    # videos" Engagement metriklerini karistirmayi desteklemez); sutunlar
+    # mevcut ise 0'da birakiliyor. Ileride Engagement raporu icin ayri
+    # fetch eklenirse burada ustune yazacak.
     row.card_impressions = int(metrics.get("cardImpressions", 0) or 0)
     row.card_clicks = int(metrics.get("cardClicks", 0) or 0)
     row.card_click_rate = float(metrics.get("cardClickRate", 0) or 0)
@@ -294,9 +298,14 @@ class YouTubeAnalyticsService:
         max_videos: int = 50,
     ) -> int:
         """
-        Fetch top videos (sorted by views) with per-video daily metrics.
+        Fetch top videos (sorted by views) with per-video aggregate metrics.
 
-        YouTube Analytics `dimensions=video,day` destekler.
+        Not: YouTube Analytics `dimensions=video,day` kombinasyonunu ("Top
+        videos" raporunun time-series varyanti) desteklemez — Google 400
+        "The query is not supported" dondurur. Desteklenen rapor yalnizca
+        `dimensions=video` olup her video icin pencere toplamini verir. Bu
+        yuzden her video icin pencere-sonu (end_date) ile tek snapshot
+        yaziyoruz; row.snapshot_date = end_date.
         """
         conn = await _load_connection(db, connection_id)
         if conn is None:
@@ -320,7 +329,7 @@ class YouTubeAnalyticsService:
                 start_date=start_date,
                 end_date=end_date,
                 metrics=VIDEO_DETAIL_METRICS,
-                dimensions=["video", "day"],
+                dimensions=["video"],
                 sort="-views",
                 max_results=max_videos,
             )
@@ -335,15 +344,15 @@ class YouTubeAnalyticsService:
         written = 0
         for row in rows:
             video_id = row.get("video")
-            day = row.get("day")
-            if not video_id or not day:
+            if not video_id:
                 continue
+            # Pencere-sonu snapshot'i: her video icin tek satir, tarih = end_date.
             written += await _upsert_video_daily(
-                db, connection_id, video_id, day, row,
+                db, connection_id, video_id, end_date, row,
             )
         await db.commit()
         logger.info(
-            "video daily snapshot: conn=%s rows=%d window=%s..%s",
+            "video aggregate snapshot: conn=%s rows=%d window=%s..%s",
             connection_id, written, start_date, end_date,
         )
         return written
