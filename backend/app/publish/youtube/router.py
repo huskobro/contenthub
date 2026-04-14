@@ -445,16 +445,36 @@ async def auth_callback(
         )
 
     # Find or create PlatformConnection
-    connection = await _find_or_create_connection(db, channel_profile_id)
+    try:
+        connection = await _find_or_create_connection(db, channel_profile_id)
+    except Exception as exc:  # noqa: BLE001
+        logger.exception(
+            "auth-callback: _find_or_create_connection failed for profile=%s",
+            channel_profile_id,
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"PlatformConnection olusturulamadi: {exc}",
+        )
 
     # Save tokens to PlatformCredential
-    await _token_store.save_from_auth_response(
-        db=db,
-        connection_id=connection.id,
-        client_id=resolved_client_id,
-        client_secret=resolved_client_secret,
-        auth_response=token_data,
-    )
+    try:
+        await _token_store.save_from_auth_response(
+            db=db,
+            connection_id=connection.id,
+            client_id=resolved_client_id,
+            client_secret=resolved_client_secret,
+            auth_response=token_data,
+        )
+    except Exception as exc:  # noqa: BLE001
+        logger.exception(
+            "auth-callback: save_from_auth_response failed for connection=%s",
+            connection.id,
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Token kaydi basarisiz: {exc}",
+        )
 
     # Determine scope status — hem youtube hem yt-analytics.readonly istiyoruz
     from app.publish.youtube.token_store import (
@@ -478,8 +498,17 @@ async def auth_callback(
     connection.requires_reauth = not youtube_ok
 
     # Fetch channel info from YouTube and update connection
+    # Non-blocking: if channel info fails, log and continue — connection is
+    # already valid without it.
     access_token = token_data.get("access_token", "")
-    ch_info = await _fetch_youtube_channel_info(access_token)
+    try:
+        ch_info = await _fetch_youtube_channel_info(access_token)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning(
+            "auth-callback: _fetch_youtube_channel_info failed (continuing): %s",
+            exc,
+        )
+        ch_info = None
     if ch_info:
         connection.external_account_id = ch_info.get("channel_id")
         connection.external_account_name = ch_info.get("channel_title")
@@ -491,14 +520,27 @@ async def auth_callback(
             except (ValueError, TypeError):
                 pass
 
-    await db.commit()
+    try:
+        await db.commit()
+    except Exception as exc:  # noqa: BLE001
+        logger.exception(
+            "auth-callback: db.commit failed for connection=%s", connection.id,
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"DB commit basarisiz: {exc}",
+        )
 
-    await write_audit_log(
-        db,
-        action="youtube.auth_callback",
-        entity_type="youtube_oauth",
-        entity_id=connection.id,
-    )
+    # Audit log is best-effort; do not fail the OAuth flow if it errors.
+    try:
+        await write_audit_log(
+            db,
+            action="youtube.auth_callback",
+            entity_type="youtube_oauth",
+            entity_id=connection.id,
+        )
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("auth-callback: write_audit_log failed (continuing): %s", exc)
 
     # Publish Core Hardening Pack — Gate 1: fix undefined scope_ok reference.
     # In this callback scope the scope-ok flag is called youtube_ok (line 449).
