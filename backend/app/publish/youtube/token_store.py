@@ -174,7 +174,14 @@ class DBYouTubeTokenStore:
         cipher = get_token_cipher()
 
         now = datetime.now(timezone.utc)
-        if cred.token_expiry and now < cred.token_expiry:
+        # SQLite DateTime kolonu timezone metadatasini tutmaz — SQLAlchemy
+        # naive datetime dondurur. Token'lar her zaman UTC ile yaziliyor
+        # (bkz. save_credential + _refresh_access_token), bu yuzden naive
+        # degeri UTC olarak etiketleyip karsilastirmayi tz-aware yapiyoruz.
+        expiry = cred.token_expiry
+        if expiry is not None and expiry.tzinfo is None:
+            expiry = expiry.replace(tzinfo=timezone.utc)
+        if expiry and now < expiry:
             return cipher.decrypt(cred.access_token)
 
         logger.info(
