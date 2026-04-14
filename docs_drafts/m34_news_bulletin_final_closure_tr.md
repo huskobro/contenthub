@@ -2,6 +2,10 @@
 
 **Tarih:** 2026-04-06
 **Durum:** Tamamlandi
+**Süperlendi:** Bu rapor M34 multi-render fazını kapatır. Modül seviyesindeki
+nihai closure durumu için bkz.
+[`news_bulletin_module_final_closure_tr.md`](./news_bulletin_module_final_closure_tr.md)
+(2026-04-14).
 
 ---
 

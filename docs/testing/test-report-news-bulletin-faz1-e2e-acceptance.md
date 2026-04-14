@@ -4,6 +4,9 @@
 **Modül:** `news_bulletin`
 **Amaç:** Uçtan uca pipeline'ın gerçekten çalıştığını kanıtlamak
 **Kapsam:** Sadece `combined` render mode; publish adapter dışı; multi-render yok
+**Closure bağlantısı:** Bu E2E raporu `news_bulletin` modülünün closure'ına
+kaydedilen doğrulamalardan biridir. Modül seviyesindeki nihai closure için
+bkz. [`docs_drafts/news_bulletin_module_final_closure_tr.md`](../../docs_drafts/news_bulletin_module_final_closure_tr.md).
 
 ## 1. Test Verisi
 
