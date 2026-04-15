@@ -24,6 +24,14 @@ export interface ChannelProfileResponse {
   notes: string | null;
   created_at: string;
   updated_at: string;
+  // PHASE X: URL-only create flow metadata (opsiyonel, backend dondurur)
+  source_url?: string | null;
+  normalized_url?: string | null;
+  platform?: string | null;
+  platform_handle?: string | null;
+  avatar_url?: string | null;
+  metadata_fetch_status?: string | null;
+  metadata_fetched_at?: string | null;
 }
 
 export interface CreateChannelProfile {
@@ -33,6 +41,13 @@ export interface CreateChannelProfile {
   profile_type?: string;
   default_language?: string;
   default_content_mode?: string;
+  notes?: string;
+}
+
+// PHASE X: URL-only create payload.
+export interface CreateChannelProfileFromURL {
+  source_url: string;
+  default_language?: string;
   notes?: string;
 }
 
@@ -56,6 +71,13 @@ export function createChannelProfile(
   data: CreateChannelProfile,
 ): Promise<ChannelProfileResponse> {
   return api.post<ChannelProfileResponse>(BASE, data);
+}
+
+// PHASE X: URL-only create
+export function createChannelProfileFromURL(
+  data: CreateChannelProfileFromURL,
+): Promise<ChannelProfileResponse> {
+  return api.post<ChannelProfileResponse>(`${BASE}/from-url`, data);
 }
 
 export function deleteChannelProfile(

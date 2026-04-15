@@ -49,7 +49,13 @@ export interface JobResponse {
   steps: JobStepResponse[];
 }
 
-export function fetchJobs(params?: { include_test_data?: boolean }): Promise<JobResponse[]> {
+export function fetchJobs(
+  params?: {
+    include_test_data?: boolean;
+    content_project_id?: string;
+    channel_profile_id?: string;
+  },
+): Promise<JobResponse[]> {
   return api.get<JobResponse[]>(BASE_URL, params);
 }
 

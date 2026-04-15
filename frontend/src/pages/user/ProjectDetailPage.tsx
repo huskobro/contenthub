@@ -77,10 +77,10 @@ function LegacyProjectDetailPage() {
   const [activeTab, setActiveTab] = useState<DetailTab>("general");
   const { data: project, isLoading, isError, error } = useContentProject(projectId ?? "");
 
-  // Fetch jobs linked to this project
-  const { data: allJobs } = useQuery({
-    queryKey: ["jobs"],
-    queryFn: () => fetchJobs(),
+  // PHASE X: project-scoped job listing (ownership filtering server-side)
+  const { data: projectJobs } = useQuery({
+    queryKey: ["jobs", { content_project_id: projectId }],
+    queryFn: () => fetchJobs({ content_project_id: projectId }),
     enabled: !!projectId,
   });
 
@@ -92,9 +92,7 @@ function LegacyProjectDetailPage() {
     select: (videos) => videos.filter((v) => v.content_project_id === projectId),
   });
 
-  const linkedJobs = (allJobs ?? []).filter(
-    (j: JobResponse) => j.content_project_id === projectId,
-  );
+  const linkedJobs: JobResponse[] = projectJobs ?? [];
 
   // The latest non-rendering/completed video eligible for production start
   const pendingVideo = linkedVideos?.find(

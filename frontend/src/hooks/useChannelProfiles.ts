@@ -9,8 +9,10 @@ import {
   fetchChannelProfiles,
   fetchChannelProfile,
   createChannelProfile,
+  createChannelProfileFromURL,
   deleteChannelProfile,
   type CreateChannelProfile,
+  type CreateChannelProfileFromURL,
 } from "../api/channelProfilesApi";
 import { useApiError } from "./useApiError";
 
@@ -34,6 +36,25 @@ export function useCreateChannelProfile() {
   const onError = useApiError();
   return useMutation({
     mutationFn: (data: CreateChannelProfile) => createChannelProfile(data),
+    onError,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["channel-profiles"] });
+    },
+  });
+}
+
+/**
+ * PHASE X — URL-only channel create flow.
+ *
+ * Kullanici sadece URL girer. Backend platform/handle/isim/avatar'i
+ * auto-fetch eder. Fetch basarisiz olsa dahi kayit acilir (honest state).
+ */
+export function useCreateChannelProfileFromURL() {
+  const queryClient = useQueryClient();
+  const onError = useApiError();
+  return useMutation({
+    mutationFn: (data: CreateChannelProfileFromURL) =>
+      createChannelProfileFromURL(data),
     onError,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["channel-profiles"] });

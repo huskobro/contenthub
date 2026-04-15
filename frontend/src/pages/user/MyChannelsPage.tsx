@@ -15,6 +15,7 @@ import { useAuthStore } from "../../stores/authStore";
 import {
   useChannelProfiles,
   useCreateChannelProfile,
+  useCreateChannelProfileFromURL,
   useDeleteChannelProfile,
 } from "../../hooks/useChannelProfiles";
 import {
@@ -41,6 +42,7 @@ function LegacyMyChannelsPage() {
 
   const { data: channels, isLoading } = useChannelProfiles(userId);
   const createMutation = useCreateChannelProfile();
+  const createFromURLMutation = useCreateChannelProfileFromURL();
   const deleteMutation = useDeleteChannelProfile();
 
   function handleDelete(e: React.MouseEvent, channelId: string, name: string) {
@@ -56,10 +58,43 @@ function LegacyMyChannelsPage() {
   }
 
   const [showCreate, setShowCreate] = useState(false);
+  const [createMode, setCreateMode] = useState<"url" | "advanced">("url");
+
+  // URL-only form state
+  const [sourceUrl, setSourceUrl] = useState("");
+  const [urlLanguage, setUrlLanguage] = useState("tr");
+
+  // Advanced (legacy) form state
   const [profileName, setProfileName] = useState("");
   const [channelSlug, setChannelSlug] = useState("");
   const [defaultLanguage, setDefaultLanguage] = useState("tr");
+
   const [createError, setCreateError] = useState<string | null>(null);
+
+  function resetForm() {
+    setSourceUrl("");
+    setUrlLanguage("tr");
+    setProfileName("");
+    setChannelSlug("");
+    setDefaultLanguage("tr");
+    setCreateError(null);
+  }
+
+  async function handleCreateFromURL(e: React.FormEvent) {
+    e.preventDefault();
+    if (!userId) return;
+    setCreateError(null);
+    try {
+      await createFromURLMutation.mutateAsync({
+        source_url: sourceUrl.trim(),
+        default_language: urlLanguage || undefined,
+      });
+      setShowCreate(false);
+      resetForm();
+    } catch (err) {
+      setCreateError(err instanceof Error ? err.message : "Kanal olusturulamadi");
+    }
+  }
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
@@ -74,9 +109,7 @@ function LegacyMyChannelsPage() {
         default_language: defaultLanguage,
       });
       setShowCreate(false);
-      setProfileName("");
-      setChannelSlug("");
-      setDefaultLanguage("tr");
+      resetForm();
     } catch (err) {
       setCreateError(err instanceof Error ? err.message : "Olusturulamadi");
     }
@@ -93,70 +126,162 @@ function LegacyMyChannelsPage() {
       }
       testId="my-channels"
     >
-      {/* Create modal/form */}
+      {/* Create modal/form — PHASE X: URL-only + advanced toggle */}
       {showCreate && (
         <SectionShell title="Yeni Kanal" testId="create-channel-form">
-          <form onSubmit={handleCreate} className="space-y-3 max-w-[480px]">
-            {createError && (
-              <div className="py-2 px-3 rounded-lg text-sm bg-error-light text-error-text border border-error/20">
-                {createError}
+          <div className="flex gap-2 mb-4">
+            <ActionButton
+              type="button"
+              variant={createMode === "url" ? "primary" : "ghost"}
+              onClick={() => {
+                setCreateMode("url");
+                setCreateError(null);
+              }}
+              data-testid="create-mode-url"
+            >
+              URL ile
+            </ActionButton>
+            <ActionButton
+              type="button"
+              variant={createMode === "advanced" ? "primary" : "ghost"}
+              onClick={() => {
+                setCreateMode("advanced");
+                setCreateError(null);
+              }}
+              data-testid="create-mode-advanced"
+            >
+              Gelismis
+            </ActionButton>
+          </div>
+
+          {createMode === "url" ? (
+            <form
+              onSubmit={handleCreateFromURL}
+              className="space-y-3 max-w-[560px]"
+              data-testid="create-channel-form-url"
+            >
+              {createError && (
+                <div className="py-2 px-3 rounded-lg text-sm bg-error-light text-error-text border border-error/20">
+                  {createError}
+                </div>
+              )}
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-1">
+                  Kanal URL
+                </label>
+                <FilterInput
+                  value={sourceUrl}
+                  onChange={(e) => setSourceUrl(e.target.value)}
+                  placeholder="https://www.youtube.com/@kanalim"
+                  required
+                  className="w-full"
+                  data-testid="create-channel-source-url"
+                />
+                <p className="mt-1 text-xs text-neutral-500">
+                  Platform (YouTube, Instagram vb.), kullanici adi, avatar ve
+                  kanal adi URL'den otomatik cekilir. Cekilemezse kayit "baslik
+                  alinamadi" durumunda acilir; sonradan duzenleyebilirsiniz.
+                </p>
               </div>
-            )}
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-1">
-                Kanal Adi
-              </label>
-              <FilterInput
-                value={profileName}
-                onChange={(e) => setProfileName(e.target.value)}
-                placeholder="Ornek: Ana YouTube Kanali"
-                required
-                className="w-full"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-1">
-                Kanal Slug
-              </label>
-              <FilterInput
-                value={channelSlug}
-                onChange={(e) => setChannelSlug(e.target.value)}
-                placeholder="ornek: ana-youtube"
-                required
-                className="w-full"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-1">
-                Varsayilan Dil
-              </label>
-              <FilterInput
-                value={defaultLanguage}
-                onChange={(e) => setDefaultLanguage(e.target.value)}
-                placeholder="tr"
-                className="w-full"
-              />
-            </div>
-            <div className="flex gap-2 pt-2">
-              <ActionButton
-                type="submit"
-                variant="primary"
-                loading={createMutation.isPending}
-              >
-                Olustur
-              </ActionButton>
-              <ActionButton
-                type="button"
-                variant="ghost"
-                onClick={() => {
-                  setShowCreate(false);
-                  setCreateError(null);
-                }}
-              >
-                Iptal
-              </ActionButton>
-            </div>
-          </form>
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-1">
+                  Varsayilan Dil
+                </label>
+                <FilterInput
+                  value={urlLanguage}
+                  onChange={(e) => setUrlLanguage(e.target.value)}
+                  placeholder="tr"
+                  className="w-full"
+                />
+              </div>
+              <div className="flex gap-2 pt-2">
+                <ActionButton
+                  type="submit"
+                  variant="primary"
+                  loading={createFromURLMutation.isPending}
+                  data-testid="create-channel-submit-url"
+                >
+                  Kanali Ekle
+                </ActionButton>
+                <ActionButton
+                  type="button"
+                  variant="ghost"
+                  onClick={() => {
+                    setShowCreate(false);
+                    resetForm();
+                  }}
+                >
+                  Iptal
+                </ActionButton>
+              </div>
+            </form>
+          ) : (
+            <form
+              onSubmit={handleCreate}
+              className="space-y-3 max-w-[480px]"
+              data-testid="create-channel-form-advanced"
+            >
+              {createError && (
+                <div className="py-2 px-3 rounded-lg text-sm bg-error-light text-error-text border border-error/20">
+                  {createError}
+                </div>
+              )}
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-1">
+                  Kanal Adi
+                </label>
+                <FilterInput
+                  value={profileName}
+                  onChange={(e) => setProfileName(e.target.value)}
+                  placeholder="Ornek: Ana YouTube Kanali"
+                  required
+                  className="w-full"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-1">
+                  Kanal Slug
+                </label>
+                <FilterInput
+                  value={channelSlug}
+                  onChange={(e) => setChannelSlug(e.target.value)}
+                  placeholder="ornek: ana-youtube"
+                  required
+                  className="w-full"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-1">
+                  Varsayilan Dil
+                </label>
+                <FilterInput
+                  value={defaultLanguage}
+                  onChange={(e) => setDefaultLanguage(e.target.value)}
+                  placeholder="tr"
+                  className="w-full"
+                />
+              </div>
+              <div className="flex gap-2 pt-2">
+                <ActionButton
+                  type="submit"
+                  variant="primary"
+                  loading={createMutation.isPending}
+                >
+                  Olustur
+                </ActionButton>
+                <ActionButton
+                  type="button"
+                  variant="ghost"
+                  onClick={() => {
+                    setShowCreate(false);
+                    resetForm();
+                  }}
+                >
+                  Iptal
+                </ActionButton>
+              </div>
+            </form>
+          )}
         </SectionShell>
       )}
 
