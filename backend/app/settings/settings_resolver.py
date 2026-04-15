@@ -542,6 +542,44 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "wired_to": "app.tts.controls.apply_scene_energy",
     },
 
+    # --- Faz 5: Preview-first TTS ---
+    "tts.preview.voice_sample_text": {
+        "group": "tts",
+        "type": "string",
+        "label": "Voice sample metni (Faz 5 L1)",
+        "help_text": "Voice sample preview'inde kullanilan kisa cumle. "
+                     "Kullanici bu cumleyi farkli ses/ayarlarla dener.",
+        "module_scope": None,
+        "env_var": "",
+        "builtin_default": "Merhaba, bu ses ornegidir. ContentHub ile nasil bir tonda konustugunu dinleyin.",
+        "wired": True,
+        "wired_to": "app.tts.preview_service.generate_voice_sample",
+    },
+    "tts.preview.max_characters_draft": {
+        "group": "tts",
+        "type": "integer",
+        "label": "Draft preview karakter siniri (Faz 5 L3)",
+        "help_text": "Draft script preview'inde TOPLAM karakter siniri. "
+                     "Asilirsa metin kisaltilir — tam uretim kotasi yenmez.",
+        "module_scope": None,
+        "env_var": "",
+        "builtin_default": 1500,
+        "wired": True,
+        "wired_to": "app.tts.preview_service.generate_draft_script_preview",
+    },
+    "tts.preview.workspace_dir": {
+        "group": "tts",
+        "type": "string",
+        "label": "Preview artifact dizini",
+        "help_text": "Preview mp3 + manifest dosyalarinin yazildigi klasor "
+                     "(workspace_root altindaki rolatif yol).",
+        "module_scope": None,
+        "env_var": "",
+        "builtin_default": "_tts_previews",
+        "wired": True,
+        "wired_to": "app.tts.preview_service.resolve_preview_root",
+    },
+
     "provider.visuals.pexels_default_count": {
         "group": "providers",
         "type": "integer",

@@ -46,6 +46,7 @@ from app.full_auto.router import router as full_auto_router
 from app.calendar.router import router as calendar_router
 from app.auth.router import router as auth_router
 from app.notifications.router import router as notifications_router
+from app.tts.preview_router import router as tts_preview_router
 
 api_router = APIRouter()
 
@@ -100,4 +101,5 @@ api_router.include_router(wizard_configs_router, dependencies=[Depends(require_u
 api_router.include_router(modules_router)
 api_router.include_router(calendar_router, dependencies=[Depends(require_user)])
 api_router.include_router(notifications_router, dependencies=[Depends(require_user)])
+api_router.include_router(tts_preview_router, dependencies=[Depends(require_user)])
 api_router.include_router(auth_router)
