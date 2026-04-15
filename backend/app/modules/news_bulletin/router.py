@@ -538,10 +538,17 @@ async def create_bulletin_publish_record(
 # ---------------------------------------------------------------------------
 
 class TrustCheckResponse(BaseModel):
-    """Kaynak güvenilirlik kontrol sonucu."""
+    """Kaynak güvenilirlik kontrol sonucu.
+
+    Gate Sources Closure — medium_trust_items ve trust_breakdown eklendi.
+    trust_level low/medium/high ayırt ediliyor; medium warn altında uyarılıyor,
+    block altında sadece low bloklar.
+    """
     pass_check: bool
     enforcement_level: str
     low_trust_items: list[dict] = []
+    medium_trust_items: list[dict] = []
+    trust_breakdown: dict = {}
     total_checked: int = 0
     message: str = ""
 
@@ -551,12 +558,12 @@ async def check_trust(
     item_id: str, db: AsyncSession = Depends(get_db)
 ):
     """
-    Seçili haberlerin kaynak güvenilirlik kontrolü (M30).
+    Seçili haberlerin kaynak güvenilirlik kontrolü (M30 + Gate Sources Closure).
 
     bulletin.trust_enforcement_level ayarına göre:
-      - none: kontrol yapılmaz
-      - warn: düşük güvenilirlikli kaynaklar uyarı olarak raporlanır
-      - block: düşük güvenilirlikli kaynak varsa blok
+      - none: kontrol yapılmaz (breakdown yine döner)
+      - warn: düşük VE orta güvenilirlikli kaynaklar uyarı olarak raporlanır
+      - block: düşük güvenilirlikli kaynak varsa blok; orta geçer ama surface'lenir
     """
     bulletin = await service.get_news_bulletin(db, item_id)
     if bulletin is None:
@@ -566,6 +573,8 @@ async def check_trust(
         pass_check=result["pass"],
         enforcement_level=result["enforcement_level"],
         low_trust_items=result["low_trust_items"],
+        medium_trust_items=result.get("medium_trust_items", []),
+        trust_breakdown=result.get("trust_breakdown", {}),
         total_checked=result["total_checked"],
         message=result["message"],
     )

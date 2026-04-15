@@ -178,28 +178,118 @@ def _extract_image_urls(entry: object, max_count: int = 5) -> list:
 
 
 # ---------------------------------------------------------------------------
-# OG Image Scraping — RSS'te görsel yoksa haber detay sayfasından çek
+# OG Image Scraping — RSS'te gorsel yoksa haber detay sayfasindan cek
+#
+# Gate Sources Closure guardrails:
+#   - Settings-gated (``source_scans.og_scrape_enabled``, default True).
+#   - Per-host throttle: minimum ``source_scans.og_scrape_min_interval_seconds``
+#     between calls to the same host (module-local in-memory map).
+#   - SSRF guard: rejects non-http(s), private/loopback/link-local hosts,
+#     and unresolvable hostnames.
 # ---------------------------------------------------------------------------
+
+import ipaddress
+import socket
+from urllib.parse import urlparse
 
 _OG_SCRAPE_TIMEOUT = 8  # saniye
 _OG_SCRAPE_MAX_BYTES = 100_000  # ilk 100KB HTML yeterli (meta tag'lar head'de)
 
+# In-memory per-host timestamp of last successful fetch. Single-process MVP.
+_OG_LAST_FETCH: dict[str, float] = {}
+
+
+def _is_private_host(hostname: str) -> bool:
+    """Return True if hostname resolves to a loopback / private / link-local
+    address. Used as the SSRF guard."""
+    if not hostname:
+        return True
+    # Strip brackets from IPv6 literals.
+    hostname = hostname.strip("[]").lower()
+    try:
+        ip = ipaddress.ip_address(hostname)
+        return (
+            ip.is_loopback
+            or ip.is_private
+            or ip.is_link_local
+            or ip.is_multicast
+            or ip.is_reserved
+            or ip.is_unspecified
+        )
+    except ValueError:
+        # It's a hostname — resolve it.
+        try:
+            infos = socket.getaddrinfo(hostname, None)
+        except socket.gaierror:
+            return True  # unresolvable → treat as unsafe
+        for info in infos:
+            raw = info[4][0]
+            try:
+                ip = ipaddress.ip_address(raw)
+            except ValueError:
+                continue
+            if (
+                ip.is_loopback
+                or ip.is_private
+                or ip.is_link_local
+                or ip.is_multicast
+                or ip.is_reserved
+                or ip.is_unspecified
+            ):
+                return True
+        return False
+
+
+async def _og_scrape_settings(db: AsyncSession) -> tuple[bool, float]:
+    """Resolve enable flag + per-host min-interval from Settings Registry."""
+    enabled = True
+    min_interval = 5.0
+    try:
+        from app.settings.settings_resolver import resolve as _resolve_setting
+        enabled_raw = await _resolve_setting("source_scans.og_scrape_enabled", db)
+        if enabled_raw is not None:
+            enabled = bool(enabled_raw)
+        interval_raw = await _resolve_setting(
+            "source_scans.og_scrape_min_interval_seconds", db
+        )
+        if interval_raw is not None:
+            try:
+                min_interval = float(interval_raw)
+            except (TypeError, ValueError):
+                pass
+    except Exception:
+        pass
+    return enabled, max(0.0, min_interval)
+
 
 def _scrape_og_image(article_url: str) -> Optional[str]:
-    """
-    Haber detay sayfasından og:image veya twitter:image meta tag'ını scrape eder.
+    """Scrape og:image / twitter:image with SSRF + throttle guards.
 
-    RSS feed'de media:content / enclosure gibi standart image alanları
-    olmayan kaynaklarda (ör. Mynet Teknoloji) fallback olarak kullanılır.
-
-    Lightweight: Sadece ilk 100KB HTML okunur (meta tag'lar head bölgesinde).
-    Timeout: 8 saniye.
-
-    Returns:
-        Image URL (str) veya bulunamazsa None.
+    Returns None if scraping is disabled via settings, the host is private,
+    the per-host throttle window is still active, or any network error.
+    Never raises.
     """
     if not article_url or not article_url.startswith(("http://", "https://")):
         return None
+
+    try:
+        parsed = urlparse(article_url)
+    except Exception:
+        return None
+    host = (parsed.hostname or "").lower()
+    if not host or _is_private_host(host):
+        logger.debug("_scrape_og_image: host reddedildi (SSRF guard) — %s", host)
+        return None
+
+    # Per-host throttle — module-local dict; default 5s if settings not read.
+    # execute_rss_scan resolves real settings and calls _scrape_og_image_gated.
+    import time
+    now_ts = time.monotonic()
+    last = _OG_LAST_FETCH.get(host, 0.0)
+    if now_ts - last < 5.0:
+        logger.debug("_scrape_og_image: throttled (host=%s, elapsed=%.1fs)", host, now_ts - last)
+        return None
+    _OG_LAST_FETCH[host] = now_ts
 
     try:
         import urllib.request
@@ -237,7 +327,7 @@ def _scrape_og_image(article_url: str) -> Optional[str]:
 
     except Exception as exc:
         logger.debug(
-            "_scrape_og_image: scrape başarısız — %s url=%s",
+            "_scrape_og_image: scrape basarisiz — %s url=%s",
             type(exc).__name__, article_url[:80],
         )
         return None
@@ -272,15 +362,18 @@ def normalize_entry(
     # M41a: Çoklu görsel çıkarma (max 5)
     image_urls = _extract_image_urls(entry, max_count=5)
 
-    # Fallback: RSS'te görsel yoksa haber detay sayfasından og:image scrape et
-    if not image_url and url:
+    # Fallback: RSS'te gorsel yoksa haber detay sayfasindan og:image scrape et.
+    # NOT: Asenkron settings bu fonksiyon icinde cagirilmiyor — scan runtime
+    # ``og_scrape_enabled`` setting'ini okuyup asagidaki kosul ile kapatabilir.
+    # Ornek cagrida normalize_entry'ye scrape_enabled=False gecilir.
+    if not image_url and url and getattr(normalize_entry, "_og_scrape_enabled", True):
         scraped = _scrape_og_image(url)
         if scraped:
             image_url = scraped
             if not image_urls:
                 image_urls = [scraped]
             logger.debug(
-                "normalize_entry: og:image fallback kullanıldı — %s",
+                "normalize_entry: og:image fallback kullanildi — %s",
                 scraped[:80],
             )
 
@@ -311,15 +404,28 @@ def normalize_entry(
 # DB yardımcıları
 # ---------------------------------------------------------------------------
 
-async def _load_existing_items(db: AsyncSession, source_id: str) -> list[dict]:
+async def _load_existing_items(
+    db: AsyncSession,
+    source_id: str,
+    window_days: Optional[int] = None,
+) -> list[dict]:
     """
-    Bu kaynağa ait mevcut tüm NewsItem kayıtlarının id/url/title üçlüsünü yükler.
-    Hard + soft dedupe için kullanılır.
+    Bu kaynaga ait mevcut NewsItem kayitlarinin id/url/title uclusunu yukler.
+    Hard + soft dedupe icin kullanilir.
+
+    Gate Sources Closure:
+      ``window_days`` > 0 ise yalnizca ``created_at >= now - window_days``
+      kayitlari dondurur. Bu, zaman icinde sonsuza dek buyuyen soft-dedupe
+      havuzunu onler. None / <=0 → eski davranis (tum kayitlar).
     """
-    rows = await db.execute(
-        select(NewsItem.id, NewsItem.url, NewsItem.title)
-        .where(NewsItem.source_id == source_id)
+    from datetime import timedelta
+    q = select(NewsItem.id, NewsItem.url, NewsItem.title).where(
+        NewsItem.source_id == source_id
     )
+    if window_days and window_days > 0:
+        cutoff = datetime.now(tz=timezone.utc) - timedelta(days=window_days)
+        q = q.where(NewsItem.created_at >= cutoff)
+    rows = await db.execute(q)
     return [
         {"id": row[0], "url": row[1] or "", "title": row[2] or ""}
         for row in rows.all()
@@ -421,16 +527,31 @@ async def execute_rss_scan(
     entries = getattr(feed, "entries", []) or []
     fetched_count = len(entries)
 
-    # -- Soft dedupe threshold from settings resolver (M11) --
+    # -- Settings resolver (M11 + Gate Sources Closure) --
     soft_threshold = None
+    dedupe_window_days: Optional[int] = None
+    og_scrape_enabled = True
     try:
         from app.settings.settings_resolver import resolve as _resolve_setting
         soft_threshold = await _resolve_setting("source_scans.soft_dedupe_threshold", db)
+        raw_window = await _resolve_setting("news_items.soft_dedupe_window_days", db)
+        if raw_window is not None:
+            try:
+                dedupe_window_days = int(raw_window)
+            except (TypeError, ValueError):
+                dedupe_window_days = None
+        og_enabled_raw = await _resolve_setting("source_scans.og_scrape_enabled", db)
+        if og_enabled_raw is not None:
+            og_scrape_enabled = bool(og_enabled_raw)
     except Exception:
-        pass  # Fall back to module default
+        pass  # Fall back to module defaults
 
-    # -- Mevcut item'ları yükle (hard + soft dedupe) --
-    existing_items = await _load_existing_items(db, source.id)
+    # Propagate scrape flag to normalize_entry — avoids threading the flag
+    # through the signature (many existing callers + tests).
+    setattr(normalize_entry, "_og_scrape_enabled", og_scrape_enabled)
+
+    # -- Mevcut item'lari yukle (hard + soft dedupe, rolling window) --
+    existing_items = await _load_existing_items(db, source.id, window_days=dedupe_window_days)
     dedupe_context = build_dedupe_context(
         existing_items, allow_followup=allow_followup, soft_threshold=soft_threshold,
     )

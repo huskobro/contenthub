@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Tuple
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException
@@ -7,21 +7,50 @@ from app.db.models import SourceScan, NewsSource, NewsItem, UsedNewsRegistry
 from .schemas import ScanCreate, ScanUpdate, ScanResponse
 
 
-async def list_scans(
-    db: AsyncSession,
+def _scans_base_query(
     source_id: Optional[str] = None,
     status: Optional[str] = None,
     scan_mode: Optional[str] = None,
-) -> List[SourceScan]:
-    q = select(SourceScan).order_by(SourceScan.created_at.desc())
+):
+    q = select(SourceScan)
     if source_id is not None:
         q = q.where(SourceScan.source_id == source_id)
     if status is not None:
         q = q.where(SourceScan.status == status)
     if scan_mode is not None:
         q = q.where(SourceScan.scan_mode == scan_mode)
+    return q
+
+
+async def list_scans(
+    db: AsyncSession,
+    source_id: Optional[str] = None,
+    status: Optional[str] = None,
+    scan_mode: Optional[str] = None,
+    limit: Optional[int] = None,
+    offset: int = 0,
+) -> List[SourceScan]:
+    q = _scans_base_query(source_id=source_id, status=status, scan_mode=scan_mode).order_by(
+        SourceScan.created_at.desc()
+    )
+    if offset:
+        q = q.offset(offset)
+    if limit is not None:
+        q = q.limit(limit)
     result = await db.execute(q)
     return list(result.scalars().all())
+
+
+async def count_scans(
+    db: AsyncSession,
+    source_id: Optional[str] = None,
+    status: Optional[str] = None,
+    scan_mode: Optional[str] = None,
+) -> int:
+    q = _scans_base_query(source_id=source_id, status=status, scan_mode=scan_mode)
+    count_stmt = select(func.count()).select_from(q.subquery())
+    result = await db.execute(count_stmt)
+    return int(result.scalar() or 0)
 
 
 async def list_scans_with_source_summary(
@@ -29,11 +58,16 @@ async def list_scans_with_source_summary(
     source_id: Optional[str] = None,
     status: Optional[str] = None,
     scan_mode: Optional[str] = None,
-) -> List[ScanResponse]:
-    """Return scan list enriched with source_name, source_status, and publication yield counts."""
-    scans = await list_scans(db, source_id=source_id, status=status, scan_mode=scan_mode)
+    limit: Optional[int] = None,
+    offset: int = 0,
+) -> Tuple[List[ScanResponse], int]:
+    """Return (items, total). Batched aggregates; no reviewed tracking (status removed)."""
+    scans = await list_scans(
+        db, source_id=source_id, status=status, scan_mode=scan_mode, limit=limit, offset=offset
+    )
+    total = await count_scans(db, source_id=source_id, status=status, scan_mode=scan_mode)
     if not scans:
-        return []
+        return [], total
 
     scan_ids = [s.id for s in scans]
     source_ids = list({s.source_id for s in scans})
@@ -51,17 +85,6 @@ async def list_scans_with_source_summary(
         .group_by(NewsItem.source_scan_id)
     )
     linked_map = {row[0]: row[1] for row in linked_rows.all()}
-
-    # Batch-load reviewed news counts per scan
-    reviewed_rows = await db.execute(
-        select(NewsItem.source_scan_id, func.count(NewsItem.id))
-        .where(
-            NewsItem.source_scan_id.in_(scan_ids),
-            NewsItem.status == "reviewed",
-        )
-        .group_by(NewsItem.source_scan_id)
-    )
-    reviewed_map = {row[0]: row[1] for row in reviewed_rows.all()}
 
     # Batch-load used news counts per scan (via NewsItem join)
     used_rows = await db.execute(
@@ -93,11 +116,10 @@ async def list_scans_with_source_summary(
                 source_name=source.name if source else None,
                 source_status=source.status if source else None,
                 linked_news_count_from_scan=linked_map.get(scan.id, 0),
-                reviewed_news_count_from_scan=reviewed_map.get(scan.id, 0),
                 used_news_count_from_scan=used_map.get(scan.id, 0),
             )
         )
-    return result
+    return result, total
 
 
 async def get_scan(db: AsyncSession, scan_id: str) -> Optional[SourceScan]:

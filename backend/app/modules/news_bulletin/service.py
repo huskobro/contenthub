@@ -875,16 +875,30 @@ async def check_trust_enforcement(
     """
     Seçili haberlerin kaynak güvenilirlik düzeyini kontrol eder.
 
-    bulletin.trust_enforcement_level ayarına göre:
-      - "none"  : kontrol yapılmaz, her zaman pass
-      - "warn"  : düşük güvenilirlikli kaynaklar uyarı olarak raporlanır
-      - "block" : düşük güvenilirlikli kaynak varsa blok
+    Gate Sources Closure — trust_level artık tüm değerlerde anlamlı davranış
+    üretir (low/medium/high). Önceki davranış: sadece 'low' flaglenirdi,
+    'medium' ve 'high' ayırt edilmezdi. Yeni davranış:
+
+      - ``low``    → always flagged as untrusted (blocks under level=block,
+                     warns under level=warn)
+      - ``medium`` → her zaman attention_items listesine eklenir; ``enforcement_level``
+                     'warn' ya da 'block' altında block ETMEZ, ama mesajda
+                     ayrı sayı ile raporlanır
+      - ``high``   → clean — hiçbir listede görünmez
+      - ``None``/unknown → ``low`` kabul edilir (conservative default)
+
+    bulletin.trust_enforcement_level ayarı:
+      - "none"  : kontrol yapılmaz, her zaman pass (breakdown yine döner)
+      - "warn"  : düşük/orta güvenilirlikli kaynaklar rapor edilir, block yok
+      - "block" : ``low`` varsa block; ``medium`` hala attention'da ama geçer
 
     Returns:
         dict: {
             "pass": bool,
             "enforcement_level": str,
-            "low_trust_items": [{"news_item_id", "source_id", "source_name", "trust_level"}],
+            "low_trust_items": [...],          # trust_level='low' (geri uyumlu)
+            "medium_trust_items": [...],       # trust_level='medium' (yeni)
+            "trust_breakdown": {"low": N, "medium": N, "high": N, "unknown": N},
             "total_checked": int,
             "message": str,
         }
@@ -897,20 +911,13 @@ async def check_trust_enforcement(
             "pass": False,
             "enforcement_level": "unknown",
             "low_trust_items": [],
+            "medium_trust_items": [],
+            "trust_breakdown": {"low": 0, "medium": 0, "high": 0, "unknown": 0},
             "total_checked": 0,
             "message": "Bulletin bulunamadı.",
         }
 
     level = bulletin.trust_enforcement_level or "warn"
-
-    if level == "none":
-        return {
-            "pass": True,
-            "enforcement_level": "none",
-            "low_trust_items": [],
-            "total_checked": 0,
-            "message": "Güvenilirlik kontrolü devre dışı.",
-        }
 
     # Seçili item'ları yükle
     selected_items = await list_bulletin_selected_items(db, bulletin_id)
@@ -919,17 +926,23 @@ async def check_trust_enforcement(
             "pass": True,
             "enforcement_level": level,
             "low_trust_items": [],
+            "medium_trust_items": [],
+            "trust_breakdown": {"low": 0, "medium": 0, "high": 0, "unknown": 0},
             "total_checked": 0,
             "message": "Seçili haber yok.",
         }
 
-    low_trust_items = []
+    low_trust_items: list[dict] = []
+    medium_trust_items: list[dict] = []
+    breakdown = {"low": 0, "medium": 0, "high": 0, "unknown": 0}
+
     for sel in selected_items:
         news_item = await db.execute(
             select(NewsItem).where(NewsItem.id == sel.news_item_id)
         )
         ni = news_item.scalar_one_or_none()
         if ni is None or ni.source_id is None:
+            breakdown["unknown"] += 1
             continue
 
         source_result = await db.execute(
@@ -937,43 +950,92 @@ async def check_trust_enforcement(
         )
         source = source_result.scalar_one_or_none()
         if source is None:
+            breakdown["unknown"] += 1
             continue
 
-        if source.trust_level == "low":
-            low_trust_items.append({
-                "news_item_id": sel.news_item_id,
-                "source_id": source.id,
-                "source_name": source.name,
-                "trust_level": source.trust_level,
-            })
+        tl = (source.trust_level or "low").lower()
+        entry = {
+            "news_item_id": sel.news_item_id,
+            "source_id": source.id,
+            "source_name": source.name,
+            "trust_level": tl,
+        }
+
+        if tl == "low":
+            breakdown["low"] += 1
+            low_trust_items.append(entry)
+        elif tl == "medium":
+            breakdown["medium"] += 1
+            medium_trust_items.append(entry)
+        elif tl == "high":
+            breakdown["high"] += 1
+        else:
+            # Bilinmeyen değer — konservatif davran: low olarak say ve flagle.
+            breakdown["unknown"] += 1
+            low_trust_items.append({**entry, "trust_level": tl or "unknown"})
 
     total_checked = len(selected_items)
     has_low_trust = len(low_trust_items) > 0
+    has_medium_trust = len(medium_trust_items) > 0
+
+    # enforcement_level=none → sadece breakdown dön, gate uygulama
+    if level == "none":
+        return {
+            "pass": True,
+            "enforcement_level": "none",
+            "low_trust_items": low_trust_items,
+            "medium_trust_items": medium_trust_items,
+            "trust_breakdown": breakdown,
+            "total_checked": total_checked,
+            "message": (
+                f"Güvenilirlik kontrolü devre dışı. "
+                f"Dağılım: {breakdown['high']} yüksek, "
+                f"{breakdown['medium']} orta, {breakdown['low']} düşük."
+            ),
+        }
 
     if level == "block" and has_low_trust:
         return {
             "pass": False,
             "enforcement_level": "block",
             "low_trust_items": low_trust_items,
+            "medium_trust_items": medium_trust_items,
+            "trust_breakdown": breakdown,
             "total_checked": total_checked,
-            "message": f"{len(low_trust_items)} düşük güvenilirlikli kaynak tespit edildi. Üretim engellendi.",
+            "message": (
+                f"{len(low_trust_items)} düşük güvenilirlikli kaynak tespit edildi. "
+                f"Üretim engellendi. Ayrıca {len(medium_trust_items)} orta güvenilirlikli "
+                f"kaynak dikkat gerektiriyor."
+            ),
         }
 
-    if level == "warn" and has_low_trust:
+    if level == "warn" and (has_low_trust or has_medium_trust):
+        parts = []
+        if has_low_trust:
+            parts.append(f"{len(low_trust_items)} düşük güvenilirlikli")
+        if has_medium_trust:
+            parts.append(f"{len(medium_trust_items)} orta güvenilirlikli")
         return {
             "pass": True,
             "enforcement_level": "warn",
             "low_trust_items": low_trust_items,
+            "medium_trust_items": medium_trust_items,
+            "trust_breakdown": breakdown,
             "total_checked": total_checked,
-            "message": f"Uyarı: {len(low_trust_items)} düşük güvenilirlikli kaynak mevcut.",
+            "message": f"Uyarı: {' ve '.join(parts)} kaynak mevcut.",
         }
 
     return {
         "pass": True,
         "enforcement_level": level,
         "low_trust_items": [],
+        "medium_trust_items": medium_trust_items,
+        "trust_breakdown": breakdown,
         "total_checked": total_checked,
-        "message": "Tüm kaynaklar güvenilir.",
+        "message": (
+            f"Tüm kaynaklar güvenilir. "
+            f"Dağılım: {breakdown['high']} yüksek, {breakdown['medium']} orta."
+        ),
     }
 
 

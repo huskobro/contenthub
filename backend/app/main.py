@@ -289,13 +289,43 @@ async def lifespan(app: FastAPI):
     app.state.scheduler_task = scheduler_task
     logger.info("Publish scheduler task created.")
 
-    # Auto-scan scheduler — background task (Faz D)
+    # Auto-scan scheduler — background task (Gate Sources Closure).
+    # The loop reads ``source_scans.auto_scan_enabled`` and
+    # ``source_scans.auto_scan_interval_seconds`` from the Settings Registry on
+    # every tick, so starting it is always safe: when disabled, each tick is a
+    # no-op. We still resolve the initial interval here to emit an accurate
+    # startup log line.
     from app.source_scans.scheduler import poll_auto_scans
+    async with AsyncSessionLocal() as _src_scan_db:
+        _src_scan_initial_interval = (
+            await resolve("source_scans.auto_scan_interval_seconds", _src_scan_db)
+        ) or 300
     auto_scan_task = asyncio.create_task(
-        poll_auto_scans(AsyncSessionLocal, interval=300)
+        poll_auto_scans(AsyncSessionLocal, interval=float(_src_scan_initial_interval))
     )
     app.state.auto_scan_task = auto_scan_task
-    logger.info("Auto-scan scheduler task created.")
+    logger.info(
+        "Auto-scan scheduler task created (initial interval=%ss, live-reload).",
+        _src_scan_initial_interval,
+    )
+
+    # Retention sweeper — background task (Gate Sources Closure).
+    # Deletes expired news_items (not referenced by used_news_registry) and
+    # expired source_scans (detaching news_items.source_scan_id → NULL first).
+    # Settings are re-read per tick; disable via news_items.retention.enabled=False.
+    from app.source_scans.retention import poll_retention
+    async with AsyncSessionLocal() as _retention_db:
+        _retention_initial_interval = (
+            await resolve("source_scans.retention.poll_interval_seconds", _retention_db)
+        ) or 3600
+    retention_task = asyncio.create_task(
+        poll_retention(AsyncSessionLocal, initial_poll_interval=float(_retention_initial_interval))
+    )
+    app.state.retention_task = retention_task
+    logger.info(
+        "Retention sweeper task created (initial interval=%ss, live-reload).",
+        _retention_initial_interval,
+    )
 
     # Job auto-retry scheduler — background task (Faz I)
     # Only starts if jobs.auto_retry_enabled setting is True (default: False)
@@ -376,6 +406,15 @@ async def lifespan(app: FastAPI):
         except asyncio.CancelledError:
             pass
         logger.info("Auto-scan scheduler cancelled.")
+
+    # Shutdown: cancel retention sweeper
+    if hasattr(app.state, "retention_task"):
+        app.state.retention_task.cancel()
+        try:
+            await app.state.retention_task
+        except asyncio.CancelledError:
+            pass
+        logger.info("Retention sweeper cancelled.")
 
     # Shutdown: cancel retry scheduler
     if hasattr(app.state, "retry_scheduler_task"):
