@@ -15,6 +15,7 @@ import {
   MetricGrid,
 } from "../../components/design-system/primitives";
 import { AdminAnalyticsFilterBar } from "../../components/analytics/AdminAnalyticsFilterBar";
+import { ExportButton } from "../../components/analytics/ExportButton";
 import { TrendChart } from "../../components/shared/charts/TrendChart";
 import { ComparisonBar } from "../../components/shared/charts/ComparisonBar";
 import { DistributionDonut } from "../../components/shared/charts/DistributionDonut";
@@ -81,6 +82,7 @@ export function PublishAnalyticsPage() {
         { label: "Yayin Analytics" },
       ]}
       testId="analytics-publish"
+      actions={<ExportButton kind="publish" params={analyticsFilters.apiParams} />}
     >
       <Link
         to="/admin/analytics"

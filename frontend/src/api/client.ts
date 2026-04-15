@@ -53,7 +53,14 @@ const ACCESS_TOKEN_KEY = "contenthub:access-token";
 const REFRESH_TOKEN_KEY = "contenthub:refresh-token";
 const AUTH_USER_KEY = "contenthub:auth-user";
 
+/** Dev bypass — auth tamamen pasif, her zaman admin user-id gönderir */
+const AUTH_DISABLED = true;
+const DEV_ADMIN_USER_ID = "f423e3c7-40a7-4cc5-bac5-0b9e00711933";
+
 function getActiveUserHeaders(): Record<string, string> {
+  if (AUTH_DISABLED) {
+    return { "X-ContentHub-User-Id": DEV_ADMIN_USER_ID };
+  }
   const headers: Record<string, string> = {};
   try {
     const userId = localStorage.getItem(USER_ID_STORAGE_KEY);
@@ -83,6 +90,7 @@ let _refreshPromise: Promise<boolean> | null = null;
  * Safe to call multiple times — idempotent.
  */
 function forceLogout(): void {
+  if (AUTH_DISABLED) return; // Dev bypass — login'e yönlendirme yapma
   try {
     localStorage.removeItem(ACCESS_TOKEN_KEY);
     localStorage.removeItem(REFRESH_TOKEN_KEY);
@@ -255,5 +263,20 @@ export const api = {
   /** For multipart uploads (no JSON content-type) */
   upload<T>(url: string, formData: FormData): Promise<T> {
     return request<T>(url, { method: "POST", body: formData });
+  },
+
+  /**
+   * Raw text GET — returns response body as plain text instead of parsing
+   * JSON. Used by export endpoints that emit CSV.
+   */
+  async getText(base: string, params?: QueryParams): Promise<string> {
+    const url = buildUrl(base, params);
+    const userHeaders = getActiveUserHeaders();
+    const res = await fetch(url, { headers: userHeaders });
+    if (!res.ok) {
+      const detail = await parseErrorDetail(res);
+      throw new ApiError(detail, res.status, detail);
+    }
+    return res.text();
   },
 };

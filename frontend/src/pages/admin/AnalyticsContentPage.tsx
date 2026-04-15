@@ -6,6 +6,7 @@ import type { AnalyticsWindow, TemplateImpact, BlueprintImpact } from "../../api
 import { PageShell, SectionShell, MetricTile, MetricGrid, DataTable } from "../../components/design-system/primitives";
 import { AdminAnalyticsFilterBar } from "../../components/analytics/AdminAnalyticsFilterBar";
 import { ModuleDistributionChart } from "../../components/analytics/ModuleDistributionChart";
+import { ExportButton } from "../../components/analytics/ExportButton";
 import type { ReactNode } from "react";
 
 function fmtRate(rate: number | null): string {
@@ -61,6 +62,7 @@ const BLUEPRINT_COLUMNS: { key: string; header: string; render: (item: Blueprint
 export function AnalyticsContentPage() {
   const analyticsFilters = useAnalyticsFilters("all_time");
   const window = analyticsFilters.filters.window;
+  const { apiParams } = analyticsFilters;
   const { data, isLoading, isError } = useContentMetrics(window);
   const { data: tplData, isLoading: tplLoading } = useTemplateImpact(window);
 
@@ -73,6 +75,12 @@ export function AnalyticsContentPage() {
         { label: "Analytics", to: "/admin/analytics" },
         { label: "Icerik Performansi" },
       ]}
+      actions={
+        <div className="flex gap-2">
+          <ExportButton kind="content" params={apiParams} />
+          <ExportButton kind="template-impact" params={apiParams} label="Sablon etkisi CSV" />
+        </div>
+      }
     >
       <Link
         to="/admin/analytics"

@@ -10,6 +10,7 @@ import {
   MetricGrid,
 } from "../../components/design-system/primitives";
 import { AdminAnalyticsFilterBar } from "../../components/analytics/AdminAnalyticsFilterBar";
+import { ExportButton } from "../../components/analytics/ExportButton";
 import { formatDateShort } from "../../lib/formatDate";
 
 /* ------------------------------------------------------------------ */
@@ -38,7 +39,7 @@ function fmtCount(v: number | null | undefined): string {
 
 export function AnalyticsOverviewPage() {
   const analyticsFilters = useAnalyticsFilters("last_30d");
-  const { filters } = analyticsFilters;
+  const { filters, apiParams } = analyticsFilters;
 
   const overviewOpts = (filters.dateFrom || filters.dateTo)
     ? {
@@ -57,6 +58,7 @@ export function AnalyticsOverviewPage() {
       title="Analytics"
       subtitle="Canli metrikler, operasyonel saglik ve icerik performansi."
       testId="analytics-overview"
+      actions={<ExportButton kind="overview" params={apiParams} />}
     >
       <p className="m-0 mb-2 text-xs text-neutral-400" data-testid="analytics-overview-workflow-note">
         Uretim &rarr; Yayin &rarr; Platform Metrikleri &rarr; Icerik Performansi &rarr; Operasyonel Saglik

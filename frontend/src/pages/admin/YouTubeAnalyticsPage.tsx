@@ -38,6 +38,7 @@ import {
 import { Sheet } from "../../components/design-system/Sheet";
 import { EmptyState } from "../../components/design-system/EmptyState";
 import { YouTubeVideoManagementSheet } from "../../components/youtube/YouTubeVideoManagementSheet";
+import { ExportButton } from "../../components/analytics/ExportButton";
 import { cn } from "../../lib/cn";
 import { formatDateShort, formatDateTime } from "../../lib/formatDate";
 
@@ -45,19 +46,28 @@ import { formatDateShort, formatDateTime } from "../../lib/formatDate";
 // Helpers
 // ---------------------------------------------------------------------------
 
-function fmtNum(n: number): string {
+function fmtNum(n: number | null | undefined): string {
+  if (n == null || !Number.isFinite(n)) return "—";
   if (n >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(/\.0$/, "") + "M";
   if (n >= 1_000) return (n / 1_000).toFixed(1).replace(/\.0$/, "") + "K";
   return n.toLocaleString("tr-TR");
 }
 
-function fmtNumFull(n: number): string {
+function fmtNumFull(n: number | null | undefined): string {
+  if (n == null || !Number.isFinite(n)) return "—";
   return n.toLocaleString("tr-TR");
 }
 
-function engagementRate(views: number, likes: number, comments: number): string {
-  if (views === 0) return "—";
-  return (((likes + comments) / views) * 100).toFixed(2) + "%";
+function engagementRate(
+  views: number | null | undefined,
+  likes: number | null | undefined,
+  comments: number | null | undefined,
+): string {
+  const v = Number(views ?? 0);
+  if (!Number.isFinite(v) || v === 0) return "—";
+  const l = Number(likes ?? 0);
+  const c = Number(comments ?? 0);
+  return (((l + c) / v) * 100).toFixed(2) + "%";
 }
 
 function parseDuration(iso: string | null | undefined): string {
@@ -605,9 +615,9 @@ export function YouTubeAnalyticsPage() {
         case "oldest":
           return (a.published_at ?? "").localeCompare(b.published_at ?? "");
         case "most_views":
-          return b.view_count - a.view_count;
+          return (b.view_count ?? 0) - (a.view_count ?? 0);
         case "least_views":
-          return a.view_count - b.view_count;
+          return (a.view_count ?? 0) - (b.view_count ?? 0);
       }
     });
 
@@ -635,18 +645,19 @@ export function YouTubeAnalyticsPage() {
   // Selected video for detail panel
   const selectedVideo = allVideos.find((v) => v.video_id === selectedVideoId) ?? null;
 
-  // Derived metrics (from ALL videos, unfiltered)
-  const totalViews = allVideos.reduce((s, v) => s + v.view_count, 0);
-  const totalLikes = allVideos.reduce((s, v) => s + v.like_count, 0);
-  const totalComments = allVideos.reduce((s, v) => s + v.comment_count, 0);
+  // Derived metrics (from ALL videos, unfiltered). All reads go through ?? 0
+  // to survive missing stats on fresh uploads or quota-limited responses.
+  const totalViews = allVideos.reduce((s, v) => s + (v.view_count ?? 0), 0);
+  const totalLikes = allVideos.reduce((s, v) => s + (v.like_count ?? 0), 0);
+  const totalComments = allVideos.reduce((s, v) => s + (v.comment_count ?? 0), 0);
   const hubCount = allVideos.filter((v) => v.is_contenthub).length;
   const recentCount = allVideos.filter((v) => isWithinDays(v.published_at, 30)).length;
   const avgViews = allVideos.length > 0 ? Math.round(totalViews / allVideos.length) : 0;
 
-  // Top video
+  // Top video — handle empty list and missing view_count
   const topVideo =
     allVideos.length > 0
-      ? allVideos.reduce((a, b) => (a.view_count > b.view_count ? a : b))
+      ? allVideos.reduce((a, b) => ((a.view_count ?? 0) > (b.view_count ?? 0) ? a : b))
       : null;
 
   const hasFilters = sourceFilter !== "all" || searchQuery.trim() !== "";
@@ -753,6 +764,12 @@ export function YouTubeAnalyticsPage() {
       title="YouTube Analytics"
       subtitle="Kanal performansı ve tüm video istatistikleri"
       testId="yt-analytics"
+      actions={
+        <div className="flex gap-2">
+          <ExportButton kind="channel" label="Kanal CSV" />
+          <ExportButton kind="channel-performance" label="Performans CSV" />
+        </div>
+      }
     >
       {/* Loading */}
       {isLoading && (

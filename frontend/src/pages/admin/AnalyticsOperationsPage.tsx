@@ -19,6 +19,7 @@ import { AdminAnalyticsFilterBar } from "../../components/analytics/AdminAnalyti
 import { ProviderLatencyChart } from "../../components/analytics/ProviderLatencyChart";
 import { StepDurationChart } from "../../components/analytics/StepDurationChart";
 import { SystemScopeNote } from "../../components/analytics/SystemScopeNote";
+import { ExportButton } from "../../components/analytics/ExportButton";
 
 /* ------------------------------------------------------------------ */
 /* Formatters                                                         */
@@ -245,6 +246,7 @@ const assemblyProviderColumns = [
 export function AnalyticsOperationsPage() {
   const analyticsFilters = useAnalyticsFilters("last_30d");
   const window = analyticsFilters.filters.window;
+  const { apiParams } = analyticsFilters;
   const { data, isLoading, isError } = useAnalyticsOperations(window);
   const { data: overviewData, isLoading: overviewLoading } = useAnalyticsOverview(window);
   const { data: sourceData, isLoading: sourceLoading } = useSourceImpact(window);
@@ -267,6 +269,7 @@ export function AnalyticsOperationsPage() {
         { label: "Operasyon Metrikleri" },
       ]}
       testId="analytics-operations"
+      actions={<ExportButton kind="operations" params={apiParams} />}
     >
       <Link to="/admin/analytics" className="absolute w-px h-px overflow-hidden [clip:rect(0,0,0,0)]">{"\u2190"} Analytics'e don</Link>
       <p className="m-0 mb-3 text-xs text-neutral-400" data-testid="analytics-operations-workflow-note">
@@ -352,7 +355,11 @@ export function AnalyticsOperationsPage() {
       </SectionShell>
 
       {/* Source Impact */}
-      <SectionShell title="Kaynak Etkisi"  testId="analytics-source-impact">
+      <SectionShell
+        title="Kaynak Etkisi"
+        testId="analytics-source-impact"
+        actions={<ExportButton kind="source-impact" params={{ window: apiParams.window }} />}
+      >
         <div data-testid="source-impact-heading" className="hidden">Kaynak Etkisi</div>
         <div data-testid="source-impact-note" className="hidden">Haber kaynaklarinin uretim hattina etkisi.</div>
         <SystemScopeNote />
@@ -374,7 +381,11 @@ export function AnalyticsOperationsPage() {
       </SectionShell>
 
       {/* Prompt Assembly */}
-      <SectionShell title="Prompt Assembly" testId="analytics-prompt-assembly">
+      <SectionShell
+        title="Prompt Assembly"
+        testId="analytics-prompt-assembly"
+        actions={<ExportButton kind="prompt-assembly" params={{ window: apiParams.window }} />}
+      >
         <div data-testid="prompt-assembly-heading" className="hidden">Prompt Assembly</div>
         <div data-testid="prompt-assembly-note" className="hidden">Prompt assembly calisma ozeti ve modul/provider dagilimi.</div>
         <SystemScopeNote />
