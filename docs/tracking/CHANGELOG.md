@@ -2,6 +2,68 @@
 
 ---
 
+## [2026-04-16] PHASE X — Ownership / Channel Auto-Import / Project-Job Hierarchy Pack
+
+### Özet
+Her kullanıcı artık yalnız kendi kanal / proje / iş / yayın / analitik verisini
+görür. Admin global görüşe devam eder. Kanal oluşturma tek alana (URL) indirildi;
+metadata otomatik çekilir; partial durumlar dürüstçe kaydedilir. Job ↔
+ContentProject hiyerarşisi kod katmanında enforce edilir.
+
+### 12 Alt Faz (A–L)
+- **A** — `backend/app/auth/ownership.py`: `UserContext`, `get_current_user_context`,
+  `ensure_owner_or_admin`, `apply_user_scope` / `apply_user_scope_multi`.
+- **B** — `channel_profiles` kolon + index + `UniqueConstraint(user_id,
+  normalized_url)` eklendi.
+- **C** — URL-only channel create: `app/channels/{url_utils.py,metadata_fetch.py}`,
+  router tek alan (`source_url`). Metadata alınamazsa `import_status=partial`
+  (uydurma placeholder YOK).
+- **D** — Jobs router/service ownership scope + `ContentProject` propagation
+  (create_job project sahibi kontrolünden geçer).
+- **E** — Publish ownership: `app/publish/ownership.py`, `PublishRecord → Job →
+  owner_id` üzerinden enforce.
+- **F** — Analytics endpoint'leri (analytics router + youtube_analytics_router)
+  user scope'lu; admin global.
+- **G** — Settings resolver visibility leak taraması: ownership-sızdıran alan yok.
+- **H** — Frontend: `MyChannelsPage` tek alan (kanal URL'si),
+  `ProjectDetailPage` proje job list; server scope'lu veri.
+- **I** — Alembic migration `phase_x_001_ownership_channel_url_only.py`:
+  additive kolonlar + Job owner backfill (`content_project_id → user_id`).
+- **J** — Test rehabilitation: conftest session-scoped auto-auth override +
+  `raw_client` fixture; 8 test dosyası yeni fixture'lara uyarlandı.
+- **K** — Docs: `docs/ownership.md`, `docs/channel-auto-import.md`,
+  `docs/project-job-hierarchy.md`, `docs/phase-x-closure.md` + CHANGELOG + STATUS.
+- **L** — (sıradaki) ayrı commit'ler: migration / backend / frontend / docs.
+
+### Migration
+- Revizyon: `phase_x_001` (HEAD). Önceki HEAD: `product_review_001`.
+- Additive-only. Downgrade güvenli.
+- Job backfill: `UPDATE jobs SET owner_id = cp.user_id WHERE owner_id IS NULL
+  AND content_project_id IS NOT NULL`.
+- Kalan orphan'lar non-admin için 403; admin görür.
+
+### Test Durumu
+- PHASE X hedef seti: **112/112 passed** (15.69s)
+- Tam suite: **2211 passed, 23 failed** (pre-existing baseline drift —
+  PHASE X kapsamı dışı; `git stash` ile konfirme edildi).
+
+### Kabul Edilen Sınırlamalar
+- Kanal re-import endpoint'i yok (manuel düzenleme / sil-ekle).
+- YouTube API key'li fetch yok; HTML scrape (consent-wall → partial).
+- Non-YouTube platform parser'ı yok (`platform` kolonu genişlemeye hazır).
+- Ownership transfer / multi-owner paylaşımı yok (MVP tek-owner).
+- Orphan job auto-repair scripti yok (admin manuel).
+
+### Kurallara Uygunluk (CLAUDE.md)
+- Server-side enforcement zorunlu; client-side hiding tek başına yeterli değil.
+- Hidden behavior yok: `allow_admin` explicit parametre; partial state
+  `import_status="partial"` + `import_error` ile dışa dönük.
+- Parallel pattern yok: tek `auth/ownership.py` + bir publish yardımcısı.
+- Fail-fast: `apply_user_scope` owner_field yoksa `AttributeError`; owner_id
+  `NULL` ise 403/404.
+
+---
+
 ## [2026-04-04] M8 KAPANDI — Analytics + Operations Pack
 
 ### Milestone Özeti

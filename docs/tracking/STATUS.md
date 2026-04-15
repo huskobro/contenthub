@@ -1,7 +1,23 @@
 # DURUM
 
 ## Mevcut Faz
+**PHASE X KAPANDI (2026-04-16) — Ownership / Channel Auto-Import / Project-Job Hierarchy Pack**
 **TÜM MİLESTONE'LAR KAPANDI — Master plan (M1–M8) tamamlandı**
+
+### PHASE X (Ownership) Özet
+- Server-side ownership: her kullanıcı kendi kanal/proje/iş/yayın/analitik verisini görür; admin global.
+- URL-only kanal create + honest partial metadata state (uydurma placeholder YOK).
+- Job ↔ ContentProject hiyerarşisi kod katmanında enforce.
+- Migration: `phase_x_001` (additive + Job owner backfill).
+- Test: PHASE X hedef seti **112/112 passed**; tam suite 2211 passed + 23 pre-existing baseline drift (PHASE X dışı — git stash ile konfirme).
+- Kapanış raporu: `docs/phase-x-closure.md`
+- Subsystem dokümanları: `docs/ownership.md`, `docs/channel-auto-import.md`, `docs/project-job-hierarchy.md`
+- Kalan adım: L (ayrı commit'ler: migration / backend / frontend / docs) + push.
+
+### Pre-existing Test Envanteri (PHASE X kapsamı dışı teknik borç)
+- 23 başarısızlık: pipeline step count drift, Root.tsx cast count, OAuth router 422→400, migration downgrade-1 semantics, diğer baseline drift'ler. Ayrı temizlik fazı gerekir.
+
+---
 
 **M8 KAPANDI — C1–C2 tamamlandı. Analytics + Operations Pack complete.**
 **M7 KAPANDI — C1–C4 tamamlandı, backend-complete**
