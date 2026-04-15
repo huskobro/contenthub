@@ -56,6 +56,15 @@ from app.modules.product_review.parser_chain import (
     ParsedProduct,
     parse_product_html,
 )
+from app.modules.product_review.site_parsers import parse_product_html_v2
+from app.modules.product_review.shortlink import (
+    ShortlinkError,
+    ShortlinkSSRFBlocked,
+    ShortlinkTooManyHops,
+    expand_shortlink,
+    is_shortlink,
+)
+from app.modules.product_review import robots_guard
 from app.modules.product_review.url_utils import canonicalize_url, extract_host
 
 from ._helpers import _read_artifact, _write_artifact
@@ -139,39 +148,46 @@ class ProductScrapeStepExecutor(StepExecutor):
             secondary_ids = []
 
         settings_snapshot = raw_input.get("_settings_snapshot", {}) or {}
+
+        def _snap(*keys, default):
+            for k in keys:
+                v = _get_setting(settings_snapshot, k, None)
+                if v is not None:
+                    return v
+            return default
+
         min_confidence = float(
-            _get_setting(
-                settings_snapshot,
+            _snap(
                 "product_review.scrape.min_confidence",
-                _DEFAULT_MIN_CONFIDENCE,
+                default=_DEFAULT_MIN_CONFIDENCE,
             )
         )
         min_interval_s = float(
-            _get_setting(
-                settings_snapshot,
+            _snap(
+                # Registered key:
+                "product_review.scrape.min_interval_seconds_per_host",
+                # Legacy alias:
                 "product_review.scrape.per_host_min_interval_seconds",
-                _DEFAULT_MIN_INTERVAL_S,
+                default=_DEFAULT_MIN_INTERVAL_S,
             )
         )
         max_bytes = int(
-            _get_setting(
-                settings_snapshot,
+            _snap(
+                "product_review.scrape.max_body_bytes",
                 "product_review.scrape.max_bytes",
-                _DEFAULT_MAX_BYTES,
+                default=_DEFAULT_MAX_BYTES,
             )
         )
         timeout_s = int(
-            _get_setting(
-                settings_snapshot,
+            _snap(
                 "product_review.scrape.timeout_seconds",
-                _DEFAULT_TIMEOUT_S,
+                default=_DEFAULT_TIMEOUT_S,
             )
         )
         respect_robots = bool(
-            _get_setting(
-                settings_snapshot,
+            _snap(
                 "product_review.scrape.respect_robots_txt",
-                False,
+                default=False,
             )
         )
 
@@ -300,13 +316,68 @@ class ProductScrapeStepExecutor(StepExecutor):
                 retryable=False,
             )
 
-        host = extract_host(prod.source_url) or "unknown"
+        # 1b) Shortlink expansion — affiliate kisaltmalarini canonical'a cevir.
+        fetch_url = prod.source_url
+        shortlink_detected = False
+        shortlink_hops: list[str] = []
+        if is_shortlink(prod.source_url):
+            try:
+                expanded = await asyncio.to_thread(
+                    expand_shortlink, prod.source_url
+                )
+            except ShortlinkSSRFBlocked as exc:
+                raise StepExecutionError(
+                    "product_scrape",
+                    f"Shortlink SSRF guard bloklamasi: {exc}",
+                    retryable=False,
+                )
+            except ShortlinkTooManyHops as exc:
+                raise StepExecutionError(
+                    "product_scrape",
+                    f"Shortlink zinciri cok uzun: {exc}",
+                    retryable=False,
+                )
+            except ShortlinkError as exc:
+                raise StepExecutionError(
+                    "product_scrape",
+                    f"Shortlink cozumlenemedi: {exc}",
+                    retryable=True,
+                )
+            fetch_url = expanded.final_url
+            shortlink_detected = expanded.shortlink_detected
+            shortlink_hops = expanded.hops
+
+        host = extract_host(fetch_url) or "unknown"
         started_at = time.monotonic()
+
+        # 1c) robots.txt respect kontrolu — SADECE setting=True ise.
+        robots_txt_allowed: Optional[bool] = None
+        if respect_robots:
+            try:
+                allowed = await asyncio.to_thread(
+                    robots_guard.is_allowed,
+                    fetch_url,
+                    respect_robots_txt=True,
+                )
+            except Exception as exc:  # noqa: BLE001
+                logger.debug("robots_guard hata: %s", type(exc).__name__)
+                allowed = True  # permissive_on_error default
+            robots_txt_allowed = bool(allowed)
+            if not allowed:
+                raise StepExecutionError(
+                    "product_scrape",
+                    (
+                        f"robots.txt bu URL'i bu kullanici ajanina bloklamis "
+                        f"(host={host}). Setting="
+                        f"product_review.scrape.respect_robots_txt True."
+                    ),
+                    retryable=False,
+                )
 
         # 2) Fetch
         try:
             fetch = await _fetch_async(
-                prod.source_url,
+                fetch_url,
                 min_interval_s=min_interval_s,
                 max_bytes=max_bytes,
                 timeout_s=timeout_s,
@@ -346,8 +417,14 @@ class ProductScrapeStepExecutor(StepExecutor):
         elapsed_ms = int((time.monotonic() - started_at) * 1000)
         html_sha1 = _sha1_of(fetch.html)
 
-        # 3) Parse
-        parsed: Optional[ParsedProduct] = parse_product_html(fetch.html, fetch.final_url)
+        # 3) Parse (Faz G: v2 priority chain — jsonld > site_specific > og >
+        #    twittercard > generic).
+        parsed: Optional[ParsedProduct] = parse_product_html_v2(
+            fetch.html, fetch.final_url
+        )
+        if parsed is None:
+            # Fallback to legacy v1 chain (jsonld > og > generic).
+            parsed = parse_product_html(fetch.html, fetch.final_url)
         if parsed is None:
             # Parser tamamen bulamadi — confidence 0, snapshot yine yazalim
             parsed = ParsedProduct(
@@ -403,24 +480,81 @@ class ProductScrapeStepExecutor(StepExecutor):
             prod.current_price = parsed.price
         if parsed.currency:
             prod.currency = parsed.currency[:10]
-        if not prod.canonical_url:
-            try:
-                prod.canonical_url = canonicalize_url(prod.source_url)
-            except ValueError:
-                pass
+
+        # canonical_url: Faz G hardening. Shortlink cozulduyse final_url'i
+        # canonical kabul ederiz; eski source_url'u kaydederiz (shortlink_hops
+        # artifact'ta). Duplicate partial-unique cakismasinda: mevcut urune
+        # gec, bu kaydi sil (idempotent).
+        canonical_final: Optional[str] = None
+        canonical_source = fetch.final_url or fetch_url or prod.source_url
+        try:
+            canonical_final = canonicalize_url(canonical_source)
+        except ValueError:
+            canonical_final = None
+
+        canonical_conflict = False
+        if canonical_final and canonical_final != prod.canonical_url:
+            # Ayni canonical'a sahip baska bir Product var mi?
+            existing = (
+                await db.execute(
+                    select(Product).where(
+                        Product.canonical_url == canonical_final,
+                        Product.id != product_id,
+                    ).limit(1)
+                )
+            ).scalar_one_or_none()
+            if existing is None:
+                prod.canonical_url = canonical_final
+            else:
+                # Cakisma: mevcut urune referans ver; current record'un
+                # canonical_url'ini dokunma. Log + artifact.
+                canonical_conflict = True
+                logger.info(
+                    "product_scrape: canonical_url cakismasi tespit edildi "
+                    "(product_id=%s existing_id=%s canonical=%s). Mevcut "
+                    "kayit korunur.",
+                    product_id, existing.id, canonical_final,
+                )
+
         prod.parser_source = parsed.parser_source
         prod.scrape_confidence = float(parsed.confidence)
-        prod.robots_txt_allowed = None if not respect_robots else True
+        prod.robots_txt_allowed = robots_txt_allowed
 
-        await db.flush()
-        # Commit at end of loop (caller scope) — AsyncSessionLocal commits on
-        # close? No: we need explicit commit. We'll commit per-product.
-        await db.commit()
+        try:
+            await db.flush()
+            await db.commit()
+        except Exception as exc:
+            # Son catisma savunmasi: IntegrityError gibi bir durum yakalarsak
+            # rollback + canonical'i NULL birak + tekrar commit.
+            logger.warning(
+                "product_scrape: commit hatasi, canonical_url NULL fallback "
+                "devreye giriyor (product_id=%s err=%s)",
+                product_id, type(exc).__name__,
+            )
+            await db.rollback()
+            # Yeniden fetch et, field'lari tekrar yaz ama canonical'i dokunma
+            prod = (
+                await db.execute(select(Product).where(Product.id == product_id))
+            ).scalar_one_or_none()
+            if prod is not None:
+                if parsed.name and not prod.name:
+                    prod.name = parsed.name[:500]
+                prod.parser_source = parsed.parser_source
+                prod.scrape_confidence = float(parsed.confidence)
+                prod.robots_txt_allowed = robots_txt_allowed
+                await db.flush()
+                await db.commit()
+            canonical_conflict = True
 
         return {
             "product_id": product_id,
-            "source_url": prod.source_url,
-            "canonical_url": prod.canonical_url,
+            "source_url": prod.source_url if prod is not None else None,
+            "canonical_url": prod.canonical_url if prod is not None else None,
+            "canonical_conflict": canonical_conflict,
+            "shortlink_detected": shortlink_detected,
+            "shortlink_hops": shortlink_hops,
+            "fetched_url": fetch_url,
+            "final_url": fetch.final_url,
             "host": host,
             "http_status": fetch.status,
             "elapsed_ms": elapsed_ms,
@@ -428,6 +562,7 @@ class ProductScrapeStepExecutor(StepExecutor):
             "truncated": fetch.truncated,
             "parser_source": parsed.parser_source,
             "confidence": float(parsed.confidence),
+            "robots_txt_allowed": robots_txt_allowed,
             "name": parsed.name,
             "price": parsed.price,
             "currency": parsed.currency,
