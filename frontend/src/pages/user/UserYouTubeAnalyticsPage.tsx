@@ -478,6 +478,17 @@ export function UserYouTubeAnalyticsPage() {
     return max;
   }, [demographicsQuery.data]);
 
+  // Viewer percentages across all age×gender rows should sum to ~1.0 (backend
+  // normalises 0-100 API values to 0-1 ratios). YouTube omits segments with
+  // too few viewers — surface coverage so a lopsided breakdown is obvious.
+  const demoCoverage = useMemo(() => {
+    let sum = 0;
+    for (const r of demographicsQuery.data?.rows ?? []) {
+      sum += r.viewer_percentage;
+    }
+    return sum;
+  }, [demographicsQuery.data]);
+
   // Render branches
   const noYouTubeConnection =
     !connectionsQuery.isLoading && youtubeConnections.length === 0;
@@ -819,6 +830,14 @@ export function UserYouTubeAnalyticsPage() {
           )}
           {demographicsByAge.length > 0 && (
             <div className="space-y-2">
+              {demoCoverage < 0.95 && (
+                <p className="text-[12px] text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1">
+                  Kapsam: {formatPercent(demoCoverage)}. YouTube Analytics API
+                  bazı yaş/cinsiyet segmentleri için yeterli izleyici
+                  döndürmediğinde o segmentler tabloda görünmez; bu yüzden tablo
+                  eksik görünebilir.
+                </p>
+              )}
               {demographicsByAge.map(([age, genders]) => {
                 const label = age.replace(/^age/i, "").replace("_", "-");
                 return (

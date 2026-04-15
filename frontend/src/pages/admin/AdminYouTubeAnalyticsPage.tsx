@@ -138,12 +138,14 @@ function formatDuration(seconds: number | null | undefined): string {
   return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
+// Backend normalizes `averageViewPercentage` + `viewerPercentage` from the
+// raw 0-100 API values to 0-1 ratios (see scale_metric_value). This helper is
+// ONLY for those ratio-scaled fields: avg_view_percentage + demographics
+// viewer_percentage. Traffic / device share bars compute their own 0-100
+// percentages inline and do not use this helper.
 function formatPercent(ratio: number | null | undefined): string {
   if (ratio == null || !Number.isFinite(ratio)) return "—";
-  // Backend returns average_view_percentage in 0..100 for Analytics v2.
-  // Traffic/device rows send view_count shares — we render them via ShareBar,
-  // not this helper.
-  return `${ratio.toFixed(1)}%`;
+  return `${(ratio * 100).toFixed(1)}%`;
 }
 
 function formatSignedInt(n: number | null | undefined): string {
@@ -483,6 +485,18 @@ export function AdminYouTubeAnalyticsPage() {
       if (r.viewer_percentage > max) max = r.viewer_percentage;
     }
     return max;
+  }, [demographicsQuery.data]);
+
+  // Viewer percentages across all age×gender rows should sum to ~1.0 (0-1
+  // ratio scale from backend). If YouTube omits thin segments it can land
+  // noticeably under 100% — surface that to the user rather than silently
+  // showing a lopsided breakdown.
+  const demoCoverage = useMemo(() => {
+    let sum = 0;
+    for (const r of demographicsQuery.data?.rows ?? []) {
+      sum += r.viewer_percentage;
+    }
+    return sum;
   }, [demographicsQuery.data]);
 
   // Sync status chip
@@ -831,6 +845,14 @@ export function AdminYouTubeAnalyticsPage() {
               )}
             {demographicsByAge.length > 0 && (
               <div className="space-y-2">
+                {demoCoverage < 0.95 && (
+                  <p className="text-[12px] text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1">
+                    Kapsam: {formatPercent(demoCoverage)}. YouTube Analytics API
+                    bazı yaş/cinsiyet segmentleri için yeterli izleyici
+                    döndürmediğinde ilgili bar'ları üretmez; bu yüzden tablo
+                    eksik görünebilir.
+                  </p>
+                )}
                 {demographicsByAge.map(([age, genders]) => {
                   const label = age.replace(/^age/i, "").replace("_", "-");
                   return (
