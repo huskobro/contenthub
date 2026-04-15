@@ -55,47 +55,100 @@ _DEFAULT_DISCLAIMER_TR = (
 )
 
 
-def _build_tags(primary: dict, template_type: str, language: str) -> list[str]:
+def _build_tags(
+    products: list[dict], template_type: str, language: str
+) -> list[str]:
+    """
+    Tag uretimi — template'e gore:
+      single:        primary.brand + primary.name ilk 2 kelime + "inceleme"
+      comparison:    primary.brand + secondary[0].brand + primary.name ilk kelime
+                     + secondary[0].name ilk kelime + "karsilastirma"
+      alternatives:  primary.brand + alternatives[*].brand + primary.name ilk
+                     kelime + "alternatif"
+    """
     tags: list[str] = []
+    primary = products[0] if products else {}
     name = (primary.get("name") or "").strip()
     brand = (primary.get("brand") or "").strip()
     if brand:
         tags.append(brand.lower())
     if name:
-        # Ilk iki kelimeyi tag olarak ekle (genelde marka + model)
         parts = name.split()
         tags.extend([p.lower() for p in parts[:2] if p])
+
+    # Comparison: ikinci urunun brand + ilk kelime
+    if template_type == "comparison" and len(products) >= 2:
+        sec = products[1]
+        sec_brand = (sec.get("brand") or "").strip()
+        sec_name = (sec.get("name") or "").strip()
+        if sec_brand:
+            tags.append(sec_brand.lower())
+        if sec_name:
+            first_w = sec_name.split()[0] if sec_name.split() else ""
+            if first_w:
+                tags.append(first_w.lower())
+
+    # Alternatives: alternatif urunlerin brand + ilk kelime
+    if template_type == "alternatives" and len(products) >= 2:
+        for alt in products[1:3]:
+            alt_brand = (alt.get("brand") or "").strip()
+            alt_name = (alt.get("name") or "").strip()
+            if alt_brand:
+                tags.append(alt_brand.lower())
+            if alt_name:
+                first_w = alt_name.split()[0] if alt_name.split() else ""
+                if first_w:
+                    tags.append(first_w.lower())
+
     if template_type == "single":
         tags.append("inceleme" if language.startswith("tr") else "review")
     elif template_type == "comparison":
         tags.append("karsilastirma" if language.startswith("tr") else "comparison")
     elif template_type == "alternatives":
         tags.append("alternatif" if language.startswith("tr") else "alternatives")
+
     # De-dupe + truncate
     seen: set[str] = set()
     deduped: list[str] = []
     for t in tags:
+        t = (t or "").strip()
         if t and t not in seen:
             seen.add(t)
             deduped.append(t[:40])
     return deduped[:15]
 
 
-def _build_title(primary: dict, template_type: str, language: str) -> str:
+def _build_title(
+    products: list[dict], template_type: str, language: str
+) -> str:
+    primary = products[0] if products else {}
     name = (primary.get("name") or "Urun").strip()
     is_tr = (language or "tr").lower().startswith("tr")
+
     if template_type == "single":
         return (f"{name} Inceleme" if is_tr else f"{name} Review")[:100]
     if template_type == "comparison":
+        if len(products) >= 2:
+            sec_name = (products[1].get("name") or "").strip()
+            if sec_name:
+                base = (
+                    f"{name} vs {sec_name}"
+                    if not is_tr
+                    else f"{name} vs {sec_name} Karsilastirma"
+                )
+                return base[:100]
         return (f"{name} Karsilastirma" if is_tr else f"{name} Comparison")[:100]
     if template_type == "alternatives":
-        return (f"{name} Alternatifler" if is_tr else f"{name} Alternatives")[:100]
+        return (f"{name} Icin Alternatifler" if is_tr else f"Alternatives to {name}")[
+            :100
+        ]
     return name[:100]
 
 
 def _build_description(
-    primary: dict,
+    products: list[dict],
     *,
+    template_type: str,
     disclosure: str,
     disclaimer: str,
     affiliate_url: Optional[str],
@@ -103,9 +156,31 @@ def _build_description(
 ) -> str:
     is_tr = (language or "tr").lower().startswith("tr")
     lines: list[str] = []
+    primary = products[0] if products else {}
     name = (primary.get("name") or "").strip()
     if name:
-        lines.append(f"{name}")
+        if template_type == "comparison" and len(products) >= 2:
+            sec_name = (products[1].get("name") or "").strip()
+            if sec_name:
+                lines.append(f"{name} vs {sec_name}")
+            else:
+                lines.append(name)
+        elif template_type == "alternatives" and len(products) >= 2:
+            alt_names = [
+                (p.get("name") or "").strip() for p in products[1:3]
+            ]
+            alt_names = [a for a in alt_names if a]
+            if alt_names:
+                header = (
+                    f"{name} vs {' / '.join(alt_names)}"
+                    if not is_tr
+                    else f"{name} icin alternatifler: {', '.join(alt_names)}"
+                )
+                lines.append(header)
+            else:
+                lines.append(name)
+        else:
+            lines.append(name)
         lines.append("")
 
     # Affiliate link (opsiyonel)
@@ -177,11 +252,12 @@ class ProductReviewMetadataStepExecutor(StepExecutor):
                 retryable=False,
             )
 
-        primary = scrape["products"][0]
-        title = _build_title(primary, template_type, language)
-        tags = _build_tags(primary, template_type, language)
+        products = [p for p in scrape.get("products", []) if isinstance(p, dict)]
+        title = _build_title(products, template_type, language)
+        tags = _build_tags(products, template_type, language)
         description = _build_description(
-            primary,
+            products,
+            template_type=template_type,
             disclosure=disclosure,
             disclaimer=disclaimer,
             affiliate_url=affiliate_url if affiliate_enabled else None,

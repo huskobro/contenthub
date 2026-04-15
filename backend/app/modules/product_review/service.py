@@ -304,6 +304,13 @@ async def create_product_review(
     ProductReview kaydi olusturur. Primary product var olmalidir.
     secondary_product_ids da DB'de olmali (bulunmayanlar silinip uyarilmaz —
     strict kontrol edilir; caller 400 donmelidir).
+
+    Per-template kurallar (Faz D):
+      - single:       secondary yok (varsa ignore edilir, temizlenir)
+      - comparison:   primary + en az 1 secondary (toplam >= 2 urun)
+                      primary_id secondary icinde bulunamaz (duplicate guard)
+      - alternatives: primary + en az 2 secondary (toplam >= 3 urun)
+                      primary_id secondary icinde bulunamaz
     """
     primary = await get_product(db, payload.primary_product_id)
     if primary is None:
@@ -311,14 +318,38 @@ async def create_product_review(
             f"primary_product_id bulunamadi: {payload.primary_product_id}"
         )
 
-    # Secondary product existence check
-    if payload.secondary_product_ids:
+    # --- Per-template kurallar ---
+    sec_ids = list(dict.fromkeys(payload.secondary_product_ids))  # de-dupe, preserve order
+    if payload.primary_product_id in sec_ids:
+        raise ValueError(
+            "primary_product_id, secondary_product_ids icinde bulunamaz "
+            "(ayni urun iki kez sayilmaz)."
+        )
+
+    if payload.template_type == "single":
+        # single template'de secondary yok say.
+        sec_ids = []
+    elif payload.template_type == "comparison":
+        if len(sec_ids) < 1:
+            raise ValueError(
+                "comparison template en az 2 urun gerektirir "
+                "(primary + en az 1 secondary)."
+            )
+    elif payload.template_type == "alternatives":
+        if len(sec_ids) < 2:
+            raise ValueError(
+                "alternatives template en az 3 urun gerektirir "
+                "(primary + en az 2 secondary)."
+            )
+
+    # Secondary product existence check (sec_ids ile)
+    if sec_ids:
         rows = (
             await db.execute(
-                select(Product.id).where(Product.id.in_(payload.secondary_product_ids))
+                select(Product.id).where(Product.id.in_(sec_ids))
             )
         ).scalars().all()
-        missing = set(payload.secondary_product_ids) - set(rows)
+        missing = set(sec_ids) - set(rows)
         if missing:
             raise ValueError(
                 f"secondary_product_ids icinde bulunmayan id'ler: {sorted(missing)}"
@@ -338,7 +369,7 @@ async def create_product_review(
         topic=payload.topic.strip(),
         template_type=payload.template_type,
         primary_product_id=payload.primary_product_id,
-        secondary_product_ids_json=json.dumps(payload.secondary_product_ids),
+        secondary_product_ids_json=json.dumps(sec_ids),
         language=payload.language,
         orientation=payload.orientation,
         duration_seconds=payload.duration_seconds,

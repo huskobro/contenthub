@@ -280,17 +280,25 @@ async def test_executor_chain_script_metadata_visuals_composition(tmp_path):
     step = _FakeStep()
 
     # 1. Script
+    # Faz D: single template 8-sahne plani kullanir (intro_hook, hero_card,
+    # price_reveal, feature_callout, spec_grid, social_proof, pros_cons, cta_outro)
     script_res = await ProductReviewScriptStepExecutor().execute(job, step)  # type: ignore[arg-type]
     assert script_res["status"] == "ok"
-    assert script_res["scenes_count"] == 4  # intro + product_hero + features + cta
+    assert script_res["scenes_count"] == 8
 
     script_json = json.loads(open(script_res["artifact_path"]).read())
     assert script_json["template_type"] == "single"
     assert script_json["language"] == "tr"
-    assert len(script_json["scenes"]) == 4
+    assert len(script_json["scenes"]) == 8
     # Toplam sure 60s olmali (60 * 1000 = 60000 ms)
     total_ms = sum(s["duration_ms"] for s in script_json["scenes"])
     assert total_ms == 60_000
+    # Scene key'ler scenes.tsx paketiyle ayni olmali
+    expected_single_keys = {
+        "intro_hook", "hero_card", "price_reveal", "feature_callout",
+        "spec_grid", "social_proof", "pros_cons", "cta_outro",
+    }
+    assert {s["scene_key"] for s in script_json["scenes"]} == expected_single_keys
 
     # 2. Metadata
     meta_res = await ProductReviewMetadataStepExecutor().execute(job, step)  # type: ignore[arg-type]
@@ -325,8 +333,15 @@ async def test_executor_chain_script_metadata_visuals_composition(tmp_path):
     assert comp_json["props"]["visuals"]["primary_image_url"] == (
         "https://cdn.example.com/iphone15.jpg"
     )
-    assert len(comp_json["props"]["scenes"]) == 4
+    assert len(comp_json["props"]["scenes"]) == 8
     assert comp_json["props"]["metadata"]["legal"]["disclosure_applied"] is True
+    # Faz D: composition props artik products/primary/secondary/blueprint da icerir
+    assert comp_json["props"]["template_type"] == "single"
+    assert comp_json["props"]["primary_product_id"] == "P-1"
+    assert comp_json["props"]["secondary_product_ids"] == []
+    assert comp_json["props"]["blueprint"]["blueprint_id"] == "product_review_v1"
+    assert comp_json["props"]["blueprint"]["version"] == 1
+    assert len(comp_json["props"]["products"]) == 1
 
 
 @pytest.mark.asyncio
