@@ -27,6 +27,10 @@ from typing import Optional
 from app.db.models import Job, JobStep
 from app.jobs.executor import StepExecutor
 from app.jobs.exceptions import StepExecutionError
+from app.modules.product_review.confidence import (
+    aggregate_confidence,
+    gate_decision,
+)
 from app.modules.standard_video.composition_map import get_preview_composition_id
 
 from ._helpers import _read_artifact, _write_artifact
@@ -117,6 +121,28 @@ class ProductReviewPreviewFrameExecutor(StepExecutor):
         if not primary_id:
             primary_id = products[0].get("product_id")
 
+        # Faz E: full-auto + low-confidence bloklamasi + gate kaydi.
+        run_mode = (raw_input.get("run_mode") or "semi_auto").strip().lower()
+        data_confidence = scrape.get("data_confidence")
+        if data_confidence is None:
+            data_confidence = aggregate_confidence(products)
+        else:
+            try:
+                data_confidence = float(data_confidence)
+            except (TypeError, ValueError):
+                data_confidence = aggregate_confidence(products)
+        decision = gate_decision(
+            run_mode=run_mode,
+            data_confidence=float(data_confidence),
+            settings_snapshot=settings_snapshot,
+        )
+        if decision["should_block"]:
+            raise StepExecutionError(
+                self.step_key(),
+                f"preview_frame: {decision['reason']}",
+                retryable=False,
+            )
+
         # Scene select — settings (product_review.preview.frame_scene_key) override
         scene_key = (
             settings_snapshot.get("product_review.preview.frame_scene_key")
@@ -180,6 +206,7 @@ class ProductReviewPreviewFrameExecutor(StepExecutor):
                 "blueprint_version": preview_props["blueprint"].get("version"),
                 "elapsed_ms": elapsed_ms,
                 "level": 1,
+                "gate": decision,
             },
         )
         logger.info(
@@ -193,6 +220,7 @@ class ProductReviewPreviewFrameExecutor(StepExecutor):
             "scene_key": scene_key,
             "level": 1,
             "elapsed_ms": elapsed_ms,
+            "gate": decision,
         }
 
     async def _run_still(

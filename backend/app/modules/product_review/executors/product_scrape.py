@@ -236,12 +236,23 @@ class ProductScrapeStepExecutor(StepExecutor):
                     retryable=False,
                 )
 
+        # Faz E: job-level aggregate data_confidence (average across products).
+        from app.modules.product_review.confidence import (
+            aggregate_confidence,
+            compute_data_confidence,
+        )
+
+        data_confidence = aggregate_confidence(results)
+        primary_data_confidence = compute_data_confidence(primary_res)
+
         artifact_payload = {
             "products": results,
             "failures": failures,
             "primary_product_id": primary_id,
             "secondary_product_ids": secondary_ids,
             "min_confidence": min_confidence,
+            "data_confidence": data_confidence,
+            "primary_data_confidence": primary_data_confidence,
         }
         artifact_path = _write_artifact(
             workspace_root, job.id, _ARTIFACT_FILENAME, artifact_payload
@@ -254,6 +265,8 @@ class ProductScrapeStepExecutor(StepExecutor):
             "products_count": len(results),
             "failures_count": len(failures),
             "primary_confidence": primary_res["confidence"],
+            "data_confidence": data_confidence,
+            "primary_data_confidence": primary_data_confidence,
         }
 
     # ------------------------------------------------------------------
