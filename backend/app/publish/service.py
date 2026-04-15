@@ -230,6 +230,7 @@ async def list_publish_records(
     error_category: Optional[str] = None,
     limit: int = 50,
     offset: int = 0,
+    user_context: Optional[object] = None,
 ) -> list[PublishRecord]:
     """
     Filtrelenmiş publish kayıtlarını döndürür.
@@ -237,8 +238,17 @@ async def list_publish_records(
     job_id, platform, status, content_ref_type veya error_category ile
     filtrelenebilir. error_category Gate 4 closure paketinde eklendi —
     failed kayıtları kategori bazlı triage etmek için kullanılır.
+
+    PHASE X: `user_context` geldi ise non-admin'ler icin
+    PublishRecord -> Job.owner_id = ctx.user_id sartiyla scope'lanir.
+    Admin icin filtre yoktur.
     """
     query = select(PublishRecord)
+    # PHASE X: ownership scope
+    if user_context is not None and not getattr(user_context, "is_admin", False):
+        query = query.join(Job, PublishRecord.job_id == Job.id).where(
+            Job.owner_id == user_context.user_id
+        )
     if job_id:
         query = query.where(PublishRecord.job_id == job_id)
     if platform:
@@ -1026,11 +1036,19 @@ async def list_publish_records_v2(
     content_ref_type: Optional[str] = None,
     limit: int = 50,
     offset: int = 0,
+    user_context: Optional[object] = None,
 ) -> list[PublishRecord]:
     """
     V2 listeleme — content_project_id ve platform_connection_id filtresi ekler.
+
+    PHASE X: user_context verildiğinde non-admin icin Job join + ownership
+    filtresi uygulanir.
     """
     query = select(PublishRecord)
+    if user_context is not None and not getattr(user_context, "is_admin", False):
+        query = query.join(Job, PublishRecord.job_id == Job.id).where(
+            Job.owner_id == user_context.user_id
+        )
     if content_project_id:
         query = query.where(PublishRecord.content_project_id == content_project_id)
     if platform_connection_id:

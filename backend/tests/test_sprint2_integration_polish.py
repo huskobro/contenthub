@@ -62,9 +62,9 @@ async def test_user_denied_on_admin_endpoint(client: AsyncClient, user_headers: 
 # ---------------------------------------------------------------------------
 
 @pytest.mark.asyncio
-async def test_no_auth_returns_401(client: AsyncClient):
+async def test_no_auth_returns_401(raw_client: AsyncClient):
     """Requests without auth should return 401 on protected endpoints."""
-    resp = await client.get("/api/v1/comments")
+    resp = await raw_client.get("/api/v1/comments")
     assert resp.status_code == 401
 
 

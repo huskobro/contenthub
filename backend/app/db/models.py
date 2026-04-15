@@ -1447,11 +1447,22 @@ class WizardConfig(Base):
 
 
 class ChannelProfile(Base):
-    """Kanal profili — kullanicinin kavramsal yayin profili. Faz 2."""
+    """Kanal profili — kullanicinin kavramsal yayin profili. Faz 2.
+
+    PHASE X (ownership pack):
+      - owner_id = alias semantic for user_id; id hala primary.
+      - source_url / normalized_url / platform / external_channel_id / handle /
+        title / avatar_url / metadata_json alanlari URL-only create flow'u icin
+        eklendi.
+      - uq_user_normalized_url — ayni user ayni normalized_url'i iki kez ekleyemez.
+    """
 
     __tablename__ = "channel_profiles"
     __table_args__ = (
         UniqueConstraint("user_id", "channel_slug", name="uq_user_channel_slug"),
+        UniqueConstraint(
+            "user_id", "normalized_url", name="uq_user_normalized_url"
+        ),
     )
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
@@ -1465,6 +1476,25 @@ class ChannelProfile(Base):
     default_content_mode: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     brand_profile_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True)
     automation_policy_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True)
+    # --- PHASE X: URL-only create + auto-import metadata ---------------------
+    platform: Mapped[Optional[str]] = mapped_column(String(50), nullable=True, index=True)
+    source_url: Mapped[Optional[str]] = mapped_column(String(2000), nullable=True)
+    normalized_url: Mapped[Optional[str]] = mapped_column(
+        String(2000), nullable=True, index=True
+    )
+    external_channel_id: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    handle: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    title: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    avatar_url: Mapped[Optional[str]] = mapped_column(String(2000), nullable=True)
+    metadata_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    import_status: Mapped[str] = mapped_column(
+        String(50), nullable=False, default="pending"
+    )
+    import_error: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    last_import_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    # --- mevcut ---------------------------------------------------------------
     status: Mapped[str] = mapped_column(String(50), nullable=False, default="active")
     notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
@@ -1473,6 +1503,10 @@ class ChannelProfile(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=_now, onupdate=_now
     )
+
+    @property
+    def owner_id(self) -> str:  # ownership semantic alias (read-only)
+        return self.user_id
 
 
 class PlatformConnection(Base):

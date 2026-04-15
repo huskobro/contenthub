@@ -61,9 +61,21 @@ async def db_session():
 
 @pytest.fixture
 async def client():
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as c:
-        yield c
+    """Sprint1 hardening: auth bypass testleri icin otomatik admin fallback'i
+    devre disi birak. Gercek auth akisi zorunlu."""
+    from app.auth.dependencies import get_current_user
+    from app.auth.ownership import get_current_user_context
+    saved_user = app.dependency_overrides.pop(get_current_user, None)
+    saved_ctx = app.dependency_overrides.pop(get_current_user_context, None)
+    try:
+        transport = ASGITransport(app=app)
+        async with AsyncClient(transport=transport, base_url="http://test") as c:
+            yield c
+    finally:
+        if saved_user is not None:
+            app.dependency_overrides[get_current_user] = saved_user
+        if saved_ctx is not None:
+            app.dependency_overrides[get_current_user_context] = saved_ctx
 
 
 # ---------------------------------------------------------------------------

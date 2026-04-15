@@ -74,6 +74,7 @@ async def list_jobs(
     search: Optional[str] = None,
     include_test_data: bool = False,
     owner_id: Optional[str] = None,
+    content_project_id: Optional[str] = None,
 ) -> list[Job]:
     stmt = select(Job).order_by(Job.created_at.desc())
     if not include_test_data:
@@ -84,6 +85,9 @@ async def list_jobs(
         stmt = stmt.where(Job.module_type == module_type)
     if owner_id:
         stmt = stmt.where(Job.owner_id == owner_id)
+    if content_project_id:
+        # PHASE X: project-job hierarchy filter
+        stmt = stmt.where(Job.content_project_id == content_project_id)
     if search:
         pattern = f"%{search}%"
         stmt = stmt.where(

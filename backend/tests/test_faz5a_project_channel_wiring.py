@@ -80,10 +80,15 @@ async def test_news_bulletin_create_without_linkage(client: AsyncClient):
 # 3. Job — channel_profile_id + content_project_id in response
 # ---------------------------------------------------------------------------
 
-async def test_job_response_includes_linkage_fields(client: AsyncClient):
-    """JobResponse should include channel_profile_id and content_project_id fields."""
+async def test_job_response_includes_linkage_fields(
+    client: AsyncClient, admin_headers: dict[str, str]
+):
+    """JobResponse should include channel_profile_id and content_project_id fields.
+
+    PHASE X: Jobs create artik auth ister.
+    """
     payload = {"module_id": "standard_video", "topic": "Test job linkage fields"}
-    resp = await client.post(BASE_JOBS, json=payload)
+    resp = await client.post(BASE_JOBS, json=payload, headers=admin_headers)
     assert resp.status_code in (200, 201), resp.text
     data = resp.json()
     # Fields should exist in response (may be null)

@@ -127,6 +127,10 @@ class JobCreateRequest(BaseModel):
     topic: str
     language: str = "tr"
     duration_seconds: int = 60
+    # PHASE X: project-job hierarchy — opsiyonel; belirtildiginde ownership
+    # dogrulamasi yapilir; belirtilmezse project-less job (admin icin) olusur.
+    content_project_id: Optional[str] = None
+    channel_profile_id: Optional[str] = None
 
     @classmethod
     def __get_validators__(cls):

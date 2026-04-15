@@ -62,24 +62,50 @@ async def _create_draft_via_service(db_session: AsyncSession, **overrides) -> "P
 # 1. connections-for-channel endpoint reachable
 # ---------------------------------------------------------------------------
 
-async def test_connections_for_channel_reachable(client: AsyncClient):
-    """GET /publish/connections-for-channel/{id} should return 200."""
-    resp = await client.get(f"{PUBLISH_BASE}/connections-for-channel/nonexistent-channel")
+async def test_connections_for_channel_reachable(
+    client: AsyncClient,
+    db_session: AsyncSession,
+    admin_user,
+    admin_headers: dict[str, str],
+):
+    """GET /publish/connections-for-channel/{id} should return 200 for owned channel.
+
+    PHASE X: ownership check now requires an existing channel owned by the caller.
+    """
+    from app.db.models import ChannelProfile
+    ch = ChannelProfile(
+        user_id=admin_user.id,
+        profile_name="faz11-reachable",
+        channel_slug="faz11-reachable",
+        default_language="tr",
+        status="active",
+        import_status="pending",
+    )
+    db_session.add(ch)
+    await db_session.commit()
+    await db_session.refresh(ch)
+
+    resp = await client.get(
+        f"{PUBLISH_BASE}/connections-for-channel/{ch.id}",
+        headers=admin_headers,
+    )
     assert resp.status_code == 200
     assert isinstance(resp.json(), list)
 
 
 # ---------------------------------------------------------------------------
-# 2. connections-for-channel returns empty for nonexistent channel
+# 2. connections-for-channel returns 404 for nonexistent channel
 # ---------------------------------------------------------------------------
 
-async def test_connections_for_channel_empty_result(client: AsyncClient):
-    """Non-existent channel returns empty list."""
-    resp = await client.get(f"{PUBLISH_BASE}/connections-for-channel/no-such-channel-123")
-    assert resp.status_code == 200
-    data = resp.json()
-    assert isinstance(data, list)
-    assert len(data) == 0
+async def test_connections_for_channel_empty_result(
+    client: AsyncClient, admin_headers: dict[str, str]
+):
+    """Non-existent channel returns 404 under PHASE X ownership semantics."""
+    resp = await client.get(
+        f"{PUBLISH_BASE}/connections-for-channel/no-such-channel-123",
+        headers=admin_headers,
+    )
+    assert resp.status_code == 404
 
 
 # ---------------------------------------------------------------------------

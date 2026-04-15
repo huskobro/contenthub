@@ -17,6 +17,7 @@ user_headers. Tüm API testleri bu fixture'ları kullanarak JWT auth gönderir.
 
 import pytest
 from uuid import uuid4 as _uuid4
+from fastapi import Depends
 from httpx import AsyncClient, ASGITransport
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy import event
@@ -77,10 +78,108 @@ async def _override_db_engine(test_engine):
     # Session sonu — restore gerekmez, process kapanıyor
 
 
+# ---------------------------------------------------------------------------
+# Auto-auth fallback for legacy tests that call endpoints without JWT.
+# Patches create_app() so every fresh test FastAPI app gets a dependency
+# override that falls back to a "system-test-admin" when Authorization header
+# is absent. Real JWT header still flows through decode_token normally.
+# raw_client fixture skips this for explicit 401/403 tests.
+# ---------------------------------------------------------------------------
+
+@pytest.fixture(autouse=True, scope="session")
+def _patch_create_app_auth_fallback(test_engine):
+    from app import main as _main
+    from fastapi import Request, HTTPException, status as _s
+    from app.auth.dependencies import get_current_user
+    from app.auth.ownership import get_current_user_context, UserContext
+    from app.auth.password import hash_password
+    from app.auth.jwt import decode_token
+    from sqlalchemy import select
+
+    original_create_app = _main.create_app
+
+    _TestSessionLocal = async_sessionmaker(
+        test_engine, class_=AsyncSession, expire_on_commit=False,
+    )
+
+    async def _ensure_test_admin(session: AsyncSession) -> User:
+        existing = (await session.execute(
+            select(User).where(User.slug == "system-admin-test")
+        )).scalar_one_or_none()
+        if existing:
+            return existing
+        u = User(
+            email="system-admin-test@test.local",
+            display_name="System Test Admin",
+            slug="system-admin-test",
+            role="admin",
+            status="active",
+            password_hash=hash_password("testpass123"),
+        )
+        session.add(u)
+        await session.commit()
+        await session.refresh(u)
+        return u
+
+    async def _override_get_current_user(
+        request: Request,
+        db: AsyncSession = Depends(get_db),
+    ) -> User:
+        """Test-time auth resolver.
+
+        Authorization varsa JWT decode + user lookup (current overridden db session).
+        Yoksa "system-admin-test" dusur (legacy testler icin).
+        """
+        auth = request.headers.get("authorization")
+        if auth and auth.lower().startswith("bearer "):
+            token = auth.split(" ", 1)[1].strip()
+            try:
+                payload = decode_token(token)
+                uid = payload.get("sub")
+                if uid:
+                    u = (await db.execute(
+                        select(User).where(User.id == uid)
+                    )).scalar_one_or_none()
+                    if u is not None:
+                        return u
+            except Exception:
+                pass
+            raise HTTPException(status_code=_s.HTTP_401_UNAUTHORIZED,
+                                detail="Kimlik dogrulama gerekli")
+        return await _ensure_test_admin(db)
+
+    async def _override_get_current_user_context(
+        user: User = Depends(_override_get_current_user),
+    ) -> UserContext:
+        role = (user.role or "user").strip().lower()
+        return UserContext(
+            user_id=str(user.id),
+            role=role,
+            is_admin_role=(role == "admin"),
+        )
+
+    def _patched_create_app():
+        _app = original_create_app()
+        _app.dependency_overrides[get_current_user] = _override_get_current_user
+        _app.dependency_overrides[get_current_user_context] = _override_get_current_user_context
+        return _app
+
+    _main.create_app = _patched_create_app
+    # Also patch the already-created module-level app
+    app.dependency_overrides[get_current_user] = _override_get_current_user
+    app.dependency_overrides[get_current_user_context] = _override_get_current_user_context
+
+    yield
+    _main.create_app = original_create_app
+
+
 @pytest.fixture
 async def client(test_engine) -> AsyncClient:
     """
     Test client — in-memory DB kullanır.
+
+    PHASE X Backwards-Compat: auth override session-scoped _patch_create_app_auth_fallback
+    fixture tarafindan kurulmustur. Bu fixture sadece `get_db` override'ini ekler.
     """
     TestSessionLocal = async_sessionmaker(
         test_engine,
@@ -100,6 +199,42 @@ async def client(test_engine) -> AsyncClient:
         yield ac
 
     app.dependency_overrides.pop(get_db, None)
+
+
+@pytest.fixture
+async def raw_client(test_engine) -> AsyncClient:
+    """
+    Auth-free test client — auto-admin fallback devre disi.
+    Sadece auth kontrol testleri (401/403) icin kullanilir.
+    """
+    from app.auth.dependencies import get_current_user
+    from app.auth.ownership import get_current_user_context
+
+    TestSessionLocal = async_sessionmaker(
+        test_engine,
+        class_=AsyncSession,
+        expire_on_commit=False,
+    )
+
+    async def override_get_db():
+        async with TestSessionLocal() as session:
+            yield session
+
+    # Save and remove the auto-auth overrides for this fixture's scope.
+    saved_user = app.dependency_overrides.pop(get_current_user, None)
+    saved_ctx = app.dependency_overrides.pop(get_current_user_context, None)
+    app.dependency_overrides[get_db] = override_get_db
+
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as ac:
+        yield ac
+
+    app.dependency_overrides.pop(get_db, None)
+    if saved_user is not None:
+        app.dependency_overrides[get_current_user] = saved_user
+    if saved_ctx is not None:
+        app.dependency_overrides[get_current_user_context] = saved_ctx
 
 
 @pytest.fixture

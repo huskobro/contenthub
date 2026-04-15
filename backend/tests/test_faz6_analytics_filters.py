@@ -10,6 +10,10 @@ Tests:
 6. Content endpoint accepts entity filters
 7. Empty filter = cumulative view
 8. No-data response handling
+
+PHASE X: admin_headers kullanimi zorunlu — Analytics endpoint'leri artik auth
+gerektirir. Legacy filtreler (`user_id="nonexistent-user"` vb.) admin rolu ile
+test edilir; non-admin icin user_id server-side `ctx.user_id`'ye kilitlidir.
 """
 
 import pytest
@@ -24,9 +28,9 @@ BASE = "/api/v1/analytics"
 # 1. Dashboard Summary
 # ---------------------------------------------------------------------------
 
-async def test_dashboard_summary_structure(client: AsyncClient):
+async def test_dashboard_summary_structure(client: AsyncClient, admin_headers: dict[str, str]):
     """Dashboard endpoint should return all expected fields."""
-    resp = await client.get(f"{BASE}/dashboard", params={"window": "all_time"})
+    resp = await client.get(f"{BASE}/dashboard", params={"window": "all_time"}, headers=admin_headers)
     assert resp.status_code == 200, resp.text
     data = resp.json()
     # KPIs
@@ -50,14 +54,14 @@ async def test_dashboard_summary_structure(client: AsyncClient):
     assert isinstance(data["module_distribution"], list)
 
 
-async def test_dashboard_with_entity_filters(client: AsyncClient):
+async def test_dashboard_with_entity_filters(client: AsyncClient, admin_headers: dict[str, str]):
     """Dashboard should accept user_id / channel_profile_id / platform without error."""
     resp = await client.get(f"{BASE}/dashboard", params={
         "window": "last_30d",
         "user_id": "nonexistent-user",
         "channel_profile_id": "nonexistent-channel",
         "platform": "youtube",
-    })
+    }, headers=admin_headers)
     assert resp.status_code == 200, resp.text
     data = resp.json()
     assert data["filters_applied"]["user_id"] == "nonexistent-user"
@@ -68,9 +72,9 @@ async def test_dashboard_with_entity_filters(client: AsyncClient):
 # 2. Publish Analytics
 # ---------------------------------------------------------------------------
 
-async def test_publish_analytics_structure(client: AsyncClient):
+async def test_publish_analytics_structure(client: AsyncClient, admin_headers: dict[str, str]):
     """Publish analytics endpoint should return expected structure."""
-    resp = await client.get(f"{BASE}/publish", params={"window": "all_time"})
+    resp = await client.get(f"{BASE}/publish", params={"window": "all_time"}, headers=admin_headers)
     assert resp.status_code == 200, resp.text
     data = resp.json()
     assert "total_publish_count" in data
@@ -85,12 +89,12 @@ async def test_publish_analytics_structure(client: AsyncClient):
     assert "filters_applied" in data
 
 
-async def test_publish_analytics_with_platform_filter(client: AsyncClient):
+async def test_publish_analytics_with_platform_filter(client: AsyncClient, admin_headers: dict[str, str]):
     """Publish analytics should filter by platform."""
     resp = await client.get(f"{BASE}/publish", params={
         "window": "all_time",
         "platform": "youtube",
-    })
+    }, headers=admin_headers)
     assert resp.status_code == 200, resp.text
     data = resp.json()
     assert data["filters_applied"]["platform"] == "youtube"
@@ -100,31 +104,31 @@ async def test_publish_analytics_with_platform_filter(client: AsyncClient):
 # 3. Existing endpoints accept new filters
 # ---------------------------------------------------------------------------
 
-async def test_overview_accepts_entity_filters(client: AsyncClient):
+async def test_overview_accepts_entity_filters(client: AsyncClient, admin_headers: dict[str, str]):
     """Overview endpoint should accept user_id etc. without error."""
     resp = await client.get(f"{BASE}/overview", params={
         "window": "all_time",
         "user_id": "any-user",
-    })
+    }, headers=admin_headers)
     assert resp.status_code == 200, resp.text
 
 
-async def test_operations_accepts_entity_filters(client: AsyncClient):
+async def test_operations_accepts_entity_filters(client: AsyncClient, admin_headers: dict[str, str]):
     """Operations endpoint should accept entity filters."""
     resp = await client.get(f"{BASE}/operations", params={
         "window": "all_time",
         "channel_profile_id": "any-channel",
-    })
+    }, headers=admin_headers)
     assert resp.status_code == 200, resp.text
 
 
-async def test_content_accepts_entity_filters(client: AsyncClient):
+async def test_content_accepts_entity_filters(client: AsyncClient, admin_headers: dict[str, str]):
     """Content endpoint should accept entity filters."""
     resp = await client.get(f"{BASE}/content", params={
         "window": "last_7d",
         "user_id": "test-user",
         "platform": "youtube",
-    })
+    }, headers=admin_headers)
     assert resp.status_code == 200, resp.text
 
 
@@ -132,9 +136,9 @@ async def test_content_accepts_entity_filters(client: AsyncClient):
 # 4. Cumulative view (no filters)
 # ---------------------------------------------------------------------------
 
-async def test_dashboard_cumulative_view(client: AsyncClient):
+async def test_dashboard_cumulative_view(client: AsyncClient, admin_headers: dict[str, str]):
     """Dashboard with no entity filters returns cumulative data."""
-    resp = await client.get(f"{BASE}/dashboard", params={"window": "all_time"})
+    resp = await client.get(f"{BASE}/dashboard", params={"window": "all_time"}, headers=admin_headers)
     assert resp.status_code == 200
     data = resp.json()
     # filters_applied should be empty (or at least no entity filters)
@@ -146,12 +150,12 @@ async def test_dashboard_cumulative_view(client: AsyncClient):
 # 5. Empty state handling
 # ---------------------------------------------------------------------------
 
-async def test_dashboard_no_data_returns_zeros(client: AsyncClient):
+async def test_dashboard_no_data_returns_zeros(client: AsyncClient, admin_headers: dict[str, str]):
     """With a filter that matches nothing, numeric fields should be 0/null."""
     resp = await client.get(f"{BASE}/dashboard", params={
         "window": "last_7d",
         "user_id": "no-such-user-99999",
-    })
+    }, headers=admin_headers)
     assert resp.status_code == 200
     data = resp.json()
     assert data["total_jobs"] == 0
@@ -159,12 +163,12 @@ async def test_dashboard_no_data_returns_zeros(client: AsyncClient):
     assert data["active_jobs"] == 0
 
 
-async def test_publish_analytics_no_data(client: AsyncClient):
+async def test_publish_analytics_no_data(client: AsyncClient, admin_headers: dict[str, str]):
     """Publish analytics with no matching data returns zeros."""
     resp = await client.get(f"{BASE}/publish", params={
         "window": "last_7d",
         "user_id": "no-such-user-99999",
-    })
+    }, headers=admin_headers)
     assert resp.status_code == 200
     data = resp.json()
     assert data["total_publish_count"] == 0

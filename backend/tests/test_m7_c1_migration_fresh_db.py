@@ -34,7 +34,7 @@ import pytest
 BACKEND_DIR = Path(__file__).resolve().parents[1]
 # Gate 4 (Publish Closure) güncellemesi: head revision artık gate4_001.
 # Önceki target c1a2b3d4e5f6 → catchup_001 → gate4_001 zinciri çalışıyor.
-ALEMBIC_TARGET = "gate4_001"
+ALEMBIC_TARGET = "phase_x_001"
 
 EXPECTED_PR_COLUMNS = {
     "id", "job_id", "content_ref_type", "content_ref_id", "platform",

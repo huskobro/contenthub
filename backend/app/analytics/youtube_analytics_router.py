@@ -27,7 +27,11 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.analytics import youtube_analytics_service as yts
+from app.auth.dependencies import require_admin
+from app.auth.ownership import UserContext, get_current_user_context
+from app.db.models import User
 from app.db.session import get_db
+from app.publish.ownership import ensure_platform_connection_ownership
 from app.visibility.dependencies import require_visible
 
 logger = logging.getLogger(__name__)
@@ -57,9 +61,11 @@ def _validate_window_days(window_days: int) -> int:
 async def get_channel_totals(
     connection_id: str = Query(..., description="PlatformConnection.id"),
     window_days: int = Query(28, ge=1, le=365),
+    ctx: UserContext = Depends(get_current_user_context),
     db: AsyncSession = Depends(get_db),
 ):
     _validate_window_days(window_days)
+    await ensure_platform_connection_ownership(db, connection_id, ctx)
     return await yts.read_channel_totals(db, connection_id, window_days=window_days)
 
 
@@ -68,9 +74,11 @@ async def get_top_videos(
     connection_id: str = Query(...),
     window_days: int = Query(28, ge=1, le=365),
     limit: int = Query(10, ge=1, le=100),
+    ctx: UserContext = Depends(get_current_user_context),
     db: AsyncSession = Depends(get_db),
 ):
     _validate_window_days(window_days)
+    await ensure_platform_connection_ownership(db, connection_id, ctx)
     return {
         "connection_id": connection_id,
         "window_days": window_days,
@@ -84,8 +92,10 @@ async def get_top_videos(
 async def get_retention_curve(
     video_id: str,
     connection_id: str = Query(...),
+    ctx: UserContext = Depends(get_current_user_context),
     db: AsyncSession = Depends(get_db),
 ):
+    await ensure_platform_connection_ownership(db, connection_id, ctx)
     return {
         "connection_id": connection_id,
         "video_id": video_id,
@@ -97,8 +107,10 @@ async def get_retention_curve(
 async def get_demographics(
     connection_id: str = Query(...),
     video_id: str = Query("", description="Bos birakilirsa kanal toplami"),
+    ctx: UserContext = Depends(get_current_user_context),
     db: AsyncSession = Depends(get_db),
 ):
+    await ensure_platform_connection_ownership(db, connection_id, ctx)
     return {
         "connection_id": connection_id,
         "video_id": video_id,
@@ -110,8 +122,10 @@ async def get_demographics(
 async def get_traffic_sources(
     connection_id: str = Query(...),
     video_id: str = Query(""),
+    ctx: UserContext = Depends(get_current_user_context),
     db: AsyncSession = Depends(get_db),
 ):
+    await ensure_platform_connection_ownership(db, connection_id, ctx)
     return {
         "connection_id": connection_id,
         "video_id": video_id,
@@ -123,8 +137,10 @@ async def get_traffic_sources(
 async def get_devices(
     connection_id: str = Query(...),
     video_id: str = Query(""),
+    ctx: UserContext = Depends(get_current_user_context),
     db: AsyncSession = Depends(get_db),
 ):
+    await ensure_platform_connection_ownership(db, connection_id, ctx)
     return {
         "connection_id": connection_id,
         "video_id": video_id,
@@ -135,8 +151,10 @@ async def get_devices(
 @router.get("/last-sync")
 async def get_last_sync(
     connection_id: str = Query(...),
+    ctx: UserContext = Depends(get_current_user_context),
     db: AsyncSession = Depends(get_db),
 ):
+    await ensure_platform_connection_ownership(db, connection_id, ctx)
     result = await yts.read_last_sync(db, connection_id)
     if result is None:
         return {"connection_id": connection_id, "last_sync": None}
@@ -153,9 +171,11 @@ async def trigger_sync(
     connection_id: str = Query(...),
     window_days: int = Query(28, ge=1, le=365),
     run_kind: str = Query("manual", pattern="^(manual|backfill|daily)$"),
+    ctx: UserContext = Depends(get_current_user_context),
     db: AsyncSession = Depends(get_db),
 ):
     _validate_window_days(window_days)
+    await ensure_platform_connection_ownership(db, connection_id, ctx)
     service = yts.YouTubeAnalyticsService()
     log = await service.run_sync(
         db,
@@ -180,7 +200,9 @@ async def trigger_sync(
 @router.post("/sync-all")
 async def trigger_sync_all(
     db: AsyncSession = Depends(get_db),
+    _admin: User = Depends(require_admin),
 ):
+    """PHASE X: sync-all cross-tenant; sadece admin icin."""
     service = yts.YouTubeAnalyticsService()
     results = await service.run_daily_sync_all(db, trigger_source="api")
     return {"results": results, "count": len(results)}

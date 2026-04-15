@@ -2597,6 +2597,81 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "wired": False,
         "wired_to": "product_review.executors.PublishStepExecutor + audit (Faz F)",
     },
+
+    # ---------------------------------------------------------------------
+    # Channels domain — PHASE X (URL-only create + auto-import).
+    # ---------------------------------------------------------------------
+    "channels.url_only_create_enabled": {
+        "group": "channels",
+        "type": "boolean",
+        "label": "Kanal olusturma: sadece URL ile",
+        "help_text": (
+            "Acik oldugunda kullanicilar kanal olustururken sadece URL girer. "
+            "Sistem metadata'yi (ad, platform, handle, avatar) otomatik getirir. "
+            "Kapali oldugunda klasik form alanlari gosterilir."
+        ),
+        "module_scope": None,
+        "env_var": None,
+        "builtin_default": True,
+        "user_override_allowed": False,
+        "visible_to_user": True,
+        "read_only_for_user": True,
+        "wired": True,
+        "wired_to": "app/channel_profiles/router.py POST /channel-profiles (URL-only gate)",
+    },
+    "channels.metadata_fetch_enabled": {
+        "group": "channels",
+        "type": "boolean",
+        "label": "Kanal metadata auto-fetch",
+        "help_text": (
+            "Acik oldugunda URL'den platform/handle/isim/avatar otomatik cekilir. "
+            "Kapali oldugunda kullanici sonradan elle duzenler; sistem placeholder "
+            "uretmez (durum 'baslik alinamadi' olarak kalir)."
+        ),
+        "module_scope": None,
+        "env_var": None,
+        "builtin_default": True,
+        "user_override_allowed": False,
+        "visible_to_user": True,
+        "read_only_for_user": True,
+        "wired": True,
+        "wired_to": "app/channel_profiles/service.py auto_import_from_url",
+    },
+    "channels.metadata_fetch_timeout_seconds": {
+        "group": "channels",
+        "type": "integer",
+        "label": "Metadata fetch timeout (sn)",
+        "help_text": (
+            "HTTP metadata istegi icin maksimum bekleme suresi. Asildiginda "
+            "kanal 'baslik alinamadi' durumuyla kaydedilir (placeholder YOK)."
+        ),
+        "module_scope": None,
+        "env_var": None,
+        "builtin_default": 8,
+        "user_override_allowed": False,
+        "visible_to_user": False,
+        "read_only_for_user": True,
+        "wired": True,
+        "wired_to": "app/channel_profiles/url_metadata.fetch_metadata",
+    },
+    "channels.ownership_strict_mode": {
+        "group": "channels",
+        "type": "boolean",
+        "label": "Ownership strict mode",
+        "help_text": (
+            "Acik oldugunda non-admin kullanicilar YALNIZ kendi channel/project/"
+            "job/publish kayitlarini gorur. Kapali oldugunda legacy (M0) davranisi "
+            "gecerli olur. PHASE X icin varsayilan acik. Admin her zaman hepsini gorur."
+        ),
+        "module_scope": None,
+        "env_var": None,
+        "builtin_default": True,
+        "user_override_allowed": False,
+        "visible_to_user": False,
+        "read_only_for_user": True,
+        "wired": True,
+        "wired_to": "app/auth/ownership.ensure_owner_or_admin + apply_user_scope",
+    },
 }
 
 # Group labels for UI
@@ -2615,6 +2690,7 @@ GROUP_LABELS: Dict[str, str] = {
     "wizard": "Wizard Yonetimi",
     "system": "Sistem",
     "automation": "Otomasyon",
+    "channels": "Kanallar",
 }
 
 GROUP_ORDER = ["credentials", "providers", "execution", "source_scans", "publish", "ui", "jobs", "automation", "wizard", "standard_video", "news_bulletin", "product_review", "modules", "system"]

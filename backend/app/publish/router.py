@@ -24,7 +24,17 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from app.db.session import AsyncSessionLocal, get_db
 from app.audit.service import write_audit_log
 from app.visibility.dependencies import require_visible, get_active_user_id
+from app.auth.ownership import UserContext, get_current_user_context
 from app.publish import bulk_service, service
+from app.publish.ownership import (
+    apply_publish_user_scope,
+    ensure_channel_profile_ownership,
+    ensure_content_project_ownership,
+    ensure_job_ownership,
+    ensure_platform_connection_ownership,
+    ensure_publish_record_ownership,
+    filter_record_ids_by_ownership,
+)
 from app.publish.exceptions import (
     PublishRecordNotFoundError,
     InvalidPublishTransitionError,
@@ -85,9 +95,15 @@ def _handle_gate_violation(exc: Exception) -> HTTPException:
 @router.post("/", response_model=PublishRecordRead, status_code=status.HTTP_201_CREATED)
 async def create_publish_record(
     body: PublishRecordCreate,
+    ctx: UserContext = Depends(get_current_user_context),
     session=Depends(get_db),
 ):
-    """Yeni publish kaydı oluşturur (draft durumunda başlar)."""
+    """Yeni publish kaydı oluşturur (draft durumunda başlar).
+
+    PHASE X: non-admin icin body.job_id sahibi ctx.user_id olmali.
+    """
+    if body.job_id:
+        await ensure_job_ownership(session, body.job_id, ctx)
     record = await service.create_publish_record(session=session, data=body)
     await write_audit_log(session, action="publish.create", entity_type="publish_record", entity_id=str(record.id))
     return record
@@ -105,9 +121,18 @@ async def list_publish_records(
     ),
     limit: int = Query(default=50, ge=1, le=200),
     offset: int = Query(default=0, ge=0),
+    ctx: UserContext = Depends(get_current_user_context),
     session=Depends(get_db),
 ):
-    """Filtrelenmiş publish kayıtlarını döndürür."""
+    """Filtrelenmiş publish kayıtlarını döndürür.
+
+    PHASE X: non-admin icin Job.owner_id esitligi ile scope'lanir.
+    """
+    # PHASE X: non-admin ve job_id verilmisse o job'un da ayni user'a ait
+    # oldugunu on-check et (erken 403 verir; aksi halde list bos doner ve
+    # UX 'veri yok' gibi yanlis hisseder).
+    if job_id and not ctx.is_admin:
+        await ensure_job_ownership(session, job_id, ctx)
     records = await service.list_publish_records(
         session=session,
         job_id=job_id,
@@ -117,6 +142,7 @@ async def list_publish_records(
         error_category=error_category,
         limit=limit,
         offset=offset,
+        user_context=ctx,
     )
     return records
 
@@ -124,13 +150,16 @@ async def list_publish_records(
 @router.get("/{record_id}", response_model=PublishRecordRead)
 async def get_publish_record(
     record_id: str,
+    ctx: UserContext = Depends(get_current_user_context),
     session=Depends(get_db),
 ):
     """Publish kaydı detayını döndürür."""
     try:
-        return await service.get_publish_record(session=session, record_id=record_id)
+        record = await service.get_publish_record(session=session, record_id=record_id)
     except PublishRecordNotFoundError as exc:
         raise _handle_not_found(exc)
+    await ensure_publish_record_ownership(session, record, ctx)
+    return record
 
 
 @router.get("/{record_id}/logs", response_model=list[PublishLogRead])
@@ -138,13 +167,15 @@ async def get_publish_logs(
     record_id: str,
     limit: int = Query(default=100, ge=1, le=500),
     offset: int = Query(default=0, ge=0),
+    ctx: UserContext = Depends(get_current_user_context),
     session=Depends(get_db),
 ):
     """Publish kaydına ait denetim izi log satırlarını döndürür."""
     try:
-        await service.get_publish_record(session=session, record_id=record_id)
+        record = await service.get_publish_record(session=session, record_id=record_id)
     except PublishRecordNotFoundError as exc:
         raise _handle_not_found(exc)
+    await ensure_publish_record_ownership(session, record, ctx)
     logs = await service.get_publish_logs(
         session=session,
         publish_record_id=record_id,
@@ -162,9 +193,15 @@ async def get_publish_logs(
 async def submit_for_review(
     record_id: str,
     body: TransitionRequest = TransitionRequest(next_status="pending_review"),
+    ctx: UserContext = Depends(get_current_user_context),
     session=Depends(get_db),
 ):
     """Draft kaydını review'a gönderir."""
+    try:
+        existing = await service.get_publish_record(session=session, record_id=record_id)
+    except PublishRecordNotFoundError as exc:
+        raise _handle_not_found(exc)
+    await ensure_publish_record_ownership(session, existing, ctx)
     try:
         result = await service.submit_for_review(
             session=session,
@@ -184,6 +221,7 @@ async def submit_for_review(
 async def review_action(
     record_id: str,
     body: ReviewActionRequest,
+    ctx: UserContext = Depends(get_current_user_context),
     session=Depends(get_db),
 ):
     """
@@ -201,6 +239,11 @@ async def review_action(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Reddetme kararı için rejection_reason zorunludur.",
         )
+    try:
+        existing = await service.get_publish_record(session=session, record_id=record_id)
+    except PublishRecordNotFoundError as exc:
+        raise _handle_not_found(exc)
+    await ensure_publish_record_ownership(session, existing, ctx)
     # rejection_reason'ı note ile birleştir (log'a düşmesi için)
     effective_note = body.note
     if body.decision == "reject" and body.rejection_reason:
@@ -228,9 +271,15 @@ async def review_action(
 async def schedule_publish(
     record_id: str,
     body: ScheduleRequest,
+    ctx: UserContext = Depends(get_current_user_context),
     session=Depends(get_db),
 ):
     """Approved kaydı için publish zamanlaması ayarlar."""
+    try:
+        existing = await service.get_publish_record(session=session, record_id=record_id)
+    except PublishRecordNotFoundError as exc:
+        raise _handle_not_found(exc)
+    await ensure_publish_record_ownership(session, existing, ctx)
     try:
         result = await service.schedule_publish(
             session=session,
@@ -250,8 +299,8 @@ async def schedule_publish(
 async def trigger_publish(
     record_id: str,
     body: PublishTriggerRequest,
+    ctx: UserContext = Depends(get_current_user_context),
     session=Depends(get_db),
-    user_id: Optional[str] = Depends(get_active_user_id),
 ):
     """
     Publish işlemini başlatır (approved/scheduled/failed → publishing).
@@ -259,10 +308,14 @@ async def trigger_publish(
     Publish gate kontrolü yapılır:
       draft veya pending_review durumundan bu endpoint çağrılamaz.
       422 döner.
-    M40b: actor_id body'den gelmiyorsa aktif kullanıcı header'ından alınır.
+    PHASE X: actor_id body'den gelmiyorsa kimlik dogrulanmis user'dan gelir.
     """
-    # M40b: actor_id önce body'den, yoksa aktif kullanıcı header'ından
-    effective_actor_id = body.actor_id or user_id
+    try:
+        existing = await service.get_publish_record(session=session, record_id=record_id)
+    except PublishRecordNotFoundError as exc:
+        raise _handle_not_found(exc)
+    await ensure_publish_record_ownership(session, existing, ctx)
+    effective_actor_id = body.actor_id or ctx.user_id
     try:
         result = await service.trigger_publish(
             session=session,
@@ -284,9 +337,15 @@ async def trigger_publish(
 async def cancel_publish(
     record_id: str,
     body: CancelRequest,
+    ctx: UserContext = Depends(get_current_user_context),
     session=Depends(get_db),
 ):
     """Publish kaydını iptal eder."""
+    try:
+        existing = await service.get_publish_record(session=session, record_id=record_id)
+    except PublishRecordNotFoundError as exc:
+        raise _handle_not_found(exc)
+    await ensure_publish_record_ownership(session, existing, ctx)
     try:
         result = await service.cancel_publish(
             session=session,
@@ -306,9 +365,15 @@ async def cancel_publish(
 async def reset_to_draft(
     record_id: str,
     body: TransitionRequest = TransitionRequest(next_status="draft"),
+    ctx: UserContext = Depends(get_current_user_context),
     session=Depends(get_db),
 ):
     """Review reddedilen kaydı düzeltme için draft'a döndürür."""
+    try:
+        existing = await service.get_publish_record(session=session, record_id=record_id)
+    except PublishRecordNotFoundError as exc:
+        raise _handle_not_found(exc)
+    await ensure_publish_record_ownership(session, existing, ctx)
     try:
         result = await service.reset_to_draft(
             session=session,
@@ -328,6 +393,7 @@ async def reset_to_draft(
 async def retry_publish(
     record_id: str,
     body: RetryPublishRequest,
+    ctx: UserContext = Depends(get_current_user_context),
     session=Depends(get_db),
 ):
     """
@@ -338,6 +404,11 @@ async def retry_publish(
       upload tekrar çalışmaz — executor yalnızca activate adımını yürütür.
     Publish gate kuralı: yalnızca 'failed' durumundaki kayıt retry edilebilir.
     """
+    try:
+        existing = await service.get_publish_record(session=session, record_id=record_id)
+    except PublishRecordNotFoundError as exc:
+        raise _handle_not_found(exc)
+    await ensure_publish_record_ownership(session, existing, ctx)
     try:
         result = await service.retry_publish(
             session=session,
@@ -359,6 +430,7 @@ async def retry_publish(
 async def create_publish_record_from_job(
     job_id: str,
     body: PublishFromJobRequest,
+    ctx: UserContext = Depends(get_current_user_context),
     session=Depends(get_db),
 ):
     """
@@ -366,7 +438,14 @@ async def create_publish_record_from_job(
 
     Job'un metadata artifact'ından title/description/tags alanlarını okumaya
     çalışır; bulunamazsa boş payload ile draft kaydı oluşturur.
+    PHASE X: non-admin yalnizca kendi job'undan publish kaydi acabilir; body
+    icindeki content_project_id / platform_connection_id de ownership gecer.
     """
+    await ensure_job_ownership(session, job_id, ctx)
+    if body.content_project_id:
+        await ensure_content_project_ownership(session, body.content_project_id, ctx)
+    if body.platform_connection_id:
+        await ensure_platform_connection_ownership(session, body.platform_connection_id, ctx)
     try:
         record = await service.create_publish_record_from_job(
             session=session,
@@ -387,6 +466,7 @@ async def create_publish_record_from_job(
 async def patch_publish_payload(
     record_id: str,
     body: PublishRecordPatchPayload,
+    ctx: UserContext = Depends(get_current_user_context),
     session=Depends(get_db),
 ):
     """
@@ -394,6 +474,11 @@ async def patch_publish_payload(
 
     Yalnızca draft durumunda izin verilir; diğer durumlarda 422 döner.
     """
+    try:
+        existing = await service.get_publish_record(session=session, record_id=record_id)
+    except PublishRecordNotFoundError as exc:
+        raise _handle_not_found(exc)
+    await ensure_publish_record_ownership(session, existing, ctx)
     try:
         result = await service.patch_publish_payload(
             session=session,
@@ -416,12 +501,15 @@ async def patch_publish_payload(
 async def get_connections_for_channel(
     channel_profile_id: str,
     platform: Optional[str] = Query(default=None),
+    ctx: UserContext = Depends(get_current_user_context),
     session=Depends(get_db),
 ):
     """
     Bir kanal profili için publish'e uygun platform bağlantılarını döndürür.
     Her bağlantıda can_publish flag'i var.
+    PHASE X: channel_profile_id sahibi ctx.user_id olmali (veya admin).
     """
+    await ensure_channel_profile_ownership(session, channel_profile_id, ctx)
     return await service.get_connections_for_publish(
         session=session,
         channel_profile_id=channel_profile_id,
@@ -434,14 +522,20 @@ async def list_publish_records_by_project(
     content_project_id: str,
     limit: int = Query(default=50, ge=1, le=200),
     offset: int = Query(default=0, ge=0),
+    ctx: UserContext = Depends(get_current_user_context),
     session=Depends(get_db),
 ):
-    """Content project'e ait publish kayıtlarını döndürür."""
+    """Content project'e ait publish kayıtlarını döndürür.
+
+    PHASE X: proje sahibi olmayan non-admin'lere 403.
+    """
+    await ensure_content_project_ownership(session, content_project_id, ctx)
     records = await service.list_publish_records_v2(
         session=session,
         content_project_id=content_project_id,
         limit=limit,
         offset=offset,
+        user_context=ctx,
     )
     return records
 
@@ -450,12 +544,18 @@ async def list_publish_records_by_project(
 async def update_publish_intent(
     record_id: str,
     body: PublishIntentData,
+    ctx: UserContext = Depends(get_current_user_context),
     session=Depends(get_db),
 ):
     """
     Draft durumundaki publish kaydının publish_intent_json alanını günceller.
     """
     import json
+    try:
+        existing = await service.get_publish_record(session=session, record_id=record_id)
+    except PublishRecordNotFoundError as exc:
+        raise _handle_not_found(exc)
+    await ensure_publish_record_ownership(session, existing, ctx)
     intent_json = json.dumps(body.model_dump(exclude_none=True), ensure_ascii=False)
     try:
         result = await service.update_publish_intent(
@@ -475,6 +575,7 @@ async def update_publish_intent(
 async def reset_review_for_artifact_change(
     record_id: str,
     body: ArtifactChangedRequest,
+    ctx: UserContext = Depends(get_current_user_context),
     session=Depends(get_db),
 ):
     """
@@ -485,6 +586,11 @@ async def reset_review_for_artifact_change(
     operatörün yeniden onay vermesi gerekir.
     Diğer durumlarda (draft, publishing, failed vb.) işlem yapılmaz.
     """
+    try:
+        existing = await service.get_publish_record(session=session, record_id=record_id)
+    except PublishRecordNotFoundError as exc:
+        raise _handle_not_found(exc)
+    await ensure_publish_record_ownership(session, existing, ctx)
     try:
         result = await service.reset_review_for_artifact_change(
             session=session,
@@ -527,17 +633,38 @@ def _validate_bulk_request(record_ids: list[str]) -> None:
         )
 
 
+async def _resolve_bulk_record_ids(
+    ctx: UserContext, record_ids: list[str]
+) -> list[str]:
+    """PHASE X: non-admin icin yalniz kendi sahip oldugu record_ids'leri gecir.
+
+    Diger ID'ler bulk_service'e verilmez; bulk_service kendi response'unda
+    `invalid/denied` olarak isaretler — ama bu katman zaten pre-filter
+    gorevini yapiyor (fail-fast vs silently-skip tercihi: silently skip
+    yerine burada 403 firlatma da olabilir; simdilik skip yaklasimi
+    bulk semantigine uyumlu).
+    """
+    async with AsyncSessionLocal() as session:
+        return await filter_record_ids_by_ownership(session, record_ids, ctx)
+
+
 @router.post("/bulk/approve", response_model=BulkActionResponse)
 async def bulk_approve(
     body: BulkActionRequest,
-    user_id: Optional[str] = Depends(get_active_user_id),
+    ctx: UserContext = Depends(get_current_user_context),
 ):
-    """Bulk approve — pending_review kayıtları toplu onaylar."""
+    """Bulk approve — pending_review kayıtları toplu onaylar.
+
+    PHASE X: non-admin icin yalniz kendi kayitlari islenir.
+    """
     _validate_bulk_request(body.record_ids)
+    effective_ids = await _resolve_bulk_record_ids(ctx, body.record_ids)
+    if not effective_ids:
+        raise HTTPException(status_code=403, detail="Bu kayitlar size ait degil")
     return await bulk_service.bulk_approve(
         session_factory=AsyncSessionLocal,
-        record_ids=body.record_ids,
-        reviewer_id=body.actor_id or user_id,
+        record_ids=effective_ids,
+        reviewer_id=body.actor_id or ctx.user_id,
         note=body.note,
     )
 
@@ -545,7 +672,7 @@ async def bulk_approve(
 @router.post("/bulk/reject", response_model=BulkActionResponse)
 async def bulk_reject(
     body: BulkRejectRequest,
-    user_id: Optional[str] = Depends(get_active_user_id),
+    ctx: UserContext = Depends(get_current_user_context),
 ):
     """Bulk reject — pending_review kayıtları toplu reddeder. reason zorunlu."""
     _validate_bulk_request(body.record_ids)
@@ -554,10 +681,13 @@ async def bulk_reject(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Bulk reddetme için rejection_reason zorunludur.",
         )
+    effective_ids = await _resolve_bulk_record_ids(ctx, body.record_ids)
+    if not effective_ids:
+        raise HTTPException(status_code=403, detail="Bu kayitlar size ait degil")
     return await bulk_service.bulk_reject(
         session_factory=AsyncSessionLocal,
-        record_ids=body.record_ids,
-        reviewer_id=body.actor_id or user_id,
+        record_ids=effective_ids,
+        reviewer_id=body.actor_id or ctx.user_id,
         rejection_reason=body.rejection_reason,
         note=body.note,
     )
@@ -566,14 +696,17 @@ async def bulk_reject(
 @router.post("/bulk/cancel", response_model=BulkActionResponse)
 async def bulk_cancel(
     body: BulkActionRequest,
-    user_id: Optional[str] = Depends(get_active_user_id),
+    ctx: UserContext = Depends(get_current_user_context),
 ):
     """Bulk cancel — non-terminal kayıtları toplu iptal eder."""
     _validate_bulk_request(body.record_ids)
+    effective_ids = await _resolve_bulk_record_ids(ctx, body.record_ids)
+    if not effective_ids:
+        raise HTTPException(status_code=403, detail="Bu kayitlar size ait degil")
     return await bulk_service.bulk_cancel(
         session_factory=AsyncSessionLocal,
-        record_ids=body.record_ids,
-        actor_id=body.actor_id or user_id,
+        record_ids=effective_ids,
+        actor_id=body.actor_id or ctx.user_id,
         note=body.note,
     )
 
@@ -581,14 +714,17 @@ async def bulk_cancel(
 @router.post("/bulk/retry", response_model=BulkActionResponse)
 async def bulk_retry(
     body: BulkActionRequest,
-    user_id: Optional[str] = Depends(get_active_user_id),
+    ctx: UserContext = Depends(get_current_user_context),
 ):
     """Bulk retry — yalnızca failed kayıtlar; diğerleri publish_gate ile reddedilir."""
     _validate_bulk_request(body.record_ids)
+    effective_ids = await _resolve_bulk_record_ids(ctx, body.record_ids)
+    if not effective_ids:
+        raise HTTPException(status_code=403, detail="Bu kayitlar size ait degil")
     return await bulk_service.bulk_retry(
         session_factory=AsyncSessionLocal,
-        record_ids=body.record_ids,
-        actor_id=body.actor_id or user_id,
+        record_ids=effective_ids,
+        actor_id=body.actor_id or ctx.user_id,
         note=body.note,
     )
 
@@ -636,6 +772,7 @@ async def scheduler_status(request: Request):
 )
 async def connection_token_status(
     connection_id: str,
+    ctx: UserContext = Depends(get_current_user_context),
     db=Depends(get_db),
 ):
     """
@@ -644,7 +781,9 @@ async def connection_token_status(
     NON-AGGRESSIVE: platform API'ye gitmez, sadece DB'deki token_expiry +
     requires_reauth alanlarını okur. UI badge ve scheduler aynı eşikleri
     kullanır (warn=7g, critical=24s).
+    PHASE X: connection sahibi ctx.user_id olmali (veya admin).
     """
+    await ensure_platform_connection_ownership(db, connection_id, ctx)
     status_obj = await get_connection_token_status(db, connection_id)
     return TokenStatusResponse(
         connection_id=connection_id,

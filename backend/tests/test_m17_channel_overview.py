@@ -2,23 +2,23 @@
 M17-C — Channel Overview Metrics testleri.
 
 Kanal bazlı yayın özet metriklerini doğrular.
+
+PHASE X: Analytics endpoint'leri auth gerektirir — admin_headers kullanilir.
 """
 
 import pytest
-from httpx import AsyncClient, ASGITransport
-from app.main import app
+from httpx import AsyncClient
 from app.analytics.schemas import ChannelOverviewMetrics, YouTubeChannelMetrics
 
 
 @pytest.mark.asyncio
-async def test_channel_endpoint_returns_200():
+async def test_channel_endpoint_returns_200(client: AsyncClient, admin_headers: dict[str, str]):
     """Channel endpoint boş DB'de 200 döner."""
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as client:
-        resp = await client.get(
-            "/api/v1/analytics/channel",
-            params={"window": "all_time"},
-        )
+    resp = await client.get(
+        "/api/v1/analytics/channel",
+        params={"window": "all_time"},
+        headers=admin_headers,
+    )
     assert resp.status_code == 200
     data = resp.json()
     assert "youtube" in data
@@ -42,26 +42,24 @@ async def test_channel_schema_fields():
 
 
 @pytest.mark.asyncio
-async def test_channel_invalid_window():
+async def test_channel_invalid_window(client: AsyncClient, admin_headers: dict[str, str]):
     """Geçersiz window 400 döner."""
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as client:
-        resp = await client.get(
-            "/api/v1/analytics/channel",
-            params={"window": "invalid"},
-        )
+    resp = await client.get(
+        "/api/v1/analytics/channel",
+        params={"window": "invalid"},
+        headers=admin_headers,
+    )
     assert resp.status_code == 400
 
 
 @pytest.mark.asyncio
-async def test_source_impact_endpoint_returns_200():
-    """Source impact endpoint boş DB'de 200 döner."""
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as client:
-        resp = await client.get(
-            "/api/v1/analytics/source-impact",
-            params={"window": "all_time"},
-        )
+async def test_source_impact_endpoint_returns_200(client: AsyncClient, admin_headers: dict[str, str]):
+    """Source impact endpoint boş DB'de 200 döner (admin scope)."""
+    resp = await client.get(
+        "/api/v1/analytics/source-impact",
+        params={"window": "all_time"},
+        headers=admin_headers,
+    )
     assert resp.status_code == 200
     data = resp.json()
     assert isinstance(data["total_sources"], int)

@@ -219,17 +219,17 @@ REQUIRE_ADMIN_ENDPOINTS = [
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("url", REQUIRE_USER_ENDPOINTS)
-async def test_auth_unauthenticated_user_endpoints(client: AsyncClient, url: str):
+async def test_auth_unauthenticated_user_endpoints(raw_client: AsyncClient, url: str):
     """All require_user endpoints must return 401 without auth."""
-    resp = await client.get(url)
+    resp = await raw_client.get(url)
     assert resp.status_code == 401, f"{url} returned {resp.status_code}, expected 401"
 
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("url", REQUIRE_ADMIN_ENDPOINTS)
-async def test_auth_unauthenticated_admin_endpoints(client: AsyncClient, url: str):
+async def test_auth_unauthenticated_admin_endpoints(raw_client: AsyncClient, url: str):
     """All require_admin endpoints must return 401 without auth."""
-    resp = await client.get(url)
+    resp = await raw_client.get(url)
     assert resp.status_code == 401, f"{url} returned {resp.status_code}, expected 401"
 
 

@@ -32,7 +32,14 @@ from sqlalchemy import select, update as sa_update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
+from app.auth.dependencies import require_admin
 from app.visibility.dependencies import require_visible, get_active_user_id
+from app.auth.ownership import (
+    UserContext,
+    ensure_owner_or_admin,
+    get_current_user_context,
+)
+from app.db.models import ChannelProfile, ContentProject, User
 from app.jobs import service
 from app.jobs.schemas import JobCreate, JobCreateRequest, JobResponse, JobStepResponse
 from app.jobs.timing import enrich_job_eta
@@ -59,6 +66,20 @@ async def _build_job_response(db: AsyncSession, job, steps=None) -> JobResponse:
     await enrich_job_eta(db, job_data)
     return job_data
 
+
+def _enforce_job_ownership(ctx: UserContext, job) -> None:
+    """PHASE X: job ownership kapisi. owner_id NULL ise sadece admin gecebilir."""
+    if ctx.is_admin:
+        return
+    if job.owner_id is None:
+        # Orphan / legacy job — non-admin erismesin
+        raise HTTPException(
+            status_code=403,
+            detail="Bu is orphan (owner'sız); yalnizca admin erisimine acik",
+        )
+    if str(job.owner_id) != ctx.user_id:
+        raise HTTPException(status_code=403, detail="Bu ise erisim yetkiniz yok")
+
 # ---------------------------------------------------------------------------
 # Skip'e izin verilen step key'leri.
 # Sadece pipeline bütünlüğünü bozmayacak step'ler burada listelenir.
@@ -78,11 +99,23 @@ async def list_jobs(
     module_type: Optional[str] = Query(None),
     search: Optional[str] = Query(None, description="module_type veya id üzerinde arama (case-insensitive)"),
     include_test_data: bool = Query(False, description="Test/demo kayıtlarını dahil et (varsayılan: False)"),
-    owner_id: Optional[str] = Query(None, description="Sadece belirtilen kullanıcıya ait işler (M40a)"),
+    owner_id: Optional[str] = Query(None, description="Admin only override — başka kullanıcı için"),
+    content_project_id: Optional[str] = Query(None, description="Belirli bir projeye ait job'lar"),
+    ctx: UserContext = Depends(get_current_user_context),
     db: AsyncSession = Depends(get_db),
 ):
-    """İş listesini döndürür. status, module_type, search, owner_id ve include_test_data ile filtrelenebilir."""
-    jobs = await service.list_jobs(db, status=status, module_type=module_type, search=search, include_test_data=include_test_data, owner_id=owner_id)
+    """İş listesini döndürür. Non-admin: daima ctx.user_id; admin: owner_id override serbest."""
+    # PHASE X ownership: non-admin her zaman kendi verisi
+    effective_owner_id = owner_id if ctx.is_admin else ctx.user_id
+    jobs = await service.list_jobs(
+        db,
+        status=status,
+        module_type=module_type,
+        search=search,
+        include_test_data=include_test_data,
+        owner_id=effective_owner_id,
+        content_project_id=content_project_id,
+    )
     result = []
     for job in jobs:
         job_data = await _build_job_response(db, job)
@@ -91,7 +124,11 @@ async def list_jobs(
 
 
 @router.get("/{job_id}/artifacts")
-async def get_job_artifacts(job_id: str, db: AsyncSession = Depends(get_db)):
+async def get_job_artifacts(
+    job_id: str,
+    ctx: UserContext = Depends(get_current_user_context),
+    db: AsyncSession = Depends(get_db),
+):
     """
     Belirtilen iş için workspace/artifacts/ dizinindeki dosyaları listeler.
 
@@ -107,6 +144,7 @@ async def get_job_artifacts(job_id: str, db: AsyncSession = Depends(get_db)):
     job = await service.get_job(db, job_id)
     if not job:
         raise HTTPException(status_code=404, detail="İş bulunamadı")
+    _enforce_job_ownership(ctx, job)
 
     # M42: job.workspace_path varsa onu kullan (user-scoped olabilir), yoksa global fallback
     if getattr(job, "workspace_path", None) and str(job.workspace_path).strip():
@@ -157,7 +195,12 @@ def _resolve_media_type(file_path: Path) -> str:
 
 
 @router.get("/{job_id}/artifacts/{file_path:path}")
-async def serve_job_artifact(job_id: str, file_path: str, db: AsyncSession = Depends(get_db)):
+async def serve_job_artifact(
+    job_id: str,
+    file_path: str,
+    ctx: UserContext = Depends(get_current_user_context),
+    db: AsyncSession = Depends(get_db),
+):
     """
     Serve a job artifact file (video, image, audio, json, etc.).
 
@@ -171,6 +214,7 @@ async def serve_job_artifact(job_id: str, file_path: str, db: AsyncSession = Dep
     job = await service.get_job(db, job_id)
     if not job:
         raise HTTPException(status_code=404, detail="İş bulunamadı")
+    _enforce_job_ownership(ctx, job)
 
     # Resolve workspace root for this job (user-scoped or global)
     if getattr(job, "workspace_path", None) and str(job.workspace_path).strip():
@@ -198,7 +242,11 @@ async def serve_job_artifact(job_id: str, file_path: str, db: AsyncSession = Dep
 
 
 @router.get("/{job_id}/content-ref")
-async def get_job_content_ref(job_id: str, db: AsyncSession = Depends(get_db)):
+async def get_job_content_ref(
+    job_id: str,
+    ctx: UserContext = Depends(get_current_user_context),
+    db: AsyncSession = Depends(get_db),
+):
     """
     Bir job'a bağlı içerik kaydını (NewsBulletin veya StandardVideo) döndürür.
 
@@ -218,6 +266,7 @@ async def get_job_content_ref(job_id: str, db: AsyncSession = Depends(get_db)):
     job = await service.get_job(db, job_id)
     if not job:
         raise HTTPException(status_code=404, detail="İş bulunamadı")
+    _enforce_job_ownership(ctx, job)
 
     module_type = job.module_type
 
@@ -262,11 +311,16 @@ async def get_job_content_ref(job_id: str, db: AsyncSession = Depends(get_db)):
 
 
 @router.get("/{job_id}", response_model=JobResponse)
-async def get_job(job_id: str, db: AsyncSession = Depends(get_db)):
+async def get_job(
+    job_id: str,
+    ctx: UserContext = Depends(get_current_user_context),
+    db: AsyncSession = Depends(get_db),
+):
     """Belirtilen işi adımlarıyla birlikte döndürür."""
     job = await service.get_job(db, job_id)
     if not job:
         raise HTTPException(status_code=404, detail="İş bulunamadı")
+    _enforce_job_ownership(ctx, job)
     return await _build_job_response(db, job)
 
 
@@ -274,24 +328,52 @@ async def get_job(job_id: str, db: AsyncSession = Depends(get_db)):
 async def create_job(
     payload: JobCreateRequest,
     request: Request,
+    ctx: UserContext = Depends(get_current_user_context),
     db: AsyncSession = Depends(get_db),
-    user_id: Optional[str] = Depends(get_active_user_id),
 ):
     """
     Yeni bir iş yarat, adımları başlat ve pipeline'ı tetikle.
 
     İşlem sırası:
-      1. InputNormalizer ile modül varlığını ve zorunlu alanları doğrula.
-      2. Normalize edilmiş input'u JSON'a serileştir.
-      3. JobCreate ile DB'ye job kaydet.
-      4. initialize_job_steps ile adımları ve workspace'i hazırla.
-      5. JobDispatcher aracılığıyla pipeline'ı arka planda başlat.
-      6. Job + adımlarla birlikte 201 dön.
+      1. PHASE X ownership: content_project_id / channel_profile_id ownership
+         dogrulamasi (non-admin yalniz kendi kaynagini kullanabilir).
+      2. InputNormalizer ile modül varlığını ve zorunlu alanları doğrula.
+      3. Normalize edilmiş input'u JSON'a serileştir.
+      4. JobCreate ile DB'ye job kaydet (owner_id = ctx.user_id).
+      5. initialize_job_steps ile adımları ve workspace'i hazırla.
+      6. JobDispatcher aracılığıyla pipeline'ı arka planda başlat.
+      7. Job + adımlarla birlikte 201 dön.
 
     Hatalar:
+      - 403: Belirtilen proje/kanal baska bir kullaniciya ait
+      - 404: Belirtilen proje/kanal bulunamadi
       - 422: Geçersiz dil kodu (Pydantic doğrulaması)
       - 422: Modül bulunamadı veya zorunlu alan eksik
     """
+    user_id = ctx.user_id  # PHASE X: owner her zaman kimlik dogrulanmis user
+
+    # PHASE X — project/channel ownership dogrulamasi
+    if payload.content_project_id:
+        project = await db.get(ContentProject, payload.content_project_id)
+        if project is None:
+            raise HTTPException(
+                status_code=404,
+                detail="Belirtilen icerik projesi bulunamadi",
+            )
+        ensure_owner_or_admin(
+            ctx, project.user_id, resource_label="Icerik projesi"
+        )
+    if payload.channel_profile_id:
+        channel = await db.get(ChannelProfile, payload.channel_profile_id)
+        if channel is None:
+            raise HTTPException(
+                status_code=404,
+                detail="Belirtilen kanal profili bulunamadi",
+            )
+        ensure_owner_or_admin(
+            ctx, channel.user_id, resource_label="Kanal profili"
+        )
+
     # Modül etkinlik kontrolü — service katmanında
     try:
         await service.check_module_enabled(db, payload.module_id)
@@ -342,15 +424,19 @@ async def create_job(
     # M42: user slug çözümle — workspace user-scoped olacak
     user_slug: Optional[str] = None
     if user_id:
-        from app.db.models import User
-        user_row = (await db.execute(select(User).where(User.id == user_id))).scalar_one_or_none()
+        user_row = (
+            await db.execute(select(User).where(User.id == user_id))
+        ).scalar_one_or_none()
         user_slug = user_row.slug if user_row else None
 
     # Job DB kaydı oluştur — M40a: owner_id from active user
+    # PHASE X: project/channel linkage JobCreate uzerinden propagate edilir
     job_create = JobCreate(
         module_type=payload.module_id,
         owner_id=user_id,
         input_data_json=json.dumps(normalized, ensure_ascii=False),
+        content_project_id=payload.content_project_id,
+        channel_profile_id=payload.channel_profile_id,
     )
     job = await service.create_job(db, job_create)
 
@@ -408,11 +494,21 @@ async def create_job(
 
 
 @router.post("/{job_id}/cancel", response_model=JobResponse)
-async def cancel_job(job_id: str, db: AsyncSession = Depends(get_db)):
+async def cancel_job(
+    job_id: str,
+    ctx: UserContext = Depends(get_current_user_context),
+    db: AsyncSession = Depends(get_db),
+):
     """
     İşi iptal et. Yalnızca terminal olmayan durumlardan (queued, running,
     waiting, retrying) iptal edilebilir.
     """
+    # PHASE X ownership gate
+    existing = await service.get_job(db, job_id)
+    if existing is None:
+        raise HTTPException(status_code=404, detail="İş bulunamadı")
+    _enforce_job_ownership(ctx, existing)
+
     try:
         job = await service.transition_job_status(db, job_id, "cancelled")
     except JobNotFoundError:
@@ -513,6 +609,7 @@ async def _rerun_job(
 async def retry_job(
     job_id: str,
     request: Request,
+    ctx: UserContext = Depends(get_current_user_context),
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -522,6 +619,7 @@ async def retry_job(
     job = await service.get_job(db, job_id)
     if job is None:
         raise HTTPException(status_code=404, detail="İş bulunamadı")
+    _enforce_job_ownership(ctx, job)
     if job.status != "failed":
         raise HTTPException(
             status_code=409,
@@ -534,6 +632,7 @@ async def retry_job(
 async def clone_job(
     job_id: str,
     request: Request,
+    ctx: UserContext = Depends(get_current_user_context),
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -543,6 +642,7 @@ async def clone_job(
     job = await service.get_job(db, job_id)
     if job is None:
         raise HTTPException(status_code=404, detail="İş bulunamadı")
+    _enforce_job_ownership(ctx, job)
     if not service.is_job_terminal(job.status):
         raise HTTPException(
             status_code=409,
@@ -560,7 +660,10 @@ async def clone_job(
 
 @router.post("/{job_id}/steps/{step_key}/skip", response_model=JobResponse)
 async def skip_step(
-    job_id: str, step_key: str, db: AsyncSession = Depends(get_db),
+    job_id: str,
+    step_key: str,
+    ctx: UserContext = Depends(get_current_user_context),
+    db: AsyncSession = Depends(get_db),
 ):
     """
     Belirtilen step'i atla. Yalnızca 'pending' durumundaki ve
@@ -582,6 +685,7 @@ async def skip_step(
     job = await service.get_job(db, job_id)
     if job is None:
         raise HTTPException(status_code=404, detail="İş bulunamadı")
+    _enforce_job_ownership(ctx, job)
 
     try:
         await service.transition_step_status(db, job_id, step_key, "skipped")
@@ -602,7 +706,11 @@ async def skip_step(
 
 
 @router.get("/{job_id}/allowed-actions")
-async def get_allowed_actions(job_id: str, db: AsyncSession = Depends(get_db)):
+async def get_allowed_actions(
+    job_id: str,
+    ctx: UserContext = Depends(get_current_user_context),
+    db: AsyncSession = Depends(get_db),
+):
     """
     Mevcut duruma göre izin verilen aksiyonları döndürür.
     UI tarafında butonların enabled/disabled durumunu belirlemek için kullanılır.
@@ -610,6 +718,7 @@ async def get_allowed_actions(job_id: str, db: AsyncSession = Depends(get_db)):
     job = await service.get_job(db, job_id)
     if job is None:
         raise HTTPException(status_code=404, detail="İş bulunamadı")
+    _enforce_job_ownership(ctx, job)
 
     actions = {
         "can_cancel": job.status in ("queued", "running", "waiting", "retrying"),
@@ -645,6 +754,7 @@ class _BulkArchiveTestDataRequest(BaseModel):
 @router.post("/mark-test-data")
 async def mark_jobs_as_test_data(
     payload: _MarkTestDataRequest,
+    _admin: User = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -652,6 +762,8 @@ async def mark_jobs_as_test_data(
 
     Bu kayıtlar silinmez — varsayılan is listesinden gizlenir.
     Admin panelinden include_test_data=true ile görüntülenebilir.
+    PHASE X: admin-only — user'lar kendi job'larini bile test data olarak
+    isaretleyemez, bu bulk operasyon admin otoritesindedir.
     """
     marked_count = await service.mark_jobs_as_test_data(db, payload.job_ids)
     return {"marked_count": marked_count}
@@ -660,6 +772,7 @@ async def mark_jobs_as_test_data(
 @router.post("/bulk-archive-test-data")
 async def bulk_archive_test_jobs(
     payload: _BulkArchiveTestDataRequest,
+    _admin: User = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
 ):
     """
