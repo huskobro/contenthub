@@ -50,6 +50,18 @@ import {
   TEST_PROPS,
 } from "./compositions/NewsBulletinStyleTest";
 import type { BulletinStyle } from "./templates/news-bulletin/components/StudioBackground";
+import {
+  ProductReviewComposition,
+  type ProductReviewProps,
+} from "./compositions/ProductReviewComposition";
+import {
+  ProductReviewPreviewFrame,
+  type ProductReviewPreviewFrameProps,
+} from "./compositions/ProductReviewPreviewFrame";
+import {
+  ProductReviewMini,
+  type ProductReviewMiniProps,
+} from "./compositions/ProductReviewMini";
 
 const FPS = 60;
 
@@ -65,6 +77,15 @@ const NewsBulletinComponent =
 
 const NewsBulletinTestComponent =
   NewsBulletinStyleTestComposition as unknown as React.ComponentType<Record<string, unknown>>;
+
+const ProductReviewComponent =
+  ProductReviewComposition as unknown as React.ComponentType<Record<string, unknown>>;
+
+const ProductReviewPreviewComponent =
+  ProductReviewPreviewFrame as unknown as React.ComponentType<Record<string, unknown>>;
+
+const ProductReviewMiniComponent =
+  ProductReviewMini as unknown as React.ComponentType<Record<string, unknown>>;
 
 // 9 test stil ID listesi
 const BULLETIN_TEST_STYLES: BulletinStyle[] = [
@@ -113,6 +134,92 @@ const defaultPreviewFrameProps: PreviewFrameProps = {
   image_path: null,
   subtitle_style: defaultStandardVideoProps.subtitle_style,
   sample_text: "Önizleme",
+};
+
+// ---------------------------------------------------------------------------
+// ProductReview defaultProps (Faz C)
+// ---------------------------------------------------------------------------
+
+const defaultProductReviewBlueprint = {
+  blueprint_id: "product_review_v1",
+  version: 1,
+  tone: "electric",
+  accentOverride: null,
+  showWatermark: false,
+  watermarkText: null,
+  showPriceDisclaimerOverlay: true,
+  priceDisclaimerText: "Fiyatlar video kayit anina aittir; degisebilir.",
+};
+
+const defaultProductReviewProps: ProductReviewProps = {
+  template_type: "single",
+  orientation: "vertical",
+  language: "tr",
+  duration_seconds: 60,
+  scenes: [
+    { scene_id: "s1", scene_key: "intro_hook", duration_ms: 4000 },
+    { scene_id: "s2", scene_key: "hero_card", duration_ms: 8000 },
+    { scene_id: "s3", scene_key: "price_reveal", duration_ms: 5000 },
+    { scene_id: "s4", scene_key: "feature_callout", duration_ms: 5000 },
+    { scene_id: "s5", scene_key: "pros_cons", duration_ms: 8000 },
+    { scene_id: "s6", scene_key: "verdict_card", duration_ms: 6000 },
+    { scene_id: "s7", scene_key: "cta_outro", duration_ms: 4000 },
+  ],
+  products: [
+    {
+      product_id: "DEMO-1",
+      name: "Demo Product",
+      brand: "ContentHub",
+      price: null,
+      currency: "TRY",
+      image_url: null,
+    },
+  ],
+  primary_product_id: "DEMO-1",
+  secondary_product_ids: [],
+  metadata: {
+    title: "Demo Product Review",
+    description: "",
+    tags: [],
+    legal: {
+      disclosure_applied: true,
+      disclosure_source: "default_tr",
+      disclaimer_applied: true,
+      affiliate_enabled: false,
+      affiliate_url_included: false,
+      tos_checkbox_required: true,
+    },
+  },
+  visuals: {
+    primary_image_url: "",
+    secondary_image_urls: [],
+    fallback_bg_color: "#050818",
+  },
+  blueprint: defaultProductReviewBlueprint,
+};
+
+const defaultProductReviewPreviewProps: ProductReviewPreviewFrameProps = {
+  scene_key: "hero_card",
+  scene_duration_ms: 1000,
+  products: defaultProductReviewProps.products,
+  primary_product_id: defaultProductReviewProps.primary_product_id,
+  secondary_product_ids: [],
+  metadata: defaultProductReviewProps.metadata,
+  orientation: "vertical",
+  language: "tr",
+  blueprint: defaultProductReviewBlueprint,
+  visuals: defaultProductReviewProps.visuals,
+};
+
+const defaultProductReviewMiniProps: ProductReviewMiniProps = {
+  ...defaultProductReviewProps,
+  duration_seconds: 10,
+  scenes: [
+    { scene_id: "s1", scene_key: "intro_hook", duration_ms: 2500 },
+    { scene_id: "s2", scene_key: "hero_card", duration_ms: 3500 },
+    { scene_id: "s3", scene_key: "price_reveal", duration_ms: 2500 },
+    { scene_id: "s4", scene_key: "cta_outro", duration_ms: 1500 },
+  ],
 };
 
 // ---------------------------------------------------------------------------
@@ -228,6 +335,96 @@ export function RemotionRoot() {
         defaultProps={
           defaultPreviewFrameProps as unknown as Record<string, unknown>
         }
+      />
+
+      {/* ProductReview — final render composition (Faz C) */}
+      <Composition
+        id="ProductReview"
+        component={ProductReviewComponent}
+        durationInFrames={FPS * 60}
+        fps={FPS}
+        width={1080}
+        height={1920}
+        defaultProps={
+          defaultProductReviewProps as unknown as Record<string, unknown>
+        }
+        calculateMetadata={async ({ props }) => {
+          const typed = props as unknown as ProductReviewProps;
+          const rawSeconds = typed.duration_seconds;
+          const FALLBACK = 60;
+          const totalSeconds =
+            typeof rawSeconds === "number" && rawSeconds > 0 ? rawSeconds : FALLBACK;
+          // Scene toplamini da hesaba kat — en az uygun frame sayisini ver
+          const sceneMs = (typed.scenes || []).reduce(
+            (acc, s) => acc + (typeof s.duration_ms === "number" && s.duration_ms > 0 ? s.duration_ms : 0),
+            0,
+          );
+          const sceneSeconds = sceneMs / 1000;
+          const effectiveSeconds = Math.max(totalSeconds, sceneSeconds || totalSeconds);
+          const isVertical = typed.orientation !== "horizontal";
+          return {
+            durationInFrames: Math.max(1, Math.round(effectiveSeconds * FPS)),
+            fps: FPS,
+            width: isVertical ? 1080 : 1920,
+            height: isVertical ? 1920 : 1080,
+          };
+        }}
+      />
+
+      {/* ProductReviewPreviewFrame — renderStill L1 (Faz C) */}
+      <Composition
+        id="ProductReviewPreviewFrame"
+        component={ProductReviewPreviewComponent}
+        durationInFrames={1}
+        fps={FPS}
+        width={1080}
+        height={1920}
+        defaultProps={
+          defaultProductReviewPreviewProps as unknown as Record<string, unknown>
+        }
+        calculateMetadata={async ({ props }) => {
+          const typed = props as unknown as ProductReviewPreviewFrameProps;
+          const isVertical = typed.orientation !== "horizontal";
+          return {
+            durationInFrames: 1,
+            fps: FPS,
+            width: isVertical ? 1080 : 1920,
+            height: isVertical ? 1920 : 1080,
+          };
+        }}
+      />
+
+      {/* ProductReviewMini — L2 kisa MP4 (Faz C) */}
+      <Composition
+        id="ProductReviewMini"
+        component={ProductReviewMiniComponent}
+        durationInFrames={FPS * 10}
+        fps={FPS}
+        width={1080}
+        height={1920}
+        defaultProps={
+          defaultProductReviewMiniProps as unknown as Record<string, unknown>
+        }
+        calculateMetadata={async ({ props }) => {
+          const typed = props as unknown as ProductReviewMiniProps;
+          const rawSeconds = typed.duration_seconds;
+          const FALLBACK = 10;
+          const totalSeconds =
+            typeof rawSeconds === "number" && rawSeconds > 0 ? rawSeconds : FALLBACK;
+          const sceneMs = (typed.scenes || []).reduce(
+            (acc, s) => acc + (typeof s.duration_ms === "number" && s.duration_ms > 0 ? s.duration_ms : 0),
+            0,
+          );
+          const sceneSeconds = sceneMs / 1000;
+          const effectiveSeconds = Math.max(totalSeconds, sceneSeconds || totalSeconds);
+          const isVertical = typed.orientation !== "horizontal";
+          return {
+            durationInFrames: Math.max(1, Math.round(effectiveSeconds * FPS)),
+            fps: FPS,
+            width: isVertical ? 1080 : 1920,
+            height: isVertical ? 1920 : 1080,
+          };
+        }}
       />
 
       {/* ── Stil Test Composition'ları (9 stil × 16:9) ─────────────────────

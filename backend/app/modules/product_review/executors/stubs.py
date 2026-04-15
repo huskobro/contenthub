@@ -11,6 +11,9 @@ implementasyona tasindi. Bu dosyada hala stub olan executor'lar kalir:
 
 Her stub StepExecutor'dan turer, `step_key()` dondurur ve `execute()`
 cagrildiginda StepExecutionError firlatir.
+
+Faz C sonrasinda preview_frame ve preview_mini gercek implementasyona
+tasindi: executors/preview_frame.py + executors/preview_mini.py.
 """
 
 from __future__ import annotations
@@ -63,16 +66,6 @@ class ProductReviewSubtitleStepExecutor(_ProductReviewStubBase):
 class ProductReviewRenderStepExecutor(_ProductReviewStubBase):
     _step_key = "render"
     _phase = "Faz C (standard_video RenderStepExecutor adaptor)"
-
-
-class ProductReviewPreviewFrameExecutor(_ProductReviewStubBase):
-    _step_key = "preview_frame"
-    _phase = "Faz C (Level 1 — renderStill)"
-
-
-class ProductReviewPreviewMiniExecutor(_ProductReviewStubBase):
-    _step_key = "preview_mini"
-    _phase = "Faz C (Level 2 — mini MP4)"
 
 
 class ProductReviewPublishStepExecutor(_ProductReviewStubBase):

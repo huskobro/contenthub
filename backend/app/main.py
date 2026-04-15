@@ -155,6 +155,18 @@ async def lifespan(app: FastAPI):
         if wiz_count > 0:
             logger.info("WizardConfig seed: %d yeni wizard config eklendi.", wiz_count)
 
+    # Faz C: Product Review style blueprint seed (product_review_v1)
+    from app.modules.product_review.blueprint_seed import (
+        seed_product_review_blueprints,
+    )
+    async with AsyncSessionLocal() as pr_bp_db:
+        pr_bp_count = await seed_product_review_blueprints(pr_bp_db)
+        if pr_bp_count > 0:
+            logger.info(
+                "StyleBlueprint seed (product_review): %d yeni blueprint eklendi.",
+                pr_bp_count,
+            )
+
     # Credential + ayar cozumleme — DB -> .env -> builtin (M9-A / M10-B)
     async with AsyncSessionLocal() as cred_db:
         kie_ai_key = await resolve_credential("credential.kie_ai_api_key", cred_db) or settings.kie_ai_api_key

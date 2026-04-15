@@ -38,14 +38,18 @@ from app.modules.product_review.executors.visuals import (
 from app.modules.product_review.executors.composition import (
     ProductReviewCompositionStepExecutor,
 )
+from app.modules.product_review.executors.preview_frame import (
+    ProductReviewPreviewFrameExecutor,
+)
+from app.modules.product_review.executors.preview_mini import (
+    ProductReviewPreviewMiniExecutor,
+)
 
-# Henuz stub olan executor'lar — Faz C/D/F'te gercek olacak.
+# Henuz stub olan executor'lar — Faz F'te gercek olacak.
 from app.modules.product_review.executors.stubs import (
     ProductReviewTTSStepExecutor,
     ProductReviewSubtitleStepExecutor,
     ProductReviewRenderStepExecutor,
-    ProductReviewPreviewFrameExecutor,
-    ProductReviewPreviewMiniExecutor,
     ProductReviewPublishStepExecutor,
 )
 
