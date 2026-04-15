@@ -31,11 +31,12 @@ async def _create_bulletin(client: AsyncClient) -> str:
 
 
 async def _create_news_item(client: AsyncClient) -> str:
+    """Gate Sources Closure — status artik yalnizca new/used/ignored."""
     payload = {
         "title": f"News Item {_uid()}",
         "url": f"https://example.com/news/{_uid()}",
         "source_id": None,
-        "status": "pending",
+        "status": "new",
     }
     resp = await client.post(NEWS_ITEMS_BASE, json=payload)
     assert resp.status_code == 201

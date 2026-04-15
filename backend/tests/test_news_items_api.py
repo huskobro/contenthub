@@ -79,8 +79,13 @@ async def test_list_news_items(client: AsyncClient):
     await client.post(BASE, json={"title": f"Item {_uid()}", "url": _url(), "status": "new"})
     resp = await client.get(BASE)
     assert resp.status_code == 200
-    assert isinstance(resp.json(), list)
-    assert len(resp.json()) >= 1
+    # Gate Sources Closure — pagination envelope
+    data = resp.json()
+    assert isinstance(data, dict)
+    assert "items" in data
+    assert "total" in data
+    assert isinstance(data["items"], list)
+    assert data["total"] >= 1
 
 
 # ---------------------------------------------------------------------------
@@ -101,14 +106,15 @@ async def test_get_news_item_by_id(client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_update_news_item(client: AsyncClient):
+    """Gate Sources Closure — status artik yalnizca new/used/ignored. 'reviewed' KALKTI."""
     created = (await client.post(BASE, json={"title": f"Update {_uid()}", "url": _url(), "status": "new"})).json()
     resp = await client.patch(
         f"{BASE}/{created['id']}",
-        json={"status": "reviewed", "summary": "Short summary"},
+        json={"status": "used", "summary": "Short summary"},
     )
     assert resp.status_code == 200
     data = resp.json()
-    assert data["status"] == "reviewed"
+    assert data["status"] == "used"
     assert data["summary"] == "Short summary"
 
 
@@ -179,7 +185,7 @@ async def test_get_news_item_not_found(client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_update_news_item_not_found(client: AsyncClient):
-    resp = await client.patch(f"{BASE}/{uuid.uuid4().hex}", json={"status": "reviewed"})
+    resp = await client.patch(f"{BASE}/{uuid.uuid4().hex}", json={"status": "used"})
     assert resp.status_code == 404
 
 
@@ -193,7 +199,8 @@ async def test_filter_by_status(client: AsyncClient):
     await client.patch(f"{BASE}/{created['id']}", json={"status": "used"})
     resp = await client.get(f"{BASE}?status=used")
     assert resp.status_code == 200
-    items = resp.json()
+    # Gate Sources Closure — pagination envelope
+    items = resp.json()["items"]
     assert len(items) >= 1
     assert all(item["status"] == "used" for item in items)
 
@@ -208,6 +215,7 @@ async def test_filter_by_source_id(client: AsyncClient):
     await client.post(BASE, json={"title": f"Src Filter {_uid()}", "url": _url(), "status": "new", "source_id": sid})
     resp = await client.get(f"{BASE}?source_id={sid}")
     assert resp.status_code == 200
-    items = resp.json()
+    # Gate Sources Closure — pagination envelope
+    items = resp.json()["items"]
     assert len(items) >= 1
     assert all(item["source_id"] == sid for item in items)

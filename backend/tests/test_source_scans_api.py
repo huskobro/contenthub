@@ -86,8 +86,13 @@ async def test_list_scans(client: AsyncClient):
     await client.post(BASE, json={"source_id": source_id, "scan_mode": "manual"})
     resp = await client.get(BASE)
     assert resp.status_code == 200
-    assert isinstance(resp.json(), list)
-    assert len(resp.json()) >= 1
+    # Gate Sources Closure — pagination envelope
+    data = resp.json()
+    assert isinstance(data, dict)
+    assert "items" in data
+    assert "total" in data
+    assert isinstance(data["items"], list)
+    assert data["total"] >= 1
 
 
 # ---------------------------------------------------------------------------
@@ -178,7 +183,8 @@ async def test_filter_by_source_id(client: AsyncClient):
     await client.post(BASE, json={"source_id": source_id, "scan_mode": "manual"})
     resp = await client.get(f"{BASE}?source_id={source_id}")
     assert resp.status_code == 200
-    items = resp.json()
+    # Gate Sources Closure — pagination envelope
+    items = resp.json()["items"]
     assert len(items) >= 1
     assert all(item["source_id"] == source_id for item in items)
 
@@ -194,7 +200,8 @@ async def test_filter_by_status(client: AsyncClient):
     await client.patch(f"{BASE}/{created['id']}", json={"status": "failed"})
     resp = await client.get(f"{BASE}?status=failed")
     assert resp.status_code == 200
-    items = resp.json()
+    # Gate Sources Closure — pagination envelope
+    items = resp.json()["items"]
     assert len(items) >= 1
     assert all(item["status"] == "failed" for item in items)
 
