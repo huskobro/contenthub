@@ -22,14 +22,27 @@ Tum stub'lar StepExecutionError firlatir — modul tanimi yuklenirken
 patlamaz ama tetiklenirse acik hata verir.
 """
 
-from app.modules.product_review.executors.stubs import (
+# Gercek implementasyonlar (Faz B+) — stub yerine bunlar kullanilir.
+from app.modules.product_review.executors.product_scrape import (
     ProductScrapeStepExecutor,
+)
+from app.modules.product_review.executors.script import (
     ProductReviewScriptStepExecutor,
+)
+from app.modules.product_review.executors.metadata import (
     ProductReviewMetadataStepExecutor,
-    ProductReviewTTSStepExecutor,
+)
+from app.modules.product_review.executors.visuals import (
     ProductReviewVisualsStepExecutor,
-    ProductReviewSubtitleStepExecutor,
+)
+from app.modules.product_review.executors.composition import (
     ProductReviewCompositionStepExecutor,
+)
+
+# Henuz stub olan executor'lar — Faz C/D/F'te gercek olacak.
+from app.modules.product_review.executors.stubs import (
+    ProductReviewTTSStepExecutor,
+    ProductReviewSubtitleStepExecutor,
     ProductReviewRenderStepExecutor,
     ProductReviewPreviewFrameExecutor,
     ProductReviewPreviewMiniExecutor,

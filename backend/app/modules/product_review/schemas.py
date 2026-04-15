@@ -67,6 +67,27 @@ class ProductResponse(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class ProductListResponse(BaseModel):
+    items: List[ProductResponse]
+    total: int
+    offset: int
+    limit: int
+
+
+class ProductScrapeTriggerResponse(BaseModel):
+    status: Literal["ok", "failed"]
+    product_id: str
+    parser_source: Optional[str] = None
+    confidence: Optional[float] = None
+    price: Optional[float] = None
+    currency: Optional[str] = None
+    primary_image_url: Optional[str] = None
+    name: Optional[str] = None
+    snapshot_id: Optional[str] = None
+    snapshot_created: Optional[bool] = None
+    error: Optional[str] = None
+
+
 # ---------------------------------------------------------------------------
 # ProductSnapshot
 # ---------------------------------------------------------------------------

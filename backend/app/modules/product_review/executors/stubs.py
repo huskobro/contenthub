@@ -1,18 +1,16 @@
 """
-Product Review executor STUB'lari (Faz A iskeleti).
+Product Review — kalan STUB executor'lar.
+
+Faz B'de Script / Metadata / Visuals / Composition / ProductScrape gercek
+implementasyona tasindi. Bu dosyada hala stub olan executor'lar kalir:
+
+  Faz C  — PreviewFrame, PreviewMini
+  Faz F  — Publish
+  TTS / Subtitle / Render — standard_video executor'lari yeniden kullanilacak
+            (Faz C/D baglaninda adaptor eklenir).
 
 Her stub StepExecutor'dan turer, `step_key()` dondurur ve `execute()`
-cagrildiginda StepExecutionError firlatir. Bu sayede:
-  - ModuleDefinition kayit olurken import hatasi yok.
-  - Pipeline tetiklenirse anlik ve acik hata: "Faz B'de doldurulacak".
-  - "yarim birakma" kurali ihlal edilmez: iskelet KASITLI, dokumante edilmis.
-
-Gercek implementasyonlar:
-  Faz B  — Scrape, Script(single), Metadata, Visuals, Composition
-  Faz C  — PreviewFrame, PreviewMini
-  Faz D  — Script/Composition template dallari (comparison, alternatives)
-  Faz F  — Publish
-  TTS + Subtitle + Render — standard_video executor'lari yeniden kullanilacak.
+cagrildiginda StepExecutionError firlatir.
 """
 
 from __future__ import annotations
@@ -23,7 +21,7 @@ from app.jobs.exceptions import StepExecutionError
 
 
 class _ProductReviewStubBase(StepExecutor):
-    """Tum product_review stub executor'larinin ortak gövdesi."""
+    """Tum product_review stub executor'larinin ortak govdesi."""
 
     _step_key: str = ""
     _phase: str = "Faz B"
@@ -42,44 +40,29 @@ class _ProductReviewStubBase(StepExecutor):
         )
 
 
-class ProductScrapeStepExecutor(_ProductReviewStubBase):
-    _step_key = "product_scrape"
-    _phase = "Faz B"
-
-
-class ProductReviewScriptStepExecutor(_ProductReviewStubBase):
-    _step_key = "script"
-    _phase = "Faz B"
-
-
-class ProductReviewMetadataStepExecutor(_ProductReviewStubBase):
-    _step_key = "metadata"
-    _phase = "Faz B"
+# ---------------------------------------------------------------------------
+# Hala stub olanlar — Faz C/F'te gercek olacak.
+# NOT: ProductScrapeStepExecutor → product_scrape.py
+#      ProductReviewScriptStepExecutor → script.py
+#      ProductReviewMetadataStepExecutor → metadata.py
+#      ProductReviewVisualsStepExecutor → visuals.py
+#      ProductReviewCompositionStepExecutor → composition.py
+# ---------------------------------------------------------------------------
 
 
 class ProductReviewTTSStepExecutor(_ProductReviewStubBase):
     _step_key = "tts"
-    _phase = "Faz B (standard_video TTSStepExecutor reuse)"
-
-
-class ProductReviewVisualsStepExecutor(_ProductReviewStubBase):
-    _step_key = "visuals"
-    _phase = "Faz B"
+    _phase = "Faz C (standard_video TTSStepExecutor adaptor)"
 
 
 class ProductReviewSubtitleStepExecutor(_ProductReviewStubBase):
     _step_key = "subtitle"
-    _phase = "Faz B (standard_video SubtitleStepExecutor reuse)"
-
-
-class ProductReviewCompositionStepExecutor(_ProductReviewStubBase):
-    _step_key = "composition"
-    _phase = "Faz B"
+    _phase = "Faz C (standard_video SubtitleStepExecutor adaptor)"
 
 
 class ProductReviewRenderStepExecutor(_ProductReviewStubBase):
     _step_key = "render"
-    _phase = "Faz B (standard_video RenderStepExecutor reuse)"
+    _phase = "Faz C (standard_video RenderStepExecutor adaptor)"
 
 
 class ProductReviewPreviewFrameExecutor(_ProductReviewStubBase):
