@@ -52,5 +52,12 @@ async def record_analytics_view(
             actor_id=actor_id,
             details={"filters": filters or {}},
         )
+        # Analytics endpoints are read-only — nothing else commits the
+        # transaction — so we commit here. write_audit_log only flush'd.
+        await db.commit()
     except Exception as exc:  # noqa: BLE001 — defensive safety net
         logger.warning("Analytics audit write failed for kind=%s: %s", report_kind, exc)
+        try:
+            await db.rollback()
+        except Exception:
+            pass
