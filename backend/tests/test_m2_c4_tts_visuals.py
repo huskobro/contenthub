@@ -101,23 +101,37 @@ def _make_tts_provider(duration_seconds: float = 5.0) -> MagicMock:
     return mock
 
 
-def _make_mock_registry() -> MagicMock:
-    """ProviderRegistry mock'u döndürür — TTSStepExecutor için."""
-    return MagicMock(spec=ProviderRegistry)
+def _make_mock_registry(primary_provider_id: str = "edge_tts") -> MagicMock:
+    """
+    ProviderRegistry mock'u döndürür — TTSStepExecutor için.
+
+    Faz 2: Executor primary'i belirlemek icin registry.get_primary(TTS).provider_id()
+    cagiriyor. Bu yardimci varsayilan olarak 'edge_tts' donduruyor — boylece
+    eski Edge TTS voice_map testleri (AhmetNeural, ChristopherNeural) gecerli
+    kalir. DubVoice yolunu test etmek icin primary_provider_id='dubvoice'
+    gecilebilir.
+    """
+    reg = MagicMock(spec=ProviderRegistry)
+    primary = MagicMock()
+    primary.provider_id = MagicMock(return_value=primary_provider_id)
+    reg.get_primary = MagicMock(return_value=primary)
+    return reg
 
 
 def _make_tts_patch(tts_mock: MagicMock):
     """
-    resolve_and_invoke'u patch etmek için context manager döndürür.
+    resolve_tts_strict'i patch etmek için context manager döndürür.
 
-    resolve_and_invoke(registry, capability, input_data) imzasını sararak
-    tts_mock.invoke(input_data) çağrısına dönüştürür.
+    (Faz 2 — SABIT): Eski resolve_and_invoke YERINE resolve_tts_strict
+    kullaniliyor. Auto-fallback yok. Mock imzasi:
+      resolve_tts_strict(registry, input_data, *, explicit_provider_id=None,
+                         allowed_fallback_provider_ids=None)
     """
-    async def _side_effect(registry, capability, input_data):
+    async def _side_effect(registry, input_data, **kwargs):
         return await tts_mock.invoke(input_data)
 
     return patch(
-        "app.modules.standard_video.executors.tts.resolve_and_invoke",
+        "app.modules.standard_video.executors.tts.resolve_tts_strict",
         new=AsyncMock(side_effect=_side_effect),
     )
 
@@ -199,7 +213,7 @@ class TestTTSStepExecutor:
 
     @pytest.mark.asyncio
     async def test_edge_tts_communicate_cagrilir(self):
-        """resolve_and_invoke doğru voice ile çağrılıyor mu."""
+        """resolve_tts_strict dogru voice ile cagriliyor mu (Edge TTS yolu)."""
         with tempfile.TemporaryDirectory() as tmpdir:
             job_id = "test-tts-1"
             workspace_root = str(Path(tmpdir) / job_id)
@@ -212,14 +226,16 @@ class TestTTSStepExecutor:
             step = _make_step()
 
             with _make_tts_patch(tts_mock) as mock_resolve:
-                executor = TTSStepExecutor(registry=_make_mock_registry())
+                # Edge TTS primary olarak isaretlenmis mock registry
+                executor = TTSStepExecutor(registry=_make_mock_registry("edge_tts"))
                 await executor.execute(job, step)
 
-                # resolve_and_invoke çağrıldı mı
+                # resolve_tts_strict cagrildi mi
                 assert mock_resolve.call_count == 1
-                call_input = mock_resolve.call_args[0][2]
+                # Positional args: (registry, tts_input)
+                call_input = mock_resolve.call_args[0][1]
                 assert call_input["text"] == "Merhaba dünya."
-                # Ses TR için AhmetNeural olmalı
+                # Edge TTS yolunda 'voice' alani gelir
                 assert call_input["voice"] == "tr-TR-AhmetNeural"
 
     @pytest.mark.asyncio

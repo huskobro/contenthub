@@ -96,6 +96,20 @@ JOB_INPUT = {
 }
 
 
+def _edge_tts_registry():
+    """
+    Faz 2 sonrasi TTSStepExecutor registry'den primary provider_id cekiyor.
+    Bu testler Edge TTS voice override davranisini test ettiginden, registry
+    mock'u 'edge_tts' provider_id donmeli — boylece executor Edge TTS dalina
+    girer ve 'voice' alani override ile dolar.
+    """
+    reg = MagicMock()
+    primary = MagicMock()
+    primary.provider_id = MagicMock(return_value="edge_tts")
+    reg.get_primary = MagicMock(return_value=primary)
+    return reg
+
+
 class TestTTSTemplateContext:
     """TTS executor template context consumption tests."""
 
@@ -105,13 +119,13 @@ class TestTTSTemplateContext:
         job = _make_mock_job(JOB_INPUT, template_ctx=TEMPLATE_CTX_WITH_VOICE)
         step = _make_mock_step()
 
-        registry = MagicMock()
+        registry = _edge_tts_registry()
         executor = TTSStepExecutor(registry=registry)
 
         with patch("app.modules.standard_video.executors.tts._read_artifact") as mock_read, \
              patch("app.modules.standard_video.executors.tts._resolve_artifact_path") as mock_path, \
              patch("app.modules.standard_video.executors.tts._write_artifact") as mock_write, \
-             patch("app.modules.standard_video.executors.tts.resolve_and_invoke") as mock_invoke:
+             patch("app.modules.standard_video.executors.tts.resolve_tts_strict") as mock_invoke:
 
             # manifest does not exist → proceed with TTS
             mock_artifact_path = MagicMock()
@@ -139,7 +153,7 @@ class TestTTSTemplateContext:
             # Verify the TTS was called with overridden voice
             assert mock_invoke.called
             call_kwargs = mock_invoke.call_args
-            invoke_params = call_kwargs[0][2]  # third positional arg = params dict
+            invoke_params = call_kwargs[0][1]  # second positional arg = input dict
             assert invoke_params["voice"] == "tr-TR-EmelNeural"
 
             # Verify result voice is the overridden value
@@ -151,13 +165,13 @@ class TestTTSTemplateContext:
         job = _make_mock_job(JOB_INPUT)
         step = _make_mock_step()
 
-        registry = MagicMock()
+        registry = _edge_tts_registry()
         executor = TTSStepExecutor(registry=registry)
 
         with patch("app.modules.standard_video.executors.tts._read_artifact") as mock_read, \
              patch("app.modules.standard_video.executors.tts._resolve_artifact_path") as mock_path, \
              patch("app.modules.standard_video.executors.tts._write_artifact") as mock_write, \
-             patch("app.modules.standard_video.executors.tts.resolve_and_invoke") as mock_invoke:
+             patch("app.modules.standard_video.executors.tts.resolve_tts_strict") as mock_invoke:
 
             mock_artifact_path = MagicMock()
             mock_artifact_path.exists.return_value = False
@@ -185,13 +199,13 @@ class TestTTSTemplateContext:
         job = _make_mock_job(JOB_INPUT, template_ctx=TEMPLATE_CTX_NO_VOICE)
         step = _make_mock_step()
 
-        registry = MagicMock()
+        registry = _edge_tts_registry()
         executor = TTSStepExecutor(registry=registry)
 
         with patch("app.modules.standard_video.executors.tts._read_artifact") as mock_read, \
              patch("app.modules.standard_video.executors.tts._resolve_artifact_path") as mock_path, \
              patch("app.modules.standard_video.executors.tts._write_artifact") as mock_write, \
-             patch("app.modules.standard_video.executors.tts.resolve_and_invoke") as mock_invoke:
+             patch("app.modules.standard_video.executors.tts.resolve_tts_strict") as mock_invoke:
 
             mock_artifact_path = MagicMock()
             mock_artifact_path.exists.return_value = False
@@ -217,7 +231,7 @@ class TestTTSTemplateContext:
             # voice should NOT be overridden — default Turkish voice used
             assert mock_invoke.called
             call_kwargs = mock_invoke.call_args
-            invoke_params = call_kwargs[0][2]
+            invoke_params = call_kwargs[0][1]
             assert invoke_params["voice"] != "tr-TR-EmelNeural"
 
     @pytest.mark.asyncio
@@ -226,13 +240,13 @@ class TestTTSTemplateContext:
         job = _make_mock_job(JOB_INPUT, template_ctx=TEMPLATE_CTX_NO_BLUEPRINT)
         step = _make_mock_step()
 
-        registry = MagicMock()
+        registry = _edge_tts_registry()
         executor = TTSStepExecutor(registry=registry)
 
         with patch("app.modules.standard_video.executors.tts._read_artifact") as mock_read, \
              patch("app.modules.standard_video.executors.tts._resolve_artifact_path") as mock_path, \
              patch("app.modules.standard_video.executors.tts._write_artifact") as mock_write, \
-             patch("app.modules.standard_video.executors.tts.resolve_and_invoke") as mock_invoke:
+             patch("app.modules.standard_video.executors.tts.resolve_tts_strict") as mock_invoke:
 
             mock_artifact_path = MagicMock()
             mock_artifact_path.exists.return_value = False
