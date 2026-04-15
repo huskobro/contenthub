@@ -43,6 +43,14 @@ _CREDENTIAL_PROVIDER_MAP: dict[str, dict] = {
         "provider_id": "pixabay",
         "factory": "_make_pixabay_provider",
     },
+    # Faz 1 — DubVoice TTS primary
+    "credential.dubvoice_api_key": {
+        "capability": ProviderCapability.TTS,
+        "provider_id": "dubvoice",
+        "factory": "_make_dubvoice_provider",
+        "register_as_primary": True,
+        "register_priority": 0,
+    },
 }
 
 
@@ -97,12 +105,27 @@ def _make_pixabay_provider(api_key: str):
     )
 
 
+def _make_dubvoice_provider(api_key: str):
+    """Faz 1 — DubVoice primary TTS provider."""
+    from app.providers.tts.dubvoice_provider import DubVoiceProvider
+
+    return DubVoiceProvider(
+        api_key=api_key,
+        default_voice_id=_get_builtin("tts.default_voice.tr"),
+        default_model_id=_get_builtin("tts.dubvoice.default_model_id"),
+        poll_interval_s=_get_builtin("tts.dubvoice.poll_interval_seconds"),
+        poll_timeout_s=_get_builtin("tts.dubvoice.poll_timeout_seconds"),
+        http_timeout_s=_get_builtin("tts.dubvoice.http_timeout_seconds"),
+    )
+
+
 # Factory dispatch
 _FACTORIES = {
     "_make_kie_ai_provider": _make_kie_ai_provider,
     "_make_openai_compat_provider": _make_openai_compat_provider,
     "_make_pexels_provider": _make_pexels_provider,
     "_make_pixabay_provider": _make_pixabay_provider,
+    "_make_dubvoice_provider": _make_dubvoice_provider,
 }
 
 
@@ -164,16 +187,19 @@ async def reinitialize_provider_for_credential(key: str, value: str) -> dict:
         return {"key": key, "action": "replaced", "provider_id": new_pid}
 
     # Provider henuz kayitli degilse (ornegin openai key ilk kez giriliyor)
-    # Yeni olarak kaydet
+    # Yeni olarak kaydet. DubVoice icin register_as_primary=True — Faz 1.
+    register_as_primary = bool(mapping.get("register_as_primary", False))
+    register_priority = int(mapping.get("register_priority", 1))
     provider_registry.register(
         new_provider,
         capability,
-        is_primary=False,
-        priority=1,
+        is_primary=register_as_primary,
+        priority=register_priority,
     )
     logger.info(
-        "Yeni provider kaydedildi: capability=%s, provider_id=%s",
+        "Yeni provider kaydedildi: capability=%s, provider_id=%s, primary=%s",
         capability.value,
         new_pid,
+        register_as_primary,
     )
     return {"key": key, "action": "registered", "provider_id": new_pid}

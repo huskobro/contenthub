@@ -173,6 +173,8 @@ async def lifespan(app: FastAPI):
         openai_key = await resolve_credential("credential.openai_api_key", cred_db) or settings.openai_api_key
         pexels_key = await resolve_credential("credential.pexels_api_key", cred_db) or settings.pexels_api_key
         pixabay_key = await resolve_credential("credential.pixabay_api_key", cred_db) or settings.pixabay_api_key
+        # Faz 1 — DubVoice TTS primary
+        dubvoice_key = await resolve_credential("credential.dubvoice_api_key", cred_db) or ""
         # Provider ayarlarini resolver'dan oku (M10-B)
         openai_model = await resolve("provider.llm.openai_model", cred_db) or "gpt-4o-mini"
         # Provider settings from resolver (M11)
@@ -181,6 +183,12 @@ async def lifespan(app: FastAPI):
         openai_temperature = await resolve("provider.llm.openai_temperature", cred_db)
         llm_timeout = await resolve("provider.llm.timeout_seconds", cred_db)
         edge_voice = await resolve("provider.tts.edge_default_voice", cred_db)
+        # Faz 1 — DubVoice model/poll ayarlari
+        dubvoice_voice_tr = await resolve("tts.default_voice.tr", cred_db)
+        dubvoice_model_id = await resolve("tts.dubvoice.default_model_id", cred_db)
+        dubvoice_poll_interval = await resolve("tts.dubvoice.poll_interval_seconds", cred_db)
+        dubvoice_poll_timeout = await resolve("tts.dubvoice.poll_timeout_seconds", cred_db)
+        dubvoice_http_timeout = await resolve("tts.dubvoice.http_timeout_seconds", cred_db)
         pexels_count = await resolve("provider.visuals.pexels_default_count", cred_db)
         pixabay_count = await resolve("provider.visuals.pixabay_default_count", cred_db)
         search_timeout = await resolve("provider.visuals.search_timeout_seconds", cred_db)
@@ -215,20 +223,44 @@ async def lifespan(app: FastAPI):
     else:
         logger.info("OpenAI API key bos veya placeholder — LLM fallback kaydedilmedi.")
 
-    # TTS — primary: Microsoft Edge TTS
+    # TTS — Faz 1: DubVoice primary, Edge TTS explicit-fallback, System TTS test-only.
+    # DubVoice mutlaka kayit edilir — API key bos olsa bile slot acik durur ki
+    # credential sonradan kaydedildiginde replace_provider calisabilsin.
+    from app.providers.tts.dubvoice_provider import DubVoiceProvider
     provider_registry.register(
-        EdgeTTSProvider(default_voice=edge_voice),
+        DubVoiceProvider(
+            api_key=dubvoice_key,
+            default_voice_id=dubvoice_voice_tr,
+            default_model_id=dubvoice_model_id,
+            poll_interval_s=dubvoice_poll_interval,
+            poll_timeout_s=dubvoice_poll_timeout,
+            http_timeout_s=dubvoice_http_timeout,
+        ),
         ProviderCapability.TTS,
         is_primary=True,
         priority=0,
     )
-    # TTS — fallback: noop stub (M3-C2)
-    # Her zaman kayıt yapılır — üretim için değil, fallback zinciri testleri için
+    if not (dubvoice_key or "").strip():
+        logger.warning(
+            "TTS: credential.dubvoice_api_key bos — DubVoice cagrilari "
+            "ConfigurationError firlatacak. Admin panelden API key girilmeli.",
+        )
+
+    # Edge TTS — EXPLICIT fallback (otomatik DEGIL). resolve_tts_strict primary
+    # basarisizlik halinde bu saglayicilara otomatik gecmez. Kullanici "Explicit
+    # Fallback" aksiyonu aldiginda bu kayittan secenek olarak sunulur. (Faz 2)
+    provider_registry.register(
+        EdgeTTSProvider(default_voice=edge_voice),
+        ProviderCapability.TTS,
+        is_primary=False,
+        priority=1,
+    )
+    # System TTS — test/stub amacli fallback secenegi.
     provider_registry.register(
         SystemTTSProvider(),
         ProviderCapability.TTS,
         is_primary=False,
-        priority=1,
+        priority=2,
     )
 
     # VISUALS — primary: Pexels, fallback: Pixabay
