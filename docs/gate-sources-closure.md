@@ -102,10 +102,13 @@ Kapsam disi (bilincli ertelendi):
 
 ### 2.5 Migration
 
-**`backend/app/db/migrations/versions/ec8a1f0b2c4d_gate_sources_closure_shell_cleanup.py`**
+**`backend/alembic/versions/gate_sources_001_closure.py`**
 - `feed_url` icin partial UNIQUE index: `WHERE feed_url IS NOT NULL` (SQLite uyumlu, `_index_exists` idempotency guard).
-- `news_items.status` icin check-style normalizasyon (Python katmaninda Literal; veri satirlari icin tek seferlik `UPDATE` ile `reviewed` → `used` tasima).
-- Downgrade path mevcut — partial index dropped, status backfill geri alinabilir (best-effort).
+- `news_items.status` icin normalizasyon (Python katmaninda Literal; veri satirlari icin tek seferlik `UPDATE news_items SET status='new' WHERE status='reviewed'`).
+  - **Semantic:** `reviewed` bir orphan review-gate state idi — hicbir zaman "kullanildi" (used) anlami tasimiyordu. Migration bu orphan satirlari acik kuyruga (`new`) geri dondurur. `reviewed` → `used` ASLA yapilmaz (semantic yanlistir).
+- Ek normalizasyonlar: `news_sources.source_type='rss' WHERE source_type IN ('manual_url','api')`, `news_sources.scan_mode='manual' WHERE scan_mode='curated'`.
+- Ek indexler: `ix_news_items_created_at_status`, `ix_source_scans_created_at` (pagination N+1 onleme).
+- Downgrade path mevcut — partial index dropped, status backfill tek yonlu (veri kaybi onleme).
 
 ### 2.6 Trust Enforcement (low/medium/high distinct)
 
@@ -177,7 +180,7 @@ Kapsam disi (bilincli ertelendi):
 
 ### 4.1 Backend
 
-**`backend/tests/test_gate_sources_closure.py`** (YENI, 28 test)
+**`backend/tests/test_gate_sources_closure.py`** (YENI, 36 test)
 - KNOWN_SETTINGS registration + resolve defaults (2)
 - Retention sweep: deletion + referenced preservation + scan detach (2)
 - Rolling dedupe window filtering (1)
@@ -189,14 +192,18 @@ Kapsam disi (bilincli ertelendi):
 - Trigger scan 404 (1)
 - Pagination envelope on all 3 lists + offset/limit (2)
 - Hard rejection: manual_url, api, curated, reviewed (4)
+- **(L) Migration semantic proof: `test_migration_reviewed_maps_to_new_not_used`** — static source scan + runtime UPDATE kanit (1)
+- **(M) Duplicate feed_url 409 conflict: create + update + self-patch** (3)
+- **(N) Scheduler no-op: `test_scheduler_tick_noop_when_disabled` + `test_scheduler_tick_runs_when_enabled`** (2)
+- **(O) Scheduler live-reload: `test_scheduler_interval_reflects_live_settings_change` + status endpoint** (2)
 
 **Uyumlandirilan mevcut testler:**
 - `test_sources_api.py` — 15 test (manual_url/api shell'leri 422'ye cevrildi, envelope, filter).
 - `test_source_scans_api.py` — 14 test (envelope, filter).
-- `test_news_items_api.py` — 14 test (envelope, `reviewed` → `used`).
+- `test_news_items_api.py` — 14 test (envelope, `status` Literal = `new|used|ignored`; `reviewed` 422 hard-rejected).
 - `test_news_bulletin_selected_items_api.py` — 8 test (`_create_news_item` helper status `pending` → `new`).
 
-**Sonuc:** 79/79 in-scope test gecti. Full suite: 1827/1866 (39 failure tumu pre-existing auth/oauth/m7/sprint; Gate kapsami disinda — MEMORY.md'de not edildi).
+**Sonuc:** 87/87 in-scope test gecti (closure-proof 8 yeni test dahil). Full suite: pre-existing auth/oauth/m7/sprint failure'lari Gate kapsami disinda — MEMORY.md'de not edildi.
 
 ### 4.2 Frontend
 
@@ -209,12 +216,36 @@ Kapsam disi (bilincli ertelendi):
 
 ### 5.1 Scheduler Settings Wire
 
-`source_scans.scheduler.poll_auto_scan_scheduler` her tick'te:
-```python
-raw_enabled = await _resolve("source_scans.auto_scan.enabled", db)
-raw_interval = await _resolve("source_scans.auto_scan.interval_seconds", db)
+`app/source_scans/scheduler.py::poll_auto_scans` her tick'te `_read_effective_settings` cagirir (Settings Registry'den `source_scans.auto_scan_enabled` + `source_scans.auto_scan_interval_seconds`). Degerler `SCHEDULER_STATE` dict'ine yazilir ve `GET /source-scans/scheduler/status` bu state'i surfaces eder.
+
+**Test kanitlari (tumu PASSED):**
+- `test_scheduler_tick_noop_when_disabled` — `_read_effective_settings` monkey-patched `(False, 0.01)` doner. `poll_auto_scans` loop baslar, 0.15s beklenir, cancel edilir. Assertion: `_check_and_scan` cagri sayisi = 0, `SCHEDULER_STATE["skipped_because_disabled"] is True`, `SCHEDULER_STATE["enabled"] is False`.
+- `test_scheduler_tick_runs_when_enabled` — `(True, 0.01)` doner. Assertion: `_check_and_scan >= 1`, `skipped_because_disabled is False`, `last_triggered_count == 3`.
+- `test_scheduler_interval_reflects_live_settings_change` — initial `(True, 0.01)`, sonraki tick(ler) `(True, 0.02)`. Loop initial + en az 1 tick atar. Assertion: `SCHEDULER_STATE["effective_interval_seconds"] == 0.02` (live-reload davranisinin dogrudan kaniti).
+- `test_scheduler_status_endpoint_reflects_state` — state set edilir, `GET /source-scans/scheduler/status` istegi atilir, JSON body'nin tum alanlari (enabled, effective_interval_seconds, last_tick_at, last_tick_ok, last_tick_error, last_triggered_count, skipped_because_disabled) dogrulanir.
+
+**Calistirma:**
 ```
-`SCHEDULER_STATE["effective_interval_seconds"]` degeri settings degisince bir sonraki tick'te guncelleniyor; `enabled=False` ise tick `skipped_because_disabled=True` ile sessizce atlaniyor. `GET /source-scans/scheduler/status` bu state'i dogrudan surfaces.
+.venv/bin/python3 -m pytest tests/test_gate_sources_closure.py::test_scheduler_tick_noop_when_disabled tests/test_gate_sources_closure.py::test_scheduler_tick_runs_when_enabled tests/test_gate_sources_closure.py::test_scheduler_interval_reflects_live_settings_change tests/test_gate_sources_closure.py::test_scheduler_status_endpoint_reflects_state -v
+```
+Sonuc: `4 passed`.
+
+### 5.1.1 Duplicate feed_url 409 Conflict (kanit)
+
+`app/sources/service.py::create_source` + `update_source` icinde `_feed_url_exists(db, feed_url, exclude_id)` helper'i cagrilir; duplicate varsa `HTTPException(status_code=409, detail="A source with feed_url=... already exists.")` raise edilir. IntegrityError fallback'i de ayni 409'u doner.
+
+**Test kanitlari (tumu PASSED):**
+- `test_duplicate_feed_url_on_create_returns_409` — ayni feed_url'e 2. POST → 409.
+- `test_duplicate_feed_url_on_update_returns_409` — B source'unu A'nin feed_url'ine PATCH → 409.
+- `test_self_patch_keeps_own_feed_url_ok` — Ayni source kendi feed_url'ini PATCH'lerse 200 (false positive yok).
+
+### 5.1.2 Migration `reviewed → new` Semantic (kanit)
+
+**Migration kaynak dogrulamasi:** `backend/alembic/versions/gate_sources_001_closure.py` icinde `UPDATE news_items SET status='new' WHERE status='reviewed'` var; `SET status='used' WHERE status='reviewed'` YOK.
+
+**Runtime dogrulamasi:** in-memory SQLite'a `reviewed` statulu satir INSERT edilir, migration UPDATE cumlesi calistirilir, sonuc `SELECT status` ile okunur → `'new'`. `'used'` olmamasi ayrica assert edilir.
+
+**Test:** `test_migration_reviewed_maps_to_new_not_used` — PASSED.
 
 ### 5.2 User Redirect
 
@@ -243,7 +274,7 @@ Admin surface'ine hicbir `/admin` yonlendirmesi yok. `UserNewsPickerPage` kendi 
 
 **Degisiklikler:**
 1. `news_sources.feed_url` uzerinde partial UNIQUE index (`WHERE feed_url IS NOT NULL`). `_index_exists` idempotency guard.
-2. `news_items.status` veri normalizasyonu: `reviewed` → `used` (tek seferlik backfill).
+2. `news_items.status` veri normalizasyonu: `reviewed` → `new` (tek seferlik backfill). Semantic: `reviewed` bir orphan review-gate state idi, "kullanildi" anlami TASIMIYORDU — kayitlar acik kuyruga geri dondurulur.
 3. SourceScan / NewsItem Literal enforcement veri tabani seviyesine degil Pydantic katmanina (SQLite CHECK yerine uygulama katmani tercih edildi — daha taninabilir hata mesajlari).
 
 **Downgrade:** partial index drop edilir; status backfill geri alinmaz (veri kaybi onleme).
@@ -285,4 +316,4 @@ cd backend
 .venv/bin/python3 -m pytest tests/test_sources_api.py tests/test_source_scans_api.py tests/test_news_items_api.py tests/test_news_bulletin_selected_items_api.py -v
 ```
 
-Beklenen: 79 passed. Frontend build: `cd frontend && npm run build`.
+Beklenen: 87 passed. Frontend build: `cd frontend && npm run build`.

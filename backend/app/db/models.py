@@ -636,7 +636,7 @@ class NewsItem(Base):
     published_at    : original publish datetime (nullable)
     language        : e.g. 'tr', 'en'
     category        : e.g. 'general', 'tech'
-    status          : 'new', 'reviewed', 'used', 'ignored'
+    status          : 'new', 'used', 'ignored' (Gate Sources Closure — 'reviewed' KALKTI; migration bu kayitlari 'new'e tasir)
     dedupe_key      : placeholder for future dedupe (nullable)
     raw_payload_json: small trace of raw source data (nullable)
     """

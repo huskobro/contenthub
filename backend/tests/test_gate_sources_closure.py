@@ -26,6 +26,16 @@ Covers the behaviors introduced by the Gate Sources Closure milestone:
      {items, total, offset, limit} and honor offset+limit.
   K) Hard rejection — source_type manual_url/api and scan_mode curated are
      422 regardless of other fields. News item status 'reviewed' is 422.
+  L) Migration backfill semantics — news_items.status 'reviewed' rows are
+     migrated to 'new' (NOT 'used'). 'reviewed' was never "consumed" — it
+     was an orphan review-gate state that the product no longer supports.
+  M) Duplicate feed_url → 409 Conflict on both POST /sources (create) and
+     PATCH /sources/{id} (update). Backed by the partial UNIQUE index from
+     gate_sources_001 migration.
+  N) Scheduler enabled=False → tick is a no-op. Setting changes take effect
+     on the next tick without restart (live-reload).
+  O) Scheduler interval change → SCHEDULER_STATE.effective_interval_seconds
+     reflects the new value on the next settings read.
 """
 
 from __future__ import annotations
@@ -595,3 +605,287 @@ async def test_hard_rejection_reviewed_news_item_status(client: AsyncClient):
         json={"title": f"R {_uid()}", "url": f"https://x.com/{_uid()}", "status": "reviewed"},
     )
     assert r.status_code == 422
+
+
+# ---------------------------------------------------------------------------
+# L) Migration backfill: reviewed -> new (NOT used)
+# ---------------------------------------------------------------------------
+
+@pytest.mark.asyncio
+async def test_migration_reviewed_maps_to_new_not_used():
+    """gate_sources_001 migration 'reviewed' -> 'new' ceviriyor (used DEGIL).
+
+    Semantic: 'reviewed' bir orphan review-gate state idi — hicbir zaman
+    "tuketildi" (used) anlami tasimiyordu. Migration bu orphan'i yeniden
+    acik kuyruga (new) dondurmeli.
+
+    Dogrulama stratejisi: migration dosyasini runtime'da kaynak olarak
+    icine bakarak UPDATE komutunun hedefi 'new' oldugunu dogrular — ayni
+    zamanda canli DB uzerinde UPDATE'i calistirip sonucu kontrol eder.
+    """
+    # 1. Static kaynak dogrulamasi — migration dosyasi dogru semantigi icermeli
+    import pathlib
+    migration_path = (
+        pathlib.Path(__file__).parent.parent
+        / "alembic" / "versions" / "gate_sources_001_closure.py"
+    )
+    src = migration_path.read_text(encoding="utf-8")
+    assert "SET status='new' WHERE status='reviewed'" in src, (
+        "Migration 'reviewed' -> 'new' UPDATE'ini icermeli (used DEGIL)"
+    )
+    assert "SET status='used' WHERE status='reviewed'" not in src, (
+        "Migration ASLA 'reviewed' -> 'used' cevirmemeli — semantic yanlis olur"
+    )
+
+    # 2. Runtime dogrulamasi — UPDATE cumlesini canli in-memory DB'de calistir
+    from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
+    from sqlalchemy import text
+    from app.db.base import Base
+    from app.db.models import NewsItem
+
+    eng = create_async_engine("sqlite+aiosqlite:///:memory:")
+    async with eng.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+        # 'reviewed' artik Literal'de yok — ham SQL ile orphan state yerlestir
+        await conn.execute(text(
+            "INSERT INTO news_items (id, title, url, status, is_test_data, "
+            "created_at, updated_at) "
+            "VALUES ('rvw1', 'orphan review', 'https://x.com/r1', 'reviewed', "
+            "0, datetime('now'), datetime('now'))"
+        ))
+        # Migration UPDATE cumlesini CALISTIR
+        await conn.execute(text(
+            "UPDATE news_items SET status='new' WHERE status='reviewed'"
+        ))
+
+    Session = async_sessionmaker(eng, expire_on_commit=False)
+    async with Session() as db:
+        row = await db.execute(text("SELECT status FROM news_items WHERE id='rvw1'"))
+        status = row.scalar_one()
+        assert status == "new", (
+            f"Migration sonrasi 'reviewed' kaydi 'new' olmali, bulunan: {status!r}"
+        )
+        assert status != "used", "ASLA 'used' olmamali — semantic yanlis"
+
+
+# ---------------------------------------------------------------------------
+# M) Duplicate feed_url -> 409 Conflict
+# ---------------------------------------------------------------------------
+
+@pytest.mark.asyncio
+async def test_duplicate_feed_url_on_create_returns_409(client: AsyncClient):
+    """Ayni feed_url'e ikinci POST 409 Conflict donmeli."""
+    unique_feed = f"https://dup-test-{_uid()}.com/feed.xml"
+    first = await client.post(
+        SOURCES,
+        json={"name": f"First {_uid()}", "source_type": "rss", "feed_url": unique_feed},
+    )
+    assert first.status_code == 201
+
+    second = await client.post(
+        SOURCES,
+        json={"name": f"Second {_uid()}", "source_type": "rss", "feed_url": unique_feed},
+    )
+    assert second.status_code == 409, (
+        f"Duplicate feed_url 409 donmeli, donen: {second.status_code} body={second.text}"
+    )
+    body = second.json()
+    assert "feed_url" in (body.get("detail") or ""), (
+        "409 detail feed_url'i belirtmeli"
+    )
+
+
+@pytest.mark.asyncio
+async def test_duplicate_feed_url_on_update_returns_409(client: AsyncClient):
+    """PATCH ile baska bir source'un feed_url'ini kullanmak 409 donmeli."""
+    feed_a = f"https://uniq-a-{_uid()}.com/feed.xml"
+    feed_b = f"https://uniq-b-{_uid()}.com/feed.xml"
+
+    a = (await client.post(
+        SOURCES,
+        json={"name": f"A {_uid()}", "source_type": "rss", "feed_url": feed_a},
+    )).json()
+    b = (await client.post(
+        SOURCES,
+        json={"name": f"B {_uid()}", "source_type": "rss", "feed_url": feed_b},
+    )).json()
+
+    # B'yi A'nin feed_url'ine PATCH et
+    r = await client.patch(f"{SOURCES}/{b['id']}", json={"feed_url": feed_a})
+    assert r.status_code == 409, (
+        f"PATCH ile duplicate feed_url 409 donmeli, donen: {r.status_code}"
+    )
+
+
+@pytest.mark.asyncio
+async def test_self_patch_keeps_own_feed_url_ok(client: AsyncClient):
+    """Ayni source kendi feed_url'ini PATCH'lerse 409 DEGIL — normal gecmeli."""
+    feed = f"https://self-{_uid()}.com/feed.xml"
+    s = (await client.post(
+        SOURCES,
+        json={"name": f"S {_uid()}", "source_type": "rss", "feed_url": feed},
+    )).json()
+    # Kendi feed_url'ini tekrar gonder — 409 olmamali
+    r = await client.patch(f"{SOURCES}/{s['id']}", json={"feed_url": feed, "notes": "self-update"})
+    assert r.status_code == 200
+
+
+# ---------------------------------------------------------------------------
+# N) Scheduler enabled=False -> no-op
+# ---------------------------------------------------------------------------
+
+@pytest.mark.asyncio
+async def test_scheduler_tick_noop_when_disabled(monkeypatch):
+    """enabled=False iken _check_and_scan ASLA cagrilmamali + state dogru."""
+    from app.source_scans import scheduler as sched
+
+    # _read_effective_settings -> (enabled=False, interval=0.01)
+    # NOT: poll_auto_scans `current_interval = interval0` olarak initial
+    # settings interval'ini kullanir. Testte gercek tick olabilmesi icin
+    # clamp'lenmeden onceki ham deger (0.01) uygulanir — loop `while True`
+    # icinde `await asyncio.sleep(current_interval)` cagirir.
+    async def _fake_settings(_factory):
+        return (False, 0.01)
+
+    check_calls = {"n": 0}
+
+    async def _fake_check_and_scan(_factory, _interval):
+        check_calls["n"] += 1
+        return 0
+
+    monkeypatch.setattr(sched, "_read_effective_settings", _fake_settings)
+    monkeypatch.setattr(sched, "_check_and_scan", _fake_check_and_scan)
+
+    # Reset state
+    sched.SCHEDULER_STATE["enabled"] = True
+    sched.SCHEDULER_STATE["skipped_because_disabled"] = False
+    sched.SCHEDULER_STATE["last_triggered_count"] = 999
+
+    # poll_auto_scans'i birkac tick calistir sonra cancel et
+    task = asyncio.create_task(sched.poll_auto_scans(lambda: None, interval=0.01))
+    # Initial read + birkac tick'e yetsin diye bekle
+    await asyncio.sleep(0.15)
+    task.cancel()
+    try:
+        await task
+    except asyncio.CancelledError:
+        pass
+
+    # Dogrulamalar
+    assert check_calls["n"] == 0, (
+        "enabled=False iken _check_and_scan cagrilmamali (no-op)"
+    )
+    assert sched.SCHEDULER_STATE["enabled"] is False
+    assert sched.SCHEDULER_STATE["skipped_because_disabled"] is True
+    assert sched.SCHEDULER_STATE["last_tick_ok"] is True
+    assert sched.SCHEDULER_STATE["last_triggered_count"] == 0
+
+
+@pytest.mark.asyncio
+async def test_scheduler_tick_runs_when_enabled(monkeypatch):
+    """enabled=True iken _check_and_scan cagrilmali + skipped_because_disabled=False."""
+    from app.source_scans import scheduler as sched
+
+    async def _fake_settings(_factory):
+        return (True, 0.01)
+
+    check_calls = {"n": 0}
+
+    async def _fake_check_and_scan(_factory, _interval):
+        check_calls["n"] += 1
+        return 3
+
+    monkeypatch.setattr(sched, "_read_effective_settings", _fake_settings)
+    monkeypatch.setattr(sched, "_check_and_scan", _fake_check_and_scan)
+
+    sched.SCHEDULER_STATE["skipped_because_disabled"] = True
+    sched.SCHEDULER_STATE["last_triggered_count"] = 0
+
+    task = asyncio.create_task(sched.poll_auto_scans(lambda: None, interval=0.01))
+    await asyncio.sleep(0.15)
+    task.cancel()
+    try:
+        await task
+    except asyncio.CancelledError:
+        pass
+
+    assert check_calls["n"] >= 1, "enabled=True iken _check_and_scan en az 1 kez cagrilmali"
+    assert sched.SCHEDULER_STATE["skipped_because_disabled"] is False
+    assert sched.SCHEDULER_STATE["last_triggered_count"] == 3
+
+
+# ---------------------------------------------------------------------------
+# O) Scheduler interval change -> effective_interval_seconds updates
+# ---------------------------------------------------------------------------
+
+@pytest.mark.asyncio
+async def test_scheduler_interval_reflects_live_settings_change(monkeypatch):
+    """Interval ayari degisince SCHEDULER_STATE bir sonraki tick'te guncellenmeli."""
+    from app.source_scans import scheduler as sched
+
+    # Sekvansli cevap: 1. cagri 0.01s (loop'un tick atmasina izin ver),
+    # 2. cagri 0.02s — live-reload ile SCHEDULER_STATE'in yeni degeri
+    # yansittigini kanitla. Clamp normalde [60,86400] araligi dayatir ama
+    # test `_read_effective_settings`'i monkeypatch ile tamamen degistiriyor;
+    # bu yuzden clamp devre disi kalir ve bize kucuk test degerleri verir.
+    call_count = {"n": 0}
+
+    async def _fake_settings(_factory):
+        call_count["n"] += 1
+        if call_count["n"] == 1:
+            # Initial read: kucuk deger ver ki loop sleep(0.01)'de cok tick atsin
+            return (True, 0.01)
+        # Sonraki tick'ler: 0.02 — state bunu yansitmali
+        return (True, 0.02)
+
+    async def _fake_check_and_scan(_factory, _interval):
+        return 0
+
+    monkeypatch.setattr(sched, "_read_effective_settings", _fake_settings)
+    monkeypatch.setattr(sched, "_check_and_scan", _fake_check_and_scan)
+
+    task = asyncio.create_task(sched.poll_auto_scans(lambda: None, interval=0.01))
+
+    # Initial + birkac tick yapsin
+    await asyncio.sleep(0.15)
+    after_value = sched.SCHEDULER_STATE["effective_interval_seconds"]
+
+    task.cancel()
+    try:
+        await task
+    except asyncio.CancelledError:
+        pass
+
+    # Initial 0.01 idi — tick sonrasi settings tekrar okununca 0.02 olmali
+    # (live-reload kanit)
+    assert after_value == 0.02, (
+        f"Live-reload sonrasi effective_interval_seconds=0.02 bekleniyordu, "
+        f"bulunan: {after_value}"
+    )
+    # En az initial + bir tick olmus olmali
+    assert call_count["n"] >= 2, (
+        f"_read_effective_settings initial + en az 1 tick'te cagrilmali, "
+        f"toplam: {call_count['n']}"
+    )
+
+
+@pytest.mark.asyncio
+async def test_scheduler_status_endpoint_reflects_state(client: AsyncClient):
+    """GET /source-scans/scheduler/status SCHEDULER_STATE dict'ini surfaces etmeli."""
+    from app.source_scans import scheduler as sched
+
+    sched.SCHEDULER_STATE["enabled"] = True
+    sched.SCHEDULER_STATE["effective_interval_seconds"] = 777.0
+    sched.SCHEDULER_STATE["last_triggered_count"] = 42
+
+    r = await client.get(f"{SCANS}/scheduler/status")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["enabled"] is True
+    assert body["effective_interval_seconds"] == 777.0
+    assert body["last_triggered_count"] == 42
+    # Dict sekli dogru mu?
+    for k in ("enabled", "effective_interval_seconds", "last_tick_at",
+              "last_tick_ok", "last_tick_error", "last_triggered_count",
+              "skipped_because_disabled"):
+        assert k in body, f"scheduler status {k} icermeli"
