@@ -58,6 +58,7 @@ const AnalyticsOverviewPage = lazy(() => import("../pages/admin/AnalyticsOvervie
 const AnalyticsContentPage = lazy(() => import("../pages/admin/AnalyticsContentPage").then(m => ({ default: m.AnalyticsContentPage })));
 const AnalyticsOperationsPage = lazy(() => import("../pages/admin/AnalyticsOperationsPage").then(m => ({ default: m.AnalyticsOperationsPage })));
 const YouTubeAnalyticsPage = lazy(() => import("../pages/admin/YouTubeAnalyticsPage").then(m => ({ default: m.YouTubeAnalyticsPage })));
+const AdminYouTubeAnalyticsPage = lazy(() => import("../pages/admin/AdminYouTubeAnalyticsPage").then(m => ({ default: m.AdminYouTubeAnalyticsPage })));
 const PublishAnalyticsPage = lazy(() => import("../pages/admin/PublishAnalyticsPage").then(m => ({ default: m.PublishAnalyticsPage })));
 const JobDetailPage = lazy(() => import("../pages/admin/JobDetailPage").then(m => ({ default: m.JobDetailPage })));
 const StandardVideoDetailPage = lazy(() => import("../pages/admin/StandardVideoDetailPage").then(m => ({ default: m.StandardVideoDetailPage })));
@@ -165,6 +166,7 @@ export const router = createBrowserRouter([
       { path: "analytics/content", element: <VisibilityGuard targetKey="panel:analytics"><Suspense fallback={<LazyFallback />}><AnalyticsContentPage /></Suspense></VisibilityGuard> },
       { path: "analytics/operations", element: <VisibilityGuard targetKey="panel:analytics"><Suspense fallback={<LazyFallback />}><AnalyticsOperationsPage /></Suspense></VisibilityGuard> },
       { path: "analytics/youtube", element: <VisibilityGuard targetKey="panel:analytics"><Suspense fallback={<LazyFallback />}><YouTubeAnalyticsPage /></Suspense></VisibilityGuard> },
+      { path: "analytics/youtube-admin", element: <VisibilityGuard targetKey="panel:analytics"><Suspense fallback={<LazyFallback />}><AdminYouTubeAnalyticsPage /></Suspense></VisibilityGuard> },
       { path: "analytics/publish", element: <VisibilityGuard targetKey="panel:analytics"><Suspense fallback={<LazyFallback />}><PublishAnalyticsPage /></Suspense></VisibilityGuard> },
       { path: "analytics/channel-performance", element: <VisibilityGuard targetKey="panel:analytics"><Suspense fallback={<LazyFallback />}><AdminChannelPerformancePage /></Suspense></VisibilityGuard> },
       { path: "comments", element: <Suspense fallback={<LazyFallback />}><AdminCommentMonitoringPage /></Suspense> },

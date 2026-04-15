@@ -11,6 +11,7 @@ import {
 } from "../../components/design-system/primitives";
 import { AdminAnalyticsFilterBar } from "../../components/analytics/AdminAnalyticsFilterBar";
 import { ExportButton } from "../../components/analytics/ExportButton";
+import { SnapshotLockDisclaimer } from "../../components/analytics/SnapshotLockDisclaimer";
 import { formatDateShort } from "../../lib/formatDate";
 
 /* ------------------------------------------------------------------ */
@@ -69,6 +70,8 @@ export function AnalyticsOverviewPage() {
 
       {/* Shared Filter Bar */}
       <AdminAnalyticsFilterBar analyticsFilters={analyticsFilters} testId="analytics-overview-filter-bar" />
+
+      <SnapshotLockDisclaimer />
 
       {isError && (
         <div className="flex flex-col items-center py-8 gap-2 mb-4" data-testid="analytics-overview-error">
