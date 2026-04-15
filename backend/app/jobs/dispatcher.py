@@ -47,6 +47,12 @@ from app.modules.news_bulletin.executors import (
     BulletinScriptExecutor,
     BulletinMetadataExecutor,
 )
+from app.modules.product_review.executors import (
+    ProductReviewTTSStepExecutor,
+    ProductReviewSubtitleStepExecutor,
+    ProductReviewRenderStepExecutor,
+    ProductReviewPublishStepExecutor,
+)
 from app.providers.capability import ProviderCapability
 from app.providers.registry import ProviderRegistry
 from app.publish.executor import PublishStepExecutor
@@ -116,6 +122,21 @@ def _build_executor_from_registry(
                 "PublishStepExecutor için pipeline_db (AsyncSession) gereklidir."
             )
         return PublishStepExecutor(db=pipeline_db)
+
+    # product_review Faz F adapter'lari — provider/session injection ayni.
+    if executor_class is ProductReviewTTSStepExecutor:
+        return ProductReviewTTSStepExecutor(registry=registry)
+    if executor_class is ProductReviewSubtitleStepExecutor:
+        return ProductReviewSubtitleStepExecutor(registry=registry)
+    if executor_class is ProductReviewRenderStepExecutor:
+        return ProductReviewRenderStepExecutor()
+    if executor_class is ProductReviewPublishStepExecutor:
+        if pipeline_db is None:
+            raise ValueError(
+                "ProductReviewPublishStepExecutor için pipeline_db (AsyncSession) "
+                "gereklidir."
+            )
+        return ProductReviewPublishStepExecutor(db=pipeline_db)
 
     # Provider gerektirmeyen executor'lar (CompositionStepExecutor)
     return executor_class()

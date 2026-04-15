@@ -404,9 +404,28 @@ async def test_product_scrape_stub_raises_step_execution_error():
 
 
 def test_stub_step_keys_match_definition():
-    """Her StepDefinition.executor_class().step_key() StepDefinition.step_key'e esit."""
+    """Her StepDefinition.executor_class().step_key() StepDefinition.step_key'e esit.
+
+    Faz F: TTS/Subtitle adapter'lari registry, Publish adapter db session
+    parametreleri bekler. Test `inspect.signature` ile kwargs'lari None ile
+    doldurur — step_key() metadata ve state tasimadan cagrilir.
+    """
+    import inspect
+
     for sd in PRODUCT_REVIEW_MODULE.steps:
-        inst = sd.executor_class()
+        cls = sd.executor_class
+        try:
+            inst = cls()  # type: ignore[call-arg]
+        except TypeError:
+            # Faz F: registry / db gerektirenler icin None ile cagir.
+            sig = inspect.signature(cls.__init__)
+            kwargs: dict = {}
+            for pname, param in sig.parameters.items():
+                if pname == "self":
+                    continue
+                if param.default is inspect.Parameter.empty:
+                    kwargs[pname] = None
+            inst = cls(**kwargs)
         assert inst.step_key() == sd.step_key, (
             f"executor_class.step_key() mismatch: {inst.step_key()} != {sd.step_key}"
         )

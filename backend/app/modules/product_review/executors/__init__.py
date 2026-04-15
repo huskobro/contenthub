@@ -1,28 +1,28 @@
 """
-Product Review modulu executor'lari (Faz A — iskelet).
+Product Review modulu executor'lari.
 
-Faz A'da executor'lar STUB olarak tanimlanir; gercek implementasyon
-Faz B (vertical slice), Faz C (creative pack), Faz D (3 template) asamalarinda
-gelecek. Bu dosya ModuleDefinition'in kayit olabilmesi icin var.
+Faz A   — iskelet (sadece ProductScrape).
+Faz B   — Script / Metadata / Visuals / Composition gercek.
+Faz C   — PreviewFrame + PreviewMini.
+Faz D   — 3 template (single / comparison / alternatives) script branch.
+Faz E   — data_confidence + gate_decision.
+Faz F   — TTS / Subtitle / Render / Publish adapter executor'lari
+          (standard_video + publish zincirini yeniden kullanir).
 
-executor classlari:
-  - ProductScrapeStepExecutor         (Faz B — ingestion + parser_chain)
-  - ProductReviewScriptStepExecutor   (Faz B — single template icin LLM)
-  - ProductReviewMetadataStepExecutor (Faz B — metadata + disclosure)
-  - ProductReviewTTSStepExecutor      (Faz B — standard_video TTSStepExecutor reuse)
-  - ProductReviewVisualsStepExecutor  (Faz B — urun gorseli + stoklar)
-  - ProductReviewSubtitleStepExecutor (Faz B — SubtitleStepExecutor reuse)
-  - ProductReviewCompositionStepExecutor (Faz B — Remotion props)
-  - ProductReviewRenderStepExecutor   (Faz B — RenderStepExecutor reuse)
-  - ProductReviewPreviewFrameExecutor (Faz C — Level 1 preview)
-  - ProductReviewPreviewMiniExecutor  (Faz C — Level 2 preview)
-  - ProductReviewPublishStepExecutor  (Faz F — PublishStepExecutor reuse)
-
-Tum stub'lar StepExecutionError firlatir — modul tanimi yuklenirken
-patlamaz ama tetiklenirse acik hata verir.
+Executor classlari (step_key -> class):
+  product_scrape   -> ProductScrapeStepExecutor
+  script           -> ProductReviewScriptStepExecutor
+  metadata         -> ProductReviewMetadataStepExecutor
+  visuals          -> ProductReviewVisualsStepExecutor
+  tts              -> ProductReviewTTSStepExecutor    (Faz F adapter)
+  subtitle         -> ProductReviewSubtitleStepExecutor (Faz F adapter)
+  preview_frame    -> ProductReviewPreviewFrameExecutor
+  preview_mini     -> ProductReviewPreviewMiniExecutor
+  composition      -> ProductReviewCompositionStepExecutor
+  render           -> ProductReviewRenderStepExecutor (Faz F adapter)
+  publish          -> ProductReviewPublishStepExecutor (Faz F adapter)
 """
 
-# Gercek implementasyonlar (Faz B+) — stub yerine bunlar kullanilir.
 from app.modules.product_review.executors.product_scrape import (
     ProductScrapeStepExecutor,
 )
@@ -44,12 +44,16 @@ from app.modules.product_review.executors.preview_frame import (
 from app.modules.product_review.executors.preview_mini import (
     ProductReviewPreviewMiniExecutor,
 )
-
-# Henuz stub olan executor'lar — Faz F'te gercek olacak.
-from app.modules.product_review.executors.stubs import (
+from app.modules.product_review.executors.tts import (
     ProductReviewTTSStepExecutor,
+)
+from app.modules.product_review.executors.subtitle import (
     ProductReviewSubtitleStepExecutor,
+)
+from app.modules.product_review.executors.render import (
     ProductReviewRenderStepExecutor,
+)
+from app.modules.product_review.executors.publish import (
     ProductReviewPublishStepExecutor,
 )
 
