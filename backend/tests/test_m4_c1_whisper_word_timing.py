@@ -382,8 +382,12 @@ async def test_subtitle_whisper_yok_word_timing_path_none():
 
 
 @pytest.mark.asyncio
-async def test_subtitle_whisper_var_timing_mode_whisper_word():
-    """Test 11: Whisper varsa ve kelime verisi mevcutsa timing_mode='whisper_word'."""
+async def test_subtitle_whisper_var_timing_mode_script_canonical_whisper():
+    """Test 11 (Faz 3): Whisper varsa timing_mode='script_canonical_whisper'.
+
+    Faz 3 SABIT: Whisper transkripti asla altyazi olarak kullanilmaz; sadece
+    script token'larina word-level timing saglamak icin kullanilir.
+    """
     with tempfile.TemporaryDirectory() as tmpdir:
         artifacts_dir = _setup_artifacts(tmpdir, with_audio=True)
         job = _make_job(tmpdir)
@@ -393,7 +397,8 @@ async def test_subtitle_whisper_var_timing_mode_whisper_word():
         executor = SubtitleStepExecutor(registry=registry)
         result = await executor.execute(job, step)
 
-        assert result["timing_mode"] == "whisper_word"
+        assert result["timing_mode"] == "script_canonical_whisper"
+        assert result["text_source"] == "script_canonical"
 
 
 @pytest.mark.asyncio
@@ -415,7 +420,11 @@ async def test_subtitle_whisper_var_word_timing_json_uretilir():
 
 @pytest.mark.asyncio
 async def test_subtitle_word_timing_json_yapisi_dogru():
-    """Test 13: word_timing.json doğru alanları içermelidir."""
+    """Test 13 (Faz 3): word_timing.json script-canonical schema.
+
+    Faz 3: version=='2', source=='script_canonical', her kelime
+    {word, start, end, scene, timing_from_whisper}.
+    """
     with tempfile.TemporaryDirectory() as tmpdir:
         _setup_artifacts(tmpdir, with_audio=True)
         job = _make_job(tmpdir)
@@ -429,24 +438,28 @@ async def test_subtitle_word_timing_json_yapisi_dogru():
         assert word_timing_path is not None
 
         data = json.loads(Path(word_timing_path).read_text(encoding="utf-8"))
-        assert data["version"] == "1"
-        assert data["timing_mode"] == "whisper_word"
+        assert data["version"] == "2"
+        assert data["timing_mode"] == "script_canonical_whisper"
+        assert data["source"] == "script_canonical"
         assert data["language"] == "tr"
         assert "words" in data
         assert data["word_count"] > 0
 
-        # İlk kelime yapısı
+        # Ilk kelime yapisi — Faz 3 schema
         first_word = data["words"][0]
         assert "word" in first_word
         assert "start" in first_word
         assert "end" in first_word
-        assert "probability" in first_word
         assert "scene" in first_word
+        assert "timing_from_whisper" in first_word
 
 
 @pytest.mark.asyncio
-async def test_subtitle_whisper_var_srt_whisper_segmentlerinden_gelir():
-    """Test 14: Whisper varsa SRT içeriği Whisper segment metinleri içermelidir."""
+async def test_subtitle_whisper_var_srt_script_canonical_metin_icerir():
+    """Test 14 (Faz 3): SRT metni SCRIPT narration'dan gelir — Whisper transkripti DEĞİL.
+
+    Whisper'dan sadece word-level timing alinir; metin her zaman script canonical'dir.
+    """
     with tempfile.TemporaryDirectory() as tmpdir:
         _setup_artifacts(tmpdir, with_audio=True)
         job = _make_job(tmpdir)
@@ -457,9 +470,11 @@ async def test_subtitle_whisper_var_srt_whisper_segmentlerinden_gelir():
         result = await executor.execute(job, step)
 
         srt_content = Path(result["artifact_path"]).read_text(encoding="utf-8")
-        # Whisper segment metni SRT'de bulunmalı
-        assert "İlk sahne anlatımı." in srt_content
-        assert "Devam cümlesi." in srt_content
+        # Script canonical narration SRT'de bulunmali
+        # (SAMPLE_SCRIPT_SCENES[0].narration == "İlk sahne anlatımı.")
+        assert "İlk" in srt_content
+        assert "sahne" in srt_content
+        assert "anlatımı" in srt_content
 
 
 @pytest.mark.asyncio

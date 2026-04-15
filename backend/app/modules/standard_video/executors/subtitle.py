@@ -1,22 +1,29 @@
 """
-Altyazı adımı executor'ı (SubtitleStepExecutor) — M4-C1 Whisper entegrasyonu.
+Altyazı adımı executor'ı (SubtitleStepExecutor) — M4-C1 + Faz 3 script-canonical.
 
 audio_manifest.json + script.json → SRT formatında altyazı dosyası üretir.
-Whisper registry'de kayıtlıysa kelime-düzeyi zaman damgaları da çıkartılır.
+Whisper registry'de kayıtlıysa kelime-düzeyi zaman damgaları alınır AMA
+altyazı metni HER ZAMAN script canonical'indan gelir.
+
+Faz 3 SABIT:
+  - Subtitle metni SCRIPT narration'indan gelir; Whisper transkripti asla
+    altyazı olarak gösterilmez (halüsinasyon + Türkçe karakter bozulması +
+    marka/ürün ismi kırılması riski var).
+  - Whisper'in rolü: script token'larına word-level timing sağlamak.
+  - Whisper yoksa → cursor fallback (linear yayılım); timing_mode='cursor'.
 
 Zamanlama modları:
-  - whisper_word   : Whisper çıktısından gerçek kelime-düzeyi zaman damgaları.
-  - whisper_segment: Whisper segment zamanlama kullanılır (kelime yoksa).
-  - cursor         : Whisper kayıtlı değil veya ses dosyası eksik → eski cursor-tabanlı fallback.
+  - script_canonical_whisper : Whisper timing + script metin (Faz 3 default)
+  - cursor                    : Whisper yok veya ses dosyası eksik → fallback.
+
+(Eski 'whisper_word' ve 'whisper_segment' modlari kaldirildi; her ikisi de
+artik 'script_canonical_whisper' altinda birlesir.)
 
 Artifact'lar:
-  - artifacts/subtitles.srt         — SRT formatında altyazı (her zaman üretilir).
-  - artifacts/word_timing.json      — Kelime-düzeyi zamanlama verisi (Whisper varsa).
-  - artifacts/subtitle_metadata.json — Adım meta verisi + timing modu (her zaman üretilir).
-
-NOT: Subtitle-specific preview (karaoke stil seçimi) M4-C3'te gelecektir.
-     Bu executor yalnızca timing verisi ve SRT üretir; render/stil kararı vermez.
-     Genel preview altyapısı (kompozisyon, hareket, stil kartları) M6 kapsamındadır.
+  - artifacts/subtitles.srt              — SRT formatında altyazı.
+  - artifacts/word_timing.json           — Kelime-düzeyi zamanlama verisi.
+  - artifacts/subtitle_metadata.json     — Adım meta verisi + timing modu.
+  - artifacts/subtitle_alignment_audit.json — Faz 3: per-sahne align istatistigi.
 """
 
 from __future__ import annotations
@@ -31,6 +38,15 @@ from app.db.models import Job, JobStep
 from app.jobs.executor import StepExecutor
 from app.jobs.exceptions import StepExecutionError
 from app.providers.capability import ProviderCapability
+from app.subtitle.canonical_align import (
+    AlignmentResult,
+    ScriptToken,
+    align_script_to_whisper,
+    chunk_tokens_for_srt,
+    cues_to_srt,
+    extract_whisper_words,
+    tokenize_script,
+)
 
 from ._helpers import (
     _resolve_artifact_path,
@@ -162,22 +178,33 @@ _build_srt = _build_srt_from_scenes
 
 class SubtitleStepExecutor(StepExecutor):
     """
-    Altyazı adımı executor'ı — M4-C1 Whisper entegrasyonu ile.
+    Altyazi adimi executor'i — Faz 3 script-canonical.
 
-    Whisper registry'de kayıtlıysa:
-      - Her sahnenin ses dosyasını Whisper ile transkripte eder.
-      - Kelime-düzeyi zaman damgaları içeren word_timing.json üretir.
-      - SRT zamanlaması Whisper çıktısından gelir.
+    SABIT: Altyazi METNI her zaman SCRIPT narration'indan gelir. Whisper
+    transkripti asla altyazi olarak gosterilmez. Whisper'in rolu yalniz
+    word-level timing saglamak.
 
-    Whisper yoksa (kayıtlı değil):
-      - Mevcut cursor-tabanlı zamanlama kullanılır.
-      - word_timing.json üretilmez.
-      - subtitle_metadata.json'da timing_mode: "cursor" olarak işaretlenir.
+    Whisper registry'de kayitliysa:
+      - Her sahnenin ses dosyasi Whisper ile transkripte edilir.
+      - align_script_to_whisper ile script token'larina word-level timing atanir.
+      - timing_mode='script_canonical_whisper' olarak isaretlenir.
+      - word_timing.json (v2, source='script_canonical') uretilir.
 
-    artifact_check: subtitle_metadata.json varsa adımı atlar (idempotency).
+    Whisper yoksa (kayitli degil) veya ses dosyasi yoksa:
+      - align_script_to_whisper cursor fallback'ini calistirir (linear yayilim).
+      - Altyazi metni yine SCRIPT CANONICAL'dir; timing linear uretilir.
+      - timing_mode='cursor'.
 
-    NOT: Subtitle-specific preview (karaoke stil seçimi) M4-C3'te gelecektir.
-         Genel preview altyapısı M6 kapsamındadır.
+    Her kosulda uretilen artifactlar:
+      - subtitles.srt                    (script-canonical metin + timing)
+      - word_timing.json                  (v2, tek source: script_canonical)
+      - subtitle_alignment_audit.json     (per-sahne align istatistigi)
+      - subtitle_metadata.json            (step-level metadata)
+
+    artifact_check: subtitle_metadata.json varsa adimi atlar (idempotency).
+
+    NOT: Subtitle-specific preview (karaoke stil secimi) M4-C3'te gelecektir.
+         Genel preview altyapisi M6 kapsamindadir.
     """
 
     # Template Context Decision (M14):
@@ -272,10 +299,13 @@ class SubtitleStepExecutor(StepExecutor):
             return {
                 "artifact_path": existing.get("srt_path"),
                 "metadata_path": str(metadata_path),
+                "word_timing_path": existing.get("word_timing_path"),
+                "alignment_audit_path": existing.get("alignment_audit_path"),
                 "language": existing.get("language"),
                 "segment_count": existing.get("segment_count", 0),
                 "total_duration_seconds": existing.get("total_duration_seconds", 0.0),
                 "timing_mode": existing.get("timing_mode", "cursor"),
+                "text_source": existing.get("text_source", "script_canonical"),
                 "skipped": True,
                 "step": self.step_key(),
             }
@@ -337,21 +367,54 @@ class SubtitleStepExecutor(StepExecutor):
         srt_content: str
         all_word_timings: list[dict] = []
         whisper_trace: dict = {}
+        alignment_audit: list[dict] = []
 
         if whisper_available:
-            timing_mode, srt_content, all_word_timings, whisper_trace = (
-                await self._run_whisper_mode(
-                    workspace_root=workspace_root,
-                    job_id=job.id,
-                    merged_scenes=merged_scenes,
-                )
+            (
+                timing_mode,
+                srt_content,
+                all_word_timings,
+                whisper_trace,
+                alignment_audit,
+            ) = await self._run_whisper_mode(
+                workspace_root=workspace_root,
+                job_id=job.id,
+                merged_scenes=merged_scenes,
             )
         else:
+            # Faz 3: Whisper yoksa bile SUBTITLE METNI SCRIPT CANONICAL olmali.
+            # Sahne bazinda tokenize + cursor-fallback timing uygula, chunkla.
+            all_tokens: list[ScriptToken] = []
+            cursor_offset = 0.0
+            for scene in merged_scenes:
+                narration = scene.get("narration", "").strip()
+                duration = float(scene.get("duration_seconds", 0.0))
+                if not narration or duration <= 0:
+                    cursor_offset += duration
+                    continue
+                align = align_script_to_whisper(
+                    narration,
+                    [],  # whisper yok → cursor fallback
+                    scene_duration_seconds=duration,
+                    scene_offset=cursor_offset,
+                )
+                all_tokens.extend(align.tokens)
+                alignment_audit.append({
+                    "scene_number": scene.get("scene_number"),
+                    "duration_seconds": round(duration, 3),
+                    "audio_found": False,
+                    "whisper_invoked": False,
+                    "whisper_error": None,
+                    **align.summary(),
+                })
+                cursor_offset += duration
+
+            cues = chunk_tokens_for_srt(all_tokens, start_index=1)
+            srt_content = cues_to_srt(cues)
             timing_mode = "cursor"
-            srt_content = _build_srt_from_scenes(merged_scenes)
             logger.info(
-                "SubtitleStepExecutor: Whisper provider kayıtlı değil, "
-                "cursor-tabanlı zamanlama kullanılıyor. job=%s",
+                "SubtitleStepExecutor: Whisper provider kayitli degil, "
+                "script-canonical + cursor fallback timing kullaniliyor. job=%s",
                 job.id,
             )
 
@@ -371,11 +434,39 @@ class SubtitleStepExecutor(StepExecutor):
                 job_id=job.id,
                 filename="word_timing.json",
                 data={
-                    "version": "1",
+                    "version": "2",  # Faz 3: script-canonical timing schema
                     "timing_mode": timing_mode,
                     "language": ctx.language.value,
+                    "source": "script_canonical",
                     "words": all_word_timings,
                     "word_count": len(all_word_timings),
+                },
+            )
+
+        # Faz 3: subtitle_alignment_audit.json — per-sahne istatistikler
+        alignment_audit_path: str | None = None
+        if alignment_audit:
+            alignment_audit_path = _write_artifact(
+                workspace_root=workspace_root,
+                job_id=job.id,
+                filename="subtitle_alignment_audit.json",
+                data={
+                    "version": "1",
+                    "timing_mode": timing_mode,
+                    "rule": "script_canonical_subtitle_text",
+                    "scenes": alignment_audit,
+                    "totals": {
+                        "scenes": len(alignment_audit),
+                        "script_token_count": sum(
+                            int(a.get("script_token_count", 0)) for a in alignment_audit
+                        ),
+                        "matched_by_whisper": sum(
+                            int(a.get("matched_by_whisper", 0)) for a in alignment_audit
+                        ),
+                        "fallback_from_cursor": sum(
+                            int(a.get("fallback_from_cursor", 0)) for a in alignment_audit
+                        ),
+                    },
                 },
             )
 
@@ -392,10 +483,12 @@ class SubtitleStepExecutor(StepExecutor):
         metadata: dict = {
             "srt_path": srt_path,
             "word_timing_path": word_timing_path,
+            "alignment_audit_path": alignment_audit_path,
             "segment_count": segment_count,
             "total_duration_seconds": round(total_duration, 3),
             "language": language,
             "timing_mode": timing_mode,
+            "text_source": "script_canonical",
         }
         metadata_artifact_path = _write_artifact(
             workspace_root=workspace_root,
@@ -419,10 +512,12 @@ class SubtitleStepExecutor(StepExecutor):
             "artifact_path": srt_path,
             "metadata_path": metadata_artifact_path,
             "word_timing_path": word_timing_path,
+            "alignment_audit_path": alignment_audit_path,
             "language": language,
             "segment_count": segment_count,
             "total_duration_seconds": round(total_duration, 3),
             "timing_mode": timing_mode,
+            "text_source": "script_canonical",
             "provider": {
                 "provider_id": "builtin_srt_generator",
                 "timing_mode": timing_mode,
@@ -441,30 +536,42 @@ class SubtitleStepExecutor(StepExecutor):
         workspace_root: str,
         job_id: str,
         merged_scenes: list[dict],
-    ) -> tuple[str, str, list[dict], dict]:
+    ) -> tuple[str, str, list[dict], dict, list[dict]]:
         """
-        Whisper modunda her sahnenin ses dosyasını transkripte eder.
+        Faz 3 script-canonical Whisper modu.
 
-        Her ses dosyası için Whisper çağrılır; kelime zaman damgaları toplanır.
-        SRT Whisper segmentlerinden oluşturulur.
+        Her sahne icin:
+          1. Script narration tokenize edilir (canonical metin — korunur).
+          2. Sahnenin ses dosyasi varsa Whisper cagrilir; word-level timing alinir.
+          3. align_script_to_whisper ile scripting token'larina Whisper timing'i
+             atanir. Whisper'in metni asla altyazi olmaz.
+          4. Ses yoksa veya Whisper basarisizsa, ayni sahne icin cursor
+             fallback timing kullanilir (ayni alignment API).
+        Tum sahnelerin token'lari job-global timeline'a kaydirilarak biriktirilir;
+        en sonda chunk_tokens_for_srt ile tek cue dizisi olusturulup SRT uretilir.
 
         Args:
-            workspace_root: Job workspace kök dizini.
+            workspace_root: Job workspace kok dizini.
             job_id: Job ID.
-            merged_scenes: Birleştirilmiş sahne listesi.
+            merged_scenes: Birlestirilmis sahne listesi.
 
         Returns:
-            Tuple: (timing_mode, srt_content, all_word_timings, whisper_trace_summary)
+            Tuple: (timing_mode, srt_content, word_timings, whisper_trace,
+                    alignment_audit)
+
+            alignment_audit: per-sahne AlignmentResult.summary() + ses_var,
+            whisper_invoked bilgisi.
         """
         from app.providers.resolution import resolve_and_invoke
 
-        srt_blocks: list[str] = []
+        all_tokens: list[ScriptToken] = []
         all_word_timings: list[dict] = []
-        srt_index = 1
+        alignment_audit: list[dict] = []
+
         cursor_offset = 0.0
         total_whisper_latency = 0
-        whisper_provider_id = "local_whisper"
-        has_word_level = False
+        whisper_provider_id: str = "local_whisper"
+        any_whisper_success = False
 
         for scene in merged_scenes:
             narration = scene.get("narration", "").strip()
@@ -476,85 +583,103 @@ class SubtitleStepExecutor(StepExecutor):
                 cursor_offset += duration
                 continue
 
-            # Ses dosyası yolu çöz
+            # Ses dosyasi yolu coz
             audio_abs: str | None = None
             if audio_relative and workspace_root:
                 candidate = Path(workspace_root) / audio_relative
                 if candidate.exists():
                     audio_abs = str(candidate)
 
-            if audio_abs is None:
-                # Ses dosyası bulunamadı → bu sahne için cursor-tabanlı blok kullan
+            whisper_segments: list[dict] = []
+            whisper_invoked = False
+            whisper_error: str | None = None
+
+            if audio_abs is not None:
+                try:
+                    t0 = time.monotonic()
+                    output = await resolve_and_invoke(
+                        self._registry,
+                        ProviderCapability.WHISPER,
+                        {
+                            "audio_path": audio_abs,
+                            "language": None,  # otomatik algila
+                        },
+                    )
+                    total_whisper_latency += int((time.monotonic() - t0) * 1000)
+                    whisper_provider_id = output.provider_id
+                    whisper_segments = output.result.get("segments", []) or []
+                    whisper_invoked = True
+                    any_whisper_success = True
+                except Exception as exc:
+                    whisper_error = str(exc)
+                    logger.warning(
+                        "SubtitleStepExecutor: Whisper sahne %d basarisiz (%s); "
+                        "cursor fallback kullanilacak. job=%s",
+                        scene_number,
+                        exc,
+                        job_id,
+                    )
+            else:
                 logger.warning(
-                    "SubtitleStepExecutor: sahne %d için ses dosyası bulunamadı, "
-                    "cursor-tabanlı timing kullanılıyor. job=%s",
+                    "SubtitleStepExecutor: sahne %d icin ses dosyasi bulunamadi; "
+                    "cursor fallback kullanilacak. job=%s",
                     scene_number,
                     job_id,
                 )
-                start_t = _seconds_to_srt_time(cursor_offset)
-                end_t = _seconds_to_srt_time(cursor_offset + duration)
-                srt_blocks.append(
-                    f"{srt_index}\n{start_t} --> {end_t}\n{narration}"
-                )
-                srt_index += 1
-                cursor_offset += duration
-                continue
 
-            # Whisper çağır
-            try:
-                t0 = time.monotonic()
-                output = await resolve_and_invoke(
-                    self._registry,
-                    ProviderCapability.WHISPER,
-                    {
-                        "audio_path": audio_abs,
-                        "language": None,  # otomatik algıla
-                    },
-                )
-                total_whisper_latency += int((time.monotonic() - t0) * 1000)
-                whisper_provider_id = output.provider_id
+            whisper_words = extract_whisper_words(whisper_segments) if whisper_invoked else []
 
-                segments = output.result.get("segments", [])
+            align = align_script_to_whisper(
+                narration,
+                whisper_words,
+                scene_duration_seconds=duration,
+                scene_offset=cursor_offset,
+            )
+            all_tokens.extend(align.tokens)
 
-                # Whisper segmentlerinden SRT blokları üret
-                scene_blocks = _build_srt_from_whisper(segments, scene_offset=cursor_offset)
-                for block in scene_blocks:
-                    srt_blocks.append(f"{srt_index}\n{block}")
-                    srt_index += 1
+            # Per-kelime timing artifact'i (yalniz Whisper'dan timing alanlar)
+            for tok in align.tokens:
+                if tok.is_punct:
+                    continue
+                all_word_timings.append({
+                    "scene": scene_number,
+                    "word": tok.text,
+                    "start": round(tok.start, 3),
+                    "end": round(tok.end, 3),
+                    "timing_from_whisper": tok.timing_from_whisper,
+                })
 
-                # Kelime zamanlama verisi
-                words = _extract_word_timings_from_segments(
-                    segments, scene_number=scene_number, scene_offset=cursor_offset
-                )
-                if words:
-                    all_word_timings.extend(words)
-                    has_word_level = True
-
-            except Exception as exc:
-                # Whisper başarısız → bu sahne için cursor-tabanlı blok
-                logger.warning(
-                    "SubtitleStepExecutor: Whisper sahne %d için başarısız (%s), "
-                    "cursor-tabanlı timing kullanılıyor. job=%s",
-                    scene_number,
-                    exc,
-                    job_id,
-                )
-                start_t = _seconds_to_srt_time(cursor_offset)
-                end_t = _seconds_to_srt_time(cursor_offset + duration)
-                srt_blocks.append(
-                    f"{srt_index}\n{start_t} --> {end_t}\n{narration}"
-                )
-                srt_index += 1
+            audit_entry = {
+                "scene_number": scene_number,
+                "duration_seconds": round(duration, 3),
+                "audio_found": audio_abs is not None,
+                "whisper_invoked": whisper_invoked,
+                "whisper_error": whisper_error,
+                **align.summary(),
+            }
+            alignment_audit.append(audit_entry)
 
             cursor_offset += duration
 
-        timing_mode = "whisper_word" if has_word_level else "whisper_segment"
-        srt_content = "\n\n".join(srt_blocks)
+        # Tum sahnelerden gelen token'lari tek cue dizisine bol
+        cues = chunk_tokens_for_srt(all_tokens, start_index=1)
+        srt_content = cues_to_srt(cues)
+
+        # Faz 3: tek timing modu — Whisper varsa scripturl canonical + Whisper timing,
+        # yoksa cursor fallback (ama herzaman script metni).
+        # Ayrim audit dosyasinda gorunur; dis API 'script_canonical_whisper' tek deger.
+        timing_mode = "script_canonical_whisper"
 
         whisper_trace = {
-            "whisper_provider_id": whisper_provider_id,
+            "whisper_provider_id": whisper_provider_id if any_whisper_success else None,
             "whisper_latency_ms": total_whisper_latency,
             "word_count": len(all_word_timings),
+            "scenes_with_whisper": sum(
+                1 for a in alignment_audit if a.get("whisper_invoked")
+            ),
+            "scenes_with_cursor_fallback": sum(
+                1 for a in alignment_audit if not a.get("whisper_invoked")
+            ),
         }
 
-        return timing_mode, srt_content, all_word_timings, whisper_trace
+        return timing_mode, srt_content, all_word_timings, whisper_trace, alignment_audit
