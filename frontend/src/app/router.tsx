@@ -102,6 +102,7 @@ const AdminNotificationsPage = lazy(() => import("../pages/admin/AdminNotificati
 
 // Lazy-loaded Faz 17 pages
 const UserConnectionsPage = lazy(() => import("../pages/user/UserConnectionsPage").then(m => ({ default: m.UserConnectionsPage })));
+const UserNewsPickerPage = lazy(() => import("../pages/user/UserNewsPickerPage").then(m => ({ default: m.UserNewsPickerPage })));
 const AdminConnectionsPage = lazy(() => import("../pages/admin/AdminConnectionsPage").then(m => ({ default: m.AdminConnectionsPage })));
 
 function LazyFallback() {
@@ -214,6 +215,7 @@ export const router = createBrowserRouter([
       { path: "connections", element: <Suspense fallback={<LazyFallback />}><UserConnectionsPage /></Suspense> },
       { path: "create/video", element: <Suspense fallback={<LazyFallback />}><CreateVideoWizardPage /></Suspense> },
       { path: "create/bulletin", element: <Suspense fallback={<LazyFallback />}><CreateBulletinWizardPage /></Suspense> },
+      { path: "news-picker", element: <Suspense fallback={<LazyFallback />}><UserNewsPickerPage /></Suspense> },
       { path: "settings/youtube-callback", element: <UserYouTubeCallbackPage /> },
     ]}],
   },

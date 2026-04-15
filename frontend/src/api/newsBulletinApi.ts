@@ -364,15 +364,27 @@ export function deleteNewsBulletinSelectedItem(
 // Trust enforcement check (M30)
 // ---------------------------------------------------------------------------
 
+export interface TrustCheckItemRef {
+  news_item_id: string;
+  source_id: string;
+  source_name: string;
+  trust_level: string;
+}
+
 export interface TrustCheckResponse {
   pass_check: boolean;
   enforcement_level: string;
-  low_trust_items: Array<{
-    news_item_id: string;
-    source_id: string;
-    source_name: string;
-    trust_level: string;
-  }>;
+  /** Kaynak trust_level = 'low'. warn altında uyarı, block altında engel. */
+  low_trust_items: TrustCheckItemRef[];
+  /** Kaynak trust_level = 'medium'. Gate Sources Closure — warn altında uyarı, hiçbir zaman block değil. */
+  medium_trust_items: TrustCheckItemRef[];
+  /** Seçili haberlerin trust_level dağılımı (sayılar). */
+  trust_breakdown: {
+    low?: number;
+    medium?: number;
+    high?: number;
+    unknown?: number;
+  };
   total_checked: number;
   message: string;
 }

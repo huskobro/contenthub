@@ -194,9 +194,13 @@ export function NewsBulletinWizardPage() {
   }, [bulletin]);
 
   // Sources list — for filter dropdown
-  const { data: sourcesList = [] } = useQuery({
+  // Gate Sources Closure: /sources artik {items,total,offset,limit} doner.
+  const { data: sourcesList = [] } = useQuery<SourceResponse[]>({
     queryKey: ["sources-active"],
-    queryFn: () => fetchSources({ status: "active" }),
+    queryFn: async () => {
+      const resp = await fetchSources({ status: "active" });
+      return resp.items;
+    },
   });
 
   // Category style mapping — for visual style badge on news items

@@ -7,6 +7,11 @@ function isNonEmpty(value: string | null | undefined): boolean {
   return value.trim().length > 0;
 }
 
+/**
+ * Gate Sources Closure sonrasi: yalnizca 'rss' tipi gecerlidir. Legacy
+ * 'manual_url' ve 'api' tipleri backend tarafinda 422 ile reddedilir;
+ * burada bu eski tipler gecerse konservatif olarak config yok kabul edilir.
+ */
 function getConfigField(
   sourceType: string | null | undefined,
   feedUrl: string | null | undefined,
@@ -14,12 +19,19 @@ function getConfigField(
   apiEndpoint: string | null | undefined,
 ): boolean {
   if (sourceType === "rss") return isNonEmpty(feedUrl);
+  // Legacy shells — gerekirse base_url/api_endpoint'i hala tanimis olabilir
+  // ama source_type bozuk kabul edilir.
   if (sourceType === "manual_url") return isNonEmpty(baseUrl);
   if (sourceType === "api") return isNonEmpty(apiEndpoint);
-  // unknown type — no config considered
   return false;
 }
 
+/**
+ * @deprecated ``reviewedNewsCount`` parametresi Gate Sources Closure ile
+ * anlamini yitirdi — news_items.status artik 'reviewed' degerini almiyor.
+ * Sifir gecirmek guvenlidir. Gelistirme dongusunden geriye uyumluluk icin
+ * imza tutuldu; bir sonraki minor surumde kaldirilabilir.
+ */
 export function computeSourceTargetOutputConsistency(
   sourceType: string | null | undefined,
   feedUrl: string | null | undefined,
@@ -47,6 +59,7 @@ interface Props {
   baseUrl: string | null | undefined;
   apiEndpoint: string | null | undefined;
   linkedNewsCount: number | null | undefined;
+  /** @deprecated news_items.status 'reviewed' kaldirildi. */
   reviewedNewsCount: number | null | undefined;
   usedNewsCountFromSource: number | null | undefined;
 }

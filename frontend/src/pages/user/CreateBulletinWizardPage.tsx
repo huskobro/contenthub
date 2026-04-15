@@ -1,12 +1,14 @@
 /**
- * CreateBulletinWizardPage — Faz 5F: User-facing news bulletin creation wizard.
+ * CreateBulletinWizardPage — User-facing news bulletin creation wizard.
  *
- * Flow: ChannelProfile (Step 0) → ContentProject → Redirect to admin bulletin wizard
- *       with channelProfileId + contentProjectId context.
+ * Gate Sources Closure §S7:
+ *   Artik admin wizard'a redirect YOK. Kullanici channel + project + style
+ *   adimlarini bitirince kendi surface'indaki "/user/news-picker"
+ *   sayfasina yonlendirilir. Haber secim + uretim baslatma admin panele
+ *   gecmeden tamamlanir. Editorial gate ve clone gibi ileri fonksiyonlar
+ *   admin surface'ta kalir.
  *
- * The bulletin wizard itself (NewsBulletinWizardPage) is complex with editorial gates.
- * Rather than duplicating 1400 lines, this page handles Channel + Project setup,
- * then redirects to the existing wizard with context params.
+ * Flow: ChannelProfile (Step 0) → ContentProject → Stil → /user/news-picker
  */
 
 import { useState, useCallback } from "react";
@@ -65,13 +67,13 @@ export function CreateBulletinWizardPage() {
     if (step < 3) {
       setStep(step + 1);
     } else {
-      // Navigate to bulletin wizard with context + style selections
+      // Gate Sources Closure §S7: user surface'ta kal — admin panele redirect yok.
       const params = new URLSearchParams();
       if (channelProfileId) params.set("channelProfileId", channelProfileId);
       if (contentProjectId) params.set("contentProjectId", contentProjectId);
       if (lowerThirdStyle) params.set("lowerThirdStyle", lowerThirdStyle);
       if (styleBlueprintId) params.set("styleBlueprintId", styleBlueprintId);
-      navigate(`/admin/news-bulletins/wizard?${params.toString()}`);
+      navigate(`/user/news-picker?${params.toString()}`);
     }
   }
 
@@ -85,7 +87,7 @@ export function CreateBulletinWizardPage() {
       onCancel={() => navigate(-1)}
       nextDisabled={!canGoNext()}
       isLastStep={step === 3}
-      nextLabel={step === 3 ? "Bulten Wizard'a Devam Et" : undefined}
+      nextLabel={step === 3 ? "Haber Secimine Gec" : undefined}
       testId="create-bulletin-wizard"
     >
       {/* Step 0: Channel selection */}
