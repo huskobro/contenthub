@@ -18,6 +18,7 @@ import {
 import { AdminAnalyticsFilterBar } from "../../components/analytics/AdminAnalyticsFilterBar";
 import { ProviderLatencyChart } from "../../components/analytics/ProviderLatencyChart";
 import { StepDurationChart } from "../../components/analytics/StepDurationChart";
+import { SystemScopeNote } from "../../components/analytics/SystemScopeNote";
 
 /* ------------------------------------------------------------------ */
 /* Formatters                                                         */
@@ -354,6 +355,7 @@ export function AnalyticsOperationsPage() {
       <SectionShell title="Kaynak Etkisi"  testId="analytics-source-impact">
         <div data-testid="source-impact-heading" className="hidden">Kaynak Etkisi</div>
         <div data-testid="source-impact-note" className="hidden">Haber kaynaklarinin uretim hattina etkisi.</div>
+        <SystemScopeNote />
         <MetricGrid>
           <MetricTile label="Toplam Kaynak" value={fmtCount(sourceData?.total_sources ?? null)} note="Tanimli haber kaynaklari" loading={sourceLoading} testId="source-metric-total" />
           <MetricTile label="Aktif Kaynak" value={fmtCount(sourceData?.active_sources ?? null)} note="Durumu aktif olan kaynaklar" loading={sourceLoading} testId="source-metric-active" />
@@ -375,6 +377,7 @@ export function AnalyticsOperationsPage() {
       <SectionShell title="Prompt Assembly" testId="analytics-prompt-assembly">
         <div data-testid="prompt-assembly-heading" className="hidden">Prompt Assembly</div>
         <div data-testid="prompt-assembly-note" className="hidden">Prompt assembly calisma ozeti ve modul/provider dagilimi.</div>
+        <SystemScopeNote />
         <MetricGrid>
           <MetricTile
             label="Uretim Calismasi"
