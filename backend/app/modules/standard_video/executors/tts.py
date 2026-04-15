@@ -35,6 +35,10 @@ from app.modules.shared_helpers import (
     validate_audio_duration,
     clean_narration_for_tts,
 )
+from app.tts.controls import (
+    TTSFineControls,
+    plan_scene_tts,
+)
 from app.tts.fallback_service import (
     get_job_fallback_selection,
 )
@@ -198,31 +202,20 @@ class TTSStepExecutor(StepExecutor):
             )
             voice = voice_style_override
 
-        # DubVoice-spesifik model ve voice_settings (Faz 1+2)
+        # DubVoice-spesifik model (Faz 1+2)
         dubvoice_model_id = None
-        dubvoice_voice_settings: dict = {}
         allowed_fallback_list: list[str] = []
+
+        # Faz 4: Tum TTS fine controls settings'ten cozulur
+        fine_controls = await self._resolve_fine_controls()
+        default_scene_energy = await self._resolve_default_scene_energy()
+        ssml_pauses_enabled = await self._resolve_ssml_pauses_enabled()
+
         if active_provider_id == "dubvoice":
             async with AsyncSessionLocal() as s_db:
                 dubvoice_model_id = await resolve_setting(
                     "tts.dubvoice.default_model_id", s_db
                 ) or "eleven_multilingual_v2"
-                stability = await resolve_setting("tts.voice_settings.stability", s_db)
-                similarity = await resolve_setting(
-                    "tts.voice_settings.similarity_boost", s_db
-                )
-                speed = await resolve_setting("tts.voice_settings.speed", s_db)
-                style = await resolve_setting("tts.voice_settings.style", s_db)
-                speaker_boost = await resolve_setting(
-                    "tts.voice_settings.use_speaker_boost", s_db
-                )
-                dubvoice_voice_settings = {
-                    "stability": float(stability) if stability is not None else 0.5,
-                    "similarity_boost": float(similarity) if similarity is not None else 0.75,
-                    "speed": float(speed) if speed is not None else 1.0,
-                    "style": float(style) if style is not None else 0.0,
-                    "use_speaker_boost": bool(speaker_boost) if speaker_boost is not None else True,
-                }
                 fb_raw = await resolve_setting("tts.fallback_providers", s_db)
                 if isinstance(fb_raw, list):
                     allowed_fallback_list = [str(p) for p in fb_raw if p]
@@ -247,6 +240,8 @@ class TTSStepExecutor(StepExecutor):
         total_chars = 0
         total_duration = 0.0
         start_time = time.monotonic()
+        # Faz 4: per-sahne TTS plan audit icin biriktirilir
+        controls_audit: list[dict] = []
 
         for i, scene in enumerate(scenes, start=1):
             raw_narration: str = scene.get("narration", "").strip()
@@ -278,9 +273,27 @@ class TTSStepExecutor(StepExecutor):
             audio_path = audio_dir / audio_filename
             relative_path = f"artifacts/audio/{audio_filename}"
 
+            # Faz 4: per-sahne scene_energy (input'tan override, yoksa default)
+            scene_energy_override = (
+                scene.get("scene_energy")
+                if isinstance(scene.get("scene_energy"), str)
+                else None
+            )
+            scene_energy = scene_energy_override or default_scene_energy
+
+            # Faz 4: glossary + pronunciation + controls'u uygula
+            plan = plan_scene_tts(
+                script_narration=narration,
+                base_controls=fine_controls,
+                scene_energy=scene_energy,
+                provider_id=active_provider_id or "dubvoice",
+                apply_ssml_pauses=ssml_pauses_enabled,
+            )
+            controls_audit.append(plan.as_audit_entry(scene_number=i))
+
             # Faz 1+2: DubVoice icin voice_id + voice_settings, Edge TTS icin voice
             tts_input: dict = {
-                "text": narration,
+                "text": plan.tts_text,
                 "output_path": str(audio_path),
                 "language": ctx.language.value,
             }
@@ -288,11 +301,17 @@ class TTSStepExecutor(StepExecutor):
                 tts_input["voice_id"] = voice
                 if dubvoice_model_id:
                     tts_input["model_id"] = dubvoice_model_id
-                if dubvoice_voice_settings:
-                    tts_input["voice_settings"] = dubvoice_voice_settings
+                # Faz 4: plan.voice_settings provider-native payload
+                if plan.voice_settings:
+                    tts_input["voice_settings"] = plan.voice_settings
             else:
-                # Edge TTS / System TTS voice kodu bekler
+                # Edge TTS / System TTS voice kodu bekler + rate/pitch
                 tts_input["voice"] = voice
+                if plan.voice_settings:
+                    # Edge TTS {'rate': '+10%', 'pitch': '+0Hz'}
+                    # System TTS {'speed': 1.0}
+                    for k, v in plan.voice_settings.items():
+                        tts_input.setdefault(k, v)
 
             try:
                 output = await resolve_tts_strict(
@@ -365,6 +384,10 @@ class TTSStepExecutor(StepExecutor):
             # Faz 2: hangi provider uretti, explicit fallback mi?
             "provider_id": active_provider_id,
             "explicit_fallback_used": bool(explicit_provider_id),
+            # Faz 4: narration canonicality ispati
+            "narration_source": "script_canonical",
+            "controls_default_scene_energy": default_scene_energy,
+            "controls_ssml_pauses_enabled": ssml_pauses_enabled,
         }
 
         artifact_path = _write_artifact(
@@ -373,6 +396,27 @@ class TTSStepExecutor(StepExecutor):
             filename="audio_manifest.json",
             data=manifest_data,
         )
+
+        # Faz 4: tts_controls_audit.json — per-sahne TTS plan audit
+        controls_audit_path = None
+        if controls_audit:
+            controls_audit_path = _write_artifact(
+                workspace_root=workspace_root,
+                job_id=job.id,
+                filename="tts_controls_audit.json",
+                data={
+                    "version": "1",
+                    "rule": "script_canonical_narration_glossary_only_for_tts",
+                    "scenes": controls_audit,
+                    "totals": {
+                        "scenes": len(controls_audit),
+                        "total_replacements": sum(
+                            sum(r.get("count", 1) for r in a.get("replacements", []))
+                            for a in controls_audit
+                        ),
+                    },
+                },
+            )
 
         logger.info(
             "TTSStepExecutor: job=%s dil=%s ses=%s sahne=%d toplam_sure=%.1fs artifact=%s",
@@ -401,9 +445,11 @@ class TTSStepExecutor(StepExecutor):
 
         result = {
             "artifact_path": artifact_path,
+            "controls_audit_path": controls_audit_path,
             "language": ctx.language.value,
             "voice": voice,
             "scene_count": len(scenes),
+            "narration_source": "script_canonical",
             "provider": {
                 "provider_id": active_provider_id,
                 "voice": voice,
@@ -414,6 +460,8 @@ class TTSStepExecutor(StepExecutor):
                 "latency_ms": latency_ms,
                 "explicit_fallback_used": bool(explicit_provider_id),
                 "auto_fallback_allowed": False,
+                "default_scene_energy": default_scene_energy,
+                "ssml_pauses_enabled": ssml_pauses_enabled,
             },
             "provider_trace": trace_info,
             "step": self.step_key(),
@@ -424,3 +472,81 @@ class TTSStepExecutor(StepExecutor):
             result["template_info"] = template_info
             result["voice_style_override_applied"] = voice_style_override is not None
         return result
+
+    # -----------------------------------------------------------------
+    # Faz 4: Fine controls settings resolution
+    # -----------------------------------------------------------------
+
+    async def _resolve_fine_controls(self) -> TTSFineControls:
+        """
+        Settings Registry'den tum TTS fine controls'u cek ve TTSFineControls
+        nesnesine yerlestir.
+        """
+        from app.db.session import AsyncSessionLocal
+        from app.settings.settings_resolver import resolve as resolve_setting
+
+        async with AsyncSessionLocal() as s_db:
+            stability = await resolve_setting("tts.voice_settings.stability", s_db)
+            similarity = await resolve_setting(
+                "tts.voice_settings.similarity_boost", s_db
+            )
+            speed = await resolve_setting("tts.voice_settings.speed", s_db)
+            pitch = await resolve_setting("tts.voice_settings.pitch", s_db)
+            emphasis = await resolve_setting("tts.voice_settings.emphasis", s_db)
+            speaker_boost = await resolve_setting(
+                "tts.voice_settings.use_speaker_boost", s_db
+            )
+            sentence_break = await resolve_setting("tts.pauses.sentence_break_ms", s_db)
+            paragraph_break = await resolve_setting("tts.pauses.paragraph_break_ms", s_db)
+            scene_break = await resolve_setting("tts.pauses.scene_break_ms", s_db)
+            brand_raw = await resolve_setting("tts.glossary.brand", s_db)
+            product_raw = await resolve_setting("tts.glossary.product", s_db)
+            pron_raw = await resolve_setting("tts.pronunciation.overrides", s_db)
+
+        def _as_dict(value) -> dict:
+            if isinstance(value, dict):
+                return value
+            if isinstance(value, str) and value.strip():
+                try:
+                    parsed = json.loads(value)
+                    if isinstance(parsed, dict):
+                        return parsed
+                except Exception:
+                    return {}
+            return {}
+
+        return TTSFineControls(
+            speed=float(speed) if speed is not None else 1.0,
+            pitch=float(pitch) if pitch is not None else 0.0,
+            emphasis=float(emphasis) if emphasis is not None else 0.5,
+            use_speaker_boost=bool(speaker_boost) if speaker_boost is not None else True,
+            stability=float(stability) if stability is not None else 0.5,
+            similarity_boost=float(similarity) if similarity is not None else 0.75,
+            sentence_break_ms=int(sentence_break) if sentence_break is not None else 0,
+            paragraph_break_ms=int(paragraph_break) if paragraph_break is not None else 0,
+            scene_break_ms=int(scene_break) if scene_break is not None else 0,
+            glossary_brand=_as_dict(brand_raw),
+            glossary_product=_as_dict(product_raw),
+            pronunciation_overrides=_as_dict(pron_raw),
+        ).clamped()
+
+    async def _resolve_default_scene_energy(self) -> str | None:
+        from app.db.session import AsyncSessionLocal
+        from app.settings.settings_resolver import resolve as resolve_setting
+
+        async with AsyncSessionLocal() as s_db:
+            val = await resolve_setting("tts.controls.default_scene_energy", s_db)
+        if not val or not isinstance(val, str):
+            return None
+        val = val.strip().lower()
+        if val in {"calm", "neutral", "energetic"}:
+            return val
+        return None
+
+    async def _resolve_ssml_pauses_enabled(self) -> bool:
+        from app.db.session import AsyncSessionLocal
+        from app.settings.settings_resolver import resolve as resolve_setting
+
+        async with AsyncSessionLocal() as s_db:
+            val = await resolve_setting("tts.controls.ssml_pauses_enabled", s_db)
+        return bool(val) if val is not None else False

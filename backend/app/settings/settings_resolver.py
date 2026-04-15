@@ -415,6 +415,133 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "wired_to": "VoiceSettings dataclass default",
     },
 
+    # Faz 4 — TTS fine controls
+    "tts.voice_settings.pitch": {
+        "group": "tts",
+        "type": "float",
+        "label": "TTS Pitch (-1..+1)",
+        "help_text": "Ses perdesi. 0 = normal. DubVoice yok sayar; Edge TTS "
+                     "Hz'e cevirip uygular (-20..+20Hz).",
+        "module_scope": None,
+        "env_var": "",
+        "builtin_default": 0.0,
+        "wired": True,
+        "wired_to": "app.tts.controls.build_provider_voice_settings",
+    },
+    "tts.voice_settings.emphasis": {
+        "group": "tts",
+        "type": "float",
+        "label": "TTS Vurgu Yogunlugu (0..1)",
+        "help_text": "Kullanici-yonlu vurgu kontrolu. DubVoice icin 'style' "
+                     "alanina dondurulur; yuksek deger daha dramatik tonlama.",
+        "module_scope": None,
+        "env_var": "",
+        "builtin_default": 0.5,
+        "wired": True,
+        "wired_to": "app.tts.controls.TTSFineControls.emphasis",
+    },
+    "tts.pauses.sentence_break_ms": {
+        "group": "tts",
+        "type": "integer",
+        "label": "Cumle Arasi Duraklama (ms)",
+        "help_text": "Cumle sonu noktalama sonrasi eklenecek SSML break "
+                     "suresi. 0 = kapali. SSML destekleyen provider'a gore "
+                     "uygulanir (Edge TTS SSML, DubVoice ignore edebilir).",
+        "module_scope": None,
+        "env_var": "",
+        "builtin_default": 0,
+        "wired": True,
+        "wired_to": "app.tts.controls.insert_ssml_pauses",
+    },
+    "tts.pauses.paragraph_break_ms": {
+        "group": "tts",
+        "type": "integer",
+        "label": "Paragraf Arasi Duraklama (ms)",
+        "help_text": "Cift yeni satir (paragraph boundary) sonrasi SSML "
+                     "break. 0 = kapali.",
+        "module_scope": None,
+        "env_var": "",
+        "builtin_default": 0,
+        "wired": True,
+        "wired_to": "app.tts.controls.insert_ssml_pauses",
+    },
+    "tts.pauses.scene_break_ms": {
+        "group": "tts",
+        "type": "integer",
+        "label": "Sahne Arasi Duraklama (ms)",
+        "help_text": "Iki sahne arasina eklenecek bos ses suresi. 0 = kapali. "
+                     "Composition adiminda audio mix'e uygulanir.",
+        "module_scope": None,
+        "env_var": "",
+        "builtin_default": 0,
+        "wired": True,
+        "wired_to": "Composition step — audio gap between scenes",
+    },
+    "tts.glossary.brand": {
+        "group": "tts",
+        "type": "json",
+        "label": "Marka Glossary (pronunciation)",
+        "help_text": "Marka isimlerinin TTS icin fonetik yazimi. "
+                     "Ornek: {\"ContentHub\": \"kontent hab\"}. SABIT: bu "
+                     "degisim SADECE TTS metninde uygulanir; subtitle metni "
+                     "her zaman script canonical'dir (Faz 3 kurali gecerli).",
+        "module_scope": None,
+        "env_var": "",
+        "builtin_default": {},
+        "wired": True,
+        "wired_to": "app.tts.controls.apply_glossary_and_pronunciation",
+    },
+    "tts.glossary.product": {
+        "group": "tts",
+        "type": "json",
+        "label": "Urun Glossary (pronunciation)",
+        "help_text": "Urun isimlerinin TTS icin fonetik yazimi. Benzer "
+                     "sekilde subtitle etkilemez.",
+        "module_scope": None,
+        "env_var": "",
+        "builtin_default": {},
+        "wired": True,
+        "wired_to": "app.tts.controls.apply_glossary_and_pronunciation",
+    },
+    "tts.pronunciation.overrides": {
+        "group": "tts",
+        "type": "json",
+        "label": "Genel Pronunciation Overrides",
+        "help_text": "Marka/urun disi sozluk (aksent, yerellestirme vb.). "
+                     "Ornek: {\"Istanbul\": \"isztanbul\"}. Subtitle "
+                     "etkilenmez.",
+        "module_scope": None,
+        "env_var": "",
+        "builtin_default": {},
+        "wired": True,
+        "wired_to": "app.tts.controls.apply_glossary_and_pronunciation",
+    },
+    "tts.controls.ssml_pauses_enabled": {
+        "group": "tts",
+        "type": "boolean",
+        "label": "SSML Break Etiketlerini Enjekte Et",
+        "help_text": "Acikken sentence_break_ms/paragraph_break_ms degerleri "
+                     "<break> etiketi olarak TTS metnine eklenir. DubVoice "
+                     "SSML destegi sinirlidir; default KAPALI.",
+        "module_scope": None,
+        "env_var": "",
+        "builtin_default": False,
+        "wired": True,
+        "wired_to": "app.tts.controls.plan_scene_tts apply_ssml_pauses bayragi",
+    },
+    "tts.controls.default_scene_energy": {
+        "group": "tts",
+        "type": "string",
+        "label": "Varsayilan Sahne Enerjisi",
+        "help_text": "calm | neutral | energetic | '' (off). Per-sahne "
+                     "override input.scenes[].scene_energy ile yapilabilir.",
+        "module_scope": None,
+        "env_var": "",
+        "builtin_default": "neutral",
+        "wired": True,
+        "wired_to": "app.tts.controls.apply_scene_energy",
+    },
+
     "provider.visuals.pexels_default_count": {
         "group": "providers",
         "type": "integer",
