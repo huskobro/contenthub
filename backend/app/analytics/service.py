@@ -57,6 +57,7 @@ from app.db.models import (
     SyncedComment, SyncedPlaylist, PlatformPost, EngagementTask,
 )
 from app.prompt_assembly.models import PromptAssemblyRun
+from app.analytics.sql_helpers import epoch_diff_seconds
 
 logger = logging.getLogger(__name__)
 
@@ -196,8 +197,7 @@ async def get_overview_metrics(
             case(
                 (
                     (Job.started_at.is_not(None)) & (Job.finished_at.is_not(None)),
-                    func.julianday(Job.finished_at) * 86400.0
-                    - func.julianday(Job.started_at) * 86400.0,
+                    epoch_diff_seconds(Job.started_at, Job.finished_at),
                 ),
                 else_=None,
             )
@@ -747,8 +747,7 @@ async def get_content_metrics(
             case(
                 (
                     (Job.started_at.is_not(None)) & (Job.finished_at.is_not(None)),
-                    func.julianday(Job.finished_at) * 86400.0
-                    - func.julianday(Job.started_at) * 86400.0,
+                    epoch_diff_seconds(Job.started_at, Job.finished_at),
                 ),
                 else_=None,
             )
@@ -821,8 +820,7 @@ async def get_content_metrics(
     # --- Ortalama yayına kadar geçen süre ---
     time_to_pub_q = select(
         func.avg(
-            func.julianday(PublishRecord.published_at) * 86400.0
-            - func.julianday(Job.created_at) * 86400.0,
+            epoch_diff_seconds(Job.created_at, PublishRecord.published_at),
         ).label("avg_time")
     ).join(Job, Job.id == PublishRecord.job_id).where(
         PublishRecord.status == "published",
@@ -899,8 +897,7 @@ async def get_template_impact_metrics(
                 case(
                     (
                         (Job.started_at.is_not(None)) & (Job.finished_at.is_not(None)),
-                        func.julianday(Job.finished_at) * 86400.0
-                        - func.julianday(Job.started_at) * 86400.0,
+                        epoch_diff_seconds(Job.started_at, Job.finished_at),
                     ),
                     else_=None,
                 )
@@ -1139,8 +1136,7 @@ async def get_dashboard_summary(
             case(
                 (
                     (Job.started_at.is_not(None)) & (Job.finished_at.is_not(None)),
-                    func.julianday(Job.finished_at) * 86400.0
-                    - func.julianday(Job.started_at) * 86400.0,
+                    epoch_diff_seconds(Job.started_at, Job.finished_at),
                 ),
                 else_=None,
             )
@@ -1373,8 +1369,7 @@ async def get_publish_analytics(
     # --- Avg time to publish ---
     time_q = select(
         func.avg(
-            func.julianday(PublishRecord.published_at) * 86400.0
-            - func.julianday(Job.created_at) * 86400.0,
+            epoch_diff_seconds(Job.created_at, PublishRecord.published_at),
         ).label("avg_time")
     ).join(Job, Job.id == PublishRecord.job_id).where(
         PublishRecord.status == "published",
@@ -1509,8 +1504,7 @@ async def get_channel_performance(
             case(
                 (
                     (Job.started_at.is_not(None)) & (Job.finished_at.is_not(None)),
-                    func.julianday(Job.finished_at) * 86400.0
-                    - func.julianday(Job.started_at) * 86400.0,
+                    epoch_diff_seconds(Job.started_at, Job.finished_at),
                 ),
                 else_=None,
             )
