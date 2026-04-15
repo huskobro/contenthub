@@ -1852,6 +1852,337 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "wired": True,
         "wired_to": "AutomationScheduler.compute_next_run",
     },
+
+    # -----------------------------------------------------------------
+    # Product Review Module (Faz A — 23 setting)
+    # -----------------------------------------------------------------
+    # Scrape / ingestion
+    "product_review.scrape.enabled": {
+        "group": "product_review",
+        "type": "boolean",
+        "label": "Urun tarama etkin",
+        "help_text": "Kapali oldugunda product_scrape adimi kullaniciya acik hata verir.",
+        "module_scope": "product_review",
+        "env_var": None,
+        "builtin_default": True,
+        "wired": False,
+        "wired_to": "product_review.executors.ProductScrapeStepExecutor (Faz B)",
+    },
+    "product_review.scrape.timeout_seconds": {
+        "group": "product_review",
+        "type": "integer",
+        "label": "Scrape HTTP timeout (saniye)",
+        "help_text": "Urun sayfasi cekme HTTP timeout'u.",
+        "module_scope": "product_review",
+        "env_var": None,
+        "builtin_default": 15,
+        "wired": False,
+        "wired_to": "product_review.executors.ProductScrapeStepExecutor (Faz B)",
+    },
+    "product_review.scrape.max_body_bytes": {
+        "group": "product_review",
+        "type": "integer",
+        "label": "Scrape max icerik boyutu (byte)",
+        "help_text": "Bu limiti asan sayfalar kesilir ve uyari verilir.",
+        "module_scope": "product_review",
+        "env_var": None,
+        "builtin_default": 2_000_000,
+        "wired": False,
+        "wired_to": "product_review.executors.ProductScrapeStepExecutor (Faz B)",
+    },
+    "product_review.scrape.min_interval_seconds_per_host": {
+        "group": "product_review",
+        "type": "integer",
+        "label": "Host basina scrape araligi (saniye)",
+        "help_text": "Ayni host'a pes pese istekleri engeller — kibarlik + anti-ban.",
+        "module_scope": "product_review",
+        "env_var": None,
+        "builtin_default": 5,
+        "wired": False,
+        "wired_to": "product_review.executors.ProductScrapeStepExecutor (Faz B)",
+    },
+    "product_review.scrape.respect_robots_txt": {
+        "group": "product_review",
+        "type": "boolean",
+        "label": "robots.txt'e uy",
+        "help_text": (
+            "Varsayilan KAPALI (user karari: default false). Acildiginda scrape "
+            "oncesi robots.txt okunur; izin yoksa adim hata verir + audit log. "
+            "UYARI: Acmak kibar + yasal olan — docs/product-review-legal.md'ye bakiniz."
+        ),
+        "module_scope": "product_review",
+        "env_var": None,
+        "builtin_default": False,
+        "wired": False,
+        "wired_to": "product_review.executors.ProductScrapeStepExecutor (Faz B)",
+    },
+    "product_review.scrape.parser_chain_order": {
+        "group": "product_review",
+        "type": "string",
+        "label": "Parser zincir sirasi",
+        "help_text": (
+            "Virgul ile ayrilmis parser adlari. Ornek: 'jsonld,og,site_specific'. "
+            "Ilk geri doneni kazanir; hepsi bos → scrape_confidence 0.0."
+        ),
+        "module_scope": "product_review",
+        "env_var": None,
+        "builtin_default": "jsonld,og,site_specific",
+        "wired": False,
+        "wired_to": "product_review.executors.ProductScrapeStepExecutor (Faz B)",
+    },
+    "product_review.scrape.min_confidence_for_full_auto": {
+        "group": "product_review",
+        "type": "float",
+        "label": "Full-auto icin minimum scrape guveni",
+        "help_text": (
+            "Full-auto mode'da bu esigi gecemeyen job'lar semi_auto'ya dusurulur. "
+            "Publish review gate KORUNUR — bu sadece pipeline otomasyonunu etkiler."
+        ),
+        "module_scope": "product_review",
+        "env_var": None,
+        "builtin_default": 0.7,
+        "wired": False,
+        "wired_to": "product_review.executors.ProductScrapeStepExecutor + full_auto gate (Faz B / E)",
+    },
+
+    # Ingestion — site allowlist
+    "product_review.sites.allowlist": {
+        "group": "product_review",
+        "type": "string",
+        "label": "Desteklenen siteler (allowlist)",
+        "help_text": (
+            "Virgul ile ayrilmis host listesi. v1: amazon,trendyol,hepsiburada,n11,"
+            "shopify,woocommerce. Bu listenin disindaki host'lar generic parser "
+            "ile islenir (sadece jsonld + og; site_specific devre disi)."
+        ),
+        "module_scope": "product_review",
+        "env_var": None,
+        "builtin_default": "amazon,trendyol,hepsiburada,n11,shopify,woocommerce",
+        "wired": False,
+        "wired_to": "product_review.executors.ProductScrapeStepExecutor (Faz B/G)",
+    },
+
+    # Creative / pipeline
+    "product_review.config.default_language": {
+        "group": "product_review",
+        "type": "string",
+        "label": "Varsayilan dil",
+        "help_text": "Senaryo ve metadata icin varsayilan dil (ISO 639-1).",
+        "module_scope": "product_review",
+        "env_var": None,
+        "builtin_default": "tr",
+        "wired": False,
+        "wired_to": "product_review.executors.ScriptStepExecutor (Faz B)",
+    },
+    "product_review.config.default_orientation": {
+        "group": "product_review",
+        "type": "string",
+        "label": "Varsayilan video yonu",
+        "help_text": "'vertical' veya 'horizontal'. v1 vertical ile baslar.",
+        "module_scope": "product_review",
+        "env_var": None,
+        "builtin_default": "vertical",
+        "wired": False,
+        "wired_to": "product_review.executors.CompositionStepExecutor (Faz B)",
+    },
+    "product_review.config.default_duration_seconds": {
+        "group": "product_review",
+        "type": "integer",
+        "label": "Varsayilan video suresi (saniye)",
+        "help_text": "Hedef sure — senaryo buna gore planlanir.",
+        "module_scope": "product_review",
+        "env_var": None,
+        "builtin_default": 60,
+        "wired": False,
+        "wired_to": "product_review.executors.ScriptStepExecutor (Faz B)",
+    },
+    "product_review.config.render_fps": {
+        "group": "product_review",
+        "type": "integer",
+        "label": "Render FPS",
+        "help_text": "Remotion render kare hizi.",
+        "module_scope": "product_review",
+        "env_var": None,
+        "builtin_default": 30,
+        "wired": False,
+        "wired_to": "product_review.executors.RenderStepExecutor (Faz B)",
+    },
+
+    # Preview-first
+    "product_review.preview.level1_enabled": {
+        "group": "product_review",
+        "type": "boolean",
+        "label": "Level 1 preview (renderStill) etkin",
+        "help_text": "Kapatilirsa preview_frame adimi atlanir — user kararina karsin onerilmiyor.",
+        "module_scope": "product_review",
+        "env_var": None,
+        "builtin_default": True,
+        "wired": False,
+        "wired_to": "product_review.executors.PreviewFrameExecutor (Faz C)",
+    },
+    "product_review.preview.level2_enabled": {
+        "group": "product_review",
+        "type": "boolean",
+        "label": "Level 2 preview (mini MP4) etkin",
+        "help_text": "Kapatilirsa preview_mini adimi atlanir — kullanici kararina karsi onerilmiyor.",
+        "module_scope": "product_review",
+        "env_var": None,
+        "builtin_default": True,
+        "wired": False,
+        "wired_to": "product_review.executors.PreviewMiniExecutor (Faz C)",
+    },
+    "product_review.preview.mini_seconds": {
+        "group": "product_review",
+        "type": "integer",
+        "label": "Mini MP4 suresi (saniye)",
+        "help_text": "Level 2 preview MP4'un sure uzunlugu.",
+        "module_scope": "product_review",
+        "env_var": None,
+        "builtin_default": 3,
+        "wired": False,
+        "wired_to": "product_review.executors.PreviewMiniExecutor (Faz C)",
+    },
+
+    # Legal / disclosure
+    "product_review.legal.affiliate_disclosure_text": {
+        "group": "product_review",
+        "type": "string",
+        "label": "Affiliate disclosure metni",
+        "help_text": (
+            "Affiliate URL'li jobs icin metadata + video sonuna eklenen yasal metin. "
+            "BU METIN KALDIRILAMAZ — affiliate_enabled=True iken eklenmesi zorunlu."
+        ),
+        "module_scope": "product_review",
+        "env_var": None,
+        "builtin_default": (
+            "Bu videodaki baglantilar affiliate link icerebilir. Satin alma "
+            "yaparsaniz kanalin kucuk bir komisyon kazanmasi mumkundur; size ek "
+            "maliyeti yoktur."
+        ),
+        "wired": False,
+        "wired_to": "product_review.executors.MetadataStepExecutor (Faz B)",
+    },
+    "product_review.legal.price_disclaimer_text": {
+        "group": "product_review",
+        "type": "string",
+        "label": "Fiyat disclaimer metni",
+        "help_text": (
+            "Metadata + on-screen'de gosterilen fiyat disclaimer'i. Fiyatlar "
+            "snapshot tabanli, degisebilir uyarisi. KALDIRILAMAZ."
+        ),
+        "module_scope": "product_review",
+        "env_var": None,
+        "builtin_default": (
+            "Fiyatlar video cekim anindaki duruma gore alinmistir; guncel fiyat "
+            "icin ilgili satici sayfasina bakiniz."
+        ),
+        "wired": False,
+        "wired_to": "product_review.executors.MetadataStepExecutor (Faz B)",
+    },
+    "product_review.legal.tos_checkbox_required": {
+        "group": "product_review",
+        "type": "boolean",
+        "label": "Is olusturulurken ToS onayi zorunlu",
+        "help_text": (
+            "Kullanici urun incelemesi job'i baslatirken 'affiliate disclosure + "
+            "fiyat disclaimer eklenecek' onayini vermeden job olusamaz (wizard)."
+        ),
+        "module_scope": "product_review",
+        "env_var": None,
+        "builtin_default": True,
+        "wired": False,
+        "wired_to": "product_review.router (Faz B wizard) + audit",
+    },
+
+    # Prompts
+    "product_review.prompt.single_script_system": {
+        "group": "product_review",
+        "type": "prompt",
+        "label": "Tek urun senaryo sistem promptu",
+        "help_text": (
+            "Tek urun incelemesi icin senaryo uretimi sistem promptu. "
+            "{brand}, {name}, {price}, {currency}, {rating}, {features} "
+            "placeholder'lari desteklenir."
+        ),
+        "module_scope": "product_review",
+        "env_var": None,
+        "builtin_default": (
+            "Sen urun inceleme videolari icin profesyonel bir senaristsin. "
+            "Turkce, samimi ama bilgilendirici bir tonla yaz. Urunun faydalarina "
+            "ve gercek kullanim senaryolarina odaklan. Abartili ifadelerden kacin. "
+            "Affiliate disclosure + fiyat disclaimer senaryo sonuna KESIN eklenmeli."
+        ),
+        "wired": False,
+        "wired_to": "product_review.executors.ScriptStepExecutor (Faz B)",
+    },
+    "product_review.prompt.comparison_script_system": {
+        "group": "product_review",
+        "type": "prompt",
+        "label": "Karsilastirma senaryo sistem promptu",
+        "help_text": (
+            "Urun karsilastirma (2+ urun) senaryo sistem promptu. "
+            "{primary}, {secondaries} placeholder'lari."
+        ),
+        "module_scope": "product_review",
+        "env_var": None,
+        "builtin_default": (
+            "Sen urun karsilastirma videolari icin objektif bir senaristsin. "
+            "Turkce yaz. Her urunun artisi ve eksisi esit mesafeden degerlendir. "
+            "Sonuc tavsiyesi ver ama okur karar versin. Affiliate disclosure + "
+            "fiyat disclaimer senaryo sonuna KESIN eklenmeli."
+        ),
+        "wired": False,
+        "wired_to": "product_review.executors.ScriptStepExecutor (Faz D)",
+    },
+    "product_review.prompt.alternatives_script_system": {
+        "group": "product_review",
+        "type": "prompt",
+        "label": "Alternatif oneri senaryo sistem promptu",
+        "help_text": "Bir ana urune alternatif urun onerileri senaryo sistem promptu.",
+        "module_scope": "product_review",
+        "env_var": None,
+        "builtin_default": (
+            "Sen urun oneri videolari icin tecrubeli bir senaristsin. Turkce yaz. "
+            "Ana urunu tanit, butce / ozellik / hedef kitleye gore 3 alternatif "
+            "oner. Her alternatifi kisa gerekce ile sun. Affiliate disclosure + "
+            "fiyat disclaimer senaryo sonuna KESIN eklenmeli."
+        ),
+        "wired": False,
+        "wired_to": "product_review.executors.ScriptStepExecutor (Faz D)",
+    },
+    "product_review.prompt.metadata_system": {
+        "group": "product_review",
+        "type": "prompt",
+        "label": "Metadata sistem promptu",
+        "help_text": "Basiklik, aciklama, etiketler uretimi icin prompt.",
+        "module_scope": "product_review",
+        "env_var": None,
+        "builtin_default": (
+            "Sen YouTube/TikTok icerik optimizasyonu konusunda uzman bir "
+            "editorsen. Turkce yaz. Clickbait'ten kacin; basligi dogru ve cekici "
+            "yap. Aciklamaya affiliate disclosure + fiyat disclaimer'i MUTLAKA "
+            "ekle. Etiketler urunun marka, kategori ve kullanim alanina odakli olsun."
+        ),
+        "wired": False,
+        "wired_to": "product_review.executors.MetadataStepExecutor (Faz B)",
+    },
+
+    # Full-auto / audit
+    "product_review.full_auto.allow_publish_without_review": {
+        "group": "product_review",
+        "type": "boolean",
+        "label": "Full-auto: review GATE'i atla (TEHLIKELI)",
+        "help_text": (
+            "Varsayilan KAPALI. Acildiginda full_auto mode'da publish review "
+            "atlanir ve otomatik yayinlanir. Her kullanim audit_logs'a yazilir. "
+            "Yasal disclosure + disclaimer her iki durumda da ZORUNLU kalir."
+        ),
+        "module_scope": "product_review",
+        "env_var": None,
+        "builtin_default": False,
+        "wired": False,
+        "wired_to": "product_review.executors.PublishStepExecutor + audit (Faz F)",
+    },
 }
 
 # Group labels for UI
@@ -1865,13 +2196,14 @@ GROUP_LABELS: Dict[str, str] = {
     "jobs": "Is Motoru Ayarlari",
     "news_bulletin": "Haber Bulteni",
     "standard_video": "Standart Video",
+    "product_review": "Urun Incelemesi",
     "modules": "Moduller",
     "wizard": "Wizard Yonetimi",
     "system": "Sistem",
     "automation": "Otomasyon",
 }
 
-GROUP_ORDER = ["credentials", "providers", "execution", "source_scans", "publish", "ui", "jobs", "automation", "wizard", "standard_video", "news_bulletin", "modules", "system"]
+GROUP_ORDER = ["credentials", "providers", "execution", "source_scans", "publish", "ui", "jobs", "automation", "wizard", "standard_video", "news_bulletin", "product_review", "modules", "system"]
 
 
 # ---------------------------------------------------------------------------
@@ -1941,6 +2273,24 @@ KNOWN_VALIDATION_RULES: Dict[str, str] = {
     "standard_video.config.image_transition": '{"type": "string", "enum": ["crossfade", "cut", "slide", "zoom"]}',
     "standard_video.config.watermark_opacity": '{"type": "float", "min": 0.0, "max": 1.0}',
     "standard_video.config.watermark_position": '{"type": "string", "enum": ["top-left", "top-right", "bottom-left", "bottom-right"]}',
+    # Product Review (Faz A)
+    "product_review.scrape.timeout_seconds": '{"type": "integer", "min": 3, "max": 120}',
+    "product_review.scrape.max_body_bytes": '{"type": "integer", "min": 10000, "max": 50000000}',
+    "product_review.scrape.min_interval_seconds_per_host": '{"type": "integer", "min": 1, "max": 300}',
+    "product_review.scrape.parser_chain_order": '{"type": "string", "required": true}',
+    "product_review.scrape.min_confidence_for_full_auto": '{"type": "float", "min": 0.0, "max": 1.0}',
+    "product_review.sites.allowlist": '{"type": "string", "required": true}',
+    "product_review.config.default_language": '{"type": "string", "required": true}',
+    "product_review.config.default_orientation": '{"type": "string", "enum": ["vertical", "horizontal"]}',
+    "product_review.config.default_duration_seconds": '{"type": "integer", "min": 30, "max": 600}',
+    "product_review.config.render_fps": '{"type": "integer", "min": 15, "max": 60}',
+    "product_review.preview.mini_seconds": '{"type": "integer", "min": 1, "max": 15}',
+    "product_review.legal.affiliate_disclosure_text": '{"type": "string", "required": true, "min_length": 10}',
+    "product_review.legal.price_disclaimer_text": '{"type": "string", "required": true, "min_length": 10}',
+    "product_review.prompt.single_script_system": '{"type": "string", "required": true, "min_length": 10}',
+    "product_review.prompt.comparison_script_system": '{"type": "string", "required": true, "min_length": 10}',
+    "product_review.prompt.alternatives_script_system": '{"type": "string", "required": true, "min_length": 10}',
+    "product_review.prompt.metadata_system": '{"type": "string", "required": true, "min_length": 10}',
 }
 
 

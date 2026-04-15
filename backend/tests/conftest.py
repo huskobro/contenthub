@@ -28,11 +28,13 @@ from app.db.models import User
 from app.modules.registry import module_registry
 from app.modules.standard_video.definition import STANDARD_VIDEO_MODULE
 from app.modules.news_bulletin.definition import NEWS_BULLETIN_MODULE
+from app.modules.product_review.definition import PRODUCT_REVIEW_MODULE
 
 
 # Test ortamında global registry'e modülleri kaydet
 module_registry.register(STANDARD_VIDEO_MODULE)
 module_registry.register(NEWS_BULLETIN_MODULE)
+module_registry.register(PRODUCT_REVIEW_MODULE)
 
 
 # ---------------------------------------------------------------------------

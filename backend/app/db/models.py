@@ -1946,5 +1946,150 @@ class NotificationItem(Base):
     )
 
 
+# ---------------------------------------------------------------------------
+# Product Review Module (Faz A — product_review_001 migration)
+# ---------------------------------------------------------------------------
+
+
+class Product(Base):
+    """
+    product_review modulu icin urun ana kaydi.
+
+    source_url: operatorun girdigi orijinal link (tracking param'li olabilir)
+    canonical_url: normalize edilmis, affiliate/tracking temizlenmis url
+                   — partial UNIQUE index (NULL'lara izin verilir)
+    parser_source: hangi ingestion adimi cozdu ('jsonld', 'og',
+                   'site_specific', 'manual')
+    scrape_confidence: 0.0-1.0 — full-auto kapisi bunu kullanir.
+    robots_txt_allowed: site robots.txt kontrolune gore (varsayilan kapali,
+                       setting ile acilabilir — docs/warning zorunlu).
+
+    Snapshot politikasi v1: her scrape sonrasi bir product_snapshot satiri
+    yaratilir; price history tablosu YOK (kullanici karari).
+    """
+
+    __tablename__ = "products"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    name: Mapped[str] = mapped_column(String(500), nullable=False)
+    brand: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    category: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    vendor: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    source_url: Mapped[str] = mapped_column(Text, nullable=False)
+    canonical_url: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    affiliate_url: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    current_price: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    currency: Mapped[Optional[str]] = mapped_column(String(10), nullable=True, default="TRY")
+    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    primary_image_url: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    parser_source: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    scrape_confidence: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    robots_txt_allowed: Mapped[Optional[bool]] = mapped_column(Boolean, nullable=True)
+    is_test_data: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now, onupdate=_now
+    )
+
+
+class ProductSnapshot(Base):
+    """
+    Her scrape icin yazilan anlik fotograf. Migration'da product_id FK
+    CASCADE: urun silindiginde snapshot'lar da siler.
+
+    Alanlar:
+      - http_status: Content fetch HTTP durumu.
+      - price / availability / rating_*: parse sonuclari.
+      - raw_html_sha1: deduplikasyon (ayni icerik tekrar tekrar yazilmasin).
+      - parsed_json: debug icin tum parse ciktisini tutar.
+      - confidence: scrape_engine'in bu snapshot'a verdigi guven skoru.
+    """
+
+    __tablename__ = "product_snapshots"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    product_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("products.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    fetched_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now
+    )
+    http_status: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    price: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    currency: Mapped[Optional[str]] = mapped_column(String(10), nullable=True)
+    availability: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    rating_value: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    rating_count: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    raw_html_sha1: Mapped[Optional[str]] = mapped_column(String(40), nullable=True, index=True)
+    parsed_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    parser_source: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    confidence: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    error_message: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    is_test_data: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now
+    )
+
+
+class ProductReview(Base):
+    """
+    product_review modulunun job engine icin girdi kaydi
+    (news_bulletins'e paralel).
+
+    template_type: 'single' | 'comparison' | 'alternatives'
+    primary_product_id: ana urun (zorunlu).
+    secondary_product_ids_json: JSON array of product ids (comparison/alternatives icin).
+
+    run_mode: 'semi_auto' (operator onay bekler) | 'full_auto' (scrape_confidence
+              gate'ine + min veri kriterine baglidir — publish review KAPISI
+              her iki modda KORUNUR; tek istisna settings-gated + audit).
+    """
+
+    __tablename__ = "product_reviews"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    topic: Mapped[str] = mapped_column(String(500), nullable=False)
+    template_type: Mapped[str] = mapped_column(String(50), nullable=False)
+    primary_product_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("products.id", ondelete="RESTRICT"),
+        nullable=False,
+        index=True,
+    )
+    secondary_product_ids_json: Mapped[str] = mapped_column(
+        Text, nullable=False, default="[]"
+    )
+    language: Mapped[str] = mapped_column(String(10), nullable=False, default="tr")
+    orientation: Mapped[str] = mapped_column(String(20), nullable=False, default="vertical")
+    duration_seconds: Mapped[int] = mapped_column(Integer, nullable=False, default=60)
+    run_mode: Mapped[str] = mapped_column(String(20), nullable=False, default="semi_auto")
+    affiliate_enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    disclosure_text: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    job_id: Mapped[Optional[str]] = mapped_column(
+        String(36),
+        ForeignKey("jobs.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+    owner_user_id: Mapped[Optional[str]] = mapped_column(
+        String(36),
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+    is_test_data: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now, onupdate=_now
+    )
+
+
 # Prompt Assembly Engine models (Alembic discovery)
 import app.prompt_assembly.models  # noqa: E402, F401

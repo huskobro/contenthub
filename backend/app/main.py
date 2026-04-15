@@ -32,6 +32,7 @@ from app.jobs.dispatcher import JobDispatcher
 from app.modules.registry import module_registry
 from app.modules.standard_video.definition import STANDARD_VIDEO_MODULE
 from app.modules.news_bulletin.definition import NEWS_BULLETIN_MODULE
+from app.modules.product_review.definition import PRODUCT_REVIEW_MODULE
 from app.providers.capability import ProviderCapability
 from app.providers.llm.kie_ai_provider import KieAiProvider
 from app.providers.llm.openai_compat_provider import OpenAICompatProvider
@@ -114,6 +115,9 @@ async def lifespan(app: FastAPI):
 
     module_registry.register(NEWS_BULLETIN_MODULE)
     logger.info("Modül kaydedildi: %s", NEWS_BULLETIN_MODULE.module_id)
+
+    module_registry.register(PRODUCT_REVIEW_MODULE)
+    logger.info("Modül kaydedildi: %s", PRODUCT_REVIEW_MODULE.module_id)
 
     # KNOWN_SETTINGS'i DB'ye seed et (M10-C) — eksik key'ler icin DB satiri olusturur
     async with AsyncSessionLocal() as seed_db:

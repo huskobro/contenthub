@@ -25,13 +25,17 @@ Senkron kuralı (değişmez):
 COMPOSITION_MAP: dict[str, str] = {
     "standard_video": "StandardVideo",
     "news_bulletin": "NewsBulletin",
+    "product_review": "ProductReview",
 }
 
-# Preview composition kimlik eşleştirmesi (renderStill)
+# Preview composition kimlik eşleştirmesi (renderStill + mini MP4)
 # Key: preview bağlamı, Value: Remotion composition ID
 # Yeni preview composition eklemek için bu sözlüğe açık kayıt yapılmalıdır.
 PREVIEW_COMPOSITION_MAP: dict[str, str] = {
     "standard_video_preview": "PreviewFrame",
+    # product_review — Faz A kaydi; Remotion Root.tsx'de Faz B/C'de tanimlanacak
+    "product_review_preview": "ProductReviewPreviewFrame",
+    "product_review_mini": "ProductReviewMini",
 }
 
 
