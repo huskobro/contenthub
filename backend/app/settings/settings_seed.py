@@ -53,10 +53,10 @@ async def seed_known_settings(db: AsyncSession) -> int:
             type=meta.get("type", "string"),
             default_value_json=default_json,
             admin_value_json="null",
-            user_override_allowed=False,
-            visible_to_user=False,
-            visible_in_wizard=False,
-            read_only_for_user=True,
+            user_override_allowed=bool(meta.get("user_override_allowed", False)),
+            visible_to_user=bool(meta.get("visible_to_user", False)),
+            visible_in_wizard=bool(meta.get("visible_in_wizard", False)),
+            read_only_for_user=bool(meta.get("read_only_for_user", True)),
             module_scope=meta.get("module_scope"),
             help_text=meta.get("help_text", ""),
             validation_rules_json=KNOWN_VALIDATION_RULES.get(key, "{}"),
@@ -70,3 +70,46 @@ async def seed_known_settings(db: AsyncSession) -> int:
         await db.commit()
 
     return created
+
+
+async def sync_visibility_flags_from_registry(db: AsyncSession) -> int:
+    """
+    KNOWN_SETTINGS meta'sindaki visibility bayraklarini (visible_to_user,
+    user_override_allowed, visible_in_wizard, read_only_for_user) mevcut DB
+    satirlarina senkronize eder.
+
+    Kural: admin override'i (admin_value_json) ASLA degistirilmez; sadece
+    visibility metadatalari guncellenir. Idempotent.
+
+    Returns:
+        Guncellenen satir sayisi.
+    """
+    updated = 0
+
+    for key, meta in KNOWN_SETTINGS.items():
+        result = await db.execute(select(Setting).where(Setting.key == key))
+        row = result.scalar_one_or_none()
+        if row is None:
+            continue
+
+        desired = {
+            "visible_to_user": bool(meta.get("visible_to_user", False)),
+            "user_override_allowed": bool(meta.get("user_override_allowed", False)),
+            "visible_in_wizard": bool(meta.get("visible_in_wizard", False)),
+            "read_only_for_user": bool(meta.get("read_only_for_user", True)),
+        }
+        changed = False
+        for attr, target in desired.items():
+            if getattr(row, attr) != target:
+                setattr(row, attr, target)
+                changed = True
+        if changed:
+            updated += 1
+            logger.debug(
+                "Settings sync: visibility metadata guncellendi — %s", key
+            )
+
+    if updated > 0:
+        await db.commit()
+
+    return updated

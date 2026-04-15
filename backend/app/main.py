@@ -45,7 +45,7 @@ from app.publish.registry import publish_adapter_registry
 from app.publish.youtube.adapter import YouTubeAdapter
 from app.settings.credential_resolver import resolve_credential
 from app.settings.settings_resolver import resolve, KNOWN_SETTINGS
-from app.settings.settings_seed import seed_known_settings
+from app.settings.settings_seed import seed_known_settings, sync_visibility_flags_from_registry
 from app.prompt_assembly.block_seed import seed_prompt_blocks
 from app.sse.bus import event_bus
 
@@ -124,6 +124,13 @@ async def lifespan(app: FastAPI):
         seed_count = await seed_known_settings(seed_db)
         if seed_count > 0:
             logger.info("Settings seed: %d yeni ayar DB'ye eklendi.", seed_count)
+        # Faz 6: mevcut satirlarin visibility bayraklarini registry'ye gore senkronize et
+        sync_count = await sync_visibility_flags_from_registry(seed_db)
+        if sync_count > 0:
+            logger.info(
+                "Settings sync: %d satirin visibility metadatasi guncellendi.",
+                sync_count,
+            )
 
     # M40b: workspace_root + output_dir global state'ini settings'ten yukle
     from pathlib import Path as _Path

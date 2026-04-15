@@ -298,6 +298,11 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "builtin_default": "21m00Tcm4TlvDq8ikWAM",
         "wired": True,
         "wired_to": "DubVoiceProvider.default_voice_id + voice_map.get_voice",
+        # Faz 6: user-facing — kanal/sahip override edebilir, wizard'da gorunur
+        "visible_to_user": True,
+        "user_override_allowed": True,
+        "visible_in_wizard": True,
+        "read_only_for_user": False,
     },
     "tts.default_voice.en": {
         "group": "tts",
@@ -309,6 +314,11 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "builtin_default": "pNInz6obpgDQGcFmaJgB",
         "wired": True,
         "wired_to": "DubVoiceProvider.default_voice_id + voice_map.get_voice",
+        # Faz 6: user-facing
+        "visible_to_user": True,
+        "user_override_allowed": True,
+        "visible_in_wizard": True,
+        "read_only_for_user": False,
     },
     "tts.dubvoice.default_model_id": {
         "group": "tts",
@@ -390,6 +400,11 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "builtin_default": 1.0,
         "wired": True,
         "wired_to": "VoiceSettings dataclass default",
+        # Faz 6: user-facing — per-channel speed override
+        "visible_to_user": True,
+        "user_override_allowed": True,
+        "visible_in_wizard": True,
+        "read_only_for_user": False,
     },
     "tts.voice_settings.style": {
         "group": "tts",
@@ -413,6 +428,11 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "builtin_default": True,
         "wired": True,
         "wired_to": "VoiceSettings dataclass default",
+        # Faz 6: user-facing
+        "visible_to_user": True,
+        "user_override_allowed": True,
+        "visible_in_wizard": False,
+        "read_only_for_user": False,
     },
 
     # Faz 4 — TTS fine controls
@@ -427,6 +447,11 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "builtin_default": 0.0,
         "wired": True,
         "wired_to": "app.tts.controls.build_provider_voice_settings",
+        # Faz 6: user-facing
+        "visible_to_user": True,
+        "user_override_allowed": True,
+        "visible_in_wizard": False,
+        "read_only_for_user": False,
     },
     "tts.voice_settings.emphasis": {
         "group": "tts",
@@ -439,6 +464,11 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "builtin_default": 0.5,
         "wired": True,
         "wired_to": "app.tts.controls.TTSFineControls.emphasis",
+        # Faz 6: user-facing
+        "visible_to_user": True,
+        "user_override_allowed": True,
+        "visible_in_wizard": True,
+        "read_only_for_user": False,
     },
     "tts.pauses.sentence_break_ms": {
         "group": "tts",
@@ -452,6 +482,11 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "builtin_default": 0,
         "wired": True,
         "wired_to": "app.tts.controls.insert_ssml_pauses",
+        # Faz 6: user advanced
+        "visible_to_user": True,
+        "user_override_allowed": True,
+        "visible_in_wizard": False,
+        "read_only_for_user": False,
     },
     "tts.pauses.paragraph_break_ms": {
         "group": "tts",
@@ -464,6 +499,11 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "builtin_default": 0,
         "wired": True,
         "wired_to": "app.tts.controls.insert_ssml_pauses",
+        # Faz 6: user advanced
+        "visible_to_user": True,
+        "user_override_allowed": True,
+        "visible_in_wizard": False,
+        "read_only_for_user": False,
     },
     "tts.pauses.scene_break_ms": {
         "group": "tts",
@@ -476,6 +516,11 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "builtin_default": 0,
         "wired": True,
         "wired_to": "Composition step — audio gap between scenes",
+        # Faz 6: user advanced
+        "visible_to_user": True,
+        "user_override_allowed": True,
+        "visible_in_wizard": False,
+        "read_only_for_user": False,
     },
     "tts.glossary.brand": {
         "group": "tts",
@@ -490,6 +535,11 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "builtin_default": {},
         "wired": True,
         "wired_to": "app.tts.controls.apply_glossary_and_pronunciation",
+        # Faz 6: user-facing — kanal bazli marka sozlugu
+        "visible_to_user": True,
+        "user_override_allowed": True,
+        "visible_in_wizard": False,
+        "read_only_for_user": False,
     },
     "tts.glossary.product": {
         "group": "tts",
@@ -502,6 +552,11 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "builtin_default": {},
         "wired": True,
         "wired_to": "app.tts.controls.apply_glossary_and_pronunciation",
+        # Faz 6: user-facing
+        "visible_to_user": True,
+        "user_override_allowed": True,
+        "visible_in_wizard": False,
+        "read_only_for_user": False,
     },
     "tts.pronunciation.overrides": {
         "group": "tts",
@@ -515,6 +570,11 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "builtin_default": {},
         "wired": True,
         "wired_to": "app.tts.controls.apply_glossary_and_pronunciation",
+        # Faz 6: user-facing
+        "visible_to_user": True,
+        "user_override_allowed": True,
+        "visible_in_wizard": False,
+        "read_only_for_user": False,
     },
     "tts.controls.ssml_pauses_enabled": {
         "group": "tts",
@@ -540,6 +600,11 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "builtin_default": "neutral",
         "wired": True,
         "wired_to": "app.tts.controls.apply_scene_energy",
+        # Faz 6: user-facing — guided mode'da tek secim
+        "visible_to_user": True,
+        "user_override_allowed": True,
+        "visible_in_wizard": True,
+        "read_only_for_user": False,
     },
 
     # --- Faz 5: Preview-first TTS ---
@@ -554,6 +619,11 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "builtin_default": "Merhaba, bu ses ornegidir. ContentHub ile nasil bir tonda konustugunu dinleyin.",
         "wired": True,
         "wired_to": "app.tts.preview_service.generate_voice_sample",
+        # Faz 6: user-facing — kendi sample cumlesini yazabilir
+        "visible_to_user": True,
+        "user_override_allowed": True,
+        "visible_in_wizard": False,
+        "read_only_for_user": False,
     },
     "tts.preview.max_characters_draft": {
         "group": "tts",
