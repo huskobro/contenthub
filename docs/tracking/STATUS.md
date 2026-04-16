@@ -1,21 +1,40 @@
 # DURUM
 
 ## Mevcut Faz
+**PHASE Y KAPANDI (2026-04-16) — Baseline Drift / Release Readiness Stabilization Pack**
 **PHASE X KAPANDI (2026-04-16) — Ownership / Channel Auto-Import / Project-Job Hierarchy Pack**
 **TÜM MİLESTONE'LAR KAPANDI — Master plan (M1–M8) tamamlandı**
+
+### PHASE Y (Baseline Stabilization) Özet
+- PHASE X sonrası raporlanan 23 pre-existing baseline drift'i temizlendi.
+- Hiçbir production/ownership/auth davranışı zayıflatılmadı; düzeltmeler sadece
+  test baseline ve test izolasyon seviyesinde kaldı.
+- Kategori dağılımı:
+  - Pipeline step count 7→8 drift (8 test) — render + publish ayrı adım.
+  - Root.tsx cast count (1 test) — 7 composition × ~2-3 cast.
+  - OAuth/YouTube router 422/400 (6 test) — PHASE X `channel_profile_id` zorunlu.
+  - Migration downgrade-1 semantiği (1 test) — `phase_x_001 → product_review_001`.
+  - Full-auto violations mesaj drift (3 test) — gerçek mesajlarla eşitlendi.
+  - Analytics audit log (1 test) — admin JWT header'a geçirildi.
+  - Artifact list user-scoped workspace (1 test) — DB'den workspace_path okuyor.
+  - `test_ae` session leakage (1 test) — test-local in-memory DB override.
+- Tam suite: **2234 passed, 0 failed** (PHASE Y kapanışı).
+- Kapanış raporu: `docs/phase-y-closure.md`.
 
 ### PHASE X (Ownership) Özet
 - Server-side ownership: her kullanıcı kendi kanal/proje/iş/yayın/analitik verisini görür; admin global.
 - URL-only kanal create + honest partial metadata state (uydurma placeholder YOK).
 - Job ↔ ContentProject hiyerarşisi kod katmanında enforce.
 - Migration: `phase_x_001` (additive + Job owner backfill).
-- Test: PHASE X hedef seti **112/112 passed**; tam suite 2211 passed + 23 pre-existing baseline drift (PHASE X dışı — git stash ile konfirme).
+- Test: PHASE X hedef seti **112/112 passed**.
+- L (git disiplini) tamamlandı — 4 commit (8852133 migration, 5cb1bb8 backend,
+  c5b89d2 frontend, 682663a docs); `main` remote ile sync.
 - Kapanış raporu: `docs/phase-x-closure.md`
 - Subsystem dokümanları: `docs/ownership.md`, `docs/channel-auto-import.md`, `docs/project-job-hierarchy.md`
-- Kalan adım: L (ayrı commit'ler: migration / backend / frontend / docs) + push.
 
-### Pre-existing Test Envanteri (PHASE X kapsamı dışı teknik borç)
-- 23 başarısızlık: pipeline step count drift, Root.tsx cast count, OAuth router 422→400, migration downgrade-1 semantics, diğer baseline drift'ler. Ayrı temizlik fazı gerekir.
+### Pre-existing Test Envanteri
+- PHASE Y sonrası: **0 failing**. Tüm 23 drift Y-B / Y-C fazında çözüldü.
+  Detay: `docs/phase-y-closure.md`.
 
 ---
 

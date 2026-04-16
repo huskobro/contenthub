@@ -2,6 +2,54 @@
 
 ---
 
+## [2026-04-16] PHASE Y — Baseline Drift / Release Readiness Stabilization Pack
+
+### Özet
+PHASE X kapanışında raporlanan 23 pre-existing baseline drift test'i dürüstçe
+temizlendi. **Hiçbir production kodu, ownership/auth/security davranışı
+zayıflatılmadı.** Tüm düzeltmeler test baseline ve test izolasyon seviyesinde
+kaldı. Hiç skip/xfail/sessiz bypass eklenmedi. Dokümantasyon tek hikaye
+anlatacak şekilde reconciliation edildi (STATUS, CHANGELOG, phase-x-closure,
+phase-y-closure).
+
+### 7 Alt Faz (A–G)
+- **A** — Discovery: `git stash` ile 23 drift'in PHASE X öncesinden geldiği
+  konfirme; kategori bölmesi.
+- **B** — Test expectation cleanup: 9 test dosyasında baseline güncellemeleri
+  (pipeline step 7→8, OAuth 422/400, Root.tsx cast ≤20, full-auto mesaj
+  stringleri, analytics audit log header'ı, artifact list user-scoped
+  workspace, test_ae session leakage).
+- **C** — Migration test cleanup: `test_m7_c1_migration_fresh_db.py`
+  downgrade -1 semantiği `phase_x_001 → product_review_001`'e uyarlandı;
+  PHASE X kolonları doğrulaması.
+- **D** — Docs reconciliation: STATUS head yenilendi (PHASE Y özet, "L kaldı"
+  ifadesi kaldırıldı), CHANGELOG'a PHASE Y girdisi + PHASE X girdisinin L
+  satırı "TAMAMLANDI" olarak güncellendi, phase-x-closure test sonucu ve
+  pre-existing tablosu güncellendi, yeni phase-y-closure.md yazıldı.
+- **E** — Release-readiness honest audit: hazır + kabul edilen sınırlamalar
+  envanteri phase-y-closure §6'da.
+- **F** — Final verification: hedef set yeşil; tam suite **2234 passed, 0
+  failed**; migration fresh-DB 9/9 passed.
+- **G** — Git discipline: 2 commit (test baseline / docs) + push `origin/main`.
+
+### Test Durumu
+- Hedef set: yeşil (9 dosya).
+- Tam suite: **2234 passed, 0 failed**.
+- Migration fresh-DB: 9/9 passed.
+
+### Değişmeyenler
+- Backend production kodu: dokunulmadı.
+- Frontend production kodu: dokunulmadı.
+- Alembic zinciri: `product_review_001 → phase_x_001` aynı kaldı.
+- Ownership/auth/security davranışı: PHASE X'teki gibi.
+
+### Kurallara Uygunluk
+- No skip/xfail/silent ignore.
+- No hidden behavior.
+- Test baseline fix ≠ production fix; ayrım phase-y-closure §4'te açık.
+
+---
+
 ## [2026-04-16] PHASE X — Ownership / Channel Auto-Import / Project-Job Hierarchy Pack
 
 ### Özet
@@ -33,7 +81,8 @@ ContentProject hiyerarşisi kod katmanında enforce edilir.
   `raw_client` fixture; 8 test dosyası yeni fixture'lara uyarlandı.
 - **K** — Docs: `docs/ownership.md`, `docs/channel-auto-import.md`,
   `docs/project-job-hierarchy.md`, `docs/phase-x-closure.md` + CHANGELOG + STATUS.
-- **L** — (sıradaki) ayrı commit'ler: migration / backend / frontend / docs.
+- **L** — TAMAMLANDI: 4 ayrı commit (`8852133` migration, `5cb1bb8` backend,
+  `c5b89d2` frontend, `682663a` docs); `main` remote ile sync.
 
 ### Migration
 - Revizyon: `phase_x_001` (HEAD). Önceki HEAD: `product_review_001`.

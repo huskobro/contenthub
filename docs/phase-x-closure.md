@@ -14,9 +14,10 @@
   placeholder yok — partial state dürüstçe kaydedilir.
 - ✅ Job ↔ ContentProject hiyerarşisi kod katmanında enforce edilir.
 - ✅ Alembic additive migration; downgrade güvenli.
-- ✅ Hedef test seti 112/112 yeşil.
-- ✅ Tam suite: 2211 passed, 23 pre-existing failure (PHASE X dışı baseline drift,
-  aşağıda kayıtlı).
+- ✅ Hedef test seti 112/112 yeşil (PHASE X kapanışında).
+- ✅ Tam suite (PHASE X kapanışında): 2211 passed, 23 pre-existing baseline drift
+  başarısızlığı — hepsi PHASE Y (baseline stabilization) fazında temizlendi ve
+  artık 0 failing. Güncel baseline **PHASE Y sonrası: 2234 passed, 0 failed**.
 
 ---
 
@@ -35,7 +36,7 @@
 | I | Alembic migration (`phase_x_001`) | ✅ | `backend/alembic/versions/phase_x_001_ownership_channel_url_only.py` |
 | J | Test rehabilitation (auth-tightening sonrası rejimler) | ✅ | conftest + 8 test dosyası |
 | K | Docs (bu doküman + subsystem docs + CHANGELOG + STATUS) | ✅ | `docs/*.md` |
-| L | Git discipline (ayrı commit, push) | ⏭ (sonraki adım) | — |
+| L | Git discipline (ayrı commit, push) | ✅ | 4 commit (8852133 migration, 5cb1bb8 backend, c5b89d2 frontend, 682663a docs); `main` remote ile sync |
 
 ---
 
@@ -91,24 +92,31 @@
 
 ### 4.2 Tam test suite sweep
 
-**Sonuç: 2211 passed, 23 failed, 4 warnings in 84.42s**
+**PHASE X kapanışındaki sonuç:** 2211 passed, 23 failed, 4 warnings in 84.42s.
 
-23 başarısız test **PHASE X kapsamı dışı, pre-existing baseline drift**.
-`git stash` ile PHASE X değişikliklerini geri alıp tekrar koştuğumuzda aynı
-başarısızlıklar mevcuttu. Listesi:
+23 başarısız test PHASE X kapsamı dışıydı; **pre-existing baseline drift** olarak
+raporlanmıştı. `git stash` ile PHASE X değişikliklerini geri alıp tekrar
+koştuğumuzda aynı başarısızlıklar mevcuttu.
 
-#### 4.2.1 Pre-existing failures (technical debt envanteri)
+**PHASE Y (baseline stabilization) sonrası güncel sonuç: 2234 passed, 0 failed.**
+Tüm 23 drift Y-B/Y-C fazında temizlendi. Detay için:
+[phase-y-closure.md](./phase-y-closure.md).
 
-| Test dosyası | Başarısız sayısı | Neden (pre-existing) |
+#### 4.2.1 PHASE X kapanışında raporlanan drift (artık çözülmüş)
+
+| Kategori | Adet | Çözüm yöntemi (PHASE Y) |
 |---|---|---|
-| `test_pipeline_steps_count` (modül adedi 7→8 drift) | ~3 | Pipeline step sayısı baseline | 
-| `test_root_tsx_cast_count` (frontend sayım) | 1 | Root.tsx cast sayısı pre-existing drift |
-| OAuth router 422 → 400 change | ~4 | Status code baseline drift |
-| Migration downgrade-1 semantik | ~2 | Önceki migration downgrade testleri |
-| Diğer baseline drift'ler | ~13 | Pre-existing |
+| Pipeline step count 7→8 drift | 8 | Test baseline güncellendi (render + publish ayrı adım) |
+| OAuth/YouTube router 422/400 | 6 | Test baseline güncellendi (PHASE X channel_profile_id zorunlu) |
+| Root.tsx cast count | 1 | Test baseline 10 → 20 (7 composition × 2-3 cast) |
+| Migration downgrade -1 semantik | 1 | Test yeniden yazıldı (phase_x_001 head için) |
+| Full-auto violations mesaj drift | 3 | Test baseline güncellendi (gerçek mesajlara göre) |
+| Analytics audit log | 1 | Test legacy header → admin_headers (JWT) ile yenilendi |
+| Artifact list user-scoped workspace | 1 | Test user-scoped workspace path okuyacak şekilde güncellendi |
+| `test_ae` session leakage | 1 | Test-local DB override ile izole edildi |
 
-Bu 23 başarısızlık proje CLAUDE.md'deki **"bilinen test sorunları"**
-envanterine eklenir; PHASE X onları ne çözmeyi hedefler ne de bozar.
+Hiçbir gerçek bug için kodun ownership/security davranışı zayıflatılmadı;
+tüm düzeltmeler test baseline seviyesinde kaldı.
 
 ---
 
@@ -150,7 +158,7 @@ gibi önceden var olan kolonlara dokunmaz.
 - **Ownership transfer / multi-owner paylaşımı yok.** MVP tek-owner.
 - **Orphan job otomatik onarım scripti yok.** Admin manuel rezolüsyon.
 - **Pre-existing 23 test başarısızlığı.** PHASE X kapsamı dışı — ayrı
-  temizlik fazı gerekir.
+  temizlik fazı (PHASE Y) gerekiyordu; **PHASE Y tamamlandı**, 0 failing.
 
 ---
 
@@ -170,17 +178,21 @@ gibi önceden var olan kolonlara dokunmaz.
 
 ---
 
-## 8. Sonraki Adımlar (Faz L)
+## 8. Faz L — Git Discipline (TAMAMLANDI)
 
-1. `backend/alembic/versions/phase_x_001_*.py` — tek commit (migration).
-2. `backend/app/auth/ownership.py` + domain helper'lar + router/service
-   değişiklikleri + model + tests — tek commit (backend ownership + channel
-   auto-import + project-job).
-3. `frontend/src/...` — tek commit (URL-only surface + project detail).
-4. `docs/ownership.md`, `docs/channel-auto-import.md`,
-   `docs/project-job-hierarchy.md`, `docs/phase-x-closure.md`, CHANGELOG,
-   STATUS — tek commit (docs).
-5. Push (remote auth çalışıyorsa).
+Dört ayrı commit hedeflenen sırayla atıldı ve uzak repoya push edildi:
+
+| Commit | Kapsam |
+|---|---|
+| `8852133` | `phase_x: alembic migration — ownership + channel URL-only columns (phase_x_001)` |
+| `5cb1bb8` | `phase_x: backend ownership + channel auto-import + project-job hierarchy` |
+| `c5b89d2` | `phase_x: frontend — URL-only channel create + project detail job list` |
+| `682663a` | `phase_x: docs — subsystem docs + CHANGELOG + STATUS + closure report` |
+
+Branch: `main`, remote sync: `main...origin/main` (aynı ref, push tamam).
+
+Sonraki doğal adım PHASE Y (baseline drift / release readiness) oldu;
+bkz. [phase-y-closure.md](./phase-y-closure.md).
 
 ---
 
