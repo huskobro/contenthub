@@ -25,7 +25,12 @@ from app.providers.registry import ProviderRegistry
 from app.providers.resolution import resolve_and_invoke
 from app.providers.trace_helper import build_provider_trace
 
-from ._helpers import _strip_markdown_json, _write_artifact, _read_artifact
+from ._helpers import (
+    _strip_markdown_json,
+    _write_artifact,
+    _read_artifact,
+    _write_preview_artifact,
+)
 from ._persistence import persist_metadata_row
 from ..description_formatter import build_publish_description, build_publish_tags
 
@@ -185,6 +190,37 @@ class BulletinMetadataExecutor(StepExecutor):
             filename="metadata.json",
             data=metadata_data,
         )
+
+        # PHASE AB: preview_metadata.json — final metadata başarıyla yazıldıktan
+        # SONRA minimal bir snapshot. Nihai değil; metadata.json FINAL scope'ta
+        # kalır. Classifier bu dosyayı PREVIEW scope olarak tanır.
+        try:
+            _desc = metadata_data.get("description") or ""
+            _write_preview_artifact(
+                workspace_root=workspace_root,
+                job_id=job.id,
+                filename="preview_metadata.json",
+                data={
+                    "step": "metadata",
+                    "bulletin_id": bulletin_id,
+                    "language": metadata_data.get("language", language.value),
+                    "title": metadata_data.get("title", ""),
+                    "description_preview": _desc[:500],
+                    "description_truncated": len(_desc) > 500,
+                    "tags": list(metadata_data.get("tags", []) or [])[:20],
+                    "category": metadata_data.get("category")
+                    or dominant_category,
+                    "tone": tone,
+                    "publish_description_meta": metadata_data.get(
+                        "publish_description_meta"
+                    ),
+                },
+            )
+        except Exception as _preview_exc:  # pragma: no cover — best-effort
+            logger.warning(
+                "BulletinMetadataExecutor: preview_metadata.json yazılamadı "
+                "job=%s err=%s", job.id, _preview_exc,
+            )
 
         # Persist to news_bulletin_metadata so has_metadata enrichment works
         # and the Publish Center can read the canonical record from the DB.

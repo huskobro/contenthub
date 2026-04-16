@@ -36,7 +36,7 @@ from app.providers.resolution import resolve_and_invoke
 from app.providers.trace_helper import build_provider_trace
 from app.modules.shared_helpers import validate_script_data
 
-from ._helpers import _strip_markdown_json, _write_artifact
+from ._helpers import _strip_markdown_json, _write_artifact, _write_preview_artifact
 from ._persistence import persist_script_row
 
 logger = logging.getLogger(__name__)
@@ -136,6 +136,45 @@ class BulletinScriptExecutor(StepExecutor):
                 self.step_key(),
                 "Seçilmiş haber öğesi bulunamadı (selected_items boş).",
             )
+
+        # PHASE AB: workspace_root erken resolve — preview_news_selected
+        # yazımı için gereklidir. Script artifact'ı ile tutarlı root.
+        workspace_root = raw_input.get("workspace_root", "")
+        if not workspace_root and hasattr(job, "workspace_path") and job.workspace_path:
+            workspace_root = str(job.workspace_path)
+
+        # PHASE AB: preview_news_selected.json — gerçek seçim verisi,
+        # henüz LLM üretmeden önce de karar izlenebilir olsun. Honest:
+        # selected_items_data boşsa zaten yukarıdaki guard çalıştı.
+        _write_preview_artifact(
+            workspace_root=workspace_root,
+            job_id=job.id,
+            filename="preview_news_selected.json",
+            data={
+                "step": "news_selected",
+                "bulletin_id": bulletin_id,
+                "language": language.value,
+                "item_count": len(selected_items_data),
+                "items": [
+                    {
+                        "item_number": i + 1,
+                        "headline": item.get(
+                            "headline", item.get("title", "")
+                        ),
+                        "summary": (item.get("summary") or "")[:280],
+                        "category": item.get("category"),
+                        "source_name": item.get("source_name"),
+                        "source_id": item.get("source_id"),
+                        "published_at": item.get("published_at"),
+                        "url": item.get("url"),
+                        "has_edited_narration": bool(
+                            item.get("edited_narration")
+                        ),
+                    }
+                    for i, item in enumerate(selected_items_data)
+                ],
+            },
+        )
 
         # LLM için item listesi hazırla
         items_for_prompt = []
@@ -267,9 +306,8 @@ class BulletinScriptExecutor(StepExecutor):
                 s_item["source_id"] = src.get("source_id")
                 s_item["source_name"] = src.get("source_name")
 
-        workspace_root = raw_input.get("workspace_root", "")
-        if not workspace_root and hasattr(job, "workspace_path") and job.workspace_path:
-            workspace_root = str(job.workspace_path)
+        # workspace_root yukarıda (selected_items guard'ından hemen sonra)
+        # zaten resolve edildi — yeniden hesaplama.
 
         artifact_path = _write_artifact(
             workspace_root=workspace_root,
@@ -277,6 +315,45 @@ class BulletinScriptExecutor(StepExecutor):
             filename="bulletin_script.json",
             data=script_data,
         )
+
+        # PHASE AB: preview_script.json — final script başarıyla yazıldıktan
+        # SONRA minimal bir izleme snapshot'ı. Nihai değil; script.json /
+        # bulletin_script.json FINAL scope'ta kalır. Bu dosya classifier
+        # tarafından PREVIEW scope olarak tanınır.
+        try:
+            _script_items = script_data.get("items", []) or []
+            _write_preview_artifact(
+                workspace_root=workspace_root,
+                job_id=job.id,
+                filename="preview_script.json",
+                data={
+                    "step": "script",
+                    "bulletin_id": bulletin_id,
+                    "language": script_data.get("language", language.value),
+                    "title": script_data.get("title")
+                    or script_data.get("bulletin_title"),
+                    "item_count": len(_script_items),
+                    "headlines": [
+                        {
+                            "item_number": itm.get("item_number", idx + 1),
+                            "headline": (itm.get("headline") or "")[:180],
+                            "narration_preview": (
+                                itm.get("narration") or ""
+                            )[:240],
+                            "duration_seconds": itm.get("duration_seconds"),
+                            "category": itm.get("category"),
+                        }
+                        for idx, itm in enumerate(_script_items)
+                    ],
+                    "warnings": list(script_warnings or []),
+                    "used_assembly_engine": used_assembly,
+                },
+            )
+        except Exception as _preview_exc:  # pragma: no cover — best-effort
+            logger.warning(
+                "BulletinScriptExecutor: preview_script.json yazılamadı "
+                "job=%s err=%s", job.id, _preview_exc,
+            )
 
         # Persist to news_bulletin_scripts so has_script enrichment works.
         # Best-effort — a persistence failure never fails the pipeline.

@@ -8,12 +8,18 @@ NOT: Şu an standard_video helpers ile aynı implementasyon.
      Ortak bir shared helpers modülüne taşınması M29+'da değerlendirilebilir.
      Mevcut yaklaşım: CLAUDE.md "parallel pattern yasak" kuralına uyar çünkü
      her modülün kendi helper'ları olması modül bağımsızlığını korur.
+
+PHASE AB: _write_preview_artifact eklendi — news_bulletin için gerçek preview
+artifact'leri. Preview dosyaları classifier tarafından otomatik PREVIEW scope
+olarak tanınır. Preview yazımı başarısız olsa bile adım başarısız olmaz
+(honest best-effort).
 """
 
 from __future__ import annotations
 
 import json
 import logging
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
@@ -90,4 +96,51 @@ def _read_artifact(
         return json.loads(artifact_file.read_text(encoding="utf-8"))
     except (json.JSONDecodeError, OSError) as err:
         logger.error("Artifact okunamadı %s: %s", artifact_file, err)
+        return None
+
+
+def _write_preview_artifact(
+    workspace_root: str,
+    job_id: str,
+    filename: str,
+    data: dict,
+) -> Optional[str]:
+    """
+    PHASE AB: Preview artifact yazar. FINAL write yolundan bağımsızdır.
+
+    Classifier filename kuralına göre `preview_*` prefix'li dosyaları otomatik
+    PREVIEW scope olarak tanır. Bu helper sadece filename disiplinini
+    garanti eder (prefix ihlali guard) ve yazım hatası durumunda exception
+    fırlatmak yerine None döner — preview üretimi best-effort'dur, step'i
+    asla durdurmamalıdır.
+
+    Returns:
+        Başarılıysa dosya yolu, aksi halde None.
+    """
+    if not filename.startswith("preview_"):
+        logger.error(
+            "_write_preview_artifact: preview filename 'preview_' prefix "
+            "olmalı. Gelen: %s (job=%s)", filename, job_id,
+        )
+        return None
+
+    # generated_at her preview'da olmalı — izleme/sıralama için
+    payload = dict(data) if isinstance(data, dict) else {"value": data}
+    payload.setdefault(
+        "generated_at",
+        datetime.now(timezone.utc).isoformat(),
+    )
+
+    try:
+        return _write_artifact(
+            workspace_root=workspace_root,
+            job_id=job_id,
+            filename=filename,
+            data=payload,
+        )
+    except Exception as exc:  # pragma: no cover — disk/permission edge cases
+        logger.warning(
+            "_write_preview_artifact: preview yazılamadı %s (job=%s): %s",
+            filename, job_id, exc,
+        )
         return None
