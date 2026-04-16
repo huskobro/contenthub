@@ -12,8 +12,10 @@ Kapsam:
   E) publish_logs sütunları tam ve doğru
   F) publish_records → jobs FK kısıtı mevcut (ondelete=CASCADE)
   G) publish_logs → publish_records FK kısıtı mevcut (ondelete=CASCADE)
-  H) alembic_version = c1a2b3d4e5f6 (son revision)
-  I) downgrade: publish_records ve publish_logs kaldırılır
+  H) alembic_version = phase_ac_001 (son revision — live head)
+  I) downgrade davranışı:
+       - phase_ac_001 forward-only; head'ten -1 downgrade NotImplementedError
+       - phase_x_001 seviyesinden -1 downgrade gerçek kolon drop yapar
 
 Doğrulama yöntemi:
   - Geçici dizin + boş SQLite DB
@@ -32,9 +34,15 @@ import pytest
 
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
-# Gate 4 (Publish Closure) güncellemesi: head revision artık gate4_001.
-# Önceki target c1a2b3d4e5f6 → catchup_001 → gate4_001 zinciri çalışıyor.
-ALEMBIC_TARGET = "phase_x_001"
+# Head revision tarihsel zincir:
+#   c1a2b3d4e5f6 → catchup_001 → gate4_001 → product_review_001 → phase_x_001 → phase_ac_001
+# phase_ac_001 forward-only reconciliation migration'dir (live DB drift fix);
+# downgrade'i bilinçli olarak NotImplementedError atar. Bu yüzden I testi
+# phase_ac seviyesinden değil, phase_x'ten -1 downgrade yaparak gerçek
+# geri-alma davranışını doğrular.
+ALEMBIC_TARGET = "phase_ac_001"
+PHASE_X_REVISION = "phase_x_001"
+PRODUCT_REVIEW_REVISION = "product_review_001"
 
 EXPECTED_PR_COLUMNS = {
     "id", "job_id", "content_ref_type", "content_ref_id", "platform",
@@ -224,11 +232,11 @@ def test_g_publish_logs_fk_to_publish_records(migrated_db):
 
 
 # ---------------------------------------------------------------------------
-# H) alembic_version = c1a2b3d4e5f6
+# H) alembic_version = phase_ac_001 (live head)
 # ---------------------------------------------------------------------------
 
 def test_h_alembic_version_is_target(migrated_db):
-    """Migration sonrası alembic_version = c1a2b3d4e5f6 olmalı."""
+    """Migration sonrası alembic_version = phase_ac_001 olmalı."""
     version = _get_version(migrated_db)
     assert version == ALEMBIC_TARGET, (
         f"Beklenen alembic_version={ALEMBIC_TARGET}, alınan={version}"
@@ -236,18 +244,63 @@ def test_h_alembic_version_is_target(migrated_db):
 
 
 # ---------------------------------------------------------------------------
-# I) downgrade: publish_records ve publish_logs kaldırılır
+# I) downgrade davranışı — iki parça
 # ---------------------------------------------------------------------------
+#
+# phase_ac_001 canlı DB drift'ini kapatan forward-only bir reconciliation
+# migration'dır. downgrade'i *bilinçli olarak* NotImplementedError atar
+# (bkz. migration docstring ve downgrade() gövdesi). Bu bir bug değil,
+# ürün tasarım kararıdır: destructive downgrade veri kaybına yol açar ve
+# modelin beklediği gerçek sürümle çelişir. Geri alma için backup restore
+# protokolü kullanılır.
+#
+# Bu yüzden testi iki parçaya bölüyoruz:
+#   I.1) phase_ac_001'den -1 downgrade NotImplementedError vermeli
+#        (forward-only kontratı korunuyor mu?)
+#   I.2) phase_x_001 seviyesinden -1 downgrade gerçek drop yapmalı
+#        (PHASE X'in channel_profiles kolonları downgrade'i çalışıyor mu?)
+
+
+def test_i_downgrade_from_head_is_forward_only(fresh_db_dir):
+    """
+    phase_ac_001 forward-only bir reconciliation migration'dir; head'ten
+    `downgrade -1` çağrısı NotImplementedError atarak reddedilir.
+    Bu bir tasarım kararıdır, test onu kontrat olarak doğrular.
+    """
+    up = _run_alembic(["upgrade", "head"], fresh_db_dir)
+    assert up.returncode == 0, f"upgrade head başarısız: {up.stderr}"
+
+    db_path = os.path.join(fresh_db_dir, "contenthub.db")
+    assert _get_version(db_path) == ALEMBIC_TARGET
+
+    # Head'ten -1 denendiğinde alembic subprocess'i non-zero dönmeli
+    # (NotImplementedError taşınır). Version değişmemeli.
+    down = _run_alembic(["downgrade", "-1"], fresh_db_dir)
+    assert down.returncode != 0, (
+        "phase_ac_001 forward-only olmalı ama downgrade sessizce geçti:\n"
+        f"stdout={down.stdout}\nstderr={down.stderr}"
+    )
+    combined = (down.stdout or "") + (down.stderr or "")
+    assert "NotImplementedError" in combined or "forward-only" in combined, (
+        f"Beklenen forward-only hata mesajı yok:\n{combined}"
+    )
+    # Version hâlâ head'de takılı olmalı
+    assert _get_version(db_path) == ALEMBIC_TARGET, (
+        "Başarısız downgrade sonrası version değişmiş olmamalı"
+    )
+
 
 def test_i_downgrade_removes_phase_x_columns(fresh_db_dir):
     """
-    PHASE Y baseline: head artık phase_x_001. downgrade -1 PHASE X'in
-    channel_profiles'a eklediği URL-only/auto-import kolonlarını geri alır;
-    publish_records/publish_logs tabloları hâlâ mevcut kalır.
+    PHASE X'ten -1 downgrade, channel_profiles'a eklediği URL-only/
+    auto-import kolonlarını geri alır; publish_records/publish_logs
+    tabloları hâlâ mevcut kalır.
 
-    Bu test PHASE X sonrası migration chain'i doğrular.
+    Bu test phase_ac_001'i atlamak için önce head'e çıkar, sonra
+    phase_x_001'e stamp eder (phase_ac_001'in downgrade'i yasak
+    olduğundan); oradan -1 ile product_review_001'e iner.
     """
-    # Önce tüm migration'ları uygula (head = phase_x_001)
+    # Önce tüm migration'ları uygula
     up = _run_alembic(["upgrade", "head"], fresh_db_dir)
     assert up.returncode == 0, f"upgrade head başarısız: {up.stderr}"
 
@@ -269,7 +322,14 @@ def test_i_downgrade_removes_phase_x_columns(fresh_db_dir):
         f"PHASE X kolonları upgrade sonrası eksik: {phase_x_columns - cp_cols_before}"
     )
 
-    # Bir adım geri al — phase_x_001 → product_review_001
+    # phase_ac_001 forward-only olduğu için önce o revision'ı stamp
+    # phase_x_001'e düşür (gerçek DDL yok — phase_ac idempotent no-op
+    # fresh DB'de; PHASE X hedef durumu zaten mevcut).
+    stamp = _run_alembic(["stamp", PHASE_X_REVISION], fresh_db_dir)
+    assert stamp.returncode == 0, f"stamp phase_x_001 başarısız: {stamp.stderr}"
+    assert _get_version(db_path) == PHASE_X_REVISION
+
+    # Artık -1 ile product_review_001'e in
     down = _run_alembic(["downgrade", "-1"], fresh_db_dir)
     assert down.returncode == 0, f"downgrade -1 başarısız: {down.stderr}"
 
@@ -278,7 +338,7 @@ def test_i_downgrade_removes_phase_x_columns(fresh_db_dir):
     assert "publish_records" in tables_after
     assert "publish_logs" in tables_after
 
-    # PHASE X kolonları en az bir kaçı gitmiş olmalı (downgrade_by_column işledi)
+    # PHASE X kolonları en az bir kaçı gitmiş olmalı
     cp_cols_after = _get_columns(db_path, "channel_profiles")
     dropped = present_before - cp_cols_after
     assert dropped, (
@@ -288,6 +348,6 @@ def test_i_downgrade_removes_phase_x_columns(fresh_db_dir):
 
     # Revision product_review_001'e dönülmeli
     version_after = _get_version(db_path)
-    assert version_after == "product_review_001", (
-        f"Beklenen downgrade target product_review_001, alınan {version_after}"
+    assert version_after == PRODUCT_REVIEW_REVISION, (
+        f"Beklenen downgrade target {PRODUCT_REVIEW_REVISION}, alınan {version_after}"
     )
