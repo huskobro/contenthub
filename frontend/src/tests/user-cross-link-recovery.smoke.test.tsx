@@ -63,11 +63,11 @@ describe("User panel cross-link recovery", () => {
   });
 
   describe("content page cross-link to publish", () => {
-    it("/user/content shows cross-link to publish — testid exists and text contains Yayin", () => {
+    it("/user/content shows cross-link to publish — testid exists and text contains Yayın", () => {
       renderAt("/user/content");
       const link = screen.getByTestId("content-to-publish-crosslink");
       expect(link).toBeDefined();
-      expect(link.textContent).toContain("Yayin");
+      expect(link.textContent).toContain("Yayın");
     });
 
     it("cross-link on content page navigates toward publish — publish subtitle testid appears", async () => {
@@ -116,14 +116,16 @@ describe("User panel cross-link recovery", () => {
       renderAt("/user/content");
       const nav = screen.getByRole("navigation");
       expect(nav).toBeDefined();
-      const contentLink = screen.getByRole("link", { name: "Icerik" });
+      // Sidebar + page heading both match "İçerik"; pick the link targeting /user/content.
+      const links = screen.getAllByRole("link", { name: "İçerik" });
+      const contentLink = links.find((l) => l.getAttribute("href") === "/user/content");
       expect(contentLink).toBeDefined();
-      expect(contentLink.getAttribute("href")).toBe("/user/content");
+      expect(contentLink!.getAttribute("href")).toBe("/user/content");
     });
 
-    it("dashboard still works — /user renders Anasayfa heading", async () => {
+    it("dashboard still works — /user renders greeting heading", () => {
       renderAt("/user");
-      expect(screen.getByRole("heading", { name: "Anasayfa" })).toBeDefined();
+      expect(screen.getByRole("heading", { name: /Hoşgeldin/ })).toBeDefined();
     });
   });
 });

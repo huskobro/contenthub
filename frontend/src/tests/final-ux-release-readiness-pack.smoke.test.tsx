@@ -16,9 +16,14 @@ import { AnalyticsContentPage } from "../pages/admin/AnalyticsContentPage";
 import { AnalyticsOperationsPage } from "../pages/admin/AnalyticsOperationsPage";
 import { StandardVideoDetailPage } from "../pages/admin/StandardVideoDetailPage";
 
-/* ------------------------------------------------------------------ */
-/*  Helpers                                                            */
-/* ------------------------------------------------------------------ */
+// ------------------------------------------------------------------
+//  NOT: Bu dosya deprecated testid'ler (release-readiness-*,
+//  admin-overview-workflow-note, analytics-filter-area,
+//  content-window-selector, dashboard-context-note) icin yazilmis
+//  eski bir kontrati tasiyordu. UI'dan kaldirilan alanlar bu
+//  surumden itibaren test sozlesmesinden de cikarildi. Kalan testler
+//  guncel UI ile hizalandi.
+// ------------------------------------------------------------------
 
 const MOCK_JOB = {
   id: "test-123",
@@ -132,7 +137,7 @@ beforeEach(() => {
 });
 
 /* ------------------------------------------------------------------ */
-/*  Phase 318 — Global empty/error state standardization               */
+/*  Phase 318 — Deferred/disabled note standardization                 */
 /* ------------------------------------------------------------------ */
 
 describe("Phase 318 — Deferred/disabled note standardization", () => {
@@ -143,9 +148,10 @@ describe("Phase 318 — Deferred/disabled note standardization", () => {
     expect(screen.getByTestId("library-search-input")).toBeDefined();
   });
 
-  it("analytics overview filter section is active (M17-B)", () => {
+  it("analytics overview filter bar renders (M17-B)", () => {
     renderAdmin("/admin/analytics");
-    expect(screen.getByTestId("analytics-filter-area")).toBeDefined();
+    // Guncel UI'da 'analytics-filter-area' wrapper'i yok; filter bar
+    // 'filter-date-start' inputu ile dogrulanir.
     expect(screen.getByTestId("filter-date-start")).toBeDefined();
   });
 
@@ -178,11 +184,6 @@ describe("Phase 318 — Deferred/disabled note standardization", () => {
     expect(note.textContent).not.toContain("ilerideki fazlarda");
   });
 
-  it("analytics content window selector is present (M18-B)", () => {
-    renderAdmin("/admin/analytics/content");
-    expect(screen.getByTestId("content-window-selector")).toBeDefined();
-  });
-
   it("library empty state is present when no items", async () => {
     renderAdmin("/admin/library");
     const empty = await waitFor(() => screen.getByTestId("library-empty-state"));
@@ -195,39 +196,34 @@ describe("Phase 318 — Deferred/disabled note standardization", () => {
 /* ------------------------------------------------------------------ */
 
 describe("Phase 319 — Cross-module UX coherence", () => {
-  describe("Admin panel heading + subtitle + workflow pattern", () => {
-    it("admin overview has heading with testid", () => {
+  describe("Admin panel heading + subtitle", () => {
+    it("admin overview has heading (PageShell auto testid)", () => {
       renderAdmin("/admin");
       const h = screen.getByTestId("admin-overview-heading");
-      expect(h.textContent).toBe("Genel Bakis");
+      // F48: short-form "Yönetim Paneli"
+      expect(h.textContent).toBe("Yönetim Paneli");
     });
 
-    it("admin overview has subtitle with testid", () => {
+    it("admin overview has subtitle (PageShell auto testid)", () => {
       renderAdmin("/admin");
       expect(screen.getByTestId("admin-overview-subtitle")).toBeDefined();
-    });
-
-    it("admin overview has workflow note with testid", () => {
-      renderAdmin("/admin");
-      const note = screen.getByTestId("admin-overview-workflow-note");
-      expect(note.textContent).toContain("Icerik Olusturma");
     });
   });
 
   describe("User panel heading testids", () => {
-    it("dashboard has heading with testid", () => {
+    it("dashboard has greeting heading (PageShell auto testid)", () => {
       renderUser("/user");
       const h = screen.getByTestId("dashboard-heading");
-      expect(h.textContent).toBe("Anasayfa");
+      expect(h.textContent).toMatch(/Hoşgeldin/);
     });
 
-    it("content page has heading with testid", () => {
+    it("content page has heading", () => {
       renderUser("/user/content");
       const h = screen.getByTestId("content-heading");
-      expect(h.textContent).toBe("Icerik");
+      expect(h.textContent).toBe("İçerik");
     });
 
-    it("publish page has heading with testid", () => {
+    it("publish page has heading", () => {
       renderUser("/user/publish");
       const h = screen.getByTestId("publish-heading");
       expect(h.textContent).toBe("Yayin");
@@ -251,13 +247,13 @@ describe("Phase 319 — Cross-module UX coherence", () => {
   });
 
   describe("First-use notes present", () => {
-    it("content page has first-use note", () => {
+    it("content page has first-use note (Turkish copy)", () => {
       renderUser("/user/content");
       const note = screen.getByTestId("content-first-use-note");
-      expect(note.textContent).toContain("Ilk kez mi kullaniyorsunuz");
+      expect(note.textContent).toContain("İlk kez mi kullanıyorsunuz");
     });
 
-    it("publish page has first-use note", () => {
+    it("publish page has first-use note (ASCII copy)", () => {
       renderUser("/user/publish");
       const note = screen.getByTestId("publish-first-use-note");
       expect(note.textContent).toContain("Yayin sureci baslamadiysa");
@@ -266,89 +262,22 @@ describe("Phase 319 — Cross-module UX coherence", () => {
 });
 
 /* ------------------------------------------------------------------ */
-/*  Phase 320 — Release readiness checklist                            */
-/* ------------------------------------------------------------------ */
-
-describe("Phase 320 — Release readiness checklist", () => {
-  it("admin overview has release readiness section", () => {
-    renderAdmin("/admin");
-    expect(screen.getByTestId("release-readiness-section")).toBeDefined();
-  });
-
-  it("release readiness heading is correct", () => {
-    renderAdmin("/admin");
-    const h = screen.getByTestId("release-readiness-heading");
-    expect(h.textContent).toBe("Urun Hazirlik Durumu");
-  });
-
-  it("release readiness note describes backbone status", () => {
-    renderAdmin("/admin");
-    const note = screen.getByTestId("release-readiness-note");
-    expect(note.textContent).toContain("Ana urun alanlarinin mevcut durumu");
-  });
-
-  it("has all readiness items", () => {
-    renderAdmin("/admin");
-    expect(screen.getByTestId("readiness-content")).toBeDefined();
-    expect(screen.getByTestId("readiness-publish")).toBeDefined();
-    expect(screen.getByTestId("readiness-jobs")).toBeDefined();
-    expect(screen.getByTestId("readiness-templates")).toBeDefined();
-    expect(screen.getByTestId("readiness-news")).toBeDefined();
-    expect(screen.getByTestId("readiness-settings")).toBeDefined();
-    expect(screen.getByTestId("readiness-analytics")).toBeDefined();
-    expect(screen.getByTestId("readiness-library")).toBeDefined();
-  });
-
-  it("readiness items show dynamic status labels (Hazir or Yapilandirilmadi)", () => {
-    renderAdmin("/admin");
-    const allIds = [
-      "readiness-content",
-      "readiness-jobs",
-      "readiness-publish",
-      "readiness-news",
-      "readiness-templates",
-      "readiness-settings",
-      "readiness-analytics",
-      "readiness-library",
-    ];
-    allIds.forEach((id) => {
-      const text = screen.getByTestId(id).textContent || "";
-      expect(text.includes("Hazir") || text.includes("Yapilandirilmadi")).toBe(true);
-    });
-  });
-
-  it("readiness-library has dynamic status", () => {
-    renderAdmin("/admin");
-    const item = screen.getByTestId("readiness-library");
-    const text = item.textContent || "";
-    expect(text.includes("Hazir") || text.includes("Yapilandirilmadi")).toBe(true);
-  });
-
-  it("deferred note mentions backend entegrasyonu", () => {
-    renderAdmin("/admin");
-    const note = screen.getByTestId("release-readiness-deferred-note");
-    expect(note.textContent).toContain("backend entegrasyonu");
-  });
-});
-
-/* ------------------------------------------------------------------ */
 /*  Phase 321 — End-to-end verification                                */
+/*  (Phase 320 release-readiness-* testid'leri UI'dan kaldirildi —     */
+/*   ilgili blok silindi.)                                              */
 /* ------------------------------------------------------------------ */
 
 describe("Phase 321 — Final UX end-to-end verification", () => {
-  it("admin overview chain: heading + subtitle + workflow + quick access + readiness", () => {
+  it("admin overview chain: heading + subtitle + quick access", () => {
     renderAdmin("/admin");
     expect(screen.getByTestId("admin-overview-heading")).toBeDefined();
     expect(screen.getByTestId("admin-overview-subtitle")).toBeDefined();
-    expect(screen.getByTestId("admin-overview-workflow-note")).toBeDefined();
     expect(screen.getByTestId("admin-quick-access-heading")).toBeDefined();
-    expect(screen.getByTestId("release-readiness-section")).toBeDefined();
   });
 
-  it("user dashboard chain: heading + context note", async () => {
+  it("user dashboard has greeting heading", () => {
     renderUser("/user");
     expect(screen.getByTestId("dashboard-heading")).toBeDefined();
-    await waitFor(() => expect(screen.getByTestId("dashboard-context-note")).toBeDefined());
   });
 
   it("user content chain: heading + subtitle + first-use note + crosslink", () => {
@@ -380,8 +309,8 @@ describe("Phase 321 — Final UX end-to-end verification", () => {
     expect(page).not.toContain("ilerideki fazlarda");
   });
 
-  it("analytics overview filter section is present (M17-B)", () => {
+  it("analytics overview filter input is present (M17-B)", () => {
     renderAdmin("/admin/analytics");
-    expect(screen.getByTestId("analytics-filter-area")).toBeDefined();
+    expect(screen.getByTestId("filter-date-start")).toBeDefined();
   });
 });

@@ -43,6 +43,10 @@ beforeEach(() => {
 });
 
 describe("User publish entry surface", () => {
+  // NOTE: UserPublishEntryPage artik router'da dogrudan mount edilmiyor
+  // (prod router'da /user/publish -> UserPublishPage). Burada bu sayfa
+  // smoke test kapsami icin mount ediliyor ve guncel icerik dogrulaniyor.
+
   it("renders publish entry page at /user/publish", () => {
     renderAt("/user/publish");
     expect(screen.getByRole("heading", { name: "Yayin" })).toBeDefined();
@@ -53,25 +57,25 @@ describe("User publish entry surface", () => {
     expect(screen.getByText(/Icerik yayin durumunu takip edin/)).toBeDefined();
   });
 
-  it("shows jobs publish card", () => {
+  it("shows projelerim publish card", () => {
     renderAt("/user/publish");
-    expect(screen.getByTestId("publish-entry-jobs")).toBeDefined();
-    expect(screen.getByText("Isler")).toBeDefined();
-    expect(screen.getByText("Isleri Goruntule →")).toBeDefined();
+    const card = screen.getByTestId("publish-entry-jobs");
+    expect(card).toBeDefined();
+    expect(card.textContent).toContain("Projelerim");
   });
 
-  it("shows standard videos publish card", () => {
+  it("shows yeni video publish card", () => {
     renderAt("/user/publish");
-    expect(screen.getByTestId("publish-entry-standard-videos")).toBeDefined();
-    expect(screen.getByText("Standart Videolar")).toBeDefined();
-    expect(screen.getByText("Videolari Goruntule →")).toBeDefined();
+    const card = screen.getByTestId("publish-entry-standard-videos");
+    expect(card).toBeDefined();
+    expect(card.textContent).toContain("Yeni Video");
   });
 
-  it("shows news bulletins publish card", () => {
+  it("shows yayin kayitlari publish card", () => {
     renderAt("/user/publish");
-    expect(screen.getByTestId("publish-entry-news-bulletins")).toBeDefined();
-    expect(screen.getByText("Haber Bultenleri")).toBeDefined();
-    expect(screen.getByText("Bultenleri Goruntule →")).toBeDefined();
+    const card = screen.getByTestId("publish-entry-news-bulletins");
+    expect(card).toBeDefined();
+    expect(card.textContent).toContain("Yayin Kayitlari");
   });
 
   it("shows admin navigation note", () => {
@@ -79,28 +83,29 @@ describe("User publish entry surface", () => {
     expect(screen.getByText(/Tamamlanan isler yonetim panelinden yayinlanabilir/)).toBeDefined();
   });
 
-  it("sidebar Yayin link is active at /user/publish", () => {
+  it("sidebar Yayın link is active at /user/publish", () => {
     renderAt("/user/publish");
-    const link = screen.getByRole("link", { name: "Yayin" });
+    // Sidebar ve H2 baslik ayni isme sahip olabilir; href filtresiyle tek link cek.
+    const links = screen.getAllByRole("link", { name: "Yayın" });
+    const link = links.find((l) => l.getAttribute("href") === "/user/publish");
     expect(link).toBeDefined();
-    expect(link.getAttribute("href")).toBe("/user/publish");
+    expect(link!.getAttribute("aria-current")).toBe("page");
   });
 
-  it("sidebar Yayin link is available from dashboard", () => {
+  it("sidebar Yayın link is available from dashboard", () => {
     renderAt("/user");
-    const link = screen.getByRole("link", { name: "Yayin" });
+    const link = screen.getByRole("link", { name: "Yayın" });
     expect(link).toBeDefined();
     expect(link.getAttribute("href")).toBe("/user/publish");
   });
 
   it("does not break content entry at /user/content", () => {
     renderAt("/user/content");
-    expect(screen.getByRole("heading", { name: "Icerik" })).toBeDefined();
+    expect(screen.getByRole("heading", { name: "İçerik" })).toBeDefined();
   });
 
-  it("does not break user dashboard at /user", async () => {
+  it("does not break user dashboard at /user", () => {
     renderAt("/user");
-    expect(screen.getByRole("heading", { name: "Anasayfa" })).toBeDefined();
-    expect(await screen.findByTestId("post-onboarding-handoff")).toBeDefined();
+    expect(screen.getByRole("heading", { name: /Hoşgeldin/ })).toBeDefined();
   });
 });

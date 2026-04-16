@@ -122,9 +122,9 @@ describe("Faz 4D — panel switch presence across surfaces", () => {
       wrap(<CanvasUserLayout />);
       const btn = screen.getByTestId("canvas-panel-switch");
       expect(btn).toBeDefined();
-      expect(btn.textContent).toMatch(/yonetim/i);
-      expect(btn.getAttribute("title")).toMatch(/yonetim/i);
-      expect(btn.getAttribute("aria-label")).toMatch(/yonetim/i);
+      expect(btn.textContent).toMatch(/y[oö]netim/i);
+      expect(btn.getAttribute("title")).toMatch(/y[oö]netim/i);
+      expect(btn.getAttribute("aria-label")).toMatch(/y[oö]netim/i);
     });
 
     it("clicking canvas panel switch navigates to /admin", async () => {
@@ -145,9 +145,9 @@ describe("Faz 4D — panel switch presence across surfaces", () => {
       wrap(<AtriumUserLayout />);
       const btn = screen.getByTestId("atrium-panel-switch");
       expect(btn).toBeDefined();
-      expect(btn.textContent).toMatch(/yonetim/i);
-      expect(btn.getAttribute("title")).toMatch(/yonetim/i);
-      expect(btn.getAttribute("aria-label")).toMatch(/yonetim/i);
+      expect(btn.textContent).toMatch(/y[oö]netim/i);
+      expect(btn.getAttribute("title")).toMatch(/y[oö]netim/i);
+      expect(btn.getAttribute("aria-label")).toMatch(/y[oö]netim/i);
     });
 
     it("clicking atrium panel switch navigates to /admin", async () => {
@@ -168,8 +168,8 @@ describe("Faz 4D — panel switch presence across surfaces", () => {
       wrap(<BridgeAdminLayout />);
       const btn = screen.getByTestId("bridge-scope-switch");
       expect(btn).toBeDefined();
-      expect(btn.getAttribute("title")).toMatch(/kullanici/i);
-      expect(btn.getAttribute("aria-label")).toMatch(/kullanici/i);
+      expect(btn.getAttribute("title")).toMatch(/kullan[ıi]c[ıi]/i);
+      expect(btn.getAttribute("aria-label")).toMatch(/kullan[ıi]c[ıi]/i);
       expect(btn.getAttribute("data-panel-switch")).toBe("bridge");
     });
 
