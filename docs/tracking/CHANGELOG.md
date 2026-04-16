@@ -2,6 +2,91 @@
 
 ---
 
+## [2026-04-16] PHASE AB — News Bulletin Real Preview Pack
+
+### Özet
+PHASE AA'da belgelenen `news_bulletin` honest gap'ini **fake preview üretmeden**
+kapatan odaklı bir faz. Hiç yeni altyapı kurulmadı; classifier / service / router /
+frontend dokunulmadı. news_bulletin executor'larına üç **gerçek** preview yazımı
+eklendi (`preview_news_selected.json`, `preview_script.json`, `preview_metadata.json`).
+Hepsi PHASE AA preview-artifact-contract'ı ile uyumlu; MediaPreview JSON delegasyonu
+ile admin/user surface'larında otomatik görünür.
+
+### 10 Alt Faz (A–J)
+- **A** — Discovery + contract fit check: `script.py` / `metadata.py` /
+  `composition.py` tarandı. Honest üretim noktaları: (1) selected_items snapshot'ı
+  (raw_input'ta hazır), (2) bulletin_script başarılı yazımı sonrası, (3) metadata
+  başarılı yazımı sonrası. Frame preview için gerçek render gerekli — honest olarak
+  deferred.
+- **B** — Preview strategy (real only, no fake): üç gerçek preview belirlendi;
+  frame preview kapsam dışı (composition step render yapmaz — placeholder yerine
+  honest deferred).
+- **C** — Backend preview production:
+  - `_helpers.py` → yeni `_write_preview_artifact(workspace_root, job_id, filename, data)`
+    helper. Prefix guard (`preview_` zorunlu) + otomatik `generated_at` injection
+    + best-effort exception suppression (step'i asla durdurmaz, fake placeholder
+    üretmez).
+  - `executors/script.py` → `BulletinScriptExecutor.execute()` iki noktada preview
+    yazar: (1) selected_items guard sonrası LLM öncesi `preview_news_selected.json`,
+    (2) `bulletin_script.json` FINAL yazımı sonrası `preview_script.json`.
+  - `executors/metadata.py` → `BulletinMetadataExecutor.execute()` `metadata.json`
+    FINAL yazımı sonrası `preview_metadata.json` yazar.
+- **D** — Classifier/contract extension: GEREKSİZ. `_PREVIEW_STEP_MAP` zaten AA'da
+  `preview_news_selected → news_selected`, `preview_script → script`,
+  `preview_metadata → metadata` içeriyordu. Değişiklik yok.
+- **E** — Service/router compat: mevcut `/api/v1/jobs/{id}/previews` endpoint
+  news_bulletin preview'larını filename tabanlı otomatik listeler. Yeni endpoint
+  YOK; parallel serve pattern'i yok.
+- **F** — Frontend surface compat: `JobPreviewCard` + `JobPreviewList` + MediaPreview
+  JSON routing zaten AA'da hazırdı. Yeni component yok.
+- **G** — Honest state handling:
+  - Selected items boş → StepExecutionError; hiçbir preview yazılmaz.
+  - LLM fail → `bulletin_script.json` / `metadata.json` yazılmaz → `preview_script.json`
+    / `preview_metadata.json` da yazılmaz.
+  - Preview yazımı fail → log warn + `None` dönüş; fake placeholder oluşturulmaz.
+  - `preview_` prefix ihlali `_write_preview_artifact` içinde bloklanır.
+- **H** — Tests (+phase_ab preview smoke pack): 15 yeni test.
+  - `test_phase_ab_news_bulletin_preview.py` — 4 classifier coverage, 4 helper unit,
+    4 script executor integration (preview yazımları + fail path), 2 metadata
+    executor integration, 1 router smoke (mevcut endpoint'ten news_bulletin
+    preview'larını listeleyen).
+- **I** — Docs:
+  - `docs/preview-artifact-contract.md` §6.3 "news_bulletin honest gap" bölümü
+    "PHASE AB — honest gap kapandı" olarak güncellendi; üç preview'ın üretim
+    noktası ve honest state garantileri tablo olarak belgelendi.
+  - Yeni: `docs/phase-ab-closure.md` — 10 alt faz teslim özeti + backend/frontend
+    değişiklikleri + invariants + kural-ihlali kontrolü.
+  - STATUS/CHANGELOG head section'ları bu girişi işaret ediyor.
+- **J** — Git discipline: 3 commit (backend+tests / (boş FE — commit atlandı, FE
+  dokunulmadı) / docs). Push → `origin/main`.
+
+### Testler
+- `backend/tests/test_phase_ab_news_bulletin_preview.py` — 15 yeni test.
+- Pytest: **2358 passed, 0 failed** (PHASE AA baseline 2343 → +15 AB).
+- Zero skip, zero xfail, zero sessiz bypass.
+
+### Yeni dosyalar
+- `backend/tests/test_phase_ab_news_bulletin_preview.py`
+- `docs/phase-ab-closure.md`
+
+### Değişen dosyalar
+- `backend/app/modules/news_bulletin/executors/_helpers.py`
+- `backend/app/modules/news_bulletin/executors/script.py`
+- `backend/app/modules/news_bulletin/executors/metadata.py`
+- `docs/preview-artifact-contract.md` (§6.3)
+- `docs/tracking/STATUS.md` (head section)
+- `docs/tracking/CHANGELOG.md` (head section — bu giriş)
+
+### Kalan sınırlamalar (honest)
+- `preview_bulletin_frame.jpg` YOK — gerçek render gerekli, placeholder üretmemek
+  için gelecek faza bırakıldı.
+- Subtitle preview / composition preview henüz üretilmiyor; composition_props
+  zaten FINAL olarak tam içerik taşıyor — parallel dilim gereksiz.
+- Preview üretim telemetrisi yok (analytics pack işi).
+- SSE invalidate yok; React Query staleTime=10s ile yenilenir.
+
+---
+
 ## [2026-04-16] PHASE AA — Preview Artifact Pipeline / Visual Review Pack
 
 ### Özet

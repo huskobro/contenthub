@@ -147,16 +147,46 @@ onizlemedir — nihai cikti degildir." uyarısı her zaman görünür.
   - `preview_mini.mp4` → PREVIEW / VIDEO_RENDER / `preview_mini`.
   - `preview_mini.json` → PREVIEW / METADATA / `preview_mini`.
 
-### 6.3 news_bulletin ⚠️ (honest gap)
-- Gerçek bir preview adımı YOK. Script ve metadata aşamaları `script.json` /
-  `bulletin_script.json` / `metadata.json` üretir — bunların tümü FINAL scope
-  altında kalır.
-- PHASE AA sahte bir preview dosyası inject ETMEDİ (kural: "preview dosyaları
-  final artifact gibi davranmasın" aynı zamanda "final dosyalar preview gibi
-  davranmasın"). Bu sınırlama bilinçli tercihtir.
-- Gelecek bir fazda news_bulletin için uygun bir preview üretici eklenirse
-  (ör. `preview_news_selected.json` — classifier bunu zaten yakalıyor),
-  doğal olarak yüzeye düşer.
+### 6.3 news_bulletin ✅ (PHASE AB — honest gap kapandı)
+
+PHASE AA'da belgelenen honest gap, PHASE AB'de **fake preview üretmeden**
+kapatıldı. news_bulletin artık üç gerçek preview artifact'i üretir:
+
+| Artifact                      | Üretim noktası                                | Scope / Kind         | source_step      |
+| ----------------------------- | --------------------------------------------- | -------------------- | ---------------- |
+| `preview_news_selected.json`  | `BulletinScriptExecutor.execute()` başında (selected_items guard'ından hemen sonra) | PREVIEW / METADATA | `news_selected`  |
+| `preview_script.json`         | `BulletinScriptExecutor` — `bulletin_script.json` (FINAL) yazıldıktan SONRA | PREVIEW / METADATA | `script`         |
+| `preview_metadata.json`       | `BulletinMetadataExecutor` — `metadata.json` (FINAL) yazıldıktan SONRA | PREVIEW / METADATA | `metadata`       |
+
+**Honest state garantileri:**
+- `selected_items` boşsa executor hata fırlatır (PHASE X öncesinden beri
+  mevcut kural) — `preview_news_selected.json` dahil hiçbir preview yazılmaz.
+- LLM çağrısı başarısız olursa `bulletin_script.json`/`metadata.json`
+  yazılmaz — dolayısıyla `preview_script.json`/`preview_metadata.json` da
+  yazılmaz.
+- Preview yazımı best-effort'dur: yazım hatası olursa step başarısız olmaz,
+  ama fake placeholder da oluşturulmaz (`_write_preview_artifact` dönüş
+  değeri None → log warning → sessiz devam).
+- `preview_*` prefix ihlali `_write_preview_artifact` içinde bloklanır
+  (error log + None dönüş).
+
+**Alınmayan preview:**
+- `preview_bulletin_frame.jpg` — honestly derive edilebilmesi için gerçek
+  render gerekir (composition step yalnızca props üretir). Ayrı bir
+  `render_still` adımı veya Remotion CLI preview-only invocation şu an
+  pipeline'da yok → sahte çerçeve inject etmedik, gelecek bir faza
+  bırakıldı.
+- Composition preview (`preview_composition.json`) — composition_props.json
+  zaten FINAL scope'ta ve full içeriği var; ayrı bir "preview" dilimine
+  ihtiyaç yok, parallel pattern olurdu.
+
+**Classifier değişikliği yok.** `_PREVIEW_STEP_MAP` ve `_PREVIEW_LABEL_MAP`
+zaten PHASE AA'da bu stem'leri içeriyordu — AB yalnızca üreticiyi ekledi.
+
+### 6.4 (eski) news_bulletin honest gap — kapandı
+
+_(Bu bölüm AB öncesi durumun dokümantasyonuydu. AB sonrası artık geçerli
+değil — §6.3'e bakınız.)_
 
 ---
 

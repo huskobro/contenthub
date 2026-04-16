@@ -1,11 +1,44 @@
 # DURUM
 
 ## Mevcut Faz
+**PHASE AB KAPANDI (2026-04-16) — News Bulletin Real Preview Pack**
 **PHASE AA KAPANDI (2026-04-16) — Preview Artifact Pipeline / Visual Review Pack**
 **PHASE Z KAPANDI (2026-04-16) — Operational Hardening / Release Candidate Pack**
 **PHASE Y KAPANDI (2026-04-16) — Baseline Drift / Release Readiness Stabilization Pack**
 **PHASE X KAPANDI (2026-04-16) — Ownership / Channel Auto-Import / Project-Job Hierarchy Pack**
 **TÜM MİLESTONE'LAR KAPANDI — Master plan (M1–M8) tamamlandı**
+
+### PHASE AB (News Bulletin Real Preview Pack) Özet
+- Amaç: PHASE AA'daki `news_bulletin` honest gap'ini **fake preview üretmeden**
+  kapatmak. "Sahte placeholder üretme, gerçekten üretilebilen preview'ları üret"
+  kuralı merkezde.
+- Yeni backend altyapısı KURULMADI — yalnızca news_bulletin executor'larına
+  yan etki olarak preview yazımı eklendi.
+- `BulletinScriptExecutor` artık iki gerçek preview yazar:
+  - `preview_news_selected.json` — seçilmiş haber öğeleri snapshot'ı (LLM
+    öncesi, karar izlenebilirliği için).
+  - `preview_script.json` — `bulletin_script.json` (FINAL) başarıyla
+    yazıldıktan sonra headlines + narration önizleme.
+- `BulletinMetadataExecutor` artık bir gerçek preview yazar:
+  - `preview_metadata.json` — `metadata.json` (FINAL) başarıyla yazıldıktan
+    sonra title/description/tags/category önizlemesi.
+- Yeni yardımcı: `_write_preview_artifact(workspace_root, job_id, filename, data)`
+  — `preview_` prefix guard + otomatik `generated_at` + best-effort
+  (istisnayı bastırır, step'i durdurmaz, fake placeholder oluşturmaz).
+- Classifier / service / router / frontend DOKUNULMADI. AA'da kurulan
+  altyapı filename tabanlı yeni preview'ları otomatik yakalar; `JobPreviewList`
+  news_bulletin JSON preview'larını MediaPreview delegasyonu ile gösterir.
+- Honest state: selected_items boş → hata + hiç preview. LLM fail → FINAL yok
+  → preview de yok. Yazım fail → log warn + None, fake placeholder yok.
+- Alınmayan: `preview_bulletin_frame.jpg` — gerçek render gerektirir,
+  placeholder üretmemek için gelecek faza bırakıldı.
+- Yeni test dosyası: `test_phase_ab_news_bulletin_preview.py` — **15 test**
+  (4 classifier, 4 helper, 4 script executor, 2 metadata executor, 1 router
+  smoke).
+- Tam suite: **2358 passed, 0 failed** (PHASE AA baseline 2343 → +15).
+- Docs: `docs/preview-artifact-contract.md` §6.3 (news_bulletin) — "honest
+  gap" durumundan "PHASE AB — honest gap kapandı" durumuna güncellendi.
+- Kapanış raporu: `docs/phase-ab-closure.md`.
 
 ### PHASE AA (Preview Artifact Pipeline / Visual Review Pack) Özet
 - Amaç: preview-first yaklaşımını gerçek, tutarlı, yönetilebilir bir yüzeye çıkarmak.
