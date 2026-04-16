@@ -169,32 +169,84 @@ YouTube publish ozelligi icin OAuth baglantisi gereklidir:
 
 ## 7. Yedekleme ve Geri Yukleme
 
-### Yedekleme
+### Ne Yedeklenmeli
 
-ContentHub tum verisini iki yerde tutar:
+ContentHub tum kalici verisini iki yerde tutar:
 
-| Konum | Icerik |
-|-------|--------|
-| `backend/data/contenthub.db` | Veritabani (tum kayitlar, ayarlar, kullanicilar) |
-| `backend/workspace/` | Is artifact'lari (audio, video, script, metadata) |
+| Konum | Icerik | Yedek Onceligi |
+|-------|--------|----------------|
+| `backend/data/contenthub.db` (+ `-wal`, `-shm`) | Veritabani (tum kayitlar, ayarlar, kullanicilar, jobs, publish records, audit log) | **Kritik** |
+| `backend/workspace/users/<slug>/jobs/<job_id>/artifacts/` | Is artifact'lari (audio, video, script, metadata) — PHASE X sonrasi user-scoped | Yuksek |
+| `backend/workspace/users/<slug>/exports/` | Kullanici export dosyalari | Yuksek |
+| `.env` | Secrets (JWT, API keys) | **Kritik** (ayri, sifreli saklayin) |
 
-**Yedek alma:**
+### Guvenli Yedekleme (Onerilen Yontem — hot backup)
+
+SQLite `.backup` komutu WAL'i dondurmaz, transaction-consistent bir kopya
+olusturur — sistem calisirken guvenle yedek alinabilir:
+
 ```bash
-# Sistemi durdurun (veya WAL checkpoint yapin)
-cp backend/data/contenthub.db backup/contenthub-$(date +%Y%m%d).db
-cp -r backend/workspace/ backup/workspace-$(date +%Y%m%d)/
+mkdir -p backup
+sqlite3 backend/data/contenthub.db ".backup backup/contenthub-$(date +%Y%m%d-%H%M%S).db"
 ```
+
+Workspace icin rsync (atomic, inkremental):
+
+```bash
+rsync -a --delete backend/workspace/ backup/workspace-$(date +%Y%m%d)/
+```
+
+### Basit Yedekleme (sistem kapaliken — cold backup)
+
+Eger sistem kapali ise dogrudan `cp` yeterlidir. **WAL dosyalarini mutlaka
+beraber alin**, yoksa son yazilanlar kaybolur:
+
+```bash
+# Sistemi durdurun (Ctrl+C veya kill)
+cp backend/data/contenthub.db{,-wal,-shm} backup/$(date +%Y%m%d)/
+cp -r backend/workspace/ backup/$(date +%Y%m%d)/workspace/
+```
+
+### Migration Oncesi Akis
+
+Yeni bir surum veya schema migration uygulamadan once:
+
+```bash
+# 1. Sistemi durdurun
+# 2. Hot backup (yukaridaki .backup komutu)
+# 3. Migration'i uygulayin
+cd backend && .venv/bin/alembic upgrade head
+# 4. Alembic loglarini kontrol edin (hata varsa dogrudan restore edin)
+# 5. Sistemi baslatin — startup recovery stale job'lari temizler
+```
+
+Alembic `downgrade` komutu **yalnizca migration scripti dogru yazilmis ise**
+guvenlidir. Super onemli / geri donusu olmayan migration'lardan once her
+zaman hot backup alin.
 
 ### Geri Yukleme
 
 ```bash
-# Sistemi durdurun
+# 1. Sistemi durdurun
+# 2. Mevcut bozuk DB'yi yedekleyin (forensic icin)
+mv backend/data/contenthub.db backend/data/contenthub.db.broken-$(date +%Y%m%d)
+# 3. Backup'i yerine koyun (WAL dosyalari dahil)
 cp backup/contenthub-TARIH.db backend/data/contenthub.db
-cp -r backup/workspace-TARIH/ backend/workspace/
-# Sistemi yeniden baslatin
+# 4. Workspace'i restore edin
+rsync -a backup/workspace-TARIH/ backend/workspace/
+# 5. Sistemi baslatin
+./start.sh
 ```
 
-**Onemli:** Geri yukleme sirasinda sistem kapalı olmalidir. WAL dosyalari (`-wal`, `-shm`) DB ile birlikte tasinmalidir.
+**Restore sonrasi otomatik davranislar:**
+- Startup recovery scan'i devreye girer (5 dk'dan eski `running` job'lar
+  `failed` olarak isaretlenir — `C-07 / P-008`).
+- Stale queued job'lar loglanir (30 dk'dan eski) — operator manuel incelemeli.
+- WAL checkpoint otomatik calisir.
+- Seed'ler idempotent — mevcut veriyi degistirmez.
+
+**Onemli:** WAL dosyalari (`-wal`, `-shm`) DB ile birlikte tasinmalidir. Yalniz
+`.db` dosyasini kopyalamak son yazilmamis transaction'lari kaybedebilir.
 
 ---
 

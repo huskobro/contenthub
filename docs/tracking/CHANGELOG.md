@@ -2,6 +2,66 @@
 
 ---
 
+## [2026-04-16] PHASE Z — Operational Hardening / Release Candidate Pack
+
+### Özet
+PHASE Y sonrası RC-readiness için operasyonel dayanıklılık turu. Production
+ownership/auth/security kontratı PHASE X seviyesinde **zayıflatılmadan**
+channel import DoS/consent-wall resilience, workspace artifact serving guard
+zincirinin end-to-end test kapsamı, backup/restore operator yolu ve 8-test
+release-candidate smoke hattı eklendi. Hiç skip/xfail/sessiz bypass yok.
+
+### 7 Alt Faz (A–G)
+- **A** — Warning cleanup audit: 22 warning → 17 temizlendi (Starlette
+  `HTTP_422_UNPROCESSABLE_ENTITY` → `_CONTENT` rename 6 yerde;
+  `ResourceWarning: unclosed file` fix 11 yerde `Path.read_text()` ile). Kalan
+  1 warning non-blocker (dispatcher integration background coroutine).
+- **B** — Channel import hardening:
+  - `_fetch_html` streaming body 512 KB hard cap, `max_redirects=5`, broad
+    exception handling.
+  - `_MEANINGLESS_TITLES` filter → consent-wall sayfaları artık `partial=True`
+    state'e düşüyor ("YouTube" başlığı meaningful kabul edilmiyordu → dürüst
+    düzeltme).
+  - 25 yeni test (`test_phase_z_channel_hardening.py`): url_utils edge-cases,
+    httpx streaming shim, partial/consent/malformed/success, service dup /
+    cross-user / metadata_json leak guard.
+- **C** — Workspace/artifact hardening: 7 yeni test
+  (`test_phase_z_workspace_hardening.py`) workspace_path authoritative, orphan
+  (user 403 / admin 200), cross-user 403, path-traversal (`..` + `..%2F..%2F`
+  URL-encoded), missing file 404, global fallback.
+- **D** — Backup/restore/recoverability audit: `docs/operator-guide.md` §7
+  tamamen yeniden yazıldı (hot backup `sqlite3 .backup`, WAL/SHM zorunluluğu,
+  migration pre-flight checklist, restore forensic + post-behavior).
+- **E** — Release candidate smoke pack: 8 yeni test
+  (`test_phase_z_rc_smoke.py`) onboarding, channel URL create, project+job
+  chain, ownership isolation, admin global, analytics, publish gate, startup
+  recovery (P-008).
+- **F** — Docs: `docs/phase-z-closure.md` yazıldı; STATUS head ve CHANGELOG
+  güncellendi.
+- **G** — Git discipline: 2 commit (hardening code/tests + docs/release audit)
+  + push `origin/main`.
+
+### Test Durumu
+- Hedef set: 40/40 yeşil (25 + 7 + 8).
+- Tam suite: **2274 passed, 0 failed** (PHASE Y'ye göre +40 test).
+- Kalan warning: 1 non-blocker.
+
+### Değişmeyenler
+- Ownership/auth/security: PHASE X contract'i aynen.
+- Alembic zinciri: `product_review_001 → phase_x_001` aynı.
+- Schema/migration: değişiklik YOK.
+- Backend business logic: sadece `metadata_fetch.py` hardening (prod davranış
+  değişikliği = consent-wall sayfaların dürüstçe partial kabul edilmesi).
+
+### Kurallara Uygunluk
+- No ownership/auth/security weakening.
+- No hidden bypass; tek prod davranış değişikliği açık (consent-wall partial).
+- No skip/xfail/silent ignore.
+- No refactor for refactor's sake.
+- Sadece operasyonel dayanıklılık + release-readiness temizliği.
+
+---
+
 ## [2026-04-16] PHASE Y — Baseline Drift / Release Readiness Stabilization Pack
 
 ### Özet

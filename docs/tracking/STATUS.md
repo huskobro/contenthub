@@ -1,9 +1,29 @@
 # DURUM
 
 ## Mevcut Faz
+**PHASE Z KAPANDI (2026-04-16) — Operational Hardening / Release Candidate Pack**
 **PHASE Y KAPANDI (2026-04-16) — Baseline Drift / Release Readiness Stabilization Pack**
 **PHASE X KAPANDI (2026-04-16) — Ownership / Channel Auto-Import / Project-Job Hierarchy Pack**
 **TÜM MİLESTONE'LAR KAPANDI — Master plan (M1–M8) tamamlandı**
+
+### PHASE Z (Operational Hardening / Release Candidate) Özet
+- Ownership/auth/security PHASE X seviyesinde **aynen korundu**; hiç skip/xfail yok.
+- Channel import DoS/consent-wall/edge-case hardening:
+  - `_fetch_html` streaming body 512 KB hard cap + `max_redirects=5`.
+  - `_MEANINGLESS_TITLES` filter ("YouTube" / "Google" / "Error" / "404") — consent
+    wall sayfaları artık dürüstçe `partial=True` kabul ediliyor.
+- Workspace artifact serving 7 hardening testi ile kilitlendi (ownership + orphan +
+  cross-user + path-traversal + missing + global fallback).
+- Backup/restore operator rehberi yeniden yazıldı (hot backup via sqlite `.backup`,
+  WAL/SHM, migration pre-flight, restore post-behavior).
+- Release Candidate smoke hattı: 8 uçtan uca test (onboarding → channel → project
+  → job → ownership isolation → admin global → analytics → publish gate → startup
+  recovery).
+- Starlette `HTTP_422_UNPROCESSABLE_ENTITY` → `_CONTENT` rename (6 yer) — forward-compat.
+- Test warning'leri: 17 fixable temizlendi; 1 non-blocker (dispatcher integration
+  background coroutine).
+- Full suite: **2274 passed, 0 failed** (+40 hardening/smoke testi).
+- Kapanış raporu: `docs/phase-z-closure.md`.
 
 ### PHASE Y (Baseline Stabilization) Özet
 - PHASE X sonrası raporlanan 23 pre-existing baseline drift'i temizlendi.
