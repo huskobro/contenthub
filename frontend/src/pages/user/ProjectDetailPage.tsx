@@ -26,6 +26,7 @@ import {
 import { formatDateISO } from "../../lib/formatDate";
 import { useSurfacePageOverride } from "../../surfaces";
 import { ProjectAutomationPanel } from "../../components/full-auto/ProjectAutomationPanel";
+import { JobPreviewList } from "../../components/preview/JobPreviewList";
 
 const MODULE_LABELS: Record<string, string> = {
   standard_video: "Standart Video",
@@ -93,6 +94,15 @@ function LegacyProjectDetailPage() {
   });
 
   const linkedJobs: JobResponse[] = projectJobs ?? [];
+
+  // PHASE AA: projenin en son is'ini preview/final paneli icin sec.
+  // Admin surface'a benzer sekilde, backend ownership kontrol eder.
+  const latestJobForPreview: JobResponse | undefined = linkedJobs.length > 0
+    ? [...linkedJobs].sort(
+        (a, b) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+      )[0]
+    : undefined;
 
   // The latest non-rendering/completed video eligible for production start
   const pendingVideo = linkedVideos?.find(
@@ -242,6 +252,15 @@ function LegacyProjectDetailPage() {
           </div>
         )}
       </SectionShell>
+
+      {/* PHASE AA — Son is icin preview + nihai artifact'ler */}
+      {latestJobForPreview && (
+        <JobPreviewList
+          jobId={latestJobForPreview.id}
+          testId="project-detail-previews"
+          compactCards
+        />
+      )}
 
       {/* Quick Actions */}
       <SectionShell title="Aksiyonlar" testId="project-actions">

@@ -15,6 +15,7 @@ import {
 } from "../../components/design-system/primitives";
 import { useToast } from "../../hooks/useToast";
 import { VideoPlayer } from "../../components/shared/VideoPlayer";
+import { JobPreviewList } from "../../components/preview/JobPreviewList";
 import type { JobStepResponse } from "../../api/jobsApi";
 import { useSurfacePageOverride } from "../../surfaces/SurfaceContext";
 
@@ -163,6 +164,9 @@ function LegacyJobDetailPage() {
       <JobTimelinePanel steps={job.steps} />
       <JobSystemPanels steps={job.steps} jobId={job.id} />
       <JobActionsPanel job={job} />
+
+      {/* PHASE AA — Preview + nihai artifact'ler siniflandirilmis liste */}
+      <JobPreviewList jobId={job.id} testId="job-detail-previews" />
 
       {/* Ciktilar */}
       {(() => {
