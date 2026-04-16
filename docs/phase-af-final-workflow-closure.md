@@ -80,6 +80,12 @@ Migration yapılmadı — schema zaten PHASE AE'de yeterliydi.
 - ProjectDetailPage'de Canvas override path'i güncellenmedi — Canvas
   surface'daki CanvasProjectDetailPage kendi bölümlerini render ediyor;
   launcher + summary Canvas'a port edilmedi (scope dışı).
+- ~~Proje oluştururken hâlâ modül soruluyor, ama backend `module_type`'i~~
+  ~~zorunlu tutuyor. Karma proje desteği için schema değişikliği gerekir.~~
+  **PHASE AG ile çözüldü**: `module_type` nullable yapıldı, create
+  modal'ında modül picker kaldırıldı, karma proje için "Karma (modül-
+  üstü)" etiketi + launcher kartları. Bkz.
+  `docs/phase-ag-project-finalization-closure.md`.
 
 ## Kullanıcı İçin Kısa Özet
 
