@@ -1,7 +1,7 @@
 """
 PHASE AE — Unified User Production Flow smoke tests.
 
-Scope:
+Scope (genel):
   1. URL-only channel onboarding (user-facing create).
   2. Project creation on top of that channel.
   3. Product review happy path:
@@ -12,10 +12,33 @@ Scope:
   5. Publish deep-link contract: list publish records filtered by
      content_project_id returns only records bound to that project.
 
-These tests intentionally stay at the HTTP contract layer so the user-facing
-wizard's assumptions (endpoint shapes, ownership rules, project-scoped lists)
-are exercised end-to-end without depending on real scraping or the job
-runner.
+Scope (3-module unified coverage — PHASE AE follow-up):
+  Bu smoke block, kullanicinin tek akista uclu modulu (standard_video,
+  news_bulletin, product_review) gercekten bastan sona kullanabildigini
+  kanitlar. Her modul icin ayni kontrat seti tekrarlanir:
+
+    6. create path              (her modulun kendi POST endpoint'i 201 ve
+                                 content_project_id/channel_profile_id
+                                 alaninin kaybolmadigi)
+    7. preview visibility       (GET /jobs/{id}/previews modul-agnostik,
+                                 3 modul icin de 200 + schema sabit)
+    8. review gate path         (POST /publish/from-job -> POST submit ->
+                                 POST review approve; her modul icin ayni
+                                 state machine, herhangi bir module-fork yok)
+    9. publish CTA visibility   (from-job endpoint, content_project_id
+                                 iletildiginde ownership gate'i tetikler;
+                                 3 modul icin de tutarli davranir)
+   10. project altinda coklu job listesi (ayni projeye bagli 3 modulun 3
+                                         job'unu listeleme, ownership filter
+                                         ile baskalarinin isi sizmaz)
+   11. cross-user ownership isolation    (3 modulun her biri icin baska
+                                         kullanicinin kayitlarina kapi)
+
+Testler HTTP kontrat seviyesinde kalir — scrape/job runner'a gercek baglilik
+kurmaz. Dispatcher stub bulunmadigi test ortaminda start-production cagrilari
+yalnizca ownership + payload validation asamasina kadar calisir; bu PHASE AE
+scope'unda yeterlidir cunku yeni bir altyapi kurmuyoruz, sadece mevcut
+zincirin modul-agnostik calistigini kanitliyoruz.
 """
 
 from __future__ import annotations
@@ -27,8 +50,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.models import (
     ChannelProfile,
     ContentProject,
+    Job,
+    NewsBulletin,
     Product,
     ProductReview,
+    StandardVideo,
     User,
 )
 
@@ -38,6 +64,10 @@ pytestmark = pytest.mark.asyncio
 BASE_CHANNELS = "/api/v1/channel-profiles"
 BASE_PROJECTS = "/api/v1/content-projects"
 BASE_PR = "/api/v1/product-review"
+BASE_SV = "/api/v1/modules/standard-video"
+BASE_NB = "/api/v1/modules/news-bulletin"
+BASE_JOBS = "/api/v1/jobs"
+BASE_PUBLISH = "/api/v1/publish"
 
 
 # ---------------------------------------------------------------------------
@@ -295,3 +325,430 @@ async def test_publish_records_filter_by_content_project_id(
         assert isinstance(rows, list)
         for r in rows:
             assert r.get("content_project_id") == p1.id
+
+
+# ===========================================================================
+# PHASE AE follow-up — 3 modul unified zincir kaniti
+# ===========================================================================
+#
+# Yeni faz acmiyoruz; PHASE AE'nin kapanmami\u015f kismini bitiriyoruz.
+# A\u015fa\u011fidaki helper'lar ve testler standard_video, news_bulletin,
+# product_review i\u00e7in ayni kontrat setini paralel cal\u0131\u015ft\u0131r\u0131r.
+
+
+async def _seed_project_for(
+    db: AsyncSession,
+    owner: User,
+    *,
+    slug_suffix: str,
+    module_type: str,
+) -> ContentProject:
+    ch = await _seed_channel(db, owner, slug=f"ae3-{module_type[:4]}-{slug_suffix}")
+    proj = ContentProject(
+        user_id=owner.id,
+        channel_profile_id=ch.id,
+        title=f"AE3 {module_type} {slug_suffix}",
+        module_type=module_type,
+        content_status="draft",
+        review_status="not_required",
+        publish_status="unpublished",
+        origin_type="original",
+        priority="normal",
+    )
+    db.add(proj)
+    await db.commit()
+    await db.refresh(proj)
+    return proj
+
+
+async def _seed_completed_job(
+    db: AsyncSession,
+    owner: User,
+    project: ContentProject,
+    *,
+    module_type: str,
+) -> Job:
+    """Job'u 'completed' state'e ceker ki publish from-job endpoint'i kabul etsin."""
+    j = Job(
+        module_type=module_type,
+        status="completed",
+        owner_id=owner.id,
+        content_project_id=project.id,
+        channel_profile_id=project.channel_profile_id,
+    )
+    db.add(j)
+    await db.commit()
+    await db.refresh(j)
+    return j
+
+
+# ---------------------------------------------------------------------------
+# (6) Create path — 3 modul
+# ---------------------------------------------------------------------------
+
+
+async def test_create_path_standard_video(
+    client: AsyncClient,
+    db_session: AsyncSession,
+    regular_user: User,
+    user_headers: dict,
+):
+    """standard_video: POST /modules/standard-video 201 d\u00f6nmeli ve proje
+    ba\u011f\u0131 kaybolmamal\u0131 (wizard'\u0131n v\u00fcucudu ile birebir)."""
+    proj = await _seed_project_for(
+        db_session, regular_user, slug_suffix="create", module_type="standard_video"
+    )
+    payload = {
+        "topic": "AE3 standard video create path",
+        "language": "tr",
+        "render_format": "landscape",
+        "content_project_id": proj.id,
+        "channel_profile_id": proj.channel_profile_id,
+    }
+    resp = await client.post(BASE_SV, json=payload, headers=user_headers)
+    assert resp.status_code == 201, resp.text
+    body = resp.json()
+    assert body["topic"] == payload["topic"]
+    assert body.get("content_project_id") == proj.id
+
+
+async def test_create_path_news_bulletin(
+    client: AsyncClient,
+    db_session: AsyncSession,
+    regular_user: User,
+    user_headers: dict,
+):
+    """news_bulletin: POST /modules/news-bulletin 201 d\u00f6nmeli ve proje
+    ba\u011f\u0131 ayn\u0131 kalmal\u0131."""
+    proj = await _seed_project_for(
+        db_session, regular_user, slug_suffix="create", module_type="news_bulletin"
+    )
+    payload = {
+        "topic": "AE3 news bulletin create path",
+        "language": "tr",
+        "content_project_id": proj.id,
+        "channel_profile_id": proj.channel_profile_id,
+    }
+    resp = await client.post(BASE_NB, json=payload, headers=user_headers)
+    assert resp.status_code == 201, resp.text
+    body = resp.json()
+    assert body["topic"] == payload["topic"]
+    assert body.get("content_project_id") == proj.id
+
+
+async def test_create_path_product_review(
+    client: AsyncClient,
+    db_session: AsyncSession,
+    regular_user: User,
+    user_headers: dict,
+):
+    """product_review: POST /products -> POST /product-reviews -> 201."""
+    _ = await _seed_project_for(
+        db_session, regular_user, slug_suffix="create", module_type="product_review"
+    )
+    # (1) Product
+    resp = await client.post(
+        f"{BASE_PR}/products",
+        json={"source_url": "https://shop.example.com/ae3-pr-create"},
+        headers=user_headers,
+    )
+    assert resp.status_code == 201, resp.text
+    product_id = resp.json()["id"]
+
+    # (2) Review
+    resp = await client.post(
+        f"{BASE_PR}/product-reviews",
+        json={
+            "topic": "AE3 product review create path",
+            "template_type": "single",
+            "primary_product_id": product_id,
+            "secondary_product_ids": [],
+            "language": "tr",
+            "orientation": "vertical",
+            "duration_seconds": 60,
+            "run_mode": "semi_auto",
+            "affiliate_enabled": False,
+        },
+        headers=user_headers,
+    )
+    assert resp.status_code == 201, resp.text
+    assert resp.json()["primary_product_id"] == product_id
+
+
+# ---------------------------------------------------------------------------
+# (7) Preview visibility — 3 modul icin ayni endpoint
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize("module_type", ["standard_video", "news_bulletin", "product_review"])
+async def test_preview_visibility_per_module(
+    client: AsyncClient,
+    db_session: AsyncSession,
+    regular_user: User,
+    user_headers: dict,
+    module_type: str,
+):
+    """GET /jobs/{id}/previews 3 modul icin de ayni schema ile 200 d\u00f6ner.
+    Henuz artifact yoksa entries=[] bekliyoruz — bu 'preview g\u00f6r\u00fcn\u00fcrl\u00fc\u011f\u00fc
+    varsay\u0131lan olarak endpoint-level tutarl\u0131' kontrat\u0131d\u0131r."""
+    proj = await _seed_project_for(
+        db_session, regular_user, slug_suffix="prev", module_type=module_type
+    )
+    job = await _seed_completed_job(db_session, regular_user, proj, module_type=module_type)
+
+    resp = await client.get(f"{BASE_JOBS}/{job.id}/previews", headers=user_headers)
+    assert resp.status_code == 200, resp.text
+    body = resp.json()
+    assert body["job_id"] == job.id
+    assert "entries" in body
+    assert "preview_count" in body and "final_count" in body
+    assert isinstance(body["entries"], list)
+
+
+# ---------------------------------------------------------------------------
+# (8) Review gate path — publish from-job -> submit -> approve
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize("module_type", ["standard_video", "news_bulletin", "product_review"])
+async def test_review_gate_path_per_module(
+    client: AsyncClient,
+    db_session: AsyncSession,
+    regular_user: User,
+    user_headers: dict,
+    module_type: str,
+):
+    """Her modul icin tek state machine:
+       from-job -> draft -> submit (pending_review) -> approve (approved).
+    Ayni endpoint'ler, modulden bagimsiz davranir."""
+    proj = await _seed_project_for(
+        db_session, regular_user, slug_suffix="review", module_type=module_type
+    )
+    job = await _seed_completed_job(db_session, regular_user, proj, module_type=module_type)
+
+    # from-job: draft yarat
+    resp = await client.post(
+        f"{BASE_PUBLISH}/from-job/{job.id}",
+        json={
+            "platform": "youtube",
+            "content_ref_type": module_type,
+            "content_project_id": proj.id,
+        },
+        headers=user_headers,
+    )
+    assert resp.status_code == 201, resp.text
+    rec = resp.json()
+    assert rec["status"] == "draft"
+    record_id = rec["id"]
+
+    # submit: draft -> pending_review
+    resp = await client.post(
+        f"{BASE_PUBLISH}/{record_id}/submit",
+        json={"next_status": "pending_review"},
+        headers=user_headers,
+    )
+    assert resp.status_code == 200, resp.text
+    assert resp.json()["status"] == "pending_review"
+
+    # approve: pending_review -> approved
+    resp = await client.post(
+        f"{BASE_PUBLISH}/{record_id}/review",
+        json={"decision": "approve"},
+        headers=user_headers,
+    )
+    assert resp.status_code == 200, resp.text
+    assert resp.json()["status"] == "approved"
+
+
+# ---------------------------------------------------------------------------
+# (9) Publish CTA visibility — 3 modul icin de completed job = publish acik
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize("module_type", ["standard_video", "news_bulletin", "product_review"])
+async def test_publish_cta_visibility_per_module(
+    client: AsyncClient,
+    db_session: AsyncSession,
+    regular_user: User,
+    user_headers: dict,
+    module_type: str,
+):
+    """ProjectDetailPage'deki 'Yay\u0131na G\u00f6nder' CTA'\u0131n\u0131n kontrat\u0131:
+       completed bir job varsa /publish/from-job 201 d\u00f6ner, by-project
+       listelemesi yeni kayd\u0131 g\u00f6sterir. 3 modul icin de ayni."""
+    proj = await _seed_project_for(
+        db_session, regular_user, slug_suffix="cta", module_type=module_type
+    )
+    job = await _seed_completed_job(db_session, regular_user, proj, module_type=module_type)
+
+    resp = await client.post(
+        f"{BASE_PUBLISH}/from-job/{job.id}",
+        json={
+            "platform": "youtube",
+            "content_ref_type": module_type,
+            "content_project_id": proj.id,
+        },
+        headers=user_headers,
+    )
+    assert resp.status_code == 201, resp.text
+    record = resp.json()
+
+    resp = await client.get(
+        f"{BASE_PUBLISH}/by-project/{proj.id}", headers=user_headers
+    )
+    assert resp.status_code == 200, resp.text
+    rows = resp.json()
+    assert any(r["id"] == record["id"] for r in rows), rows
+
+
+# ---------------------------------------------------------------------------
+# (10) Project altinda coklu job listesi — ownership isolation
+# ---------------------------------------------------------------------------
+
+
+async def test_project_multi_job_listing_and_ownership_isolation(
+    client: AsyncClient,
+    db_session: AsyncSession,
+    regular_user: User,
+    admin_user: User,
+    user_headers: dict,
+):
+    """Ayni projeye bagli 3 modulun 3 job'u listelenir; baska kullanicinin
+    ayni modul tipindeki job'u sizmaz."""
+    proj = await _seed_project_for(
+        db_session, regular_user, slug_suffix="multijob", module_type="standard_video"
+    )
+    j_sv = await _seed_completed_job(db_session, regular_user, proj, module_type="standard_video")
+    j_nb = await _seed_completed_job(db_session, regular_user, proj, module_type="news_bulletin")
+    j_pr = await _seed_completed_job(db_session, regular_user, proj, module_type="product_review")
+
+    # Admin'in ayni project-id'siz fakat ayni owner olmayan job'u
+    admin_proj = await _seed_project_for(
+        db_session, admin_user, slug_suffix="multijob-adm", module_type="standard_video"
+    )
+    await _seed_completed_job(
+        db_session, admin_user, admin_proj, module_type="standard_video"
+    )
+
+    # User kendi projesinin tum job'larini goruyor
+    resp = await client.get(
+        f"{BASE_JOBS}?content_project_id={proj.id}", headers=user_headers
+    )
+    assert resp.status_code == 200, resp.text
+    rows = resp.json()
+    ids = {r["id"] for r in rows}
+    assert j_sv.id in ids
+    assert j_nb.id in ids
+    assert j_pr.id in ids
+    # Ama admin'in project-id'si buraya sizmamali
+    for r in rows:
+        assert r["content_project_id"] == proj.id
+
+
+# ---------------------------------------------------------------------------
+# (11) Cross-user ownership isolation — 3 modul icin create CTA'lari
+# ---------------------------------------------------------------------------
+
+
+async def test_cross_user_cannot_start_production_standard_video(
+    client: AsyncClient,
+    db_session: AsyncSession,
+    admin_user: User,
+    user_headers: dict,
+):
+    """Non-admin kullanici, admin'in standard_video kaydina start-production
+    cekemez. StandardVideo modelinde owner_user_id kolonu yok; ownership
+    content_project_id uzerinden zorlanir. Dispatcher test ortaminda 503
+    donebilir; ownership gate her durumda 503'ten *once* firmalali, yani
+    403 gorelim."""
+    # Admin'in projesi + standard_video kaydi (content_project_id uzerinden bagli)
+    admin_project = await _seed_project_for(
+        db_session, admin_user, slug_suffix="iso-sv", module_type="standard_video"
+    )
+    sv = StandardVideo(
+        topic="Admin SV",
+        language="tr",
+        status="draft",
+        content_project_id=admin_project.id,
+        channel_profile_id=admin_project.channel_profile_id,
+    )
+    db_session.add(sv)
+    await db_session.commit()
+    await db_session.refresh(sv)
+
+    resp = await client.post(
+        f"{BASE_SV}/{sv.id}/start-production",
+        json={},
+        headers=user_headers,
+    )
+    assert resp.status_code == 403, resp.text
+
+
+async def test_cross_user_cannot_start_production_news_bulletin(
+    client: AsyncClient,
+    db_session: AsyncSession,
+    admin_user: User,
+    user_headers: dict,
+):
+    """news_bulletin icin ayni ownership kapisi. NewsBulletin modelinde
+    owner_user_id kolonu yok; kapi content_project_id uzerinden calisir."""
+    admin_project = await _seed_project_for(
+        db_session, admin_user, slug_suffix="iso-nb", module_type="news_bulletin"
+    )
+    nb = NewsBulletin(
+        topic="Admin NB",
+        status="in_progress",
+        content_project_id=admin_project.id,
+        channel_profile_id=admin_project.channel_profile_id,
+    )
+    db_session.add(nb)
+    await db_session.commit()
+    await db_session.refresh(nb)
+
+    resp = await client.post(
+        f"{BASE_NB}/{nb.id}/start-production",
+        json={},
+        headers=user_headers,
+    )
+    assert resp.status_code == 403, resp.text
+
+
+async def test_cross_user_cannot_start_production_product_review_final(
+    client: AsyncClient,
+    db_session: AsyncSession,
+    admin_user: User,
+    user_headers: dict,
+):
+    """product_review ownership kap\u0131s\u0131 PHASE AE \u00e7ekirdek testi ile ayn\u0131
+    davran\u0131\u015f\u0131 tekrar do\u011frular — 3 modul izolasyonu tam."""
+    prod = Product(
+        name="Admin PR product",
+        canonical_url="https://shop.example.com/ae3-admin",
+        source_url="https://shop.example.com/ae3-admin",
+    )
+    db_session.add(prod)
+    await db_session.commit()
+    await db_session.refresh(prod)
+
+    review = ProductReview(
+        topic="Admin-owned PR review",
+        template_type="single",
+        primary_product_id=prod.id,
+        secondary_product_ids_json="[]",
+        language="tr",
+        orientation="vertical",
+        duration_seconds=60,
+        run_mode="semi_auto",
+        affiliate_enabled=False,
+        owner_user_id=admin_user.id,
+    )
+    db_session.add(review)
+    await db_session.commit()
+    await db_session.refresh(review)
+
+    resp = await client.post(
+        f"{BASE_PR}/product-reviews/{review.id}/start-production",
+        json={},
+        headers=user_headers,
+    )
+    assert resp.status_code == 403, resp.text

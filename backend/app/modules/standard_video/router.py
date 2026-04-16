@@ -5,7 +5,9 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.auth.ownership import UserContext, get_current_user_context
 from app.db.session import get_db
+from app.publish.ownership import ensure_content_project_ownership
 from app.visibility.dependencies import require_visible, get_active_user_id
 from app.modules.standard_video import service
 from app.modules.standard_video.schemas import (
@@ -118,6 +120,7 @@ async def start_production(
     request: Request,
     db: AsyncSession = Depends(get_db),
     user_id: Optional[str] = Depends(get_active_user_id),
+    ctx: UserContext = Depends(get_current_user_context),
 ):
     """
     Standard Video uretim pipeline'ini baslatir.
@@ -126,9 +129,27 @@ async def start_production(
       - Video kaydi mevcut olmali
       - Video.status 'rendering' / 'completed' / 'published' olmamali
 
+    Ownership (PHASE AE tamamlama):
+      StandardVideo kaydinda dogrudan owner alani yok; bu yuzden kayit
+      bir content_project'e bagli ise (user wizard'undan geldiyse) projenin
+      sahipligi zorla kontrol edilir. Projesi yok (orphan) ise admin
+      disinda kimse uretim baslatamaz.
+
     Job olusturur, dispatcher'a gonderir, video.status = "rendering" yapar.
     Pattern: news_bulletin.router.start_production_endpoint ile ayni.
     """
+    # PHASE AE tamamlama: content_project uzerinden ownership gate.
+    video_row = await service.get_standard_video(db, item_id)
+    if video_row is None:
+        raise HTTPException(status_code=404, detail="Standard video bulunamadi")
+    if video_row.content_project_id:
+        await ensure_content_project_ownership(db, video_row.content_project_id, ctx)
+    elif not ctx.is_admin:
+        raise HTTPException(
+            status_code=403,
+            detail="Bu video orphan (proje yok); yalnizca admin uretim baslatabilir",
+        )
+
     dispatcher = getattr(request.app.state, "job_dispatcher", None)
     if dispatcher is None:
         raise HTTPException(status_code=503, detail="JobDispatcher hazir degil.")

@@ -325,6 +325,7 @@ async def start_production_endpoint(
     request: Request,
     db: AsyncSession = Depends(get_db),
     user_id: Optional[str] = Depends(get_active_user_id),
+    ctx: UserContext = Depends(get_current_user_context),
 ):
     """
     Bülten üretim pipeline'ını başlatır (M28).
@@ -333,8 +334,26 @@ async def start_production_endpoint(
       - Bulletin.status == "in_progress" (consume_news geçilmiş olmalı)
       - En az 1 selected item olmalı
 
+    Ownership (PHASE AE tamamlama):
+      NewsBulletin kaydinda dogrudan owner alani yok; kayit bir
+      content_project'e bagli ise projenin sahipligi zorla kontrol edilir.
+      Projesi yok (orphan) ise admin disinda kimse uretim baslatamaz.
+
     Job oluşturur, dispatcher'a gönderir, bulletin.status = "rendering" yapar.
     """
+    # PHASE AE tamamlama: content_project uzerinden ownership gate.
+    from app.publish.ownership import ensure_content_project_ownership
+    bulletin_row = await service.get_news_bulletin(db, item_id)
+    if bulletin_row is None:
+        raise HTTPException(status_code=404, detail="Bulten bulunamadi")
+    if bulletin_row.content_project_id:
+        await ensure_content_project_ownership(db, bulletin_row.content_project_id, ctx)
+    elif not ctx.is_admin:
+        raise HTTPException(
+            status_code=403,
+            detail="Bu bulten orphan (proje yok); yalnizca admin uretim baslatabilir",
+        )
+
     dispatcher = getattr(request.app.state, "job_dispatcher", None)
     if dispatcher is None:
         raise HTTPException(status_code=503, detail="JobDispatcher hazır değil.")

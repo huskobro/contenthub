@@ -357,6 +357,21 @@ function LegacyProjectDetailPage() {
               {isStarting ? "Başlatılıyor..." : "▶ Üretime Başla"}
             </button>
           )}
+          {/* PHASE AE follow-up: standard_video projesi oluşturulmuş ama
+              henüz video kaydı yoksa wizard'a yönlendir — user projenin
+              içinde kaybolmasın. Diğer iki modül için de aynı davranış var. */}
+          {project.module_type === "standard_video" &&
+            !pendingVideo &&
+            !project.active_job_id &&
+            !linkedVideos?.some((v) => ["rendering", "completed", "published"].includes(v.status)) && (
+            <button
+              onClick={() => navigate("/user/create/video")}
+              className="px-4 py-1.5 text-sm font-medium text-white bg-brand-600 border border-brand-600 rounded-sm cursor-pointer hover:bg-brand-700"
+              data-testid="project-action-start-standard-video-wizard"
+            >
+              ▶ Video Oluştur
+            </button>
+          )}
           {/* Rendering durumunda bilgi */}
           {project.module_type === "standard_video" &&
             linkedVideos?.some((v) => v.status === "rendering") && (
