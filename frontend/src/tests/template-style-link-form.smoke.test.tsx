@@ -92,7 +92,9 @@ describe("TemplateStyleLink form smoke tests", () => {
       "/admin/template-style-links"
     );
     await waitFor(() => {
-      expect(screen.getByText("primary")).toBeDefined();
+      // `primary` appears in both the filter dropdown and the link_role cell;
+      // use the unique truncated template_id for disambiguation.
+      expect(screen.getByText(/tmpl-abc/)).toBeDefined();
     });
   });
 
@@ -107,8 +109,10 @@ describe("TemplateStyleLink form smoke tests", () => {
     });
     makeRouter(fetchFn, "/admin/template-style-links");
     const user = userEvent.setup();
-    await waitFor(() => expect(screen.getByText("primary")).toBeDefined());
-    await user.click(screen.getByText("primary"));
+    // `primary` appears in both the filter dropdown and the link_role cell,
+    // so tests assert on the truncated template_id cell which is unique per row.
+    await waitFor(() => expect(screen.getByText(/tmpl-abc/)).toBeDefined());
+    await user.click(screen.getByText(/tmpl-abc/));
     await waitFor(() => {
       expect(screen.getByRole("button", { name: "Düzenle" })).toBeDefined();
     });
@@ -125,8 +129,10 @@ describe("TemplateStyleLink form smoke tests", () => {
     });
     makeRouter(fetchFn, "/admin/template-style-links");
     const user = userEvent.setup();
-    await waitFor(() => expect(screen.getByText("primary")).toBeDefined());
-    await user.click(screen.getByText("primary"));
+    // `primary` appears in both the filter dropdown and the link_role cell,
+    // so tests assert on the truncated template_id cell which is unique per row.
+    await waitFor(() => expect(screen.getByText(/tmpl-abc/)).toBeDefined());
+    await user.click(screen.getByText(/tmpl-abc/));
     await waitFor(() => expect(screen.getByRole("button", { name: "Düzenle" })).toBeDefined());
     await user.click(screen.getByRole("button", { name: "Düzenle" }));
     await waitFor(() => {
@@ -145,8 +151,10 @@ describe("TemplateStyleLink form smoke tests", () => {
     });
     makeRouter(fetchFn, "/admin/template-style-links");
     const user = userEvent.setup();
-    await waitFor(() => expect(screen.getByText("primary")).toBeDefined());
-    await user.click(screen.getByText("primary"));
+    // `primary` appears in both the filter dropdown and the link_role cell,
+    // so tests assert on the truncated template_id cell which is unique per row.
+    await waitFor(() => expect(screen.getByText(/tmpl-abc/)).toBeDefined());
+    await user.click(screen.getByText(/tmpl-abc/));
     await waitFor(() => expect(screen.getByRole("button", { name: "Düzenle" })).toBeDefined());
     await user.click(screen.getByRole("button", { name: "Düzenle" }));
     await waitFor(() => expect(screen.getByRole("heading", { name: "Link Düzenle" })).toBeDefined());

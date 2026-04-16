@@ -54,6 +54,29 @@ function mockFetch(data: unknown, status = 200) {
         json: () => Promise.resolve({ visible: true, read_only: false, wizard_visible: false }),
       });
     }
+    // AdminLayout fans out to /notifications (notificationStore), /modules,
+    // /credentials, /users, /onboarding. Return safe defaults so none of
+    // those secondary endpoints receive MOCK_RULES (which breaks
+    // `notificationTypeToCategory.startsWith` and friends).
+    if (urlStr.includes("/notifications")) {
+      return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve([]) });
+    }
+    if (urlStr.includes("/modules")) {
+      return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve([]) });
+    }
+    if (urlStr.includes("/credentials")) {
+      return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve([]) });
+    }
+    if (urlStr.includes("/users") && !urlStr.includes("/jobs")) {
+      return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve([]) });
+    }
+    if (urlStr.includes("/onboarding")) {
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve({ onboarding_required: false }),
+      });
+    }
     return Promise.resolve({
       ok: status >= 200 && status < 300,
       status,
@@ -99,7 +122,7 @@ beforeEach(() => {
 describe("Visibility Registry smoke tests", () => {
   it("renders the visibility page at /admin/visibility", async () => {
     renderVisibility(mockFetch(MOCK_RULES));
-    expect(screen.getByRole("heading", { name: "Gorunurluk Kurallari" })).toBeDefined();
+    expect(screen.getByRole("heading", { name: "Görünürlük Kuralları" })).toBeDefined();
   });
 
   it("shows loading state", () => {
@@ -144,7 +167,6 @@ describe("Visibility Registry smoke tests", () => {
     let listCallDone = false;
     const detailFetch = vi.fn((url: string | URL | Request) => {
       const urlStr = String(url);
-      // Handle visibility resolve requests (from AdminLayout + ReadOnlyGuard)
       if (urlStr.includes("/visibility-rules/resolve")) {
         return Promise.resolve({
           ok: true,
@@ -152,7 +174,19 @@ describe("Visibility Registry smoke tests", () => {
           json: () => Promise.resolve({ visible: true, read_only: false, wizard_visible: false }),
         });
       }
-      // First non-resolve call returns the rules list, subsequent ones return detail
+      // Safe defaults for secondary AdminLayout endpoints (see mockFetch).
+      if (urlStr.includes("/notifications") || urlStr.includes("/modules") ||
+          urlStr.includes("/credentials") ||
+          (urlStr.includes("/users") && !urlStr.includes("/jobs"))) {
+        return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve([]) });
+      }
+      if (urlStr.includes("/onboarding")) {
+        return Promise.resolve({
+          ok: true, status: 200,
+          json: () => Promise.resolve({ onboarding_required: false }),
+        });
+      }
+      // First visibility-rules call returns the list, subsequent ones return detail
       if (!listCallDone) {
         listCallDone = true;
         return Promise.resolve({

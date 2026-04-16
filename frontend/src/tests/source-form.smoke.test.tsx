@@ -138,7 +138,14 @@ describe("SourceForm / Create page smoke tests", () => {
       if (String(url).includes("/sources/src-1")) {
         return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(MOCK_SOURCE) });
       }
-      return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve([MOCK_SOURCE]) });
+      // `/sources` list endpoint now returns a pagination envelope
+      // `{ items, total, offset, limit }` (post Gate Sources Closure);
+      // useSourcesList extracts `.items`, so tests must wrap arrays.
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve({ items: [MOCK_SOURCE], total: 1, offset: 0, limit: 50 }),
+      });
     });
     const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     const testRouter = createMemoryRouter(
@@ -168,7 +175,14 @@ describe("SourceForm / Create page smoke tests", () => {
       if (String(url).includes("/sources/src-1")) {
         return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(MOCK_SOURCE) });
       }
-      return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve([MOCK_SOURCE]) });
+      // `/sources` list endpoint now returns a pagination envelope
+      // `{ items, total, offset, limit }` (post Gate Sources Closure);
+      // useSourcesList extracts `.items`, so tests must wrap arrays.
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve({ items: [MOCK_SOURCE], total: 1, offset: 0, limit: 50 }),
+      });
     });
     const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     const testRouter = createMemoryRouter(
@@ -200,7 +214,14 @@ describe("SourceForm / Create page smoke tests", () => {
       if (String(url).includes("/sources/src-1")) {
         return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(MOCK_SOURCE) });
       }
-      return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve([MOCK_SOURCE]) });
+      // `/sources` list endpoint now returns a pagination envelope
+      // `{ items, total, offset, limit }` (post Gate Sources Closure);
+      // useSourcesList extracts `.items`, so tests must wrap arrays.
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve({ items: [MOCK_SOURCE], total: 1, offset: 0, limit: 50 }),
+      });
     });
     window.fetch = fetchMock;
     const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });

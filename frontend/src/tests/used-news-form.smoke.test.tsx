@@ -98,7 +98,9 @@ describe("UsedNews form smoke tests", () => {
       "/admin/used-news"
     );
     await waitFor(() => {
-      expect(screen.getByText("bulletin")).toBeDefined();
+      // `bulletin` shows up in both the filter dropdown and the usage_type
+      // cell; assert on the unique truncated news_item_id instead.
+      expect(screen.getByText("news-ite")).toBeDefined();
     });
   });
 
@@ -113,8 +115,11 @@ describe("UsedNews form smoke tests", () => {
     });
     makeRouter(fetchFn, "/admin/used-news");
     const user = userEvent.setup();
-    await waitFor(() => expect(screen.getByText("bulletin")).toBeDefined());
-    await user.click(screen.getByText("bulletin"));
+    // `bulletin` appears in both filter dropdown and the usage_type cell,
+    // so tests assert on the truncated news_item_id cell (8-char slice)
+    // which is unique per row.
+    await waitFor(() => expect(screen.getByText("news-ite")).toBeDefined());
+    await user.click(screen.getByText("news-ite"));
     await waitFor(() => {
       expect(screen.getByRole("button", { name: "Düzenle" })).toBeDefined();
     });
@@ -131,8 +136,11 @@ describe("UsedNews form smoke tests", () => {
     });
     makeRouter(fetchFn, "/admin/used-news");
     const user = userEvent.setup();
-    await waitFor(() => expect(screen.getByText("bulletin")).toBeDefined());
-    await user.click(screen.getByText("bulletin"));
+    // `bulletin` appears in both filter dropdown and the usage_type cell,
+    // so tests assert on the truncated news_item_id cell (8-char slice)
+    // which is unique per row.
+    await waitFor(() => expect(screen.getByText("news-ite")).toBeDefined());
+    await user.click(screen.getByText("news-ite"));
     await waitFor(() => expect(screen.getByRole("button", { name: "Düzenle" })).toBeDefined());
     await user.click(screen.getByRole("button", { name: "Düzenle" }));
     await waitFor(() => {
@@ -151,8 +159,11 @@ describe("UsedNews form smoke tests", () => {
     });
     makeRouter(fetchFn, "/admin/used-news");
     const user = userEvent.setup();
-    await waitFor(() => expect(screen.getByText("bulletin")).toBeDefined());
-    await user.click(screen.getByText("bulletin"));
+    // `bulletin` appears in both filter dropdown and the usage_type cell,
+    // so tests assert on the truncated news_item_id cell (8-char slice)
+    // which is unique per row.
+    await waitFor(() => expect(screen.getByText("news-ite")).toBeDefined());
+    await user.click(screen.getByText("news-ite"));
     await waitFor(() => expect(screen.getByRole("button", { name: "Düzenle" })).toBeDefined());
     await user.click(screen.getByRole("button", { name: "Düzenle" }));
     await waitFor(() => expect(screen.getByRole("heading", { name: "Used News Düzenle" })).toBeDefined());

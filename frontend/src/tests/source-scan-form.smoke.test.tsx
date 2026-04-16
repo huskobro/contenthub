@@ -83,8 +83,15 @@ describe("SourceScan form smoke tests", () => {
   });
 
   it("registry page shows scan in list after load", async () => {
+    // `/source-scans` list endpoint now returns a pagination envelope
+    // `{ items, total, offset, limit }` (post Gate Sources Closure);
+    // useSourceScansList extracts `.items`, so tests must wrap arrays.
     makeRouter(
-      vi.fn().mockResolvedValue({ ok: true, status: 200, json: () => Promise.resolve([MOCK_SCAN]) }),
+      vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve({ items: [MOCK_SCAN], total: 1, offset: 0, limit: 50 }),
+      }),
       "/admin/source-scans"
     );
     await waitFor(() => {
@@ -97,7 +104,12 @@ describe("SourceScan form smoke tests", () => {
     const fetchFn = vi.fn().mockImplementation(() => {
       callCount++;
       if (callCount === 1) {
-        return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve([MOCK_SCAN]) });
+        // pagination envelope — see comment above.
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: () => Promise.resolve({ items: [MOCK_SCAN], total: 1, offset: 0, limit: 50 }),
+        });
       }
       return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(MOCK_SCAN) });
     });
@@ -115,7 +127,11 @@ describe("SourceScan form smoke tests", () => {
     const fetchFn = vi.fn().mockImplementation(() => {
       callCount++;
       if (callCount === 1) {
-        return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve([MOCK_SCAN]) });
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: () => Promise.resolve({ items: [MOCK_SCAN], total: 1, offset: 0, limit: 50 }),
+        });
       }
       return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(MOCK_SCAN) });
     });
@@ -135,7 +151,11 @@ describe("SourceScan form smoke tests", () => {
     const fetchFn = vi.fn().mockImplementation(() => {
       callCount++;
       if (callCount === 1) {
-        return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve([MOCK_SCAN]) });
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: () => Promise.resolve({ items: [MOCK_SCAN], total: 1, offset: 0, limit: 50 }),
+        });
       }
       return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(MOCK_SCAN) });
     });

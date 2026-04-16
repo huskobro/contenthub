@@ -74,16 +74,20 @@ describe("Used News Registry smoke tests", () => {
   });
 
   it("displays record list after data loads", async () => {
+    // UsedNewsTable renders `news_item_id.slice(0, 8)` as an abbreviated
+    // reference — full ids are shown in the detail panel instead.
     renderPage(mockFetch([MOCK_RECORD]));
     await waitFor(() => {
-      expect(screen.getByText("news-abc-123")).toBeDefined();
+      expect(screen.getByText("news-abc")).toBeDefined();
     });
   });
 
   it("shows usage_type column", async () => {
+    // `bulletin_script` appears in both the filter dropdown and the table
+    // cell, so the assertion must allow multiple matches.
     renderPage(mockFetch([MOCK_RECORD]));
     await waitFor(() => {
-      expect(screen.getByText("bulletin_script")).toBeDefined();
+      expect(screen.getAllByText("bulletin_script").length).toBeGreaterThan(0);
     });
   });
 
@@ -114,8 +118,8 @@ describe("Used News Registry smoke tests", () => {
       </QueryClientProvider>
     );
     const user = userEvent.setup();
-    await waitFor(() => expect(screen.getByText("news-abc-123")).toBeDefined());
-    await user.click(screen.getByText("news-abc-123"));
+    await waitFor(() => expect(screen.getByText("news-abc")).toBeDefined());
+    await user.click(screen.getByText("news-abc"));
     await waitFor(() => {
       expect(screen.getByRole("heading", { name: "Used News Detayı" })).toBeDefined();
     });
