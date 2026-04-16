@@ -52,6 +52,27 @@ function mockFetch(data: unknown, status = 200) {
         json: () => Promise.resolve({ visible: true, read_only: false, wizard_visible: false }),
       });
     }
+    // Post Gate Sources Closure, `/sources` responds with a pagination
+    // envelope `{ items, total, offset, limit }`. useSourcesList extracts
+    // `.items`, so raw arrays in tests must be wrapped. Detail endpoints
+    // (`/sources/:id`) still return a single SourceResponse object.
+    if (
+      urlStr.includes("/sources") &&
+      !urlStr.match(/\/sources\/[^/?]+($|\?|\/)/) &&
+      Array.isArray(data)
+    ) {
+      return Promise.resolve({
+        ok: status >= 200 && status < 300,
+        status,
+        json: () =>
+          Promise.resolve({
+            items: data,
+            total: (data as unknown[]).length,
+            offset: 0,
+            limit: (data as unknown[]).length || 50,
+          }),
+      });
+    }
     return Promise.resolve({
       ok: status >= 200 && status < 300,
       status,
@@ -156,7 +177,19 @@ describe("Sources Registry smoke tests", () => {
       }
       if (!listCallDone) {
         listCallDone = true;
-        return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(MOCK_SOURCES) });
+        // `/sources` envelope: wrap MOCK_SOURCES under `items` for
+        // useSourcesList's `resp.items` extraction.
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: () =>
+            Promise.resolve({
+              items: MOCK_SOURCES,
+              total: MOCK_SOURCES.length,
+              offset: 0,
+              limit: MOCK_SOURCES.length,
+            }),
+        });
       }
       return new Promise(() => {}); // detail never resolves
     }) as unknown as typeof window.fetch;
@@ -187,7 +220,18 @@ describe("Sources Registry smoke tests", () => {
       }
       if (!listCallDone) {
         listCallDone = true;
-        return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(MOCK_SOURCES) });
+        // Same envelope wrapping as above — useSourcesList pulls `.items`.
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: () =>
+            Promise.resolve({
+              items: MOCK_SOURCES,
+              total: MOCK_SOURCES.length,
+              offset: 0,
+              limit: MOCK_SOURCES.length,
+            }),
+        });
       }
       return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(MOCK_SOURCES[0]) });
     }) as unknown as typeof window.fetch;

@@ -40,11 +40,32 @@ const MOCK_SCANS: SourceScanResponse[] = [
 ];
 
 function mockFetch(data: unknown, status = 200) {
-  return vi.fn().mockResolvedValue({
-    ok: status >= 200 && status < 300,
-    status,
-    json: () => Promise.resolve(data),
-  });
+  // Post Gate Source-Scans Closure, `/source-scans` list endpoint returns
+  // the pagination envelope `{ items, total, offset, limit }` and
+  // useSourceScansList extracts `.items`. Wrap raw arrays into the
+  // envelope shape while leaving singletons (detail) untouched.
+  return vi.fn((url: string | URL | Request) =>
+    Promise.resolve({
+      ok: status >= 200 && status < 300,
+      status,
+      json: () => {
+        const urlStr = String(url);
+        if (
+          urlStr.includes("/source-scans") &&
+          !urlStr.match(/\/source-scans\/[^/?]+($|\?|\/)/) &&
+          Array.isArray(data)
+        ) {
+          return Promise.resolve({
+            items: data,
+            total: (data as unknown[]).length,
+            offset: 0,
+            limit: (data as unknown[]).length || 50,
+          });
+        }
+        return Promise.resolve(data);
+      },
+    })
+  ) as unknown as typeof window.fetch;
 }
 
 function renderRegistry(fetchFn: typeof window.fetch) {
@@ -138,7 +159,18 @@ describe("Source Scans Registry smoke tests", () => {
     window.fetch = vi.fn().mockImplementation(() => {
       callCount++;
       if (callCount === 1) {
-        return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(MOCK_SCANS) });
+        // Wrap list response in pagination envelope (see mockFetch comment).
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: () =>
+            Promise.resolve({
+              items: MOCK_SCANS,
+              total: MOCK_SCANS.length,
+              offset: 0,
+              limit: MOCK_SCANS.length,
+            }),
+        });
       }
       return new Promise(() => {}); // detail never resolves
     });
@@ -166,7 +198,17 @@ describe("Source Scans Registry smoke tests", () => {
     window.fetch = vi.fn().mockImplementation(() => {
       callCount++;
       if (callCount === 1) {
-        return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(MOCK_SCANS) });
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: () =>
+            Promise.resolve({
+              items: MOCK_SCANS,
+              total: MOCK_SCANS.length,
+              offset: 0,
+              limit: MOCK_SCANS.length,
+            }),
+        });
       }
       return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(MOCK_SCANS[0]) });
     });

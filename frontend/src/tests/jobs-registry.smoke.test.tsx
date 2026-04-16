@@ -73,11 +73,32 @@ const MOCK_JOBS: JobResponse[] = [
 ];
 
 function mockFetch(data: unknown, status = 200) {
-  return vi.fn().mockResolvedValue({
-    ok: status >= 200 && status < 300,
-    status,
-    json: () => Promise.resolve(data),
-  });
+  // URL-routed: the admin shell fans out to secondary endpoints like
+  // /notifications which expect specific shapes. If those calls receive
+  // the jobs payload (a job[]), the notification category mapper crashes
+  // on `startsWith` against the job's undefined `type`. Route those
+  // endpoints to safe defaults first.
+  return vi.fn((url: string) =>
+    Promise.resolve({
+      ok: status >= 200 && status < 300,
+      status,
+      json: () => {
+        if (typeof url === "string") {
+          if (url.includes("/notifications")) return Promise.resolve([]);
+          if (url.includes("/modules")) return Promise.resolve([]);
+          if (url.includes("/visibility-rules")) return Promise.resolve([]);
+          if (url.includes("/credentials")) return Promise.resolve([]);
+          if (url.includes("/users") && !url.includes("/jobs")) {
+            return Promise.resolve([]);
+          }
+          if (url.includes("/onboarding")) {
+            return Promise.resolve({ onboarding_required: false });
+          }
+        }
+        return Promise.resolve(data);
+      },
+    })
+  ) as unknown as typeof window.fetch;
 }
 
 function renderJobs(fetchFn: typeof window.fetch) {
@@ -138,15 +159,18 @@ describe("Jobs Registry smoke tests", () => {
   it("displays jobs list after data loads", async () => {
     renderJobs(mockFetch(MOCK_JOBS));
     await waitFor(() => {
-      expect(screen.getByText("standard_video")).toBeDefined();
-      expect(screen.getByText("news_bulletin")).toBeDefined();
+      // JobsTable maps module_type → Turkish label via MODULE_LABELS.
+      // "standard_video" -> "Standart Video", "news_bulletin" -> "Haber Bülteni".
+      // Labels also appear in the filter-dropdown, so use getAllByText.
+      expect(screen.getAllByText("Standart Video").length).toBeGreaterThan(0);
+      expect(screen.getAllByText("Haber Bülteni").length).toBeGreaterThan(0);
     });
   });
 
   it("detail panel is hidden (inside Sheet) until a job is clicked", async () => {
     renderJobs(mockFetch(MOCK_JOBS));
     await waitFor(() => {
-      expect(screen.getByText("standard_video")).toBeDefined();
+      expect(screen.getAllByText("Standart Video").length).toBeGreaterThan(0);
     });
     // Sheet starts closed — detail placeholder is NOT visible on page load
     expect(screen.queryByText("Detay görmek için bir job seçin.")).toBeNull();
@@ -156,11 +180,11 @@ describe("Jobs Registry smoke tests", () => {
     renderJobs(mockFetch(MOCK_JOBS));
 
     await waitFor(() => {
-      expect(screen.getByText("news_bulletin")).toBeDefined();
+      expect(screen.getAllByText("Haber Bülteni").length).toBeGreaterThan(0);
     });
 
     // Table rows are clickable — verify the row exists and click does not throw
-    const rows = screen.getAllByText("news_bulletin");
+    const rows = screen.getAllByText("Haber Bülteni");
     expect(rows.length).toBeGreaterThan(0);
   });
 
