@@ -72,6 +72,47 @@ async def seed_known_settings(db: AsyncSession) -> int:
     return created
 
 
+async def sync_default_values_from_registry(db: AsyncSession) -> int:
+    """
+    KNOWN_SETTINGS meta'sindaki `builtin_default` degerini mevcut DB satirlarina
+    yansitir. Urun evrildikce bir setting'in builtin default'u degisebilir
+    (ornek: 'ui.surface.canvas.enabled' false iken Faz 3 teslim edildikten
+    sonra true olmali). Bu senkronizasyon mevcut kurulumlarin da yeni
+    default'u gormesini saglar.
+
+    Kural: admin_value_json (operator override) ASLA degistirilmez; yalnizca
+    default_value_json guncellenir. Idempotent — sonraki cagrilarda fark
+    yoksa hiçbir sey yazmaz.
+
+    Returns:
+        Guncellenen satir sayisi.
+    """
+    updated = 0
+
+    for key, meta in KNOWN_SETTINGS.items():
+        result = await db.execute(select(Setting).where(Setting.key == key))
+        row = result.scalar_one_or_none()
+        if row is None:
+            continue
+
+        builtin = meta.get("builtin_default")
+        desired = json.dumps(builtin) if builtin is not None else "null"
+        if row.default_value_json != desired:
+            row.default_value_json = desired
+            row.version = (row.version or 1) + 1
+            updated += 1
+            logger.info(
+                "Settings sync: default_value guncellendi — %s -> %s",
+                key,
+                desired,
+            )
+
+    if updated > 0:
+        await db.commit()
+
+    return updated
+
+
 async def sync_visibility_flags_from_registry(db: AsyncSession) -> int:
     """
     KNOWN_SETTINGS meta'sindaki visibility bayraklarini (visible_to_user,

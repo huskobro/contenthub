@@ -900,14 +900,15 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "type": "boolean",
         "label": "Surface Registry Altyapisi Aktif",
         "help_text": (
-            "Surface Registry altyapisi icin kill-switch. Kapaliyken (varsayilan) "
-            "arayuz eski classic/horizon davranisiyla calisir. Acildiginda resolver "
-            "kullanici tercihi -> rol varsayilani -> global varsayilan -> legacy "
-            "zincirini degerlendirir. Hatalar her zaman legacy'ye dusurur."
+            "Surface Registry altyapisi icin kill-switch. Kapaliyken arayuz eski "
+            "classic/horizon davranisiyla calisir. Acikken (urunsel varsayilan) "
+            "resolver kullanici tercihi -> rol varsayilani -> global varsayilan -> "
+            "legacy zincirini degerlendirir. Hatalar her zaman legacy'ye dusurur."
         ),
         "module_scope": None,
         "env_var": None,
-        "builtin_default": False,
+        # Faz 3/3A/3B teslim edildikten sonra infra uretime hazir; default acik.
+        "builtin_default": True,
         "wired": True,
         "wired_to": "frontend.surfaces.resolver",
     },
@@ -918,15 +919,15 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "help_text": (
             "Kullanici kendi tercihini belirtmemisse admin panelinde varsayilan olarak "
             "hangi yuzey gosterilsin? Gecerli degerler: legacy, horizon, atrium, bridge, "
-            "canvas. Urunsel varsayilan 'bridge' (Operations Command Center) — admin "
-            "scope'undaki tek beta yuzey ve Faz 2'de uc sayfa override'i (jobs registry/"
-            "jobs detail/publish center) ile teslim edildi. Resolver layer-3 role-default "
-            "olarak kullanir; `ui.surface.bridge.enabled=false` veya kill-switch kapaliysa "
-            "otomatik olarak legacy'e duser. Bos/tanimsiz birakilirsa yine legacy kullanilir."
+            "canvas. Urunsel varsayilan 'canvas' (Creator Workspace Pro) — scope='both' "
+            "ile hem admin hem user tarafina is yetkin, Faz 3/3A/3B'de 9 sayfa override'i "
+            "ile teslim edildi. Resolver layer-3 role-default olarak kullanir; "
+            "`ui.surface.canvas.enabled=false` veya kill-switch kapaliysa otomatik olarak "
+            "legacy'e duser. Bos/tanimsiz birakilirsa yine legacy kullanilir."
         ),
         "module_scope": None,
         "env_var": None,
-        "builtin_default": "bridge",
+        "builtin_default": "canvas",
         "wired": True,
         "wired_to": "frontend.surfaces.resolver",
     },
@@ -956,13 +957,14 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "type": "boolean",
         "label": "Atrium Yuzeyi Aktif",
         "help_text": (
-            "Atrium (Premium Media OS) yuzeyini admin/kullanicilara acar. Faz 1'de "
-            "yalnizca placeholder olarak kayitlidir, gercek kabuk mevcut degildir; "
-            "secilmesi durumunda resolver legacy'ye duser."
+            "Atrium (Premium Media OS) yuzeyini admin/kullanicilara acar. Faz 4'te "
+            "uc sayfa override'i (dashboard, projects list, project detail) ile "
+            "teslim edildi; kapatildiginda resolver legacy'ye duser."
         ),
         "module_scope": None,
         "env_var": None,
-        "builtin_default": False,
+        # Faz 4 teslim; yuzey secilebilir listede gorunmeli — varsayilan acik.
+        "builtin_default": True,
         "wired": True,
         "wired_to": "frontend.surfaces.registry",
     },
@@ -972,12 +974,13 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "label": "Bridge Yuzeyi Aktif",
         "help_text": (
             "Bridge (Operations Command Center) yuzeyini admin/kullanicilara acar. "
-            "Faz 1'de yalnizca placeholder olarak kayitlidir, gercek kabuk mevcut "
-            "degildir; secilmesi durumunda resolver legacy'ye duser."
+            "Faz 2'de uc sayfa override'i (jobs registry, jobs detail, publish "
+            "center) ile teslim edildi; kapatildiginda resolver legacy'ye duser."
         ),
         "module_scope": None,
         "env_var": None,
-        "builtin_default": False,
+        # Faz 2 teslim; admin scope icin en olgun uretim yuzeyi — varsayilan acik.
+        "builtin_default": True,
         "wired": True,
         "wired_to": "frontend.surfaces.registry",
     },
@@ -986,13 +989,14 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "type": "boolean",
         "label": "Canvas Yuzeyi Aktif",
         "help_text": (
-            "Canvas (Creator Workspace Pro) yuzeyini admin/kullanicilara acar. Faz 1'de "
-            "yalnizca placeholder olarak kayitlidir, gercek kabuk mevcut degildir; "
-            "secilmesi durumunda resolver legacy'ye duser."
+            "Canvas (Creator Workspace Pro) yuzeyini admin/kullanicilara acar. "
+            "Faz 3/3A/3B'de dokuz sayfa override'i ile teslim edildi ve user scope "
+            "varsayilan yuzeyidir; kapatildiginda resolver legacy'ye duser."
         ),
         "module_scope": None,
         "env_var": None,
-        "builtin_default": False,
+        # Faz 3/3A/3B teslim; user scope icin default yuzey — varsayilan acik.
+        "builtin_default": True,
         "wired": True,
         "wired_to": "frontend.surfaces.registry",
     },
