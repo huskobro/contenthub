@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -45,50 +45,52 @@ beforeEach(() => {
 describe("User content entry surface", () => {
   it("renders content entry page at /user/content", () => {
     renderAt("/user/content");
-    expect(screen.getByRole("heading", { name: "Icerik" })).toBeDefined();
+    expect(screen.getByRole("heading", { name: "İçerik" })).toBeDefined();
   });
 
-  it("shows description text", () => {
+  it("shows description text (guided mode default)", () => {
     renderAt("/user/content");
-    expect(screen.getByText(/Adim adim rehberlik ile yeni icerik olusturun/)).toBeDefined();
+    expect(screen.getByText(/Adım adım rehberlik ile yeni içerik oluşturun/)).toBeDefined();
   });
 
   it("shows standard video content card", () => {
     renderAt("/user/content");
     expect(screen.getByTestId("content-entry-standard-video")).toBeDefined();
     expect(screen.getByText("Standart Video")).toBeDefined();
-    expect(screen.getByText("Yeni Video Olustur →")).toBeDefined();
+    // CTA text: ct.cta = "Yeni Video Oluştur"; card render appends " →".
+    expect(screen.getByText(/Yeni Video Oluştur/)).toBeDefined();
   });
 
   it("shows news bulletin content card", () => {
     renderAt("/user/content");
     expect(screen.getByTestId("content-entry-news-bulletin")).toBeDefined();
-    expect(screen.getByText("Haber Bulteni")).toBeDefined();
-    expect(screen.getByText("Yeni Bulten Olustur →")).toBeDefined();
+    expect(screen.getByText("Haber Bülteni")).toBeDefined();
+    expect(screen.getByText(/Yeni Bülten Oluştur/)).toBeDefined();
   });
 
-  it("shows admin navigation note", () => {
+  it("shows admin navigation crosslink area", () => {
     renderAt("/user/content");
-    expect(screen.getByTestId("content-to-library-crosslink")).toBeDefined();
+    // Current testId: content-to-publish-crosslink (was content-to-library-crosslink).
+    expect(screen.getByTestId("content-to-publish-crosslink")).toBeDefined();
   });
 
-  it("sidebar Icerik link is active at /user/content", () => {
+  it("sidebar İçerik link is active at /user/content", () => {
     renderAt("/user/content");
-    const link = screen.getByRole("link", { name: "Icerik" });
-    expect(link).toBeDefined();
-    expect(link.getAttribute("href")).toBe("/user/content");
+    const links = screen.getAllByRole("link", { name: "İçerik" });
+    const primary = links.find((l) => l.getAttribute("href") === "/user/content");
+    expect(primary).toBeDefined();
   });
 
-  it("sidebar Icerik link is available from dashboard", () => {
+  it("sidebar İçerik link is available from dashboard", () => {
     renderAt("/user");
-    const link = screen.getByRole("link", { name: "Icerik" });
-    expect(link).toBeDefined();
-    expect(link.getAttribute("href")).toBe("/user/content");
+    const links = screen.getAllByRole("link", { name: "İçerik" });
+    const primary = links.find((l) => l.getAttribute("href") === "/user/content");
+    expect(primary).toBeDefined();
   });
 
-  it("does not break user dashboard at /user", async () => {
+  it("does not break user dashboard at /user", () => {
     renderAt("/user");
-    expect(screen.getByRole("heading", { name: "Anasayfa" })).toBeDefined();
-    expect(await screen.findByTestId("post-onboarding-handoff")).toBeDefined();
+    expect(screen.getByRole("heading", { name: /Hoşgeldin/ })).toBeDefined();
+    // PostOnboardingHandoff bu surumde UserDashboardPage'de pasif.
   });
 });

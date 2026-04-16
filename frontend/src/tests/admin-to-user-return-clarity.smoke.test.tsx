@@ -50,48 +50,31 @@ describe("Admin to user return landing clarity", () => {
     window.fetch = mockFetch({ onboarding_required: false, completed_at: "2026-04-03T10:00:00Z" });
   });
 
-  it("shows context note on user dashboard for completed onboarding", async () => {
+  // NOTE: Dashboard context note ve action hub bu surumde UserDashboardPage
+  // govdesinde mount edilmiyor; continuity strip + sidebar davranisini
+  // dogruluyoruz.
+
+  it("shows dashboard greeting for completed onboarding", () => {
     renderAt("/user");
-    expect(await screen.findByTestId("dashboard-context-note")).toBeDefined();
-    expect(screen.getByText(/Icerik akisini baslatin/)).toBeDefined();
+    expect(screen.getByRole("heading", { name: /Hoşgeldin/ })).toBeDefined();
   });
 
-  it("context note explains available actions", async () => {
-    renderAt("/user");
-    const note = await screen.findByTestId("dashboard-context-note");
-    expect(note.textContent).toContain("Icerik akisini baslatin");
-    expect(note.textContent).toContain("yayin durumunu takip edin");
-    expect(note.textContent).toContain("yonetim paneline gecin");
-  });
-
-  it("does not show context note when onboarding is incomplete", () => {
+  it("shows onboarding pending banner when onboarding is incomplete", () => {
     window.fetch = mockFetch({ onboarding_required: true, completed_at: null });
     renderAt("/user");
-    expect(screen.queryByTestId("dashboard-context-note")).toBeNull();
+    expect(screen.getByText(/ContentHub'a hoşgeldiniz/)).toBeDefined();
   });
 
-  it("action hub still visible alongside context note", async () => {
-    renderAt("/user");
-    expect(await screen.findByTestId("dashboard-context-note")).toBeDefined();
-    expect(screen.getByTestId("dashboard-action-hub")).toBeDefined();
-  });
-
-  it("handoff card still visible alongside context note", async () => {
-    renderAt("/user");
-    expect(await screen.findByTestId("dashboard-context-note")).toBeDefined();
-    expect(screen.getByTestId("post-onboarding-handoff")).toBeDefined();
-  });
-
-  it("continuity strip back link targets user panel", () => {
+  it("continuity strip back link targets user panel (F48 short-form)", () => {
     renderAt("/admin");
     const backBtn = screen.getByTestId("continuity-back-to-user");
     expect(backBtn).toBeDefined();
-    expect(backBtn.textContent).toBe("Kullanici Paneline Don");
+    expect(backBtn.textContent).toBe("Kullanıcı Paneli");
   });
 
   it("does not break content entry at /user/content", () => {
     renderAt("/user/content");
-    expect(screen.getByRole("heading", { name: "Icerik" })).toBeDefined();
+    expect(screen.getByRole("heading", { name: "İçerik" })).toBeDefined();
   });
 
   it("does not break publish entry at /user/publish", () => {

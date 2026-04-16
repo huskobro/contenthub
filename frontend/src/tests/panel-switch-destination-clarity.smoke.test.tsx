@@ -45,54 +45,54 @@ describe("Panel switch destination clarity", () => {
   });
 
   describe("user panel header", () => {
-    it("shows active panel label as Kullanici Paneli", () => {
+    it("shows active panel label as Kullanıcı Paneli", () => {
       renderAt("/user");
       const label = screen.getByTestId("header-area-label");
-      expect(label.textContent).toBe("Kullanici Paneli");
+      expect(label.textContent).toBe("Kullanıcı Paneli");
     });
 
-    it("switch button says Yonetim Paneline Gec (verb included)", () => {
+    it("switch button says Yönetim Paneli (F48 short-form)", () => {
       renderAt("/user");
       const btn = screen.getByTestId("header-panel-switch");
-      expect(btn.textContent).toBe("Yonetim Paneline Gec");
+      expect(btn.textContent).toBe("Yönetim Paneli");
     });
 
     it("switch button has descriptive title attribute", () => {
       renderAt("/user");
       const btn = screen.getByTestId("header-panel-switch");
-      expect(btn.getAttribute("title")).toBe("Yonetim paneline gecis yapin");
+      expect(btn.getAttribute("title")).toBe("Yönetim Paneli");
     });
 
     it("switch button has descriptive aria-label", () => {
       renderAt("/user");
       const btn = screen.getByTestId("header-panel-switch");
-      expect(btn.getAttribute("aria-label")).toBe("Yonetim paneline gecis yapin");
+      expect(btn.getAttribute("aria-label")).toBe("Yönetim Paneli");
     });
   });
 
   describe("admin panel header", () => {
-    it("shows active panel label as Yonetim Paneli", () => {
+    it("shows active panel label as Yönetim Paneli", () => {
       renderAt("/admin");
       const label = screen.getByTestId("header-area-label");
-      expect(label.textContent).toBe("Yonetim Paneli");
+      expect(label.textContent).toBe("Yönetim Paneli");
     });
 
-    it("switch button says Kullanici Paneline Gec (verb included)", () => {
+    it("switch button says Kullanıcı Paneli (F48 short-form)", () => {
       renderAt("/admin");
       const btn = screen.getByTestId("header-panel-switch");
-      expect(btn.textContent).toBe("Kullanici Paneline Gec");
+      expect(btn.textContent).toBe("Kullanıcı Paneli");
     });
 
     it("switch button has descriptive title attribute", () => {
       renderAt("/admin");
       const btn = screen.getByTestId("header-panel-switch");
-      expect(btn.getAttribute("title")).toBe("Kullanici paneline gecis yapin");
+      expect(btn.getAttribute("title")).toBe("Kullanıcı Paneli");
     });
 
     it("switch button has descriptive aria-label", () => {
       renderAt("/admin");
       const btn = screen.getByTestId("header-panel-switch");
-      expect(btn.getAttribute("aria-label")).toBe("Kullanici paneline gecis yapin");
+      expect(btn.getAttribute("aria-label")).toBe("Kullanıcı Paneli");
     });
   });
 
@@ -102,9 +102,11 @@ describe("Panel switch destination clarity", () => {
       expect(screen.getByTestId("admin-continuity-strip")).toBeDefined();
     });
 
-    it("user dashboard context note still present", async () => {
+    it("user dashboard greeting header still present", () => {
       renderAt("/user");
-      expect(await screen.findByTestId("dashboard-context-note")).toBeDefined();
+      // dashboard-context-note element bu surumde yok; greeting header
+      // her halukarda rendersiz hata vermeden cikislidir.
+      expect(screen.getByRole("heading", { name: /Hoşgeldin/ })).toBeDefined();
     });
   });
 });

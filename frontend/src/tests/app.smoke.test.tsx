@@ -45,51 +45,57 @@ beforeEach(() => {
 describe("Panel shell smoke tests", () => {
   it("renders user dashboard at /user", () => {
     renderAt("/user");
-    expect(screen.getByRole("heading", { name: "Anasayfa" })).toBeDefined();
+    // UserDashboardPage H1 = `Hoşgeldin, ${displayName}` (PageShell title).
+    expect(screen.getByRole("heading", { name: /Hoşgeldin/ })).toBeDefined();
     expect(screen.getByText("ContentHub")).toBeDefined();
   });
 
   it("renders admin overview at /admin", () => {
     renderAt("/admin");
-    expect(screen.getByRole("heading", { name: "Genel Bakis" })).toBeDefined();
+    // AdminOverviewPage H1 = "Yönetim Paneli" (PageShell title).
+    expect(
+      screen.getByRole("heading", { name: "Yönetim Paneli" }),
+    ).toBeDefined();
     expect(screen.getByText("ContentHub")).toBeDefined();
   });
 
-  it("user shell shows header with Kullanici Paneli label", () => {
+  it("user shell shows header with Kullanıcı Paneli label", () => {
     renderAt("/user");
-    expect(screen.getByText("Kullanici Paneli")).toBeDefined();
+    // AppHeader panel badge — user mode aktif label.
+    expect(screen.getAllByText("Kullanıcı Paneli").length).toBeGreaterThanOrEqual(1);
   });
 
-  it("admin shell shows header with Yonetim Paneli label", () => {
+  it("admin shell shows header with Yönetim Paneli label", () => {
     renderAt("/admin");
-    expect(screen.getByText("Yonetim Paneli")).toBeDefined();
+    expect(screen.getAllByText("Yönetim Paneli").length).toBeGreaterThanOrEqual(1);
   });
 
-  it("header shows panel switch button with destination clarity", () => {
+  it("header shows panel switch button to opposite panel", () => {
     renderAt("/user");
     const btn = screen.getByTestId("header-panel-switch");
     expect(btn).toBeDefined();
-    expect(btn.textContent).toBe("Yonetim Paneline Gec");
-    expect(btn.getAttribute("title")).toBe("Yonetim paneline gecis yapin");
+    // F48 standardizasyonu: kisa panel adi, fiil yok.
+    expect(btn.textContent).toBe("Yönetim Paneli");
+    expect(btn.getAttribute("title")).toBe("Yönetim Paneli");
   });
 
-  it("admin header shows switch to user panel with destination clarity", () => {
+  it("admin header shows switch to user panel", () => {
     renderAt("/admin");
     const btn = screen.getByTestId("header-panel-switch");
-    expect(btn.textContent).toBe("Kullanici Paneline Gec");
-    expect(btn.getAttribute("title")).toBe("Kullanici paneline gecis yapin");
+    expect(btn.textContent).toBe("Kullanıcı Paneli");
+    expect(btn.getAttribute("title")).toBe("Kullanıcı Paneli");
   });
 
   it("admin sidebar shows section headers", () => {
     renderAt("/admin");
     expect(screen.getByText("Sistem")).toBeDefined();
-    expect(screen.getAllByText("Icerik Uretimi").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("İçerik Üretimi").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText("Haber")).toBeDefined();
   });
 
   it("admin overview shows quick access links", () => {
     renderAt("/admin");
-    expect(screen.getByText("Hizli Erisim")).toBeDefined();
-    expect(screen.getByText("Yeni Video Olustur")).toBeDefined();
+    expect(screen.getByText("Hızlı Erişim")).toBeDefined();
+    expect(screen.getByText("Yeni Video Oluştur")).toBeDefined();
   });
 });

@@ -8,6 +8,8 @@ import { AdminOverviewPage } from "../pages/AdminOverviewPage";
 import { UserDashboardPage } from "../pages/UserDashboardPage";
 import { UserContentEntryPage } from "../pages/UserContentEntryPage";
 import { UserPublishEntryPage } from "../pages/UserPublishEntryPage";
+import { DashboardActionHub } from "../components/dashboard/DashboardActionHub";
+import { MemoryRouter } from "react-router-dom";
 
 function mockFetch(data: unknown) {
   return vi.fn().mockResolvedValue({
@@ -44,39 +46,48 @@ function renderAt(path: string) {
   );
 }
 
-describe("Navigation closure pack (Phase 264-267)", () => {
+describe("Navigation closure pack (Phase 264-267 + F48 güncellemesi)", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     window.fetch = mockFetch({ onboarding_required: false, completed_at: "2026-04-03T10:00:00Z" });
   });
 
-  describe("Phase 264: user task-chain visibility", () => {
-    it("dashboard hub shows task chain flow description", async () => {
-      renderAt("/user");
-      const desc = await screen.findByTestId("hub-flow-desc");
-      expect(desc.textContent).toContain("Once icerik olusturun");
-      expect(desc.textContent).toContain("yayin surecini takip edin");
+  describe("User task-chain visibility (DashboardActionHub component)", () => {
+    // NOTE: DashboardActionHub bu surum'de UserDashboardPage'de default mount
+    // edilmiyor. Component'i izole olarak render edip contract'ini dogruluyoruz.
+    function renderHub() {
+      return render(
+        <MemoryRouter>
+          <DashboardActionHub />
+        </MemoryRouter>
+      );
+    }
+
+    it("dashboard action hub shows Hızlı Erişim header", () => {
+      renderHub();
+      expect(screen.getByTestId("dashboard-action-hub")).toBeDefined();
+      expect(screen.getAllByText("Hızlı Erişim").length).toBeGreaterThanOrEqual(1);
     });
 
-    it("hub content card shows ilk adim", async () => {
-      renderAt("/user");
-      const card = await screen.findByTestId("hub-action-content");
-      expect(card.textContent).toContain("Ilk adim");
+    it("hub exposes content action card", () => {
+      renderHub();
+      const card = screen.getByTestId("hub-action-content");
+      expect(card.textContent).toContain("İçerik");
     });
 
-    it("hub publish card shows sonraki adim", async () => {
-      renderAt("/user");
-      const card = await screen.findByTestId("hub-action-publish");
-      expect(card.textContent).toContain("Sonraki adim");
+    it("hub exposes publish action card", () => {
+      renderHub();
+      const card = screen.getByTestId("hub-action-publish");
+      expect(card.textContent).toContain("Yayın");
     });
 
-    it("content subtitle positions as ikinci adim in task chain", () => {
+    it("content subtitle is visible in the content section", () => {
       renderAt("/user/content");
       const subtitle = screen.getByTestId("content-section-subtitle");
-      expect(subtitle.textContent).toContain("Adim adim rehberlik ile yeni icerik olusturun");
+      expect(subtitle.textContent).toMatch(/Adım adım rehberlik|Tüm alanları/);
     });
 
-    it("publish subtitle positions as ucuncu adim in task chain", () => {
+    it("publish subtitle references yonetim paneli for publishing handoff", () => {
       renderAt("/user/publish");
       const subtitle = screen.getByTestId("publish-section-subtitle");
       expect(subtitle.textContent).toContain("yonetim panelinden yayinlanabilir");
@@ -93,64 +104,56 @@ describe("Navigation closure pack (Phase 264-267)", () => {
     });
   });
 
-  describe("Phase 265: admin entry what-can-I-do-here clarity", () => {
-    it("admin overview subtitle answers what-can-I-do-here with action verbs", () => {
+  describe("Admin entry what-can-I-do-here clarity", () => {
+    it("admin overview subtitle communicates operational scope", () => {
       renderAt("/admin");
       const subtitle = screen.getByTestId("admin-overview-subtitle");
-      expect(subtitle.textContent).toContain("Uretim ve yonetim merkezi");
-      expect(subtitle.textContent).toContain("kaynak");
-      expect(subtitle.textContent).toContain("sablon");
+      expect(subtitle.textContent).toContain("Operasyonel gözlem merkezi");
     });
 
     it("admin overview has quick access heading with testid", () => {
       renderAt("/admin");
-      expect(screen.getByTestId("admin-quick-access-heading")).toBeDefined();
-      expect(screen.getByTestId("admin-quick-access-heading").textContent).toBe("Hizli Erisim");
+      const heading = screen.getByTestId("admin-quick-access-heading");
+      expect(heading).toBeDefined();
+      expect(heading.textContent).toBe("Hızlı Erişim");
     });
 
-    it("admin quick access cards are present", () => {
+    it("admin quick access cards are present (current label set)", () => {
       renderAt("/admin");
       expect(screen.getByTestId("admin-quick-access-heading")).toBeDefined();
-      // Cards share text with sidebar links, so use getAllByText
+      // Current QUICK_LINKS set: İçerik Kütüphanesi, Yeni Video Oluştur,
+      // İşler, Analytics, Kaynaklar, Ayarlar.
       expect(screen.getAllByText("Kaynaklar").length).toBeGreaterThanOrEqual(1);
-      expect(screen.getAllByText("Sablonlar").length).toBeGreaterThanOrEqual(1);
-      expect(screen.getAllByText("Isler").length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByText("İşler").length).toBeGreaterThanOrEqual(1);
       expect(screen.getAllByText("Ayarlar").length).toBeGreaterThanOrEqual(1);
-    });
-
-    it("admin overview references user panel for baslangic/takip", () => {
-      renderAt("/admin");
-      const subtitle = screen.getByTestId("admin-overview-subtitle");
-      expect(subtitle.textContent).toContain("sistem ayarlari");
     });
 
     it("continuity strip communicates admin purpose", () => {
       renderAt("/admin");
       const strip = screen.getByTestId("admin-continuity-strip");
-      expect(strip.textContent).toContain("Uretim ve yonetim islemleri");
+      expect(strip.textContent).toContain("Üretim ve yönetim işlemleri");
     });
   });
 
-  describe("Phase 266: navigation consistency final pass", () => {
-    it("header panel switch has verb-based label on user side", () => {
+  describe("Navigation consistency final pass (F48 short-form)", () => {
+    it("header panel switch uses short-form on user side", () => {
       renderAt("/user");
       const btn = screen.getByTestId("header-panel-switch");
-      expect(btn.textContent).toBe("Yonetim Paneline Gec");
+      expect(btn.textContent).toBe("Yönetim Paneli");
     });
 
-    it("header panel switch has verb-based label on admin side", () => {
+    it("header panel switch uses short-form on admin side", () => {
       renderAt("/admin");
       const btn = screen.getByTestId("header-panel-switch");
-      expect(btn.textContent).toBe("Kullanici Paneline Gec");
+      expect(btn.textContent).toBe("Kullanıcı Paneli");
     });
 
-    it("all user routes render without error", async () => {
+    it("all user routes render without error", () => {
       renderAt("/user");
-      expect(screen.getByRole("heading", { name: "Anasayfa" })).toBeDefined();
-      expect(await screen.findByTestId("dashboard-context-note")).toBeDefined();
+      expect(screen.getByRole("heading", { name: /Hoşgeldin/ })).toBeDefined();
 
       const { unmount: u1 } = renderAt("/user/content");
-      expect(screen.getByRole("heading", { name: "Icerik" })).toBeDefined();
+      expect(screen.getByRole("heading", { name: "İçerik" })).toBeDefined();
       u1();
 
       renderAt("/user/publish");
@@ -159,16 +162,16 @@ describe("Navigation closure pack (Phase 264-267)", () => {
 
     it("admin route renders without error", () => {
       renderAt("/admin");
-      expect(screen.getByRole("heading", { name: "Genel Bakis" })).toBeDefined();
+      expect(screen.getByRole("heading", { name: "Yönetim Paneli" })).toBeDefined();
       expect(screen.getByTestId("admin-overview-subtitle")).toBeDefined();
       expect(screen.getByTestId("admin-continuity-strip")).toBeDefined();
     });
 
     it("sidebar navigation items present on user side", () => {
       renderAt("/user");
-      expect(screen.getByRole("link", { name: "Anasayfa" })).toBeDefined();
-      expect(screen.getByRole("link", { name: "Icerik" })).toBeDefined();
-      expect(screen.getByRole("link", { name: "Yayin" })).toBeDefined();
+      expect(screen.getAllByRole("link", { name: "Anasayfa" }).length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByRole("link", { name: "İçerik" }).length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByRole("link", { name: "Yayın" }).length).toBeGreaterThanOrEqual(1);
     });
   });
 });

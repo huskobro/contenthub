@@ -1,9 +1,10 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { createMemoryRouter, RouterProvider } from "react-router-dom";
+import { MemoryRouter, createMemoryRouter, RouterProvider } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { UserLayout } from "../app/layouts/UserLayout";
 import { UserDashboardPage } from "../pages/UserDashboardPage";
+import { PostOnboardingHandoff } from "../components/dashboard/PostOnboardingHandoff";
 
 function mockFetch(data: unknown) {
   return vi.fn().mockResolvedValue({
@@ -33,64 +34,67 @@ function renderDashboard() {
   );
 }
 
+function renderHandoff() {
+  return render(
+    <MemoryRouter>
+      <PostOnboardingHandoff />
+    </MemoryRouter>
+  );
+}
+
 describe("Post-onboarding handoff", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
   });
 
-  it("shows handoff card when onboarding is completed", async () => {
-    window.fetch = mockFetch({ onboarding_required: false, completed_at: "2026-04-03T10:00:00Z" });
-    renderDashboard();
-    expect(await screen.findByTestId("post-onboarding-handoff")).toBeDefined();
+  // NOTE: PostOnboardingHandoff bu surumde UserDashboardPage'den pasife
+  // alindi (import korunuyor). Kontrat component seviyesinde dogrulaniyor.
+
+  it("shows handoff card with Sistem Hazır badge", () => {
+    renderHandoff();
+    expect(screen.getByTestId("post-onboarding-handoff")).toBeDefined();
     expect(screen.getByText("Sistem Hazir")).toBeDefined();
     expect(screen.getByText("Ilk Iceriginizi Olusturun")).toBeDefined();
   });
 
-  it("shows generic welcome when onboarding is still required", async () => {
-    window.fetch = mockFetch({ onboarding_required: true, completed_at: null });
-    renderDashboard();
-    // Handoff should not appear
-    expect(screen.queryByTestId("post-onboarding-handoff")).toBeNull();
-    expect(screen.getByText(/ContentHub'a hosgeldiniz/)).toBeDefined();
-  });
-
-  it("primary CTA is present and clickable", async () => {
-    window.fetch = mockFetch({ onboarding_required: false, completed_at: "2026-04-03T10:00:00Z" });
-    renderDashboard();
-    const btn = await screen.findByTestId("handoff-create-content");
+  it("primary CTA is present and clickable", () => {
+    renderHandoff();
+    const btn = screen.getByTestId("handoff-create-content");
     expect(btn.textContent).toBe("Yeni Video Olustur");
     expect(btn.tagName).toBe("BUTTON");
   });
 
-  it("secondary CTA is present and clickable", async () => {
-    window.fetch = mockFetch({ onboarding_required: false, completed_at: "2026-04-03T10:00:00Z" });
-    renderDashboard();
-    const btn = await screen.findByTestId("handoff-go-admin");
+  it("secondary CTA is present and clickable", () => {
+    renderHandoff();
+    const btn = screen.getByTestId("handoff-go-admin");
     expect(btn.textContent).toBe("Yonetim Paneline Git");
     expect(btn.tagName).toBe("BUTTON");
   });
 
-  it("does not break existing dashboard heading", async () => {
+  it("handoff is NOT mounted on dashboard by default (pasife alindi)", async () => {
     window.fetch = mockFetch({ onboarding_required: false, completed_at: "2026-04-03T10:00:00Z" });
     renderDashboard();
-    await screen.findByTestId("post-onboarding-handoff");
-    expect(screen.getByRole("heading", { name: "Anasayfa" })).toBeDefined();
+    // Component pasife alindi — dashboard'da gorunmemeli.
+    expect(screen.queryByTestId("post-onboarding-handoff")).toBeNull();
+  });
+
+  it("shows generic welcome when onboarding is still required", () => {
+    window.fetch = mockFetch({ onboarding_required: true, completed_at: null });
+    renderDashboard();
+    expect(screen.queryByTestId("post-onboarding-handoff")).toBeNull();
+    expect(screen.getByText(/ContentHub'a hoşgeldiniz/)).toBeDefined();
+  });
+
+  it("dashboard heading still rendered", () => {
+    window.fetch = mockFetch({ onboarding_required: false, completed_at: "2026-04-03T10:00:00Z" });
+    renderDashboard();
+    expect(screen.getByRole("heading", { name: /Hoşgeldin/ })).toBeDefined();
   });
 
   it("shows generic welcome when status fetch fails", () => {
     window.fetch = vi.fn().mockRejectedValue(new Error("Network error")) as unknown as typeof window.fetch;
     renderDashboard();
-    // Fallback: no handoff, just welcome
     expect(screen.queryByTestId("post-onboarding-handoff")).toBeNull();
-    expect(screen.getByText(/ContentHub'a hosgeldiniz/)).toBeDefined();
-  });
-
-  it("onboarding gate bypass is not affected", async () => {
-    // This test verifies that the dashboard page itself does not interfere with gate logic
-    window.fetch = mockFetch({ onboarding_required: false, completed_at: "2026-04-03T10:00:00Z" });
-    renderDashboard();
-    // User lands on /user and sees handoff — not redirected elsewhere
-    await screen.findByTestId("post-onboarding-handoff");
-    expect(screen.getByRole("heading", { name: "Anasayfa" })).toBeDefined();
+    expect(screen.getByText(/ContentHub'a hoşgeldiniz/)).toBeDefined();
   });
 });

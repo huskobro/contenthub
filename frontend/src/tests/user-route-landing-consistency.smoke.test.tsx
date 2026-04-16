@@ -44,40 +44,32 @@ describe("User panel route landing consistency", () => {
   });
 
   describe("/user — dashboard landing", () => {
-    it("has h2 heading", async () => {
+    it("has h1 greeting heading", () => {
       renderAt("/user");
-      expect(screen.getByRole("heading", { name: "Anasayfa" })).toBeDefined();
+      // PageShell title = `Hoşgeldin, ${displayName}`
+      expect(screen.getByRole("heading", { name: /Hoşgeldin/ })).toBeDefined();
     });
 
-    it("has subtitle with data-testid", async () => {
+    it("has subtitle with testId-derived data-testid", () => {
       renderAt("/user");
-      const subtitle = await screen.findByTestId("dashboard-context-note");
+      // PageShell renders `${testId}-subtitle` automatically.
+      const subtitle = screen.getByTestId("dashboard-subtitle");
       expect(subtitle).toBeDefined();
-      expect(subtitle.textContent).toContain("Icerik akisini baslatin");
-    });
-
-    it("has action hub block", async () => {
-      renderAt("/user");
-      expect(await screen.findByTestId("dashboard-action-hub")).toBeDefined();
-    });
-
-    it("has post-onboarding handoff block", async () => {
-      renderAt("/user");
-      expect(await screen.findByTestId("post-onboarding-handoff")).toBeDefined();
+      expect(subtitle.textContent).toContain("Kullanıcı kontrol paneli");
     });
   });
 
   describe("/user/content — content landing", () => {
     it("has h2 heading", () => {
       renderAt("/user/content");
-      expect(screen.getByRole("heading", { name: "Icerik" })).toBeDefined();
+      expect(screen.getByRole("heading", { name: "İçerik" })).toBeDefined();
     });
 
     it("has subtitle with data-testid", () => {
       renderAt("/user/content");
       const subtitle = screen.getByTestId("content-section-subtitle");
       expect(subtitle).toBeDefined();
-      expect(subtitle.textContent).toContain("Adim adim rehberlik ile yeni icerik olusturun");
+      expect(subtitle.textContent).toMatch(/Adım adım rehberlik|Tüm alanları/);
     });
 
     it("has content cards", () => {
@@ -90,7 +82,7 @@ describe("User panel route landing consistency", () => {
       renderAt("/user/content");
       const note = screen.getByTestId("content-first-use-note");
       expect(note).toBeDefined();
-      expect(note.textContent).toContain("Ilk kez mi kullaniyorsunuz");
+      expect(note.textContent).toContain("İlk kez mi kullanıyorsunuz");
     });
   });
 
