@@ -113,7 +113,10 @@ function ProjectPreviewTile({
    */
   previewUrl?: string | null;
 }) {
-  const moduleLabel = MODULE_LABELS[project.module_type] ?? project.module_type;
+  // PHASE AG: karma proje null/"mixed" — dashboard tile'da sade "Karma" etiketi.
+  const moduleLabel = !project.module_type || project.module_type === "mixed"
+    ? "Karma"
+    : (MODULE_LABELS[project.module_type] ?? project.module_type);
 
   return (
     <button

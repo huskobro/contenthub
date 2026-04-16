@@ -231,7 +231,8 @@ export function CanvasUserPublishPage() {
             selectedConnection?.platform ??
             selectedProject.primary_platform ??
             "youtube",
-          content_ref_type: selectedProject.module_type,
+          // PHASE AG: karma projelerde module_type NULL -> "mixed".
+          content_ref_type: selectedProject.module_type ?? "mixed",
           content_ref_id: selectedProject.id,
           content_project_id: selectedProject.id,
           platform_connection_id: selectedConnectionId || undefined,
@@ -379,7 +380,9 @@ export function CanvasUserPublishPage() {
                           {p.title}
                         </p>
                         <p className="m-0 mt-0.5 text-[11px] text-neutral-500">
-                          {MODULE_LABELS[p.module_type] ?? p.module_type}
+                          {!p.module_type || p.module_type === "mixed"
+                            ? "Karma"
+                            : (MODULE_LABELS[p.module_type] ?? p.module_type)}
                         </p>
                         <div className="mt-1 flex items-center gap-1.5">
                           <StatusBadge status={p.content_status} size="sm" />
@@ -473,8 +476,11 @@ export function CanvasUserPublishPage() {
                       {selectedProject.title}
                     </p>
                     <p className="m-0 mt-0.5 text-xs text-neutral-500">
-                      {MODULE_LABELS[selectedProject.module_type] ??
-                        selectedProject.module_type}
+                      {!selectedProject.module_type ||
+                      selectedProject.module_type === "mixed"
+                        ? "Karma"
+                        : (MODULE_LABELS[selectedProject.module_type] ??
+                          selectedProject.module_type)}
                       {" · "}
                       kanal: {channelName ?? "-"}
                     </p>

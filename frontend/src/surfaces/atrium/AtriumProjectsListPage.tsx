@@ -30,8 +30,10 @@ import { cn } from "../../lib/cn";
 
 const MODULE_TYPES: Array<{ value: string; label: string }> = [
   { value: "", label: "Tüm modüller" },
-  { value: "standard_video", label: "Standart Video" },
-  { value: "news_bulletin", label: "Haber Bülteni" },
+  { value: "mixed", label: "Karma (modül-üstü)" },
+  { value: "standard_video", label: "Standart Video (legacy)" },
+  { value: "news_bulletin", label: "Haber Bülteni (legacy)" },
+  { value: "product_review", label: "Ürün İncelemesi (legacy)" },
 ];
 
 const CONTENT_STATUSES: Array<{ value: string; label: string }> = [
@@ -50,6 +52,14 @@ const MODULE_LABELS: Record<string, string> = {
   howto_video: "Nasıl Yapılır",
 };
 
+// PHASE AG: modul-ustu projeler icin editoryal etiket — null/"mixed" => "Karma",
+// somut legacy deger => "X (legacy)".
+function formatAtriumModuleLabel(moduleType: string | null | undefined): string {
+  if (!moduleType || moduleType === "mixed") return "Karma";
+  const label = MODULE_LABELS[moduleType] ?? moduleType;
+  return `${label} (legacy)`;
+}
+
 function PortfolioCard({
   project,
   channelName,
@@ -59,7 +69,7 @@ function PortfolioCard({
   channelName: string | null;
   onOpen: () => void;
 }) {
-  const moduleLabel = MODULE_LABELS[project.module_type] ?? project.module_type;
+  const moduleLabel = formatAtriumModuleLabel(project.module_type);
   const createdDate = new Date(project.created_at).toLocaleDateString("tr-TR", {
     day: "2-digit",
     month: "short",

@@ -98,6 +98,13 @@ const MODULE_LABELS: Record<string, string> = {
   howto_video: "Nasıl Yapılır",
 };
 
+// PHASE AG: modul-ustu konteyner etiketi.
+function formatCanvasProjectModule(moduleType: string | null | undefined): string {
+  if (!moduleType || moduleType === "mixed") return "Karma (modül-üstü)";
+  const label = MODULE_LABELS[moduleType] ?? moduleType;
+  return `${label} (legacy)`;
+}
+
 const STATUS_LABELS: Record<string, string> = {
   draft: "Taslak",
   in_progress: "Devam Ediyor",
@@ -284,8 +291,11 @@ export function CanvasProjectDetailPage() {
             <h1 className="m-0 text-xl font-semibold text-neutral-900 truncate">
               {project.title}
             </h1>
-            <p className="m-0 mt-1 text-sm text-neutral-500">
-              {MODULE_LABELS[project.module_type] ?? project.module_type}
+            <p
+              className="m-0 mt-1 text-sm text-neutral-500"
+              data-testid="canvas-project-main-module-label"
+            >
+              {formatCanvasProjectModule(project.module_type)}
             </p>
             <div className="mt-3 flex items-center gap-2 flex-wrap">
               <StatusBadge
@@ -452,8 +462,8 @@ export function CanvasProjectDetailPage() {
               <MetaRow label="Proje ID">
                 <Mono>{project.id}</Mono>
               </MetaRow>
-              <MetaRow label="Modül">
-                {MODULE_LABELS[project.module_type] ?? project.module_type}
+              <MetaRow label="Ana modül">
+                {formatCanvasProjectModule(project.module_type)}
               </MetaRow>
               <MetaRow label="Oluşturulma">
                 {formatDateISO(project.created_at) || "—"}
@@ -668,7 +678,8 @@ export function CanvasProjectDetailPage() {
       {projectId && (
         <CollapsibleAutomationSection
           projectId={projectId}
-          moduleType={project.module_type}
+          // PHASE AG: karma projelerde undefined.
+          moduleType={project.module_type ?? undefined}
           surface="canvas"
         />
       )}
@@ -704,7 +715,8 @@ function CollapsibleAutomationSection({
   surface,
 }: {
   projectId: string;
-  moduleType: string;
+  // PHASE AG: karma projelerde undefined gelir.
+  moduleType?: string;
   surface: "canvas" | "atrium";
 }) {
   const [open, setOpen] = useState(false);

@@ -6,12 +6,20 @@
  * Faz 3 (Canvas): trampoline — delegates to the Canvas workspace grid when
  * Canvas registers an override for `user.projects.list`, falls through to
  * the legacy data table otherwise.
+ *
+ * PHASE AG: ContentProject artik modul-ustu konteyner.
+ *   - "Yeni Proje" akisi modul secmiyor; backend default olarak "mixed" yazar.
+ *   - Modul kolonu karma projeler icin "Karma", eski kayitlar icin "X (legacy)" gosterir.
+ *   - Modul filtresi "Karma" secenegi ile zenginlestirildi.
  */
 
-import { useState } from "react";
+import { useMemo, useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../stores/authStore";
-import { useContentProjects } from "../../hooks/useContentProjects";
+import {
+  useContentProjects,
+  useCreateContentProject,
+} from "../../hooks/useContentProjects";
 import { useChannelProfiles } from "../../hooks/useChannelProfiles";
 import {
   PageShell,
@@ -27,9 +35,10 @@ import { useSurfacePageOverride } from "../../surfaces";
 
 const MODULE_TYPES = [
   { value: "", label: "Tüm Modüller" },
-  { value: "standard_video", label: "Standart Video" },
-  { value: "news_bulletin", label: "Haber Bülteni" },
-  { value: "product_review", label: "Ürün İncelemesi" },
+  { value: "mixed", label: "Karma (modül-üstü)" },
+  { value: "standard_video", label: "Standart Video (legacy)" },
+  { value: "news_bulletin", label: "Haber Bülteni (legacy)" },
+  { value: "product_review", label: "Ürün İncelemesi (legacy)" },
 ];
 
 const CONTENT_STATUSES = [
@@ -39,6 +48,20 @@ const CONTENT_STATUSES = [
   { value: "completed", label: "Tamamlandı" },
   { value: "archived", label: "Arşivlendi" },
 ];
+
+const LEGACY_MODULE_LABELS: Record<string, string> = {
+  standard_video: "Standart Video",
+  news_bulletin: "Haber Bülteni",
+  product_review: "Ürün İncelemesi",
+  educational_video: "Eğitim Videosu",
+  howto_video: "Nasıl Yapılır",
+};
+
+function formatModuleCell(moduleType: string | null | undefined): string {
+  if (!moduleType || moduleType === "mixed") return "Karma";
+  const label = LEGACY_MODULE_LABELS[moduleType] ?? moduleType;
+  return `${label} (legacy)`;
+}
 
 export function MyProjectsPage() {
   const Override = useSurfacePageOverride("user.projects.list");
@@ -54,6 +77,7 @@ function LegacyMyProjectsPage() {
   const [moduleFilter, setModuleFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [channelFilter, setChannelFilter] = useState("");
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   const { data: channels } = useChannelProfiles(userId);
 
@@ -76,7 +100,9 @@ function LegacyMyProjectsPage() {
       key: "module_type",
       header: "Modül",
       render: (p: ContentProjectResponse) => (
-        <span className="text-sm text-neutral-600">{p.module_type}</span>
+        <span className="text-sm text-neutral-600">
+          {formatModuleCell(p.module_type)}
+        </span>
       ),
     },
     {
@@ -111,7 +137,8 @@ function LegacyMyProjectsPage() {
       actions={
         <ActionButton
           variant="primary"
-          onClick={() => navigate("/user/content")}
+          onClick={() => setShowCreateModal(true)}
+          data-testid="projects-create-button"
         >
           Yeni Proje
         </ActionButton>
@@ -164,6 +191,179 @@ function LegacyMyProjectsPage() {
           testId="projects-data-table"
         />
       </SectionShell>
+
+      {showCreateModal && userId && (
+        <CreateProjectModal
+          userId={userId}
+          channels={channels ?? []}
+          defaultChannelId={channelFilter || ""}
+          onClose={() => setShowCreateModal(false)}
+          onCreated={(id) => {
+            setShowCreateModal(false);
+            navigate(`/user/projects/${id}`);
+          }}
+        />
+      )}
     </PageShell>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Create Project Modal — PHASE AG
+//
+// Modul secimi yok. Backend default olarak "mixed" atar. Olusturulduktan
+// sonra kullanici proje detay sayfasindan istedigi modulun wizard'ini baslatir.
+// ---------------------------------------------------------------------------
+
+interface CreateProjectModalProps {
+  userId: string;
+  channels: Array<{ id: string; profile_name: string }>;
+  defaultChannelId?: string;
+  onClose: () => void;
+  onCreated: (projectId: string) => void;
+}
+
+function CreateProjectModal({
+  userId,
+  channels,
+  defaultChannelId,
+  onClose,
+  onCreated,
+}: CreateProjectModalProps) {
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [channelId, setChannelId] = useState(defaultChannelId || "");
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const createMutation = useCreateContentProject();
+
+  const canSubmit = useMemo(
+    () => title.trim().length > 0 && channelId.length > 0,
+    [title, channelId],
+  );
+
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault();
+    if (!canSubmit) return;
+    setSubmitError(null);
+    try {
+      const created = await createMutation.mutateAsync({
+        user_id: userId,
+        channel_profile_id: channelId,
+        title: title.trim(),
+        description: description.trim() || undefined,
+        // PHASE AG: module_type gonderilmiyor — backend "mixed" atar.
+      });
+      onCreated(created.id);
+    } catch (err) {
+      setSubmitError(
+        err instanceof Error ? err.message : "Proje oluşturulamadı",
+      );
+    }
+  }
+
+  return (
+    <div
+      data-testid="create-project-modal"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h2 className="text-lg font-semibold text-neutral-800">
+          Yeni Proje Oluştur
+        </h2>
+        <p className="mt-1 text-sm text-neutral-500">
+          Proje modül-üstü bir konteynerdır. Modül seçimini ilgili wizard
+          başlatırken yaparsınız.
+        </p>
+
+        <form onSubmit={handleSubmit} className="mt-4 space-y-4">
+          <div>
+            <label
+              htmlFor="project-title"
+              className="block text-sm font-medium text-neutral-700"
+            >
+              Başlık <span className="text-red-600">*</span>
+            </label>
+            <input
+              id="project-title"
+              data-testid="create-project-title"
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              maxLength={300}
+              required
+              className="mt-1 block w-full rounded-md border border-neutral-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="project-channel"
+              className="block text-sm font-medium text-neutral-700"
+            >
+              Kanal <span className="text-red-600">*</span>
+            </label>
+            <select
+              id="project-channel"
+              data-testid="create-project-channel"
+              value={channelId}
+              onChange={(e) => setChannelId(e.target.value)}
+              required
+              className="mt-1 block w-full rounded-md border border-neutral-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            >
+              <option value="">-- Kanal seçin --</option>
+              {channels.map((ch) => (
+                <option key={ch.id} value={ch.id}>
+                  {ch.profile_name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label
+              htmlFor="project-description"
+              className="block text-sm font-medium text-neutral-700"
+            >
+              Açıklama (opsiyonel)
+            </label>
+            <textarea
+              id="project-description"
+              data-testid="create-project-description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+              className="mt-1 block w-full rounded-md border border-neutral-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+          </div>
+
+          {submitError && (
+            <div
+              data-testid="create-project-error"
+              className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+            >
+              {submitError}
+            </div>
+          )}
+
+          <div className="flex justify-end gap-2 pt-2">
+            <ActionButton variant="ghost" onClick={onClose} type="button">
+              Vazgeç
+            </ActionButton>
+            <ActionButton
+              variant="primary"
+              type="submit"
+              disabled={!canSubmit || createMutation.isPending}
+              data-testid="create-project-submit"
+            >
+              {createMutation.isPending ? "Oluşturuluyor..." : "Oluştur"}
+            </ActionButton>
+          </div>
+        </form>
+      </div>
+    </div>
   );
 }

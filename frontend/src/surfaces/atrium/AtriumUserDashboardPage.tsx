@@ -111,7 +111,10 @@ function LineupCard({
   project: ContentProjectResponse;
   onOpen: () => void;
 }) {
-  const moduleLabel = MODULE_LABELS[project.module_type] ?? project.module_type;
+  // PHASE AG: karma proje null/"mixed" — hero tile'da sade "Karma" etiketi.
+  const moduleLabel = !project.module_type || project.module_type === "mixed"
+    ? "Karma"
+    : (MODULE_LABELS[project.module_type] ?? project.module_type);
   return (
     <button
       type="button"
@@ -369,7 +372,9 @@ export function AtriumUserDashboardPage() {
                 </h2>
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="text-[10px] font-mono uppercase text-neutral-300">
-                    {MODULE_LABELS[headline.module_type] ?? headline.module_type}
+                    {!headline.module_type || headline.module_type === "mixed"
+                      ? "Karma"
+                      : (MODULE_LABELS[headline.module_type] ?? headline.module_type)}
                   </span>
                   <span className="text-[10px] font-mono uppercase text-neutral-500">
                     &middot;

@@ -13,11 +13,14 @@
  *   - No fake preview images — preview slot is an explicit placeholder.
  */
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "../../stores/authStore";
-import { useContentProjects } from "../../hooks/useContentProjects";
+import {
+  useContentProjects,
+  useCreateContentProject,
+} from "../../hooks/useContentProjects";
 import { useChannelProfiles } from "../../hooks/useChannelProfiles";
 import type { ContentProjectResponse } from "../../api/contentProjectsApi";
 import { fetchJobs } from "../../api/jobsApi";
@@ -27,8 +30,10 @@ import { cn } from "../../lib/cn";
 
 const MODULE_TYPES: Array<{ value: string; label: string }> = [
   { value: "", label: "Tüm Modüller" },
-  { value: "standard_video", label: "Standart Video" },
-  { value: "news_bulletin", label: "Haber Bülteni" },
+  { value: "mixed", label: "Karma (modül-üstü)" },
+  { value: "standard_video", label: "Standart Video (legacy)" },
+  { value: "news_bulletin", label: "Haber Bülteni (legacy)" },
+  { value: "product_review", label: "Ürün İncelemesi (legacy)" },
 ];
 
 const CONTENT_STATUSES: Array<{ value: string; label: string }> = [
@@ -42,7 +47,15 @@ const CONTENT_STATUSES: Array<{ value: string; label: string }> = [
 const MODULE_LABELS: Record<string, string> = {
   standard_video: "Standart Video",
   news_bulletin: "Haber Bülteni",
+  product_review: "Ürün İncelemesi",
 };
+
+// PHASE AG: modul-ustu konteyner etiketi (kart altindaki kucuk modul satiri).
+function formatCardModule(moduleType: string | null | undefined): string {
+  if (!moduleType || moduleType === "mixed") return "Karma";
+  const label = MODULE_LABELS[moduleType] ?? moduleType;
+  return `${label} (legacy)`;
+}
 
 export function CanvasMyProjectsPage() {
   const navigate = useNavigate();
@@ -52,6 +65,7 @@ export function CanvasMyProjectsPage() {
   const [moduleFilter, setModuleFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [channelFilter, setChannelFilter] = useState("");
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   const { data: channels } = useChannelProfiles(userId);
   const { data: projects, isLoading, isError } = useContentProjects({
@@ -102,7 +116,7 @@ export function CanvasMyProjectsPage() {
         </div>
         <button
           type="button"
-          onClick={() => navigate("/user/create/video")}
+          onClick={() => setShowCreateModal(true)}
           className={cn(
             "px-4 py-2 rounded-md text-sm font-semibold shrink-0",
             "bg-brand-600 text-white hover:bg-brand-700 transition-colors",
@@ -210,6 +224,165 @@ export function CanvasMyProjectsPage() {
         </div>
       )}
 
+      {showCreateModal && userId && (
+        <CanvasCreateProjectModal
+          userId={userId}
+          channels={channels ?? []}
+          defaultChannelId={channelFilter || ""}
+          onClose={() => setShowCreateModal(false)}
+          onCreated={(id) => {
+            setShowCreateModal(false);
+            navigate(`/user/projects/${id}`);
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// PHASE AG Create Modal — modul-ustu (modul seciminde sormaz)
+// ---------------------------------------------------------------------------
+
+interface CanvasCreateProjectModalProps {
+  userId: string;
+  channels: Array<{ id: string; profile_name: string }>;
+  defaultChannelId?: string;
+  onClose: () => void;
+  onCreated: (projectId: string) => void;
+}
+
+function CanvasCreateProjectModal({
+  userId,
+  channels,
+  defaultChannelId,
+  onClose,
+  onCreated,
+}: CanvasCreateProjectModalProps) {
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [channelId, setChannelId] = useState(defaultChannelId || "");
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const createMutation = useCreateContentProject();
+
+  const canSubmit = title.trim().length > 0 && channelId.length > 0;
+
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault();
+    if (!canSubmit) return;
+    setSubmitError(null);
+    try {
+      const created = await createMutation.mutateAsync({
+        user_id: userId,
+        channel_profile_id: channelId,
+        title: title.trim(),
+        description: description.trim() || undefined,
+        // PHASE AG: module_type gonderilmiyor — backend "mixed" atar.
+      });
+      onCreated(created.id);
+    } catch (err) {
+      setSubmitError(
+        err instanceof Error ? err.message : "Proje oluşturulamadı",
+      );
+    }
+  }
+
+  return (
+    <div
+      data-testid="canvas-create-project-modal"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-md rounded-xl bg-surface-card p-6 shadow-xl border border-border-subtle"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h2 className="m-0 text-lg font-semibold text-neutral-800">
+          Yeni Proje Oluştur
+        </h2>
+        <p className="m-0 mt-1 text-sm text-neutral-500">
+          Proje modül-üstü bir konteynerdır. Modül seçimini ilgili wizard
+          başlatırken yaparsınız.
+        </p>
+
+        <form onSubmit={handleSubmit} className="mt-4 space-y-3">
+          <div>
+            <label className="block text-sm font-medium text-neutral-700">
+              Başlık <span className="text-error-dark">*</span>
+            </label>
+            <input
+              data-testid="canvas-create-project-title"
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              maxLength={300}
+              required
+              className="mt-1 block w-full rounded-md border border-border-subtle px-3 py-2 text-sm focus:border-brand-400 focus:outline-none"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-neutral-700">
+              Kanal <span className="text-error-dark">*</span>
+            </label>
+            <select
+              data-testid="canvas-create-project-channel"
+              value={channelId}
+              onChange={(e) => setChannelId(e.target.value)}
+              required
+              className="mt-1 block w-full rounded-md border border-border-subtle px-3 py-2 text-sm focus:border-brand-400 focus:outline-none"
+            >
+              <option value="">-- Kanal seçin --</option>
+              {channels.map((ch) => (
+                <option key={ch.id} value={ch.id}>
+                  {ch.profile_name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-neutral-700">
+              Açıklama (opsiyonel)
+            </label>
+            <textarea
+              data-testid="canvas-create-project-description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+              className="mt-1 block w-full rounded-md border border-border-subtle px-3 py-2 text-sm focus:border-brand-400 focus:outline-none"
+            />
+          </div>
+
+          {submitError && (
+            <div
+              data-testid="canvas-create-project-error"
+              className="rounded-md border border-error-base/30 bg-error-light/40 px-3 py-2 text-sm text-error-dark"
+            >
+              {submitError}
+            </div>
+          )}
+
+          <div className="flex justify-end gap-2 pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-3 py-1.5 text-sm text-neutral-700 bg-transparent border border-border-subtle rounded-md hover:bg-neutral-50"
+            >
+              Vazgeç
+            </button>
+            <button
+              type="submit"
+              disabled={!canSubmit || createMutation.isPending}
+              data-testid="canvas-create-project-submit"
+              className={cn(
+                "px-4 py-1.5 text-sm font-semibold rounded-md",
+                "bg-brand-600 text-white hover:bg-brand-700 disabled:opacity-50",
+              )}
+            >
+              {createMutation.isPending ? "Oluşturuluyor..." : "Oluştur"}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }
@@ -314,7 +487,7 @@ function ProjectCard({
           <StatusBadge status={project.content_status} size="sm" />
         </div>
         <p className="m-0 mt-1 text-xs text-neutral-500">
-          {MODULE_LABELS[project.module_type] ?? project.module_type} &middot;{" "}
+          {formatCardModule(project.module_type)} &middot;{" "}
           {new Date(project.created_at).toLocaleDateString("tr-TR")}
         </p>
         <div className="mt-2 flex items-center gap-1.5">

@@ -50,6 +50,13 @@ const MODULE_LABELS: Record<string, string> = {
   howto_video: "Nasıl Yapılır",
 };
 
+// PHASE AG: modul-ustu konteyner etiketi.
+function formatAtriumProjectModule(moduleType: string | null | undefined): string {
+  if (!moduleType || moduleType === "mixed") return "Karma (modül-üstü)";
+  const label = MODULE_LABELS[moduleType] ?? moduleType;
+  return `${label} (legacy)`;
+}
+
 const STATUS_LABELS: Record<string, string> = {
   draft: "Taslak",
   in_progress: "Devam Ediyor",
@@ -313,7 +320,7 @@ export function AtriumProjectDetailPage() {
         <div className="relative px-6 md:px-10 py-6 md:py-7 flex flex-col md:flex-row gap-5 md:gap-8 items-start md:items-end">
           <div className="flex-1 min-w-0">
             <p className="m-0 text-[10px] font-semibold uppercase tracking-[0.22em] text-indigo-300">
-              {MODULE_LABELS[project.module_type] ?? project.module_type}
+              {formatAtriumProjectModule(project.module_type)}
             </p>
             <h1 className="m-0 mt-2 text-2xl md:text-3xl font-bold text-white leading-tight">
               {project.title}
@@ -478,8 +485,10 @@ export function AtriumProjectDetailPage() {
             <MetaRow label="Yapım ID">
               <Mono>{project.id}</Mono>
             </MetaRow>
-            <MetaRow label="Modül">
-              {MODULE_LABELS[project.module_type] ?? project.module_type}
+            <MetaRow label="Ana modül">
+              <span data-testid="atrium-project-main-module-label">
+                {formatAtriumProjectModule(project.module_type)}
+              </span>
             </MetaRow>
             <MetaRow label="Kanal">
               {channel ? (
@@ -536,7 +545,8 @@ export function AtriumProjectDetailPage() {
       {projectId && (
         <CollapsibleAutomationSection
           projectId={projectId}
-          moduleType={project.module_type}
+          // PHASE AG: modul-ustu projelerde undefined gonderilir.
+          moduleType={project.module_type ?? undefined}
         />
       )}
 
@@ -553,7 +563,9 @@ function CollapsibleAutomationSection({
   moduleType,
 }: {
   projectId: string;
-  moduleType: string;
+  // PHASE AG: modul-ustu projelerde moduleType undefined gelir; alt panel
+  // karma proje icin backend violation'ini UX'e yansitir.
+  moduleType?: string;
 }) {
   const [open, setOpen] = useState(false);
   return (

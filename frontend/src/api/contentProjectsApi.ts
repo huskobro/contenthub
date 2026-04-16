@@ -14,7 +14,9 @@ export interface ContentProjectResponse {
   id: string;
   user_id: string;
   channel_profile_id: string;
-  module_type: string;
+  // PHASE AG: artik modul-ustu konteyner. null/"mixed" = karma proje;
+  // somut degerler ("standard_video" vb.) legacy uyum icin korunur.
+  module_type: string | null;
   title: string;
   description: string | null;
   current_stage: string | null;
@@ -43,7 +45,8 @@ export interface ContentProjectFilters {
 export interface CreateContentProject {
   user_id: string;
   channel_profile_id: string;
-  module_type: string;
+  // PHASE AG: module_type artik opsiyonel. Bos birakilirsa backend "mixed" atar.
+  module_type?: string | null;
   title: string;
   description?: string;
   content_status?: string;
@@ -113,6 +116,7 @@ export interface ProjectJobFilters {
 
 export interface ProjectJobRow {
   id: string;
+  // Job seviyesinde module_type hala zorunlu — is birden cok modulden gelebilir.
   module_type: string;
   status: string;
   owner_id: string | null;

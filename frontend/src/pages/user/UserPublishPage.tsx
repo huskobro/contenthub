@@ -201,10 +201,11 @@ function LegacyUserPublishPage() {
         throw new Error("Proje seçilmedi veya aktif job yok.");
       }
 
-      // Create publish record from job
+      // PHASE AG: content_ref_type — karma projelerde module_type NULL olabilir;
+      // bu durumda "mixed" string'i kullanilir (backend bunu kabul eder).
       const record = await createPublishRecordFromJob(selectedProject.active_job_id, {
         platform: selectedConnection?.platform || selectedProject.primary_platform || "youtube",
-        content_ref_type: selectedProject.module_type,
+        content_ref_type: selectedProject.module_type ?? "mixed",
         content_ref_id: selectedProject.id,
         content_project_id: selectedProject.id,
         platform_connection_id: selectedConnectionId || undefined,
@@ -279,7 +280,15 @@ function LegacyUserPublishPage() {
           <SectionShell title="Proje Özeti" testId="publish-project-summary">
             <MetricGrid>
               <MetricTile label="Başlık" value={selectedProject.title} testId="pub-title" />
-              <MetricTile label="Modül" value={selectedProject.module_type} testId="pub-module" />
+              <MetricTile
+                label="Ana modül"
+                value={
+                  !selectedProject.module_type || selectedProject.module_type === "mixed"
+                    ? "Karma"
+                    : `${selectedProject.module_type} (legacy)`
+                }
+                testId="pub-module"
+              />
               <MetricTile label="Kanal" value={channelName || "-"} testId="pub-channel" />
               <MetricTile label="Durum" value={selectedProject.publish_status || "draft"} testId="pub-status" />
             </MetricGrid>

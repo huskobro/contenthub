@@ -45,6 +45,16 @@ const MODULE_LABELS: Record<string, string> = {
   howto_video: "Nasıl Yapılır Videosu",
 };
 
+// PHASE AG: proje artik modul-ustu konteyner. Ana modul gosterimi 3 duruma ayrilir:
+//   - null/"mixed" → "Karma (modül-üstü)"
+//   - somut ve bilinen legacy deger → "X (legacy)"
+//   - bilinmeyen deger → ham string + "(legacy)"
+function formatProjectModuleLabel(moduleType: string | null | undefined): string {
+  if (!moduleType || moduleType === "mixed") return "Karma (modül-üstü)";
+  const label = MODULE_LABELS[moduleType] ?? moduleType;
+  return `${label} (legacy)`;
+}
+
 const STATUS_LABELS: Record<string, string> = {
   draft: "Taslak",
   in_progress: "Devam Ediyor",
@@ -259,7 +269,7 @@ function LegacyProjectDetailPage() {
   return (
     <PageShell
       title={project.title}
-      subtitle={MODULE_LABELS[project.module_type] ?? project.module_type}
+      subtitle={formatProjectModuleLabel(project.module_type)}
       breadcrumb={[
         { label: "Projelerim", to: "/user/projects" },
         { label: project.title },
@@ -276,7 +286,10 @@ function LegacyProjectDetailPage() {
       {activeTab === "automation" && projectId ? (
         <ProjectAutomationPanel
           projectId={projectId}
-          moduleType={project.module_type}
+          // PHASE AG: modul-ustu projelerde moduleType undefined gonderilir;
+          // panel kendi guard UX'inde "karma proje" mesajini gosterecek sekilde
+          // backend violation'ini gorsel hale getirir.
+          moduleType={project.module_type ?? undefined}
           testId="project-detail-automation"
         />
       ) : null}
@@ -288,9 +301,12 @@ function LegacyProjectDetailPage() {
             <Row label="Proje ID">
               <Mono>{project.id}</Mono>
             </Row>
-            <Row label="Modül (ana)">
-              <span className="font-medium">
-                {MODULE_LABELS[project.module_type] ?? project.module_type}
+            <Row label="Ana modül">
+              <span
+                className="font-medium"
+                data-testid="project-main-module-label"
+              >
+                {formatProjectModuleLabel(project.module_type)}
               </span>
             </Row>
             <Row label="Kanal">
