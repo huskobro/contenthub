@@ -85,9 +85,13 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('user_id', 'channel_slug', name='uq_user_channel_slug')
     )
-    op.create_index(op.f('ix_channel_profiles_channel_slug'), 'channel_profiles', ['channel_slug'], unique=False)
-    op.create_index(op.f('ix_channel_profiles_user_id'), 'channel_profiles', ['user_id'], unique=False)
-    op.create_table('automation_policies',
+    if _table_exists('channel_profiles'):
+        if not _index_exists('ix_channel_profiles_channel_slug', 'channel_profiles'):
+            op.create_index(op.f('ix_channel_profiles_channel_slug'), 'channel_profiles', ['channel_slug'], unique=False)
+        if not _index_exists('ix_channel_profiles_user_id', 'channel_profiles'):
+            op.create_index(op.f('ix_channel_profiles_user_id'), 'channel_profiles', ['user_id'], unique=False)
+    if not _table_exists('automation_policies'):
+        op.create_table('automation_policies',
     sa.Column('id', sa.String(length=36), nullable=False),
     sa.Column('channel_profile_id', sa.String(length=36), nullable=False),
     sa.Column('automation_level', sa.String(length=50), nullable=False),
@@ -106,7 +110,8 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('channel_profile_id')
     )
-    op.create_table('content_projects',
+    if not _table_exists('content_projects'):
+        op.create_table('content_projects',
     sa.Column('id', sa.String(length=36), nullable=False),
     sa.Column('user_id', sa.String(length=36), nullable=False),
     sa.Column('channel_profile_id', sa.String(length=36), nullable=False),
@@ -129,10 +134,15 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_index(op.f('ix_content_projects_channel_profile_id'), 'content_projects', ['channel_profile_id'], unique=False)
-    op.create_index(op.f('ix_content_projects_module_type'), 'content_projects', ['module_type'], unique=False)
-    op.create_index(op.f('ix_content_projects_user_id'), 'content_projects', ['user_id'], unique=False)
-    op.create_table('platform_connections',
+    if _table_exists('content_projects'):
+        if not _index_exists('ix_content_projects_channel_profile_id', 'content_projects'):
+            op.create_index(op.f('ix_content_projects_channel_profile_id'), 'content_projects', ['channel_profile_id'], unique=False)
+        if not _index_exists('ix_content_projects_module_type', 'content_projects'):
+            op.create_index(op.f('ix_content_projects_module_type'), 'content_projects', ['module_type'], unique=False)
+        if not _index_exists('ix_content_projects_user_id', 'content_projects'):
+            op.create_index(op.f('ix_content_projects_user_id'), 'content_projects', ['user_id'], unique=False)
+    if not _table_exists('platform_connections'):
+        op.create_table('platform_connections',
     sa.Column('id', sa.String(length=36), nullable=False),
     sa.Column('channel_profile_id', sa.String(length=36), nullable=False),
     sa.Column('platform', sa.String(length=50), nullable=False),
@@ -158,9 +168,13 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['channel_profile_id'], ['channel_profiles.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_index(op.f('ix_platform_connections_channel_profile_id'), 'platform_connections', ['channel_profile_id'], unique=False)
-    op.create_index(op.f('ix_platform_connections_platform'), 'platform_connections', ['platform'], unique=False)
-    op.create_table('engagement_tasks',
+    if _table_exists('platform_connections'):
+        if not _index_exists('ix_platform_connections_channel_profile_id', 'platform_connections'):
+            op.create_index(op.f('ix_platform_connections_channel_profile_id'), 'platform_connections', ['channel_profile_id'], unique=False)
+        if not _index_exists('ix_platform_connections_platform', 'platform_connections'):
+            op.create_index(op.f('ix_platform_connections_platform'), 'platform_connections', ['platform'], unique=False)
+    if not _table_exists('engagement_tasks'):
+        op.create_table('engagement_tasks',
     sa.Column('id', sa.String(length=36), nullable=False),
     sa.Column('user_id', sa.String(length=36), nullable=False),
     sa.Column('channel_profile_id', sa.String(length=36), nullable=False),
@@ -183,12 +197,19 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_index(op.f('ix_engagement_tasks_channel_profile_id'), 'engagement_tasks', ['channel_profile_id'], unique=False)
-    op.create_index(op.f('ix_engagement_tasks_content_project_id'), 'engagement_tasks', ['content_project_id'], unique=False)
-    op.create_index(op.f('ix_engagement_tasks_platform_connection_id'), 'engagement_tasks', ['platform_connection_id'], unique=False)
-    op.create_index(op.f('ix_engagement_tasks_type'), 'engagement_tasks', ['type'], unique=False)
-    op.create_index(op.f('ix_engagement_tasks_user_id'), 'engagement_tasks', ['user_id'], unique=False)
-    op.create_table('platform_credentials',
+    if _table_exists('engagement_tasks'):
+        if not _index_exists('ix_engagement_tasks_channel_profile_id', 'engagement_tasks'):
+            op.create_index(op.f('ix_engagement_tasks_channel_profile_id'), 'engagement_tasks', ['channel_profile_id'], unique=False)
+        if not _index_exists('ix_engagement_tasks_content_project_id', 'engagement_tasks'):
+            op.create_index(op.f('ix_engagement_tasks_content_project_id'), 'engagement_tasks', ['content_project_id'], unique=False)
+        if not _index_exists('ix_engagement_tasks_platform_connection_id', 'engagement_tasks'):
+            op.create_index(op.f('ix_engagement_tasks_platform_connection_id'), 'engagement_tasks', ['platform_connection_id'], unique=False)
+        if not _index_exists('ix_engagement_tasks_type', 'engagement_tasks'):
+            op.create_index(op.f('ix_engagement_tasks_type'), 'engagement_tasks', ['type'], unique=False)
+        if not _index_exists('ix_engagement_tasks_user_id', 'engagement_tasks'):
+            op.create_index(op.f('ix_engagement_tasks_user_id'), 'engagement_tasks', ['user_id'], unique=False)
+    if not _table_exists('platform_credentials'):
+        op.create_table('platform_credentials',
     sa.Column('id', sa.String(length=36), nullable=False),
     sa.Column('platform_connection_id', sa.String(length=36), nullable=False),
     sa.Column('access_token', sa.Text(), nullable=True),
