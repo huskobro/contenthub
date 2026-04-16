@@ -404,8 +404,11 @@ def test_credential_wiring_dubvoice_mapping_registered():
     assert mapping["register_priority"] == 0
 
 
-def test_credential_wiring_factory_creates_dubvoice_provider():
+@pytest.mark.asyncio
+async def test_credential_wiring_factory_creates_dubvoice_provider():
+    # Phase AI — factory artik async + optional db parametreli.
+    # db=None verilirse builtin defaults'e duser (legacy davranis korunur).
     factory = _FACTORIES["_make_dubvoice_provider"]
-    provider = factory("sk_fake")
+    provider = await factory("sk_fake", db=None)
     assert provider.provider_id() == "dubvoice"
     assert provider.capability() == ProviderCapability.TTS

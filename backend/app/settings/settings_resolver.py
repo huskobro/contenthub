@@ -1113,6 +1113,20 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "wired": True,
         "wired_to": "YouTubeAdapter.upload() — payload'da tags yoksa settings'ten okunur",
     },
+    # Phase AI — publish scheduler polling interval. Onceki hardcoded 60s yerine
+    # ayar uzerinden kontrol edilir; main.py lifespan task'i baslamadan once bu deger
+    # cozumlenir. Degeri degistirmek app restart gerektirir (scheduler zaten calisiyor).
+    "publish.scheduler.interval_seconds": {
+        "group": "publish",
+        "type": "float",
+        "label": "Publish Scheduler Polling Araligi (saniye)",
+        "help_text": "Zamanlanmis publish kayitlarinin ne siklikta taranacagi. Restart sonrasi etkin olur. Cok dusuk degerler DB yukunu artirir.",
+        "module_scope": "publish",
+        "env_var": "",
+        "builtin_default": 60.0,
+        "wired": True,
+        "wired_to": "main.py lifespan — poll_scheduled_publishes(interval=...)",
+    },
 
     # --- YouTube Analytics API v2 (Sprint 1 / Faz YT-A1) ---
     "publish.youtube.analytics.sync_interval_hours": {
@@ -2120,6 +2134,20 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "label": "Haber Bülteni modülü etkin",
         "help_text": "Devre dışı bırakıldığında: menüde gizlenir, yeni üretim engellenir, mevcut kayıtlar etkilenmez.",
         "module_scope": "news_bulletin",
+        "env_var": None,
+        "builtin_default": True,
+        "wired": True,
+        "wired_to": "Module registry + sidebar + command palette + wizard",
+    },
+    # Phase AI — product_review modulu admin panelinden yonetilebilir hale getirilir.
+    # Module registry'de zaten kayitli; bu eksiklik yuzunden Settings page'de admin
+    # acip/kapatma yapamiyordu (yalnizca standard_video + news_bulletin gorunuyordu).
+    "module.product_review.enabled": {
+        "group": "modules",
+        "type": "boolean",
+        "label": "Ürün İncelemesi modülü etkin",
+        "help_text": "Devre dışı bırakıldığında: menüde gizlenir, yeni üretim engellenir, mevcut kayıtlar etkilenmez.",
+        "module_scope": "product_review",
         "env_var": None,
         "builtin_default": True,
         "wired": True,

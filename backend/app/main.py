@@ -346,17 +346,28 @@ async def lifespan(app: FastAPI):
     # The scheduler updates this dict in place every tick. The
     # /publish/scheduler/status endpoint reads it and reports
     # {unknown, healthy, stale}.
+    #
+    # Phase AI — Interval, publish.scheduler.interval_seconds ayarindan cozumlenir.
+    # Onceden hardcoded 60s idi; admin'in ayari degistirmesi runtime'i etkilemiyordu.
+    # Live-reload degil (scheduler loop tek seferlik okuyor); ayar degisince restart gerekir.
     from app.publish.scheduler import poll_scheduled_publishes
     app.state.publish_scheduler_status = {}
+    async with AsyncSessionLocal() as _pub_sched_db:
+        _pub_sched_interval = (
+            await resolve("publish.scheduler.interval_seconds", _pub_sched_db)
+        ) or 60.0
     scheduler_task = asyncio.create_task(
         poll_scheduled_publishes(
             AsyncSessionLocal,
-            interval=60,
+            interval=float(_pub_sched_interval),
             status_holder=app.state.publish_scheduler_status,
         )
     )
     app.state.scheduler_task = scheduler_task
-    logger.info("Publish scheduler task created.")
+    logger.info(
+        "Publish scheduler task created (interval=%ss, restart-reload).",
+        _pub_sched_interval,
+    )
 
     # Auto-scan scheduler — background task (Gate Sources Closure).
     # The loop reads ``source_scans.auto_scan_enabled`` and

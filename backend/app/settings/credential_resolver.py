@@ -59,6 +59,16 @@ CREDENTIAL_KEYS: dict[str, dict] = {
         "group": "visual_providers",
         "capability": "visuals",
     },
+    # Phase AI — DubVoice (primary TTS). Provider zaten credential_wiring.py ve
+    # provider registry'de kayitli; sadece write-path burada eksikti: save_credential()
+    # bilinmeyen key ValueError firlatiyordu, UI 400 aliyor, kaydedilemiyordu.
+    "credential.dubvoice_api_key": {
+        "env_var": "CONTENTHUB_DUBVOICE_API_KEY",
+        "label": "DubVoice API Key",
+        "help_text": "DubVoice primary TTS saglayicisi icin API anahtari.",
+        "group": "ai_providers",
+        "capability": "tts",
+    },
     "credential.youtube_client_id": {
         "env_var": "",
         "label": "YouTube OAuth Client ID",
@@ -224,11 +234,26 @@ async def save_credential(key: str, value: str, db: AsyncSession) -> dict:
 
     group_name="credentials" ile kaydedilir.
     Donus: get_credential_status sonucu.
+
+    Phase AI — placeholder degerler (abc, sk-test-key-123, placeholder, bos string)
+    sessizce kabul edilip kaydedilmek yerine RED edilir. Boylece UI yaniltici
+    "Kaydedildi" toast'u atmaz, kullanici gercek bir key girdigini dogrular.
     """
     if key not in CREDENTIAL_KEYS:
         raise ValueError(f"Bilinmeyen credential key: {key}")
 
     value = _normalize_credential_value(key, value)
+
+    # Placeholder/bos deger kontrolu — credential_wiring ile ayni set.
+    # Import local: circular dependency riski yok cunku credential_wiring
+    # credential_resolver'a bagimli, tersi degil.
+    from app.settings.credential_wiring import is_placeholder_credential
+    if is_placeholder_credential(value):
+        raise ValueError(
+            "Placeholder veya bos credential degeri kabul edilmez. "
+            "Gercek bir API key girin veya alani tamamen bos birakmak yerine "
+            "'Sil' eylemini kullanin."
+        )
 
     meta = CREDENTIAL_KEYS[key]
     admin_json = json.dumps(value)  # '"sk-abc123"' seklinde JSON string

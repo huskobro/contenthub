@@ -167,10 +167,12 @@ async def save_credential_endpoint(
         )
 
     # Provider reinit — best effort, hata olursa credential yine kaydedilmis olur
+    # Phase AI: db session threaded through so factories can use resolve() chain
+    # (DB admin_value -> DB default -> .env -> builtin) instead of builtin-only.
     wiring_result = {"key": key, "action": "skipped", "provider_id": None}
     try:
         from app.settings.credential_wiring import reinitialize_provider_for_credential
-        wiring_result = await reinitialize_provider_for_credential(key, body.value)
+        wiring_result = await reinitialize_provider_for_credential(key, body.value, db=db)
         logger.info("Provider reinit for %s: %s", key, wiring_result)
     except Exception as exc:
         logger.warning("Provider reinit basarisiz for %s: %s", key, exc)
@@ -188,7 +190,21 @@ async def validate_credential(
     key: str,
     db: AsyncSession = Depends(get_db),
 ) -> dict:
-    """Credential degerinin var olup olmadigini kontrol eder (basic validation)."""
+    """
+    Credential icin KAYIT dogrulamasi yapar — provider'a CANLI istek atmaz.
+
+    Phase AI — Onceden "Dogrula / Test Connection" butonu bu endpoint'i cagirip
+    sadece DB/env'da bir deger olup olmadigina bakiyordu ama UI'ya "Valid"
+    gosteriyordu. Bu yaniltici: kullanici bozuk/expired key'i valid saniyordu.
+
+    Artik yanit explicit:
+      - ``valid``        : credential kayitli ve bos degil
+      - ``live_tested``  : her zaman False — provider'a gercek cagri yapilmadi
+      - ``message``      : kullaniciya yalin dille "kayit dogrulandi / canli test yapilmadi"
+
+    Canli provider ping'i ileriki bir Phase'de eklendiginde ``live_tested``
+    True/False olarak dolu gelebilir; API sozlesmesi geriye donuk uyumlu kalir.
+    """
     if key not in CREDENTIAL_KEYS:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -196,8 +212,21 @@ async def validate_credential(
         )
     value = await resolve_credential(key, db)
     if value:
-        return {"key": key, "valid": True, "message": "Credential degeri mevcut."}
-    return {"key": key, "valid": False, "message": "Credential degeri bulunamadi."}
+        return {
+            "key": key,
+            "valid": True,
+            "live_tested": False,
+            "message": (
+                "Credential kayitli ve bos degil. Provider'a canli istek "
+                "atilmadi — gercek dogrulama icin ilgili modulu kullanin."
+            ),
+        }
+    return {
+        "key": key,
+        "valid": False,
+        "live_tested": False,
+        "message": "Credential degeri bulunamadi veya bos.",
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -277,10 +306,12 @@ async def update_effective_setting(
             )
         result = await save_credential(key, str(body.value), db)
         # Provider reinit — best effort
+        # Phase AI: db threaded so provider settings (model/temperature/voice_id)
+        # actually reach the new provider instance.
         wiring_result = {"key": key, "action": "skipped", "provider_id": None}
         try:
             from app.settings.credential_wiring import reinitialize_provider_for_credential
-            wiring_result = await reinitialize_provider_for_credential(key, str(body.value))
+            wiring_result = await reinitialize_provider_for_credential(key, str(body.value), db=db)
         except Exception as exc:
             logger.warning("Provider reinit basarisiz for %s: %s", key, exc)
         return {**result, "wiring": wiring_result}
