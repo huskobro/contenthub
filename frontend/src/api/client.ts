@@ -53,14 +53,21 @@ const ACCESS_TOKEN_KEY = "contenthub:access-token";
 const REFRESH_TOKEN_KEY = "contenthub:refresh-token";
 const AUTH_USER_KEY = "contenthub:auth-user";
 
-/** Dev bypass — auth tamamen pasif, her zaman admin user-id gönderir */
-const AUTH_DISABLED = true;
-const DEV_ADMIN_USER_ID = "f423e3c7-40a7-4cc5-bac5-0b9e00711933";
-
+/**
+ * Build the auth + identity headers for every outgoing request.
+ *
+ * - `Authorization: Bearer <access_token>` — primary auth (JWT) expected by
+ *   backend FastAPI guards. Without it every protected endpoint returns 401.
+ * - `X-ContentHub-User-Id: <uuid>` — secondary identity header (M40) used by
+ *   routes that scope data per user. Only forwarded when the stored id looks
+ *   like a real uuid to avoid leaking stale values.
+ *
+ * NOTE: a previous dev-time bypass (`AUTH_DISABLED=true`) was removed — it
+ * was masking the real login flow and caused "Veri Yuklenemedi" after
+ * login because the Bearer token never made it onto the request. Keep this
+ * path as the single source of truth.
+ */
 function getActiveUserHeaders(): Record<string, string> {
-  if (AUTH_DISABLED) {
-    return { "X-ContentHub-User-Id": DEV_ADMIN_USER_ID };
-  }
   const headers: Record<string, string> = {};
   try {
     const userId = localStorage.getItem(USER_ID_STORAGE_KEY);
@@ -72,7 +79,7 @@ function getActiveUserHeaders(): Record<string, string> {
       headers["Authorization"] = `Bearer ${token}`;
     }
   } catch {
-    // localStorage not available
+    // localStorage not available (SSR / tests) — send no auth headers.
   }
   return headers;
 }
@@ -90,7 +97,6 @@ let _refreshPromise: Promise<boolean> | null = null;
  * Safe to call multiple times — idempotent.
  */
 function forceLogout(): void {
-  if (AUTH_DISABLED) return; // Dev bypass — login'e yönlendirme yapma
   try {
     localStorage.removeItem(ACCESS_TOKEN_KEY);
     localStorage.removeItem(REFRESH_TOKEN_KEY);
