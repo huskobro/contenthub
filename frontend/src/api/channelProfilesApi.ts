@@ -24,14 +24,22 @@ export interface ChannelProfileResponse {
   notes: string | null;
   created_at: string;
   updated_at: string;
-  // PHASE X: URL-only create flow metadata (opsiyonel, backend dondurur)
+  // PHASE X: URL-only create flow metadata (backend dondurur)
+  platform?: string | null;
   source_url?: string | null;
   normalized_url?: string | null;
-  platform?: string | null;
-  platform_handle?: string | null;
+  external_channel_id?: string | null;
+  handle?: string | null;
+  title?: string | null;
   avatar_url?: string | null;
-  metadata_fetch_status?: string | null;
-  metadata_fetched_at?: string | null;
+  /**
+   * PHASE X import lifecycle: "pending" | "success" | "partial" | "failed".
+   * `partial` means the channel row exists but metadata fetch incomplete —
+   * the user should see honest badges and can trigger `/reimport`.
+   */
+  import_status?: string | null;
+  import_error?: string | null;
+  last_import_at?: string | null;
 }
 
 export interface CreateChannelProfile {

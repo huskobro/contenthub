@@ -48,6 +48,35 @@ const STATUS_LABELS: Record<string, string> = {
   not_required: "Gerekmiyor",
 };
 
+// PHASE AE: per-job next-action hint for user-facing job row.
+// Keep copy short — the user can always click through to job detail.
+function nextActionHint(status: string | null | undefined): string | null {
+  switch ((status ?? "").toLowerCase()) {
+    case "queued":
+    case "scheduled":
+      return "Sırada — iş başlayınca güncelleme göreceksiniz";
+    case "running":
+    case "in_progress":
+      return "Üretim devam ediyor — detay sayfasından adımları izleyin";
+    case "review_required":
+    case "pending_review":
+    case "awaiting_review":
+      return "İnceleme bekleniyor — detay sayfasından onaylayın";
+    case "completed":
+    case "succeeded":
+    case "success":
+      return "Hazır — yayın için “Yayına Gönder” düğmesini kullanın";
+    case "failed":
+    case "error":
+      return "Başarısız — detay sayfasında hata ve yeniden deneme";
+    case "cancelled":
+    case "canceled":
+      return "İptal edildi";
+    default:
+      return null;
+  }
+}
+
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex py-2 border-b border-neutral-100">
@@ -236,24 +265,36 @@ function LegacyProjectDetailPage() {
           </p>
         ) : (
           <div className="divide-y divide-border-subtle">
-            {linkedJobs.map((job: JobResponse) => (
-              <div
-                key={job.id}
-                className="flex items-center justify-between px-4 py-3 hover:bg-brand-50 cursor-pointer transition-colors"
-                onClick={() => navigate(`/user/jobs/${job.id}`)}
-              >
-                <div className="min-w-0 flex-1">
-                  <p className="m-0 text-sm font-medium text-neutral-800">
-                    Job: <Mono>{job.id.slice(0, 12)}...</Mono>
-                  </p>
-                  <p className="m-0 mt-0.5 text-xs text-neutral-500">
-                    {job.module_type} &middot;{" "}
-                    {formatDateISO(job.created_at)}
-                  </p>
+            {linkedJobs.map((job: JobResponse) => {
+              const hint = nextActionHint(job.status);
+              return (
+                <div
+                  key={job.id}
+                  className="flex items-center justify-between px-4 py-3 hover:bg-brand-50 cursor-pointer transition-colors"
+                  onClick={() => navigate(`/user/jobs/${job.id}`)}
+                  data-testid={`project-linked-job-${job.id}`}
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="m-0 text-sm font-medium text-neutral-800">
+                      Job: <Mono>{job.id.slice(0, 12)}...</Mono>
+                    </p>
+                    <p className="m-0 mt-0.5 text-xs text-neutral-500">
+                      {job.module_type} &middot;{" "}
+                      {formatDateISO(job.created_at)}
+                    </p>
+                    {hint && (
+                      <p
+                        className="m-0 mt-1 text-[11px] text-brand-700 font-medium"
+                        data-testid={`project-linked-job-${job.id}-hint`}
+                      >
+                        → {hint}
+                      </p>
+                    )}
+                  </div>
+                  <StatusBadge status={job.status} size="sm" />
                 </div>
-                <StatusBadge status={job.status} size="sm" />
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </SectionShell>
@@ -336,14 +377,14 @@ function LegacyProjectDetailPage() {
               📰 Haber Seç ve Başlat
             </button>
           )}
-          {/* Product Review — henüz ayrı wizard'a sahip değil, genel create akışına yönlendir */}
+          {/* Product Review — PHASE AE: dedicated wizard */}
           {project.module_type === "product_review" && !project.active_job_id && (
             <button
-              onClick={() => navigate("/user/content")}
+              onClick={() => navigate("/user/create/product-review")}
               className="px-4 py-1.5 text-sm font-medium text-white bg-brand-600 border border-brand-600 rounded-sm cursor-pointer hover:bg-brand-700"
               data-testid="project-action-start-product-review"
             >
-              🛒 İçerik Oluştur
+              ★ İnceleme Oluştur
             </button>
           )}
           {/* Yayın — completed olmuş bir job varsa publish ekranına hızlı geçiş */}

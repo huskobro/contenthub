@@ -165,6 +165,9 @@ export function UserNewsPickerPage() {
   });
 
   // --- Start production -----------------------------------------------------
+  // PHASE AE: when no content project is bound, land the user on the job
+  // detail page (not the projects list — the previous `?jobId=` query param
+  // was never consumed). With a project, prefer the project hub.
   const startMutation = useMutation({
     mutationFn: () => startBulletinProduction(bulletinId as string),
     onSuccess: (resp) => {
@@ -173,7 +176,7 @@ export function UserNewsPickerPage() {
         return;
       }
       if (resp.job_id) {
-        navigate(`/user/projects?jobId=${resp.job_id}`);
+        navigate(`/user/jobs/${resp.job_id}`);
       }
     },
   });

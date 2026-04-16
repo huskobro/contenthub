@@ -74,6 +74,7 @@ const ChannelDetailPage = lazy(() => import("../pages/user/ChannelDetailPage").t
 // Lazy-loaded user wizard pages (Faz 5)
 const CreateVideoWizardPage = lazy(() => import("../pages/user/CreateVideoWizardPage").then(m => ({ default: m.CreateVideoWizardPage })));
 const CreateBulletinWizardPage = lazy(() => import("../pages/user/CreateBulletinWizardPage").then(m => ({ default: m.CreateBulletinWizardPage })));
+const CreateProductReviewWizardPage = lazy(() => import("../pages/user/CreateProductReviewWizardPage").then(m => ({ default: m.CreateProductReviewWizardPage })));
 const ProjectDetailPage = lazy(() => import("../pages/user/ProjectDetailPage").then(m => ({ default: m.ProjectDetailPage })));
 const UserJobDetailPage = lazy(() => import("../pages/user/UserJobDetailPage").then(m => ({ default: m.UserJobDetailPage })));
 const UserAnalyticsPage = lazy(() => import("../pages/user/UserAnalyticsPage").then(m => ({ default: m.UserAnalyticsPage })));
@@ -217,6 +218,7 @@ export const router = createBrowserRouter([
       { path: "connections", element: <Suspense fallback={<LazyFallback />}><UserConnectionsPage /></Suspense> },
       { path: "create/video", element: <Suspense fallback={<LazyFallback />}><CreateVideoWizardPage /></Suspense> },
       { path: "create/bulletin", element: <Suspense fallback={<LazyFallback />}><CreateBulletinWizardPage /></Suspense> },
+      { path: "create/product-review", element: <Suspense fallback={<LazyFallback />}><CreateProductReviewWizardPage /></Suspense> },
       { path: "news-picker", element: <Suspense fallback={<LazyFallback />}><UserNewsPickerPage /></Suspense> },
       { path: "settings/youtube-callback", element: <UserYouTubeCallbackPage /> },
     ]}],

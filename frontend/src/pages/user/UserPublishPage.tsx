@@ -16,13 +16,14 @@
  * component if so, or falls through to the legacy body below otherwise.
  */
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useSurfacePageOverride } from "../../surfaces";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchContentProjects, type ContentProjectResponse } from "../../api/contentProjectsApi";
 import { fetchChannelProfiles, type ChannelProfileResponse } from "../../api/channelProfilesApi";
 import { fetchConnectionsForPublish, type ConnectionForPublish } from "../../api/platformConnectionsApi";
-import { ConnectionCapabilityWarning, useCapabilityStatus } from "../../components/connections/ConnectionCapabilityWarning";
+import { ConnectionCapabilityWarning } from "../../components/connections/ConnectionCapabilityWarning";
 import {
   createPublishRecordFromJob,
   fetchPublishRecordsByProject,
@@ -76,9 +77,11 @@ export function UserPublishPage() {
 
 function LegacyUserPublishPage() {
   const queryClient = useQueryClient();
+  const [searchParams] = useSearchParams();
+  const deepLinkProjectId = searchParams.get("projectId") || "";
 
   // Step state
-  const [selectedProjectId, setSelectedProjectId] = useState("");
+  const [selectedProjectId, setSelectedProjectId] = useState(deepLinkProjectId);
   const [selectedConnectionId, setSelectedConnectionId] = useState("");
 
   // Intent form
@@ -176,6 +179,20 @@ function LegacyUserPublishPage() {
       setIntentPrivacy("public");
     }
   }, [projects]);
+
+  // PHASE AE: deep-link pre-fill. If the user arrives with ?projectId=... the
+  // initial state already has selectedProjectId, but projects load async so
+  // the intent title/description need to hydrate when the list arrives.
+  useEffect(() => {
+    if (!deepLinkProjectId) return;
+    if (intentTitle || intentDescription) return; // already filled
+    const proj = projects.find((p) => p.id === deepLinkProjectId);
+    if (proj) {
+      setIntentTitle(proj.title || "");
+      setIntentDescription(proj.description || "");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [deepLinkProjectId, projects]);
 
   // Create publish record mutation
   const createMutation = useMutation({

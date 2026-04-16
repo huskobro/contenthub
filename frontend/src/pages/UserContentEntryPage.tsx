@@ -9,6 +9,7 @@ import { useEffectiveSetting } from "../hooks/useEffectiveSettings";
 const DEFAULT_ROUTES = {
   standard_video: { wizard: "/user/create/video",    form: "/user/create/video" },
   news_bulletin:  { wizard: "/user/create/bulletin", form: "/user/create/bulletin" },
+  product_review: { wizard: "/user/create/product-review", form: "/user/create/product-review" },
 };
 
 const CONTENT_TYPES = [
@@ -32,6 +33,16 @@ const CONTENT_TYPES = [
     settingKey: "wizard.news_bulletin.entry_mode",
     testId: "content-entry-news-bulletin",
   },
+  {
+    moduleId: "product_review",
+    icon: "★",
+    iconBgClass: "bg-brand-500",
+    title: "Ürün İncelemesi",
+    desc: "Ürün URL'sini ekleyerek inceleme videosu oluşturun.",
+    cta: "Yeni İnceleme Oluştur",
+    settingKey: "wizard.product_review.entry_mode",
+    testId: "content-entry-product-review",
+  },
 ];
 
 export function UserContentEntryPage() {
@@ -42,10 +53,12 @@ export function UserContentEntryPage() {
 
   const { data: svEntryMode } = useEffectiveSetting("wizard.standard_video.entry_mode");
   const { data: nbEntryMode } = useEffectiveSetting("wizard.news_bulletin.entry_mode");
+  const { data: prEntryMode } = useEffectiveSetting("wizard.product_review.entry_mode");
 
   const entryModeMap: Record<string, string> = {
     standard_video: (svEntryMode?.effective_value ?? "wizard") as string,
     news_bulletin:  (nbEntryMode?.effective_value ?? "wizard") as string,
+    product_review: (prEntryMode?.effective_value ?? "wizard") as string,
   };
 
   const visibleTypes = CONTENT_TYPES.filter(

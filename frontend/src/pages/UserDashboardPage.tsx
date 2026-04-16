@@ -89,6 +89,12 @@ function LegacyUserDashboardPage() {
                 icon={"\u2139"}
                 onClick={() => navigate("/user/create/bulletin")}
               />
+              <QuickCreateCard
+                label="Ürün İncelemesi"
+                description="URL ekle, otomatik inceleme üret"
+                icon={"\u2605"}
+                onClick={() => navigate("/user/create/product-review")}
+              />
             </div>
           </SectionShell>
 

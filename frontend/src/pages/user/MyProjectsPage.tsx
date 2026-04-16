@@ -29,6 +29,7 @@ const MODULE_TYPES = [
   { value: "", label: "Tüm Modüller" },
   { value: "standard_video", label: "Standart Video" },
   { value: "news_bulletin", label: "Haber Bülteni" },
+  { value: "product_review", label: "Ürün İncelemesi" },
 ];
 
 const CONTENT_STATUSES = [

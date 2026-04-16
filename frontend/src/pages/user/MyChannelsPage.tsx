@@ -29,6 +29,28 @@ import { EmptyState } from "../../components/design-system/EmptyState";
 import { SkeletonTable } from "../../components/design-system/Skeleton";
 import { cn } from "../../lib/cn";
 
+// PHASE AE: honest partial state labels for URL-only onboarding.
+// `partial` = channel row exists but metadata fetch incomplete; user should
+// know so they can reimport or edit manually instead of assuming success.
+const IMPORT_STATUS_BADGE: Record<string, { label: string; className: string }> = {
+  pending: {
+    label: "Meta veri bekleniyor",
+    className: "bg-neutral-50 text-neutral-600 border-neutral-200",
+  },
+  success: {
+    label: "Otomatik yuklendi",
+    className: "bg-success-50 text-success-700 border-success-200",
+  },
+  partial: {
+    label: "Kismi yuklendi — duzenleyin",
+    className: "bg-warning-50 text-warning-800 border-warning-200",
+  },
+  failed: {
+    label: "Yukleme basarisiz — yeniden deneyin",
+    className: "bg-error-50 text-error-700 border-error-200",
+  },
+};
+
 export function MyChannelsPage() {
   const Override = useSurfacePageOverride("user.channels.list");
   if (Override) return <Override />;
@@ -58,7 +80,10 @@ function LegacyMyChannelsPage() {
   }
 
   const [showCreate, setShowCreate] = useState(false);
+  // PHASE AE: URL-only mode is the default; advanced mode is hidden behind a
+  // disclosure link to keep the primary flow one-decision simple.
   const [createMode, setCreateMode] = useState<"url" | "advanced">("url");
+  const [showAdvancedToggle, setShowAdvancedToggle] = useState(false);
 
   // URL-only form state
   const [sourceUrl, setSourceUrl] = useState("");
@@ -126,32 +151,49 @@ function LegacyMyChannelsPage() {
       }
       testId="my-channels"
     >
-      {/* Create modal/form — PHASE X: URL-only + advanced toggle */}
+      {/* Create modal/form — PHASE AE: URL-only is the primary flow, advanced
+          is a disclosure link to keep the common path clean. */}
       {showCreate && (
         <SectionShell title="Yeni Kanal" testId="create-channel-form">
-          <div className="flex gap-2 mb-4">
-            <ActionButton
-              type="button"
-              variant={createMode === "url" ? "primary" : "ghost"}
-              onClick={() => {
-                setCreateMode("url");
-                setCreateError(null);
-              }}
-              data-testid="create-mode-url"
-            >
-              URL ile
-            </ActionButton>
-            <ActionButton
-              type="button"
-              variant={createMode === "advanced" ? "primary" : "ghost"}
-              onClick={() => {
-                setCreateMode("advanced");
-                setCreateError(null);
-              }}
-              data-testid="create-mode-advanced"
-            >
-              Gelismis
-            </ActionButton>
+          <div className="mb-4 flex items-center justify-between gap-3 flex-wrap">
+            <p className="m-0 text-xs text-neutral-500">
+              Kanal URL'sini yapistirin — sistem platform, baslik ve avatar'i otomatik ceker.
+            </p>
+            {showAdvancedToggle || createMode === "advanced" ? (
+              <div className="flex gap-2">
+                <ActionButton
+                  type="button"
+                  variant={createMode === "url" ? "primary" : "ghost"}
+                  onClick={() => {
+                    setCreateMode("url");
+                    setCreateError(null);
+                  }}
+                  data-testid="create-mode-url"
+                >
+                  URL ile
+                </ActionButton>
+                <ActionButton
+                  type="button"
+                  variant={createMode === "advanced" ? "primary" : "ghost"}
+                  onClick={() => {
+                    setCreateMode("advanced");
+                    setCreateError(null);
+                  }}
+                  data-testid="create-mode-advanced"
+                >
+                  Gelismis
+                </ActionButton>
+              </div>
+            ) : (
+              <button
+                type="button"
+                className="text-xs text-neutral-500 hover:text-brand-600 underline bg-transparent border-none p-0 cursor-pointer"
+                onClick={() => setShowAdvancedToggle(true)}
+                data-testid="create-mode-show-advanced"
+              >
+                URL yok, elle girmek istiyorum
+              </button>
+            )}
           </div>
 
           {createMode === "url" ? (
@@ -302,61 +344,99 @@ function LegacyMyChannelsPage() {
           />
         ) : (
           <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4 p-4">
-            {(channels ?? []).map((ch) => (
-              <div
-                key={ch.id}
-                className={cn(
-                  "border border-border-subtle rounded-lg p-5 bg-surface-card",
-                  "hover:border-brand-400 hover:shadow-md cursor-pointer transition-all duration-fast",
-                )}
-                onClick={() => navigate(`/user/channels/${ch.id}`)}
-              >
-                <div className="flex items-center justify-between mb-3 gap-2">
-                  <h3 className="m-0 text-base font-semibold text-neutral-800 truncate">
-                    {ch.profile_name}
-                  </h3>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <StatusBadge status={ch.status} size="sm" />
-                    {ch.status !== "archived" && (
-                      <button
-                        type="button"
-                        onClick={(e) => handleDelete(e, ch.id, ch.profile_name)}
-                        disabled={deleteMutation.isPending}
-                        className={cn(
-                          "px-2 py-1 text-xs rounded-sm border",
-                          deleteMutation.isPending
-                            ? "bg-neutral-100 text-neutral-400 border-neutral-200 cursor-not-allowed"
-                            : "bg-white text-error border-error/40 hover:bg-error-light cursor-pointer",
-                        )}
-                        data-testid="channel-card-delete"
-                        aria-label={`${ch.profile_name} kanalini sil`}
-                      >
-                        Sil
-                      </button>
-                    )}
+            {(channels ?? []).map((ch) => {
+              const importStatus = ch.import_status ?? null;
+              const importBadge = importStatus
+                ? IMPORT_STATUS_BADGE[importStatus] ?? null
+                : null;
+              return (
+                <div
+                  key={ch.id}
+                  className={cn(
+                    "border border-border-subtle rounded-lg p-5 bg-surface-card",
+                    "hover:border-brand-400 hover:shadow-md cursor-pointer transition-all duration-fast",
+                  )}
+                  onClick={() => navigate(`/user/channels/${ch.id}`)}
+                  data-testid={`channel-card-${ch.id}`}
+                >
+                  <div className="flex items-center justify-between mb-3 gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      {ch.avatar_url ? (
+                        <img
+                          src={ch.avatar_url}
+                          alt=""
+                          className="w-8 h-8 rounded-full border border-border-subtle shrink-0 object-cover"
+                        />
+                      ) : null}
+                      <h3 className="m-0 text-base font-semibold text-neutral-800 truncate">
+                        {ch.title || ch.profile_name}
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <StatusBadge status={ch.status} size="sm" />
+                      {ch.status !== "archived" && (
+                        <button
+                          type="button"
+                          onClick={(e) => handleDelete(e, ch.id, ch.profile_name)}
+                          disabled={deleteMutation.isPending}
+                          className={cn(
+                            "px-2 py-1 text-xs rounded-sm border",
+                            deleteMutation.isPending
+                              ? "bg-neutral-100 text-neutral-400 border-neutral-200 cursor-not-allowed"
+                              : "bg-white text-error border-error/40 hover:bg-error-light cursor-pointer",
+                          )}
+                          data-testid="channel-card-delete"
+                          aria-label={`${ch.profile_name} kanalini sil`}
+                        >
+                          Sil
+                        </button>
+                      )}
+                    </div>
                   </div>
-                </div>
-                <div className="space-y-1 text-sm text-neutral-500">
-                  <p className="m-0">
-                    <span className="text-neutral-600 font-medium">Slug:</span>{" "}
-                    {ch.channel_slug}
-                  </p>
-                  <p className="m-0">
-                    <span className="text-neutral-600 font-medium">Dil:</span>{" "}
-                    {ch.default_language}
-                  </p>
-                  {ch.profile_type && (
-                    <p className="m-0">
-                      <span className="text-neutral-600 font-medium">Tip:</span>{" "}
-                      {ch.profile_type}
+
+                  {/* PHASE AE: honest import state — user sees that auto-fetch
+                      was partial and can click through to reimport. */}
+                  {importBadge && (
+                    <p
+                      className={cn(
+                        "m-0 mb-2 inline-block text-[11px] px-1.5 py-0.5 rounded border",
+                        importBadge.className,
+                      )}
+                      data-testid={`channel-card-import-status-${ch.id}`}
+                      title={ch.import_error ?? undefined}
+                    >
+                      {importBadge.label}
                     </p>
                   )}
+
+                  <div className="space-y-1 text-sm text-neutral-500">
+                    {ch.platform && (
+                      <p className="m-0">
+                        <span className="text-neutral-600 font-medium">Platform:</span>{" "}
+                        {ch.platform}
+                      </p>
+                    )}
+                    {ch.handle && (
+                      <p className="m-0">
+                        <span className="text-neutral-600 font-medium">Kullanici:</span>{" "}
+                        {ch.handle}
+                      </p>
+                    )}
+                    <p className="m-0">
+                      <span className="text-neutral-600 font-medium">Slug:</span>{" "}
+                      {ch.channel_slug}
+                    </p>
+                    <p className="m-0">
+                      <span className="text-neutral-600 font-medium">Dil:</span>{" "}
+                      {ch.default_language}
+                    </p>
+                  </div>
+                  <p className="m-0 mt-3 text-xs text-neutral-400">
+                    Olusturulma: {new Date(ch.created_at).toLocaleDateString("tr-TR")}
+                  </p>
                 </div>
-                <p className="m-0 mt-3 text-xs text-neutral-400">
-                  Olusturulma: {new Date(ch.created_at).toLocaleDateString("tr-TR")}
-                </p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </SectionShell>
