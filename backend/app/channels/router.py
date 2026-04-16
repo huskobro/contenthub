@@ -114,7 +114,7 @@ async def create_channel_profile_from_url(
         msg = str(exc)
         if "zaten eklenmis" in msg:
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=msg)
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=msg)
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=msg)
 
 
 # ---------------------------------------------------------------------------

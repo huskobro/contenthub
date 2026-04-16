@@ -15,6 +15,7 @@ Tum testler subprocess cagirmaz; deterministic executor + artifact olusturma.
 from __future__ import annotations
 
 import json
+from pathlib import Path
 import uuid
 from typing import Any
 
@@ -171,7 +172,7 @@ async def test_single_template_script_has_expected_scenes(tmp_path):
     assert res["template_type"] == "single"
     assert res["scenes_count"] == 8
 
-    data = json.loads(open(res["artifact_path"]).read())
+    data = json.loads(Path(res["artifact_path"]).read_text())
     keys = [s["scene_key"] for s in data["scenes"]]
     assert keys == [
         "intro_hook", "hero_card", "price_reveal", "feature_callout",
@@ -206,7 +207,7 @@ async def test_comparison_template_script_uses_comparison_row_scenes(tmp_path):
     res = await ProductReviewScriptStepExecutor().execute(job, _FakeStep())  # type: ignore[arg-type]
     assert res["status"] == "ok"
     assert res["template_type"] == "comparison"
-    data = json.loads(open(res["artifact_path"]).read())
+    data = json.loads(Path(res["artifact_path"]).read_text())
     keys = [s["scene_key"] for s in data["scenes"]]
     # comparison planinda comparison_row + verdict_card zorunlu
     assert "comparison_row" in keys
@@ -239,7 +240,7 @@ async def test_alternatives_template_script_has_two_comparison_rows(tmp_path):
     res = await ProductReviewScriptStepExecutor().execute(job, _FakeStep())  # type: ignore[arg-type]
     assert res["status"] == "ok"
     assert res["template_type"] == "alternatives"
-    data = json.loads(open(res["artifact_path"]).read())
+    data = json.loads(Path(res["artifact_path"]).read_text())
     keys = [s["scene_key"] for s in data["scenes"]]
     assert keys.count("comparison_row") == 2, keys
     # Ilk comparison_row -> alt1, ikinci -> alt2
@@ -327,7 +328,7 @@ async def test_comparison_metadata_title_contains_vs(tmp_path):
     )
     res = await ProductReviewMetadataStepExecutor().execute(job, _FakeStep())  # type: ignore[arg-type]
     assert res["status"] == "ok"
-    data = json.loads(open(res["artifact_path"]).read())
+    data = json.loads(Path(res["artifact_path"]).read_text())
     assert "vs" in data["title"].lower()
     assert "iphone 15 pro" in data["title"].lower()
     assert "samsung galaxy s24 ultra" in data["title"].lower()
@@ -358,7 +359,7 @@ async def test_alternatives_metadata_tags_include_all_brands(tmp_path):
     )
     res = await ProductReviewMetadataStepExecutor().execute(job, _FakeStep())  # type: ignore[arg-type]
     assert res["status"] == "ok"
-    data = json.loads(open(res["artifact_path"]).read())
+    data = json.loads(Path(res["artifact_path"]).read_text())
     # Title "alternatif" icermeli
     assert (
         "alternatif" in data["title"].lower()
@@ -408,7 +409,7 @@ async def test_composition_contains_products_and_blueprint(tmp_path):
     assert comp_res["composition_id"] == "ProductReview"
     assert comp_res["template_type"] == "comparison"
 
-    data = json.loads(open(comp_res["artifact_path"]).read())
+    data = json.loads(Path(comp_res["artifact_path"]).read_text())
     props = data["props"]
     assert props["template_type"] == "comparison"
     assert props["primary_product_id"] == "P-A"

@@ -51,6 +51,7 @@ class ChannelMetadata:
 
 _HTML_CHUNK_LIMIT = 512 * 1024  # 512 KB yeterli — meta tag'ler head'de
 _REQ_TIMEOUT = 5.0  # saniye
+_MAX_REDIRECTS = 5  # YouTube genelde 1-2; 5 sonrasi suphe
 
 
 _RE_OG_TITLE = re.compile(
@@ -80,6 +81,18 @@ def _strip_youtube_title_suffix(title: str) -> str:
     return re.sub(r"\s*-\s*YouTube\s*$", "", title).strip()
 
 
+# Jenerik / anlamsiz title'lar — consent-wall, login screen vb.
+# Bu durumda title None kabul edilir; partial state dogal olarak tetiklenir.
+_MEANINGLESS_TITLES = {"youtube", "google", "error", "404"}
+
+
+def _is_meaningful_title(title: str) -> bool:
+    if not title:
+        return False
+    t = title.strip().lower()
+    return t not in _MEANINGLESS_TITLES
+
+
 async def _fetch_html(url: str) -> Optional[str]:
     if httpx is None:
         return None
@@ -87,17 +100,32 @@ async def _fetch_html(url: str) -> Optional[str]:
         async with httpx.AsyncClient(
             timeout=_REQ_TIMEOUT,
             follow_redirects=True,
+            max_redirects=_MAX_REDIRECTS,
             headers={
                 "User-Agent": "ContentHub/1.0 (+channel metadata fetch)",
                 "Accept-Language": "tr-TR,en;q=0.8",
             },
         ) as client:
-            resp = await client.get(url)
-            if resp.status_code >= 400:
-                logger.info("metadata_fetch: %s -> HTTP %s", url, resp.status_code)
-                return None
-            return resp.text[:_HTML_CHUNK_LIMIT]
-    except Exception as exc:  # network, timeout, DNS
+            # Streaming read: body 512 KB'i gectiginde keser — DoS'a karsi.
+            async with client.stream("GET", url) as resp:
+                if resp.status_code >= 400:
+                    logger.info(
+                        "metadata_fetch: %s -> HTTP %s", url, resp.status_code
+                    )
+                    return None
+                collected = b""
+                async for chunk in resp.aiter_bytes():
+                    collected += chunk
+                    if len(collected) >= _HTML_CHUNK_LIMIT:
+                        collected = collected[:_HTML_CHUNK_LIMIT]
+                        break
+                # Declared encoding or utf-8 fallback
+                encoding = resp.encoding or "utf-8"
+                try:
+                    return collected.decode(encoding, errors="replace")
+                except LookupError:
+                    return collected.decode("utf-8", errors="replace")
+    except Exception as exc:  # network, timeout, DNS, too-many-redirects
         logger.info("metadata_fetch: %s -> %s", url, exc.__class__.__name__)
         return None
 
@@ -107,9 +135,11 @@ def _parse_html_meta(html: str) -> ChannelMetadata:
     meta = ChannelMetadata()
     m = _RE_OG_TITLE.search(html)
     if m:
-        meta.title = _strip_youtube_title_suffix(m.group(1).strip())
+        candidate = _strip_youtube_title_suffix(m.group(1).strip())
+        meta.title = candidate if _is_meaningful_title(candidate) else None
     elif (m := _RE_HTML_TITLE.search(html)):
-        meta.title = _strip_youtube_title_suffix(m.group(1).strip())
+        candidate = _strip_youtube_title_suffix(m.group(1).strip())
+        meta.title = candidate if _is_meaningful_title(candidate) else None
 
     m = _RE_OG_IMAGE.search(html)
     if m:

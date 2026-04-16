@@ -9,6 +9,7 @@ admin header ile calisir.
 from __future__ import annotations
 
 import json
+from pathlib import Path
 import os
 import tempfile
 import uuid
@@ -286,7 +287,7 @@ async def test_executor_chain_script_metadata_visuals_composition(tmp_path):
     assert script_res["status"] == "ok"
     assert script_res["scenes_count"] == 8
 
-    script_json = json.loads(open(script_res["artifact_path"]).read())
+    script_json = json.loads(Path(script_res["artifact_path"]).read_text())
     assert script_json["template_type"] == "single"
     assert script_json["language"] == "tr"
     assert len(script_json["scenes"]) == 8
@@ -303,7 +304,7 @@ async def test_executor_chain_script_metadata_visuals_composition(tmp_path):
     # 2. Metadata
     meta_res = await ProductReviewMetadataStepExecutor().execute(job, step)  # type: ignore[arg-type]
     assert meta_res["status"] == "ok"
-    meta_json = json.loads(open(meta_res["artifact_path"]).read())
+    meta_json = json.loads(Path(meta_res["artifact_path"]).read_text())
     # Title + disclosure + disclaimer zorunlu
     assert "Inceleme" in meta_json["title"] or "Review" in meta_json["title"]
     assert "Test disclosure affiliate metni" in meta_json["description"]
@@ -316,7 +317,7 @@ async def test_executor_chain_script_metadata_visuals_composition(tmp_path):
     # 3. Visuals
     vis_res = await ProductReviewVisualsStepExecutor().execute(job, step)  # type: ignore[arg-type]
     assert vis_res["status"] == "ok"
-    vis_json = json.loads(open(vis_res["artifact_path"]).read())
+    vis_json = json.loads(Path(vis_res["artifact_path"]).read_text())
     assert vis_json["primary_image_url"] == "https://cdn.example.com/iphone15.jpg"
 
     # 4. Composition
@@ -328,7 +329,7 @@ async def test_executor_chain_script_metadata_visuals_composition(tmp_path):
     assert comp_res["fps"] == 30
     assert comp_res["duration_frames"] == 60 * 30
 
-    comp_json = json.loads(open(comp_res["artifact_path"]).read())
+    comp_json = json.loads(Path(comp_res["artifact_path"]).read_text())
     assert comp_json["composition_id"] == "ProductReview"
     assert comp_json["props"]["visuals"]["primary_image_url"] == (
         "https://cdn.example.com/iphone15.jpg"
@@ -404,7 +405,7 @@ async def test_metadata_injects_legal_from_settings_defaults(tmp_path):
     step = _FakeStep()
     res = await ProductReviewMetadataStepExecutor().execute(job, step)  # type: ignore[arg-type]
     assert res["status"] == "ok"
-    meta = json.loads(open(res["artifact_path"]).read())
+    meta = json.loads(Path(res["artifact_path"]).read_text())
     # Default TR disclosure metni kaldirilamaz — kontrolu:
     assert "affiliate" in meta["description"].lower()
     assert meta["legal"]["disclosure_applied"] is True

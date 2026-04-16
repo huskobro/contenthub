@@ -136,7 +136,9 @@ def _enforce_protection(block: PromptBlock, changes: dict) -> None:
 
     new_status = changes.get("status")
     if new_status and new_status in ("disabled", "deleted"):
+        # PHASE Z-A: HTTP_422_UNPROCESSABLE_ENTITY deprecated → _CONTENT.
+        # Semantik aynı (422) — sadece alias adı değişti.
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail=f"'{block.kind}' turundeki bloklar devre disi birakilamaz veya silinemez.",
         )

@@ -236,7 +236,7 @@ async def review_action(
     """
     if body.decision == "reject" and not body.rejection_reason:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail="Reddetme kararı için rejection_reason zorunludur.",
         )
     try:
@@ -620,12 +620,12 @@ async def reset_review_for_artifact_change(
 def _validate_bulk_request(record_ids: list[str]) -> None:
     if not record_ids:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail="record_ids boş olamaz.",
         )
     if len(record_ids) > bulk_service.MAX_BULK_RECORDS:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail=(
                 f"Bulk istek limiti aşıldı: {len(record_ids)} > "
                 f"{bulk_service.MAX_BULK_RECORDS}."
@@ -678,7 +678,7 @@ async def bulk_reject(
     _validate_bulk_request(body.record_ids)
     if not body.rejection_reason or not body.rejection_reason.strip():
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail="Bulk reddetme için rejection_reason zorunludur.",
         )
     effective_ids = await _resolve_bulk_record_ids(ctx, body.record_ids)
