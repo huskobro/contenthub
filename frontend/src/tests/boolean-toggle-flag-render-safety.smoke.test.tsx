@@ -157,8 +157,14 @@ describe("No raw boolean interpolation in detail panels", () => {
       for (let i = 0; i < lines.length; i++) {
         const line = lines[i].trim();
         if (line.startsWith("//") || line.startsWith("import")) continue;
-        // Raw boolean interpolation like {data.visible} without BoolBadge
-        if (/\{data\.(user_override_allowed|visible_to_user|visible_in_wizard|read_only_for_user|visible|read_only|wizard_visible)\}/.test(line)) {
+        // Raw boolean interpolation like {data.visible} without BoolBadge.
+        // Note: `value={data.foo}` / `checked={data.foo}` style attribute
+        // passes to toggle components (GovernanceToggle, BoolBadge-bearing
+        // rows) are intentional prop bindings, not raw text renders. The
+        // regex below therefore requires the `{data.<boolKey>}` form to
+        // appear WITHOUT an immediately preceding `=` (i.e. as text
+        // content, not as a JSX attribute value).
+        if (/[^=]\{data\.(user_override_allowed|visible_to_user|visible_in_wizard|read_only_for_user|visible|read_only|wizard_visible)\}/.test(line)) {
           // Should be wrapped in BoolBadge, not raw
           if (!line.includes("BoolBadge")) {
             throw new Error(

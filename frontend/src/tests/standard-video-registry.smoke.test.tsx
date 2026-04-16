@@ -108,9 +108,12 @@ describe("Standard Video Registry smoke tests", () => {
   });
 
   it("displays video list after data loads", async () => {
+    // StandardVideosTable renders `v.title || v.topic`, so sv1 shows its
+    // title ("Test Video 1") instead of topic ("Yapay Zeka"). sv2 has no
+    // title so it falls through to topic.
     renderRegistry(mockFetch(MOCK_VIDEOS));
     await waitFor(() => {
-      expect(screen.getByText("Yapay Zeka")).toBeDefined();
+      expect(screen.getByText("Test Video 1")).toBeDefined();
       expect(screen.getByText("İklim Değişikliği")).toBeDefined();
     });
   });

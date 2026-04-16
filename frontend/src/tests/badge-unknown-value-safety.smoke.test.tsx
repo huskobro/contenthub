@@ -21,10 +21,11 @@ function walkBadgeFiles(dir: string): string[] {
 
 const allBadgeFiles = walkBadgeFiles("components");
 
-// Filter to only badge files that use styles/STYLES map lookup pattern
+// Filter to only badge files that use styles/STYLES map lookup pattern.
+// Match suffix-style map names too (e.g. STATE_STYLES, LEVEL_STYLES).
 const mapBadgeFiles = allBadgeFiles.filter((file) => {
   const src = read(file);
-  return /(?:styles|STYLES)\[/.test(src);
+  return /[A-Za-z_]*(?:styles|STYLES)\[/.test(src);
 });
 
 // ─── Style lookup fallback ─────────────────────────────────────
@@ -33,10 +34,13 @@ describe("Badge style lookup has fallback for unknown values", () => {
   for (const file of mapBadgeFiles) {
     it(`${path.basename(file)} has style lookup fallback`, () => {
       const src = read(file);
-      // Accept: ?? { bg: ... } (inline neutral), ?? STYLES["..."] (named key), or ?? "tw-class" (Tailwind string)
+      // Accept: ?? { bg: ... } (inline neutral), ?? *_STYLES[".."] / STYLES[..] / styles[..]
+      // (named key), or ?? "tw-class" (Tailwind string). Widen the regex so
+      // suffix-style map names (STATE_STYLES, LEVEL_STYLES) are accepted.
       const hasStyleFallback =
         src.includes('?? { bg: colors.neutral[50]') ||
-        /\?\?\s*(?:styles|STYLES)\[/.test(src) ||
+        /\?\?\s*[A-Za-z_]*(?:styles|STYLES)\[?/.test(src) ||
+        /\?\?\s*[A-Za-z_]*(?:styles|STYLES)\./.test(src) ||
         /\?\?\s*"/.test(src);
       expect(
         hasStyleFallback,

@@ -60,10 +60,29 @@ const MOCK_FAILED_ACTIONS = {
 
 function renderJobDetail(job: JobResponse, actions: unknown) {
   window.fetch = vi.fn().mockImplementation((url: string) => {
-    if (url.includes("/allowed-actions")) {
+    const urlStr = String(url);
+    if (urlStr.includes("/allowed-actions")) {
       return Promise.resolve({
         ok: true, status: 200,
         json: () => Promise.resolve(actions),
+      });
+    }
+    // JobDetailBody now fans out to several auxiliary endpoints whose hooks
+    // expect arrays (prompt traces, decision trail, publish records). Any
+    // of these returning the raw job shape by accident crashes the panel
+    // (e.g. JobPromptTracePanel reads `runs[0].id`). Route known list
+    // endpoints to `[]` and everything else to the job payload.
+    if (
+      urlStr.includes("/prompt-assembly/traces/job/") ||
+      urlStr.includes("/decision-trail") ||
+      urlStr.includes("/publish-records") ||
+      urlStr.includes("/previews") ||
+      urlStr.includes("/notifications") ||
+      urlStr.includes("/questions")
+    ) {
+      return Promise.resolve({
+        ok: true, status: 200,
+        json: () => Promise.resolve([]),
       });
     }
     return Promise.resolve({

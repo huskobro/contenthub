@@ -75,9 +75,10 @@ describe("Audit Log Page smoke tests", () => {
 
   it("shows loading state", () => {
     renderAuditPage(vi.fn().mockReturnValue(new Promise(() => {})));
-    // Loading state now shows skeleton shimmer instead of text
-    const skeletons = document.querySelectorAll(".skeleton-shimmer");
-    expect(skeletons.length).toBeGreaterThan(0);
+    // AuditLogPage uses plain "Yükleniyor..." text, not skeleton shimmer.
+    // (The skeleton rollout was applied elsewhere; this page kept the
+    // simpler indicator.)
+    expect(screen.getByText("Yükleniyor...")).toBeDefined();
   });
 
   it("renders audit log table with records", async () => {

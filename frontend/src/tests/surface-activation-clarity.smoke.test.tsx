@@ -200,7 +200,14 @@ describe("Faz 4D — scope mismatch positive guidance (Task C)", () => {
   // describeIneligibleReason("scope-mismatch", ...) helper still exists for
   // backward compatibility (callers may build their own labels), but the
   // picker UI never surfaces it. Verify absence.
-  it("admin panel does not render scope-mismatch card for canvas", () => {
+  //
+  // Faz 5: canvas was promoted from user-scope to `both` scope, so it is
+  // now a valid choice on the admin panel as well. The "admin panel hides
+  // canvas" premise no longer holds — canvas renders a fully eligible card
+  // in both panels. The scope-filter invariant itself remains covered via
+  // buildScopedSurfacePickerEntries unit tests for admin-only or user-only
+  // manifests (e.g. synthetic scope: "user" / "admin" fixtures).
+  it.skip("admin panel does not render scope-mismatch card for canvas", () => {
     render(<SurfacePickerSection scope="admin" />);
     expect(screen.queryByTestId("surface-picker-card-canvas")).toBeNull();
     expect(screen.queryByTestId("surface-picker-ineligible-canvas")).toBeNull();

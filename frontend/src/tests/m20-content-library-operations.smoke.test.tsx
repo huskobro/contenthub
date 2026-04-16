@@ -53,11 +53,19 @@ const MOCK_UNIFIED_ITEMS = {
 
 function renderLibrary() {
   window.fetch = vi.fn((url: string) => {
-    let data: unknown = {};
-    if (typeof url === "string" && url.includes("content-library")) {
+    // AdminLayout fans out to several list endpoints expecting arrays;
+    // returning `{}` (the previous default) crashed downstream hooks
+    // that iterate over query.data. Default to `[]` instead.
+    let data: unknown = [];
+    const urlStr = String(url);
+    if (urlStr.includes("content-library")) {
       data = MOCK_UNIFIED_ITEMS;
-    } else if (typeof url === "string" && url.includes("clone")) {
+    } else if (urlStr.includes("clone")) {
       data = { id: "cloned-id" };
+    } else if (urlStr.includes("/onboarding")) {
+      data = { onboarding_required: false };
+    } else if (urlStr.includes("/visibility-rules/resolve")) {
+      data = { visible: true, read_only: false, wizard_visible: false };
     }
     return Promise.resolve({
       ok: true,

@@ -155,7 +155,7 @@ describe("AdminLayout sidebar visibility", () => {
     });
 
     // "Isler" (Jobs) has no visibility guard, so it should always be visible
-    expect(screen.getByText("Isler")).toBeDefined();
+    expect(screen.getByText("İşler")).toBeDefined();
   });
 
   it("shows nav item when visibility resolve returns visible=true", async () => {
@@ -186,10 +186,10 @@ describe("AdminLayout sidebar visibility", () => {
       expect(screen.getByText("Ayarlar")).toBeDefined();
       // "Kaynaklar" (Sources) should be visible
       expect(screen.getByText("Kaynaklar")).toBeDefined();
-      // "Sablonlar" (Templates) should be visible
-      expect(screen.getByText("Sablonlar")).toBeDefined();
+      // "Şablonlar" (Templates) should be visible
+      expect(screen.getByText("Şablonlar")).toBeDefined();
       // "Isler" (Jobs) — no guard — should be visible
-      expect(screen.getByText("Isler")).toBeDefined();
+      expect(screen.getByText("İşler")).toBeDefined();
     });
   });
 
@@ -211,8 +211,8 @@ describe("AdminLayout sidebar visibility", () => {
 
     // Unguarded items always visible; guarded items default to visible on error
     await waitFor(() => {
-      expect(screen.getByText("Isler")).toBeDefined();
-      expect(screen.getByText("Genel Bakis")).toBeDefined();
+      expect(screen.getByText("İşler")).toBeDefined();
+      expect(screen.getByText("Genel Bakış")).toBeDefined();
     });
   });
 });

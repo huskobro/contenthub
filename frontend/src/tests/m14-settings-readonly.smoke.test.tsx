@@ -210,7 +210,13 @@ describe("M14 Audit: CredentialsPanel read_only enforcement", () => {
     });
   });
 
-  it("YouTube connect button is disabled when readOnly=true", async () => {
+  it.skip("YouTube connect button is disabled when readOnly=true", async () => {
+    // YouTube OAuth flow was moved out of CredentialsPanel into
+    // per-channel settings (/user/channels/:id → "YouTube'a Bağlan").
+    // CredentialsPanel now only surfaces YouTubeChannelBrandingSection,
+    // so the global "YouTube Baglantisi Baslat" button no longer exists
+    // here. ReadOnly enforcement for the per-channel flow is covered by
+    // channel-specific tests.
     renderInReadOnlyGuard(<CredentialsPanel />, true);
 
     await waitFor(() => {
@@ -220,7 +226,8 @@ describe("M14 Audit: CredentialsPanel read_only enforcement", () => {
     });
   });
 
-  it("YouTube connect button is enabled when readOnly=false", async () => {
+  it.skip("YouTube connect button is enabled when readOnly=false", async () => {
+    // See skip note above — button ownership moved to per-channel flow.
     renderInReadOnlyGuard(<CredentialsPanel />, false);
 
     await waitFor(() => {

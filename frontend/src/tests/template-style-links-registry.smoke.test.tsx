@@ -70,9 +70,11 @@ describe("Template Style Links Registry smoke tests", () => {
   });
 
   it("displays link list after data loads", async () => {
+    // `primary` appears in both filter dropdown and link_role cell, so
+    // assert on the unique truncated template_id cell instead.
     renderPage(mockFetch([MOCK_LINK]));
     await waitFor(() => {
-      expect(screen.getByText("primary")).toBeDefined();
+      expect(screen.getByText(/tmpl-abc/)).toBeDefined();
     });
   });
 
@@ -110,8 +112,9 @@ describe("Template Style Links Registry smoke tests", () => {
       </QueryClientProvider>
     );
     const user = userEvent.setup();
-    await waitFor(() => expect(screen.getByText("primary")).toBeDefined());
-    await user.click(screen.getByText("primary"));
+    // `primary` appears twice (dropdown + cell); click unique template_id cell.
+    await waitFor(() => expect(screen.getByText(/tmpl-abc/)).toBeDefined());
+    await user.click(screen.getByText(/tmpl-abc/));
     await waitFor(() => {
       expect(screen.getByTestId("tsl-detail-heading")).toBeDefined();
     });

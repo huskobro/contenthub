@@ -132,15 +132,19 @@ describe("YouTube Publish Workflow Pack (Phase 287-292)", () => {
     });
 
     it("user publish page shows videos card with publish trigger desc", () => {
+      // Copy revised: standard videos card now describes the content
+      // entry path into publish rather than naming YouTube directly.
       renderUser("/user/publish");
       const card = screen.getByTestId("publish-entry-standard-videos");
-      expect(card.textContent).toContain("YouTube yayini tetiklenebilir");
+      expect(card.textContent).toContain("Yeni bir standart video");
     });
 
     it("user publish page shows news card with publish start desc", () => {
+      // Copy revised: news bulletins card now references managing
+      // existing draft/pending/published records.
       renderUser("/user/publish");
       const card = screen.getByTestId("publish-entry-news-bulletins");
-      expect(card.textContent).toContain("yayin sureci baslatilabilir");
+      expect(card.textContent).toContain("Mevcut yayin kayitlarinizi");
     });
 
     it("user publish page shows first-use note", () => {
@@ -178,9 +182,10 @@ describe("YouTube Publish Workflow Pack (Phase 287-292)", () => {
     });
 
     it("admin overview jobs quick link has operations context", () => {
+      // Copy uses actual Turkish diacritics: "takip edin" (not "takip et").
       renderAdmin("/admin");
       const card = screen.getByTestId("quick-link-jobs");
-      expect(card.textContent).toContain("takip et");
+      expect(card.textContent).toContain("takip edin");
     });
   });
 

@@ -170,13 +170,19 @@ describe("SurfacePickerSection — Faz 4C usability", () => {
   // admin+both scope surfaces. Scope-disallowed entries are dropped from
   // the list — not even rendered as informational ineligible cards.
 
-  it("admin panel does not list user-scope surfaces at all (atrium hidden)", () => {
+  it.skip("admin panel does not list user-scope surfaces at all (atrium hidden)", () => {
+    // Faz 5: atrium was promoted from user-scope to `both`, so it is now
+    // valid in both panels. The hard-filter assertion no longer applies.
+    // Scope filter logic itself remains tested via buildScopedSurfacePickerEntries
+    // unit tests for admin-only or user-only manifests.
     render(<SurfacePickerSection scope="admin" />);
     expect(screen.queryByTestId("surface-picker-card-atrium")).toBeNull();
     expect(screen.queryByTestId("surface-picker-ineligible-atrium")).toBeNull();
   });
 
-  it("user panel does not list admin-scope surfaces at all (bridge hidden)", () => {
+  it.skip("user panel does not list admin-scope surfaces at all (bridge hidden)", () => {
+    // Faz 5: bridge was promoted from admin-only to `both`, so it is now
+    // valid in both panels. See skip note above for atrium.
     render(<SurfacePickerSection scope="user" />);
     expect(screen.queryByTestId("surface-picker-card-bridge")).toBeNull();
     expect(screen.queryByTestId("surface-picker-ineligible-bridge")).toBeNull();

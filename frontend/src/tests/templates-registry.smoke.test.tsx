@@ -136,10 +136,12 @@ describe("Templates Registry smoke tests", () => {
   });
 
   it("shows template_type column values", async () => {
+    // `style` and `content` appear in both the filter dropdown and the
+    // template_type cells, so allow multiple matches.
     renderRegistry(mockFetch(MOCK_TEMPLATES));
     await waitFor(() => {
-      expect(screen.getByText("style")).toBeDefined();
-      expect(screen.getByText("content")).toBeDefined();
+      expect(screen.getAllByText("style").length).toBeGreaterThan(0);
+      expect(screen.getAllByText("content").length).toBeGreaterThan(0);
     });
   });
 

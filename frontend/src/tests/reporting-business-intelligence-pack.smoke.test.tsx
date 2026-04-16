@@ -260,7 +260,10 @@ describe("Phase 317 — Reporting end-to-end verification", () => {
     expect(screen.getByTestId("analytics-content-heading")).toBeDefined();
     expect(screen.getByTestId("analytics-content-subtitle")).toBeDefined();
     expect(screen.getByTestId("analytics-content-workflow-note")).toBeDefined();
-    expect(screen.getByTestId("content-window-selector")).toBeDefined();
+    // `content-window-selector` testid was retired when the analytics content
+    // page was simplified (time window is now inferred from route/filter
+    // context rather than a discrete picker). Remaining chain still exercised
+    // below via module-distribution.
     await waitFor(() => {
       expect(screen.getByTestId("analytics-module-distribution")).toBeDefined();
     });

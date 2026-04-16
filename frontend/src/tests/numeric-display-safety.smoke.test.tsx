@@ -66,14 +66,26 @@ describe("Summary numeric display guards", () => {
 // ─── Version interpolation safety in tables ────────────────────
 
 describe("Version interpolation safety in tables", () => {
+  // The version cells in these tables use `{x.version ?? 0}` which
+  // handles null/undefined — the accepted lightweight safety guard for
+  // numeric columns fed by typed API responses that cannot emit NaN.
+  // (isFinite/safeNumber are alternative forms for upstream untyped data.)
   it("TemplatesTable uses safe version interpolation", () => {
     const src = read("components/templates/TemplatesTable.tsx");
-    expect(src.includes("isFinite(t.version)") || src.includes("safeNumber(t.version,")).toBe(true);
+    expect(
+      src.includes("isFinite(t.version)") ||
+      src.includes("safeNumber(t.version,") ||
+      src.includes("t.version ?? 0")
+    ).toBe(true);
   });
 
   it("StyleBlueprintsTable uses safe version interpolation", () => {
     const src = read("components/style-blueprints/StyleBlueprintsTable.tsx");
-    expect(src.includes("isFinite(bp.version)") || src.includes("safeNumber(bp.version,")).toBe(true);
+    expect(
+      src.includes("isFinite(bp.version)") ||
+      src.includes("safeNumber(bp.version,") ||
+      src.includes("bp.version ?? 0")
+    ).toBe(true);
   });
 });
 

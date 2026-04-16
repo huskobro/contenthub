@@ -121,10 +121,12 @@ describe("Style Blueprints Registry smoke tests", () => {
   });
 
   it("shows module_scope column values", async () => {
+    // module_scope strings appear in both the filter dropdown and the
+    // row cell, so allow multiple matches per value.
     renderRegistry(mockFetch(MOCK_BLUEPRINTS));
     await waitFor(() => {
-      expect(screen.getByText("standard_video")).toBeDefined();
-      expect(screen.getByText("news_bulletin")).toBeDefined();
+      expect(screen.getAllByText("standard_video").length).toBeGreaterThan(0);
+      expect(screen.getAllByText("news_bulletin").length).toBeGreaterThan(0);
     });
   });
 
