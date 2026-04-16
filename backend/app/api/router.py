@@ -47,6 +47,7 @@ from app.calendar.router import router as calendar_router
 from app.auth.router import router as auth_router
 from app.notifications.router import router as notifications_router
 from app.tts.preview_router import router as tts_preview_router
+from app.previews.router import router as previews_router
 
 api_router = APIRouter()
 
@@ -75,6 +76,9 @@ api_router.include_router(providers_router)
 api_router.include_router(settings_router)
 api_router.include_router(visibility_router)
 api_router.include_router(jobs_router)
+# PHASE AA: preview artifact surface — ayni ownership kontratini kullanir,
+# parallel serve yolu kurmaz (indirme hala /jobs/{id}/artifacts/{path}).
+api_router.include_router(previews_router)
 api_router.include_router(standard_video_router)
 api_router.include_router(templates_router)
 api_router.include_router(style_blueprints_router)
