@@ -60,12 +60,39 @@ const MOCK_LINK = {
 };
 
 function mockFetch(handler: (url: string) => unknown) {
-  return vi.fn((url: string) =>
-    Promise.resolve({
+  // AdminLayout fans out to several secondary endpoints. Route them to
+  // safe defaults so handlers returning e.g. MOCK_TEMPLATE for an
+  // unrelated URL do not crash the notification category mapper, the
+  // modules list, etc. Pass-through the user-provided handler only for
+  // the primary endpoint under test.
+  return vi.fn((url: string) => {
+    const urlStr = String(url);
+    if (urlStr.includes("/notifications")) {
+      return Promise.resolve({ ok: true, json: () => Promise.resolve([]) });
+    }
+    if (urlStr.includes("/modules")) {
+      return Promise.resolve({ ok: true, json: () => Promise.resolve([]) });
+    }
+    if (urlStr.includes("/visibility-rules")) {
+      return Promise.resolve({ ok: true, json: () => Promise.resolve([]) });
+    }
+    if (urlStr.includes("/credentials")) {
+      return Promise.resolve({ ok: true, json: () => Promise.resolve([]) });
+    }
+    if (urlStr.includes("/users") && !urlStr.includes("/jobs")) {
+      return Promise.resolve({ ok: true, json: () => Promise.resolve([]) });
+    }
+    if (urlStr.includes("/onboarding")) {
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({ onboarding_required: false }),
+      });
+    }
+    return Promise.resolve({
       ok: true,
-      json: () => Promise.resolve(handler(url)),
-    })
-  ) as unknown as typeof window.fetch;
+      json: () => Promise.resolve(handler(urlStr)),
+    });
+  }) as unknown as typeof window.fetch;
 }
 
 function renderAt(path: string, state?: unknown) {
@@ -106,7 +133,12 @@ describe("Template/Style/Blueprint pack (Phase 282-286)", () => {
       window.fetch = mockFetch(() => []);
     });
 
-    it("admin overview shows templates quick link with workflow desc", () => {
+    it.skip("admin overview shows templates quick link with workflow desc", () => {
+      // The `quick-link-templates` tile was removed from AdminOverviewPage
+      // as part of the quick-link simplification (library/new-video/jobs/
+      // analytics/sources/settings remain — templates navigation is now
+      // reached via the sidebar link rather than an overview card).
+      // Intent preserved here; navigation coverage lives in sidebar tests.
       renderAt("/admin");
       const card = screen.getByTestId("quick-link-templates");
       expect(card).toBeDefined();
@@ -268,7 +300,9 @@ describe("Template/Style/Blueprint pack (Phase 282-286)", () => {
       window.fetch = mockFetch(() => []);
     });
 
-    it("admin overview templates quick link navigable", () => {
+    it.skip("admin overview templates quick link navigable", () => {
+      // See above — `quick-link-templates` tile has been retired from the
+      // admin overview. Sidebar / header link now owns templates navigation.
       renderAt("/admin");
       const card = screen.getByTestId("quick-link-templates");
       expect(card).toBeDefined();
