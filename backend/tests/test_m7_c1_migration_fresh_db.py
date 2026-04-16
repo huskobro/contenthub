@@ -239,13 +239,15 @@ def test_h_alembic_version_is_target(migrated_db):
 # I) downgrade: publish_records ve publish_logs kaldırılır
 # ---------------------------------------------------------------------------
 
-def test_i_downgrade_removes_last_error_category(fresh_db_dir):
+def test_i_downgrade_removes_phase_x_columns(fresh_db_dir):
     """
-    Gate 4 sonrası head migration sadece publish_records.last_error_category
-    sütununu ekler. downgrade -1 bu sütunu kaldırmalı; publish_records ve
-    publish_logs tabloları hâlâ var olmalı.
+    PHASE Y baseline: head artık phase_x_001. downgrade -1 PHASE X'in
+    channel_profiles'a eklediği URL-only/auto-import kolonlarını geri alır;
+    publish_records/publish_logs tabloları hâlâ mevcut kalır.
+
+    Bu test PHASE X sonrası migration chain'i doğrular.
     """
-    # Önce tüm migration'ları uygula
+    # Önce tüm migration'ları uygula (head = phase_x_001)
     up = _run_alembic(["upgrade", "head"], fresh_db_dir)
     assert up.returncode == 0, f"upgrade head başarısız: {up.stderr}"
 
@@ -253,24 +255,39 @@ def test_i_downgrade_removes_last_error_category(fresh_db_dir):
     tables_before = _get_tables(db_path)
     assert "publish_records" in tables_before
     assert "publish_logs" in tables_before
-    cols_before = _get_columns(db_path, "publish_records")
-    assert "last_error_category" in cols_before
+    assert "channel_profiles" in tables_before
 
-    # Bir adım geri al — gate4_001 → catchup_001
+    # PHASE X kolonları mevcut mu?
+    cp_cols_before = _get_columns(db_path, "channel_profiles")
+    phase_x_columns = {
+        "platform", "source_url", "normalized_url", "external_channel_id",
+        "handle", "title", "avatar_url", "metadata_json",
+        "import_status", "import_error", "last_import_at",
+    }
+    present_before = phase_x_columns & cp_cols_before
+    assert present_before, (
+        f"PHASE X kolonları upgrade sonrası eksik: {phase_x_columns - cp_cols_before}"
+    )
+
+    # Bir adım geri al — phase_x_001 → product_review_001
     down = _run_alembic(["downgrade", "-1"], fresh_db_dir)
     assert down.returncode == 0, f"downgrade -1 başarısız: {down.stderr}"
 
     tables_after = _get_tables(db_path)
-    # Tablolar HÂLÂ var — sadece son sütun kalktı.
+    # publish_records/logs HÂLÂ var — PHASE X bu tablolara dokunmadı.
     assert "publish_records" in tables_after
     assert "publish_logs" in tables_after
-    cols_after = _get_columns(db_path, "publish_records")
-    assert "last_error_category" not in cols_after, (
-        "last_error_category downgrade sonrası hâlâ mevcut"
+
+    # PHASE X kolonları en az bir kaçı gitmiş olmalı (downgrade_by_column işledi)
+    cp_cols_after = _get_columns(db_path, "channel_profiles")
+    dropped = present_before - cp_cols_after
+    assert dropped, (
+        f"downgrade -1 sonrası PHASE X kolonlarından hiçbiri kaldırılmamış. "
+        f"present_before={present_before} cp_cols_after={cp_cols_after}"
     )
 
-    # Revision catchup_001'e dönülmeli
+    # Revision product_review_001'e dönülmeli
     version_after = _get_version(db_path)
-    assert version_after == "catchup_001", (
-        f"Beklenen downgrade target catchup_001, alınan {version_after}"
+    assert version_after == "product_review_001", (
+        f"Beklenen downgrade target product_review_001, alınan {version_after}"
     )

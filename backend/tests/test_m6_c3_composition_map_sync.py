@@ -453,11 +453,17 @@ def test_18_no_id_overlap_between_maps():
 # ---------------------------------------------------------------------------
 
 def test_19_root_tsx_cast_count():
-    """Root.tsx 'as unknown' cast sayısı (yorum satırları hariç) 5 veya altında.
+    """Root.tsx 'as unknown' cast sayısı — composition başına ~2-3 cast beklenir.
 
-    M6-C3 audit: 5 gerçek cast (2 component + 2 defaultProps + 1 calculateMetadata).
-    Yeni composition eklemek 2 cast daha gerektirir.
-    Bu sınır yeni composition eklenmeden aşılırsa type safety erozyonu işareti.
+    Baseline hesabı (PHASE Y):
+      - 7 composition registration: standard_video, preview_frame, news_bulletin,
+        news_bulletin_style_test, product_review, product_review_preview,
+        product_review_mini → 7 component cast
+      - defaultProps/typed casts (composition başına 1-2): ~11-12
+      - Test composition (style_test) cast: 1
+    Toplam mevcut baseline: 19.
+    Yeni composition eklenmeden bu sayı artmamalı — type safety erozyon işareti.
+    Azalırsa test baseline'ı aşağı çek.
     """
     root_tsx = (
         pathlib.Path(__file__).parent.parent.parent
@@ -470,9 +476,10 @@ def test_19_root_tsx_cast_count():
         if "as unknown" in line and not line.strip().startswith("*") and not line.strip().startswith("//")
     ]
     cast_count = len(real_cast_lines)
-    assert cast_count <= 10, (
+    # Her yeni composition 2-3 cast ekleyebilir. 7 composition × ~2.5 ≈ 17-20.
+    assert cast_count <= 20, (
         f"Root.tsx gerçek 'as unknown' cast sayısı {cast_count}. "
-        "M41 baseline: 10 (3 component + 3 defaultProps + 2 calculateMetadata + 2 renderFormat). "
+        "Baseline: 19 (7 composition × 2-3 cast). "
         "Yeni composition eklenmeden bu sayı artmamalı — type safety erozyon işareti."
     )
 

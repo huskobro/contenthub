@@ -195,7 +195,8 @@ def test_b_standard_video_has_publish_step():
     step_def = publish_steps[0]
     assert step_def.idempotency_type == "operator_confirm"
     assert step_def.executor_class is PublishStepExecutor
-    assert step_def.step_order == 7
+    # render step_order=7, publish step_order=8 (M7-C3 sonrası render adımı split edildi)
+    assert step_def.step_order == 8
 
 
 # ===========================================================================

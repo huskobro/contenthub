@@ -252,18 +252,21 @@ class TestStandardVideoModule:
         assert STANDARD_VIDEO_MODULE.module_id == "standard_video"
 
     def test_alti_adim_tanimi(self):
-        """standard_video modülünde tam olarak 7 adım tanımlanmış olmalı (M7-C3: publish eklendi)."""
-        assert len(STANDARD_VIDEO_MODULE.steps) == 7
+        """standard_video modülünde 8 adım tanımlanmış olmalı (M7-C3: publish; sonrasında render ayrı step)."""
+        assert len(STANDARD_VIDEO_MODULE.steps) == 8
 
     def test_adim_anahtarlari_dogru(self):
         """Adım anahtarları beklenen sırada tanımlanmış olmalı."""
         step_keys = [s.step_key for s in STANDARD_VIDEO_MODULE.steps]
-        assert step_keys == ["script", "metadata", "tts", "visuals", "subtitle", "composition", "publish"]
+        assert step_keys == [
+            "script", "metadata", "tts", "visuals",
+            "subtitle", "composition", "render", "publish",
+        ]
 
     def test_adim_siralari_dogru(self):
-        """step_order değerleri 1'den 7'ye sıralı olmalı (M7-C3: publish step_order=7)."""
+        """step_order değerleri 1'den 8'e sıralı olmalı (render + publish ayrı adımlar)."""
         step_orders = sorted([s.step_order for s in STANDARD_VIDEO_MODULE.steps])
-        assert step_orders == [1, 2, 3, 4, 5, 6, 7]
+        assert step_orders == [1, 2, 3, 4, 5, 6, 7, 8]
 
     def test_idempotency_tipleri_dogru(self):
         """Her adımın idempotency_type değeri doğru atanmış olmalı."""

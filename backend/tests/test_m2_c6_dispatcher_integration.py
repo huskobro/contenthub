@@ -316,7 +316,7 @@ async def test_create_job_initializes_steps(db_session, test_registry):
     await initialize_job_steps(db_session, job.id, "standard_video", test_registry)
 
     steps = await service.get_job_steps(db_session, job.id)
-    assert len(steps) == 7, f"7 adım bekleniyor, {len(steps)} bulundu"
+    assert len(steps) == 8, f"8 adım bekleniyor, {len(steps)} bulundu"
 
     step_map = {s.step_key: s for s in steps}
     expected = [
@@ -326,6 +326,8 @@ async def test_create_job_initializes_steps(db_session, test_registry):
         ("visuals", 4, "artifact_check"),
         ("subtitle", 5, "re_executable"),
         ("composition", 6, "artifact_check"),
+        ("render", 7, "artifact_check"),
+        ("publish", 8, "operator_confirm"),
     ]
     for step_key, step_order, idempotency_type in expected:
         assert step_key in step_map, f"{step_key!r} adımı oluşturulmadı"
@@ -433,7 +435,7 @@ async def test_post_jobs_valid_payload_creates_job_and_steps(isolated_workspace)
     data = response.json()
     assert data["status"] == "queued", f"Beklenen status=queued, gelen: {data['status']}"
     assert data["module_type"] == "standard_video"
-    assert len(data.get("steps", [])) == 7, f"7 adım bekleniyor, gelen: {len(data.get('steps', []))}"
+    assert len(data.get("steps", [])) == 8, f"8 adım bekleniyor, gelen: {len(data.get('steps', []))}"
 
 
 # ===========================================================================
@@ -505,11 +507,11 @@ async def test_get_job_returns_steps(isolated_workspace):
     assert get_resp.status_code == 200, get_resp.text
     data = get_resp.json()
     assert "steps" in data, "steps alanı eksik"
-    assert len(data["steps"]) == 7, f"7 adım bekleniyor, gelen: {len(data['steps'])}"
+    assert len(data["steps"]) == 8, f"8 adım bekleniyor, gelen: {len(data['steps'])}"
 
     # step_key'leri doğrula
     step_keys = {s["step_key"] for s in data["steps"]}
-    expected_keys = {"script", "metadata", "tts", "visuals", "subtitle", "composition", "publish"}
+    expected_keys = {"script", "metadata", "tts", "visuals", "subtitle", "composition", "render", "publish"}
     assert step_keys == expected_keys, f"Beklenen adım anahtarları: {expected_keys}, gelen: {step_keys}"
 
 
@@ -584,10 +586,20 @@ async def test_get_job_artifacts_lists_existing_files(isolated_workspace):
             },
         )
         assert create_resp.status_code == 201, create_resp.text
-        job_id = create_resp.json()["id"]
+        job_data = create_resp.json()
+        job_id = job_data["id"]
 
-    # Workspace'e bir artifact dosyası ekle
-    artifact_dir = ws.get_workspace_path(job_id) / "artifacts"
+    # PHASE X: jobs artık user-scoped workspace altında; endpoint job.workspace_path'i
+    # tercih eder. Bu yüzden artifact dosyasını aynı path altına yazıyoruz.
+    from app.db.session import AsyncSessionLocal
+    from app.db.models import Job as JobModel
+    from sqlalchemy import select as _select
+
+    async with AsyncSessionLocal() as _s:
+        _job = (await _s.execute(_select(JobModel).where(JobModel.id == job_id))).scalar_one()
+        workspace_path = _job.workspace_path
+    assert workspace_path, "workspace_path boş — user-scoped workspace beklenir"
+    artifact_dir = Path(workspace_path) / "artifacts"
     artifact_dir.mkdir(parents=True, exist_ok=True)
     test_file = artifact_dir / "script.json"
     test_file.write_text('{"test": true}', encoding="utf-8")

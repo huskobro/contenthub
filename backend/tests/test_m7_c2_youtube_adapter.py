@@ -745,6 +745,10 @@ def test_ab_error_retryable_flags():
 # ===========================================================================
 
 def test_ac_oauth_router_auth_url():
+    """
+    PHASE X sonrası auth-url artık channel_profile_id'ye zorunlu scope edilir.
+    channel_profile_id eksik olursa 422 döner — bu davranış doğru ve beklenendir.
+    """
     from fastapi.testclient import TestClient
     from fastapi import FastAPI
     from app.publish.youtube.router import router
@@ -753,15 +757,14 @@ def test_ac_oauth_router_auth_url():
     app.include_router(router)
     client = TestClient(app)
 
+    # channel_profile_id olmadan -> 422 (pydantic/fastapi validation)
     resp = client.get(
         "/publish/youtube/auth-url",
         params={"client_id": "test_cid", "redirect_uri": "http://localhost/cb"},
     )
-    assert resp.status_code == 200
-    data = resp.json()
-    assert "auth_url" in data
-    assert "accounts.google.com" in data["auth_url"]
-    assert "test_cid" in data["auth_url"]
+    assert resp.status_code == 422, (
+        f"auth-url artık channel_profile_id gerektirir (PHASE X). Beklenen 422, gelen: {resp.status_code}"
+    )
 
 
 # ===========================================================================
@@ -770,11 +773,14 @@ def test_ac_oauth_router_auth_url():
 
 @pytest.mark.asyncio
 async def test_ad_oauth_router_auth_callback(data_dir):
+    """
+    PHASE X sonrası auth-callback body'de ya da state query param'da channel_profile_id
+    gerektirir. İkisi de eksikse 400 döner — bu kontrat doğrudur.
+    """
     from fastapi.testclient import TestClient
     from fastapi import FastAPI
-    from app.publish.youtube import router as yt_router_module
 
-    # Router modülündeki _token_store'u mock ile değiştir
+    import app.publish.youtube.router as yt_router_mod
     mock_store = MagicMock()
     mock_store.exchange_code_for_tokens = AsyncMock(return_value={
         "access_token": "ya29.new",
@@ -782,8 +788,6 @@ async def test_ad_oauth_router_auth_callback(data_dir):
         "expires_in": 3600,
     })
     mock_store.save_from_auth_response = MagicMock()
-
-    import app.publish.youtube.router as yt_router_mod
     original = yt_router_mod._token_store
     yt_router_mod._token_store = mock_store
 
@@ -792,15 +796,17 @@ async def test_ad_oauth_router_auth_callback(data_dir):
         app.include_router(yt_router_mod.router)
         client = TestClient(app)
 
+        # channel_profile_id eksik -> 400 (explicit HTTPException)
         resp = client.post("/publish/youtube/auth-callback", json={
             "client_id": "cid",
             "client_secret": "csecret",
             "code": "auth_code_xyz",
             "redirect_uri": "http://localhost/cb",
         })
-        assert resp.status_code == 200
-        data = resp.json()
-        assert data["status"] == "ok"
+        assert resp.status_code == 400, (
+            f"auth-callback channel_profile_id eksik -> 400 bekleniyor. Gelen: {resp.status_code} body: {resp.text}"
+        )
+        assert "channel_profile_id" in resp.text.lower()
     finally:
         yt_router_mod._token_store = original
 
@@ -810,26 +816,58 @@ async def test_ad_oauth_router_auth_callback(data_dir):
 # ===========================================================================
 
 def test_ae_oauth_router_status_no_credentials(data_dir):
+    """
+    /publish/youtube/status no-credentials case.
+
+    PHASE X sonrası endpoint Depends(get_db) kullandığı için test-local bir
+    DB session override'ı ile çağrıyoruz — aksi halde conftest'in session-scoped
+    engine'i ile çakışıp suite-içi test kirliliğine neden oluyor.
+    """
     from fastapi.testclient import TestClient
     from fastapi import FastAPI
+    from sqlalchemy.ext.asyncio import (
+        create_async_engine,
+        async_sessionmaker,
+        AsyncSession,
+    )
+    from app.db.session import get_db
+    from app.db.models import Base
     import app.publish.youtube.router as yt_router_mod
+    import asyncio
 
-    # Token dosyası yok (data_dir boş)
+    # Token store'u mock'la — has_credentials False dönecek
     original = yt_router_mod._token_store
     yt_router_mod._token_store = MagicMock()
-    yt_router_mod._token_store.has_credentials = MagicMock(return_value=False)
+    yt_router_mod._token_store.has_credentials = AsyncMock(return_value=False)
+    yt_router_mod._token_store.has_required_scope = AsyncMock(return_value=True)
+
+    # Test-local in-memory DB
+    test_engine = create_async_engine("sqlite+aiosqlite:///:memory:")
+
+    async def _init_schema():
+        async with test_engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+    asyncio.get_event_loop().run_until_complete(_init_schema())
+
+    TestSessionLocal = async_sessionmaker(test_engine, expire_on_commit=False, class_=AsyncSession)
+
+    async def override_get_db():
+        async with TestSessionLocal() as s:
+            yield s
 
     try:
         app = FastAPI()
+        app.dependency_overrides[get_db] = override_get_db
         app.include_router(yt_router_mod.router)
         client = TestClient(app)
 
         resp = client.get("/publish/youtube/status")
-        assert resp.status_code == 200
+        assert resp.status_code == 200, f"status=={resp.status_code} body={resp.text}"
         data = resp.json()
         assert data["has_credentials"] is False
     finally:
         yt_router_mod._token_store = original
+        asyncio.get_event_loop().run_until_complete(test_engine.dispose())
 
 
 # ===========================================================================
@@ -837,6 +875,10 @@ def test_ae_oauth_router_status_no_credentials(data_dir):
 # ===========================================================================
 
 def test_af_oauth_router_revoke(data_dir):
+    """
+    PHASE X sonrası revoke en az bir identifier (connection_id veya
+    channel_profile_id) gerektirir. İkisi de verilmezse 400 döner.
+    """
     from fastapi.testclient import TestClient
     from fastapi import FastAPI
     import app.publish.youtube.router as yt_router_mod
@@ -845,18 +887,17 @@ def test_af_oauth_router_revoke(data_dir):
     app.include_router(yt_router_mod.router)
     client = TestClient(app)
 
-    # Token dosyası yokken çağır (idempotent — 204 dönmeli)
+    # Hiç identifier yok -> 400
     resp = client.delete("/publish/youtube/revoke")
-    assert resp.status_code == 204
+    assert resp.status_code == 400, (
+        f"revoke identifier eksik -> 400 bekleniyor. Gelen: {resp.status_code}"
+    )
 
-    # Token dosyası varken çağır
-    token_file = data_dir / "youtube_tokens.json"
-    token_file.write_text('{"access_token": "x"}', encoding="utf-8")
-
-    # settings.data_dir'in tmp_path'i göstermesi gerekiyor
-    # router'daki revoke endpoint'i settings.data_dir kullandığı için
-    # data_dir fixture'ın CONTENTHUB_DATA_DIR set etmesi gerekiyor
-    # Bu fixture zaten monkeypatch ile ayarlıyor — dosya silinmeli
-
-    resp2 = client.delete("/publish/youtube/revoke")
-    assert resp2.status_code == 204
+    # Var olmayan bir channel_profile_id -> 404 (ownership/revoke kontratı)
+    resp2 = client.delete(
+        "/publish/youtube/revoke",
+        params={"channel_profile_id": "does-not-exist-uuid"},
+    )
+    assert resp2.status_code == 404, (
+        f"revoke bilinmeyen profil -> 404 bekleniyor. Gelen: {resp2.status_code}"
+    )

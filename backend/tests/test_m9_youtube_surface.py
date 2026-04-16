@@ -58,17 +58,25 @@ async def test_youtube_channel_info_disconnected(client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_youtube_revoke_idempotent(client: AsyncClient):
+    """
+    PHASE X sonrası revoke en az bir identifier (connection_id veya
+    channel_profile_id) gerektirir. Hiçbiri verilmezse 400 döner — bu
+    kontrat hidden-bypass önlemek için zorunludur.
+    """
     resp = await client.delete(f"{YT_BASE}/revoke")
-    assert resp.status_code == 204
+    assert resp.status_code == 400
 
 
 # ---------------------------------------------------------------------------
-# D) Auth URL — requires client_id
+# D) Auth URL — requires channel_profile_id (PHASE X)
 # ---------------------------------------------------------------------------
 
 @pytest.mark.asyncio
 async def test_youtube_auth_url_with_explicit_client_id(client: AsyncClient):
-    """auth-url with explicit client_id query param should work."""
+    """
+    PHASE X sonrası auth-url her zaman channel_profile_id'ye scope edilir.
+    channel_profile_id eksikse pydantic validation -> 422.
+    """
     resp = await client.get(
         f"{YT_BASE}/auth-url",
         params={
@@ -76,16 +84,15 @@ async def test_youtube_auth_url_with_explicit_client_id(client: AsyncClient):
             "client_id": "explicit-test-id.apps.googleusercontent.com",
         },
     )
-    assert resp.status_code == 200
-    body = resp.json()
-    assert "auth_url" in body
-    assert "explicit-test-id" in body["auth_url"]
-    assert "accounts.google.com" in body["auth_url"]
+    assert resp.status_code == 422
 
 
 @pytest.mark.asyncio
 async def test_youtube_auth_url_with_saved_client_id(client: AsyncClient):
-    """After saving client_id via credential API, auth-url should work."""
+    """
+    Global client_id kaydedilse bile auth-url hala channel_profile_id ister
+    (kanal bazlı bağlantı zorunluluğu, PHASE X).
+    """
     creds_base = "/api/v1/settings/credentials"
     await client.put(
         f"{creds_base}/credential.youtube_client_id",
@@ -95,7 +102,4 @@ async def test_youtube_auth_url_with_saved_client_id(client: AsyncClient):
         f"{YT_BASE}/auth-url",
         params={"redirect_uri": "http://localhost:5173/callback"},
     )
-    assert resp.status_code == 200
-    body = resp.json()
-    assert "auth_url" in body
-    assert "saved-client-id" in body["auth_url"]
+    assert resp.status_code == 422

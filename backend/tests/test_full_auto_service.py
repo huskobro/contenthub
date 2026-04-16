@@ -152,7 +152,8 @@ async def test_guard_project_toggle_off_rejects(db_session: AsyncSession):
 
     result = await fa_service.evaluate_guards(db_session, proj)
     assert result.allowed is False
-    assert any("automation_enabled" in v for v in result.violations)
+    # Mesaj: "Proje otomasyonu kapali. Proje ayarlarindan etkinlestirilmeli."
+    assert any("otomasyonu kapali" in v.lower() for v in result.violations)
 
 
 async def test_guard_missing_template_rejects(db_session: AsyncSession):
@@ -169,7 +170,8 @@ async def test_guard_missing_template_rejects(db_session: AsyncSession):
 
     result = await fa_service.evaluate_guards(db_session, proj)
     assert result.allowed is False
-    assert any("template" in v.lower() for v in result.violations)
+    # Mesaj: "Varsayilan sablon tanimli degil. Proje ayarlarindan bir sablon secilmeli."
+    assert any("sablon tanimli degil" in v.lower() for v in result.violations)
 
 
 async def test_guard_all_clear(db_session: AsyncSession):
@@ -210,7 +212,8 @@ async def test_guard_daily_quota_exhausted(db_session: AsyncSession):
 
     result = await fa_service.evaluate_guards(db_session, proj)
     assert result.allowed is False
-    assert any("Gunluk" in v for v in result.violations)
+    # Mesaj: "Bugun N is calistirildi, gunluk limit (X) doldu."
+    assert any("gunluk limit" in v.lower() and "doldu" in v.lower() for v in result.violations)
 
 
 async def test_trigger_rejected_when_guards_fail(db_session: AsyncSession):

@@ -153,16 +153,16 @@ def test_csv_accepts_all_valid_kinds(kind: str):
 
 @pytest.mark.asyncio
 async def test_audit_log_written_on_view(
-    client: AsyncClient, db_session: AsyncSession, admin_user
+    client: AsyncClient, db_session: AsyncSession, admin_user, admin_headers: dict[str, str],
 ):
     """
-    A GET /analytics/overview call with a user header should produce one
-    analytics.view.overview audit log entry.
+    PHASE X: GET /analytics/overview admin JWT ile çağrıldığında actor_id=admin_user.id
+    olarak tam olarak bir analytics.view.overview audit log girişi üretir.
     """
     resp = await client.get(
         f"{BASE}/overview",
         params={"window": "last_30d"},
-        headers={"X-ContentHub-User-Id": admin_user.id},
+        headers=admin_headers,
     )
     assert resp.status_code == 200
 
