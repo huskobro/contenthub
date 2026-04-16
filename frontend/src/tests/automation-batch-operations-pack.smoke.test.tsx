@@ -83,11 +83,34 @@ const MOCK_JOB_DETAIL: JobResponse = MOCK_JOBS[1];
 /* ------------------------------------------------------------------ */
 
 function mockFetch(handler: (url: string) => unknown) {
+  // URL-routed mockFetch: the admin job-detail surface fans out to multiple
+  // hooks (useJobDetail, usePublishRecordForJob, useJobPreviews, etc.). If
+  // we blindly return the test payload for every URL, list-typed consumers
+  // like `publish records` receive the detail object and crash on iteration
+  // ("query.data is not iterable"). Route secondary calls to safe defaults.
   return vi.fn((url: string) =>
     Promise.resolve({
       ok: true,
       status: 200,
-      json: () => Promise.resolve(handler(url)),
+      json: () => {
+        // List-shaped endpoints default to empty arrays so the detail page
+        // can render without colliding with the handler's job payload.
+        if (url.includes("/publish") && !url.includes("/publish/")) {
+          return Promise.resolve([]);
+        }
+        if (url.includes("/previews")) return Promise.resolve([]);
+        if (url.includes("/notifications")) return Promise.resolve([]);
+        if (url.includes("/modules")) return Promise.resolve([]);
+        if (url.includes("/visibility-rules")) return Promise.resolve([]);
+        if (url.includes("/credentials")) return Promise.resolve([]);
+        if (url.includes("/users") && !url.includes("/jobs")) {
+          return Promise.resolve([]);
+        }
+        if (url.includes("/onboarding")) {
+          return Promise.resolve({ onboarding_required: false });
+        }
+        return Promise.resolve(handler(url));
+      },
     })
   ) as unknown as typeof window.fetch;
 }
@@ -277,7 +300,9 @@ describe("Phase 313 — Batch operations end-to-end verification", () => {
     renderAt("/admin");
     const card = screen.getByTestId("quick-link-jobs");
     expect(card).toBeDefined();
-    expect(card.textContent).toContain("Isler");
+    // Admin quick-link text is Turkish ("İşler"); keep the assertion
+    // diacritic-flexible so minor copy tweaks don't break the smoke test.
+    expect(card.textContent).toMatch(/[İI][sş]ler/);
   });
 
   it("jobs registry chain: heading + subtitle + workflow note all present", () => {
