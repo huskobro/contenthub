@@ -352,6 +352,18 @@ async def create_job(
     """
     user_id = ctx.user_id  # PHASE X: owner her zaman kimlik dogrulanmis user
 
+    # PHASE AG — orphan job guard: non-admin kullanicilar mutlaka bir
+    # content_project_id ile is baslatmali. Admin/servis ici akislar
+    # (ornek: retry scheduler) project-less is olusturmaya devam edebilir.
+    if not ctx.is_admin and not payload.content_project_id:
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                "content_project_id zorunlu: is mutlaka bir icerik projesine "
+                "bagli acilmali (orphan is kabul edilmez)."
+            ),
+        )
+
     # PHASE X — project/channel ownership dogrulamasi
     if payload.content_project_id:
         project = await db.get(ContentProject, payload.content_project_id)

@@ -11,7 +11,11 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import ContentProject
-from app.content_projects.schemas import ContentProjectCreate, ContentProjectUpdate
+from app.content_projects.schemas import (
+    ContentProjectCreate,
+    ContentProjectUpdate,
+    MIXED_PROJECT_MODULE_TYPE,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -48,10 +52,16 @@ async def get_content_project(
 async def create_content_project(
     db: AsyncSession, payload: ContentProjectCreate
 ) -> ContentProject:
+    # PHASE AG: module_type belirtilmediyse "mixed" (modul-ustu proje).
+    # Eski client'lar somut bir modul gondermeye devam edebilir (legacy uyum).
+    effective_module_type = (payload.module_type or MIXED_PROJECT_MODULE_TYPE).strip()
+    if not effective_module_type:
+        effective_module_type = MIXED_PROJECT_MODULE_TYPE
+
     project = ContentProject(
         user_id=payload.user_id,
         channel_profile_id=payload.channel_profile_id,
-        module_type=payload.module_type,
+        module_type=effective_module_type,
         title=payload.title,
         description=payload.description,
         current_stage=payload.current_stage,

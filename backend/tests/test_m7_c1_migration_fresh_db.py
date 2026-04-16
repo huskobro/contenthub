@@ -35,12 +35,18 @@ import pytest
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
 # Head revision tarihsel zincir:
-#   c1a2b3d4e5f6 → catchup_001 → gate4_001 → product_review_001 → phase_x_001 → phase_ac_001
+#   c1a2b3d4e5f6 → catchup_001 → gate4_001 → product_review_001 → phase_x_001
+#   → phase_ac_001 → phase_ag_001
+#
 # phase_ac_001 forward-only reconciliation migration'dir (live DB drift fix);
-# downgrade'i bilinçli olarak NotImplementedError atar. Bu yüzden I testi
-# phase_ac seviyesinden değil, phase_x'ten -1 downgrade yaparak gerçek
-# geri-alma davranışını doğrular.
-ALEMBIC_TARGET = "phase_ac_001"
+# downgrade'i bilinçli olarak NotImplementedError atar.
+# phase_ag_001 reversible'dir: content_projects.module_type nullable togglesı.
+#
+# Bu yüzden I testi: head (phase_ag_001) → -1 (phase_ac_001) başarılı olmalı,
+# sonra -1 (phase_x_001 hedef) denemesi phase_ac_001 forward-only'si nedeniyle
+# NotImplementedError atmalı.
+ALEMBIC_TARGET = "phase_ag_001"
+PHASE_AC_REVISION = "phase_ac_001"
 PHASE_X_REVISION = "phase_x_001"
 PRODUCT_REVIEW_REVISION = "product_review_001"
 
@@ -232,11 +238,11 @@ def test_g_publish_logs_fk_to_publish_records(migrated_db):
 
 
 # ---------------------------------------------------------------------------
-# H) alembic_version = phase_ac_001 (live head)
+# H) alembic_version = phase_ag_001 (live head)
 # ---------------------------------------------------------------------------
 
 def test_h_alembic_version_is_target(migrated_db):
-    """Migration sonrası alembic_version = phase_ac_001 olmalı."""
+    """Migration sonrası alembic_version = phase_ag_001 olmalı (PHASE AG head)."""
     version = _get_version(migrated_db)
     assert version == ALEMBIC_TARGET, (
         f"Beklenen alembic_version={ALEMBIC_TARGET}, alınan={version}"
@@ -263,9 +269,11 @@ def test_h_alembic_version_is_target(migrated_db):
 
 def test_i_downgrade_from_head_is_forward_only(fresh_db_dir):
     """
-    phase_ac_001 forward-only bir reconciliation migration'dir; head'ten
-    `downgrade -1` çağrısı NotImplementedError atarak reddedilir.
-    Bu bir tasarım kararıdır, test onu kontrat olarak doğrular.
+    PHASE AG (phase_ag_001) reversible'dir — head'ten -1 ile phase_ac_001'e
+    inebilir. Ancak phase_ac_001 forward-only'dir; oradan tekrar -1 denendiginde
+    NotImplementedError firlatilir. Bu test kontrati iki adimda dogrular:
+      (a) head (phase_ag_001) -> phase_ac_001 reversible (return 0)
+      (b) phase_ac_001 -> phase_x_001 forward-only (non-zero + NotImplementedError)
     """
     up = _run_alembic(["upgrade", "head"], fresh_db_dir)
     assert up.returncode == 0, f"upgrade head başarısız: {up.stderr}"
@@ -273,19 +281,26 @@ def test_i_downgrade_from_head_is_forward_only(fresh_db_dir):
     db_path = os.path.join(fresh_db_dir, "contenthub.db")
     assert _get_version(db_path) == ALEMBIC_TARGET
 
-    # Head'ten -1 denendiğinde alembic subprocess'i non-zero dönmeli
-    # (NotImplementedError taşınır). Version değişmemeli.
-    down = _run_alembic(["downgrade", "-1"], fresh_db_dir)
-    assert down.returncode != 0, (
-        "phase_ac_001 forward-only olmalı ama downgrade sessizce geçti:\n"
-        f"stdout={down.stdout}\nstderr={down.stderr}"
+    # (a) phase_ag_001 -> phase_ac_001 reversible olmali
+    down_ag = _run_alembic(["downgrade", "-1"], fresh_db_dir)
+    assert down_ag.returncode == 0, (
+        f"phase_ag_001 reversible olmaliydi:\n"
+        f"stdout={down_ag.stdout}\nstderr={down_ag.stderr}"
     )
-    combined = (down.stdout or "") + (down.stderr or "")
+    assert _get_version(db_path) == PHASE_AC_REVISION
+
+    # (b) phase_ac_001 -> phase_x_001 forward-only kontrati korunuyor mu
+    down_ac = _run_alembic(["downgrade", "-1"], fresh_db_dir)
+    assert down_ac.returncode != 0, (
+        "phase_ac_001 forward-only olmalı ama downgrade sessizce geçti:\n"
+        f"stdout={down_ac.stdout}\nstderr={down_ac.stderr}"
+    )
+    combined = (down_ac.stdout or "") + (down_ac.stderr or "")
     assert "NotImplementedError" in combined or "forward-only" in combined, (
         f"Beklenen forward-only hata mesajı yok:\n{combined}"
     )
-    # Version hâlâ head'de takılı olmalı
-    assert _get_version(db_path) == ALEMBIC_TARGET, (
+    # Version hâlâ phase_ac_001'de takılı olmalı
+    assert _get_version(db_path) == PHASE_AC_REVISION, (
         "Başarısız downgrade sonrası version değişmiş olmamalı"
     )
 

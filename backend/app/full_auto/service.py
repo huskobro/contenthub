@@ -114,21 +114,34 @@ async def evaluate_guards(
         )
 
     # 2. Module allowlist
+    # PHASE AG: ContentProject.module_type artik opsiyonel ("mixed" veya NULL
+    # olabilir). Mixed projeler icin otomasyon = pause + warning; kullanici
+    # hangi modulun otomatik calisacagini netlestirene kadar full-auto
+    # tetiklenmez (dogru davranis: sessiz kosmak yerine acik red).
     allowed = global_config.get("automation.full_auto.allowed_modules") or []
     if isinstance(allowed, str):
         try:
             allowed = json.loads(allowed)
         except Exception:
             allowed = [allowed]
-    if project.module_type not in allowed:
+
+    project_module = project.module_type
+    if not project_module or project_module == "mixed":
         violations.append(
-            f"Bu projenin modulu ({project.module_type}) tam otomatik icin izinli degil."
+            "Bu proje modul-ustu (karma) bir proje. Tam otomatik mod icin "
+            "projenin otomasyon ayarlarinda belirli bir modul (standart video, "
+            "haber bulteni, vs.) secilmeli; karma projelerde otomasyon duraklatilir."
         )
-    if project.module_type not in SUPPORTED_MODULES_V1:
-        violations.append(
-            f"Faz 1 yalnizca Standart Video modulunu destekler. "
-            f"Bu projenin modulu ({project.module_type}) henuz otomatik calistirilamaz."
-        )
+    else:
+        if project_module not in allowed:
+            violations.append(
+                f"Bu projenin modulu ({project_module}) tam otomatik icin izinli degil."
+            )
+        if project_module not in SUPPORTED_MODULES_V1:
+            violations.append(
+                f"Faz 1 yalnizca Standart Video modulunu destekler. "
+                f"Bu projenin modulu ({project_module}) henuz otomatik calistirilamaz."
+            )
 
     # 3. Per-project toggle
     if not project.automation_enabled:
@@ -301,11 +314,16 @@ async def trigger_full_auto(
         )
 
     # --- Build input from project defaults (skip wizard) ------------------
-    # v1: only standard_video
+    # v1: only standard_video. PHASE AG: mixed/None projeler icin aciklayici ret.
     if project.module_type != "standard_video":
+        reason = (
+            "mixed project: full-auto requires a concrete module_type"
+            if not project.module_type or project.module_type == "mixed"
+            else f"v1: only standard_video supported, got {project.module_type}"
+        )
         return FullAutoTriggerResponse(
             accepted=False,
-            reason=f"v1: only standard_video supported, got {project.module_type}",
+            reason=reason,
             project_id=project_id,
         )
 

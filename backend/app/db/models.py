@@ -1581,7 +1581,9 @@ class ContentProject(Base):
     channel_profile_id: Mapped[str] = mapped_column(
         String(36), ForeignKey("channel_profiles.id", ondelete="CASCADE"), nullable=False, index=True
     )
-    module_type: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
+    # PHASE AG: artik modul-ustu konteyner. NULL / "mixed" yeni davranis;
+    # legacy somut degerler ("standard_video" vb.) geriye uyum icin korunur.
+    module_type: Mapped[Optional[str]] = mapped_column(String(100), nullable=True, index=True)
     title: Mapped[str] = mapped_column(String(500), nullable=False)
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     current_stage: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)

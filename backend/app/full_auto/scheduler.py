@@ -82,6 +82,9 @@ async def _run_tick(
 
         now = datetime.now(timezone.utc)
 
+        # PHASE AG: module_type IN SUPPORTED_MODULES_V1 filtresi, mixed/None
+        # module'lu projeleri dogal olarak disari birakir (pause davranisi).
+        # Ayrica evaluate_guards mixed proje icin acik violation doner.
         q = select(ContentProject).where(
             and_(
                 ContentProject.automation_enabled == True,  # noqa: E712
