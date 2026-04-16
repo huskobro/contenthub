@@ -2,6 +2,73 @@
 
 ---
 
+## [2026-04-16] PHASE AA — Preview Artifact Pipeline / Visual Review Pack
+
+### Özet
+PHASE Z sonrası yeni bir büyük altyapı KURMADAN, `ArtifactScope.{PREVIEW,FINAL}`
+contract'ini yüzeye çıkaran ince bir service + router + frontend katmanı eklendi.
+Paralel bir artifact pipeline YOK; mevcut `workspace/{job_id}/artifacts/` + dosya
+isimlendirme kuralları üzerine deterministik filename classifier oturdu. Ownership
+PHASE X seviyesinde aynen korundu; preview dosyaları final artifact gibi
+davranmaz (scope badge + ayrı header + "Onizleme — nihai degil" uyarısı).
+
+### 10 Alt Faz (A–J)
+- **A** — Discovery + contract audit: `ArtifactScope`, `ArtifactKind`,
+  `WorkspaceLayout` kontratları mevcut, executor'lar flat `artifacts/` kullanıyor.
+  5 preview boşluğu tespit edildi (news_bulletin'de preview yok, classifier yoktu,
+  API surface yoktu, frontend surface yoktu, scope badge yoktu).
+- **B** — Preview contract hardening: `app/previews/` modülü kuruldu.
+  `classifier.py` deterministik filename rules (8 PREVIEW + 7 FINAL kuralı + hidden
+  filter). `service.py` workspace resolver + scope filter + latest_preview.
+- **C** — Backend preview service hardening: `service.list_job_artifacts_classified`
+  workspace_path > default root hiyerarşisini jobs/router ile bire bir eşitledi;
+  hidden files (tmp_*, ., _, .tmp, .part, .swp) listeden gizleniyor.
+- **D** — standard_video alignment: `render_still` executor'u `preview_frame.jpg`
+  üretiyor; classifier `ArtifactScope.PREVIEW` + `THUMBNAIL` + `source_step=render_still`
+  olarak yakalıyor. Dosya yeniden konumlandırılmadı — parallel pattern'den kaçınıldı.
+- **E** — news_bulletin honest gap: preview aşaması YOK. Fake preview inject
+  ETMEDİK; script.json / metadata.json FINAL olarak kalıyor. Sınırlama
+  `docs/preview-artifact-contract.md` içinde açıkça belgelendi.
+- **F** — product_review alignment: `preview_mini` executor'u `preview_mini.mp4` +
+  `preview_mini.json` üretiyor; classifier PREVIEW olarak yakalıyor.
+- **G** — Frontend preview surfaces:
+  - `api/previewsApi.ts` + `hooks/useJobPreviews.ts` (React Query).
+  - `components/preview/JobPreviewCard.tsx` — scope badge, type-specific MediaPreview,
+    download linki (mevcut artifacts endpoint'inden).
+  - `components/preview/JobPreviewList.tsx` — grouped liste, empty/error/loading states.
+  - `admin/JobDetailPage` ve `user/ProjectDetailPage` bu listeyi gösterir.
+- **H** — Tests: 69 yeni test.
+  - `test_phase_aa_preview_classifier.py` (28) — classifier pure logic.
+  - `test_phase_aa_preview_service.py` (17) — workspace resolution, hidden filter,
+    scope filter, latest_preview mtime sıralaması.
+  - `test_phase_aa_preview_router.py` (14) — ownership enforcement (cross-user 403,
+    orphan 403 non-admin / 200 admin), scope filter, 404/422, download
+    parallel-serve-yok kontratı.
+- **I** — Docs: `docs/phase-aa-closure.md` ve yeni `docs/preview-artifact-contract.md`.
+  STATUS ve CHANGELOG head güncellendi.
+- **J** — Git: 3 commit (backend + tests / frontend / docs), push.
+
+### Çıkarılan Kurallar
+- Preview dosyalarının scope'u **asla** FINAL'e yükselmez (classifier testi
+  `test_preview_files_never_get_final_scope` bunu kilitliyor).
+- Preview dosyaları final artifact gibi görünmez — frontend her zaman ONİZLEME
+  rozeti + "Bu dosya yalnizca bir onizlemedir — nihai cikti degildir" uyarısı basar.
+- Ownership kontrolü sadece backend'de; frontend sahte filtreleme yapmaz.
+- Parallel serve yolu yok — preview download mevcut `/jobs/{id}/artifacts/{path}`
+  endpoint'ini kullanır.
+
+### Test Durumu
+- Tam suite: **2343 passed, 0 failed** (+69).
+- PHASE Z baseline: 2274 passed. Delta = +69 yeni PHASE AA testi.
+- Hiç skip/xfail eklenmedi.
+
+### Commit'ler
+- Backend + tests: `<TBD after commit>`
+- Frontend: `<TBD after commit>`
+- Docs: `<TBD after commit>`
+
+---
+
 ## [2026-04-16] PHASE Z — Operational Hardening / Release Candidate Pack
 
 ### Özet

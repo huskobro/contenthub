@@ -1,10 +1,55 @@
 # DURUM
 
 ## Mevcut Faz
+**PHASE AA KAPANDI (2026-04-16) — Preview Artifact Pipeline / Visual Review Pack**
 **PHASE Z KAPANDI (2026-04-16) — Operational Hardening / Release Candidate Pack**
 **PHASE Y KAPANDI (2026-04-16) — Baseline Drift / Release Readiness Stabilization Pack**
 **PHASE X KAPANDI (2026-04-16) — Ownership / Channel Auto-Import / Project-Job Hierarchy Pack**
 **TÜM MİLESTONE'LAR KAPANDI — Master plan (M1–M8) tamamlandı**
+
+### PHASE AA (Preview Artifact Pipeline / Visual Review Pack) Özet
+- Amaç: preview-first yaklaşımını gerçek, tutarlı, yönetilebilir bir yüzeye çıkarmak.
+  Hiç yeni büyük altyapı KURULMADI; mevcut `ArtifactScope.{PREVIEW,FINAL}` +
+  `workspace/{job_id}/artifacts/` kontratı üzerine deterministik filename
+  classifier + ince bir servis/router katmanı eklendi.
+- Yeni backend modülü: `app/previews/` (classifier, service, router).
+  - `classify_filename(name) → ClassifiedArtifact(scope, kind, source_step, label)`.
+  - Hidden filter: `tmp_*`, `.dotfile`, `_partial`, `*.tmp`, `*.part`, `*.swp`.
+  - `preview_frame.jpg` → PREVIEW/THUMBNAIL, `preview_mini.mp4` → PREVIEW/VIDEO_RENDER,
+    `preview_*.json` → PREVIEW/METADATA; `final.mp4`, `thumbnail.jpg`, `script.json`,
+    `composition_props.json`, `publish_*.json` → FINAL (kind'lar ayrı).
+- Yeni endpoint'ler (jobs/router._enforce_job_ownership ile bire bir ayni ownership):
+  - `GET /api/v1/jobs/{id}/previews` — siniflandirilmis liste + preview/final sayaclari.
+  - `GET /api/v1/jobs/{id}/previews?scope=preview|final` — tek scope filter.
+  - `GET /api/v1/jobs/{id}/previews/latest` — en son PREVIEW (mtime), yoksa 404.
+- Parallel bir serve yolu KURMADIK; preview dosyaları mevcut
+  `/api/v1/jobs/{id}/artifacts/{path}` endpoint'inden servis edilir (aynı
+  ownership + path-traversal guard).
+- Frontend surface:
+  - `frontend/src/api/previewsApi.ts` — typed fetch client.
+  - `frontend/src/hooks/useJobPreviews.ts` — React Query hook.
+  - `frontend/src/components/preview/JobPreviewCard.tsx` — scope badge (ONİZLEME /
+    NIHAİ), tip-spesifik preview (video/image/audio/json/text), size/mtime/label/
+    source_step metadata'sı.
+  - `frontend/src/components/preview/JobPreviewList.tsx` — grouped liste
+    ("Onizlemeler" vs "Nihai Ciktilar" başlıkları, toplam sayaç).
+  - `admin/JobDetailPage` ve `user/ProjectDetailPage` bu listeyi gösterir.
+- Modül durumu (honest):
+  - `standard_video` — `render_still` adımı `preview_frame.jpg` üretiyor; classifier
+    doğru yakaladı.
+  - `product_review` — `preview_mini` adımı `preview_mini.mp4` + `preview_mini.json`
+    üretiyor; classifier doğru yakaladı.
+  - `news_bulletin` — preview aşaması YOK. Fake preview injecting ETMEDİK;
+    script/metadata FINAL olarak kalıyor. `docs/preview-artifact-contract.md` bu
+    boşluğu dürüstçe belgeliyor.
+- Testler (backend): `test_phase_aa_preview_classifier.py` (28 test),
+  `test_phase_aa_preview_service.py` (17 test), `test_phase_aa_preview_router.py`
+  (14 test). Toplam **69 yeni test**.
+- Tam suite: **2343 passed, 0 failed** (+69 PHASE AA testi, PHASE Z'deki 2274'e
+  eklendi).
+- Kapanış raporu: `docs/phase-aa-closure.md`.
+- Kontrat belgesi: `docs/preview-artifact-contract.md` (yeni — classifier
+  kurallari, scope/kind matrisi, modül bazlı durum).
 
 ### PHASE Z (Operational Hardening / Release Candidate) Özet
 - Ownership/auth/security PHASE X seviyesinde **aynen korundu**; hiç skip/xfail yok.
