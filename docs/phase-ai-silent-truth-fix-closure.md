@@ -202,18 +202,28 @@ $ cd frontend && npx tsc --noEmit
 EXIT=0
 
 $ cd frontend && npx vitest run
-213 files, 208 passed | 4 failed | 1 skipped
-2565 tests, 2525 passed | 5 failed | 35 skipped
+Test Files  212 passed | 1 skipped (213)
+Tests       2530 passed | 35 skipped (2565)
+EXIT=0
 ```
 
-The 5 vitest failures are ALL in canvas/atrium/bridge surface panel-switch and
-legacy-fallback tests (`surface-panel-switch-everywhere.smoke.test.tsx`,
-`bridge-legacy-fallback.smoke.test.tsx`, `canvas-legacy-fallback.smoke.test.tsx`,
+**Follow-up (Phase AI+):** The 5 vitest failures that were mentioned in the
+original draft of this closure doc (`bridge-legacy-fallback.smoke.test.tsx`,
+`canvas-legacy-fallback.smoke.test.tsx`,
 `canvas-workspace-legacy-fallback.smoke.test.tsx`,
-`default-surface-strategy.unit.test.ts`). These tests touch zero files that
-Phase AI modified — they are pre-existing failures tracked in the
-`abundant-munching-raven.md` Phase C (Canvas panel switcher) plan and
-unrelated to settings/credentials/provider wiring.
+`surfaces-layout-switch.smoke.test.tsx`,
+`default-surface-strategy.unit.test.ts`) turned out to NOT be code bugs.
+Isolated runs of those 5 files always passed (27/27). In the full 213-file
+parallel run they intermittently timed out because default vitest limits
+(`testTimeout: 5000ms`, `hookTimeout: 10000ms`) were too tight for the
+heavy collect+transform phase (~550s across 213 files on this machine).
+
+Fix was a single-file test-config bump in `frontend/vite.config.ts`:
+`testTimeout: 20000`, `hookTimeout: 20000`. No source or test content was
+altered — the failures were environment/timing, not assertions. After the
+bump, two consecutive full runs produced `2530 passed, 0 failed, 35 skipped`.
+
+Baseline is now **fully green** on both backend and frontend.
 
 ---
 
@@ -232,9 +242,12 @@ unrelated to settings/credentials/provider wiring.
   Changing publish interval therefore still requires backend restart. Noted
   explicitly in the log line and the setting's `help_text`.
 
-- **Fixing the 5 pre-existing frontend canvas/panel-switch failures.** Those
-  belong to the Canvas surface work described in the plan file, not to silent
-  truth. They don't involve any file Phase AI touched.
+- **Fixing the 5 pre-existing frontend canvas/panel-switch failures.**
+  Originally deferred as out-of-scope; re-investigated in the follow-up pass
+  (see Test Results → Follow-up above). Root cause was not code — it was
+  vitest default timeout budgets insufficient for this project's paralel
+  collect phase. Closed via a two-line test config bump; no test content or
+  production code was altered.
 
 - **Fixing `CODE_AUDIT_REPORT.md` typos flagged during discovery.** The audit
   was kept as-is (single-source-of-truth for the phase brief); only the
