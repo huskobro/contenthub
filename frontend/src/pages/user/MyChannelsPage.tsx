@@ -17,7 +17,9 @@ import {
   useCreateChannelProfile,
   useCreateChannelProfileFromURL,
   useDeleteChannelProfile,
+  useReimportChannelProfile,
 } from "../../hooks/useChannelProfiles";
+import { useToast } from "../../hooks/useToast";
 import {
   PageShell,
   SectionShell,
@@ -66,6 +68,31 @@ function LegacyMyChannelsPage() {
   const createMutation = useCreateChannelProfile();
   const createFromURLMutation = useCreateChannelProfileFromURL();
   const deleteMutation = useDeleteChannelProfile();
+  const reimportMutation = useReimportChannelProfile();
+  const toast = useToast();
+
+  function handleReimport(e: React.MouseEvent, channelId: string) {
+    e.stopPropagation();
+    reimportMutation.mutate(channelId, {
+      onSuccess: (row) => {
+        const status = row.import_status;
+        if (status === "success") {
+          toast.success("Kanal meta verisi yenilendi.");
+        } else if (status === "partial") {
+          toast.info("Kismi guncelleme: bazi alanlar hala cekilemedi.");
+        } else if (status === "failed") {
+          toast.error("Yeniden deneme basarisiz — URL'yi kontrol edin.");
+        } else {
+          toast.info("Meta veri cekimi yenilendi.");
+        }
+      },
+      onError: (err) => {
+        toast.error(
+          err instanceof Error ? err.message : "Yeniden deneme basarisiz.",
+        );
+      },
+    });
+  }
 
   function handleDelete(e: React.MouseEvent, channelId: string, name: string) {
     e.stopPropagation();
@@ -395,18 +422,39 @@ function LegacyMyChannelsPage() {
                   </div>
 
                   {/* PHASE AE: honest import state — user sees that auto-fetch
-                      was partial and can click through to reimport. */}
+                      was partial and can click through to reimport.
+                      PHASE AF: `Yeniden Dene` button visible for partial/failed
+                      so user can re-run metadata fetch without re-entering URL. */}
                   {importBadge && (
-                    <p
-                      className={cn(
-                        "m-0 mb-2 inline-block text-[11px] px-1.5 py-0.5 rounded border",
-                        importBadge.className,
+                    <div className="mb-2 flex items-center gap-2 flex-wrap">
+                      <p
+                        className={cn(
+                          "m-0 inline-block text-[11px] px-1.5 py-0.5 rounded border",
+                          importBadge.className,
+                        )}
+                        data-testid={`channel-card-import-status-${ch.id}`}
+                        title={ch.import_error ?? undefined}
+                      >
+                        {importBadge.label}
+                      </p>
+                      {(importStatus === "partial" || importStatus === "failed") && (
+                        <button
+                          type="button"
+                          onClick={(e) => handleReimport(e, ch.id)}
+                          disabled={reimportMutation.isPending}
+                          className={cn(
+                            "px-2 py-0.5 text-[11px] rounded-sm border cursor-pointer",
+                            reimportMutation.isPending
+                              ? "bg-neutral-100 text-neutral-400 border-neutral-200 cursor-not-allowed"
+                              : "bg-white text-brand-700 border-brand-300 hover:bg-brand-50",
+                          )}
+                          data-testid={`channel-card-reimport-${ch.id}`}
+                          aria-label="Kanal meta verisini yeniden dene"
+                        >
+                          {reimportMutation.isPending ? "..." : "Yeniden Dene"}
+                        </button>
                       )}
-                      data-testid={`channel-card-import-status-${ch.id}`}
-                      title={ch.import_error ?? undefined}
-                    >
-                      {importBadge.label}
-                    </p>
+                    </div>
                   )}
 
                   <div className="space-y-1 text-sm text-neutral-500">

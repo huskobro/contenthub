@@ -14,8 +14,8 @@
  *   - Navigate to project detail page (preview/review lives there).
  */
 
-import { useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useCallback, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { WizardShell, type WizardStep } from "../../components/wizard/WizardShell";
 import { ChannelProfileStep } from "../../components/wizard/ChannelProfileStep";
@@ -81,9 +81,29 @@ export function CreateProductReviewWizardPage() {
   const qc = useQueryClient();
   const toast = useToast();
 
+  // PHASE AF: launcher deep-link destegi. ?contentProjectId=... ve
+  // ?channelProfileId=... query parametreleri verilmisse wizard o context
+  // ile acilsin — user projenin icinden yeni bir inceleme baslatabiliyor.
+  const [searchParams] = useSearchParams();
+  const presetChannelProfileId = searchParams.get("channelProfileId");
+  const presetContentProjectId = searchParams.get("contentProjectId");
+
   const [step, setStep] = useState(0);
-  const [values, setValues] = useState<WizardState>(initialState);
+  const [values, setValues] = useState<WizardState>({
+    ...initialState,
+    channelProfileId: presetChannelProfileId,
+    contentProjectId: presetContentProjectId,
+  });
   const [creatingProduct, setCreatingProduct] = useState(false);
+
+  // Launcher'dan geldiyse product adimina zipla.
+  useEffect(() => {
+    if (presetChannelProfileId && presetContentProjectId) {
+      setStep(2);
+    } else if (presetChannelProfileId) {
+      setStep(1);
+    }
+  }, [presetChannelProfileId, presetContentProjectId]);
 
   function set<K extends keyof WizardState>(field: K, value: WizardState[K]) {
     setValues((v) => ({ ...v, [field]: value }));

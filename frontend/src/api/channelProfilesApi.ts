@@ -93,3 +93,16 @@ export function deleteChannelProfile(
 ): Promise<ChannelProfileResponse> {
   return api.delete<ChannelProfileResponse>(`${BASE}/${profileId}`);
 }
+
+/**
+ * PHASE AD / PHASE AF — reimport channel metadata (re-run URL fetch).
+ *
+ * Use when `import_status === "partial"` or `"failed"` so the user can
+ * retry the metadata pull without manual field entry. User-edit fields
+ * (profile_name, notes, default_language) are preserved.
+ */
+export function reimportChannelProfile(
+  profileId: string,
+): Promise<ChannelProfileResponse> {
+  return api.post<ChannelProfileResponse>(`${BASE}/${profileId}/reimport`);
+}

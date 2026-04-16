@@ -52,6 +52,21 @@ vi.mock("../hooks/useChannelProfiles", () => ({
   }),
   useChannelProfiles: () => ({ data: [], isLoading: false }),
   useCreateChannelProfile: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useCreateChannelProfileFromURL: () => ({
+    mutate: vi.fn(),
+    mutateAsync: vi.fn(),
+    isPending: false,
+  }),
+  useDeleteChannelProfile: () => ({
+    mutate: vi.fn(),
+    mutateAsync: vi.fn(),
+    isPending: false,
+  }),
+  useReimportChannelProfile: () => ({
+    mutate: vi.fn(),
+    mutateAsync: vi.fn(),
+    isPending: false,
+  }),
 }));
 vi.mock("../hooks/useCredentials", () => ({
   useYouTubeStatusByChannel: () => ({ data: null, isLoading: false }),

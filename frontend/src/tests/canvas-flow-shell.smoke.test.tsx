@@ -39,7 +39,23 @@ vi.mock("../api/publishApi", () => ({
 
 vi.mock("../hooks/useChannelProfiles", () => ({
   useChannelProfiles: () => ({ data: [], isLoading: false }),
+  useChannelProfile: () => ({ data: null, isLoading: false }),
   useCreateChannelProfile: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useCreateChannelProfileFromURL: () => ({
+    mutate: vi.fn(),
+    mutateAsync: vi.fn(),
+    isPending: false,
+  }),
+  useDeleteChannelProfile: () => ({
+    mutate: vi.fn(),
+    mutateAsync: vi.fn(),
+    isPending: false,
+  }),
+  useReimportChannelProfile: () => ({
+    mutate: vi.fn(),
+    mutateAsync: vi.fn(),
+    isPending: false,
+  }),
 }));
 vi.mock("../hooks/useContentProjects", () => ({
   useContentProjects: () => ({ data: [], isLoading: false, isError: false }),

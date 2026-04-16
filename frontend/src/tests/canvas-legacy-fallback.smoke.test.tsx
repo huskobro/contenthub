@@ -62,10 +62,13 @@ vi.mock("../hooks/useContentProjects", () => ({
     error: null,
   }),
   useCreateContentProject: () => ({ mutate: vi.fn(), isPending: false }),
+  useProjectSummary: () => ({ data: null, isLoading: false, isError: false }),
+  useProjectJobs: () => ({ data: [], isLoading: false, isError: false }),
 }));
 
 vi.mock("../hooks/useChannelProfiles", () => ({
   useChannelProfiles: () => ({ data: [], isLoading: false }),
+  useChannelProfile: () => ({ data: null, isLoading: false }),
 }));
 
 vi.mock("../api/jobsApi", () => ({

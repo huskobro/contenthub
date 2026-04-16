@@ -7,8 +7,8 @@
  * Creates ContentProject first, then creates StandardVideo record linked to it.
  */
 
-import { useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useCallback, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "../../stores/authStore";
 import { useToast } from "../../hooks/useToast";
@@ -130,8 +130,28 @@ export function CreateVideoWizardPage() {
   const toast = useToast();
   const userId = useAuthStore((s) => s.user?.id);
 
+  // PHASE AF: launcher deep-link destegi. ?contentProjectId=... ve
+  // ?channelProfileId=... query parametreleri verilmisse wizard o context
+  // ile acilsin — user projenin icinden yeni bir video baslatabiliyor.
+  const [searchParams] = useSearchParams();
+  const presetChannelProfileId = searchParams.get("channelProfileId");
+  const presetContentProjectId = searchParams.get("contentProjectId");
+
   const [step, setStep] = useState(0);
-  const [values, setValues] = useState<VideoWizardState>(initialState);
+  const [values, setValues] = useState<VideoWizardState>({
+    ...initialState,
+    channelProfileId: presetChannelProfileId,
+    contentProjectId: presetContentProjectId,
+  });
+
+  // Eger launcher'dan geldiyse (proje + kanal dolu), basics adimina zipla.
+  useEffect(() => {
+    if (presetChannelProfileId && presetContentProjectId) {
+      setStep(2);
+    } else if (presetChannelProfileId) {
+      setStep(1);
+    }
+  }, [presetChannelProfileId, presetContentProjectId]);
   const { data: presetsData, isLoading: presetsLoading, error: presetsError } = useSubtitlePresets();
 
   function set<K extends keyof VideoWizardState>(field: K, value: VideoWizardState[K]) {

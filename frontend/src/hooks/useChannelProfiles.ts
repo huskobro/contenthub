@@ -11,6 +11,7 @@ import {
   createChannelProfile,
   createChannelProfileFromURL,
   deleteChannelProfile,
+  reimportChannelProfile,
   type CreateChannelProfile,
   type CreateChannelProfileFromURL,
 } from "../api/channelProfilesApi";
@@ -55,6 +56,25 @@ export function useCreateChannelProfileFromURL() {
   return useMutation({
     mutationFn: (data: CreateChannelProfileFromURL) =>
       createChannelProfileFromURL(data),
+    onError,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["channel-profiles"] });
+    },
+  });
+}
+
+/**
+ * PHASE AD / PHASE AF — reimport channel metadata.
+ *
+ * Partial veya failed durumunda user "Yeniden Dene" butonundan metadata
+ * fetch'ini tekrar calistirir. Ownership backend'de zorlanir; user-edit
+ * alanlari korunur.
+ */
+export function useReimportChannelProfile() {
+  const queryClient = useQueryClient();
+  const onError = useApiError();
+  return useMutation({
+    mutationFn: (profileId: string) => reimportChannelProfile(profileId),
     onError,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["channel-profiles"] });

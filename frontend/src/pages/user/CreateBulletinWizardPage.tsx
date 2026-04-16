@@ -11,8 +11,8 @@
  * Flow: ChannelProfile (Step 0) → ContentProject → Stil → /user/news-picker
  */
 
-import { useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useCallback, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { WizardShell, type WizardStep } from "../../components/wizard/WizardShell";
 import { ChannelProfileStep } from "../../components/wizard/ChannelProfileStep";
 import { ContentProjectStep } from "../../components/wizard/ContentProjectStep";
@@ -28,12 +28,32 @@ const STEPS: WizardStep[] = [
 
 export function CreateBulletinWizardPage() {
   const navigate = useNavigate();
+  // PHASE AF: launcher deep-link destegi. ?contentProjectId=... ve
+  // ?channelProfileId=... query parametreleri verilmisse wizard o context
+  // ile acilsin — user projenin icinden yeni bir bulten baslatabiliyor.
+  const [searchParams] = useSearchParams();
+  const presetChannelProfileId = searchParams.get("channelProfileId");
+  const presetContentProjectId = searchParams.get("contentProjectId");
 
   const [step, setStep] = useState(0);
-  const [channelProfileId, setChannelProfileId] = useState<string | null>(null);
-  const [contentProjectId, setContentProjectId] = useState<string | null>(null);
+  const [channelProfileId, setChannelProfileId] = useState<string | null>(
+    presetChannelProfileId,
+  );
+  const [contentProjectId, setContentProjectId] = useState<string | null>(
+    presetContentProjectId,
+  );
   const [lowerThirdStyle, setLowerThirdStyle] = useState<string>("");
   const [styleBlueprintId, setStyleBlueprintId] = useState<string | null>(null);
+
+  // Eger launcher'dan geldiyse (proje + kanal dolu), style adimina zipla.
+  // Bu user'i ayni adimlardan ikinci kez gecmek zorunda birakmaz.
+  useEffect(() => {
+    if (presetChannelProfileId && presetContentProjectId) {
+      setStep(2);
+    } else if (presetChannelProfileId) {
+      setStep(1);
+    }
+  }, [presetChannelProfileId, presetContentProjectId]);
 
   const handleChannelSelect = useCallback(
     (id: string) => setChannelProfileId(id),
