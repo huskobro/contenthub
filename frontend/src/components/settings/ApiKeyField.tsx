@@ -68,7 +68,11 @@ export function ApiKeyField({ cred }: { cred: CredentialStatus }) {
   const readOnly = useReadOnly();
   const [editing, setEditing] = useState(false);
   const [inputValue, setInputValue] = useState("");
-  const [feedback, setFeedback] = useState<{ type: "success" | "error"; msg: string } | null>(null);
+  // Phase AI — "info" variant: kayit dogrulandi ama canli provider testi yapilmadi.
+  // Kullaniciya "saved-only / not live-tested" durumunu net gosterir (yesil yerine notr).
+  const [feedback, setFeedback] = useState<
+    { type: "success" | "error" | "info"; msg: string } | null
+  >(null);
 
   const saveMutation = useSaveCredential();
   const validateMutation = useValidateCredential();
@@ -100,10 +104,19 @@ export function ApiKeyField({ cred }: { cred: CredentialStatus }) {
     setFeedback(null);
     validateMutation.mutate(cred.key, {
       onSuccess: (data) => {
-        setFeedback({
-          type: data.valid ? "success" : "error",
-          msg: data.message,
-        });
+        // Phase AI — honesty gate:
+        //   valid=true, live_tested=false  → info (saved-only; green-success degil)
+        //   valid=true, live_tested=true   → success (future: gercek canli ping yapildi)
+        //   valid=false                    → error
+        let type: "success" | "error" | "info";
+        if (!data.valid) {
+          type = "error";
+        } else if (data.live_tested) {
+          type = "success";
+        } else {
+          type = "info";
+        }
+        setFeedback({ type, msg: data.message });
       },
       onError: (err) => {
         setFeedback({ type: "error", msg: err instanceof Error ? err.message : "Dogrulama hatasi." });
@@ -202,7 +215,10 @@ export function ApiKeyField({ cred }: { cred: CredentialStatus }) {
         <div
           className={cn(
             "mt-1 text-sm",
-            feedback.type === "success" ? "text-success-text" : "text-error",
+            feedback.type === "success" && "text-success-text",
+            feedback.type === "error" && "text-error",
+            // Phase AI — saved-only / not live-tested: notr renk + italic for honesty.
+            feedback.type === "info" && "text-muted italic",
           )}
         >
           {feedback.msg}

@@ -37,10 +37,22 @@ export function saveCredential(
   return api.put<SaveCredentialResponse>(`${BASE_URL}/${encodeURIComponent(key)}`, { value });
 }
 
+/**
+ * Phase AI — validate endpoint artik `live_tested` field'i ile aciklayici mesaj doner.
+ * `live_tested=false` ise backend yalnizca DB/env kaydinin dolu olup olmadigini dogrulamistir;
+ * provider'a canli istek atilmamistir. UI bunu kullaniciya acikca iletmeli.
+ */
+export interface ValidateCredentialResponse {
+  key: string;
+  valid: boolean;
+  live_tested: boolean;
+  message: string;
+}
+
 export function validateCredential(
   key: string,
-): Promise<{ key: string; valid: boolean; message: string }> {
-  return api.post<{ key: string; valid: boolean; message: string }>(`${BASE_URL}/${encodeURIComponent(key)}/validate`);
+): Promise<ValidateCredentialResponse> {
+  return api.post<ValidateCredentialResponse>(`${BASE_URL}/${encodeURIComponent(key)}/validate`);
 }
 
 // YouTube OAuth helpers
