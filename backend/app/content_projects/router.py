@@ -1,16 +1,23 @@
 """
-Content Project router — Faz 2 + PHASE X (ownership + project-job hierarchy).
+Content Project router — Faz 2 + PHASE X + PHASE AF (project-centered workflow).
 
 PHASE X ekleri:
   - Tum endpoint'ler UserContext alir; non-admin yalnizca kendi projelerini gorur.
   - Create: user_id daima ctx.user_id (admin override edebilir).
   - GET /{id}/jobs endpoint'i — project altindaki job listesini doner (hierarchy).
+
+PHASE AF ekleri:
+  - GET /{id}/jobs: module_type + status filtreleri
+  - GET /{id}/summary: project-scope mini analytics (job counts by status,
+    publish counts, last activity). UI project detail'da reuse edilir;
+    ayri bir analytics sistemi acmiyor, mevcut jobs + publish_records
+    tablolarini okuyor.
 """
 
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.ownership import (
@@ -24,7 +31,7 @@ from app.content_projects.schemas import (
     ContentProjectResponse,
     ContentProjectUpdate,
 )
-from app.db.models import Job
+from app.db.models import Job, PublishRecord
 from app.db.session import get_db
 
 router = APIRouter(prefix="/content-projects", tags=["Content Projects"])
@@ -120,24 +127,35 @@ async def delete_content_project(
 @router.get("/{project_id}/jobs")
 async def list_project_jobs(
     project_id: str,
+    module_type: Optional[str] = Query(
+        None, description="Mod\u00fcl tipi filtresi (standard_video, news_bulletin, product_review)"
+    ),
+    job_status: Optional[str] = Query(
+        None, alias="status", description="Job status filtresi (queued, running, completed, failed, ...)"
+    ),
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=500),
     ctx: UserContext = Depends(get_current_user_context),
     db: AsyncSession = Depends(get_db),
 ):
-    """Bu proje altindaki tum job'lari doner (ownership'li)."""
+    """
+    Bu proje altindaki tum job'lari doner (ownership'li).
+
+    PHASE AF: module_type + status filtreleri eklendi; project detail UI'i
+    ayni projede birden fazla is tipini filtreleyebiliyor.
+    """
     project = await service.get_content_project(db, project_id)
     if not project:
         raise HTTPException(status_code=404, detail="Icerik projesi bulunamadi.")
     ensure_owner_or_admin(ctx, project.user_id, resource_label="Icerik projesi")
 
-    stmt = (
-        select(Job)
-        .where(Job.content_project_id == project_id)
-        .order_by(Job.created_at.desc())
-        .offset(skip)
-        .limit(limit)
-    )
+    stmt = select(Job).where(Job.content_project_id == project_id)
+    if module_type:
+        stmt = stmt.where(Job.module_type == module_type)
+    if job_status:
+        stmt = stmt.where(Job.status == job_status)
+    stmt = stmt.order_by(Job.created_at.desc()).offset(skip).limit(limit)
+
     rows = (await db.execute(stmt)).scalars().all()
     return [
         {
@@ -154,3 +172,83 @@ async def list_project_jobs(
         }
         for j in rows
     ]
+
+
+# ---------------------------------------------------------------------------
+# PHASE AF: project-scope mini analytics summary
+# ---------------------------------------------------------------------------
+
+
+@router.get("/{project_id}/summary")
+async def get_project_summary(
+    project_id: str,
+    ctx: UserContext = Depends(get_current_user_context),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Project detail sayfasi icin hafif analytics summary.
+
+    Icerik:
+      - jobs: toplam + status bazli kirilim + modul bazli kirilim + son job created_at
+      - publish: toplam + status bazli kirilim + son yayin tarihi
+
+    Scope: yalnizca bu project_id'ye bagli kayitlar (ownership backend'de
+    zaten kilitli). Ayri bir analytics sistemi degil; mevcut jobs +
+    publish_records tablolarini agregate eder.
+    """
+    project = await service.get_content_project(db, project_id)
+    if not project:
+        raise HTTPException(status_code=404, detail="Icerik projesi bulunamadi.")
+    ensure_owner_or_admin(ctx, project.user_id, resource_label="Icerik projesi")
+
+    # Jobs by status
+    status_rows = (await db.execute(
+        select(Job.status, func.count(Job.id))
+        .where(Job.content_project_id == project_id)
+        .group_by(Job.status)
+    )).all()
+    jobs_by_status = {s: int(c) for s, c in status_rows if s}
+
+    # Jobs by module_type
+    module_rows = (await db.execute(
+        select(Job.module_type, func.count(Job.id))
+        .where(Job.content_project_id == project_id)
+        .group_by(Job.module_type)
+    )).all()
+    jobs_by_module = {m: int(c) for m, c in module_rows if m}
+
+    jobs_total = sum(jobs_by_status.values())
+
+    last_job_at_row = (await db.execute(
+        select(func.max(Job.created_at)).where(Job.content_project_id == project_id)
+    )).scalar_one_or_none()
+
+    # Publish records by status
+    pr_rows = (await db.execute(
+        select(PublishRecord.status, func.count(PublishRecord.id))
+        .where(PublishRecord.content_project_id == project_id)
+        .group_by(PublishRecord.status)
+    )).all()
+    publish_by_status = {s: int(c) for s, c in pr_rows if s}
+    publish_total = sum(publish_by_status.values())
+
+    last_publish_row = (await db.execute(
+        select(func.max(PublishRecord.published_at)).where(
+            PublishRecord.content_project_id == project_id
+        )
+    )).scalar_one_or_none()
+
+    return {
+        "project_id": project_id,
+        "jobs": {
+            "total": jobs_total,
+            "by_status": jobs_by_status,
+            "by_module": jobs_by_module,
+            "last_created_at": last_job_at_row.isoformat() if last_job_at_row else None,
+        },
+        "publish": {
+            "total": publish_total,
+            "by_status": publish_by_status,
+            "last_published_at": last_publish_row.isoformat() if last_publish_row else None,
+        },
+    }
