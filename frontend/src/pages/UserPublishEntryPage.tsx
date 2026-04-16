@@ -1,31 +1,39 @@
+/**
+ * UserPublishEntryPage — PHASE AD.
+ *
+ * Bu sayfa artik router'da mount edilmiyor (router.tsx `/user/publish`
+ * dogrudan UserPublishPage'e gider). Dosya surdurulebilir smoke test'ler
+ * icin korundu; icerigi admin panel linklerine degil user panel akisina
+ * yonlendirir (admin-leak kapatildi — Faz AD).
+ */
 import { useNavigate } from "react-router-dom";
 
 const PUBLISH_ENTRIES = [
   {
-    icon: "I",
+    icon: "P",
     iconBgClass: "bg-success-dark",
-    title: "Isler",
-    desc: "Uretim islerini ve yayin hazirligini takip edin. Tamamlanan isler yayin adimina hazirlanan iceriklerdir. Yayin durumu ve sonuclari buradan gorulur.",
-    cta: "Isleri Goruntule",
-    to: "/admin/jobs",
+    title: "Projelerim",
+    desc: "Uretim projelerini ve yayin hazirligini takip edin. Tamamlanan projeler yayin adimina hazirlanan iceriklerdir.",
+    cta: "Projeleri Goruntule",
+    to: "/user/projects",
     testId: "publish-entry-jobs",
   },
   {
     icon: "V",
     iconBgClass: "bg-brand-600",
-    title: "Standart Videolar",
-    desc: "Olusturulan videolarin yayin hazirligini inceleyin. Metadata, script ve uretim tamamlandiginda YouTube yayini tetiklenebilir.",
-    cta: "Videolari Goruntule",
-    to: "/admin/standard-videos",
+    title: "Yeni Video",
+    desc: "Yeni bir standart video veya haber bulteni baslatmak icin icerik ekranini kullanin. Uretim tamamlandiginda yayin adimi acilir.",
+    cta: "Icerik Olustur",
+    to: "/user/content",
     testId: "publish-entry-standard-videos",
   },
   {
-    icon: "H",
+    icon: "Y",
     iconBgClass: "bg-brand-700",
-    title: "Haber Bultenleri",
-    desc: "Derlenen haber bultenlerinin yayin hazirligini inceleyin. Script ve metadata tamamlandiginda yayin sureci baslatilabilir.",
-    cta: "Bultenleri Goruntule",
-    to: "/admin/news-bulletins",
+    title: "Yayin Kayitlari",
+    desc: "Mevcut yayin kayitlarinizi (draft, pending, published) buradan yonetebilirsiniz.",
+    cta: "Yayinlari Goruntule",
+    to: "/user/publish",
     testId: "publish-entry-news-bulletins",
   },
 ];

@@ -449,3 +449,168 @@ async def list_product_snapshots(
     )
     total = int((await db.execute(total_stmt)).scalar() or 0)
     return list(items), total
+
+
+# ---------------------------------------------------------------------------
+# PHASE AD — Production pipeline
+# ---------------------------------------------------------------------------
+
+
+async def start_production(
+    db: AsyncSession,
+    *,
+    review_id: str,
+    dispatcher,
+    session_factory,
+    owner_id: Optional[str] = None,
+    content_project_id: Optional[str] = None,
+    channel_profile_id: Optional[str] = None,
+) -> dict:
+    """
+    Product Review uretim pipeline'ini baslatir.
+
+    Akis (standard_video / news_bulletin patternleri ile paralel):
+      1. Review kaydini dogrula (var mi, zaten job'a bagli degil mi)
+      2. Product_review.* settings snapshot al
+      3. Job olustur (module_type="product_review")
+      4. review.job_id set et
+      5. ContentProject.active_job_id guncelle (varsa)
+      6. initialize_job_steps + workspace enjeksiyonu
+      7. dispatcher.dispatch(job.id)
+
+    Returns:
+        dict: job_id, review_id, message
+    Raises:
+        ValueError: precondition ihlali
+    """
+    from sqlalchemy import select as sa_select, update as sa_update
+    from app.jobs.schemas import JobCreate
+    from app.jobs.service import create_job
+    from app.jobs.step_initializer import initialize_job_steps
+    from app.modules.registry import module_registry
+    from app.settings.settings_resolver import resolve, KNOWN_SETTINGS
+    from app.audit.service import write_audit_log
+    from app.db.models import Job, User
+
+    review = await get_product_review(db, review_id)
+    if review is None:
+        raise ValueError(f"ProductReview bulunamadi: {review_id}")
+
+    if review.job_id:
+        raise ValueError(
+            "Bu incelemeye zaten bir job baglanmis (job_id=%s); yeni baslatmak "
+            "icin kaydi klonlayin." % review.job_id
+        )
+
+    # Settings snapshot — product_review.* + system.*
+    snapshot_keys = [k for k in KNOWN_SETTINGS if k.startswith("product_review.")]
+    settings_snapshot: dict = {}
+    for key in snapshot_keys:
+        value = await resolve(key, db)
+        if value is not None:
+            settings_snapshot[key] = value
+        else:
+            meta = KNOWN_SETTINGS.get(key, {})
+            if meta.get("builtin_default") is not None:
+                settings_snapshot[key] = meta["builtin_default"]
+
+    for sys_key in ("system.workspace_root", "system.output_dir"):
+        sys_val = await resolve(sys_key, db, user_id=owner_id)
+        if sys_val is not None:
+            settings_snapshot[sys_key] = sys_val
+
+    try:
+        secondary_ids = json.loads(review.secondary_product_ids_json or "[]")
+    except (TypeError, ValueError):
+        secondary_ids = []
+
+    input_data: dict = {
+        "review_id": review.id,
+        "topic": review.topic,
+        "template_type": review.template_type,
+        "primary_product_id": review.primary_product_id,
+        "secondary_product_ids": secondary_ids,
+        "language": review.language or "tr",
+        "orientation": review.orientation or "vertical",
+        "duration_seconds": review.duration_seconds or 60,
+        "run_mode": review.run_mode or "semi_auto",
+        "affiliate_enabled": bool(review.affiliate_enabled),
+        "disclosure_text": review.disclosure_text or "",
+        "_settings_snapshot": settings_snapshot,
+    }
+
+    # User slug — workspace user-scoped
+    user_slug: Optional[str] = None
+    if owner_id:
+        user_row = (
+            await db.execute(sa_select(User).where(User.id == owner_id))
+        ).scalar_one_or_none()
+        user_slug = user_row.slug if user_row else None
+
+    job_payload = JobCreate(
+        module_type="product_review",
+        owner_id=owner_id,
+        input_data_json=json.dumps(input_data, ensure_ascii=False),
+        channel_profile_id=channel_profile_id,
+        content_project_id=content_project_id,
+    )
+    job = await create_job(db, job_payload)
+
+    review.job_id = job.id
+
+    if content_project_id:
+        from app.db.models import ContentProject
+
+        project = (
+            await db.execute(
+                sa_select(ContentProject).where(ContentProject.id == content_project_id)
+            )
+        ).scalar_one_or_none()
+        if project:
+            project.active_job_id = job.id
+            project.current_stage = "rendering"
+
+    await db.commit()
+
+    await write_audit_log(
+        db,
+        action="product_review.production.started",
+        entity_type="product_review",
+        entity_id=review_id,
+        details={
+            "job_id": job.id,
+            "topic": review.topic,
+            "template_type": review.template_type,
+            "language": input_data["language"],
+        },
+    )
+    await db.commit()
+
+    ws_path = await initialize_job_steps(
+        db, job.id, "product_review", module_registry, user_slug=user_slug
+    )
+
+    if ws_path:
+        input_data["workspace_root"] = ws_path
+        if user_slug:
+            input_data["user_slug"] = user_slug
+        await db.execute(
+            sa_update(Job)
+            .where(Job.id == job.id)
+            .values(input_data_json=json.dumps(input_data, ensure_ascii=False))
+        )
+        await db.commit()
+
+    await dispatcher.dispatch(job.id)
+
+    logger.info(
+        "product_review.start_production: review=%s job=%s dispatched",
+        review_id,
+        job.id,
+    )
+
+    return {
+        "job_id": job.id,
+        "review_id": review.id,
+        "message": "Uretim baslatildi.",
+    }

@@ -17,6 +17,7 @@ import {
   severityToType,
   notificationTypeToCategory,
 } from "../stores/notificationStore";
+import { useAuthStore } from "../stores/authStore";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 
@@ -68,6 +69,10 @@ function jobStatusType(status: string): "success" | "error" | "info" | "warning"
 export function useGlobalSSE() {
   const addNotification = useNotificationStore((s) => s.addNotification);
   const qc = useQueryClient();
+  // PHASE AD: role-aware job detail link — admin → /admin/jobs, user → /user/jobs
+  const role = useAuthStore((s) => s.user?.role);
+  const jobDetailPath = (jobId: string) =>
+    role === "admin" ? `/admin/jobs/${jobId}` : `/user/jobs/${jobId}`;
 
   const handleEvent = useCallback(
     (event: SSEEvent) => {
@@ -80,7 +85,7 @@ export function useGlobalSSE() {
             type: jobStatusType(data.status),
             title: `Is ${jobStatusLabel(data.status)}`,
             message: `Job ${data.job_id.slice(0, 8)}... → ${jobStatusLabel(data.status)}`,
-            link: `/admin/jobs/${data.job_id}`,
+            link: jobDetailPath(data.job_id),
             category: "job",
           });
         }
@@ -96,7 +101,7 @@ export function useGlobalSSE() {
             type: "error",
             title: "Adim Basarisiz",
             message: `${data.step_key} adimi basarisiz — Job ${data.job_id.slice(0, 8)}...`,
-            link: `/admin/jobs/${data.job_id}`,
+            link: jobDetailPath(data.job_id),
             category: "job",
           });
         }
@@ -121,7 +126,7 @@ export function useGlobalSSE() {
         qc.invalidateQueries({ queryKey: ["operations-inbox"] });
       }
     },
-    [addNotification, qc],
+    [addNotification, qc, role],
   );
 
   return useSSE({

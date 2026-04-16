@@ -10,6 +10,7 @@ import {
   fetchPublishLogs,
   fetchPublishRecord,
   fetchPublishRecords,
+  fetchPublishRecordsByProject,
   fetchSchedulerHealth,
   patchPublishPayload,
   resetToDraft,
@@ -154,6 +155,21 @@ export function usePublishRecordForJob(jobId: string | undefined) {
     queryKey: [KEY, "by-job", jobId],
     queryFn: () => fetchPublishRecords({ job_id: jobId! }),
     enabled: !!jobId,
+  });
+}
+
+/**
+ * PHASE AD: Returns all publish records linked to a ContentProject.
+ * Used by ProjectDetailPage to surface the publish status of the project's
+ * jobs without forcing the user to visit /user/publish.
+ */
+export function usePublishRecordsByProject(
+  contentProjectId: string | undefined,
+) {
+  return useQuery({
+    queryKey: [KEY, "by-project", contentProjectId],
+    queryFn: () => fetchPublishRecordsByProject(contentProjectId!),
+    enabled: !!contentProjectId,
   });
 }
 

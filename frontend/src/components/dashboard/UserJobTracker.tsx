@@ -77,7 +77,7 @@ export function UserJobTracker() {
               <JobCard
                 key={job.id}
                 job={job}
-                onClick={() => navigate(`/admin/jobs/${job.id}`)}
+                onClick={() => navigate(`/user/jobs/${job.id}`)}
               />
             ))}
           </div>
@@ -92,7 +92,7 @@ export function UserJobTracker() {
           </p>
           {recentCompleted.length > 0 && (
             <button
-              onClick={() => navigate("/admin/jobs")}
+              onClick={() => navigate("/user/projects")}
               className="text-xs text-brand-600 hover:text-brand-700 bg-transparent border-0 cursor-pointer p-0"
             >
               Tümünü Gör →
@@ -108,7 +108,7 @@ export function UserJobTracker() {
               <CompletedJobRow
                 key={job.id}
                 job={job}
-                onClick={() => navigate(`/admin/jobs/${job.id}`)}
+                onClick={() => navigate(`/user/jobs/${job.id}`)}
               />
             ))}
           </div>

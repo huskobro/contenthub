@@ -15,6 +15,7 @@ import { useContentProject } from "../../hooks/useContentProjects";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchJobs, type JobResponse } from "../../api/jobsApi";
 import { fetchStandardVideos, startStandardVideoProduction } from "../../api/standardVideoApi";
+import { usePublishRecordsByProject } from "../../hooks/usePublish";
 import { useToast } from "../../hooks/useToast";
 import {
   PageShell,
@@ -93,6 +94,10 @@ function LegacyProjectDetailPage() {
     select: (videos) => videos.filter((v) => v.content_project_id === projectId),
   });
 
+  // PHASE AD: Fetch publish records linked to this project so the user can
+  // see publish status inline instead of bouncing to /user/publish.
+  const { data: projectPublishRecords } = usePublishRecordsByProject(projectId);
+
   const linkedJobs: JobResponse[] = projectJobs ?? [];
 
   // PHASE AA: projenin en son is'ini preview/final paneli icin sec.
@@ -116,7 +121,7 @@ function LegacyProjectDetailPage() {
       qc.invalidateQueries({ queryKey: ["jobs"] });
       qc.invalidateQueries({ queryKey: ["standard-videos"] });
       qc.invalidateQueries({ queryKey: ["content-projects"] });
-      navigate(`/admin/jobs/${data.job_id}`);
+      navigate(`/user/jobs/${data.job_id}`);
     },
     onError: (err: Error) => {
       toast.error(err.message ?? "Üretim başlatılamadı.");
@@ -214,7 +219,7 @@ function LegacyProjectDetailPage() {
         {project.active_job_id && (
           <Row label="Aktif Job">
             <Link
-              to={`/admin/jobs/${project.active_job_id}`}
+              to={`/user/jobs/${project.active_job_id}`}
               className="text-brand-600 hover:text-brand-700 underline text-sm"
             >
               {project.active_job_id.slice(0, 12)}...
@@ -235,7 +240,7 @@ function LegacyProjectDetailPage() {
               <div
                 key={job.id}
                 className="flex items-center justify-between px-4 py-3 hover:bg-brand-50 cursor-pointer transition-colors"
-                onClick={() => navigate(`/admin/jobs/${job.id}`)}
+                onClick={() => navigate(`/user/jobs/${job.id}`)}
               >
                 <div className="min-w-0 flex-1">
                   <p className="m-0 text-sm font-medium text-neutral-800">
@@ -262,6 +267,41 @@ function LegacyProjectDetailPage() {
         />
       )}
 
+      {/* PHASE AD — Publish records linked to this project */}
+      {projectPublishRecords && projectPublishRecords.length > 0 && (
+        <SectionShell title="Yayın Durumu" testId="project-publish-records">
+          <div className="divide-y divide-border-subtle">
+            {projectPublishRecords.map((record) => (
+              <div
+                key={record.id}
+                className="flex items-center justify-between px-4 py-3 hover:bg-brand-50 cursor-pointer transition-colors"
+                onClick={() => navigate(`/user/publish/${record.id}`)}
+                data-testid={`project-publish-record-${record.id}`}
+              >
+                <div className="min-w-0 flex-1">
+                  <p className="m-0 text-sm font-medium text-neutral-800">
+                    {record.platform} &middot; <Mono>{record.id.slice(0, 12)}...</Mono>
+                  </p>
+                  <p className="m-0 mt-0.5 text-xs text-neutral-500">
+                    {record.review_state} &middot;{" "}
+                    {record.published_at
+                      ? `Yayınlandı: ${formatDateISO(record.published_at)}`
+                      : record.scheduled_at
+                        ? `Planlandı: ${formatDateISO(record.scheduled_at)}`
+                        : `Oluşturuldu: ${formatDateISO(record.created_at)}`}
+                  </p>
+                </div>
+                <StatusBadge
+                  status={record.status}
+                  label={STATUS_LABELS[record.status] ?? record.status}
+                  size="sm"
+                />
+              </div>
+            ))}
+          </div>
+        </SectionShell>
+      )}
+
       {/* Quick Actions */}
       <SectionShell title="Aksiyonlar" testId="project-actions">
         <div className="flex gap-3 flex-wrap items-center">
@@ -271,6 +311,7 @@ function LegacyProjectDetailPage() {
               onClick={() => startProduction(pendingVideo.id)}
               disabled={isStarting}
               className="px-4 py-1.5 text-sm font-medium text-white bg-brand-600 border border-brand-600 rounded-sm cursor-pointer hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              data-testid="project-action-start-standard-video"
             >
               {isStarting ? "Başlatılıyor..." : "▶ Üretime Başla"}
             </button>
@@ -281,6 +322,39 @@ function LegacyProjectDetailPage() {
             <span className="text-sm text-neutral-500">
               ⏳ Render devam ediyor...
             </span>
+          )}
+          {/* News Bulletin — henüz aktif job yoksa news picker'a gönder */}
+          {project.module_type === "news_bulletin" &&
+            !project.active_job_id && (
+            <button
+              onClick={() =>
+                navigate(`/user/news-picker?contentProjectId=${project.id}`)
+              }
+              className="px-4 py-1.5 text-sm font-medium text-white bg-brand-600 border border-brand-600 rounded-sm cursor-pointer hover:bg-brand-700"
+              data-testid="project-action-start-news-bulletin"
+            >
+              📰 Haber Seç ve Başlat
+            </button>
+          )}
+          {/* Product Review — henüz ayrı wizard'a sahip değil, genel create akışına yönlendir */}
+          {project.module_type === "product_review" && !project.active_job_id && (
+            <button
+              onClick={() => navigate("/user/content")}
+              className="px-4 py-1.5 text-sm font-medium text-white bg-brand-600 border border-brand-600 rounded-sm cursor-pointer hover:bg-brand-700"
+              data-testid="project-action-start-product-review"
+            >
+              🛒 İçerik Oluştur
+            </button>
+          )}
+          {/* Yayın — completed olmuş bir job varsa publish ekranına hızlı geçiş */}
+          {linkedJobs.some((j) => j.status === "completed") && (
+            <button
+              onClick={() => navigate(`/user/publish?projectId=${project.id}`)}
+              className="px-4 py-1.5 text-sm font-medium text-brand-700 bg-brand-50 border border-brand-200 rounded-sm cursor-pointer hover:bg-brand-100"
+              data-testid="project-action-publish"
+            >
+              📡 Yayına Gönder
+            </button>
           )}
           <button
             onClick={() => navigate("/user/projects")}

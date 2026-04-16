@@ -142,16 +142,10 @@ export function AtriumProjectDetailPage() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const toast = useToast();
-  // Role guard: only admins can access /admin/jobs/:id — non-admin users
-  // should stay in their own project workspace.
+  // PHASE AD: /user/jobs/:id exists now — open role-appropriate detail page.
   const isAdmin = useAuthStore((s) => s.user?.role === "admin");
   const openJob = (jobId: string) => {
-    if (isAdmin) {
-      navigate(`/admin/jobs/${jobId}`);
-    } else if (projectId) {
-      // Non-admin: stay on the project detail page (refresh scroll)
-      navigate(`/user/projects/${projectId}`);
-    }
+    navigate(isAdmin ? `/admin/jobs/${jobId}` : `/user/jobs/${jobId}`);
   };
 
   const {
@@ -210,11 +204,7 @@ export function AtriumProjectDetailPage() {
       qc.invalidateQueries({ queryKey: ["jobs"] });
       qc.invalidateQueries({ queryKey: ["standard-videos"] });
       qc.invalidateQueries({ queryKey: ["content-projects"] });
-      // Admins hop into job cockpit; non-admin users stay on the project
-      // detail (they don't have /admin access).
-      if (isAdmin) {
-        navigate(`/admin/jobs/${data.job_id}`);
-      }
+      navigate(isAdmin ? `/admin/jobs/${data.job_id}` : `/user/jobs/${data.job_id}`);
     },
     onError: (err: Error) => {
       toast.error(err.message ?? "Üretim başlatılamadı.");
@@ -523,20 +513,14 @@ export function AtriumProjectDetailPage() {
                 {formatDateISO(project.deadline_at) || "—"}
               </MetaRow>
             ) : null}
-            {project.active_job_id && isAdmin ? (
+            {project.active_job_id ? (
               <MetaRow label="Aktif Job">
                 <Link
-                  to={`/admin/jobs/${project.active_job_id}`}
+                  to={isAdmin ? `/admin/jobs/${project.active_job_id}` : `/user/jobs/${project.active_job_id}`}
                   className="text-indigo-600 hover:text-indigo-700 underline text-sm"
                 >
                   {project.active_job_id.slice(0, 12)}&hellip;
                 </Link>
-              </MetaRow>
-            ) : project.active_job_id ? (
-              <MetaRow label="Aktif Job">
-                <span className="text-neutral-600 text-sm font-mono">
-                  {project.active_job_id.slice(0, 12)}&hellip;
-                </span>
               </MetaRow>
             ) : null}
             {project.description ? (

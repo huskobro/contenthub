@@ -169,3 +169,38 @@ async def delete_channel_profile(
     )
     result = await service.delete_channel_profile(db, profile_id)
     return result
+
+
+# ---------------------------------------------------------------------------
+# PHASE AD — Reimport (stuck-at-partial recovery)
+# ---------------------------------------------------------------------------
+
+
+@router.post("/{profile_id}/reimport", response_model=ChannelProfileResponse)
+async def reimport_channel_profile_endpoint(
+    profile_id: str,
+    ctx: UserContext = Depends(get_current_user_context),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Re-run metadata fetch for a ChannelProfile that landed in `partial`
+    state (or simply to refresh a profile).
+
+    Ownership: yalnizca profil sahibi (veya admin) reimport tetikleyebilir.
+    User-edit alanlari (profile_name, notes, default_language) korunur;
+    sadece fetch sonucu alanlari (title, avatar, external ids, handle,
+    import_status, import_error, last_import_at) guncellenir.
+    """
+    existing = await service.get_channel_profile(db, profile_id)
+    if not existing:
+        raise HTTPException(status_code=404, detail="Kanal profili bulunamadi.")
+    ensure_owner_or_admin(
+        ctx, existing.user_id, resource_label="Kanal profili"
+    )
+    try:
+        result = await service.reimport_channel_profile(db, profile_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc))
+    if not result:
+        raise HTTPException(status_code=404, detail="Kanal profili bulunamadi.")
+    return result

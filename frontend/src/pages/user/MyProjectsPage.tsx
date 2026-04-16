@@ -110,7 +110,7 @@ function LegacyMyProjectsPage() {
       actions={
         <ActionButton
           variant="primary"
-          onClick={() => navigate("/admin/standard-videos/wizard")}
+          onClick={() => navigate("/user/content")}
         >
           Yeni Proje
         </ActionButton>

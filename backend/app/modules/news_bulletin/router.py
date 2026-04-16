@@ -7,6 +7,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
 from app.visibility.dependencies import require_visible, get_active_user_id
+from app.auth.ownership import (
+    UserContext,
+    ensure_owner_or_admin,
+    get_current_user_context,
+)
 from .schemas import (
     NewsBulletinCreate, NewsBulletinUpdate, NewsBulletinResponse,
     NewsBulletinScriptCreate, NewsBulletinScriptUpdate, NewsBulletinScriptResponse,
@@ -392,7 +397,7 @@ async def create_bulletin_publish_record(
     item_id: str,
     payload: Optional[CreateBulletinPublishRecordRequest] = None,
     db: AsyncSession = Depends(get_db),
-    user_id: Optional[str] = Depends(get_active_user_id),
+    ctx: UserContext = Depends(get_current_user_context),
 ):
     """
     Create a PublishRecord for a completed news bulletin.
@@ -400,6 +405,10 @@ async def create_bulletin_publish_record(
     Preconditions:
       * Bulletin exists and has a ``job_id`` (pipeline ran).
       * No live PublishRecord for this bulletin/platform combination.
+
+    PHASE AD: enforces ownership via the linked ContentProject.
+    Non-admin users may only publish bulletins that belong to a project
+    they own; orphan bulletins (no project) are admin-only.
 
     The underlying payload (title/description/tags) is assembled by
     ``publish.service.create_publish_record_from_job`` from the
@@ -411,6 +420,7 @@ async def create_bulletin_publish_record(
     fixed up silently.
     """
     from app.publish import service as publish_service
+    from app.db.models import ContentProject
 
     bulletin = await service.get_news_bulletin(db, item_id)
     if bulletin is None:
@@ -420,6 +430,23 @@ async def create_bulletin_publish_record(
             status_code=422,
             detail="Bülten henüz üretilmedi (job_id yok). Önce start-production.",
         )
+
+    # PHASE AD: Ownership gate — non-admin must own the linked project.
+    if not ctx.is_admin:
+        if bulletin.content_project_id is None:
+            raise HTTPException(
+                status_code=403,
+                detail="Bu bülten bir projeye bağlı değil; yalnızca admin yayınlayabilir.",
+            )
+        project = await db.get(ContentProject, bulletin.content_project_id)
+        ensure_owner_or_admin(
+            ctx,
+            getattr(project, "user_id", None) if project else None,
+            not_found_on_missing=True,
+            resource_label="proje",
+        )
+
+    user_id = ctx.user_id
 
     request_body = payload or CreateBulletinPublishRecordRequest()
     platform = (request_body.platform or "youtube").strip().lower()

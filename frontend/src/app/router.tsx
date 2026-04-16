@@ -10,7 +10,6 @@ import { RootErrorBoundary } from "../components/RootErrorBoundary";
 import { AdminOverviewPage } from "../pages/AdminOverviewPage";
 import { UserDashboardPage } from "../pages/UserDashboardPage";
 import { UserContentEntryPage } from "../pages/UserContentEntryPage";
-import { UserPublishEntryPage } from "../pages/UserPublishEntryPage";
 
 // Lazy-loaded user publish page (Faz 11)
 const UserPublishPage = lazy(() => import("../pages/user/UserPublishPage").then(m => ({ default: m.UserPublishPage })));
@@ -76,6 +75,7 @@ const ChannelDetailPage = lazy(() => import("../pages/user/ChannelDetailPage").t
 const CreateVideoWizardPage = lazy(() => import("../pages/user/CreateVideoWizardPage").then(m => ({ default: m.CreateVideoWizardPage })));
 const CreateBulletinWizardPage = lazy(() => import("../pages/user/CreateBulletinWizardPage").then(m => ({ default: m.CreateBulletinWizardPage })));
 const ProjectDetailPage = lazy(() => import("../pages/user/ProjectDetailPage").then(m => ({ default: m.ProjectDetailPage })));
+const UserJobDetailPage = lazy(() => import("../pages/user/UserJobDetailPage").then(m => ({ default: m.UserJobDetailPage })));
 const UserAnalyticsPage = lazy(() => import("../pages/user/UserAnalyticsPage").then(m => ({ default: m.UserAnalyticsPage })));
 const UserCommentsPage = lazy(() => import("../pages/user/UserCommentsPage").then(m => ({ default: m.UserCommentsPage })));
 const UserPlaylistsPage = lazy(() => import("../pages/user/UserPlaylistsPage").then(m => ({ default: m.UserPlaylistsPage })));
@@ -201,6 +201,8 @@ export const router = createBrowserRouter([
       { path: "settings", element: <UserSettingsPage /> },
       { path: "projects", element: <Suspense fallback={<LazyFallback />}><MyProjectsPage /></Suspense> },
       { path: "projects/:projectId", element: <Suspense fallback={<LazyFallback />}><ProjectDetailPage /></Suspense> },
+      { path: "jobs/:jobId", element: <Suspense fallback={<LazyFallback />}><UserJobDetailPage /></Suspense> },
+      { path: "publish/:recordId", element: <VisibilityGuard targetKey="panel:publish"><Suspense fallback={<LazyFallback />}><PublishDetailPage /></Suspense></VisibilityGuard> },
       { path: "channels", element: <Suspense fallback={<LazyFallback />}><MyChannelsPage /></Suspense> },
       { path: "channels/:channelId", element: <Suspense fallback={<LazyFallback />}><ChannelDetailPage /></Suspense> },
       { path: "analytics", element: <Suspense fallback={<LazyFallback />}><UserAnalyticsPage /></Suspense> },

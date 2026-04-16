@@ -226,16 +226,9 @@ export function AtriumUserDashboardPage() {
   const displayName = authUser?.display_name ?? "Editor";
   const isAdmin = authUser?.role === "admin";
 
-  // Non-admin users cannot reach /admin/jobs/:id. For them, open the parent
-  // project detail instead (live-studio strip shows mostly their own jobs).
+  // PHASE AD: /user/jobs/:id exists now — open role-appropriate detail route.
   const openJob = (job: JobResponse) => {
-    if (isAdmin) {
-      navigate(`/admin/jobs/${job.id}`);
-    } else if (job.content_project_id) {
-      navigate(`/user/projects/${job.content_project_id}`);
-    } else {
-      navigate("/user/projects");
-    }
+    navigate(isAdmin ? `/admin/jobs/${job.id}` : `/user/jobs/${job.id}`);
   };
 
   // Match the layout query (limit: 50) so React Query dedupes across the

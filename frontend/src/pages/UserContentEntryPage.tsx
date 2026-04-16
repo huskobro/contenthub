@@ -3,10 +3,12 @@ import { useWizardStore } from "../stores/wizardStore";
 import { useEnabledModules } from "../hooks/useEnabledModules";
 import { useEffectiveSetting } from "../hooks/useEffectiveSettings";
 
-// Varsayılan rotalar (ayar yüklenemezse fallback)
+// Varsayılan rotalar — PHASE AD: user yüzeyi kendi wizard'larını kullanır,
+// admin wizard'a sızıntı yok. Her iki mod (guided/advanced) aynı user wizard'ına
+// iner; wizard içinde mode'a göre davranış değişir.
 const DEFAULT_ROUTES = {
-  standard_video: { wizard: "/admin/standard-videos/wizard", form: "/admin/standard-videos/new" },
-  news_bulletin:  { wizard: "/admin/news-bulletins/wizard",  form: "/admin/news-bulletins/new" },
+  standard_video: { wizard: "/user/create/video",    form: "/user/create/video" },
+  news_bulletin:  { wizard: "/user/create/bulletin", form: "/user/create/bulletin" },
 };
 
 const CONTENT_TYPES = [

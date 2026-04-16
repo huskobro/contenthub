@@ -237,16 +237,9 @@ export function CanvasUserDashboardPage() {
   const displayName = authUser?.display_name ?? "Kullanıcı";
   const isAdmin = authUser?.role === "admin";
 
-  // Non-admin users don't have access to /admin/jobs/:id — send them to the
-  // parent project workspace instead (which is their own scope).
+  // PHASE AD: /user/jobs/:id exists now — open the role-appropriate detail.
   const openJob = (job: JobResponse) => {
-    if (isAdmin) {
-      navigate(`/admin/jobs/${job.id}`);
-    } else if (job.content_project_id) {
-      navigate(`/user/projects/${job.content_project_id}`);
-    } else {
-      navigate("/user/projects");
-    }
+    navigate(isAdmin ? `/admin/jobs/${job.id}` : `/user/jobs/${job.id}`);
   };
 
   // Match the layout query (limit: 50) so React Query can dedupe; the

@@ -253,6 +253,81 @@ async def create_channel_profile_from_url(
 
 
 # ---------------------------------------------------------------------------
+# PHASE AD — Reimport (stuck-at-partial recovery)
+# ---------------------------------------------------------------------------
+
+
+async def reimport_channel_profile(
+    db: AsyncSession, profile_id: str
+) -> Optional[ChannelProfile]:
+    """
+    Re-run metadata fetch for an existing ChannelProfile.
+
+    Used when the original import landed in `partial` state (fetch failed or
+    returned insufficient data). Re-parses the stored source_url, re-fetches
+    metadata, and updates the profile's title / avatar / external ids /
+    import_status in place. Leaves user-edited fields (profile_name,
+    default_language, notes) untouched.
+
+    Returns the updated profile, or None if the profile does not exist.
+    """
+    profile = await db.get(ChannelProfile, profile_id)
+    if profile is None:
+        return None
+
+    if not profile.source_url:
+        raise ValueError(
+            "Bu kanal profili URL ile olusturulmadi (source_url yok); reimport yok."
+        )
+
+    try:
+        info = parse_channel_url(profile.source_url)
+    except ChannelURLError as exc:
+        raise ValueError(str(exc))
+
+    meta = await fetch_channel_metadata(info)
+
+    profile.platform = info.platform
+    profile.normalized_url = info.normalized_url
+    if meta.external_channel_id or info.external_channel_id:
+        profile.external_channel_id = meta.external_channel_id or info.external_channel_id
+    if meta.handle or info.handle:
+        profile.handle = meta.handle or info.handle
+    # Only overwrite title/avatar when the reimport returned new values — keeps
+    # user customizations (e.g. manual title edits) intact if meta has nothing.
+    if meta.title:
+        profile.title = meta.title
+    if meta.avatar_url:
+        profile.avatar_url = meta.avatar_url
+
+    profile.metadata_json = (
+        json.dumps(
+            {
+                "description": meta.description,
+                "fetch_error": meta.fetch_error,
+                "url_kind": info.kind,
+            },
+            ensure_ascii=False,
+        )
+        if (meta.description or meta.fetch_error or info.kind)
+        else profile.metadata_json
+    )
+    profile.import_status = "partial" if meta.is_partial else "success"
+    profile.import_error = meta.fetch_error
+    profile.last_import_at = datetime.now(timezone.utc)
+
+    await db.commit()
+    await db.refresh(profile)
+    logger.info(
+        "ChannelProfile reimport: id=%s platform=%s status=%s",
+        profile.id,
+        profile.platform,
+        profile.import_status,
+    )
+    return profile
+
+
+# ---------------------------------------------------------------------------
 # Update / Delete — unchanged behavior (route handler ownership enforces)
 # ---------------------------------------------------------------------------
 

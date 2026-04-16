@@ -116,7 +116,7 @@ function LegacyUserDashboardPage() {
                 description="Hızlı oluştur butonlarından ilk projenizi başlatabilirsiniz."
                 action={{
                   label: "Video Oluştur",
-                  onClick: () => navigate("/admin/standard-videos/wizard"),
+                  onClick: () => navigate("/user/create/video"),
                   variant: "primary",
                 }}
               />
