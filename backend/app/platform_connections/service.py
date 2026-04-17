@@ -10,6 +10,7 @@ from typing import Optional
 from sqlalchemy import select, func, delete as sa_delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.auth.ownership import UserContext
 from app.db.models import PlatformConnection, ChannelProfile, User
 from app.platform_connections.schemas import (
     PlatformConnectionCreate,
@@ -38,19 +39,63 @@ async def list_platform_connections(
     channel_profile_id: Optional[str] = None,
     skip: int = 0,
     limit: int = 50,
+    *,
+    user_context: Optional[UserContext] = None,
 ) -> list[PlatformConnection]:
+    """List platform connections with mandatory ownership scoping.
+
+    PHASE AM (security fix): legacy Faz 2 endpoint previously returned ALL
+    connections globally. Now every caller MUST provide a `UserContext`; the
+    query is joined with `ChannelProfile` so non-admin users receive only
+    connections whose channel belongs to them. Admin callers see everything.
+
+    Back-compat: internal callers that still pass no context will receive an
+    empty list (fail-closed). Routes are expected to always pass `ctx`.
+    """
     q = select(PlatformConnection).order_by(PlatformConnection.created_at.desc())
     if channel_profile_id:
         q = q.where(PlatformConnection.channel_profile_id == channel_profile_id)
+
+    # Fail-closed: no context -> empty result. Callers must pass ctx.
+    if user_context is None:
+        return []
+
+    if not user_context.is_admin:
+        # Join ChannelProfile to enforce ownership at query level.
+        q = q.join(
+            ChannelProfile,
+            ChannelProfile.id == PlatformConnection.channel_profile_id,
+        ).where(ChannelProfile.user_id == user_context.user_id)
+
     q = q.offset(skip).limit(limit)
     result = await db.execute(q)
     return list(result.scalars().all())
 
 
 async def get_platform_connection(
-    db: AsyncSession, connection_id: str
+    db: AsyncSession,
+    connection_id: str,
+    *,
+    user_context: Optional[UserContext] = None,
 ) -> Optional[PlatformConnection]:
-    return await db.get(PlatformConnection, connection_id)
+    """Get a single connection, ownership-checked.
+
+    PHASE AM: if `user_context` is provided and the caller is not admin, we
+    return None when the connection's channel profile is not owned by the
+    caller. Missing context -> returns as before (router-layer guards may
+    still enforce). Callers are expected to pass `user_context` for any
+    user-facing route.
+    """
+    conn = await db.get(PlatformConnection, connection_id)
+    if conn is None:
+        return None
+    if user_context is None or user_context.is_admin:
+        return conn
+    # Non-admin: verify channel ownership at service layer too.
+    profile = await db.get(ChannelProfile, conn.channel_profile_id)
+    if profile is None or profile.user_id != user_context.user_id:
+        return None
+    return conn
 
 
 async def create_platform_connection(
@@ -82,11 +127,27 @@ async def create_platform_connection(
 
 
 async def update_platform_connection(
-    db: AsyncSession, connection_id: str, payload: PlatformConnectionUpdate
+    db: AsyncSession,
+    connection_id: str,
+    payload: PlatformConnectionUpdate,
+    *,
+    user_context: Optional[UserContext] = None,
 ) -> Optional[PlatformConnection]:
+    """Update a connection, ownership-checked.
+
+    PHASE AM: non-admin callers may only mutate connections belonging to their
+    own channel profiles. Missing context -> treated as not-found (fail-closed)
+    so a stray caller cannot mutate arbitrary rows.
+    """
     conn = await db.get(PlatformConnection, connection_id)
     if not conn:
         return None
+    if user_context is None:
+        return None
+    if not user_context.is_admin:
+        profile = await db.get(ChannelProfile, conn.channel_profile_id)
+        if profile is None or profile.user_id != user_context.user_id:
+            return None
     for field, value in payload.model_dump(exclude_unset=True).items():
         setattr(conn, field, value)
     await db.commit()
@@ -95,12 +156,25 @@ async def update_platform_connection(
 
 
 async def delete_platform_connection(
-    db: AsyncSession, connection_id: str
+    db: AsyncSession,
+    connection_id: str,
+    *,
+    user_context: Optional[UserContext] = None,
 ) -> bool:
-    """Hard delete."""
+    """Hard delete, ownership-checked.
+
+    PHASE AM: non-admin callers may only delete connections belonging to their
+    own channel profiles. Missing context -> treated as not-found (fail-closed).
+    """
     conn = await db.get(PlatformConnection, connection_id)
     if not conn:
         return False
+    if user_context is None:
+        return False
+    if not user_context.is_admin:
+        profile = await db.get(ChannelProfile, conn.channel_profile_id)
+        if profile is None or profile.user_id != user_context.user_id:
+            return False
     await db.delete(conn)
     await db.commit()
     return True
@@ -133,14 +207,24 @@ def _enrich_connection(
 async def get_connection_with_health(
     db: AsyncSession,
     connection_id: str,
+    *,
+    user_context: Optional[UserContext] = None,
 ) -> Optional[ConnectionWithHealth]:
-    """Get a single connection with computed health/capability."""
+    """Get a single connection with computed health/capability.
+
+    PHASE AM: non-admin callers may only view connections belonging to their
+    own channel profiles. Missing context -> returns as before (router-layer
+    guards may still enforce).
+    """
     conn = await db.get(PlatformConnection, connection_id)
     if not conn:
         return None
 
     # Fetch channel profile name
     ch = await db.get(ChannelProfile, conn.channel_profile_id)
+    if user_context is not None and not user_context.is_admin:
+        if ch is None or ch.user_id != user_context.user_id:
+            return None
     ch_name = ch.profile_name if ch else None
     uid = ch.user_id if ch else None
     u_name: Optional[str] = None
