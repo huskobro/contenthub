@@ -60,8 +60,8 @@ Her kalem: ayrı commit, push, test sonucu MEMORY.md'ye, 7 başlıklı Türkçe 
 
 | # | Kod | Kalem | Durum | Commit |
 |---|---|---|---|---|
-| 1 | P0.1 | `useCurrentUser()` hook | ✅ Tamam | (bu commit) |
-| 2 | P0.2 | `useActiveScope()` + `adminScopeStore` | ⏳ | — |
+| 1 | P0.1 | `useCurrentUser()` hook | ✅ Tamam | `2225aa0` |
+| 2 | P0.2 | `useActiveScope()` + `adminScopeStore` | ✅ Tamam | `__P02SHA__` |
 | 3 | P0.3a | Admin fetch refactor — Jobs/Publish/Channels/Automation | ⏳ | — |
 | 4 | P0.3b | Admin fetch refactor — Analytics/Calendar/Audit | ⏳ | — |
 | 5 | P0.3c | Admin fetch refactor — kalan 35+ sayfa | ⏳ | — |
@@ -139,7 +139,8 @@ Her kalem: ayrı commit, push, test sonucu MEMORY.md'ye, 7 başlıklı Türkçe 
 - `8746047` — R4 preview/prototype planı
 - `e9c2cda` — R5 uygulama yol haritası + MEMORY güncellemesi
 - `848ea23` — REV-2 kararı: R6 kaldırıldı, 16 kalem tek dalga, wizard dahil
-- (bu commit) — P0.1 useCurrentUser hook + unit testler + .gitignore symlink düzeltmesi
+- `2225aa0` — P0.1 useCurrentUser hook + unit testler + .gitignore symlink düzeltmesi
+- `__P02SHA__` — P0.2 useActiveScope hook + adminScopeStore + 19 unit test (14 store + 5 hook)
 
 ### 4.2 Yeni Dosyalar
 - `docs/redesign/MEMORY.md` (bu dosya)
@@ -148,9 +149,15 @@ Her kalem: ayrı commit, push, test sonucu MEMORY.md'ye, 7 başlıklı Türkçe 
 - `docs/redesign/R3_information_architecture.md`
 - `docs/redesign/R4_preview_prototype_plan.md`
 - `docs/redesign/R5_execution_roadmap.md`
+- `frontend/src/hooks/useCurrentUser.ts` (P0.1)
+- `frontend/src/tests/hooks/useCurrentUser.test.tsx` (P0.1)
+- `frontend/src/stores/adminScopeStore.ts` (P0.2)
+- `frontend/src/hooks/useActiveScope.ts` (P0.2)
+- `frontend/src/tests/stores/adminScopeStore.test.ts` (P0.2)
+- `frontend/src/tests/hooks/useActiveScope.test.tsx` (P0.2)
 
 ### 4.3 Değiştirilen Dosyalar
-- Yok (discovery-only)
+- `.gitignore` — `**/node_modules` pattern (P0.1, symlink uyumu)
 
 ---
 
@@ -241,3 +248,4 @@ Her kalem: ayrı commit, push, test sonucu MEMORY.md'ye, 7 başlıklı Türkçe 
 | 2026-04-17 | R5 kapanış | 14 kalem / 4 kademe (P0/P1/P2/P3) yol haritası, effort/risk matrisi, R7 wizard ertelendi, R6 onay kapısı açık |
 | 2026-04-17 | REV-2 kararı | Kullanıcı: "R6 kapısı kaldırılsın, 16 kalem tek dalgada bitsin, R7 ayrı faz olmasın, wizard dahil"; §1.5 çalışma kuralları + §1.6 plan tablosu + §5 yapılmayanlar bölümü + §2 faz tablosu güncellendi; R5 dosyası REV-2'ye alındı (commit `848ea23`) |
 | 2026-04-17 | P0.1 tamam | `useCurrentUser()` hook + 4 unit test (disabled/enabled/error/key). Vitest PASS (4/4), tsc --noEmit temiz, vite build başarılı. .gitignore `**/node_modules` eklendi (symlink için) |
+| 2026-04-17 | P0.2 tamam | `adminScopeStore` (Zustand + localStorage versioned shape v=1) + `useActiveScope()` hook (role/mode matrix + defensive fallback). 14 store test + 5 hook test, vitest PASS (19/19), tsc --noEmit temiz, vite build başarılı |
