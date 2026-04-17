@@ -87,9 +87,11 @@ describe("Panel shell smoke tests", () => {
   });
 
   it("admin sidebar shows section headers", () => {
+    // Redesign REV-2 / P2.1: nav yeniden gruplandı.
+    // "İçerik Üretimi" → "Üretim" (kısa isim). "Sistem" + "Haber" aynı.
     renderAt("/admin");
     expect(screen.getByText("Sistem")).toBeDefined();
-    expect(screen.getAllByText("İçerik Üretimi").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("Üretim").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText("Haber")).toBeDefined();
   });
 

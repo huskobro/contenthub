@@ -4,12 +4,32 @@
  *
  * Consolidates repeated useVisibility() calls into a single useVisibilityMap()
  * pattern and exports navigation definitions consumed by both layout variants.
+ *
+ * Redesign REV-2 / P2.1 (2026-04-18) — nav yeniden gruplandırma:
+ *   - Admin: 9 bölüm / 32 → 7 bölüm / 27 görünür giriş.
+ *     • "Scope" yeni: "Kullanıcı Yönetimi" AdminScopeSwitcher'ın kaynak
+ *        sayfası olarak buraya taşındı.
+ *     • "Yayın & Takvim" birleşik bölüm (eski "Yayın" genişletildi,
+ *        `/admin/calendar` unified).
+ *     • Kaldırılan (sayfa duruyor, sadece nav'dan): "Video Wizard"
+ *        (Standart Video içine action button), "Şablon-Stil Bağlantıları"
+ *        (template detail tab), "Kullanılan Haberler" (news-items tab),
+ *        "YouTube Analytics" (Analytics Merkezi tab).
+ *   - User: 12 düz giriş → 6 bölüm / 15 görünür giriş.
+ *     • Horizon + Classic aynı gruba oturtuldu (R3 §3 tutarlılık hedefi).
+ *     • Yeni: Otomasyonlarım, Bağlantılarım, Gelen Kutusu (Classic'te
+ *        yoktu — Horizon ile standardize).
+ *     • Kaldırılan nav girişleri (sayfa duruyor): "Kanal Performansım"
+ *        (Analitik tab), "YouTube Analitikleri" (Analitik tab),
+ *        "Playlist'lerim" (kanal detay tab — R3 §3.2).
+ *
+ * Kaynak: `docs/redesign/R3_information_architecture.md` §2.1, §3.1.
  */
 
 import { useVisibility } from "../../hooks/useVisibility";
 
 // ---------------------------------------------------------------------------
-// Admin navigation definitions
+// Admin navigation definitions (Classic / flat sidebar)
 // ---------------------------------------------------------------------------
 
 export interface AdminNavItem {
@@ -22,7 +42,12 @@ export interface AdminNavItem {
 }
 
 export const ADMIN_NAV: AdminNavItem[] = [
+  { label: "Bugün", section: true },
   { label: "Genel Bakış", to: "/admin" },
+
+  { label: "Scope", section: true },
+  { label: "Kullanıcı Yönetimi", to: "/admin/users" },
+
   { label: "Sistem", section: true },
   { label: "Ayarlar", to: "/admin/settings", visibilityKey: "panel:settings" },
   { label: "Görünürlük", to: "/admin/visibility", visibilityKey: "panel:visibility" },
@@ -32,32 +57,33 @@ export const ADMIN_NAV: AdminNavItem[] = [
   { label: "Modüller", to: "/admin/modules" },
   { label: "Sağlayıcılar", to: "/admin/providers" },
   { label: "Prompt Yönetimi", to: "/admin/prompts" },
-  { label: "İçerik Üretimi", section: true },
+
+  { label: "Üretim", section: true },
   { label: "İçerik Kütüphanesi", to: "/admin/library" },
   { label: "Varlık Kütüphanesi", to: "/admin/assets" },
   { label: "Standart Video", to: "/admin/standard-videos", moduleId: "standard_video" },
-  { label: "Video Wizard", to: "/admin/standard-videos/wizard", moduleId: "standard_video" },
+  { label: "Haber Bültenleri", to: "/admin/news-bulletins", moduleId: "news_bulletin" },
   { label: "Şablonlar", to: "/admin/templates", visibilityKey: "panel:templates" },
   { label: "Stil Şablonları", to: "/admin/style-blueprints" },
-  { label: "Şablon-Stil Bağlantıları", to: "/admin/template-style-links" },
-  { label: "Yayın", section: true },
+
+  { label: "Yayın & Takvim", section: true },
   { label: "Yayın Merkezi", to: "/admin/publish", visibilityKey: "panel:publish" },
+  { label: "Takvim", to: "/admin/calendar", visibilityKey: "panel:calendar" },
+
   { label: "Etkileşim", section: true },
   { label: "Yorum İzleme", to: "/admin/comments" },
   { label: "Playlist İzleme", to: "/admin/playlists" },
   { label: "Gönderi İzleme", to: "/admin/posts" },
+
   { label: "Analytics", section: true },
-  { label: "Analytics", to: "/admin/analytics", visibilityKey: "panel:analytics" },
-  { label: "YouTube Analytics", to: "/admin/analytics/youtube" },
+  { label: "Analytics Merkezi", to: "/admin/analytics", visibilityKey: "panel:analytics" },
   { label: "Kanal Performansı", to: "/admin/analytics/channel-performance" },
+
   { label: "Haber", section: true },
   { label: "Kaynaklar", to: "/admin/sources", visibilityKey: "panel:sources" },
   { label: "Kaynak Taramaları", to: "/admin/source-scans" },
-  { label: "Haber Bültenleri", to: "/admin/news-bulletins", moduleId: "news_bulletin" },
   { label: "Haber Öğeleri", to: "/admin/news-items", moduleId: "news_bulletin" },
-  { label: "Kullanılan Haberler", to: "/admin/used-news", moduleId: "news_bulletin" },
-  { label: "Kullanıcılar", section: true },
-  { label: "Kullanıcı Yönetimi", to: "/admin/users" },
+
   { label: "Görünüm", section: true },
   { label: "Tema Yönetimi", to: "/admin/themes" },
 ];
@@ -68,21 +94,40 @@ export const ADMIN_NAV: AdminNavItem[] = [
 
 export interface UserNavItem {
   label: string;
-  to: string;
+  to?: string;
+  section?: boolean;
+  /** If set, item is hidden when the module is disabled. */
+  moduleId?: string;
 }
 
 export const USER_NAV: UserNavItem[] = [
+  { label: "Bugün", section: true },
   { label: "Anasayfa", to: "/user" },
-  { label: "Kanallarım", to: "/user/channels" },
+
+  { label: "Üretim", section: true },
   { label: "Projelerim", to: "/user/projects" },
-  { label: "Video Oluştur", to: "/user/create/video" },
-  { label: "Bülten Oluştur", to: "/user/create/bulletin" },
-  { label: "İçerik", to: "/user/content" },
+  { label: "Video Oluştur", to: "/user/create/video", moduleId: "standard_video" },
+  { label: "Bülten Oluştur", to: "/user/create/bulletin", moduleId: "news_bulletin" },
+
+  { label: "Yayın", section: true },
   { label: "Yayın", to: "/user/publish" },
+  { label: "Takvim", to: "/user/calendar" },
+  { label: "İçerik", to: "/user/content" },
+
+  { label: "Kanallar", section: true },
+  { label: "Kanallarım", to: "/user/channels" },
+  { label: "Bağlantılarım", to: "/user/connections" },
+  { label: "Otomasyonlarım", to: "/user/automation" },
+
+  { label: "Etkileşim", section: true },
+  { label: "Gelen Kutusu", to: "/user/inbox" },
   { label: "Yorumlar", to: "/user/comments" },
-  { label: "Playlist'lerim", to: "/user/playlists" },
   { label: "Gönderilerim", to: "/user/posts" },
-  { label: "Kanal Performansım", to: "/user/analytics/channels" },
+
+  { label: "Analitik", section: true },
+  { label: "Analizim", to: "/user/analytics" },
+
+  { label: "Ayarlar", section: true },
   { label: "Ayarlarım", to: "/user/settings" },
 ];
 
@@ -94,11 +139,19 @@ import type { HorizonNavGroup } from "../../components/layout/HorizonSidebar";
 
 export const HORIZON_ADMIN_GROUPS: HorizonNavGroup[] = [
   {
-    id: "overview",
-    label: "Genel",
+    id: "today",
+    label: "Bugün",
     icon: "\u25C9",
     items: [
       { label: "Genel Bakış", to: "/admin" },
+    ],
+  },
+  {
+    id: "scope",
+    label: "Scope",
+    icon: "\u2605",
+    items: [
+      { label: "Kullanıcı Yönetimi", to: "/admin/users" },
     ],
   },
   {
@@ -114,29 +167,28 @@ export const HORIZON_ADMIN_GROUPS: HorizonNavGroup[] = [
       { label: "Modüller", to: "/admin/modules" },
       { label: "Sağlayıcılar", to: "/admin/providers" },
       { label: "Prompt Yönetimi", to: "/admin/prompts" },
-      { label: "Kullanıcılar", to: "/admin/users" },
     ],
   },
   {
     id: "content",
-    label: "İçerik Üretimi",
+    label: "Üretim",
     icon: "\u270E",
     items: [
       { label: "İçerik Kütüphanesi", to: "/admin/library" },
       { label: "Varlık Kütüphanesi", to: "/admin/assets" },
       { label: "Standart Video", to: "/admin/standard-videos", moduleId: "standard_video" },
-      { label: "Video Wizard", to: "/admin/standard-videos/wizard", moduleId: "standard_video" },
+      { label: "Haber Bültenleri", to: "/admin/news-bulletins", moduleId: "news_bulletin" },
       { label: "Şablonlar", to: "/admin/templates" },
       { label: "Stil Şablonları", to: "/admin/style-blueprints" },
-      { label: "Şablon-Stil Bağlantıları", to: "/admin/template-style-links" },
     ],
   },
   {
     id: "publish",
-    label: "Yayın",
+    label: "Yayın & Takvim",
     icon: "\u25B6",
     items: [
       { label: "Yayın Merkezi", to: "/admin/publish" },
+      { label: "Takvim", to: "/admin/calendar" },
     ],
   },
   {
@@ -154,8 +206,7 @@ export const HORIZON_ADMIN_GROUPS: HorizonNavGroup[] = [
     label: "Analytics",
     icon: "\u2261",
     items: [
-      { label: "Analytics", to: "/admin/analytics" },
-      { label: "YouTube Analytics", to: "/admin/analytics/youtube" },
+      { label: "Analytics Merkezi", to: "/admin/analytics" },
       { label: "Kanal Performansı", to: "/admin/analytics/channel-performance" },
     ],
   },
@@ -166,9 +217,7 @@ export const HORIZON_ADMIN_GROUPS: HorizonNavGroup[] = [
     items: [
       { label: "Kaynaklar", to: "/admin/sources" },
       { label: "Kaynak Taramaları", to: "/admin/source-scans" },
-      { label: "Haber Bültenleri", to: "/admin/news-bulletins", moduleId: "news_bulletin" },
       { label: "Haber Öğeleri", to: "/admin/news-items", moduleId: "news_bulletin" },
-      { label: "Kullanılan Haberler", to: "/admin/used-news", moduleId: "news_bulletin" },
     ],
   },
   {
@@ -187,44 +236,21 @@ export const HORIZON_ADMIN_GROUPS: HorizonNavGroup[] = [
 
 export const HORIZON_USER_GROUPS: HorizonNavGroup[] = [
   {
-    id: "home",
-    label: "Anasayfa",
+    id: "today",
+    label: "Bugün",
     icon: "\u25C9",
     items: [
       { label: "Anasayfa", to: "/user" },
     ],
   },
   {
-    id: "channels",
-    label: "Kanallarım",
-    icon: "\u2261",
-    items: [
-      { label: "Kanallarım", to: "/user/channels" },
-    ],
-  },
-  {
-    id: "projects",
-    label: "Projelerim",
+    id: "production",
+    label: "Üretim",
     icon: "\u270E",
     items: [
       { label: "Projelerim", to: "/user/projects" },
-    ],
-  },
-  {
-    id: "create",
-    label: "Oluştur",
-    icon: "\u2795",
-    items: [
       { label: "Video Oluştur", to: "/user/create/video", moduleId: "standard_video" },
       { label: "Bülten Oluştur", to: "/user/create/bulletin", moduleId: "news_bulletin" },
-    ],
-  },
-  {
-    id: "content",
-    label: "İçerik",
-    icon: "\u270E",
-    items: [
-      { label: "İçerik", to: "/user/content" },
     ],
   },
   {
@@ -233,6 +259,18 @@ export const HORIZON_USER_GROUPS: HorizonNavGroup[] = [
     icon: "\u25B6",
     items: [
       { label: "Yayın", to: "/user/publish" },
+      { label: "Takvim", to: "/user/calendar" },
+      { label: "İçerik", to: "/user/content" },
+    ],
+  },
+  {
+    id: "channels",
+    label: "Kanallar",
+    icon: "\u2261",
+    items: [
+      { label: "Kanallarım", to: "/user/channels" },
+      { label: "Bağlantılarım", to: "/user/connections" },
+      { label: "Otomasyonlarım", to: "/user/automation" },
     ],
   },
   {
@@ -240,36 +278,22 @@ export const HORIZON_USER_GROUPS: HorizonNavGroup[] = [
     label: "Etkileşim",
     icon: "\u2709",
     items: [
-      { label: "Yorumlar", to: "/user/comments" },
-      { label: "Playlist'lerim", to: "/user/playlists" },
-      { label: "Gönderilerim", to: "/user/posts" },
-      { label: "Kanal Performansım", to: "/user/analytics/channels" },
-    ],
-  },
-  {
-    id: "automation",
-    label: "Otomasyon",
-    icon: "\u25B2",
-    items: [
-      { label: "Otomasyonlarım", to: "/user/automation" },
       { label: "Gelen Kutusu", to: "/user/inbox" },
-      { label: "Bağlantılarım", to: "/user/connections" },
+      { label: "Yorumlar", to: "/user/comments" },
+      { label: "Gönderilerim", to: "/user/posts" },
     ],
   },
   {
     id: "analytics",
-    label: "Analiz",
+    label: "Analitik",
     icon: "\u2263",
     items: [
-      { label: "Analitiğim", to: "/user/analytics" },
-      { label: "Kanal Performansı", to: "/user/analytics/channels" },
-      { label: "YouTube Analitikleri", to: "/user/analytics/youtube" },
-      { label: "Takvim", to: "/user/calendar" },
+      { label: "Analizim", to: "/user/analytics" },
     ],
   },
   {
     id: "settings",
-    label: "Ayarlarım",
+    label: "Ayarlar",
     icon: "\u2699",
     items: [
       { label: "Ayarlarım", to: "/user/settings" },
@@ -289,6 +313,7 @@ const ADMIN_VISIBILITY_KEYS = [
   "panel:analytics",
   "panel:sources",
   "panel:publish",
+  "panel:calendar",
 ] as const;
 
 type AdminVisibilityKey = (typeof ADMIN_VISIBILITY_KEYS)[number];
@@ -298,6 +323,11 @@ export type AdminVisibilityMap = Record<AdminVisibilityKey, boolean>;
 /**
  * Calls useVisibility once per admin visibility key (rules-of-hooks safe,
  * since the key list is static). Returns a map of key -> visible boolean.
+ *
+ * Note — `panel:calendar` (P2.1): yeni key; visibility registry'de tanımlı
+ * değilse `useVisibility` default true dönüyor (mevcut sözleşme). Admin
+ * isterse `/admin/visibility` üzerinden kapatabilir. Sayfa rotası her
+ * halükârda canlı — sadece nav görünürlüğü gate'li.
  */
 export function useAdminVisibilityMap(): AdminVisibilityMap {
   // Each call is unconditional and in stable order — hooks rules satisfied.
@@ -307,6 +337,7 @@ export function useAdminVisibilityMap(): AdminVisibilityMap {
   const analytics = useVisibility("panel:analytics");
   const sources = useVisibility("panel:sources");
   const publish = useVisibility("panel:publish");
+  const calendar = useVisibility("panel:calendar");
 
   return {
     "panel:settings": settings.visible,
@@ -315,6 +346,7 @@ export function useAdminVisibilityMap(): AdminVisibilityMap {
     "panel:analytics": analytics.visible,
     "panel:sources": sources.visible,
     "panel:publish": publish.visible,
+    "panel:calendar": calendar.visible,
   };
 }
 
@@ -344,16 +376,19 @@ export function filterAdminNav(
 /**
  * Route-to-visibility-key mapping for Horizon admin groups.
  * Used to filter individual nav items within groups by route path.
+ *
+ * P2.1: `/admin/calendar` yeni route ile `panel:calendar` eklendi; kaldırılan
+ * nav girişlerinin rotaları tabloda tutulmadı (zaten nav'da yoklar).
  */
 const ROUTE_VISIBILITY: Record<string, AdminVisibilityKey> = {
   "/admin/settings": "panel:settings",
   "/admin/visibility": "panel:visibility",
   "/admin/templates": "panel:templates",
   "/admin/analytics": "panel:analytics",
-  "/admin/analytics/youtube": "panel:analytics",
   "/admin/analytics/channel-performance": "panel:analytics",
   "/admin/sources": "panel:sources",
   "/admin/publish": "panel:publish",
+  "/admin/calendar": "panel:calendar",
 };
 
 /**
