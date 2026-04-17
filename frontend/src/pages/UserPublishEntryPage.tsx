@@ -1,10 +1,24 @@
 /**
- * UserPublishEntryPage — PHASE AD.
+ * UserPublishEntryPage — PHASE AD / Phase Final F2.5.
  *
- * Bu sayfa artik router'da mount edilmiyor (router.tsx `/user/publish`
- * dogrudan UserPublishPage'e gider). Dosya surdurulebilir smoke test'ler
- * icin korundu; icerigi admin panel linklerine degil user panel akisina
- * yonlendirir (admin-leak kapatildi — Faz AD).
+ * ⚠️  TEST-ONLY SCAFFOLD — NOT MOUNTED IN PRODUCTION ROUTER.
+ *
+ * Bu sayfa router.tsx'te mount EDILMEZ. `/user/publish` rotasi dogrudan
+ * `pages/user/UserPublishPage` bilesenine gider. Bu dosya 12 smoke test
+ * dosyasinin navigation/layout kontratlarini test etmek icin minimal bir
+ * hedef sayfa olarak KORUNUR.
+ *
+ * Phase Final F2.5 denetimi:
+ *   - Uretim router'inda referans yok (grep: router.tsx, App.tsx).
+ *   - Icerik yalnizca 3 navigasyon karti (projects/content/publish) —
+ *     admin-panel linki ICERMEZ (Faz AD'de admin-leak kapatildi).
+ *   - Silinirse 12 smoke test dosyasi (user-*.smoke.test.tsx,
+ *     admin-continuity-strip, navigation-closure-pack, etc.) bozulur —
+ *     test kontrati yuzunden bu faza dahil edilmedi.
+ *
+ * Kural: Bu dosyayi router.tsx'te mount ETMEYIN. Kullanici yayin
+ * akisini geliştirmek icin `pages/user/UserPublishPage` uzerinde
+ * calisin.
  */
 import { useNavigate } from "react-router-dom";
 
