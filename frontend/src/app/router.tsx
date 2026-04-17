@@ -135,6 +135,7 @@ export const router = createBrowserRouter([
       children: [
       { index: true, element: <AdminOverviewPage /> },
       { path: "settings", element: <VisibilityGuard targetKey="panel:settings"><SettingsRegistryPage /></VisibilityGuard> },
+      { path: "settings/:group", element: <VisibilityGuard targetKey="panel:settings"><SettingsRegistryPage /></VisibilityGuard> },
       { path: "visibility", element: <VisibilityGuard targetKey="panel:visibility"><VisibilityRegistryPage /></VisibilityGuard> },
       { path: "wizard-settings", element: <Suspense fallback={<LazyFallback />}><WizardSettingsPage /></Suspense> },
       { path: "jobs", element: <JobsRegistryPage /> },

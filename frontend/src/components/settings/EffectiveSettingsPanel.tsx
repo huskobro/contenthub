@@ -15,7 +15,7 @@
  * - SettingGroupSection.tsx — group header + collapsible container
  */
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   useEffectiveSettings,
   useSettingsGroups,
@@ -28,8 +28,21 @@ import { SettingGroupSection, GROUP_LABELS_MAP } from "./SettingGroupSection";
 // Main panel
 // ---------------------------------------------------------------------------
 
-export function EffectiveSettingsPanel() {
-  const [filterGroup, setFilterGroup] = useState<string | undefined>(undefined);
+/**
+ * @param initialGroup - Seed the group filter from URL / parent when the page
+ *   is opened via `/admin/settings/:group` deep-link (Redesign REV-2 P2.3).
+ *   Keeping it optional preserves the prior contract — no caller needs to pass
+ *   anything, and the panel still manages its own filter state after the first
+ *   render.
+ */
+export function EffectiveSettingsPanel({ initialGroup }: { initialGroup?: string } = {}) {
+  const [filterGroup, setFilterGroup] = useState<string | undefined>(initialGroup);
+
+  // Sync filter when the parent route param changes (e.g. user clicks another
+  // module card → URL changes → we rerun this effect with a new initialGroup).
+  useEffect(() => {
+    setFilterGroup(initialGroup);
+  }, [initialGroup]);
   const [wiredOnly, setWiredOnly] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
