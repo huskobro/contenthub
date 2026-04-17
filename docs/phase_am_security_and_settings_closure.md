@@ -258,3 +258,61 @@ cd .claude/worktrees/audit+effective-settings-and-gemini-plan/backend
   -q
 # -> 160 passed
 ```
+
+---
+
+## AM-FINAL pass (re-verification)
+
+On a subsequent pass the entire phase was re-verified end-to-end against the
+live worktree state. Nothing was re-implemented; only verified and declared.
+
+### Declarative state (yes/no)
+
+| Item | State |
+|---|---|
+| code change (this pass) | **no** |
+| migrations run | **no** |
+| packages installed | **no** |
+| db mutations (schema) | **no** |
+| backend tests executed | **yes** — 50 Phase AM + 160 regression |
+| frontend typecheck executed | **yes** — full project tsc clean (0 errors) |
+| closure doc hardened | **yes** — this AM-FINAL section added |
+| new commit this pass | **yes** — docs-only hardening commit |
+| push this pass | **yes** |
+
+### Re-verification results
+
+- Phase AM target suite: **50/50 passed** in 8.73s.
+- Regression (AM + 8 adjacent suites — `test_settings_api`,
+  `test_settings_precedence`, `test_m22_visibility_settings_publish`,
+  `test_m10_settings_resolver`, `test_tts_faz6_settings_visibility`,
+  `test_faz17_connection_center`, `test_faz17a_capability_guard`,
+  `test_health`): **160/160 passed** in 22.11s.
+- Frontend `tsc --noEmit --project tsconfig.json` (main repo
+  `node_modules` temporarily symlinked into the worktree then removed):
+  **0 errors, 0 warnings**. No tracked file was changed by the typecheck
+  pass; `git status` on tracked Phase AM surfaces remained clean (only
+  runtime SQLite artifacts and `backend/workspace/_uploads/` remain dirty,
+  both unrelated to Phase AM).
+
+### Per-criterion live evidence
+
+| Criterion | Evidence (file:line or commit) |
+|---|---|
+| A — no legacy platform-connections leak | `backend/app/platform_connections/router.py:97,114,137,154,177,196,211` — `get_current_user_context` + `ensure_owner_or_admin` on every endpoint |
+| B — `/users/*` admin-only | `backend/app/users/router.py:22,36` — `dependencies=[Depends(require_admin)]` at router level |
+| C — `/audit-logs/*` admin-only | `backend/app/audit/router.py:18,34-35` — `Depends(require_admin)` stacked with visibility guard |
+| D — settings drift repair | `backend/app/settings/settings_seed.py:116,179`; startup wiring at `backend/app/main.py:49-52,152`; endpoints `backend/app/settings/router.py:314,323,329,332`; service-layer filter `backend/app/settings/service.py:47-52` |
+| E — frontend scoped query hygiene | admin-scope markers at `frontend/src/pages/admin/PromptEditorPage.tsx:268`, `AdminAutomationPoliciesPage.tsx:43`, `AdminConnectionsPage.tsx:198,202`; per-user bindings at `frontend/src/pages/user/UserChannelAnalyticsPage.tsx:68`, `frontend/src/surfaces/canvas/CanvasUserPublishPage.tsx:115,123,150` |
+| F — closure doc present & accurate | this file; 10 required sections populated; commit hashes match `git log 4d8269a^..HEAD` |
+
+### Remaining risks (unchanged from section 7)
+
+1. First post-deploy startup marks non-registry rows as `status='orphan'` — expected one-time inventory change; reversible.
+2. `status` column remains untyped string (no enum migration) — deferred.
+3. `/api/v1/automation-policies` still anonymous — follow-up AM-2b, not a Phase AM target.
+4. Frontend typecheck requires `node_modules`; worktree ships without it. CI on push covers; locally verified via temporary symlink this pass.
+
+### Phase AM overall status after AM-FINAL pass
+
+**CLOSED.** All five Phase AL audit findings have code + tests + commits + push + closure doc. No pending work inside the Phase AM charter.
