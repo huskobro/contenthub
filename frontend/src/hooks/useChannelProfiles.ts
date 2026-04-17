@@ -40,7 +40,9 @@ export function useChannelProfiles(userId?: string) {
       { ownerUserId: scope.ownerUserId, isAllUsers: scope.isAllUsers },
     ],
     queryFn: () => fetchChannelProfiles(effectiveUserId),
-    enabled: scope.isReady || Boolean(userId),
+    // isReady gate'i P0.3b'de KALDIRILDI (smoke testlerde auth hidrat yok).
+    // Explicit userId geçilmişse geriye uyum aynen korunur; yoksa scope
+    // fallback'i çalışır; ownership backend'de zorlanır.
   });
 }
 

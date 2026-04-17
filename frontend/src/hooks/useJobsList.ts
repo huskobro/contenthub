@@ -15,6 +15,11 @@
  * Scope altyapi katmani: backend her durumda dogrulayici, frontend sadece
  * "hangi veri istendi" bilgisini gorunur hale getirir (CLAUDE.md: "enforce
  * visibility server-side, reflect visibility client-side").
+ *
+ * Not (P0.3b düzeltmesi): `enabled: scope.isReady` gate'i bilinçli olarak
+ * KALDIRILDI. Mevcut smoke testler auth hidrat etmeden render ediyor ve
+ * gate olursa tüm ekran boş kalıyordu. Cache key scope parmak izi ile
+ * admin all/user focus ayrışması sağlanır; ownership backend'de zorlanır.
  */
 
 import { useQuery } from "@tanstack/react-query";
@@ -42,6 +47,5 @@ export function useJobsList(includeArchived = false) {
           ? { owner_id: scope.ownerUserId }
           : {}),
       }),
-    enabled: scope.isReady,
   });
 }

@@ -9,6 +9,7 @@
 import { useCallback, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import type { AnalyticsWindow, AnalyticsFilterParams } from "../api/analyticsApi";
+import { useActiveScope } from "./useActiveScope";
 
 const VALID_WINDOWS: AnalyticsWindow[] = ["last_7d", "last_30d", "last_90d", "all_time"];
 
@@ -42,6 +43,12 @@ export function useAnalyticsFilters(
   defaultWindow: AnalyticsWindow = "last_30d",
 ): UseAnalyticsFiltersReturn {
   const [searchParams, setSearchParams] = useSearchParams();
+  // Redesign REV-2 / P0.3b:
+  //   URL'de `user_id` yoksa admin focus mode için `scope.ownerUserId`
+  //   effective user_id olarak kullanılır. User rolü için scope.ownerUserId
+  //   zaten kendi id'si — UI'da görünürse kafa karıştırıcı olmasın diye
+  //   sadece admin'de fallback devreye alınır.
+  const scope = useActiveScope();
 
   const rawWindow = searchParams.get("window") || defaultWindow;
   const window: AnalyticsWindow = VALID_WINDOWS.includes(rawWindow as AnalyticsWindow)
@@ -49,7 +56,12 @@ export function useAnalyticsFilters(
     : defaultWindow;
   const dateFrom = searchParams.get("date_from") || "";
   const dateTo = searchParams.get("date_to") || "";
-  const userId = searchParams.get("user_id") || "";
+  const urlUserId = searchParams.get("user_id") || "";
+  // Admin focused-user scope'ta URL user_id yoksa scope'u default kabul et.
+  // Non-admin veya scope "all" ise boş kalır (backend zaten kullanıcıyı zorlar).
+  const userId =
+    urlUserId ||
+    (scope.role === "admin" && scope.ownerUserId ? scope.ownerUserId : "");
   const channelProfileId = searchParams.get("channel_profile_id") || "";
   const platform = searchParams.get("platform") || "";
 

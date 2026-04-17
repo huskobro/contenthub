@@ -63,7 +63,9 @@ export function usePublishRecords(params: PublishListParams = {}) {
       { ownerUserId: scope.ownerUserId, isAllUsers: scope.isAllUsers },
     ],
     queryFn: () => fetchPublishRecords(effectiveParams),
-    enabled: scope.isReady,
+    // isReady gate'i P0.3b'de KALDIRILDI (smoke testlerde auth hidrat
+    // beklenmediği için fetch duruyordu). Cache key scope parmak izi
+    // yeterli; ownership backend'de zorlanır.
   });
 }
 

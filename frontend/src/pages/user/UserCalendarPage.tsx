@@ -13,6 +13,7 @@ import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "../../stores/authStore";
+import { useActiveScope } from "../../hooks/useActiveScope";
 import { useSurfacePageOverride } from "../../surfaces";
 import {
   fetchCalendarEvents,
@@ -141,6 +142,17 @@ export function UserCalendarPage(props: CalendarPageProps = {}) {
 
 function LegacyUserCalendarPage({ isAdmin }: CalendarPageProps) {
   const userId = useAuthStore((s) => s.user?.id);
+  // Redesign REV-2 / P0.3b:
+  //   Admin "all users" modunda owner_user_id geçirilmez; admin bir
+  //   kullanıcıya odaklanmışsa calendar o kullanıcıya filtrelenir.
+  //   Non-admin için userId zaten auth store'dan alınır.
+  const scope = useActiveScope();
+  const effectiveOwnerForAdmin =
+    scope.role === "admin" && scope.ownerUserId ? scope.ownerUserId : undefined;
+  const calendarOwnerUserId = isAdmin
+    ? effectiveOwnerForAdmin // admin all -> undefined; admin focus -> focused uid
+    : userId;
+
   const [view, setView] = useState<ViewMode>("month");
   const [baseDate, setBaseDate] = useState(() => new Date());
   const [channelFilter, setChannelFilter] = useState("");
@@ -151,8 +163,12 @@ function LegacyUserCalendarPage({ isAdmin }: CalendarPageProps) {
 
   // Channels for filter
   const { data: channels = [] } = useQuery({
-    queryKey: ["channel-profiles", isAdmin ? undefined : userId],
-    queryFn: () => fetchChannelProfiles(isAdmin ? undefined : userId),
+    queryKey: [
+      "channel-profiles",
+      calendarOwnerUserId,
+      { ownerUserId: scope.ownerUserId, isAllUsers: scope.isAllUsers, isAdmin: !!isAdmin },
+    ],
+    queryFn: () => fetchChannelProfiles(calendarOwnerUserId),
     enabled: !!userId || !!isAdmin,
   });
 
@@ -171,15 +187,16 @@ function LegacyUserCalendarPage({ isAdmin }: CalendarPageProps) {
       "calendar-events",
       start.toISOString(),
       end.toISOString(),
-      isAdmin ? undefined : userId,
+      calendarOwnerUserId,
       channelFilter || undefined,
       typeFilter || undefined,
+      { ownerUserId: scope.ownerUserId, isAllUsers: scope.isAllUsers, isAdmin: !!isAdmin },
     ],
     queryFn: () =>
       fetchCalendarEvents({
         start_date: start.toISOString(),
         end_date: end.toISOString(),
-        owner_user_id: isAdmin ? undefined : userId,
+        owner_user_id: calendarOwnerUserId,
         channel_profile_id: channelFilter || undefined,
         event_type: typeFilter || undefined,
       }),

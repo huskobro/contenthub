@@ -1,9 +1,16 @@
 /**
  * Audit Log React Query hooks — M15.
+ *
+ * Redesign REV-2 / P0.3b:
+ *   Audit yüzeyi admin-only; ownership backend'de sertleştirilmiş (Phase AL
+ *   hardening sonrası /audit-logs/* leak kapatıldı). Burada sadece cache
+ *   key'e `useActiveScope()` parmak izi eklenir — admin odağı değişince
+ *   başka bir user'ın filtrelenmiş görünümüyle karışmasın.
  */
 
 import { useQuery } from "@tanstack/react-query";
 import { fetchAuditLogs, fetchAuditLogDetail } from "../api/auditLogApi";
+import { useActiveScope } from "./useActiveScope";
 
 export function useAuditLogs(params?: {
   action?: string;
@@ -13,10 +20,16 @@ export function useAuditLogs(params?: {
   limit?: number;
   offset?: number;
 }) {
+  const scope = useActiveScope();
   return useQuery({
-    queryKey: ["audit-logs", params],
+    queryKey: [
+      "audit-logs",
+      params,
+      { ownerUserId: scope.ownerUserId, isAllUsers: scope.isAllUsers },
+    ],
     queryFn: () => fetchAuditLogs(params),
     staleTime: 15_000,
+    // isReady gate eklenmedi — bkz. useAnalyticsOverview açıklaması.
   });
 }
 

@@ -62,7 +62,7 @@ export function AdminAutomationPoliciesPage() {
       fetchAutomationPolicies(
         ownerUserIdFilter ? { owner_user_id: ownerUserIdFilter } : undefined,
       ),
-    enabled: scope.isReady,
+    // P0.3b: isReady gate kaldırıldı — smoke testlerle uyumlu; ownership backend'de.
   });
 
   return (
