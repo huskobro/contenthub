@@ -1,12 +1,109 @@
 # DURUM
 
 ## Mevcut Faz
+**PHASE FINAL F3 KAPANDI (2026-04-17) — Final Release Readiness Gate**
+**PHASE FINAL F2 KAPANDI (2026-04-17) — Ownership/Visibility Hardening + Effective Settings Sync**
+**PHASE AN KAPANDI (2026-04-17) — Automation Policies + Inbox Ownership Guard**
+**PHASE AM KAPANDI (2026-04-17) — Security + Settings Hardening Closure**
+**PHASE AL KAPANDI (2026-04-17) — Product Simplification + Effective Settings Audit (read-only)**
+**PHASE AK KAPANDI (2026-04-17) — Effective Settings + Gemini Plan Audit (read-only)**
 **PHASE AB KAPANDI (2026-04-16) — News Bulletin Real Preview Pack**
 **PHASE AA KAPANDI (2026-04-16) — Preview Artifact Pipeline / Visual Review Pack**
 **PHASE Z KAPANDI (2026-04-16) — Operational Hardening / Release Candidate Pack**
 **PHASE Y KAPANDI (2026-04-16) — Baseline Drift / Release Readiness Stabilization Pack**
 **PHASE X KAPANDI (2026-04-16) — Ownership / Channel Auto-Import / Project-Job Hierarchy Pack**
 **TÜM MİLESTONE'LAR KAPANDI — Master plan (M1–M8) tamamlandı**
+
+### PHASE FINAL F3 (Final Release Readiness Gate) Özet
+- Amaç: AM + AN + F2 dalgalarından sonra üretim adayını **tek geçiş** final
+  kalite kapısından geçirmek. Kod değişikliği yok — yalnızca doğrulama +
+  tracking docs senkronizasyonu + kapanış raporu.
+- Doğrulanan kanıtlar (hepsi worktree'de koşuldu, main'e dokunulmadı):
+  - Backend pytest: **2533 passed, 0 failed, 1 warning (129 s)**.
+  - Frontend vitest: **2530 passed, 35 skipped, 213 files (166 s)**.
+  - TypeScript `tsc --noEmit`: **exit 0, hata yok**.
+  - Vite production build: **exit 0, 3.64 s**. "index" chunk 1.56 MB
+    (gzip 403 KB) — mevcut uyarı, regresyon değil.
+  - Fresh-DB startup zinciri (temiz /tmp + bos DB): seed=204, visibility=0,
+    orphan drift {marked_orphan: 0, reactivated: 0}, total=204, active=204,
+    **distinct_groups=16** — KNOWN_SETTINGS ile bire bir uyum.
+- Gemini plan reality-check (8 madde, dosya:satır kanıtlı):
+  - (1) Theme persistence: `frontend/src/stores/themeStore.ts:48-134` —
+    localStorage + best-effort backend save — **zaten var, doğru çalışıyor**.
+  - (2) Layout consolidation: `frontend/src/app/layouts/useLayoutNavigation.ts`
+    ADMIN_NAV/USER_NAV single-source — **zaten var, doğru çalışıyor**.
+  - (3) Publish review gate hard-enforce: `backend/app/publish/service.py:506`
+    `can_publish()` terminal guard — **zaten var, doğru çalışıyor**.
+  - (4) Full-auto publish_now bypass: `backend/app/full_auto/service.py:12-13`
+    "v1 ALWAYS draft; no auto-publish" — **zaten var, doğru çalışıyor**.
+  - (5) Daily automation digest: `full_auto/service.py:199,233-236` +
+    `schemas.py:41-42` — runs_today sayaçları var — **kısmen var**; dashboard
+    widget'ı yok (scope dışı, Phase AM/AN'de kapsam dışı bırakıldı).
+  - (6) UserCalendarPage: `frontend/src/pages/user/UserCalendarPage.tsx` —
+    **zaten var, doğru çalışıyor** (Faz 14 + 14a, LegacyUserCalendarPage delege).
+  - (7) Sidebar truth map: `useLayoutNavigation.ts` ADMIN_NAV + USER_NAV tek
+    tanım — **zaten var, doğru çalışıyor**.
+  - (8) UserPublishEntryPage mount-leak: Faz AD + F2.5'te router'dan
+    çıkarıldı; dosya test-only scaffold, deprecation notu güçlendirildi —
+    **zaten var, doğru çalışıyor**.
+- Kalan gap'ler (bilinerek bu faza dahil edilmedi — honest state):
+  - Daily automation digest widget'ı yok (data var, UI yüzeyi yok).
+  - Dev DB'de 20 grup / 252 active / 14 deleted / 2 inactive satır vardı —
+    bunlar Nisan 7 testlerinden kalan artifact; fresh-DB'de 16/204/0
+    garanti edilir, production'a sızmaz.
+- Docs: `docs/final_release_readiness_report.md` — F3 kapanış raporu
+  (7 bölüm TR + kod/test/migration/push/main kontrol satırları).
+- Commit zinciri (15 + F3 doc): F3 docs worktree üstünde commit'lenir,
+  main'e push ATILMAZ.
+
+### PHASE FINAL F2 (Ownership/Visibility Hardening + Effective Settings Sync) Özet
+- Amaç: AM + AN dalgalarından sonra kalan ownership/admin-only yüzeylerini
+  kapatmak + effective settings panelindeki 4 grup "Unlisted" düşüşünü
+  temizlemek + hayalet test-sayfasında kalıcı deprecation.
+- F2.1 — P0 ownership wave (`comments`, `engagement`, `platform_connections`,
+  `posts`, `playlists`, `notifications`, `settings`) — UserContext + spoof
+  defense. Test: `test_phase_final_f2_ownership.py` (~20 test).
+- F2.2 — P1 ownership wave (`brand_profiles`, `calendar`, `content_library`,
+  `full_auto`, `discovery`, `assets`) — channel-derived ownership +
+  discovery admin-only kategori sızıntısı düzeltildi. Test:
+  `test_phase_final_f2_2_ownership.py` (10 test).
+- F2.3 — P2 admin-only (`sources`, `news_items`, `used_news`, `onboarding`)
+  — router-level `Depends(require_admin)`. Test: `test_phase_final_f2_3_admin_only.py`
+  (8 test). `test_used_news_api.py`: user_headers → admin_headers.
+  `test_faz14_calendar.py` + `test_faz15_event_hooks.py`: sürükleyici
+  session-state temizliği.
+- F2.4 — Effective Settings groupOrder senkron: frontend `EffectiveSettingsPanel`
+  groupOrder 12 → 16 gruba genişletildi; `SettingGroupSection` GROUP_LABELS_MAP
+  4 yeni Türkçe etiket; Fresh-DB verifikasyonu 204/16/0.
+- F2.5 — `UserPublishEntryPage` deprecation — silinmedi (12 smoke test
+  bağımlılığı), header'a kalıcı "router'a mount ETMEYİN" kuralı.
+- Kapanış raporu: `docs/final_merge_readiness_report.md`.
+
+### PHASE AN (Automation Policies + Inbox Ownership Guard) Özet
+- Amaç: automation policies/inbox router/service'lerinde owner-spoof +
+  cross-user okuma yüzeylerini kapatmak.
+- Router + service seviyesinde `UserContext` + `apply_user_scope` + PATCH/evaluate/
+  trigger guard'ları.
+- Test: `test_phase_an_automation_policies_guard.py` (~495 satır).
+- Kapanış: `docs/phase_an_automation_policies_guard_closure.md`.
+
+### PHASE AM (Security + Settings Hardening Closure) Özet
+- AM-2: platform_connections legacy ownership leak kapatıldı.
+- AM-3: users + audit admin-only guard.
+- AM-4: settings orphan registry drift repair.
+- AM-5: frontend scoped query cache hijyeni (user/admin publish + projects).
+- Kapanış: `docs/phase_am_security_and_settings_closure.md` +
+  `docs/phase_am_security_and_settings_closure.md` re-verify block.
+
+### PHASE AL (Product Simplification Audit — read-only) Özet
+- 485 satırlık audit raporu: `docs/phase_al_product_simplification_and_effective_settings_audit.md`.
+- 10 bölüm + 4 tablo + K1–K10 kurallarına uygun.
+- `code change: none` + `git diff --stat backend/ frontend/ renderer/` kanıtlı.
+
+### PHASE AK (Effective Settings + Gemini Plan Audit — read-only) Özet
+- 259 satırlık audit: `docs/phase_ak_effective_settings_and_gemini_plan_audit.md`.
+- 7-sayı effective settings root cause + 8-madde Gemini reality check.
+- `code change: none`.
 
 ### PHASE AB (News Bulletin Real Preview Pack) Özet
 - Amaç: PHASE AA'daki `news_bulletin` honest gap'ini **fake preview üretmeden**

@@ -2,6 +2,134 @@
 
 ---
 
+## [2026-04-17] PHASE FINAL F3 — Final Release Readiness Gate
+
+### Özet
+AM + AN + F2 dalgalarından sonra üretim adayını tek geçiş final kalite
+kapısından geçirmek için koşulan kod-değişikliği-sız doğrulama + tracking
+docs senkronizasyonu + Türkçe kapanış raporu. Hiçbir yeni kod/migration/npm
+install yok; yalnızca `docs/` altında iki dosya güncellendi (STATUS.md +
+CHANGELOG.md drift repair) ve yeni dosya eklendi (`final_release_readiness_report.md`).
+
+### Doğrulanan Kanıtlar
+- Backend pytest: 2533 passed, 0 failed, 1 warning (129 s).
+- Frontend vitest: 2530 passed, 35 skipped, 213 files (166 s).
+- TypeScript `tsc --noEmit`: exit 0.
+- Vite production build: exit 0, 3.64 s.
+- Fresh-DB startup (temiz /tmp): seed=204, visibility=0,
+  orphan={marked_orphan:0, reactivated:0}, total=204, active=204,
+  distinct_groups=16.
+
+### Gemini Reality-Check (8 madde)
+1. Theme persistence — zaten var, doğru çalışıyor (`themeStore.ts:48-134`).
+2. Layout consolidation — zaten var (`useLayoutNavigation.ts`).
+3. Publish review gate hard-enforce — zaten var (`publish/service.py:506`).
+4. Full-auto publish_now bypass — zaten var (`full_auto/service.py:12-13` ALWAYS draft).
+5. Daily automation digest — kısmen var (runs_today sayaçları var, dashboard widget yok).
+6. UserCalendarPage — zaten var (`UserCalendarPage.tsx`).
+7. Sidebar truth map — zaten var (`useLayoutNavigation.ts`).
+8. UserPublishEntryPage — Faz AD + F2.5'te temizlendi.
+
+### Dokümanlar
+- `docs/final_release_readiness_report.md` — F3 kapanış (TR).
+- `docs/tracking/STATUS.md` — AK→F3 zinciri eklendi.
+- `docs/tracking/CHANGELOG.md` — bu entry.
+
+### Kod Değişikliği / Migration / NPM / DB Mutation
+- code change: none (yalnızca docs).
+- migrations: none.
+- packages installed: none.
+- db schema mutation: none.
+- db data mutation: none (production DB'ye dokunulmadı).
+- main branch touched: NO.
+
+---
+
+## [2026-04-17] PHASE FINAL F2 — Ownership/Visibility Hardening + Effective Settings Sync
+
+### Özet
+AM + AN dalgalarından sonra kalan ownership/admin-only yüzeylerini kapatmak,
+effective settings panelinde 4 grubun "Unlisted" düşüşünü gidermek ve hayalet
+test-sayfasında kalıcı deprecation notu bırakmak için koşulan 5 alt faz.
+
+### Alt Fazlar
+- **F2.1 (P0 ownership wave)** — `comments`, `engagement`,
+  `platform_connections`, `posts`, `playlists`, `notifications`, `settings`
+  router+service katmanlarında UserContext + spoof defense. Test:
+  `test_phase_final_f2_ownership.py` (~20 test).
+- **F2.2 (P1 ownership wave)** — `brand_profiles`, `calendar`,
+  `content_library`, `full_auto`, `discovery`, `assets`. Discovery admin-only
+  kategori sızıntısı düzeltildi (3 yeni param). Test:
+  `test_phase_final_f2_2_ownership.py` (10 test).
+- **F2.3 (P2 admin-only)** — `sources`, `news_items`, `used_news`,
+  `onboarding` router-level `Depends(require_admin)`. Test dosyaları
+  güncellendi (user_headers → admin_headers). `test_faz14_calendar.py`
+  far-future window fix.
+- **F2.4 (Effective Settings sync)** — groupOrder 12 → 16; GROUP_LABELS_MAP
+  4 yeni Türkçe etiket; fresh-DB doğrulaması 204/16/0.
+- **F2.5 (UserPublishEntryPage deprecation)** — silinmedi (12 smoke test
+  bağımlılığı); kalıcı "router'a mount etmeyin" kuralı.
+
+### Sayılar
+- Backend: 2533 passed, 0 failed.
+- Frontend (affected smoke): 27 passed, 2 skipped.
+- Toplam: 15 commit (5 F2 + 10 önceki), 59 dosya, +5846 / −526.
+
+### Kapanış
+- `docs/final_merge_readiness_report.md` (232 satır).
+
+---
+
+## [2026-04-17] PHASE AN — Automation Policies + Inbox Ownership Guard
+
+### Özet
+Automation policies/inbox router+service'lerinde owner-spoof ve cross-user
+okuma yüzeylerini kapatan odaklı faz. UserContext + apply_user_scope +
+PATCH/evaluate/trigger guard'ları.
+
+### Test
+`test_phase_an_automation_policies_guard.py` (~495 satır).
+
+### Kapanış
+`docs/phase_an_automation_policies_guard_closure.md`.
+
+---
+
+## [2026-04-17] PHASE AM — Security + Settings Hardening Closure
+
+### Özet
+- **AM-2** platform_connections legacy ownership leak kapatıldı.
+- **AM-3** users + audit admin-only guard.
+- **AM-4** settings orphan registry drift repair (mark_orphan_settings startup).
+- **AM-5** frontend scoped query cache hijyeni (user/admin publish + projects).
+
+### Kapanış
+`docs/phase_am_security_and_settings_closure.md` + re-verify block.
+
+---
+
+## [2026-04-17] PHASE AL — Product Simplification Audit (read-only)
+
+### Özet
+485 satırlık audit raporu; 10 bölüm + 4 tablo + K1–K10 kurallarına uygun.
+Kod değişikliği yok; `git diff --stat backend/ frontend/ renderer/` boş.
+
+### Rapor
+`docs/phase_al_product_simplification_and_effective_settings_audit.md`.
+
+---
+
+## [2026-04-17] PHASE AK — Effective Settings + Gemini Plan Audit (read-only)
+
+### Özet
+259 satırlık audit: 7-sayı effective settings root cause + 8-madde Gemini
+reality check. Kod değişikliği yok.
+
+### Rapor
+`docs/phase_ak_effective_settings_and_gemini_plan_audit.md`.
+
+---
+
 ## [2026-04-16] PHASE AB — News Bulletin Real Preview Pack
 
 ### Özet
