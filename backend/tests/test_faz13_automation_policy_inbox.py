@@ -241,8 +241,14 @@ async def test_inbox_resolve_sets_timestamp(client: AsyncClient, user_headers: d
 # 9. Inbox list filtering by owner_user_id
 # ---------------------------------------------------------------------------
 
-async def test_inbox_filter_by_owner(client: AsyncClient, db_session: AsyncSession, user_headers: dict):
-    """Inbox list filters by owner_user_id."""
+async def test_inbox_filter_by_owner(client: AsyncClient, db_session: AsyncSession, admin_headers: dict):
+    """Inbox list filters by owner_user_id.
+
+    Phase AN-1: ownership enforced. Only an admin caller can legitimately
+    filter *another* user's inbox items via ``owner_user_id``. A non-admin
+    caller would have its scope pinned to its own id (covered by
+    ``test_phase_an_automation_policies_guard::test_inbox_list_non_admin_only_sees_own_rows``).
+    """
     owner = await _ensure_user(db_session)
     other = await _ensure_user(db_session)
 
@@ -251,15 +257,15 @@ async def test_inbox_filter_by_owner(client: AsyncClient, db_session: AsyncSessi
         "title": "Yorum cevabi bekliyor",
         "owner_user_id": owner,
     },
-    headers=user_headers,)
+    headers=admin_headers,)
     await client.post(INBOX_BASE, json={
         "item_type": "post_action",
         "title": "Post gonderimi",
         "owner_user_id": other,
     },
-    headers=user_headers,)
+    headers=admin_headers,)
 
-    resp = await client.get(INBOX_BASE, params={"owner_user_id": owner}, headers=user_headers)
+    resp = await client.get(INBOX_BASE, params={"owner_user_id": owner}, headers=admin_headers)
     assert resp.status_code == 200
     items = resp.json()
     for item in items:
