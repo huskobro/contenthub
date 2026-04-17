@@ -7,7 +7,7 @@ import { AdminOverviewPage } from "../pages/AdminOverviewPage";
 import { UserLayout } from "../app/layouts/UserLayout";
 import { UserDashboardPage } from "../pages/UserDashboardPage";
 import { UserContentEntryPage } from "../pages/UserContentEntryPage";
-import { UserPublishEntryPage } from "../pages/UserPublishEntryPage";
+import { UserPublishEntryPage } from "../pages/_scaffolds/UserPublishEntryPage";
 
 function mockFetch(data: unknown) {
   return vi.fn().mockResolvedValue({

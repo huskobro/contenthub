@@ -7,7 +7,7 @@ import { UserLayout } from "../app/layouts/UserLayout";
 import { AdminOverviewPage } from "../pages/AdminOverviewPage";
 import { UserDashboardPage } from "../pages/UserDashboardPage";
 import { UserContentEntryPage } from "../pages/UserContentEntryPage";
-import { UserPublishEntryPage } from "../pages/UserPublishEntryPage";
+import { UserPublishEntryPage } from "../pages/_scaffolds/UserPublishEntryPage";
 import { ContentLibraryPage } from "../pages/admin/ContentLibraryPage";
 import { JobsRegistryPage } from "../pages/admin/JobsRegistryPage";
 import { JobDetailPage } from "../pages/admin/JobDetailPage";

@@ -1,24 +1,38 @@
 /**
- * UserPublishEntryPage — PHASE AD / Phase Final F2.5.
+ * UserPublishEntryPage — TEST-ONLY SCAFFOLD (Phase Final F4 — relocated).
  *
- * ⚠️  TEST-ONLY SCAFFOLD — NOT MOUNTED IN PRODUCTION ROUTER.
+ * ⚠️  BU SAYFA URETIM ROUTER'INDA MOUNT EDILMEZ. ⚠️
  *
- * Bu sayfa router.tsx'te mount EDILMEZ. `/user/publish` rotasi dogrudan
- * `pages/user/UserPublishPage` bilesenine gider. Bu dosya 12 smoke test
- * dosyasinin navigation/layout kontratlarini test etmek icin minimal bir
- * hedef sayfa olarak KORUNUR.
+ * Konum: `frontend/src/pages/_scaffolds/` — `_scaffolds/` klasor prefix'i
+ * bu dosyanin urun router'inda mount edilmemesi gerektigini fiziksel olarak
+ * isaretler. Phase Final F4'ten once `pages/UserPublishEntryPage.tsx`
+ * konumundaydi; isim cakismasi + accidental-mount riski yuzunden buraya
+ * tasindi.
  *
- * Phase Final F2.5 denetimi:
- *   - Uretim router'inda referans yok (grep: router.tsx, App.tsx).
- *   - Icerik yalnizca 3 navigasyon karti (projects/content/publish) —
- *     admin-panel linki ICERMEZ (Faz AD'de admin-leak kapatildi).
- *   - Silinirse 12 smoke test dosyasi (user-*.smoke.test.tsx,
- *     admin-continuity-strip, navigation-closure-pack, etc.) bozulur —
- *     test kontrati yuzunden bu faza dahil edilmedi.
+ * Amac: 13 smoke test dosyasinin (`user-*.smoke.test.tsx`,
+ * `admin-continuity-strip.smoke.test.tsx`, `navigation-closure-pack`,
+ * `final-ux-release-readiness-pack`, ...) navigation ve layout
+ * kontratlarini kontrol edebilmesi icin minimal hedef sayfa olarak durur.
+ * Uretim kullanicisinin gordugu `/user/publish` rotasi
+ * `pages/user/UserPublishPage` bilesenine gider — bu dosya ile alakasi
+ * YOKTUR.
  *
- * Kural: Bu dosyayi router.tsx'te mount ETMEYIN. Kullanici yayin
- * akisini geliştirmek icin `pages/user/UserPublishPage` uzerinde
- * calisin.
+ * Non-negotiable kurallar (CLAUDE.md "no hidden behavior" + "no parallel
+ * patterns" maddeleri):
+ *   1. Bu dosyayi `router.tsx` veya `App.tsx`'te MOUNT ETMEYIN. `/user/publish`
+ *      rotasi tek dogru bilesen (`UserPublishPage`) uzerinden akmalidir.
+ *   2. Bu dosyaya admin-panel linki EKLEMEYIN. Faz AD'de admin-leak
+ *      kapatildi — cross-role kontamine olmamasi icin koruyun.
+ *   3. Bu dosyayi yeniden isimlendirmeyin / silmeyin. 13 test dosyasi bu
+ *      bilesenin varligina + data-testid contract'ina bagli. Once testlerin
+ *      yeni hedefini belirleyin, SONRA tasiyin.
+ *   4. Yeni navigation kartlari veya CTA cesitleri "urun kullanicisi buradan
+ *      akmali" varsayimiyla eklenemez — uretim akisi UserPublishPage'te.
+ *
+ * Faz gecmisi:
+ *   - Faz AD: admin-leak kapatma (admin-panel linki kaldirildi)
+ *   - Faz Final F2.5: scaffold oldugu denetlendi, router referansi yok
+ *   - Faz Final F4: `pages/_scaffolds/` altina tasindi; 13 test import'u guncellendi
  */
 import { useNavigate } from "react-router-dom";
 
