@@ -45,7 +45,12 @@ async def list_settings(
     if group_name is not None:
         stmt = stmt.where(Setting.group_name == group_name)
     if visible_to_user_only:
-        stmt = stmt.where(Setting.visible_to_user == True)  # noqa: E712
+        # Phase AM-4: only active rows — 'orphan' (key removed from registry)
+        # and 'deleted' (admin soft-deleted) must never leak to users.
+        stmt = stmt.where(
+            Setting.visible_to_user == True,  # noqa: E712
+            Setting.status == "active",
+        )
     result = await db.execute(stmt)
     return list(result.scalars().all())
 

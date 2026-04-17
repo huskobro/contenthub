@@ -48,7 +48,15 @@ from app.settings.settings_resolver import (
     list_effective,
     list_groups,
 )
-from app.settings.settings_seed import seed_known_settings
+from sqlalchemy import select
+
+from app.auth.dependencies import require_admin
+from app.db.models import Setting
+from app.settings.settings_seed import (
+    compute_drift_report,
+    mark_orphan_settings,
+    seed_known_settings,
+)
 from app.audit.service import write_audit_log
 from app.visibility.dependencies import get_caller_role, get_active_user_id, require_visible
 from app.settings.validation import validate_setting_value, SettingValidationError
@@ -260,6 +268,69 @@ async def get_groups(
     """Grup bazli ozet bilgi doner (toplam, wired, secret, missing sayilari)."""
     groups = await list_groups(db)
     return [GroupSummaryResponse(**g) for g in groups]
+
+
+# ---------------------------------------------------------------------------
+# Phase AM-4 — Drift report + one-shot repair (admin-only)
+# ---------------------------------------------------------------------------
+
+
+class DriftReport(BaseModel):
+    """Seven-line Phase AL drift snapshot plus actionable key lists."""
+
+    registry_total: int
+    registry_visible: int
+    db_total: int
+    db_active_total: int
+    db_visible_total: int
+    orphan_count: int
+    missing_count: int
+    orphan_keys: List[str]
+    missing_keys: List[str]
+    visible_but_hidden_keys: List[str]
+
+
+class DriftRepairResult(BaseModel):
+    marked_orphan: int
+    reactivated: int
+    report: DriftReport
+
+
+@router.get(
+    "/drift",
+    response_model=DriftReport,
+    dependencies=[Depends(require_admin)],
+)
+async def get_drift_report(db: AsyncSession = Depends(get_db)) -> DriftReport:
+    """Phase AM-4: live drift snapshot between KNOWN_SETTINGS and the DB.
+
+    Admin-only. Purely read — never mutates rows. The same numbers are
+    produced at startup; this endpoint is the in-product inspector so
+    operators can verify the drift is closed after a deploy without
+    tailing logs.
+    """
+    result = await db.execute(select(Setting))
+    rows = list(result.scalars().all())
+    return DriftReport(**compute_drift_report(rows))
+
+
+@router.post(
+    "/drift/repair",
+    response_model=DriftRepairResult,
+    dependencies=[Depends(require_admin)],
+)
+async def repair_drift(db: AsyncSession = Depends(get_db)) -> DriftRepairResult:
+    """Phase AM-4: run ``mark_orphan_settings`` on demand.
+
+    This is normally invoked automatically during startup; this endpoint is
+    provided so operators can re-run the non-destructive repair after
+    registry edits without bouncing the process. Admin-only.
+    """
+    counts = await mark_orphan_settings(db)
+    result = await db.execute(select(Setting))
+    rows = list(result.scalars().all())
+    report = DriftReport(**compute_drift_report(rows))
+    return DriftRepairResult(**counts, report=report)
 
 
 @router.get("/effective/{key}", response_model=EffectiveSettingResponse)

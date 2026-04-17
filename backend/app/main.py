@@ -46,6 +46,7 @@ from app.publish.youtube.adapter import YouTubeAdapter
 from app.settings.credential_resolver import resolve_credential
 from app.settings.settings_resolver import resolve, KNOWN_SETTINGS
 from app.settings.settings_seed import (
+    mark_orphan_settings,
     seed_known_settings,
     sync_default_values_from_registry,
     sync_visibility_flags_from_registry,
@@ -144,6 +145,16 @@ async def lifespan(app: FastAPI):
             logger.info(
                 "Settings sync: %d satirin default_value registry'ye hizalandi.",
                 default_sync_count,
+            )
+        # Phase AM-4: mark rows whose keys are no longer in KNOWN_SETTINGS
+        # as 'orphan' so they drop out of the user-visible effective list.
+        # Non-destructive; reactivated automatically if the key returns.
+        drift = await mark_orphan_settings(seed_db)
+        if drift["marked_orphan"] or drift["reactivated"]:
+            logger.info(
+                "Settings drift repair: marked_orphan=%d reactivated=%d",
+                drift["marked_orphan"],
+                drift["reactivated"],
             )
 
     # M40b: workspace_root + output_dir global state'ini settings'ten yukle
