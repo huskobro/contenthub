@@ -2,6 +2,73 @@
 
 ---
 
+## [2026-04-17] PHASE FINAL F4 — Deferred Items Closure + Final Merge Gate
+
+### Özet
+F3 kapanış raporunda bilinerek açık bırakılan tüm maddeleri tek final
+dalgada kapattık. Üretim adayı artık merge-ready duruma geldi. Hiçbir yeni
+npm paketi, DB migration veya schema mutasyonu yok. Dev DB'de bir kereye
+mahsus idempotent drift repair çalıştırıldı (production DB'ye dokunmaz).
+
+### Yeni Özellikler
+- **Daily Automation Digest endpoint'i:** `GET /api/v1/full-auto/digest/today`.
+  Non-admin caller yalnız kendi kanal kapsamındaki projeleri görür; admin
+  tümünü görür. Alanlar: `total_projects`, `automation_enabled_count`,
+  `schedule_enabled_count`, `runs_today_total`, `runs_today_limit_total`,
+  `at_limit_count`, `next_upcoming_run_at`, proje listesi.
+- **AutomationDigestWidget:** Dashboard'da React Query tabanlı (60 s
+  refetch) widget. Yüklenme / aktif / boş / hata (silent null) 4 yol
+  kapsandı. Tıklama ile `/user/projects/{id}/automation` hedefine gider.
+- **ProjectAutomationPanel status badges:** `-badge-active`,
+  `-badge-scheduled`, `-badge-at-limit`. Yalnız görsel katman, logic yok.
+- **Cross-device theme persistence:** `hydrateFromBackend({force: true})`
+  opsiyonu + `authStore.applyTokenResponse` içinde late-bind tetikleyici.
+  Farklı tarayıcıda aynı hesapla giriş yapan kullanıcı en son seçilen
+  tema ile başlar.
+- **Test-only scaffold klasörü:** `frontend/src/pages/_scaffolds/`.
+  `UserPublishEntryPage` buraya taşındı; 13 smoke test dosyasının import
+  yolu güncellendi, aksidental üretim-mount riski fiziksel bariyere dönüştü.
+
+### Düzeltmeler / Kontrat Kapanışları
+- **posts/service.py TODO kapanışı:** `submit_post()` içindeki
+  "Gerçek platform API çağrısı burada olacak" TODO'su kaldırıldı. Yerine
+  "senkron HTTP yok, gelecekte adapter registry'de async consumer yapılır"
+  kontrat yorumu + her iki kolda `logger.info` trace event. Kontrat testi
+  `test_phase_final_f4_posts_todo_closure.py` (3 case) kilit.
+
+### Araçlar
+- **`backend/scripts/drift_repair.py`** (yeni, 158 satır). Idempotent,
+  default dry-run, 6 kategori (settings test.*, jobs NULL owner, job_steps
+  orphan, prompt_assembly_runs orphan, block_traces cascade, news_bulletin
+  job_id NULL'a dönüştürme — **yayın kaydı silinmez**).
+
+### Doğrulanan Kanıtlar (F4 final gate)
+- Backend pytest: **2541 passed, 0 failed, 1 warning** (128 s).
+- Frontend tsc `--noEmit`: **exit 0**.
+- Frontend vitest: **2537 passed, 35 skipped** (21.9 s).
+- Frontend vite build: **başarılı**, 3.51 s, index 1.57 MB / gzip 404 kB.
+- Backend startup smoke: **334 route**, kritik endpoint'ler mevcut
+  (`digest/today`, `auth/login`, `settings`, `jobs`).
+- Dev DB drift: **212 kirli / orphan kayıt temizlendi** (60 test.* settings
+  + 8 NULL owner jobs + 56 job_steps + 8 runs + 72 block_traces + 8 bulletin
+  job_id NULL). Fresh DB'de script 0 sonuç döner.
+
+### Kontrat Satırları
+- code change: **yes** (backend service + frontend widget/store/tests + script)
+- migrations run: **no**
+- packages installed: **no**
+- db schema mutation: **no**
+- db data mutation: **yes** (yalnız dev DB, bir kereye mahsus repair — production DB'ye dokunmaz)
+- main branch touched: **no**
+
+### Commit Zinciri (F4)
+- `5950729 chore(db): safe dev DB drift repair script`
+- `ee6e392 fix(posts): close submit_post TODO with honest contract`
+- `143866a chore(scaffold): relocate UserPublishEntryPage to pages/_scaffolds/`
+- öncesinde: theme force-hydrate, automation-digest widget, project badges.
+
+---
+
 ## [2026-04-17] PHASE FINAL F3 — Final Release Readiness Gate
 
 ### Özet

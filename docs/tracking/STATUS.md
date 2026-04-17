@@ -1,6 +1,7 @@
 # DURUM
 
 ## Mevcut Faz
+**PHASE FINAL F4 KAPANDI (2026-04-17) — Deferred Items Closure + Final Merge Gate**
 **PHASE FINAL F3 KAPANDI (2026-04-17) — Final Release Readiness Gate**
 **PHASE FINAL F2 KAPANDI (2026-04-17) — Ownership/Visibility Hardening + Effective Settings Sync**
 **PHASE AN KAPANDI (2026-04-17) — Automation Policies + Inbox Ownership Guard**
@@ -13,6 +14,56 @@
 **PHASE Y KAPANDI (2026-04-16) — Baseline Drift / Release Readiness Stabilization Pack**
 **PHASE X KAPANDI (2026-04-16) — Ownership / Channel Auto-Import / Project-Job Hierarchy Pack**
 **TÜM MİLESTONE'LAR KAPANDI — Master plan (M1–M8) tamamlandı**
+
+### PHASE FINAL F4 (Deferred Items Closure + Final Merge Gate) Özet
+- Amaç: F3 kapanış raporunda bilinerek açık bırakılmış tüm maddeleri tek final
+  dalgada kapatmak ve üretim adayını **merge-ready** duruma getirmek.
+- Tamamlanan kapanışlar (her biri commit + push):
+  - **Daily Automation Digest (backend + frontend):** yeni endpoint
+    `GET /api/v1/full-auto/digest/today` (owner-scope, admin-all, runs_today
+    agregasyonu, at_limit, next_upcoming). Dashboard'a `AutomationDigestWidget`
+    (React Query 60 s refetch, 4 metrik kartı + top-3 upcoming liste).
+  - **Project status badges:** `ProjectAutomationPanel` başlığında 3 rozet
+    (`-badge-active / -badge-scheduled / -badge-at-limit`). Logic değişikliği yok.
+  - **Cross-device theme persistence:** `themeStore.hydrateFromBackend({force: true})`
+    seçeneği + `authStore.applyTokenResponse` içinde late-bind tema tetikleyici
+    (login / register / refresh sonrasında backend değeri localStorage'ı override
+    eder). Unit: `frontend/src/tests/stores/themeStore.hydrate-force.unit.test.ts` 4/4 yeşil.
+  - **Scaffold relocation:** `pages/UserPublishEntryPage.tsx` →
+    `pages/_scaffolds/UserPublishEntryPage.tsx`. 13 test import'u güncellendi.
+    Klasör prefix + kod-içi "non-negotiable 4 kural" yorumu ile accidental-mount
+    bariyeri kuruldu.
+  - **posts/service.py TODO kapanışı:** `submit_post()` içindeki
+    "Gerçek platform API çağrısı burada olacak" TODO'su kaldırıldı; yerine
+    "senkron HTTP yok, adapter registry'de yapılır" kontrat yorumu + her iki
+    kolda `logger.info` trace event. Kontrat testi
+    `test_phase_final_f4_posts_todo_closure.py` 3/3 yeşil.
+  - **Dev DB drift repair:** `backend/scripts/drift_repair.py` (idempotent,
+    default dry-run). 6 kategori: test.* settings (60), NULL owner jobs (8),
+    job_steps orphan (56), prompt_assembly_runs orphan (8),
+    block_traces cascade (72), news_bulletin job_id → NULL (8).
+    Dev DB'de 212 kirli kayıt temizlendi. Fresh DB'de script 0 sonuç döner.
+    Schema değişikliği yok, kullanıcı içeriği (news_bulletins) silinmedi.
+- Final regression gate (worktree, main'e dokunulmadı):
+  - Backend pytest: **2541 / 2541 yeşil** (128 s, 1 uyarı — kritik değil).
+  - Frontend tsc `--noEmit`: **0 hata**.
+  - Frontend vitest: **2537 / 2537 yeşil** (35 skipped kasıtlı, 21.9 s).
+  - Frontend vite build: **başarılı** (3.51 s, index 1.57 MB / gzip 404 kB).
+  - Backend startup smoke: **334 route yüklü**, kritik uçlar mevcut
+    (`digest/today`, `auth/login`, `settings`, `jobs`).
+- Bilinçli açık bırakılan (F4'te de kapatılmadı — üretim MVP'si kapsamı dışı):
+  - Vite bundle tek-parça (404 kB gzip); code-split optimize edilmedi.
+  - `PLATFORM_POST_CAPABILITY` tüm platformlarda hâlâ False — gerçek
+    community post API gelince adapter registry fazı.
+- Kontrol satırları (F4 kapanışı):
+  - code change: yes (backend `posts/service.py` + yeni script + frontend widget/store + tests)
+  - migrations run: no
+  - packages installed: no
+  - db schema mutation: no
+  - db data mutation: yes (sadece dev DB — 212 orphan/test-pollution temizlik, bir kereye mahsus)
+  - main branch touched: no
+- Commit zinciri (F4): `5950729 drift-repair` ← `ee6e392 posts-todo` ←
+  `143866a scaffold-relocation` ← öncesi F2/F3/digest/theme dalgaları.
 
 ### PHASE FINAL F3 (Final Release Readiness Gate) Özet
 - Amaç: AM + AN + F2 dalgalarından sonra üretim adayını **tek geçiş** final
