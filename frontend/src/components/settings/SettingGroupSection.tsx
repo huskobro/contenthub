@@ -15,14 +15,18 @@ import type { EffectiveSetting, GroupSummary } from "../../api/effectiveSettings
 export const GROUP_LABELS_MAP: Record<string, string> = {
   credentials: "Kimlik Bilgileri",
   providers: "Provider Ayarlari",
+  tts: "Seslendirme (TTS)",
+  channels: "Kanallar",
   execution: "Calisma Ortami",
   source_scans: "Kaynak Tarama",
   publish: "Yayin Ayarlari",
+  automation: "Otomasyon",
   ui: "Arayuz Ayarlari",
   jobs: "Is Motoru Ayarlari",
   wizard: "Wizard Yonetimi",
   standard_video: "Standart Video",
   news_bulletin: "Haber Bulteni",
+  product_review: "Urun Incelemesi",
   modules: "Moduller",
   system: "Sistem",
 };
