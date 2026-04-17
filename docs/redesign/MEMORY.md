@@ -65,7 +65,7 @@ Her kalem: ayrı commit, push, test sonucu MEMORY.md'ye, 7 başlıklı Türkçe 
 | 3 | P0.3a | Admin fetch refactor — Jobs/Publish/Channels/Automation | ✅ Tamam | `0d5f184` |
 | 4 | P0.3b | Admin fetch refactor — Analytics/Calendar/Audit | ✅ Tamam | `1eeb8b9` |
 | 5 | P0.3c | Admin fetch refactor — Comment/Playlist/Post/Notifications/Inbox | ✅ Tamam | `a6c719c` |
-| 6 | P1.1 | `AdminScopeSwitcher` component | ✅ Tamam | (commit sonrası) |
+| 6 | P1.1 | `AdminScopeSwitcher` component | ✅ Tamam | `883f6c3` |
 | 7 | P1.2 | `UserIdentityStrip` component | ⏳ | — |
 | 8 | P1.3 | `AdminDigestDashboard` | ⏳ | — |
 | 9 | P1.4 | `UserDigestDashboard` | ⏳ | — |
@@ -148,7 +148,7 @@ Her kalem: ayrı commit, push, test sonucu MEMORY.md'ye, 7 başlıklı Türkçe 
 - `c306b08` — P0.3b commit SHA'sı MEMORY.md'ye işleme (docs-only)
 - `a6c719c` — P0.3c Admin fetch refactor Monitoring/Notifications/Inbox (5 sayfa scope-aware)
 - `53ff559` — P0.3c commit SHA'sı MEMORY.md'ye işleme (docs-only)
-- `(TBD)` — P1.1 AdminScopeSwitcher bileşeni + AppHeader entegrasyonu + 8 smoke test
+- `883f6c3` — P1.1 AdminScopeSwitcher bileşeni + AppHeader entegrasyonu + 8 smoke test
 
 ### 4.2 Yeni Dosyalar
 - `docs/redesign/MEMORY.md` (bu dosya)
