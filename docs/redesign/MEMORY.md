@@ -64,7 +64,7 @@ Her kalem: ayrı commit, push, test sonucu MEMORY.md'ye, 7 başlıklı Türkçe 
 | 2 | P0.2 | `useActiveScope()` + `adminScopeStore` | ✅ Tamam | `32bb576` |
 | 3 | P0.3a | Admin fetch refactor — Jobs/Publish/Channels/Automation | ✅ Tamam | `0d5f184` |
 | 4 | P0.3b | Admin fetch refactor — Analytics/Calendar/Audit | ✅ Tamam | `1eeb8b9` |
-| 5 | P0.3c | Admin fetch refactor — Comment/Playlist/Post/Notifications/Inbox | ✅ Tamam | (commit sonrası) |
+| 5 | P0.3c | Admin fetch refactor — Comment/Playlist/Post/Notifications/Inbox | ✅ Tamam | `a6c719c` |
 | 6 | P1.1 | `AdminScopeSwitcher` component | ⏳ | — |
 | 7 | P1.2 | `UserIdentityStrip` component | ⏳ | — |
 | 8 | P1.3 | `AdminDigestDashboard` | ⏳ | — |
@@ -146,7 +146,7 @@ Her kalem: ayrı commit, push, test sonucu MEMORY.md'ye, 7 başlıklı Türkçe 
 - `415c2d7` — P0.3a commit SHA'sı MEMORY.md'ye işleme (docs-only)
 - `1eeb8b9` — P0.3b Admin fetch refactor Analytics/Calendar/Audit (scope-aware keys + analytics filter scope fallback + calendar admin focused-user + isReady gate rollback fix)
 - `c306b08` — P0.3b commit SHA'sı MEMORY.md'ye işleme (docs-only)
-- (commit sonrası) — P0.3c Admin fetch refactor Monitoring/Notifications/Inbox (5 sayfa scope-aware)
+- `a6c719c` — P0.3c Admin fetch refactor Monitoring/Notifications/Inbox (5 sayfa scope-aware)
 
 ### 4.2 Yeni Dosyalar
 - `docs/redesign/MEMORY.md` (bu dosya)
