@@ -5,6 +5,7 @@ import { useAnalyticsFilters } from "../../hooks/useAnalyticsFilters";
 import type { AnalyticsWindow, TemplateImpact, BlueprintImpact } from "../../api/analyticsApi";
 import { PageShell, SectionShell, MetricTile, MetricGrid, DataTable } from "../../components/design-system/primitives";
 import { AdminAnalyticsFilterBar } from "../../components/analytics/AdminAnalyticsFilterBar";
+import { AdminAnalyticsTabBar } from "../../components/analytics/AnalyticsTabBar";
 import { ModuleDistributionChart } from "../../components/analytics/ModuleDistributionChart";
 import { ExportButton } from "../../components/analytics/ExportButton";
 import type { ReactNode } from "react";
@@ -82,6 +83,7 @@ export function AnalyticsContentPage() {
         </div>
       }
     >
+      <AdminAnalyticsTabBar />
       <Link
         to="/admin/analytics"
         className="inline-block mb-3 text-sm text-brand-600 no-underline"

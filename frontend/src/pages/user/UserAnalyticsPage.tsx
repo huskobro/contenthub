@@ -23,6 +23,7 @@ import {
 } from "../../components/design-system/primitives";
 import { TrendChart } from "../../components/shared/charts/TrendChart";
 import { DistributionDonut } from "../../components/shared/charts/DistributionDonut";
+import { UserAnalyticsTabBar } from "../../components/analytics/AnalyticsTabBar";
 import { useState } from "react";
 import type { AnalyticsWindow } from "../../api/analyticsApi";
 
@@ -88,6 +89,7 @@ function LegacyUserAnalyticsPage() {
       subtitle="Kendi içerik üretiminiz ve yayın performansınız."
       testId="user-analytics"
     >
+      <UserAnalyticsTabBar />
       <div className="mb-4">
         <WindowSelector
           options={WINDOW_OPTIONS}

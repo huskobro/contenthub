@@ -15,6 +15,7 @@ import {
   MetricGrid,
 } from "../../components/design-system/primitives";
 import { AdminAnalyticsFilterBar } from "../../components/analytics/AdminAnalyticsFilterBar";
+import { AdminAnalyticsTabBar } from "../../components/analytics/AnalyticsTabBar";
 import { ExportButton } from "../../components/analytics/ExportButton";
 import { TrendChart } from "../../components/shared/charts/TrendChart";
 import { ComparisonBar } from "../../components/shared/charts/ComparisonBar";
@@ -84,6 +85,7 @@ export function PublishAnalyticsPage() {
       testId="analytics-publish"
       actions={<ExportButton kind="publish" params={analyticsFilters.apiParams} />}
     >
+      <AdminAnalyticsTabBar />
       <Link
         to="/admin/analytics"
         className="inline-block mb-3 text-sm text-brand-600 no-underline"

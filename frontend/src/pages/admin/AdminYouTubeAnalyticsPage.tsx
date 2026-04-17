@@ -46,6 +46,7 @@ import {
   ActionButton,
 } from "../../components/design-system/primitives";
 import { TrendChart } from "../../components/shared/charts/TrendChart";
+import { AdminAnalyticsTabBar } from "../../components/analytics/AnalyticsTabBar";
 import { SnapshotLockDisclaimer } from "../../components/analytics/SnapshotLockDisclaimer";
 import { ExportButton } from "../../components/analytics/ExportButton";
 import { cn } from "../../lib/cn";
@@ -556,6 +557,7 @@ export function AdminYouTubeAnalyticsPage() {
         </div>
       }
     >
+      <AdminAnalyticsTabBar />
       <Link
         to="/admin/analytics"
         className="inline-block mb-3 text-sm text-brand-600 no-underline"

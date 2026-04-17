@@ -20,6 +20,7 @@ import {
   MetricTile,
   WindowSelector,
 } from "../../components/design-system/primitives";
+import { UserAnalyticsTabBar } from "../../components/analytics/AnalyticsTabBar";
 import type { AnalyticsWindow, AnalyticsFilterParams } from "../../api/analyticsApi";
 
 // ---------------------------------------------------------------------------
@@ -109,6 +110,7 @@ export function UserChannelAnalyticsPage() {
       subtitle={selectedChannelName ? `${selectedChannelName} için performans metrikleri` : "Kanallarınızın üretim, yayın ve etkileşim performansı."}
       testId="user-channel-analytics"
     >
+      <UserAnalyticsTabBar />
       {/* Controls */}
       <div className="flex flex-col gap-3 mb-4" data-testid="user-channel-controls">
         <WindowSelector
