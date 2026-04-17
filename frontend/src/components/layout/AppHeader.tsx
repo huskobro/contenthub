@@ -4,6 +4,7 @@ import { useCommandPaletteStore } from "../../stores/commandPaletteStore";
 import { useAuthStore } from "../../stores/authStore";
 import { NotificationBell } from "../design-system/NotificationCenter";
 import { SurfaceActiveBadge } from "../surfaces/SurfaceActiveBadge";
+import { AdminScopeSwitcher } from "./AdminScopeSwitcher";
 import { cn } from "../../lib/cn";
 
 // ---------------------------------------------------------------------------
@@ -151,6 +152,16 @@ export function AppHeader({ area }: AppHeaderProps) {
 
       {/* Faz 4C: aktif surface rozeti — area label'in hemen yaninda. */}
       <SurfaceActiveBadge area={area} className="ml-3" />
+
+      {/* Redesign REV-2 / P1.1:
+          Admin panelde kapsam seçici. adminScopeStore'a bağlı "Tüm
+          Kullanıcılar / Kullanıcı: X" toggle'ı — useActiveScope() üzerinden
+          tüm scope-aware React Query anahtarlarına akar. Non-admin
+          rollerde hiç render olmaz (component içinde guard var), ancak
+          biz area="Admin" ile de ek olarak sınırlıyoruz: identity
+          impersonation ile değil, gerçek auth role'ü ile admin olan
+          oturumda yalnız admin panelinde anlamlı. */}
+      {area === "Admin" && <AdminScopeSwitcher className="ml-3" />}
 
       <div className="flex-1" />
 
