@@ -196,9 +196,9 @@ Phase AL §3 (Ownership Reality Check) — `automation_policies` satırı:
 
 5. **Ek risk:** §5 tablosu. Özet: event_hooks bypass bilinçli (dahili), `caller_ctx=None` default back-compat için, frontend cache hygiene bu faz'da skip.
 
-6. **Commit hash:** (bu dosya commit'lendikten sonra doldurulur)
+6. **Commit hash:** `50500a0` — `feat(automation): phase AN-1 — ownership guard on policies + inbox`
 
-7. **Push durumu:** (push sonrası doldurulur)
+7. **Push durumu:** ✅ `origin/worktree-audit+effective-settings-and-gemini-plan` → `7a71375..50500a0` (fast-forward).
 
 ---
 
