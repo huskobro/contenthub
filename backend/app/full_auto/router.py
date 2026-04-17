@@ -34,6 +34,7 @@ from app.db.session import get_db
 from app.full_auto import service as fa_service
 from app.full_auto.cron import compute_next_run, is_valid_cron
 from app.full_auto.schemas import (
+    AutomationDigest,
     FullAutoTriggerRequest,
     FullAutoTriggerResponse,
     GuardCheckResult,
@@ -214,6 +215,27 @@ async def trigger_project_full_auto(
         trigger_source="manual",
         scheduled_run_id=None,
         actor_id=ctx.user_id,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Daily digest — Phase Final F4 (autopilot summary)
+# ---------------------------------------------------------------------------
+
+@router.get("/digest/today", response_model=AutomationDigest)
+async def get_automation_digest_today(
+    ctx: UserContext = Depends(get_current_user_context),
+    db: AsyncSession = Depends(get_db),
+):
+    """Caller-scope ContentProject automation digest for today.
+
+    Non-admin caller sees yalnizca kendi sahip oldugu projeleri; admin tum
+    projeleri gorur. Read-only aggregate; hicbir state transition tetiklemez.
+    """
+    return await fa_service.build_automation_digest(
+        db,
+        caller_user_id=ctx.user_id,
+        is_admin=ctx.is_admin,
     )
 
 

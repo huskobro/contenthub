@@ -39,6 +39,8 @@ from app.db.models import (
     StyleBlueprint,
 )
 from app.full_auto.schemas import (
+    AutomationDigest,
+    AutomationDigestProject,
     FullAutoTriggerRequest,
     FullAutoTriggerResponse,
     GuardCheckResult,
@@ -503,3 +505,136 @@ async def apply_config_update(
     await db.commit()
     await db.refresh(project)
     return project
+
+
+# ---------------------------------------------------------------------------
+# Daily digest aggregate — Phase Final F4
+# ---------------------------------------------------------------------------
+
+async def build_automation_digest(
+    db: AsyncSession,
+    *,
+    caller_user_id: Optional[str],
+    is_admin: bool,
+) -> AutomationDigest:
+    """Caller-scope aggregate of Full-Auto project state.
+
+    Non-admin callers see only projects whose ``user_id`` matches the caller
+    OR whose ``channel_profile.user_id`` matches. Admin callers see every
+    project (including orphans).
+
+    The aggregate counts mirror fields already persisted on ``ContentProject``:
+      - total_projects            total visible to the caller
+      - automation_enabled_count  projects with automation_enabled=True
+      - schedule_enabled_count    projects with automation_schedule_enabled=True
+      - runs_today_total          sum of runs_today across visible projects
+      - runs_today_limit_total    sum of automation_max_runs_per_day
+                                  (treats NULL as 0 — global config may still
+                                  cap, but project-level limit is what the user
+                                  sees)
+      - at_limit_count            projects where runs_today >= max_runs_per_day
+                                  (max_runs_per_day > 0)
+      - next_upcoming_run_at      earliest automation_next_run_at in the future
+    """
+    scope = "admin" if is_admin else "user"
+
+    # Visible project set — caller scope
+    stmt = select(ContentProject)
+    if not is_admin:
+        if not caller_user_id:
+            # Anonymous non-admin has no scope to read.
+            return AutomationDigest(
+                scope=scope,
+                today_date=_today_str(),
+                projects=[],
+            )
+        # Owned directly OR via channel_profile.user_id
+        owned_channel_subq = select(ChannelProfile.id).where(
+            ChannelProfile.user_id == caller_user_id
+        )
+        stmt = stmt.where(
+            (ContentProject.user_id == caller_user_id)
+            | (ContentProject.channel_profile_id.in_(owned_channel_subq))
+        )
+
+    result = await db.execute(stmt)
+    projects = result.scalars().all()
+
+    today = _today_str()
+    now = datetime.now(timezone.utc)
+
+    total_projects = len(projects)
+    automation_enabled_count = 0
+    schedule_enabled_count = 0
+    runs_today_total = 0
+    runs_today_limit_total = 0
+    at_limit_count = 0
+    next_upcoming: Optional[datetime] = None
+
+    items: list[AutomationDigestProject] = []
+    for p in projects:
+        # Effective runs_today: reset if the stored date is not today.
+        runs_today = p.automation_runs_today or 0
+        if p.automation_runs_today_date != today:
+            runs_today = 0
+
+        if p.automation_enabled:
+            automation_enabled_count += 1
+        if p.automation_schedule_enabled:
+            schedule_enabled_count += 1
+        runs_today_total += runs_today
+        limit = p.automation_max_runs_per_day or 0
+        runs_today_limit_total += limit
+        if limit > 0 and runs_today >= limit:
+            at_limit_count += 1
+
+        nxt = p.automation_next_run_at
+        if nxt is not None:
+            # Normalise naive UTC
+            if nxt.tzinfo is None:
+                nxt = nxt.replace(tzinfo=timezone.utc)
+            if nxt > now and (next_upcoming is None or nxt < next_upcoming):
+                next_upcoming = nxt
+
+        items.append(
+            AutomationDigestProject(
+                project_id=p.id,
+                project_title=p.title,
+                channel_profile_id=p.channel_profile_id,
+                automation_enabled=bool(p.automation_enabled),
+                automation_run_mode=p.automation_run_mode or "manual",
+                automation_schedule_enabled=bool(p.automation_schedule_enabled),
+                automation_cron_expression=p.automation_cron_expression,
+                automation_publish_policy=p.automation_publish_policy or "draft",
+                automation_max_runs_per_day=p.automation_max_runs_per_day,
+                runs_today=runs_today,
+                runs_today_date=today,
+                last_run_at=p.automation_last_run_at,
+                next_run_at=p.automation_next_run_at,
+            )
+        )
+
+    # Sort digest items by most relevant first: at-limit > enabled > others,
+    # then by next_run_at ascending so upcoming runs bubble up.
+    def _sort_key(item: AutomationDigestProject) -> tuple:
+        limit = item.automation_max_runs_per_day or 0
+        at_limit = 1 if (limit > 0 and item.runs_today >= limit) else 0
+        enabled = 1 if item.automation_enabled else 0
+        # Missing next_run_at goes last
+        nxt_ts = item.next_run_at.timestamp() if item.next_run_at else float("inf")
+        return (-at_limit, -enabled, nxt_ts)
+
+    items.sort(key=_sort_key)
+
+    return AutomationDigest(
+        scope=scope,
+        today_date=today,
+        total_projects=total_projects,
+        automation_enabled_count=automation_enabled_count,
+        schedule_enabled_count=schedule_enabled_count,
+        runs_today_total=runs_today_total,
+        runs_today_limit_total=runs_today_limit_total,
+        at_limit_count=at_limit_count,
+        next_upcoming_run_at=next_upcoming,
+        projects=items,
+    )
