@@ -2,12 +2,17 @@
 
 Gate Sources Closure — added actor+detail-captured audit entries on every
 mutation (``used_news.create`` / ``used_news.update`` / ``used_news.delete``).
+
+Phase Final F2.3:
+  - Used-news dedupe registry is global admin-only infrastructure. Entire
+    router is gated behind ``require_admin`` — non-admin callers get 403.
 """
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.audit.service import write_audit_log
+from app.auth.dependencies import require_admin
 from app.db.session import get_db
 from app.visibility.dependencies import require_visible
 from .schemas import UsedNewsCreate, UsedNewsUpdate, UsedNewsResponse
@@ -16,7 +21,10 @@ from . import service
 router = APIRouter(
     prefix="/used-news",
     tags=["used-news"],
-    dependencies=[Depends(require_visible("panel:used-news"))],
+    dependencies=[
+        Depends(require_admin),
+        Depends(require_visible("panel:used-news")),
+    ],
 )
 
 

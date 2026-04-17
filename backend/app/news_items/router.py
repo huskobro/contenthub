@@ -8,12 +8,18 @@ Gate Sources Closure:
     audit entry.
   - ``GET /{id}`` is now audit-silent (read-only) but write paths carry
     actor + filter details.
+
+Phase Final F2.3:
+  - News items are part of the global admin-managed news pipeline.
+    Entire router is locked behind ``require_admin`` — non-admin callers
+    receive 403 regardless of endpoint.
 """
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.audit.service import write_audit_log
+from app.auth.dependencies import require_admin
 from app.db.session import get_db
 from app.visibility.dependencies import require_visible
 from .schemas import (
@@ -27,7 +33,10 @@ from . import service
 router = APIRouter(
     prefix="/news-items",
     tags=["news-items"],
-    dependencies=[Depends(require_visible("panel:news-items"))],
+    dependencies=[
+        Depends(require_admin),
+        Depends(require_visible("panel:news-items")),
+    ],
 )
 
 

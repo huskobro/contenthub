@@ -10,11 +10,17 @@ Gate Sources Closure:
   - Added ``GET /sources/{id}/health`` — source health surface for the
     admin Sources page.
   - Audit log now captures actor + filters on every CRUD action.
+
+Phase Final F2.3:
+  - News sources are a global admin-managed registry. Entire router is
+    locked behind ``require_admin``; non-admin callers receive 403 even
+    for read endpoints.
 """
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.auth.dependencies import require_admin
 from app.db.session import get_db
 from app.audit.service import write_audit_log
 from app.visibility.dependencies import require_visible
@@ -30,7 +36,10 @@ from . import service
 router = APIRouter(
     prefix="/sources",
     tags=["sources"],
-    dependencies=[Depends(require_visible("panel:sources"))],
+    dependencies=[
+        Depends(require_admin),
+        Depends(require_visible("panel:sources")),
+    ],
 )
 
 

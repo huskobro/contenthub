@@ -5,17 +5,30 @@ Endpoints:
   GET   /onboarding/status       — check if onboarding is required
   GET   /onboarding/requirements — check setup requirements against real data
   POST  /onboarding/complete     — mark onboarding as completed
+
+Phase Final F2.3:
+  - Onboarding reflects platform-wide setup readiness (global credentials,
+    initial source registry, channel setup etc.). Router is locked behind
+    ``require_admin`` — non-admin callers get 403.
 """
 
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.auth.dependencies import require_admin
 from app.db.session import get_db
 from app.visibility.dependencies import require_visible
 from app.onboarding import service
 from app.onboarding.schemas import OnboardingStatusResponse, SetupRequirementsResponse
 
-router = APIRouter(prefix="/onboarding", tags=["onboarding"], dependencies=[Depends(require_visible("panel:onboarding"))])
+router = APIRouter(
+    prefix="/onboarding",
+    tags=["onboarding"],
+    dependencies=[
+        Depends(require_admin),
+        Depends(require_visible("panel:onboarding")),
+    ],
+)
 
 
 @router.get("/status", response_model=OnboardingStatusResponse)
