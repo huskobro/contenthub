@@ -1,16 +1,20 @@
 """
-Content Library Service — M21-D + M22-D hardened.
+Content Library Service — M21-D + M22-D + Phase Final F2.2 ownership guard.
 
 Standard Video ve News Bulletin kayitlarini birlesik tek endpoint
 uzerinden sunar. Backend-side filtreleme, arama ve sayfalama.
 
 M22-D: SQL tarafinda UNION ALL ile birlesim, sort ve sayfalama.
 Eski Python-side merge/sort/paginate kaldirildi.
+
+Phase Final F2.2: Non-admin caller sadece kendi sahip oldugu
+`ChannelProfile`'lara bagli kayitlari gorur. Orphan (channel_profile_id NULL)
+kayitlar admin-only.
 """
 
-from typing import Optional
+from typing import List, Optional
 
-from sqlalchemy import text, func as sqlfunc
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -21,13 +25,27 @@ async def list_content_library(
     search: Optional[str] = None,
     limit: int = 100,
     offset: int = 0,
+    owned_channel_ids: Optional[List[str]] = None,
 ) -> dict:
     """
     Birlesik icerik kutuphanesi sorgulama — SQL UNION ALL.
 
     M22-D: Tum filtreleme, siralama ve sayfalama SQL tarafinda yapilir.
     has_script ve has_metadata icin correlated subquery kullanilir.
+
+    Phase Final F2.2: `owned_channel_ids=None` => no scoping (admin).
+    `owned_channel_ids=[]` => empty scope (non-admin without any channel).
+    `owned_channel_ids=[id, ...]` => scope filter uygulanir.
     """
+
+    # Non-admin with zero owned channels: erken donus.
+    if owned_channel_ids is not None and not owned_channel_ids:
+        return {
+            "total": 0,
+            "offset": offset,
+            "limit": limit,
+            "items": [],
+        }
 
     # Build WHERE clause fragments
     where_clauses_sv = ["1=1"]
@@ -40,9 +58,27 @@ async def list_content_library(
         params["status"] = status
 
     if search:
-        where_clauses_sv.append("(sv.title LIKE :search_pattern OR sv.topic LIKE :search_pattern)")
-        where_clauses_nb.append("(nb.title LIKE :search_pattern OR nb.topic LIKE :search_pattern)")
+        where_clauses_sv.append(
+            "(sv.title LIKE :search_pattern OR sv.topic LIKE :search_pattern)"
+        )
+        where_clauses_nb.append(
+            "(nb.title LIKE :search_pattern OR nb.topic LIKE :search_pattern)"
+        )
         params["search_pattern"] = f"%{search}%"
+
+    # Phase Final F2.2: ownership scope filter
+    # Admin (owned_channel_ids=None) => no filter, orphan kayitlar dahil.
+    # Non-admin => sadece sahip oldugu channel_profile_id'lerdekiler.
+    if owned_channel_ids is not None:
+        # Build IN (...) clause with param placeholders: :cpid0, :cpid1, ...
+        placeholders = []
+        for i, cpid in enumerate(owned_channel_ids):
+            key = f"cpid{i}"
+            placeholders.append(f":{key}")
+            params[key] = cpid
+        in_clause = ", ".join(placeholders)
+        where_clauses_sv.append(f"sv.channel_profile_id IN ({in_clause})")
+        where_clauses_nb.append(f"nb.channel_profile_id IN ({in_clause})")
 
     sv_where = " AND ".join(where_clauses_sv)
     nb_where = " AND ".join(where_clauses_nb)

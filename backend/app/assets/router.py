@@ -1,22 +1,31 @@
 """
-Asset Router — M19-A + M20-A + M21-A.
+Asset Router — M19-A + M20-A + M21-A + Phase Final F2.2 ownership guard.
 
 Asset index + operasyon + upload endpoint'leri.
 
 Endpoint'ler:
   GET    /assets                     : Asset listesi (filtre + sayfalama)
-  POST   /assets/upload              : Dosya yukle
-  POST   /assets/refresh             : Workspace taramasini yeniden tetikle
+  POST   /assets/upload              : Dosya yukle  (admin-only)
+  POST   /assets/refresh             : Workspace taramasini tetikle  (admin-only)
   GET    /assets/{id}                : Tekil asset detayi
-  DELETE /assets/{id}                : Asset sil
+  DELETE /assets/{id}                : Asset sil  (admin-only)
   POST   /assets/{id}/reveal         : Asset konum bilgisi
   GET    /assets/{id}/allowed-actions : Izin verilen aksiyonlar
+
+Ownership:
+  - Asset library diskte, workspace altinda global admin yonetimli bir
+    havuzdur. Asset kayitlarinda per-user sahiplik yok.
+  - Read endpoint'leri (`list`, `get`, `reveal`, `allowed-actions`) panel
+    visibility + authenticated user gate'ine baglidir.
+  - Write endpoint'leri (`upload`, `refresh`, `delete`) `require_admin`
+    ile kilitlidir. Non-admin kullanici POST/DELETE yapamaz.
 """
 
 from typing import Optional
 
 from fastapi import APIRouter, Depends, Query, HTTPException, UploadFile, File, Form
 
+from app.auth.dependencies import require_admin
 from app.db.session import get_db
 from app.visibility.dependencies import require_visible
 from app.assets import service
@@ -31,7 +40,11 @@ from app.assets.schemas import (
 )
 from app.audit.service import write_audit_log
 
-router = APIRouter(prefix="/assets", tags=["assets"], dependencies=[Depends(require_visible("panel:assets"))])
+router = APIRouter(
+    prefix="/assets",
+    tags=["assets"],
+    dependencies=[Depends(require_visible("panel:assets"))],
+)
 
 _VALID_ASSET_TYPES = ("audio", "video", "image", "data", "text", "subtitle", "document", "other")
 
@@ -61,7 +74,12 @@ async def list_assets(
     )
 
 
-@router.post("/upload", response_model=AssetUploadResponse, status_code=201)
+@router.post(
+    "/upload",
+    response_model=AssetUploadResponse,
+    status_code=201,
+    dependencies=[Depends(require_admin)],
+)
 async def upload_asset(
     file: UploadFile = File(..., description="Yuklenecek dosya"),
     asset_type: Optional[str] = Form(None, description="Opsiyonel asset turu ipucu"),
@@ -121,7 +139,11 @@ async def upload_asset(
     return result
 
 
-@router.post("/refresh", response_model=AssetRefreshResponse)
+@router.post(
+    "/refresh",
+    response_model=AssetRefreshResponse,
+    dependencies=[Depends(require_admin)],
+)
 async def refresh_assets(session=Depends(get_db)):
     """Workspace disk taramasini yeniden tetikler."""
     result = await service.refresh_assets(session=session)
@@ -160,7 +182,11 @@ async def reveal_asset(asset_id: str, session=Depends(get_db)):
     return result
 
 
-@router.delete("/{asset_id:path}", response_model=AssetDeleteResponse)
+@router.delete(
+    "/{asset_id:path}",
+    response_model=AssetDeleteResponse,
+    dependencies=[Depends(require_admin)],
+)
 async def delete_asset(asset_id: str, session=Depends(get_db)):
     """Workspace altindaki bir asset dosyasini siler."""
     validated = service._validate_asset_path(asset_id)
