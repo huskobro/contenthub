@@ -69,6 +69,7 @@ import {
   findFirstVideoArtifact,
 } from "../../lib/jobArtifacts";
 import { cn } from "../../lib/cn";
+import { useAuthStore } from "../../stores/authStore";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -85,6 +86,12 @@ const MODULE_LABELS: Record<string, string> = {
 
 export function CanvasUserPublishPage() {
   const queryClient = useQueryClient();
+
+  // Phase AM-5: bind user-scope query caches to the authenticated user id
+  // so a different identity sharing the same browser session cannot reuse
+  // a stale project/channel list. Backend already scopes non-admin callers
+  // — this is frontend cache hygiene.
+  const userId = useAuthStore((s) => s.user?.id ?? "anonymous");
 
   // Selection state
   const [selectedProjectId, setSelectedProjectId] = useState("");
@@ -105,7 +112,7 @@ export function CanvasUserPublishPage() {
     data: completedProjects,
     isError: completedError,
   } = useQuery({
-    queryKey: ["canvas-publish-projects-completed"],
+    queryKey: ["canvas-publish-projects-completed", userId],
     queryFn: () => fetchContentProjects({ content_status: "completed" }),
     staleTime: 30_000,
   });
@@ -113,7 +120,7 @@ export function CanvasUserPublishPage() {
     data: productionProjects,
     isError: productionError,
   } = useQuery({
-    queryKey: ["canvas-publish-projects-production"],
+    queryKey: ["canvas-publish-projects-production", userId],
     queryFn: () => fetchContentProjects({ content_status: "in_production" }),
     staleTime: 30_000,
   });
@@ -140,7 +147,7 @@ export function CanvasUserPublishPage() {
 
   // Channels for channel-name lookup
   const { data: channels } = useQuery({
-    queryKey: ["canvas-publish-channels"],
+    queryKey: ["canvas-publish-channels", userId],
     queryFn: () => fetchChannelProfiles(),
     staleTime: 60_000,
   });

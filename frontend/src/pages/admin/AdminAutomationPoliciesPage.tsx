@@ -34,8 +34,13 @@ const CHECKPOINTS = [
 ];
 
 export function AdminAutomationPoliciesPage() {
+  // Phase AM-5: admin-scope marker so this cache cannot collide with a
+  // future per-user policies view. The backend endpoint currently accepts
+  // an optional `owner_user_id` filter but doesn't auto-scope — that
+  // backend gap is tracked separately; the key marker here keeps the
+  // front-end cache honest.
   const { data: policies = [], isLoading } = useQuery({
-    queryKey: ["automation-policies"],
+    queryKey: ["automation-policies", "admin-scope"],
     queryFn: () => fetchAutomationPolicies(),
   });
 

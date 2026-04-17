@@ -190,8 +190,18 @@ export function AdminConnectionsPage() {
   const [healthFilter, setHealthFilter] = useState("");
   const [reauthFilter, setReauthFilter] = useState("");
 
-  const { data: users } = useQuery({ queryKey: ["users"], queryFn: fetchUsers });
-  const { data: channels } = useQuery({ queryKey: ["channel-profiles"], queryFn: () => fetchChannelProfiles() });
+  // Phase AM-5: tag query keys with an explicit `admin-scope` marker so
+  // admin-wide caches cannot collide with per-user caches elsewhere in the
+  // app. The backend scopes non-admin callers automatically; this hygiene
+  // is purely about React Query cache segregation.
+  const { data: users } = useQuery({
+    queryKey: ["users", "admin-scope"],
+    queryFn: fetchUsers,
+  });
+  const { data: channels } = useQuery({
+    queryKey: ["channel-profiles", "admin-scope"],
+    queryFn: () => fetchChannelProfiles(),
+  });
 
   const params = useMemo(() => ({
     user_id: userFilter || undefined,
