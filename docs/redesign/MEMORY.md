@@ -72,7 +72,7 @@ Her kalem: ayrı commit, push, test sonucu MEMORY.md'ye, 7 başlıklı Türkçe 
 | 10 | P2.1 | Nav yeniden gruplandırma | ✅ Tamam | `9ec4b31` |
 | 11 | P2.2 | Analytics tabs (3 → 1) | ✅ Tamam | `237454d` |
 | 12 | P2.3 | Settings module landing | ✅ Tamam | `f5d1e72` |
-| 13 | P3.1 | 6 duplicate çift birleştirme | 🟡 Commit bekliyor | — |
+| 13 | P3.1 | 6 duplicate çift birleştirme | ✅ Tamam | `3ba6af5` |
 | 14 | P2.4 | Calendar unified (P3.1 sonrası) | ⏳ | — |
 | 15 | P2.5 | PublishBoard toggle | ⏳ | — |
 | 16 | P2.6 | Automation SVG görselleştirme | ⏳ | — |
@@ -160,7 +160,7 @@ Her kalem: ayrı commit, push, test sonucu MEMORY.md'ye, 7 başlıklı Türkçe 
 - `237454d` — P2.2 Analytics tabs (3 → 1): AnalyticsTabBar.tsx router-aware tab stripe + 5 admin + 3 user analytics sayfası entegrasyonu + 10 smoke test
 - `35ef5c3` — P2.2 commit SHA'sı MEMORY.md'ye işleme (docs-only)
 - `f5d1e72` — P2.3 Settings module landing: SettingsModuleLanding bileşeni + `/admin/settings/:group` deep-link rotası + EffectiveSettingsPanel initialGroup prop + 5 smoke test
-- (P3.1 commit bekliyor) — 6 duplicate çift birleştirme: YouTubeCallback çifti `YouTubeCallbackBody` ortak motorunda toplandı (mode prop ile admin/user davranışı ayrıştırıldı) + 8 smoke test; diğer 5 çiftin mevcut durumu dürüstçe dokümante edildi
+- `3ba6af5` — P3.1 6 duplicate çift birleştirme: YouTubeCallback çifti `YouTubeCallbackBody` ortak motorunda toplandı (mode prop ile admin/user davranışı ayrıştırıldı) + 8 smoke test; diğer 5 çiftin mevcut durumu dürüstçe dokümante edildi
 
 ### 4.2 Yeni Dosyalar
 - `docs/redesign/MEMORY.md` (bu dosya)
