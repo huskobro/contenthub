@@ -71,7 +71,7 @@ Her kalem: ayrı commit, push, test sonucu MEMORY.md'ye, 7 başlıklı Türkçe 
 | 9 | P1.4 | `UserDigestDashboard` | ✅ Tamam | `11ffecf` |
 | 10 | P2.1 | Nav yeniden gruplandırma | ✅ Tamam | `9ec4b31` |
 | 11 | P2.2 | Analytics tabs (3 → 1) | ✅ Tamam | `237454d` |
-| 12 | P2.3 | Settings module landing | 🟡 Commit bekliyor | — |
+| 12 | P2.3 | Settings module landing | ✅ Tamam | `f5d1e72` |
 | 13 | P3.1 | 6 duplicate çift birleştirme | ⏳ | — |
 | 14 | P2.4 | Calendar unified (P3.1 sonrası) | ⏳ | — |
 | 15 | P2.5 | PublishBoard toggle | ⏳ | — |
@@ -159,6 +159,7 @@ Her kalem: ayrı commit, push, test sonucu MEMORY.md'ye, 7 başlıklı Türkçe 
 - `9ec4b31` — P2.1 Nav yeniden gruplandırma (useLayoutNavigation.ts 4 export R3 IA'ya uyarlandı)
 - `237454d` — P2.2 Analytics tabs (3 → 1): AnalyticsTabBar.tsx router-aware tab stripe + 5 admin + 3 user analytics sayfası entegrasyonu + 10 smoke test
 - `35ef5c3` — P2.2 commit SHA'sı MEMORY.md'ye işleme (docs-only)
+- `f5d1e72` — P2.3 Settings module landing: SettingsModuleLanding bileşeni + `/admin/settings/:group` deep-link rotası + EffectiveSettingsPanel initialGroup prop + 5 smoke test
 
 ### 4.2 Yeni Dosyalar
 - `docs/redesign/MEMORY.md` (bu dosya)
