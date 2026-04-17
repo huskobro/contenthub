@@ -167,6 +167,23 @@ function applyTokenResponse(
     user,
     isAuthenticated: true,
   });
+
+  // Phase Final F4 — cross-device theme persistence.
+  // After successful auth, force-hydrate the theme from backend so a
+  // different browser on the same account reflects the last chosen theme.
+  // Late-bind the import to avoid a circular import with themeStore.
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    void import("./themeStore").then((mod) => {
+      try {
+        mod.useThemeStore.getState().hydrateFromBackend({ force: true });
+      } catch {
+        // theme store not ready yet — safe to ignore
+      }
+    });
+  } catch {
+    // dynamic import unavailable — safe to ignore
+  }
 }
 
 export const useAuthStore = create<AuthState>((set, get) => {
