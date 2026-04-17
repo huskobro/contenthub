@@ -108,13 +108,17 @@ async def test_capability_endpoint(client: AsyncClient, user_headers: dict):
 # 7. Post update (draft only)
 # ---------------------------------------------------------------------------
 
-async def test_update_draft_post(client: AsyncClient, user_headers: dict):
-    """PATCH /posts/{id} should update draft."""
+async def test_update_draft_post(client: AsyncClient, admin_headers: dict):
+    """PATCH /posts/{id} should update draft.
+
+    Phase Final F2: channel_profile_id=None olan orphan post'u yalnizca admin
+    guncelleyebilir; business logic (draft update) admin-header ile dogrulaniyor.
+    """
     # Create first
     create_resp = await client.post(BASE, json={
         "platform": "youtube",
         "body": "Original body",
-    }, headers=user_headers)
+    }, headers=admin_headers)
     assert create_resp.status_code == 201
     post_id = create_resp.json()["id"]
 
@@ -122,7 +126,7 @@ async def test_update_draft_post(client: AsyncClient, user_headers: dict):
     update_resp = await client.patch(f"{BASE}/{post_id}", json={
         "body": "Updated body",
         "title": "New title",
-    }, headers=user_headers)
+    }, headers=admin_headers)
     assert update_resp.status_code == 200
     data = update_resp.json()
     assert data["body"] == "Updated body"
@@ -133,20 +137,23 @@ async def test_update_draft_post(client: AsyncClient, user_headers: dict):
 # 8. Post delete (draft only)
 # ---------------------------------------------------------------------------
 
-async def test_delete_draft_post(client: AsyncClient, user_headers: dict):
-    """DELETE /posts/{id} should delete draft."""
+async def test_delete_draft_post(client: AsyncClient, admin_headers: dict):
+    """DELETE /posts/{id} should delete draft.
+
+    Phase Final F2: orphan post yalnizca admin silinebilir.
+    """
     create_resp = await client.post(BASE, json={
         "platform": "youtube",
         "body": "To be deleted",
-    }, headers=user_headers)
+    }, headers=admin_headers)
     assert create_resp.status_code == 201
     post_id = create_resp.json()["id"]
 
-    del_resp = await client.delete(f"{BASE}/{post_id}", headers=user_headers)
+    del_resp = await client.delete(f"{BASE}/{post_id}", headers=admin_headers)
     assert del_resp.status_code == 204
 
     # Verify gone
-    get_resp = await client.get(f"{BASE}/{post_id}", headers=user_headers)
+    get_resp = await client.get(f"{BASE}/{post_id}", headers=admin_headers)
     assert get_resp.status_code == 404
 
 
