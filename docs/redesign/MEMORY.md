@@ -59,8 +59,8 @@
 | R0 | Worktree/branch setup | ✅ Tamam | `33783e1` (branch base) | — |
 | R1 | Delta-audit (post-F4 + multi-tenant) | ✅ Tamam | `689ffdb` | `docs/redesign/R1_repo_reality_delta_audit.md` |
 | R2 | Rakip analizi (hibrit: 4 derin + 5 tamamlayıcı) | ✅ Tamam | `16c93bc` | `docs/redesign/R2_competitor_benchmark.md` |
-| R3 | Yeni IA önerisi | ✅ Tamam | (commit sonra güncellenecek) | `docs/redesign/R3_information_architecture.md` |
-| R4 | Preview/prototype planı | 🟡 Sürüyor | — | `docs/redesign/R4_preview_prototype_plan.md` |
+| R3 | Yeni IA önerisi | ✅ Tamam | `b7c77a3` | `docs/redesign/R3_information_architecture.md` |
+| R4 | Preview/prototype planı | ✅ Tamam | (commit sonra güncellenecek) | `docs/redesign/R4_preview_prototype_plan.md` |
 | R5 | Uygulama yol haritası | ⏳ Beklemede | — | `docs/redesign/R5_execution_roadmap.md` |
 | R6 | Onaylı implementasyon | 🔒 Onay kapısı | — | (kullanıcı seçecek parça) |
 
@@ -100,6 +100,7 @@
 - `689ffdb` — R1 delta-audit raporu (R1 teslimi)
 - `7aaadbb` — MEMORY.md ilk sürüm
 - `16c93bc` — R2 competitor benchmark raporu
+- `b7c77a3` — R3 information architecture önerisi
 
 ### 4.2 Yeni Dosyalar
 - `docs/redesign/MEMORY.md` (bu dosya)
