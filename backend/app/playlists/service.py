@@ -676,14 +676,24 @@ async def remove_video_from_playlist(
 async def list_playlists(
     db: AsyncSession,
     channel_profile_id: Optional[str] = None,
+    channel_profile_ids: Optional[list[str]] = None,
     platform: Optional[str] = None,
     limit: int = 100,
     offset: int = 0,
 ) -> list[SyncedPlaylist]:
-    """Playlist'leri filtreli listele."""
+    """
+    Playlist'leri filtreli listele.
+
+    Phase Final F2: `channel_profile_ids` scopes to owned channels
+    (non-admin caller). `None` means no ownership filter (admin).
+    """
     q = select(SyncedPlaylist).order_by(SyncedPlaylist.updated_at.desc())
     if channel_profile_id:
         q = q.where(SyncedPlaylist.channel_profile_id == channel_profile_id)
+    if channel_profile_ids is not None:
+        if not channel_profile_ids:
+            return []
+        q = q.where(SyncedPlaylist.channel_profile_id.in_(channel_profile_ids))
     if platform:
         q = q.where(SyncedPlaylist.platform == platform)
     q = q.offset(offset).limit(limit)
@@ -712,8 +722,15 @@ async def list_playlist_items(
     return list(result.scalars().all())
 
 
-async def get_sync_status(db: AsyncSession) -> list[dict]:
-    """Playlist bazinda sync ozeti."""
+async def get_sync_status(
+    db: AsyncSession,
+    channel_profile_ids: Optional[list[str]] = None,
+) -> list[dict]:
+    """
+    Playlist bazinda sync ozeti.
+
+    Phase Final F2: `channel_profile_ids` scopes to owned channels.
+    """
     stmt = (
         select(
             SyncedPlaylist.id,
@@ -725,6 +742,11 @@ async def get_sync_status(db: AsyncSession) -> list[dict]:
         )
         .order_by(SyncedPlaylist.updated_at.desc())
     )
+    if channel_profile_ids is not None:
+        if not channel_profile_ids:
+            return []
+        stmt = stmt.where(SyncedPlaylist.channel_profile_id.in_(channel_profile_ids))
+
     result = await db.execute(stmt)
     return [
         {

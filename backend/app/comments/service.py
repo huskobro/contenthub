@@ -270,19 +270,32 @@ async def list_comments(
     db: AsyncSession,
     video_id: Optional[str] = None,
     channel_profile_id: Optional[str] = None,
+    channel_profile_ids: Optional[list[str]] = None,
     platform: Optional[str] = None,
     reply_status: Optional[str] = None,
     is_reply: Optional[bool] = None,
     limit: int = 100,
     offset: int = 0,
 ) -> list[SyncedComment]:
-    """Synced yorumlari filtreli listele."""
+    """
+    Synced yorumlari filtreli listele.
+
+    Phase Final F2: caller ownership is enforced at the router level; the
+    optional `channel_profile_ids` list scopes results to a set of channels
+    (e.g. the caller's owned channels). `channel_profile_id` remains for
+    backwards compatibility.
+    """
     q = select(SyncedComment).order_by(SyncedComment.published_at.desc())
 
     if video_id:
         q = q.where(SyncedComment.external_video_id == video_id)
     if channel_profile_id:
         q = q.where(SyncedComment.channel_profile_id == channel_profile_id)
+    if channel_profile_ids is not None:
+        if not channel_profile_ids:
+            # Non-admin caller with no owned channels → empty result
+            return []
+        q = q.where(SyncedComment.channel_profile_id.in_(channel_profile_ids))
     if platform:
         q = q.where(SyncedComment.platform == platform)
     if reply_status:
@@ -427,9 +440,15 @@ async def reply_to_comment(
     }
 
 
-async def get_sync_status(db: AsyncSession) -> list[dict]:
+async def get_sync_status(
+    db: AsyncSession,
+    channel_profile_ids: Optional[list[str]] = None,
+) -> list[dict]:
     """
     Her video icin son sync bilgisini dondurur.
+
+    Phase Final F2: caller owned-channel scoping via `channel_profile_ids`;
+    `None` means "no ownership filter" (admin-only path).
     """
     stmt = (
         select(
@@ -440,6 +459,11 @@ async def get_sync_status(db: AsyncSession) -> list[dict]:
         .group_by(SyncedComment.external_video_id)
         .order_by(func.max(SyncedComment.last_synced_at).desc())
     )
+    if channel_profile_ids is not None:
+        if not channel_profile_ids:
+            return []
+        stmt = stmt.where(SyncedComment.channel_profile_id.in_(channel_profile_ids))
+
     result = await db.execute(stmt)
     rows = result.all()
 

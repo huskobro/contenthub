@@ -64,12 +64,20 @@ async def get_calendar_events(
     channel_profile_id: Optional[str] = None,
     platform: Optional[str] = None,
     event_type: Optional[str] = None,
+    owned_channel_ids: Optional[list[str]] = None,
 ) -> list[CalendarEvent]:
     """
     Aggregate calendar events from multiple sources.
 
     Returns unified CalendarEvent list sorted by start_at.
+
+    Phase Final F2.2: `owned_channel_ids` scope param for non-admin caller.
+    `None` = no scoping (admin); `[]` = empty scope = empty result.
     """
+    # Non-admin with zero owned channels: erken donus.
+    if owned_channel_ids is not None and not owned_channel_ids:
+        return []
+
     events: list[CalendarEvent] = []
     now = _now_utc()
 
@@ -78,7 +86,7 @@ async def get_calendar_events(
         events.extend(
             await _collect_project_events(
                 db, start_date, end_date, owner_user_id,
-                channel_profile_id, platform, now,
+                channel_profile_id, platform, now, owned_channel_ids,
             )
         )
 
@@ -87,7 +95,7 @@ async def get_calendar_events(
         events.extend(
             await _collect_publish_events(
                 db, start_date, end_date, owner_user_id,
-                channel_profile_id, platform, now,
+                channel_profile_id, platform, now, owned_channel_ids,
             )
         )
 
@@ -97,6 +105,7 @@ async def get_calendar_events(
             await _collect_post_events(
                 db, start_date, end_date, owner_user_id,
                 channel_profile_id, platform, now,
+                owned_channel_ids=owned_channel_ids,
             )
         )
 
@@ -116,6 +125,7 @@ async def _collect_project_events(
     channel_profile_id: Optional[str],
     platform: Optional[str],
     now: datetime,
+    owned_channel_ids: Optional[list[str]] = None,
 ) -> list[CalendarEvent]:
     """Collect ContentProject deadline events."""
     q = select(ContentProject).where(
@@ -127,6 +137,10 @@ async def _collect_project_events(
         q = q.where(ContentProject.user_id == owner_user_id)
     if channel_profile_id:
         q = q.where(ContentProject.channel_profile_id == channel_profile_id)
+    # Phase Final F2.2: non-admin caller sadece sahip oldugu kanallardaki
+    # projeleri goruyor. `owned_channel_ids=None` admin demek (no scope).
+    if owned_channel_ids is not None:
+        q = q.where(ContentProject.channel_profile_id.in_(owned_channel_ids))
     # Faz 14a: platform filter via primary_platform
     if platform:
         q = q.where(ContentProject.primary_platform == platform)
@@ -168,6 +182,7 @@ async def _collect_publish_events(
     channel_profile_id: Optional[str],
     platform: Optional[str],
     now: datetime,
+    owned_channel_ids: Optional[list[str]] = None,
 ) -> list[CalendarEvent]:
     """Collect PublishRecord scheduled/published events."""
     q = select(PublishRecord).where(
@@ -186,6 +201,17 @@ async def _collect_publish_events(
     )
     if platform:
         q = q.where(PublishRecord.platform == platform)
+
+    # Phase Final F2.2: non-admin caller sadece sahip oldugu kanallara
+    # bagli ContentProject'lerin PublishRecord'larini gorebilir.
+    # PublishRecord.channel_profile_id yok, bu yuzden ContentProject
+    # uzerinden subquery ile filtreliyoruz.
+    if owned_channel_ids is not None:
+        owned_project_ids_stmt = select(ContentProject.id).where(
+            ContentProject.channel_profile_id.in_(owned_channel_ids)
+        )
+        q = q.where(PublishRecord.content_project_id.in_(owned_project_ids_stmt))
+
     q = q.limit(200)
 
     result = await db.execute(q)
@@ -228,6 +254,7 @@ async def _collect_post_events(
     channel_profile_id: Optional[str],
     platform: Optional[str],
     now: datetime,
+    owned_channel_ids: Optional[list[str]] = None,
 ) -> list[CalendarEvent]:
     """Collect PlatformPost scheduled/posted events."""
     q = select(PlatformPost).where(
@@ -246,6 +273,11 @@ async def _collect_post_events(
     )
     if channel_profile_id:
         q = q.where(PlatformPost.channel_profile_id == channel_profile_id)
+    # Phase Final F2.2: non-admin caller sadece sahip oldugu kanallardaki
+    # PlatformPost'lari gorebilir. `owned_channel_ids=None` admin demek (no scope).
+    # PlatformPost.channel_profile_id dogrudan FK, subquery gerekmez.
+    if owned_channel_ids is not None:
+        q = q.where(PlatformPost.channel_profile_id.in_(owned_channel_ids))
     if platform:
         q = q.where(PlatformPost.platform == platform)
     q = q.limit(200)

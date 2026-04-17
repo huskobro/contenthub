@@ -139,10 +139,15 @@ def _params(start: datetime, end: datetime, **extra: str) -> dict:
 # 1. Empty calendar
 # ---------------------------------------------------------------------------
 
-async def test_calendar_empty(client: AsyncClient, user_headers: dict):
-    """No data returns empty list."""
-    now = _now()
-    resp = await client.get(CAL_BASE, params=_params(now, now + timedelta(days=7)), headers=user_headers)
+async def test_calendar_empty(client: AsyncClient, admin_headers: dict):
+    """No data returns empty list.
+
+    Uses a far-future window (365+ days out) so leftover data from other
+    session-scoped fixtures does not contaminate this baseline assertion.
+    """
+    far_start = _now() + timedelta(days=365)
+    far_end = far_start + timedelta(days=7)
+    resp = await client.get(CAL_BASE, params=_params(far_start, far_end), headers=admin_headers)
     assert resp.status_code == 200
     assert resp.json() == []
 
@@ -151,7 +156,7 @@ async def test_calendar_empty(client: AsyncClient, user_headers: dict):
 # 2. ContentProject deadline events
 # ---------------------------------------------------------------------------
 
-async def test_project_deadline_event(client: AsyncClient, db_session: AsyncSession, user_headers: dict):
+async def test_project_deadline_event(client: AsyncClient, db_session: AsyncSession, admin_headers: dict):
     """ContentProject with deadline_at appears as calendar event."""
     user_id = await _ensure_user(db_session)
     ch_id = await _ensure_channel(db_session, user_id)
@@ -160,7 +165,7 @@ async def test_project_deadline_event(client: AsyncClient, db_session: AsyncSess
 
     start = _now() - timedelta(days=1)
     end = _now() + timedelta(days=7)
-    resp = await client.get(CAL_BASE, params=_params(start, end), headers=user_headers)
+    resp = await client.get(CAL_BASE, params=_params(start, end), headers=admin_headers)
     assert resp.status_code == 200
     data = resp.json()
     proj_events = [e for e in data if e["event_type"] == "content_project"]
@@ -172,7 +177,7 @@ async def test_project_deadline_event(client: AsyncClient, db_session: AsyncSess
 # 3. PublishRecord scheduled events
 # ---------------------------------------------------------------------------
 
-async def test_publish_scheduled_event(client: AsyncClient, db_session: AsyncSession, user_headers: dict):
+async def test_publish_scheduled_event(client: AsyncClient, db_session: AsyncSession, admin_headers: dict):
     """PublishRecord with scheduled_at appears as calendar event."""
     job_id = await _ensure_job(db_session)
     sched = _now() + timedelta(days=2)
@@ -181,7 +186,7 @@ async def test_publish_scheduled_event(client: AsyncClient, db_session: AsyncSes
     resp = await client.get(CAL_BASE, params=_params(
         _now() - timedelta(days=1), _now() + timedelta(days=7),
     ),
-    headers=user_headers,)
+    headers=admin_headers,)
     assert resp.status_code == 200
     pub_events = [e for e in resp.json() if e["event_type"] == "publish_record"]
     assert len(pub_events) >= 1
@@ -192,7 +197,7 @@ async def test_publish_scheduled_event(client: AsyncClient, db_session: AsyncSes
 # 4. PlatformPost scheduled events
 # ---------------------------------------------------------------------------
 
-async def test_post_scheduled_event(client: AsyncClient, db_session: AsyncSession, user_headers: dict):
+async def test_post_scheduled_event(client: AsyncClient, db_session: AsyncSession, admin_headers: dict):
     """PlatformPost with scheduled_for appears as calendar event."""
     user_id = await _ensure_user(db_session)
     ch_id = await _ensure_channel(db_session, user_id)
@@ -202,7 +207,7 @@ async def test_post_scheduled_event(client: AsyncClient, db_session: AsyncSessio
     resp = await client.get(CAL_BASE, params=_params(
         _now() - timedelta(days=1), _now() + timedelta(days=7),
     ),
-    headers=user_headers,)
+    headers=admin_headers,)
     assert resp.status_code == 200
     post_events = [e for e in resp.json() if e["event_type"] == "platform_post"]
     assert len(post_events) >= 1
@@ -213,7 +218,7 @@ async def test_post_scheduled_event(client: AsyncClient, db_session: AsyncSessio
 # 5. Date range filtering (out-of-range excluded)
 # ---------------------------------------------------------------------------
 
-async def test_date_range_excludes_outside(client: AsyncClient, db_session: AsyncSession, user_headers: dict):
+async def test_date_range_excludes_outside(client: AsyncClient, db_session: AsyncSession, admin_headers: dict):
     """Events outside date range are not returned."""
     user_id = await _ensure_user(db_session)
     ch_id = await _ensure_channel(db_session, user_id)
@@ -224,7 +229,7 @@ async def test_date_range_excludes_outside(client: AsyncClient, db_session: Asyn
     resp = await client.get(CAL_BASE, params=_params(
         _now(), _now() + timedelta(days=5),
     ),
-    headers=user_headers,)
+    headers=admin_headers,)
     assert resp.status_code == 200
     proj_events = [e for e in resp.json() if e["event_type"] == "content_project"]
     # Should not include the 60-day-out deadline
@@ -238,7 +243,7 @@ async def test_date_range_excludes_outside(client: AsyncClient, db_session: Asyn
 # 6. Channel filter
 # ---------------------------------------------------------------------------
 
-async def test_channel_filter(client: AsyncClient, db_session: AsyncSession, user_headers: dict):
+async def test_channel_filter(client: AsyncClient, db_session: AsyncSession, admin_headers: dict):
     """channel_profile_id filter restricts results."""
     user_id = await _ensure_user(db_session)
     ch_a = await _ensure_channel(db_session, user_id)
@@ -251,7 +256,7 @@ async def test_channel_filter(client: AsyncClient, db_session: AsyncSession, use
         _now() - timedelta(days=1), _now() + timedelta(days=7),
         channel_profile_id=ch_a,
     ),
-    headers=user_headers,)
+    headers=admin_headers,)
     assert resp.status_code == 200
     for ev in resp.json():
         if ev["channel_profile_id"]:
@@ -262,7 +267,7 @@ async def test_channel_filter(client: AsyncClient, db_session: AsyncSession, use
 # 7. Event type filter
 # ---------------------------------------------------------------------------
 
-async def test_event_type_filter(client: AsyncClient, db_session: AsyncSession, user_headers: dict):
+async def test_event_type_filter(client: AsyncClient, db_session: AsyncSession, admin_headers: dict):
     """event_type filter restricts to single source."""
     user_id = await _ensure_user(db_session)
     ch_id = await _ensure_channel(db_session, user_id)
@@ -275,7 +280,7 @@ async def test_event_type_filter(client: AsyncClient, db_session: AsyncSession, 
         _now() - timedelta(days=1), _now() + timedelta(days=7),
         event_type="content_project",
     ),
-    headers=user_headers,)
+    headers=admin_headers,)
     assert resp.status_code == 200
     for ev in resp.json():
         assert ev["event_type"] == "content_project"
@@ -285,7 +290,7 @@ async def test_event_type_filter(client: AsyncClient, db_session: AsyncSession, 
 # 8. Overdue flag
 # ---------------------------------------------------------------------------
 
-async def test_overdue_flag(client: AsyncClient, db_session: AsyncSession, user_headers: dict):
+async def test_overdue_flag(client: AsyncClient, db_session: AsyncSession, admin_headers: dict):
     """Past-deadline draft project has is_overdue=True."""
     user_id = await _ensure_user(db_session)
     ch_id = await _ensure_channel(db_session, user_id)
@@ -295,7 +300,7 @@ async def test_overdue_flag(client: AsyncClient, db_session: AsyncSession, user_
     resp = await client.get(CAL_BASE, params=_params(
         _now() - timedelta(days=2), _now() + timedelta(days=1),
     ),
-    headers=user_headers,)
+    headers=admin_headers,)
     assert resp.status_code == 200
     overdue = [e for e in resp.json() if e["is_overdue"] is True]
     assert len(overdue) >= 1
@@ -305,7 +310,7 @@ async def test_overdue_flag(client: AsyncClient, db_session: AsyncSession, user_
 # 9. Events sorted by start_at
 # ---------------------------------------------------------------------------
 
-async def test_events_sorted(client: AsyncClient, db_session: AsyncSession, user_headers: dict):
+async def test_events_sorted(client: AsyncClient, db_session: AsyncSession, admin_headers: dict):
     """Events are returned sorted by start_at ascending."""
     user_id = await _ensure_user(db_session)
     ch_id = await _ensure_channel(db_session, user_id)
@@ -317,7 +322,7 @@ async def test_events_sorted(client: AsyncClient, db_session: AsyncSession, user
         _now() - timedelta(days=1), _now() + timedelta(days=10),
         event_type="content_project",
     ),
-    headers=user_headers,)
+    headers=admin_headers,)
     assert resp.status_code == 200
     data = resp.json()
     dates = [e["start_at"] for e in data]
@@ -328,7 +333,7 @@ async def test_events_sorted(client: AsyncClient, db_session: AsyncSession, user
 # 10. Owner user filter
 # ---------------------------------------------------------------------------
 
-async def test_owner_filter(client: AsyncClient, db_session: AsyncSession, user_headers: dict):
+async def test_owner_filter(client: AsyncClient, db_session: AsyncSession, admin_headers: dict):
     """owner_user_id filter restricts project events."""
     user_a = await _ensure_user(db_session)
     user_b = await _ensure_user(db_session)
@@ -342,7 +347,7 @@ async def test_owner_filter(client: AsyncClient, db_session: AsyncSession, user_
         _now() - timedelta(days=1), _now() + timedelta(days=7),
         owner_user_id=user_a,
     ),
-    headers=user_headers,)
+    headers=admin_headers,)
     assert resp.status_code == 200
     for ev in resp.json():
         if ev["owner_user_id"]:
@@ -353,7 +358,7 @@ async def test_owner_filter(client: AsyncClient, db_session: AsyncSession, user_
 # 11. Mixed event sources aggregated
 # ---------------------------------------------------------------------------
 
-async def test_mixed_aggregation(client: AsyncClient, db_session: AsyncSession, user_headers: dict):
+async def test_mixed_aggregation(client: AsyncClient, db_session: AsyncSession, admin_headers: dict):
     """All three event sources aggregated into one response."""
     user_id = await _ensure_user(db_session)
     ch_id = await _ensure_channel(db_session, user_id)
@@ -367,7 +372,7 @@ async def test_mixed_aggregation(client: AsyncClient, db_session: AsyncSession, 
     resp = await client.get(CAL_BASE, params=_params(
         _now() - timedelta(days=1), _now() + timedelta(days=7),
     ),
-    headers=user_headers,)
+    headers=admin_headers,)
     assert resp.status_code == 200
     types = {e["event_type"] for e in resp.json()}
     assert "content_project" in types
@@ -384,7 +389,7 @@ async def test_mixed_aggregation(client: AsyncClient, db_session: AsyncSession, 
 # 12. Channel calendar context returns policy summary
 # ---------------------------------------------------------------------------
 
-async def test_channel_context_policy_summary(client: AsyncClient, db_session: AsyncSession, user_headers: dict):
+async def test_channel_context_policy_summary(client: AsyncClient, db_session: AsyncSession, admin_headers: dict):
     """Channel context endpoint returns policy summary."""
     channel_id = await _ensure_channel(db_session)
     # Create a policy for this channel
@@ -398,9 +403,9 @@ async def test_channel_context_policy_summary(client: AsyncClient, db_session: A
         "publish_mode": "manual_review",
         "post_publish_mode": "automatic",
     },
-    headers=user_headers,)
+    headers=admin_headers,)
 
-    resp = await client.get(f"{CTX_BASE}/{channel_id}", headers=user_headers)
+    resp = await client.get(f"{CTX_BASE}/{channel_id}", headers=admin_headers)
     assert resp.status_code == 200
     data = resp.json()
     assert data["channel_profile_id"] == channel_id
@@ -414,7 +419,7 @@ async def test_channel_context_policy_summary(client: AsyncClient, db_session: A
 # 13. Channel context with publish_windows_json display
 # ---------------------------------------------------------------------------
 
-async def test_channel_context_publish_windows(client: AsyncClient, db_session: AsyncSession, user_headers: dict):
+async def test_channel_context_publish_windows(client: AsyncClient, db_session: AsyncSession, admin_headers: dict):
     """publish_windows_json is parsed and displayed."""
     channel_id = await _ensure_channel(db_session)
     import json
@@ -425,9 +430,9 @@ async def test_channel_context_publish_windows(client: AsyncClient, db_session: 
         "is_enabled": True,
         "publish_windows_json": windows,
     },
-    headers=user_headers,)
+    headers=admin_headers,)
 
-    resp = await client.get(f"{CTX_BASE}/{channel_id}", headers=user_headers)
+    resp = await client.get(f"{CTX_BASE}/{channel_id}", headers=admin_headers)
     assert resp.status_code == 200
     data = resp.json()
     assert data["publish_windows_display"] is not None
@@ -439,7 +444,7 @@ async def test_channel_context_publish_windows(client: AsyncClient, db_session: 
 # 14. Channel context with max_daily_posts
 # ---------------------------------------------------------------------------
 
-async def test_channel_context_max_daily_posts(client: AsyncClient, db_session: AsyncSession, user_headers: dict):
+async def test_channel_context_max_daily_posts(client: AsyncClient, db_session: AsyncSession, admin_headers: dict):
     """max_daily_posts shown in channel context."""
     channel_id = await _ensure_channel(db_session)
     await client.post(POLICY_BASE, json={
@@ -448,9 +453,9 @@ async def test_channel_context_max_daily_posts(client: AsyncClient, db_session: 
         "is_enabled": True,
         "max_daily_posts": 3,
     },
-    headers=user_headers,)
+    headers=admin_headers,)
 
-    resp = await client.get(f"{CTX_BASE}/{channel_id}", headers=user_headers)
+    resp = await client.get(f"{CTX_BASE}/{channel_id}", headers=admin_headers)
     assert resp.status_code == 200
     assert resp.json()["max_daily_posts"] == 3
 
@@ -459,7 +464,7 @@ async def test_channel_context_max_daily_posts(client: AsyncClient, db_session: 
 # 15. Calendar ↔ inbox relation (inbox_item_id enrichment)
 # ---------------------------------------------------------------------------
 
-async def test_calendar_inbox_relation(client: AsyncClient, db_session: AsyncSession, user_headers: dict):
+async def test_calendar_inbox_relation(client: AsyncClient, db_session: AsyncSession, admin_headers: dict):
     """Events with matching inbox items get inbox_item_id populated."""
     user_id = await _ensure_user(db_session)
     ch_id = await _ensure_channel(db_session, user_id)
@@ -474,14 +479,14 @@ async def test_calendar_inbox_relation(client: AsyncClient, db_session: AsyncSes
         "related_entity_type": "content_project",
         "related_entity_id": proj_id,
     },
-    headers=user_headers,)
+    headers=admin_headers,)
     assert inbox_resp.status_code == 201
 
     # Get calendar events
     resp = await client.get(CAL_BASE, params=_params(
         _now() - timedelta(days=1), _now() + timedelta(days=7),
     ),
-    headers=user_headers,)
+    headers=admin_headers,)
     assert resp.status_code == 200
     proj_events = [e for e in resp.json() if e["event_type"] == "content_project" and e["related_project_id"] == proj_id]
     assert len(proj_events) >= 1
@@ -493,7 +498,7 @@ async def test_calendar_inbox_relation(client: AsyncClient, db_session: AsyncSes
 # 16. Overdue event detail includes all fields
 # ---------------------------------------------------------------------------
 
-async def test_overdue_event_detail_fields(client: AsyncClient, db_session: AsyncSession, user_headers: dict):
+async def test_overdue_event_detail_fields(client: AsyncClient, db_session: AsyncSession, admin_headers: dict):
     """Overdue event has correct fields in response."""
     user_id = await _ensure_user(db_session)
     ch_id = await _ensure_channel(db_session, user_id)
@@ -503,7 +508,7 @@ async def test_overdue_event_detail_fields(client: AsyncClient, db_session: Asyn
     resp = await client.get(CAL_BASE, params=_params(
         _now() - timedelta(days=2), _now() + timedelta(days=1),
     ),
-    headers=user_headers,)
+    headers=admin_headers,)
     assert resp.status_code == 200
     overdue = [e for e in resp.json() if e["is_overdue"]]
     assert len(overdue) >= 1
@@ -520,7 +525,7 @@ async def test_overdue_event_detail_fields(client: AsyncClient, db_session: Asyn
 # 17. ContentProject platform filter via primary_platform
 # ---------------------------------------------------------------------------
 
-async def test_project_platform_filter(client: AsyncClient, db_session: AsyncSession, user_headers: dict):
+async def test_project_platform_filter(client: AsyncClient, db_session: AsyncSession, admin_headers: dict):
     """Platform filter restricts ContentProject events via primary_platform."""
     user_id = await _ensure_user(db_session)
     ch_id = await _ensure_channel(db_session, user_id)
@@ -532,7 +537,7 @@ async def test_project_platform_filter(client: AsyncClient, db_session: AsyncSes
         _now() - timedelta(days=1), _now() + timedelta(days=7),
         platform="youtube", event_type="content_project",
     ),
-    headers=user_headers,)
+    headers=admin_headers,)
     assert resp.status_code == 200
     for ev in resp.json():
         assert ev["primary_platform"] == "youtube" or ev["platform"] == "youtube"
@@ -542,7 +547,7 @@ async def test_project_platform_filter(client: AsyncClient, db_session: AsyncSes
 # 18. Detail panel upgraded fields present in response
 # ---------------------------------------------------------------------------
 
-async def test_detail_upgraded_fields(client: AsyncClient, db_session: AsyncSession, user_headers: dict):
+async def test_detail_upgraded_fields(client: AsyncClient, db_session: AsyncSession, admin_headers: dict):
     """CalendarEvent response includes Faz 14a fields."""
     user_id = await _ensure_user(db_session)
     ch_id = await _ensure_channel(db_session, user_id)
@@ -552,7 +557,7 @@ async def test_detail_upgraded_fields(client: AsyncClient, db_session: AsyncSess
         _now() - timedelta(days=1), _now() + timedelta(days=7),
         event_type="content_project", platform="youtube",
     ),
-    headers=user_headers,)
+    headers=admin_headers,)
     assert resp.status_code == 200
     data = resp.json()
     # Find our specific project
@@ -570,7 +575,7 @@ async def test_detail_upgraded_fields(client: AsyncClient, db_session: AsyncSess
 # 19. Admin/user scope — channel context respects channel ID
 # ---------------------------------------------------------------------------
 
-async def test_channel_context_scope(client: AsyncClient, db_session: AsyncSession, user_headers: dict):
+async def test_channel_context_scope(client: AsyncClient, db_session: AsyncSession, admin_headers: dict):
     """Channel context returns data for the specific channel only."""
     user_id = await _ensure_user(db_session)
     ch_a = await _ensure_channel(db_session, user_id)
@@ -582,16 +587,16 @@ async def test_channel_context_scope(client: AsyncClient, db_session: AsyncSessi
         "is_enabled": True,
         "max_daily_posts": 10,
     },
-    headers=user_headers,)
+    headers=admin_headers,)
 
     # ch_a has policy
-    resp_a = await client.get(f"{CTX_BASE}/{ch_a}", headers=user_headers)
+    resp_a = await client.get(f"{CTX_BASE}/{ch_a}", headers=admin_headers)
     assert resp_a.status_code == 200
     assert resp_a.json()["max_daily_posts"] == 10
     assert resp_a.json()["policy_id"] is not None
 
     # ch_b has no policy
-    resp_b = await client.get(f"{CTX_BASE}/{ch_b}", headers=user_headers)
+    resp_b = await client.get(f"{CTX_BASE}/{ch_b}", headers=admin_headers)
     assert resp_b.status_code == 200
     assert resp_b.json()["policy_id"] is None
     assert resp_b.json()["max_daily_posts"] is None
@@ -601,11 +606,11 @@ async def test_channel_context_scope(client: AsyncClient, db_session: AsyncSessi
 # 20. Channel context with no policy returns defaults
 # ---------------------------------------------------------------------------
 
-async def test_channel_context_no_policy(client: AsyncClient, db_session: AsyncSession, user_headers: dict):
+async def test_channel_context_no_policy(client: AsyncClient, db_session: AsyncSession, admin_headers: dict):
     """Channel with no policy returns sensible defaults."""
     ch_id = await _ensure_channel(db_session)
 
-    resp = await client.get(f"{CTX_BASE}/{ch_id}", headers=user_headers)
+    resp = await client.get(f"{CTX_BASE}/{ch_id}", headers=admin_headers)
     assert resp.status_code == 200
     data = resp.json()
     assert data["policy_id"] is None
@@ -618,7 +623,7 @@ async def test_channel_context_no_policy(client: AsyncClient, db_session: AsyncS
 # 21. Inbox cross-ref only matches open items
 # ---------------------------------------------------------------------------
 
-async def test_inbox_crossref_only_open(client: AsyncClient, db_session: AsyncSession, user_headers: dict):
+async def test_inbox_crossref_only_open(client: AsyncClient, db_session: AsyncSession, admin_headers: dict):
     """Resolved inbox items are not cross-referenced in calendar events."""
     user_id = await _ensure_user(db_session)
     ch_id = await _ensure_channel(db_session, user_id)
@@ -633,15 +638,15 @@ async def test_inbox_crossref_only_open(client: AsyncClient, db_session: AsyncSe
         "related_entity_type": "content_project",
         "related_entity_id": proj_id,
     },
-    headers=user_headers,)
+    headers=admin_headers,)
     item_id = inbox_resp.json()["id"]
-    await client.patch(f"{INBOX_BASE}/{item_id}", json={"status": "resolved"}, headers=user_headers)
+    await client.patch(f"{INBOX_BASE}/{item_id}", json={"status": "resolved"}, headers=admin_headers)
 
     # Calendar events should NOT have this resolved item
     resp = await client.get(CAL_BASE, params=_params(
         _now() - timedelta(days=1), _now() + timedelta(days=7),
     ),
-    headers=user_headers,)
+    headers=admin_headers,)
     assert resp.status_code == 200
     proj_events = [e for e in resp.json() if e["related_project_id"] == proj_id]
     assert len(proj_events) >= 1

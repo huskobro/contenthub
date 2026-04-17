@@ -81,8 +81,13 @@ async def test_sync_status_returns_array(client: AsyncClient, user_headers: dict
 # 6. Playlist items (empty playlist)
 # ---------------------------------------------------------------------------
 
-async def test_playlist_items_empty(client: AsyncClient, db_session: AsyncSession, user_headers: dict):
-    """Items endpoint for a real playlist should return empty list."""
+async def test_playlist_items_empty(client: AsyncClient, db_session: AsyncSession, admin_headers: dict):
+    """Items endpoint for a real playlist should return empty list.
+
+    Phase Final F2: orphan playlist (channel_profile_id=None) yalnizca admin
+    tarafindan listelenebilir; business logic (empty list) burada admin-header
+    ile dogrulaniyor.
+    """
     from app.db.models import SyncedPlaylist
     from datetime import datetime, timezone
     import uuid
@@ -99,7 +104,7 @@ async def test_playlist_items_empty(client: AsyncClient, db_session: AsyncSessio
     db_session.add(pl)
     await db_session.commit()
 
-    resp = await client.get(f"{BASE}/{pl.id}/items", headers=user_headers)
+    resp = await client.get(f"{BASE}/{pl.id}/items", headers=admin_headers)
     assert resp.status_code == 200
     assert isinstance(resp.json(), list)
     assert len(resp.json()) == 0

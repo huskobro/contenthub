@@ -27,6 +27,7 @@ import { useChannelProfiles } from "../hooks/useChannelProfiles";
 import { PostOnboardingHandoff } from "../components/dashboard/PostOnboardingHandoff";
 void PostOnboardingHandoff;
 import { UserJobTracker } from "../components/dashboard/UserJobTracker";
+import { AutomationDigestWidget } from "../components/dashboard/AutomationDigestWidget";
 import {
   PageShell,
   SectionShell,
@@ -205,6 +206,13 @@ function LegacyUserDashboardPage() {
                 ))}
               </div>
             )}
+          </SectionShell>
+
+          {/* Otomasyon Özeti (Phase Final F4) — read-only daily digest. */}
+          <SectionShell title="Otomasyon Özeti" testId="automation-digest">
+            <div className="p-4">
+              <AutomationDigestWidget />
+            </div>
           </SectionShell>
 
           {/* Job Tracker */}

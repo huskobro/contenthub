@@ -1,4 +1,4 @@
-"""HTTP routes for Full-Auto Mode v1.
+"""HTTP routes for Full-Auto Mode v1 + Phase Final F2.2 ownership guard.
 
 Endpoints (all mounted under ``/full-auto``):
   GET    /content-projects/{project_id}         — read project automation config
@@ -7,6 +7,13 @@ Endpoints (all mounted under ``/full-auto``):
   GET    /scheduler/status                      — read scheduler tick state
   POST   /content-projects/{project_id}/evaluate — dry-run guard check
   GET    /cron/preview                          — next fire time for an expression
+
+Ownership:
+  - `ContentProject` ownership turetilir: `ContentProject.user_id` veya
+    `ContentProject.channel_profile.user_id` uzerinden.
+  - Non-admin caller baska bir user'in projesini goremez / guncelleyemez /
+    trigger edemez. Admin tum projeleri isleyebilir.
+  - Orphan proje (user_id=NULL VE channel_profile_id=NULL) admin-only.
 """
 
 from __future__ import annotations
@@ -17,12 +24,17 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.visibility.dependencies import get_active_user_id
-from app.db.models import ContentProject
+from app.auth.ownership import (
+    UserContext,
+    ensure_owner_or_admin,
+    get_current_user_context,
+)
+from app.db.models import ChannelProfile, ContentProject
 from app.db.session import get_db
 from app.full_auto import service as fa_service
 from app.full_auto.cron import compute_next_run, is_valid_cron
 from app.full_auto.schemas import (
+    AutomationDigest,
     FullAutoTriggerRequest,
     FullAutoTriggerResponse,
     GuardCheckResult,
@@ -33,6 +45,40 @@ from app.full_auto.schemas import (
 from app.full_auto.scheduler import SCHEDULER_STATE
 
 router = APIRouter(prefix="/full-auto", tags=["Full-Auto"])
+
+
+# ---------------------------------------------------------------------------
+# Ownership helper
+# ---------------------------------------------------------------------------
+
+async def _enforce_project_ownership(
+    db: AsyncSession, ctx: UserContext, project: ContentProject
+) -> None:
+    """Non-admin caller sadece kendi sahip oldugu projeye erisebilir.
+
+    Ownership oncelik sirasi:
+      1. `project.user_id` set ise dogrudan karsilastir.
+      2. Aksi halde `project.channel_profile.user_id` uzerinden turet.
+      3. Ikiside NULL ise orphan kabul edilir => admin-only.
+    """
+    if ctx.is_admin:
+        return
+
+    owner_user_id: Optional[str] = getattr(project, "user_id", None)
+
+    if owner_user_id is None and project.channel_profile_id:
+        cp = await db.get(ChannelProfile, project.channel_profile_id)
+        if cp is not None:
+            owner_user_id = cp.user_id
+
+    if owner_user_id is None:
+        # Orphan proje: admin-only.
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Bu proje icin sahiplik cozumlenemedi; yonetici erisimi gerekli.",
+        )
+
+    ensure_owner_or_admin(ctx, owner_user_id, resource_label="content project")
 
 
 # ---------------------------------------------------------------------------
@@ -65,11 +111,13 @@ def _project_to_config(project: ContentProject) -> ProjectAutomationConfig:
 )
 async def get_project_automation_config(
     project_id: str,
+    ctx: UserContext = Depends(get_current_user_context),
     db: AsyncSession = Depends(get_db),
 ):
     project = await db.get(ContentProject, project_id)
     if project is None:
         raise HTTPException(status_code=404, detail="Icerik projesi bulunamadi.")
+    await _enforce_project_ownership(db, ctx, project)
     return _project_to_config(project)
 
 
@@ -80,12 +128,13 @@ async def get_project_automation_config(
 async def update_project_automation_config(
     project_id: str,
     payload: ProjectAutomationConfigUpdate,
+    ctx: UserContext = Depends(get_current_user_context),
     db: AsyncSession = Depends(get_db),
-    user_id: Optional[str] = Depends(get_active_user_id),
 ):
     project = await db.get(ContentProject, project_id)
     if project is None:
         raise HTTPException(status_code=404, detail="Icerik projesi bulunamadi.")
+    await _enforce_project_ownership(db, ctx, project)
 
     updates = payload.model_dump(exclude_unset=True)
 
@@ -103,7 +152,7 @@ async def update_project_automation_config(
         project.automation_next_run_at = None
 
     project = await fa_service.apply_config_update(
-        db, project, updates, actor_id=user_id
+        db, project, updates, actor_id=ctx.user_id
     )
     return _project_to_config(project)
 
@@ -118,11 +167,13 @@ async def update_project_automation_config(
 )
 async def evaluate_project_automation(
     project_id: str,
+    ctx: UserContext = Depends(get_current_user_context),
     db: AsyncSession = Depends(get_db),
 ):
     project = await db.get(ContentProject, project_id)
     if project is None:
         raise HTTPException(status_code=404, detail="Icerik projesi bulunamadi.")
+    await _enforce_project_ownership(db, ctx, project)
     return await fa_service.evaluate_guards(db, project)
 
 
@@ -138,9 +189,14 @@ async def trigger_project_full_auto(
     project_id: str,
     request: Request,
     payload: Optional[FullAutoTriggerRequest] = None,
+    ctx: UserContext = Depends(get_current_user_context),
     db: AsyncSession = Depends(get_db),
-    user_id: Optional[str] = Depends(get_active_user_id),
 ):
+    project = await db.get(ContentProject, project_id)
+    if project is None:
+        raise HTTPException(status_code=404, detail="Icerik projesi bulunamadi.")
+    await _enforce_project_ownership(db, ctx, project)
+
     dispatcher = getattr(request.app.state, "job_dispatcher", None)
     if dispatcher is None:
         raise HTTPException(status_code=503, detail="JobDispatcher hazir degil.")
@@ -158,7 +214,28 @@ async def trigger_project_full_auto(
         payload=payload,
         trigger_source="manual",
         scheduled_run_id=None,
-        actor_id=user_id,
+        actor_id=ctx.user_id,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Daily digest — Phase Final F4 (autopilot summary)
+# ---------------------------------------------------------------------------
+
+@router.get("/digest/today", response_model=AutomationDigest)
+async def get_automation_digest_today(
+    ctx: UserContext = Depends(get_current_user_context),
+    db: AsyncSession = Depends(get_db),
+):
+    """Caller-scope ContentProject automation digest for today.
+
+    Non-admin caller sees yalnizca kendi sahip oldugu projeleri; admin tum
+    projeleri gorur. Read-only aggregate; hicbir state transition tetiklemez.
+    """
+    return await fa_service.build_automation_digest(
+        db,
+        caller_user_id=ctx.user_id,
+        is_admin=ctx.is_admin,
     )
 
 
@@ -168,6 +245,7 @@ async def trigger_project_full_auto(
 
 @router.get("/scheduler/status", response_model=SchedulerStatus)
 async def get_scheduler_status():
+    """Scheduler tick state — her rolun gorebilecegi global bilgi."""
     return SchedulerStatus(**SCHEDULER_STATE)
 
 
@@ -180,6 +258,7 @@ async def preview_cron(
     expression: str = Query(..., description="5-field cron expression"),
     count: int = Query(5, ge=1, le=20),
 ):
+    """Cron ifadesi icin sonraki fire zamanlari (saf utility)."""
     if not is_valid_cron(expression):
         raise HTTPException(status_code=400, detail="Gecersiz cron ifadesi.")
     fires: list[datetime] = []

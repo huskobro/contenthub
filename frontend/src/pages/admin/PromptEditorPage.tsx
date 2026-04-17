@@ -260,8 +260,12 @@ export function PromptEditorPage() {
   // Active module scope tab for the Prompt Blocks section
   const [activeBlockModule, setActiveBlockModule] = useState<string | undefined>(undefined);
 
+  // Phase AM-5: mark this as the admin-scope effective settings view so
+  // the cache cannot accidentally be shared with the user-facing settings
+  // panel (`EffectiveSettingsPanel` in the user surface uses its own
+  // key; this marker makes the separation explicit on both sides).
   const { data: allSettings, isLoading, isError } = useQuery({
-    queryKey: ["effectiveSettings"],
+    queryKey: ["effectiveSettings", "admin-scope"],
     queryFn: () => fetchEffectiveSettings(),
   });
 

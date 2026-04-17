@@ -10,6 +10,7 @@ import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useChannelPerformance } from "../../hooks/useChannelPerformance";
 import { fetchChannelProfiles, type ChannelProfileResponse } from "../../api/channelProfilesApi";
+import { useAuthStore } from "../../stores/authStore";
 import { TrendChart } from "../../components/shared/charts/TrendChart";
 import { DistributionDonut } from "../../components/shared/charts/DistributionDonut";
 import {
@@ -58,9 +59,13 @@ export function UserChannelAnalyticsPage() {
   const [selectedChannel, setSelectedChannel] = useState("");
   const [window, setWindow] = useState<AnalyticsWindow>("last_30d");
 
-  // Fetch user's channels
+  // Phase AM-5: bind the user-scope cache to the authenticated user id so
+  // a different identity cannot reuse a stale channel list from a prior
+  // session. Backend auto-scopes non-admin callers — this is frontend
+  // cache hygiene only.
+  const userId = useAuthStore((s) => s.user?.id ?? "anonymous");
   const { data: channels } = useQuery({
-    queryKey: ["channel-profiles-user"],
+    queryKey: ["channel-profiles-user", userId],
     queryFn: () => fetchChannelProfiles(),
     staleTime: 60_000,
   });

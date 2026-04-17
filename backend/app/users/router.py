@@ -2,6 +2,16 @@
 User router — M40.
 
 CRUD endpoints for user management and per-user setting overrides.
+
+PHASE AM (security fix B): this router is admin-only. Every endpoint below
+manages other users' accounts or their setting overrides, which is strictly
+an admin-panel concern. Before AM, the router had no guard at all — any
+authenticated caller (and in debug mode even anonymous ones) could list,
+mutate or soft-delete any account. We now attach `require_admin` at the
+router level so every endpoint returns:
+  - 401 when unauthenticated
+  - 403 when authenticated as a non-admin
+Endpoint-level behaviour is otherwise unchanged.
 """
 
 from typing import List
@@ -9,6 +19,7 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.auth.dependencies import require_admin
 from app.db.session import get_db
 from app.users import service
 from app.users.schemas import (
@@ -19,7 +30,11 @@ from app.users.schemas import (
     UserOverrideSetRequest,
 )
 
-router = APIRouter(prefix="/users", tags=["users"])
+router = APIRouter(
+    prefix="/users",
+    tags=["users"],
+    dependencies=[Depends(require_admin)],
+)
 
 
 # ---------------------------------------------------------------------------

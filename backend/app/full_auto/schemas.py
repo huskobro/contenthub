@@ -110,3 +110,49 @@ class SchedulerStatus(BaseModel):
     pending_project_count: int = 0
     next_candidate_project_id: Optional[str] = None
     next_candidate_run_at: Optional[datetime] = None
+
+
+# ---------------------------------------------------------------------------
+# Daily digest (Phase Final F4 — autopilot summary)
+# ---------------------------------------------------------------------------
+
+class AutomationDigestProject(BaseModel):
+    """Single project snapshot inside the daily digest payload."""
+
+    project_id: str
+    project_title: Optional[str] = None
+    channel_profile_id: Optional[str] = None
+    automation_enabled: bool = False
+    automation_run_mode: Literal["manual", "assisted", "full_auto"] = "manual"
+    automation_schedule_enabled: bool = False
+    automation_cron_expression: Optional[str] = None
+    automation_publish_policy: Literal["draft", "schedule", "publish_now"] = "draft"
+    automation_max_runs_per_day: Optional[int] = None
+    runs_today: int = 0
+    runs_today_date: Optional[str] = None
+    last_run_at: Optional[datetime] = None
+    next_run_at: Optional[datetime] = None
+
+
+class AutomationDigest(BaseModel):
+    """
+    Caller-scope daily digest for Full-Auto projects.
+
+    Non-admin callers see only projects they own (direct ``user_id`` or via
+    ``channel_profile.user_id``). Admin callers see every project.
+
+    This is strictly read-only and does not expose internals (audit log ids,
+    actor ids, error traces). It mirrors the counters that already exist on
+    ``ContentProject`` and composes them into a dashboard-friendly shape.
+    """
+
+    scope: Literal["user", "admin"]
+    today_date: str
+    total_projects: int = 0
+    automation_enabled_count: int = 0
+    schedule_enabled_count: int = 0
+    runs_today_total: int = 0
+    runs_today_limit_total: int = 0
+    at_limit_count: int = 0
+    next_upcoming_run_at: Optional[datetime] = None
+    projects: List[AutomationDigestProject] = Field(default_factory=list)

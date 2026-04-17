@@ -67,7 +67,29 @@ export function EffectiveSettingsPanel() {
     : settings;
 
   // Group filtered settings
-  const groupOrder = ["credentials", "providers", "execution", "source_scans", "publish", "ui", "jobs", "wizard", "standard_video", "news_bulletin", "modules", "system"];
+  //
+  // Order mirrors GROUP_LABELS_MAP — keep in sync. Groups present in
+  // KNOWN_SETTINGS but absent here fall through to the "Unlisted groups"
+  // block at the bottom, so missing entries degrade gracefully rather than
+  // hiding settings entirely.
+  const groupOrder = [
+    "credentials",
+    "providers",
+    "tts",
+    "channels",
+    "execution",
+    "source_scans",
+    "publish",
+    "automation",
+    "ui",
+    "jobs",
+    "wizard",
+    "standard_video",
+    "news_bulletin",
+    "product_review",
+    "modules",
+    "system",
+  ];
   const grouped: Record<string, EffectiveSetting[]> = {};
   for (const s of filtered) {
     const g = s.group || "general";

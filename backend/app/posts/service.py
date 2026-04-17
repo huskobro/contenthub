@@ -148,15 +148,33 @@ async def submit_post(
     now = _now()
 
     if can_deliver:
-        # Gercek delivery — gelecekte platform adapter ile
+        # Faz Final F4 TODO kapanisi:
+        #   Su an `PLATFORM_POST_CAPABILITY` dict'inde hic bir platform True
+        #   degil — `can_deliver=True` kolu pratikte erisilemez. Gelecekte bir
+        #   platform adapter registry (ornegin `post_delivery_adapters.py`)
+        #   eklendiginde, gercek API cagrisi BU noktada degil, adapter'in
+        #   kendi modulunde yapilir; burasi sadece kuyruk disiplinini kurar.
+        #
+        #   Burada "TODO: api cagrisi" seklinde acik kapi BIRAKMIYORUZ.
+        #   Kontrat: adapter hazir oldugunda once `capability` True'ya cekilir,
+        #   ardindan asenkron bir background task kuyruktan okur. Bu fonksiyon
+        #   hicbir zaman senkron HTTP cagrisi yapmaz (CLAUDE.md "fail fast").
         post.status = "queued"
         post.delivery_status = "pending"
-        # TODO: Gercek platform API cagrisi burada olacak
+        logger.info(
+            "platform_post.queued",
+            extra={"post_id": post.id, "platform": post.platform, "post_type": post.post_type},
+        )
     else:
-        # Platform API destegi yok — taslak kalir, bilgi mesaji
+        # Platform API destegi yok — taslak kuyruga alinir ama delivery_status
+        # "not_available" kalir; operator UI'dan gonderinin durdugunu gorur.
         post.status = "queued"
         post.delivery_status = "not_available"
         post.delivery_error = reason
+        logger.info(
+            "platform_post.not_available",
+            extra={"post_id": post.id, "platform": post.platform, "post_type": post.post_type, "reason": reason},
+        )
 
     post.updated_at = now
 
@@ -212,16 +230,26 @@ async def delete_post(db: AsyncSession, post_id: str) -> bool:
 async def list_posts(
     db: AsyncSession,
     channel_profile_id: Optional[str] = None,
+    channel_profile_ids: Optional[list[str]] = None,
     platform: Optional[str] = None,
     status: Optional[str] = None,
     post_type: Optional[str] = None,
     limit: int = 100,
     offset: int = 0,
 ) -> list[PlatformPost]:
-    """Gonderileri filtreli listele."""
+    """
+    Gonderileri filtreli listele.
+
+    Phase Final F2: `channel_profile_ids` scopes results to a set of owned
+    channels (non-admin caller); `None` means no ownership filter (admin).
+    """
     q = select(PlatformPost).order_by(PlatformPost.updated_at.desc())
     if channel_profile_id:
         q = q.where(PlatformPost.channel_profile_id == channel_profile_id)
+    if channel_profile_ids is not None:
+        if not channel_profile_ids:
+            return []
+        q = q.where(PlatformPost.channel_profile_id.in_(channel_profile_ids))
     if platform:
         q = q.where(PlatformPost.platform == platform)
     if status:
@@ -237,20 +265,36 @@ async def get_post(db: AsyncSession, post_id: str) -> Optional[PlatformPost]:
     return await db.get(PlatformPost, post_id)
 
 
-async def get_post_stats(db: AsyncSession) -> dict:
-    """Gonderi istatistikleri."""
-    total = await db.scalar(select(func.count(PlatformPost.id)))
+async def get_post_stats(
+    db: AsyncSession,
+    channel_profile_ids: Optional[list[str]] = None,
+) -> dict:
+    """
+    Gonderi istatistikleri (owner-scoped if channel_profile_ids passed).
+    """
+    def _scope(stmt):
+        if channel_profile_ids is not None:
+            if not channel_profile_ids:
+                return None  # signal empty scope
+            return stmt.where(PlatformPost.channel_profile_id.in_(channel_profile_ids))
+        return stmt
+
+    # Empty owned-channel list for non-admin → return zeros.
+    if channel_profile_ids is not None and not channel_profile_ids:
+        return {"total": 0, "draft": 0, "queued": 0, "posted": 0, "failed": 0}
+
+    total = await db.scalar(_scope(select(func.count(PlatformPost.id))))
     draft = await db.scalar(
-        select(func.count(PlatformPost.id)).where(PlatformPost.status == "draft")
+        _scope(select(func.count(PlatformPost.id)).where(PlatformPost.status == "draft"))
     )
     queued = await db.scalar(
-        select(func.count(PlatformPost.id)).where(PlatformPost.status == "queued")
+        _scope(select(func.count(PlatformPost.id)).where(PlatformPost.status == "queued"))
     )
     posted = await db.scalar(
-        select(func.count(PlatformPost.id)).where(PlatformPost.status == "posted")
+        _scope(select(func.count(PlatformPost.id)).where(PlatformPost.status == "posted"))
     )
     failed = await db.scalar(
-        select(func.count(PlatformPost.id)).where(PlatformPost.status == "failed")
+        _scope(select(func.count(PlatformPost.id)).where(PlatformPost.status == "failed"))
     )
     return {
         "total": total or 0,

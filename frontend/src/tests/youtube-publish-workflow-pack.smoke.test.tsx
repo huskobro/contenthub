@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AdminLayout } from "../app/layouts/AdminLayout";
 import { UserLayout } from "../app/layouts/UserLayout";
 import { AdminOverviewPage } from "../pages/AdminOverviewPage";
-import { UserPublishEntryPage } from "../pages/UserPublishEntryPage";
+import { UserPublishEntryPage } from "../pages/_scaffolds/UserPublishEntryPage";
 import { JobsRegistryPage } from "../pages/admin/JobsRegistryPage";
 import { JobDetailPage } from "../pages/admin/JobDetailPage";
 import { StandardVideoDetailPage } from "../pages/admin/StandardVideoDetailPage";

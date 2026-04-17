@@ -15,16 +15,25 @@ from pydantic import BaseModel
 from sqlalchemy import select, desc, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.auth.dependencies import require_admin
 from app.db.session import get_db
 from app.db.models import AuditLog
 from app.visibility.dependencies import require_visible
 
 logger = logging.getLogger(__name__)
 
+# PHASE AM (security fix C): audit logs are an admin surface. Visibility engine
+# alone is not enough — an admin can flip panel visibility for any user role
+# without intending to disclose audit trail contents. We now require
+# `require_admin` *in addition to* the visibility guard so the two guards
+# stack and neither can be bypassed independently.
 router = APIRouter(
     prefix="/audit-logs",
     tags=["audit-logs"],
-    dependencies=[Depends(require_visible("panel:audit-logs"))],
+    dependencies=[
+        Depends(require_admin),
+        Depends(require_visible("panel:audit-logs")),
+    ],
 )
 
 

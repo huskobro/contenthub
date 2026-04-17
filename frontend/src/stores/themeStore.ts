@@ -191,8 +191,18 @@ interface ThemeState {
   exportTheme: (id: string) => string | null;
   /** Check if a theme is built-in */
   isBuiltin: (id: string) => boolean;
-  /** Hydrate theme from backend if localStorage has no saved theme */
-  hydrateFromBackend: () => void;
+  /**
+   * Hydrate theme from backend.
+   *
+   * Default mode (opportunistic): only when localStorage has no saved theme.
+   *   Fast-path for first load + returning visitors.
+   *
+   * Force mode (cross-device): overrides localStorage with the backend value
+   *   whenever they disagree. Use at login / auth bootstrap so a different
+   *   browser on the same account reflects the last chosen theme. Still a
+   *   no-op if the backend value is absent or the theme id is unknown.
+   */
+  hydrateFromBackend: (opts?: { force?: boolean }) => void;
 }
 
 export const useThemeStore = create<ThemeState>((set, get) => {
@@ -285,30 +295,37 @@ export const useThemeStore = create<ThemeState>((set, get) => {
 
     isBuiltin: (id: string) => BUILTIN_THEMES.some((b) => b.id === id),
 
-    hydrateFromBackend: (): void => {
-      // Only hydrate if localStorage had no saved theme (user cleared browser)
+    hydrateFromBackend: (opts?: { force?: boolean }): void => {
+      const force = opts?.force === true;
+
       let localSaved: string | null = null;
       try {
         localSaved = localStorage.getItem(STORAGE_KEY_ACTIVE);
       } catch {
         // localStorage unavailable (test env, SSR) — continue to backend hydration
       }
-      if (localSaved) return; // localStorage has a value, no need to hydrate
+      // Opportunistic path: localStorage already has a theme, nothing to do.
+      if (!force && localSaved) return;
 
       fetchEffectiveSetting("ui.active_theme")
         .then((setting) => {
           const backendThemeId = setting?.effective_value;
-          if (typeof backendThemeId === "string" && backendThemeId) {
-            const { themes } = get();
-            if (themes.some((t) => t.id === backendThemeId)) {
-              set({ activeThemeId: backendThemeId });
-              // Save to localStorage so subsequent loads are fast
-              try {
-                localStorage.setItem(STORAGE_KEY_ACTIVE, backendThemeId);
-              } catch {
-                // silently fail
-              }
-            }
+          if (typeof backendThemeId !== "string" || !backendThemeId) return;
+
+          const { themes, activeThemeId } = get();
+          if (!themes.some((t) => t.id === backendThemeId)) return;
+
+          // Force mode: apply only when the backend value truly differs.
+          // Avoids a pointless state update + re-render on the common path.
+          if (force && backendThemeId === activeThemeId && localSaved === backendThemeId) {
+            return;
+          }
+
+          set({ activeThemeId: backendThemeId });
+          try {
+            localStorage.setItem(STORAGE_KEY_ACTIVE, backendThemeId);
+          } catch {
+            // silently fail
           }
         })
         .catch(() => {

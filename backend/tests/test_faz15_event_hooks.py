@@ -332,8 +332,13 @@ async def test_policy_bridge_automatic_no_inbox(client: AsyncClient, db_session:
 # 9. Calendar shows newly created inbox items
 # ---------------------------------------------------------------------------
 
-async def test_calendar_shows_new_inbox_items(client: AsyncClient, db_session: AsyncSession, user_headers: dict):
-    """Automatically created inbox items are visible in calendar cross-ref."""
+async def test_calendar_shows_new_inbox_items(client: AsyncClient, db_session: AsyncSession, admin_headers: dict):
+    """Automatically created inbox items are visible in calendar cross-ref.
+
+    Phase Final F2.2: test bir synthetic user yaratip ona kanal ve proje
+    bagliyor; admin_headers ile sorgulayarak ownership scope filtresini
+    atliyoruz — testin amaci inbox cross-ref, ownership degil.
+    """
     user_id = await _ensure_user(db_session)
     ch_id = await _ensure_channel(db_session, user_id)
     from app.db.models import ContentProject
@@ -363,7 +368,7 @@ async def test_calendar_shows_new_inbox_items(client: AsyncClient, db_session: A
         "start_date": (_now() - timedelta(days=1)).isoformat(),
         "end_date": (_now() + timedelta(days=7)).isoformat(),
     },
-    headers=user_headers,)
+    headers=admin_headers,)
     assert resp.status_code == 200
     proj_events = [e for e in resp.json() if e["related_project_id"] == proj_id]
     assert len(proj_events) >= 1

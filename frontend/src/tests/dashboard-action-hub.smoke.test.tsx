@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { UserLayout } from "../app/layouts/UserLayout";
 import { UserDashboardPage } from "../pages/UserDashboardPage";
 import { UserContentEntryPage } from "../pages/UserContentEntryPage";
-import { UserPublishEntryPage } from "../pages/UserPublishEntryPage";
+import { UserPublishEntryPage } from "../pages/_scaffolds/UserPublishEntryPage";
 import { DashboardActionHub } from "../components/dashboard/DashboardActionHub";
 
 function mockFetch(data: unknown) {

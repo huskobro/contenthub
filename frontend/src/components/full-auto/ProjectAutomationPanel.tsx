@@ -190,9 +190,42 @@ export function ProjectAutomationPanel({
       >
         <div className="flex items-center justify-between">
           <div>
-            <p className="m-0 text-sm font-semibold text-neutral-900">
-              Proje Otomasyonu
-            </p>
+            <div className="flex items-center gap-2 flex-wrap">
+              <p className="m-0 text-sm font-semibold text-neutral-900">
+                Proje Otomasyonu
+              </p>
+              {/* Phase Final F4 — hafif durum rozetleri (read-only) */}
+              {config.automation_enabled && (
+                <span
+                  data-testid={`${testId}-badge-active`}
+                  className="inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-success-light text-success-dark border-success"
+                >
+                  Aktif
+                </span>
+              )}
+              {config.automation_enabled &&
+                config.automation_schedule_enabled &&
+                config.automation_next_run_at && (
+                  <span
+                    data-testid={`${testId}-badge-scheduled`}
+                    className="inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-brand-50 text-brand-700 border-brand-200"
+                  >
+                    Planlandı
+                  </span>
+                )}
+              {config.automation_enabled &&
+                config.automation_max_runs_per_day != null &&
+                config.automation_max_runs_per_day > 0 &&
+                config.automation_runs_today >=
+                  config.automation_max_runs_per_day && (
+                  <span
+                    data-testid={`${testId}-badge-at-limit`}
+                    className="inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-warning-light text-warning-dark border-warning"
+                  >
+                    Günlük Limit Doldu
+                  </span>
+                )}
+            </div>
             <p className="m-0 mt-0.5 text-xs text-neutral-500">
               Etkinlestirildiginde zamanlama ve tetikleme kullanilabilir.
             </p>

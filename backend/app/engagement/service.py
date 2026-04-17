@@ -1,7 +1,14 @@
 """
-Engagement Task service — Faz 2.
+Engagement Task service — Faz 2 + Phase Final F2 ownership guard.
 
 Business logic for engagement task CRUD.
+
+Ownership:
+  - `list_engagement_tasks` accepts an optional `caller_ctx`; when set, the
+    query is scoped via `apply_user_scope(EngagementTask, owner_field="user_id")`
+    which transparently no-ops for admin.
+  - `get_engagement_task` / `update_engagement_task` remain thin; router enforces
+    per-row ownership (more expressive 404 vs 403 separation lives there).
 """
 
 import logging
@@ -10,6 +17,7 @@ from typing import Optional
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.auth.ownership import UserContext, apply_user_scope
 from app.db.models import EngagementTask
 from app.engagement.schemas import EngagementTaskCreate, EngagementTaskUpdate
 
@@ -18,6 +26,8 @@ logger = logging.getLogger(__name__)
 
 async def list_engagement_tasks(
     db: AsyncSession,
+    *,
+    caller_ctx: Optional[UserContext] = None,
     user_id: Optional[str] = None,
     channel_profile_id: Optional[str] = None,
     type: Optional[str] = None,
@@ -26,6 +36,12 @@ async def list_engagement_tasks(
     limit: int = 50,
 ) -> list[EngagementTask]:
     q = select(EngagementTask).order_by(EngagementTask.created_at.desc())
+
+    # Query-level defense-in-depth: non-admin caller'in asla baska bir
+    # kullanicinin tasklarini gormemesi icin ikinci katman.
+    if caller_ctx is not None:
+        q = apply_user_scope(q, EngagementTask, user_context=caller_ctx)
+
     if user_id:
         q = q.where(EngagementTask.user_id == user_id)
     if channel_profile_id:

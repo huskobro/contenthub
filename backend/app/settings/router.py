@@ -48,7 +48,15 @@ from app.settings.settings_resolver import (
     list_effective,
     list_groups,
 )
-from app.settings.settings_seed import seed_known_settings
+from sqlalchemy import select
+
+from app.auth.dependencies import require_admin
+from app.db.models import Setting
+from app.settings.settings_seed import (
+    compute_drift_report,
+    mark_orphan_settings,
+    seed_known_settings,
+)
 from app.audit.service import write_audit_log
 from app.visibility.dependencies import get_caller_role, get_active_user_id, require_visible
 from app.settings.validation import validate_setting_value, SettingValidationError
@@ -122,21 +130,29 @@ class SettingAdminValueRequest(BaseModel):
 # Credential endpoints — MUST be before /{setting_id} to avoid path conflicts
 # ---------------------------------------------------------------------------
 
-@router.get("/credentials", response_model=List[CredentialStatusResponse])
+@router.get(
+    "/credentials",
+    response_model=List[CredentialStatusResponse],
+    dependencies=[Depends(require_admin)],
+)
 async def list_credentials(
     db: AsyncSession = Depends(get_db),
 ) -> List[CredentialStatusResponse]:
-    """Tum bilinen credential key'leri icin durum listesi doner."""
+    """Tum bilinen credential key'leri icin durum listesi doner (admin-only)."""
     statuses = await list_credential_statuses(db)
     return [CredentialStatusResponse(**s) for s in statuses]
 
 
-@router.get("/credentials/{key}", response_model=CredentialStatusResponse)
+@router.get(
+    "/credentials/{key}",
+    response_model=CredentialStatusResponse,
+    dependencies=[Depends(require_admin)],
+)
 async def get_credential(
     key: str,
     db: AsyncSession = Depends(get_db),
 ) -> CredentialStatusResponse:
-    """Tek credential icin durum raporu doner."""
+    """Tek credential icin durum raporu doner (admin-only)."""
     if key not in CREDENTIAL_KEYS:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -146,7 +162,10 @@ async def get_credential(
     return CredentialStatusResponse(**s)
 
 
-@router.put("/credentials/{key}")
+@router.put(
+    "/credentials/{key}",
+    dependencies=[Depends(require_admin)],
+)
 async def save_credential_endpoint(
     key: str,
     body: CredentialSaveRequest,
@@ -185,7 +204,10 @@ async def save_credential_endpoint(
     return {**result, "wiring": wiring_result}
 
 
-@router.post("/credentials/{key}/validate")
+@router.post(
+    "/credentials/{key}/validate",
+    dependencies=[Depends(require_admin)],
+)
 async def validate_credential(
     key: str,
     db: AsyncSession = Depends(get_db),
@@ -260,6 +282,69 @@ async def get_groups(
     """Grup bazli ozet bilgi doner (toplam, wired, secret, missing sayilari)."""
     groups = await list_groups(db)
     return [GroupSummaryResponse(**g) for g in groups]
+
+
+# ---------------------------------------------------------------------------
+# Phase AM-4 — Drift report + one-shot repair (admin-only)
+# ---------------------------------------------------------------------------
+
+
+class DriftReport(BaseModel):
+    """Seven-line Phase AL drift snapshot plus actionable key lists."""
+
+    registry_total: int
+    registry_visible: int
+    db_total: int
+    db_active_total: int
+    db_visible_total: int
+    orphan_count: int
+    missing_count: int
+    orphan_keys: List[str]
+    missing_keys: List[str]
+    visible_but_hidden_keys: List[str]
+
+
+class DriftRepairResult(BaseModel):
+    marked_orphan: int
+    reactivated: int
+    report: DriftReport
+
+
+@router.get(
+    "/drift",
+    response_model=DriftReport,
+    dependencies=[Depends(require_admin)],
+)
+async def get_drift_report(db: AsyncSession = Depends(get_db)) -> DriftReport:
+    """Phase AM-4: live drift snapshot between KNOWN_SETTINGS and the DB.
+
+    Admin-only. Purely read — never mutates rows. The same numbers are
+    produced at startup; this endpoint is the in-product inspector so
+    operators can verify the drift is closed after a deploy without
+    tailing logs.
+    """
+    result = await db.execute(select(Setting))
+    rows = list(result.scalars().all())
+    return DriftReport(**compute_drift_report(rows))
+
+
+@router.post(
+    "/drift/repair",
+    response_model=DriftRepairResult,
+    dependencies=[Depends(require_admin)],
+)
+async def repair_drift(db: AsyncSession = Depends(get_db)) -> DriftRepairResult:
+    """Phase AM-4: run ``mark_orphan_settings`` on demand.
+
+    This is normally invoked automatically during startup; this endpoint is
+    provided so operators can re-run the non-destructive repair after
+    registry edits without bouncing the process. Admin-only.
+    """
+    counts = await mark_orphan_settings(db)
+    result = await db.execute(select(Setting))
+    rows = list(result.scalars().all())
+    report = DriftReport(**compute_drift_report(rows))
+    return DriftRepairResult(**counts, report=report)
 
 
 @router.get("/effective/{key}", response_model=EffectiveSettingResponse)
@@ -422,11 +507,17 @@ async def get_setting(
     return SettingResponse.model_validate(row)
 
 
-@router.post("", response_model=SettingResponse, status_code=201)
+@router.post(
+    "",
+    response_model=SettingResponse,
+    status_code=201,
+    dependencies=[Depends(require_admin)],
+)
 async def create_setting(
     payload: SettingCreate,
     db: AsyncSession = Depends(get_db),
 ) -> SettingResponse:
+    """Yeni ayar kaydi olustur (admin-only)."""
     row = await service.create_setting(db, payload)
     return SettingResponse.model_validate(row)
 
@@ -450,32 +541,43 @@ async def update_setting(
     return SettingResponse.model_validate(row)
 
 
-@router.delete("/{setting_id}", response_model=SettingResponse)
+@router.delete(
+    "/{setting_id}",
+    response_model=SettingResponse,
+    dependencies=[Depends(require_admin)],
+)
 async def delete_setting(
     setting_id: str,
     db: AsyncSession = Depends(get_db),
 ) -> SettingResponse:
-    """Soft-delete: status → deleted. Ayar silinmez, devre dışı bırakılır."""
+    """Soft-delete: status → deleted (admin-only). Ayar silinmez, devre disi birakilir."""
     row = await service.delete_setting(db, setting_id)
     return SettingResponse.model_validate(row)
 
 
-@router.post("/{setting_id}/restore", response_model=SettingResponse)
+@router.post(
+    "/{setting_id}/restore",
+    response_model=SettingResponse,
+    dependencies=[Depends(require_admin)],
+)
 async def restore_setting(
     setting_id: str,
     db: AsyncSession = Depends(get_db),
 ) -> SettingResponse:
-    """M23-D: Soft-delete edilmiş ayarı geri yükle (status → active)."""
+    """M23-D: Soft-delete edilmis ayari geri yukle (admin-only)."""
     row = await service.restore_setting(db, setting_id)
     return SettingResponse.model_validate(row)
 
 
-@router.get("/{setting_id}/history")
+@router.get(
+    "/{setting_id}/history",
+    dependencies=[Depends(require_admin)],
+)
 async def get_setting_history(
     setting_id: str,
     db: AsyncSession = Depends(get_db),
 ):
-    """M23-D: Ayarın audit geçmişi."""
+    """M23-D: Ayarin audit gecmisi (admin-only)."""
     return await service.get_setting_history(db, setting_id)
 
 
@@ -483,11 +585,15 @@ class BulkUpdateRequest(BaseModel):
     updates: List[dict]
 
 
-@router.post("/bulk-update", response_model=List[SettingResponse])
+@router.post(
+    "/bulk-update",
+    response_model=List[SettingResponse],
+    dependencies=[Depends(require_admin)],
+)
 async def bulk_update_settings(
     body: BulkUpdateRequest,
     db: AsyncSession = Depends(get_db),
 ) -> List[SettingResponse]:
-    """Toplu admin_value güncelleme. Body: { "updates": [{"key": "...", "value": ...}] }"""
+    """Toplu admin_value guncelleme (admin-only). Body: { "updates": [{"key": "...", "value": ...}] }"""
     rows = await service.bulk_update_admin_values(db, body.updates)
     return [SettingResponse.model_validate(r) for r in rows]
