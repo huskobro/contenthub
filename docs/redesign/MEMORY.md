@@ -63,7 +63,7 @@ Her kalem: ayrı commit, push, test sonucu MEMORY.md'ye, 7 başlıklı Türkçe 
 | 1 | P0.1 | `useCurrentUser()` hook | ✅ Tamam | `2225aa0` |
 | 2 | P0.2 | `useActiveScope()` + `adminScopeStore` | ✅ Tamam | `32bb576` |
 | 3 | P0.3a | Admin fetch refactor — Jobs/Publish/Channels/Automation | ✅ Tamam | `0d5f184` |
-| 4 | P0.3b | Admin fetch refactor — Analytics/Calendar/Audit | ✅ Tamam | (commit sonrası doldurulacak) |
+| 4 | P0.3b | Admin fetch refactor — Analytics/Calendar/Audit | ✅ Tamam | `1eeb8b9` |
 | 5 | P0.3c | Admin fetch refactor — kalan 35+ sayfa | ⏳ | — |
 | 6 | P1.1 | `AdminScopeSwitcher` component | ⏳ | — |
 | 7 | P1.2 | `UserIdentityStrip` component | ⏳ | — |
@@ -144,7 +144,7 @@ Her kalem: ayrı commit, push, test sonucu MEMORY.md'ye, 7 başlıklı Türkçe 
 - `c02831f` — P0.2 commit SHA'yı MEMORY.md'ye işleme (docs-only)
 - `0d5f184` — P0.3a Admin fetch refactor Jobs/Publish/Channels/Automation (scope-aware query keys + backend publish admin override)
 - `415c2d7` — P0.3a commit SHA'sı MEMORY.md'ye işleme (docs-only)
-- (P0.3b commit SHA commit sonrası doldurulacak) — Admin fetch refactor Analytics/Calendar/Audit (scope-aware keys + analytics filter scope fallback + calendar admin focused-user + isReady gate rollback fix)
+- `1eeb8b9` — P0.3b Admin fetch refactor Analytics/Calendar/Audit (scope-aware keys + analytics filter scope fallback + calendar admin focused-user + isReady gate rollback fix)
 
 ### 4.2 Yeni Dosyalar
 - `docs/redesign/MEMORY.md` (bu dosya)
