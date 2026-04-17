@@ -61,7 +61,7 @@ Her kalem: ayrı commit, push, test sonucu MEMORY.md'ye, 7 başlıklı Türkçe 
 | # | Kod | Kalem | Durum | Commit |
 |---|---|---|---|---|
 | 1 | P0.1 | `useCurrentUser()` hook | ✅ Tamam | `2225aa0` |
-| 2 | P0.2 | `useActiveScope()` + `adminScopeStore` | ✅ Tamam | `__P02SHA__` |
+| 2 | P0.2 | `useActiveScope()` + `adminScopeStore` | ✅ Tamam | `32bb576` |
 | 3 | P0.3a | Admin fetch refactor — Jobs/Publish/Channels/Automation | ⏳ | — |
 | 4 | P0.3b | Admin fetch refactor — Analytics/Calendar/Audit | ⏳ | — |
 | 5 | P0.3c | Admin fetch refactor — kalan 35+ sayfa | ⏳ | — |
@@ -140,7 +140,7 @@ Her kalem: ayrı commit, push, test sonucu MEMORY.md'ye, 7 başlıklı Türkçe 
 - `e9c2cda` — R5 uygulama yol haritası + MEMORY güncellemesi
 - `848ea23` — REV-2 kararı: R6 kaldırıldı, 16 kalem tek dalga, wizard dahil
 - `2225aa0` — P0.1 useCurrentUser hook + unit testler + .gitignore symlink düzeltmesi
-- `__P02SHA__` — P0.2 useActiveScope hook + adminScopeStore + 19 unit test (14 store + 5 hook)
+- `32bb576` — P0.2 useActiveScope hook + adminScopeStore + 19 unit test (14 store + 5 hook)
 
 ### 4.2 Yeni Dosyalar
 - `docs/redesign/MEMORY.md` (bu dosya)
