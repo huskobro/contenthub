@@ -70,7 +70,7 @@ Her kalem: ayrı commit, push, test sonucu MEMORY.md'ye, 7 başlıklı Türkçe 
 | 8 | P1.3 | `AdminDigestDashboard` | ✅ Tamam | `e96c22d` |
 | 9 | P1.4 | `UserDigestDashboard` | ✅ Tamam | `11ffecf` |
 | 10 | P2.1 | Nav yeniden gruplandırma | ✅ Tamam | `9ec4b31` |
-| 11 | P2.2 | Analytics tabs (3 → 1) | 🟡 Commit bekliyor | — |
+| 11 | P2.2 | Analytics tabs (3 → 1) | ✅ Tamam | `237454d` |
 | 12 | P2.3 | Settings module landing | ⏳ | — |
 | 13 | P3.1 | 6 duplicate çift birleştirme | ⏳ | — |
 | 14 | P2.4 | Calendar unified (P3.1 sonrası) | ⏳ | — |
@@ -157,6 +157,7 @@ Her kalem: ayrı commit, push, test sonucu MEMORY.md'ye, 7 başlıklı Türkçe 
 - `11ffecf` — P1.4 UserDigestDashboard bileşeni + UserDashboardPage entegrasyonu + 7 smoke test
 - `5bc1173` — P1.4 commit SHA'sı MEMORY.md'ye işleme (docs-only)
 - `9ec4b31` — P2.1 Nav yeniden gruplandırma (useLayoutNavigation.ts 4 export R3 IA'ya uyarlandı)
+- `237454d` — P2.2 Analytics tabs (3 → 1): AnalyticsTabBar.tsx router-aware tab stripe + 5 admin + 3 user analytics sayfası entegrasyonu + 10 smoke test
 
 ### 4.2 Yeni Dosyalar
 - `docs/redesign/MEMORY.md` (bu dosya)
