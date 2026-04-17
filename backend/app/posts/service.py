@@ -148,15 +148,33 @@ async def submit_post(
     now = _now()
 
     if can_deliver:
-        # Gercek delivery — gelecekte platform adapter ile
+        # Faz Final F4 TODO kapanisi:
+        #   Su an `PLATFORM_POST_CAPABILITY` dict'inde hic bir platform True
+        #   degil — `can_deliver=True` kolu pratikte erisilemez. Gelecekte bir
+        #   platform adapter registry (ornegin `post_delivery_adapters.py`)
+        #   eklendiginde, gercek API cagrisi BU noktada degil, adapter'in
+        #   kendi modulunde yapilir; burasi sadece kuyruk disiplinini kurar.
+        #
+        #   Burada "TODO: api cagrisi" seklinde acik kapi BIRAKMIYORUZ.
+        #   Kontrat: adapter hazir oldugunda once `capability` True'ya cekilir,
+        #   ardindan asenkron bir background task kuyruktan okur. Bu fonksiyon
+        #   hicbir zaman senkron HTTP cagrisi yapmaz (CLAUDE.md "fail fast").
         post.status = "queued"
         post.delivery_status = "pending"
-        # TODO: Gercek platform API cagrisi burada olacak
+        logger.info(
+            "platform_post.queued",
+            extra={"post_id": post.id, "platform": post.platform, "post_type": post.post_type},
+        )
     else:
-        # Platform API destegi yok — taslak kalir, bilgi mesaji
+        # Platform API destegi yok — taslak kuyruga alinir ama delivery_status
+        # "not_available" kalir; operator UI'dan gonderinin durdugunu gorur.
         post.status = "queued"
         post.delivery_status = "not_available"
         post.delivery_error = reason
+        logger.info(
+            "platform_post.not_available",
+            extra={"post_id": post.id, "platform": post.platform, "post_type": post.post_type, "reason": reason},
+        )
 
     post.updated_at = now
 
