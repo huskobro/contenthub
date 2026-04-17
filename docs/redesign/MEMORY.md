@@ -69,7 +69,7 @@ Her kalem: ayrı commit, push, test sonucu MEMORY.md'ye, 7 başlıklı Türkçe 
 | 7 | P1.2 | `UserIdentityStrip` component | ✅ Tamam | `0237c97` |
 | 8 | P1.3 | `AdminDigestDashboard` | ✅ Tamam | `e96c22d` |
 | 9 | P1.4 | `UserDigestDashboard` | ✅ Tamam | `11ffecf` |
-| 10 | P2.1 | Nav yeniden gruplandırma | 🟡 Commit bekliyor | — |
+| 10 | P2.1 | Nav yeniden gruplandırma | ✅ Tamam | `9ec4b31` |
 | 11 | P2.2 | Analytics tabs (3 → 1) | ⏳ | — |
 | 12 | P2.3 | Settings module landing | ⏳ | — |
 | 13 | P3.1 | 6 duplicate çift birleştirme | ⏳ | — |
@@ -155,6 +155,8 @@ Her kalem: ayrı commit, push, test sonucu MEMORY.md'ye, 7 başlıklı Türkçe 
 - `e96c22d` — P1.3 AdminDigestDashboard bileşeni + AdminOverviewPage entegrasyonu + 7 smoke test
 - `38aa211` — P1.3 commit SHA'sı MEMORY.md'ye işleme (docs-only)
 - `11ffecf` — P1.4 UserDigestDashboard bileşeni + UserDashboardPage entegrasyonu + 7 smoke test
+- `5bc1173` — P1.4 commit SHA'sı MEMORY.md'ye işleme (docs-only)
+- `9ec4b31` — P2.1 Nav yeniden gruplandırma (useLayoutNavigation.ts 4 export R3 IA'ya uyarlandı)
 
 ### 4.2 Yeni Dosyalar
 - `docs/redesign/MEMORY.md` (bu dosya)
