@@ -193,10 +193,13 @@ describe("Sprint 4 — TypeScript cleanup", () => {
 // ===========================================================================
 
 describe("Sprint 4 — Raw fetch elimination", () => {
+  // Note: Redesign REV-2 / P3.1 — YouTubeCallbackPage (admin) + UserYouTubeCallbackPage
+  // now thin-wrap `components/oauth/YouTubeCallbackBody`, so the api client
+  // usage is asserted on the shared body instead of the per-panel page.
   const FILES_SHOULD_USE_API_CLIENT = [
     "pages/user/CreateVideoWizardPage.tsx",
     "pages/user/UserAutomationPage.tsx",
-    "pages/admin/YouTubeCallbackPage.tsx",
+    "components/oauth/YouTubeCallbackBody.tsx",
     "pages/admin/StandardVideoWizardPage.tsx",
     "hooks/useDiscoverySearch.ts",
     "hooks/useSubtitlePresets.ts",
