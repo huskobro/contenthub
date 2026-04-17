@@ -61,7 +61,7 @@
 | R2 | Rakip analizi (hibrit: 4 derin + 5 tamamlayıcı) | ✅ Tamam | `16c93bc` | `docs/redesign/R2_competitor_benchmark.md` |
 | R3 | Yeni IA önerisi | ✅ Tamam | `b7c77a3` | `docs/redesign/R3_information_architecture.md` |
 | R4 | Preview/prototype planı | ✅ Tamam | `8746047` | `docs/redesign/R4_preview_prototype_plan.md` |
-| R5 | Uygulama yol haritası | ✅ Tamam | (commit sonra güncellenecek) | `docs/redesign/R5_execution_roadmap.md` |
+| R5 | Uygulama yol haritası | ✅ Tamam | `e9c2cda` | `docs/redesign/R5_execution_roadmap.md` |
 | R6 | Onaylı implementasyon | 🔒 Onay kapısı — kullanıcı seçecek | — | (R5'teki 14 kalemden 1-N tanesi) |
 | R7 | Wizard birleştirme (ayrı faz — ertelendi) | ⏳ R6 sonrasına ertelendi | — | `docs/redesign/R7_wizard_unification.md` (planlandı, yazılmadı) |
 
@@ -103,7 +103,7 @@
 - `16c93bc` — R2 competitor benchmark raporu
 - `b7c77a3` — R3 information architecture önerisi
 - `8746047` — R4 preview/prototype planı
-- (R5 SHA commit sonrası eklenecek) — R5 uygulama yol haritası + MEMORY güncellemesi
+- `e9c2cda` — R5 uygulama yol haritası + MEMORY güncellemesi
 
 ### 4.2 Yeni Dosyalar
 - `docs/redesign/MEMORY.md` (bu dosya)
