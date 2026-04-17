@@ -11,6 +11,7 @@ import { useEffect } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { AppHeader } from "../../components/layout/AppHeader";
 import { AppSidebar } from "../../components/layout/AppSidebar";
+import { UserIdentityStrip } from "../../components/layout/UserIdentityStrip";
 import { ToastContainer } from "../../components/design-system/Toast";
 import { ThemeProvider } from "../../components/design-system/ThemeProvider";
 import { CommandPalette } from "../../components/design-system/CommandPalette";
@@ -68,6 +69,13 @@ export function UserLayout() {
         <div className="flex flex-1">
           <AppSidebar items={USER_NAV} />
           <main className="flex-1 bg-surface-page overflow-y-auto" style={{ padding: "var(--ch-page-padding)" }}>
+            {/* Redesign REV-2 / P1.2:
+                User panelinde sticky kimlik şeridi. Admin rolünde
+                render olmaz (bileşen içi guard); user rolünde avatar
+                + isim + kapsam etiketi + bildirim/bugün sayaçlarıyla
+                "kendi alanındayım" hissini verir. Main içeriğin en
+                üstünde, sticky olduğu için scroll boyunca kalır. */}
+            <UserIdentityStrip className="-mx-[var(--ch-page-padding)] -mt-[var(--ch-page-padding)] mb-4" />
             <Outlet />
           </main>
         </div>

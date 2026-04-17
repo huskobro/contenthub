@@ -66,7 +66,7 @@ Her kalem: ayrı commit, push, test sonucu MEMORY.md'ye, 7 başlıklı Türkçe 
 | 4 | P0.3b | Admin fetch refactor — Analytics/Calendar/Audit | ✅ Tamam | `1eeb8b9` |
 | 5 | P0.3c | Admin fetch refactor — Comment/Playlist/Post/Notifications/Inbox | ✅ Tamam | `a6c719c` |
 | 6 | P1.1 | `AdminScopeSwitcher` component | ✅ Tamam | `883f6c3` |
-| 7 | P1.2 | `UserIdentityStrip` component | ⏳ | — |
+| 7 | P1.2 | `UserIdentityStrip` component | ✅ Tamam | (commit sonrası) |
 | 8 | P1.3 | `AdminDigestDashboard` | ⏳ | — |
 | 9 | P1.4 | `UserDigestDashboard` | ⏳ | — |
 | 10 | P2.1 | Nav yeniden gruplandırma | ⏳ | — |
@@ -149,6 +149,8 @@ Her kalem: ayrı commit, push, test sonucu MEMORY.md'ye, 7 başlıklı Türkçe 
 - `a6c719c` — P0.3c Admin fetch refactor Monitoring/Notifications/Inbox (5 sayfa scope-aware)
 - `53ff559` — P0.3c commit SHA'sı MEMORY.md'ye işleme (docs-only)
 - `883f6c3` — P1.1 AdminScopeSwitcher bileşeni + AppHeader entegrasyonu + 8 smoke test
+- `4068785` — P1.1 commit SHA'sı MEMORY.md'ye işleme (docs-only)
+- `(TBD)` — P1.2 UserIdentityStrip bileşeni + UserLayout entegrasyonu + 7 smoke test
 
 ### 4.2 Yeni Dosyalar
 - `docs/redesign/MEMORY.md` (bu dosya)
@@ -165,6 +167,8 @@ Her kalem: ayrı commit, push, test sonucu MEMORY.md'ye, 7 başlıklı Türkçe 
 - `frontend/src/tests/hooks/useActiveScope.test.tsx` (P0.2)
 - `frontend/src/components/layout/AdminScopeSwitcher.tsx` (P1.1) — admin kapsam seçici bileşen (AppHeader'da `area="Admin"` ile render olur; non-admin rollerde `return null`)
 - `frontend/src/tests/admin-scope-switcher.smoke.test.tsx` (P1.1) — 8 smoke test: non-admin render=null, mode=all label, dropdown open, user focus, return to all, Escape close, outside-click close, focused user label
+- `frontend/src/components/layout/UserIdentityStrip.tsx` (P1.2) — user paneli sticky kimlik şeridi; avatar + isim + "Kendi alanım" chip'i + bildirim/bugün sayaçları; admin rolünde `return null` (panel user bakışı için)
+- `frontend/src/tests/user-identity-strip.smoke.test.tsx` (P1.2) — 7 smoke test: admin null, unauthenticated null, user name+scope+avatar, notif chip visible/hidden (unread>0/==0), today chip visible/hidden (events>0/==0)
 
 ### 4.3 Değiştirilen Dosyalar
 - `.gitignore` — `**/node_modules` pattern (P0.1, symlink uyumu)
@@ -189,6 +193,7 @@ Her kalem: ayrı commit, push, test sonucu MEMORY.md'ye, 7 başlıklı Türkçe 
 - `frontend/src/pages/admin/AdminNotificationsPage.tsx` — (P0.3c) `useActiveScope()` bağlandı; admin focused-user ise `fetchNotifications`, `fetchNotificationCount`, `markAllNotificationsRead` çağrıları `owner_user_id` parametresini geçirir. Query key'lere `{ ownerUserId, isAllUsers }` bloğu eklendi — cache çapraz kirlenme olmaz.
 - `frontend/src/pages/user/UserInboxPage.tsx` — (P0.3c) Admin wrapper (`isAdmin=true`) için `useActiveScope()` fallback: admin focused-user'da inbox o user'a daraltılır, admin "all" seçerse tüm kapsam görünür (mevcut davranış). User rolünde davranış değişmedi. Query key'e scope bloğu eklendi.
 - `frontend/src/components/layout/AppHeader.tsx` — (P1.1) `AdminScopeSwitcher` import edildi; `area === "Admin"` branşında `SurfaceActiveBadge`'den sonra `flex-1` spacer'dan önce `<AdminScopeSwitcher className="ml-3" />` render ediliyor. Admin dışı area'larda render olmaz; bileşen içindeki rol guard da non-admin'de null döner (çifte savunma, sızdırma ihtimali sıfır).
+- `frontend/src/app/layouts/UserLayout.tsx` — (P1.2) `UserIdentityStrip` import edildi; `<main>` içinde `<Outlet />` öncesine eklendi. `-mx-[var(--ch-page-padding)] -mt-[var(--ch-page-padding)] mb-4` ile main'in padding'ini nötralize edip edge-to-edge sticky şerit olarak yerleşti. Strip bileşen içi guard ile user olmayan rolde null döner; legacy user shell'i için yeterli — surface varyantlarına entegrasyon kapsam dışı (farklı nav mimarileri, P3.1 duplicate cleanup sonrasına ertelenebilir).
 
 ---
 
@@ -283,4 +288,5 @@ Her kalem: ayrı commit, push, test sonucu MEMORY.md'ye, 7 başlıklı Türkçe 
 | 2026-04-18 | P0.3a tamam | Jobs/Publish/Channels/Automation admin fetch refactor. Backend: `publish/router.py` + `publish/service.py` — admin-only `owner_id` override (non-admin yol değişmedi, backend authority korundu). Frontend: `jobsApi.ts` + `publishApi.ts` — `owner_id` alanı; `useJobsList` + `usePublishRecords` + `useChannelProfiles` scope-aware query key ve `scope.isReady` gate; `AdminAutomationPoliciesPage` + `AdminConnectionsPage` `useActiveScope()` bağlandı. Test sonucu: P0.1+P0.2 mevcut 23/23 vitest PASS, tsc --noEmit exit 0, vite build başarılı (3.48s). `useChannelProfiles(userId)` call-site'ları grep ile doğrulandı — hepsi explicit userId geçiriyor, geriye uyum kırılmadı. |
 | 2026-04-18 | P0.3b tamam | Analytics/Calendar/Audit admin fetch refactor. `useAnalyticsOverview` + `useAnalyticsOperations` + `useAuditLogs` scope-aware cache key. `useAnalyticsFilters` admin focused-user fallback (URL user_id yoksa scope.ownerUserId). `UserCalendarPage` admin modunda scope'a göre owner_user_id geçirir. P0.3b düzeltmesi: `enabled: scope.isReady` gate'i P0.3a hook'larından (useJobsList/usePublish/useChannelProfiles) + AdminAutomationPoliciesPage'den KALDIRILDI — smoke test'ler auth hidrat etmiyordu, gate dashboard'ı boşaltıyordu. Test sonucu: **full vitest 2560/2560 PASS** (35 skipped, 218 test dosyası), tsc --noEmit exit 0, vite build başarılı (3.90s). |
 | 2026-04-18 | P0.3c tamam | Monitoring (Comment/Playlist/Post) + Notifications + Inbox admin fetch refactor. 5 sayfa scope-aware: AdminComment/Playlist/PostMonitoringPage `userFilter` default `scopedDefaultUser`'a atanır, scope değişince manuel seçim yoksa snap eder; channels query key `{ ownerUserId, isAllUsers }` bloğu taşır. AdminNotificationsPage `owner_user_id` parametresini list/count/mark-all-read çağrılarına geçirir. UserInboxPage admin wrapper'ı admin focused-user'da inbox'ı o user'a daraltır. Test sonucu: **full vitest 2560/2560 PASS** (35 skipped, 218 dosya, 25.46s), tsc --noEmit exit 0, vite build başarılı (3.38s). |
+| 2026-04-18 | P1.2 tamam | `UserIdentityStrip` bileşeni UserLayout main'inin en üstüne (sticky) eklendi. Kullanıcıya "Sen: <İsim> • Kendi alanım • 🔔 N yeni 📅 M bugün" hissini veren kimlik şeridi. Veri: `useCurrentUser()` + `useNotifications({ mode: "user" })` + `fetchCalendarEvents({ owner_user_id })`. Admin rolünde render olmaz — user panel user bakışı için. Unauthenticated ve non-user rollerde de null. 7 smoke test yazıldı (admin null, unauth null, user+name+scope+avatar, notif chip show/hide, today chip show/hide). Surface varyantlarına entegrasyon (Canvas/Atrium/Bridge) bu dalgada kapsam dışı; legacy `UserLayout` yeterli. Test sonucu: **full vitest 2575/2575 PASS** (+7), 35 skipped, 219 dosya + 1 skip, 253 s. `tsc --noEmit` exit 0, `vite build` başarılı (4.09s). |
 | 2026-04-18 | P1.1 tamam | `AdminScopeSwitcher` bileşeni AppHeader sağ bloğuna eklendi — admin için kapsam seçimini görünür ve tek tıkla yönetilebilir kıldı. Özellikler: (1) rol guard (non-admin → null), (2) kompakt buton (avatar + "Kapsam" etiketi + aktif scope label + chevron), (3) dropdown: "Tüm Kullanıcılar" + aktif kullanıcı listesi + ≥5 kullanıcıda arama input'u + focused'a geri dönüş footer'ı, (4) outside-click + Escape ile kapanma, (5) `useQuery({ enabled: isAdmin && open })` ile tembel kullanıcı listesi. Bileşen `useAdminScopeStore`'u doğrudan güncelliyor; `useActiveScope()` üzerinden tüm scope-aware React Query anahtarlarına anında yansıyor. AppHeader tarafında `area === "Admin"` branşıyla da ayrıca sınırlandırıldı (çifte savunma). 8 smoke test yazıldı (non-admin null, mode=all label, dropdown open, focusUser, setAll, Escape close, outside-click close, focused user label). Test sonucu: **full vitest 2568/2568 PASS** (+8), 35 skipped, 218 dosya + 1 skip, 265s. `tsc --noEmit` exit 0, `vite build` başarılı (4.15s). |
