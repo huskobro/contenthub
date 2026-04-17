@@ -231,6 +231,7 @@ async def list_publish_records(
     limit: int = 50,
     offset: int = 0,
     user_context: Optional[object] = None,
+    admin_owner_id_override: Optional[str] = None,
 ) -> list[PublishRecord]:
     """
     Filtrelenmiş publish kayıtlarını döndürür.
@@ -242,12 +243,25 @@ async def list_publish_records(
     PHASE X: `user_context` geldi ise non-admin'ler icin
     PublishRecord -> Job.owner_id = ctx.user_id sartiyla scope'lanir.
     Admin icin filtre yoktur.
+
+    Redesign REV-2 / P0.3a:
+        `admin_owner_id_override` sadece router tarafinda admin olduguna
+        kanaat getirilip geliyorsa pass edilir. Bu durumda admin, belirli bir
+        kullanicinin kayitlarini gormek ister; hem ownership kontrolu zaten
+        cagiri anindaydi, hem de bu override non-admin icin None gonderilir.
+        Dolayisiyla burada ek bir admin check yaptiramayiz — guven rotanin.
     """
     query = select(PublishRecord)
-    # PHASE X: ownership scope
+    # PHASE X: ownership scope — non-admin daima kendi user_id'si.
     if user_context is not None and not getattr(user_context, "is_admin", False):
         query = query.join(Job, PublishRecord.job_id == Job.id).where(
             Job.owner_id == user_context.user_id
+        )
+    elif admin_owner_id_override:
+        # REV-2 P0.3a: admin focused-user scope. Non-admin path asla buraya
+        # dusmez (router override'i None'a clamp ediyor).
+        query = query.join(Job, PublishRecord.job_id == Job.id).where(
+            Job.owner_id == admin_owner_id_override
         )
     if job_id:
         query = query.where(PublishRecord.job_id == job_id)

@@ -16,11 +16,31 @@ import {
   type CreateChannelProfileFromURL,
 } from "../api/channelProfilesApi";
 import { useApiError } from "./useApiError";
+import { useActiveScope } from "./useActiveScope";
 
+/**
+ * Redesign REV-2 / P0.3a:
+ *   Caller explicit `userId` geciriyorsa (mevcut kullanimlarin cogu)
+ *   davranis degismez. Hic gecirmezse hook artik `useActiveScope()`
+ *   uzerinden effective scope'u turetir:
+ *     - user rolu       -> kendi user.id
+ *     - admin focus     -> focused user.id
+ *     - admin "all"     -> undefined (backend tum kayitlari verir)
+ *   Query key scope bilincli — admin/user cache cross-contamination olmaz.
+ */
 export function useChannelProfiles(userId?: string) {
+  const scope = useActiveScope();
+  const effectiveUserId =
+    userId ?? (scope.ownerUserId && scope.isReady ? scope.ownerUserId : undefined);
+
   return useQuery({
-    queryKey: ["channel-profiles", userId ?? "all"],
-    queryFn: () => fetchChannelProfiles(userId),
+    queryKey: [
+      "channel-profiles",
+      effectiveUserId ?? "all",
+      { ownerUserId: scope.ownerUserId, isAllUsers: scope.isAllUsers },
+    ],
+    queryFn: () => fetchChannelProfiles(effectiveUserId),
+    enabled: scope.isReady || Boolean(userId),
   });
 }
 

@@ -62,7 +62,7 @@ Her kalem: ayrı commit, push, test sonucu MEMORY.md'ye, 7 başlıklı Türkçe 
 |---|---|---|---|---|
 | 1 | P0.1 | `useCurrentUser()` hook | ✅ Tamam | `2225aa0` |
 | 2 | P0.2 | `useActiveScope()` + `adminScopeStore` | ✅ Tamam | `32bb576` |
-| 3 | P0.3a | Admin fetch refactor — Jobs/Publish/Channels/Automation | ⏳ | — |
+| 3 | P0.3a | Admin fetch refactor — Jobs/Publish/Channels/Automation | ✅ Tamam | (commit sonrası doldurulacak) |
 | 4 | P0.3b | Admin fetch refactor — Analytics/Calendar/Audit | ⏳ | — |
 | 5 | P0.3c | Admin fetch refactor — kalan 35+ sayfa | ⏳ | — |
 | 6 | P1.1 | `AdminScopeSwitcher` component | ⏳ | — |
@@ -141,6 +141,8 @@ Her kalem: ayrı commit, push, test sonucu MEMORY.md'ye, 7 başlıklı Türkçe 
 - `848ea23` — REV-2 kararı: R6 kaldırıldı, 16 kalem tek dalga, wizard dahil
 - `2225aa0` — P0.1 useCurrentUser hook + unit testler + .gitignore symlink düzeltmesi
 - `32bb576` — P0.2 useActiveScope hook + adminScopeStore + 19 unit test (14 store + 5 hook)
+- `c02831f` — P0.2 commit SHA'yı MEMORY.md'ye işleme (docs-only)
+- (P0.3a commit SHA commit sonrası doldurulacak) — Admin fetch refactor Jobs/Publish/Channels/Automation (scope-aware query keys + backend publish admin override)
 
 ### 4.2 Yeni Dosyalar
 - `docs/redesign/MEMORY.md` (bu dosya)
@@ -158,6 +160,15 @@ Her kalem: ayrı commit, push, test sonucu MEMORY.md'ye, 7 başlıklı Türkçe 
 
 ### 4.3 Değiştirilen Dosyalar
 - `.gitignore` — `**/node_modules` pattern (P0.1, symlink uyumu)
+- `backend/app/publish/router.py` — (P0.3a) `owner_id` query param eklendi; admin-only override. Non-admin sessizce yoksayar; admin `Job.owner_id == override` filtresi uygular.
+- `backend/app/publish/service.py` — (P0.3a) `list_publish_records` imzasına `admin_owner_id_override` parametresi; admin + override mevcut ise `Job` join + filter; non-admin yol değişmedi, backend authority korundu.
+- `frontend/src/api/jobsApi.ts` — (P0.3a) `fetchJobs` params'a `owner_id?: string` alanı eklendi.
+- `frontend/src/api/publishApi.ts` — (P0.3a) `PublishListParams` tipine `owner_id?: string` eklendi.
+- `frontend/src/hooks/useJobsList.ts` — (P0.3a) `useActiveScope()` tüketildi; query key `["jobs", { ownerUserId, isAllUsers, includeArchived }]`; admin focused-user'da `owner_id` param geçirilir; `enabled: scope.isReady`.
+- `frontend/src/hooks/usePublish.ts` — (P0.3a) `usePublishRecords` scope-aware; `scopedOwnerId = params.owner_id ?? (admin ? scope.ownerUserId : undefined)`; query key `[KEY, effectiveParams, { ownerUserId, isAllUsers }]`; by-job/by-project kullanımları dokunulmadı.
+- `frontend/src/hooks/useChannelProfiles.ts` — (P0.3a) `useChannelProfiles(userId?)` explicit `userId` geçirildiği tüm call-site'larda geriye uyumlu; `userId` yoksa `useActiveScope()` üzerinden effective scope'a düşer; query key scope-aware.
+- `frontend/src/pages/admin/AdminAutomationPoliciesPage.tsx` — (P0.3a) Statik `["automation-policies", "admin-scope"]` key yerine scope-aware key + `owner_user_id` filter; `enabled: scope.isReady`.
+- `frontend/src/pages/admin/AdminConnectionsPage.tsx` — (P0.3a) `useActiveScope()` bağlandı; `effectiveUserFilter = userFilter || (admin ? scope.ownerUserId ?? "" : "")`; users ve channel-profiles query'leri scope-keyed; `params` memo `effectiveUserFilter` ile yeniden üretildi.
 
 ---
 
@@ -249,3 +260,4 @@ Her kalem: ayrı commit, push, test sonucu MEMORY.md'ye, 7 başlıklı Türkçe 
 | 2026-04-17 | REV-2 kararı | Kullanıcı: "R6 kapısı kaldırılsın, 16 kalem tek dalgada bitsin, R7 ayrı faz olmasın, wizard dahil"; §1.5 çalışma kuralları + §1.6 plan tablosu + §5 yapılmayanlar bölümü + §2 faz tablosu güncellendi; R5 dosyası REV-2'ye alındı (commit `848ea23`) |
 | 2026-04-17 | P0.1 tamam | `useCurrentUser()` hook + 4 unit test (disabled/enabled/error/key). Vitest PASS (4/4), tsc --noEmit temiz, vite build başarılı. .gitignore `**/node_modules` eklendi (symlink için) |
 | 2026-04-17 | P0.2 tamam | `adminScopeStore` (Zustand + localStorage versioned shape v=1) + `useActiveScope()` hook (role/mode matrix + defensive fallback). 14 store test + 5 hook test, vitest PASS (19/19), tsc --noEmit temiz, vite build başarılı |
+| 2026-04-18 | P0.3a tamam | Jobs/Publish/Channels/Automation admin fetch refactor. Backend: `publish/router.py` + `publish/service.py` — admin-only `owner_id` override (non-admin yol değişmedi, backend authority korundu). Frontend: `jobsApi.ts` + `publishApi.ts` — `owner_id` alanı; `useJobsList` + `usePublishRecords` + `useChannelProfiles` scope-aware query key ve `scope.isReady` gate; `AdminAutomationPoliciesPage` + `AdminConnectionsPage` `useActiveScope()` bağlandı. Test sonucu: P0.1+P0.2 mevcut 23/23 vitest PASS, tsc --noEmit exit 0, vite build başarılı (3.48s). `useChannelProfiles(userId)` call-site'ları grep ile doğrulandı — hepsi explicit userId geçiriyor, geriye uyum kırılmadı. |

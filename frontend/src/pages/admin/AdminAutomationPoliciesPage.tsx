@@ -11,6 +11,7 @@ import {
   type CheckpointMode,
 } from "../../api/automationApi";
 import { SchedulerStatusCard } from "../../components/full-auto/SchedulerStatusCard";
+import { useActiveScope } from "../../hooks/useActiveScope";
 import { cn } from "../../lib/cn";
 
 const MODE_LABELS: Record<CheckpointMode, string> = {
@@ -34,14 +35,34 @@ const CHECKPOINTS = [
 ];
 
 export function AdminAutomationPoliciesPage() {
-  // Phase AM-5: admin-scope marker so this cache cannot collide with a
-  // future per-user policies view. The backend endpoint currently accepts
-  // an optional `owner_user_id` filter but doesn't auto-scope — that
-  // backend gap is tracked separately; the key marker here keeps the
-  // front-end cache honest.
+  // Redesign REV-2 / P0.3a: Artik gercek scope tuketiyoruz. Admin "all"
+  // modundayken backend bir filter uygulamaz (policy evreni admin erisimli);
+  // admin "belirli bir kullanici" moduna gecerse fetch `owner_user_id`
+  // param'ini gecer ve cache o scope'a ayrisir. Non-admin bu sayfaya
+  // navigasyon izni yok (route-level guard); yine de scope defensive:
+  // role=="user" gelirse kendi user.id'si gecirilir.
+  const scope = useActiveScope();
+  const ownerUserIdFilter =
+    scope.role === "admin" && scope.ownerUserId
+      ? scope.ownerUserId
+      : scope.role === "user" && scope.ownerUserId
+        ? scope.ownerUserId
+        : undefined;
+
   const { data: policies = [], isLoading } = useQuery({
-    queryKey: ["automation-policies", "admin-scope"],
-    queryFn: () => fetchAutomationPolicies(),
+    queryKey: [
+      "automation-policies",
+      {
+        ownerUserId: scope.ownerUserId,
+        isAllUsers: scope.isAllUsers,
+        role: scope.role,
+      },
+    ],
+    queryFn: () =>
+      fetchAutomationPolicies(
+        ownerUserIdFilter ? { owner_user_id: ownerUserIdFilter } : undefined,
+      ),
+    enabled: scope.isReady,
   });
 
   return (
