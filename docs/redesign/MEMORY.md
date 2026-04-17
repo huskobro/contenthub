@@ -64,7 +64,7 @@ Her kalem: ayrı commit, push, test sonucu MEMORY.md'ye, 7 başlıklı Türkçe 
 | 2 | P0.2 | `useActiveScope()` + `adminScopeStore` | ✅ Tamam | `32bb576` |
 | 3 | P0.3a | Admin fetch refactor — Jobs/Publish/Channels/Automation | ✅ Tamam | `0d5f184` |
 | 4 | P0.3b | Admin fetch refactor — Analytics/Calendar/Audit | ✅ Tamam | `1eeb8b9` |
-| 5 | P0.3c | Admin fetch refactor — kalan 35+ sayfa | ⏳ | — |
+| 5 | P0.3c | Admin fetch refactor — Comment/Playlist/Post/Notifications/Inbox | ✅ Tamam | (commit sonrası) |
 | 6 | P1.1 | `AdminScopeSwitcher` component | ⏳ | — |
 | 7 | P1.2 | `UserIdentityStrip` component | ⏳ | — |
 | 8 | P1.3 | `AdminDigestDashboard` | ⏳ | — |
@@ -145,6 +145,8 @@ Her kalem: ayrı commit, push, test sonucu MEMORY.md'ye, 7 başlıklı Türkçe 
 - `0d5f184` — P0.3a Admin fetch refactor Jobs/Publish/Channels/Automation (scope-aware query keys + backend publish admin override)
 - `415c2d7` — P0.3a commit SHA'sı MEMORY.md'ye işleme (docs-only)
 - `1eeb8b9` — P0.3b Admin fetch refactor Analytics/Calendar/Audit (scope-aware keys + analytics filter scope fallback + calendar admin focused-user + isReady gate rollback fix)
+- `c306b08` — P0.3b commit SHA'sı MEMORY.md'ye işleme (docs-only)
+- (commit sonrası) — P0.3c Admin fetch refactor Monitoring/Notifications/Inbox (5 sayfa scope-aware)
 
 ### 4.2 Yeni Dosyalar
 - `docs/redesign/MEMORY.md` (bu dosya)
@@ -177,6 +179,11 @@ Her kalem: ayrı commit, push, test sonucu MEMORY.md'ye, 7 başlıklı Türkçe 
 - `frontend/src/hooks/useAnalyticsFilters.ts` — (P0.3b) URL'de `user_id` yoksa ve scope admin focused-user ise `scope.ownerUserId` effective user_id olarak atanır. `apiParams` otomatik bu filtreyi backend'e yollar.
 - `frontend/src/pages/user/UserCalendarPage.tsx` — (P0.3b) `useActiveScope()` bağlandı; `isAdmin` modunda admin "all" iken `owner_user_id=undefined`, admin focused-user iken `owner_user_id=scope.ownerUserId` geçirilir; hem channels hem calendar-events query'leri scope-keyed.
 - `frontend/src/hooks/useJobsList.ts` + `usePublish.ts` + `useChannelProfiles.ts` + `AdminAutomationPoliciesPage.tsx` — (P0.3b düzeltmesi) `enabled: scope.isReady` gate'i KALDIRILDI: mevcut smoke testleri auth hidrat etmiyor, gate olursa tüm dashboard boş kalıyordu. Cache key scope parmak izi ile izolasyon sağlar; ownership backend'de zorlanır.
+- `frontend/src/pages/admin/AdminCommentMonitoringPage.tsx` — (P0.3c) `useActiveScope()` bağlandı; `scopedDefaultUser = admin focused-user ? scope.ownerUserId : ""`; `userFilter` state default olarak o atanır. `useEffect` ile scope değişince manuel seçim yoksa snap eder; manuel seçim korunur. Channels query key `["channel-profiles", userFilter || "all", { ownerUserId, isAllUsers }]` şekline alındı.
+- `frontend/src/pages/admin/AdminPlaylistMonitoringPage.tsx` — (P0.3c) Aynı patern: `useActiveScope()` + `scopedDefaultUser` + snap `useEffect` + scope-aware channels query key.
+- `frontend/src/pages/admin/AdminPostMonitoringPage.tsx` — (P0.3c) Aynı patern: `useActiveScope()` + `scopedDefaultUser` + snap `useEffect` + scope-aware channels query key.
+- `frontend/src/pages/admin/AdminNotificationsPage.tsx` — (P0.3c) `useActiveScope()` bağlandı; admin focused-user ise `fetchNotifications`, `fetchNotificationCount`, `markAllNotificationsRead` çağrıları `owner_user_id` parametresini geçirir. Query key'lere `{ ownerUserId, isAllUsers }` bloğu eklendi — cache çapraz kirlenme olmaz.
+- `frontend/src/pages/user/UserInboxPage.tsx` — (P0.3c) Admin wrapper (`isAdmin=true`) için `useActiveScope()` fallback: admin focused-user'da inbox o user'a daraltılır, admin "all" seçerse tüm kapsam görünür (mevcut davranış). User rolünde davranış değişmedi. Query key'e scope bloğu eklendi.
 
 ---
 
@@ -270,3 +277,4 @@ Her kalem: ayrı commit, push, test sonucu MEMORY.md'ye, 7 başlıklı Türkçe 
 | 2026-04-17 | P0.2 tamam | `adminScopeStore` (Zustand + localStorage versioned shape v=1) + `useActiveScope()` hook (role/mode matrix + defensive fallback). 14 store test + 5 hook test, vitest PASS (19/19), tsc --noEmit temiz, vite build başarılı |
 | 2026-04-18 | P0.3a tamam | Jobs/Publish/Channels/Automation admin fetch refactor. Backend: `publish/router.py` + `publish/service.py` — admin-only `owner_id` override (non-admin yol değişmedi, backend authority korundu). Frontend: `jobsApi.ts` + `publishApi.ts` — `owner_id` alanı; `useJobsList` + `usePublishRecords` + `useChannelProfiles` scope-aware query key ve `scope.isReady` gate; `AdminAutomationPoliciesPage` + `AdminConnectionsPage` `useActiveScope()` bağlandı. Test sonucu: P0.1+P0.2 mevcut 23/23 vitest PASS, tsc --noEmit exit 0, vite build başarılı (3.48s). `useChannelProfiles(userId)` call-site'ları grep ile doğrulandı — hepsi explicit userId geçiriyor, geriye uyum kırılmadı. |
 | 2026-04-18 | P0.3b tamam | Analytics/Calendar/Audit admin fetch refactor. `useAnalyticsOverview` + `useAnalyticsOperations` + `useAuditLogs` scope-aware cache key. `useAnalyticsFilters` admin focused-user fallback (URL user_id yoksa scope.ownerUserId). `UserCalendarPage` admin modunda scope'a göre owner_user_id geçirir. P0.3b düzeltmesi: `enabled: scope.isReady` gate'i P0.3a hook'larından (useJobsList/usePublish/useChannelProfiles) + AdminAutomationPoliciesPage'den KALDIRILDI — smoke test'ler auth hidrat etmiyordu, gate dashboard'ı boşaltıyordu. Test sonucu: **full vitest 2560/2560 PASS** (35 skipped, 218 test dosyası), tsc --noEmit exit 0, vite build başarılı (3.90s). |
+| 2026-04-18 | P0.3c tamam | Monitoring (Comment/Playlist/Post) + Notifications + Inbox admin fetch refactor. 5 sayfa scope-aware: AdminComment/Playlist/PostMonitoringPage `userFilter` default `scopedDefaultUser`'a atanır, scope değişince manuel seçim yoksa snap eder; channels query key `{ ownerUserId, isAllUsers }` bloğu taşır. AdminNotificationsPage `owner_user_id` parametresini list/count/mark-all-read çağrılarına geçirir. UserInboxPage admin wrapper'ı admin focused-user'da inbox'ı o user'a daraltır. Test sonucu: **full vitest 2560/2560 PASS** (35 skipped, 218 dosya, 25.46s), tsc --noEmit exit 0, vite build başarılı (3.38s). |

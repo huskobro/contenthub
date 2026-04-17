@@ -18,6 +18,7 @@ import {
 import type { NotificationItem } from "../../api/notificationApi";
 import { cn } from "../../lib/cn";
 import { formatDateShort } from "../../lib/formatDate";
+import { useActiveScope } from "../../hooks/useActiveScope";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -56,6 +57,14 @@ export default function AdminNotificationsPage() {
   const navigate = useNavigate();
   const qc = useQueryClient();
 
+  // Redesign REV-2 / P0.3c:
+  //   Admin scope focused-user ise notifications listesi ve count o user'a
+  //   filtrelenir. Scope "all" ise admin tüm kapsamı görür (mevcut davranış).
+  //   Query key scope parmak izini taşır — cache çapraz kirlenme olmaz.
+  const scope = useActiveScope();
+  const scopedOwnerId =
+    scope.role === "admin" && scope.ownerUserId ? scope.ownerUserId : undefined;
+
   // Filters
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [severityFilter, setSeverityFilter] = useState<string>("");
@@ -63,8 +72,16 @@ export default function AdminNotificationsPage() {
 
   // Fetch
   const { data: notifications = [], isLoading } = useQuery({
-    queryKey: ["notifications", "admin-page", statusFilter, severityFilter, typeFilter],
+    queryKey: [
+      "notifications",
+      "admin-page",
+      statusFilter,
+      severityFilter,
+      typeFilter,
+      { ownerUserId: scope.ownerUserId, isAllUsers: scope.isAllUsers },
+    ],
     queryFn: () => fetchNotifications({
+      owner_user_id: scopedOwnerId,
       status: statusFilter || undefined,
       severity: severityFilter || undefined,
       notification_type: typeFilter || undefined,
@@ -73,8 +90,14 @@ export default function AdminNotificationsPage() {
   });
 
   const { data: counts } = useQuery({
-    queryKey: ["notification-count", "admin-page"],
-    queryFn: () => fetchNotificationCount(),
+    queryKey: [
+      "notification-count",
+      "admin-page",
+      { ownerUserId: scope.ownerUserId, isAllUsers: scope.isAllUsers },
+    ],
+    queryFn: () => fetchNotificationCount(
+      scopedOwnerId ? { owner_user_id: scopedOwnerId } : undefined,
+    ),
   });
 
   // Mutations
@@ -95,7 +118,10 @@ export default function AdminNotificationsPage() {
   });
 
   const markAllMut = useMutation({
-    mutationFn: () => markAllNotificationsRead(),
+    mutationFn: () =>
+      markAllNotificationsRead(
+        scopedOwnerId ? { owner_user_id: scopedOwnerId } : undefined,
+      ),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["notifications"] });
       qc.invalidateQueries({ queryKey: ["notification-count"] });

@@ -14,6 +14,7 @@ import {
   type InboxItemResponse,
 } from "../../api/automationApi";
 import { cn } from "../../lib/cn";
+import { useActiveScope } from "../../hooks/useActiveScope";
 
 // ---------------------------------------------------------------------------
 // Type labels and colors
@@ -66,10 +67,25 @@ export function UserInboxPage({ isAdmin }: InboxPageProps) {
   const qc = useQueryClient();
   const toast = useToast();
 
+  // Redesign REV-2 / P0.3c:
+  //   Admin wrapper (isAdmin=true) ve adminScopeStore focused-user ise
+  //   inbox o user'a daraltılır. Admin "all" seçerse tüm kapsam görülür
+  //   (mevcut davranış). User rolünde inbox her zaman kendi user.id'si ile.
+  const scope = useActiveScope();
+  const effectiveOwnerForAdmin =
+    scope.role === "admin" && scope.ownerUserId ? scope.ownerUserId : undefined;
+
+  const inboxOwnerUserId = isAdmin ? effectiveOwnerForAdmin : userId;
+
   const { data: items = [], isLoading } = useQuery({
-    queryKey: ["operations-inbox", { owner_user_id: isAdmin ? undefined : userId }],
+    queryKey: [
+      "operations-inbox",
+      { owner_user_id: inboxOwnerUserId, isAllUsers: scope.isAllUsers, role: scope.role },
+    ],
     queryFn: () =>
-      fetchInboxItems(isAdmin ? {} : { owner_user_id: userId! }),
+      fetchInboxItems(
+        inboxOwnerUserId ? { owner_user_id: inboxOwnerUserId } : {},
+      ),
     enabled: !!userId || isAdmin,
   });
 

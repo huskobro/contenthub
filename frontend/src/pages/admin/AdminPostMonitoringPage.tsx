@@ -6,12 +6,13 @@
  * Shows: KPI cards, post table with type/status/delivery badges.
  */
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { usePosts, usePostStats, usePostCapability } from "../../hooks/usePosts";
 import { fetchChannelProfiles, type ChannelProfileResponse } from "../../api/channelProfilesApi";
 import { fetchUsers, type UserResponse } from "../../api/usersApi";
+import { useActiveScope } from "../../hooks/useActiveScope";
 import {
   PageShell,
   SectionShell,
@@ -91,10 +92,23 @@ function postTypeLabel(type: string): string {
 // ---------------------------------------------------------------------------
 
 export function AdminPostMonitoringPage() {
-  const [userFilter, setUserFilter] = useState("");
+  // Redesign REV-2 / P0.3c:
+  //   Admin scope (adminScopeStore) focused-user ise userFilter default
+  //   olarak o user'a atanır. Manuel dropdown override her zaman kazanır.
+  //   Scope "all" ise filter boş — mevcut davranış.
+  const scope = useActiveScope();
+  const scopedDefaultUser =
+    scope.role === "admin" && scope.ownerUserId ? scope.ownerUserId : "";
+
+  const [userFilter, setUserFilter] = useState<string>(scopedDefaultUser);
   const [channelFilter, setChannelFilter] = useState("");
   const [platformFilter, setPlatformFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+
+  // Scope admin focus değişince userFilter manuel değilse yeni scope'a snap eder.
+  useEffect(() => {
+    setUserFilter((prev) => (prev === "" || prev === scopedDefaultUser ? scopedDefaultUser : prev));
+  }, [scopedDefaultUser]);
 
   // Fetch users and channels
   const { data: users } = useQuery({
@@ -104,7 +118,11 @@ export function AdminPostMonitoringPage() {
   });
 
   const { data: channels } = useQuery({
-    queryKey: ["channel-profiles", userFilter || "all"],
+    queryKey: [
+      "channel-profiles",
+      userFilter || "all",
+      { ownerUserId: scope.ownerUserId, isAllUsers: scope.isAllUsers },
+    ],
     queryFn: () => fetchChannelProfiles(userFilter || undefined),
     staleTime: 60_000,
   });
