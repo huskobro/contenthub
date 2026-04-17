@@ -66,7 +66,7 @@ Her kalem: ayrı commit, push, test sonucu MEMORY.md'ye, 7 başlıklı Türkçe 
 | 4 | P0.3b | Admin fetch refactor — Analytics/Calendar/Audit | ✅ Tamam | `1eeb8b9` |
 | 5 | P0.3c | Admin fetch refactor — Comment/Playlist/Post/Notifications/Inbox | ✅ Tamam | `a6c719c` |
 | 6 | P1.1 | `AdminScopeSwitcher` component | ✅ Tamam | `883f6c3` |
-| 7 | P1.2 | `UserIdentityStrip` component | ✅ Tamam | (commit sonrası) |
+| 7 | P1.2 | `UserIdentityStrip` component | ✅ Tamam | `0237c97` |
 | 8 | P1.3 | `AdminDigestDashboard` | ⏳ | — |
 | 9 | P1.4 | `UserDigestDashboard` | ⏳ | — |
 | 10 | P2.1 | Nav yeniden gruplandırma | ⏳ | — |
@@ -150,7 +150,7 @@ Her kalem: ayrı commit, push, test sonucu MEMORY.md'ye, 7 başlıklı Türkçe 
 - `53ff559` — P0.3c commit SHA'sı MEMORY.md'ye işleme (docs-only)
 - `883f6c3` — P1.1 AdminScopeSwitcher bileşeni + AppHeader entegrasyonu + 8 smoke test
 - `4068785` — P1.1 commit SHA'sı MEMORY.md'ye işleme (docs-only)
-- `(TBD)` — P1.2 UserIdentityStrip bileşeni + UserLayout entegrasyonu + 7 smoke test
+- `0237c97` — P1.2 UserIdentityStrip bileşeni + UserLayout entegrasyonu + 7 smoke test
 
 ### 4.2 Yeni Dosyalar
 - `docs/redesign/MEMORY.md` (bu dosya)
