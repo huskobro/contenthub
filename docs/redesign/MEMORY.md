@@ -42,13 +42,45 @@
 - **Hootsuite / Buffer / Metricool / Later:** Sosyal medya yönetim paneli UX'i
 - **OpusClip / Canva Studio:** Medya/clip/brand/asset deneyimi
 
-### 1.5 Çalışma Biçimi Kuralları (R2'den itibaren)
-- Artık gereksiz onay bekleme
-- R2 → R5 kesintisiz otomatik devam
-- Her faz sonunda kısa 7 başlıklı rapor
-- Büyük onay kapısı: **FAZ R6** (implementasyon başlangıcı)
-- Her anlamlı iş = ayrı commit
-- Her faz bu MEMORY.md'yi günceller
+### 1.5 Çalışma Biçimi Kuralları (REV-2 — 2026-04-17)
+- Artık gereksiz onay bekleme — **R6 onay kapısı KALDIRILDI**.
+- R2 → R5 kesintisiz otomatik devam ve sonrasında **R5'teki 16 kalemin tamamı tek dalgada** uygulanır.
+- **R7 ayrı faz KALDIRILDI** — wizard unification P3.3 olarak bu dalgaya dahil edildi.
+- Yalnızca anlamlı checkpoint'lerde 7 başlıklı kısa Türkçe rapor.
+- Her anlamlı iş = ayrı commit.
+- Her kod değişikliği dalgasında test + typecheck + build + ilgili smoke/integration/permission/visibility çalıştırılır; sonuç commit mesajına ve MEMORY.md'ye.
+- Her kalem sonunda MEMORY.md güncellenir.
+- Küçük-büyük ayrımı yok; iş tek seferde ürün seviyesinde kapatılır.
+- Konuşma dili + dokümanlar = Türkçe.
+- Main branch'e dokunulmaz; worktree-product-redesign-benchmark dalında kalınır.
+
+### 1.6 REV-2 Uygulama Plan Tablosu (16 kalem, sırayla)
+
+Her kalem: ayrı commit, push, test sonucu MEMORY.md'ye, 7 başlıklı Türkçe rapor anlamlı checkpoint'lerde.
+
+| # | Kod | Kalem | Durum | Commit |
+|---|---|---|---|---|
+| 1 | P0.1 | `useCurrentUser()` hook | ⏳ Sırada | — |
+| 2 | P0.2 | `useActiveScope()` + `adminScopeStore` | ⏳ | — |
+| 3 | P0.3a | Admin fetch refactor — Jobs/Publish/Channels/Automation | ⏳ | — |
+| 4 | P0.3b | Admin fetch refactor — Analytics/Calendar/Audit | ⏳ | — |
+| 5 | P0.3c | Admin fetch refactor — kalan 35+ sayfa | ⏳ | — |
+| 6 | P1.1 | `AdminScopeSwitcher` component | ⏳ | — |
+| 7 | P1.2 | `UserIdentityStrip` component | ⏳ | — |
+| 8 | P1.3 | `AdminDigestDashboard` | ⏳ | — |
+| 9 | P1.4 | `UserDigestDashboard` | ⏳ | — |
+| 10 | P2.1 | Nav yeniden gruplandırma | ⏳ | — |
+| 11 | P2.2 | Analytics tabs (3 → 1) | ⏳ | — |
+| 12 | P2.3 | Settings module landing | ⏳ | — |
+| 13 | P3.1 | 6 duplicate çift birleştirme | ⏳ | — |
+| 14 | P2.4 | Calendar unified (P3.1 sonrası) | ⏳ | — |
+| 15 | P2.5 | PublishBoard toggle | ⏳ | — |
+| 16 | P2.6 | Automation SVG görselleştirme | ⏳ | — |
+| 17 | P3.2 | Approver assignment (Alembic migration + UI) | ⏳ | — |
+| 18 | P3.3 | Wizard unification (tek motor + iki shell) | ⏳ | — |
+| 19 | REG | Final regresyon: test + typecheck + build + smoke | ⏳ | — |
+
+**Legend:** ⏳ sırada · 🟡 aktif · ✅ tamam · ❌ iptal/reddedildi
 
 ---
 
@@ -62,8 +94,10 @@
 | R3 | Yeni IA önerisi | ✅ Tamam | `b7c77a3` | `docs/redesign/R3_information_architecture.md` |
 | R4 | Preview/prototype planı | ✅ Tamam | `8746047` | `docs/redesign/R4_preview_prototype_plan.md` |
 | R5 | Uygulama yol haritası | ✅ Tamam | `e9c2cda` | `docs/redesign/R5_execution_roadmap.md` |
-| R6 | Onaylı implementasyon | 🔒 Onay kapısı — kullanıcı seçecek | — | (R5'teki 14 kalemden 1-N tanesi) |
-| R7 | Wizard birleştirme (ayrı faz — ertelendi) | ⏳ R6 sonrasına ertelendi | — | `docs/redesign/R7_wizard_unification.md` (planlandı, yazılmadı) |
+| R5-REV2 | R5 REV-2 revizyonu (R6 kapısı kaldırıldı, 16 kalem tek dalgada) | 🟡 Sürüyor | (commit sonrası) | `docs/redesign/R5_execution_roadmap.md` |
+| IMPL | R5'teki 16 kalemin tek dalgada uygulanması | 🟡 Başlıyor | (her kalem ayrı commit) | `frontend/**/*`, `backend/**/*`, `docs/redesign/MEMORY.md` |
+| ~~R6~~ | ~~Onaylı implementasyon~~ | ❌ KALDIRILDI (REV-2) | — | — |
+| ~~R7~~ | ~~Wizard birleştirme ayrı faz~~ | ❌ KALDIRILDI (REV-2) — P3.3 olarak IMPL içine alındı | — | — |
 
 ---
 
@@ -118,44 +152,60 @@
 
 ---
 
-## 5. Yapılmayanlar / Reddedilenler / Ertelenenler
+## 5. Bu Dalgada Bilinçli Olarak Yapılmayanlar / Reddedilenler / Teknik Olarak İmkansız Olanlar
 
-### 5.1 Bu Turda Yapılmayacak (kullanıcı talimatı)
-- Kod yazma — R6'ya kadar yok
-- Main'e dokunma — R6 sonrası bile ayrı merge dalgasıyla yapılacak
-- npm/pip install — onay gerekli
-- Migration çalıştırma — onay gerekli
-- Hardcoded çözüm — tüm öneriler Settings Registry üzerinden
+### 5.1 Reddedilenler (kullanıcı net talimatı, REV-2'de tekrar onaylandı)
+- ❌ Workspace switcher / org picker / project picker
+- ❌ Team switcher / team management
+- ❌ Organization management
+- ❌ Multi-tenant enterprise tier (billing, licensing, SSO federation)
+- ❌ Ağır yeni npm dependency (özellikle `@xyflow/react` ~140 KB gzip, react-flow, d3-graph kategorileri)
+- ❌ Kod kopyalama (rakipten de içeriden de)
+- ❌ Hardcoded çözüm (her davranış Settings Registry üstünden)
+- ❌ "Sıfırdan rastgele UI" — mevcut ürünün evrimi
 
-### 5.2 Reddedilenler (kullanıcı net dedi)
-- Workspace switcher (tekrarlıyorum: şimdilik yok)
-- Org/team picker
-- Enterprise karmaşası
-- "Sıfırdan rastgele UI" — mevcut ürünün evrimi istenir
+### 5.2 Bu Dalgada Bilinçli Atlananlar (aktif karar)
+- ⏸ **P0.4 Query key ESLint rule** — insan disiplini + test coverage yeterli; tooling gerekmiyor
+- ⏸ **Mobile / PWA** — scope dışı; `ileride istenebilecekler`e
+- ⏸ **Semantic dedupe** — News hard dedupe yeterli
+- ⏸ **Preview analytics** — preview sayısı/tercih telemetrisi henüz gerekmiyor
+- ⏸ **Vite bundle code-split** — localhost-first için bloke değil (gzip ~404 kB kabul edilebilir)
+- ⏸ **Platform adapter registry** — tek platform (YouTube) yeterli, community post API 3rd party'e kapalı
+- ⏸ **Real-time collaboration** (birden fazla kullanıcı aynı anda aynı sayfa)
+- ⏸ **Template marketplace**
+- ⏸ **AI-assisted automation suggestion**
+- ⏸ **External broker integration**
+- ⏸ **Custom `/api/v1/dashboard/admin/digest` endpoint** — P1.3'te client-side parallel fetch ile başla, perf sorunu olursa ekle
 
-### 5.3 Bilinçli Ertelenenler (R6 sonrası belki)
-- Surface kill-switch temizliği (F3 legacy fallback yeter)
-- Vite bundle code-split (gzip 404 kB, localhost-first için bloke değil)
-- Mobil / PWA (R3'te karar verilecek)
-- Preview analytics + semantic dedupe
-- Platform adapter registry (YouTube community post API 3rd party'e kapalı)
+### 5.3 Teknik Olarak İmkansız / Kısıtlı Olanlar
+- 🚫 YouTube community post API — 3rd party'e kapalı (sadece resmi app)
+- 🚫 Remotion composition mapping'i değiştirmek — bu dalga dışı (CLAUDE.md: "safe composition mapping")
+- 🚫 Snapshot-lock davranışını bozmak — P3.3 wizard unification'da bile kural korunacak
+- 🚫 Main branch'e merge — bu dalgada asla
 
-### 5.4 Bilinçli Korunacaklar
-- `UserPublishEntryPage` scaffold (13 test bağlı)
-- Surface mod varyantları legacy fallback (kullanıcı sürpriz görmez)
-- Wizard çift-sayfa paradigması **şimdilik** (R3'te tek-motor + iki-shell kararı gelecek)
+### 5.4 Bilinçli Korunacaklar (dokunulmayacak)
+- ✅ `UserPublishEntryPage` scaffold (13 test bağlı)
+- ✅ Surface mod varyantları legacy fallback (kullanıcı sürpriz görmez)
+- ✅ `useLayoutNavigation.ts` single-source pattern (yalnız array içeriği güncellenir, yapı değişmez)
+- ✅ Snapshot-lock davranışı (`effective_settings_snapshot_id` yazımı)
+- ✅ Tüm CLAUDE.md non-negotiable kuralları
+- ✅ Design tokens guide (`text-neutral-900/200` vb. kuralları)
+- ✅ React Query + Zustand ayrımı
+- ✅ Alembic tek migration otoritesi (Alembic dışı manuel SQL yok)
 
 ---
 
-## 6. İleride İstenebilecekler (not olarak tutulur, şimdi yapılmaz)
+## 6. İleride İstenebilecekler (not olarak tutulur, bu dalgada yok)
 
 - Mobil uygulama / PWA
-- Multi-tenant enterprise tier (workspace/org switcher)
+- Multi-tenant enterprise tier (workspace/org switcher) — kullanıcı net "hayır" dedi
 - Billing ve licensing
 - External broker integration
 - Real-time collaboration (birden fazla kullanıcı aynı anda aynı sayfa)
 - Template marketplace
 - AI-assisted automation suggestion
+- Query key ESLint rule (opsiyonel tooling)
+- Preview analytics + semantic dedupe
 
 ---
 
@@ -187,3 +237,4 @@
 | 2026-04-17 | R3 kapanış | Admin nav 32→27, user 12→15, 6 duplicate karar, surface/wizard canon, commit `b7c77a3` |
 | 2026-04-17 | R4 kapanış | 4 yeni component + 5 sayfa evrim planı, preview dosya konumu, commit `8746047` |
 | 2026-04-17 | R5 kapanış | 14 kalem / 4 kademe (P0/P1/P2/P3) yol haritası, effort/risk matrisi, R7 wizard ertelendi, R6 onay kapısı açık |
+| 2026-04-17 | REV-2 kararı | Kullanıcı: "R6 kapısı kaldırılsın, 16 kalem tek dalgada bitsin, R7 ayrı faz olmasın, wizard dahil"; §1.5 çalışma kuralları + §1.6 plan tablosu + §5 yapılmayanlar bölümü + §2 faz tablosu güncellendi; R5 dosyası REV-2'ye alındı |

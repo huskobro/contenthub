@@ -1,27 +1,37 @@
-# FAZ R5 — Uygulama Yol Haritası
+# FAZ R5 — Uygulama Yol Haritası (REV-2: Tek Dalga / 16 Kalem)
 
-> **Amaç:** R3 IA + R4 preview planlarını somut iş kalemlerine dönüştürmek. Her kalem için: dosya etkisi, efor, risk, önkoşul, test sınıfı, bağımsız-mı-yoksa-zincir-mi bilgisi. R6 onay kapısında kullanıcı **tek kalem** seçip "bunu uygula" diyebilir.
+> **Revizyon 2 (2026-04-17, post-R5 kullanıcı kararı):**
+> R6 onay kapısı **kaldırıldı**. R7 ayrı faz **kaldırıldı**. Aşağıda listelenen **16 kalemin tamamı bu dalgada (worktree-product-redesign-benchmark) tek seferde** kapatılır. Wizard unification ve approver assignment da dahil. Küçük-büyük ayrımı yok.
 >
-> **Tekrar:** Bu R5 kod YAZMAZ. R6 onay olmadan hiçbir backend/frontend/renderer dosyası değişmez.
-> **Koruma:** Main branch asla bu dalgada merge almaz. R6 sonrası ayrı merge dalgası.
-> **Hatırlatma:** CLAUDE.md non-negotiable — no hidden behavior, no hardcoded, Settings Registry üstünden.
+> **Sıra:** Önce altyapı (P0.x), sonra yüzey (P1.x), sonra sadeleştirme (P2.x), sonra birleştirme + ileri (P3.x). Ama hiçbir kalem "sonraya bırakıldı" diye kapatılmaz.
+>
+> **Koruma:**
+> - Main branch asla bu dalgada merge almaz.
+> - Her anlamlı kalem = ayrı commit.
+> - Her kalem bitiminde MEMORY.md güncellenir.
+> - Her kod değişikliğinde test + typecheck + build + ilgili smoke/integration testleri çalıştırılır, sonuç commit mesajına ve MEMORY.md'ye yazılır.
+> - Her checkpoint'te 7 başlıklı kısa Türkçe rapor.
+>
+> **CLAUDE.md non-negotiable:** No hidden behavior, no hardcoded, Settings Registry üstünden. Dil: Türkçe.
 
 ---
 
-## 0. Yönetici Özeti (12 Madde)
+## 0. Yönetici Özeti (REV-2)
 
-1. **Toplam 14 iş kalemi** tanımlandı, **4 katmana** ayrıldı: `P0 Altyapı`, `P1 Yüzey`, `P2 Sadeleştirme`, `P3 Birleştirme+İleri`.
-2. **P0 Altyapı (temel zorunluluk):** `useCurrentUser/useActiveScope` + `adminScopeStore` + query key discipline. Diğer tüm kalemlerin önkoşulu.
-3. **P1 Yüzey (görünür yenilik):** AdminScopeSwitcher, UserIdentityStrip, AdminDigest, UserDigest. P0 üstüne oturur.
-4. **P2 Sadeleştirme (IA taşıma):** Nav yeniden gruplandırma, Analytics tabs, Settings landing, Calendar unified, PublishBoard toggle, Automation SVG.
-5. **P3 Birleştirme+İleri:** 6 duplicate çift birleştirme, wizard canon önceliklendirmesi.
-6. **Tek backend migration gerektiren kalem:** "Approver assignment" (R6 dışı, R7+'a bırakıldı).
-7. **Bağımsız-kalem sayısı:** 7. (Diğer 7, P0 zincirine bağlı.)
-8. **En düşük risk + en yüksek görünür değer:** "Analytics tabs" (3 sayfa → 1 sayfa). Tek kullanıcı seçerse bile anlamlı UX yükseliş.
-9. **En yüksek risk:** "AdminScopeSwitcher discipline" (49 admin sayfada fetch refactor). Ama P0 olduğu için önce yapılır.
-10. **Wizard canon (tek motor + iki shell)** R6 kapsamı dışı, **Faz R7 Wizard Unification** ayrı dalga.
-11. **Mobile / PWA** hâlâ kapsam dışı.
-12. **R6 onay kapısı davranışı:** Kullanıcı 1-N kalem seçer, onay verir, o kalem(ler) bir branch/commit dizisinde uygulanır. Reddedilen kalem MEMORY.md'ye yazılır.
+1. **Toplam 16 iş kalemi** tanımlandı, **4 katmana** ayrıldı: `P0 Altyapı`, `P1 Yüzey`, `P2 Sadeleştirme`, `P3 Birleştirme+İleri`.
+2. **Hepsi tek dalgada kapatılır.** R6 onay kapısı yok, R7 ayrı faz yok.
+3. **P0 Altyapı:** `useCurrentUser` + `useActiveScope` + `adminScopeStore` + 49 admin sayfa fetch refactor. Her şeyin önkoşulu.
+4. **P1 Yüzey:** AdminScopeSwitcher, UserIdentityStrip, AdminDigest, UserDigest.
+5. **P2 Sadeleştirme:** Nav yeniden gruplandırma, Analytics tabs, Settings module landing, Calendar unified, PublishBoard toggle, Automation SVG.
+6. **P3 Birleştirme+İleri:** 6 duplicate çift birleştirme, approver assignment (Alembic migration dahil), wizard unification (tek motor + iki shell).
+7. **Tek backend migration gerektiren kalem:** P3.2 approver assignment. Bu dalgada yapılacak — ayrı faza bırakılmadı.
+8. **P0.4 (ESLint scope-key rule)** — opsiyonel tooling, bu dalga kapsamı dışı bırakıldı (bilinçli atlanan). İnsan disiplini + test coverage yeterli.
+9. **En yüksek risk:** P0.3 (49 admin sayfa fetch refactor). İçeride P0.3a/b/c alt-kalemlerine bölünür ama aynı dalgada tamamlanır.
+10. **En düşük risk + hızlı görünür değer:** P2.2 analytics tabs (3 sayfa → 1 tabbed).
+11. **Mobile / PWA** bu dalga kapsamı dışı (MEMORY.md "ileride istenebilecekler" bölümünde).
+12. **Uygulama sırası:** Altyapı (P0) → Yüzey (P1) → Sadeleştirme (P2) → Birleştirme (P3). Ama hiçbir kalem "sonra" etiketiyle kapatılmaz.
+13. **Checkpoint raporlama:** Her kalem biter bitmez 7 başlıklı Türkçe rapor + MEMORY.md güncellemesi + ayrı commit + push.
+14. **Test disiplini:** Her kalem sonunda pytest (backend ilgili modül) + vitest/jest (frontend ilgili) + TypeScript tsc --noEmit + Vite build. Sonuç commit mesajına ve MEMORY.md'ye işlenir.
 
 ---
 
@@ -31,8 +41,8 @@
 |---|---|---|---|---|---|---|---|---|---|
 | **P0.1** | `useCurrentUser()` hook | Altyapı | Yeni | ❌ | ❌ | S | Düşük | — | ✅ |
 | **P0.2** | `useActiveScope()` + `adminScopeStore` | Altyapı | Yeni | ❌ | ❌ | S | Düşük | P0.1 | — |
-| **P0.3** | Admin sayfa fetch refactor (49 dosya) | Altyapı | Refactor | ❌ | ❌ | **XL** | **Yüksek** | P0.2 | — |
-| **P0.4** | Query key pattern discipline (eslint rule opsiyonel) | Altyapı | Refactor | ❌ | Opsiyonel | M | Orta | P0.3 | — |
+| **P0.3** | Admin sayfa fetch refactor (49 dosya → a/b/c alt-kalem) | Altyapı | Refactor | ❌ | ❌ | **XL** | **Yüksek** | P0.2 | — |
+| ~~P0.4~~ | ~~Query key ESLint rule~~ (**bu dalga dışı — bilinçli atlanan**, insan + test yeterli) | Altyapı | Tooling | ❌ | — | — | — | — | — |
 | **P1.1** | `AdminScopeSwitcher` component | Yüzey | Yeni | ❌ | ❌ | M | Orta | P0.3 | — |
 | **P1.2** | `UserIdentityStrip` component | Yüzey | Yeni | ❌ | ❌ | S | Düşük | P0.1 | — |
 | **P1.3** | AdminDigest Dashboard `/admin` | Yüzey | Yeni | 🟡 (ops) | ❌ | M | Orta | P0.3 | — |
@@ -40,11 +50,12 @@
 | **P2.1** | Nav yeniden gruplandırma (Horizon + Classic) | Sadeleştirme | Refactor | ❌ | ❌ | S | Düşük | — | ✅ |
 | **P2.2** | Analytics tabs (3 → 1) | Sadeleştirme | Refactor | ❌ | ❌ | M | Düşük | — | ✅ |
 | **P2.3** | Settings module landing | Sadeleştirme | Yeni + refactor | ❌ | ❌ | M | Orta | — | ✅ |
-| **P2.4** | Calendar unified (list/week/month toggle) | Sadeleştirme | Refactor | ❌ | ❌ | M | Düşük | — | ✅ |
+| **P2.4** | Calendar unified (list/week/month toggle) | Sadeleştirme | Refactor | ❌ | ❌ | M | Düşük | P3.1 (duplicate) | — |
 | **P2.5** | PublishBoard toggle | Sadeleştirme | Yeni | ❌ | ❌ | M | Düşük | — | ✅ |
 | **P2.6** | Automation SVG görselleştirme | Sadeleştirme | Yeni | ❌ | ❌ | S | Düşük | — | ✅ |
-| **P3.1** | 6 duplicate çift birleştirme | Birleştirme | Refactor | ❌ | ❌ | L | Orta | P0.2 | — |
-| **P3.2** | Approver assignment | İleri (R7?) | Yeni + migration | ✅ | ❌ | L | Orta | P0.3 + Alembic | — |
+| **P3.1** | 6 duplicate çift birleştirme | Birleştirme | Refactor | ❌ | ❌ | L | Orta | P0.3 | — |
+| **P3.2** | Approver assignment | İleri | Yeni + Alembic migration | ✅ | ❌ | L | Orta | P0.3 | — |
+| **P3.3** | Wizard unification (tek motor + iki shell) | İleri | Refactor + yeni | ❌ | ❌ | L | Orta | P0.3 | — |
 
 **Efor skalası:** XS ~1 gün / S ~2-3 gün / M ~1 hafta / L ~2 hafta / XL ~3-4 hafta.
 **Risk:** Düşük / Orta / Yüksek (test gerekliliği + etki alanı).
@@ -129,10 +140,12 @@ const { data } = useQuery({
 **Efor:** **XL** (~3-4 hafta).
 **Risk:** **Yüksek** (test coverage + regression).
 
-**Bölünme önerisi (R6'da):**
-- P0.3a: Jobs, Publish, Channels, Automation (top-4 — çekirdek)
-- P0.3b: Analytics, Calendar, Audit (ikinci)
-- P0.3c: Geri kalan 35 sayfa (stabilizasyon)
+**Bölünme (bu dalgada zorunlu, ayrı ayrı commit):**
+- **P0.3a — Çekirdek (4 alan):** Jobs, Publish, Channels, Automation — kritik data leak yüzeyleri
+- **P0.3b — İkincil (3 alan):** Analytics, Calendar, Audit — orta yoğunluk
+- **P0.3c — Kalan (35+ sayfa):** Stabilizasyon — geri kalan admin sayfaları
+
+Her alt-kalem: ayrı commit + test + typecheck + build + permission test + smoke. Hepsi bu dalgada bitecek.
 
 ---
 
@@ -151,7 +164,7 @@ const { data } = useQuery({
 **Efor:** M.
 **Risk:** Orta (false-positive riski).
 
-**Öneri:** R6 dahilinde YAPILMAZ. R7 sonrası iyileştirme.
+**Karar (REV-2):** Bu dalga dışı — bilinçli atlanan. İnsan disiplini + test coverage yeterli.
 
 ---
 
@@ -388,32 +401,72 @@ const { data } = useQuery({
 
 ---
 
-### 2.16 P3.2 — Approver assignment (R7?)
+### 2.16 P3.2 — Approver assignment
 
 **Tür:** Yeni alan + migration + UI.
 **Dosyalar:**
 - Backend: `backend/app/automation/models.py` (AutomationPolicy yeni `approver_user_id`)
-- Backend: yeni Alembic migration
+- Backend: yeni Alembic migration (`approver_assignment_to_automation_policies`)
 - Backend: `backend/app/automation/service.py` publish yolu approver kontrolü
 - Frontend: `UserAutomationPage.tsx` approver dropdown
 - Frontend: `PublishReviewQueuePage.tsx` "sadece bana atanan" filtresi
 
-**Önkoşul:** P0.3 + Alembic çalıştırma izni.
+**Önkoşul:** P0.3 (scope-aware fetch).
 **Test:**
-- Backend: migration rollback test, approver-only visibility
-- Frontend: approver seçim + filtre
+- Backend: migration rollback test + fresh-DB upgrade test + approver-only visibility test
+- Frontend: approver seçim + filtre + permission test
 
 **Settings Registry key:** `automation.approver_assignment.enabled` (default false).
 **Efor:** L.
 **Risk:** Orta.
 
-**Kullanıcı kararına muhtemel ileri:** Bu kalem **R6 kapsamı DIŞI** öneriliyor — Faz R7 veya sonrası.
+**Karar (REV-2):** Bu kalem **bu dalgada yapılacak**. Ayrı faza ertelenmedi. Alembic migration bu dalgada çalıştırılır (fresh-DB + rollback testi şart).
 
 ---
 
-## 3. Bağımsız Yapılabilir Kalemler (R6 onay kapısı için)
+### 2.17 P3.3 — Wizard Unification (tek motor + iki shell)
 
-Kullanıcı "şunu yapalım" diyebilir. Aşağıdaki 7 kalem **bağımsız** uygulanabilir:
+**Tür:** Yeni engine + shell + mevcut wizard schema'ya konversiyon.
+**Dosyalar:**
+- Yeni: `frontend/src/wizard/engine/WizardEngine.ts` (step registry + state machine)
+- Yeni: `frontend/src/wizard/engine/WizardStepSchema.ts` (TypeScript DSL)
+- Yeni: `frontend/src/wizard/engine/useWizardSnapshot.ts` (snapshot-lock hook)
+- Yeni: `frontend/src/wizard/shells/AdminWizardShell.tsx`
+- Yeni: `frontend/src/wizard/shells/UserWizardShell.tsx`
+- Yeni: `frontend/src/wizard/schemas/standardVideo.schema.ts`
+- Yeni: `frontend/src/wizard/schemas/newsBulletin.schema.ts`
+- Yeni: `frontend/src/wizard/schemas/productReview.schema.ts`
+- Yeni: `frontend/src/wizard/schemas/educational.schema.ts`
+- Yeni: `frontend/src/wizard/schemas/howto.schema.ts`
+- Güncellenen / sadeleştirilen: `frontend/src/pages/admin/StandardVideoWizardPage.tsx`, `NewsBulletinWizardPage.tsx`, `ProductReviewWizardPage.tsx`, `EducationalWizardPage.tsx`, `HowtoWizardPage.tsx`
+- User muadilleri: `frontend/src/pages/user/CreateBulletinPage.tsx` vb. — User shell üstünden schema'yı tüketir
+
+**Açıklama:** R3'teki karar doğrultusunda, wizard'lar tek engine üstünde çalışır. Admin shell tam form + validation + versiyonlama; user shell guided mod + Visibility Engine üstünden Advanced toggle.
+
+**Parity test (zorunlu):** Her wizard için eski davranış = yeni davranış testi. Snapshot, field sırası, validation mesajları, step geçişleri aynı kalmalı.
+
+**Önkoşul:** P0.3 (scope-aware) + mevcut snapshot-lock davranışı korunmalı.
+**Test:**
+- Unit: Engine state machine + schema parsing + step transitions
+- Integration: Her wizard için end-to-end flow (admin + user shell)
+- Permission: User advanced toggle Visibility Engine'e bağlı (frontend filter tek başına yetmez)
+- Visibility: Field-level visibility matrisi
+- Smoke: Her wizard için 1 tam job oluşturma
+- Parity: Eski wizard behavior snapshot = yeni wizard behavior snapshot
+
+**Settings Registry key:**
+- `wizard.engine.v2.enabled` (default true — yeni engine)
+- `wizard.{module}.advanced_mode.default` (per-module advanced mod başlangıç)
+- `wizard.{module}.guided_mode.steps` (visible step list)
+
+**Efor:** L.
+**Risk:** Orta (parity testi olmadan legacy wizard kaldırılırsa yüksek).
+
+---
+
+## 3. Bağımsız Yapılabilir Kalemler (paralel potansiyeli)
+
+REV-2'de 16 kalemin tamamı yapılacak, ama sıralama için bu ayrım hâlâ yararlı. Aşağıdaki 7 kalem **bağımsız** uygulanabilir ve P0 tamamlanmasını beklemez:
 
 | # | Kalem | Efor | Neden bağımsız? |
 |---|---|---|---|
@@ -421,11 +474,10 @@ Kullanıcı "şunu yapalım" diyebilir. Aşağıdaki 7 kalem **bağımsız** uyg
 | P2.1 | Nav yeniden gruplandırma | S | useLayoutNavigation güncelleme, 4 array |
 | P2.2 | Analytics tabs | M | Mevcut sayfaları tab content'e refactor |
 | P2.3 | Settings module landing | M | URL parametresi + landing |
-| P2.4 | Calendar toggle | M | Mevcut calendar'a list view + hafta/ay |
 | P2.5 | PublishBoard toggle | M | Mevcut sayfaya alternatif görünüm |
 | P2.6 | Automation SVG | S | SVG + mevcut dropdown |
 
-**Not:** `AdminScopeSwitcher` + `UserIdentityStrip` gibi "kimlik" component'leri bağımsız değil — P0 altyapı gerekli.
+**Not:** `AdminScopeSwitcher` + `UserIdentityStrip` gibi "kimlik" component'leri bağımsız değil — P0 altyapı gerekli. `P2.4 Calendar unified` da P3.1 duplicate cleanup öncesinde yarım iş olur, onun için zincire bağlandı.
 
 ---
 
@@ -435,13 +487,14 @@ Kullanıcı "şunu yapalım" diyebilir. Aşağıdaki 7 kalem **bağımsız** uyg
 |---|---|---|
 | P0.2 | P0.1 | user info gerekli |
 | P0.3 | P0.2 | scope hook gerekli |
-| P0.4 | P0.3 | refactor tamamlanmalı |
 | P1.1 | P0.3 | scope hook + admin fetch refactored |
 | P1.2 | P0.1 | user info yeterli |
 | P1.3 | P0.3 | admin scope-aware widgets |
 | P1.4 | P0.1 | user info yeterli |
-| P3.1 | P0.2 | scope hook gerekli |
-| P3.2 | P0.3 + migration | scope + backend field |
+| P2.4 | P3.1 | duplicate cleanup öncesinde yarım kalır |
+| P3.1 | P0.3 | scope hook + admin fetch refactored |
+| P3.2 | P0.3 | scope + Alembic migration (bu dalgada) |
+| P3.3 | P0.3 | wizard shell'leri scope-aware olmalı |
 
 **Zincir uzunluk:** P0.1 → P0.2 → P0.3 → P1.1 → P1.3. En uzun 5 adım.
 
@@ -456,7 +509,6 @@ Her kalem hangi test sınıflarına girer?
 | P0.1 | ✅ | — | — | — | — | — |
 | P0.2 | ✅ | — | — | — | — | — |
 | P0.3 | ✅ | ✅ | ✅ | — | ✅ | — |
-| P0.4 | ✅ | — | — | — | — | — |
 | P1.1 | ✅ | ✅ | ✅ | — | ✅ | — |
 | P1.2 | ✅ | — | — | — | ✅ | — |
 | P1.3 | ✅ | ✅ | ✅ | ✅ | ✅ | — |
@@ -469,6 +521,7 @@ Her kalem hangi test sınıflarına girer?
 | P2.6 | ✅ | — | — | — | ✅ | — |
 | P3.1 | ✅ | ✅ | ✅ | ✅ | ✅ | — |
 | P3.2 | ✅ | ✅ | ✅ | — | ✅ | ✅ |
+| P3.3 | ✅ | ✅ | ✅ | ✅ | ✅ | — |
 
 **Test tür sayısı:** Minimum unit + smoke; maksimum tüm kategoriler.
 
@@ -483,52 +536,71 @@ Her kalem hangi test sınıflarına girer?
 | UX değişim şoku (sidebar yeniden gruplandı) | P2.1 | Release notes + visibility flag ile rollback |
 | Bookmark kırılımı (settings URL değişti) | P2.3 | 301 redirect + release notes |
 | Field visibility matrisi büyük | P3.1 | Her çift için yazılı visibility test matrisi |
-| Migration rollback ciddi test ister | P3.2 | R7'ye ertele |
+| Migration rollback ciddi test ister | P3.2 | Alembic `downgrade` testi + fresh-DB upgrade testi (bu dalgada zorunlu) |
+| Wizard engine refactor geniş yüzeylendirme | P3.3 | Parity test (eski davranış = yeni davranış) + step-by-step schema konverter |
 | Performance (digest dashboard çoklu fetch) | P1.3, P1.4 | Parallel fetch + opsiyonel custom endpoint |
 
 ---
 
-## 7. R6 Onay Kapısı Protokolü
+## 7. Uygulama Sırası (REV-2: Onay kapısı yok)
 
-**Kullanıcıya sorulacak:**
+**Tek dalga / 16 kalem / doğru sıra.** Kullanıcı her kalem için tekrar onay vermez; sadece anlamlı checkpoint'lerde 7 başlıklı Türkçe rapor alır.
 
-> "Aşağıdaki 14 kalem var. Hangi birini (veya birkaçını) ilk olarak uygulayalım?
-> - Bağımsız yapılabilir (önkoşul yok): P0.1, P2.1, P2.2, P2.3, P2.4, P2.5, P2.6
-> - En düşük risk + yüksek değer: **P2.2 (Analytics tabs)** veya **P2.1 (Nav yeniden gruplandırma)**
-> - Temel altyapı (uzun zincir açar): **P0.1 → P0.2 → P0.3 (çok ağır)**
-> - R6 dışında öneri: P3.2 (Approver assignment, migration ister)
-> - Faz R7 önerisi: Wizard engine unification"
+**Sıra:**
+1. P0.1 — useCurrentUser hook
+2. P0.2 — useActiveScope + adminScopeStore
+3. P0.3a — Admin fetch refactor (Jobs / Publish / Channels / Automation)
+4. P0.3b — Admin fetch refactor (Analytics / Calendar / Audit)
+5. P0.3c — Admin fetch refactor (kalan 35+ sayfa stabilizasyon)
+6. P1.1 — AdminScopeSwitcher component
+7. P1.2 — UserIdentityStrip component
+8. P1.3 — AdminDigest Dashboard
+9. P1.4 — UserDigest Dashboard
+10. P2.1 — Nav yeniden gruplandırma
+11. P2.2 — Analytics tabs (3 → 1 sayfa)
+12. P2.3 — Settings module landing
+13. P3.1 — 6 duplicate çift birleştirme (P2.4'ten önce)
+14. P2.4 — Calendar unified
+15. P2.5 — PublishBoard toggle
+16. P2.6 — Automation SVG görselleştirme
+17. P3.2 — Approver assignment (Alembic migration + UI)
+18. P3.3 — Wizard unification (tek motor + iki shell)
+19. **Final regresyon:** test + typecheck + build + smoke + permission + visibility. Sonuçlar MEMORY.md'ye.
 
-**Kullanıcı seçim yaptıktan sonra yapılacaklar:**
-1. Seçilen kalem için sub-branch oluşturulur (main'e dokunmaz, worktree-product-redesign-benchmark üstüne)
-2. R4'teki preview dosyaları oluşturulur (eğer yoksa)
-3. Seçilen kalemin gerçek component/sayfa/hook dosyaları yazılır
-4. İlgili test kategorileri çalıştırılır
-5. Pass olursa commit + push
-6. MEMORY.md güncellenir (seçim + sonuç)
-7. Merge main'e SADECE kullanıcı ayrı talep ederse (bu dalganın kuralı)
+**Her kalem için:**
+1. Kod yazımı + R4 preview dosyası (varsa referans)
+2. İlgili test kategorileri çalıştırılır (pytest / vitest / tsc / vite build)
+3. Sonuç commit mesajına ve MEMORY.md'ye yazılır
+4. Commit + push
+5. Anlamlı checkpoint'te 7 başlıklı Türkçe rapor kullanıcıya
 
-**Reddedilen kalem olursa:** MEMORY.md'ye yazılır (tarih + sebep).
+**Main branch'e dokunulmaz**, worktree-product-redesign-benchmark dalında kalınır.
 
 ---
 
-## 8. Wizard Unification (Faz R7 notu)
+## 8. Wizard Unification (P3.3 — bu dalgada)
 
-R3'te karar: "tek motor + iki shell". Ama:
-- `StandardVideoWizardPage.tsx` 1409 LoC'luk tam implementasyon
-- Engine-driven mimariye geçiş zorlu bir refactor
-- Snapshot-lock + settings-driven + visibility-driven tüm kurallar korunmalı
+REV-2: wizard unification ayrı faza ertelenmedi, bu dalga kapsamında.
 
-**R5 önerisi:** Bu iş **R6 dalgasında yapılmaz**, ayrı bir **Faz R7 Wizard Unification** dalgası öneriliyor. R6'da kullanıcı bunu isterse bile "R5 raporu R7'ye bırakıyor" denir.
+**Kapsam:**
+- `StandardVideoWizardPage.tsx` (1409 LoC) + `NewsBulletinWizardPage.tsx` + diğer wizard'lar tek bir engine'e oturur
+- Engine: step registry + state machine + snapshot-lock hook'lu
+- Schema DSL: `WizardStepSchema<T>` (TypeScript)
+- Shell: `AdminWizardShell` + `UserWizardShell` (Visibility Engine bağlantılı)
+- User shell: guided mode varsayılan; Advanced toggle'ı Visibility Engine üstünden
+- Admin shell: full form + validation + versiyonlama (snapshot-lock)
 
-**Faz R7 ön-plan (özet):**
-1. Engine specification: step registry + state machine + snapshot hooks
-2. Schema DSL: TypeScript types (`WizardStepSchema<T>`)
-3. Mevcut wizardları schema'ya çevir (step-by-step)
-4. Shell component'ler: AdminShell + UserShell (Visibility Engine bağlantılı)
-5. Test parity: eski wizard'lar gibi davranmalı
+**Parity test zorunlu:** Mevcut wizard'ın tüm çıktıları aynı kalmalı (snapshot, validation, adım sırası, field isimleri).
 
-Bu R6 onay kapısına dahil edilmez; kullanıcı R6 bitiminde karar verir.
+**Uygulama sırası (P3.3 iç):**
+1. Engine skeleton (`frontend/src/wizard/engine/*`)
+2. Shell skeleton (Admin + User)
+3. StandardVideoWizard → schema'ya çevir + parity test
+4. NewsBulletinWizard → schema'ya çevir + parity test
+5. ProductReview / Educational / Howto wizard'larını dahil et
+6. Legacy wizard dosyaları sadeleşir veya kaldırılır (ayrı commit)
+
+**Snapshot lock:** Job başladığında `effective_settings_snapshot_id` alanı yazılır (mevcut davranış korunur). Wizard engine değişimi bu kuralı bozmaz.
 
 ---
 
@@ -546,33 +618,32 @@ R6 gerçek implementasyon başlarken her kalem için:
 
 ---
 
-## 10. R5 Teslim Raporu (7 Başlık)
+## 10. R5 REV-2 Teslim Raporu (7 Başlık)
 
 ### 10.1 Ne yaptın
-14 iş kalemini 4 katmana ayırdım (P0/P1/P2/P3). Her kalem için dosya listesi, efor, risk, önkoşul, test kategorisi, Settings Registry key'leri, bağımsız-mı bilgisi. 7 bağımsız + 7 zincir. 1 kalem R7'ye ertelendi (Approver), 1 iş R7 ayrı dalgasına önerildi (Wizard unification).
+R5 planını REV-2'ye revize ettim. R6 onay kapısı + R7 ayrı faz mantığı kaldırıldı. 16 kalem tek dalgada tamamlanacak şekilde tabloya P3.3 wizard unification eklendi, P0.4 ESLint rule bilinçli atlanan olarak işaretlendi. Uygulama sırası netleştirildi (§7), wizard unification kapsamı yazıldı (§8), risk tablosu güncellendi (§6).
 
 ### 10.2 Hangi dosyaları okudun / değiştirdin
-- **Okundu:** R3 + R4 raporları (yazım girdisi), `useLayoutNavigation.ts` (P2.1 scope), design-tokens-guide, design-system envanter
-- **Yazıldı:** Yalnız `docs/redesign/R5_execution_roadmap.md` (bu dosya)
+- **Okundu:** Mevcut R5 dosyası (full scan)
+- **Yazıldı:** `docs/redesign/R5_execution_roadmap.md` (REV-2), `docs/redesign/MEMORY.md` (yeni karar bölümü sonraki commit'te)
 
 ### 10.3 Hangi testleri çalıştırdın
-R5 plan fazı — kod değişikliği yok. `git diff --stat backend/ frontend/ renderer/` boş.
+R5 REV-2 revizyon fazı — kod değişikliği yok (sadece doküman). `git diff --stat backend/ frontend/ renderer/` boş kalmaya devam ediyor.
 
 ### 10.4 Sonuç ne oldu
-R6 onay kapısına girdi için **tek liste** hazır. Kullanıcı 1 kalem seçip "uygula" diyebilir, bağımlılık zinciri açıkça belirli. En düşük risk + yüksek değer = P2.2 (Analytics tabs) veya P2.1 (Nav yeniden gruplandırma). En ağır = P0.3 (49 dosya fetch refactor).
+REV-2 aktif. Artık uygulamaya başlıyorum: P0.1 → P0.2 → P0.3a/b/c → P1.x → P2.x → P3.x → final regresyon. Her kalem bitiminde ayrı commit + test sonucu + 7 başlıklı rapor + MEMORY.md güncelleme.
 
-### 10.5 Bulduğun ek riskler
-- **R1:** P0.3 tek bir PR'da yapılırsa çok büyük — alt-kalem 3'e bölünmeli (R6'da kullanıcı kabul ederse).
-- **R2:** P3.1 duplicate merge'lerin her biri aslında küçük bir P0.3 tetikçisi; visibility testi yazılmazsa regression riski yüksek.
-- **R3:** P1.3/P1.4 client-side parallel fetch performans sorunu çıkarırsa custom endpoint gerekecek.
-- **R4:** P2.3 URL değişimi bookmark kırabilir; 301 redirect planı net tutulmalı.
-- **R5:** Wizard R7'si gerçekten büyük — kullanıcı "hemen yapalım" derse R5 "R7 dalgasına aittir" diyerek uyaracak.
+### 10.5 Bulduğun ek riskler (REV-2)
+- P0.3 (49 dosya) hâlâ en ağır; a/b/c bölünmesi zorunlu ama aynı dalga içinde.
+- P3.2 Alembic migration'ı fresh-DB + rollback testi ister.
+- P3.3 wizard parity testi yazılmadan legacy wizard kaldırılmamalı.
+- Mobile/PWA yine scope dışı (ileride istenebilecekler).
 
 ### 10.6 Commit hash
-Bu commit sonrası güncellenecek.
+R5 REV-2 revizyon commit'i bu Edit dalgası sonrası.
 
 ### 10.7 Push durumu
-Worktree remote'a aktif. Main'e dokunulmuyor.
+Her commit sonrası `origin/worktree-product-redesign-benchmark` dalına push. Main'e dokunulmuyor.
 
 ---
 
@@ -591,24 +662,17 @@ CLAUDE.md:
 
 ---
 
-## 12. FAZ R6 — Onay Kapısı (KULLANICI SEÇECEK)
+## 12. Uygulama Başlangıcı (REV-2)
 
-Bu dalga R5 ile teslim edilir. R6 **kullanıcı seçmeden** başlatılmaz.
+R6 onay kapısı yok. R7 ayrı faz yok.
 
-Kullanıcı mesajı beklenir. Örnek talepler:
-- "P2.2 Analytics tabs uygulayalım"
-- "P0.1 + P1.2 ile başla (kullanıcı tanımlama altyapısı)"
-- "P0.3'ü alt-kalem olarak P0.3a ile başlat"
-- "Önce R4 preview dosyalarını yaz"
-- "R7 wizard unification'ı planla"
-
-R6 başladığında:
-- Ayrı commit dizisi
-- Her kalem ayrı commit
-- Her commit sonrası test sonuçları raporlanır
-- MEMORY.md güncellenir
-- Ana dalga içinde kalınır (worktree-product-redesign-benchmark), main'e dokunulmaz
+Bu revizyon commit'inden hemen sonra P0.1 ile implementasyon başlar:
+- P0.1 → P0.2 → P0.3a → P0.3b → P0.3c → P1.1 → P1.2 → P1.3 → P1.4 → P2.1 → P2.2 → P2.3 → P3.1 → P2.4 → P2.5 → P2.6 → P3.2 → P3.3 → final regresyon
+- Her kalem ayrı commit + push
+- Test + typecheck + build sonuçları her commit mesajına ve MEMORY.md'ye
+- Her kalem bitiminde 7 başlıklı Türkçe rapor
+- Main branch'e dokunulmaz
 
 ---
 
-**Doküman sonu. R6 kullanıcı onayını bekler.**
+**Doküman sonu. Uygulamaya geçiliyor.**
