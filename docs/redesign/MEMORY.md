@@ -58,8 +58,8 @@
 |---|---|---|---|---|
 | R0 | Worktree/branch setup | ✅ Tamam | `33783e1` (branch base) | — |
 | R1 | Delta-audit (post-F4 + multi-tenant) | ✅ Tamam | `689ffdb` | `docs/redesign/R1_repo_reality_delta_audit.md` |
-| R2 | Rakip analizi (hibrit: 4 derin + 5 tamamlayıcı) | 🟡 Sürüyor | — | `docs/redesign/R2_competitor_benchmark.md` |
-| R3 | Yeni IA önerisi | ⏳ Beklemede | — | `docs/redesign/R3_information_architecture.md` |
+| R2 | Rakip analizi (hibrit: 4 derin + 5 tamamlayıcı) | ✅ Tamam | (commit sonra güncellenecek) | `docs/redesign/R2_competitor_benchmark.md` |
+| R3 | Yeni IA önerisi | 🟡 Sürüyor | — | `docs/redesign/R3_information_architecture.md` |
 | R4 | Preview/prototype planı | ⏳ Beklemede | — | `docs/redesign/R4_preview_prototype_plan.md` |
 | R5 | Uygulama yol haritası | ⏳ Beklemede | — | `docs/redesign/R5_execution_roadmap.md` |
 | R6 | Onaylı implementasyon | 🔒 Onay kapısı | — | (kullanıcı seçecek parça) |
