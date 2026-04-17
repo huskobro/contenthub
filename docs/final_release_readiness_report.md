@@ -157,13 +157,14 @@ Fresh-DB'de seed sonrası:
 
 Rapor öncesi son commit: `e91fa02` (F2 merge readiness raporu).
 
-Bu fazın commit'i (docs-only): aşağıda commit atıldıktan sonra buraya
-gömülecek. Bkz. `git log --oneline -3` çıktısı.
+Bu fazın commit'i (docs-only): **`10670f6`** — `docs(phase-final): F3 release
+readiness gate + tracking drift repair`. Push edildi:
+`e91fa02..10670f6  worktree-audit+effective-settings-and-gemini-plan`.
 
 Commit zinciri (ana branch'ten şu ana kadar):
 
 ```
-F3 docs   docs(phase-final): F3 release readiness + tracking drift repair  (bu raporun commit'i)
+10670f6   docs(phase-final): F3 release readiness gate + tracking drift repair  (bu raporun commit'i)
 e91fa02   docs(phase-final): F2 closure — merge readiness report
 c76b4bb   docs(cleanup):     F2.5 UserPublishEntryPage deprecation notice
 ab42c02   feat(settings):    F2.4 groupOrder + labels sync
