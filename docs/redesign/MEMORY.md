@@ -60,9 +60,10 @@
 | R1 | Delta-audit (post-F4 + multi-tenant) | ✅ Tamam | `689ffdb` | `docs/redesign/R1_repo_reality_delta_audit.md` |
 | R2 | Rakip analizi (hibrit: 4 derin + 5 tamamlayıcı) | ✅ Tamam | `16c93bc` | `docs/redesign/R2_competitor_benchmark.md` |
 | R3 | Yeni IA önerisi | ✅ Tamam | `b7c77a3` | `docs/redesign/R3_information_architecture.md` |
-| R4 | Preview/prototype planı | ✅ Tamam | (commit sonra güncellenecek) | `docs/redesign/R4_preview_prototype_plan.md` |
-| R5 | Uygulama yol haritası | ⏳ Beklemede | — | `docs/redesign/R5_execution_roadmap.md` |
-| R6 | Onaylı implementasyon | 🔒 Onay kapısı | — | (kullanıcı seçecek parça) |
+| R4 | Preview/prototype planı | ✅ Tamam | `8746047` | `docs/redesign/R4_preview_prototype_plan.md` |
+| R5 | Uygulama yol haritası | ✅ Tamam | (commit sonra güncellenecek) | `docs/redesign/R5_execution_roadmap.md` |
+| R6 | Onaylı implementasyon | 🔒 Onay kapısı — kullanıcı seçecek | — | (R5'teki 14 kalemden 1-N tanesi) |
+| R7 | Wizard birleştirme (ayrı faz — ertelendi) | ⏳ R6 sonrasına ertelendi | — | `docs/redesign/R7_wizard_unification.md` (planlandı, yazılmadı) |
 
 ---
 
@@ -101,10 +102,16 @@
 - `7aaadbb` — MEMORY.md ilk sürüm
 - `16c93bc` — R2 competitor benchmark raporu
 - `b7c77a3` — R3 information architecture önerisi
+- `8746047` — R4 preview/prototype planı
+- (R5 SHA commit sonrası eklenecek) — R5 uygulama yol haritası + MEMORY güncellemesi
 
 ### 4.2 Yeni Dosyalar
 - `docs/redesign/MEMORY.md` (bu dosya)
 - `docs/redesign/R1_repo_reality_delta_audit.md`
+- `docs/redesign/R2_competitor_benchmark.md`
+- `docs/redesign/R3_information_architecture.md`
+- `docs/redesign/R4_preview_prototype_plan.md`
+- `docs/redesign/R5_execution_roadmap.md`
 
 ### 4.3 Değiştirilen Dosyalar
 - Yok (discovery-only)
@@ -176,3 +183,7 @@
 | Tarih | Faz | Değişiklik |
 |---|---|---|
 | 2026-04-17 | R1 kapanış | İlk sürüm — ilkeler + R1 özet + yapılan/yapılmayan listeleri |
+| 2026-04-17 | R2 kapanış | 9 platform × 7 kategori benchmark eklendi, 4-etiket tablosu, commit `16c93bc` |
+| 2026-04-17 | R3 kapanış | Admin nav 32→27, user 12→15, 6 duplicate karar, surface/wizard canon, commit `b7c77a3` |
+| 2026-04-17 | R4 kapanış | 4 yeni component + 5 sayfa evrim planı, preview dosya konumu, commit `8746047` |
+| 2026-04-17 | R5 kapanış | 14 kalem / 4 kademe (P0/P1/P2/P3) yol haritası, effort/risk matrisi, R7 wizard ertelendi, R6 onay kapısı açık |
