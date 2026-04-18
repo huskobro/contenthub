@@ -1,6 +1,6 @@
 # ContentHub — Deferred Backlog (Ertelenen İşler)
 
-> **Son güncelleme:** 2026-04-18
+> **Son güncelleme:** 2026-04-18 (v2 — kod taraması ile doğrulandı)
 > **Kaynak:** Tüm `docs/` dokümanları + `backend/app/` + `frontend/src/` kod taraması
 > **Amaç:** Projedeki tüm "defer edilmiş / ileride yapılacak / kapsam dışı" kalemlerin tek takip noktası.
 > **Kural:** Bir kalem tamamlandığında `✅` işareti ile kapanır + tarih eklenir. Yeni erteleme geldiğinde buraya eklenir.
@@ -19,10 +19,10 @@
 
 | # | Öncelik | Durum | Konu | Neden Ertelendi | Önkoşul | Kaynak |
 |---|---|---|---|---|---|---|
-| C-1 | 🔴 | ⏳ | **Remotion render pipeline bağlantısı** — gerçek video üretimi yok | MVP altyapı tamamlanmadan kapsam dışı bırakıldı | Composition contract + executor wiring | `docs/testing/test-report-phase-322-324.md:284` |
-| C-2 | 🔴 | ⏳ | **AI/TTS provider gerçek bağlantısı** — LLM + TTS API çağrısı yok | Provider wiring ayrı faz olarak planlandı | OpenAI/Kie.ai key + TTS adapter | `backend/app/main.py:256`, `docs/full-auto-v1-closure.md` |
-| C-3 | 🔴 | ⏳ | **YouTube publish adapter** — `full_auto/service.py` her zaman `draft` bırakıyor | Faz 1 spec: "v1 ALWAYS draft; no auto-publish" | YouTube OAuth + publish executor | `backend/app/full_auto/service.py:13,424` |
-| C-4 | 🔴 | ⏳ | **Analytics API gerçek veri** — tüm analytics sayfaları backend'e bağlı ama YouTube retention/watch-time yok | YouTube API entegrasyonu ertelendi | YouTube Analytics API key | `docs/release-notes-v1.md:74`, `backend/app/analytics/youtube_analytics_service.py` |
+| C-1 | 🔴 | ✅ 2026-04-18 | **Remotion render pipeline bağlantısı** | `npx remotion render` gerçek subprocess olarak implement edilmiş | — | `backend/app/modules/standard_video/executors/render.py:895` |
+| C-2 | 🔴 | ✅ 2026-04-18 | **AI/TTS provider gerçek bağlantısı** | EdgeTTS (`edge_tts.Communicate`) + DubVoice (`dubvoice_provider.py:203`) gerçek API'ye bağlı | — | `backend/app/providers/tts/edge_tts_provider.py:97`, `dubvoice_provider.py:203` |
+| C-3 | 🔴 | 🔶 Kısmen | **YouTube publish adapter** — `publish/executor.py` hazır, gerçek `adapter.upload()` zinciri var; ancak `full_auto/service.py` kasıtlı olarak "v1 ALWAYS draft" politikasını koruyor | Full-auto auto-publish policy bilinçli olarak askıda (v1 spec) | Auto-publish policy kaldırılması gerektiğinde açılır | `backend/app/publish/executor.py:247`, `full_auto/service.py:424` |
+| C-4 | 🔴 | ✅ 2026-04-18 | **YouTube Analytics retention/watch-time** | `YouTubeAnalyticsClient` gerçek `youtubeanalytics.googleapis.com/v2/reports` endpoint'ine bağlı; `averageViewDuration`, `averageViewPercentage` dahil | — | `backend/app/publish/youtube/analytics_client.py:44,296` |
 
 ---
 
@@ -34,7 +34,7 @@
 | P-2 | 🟠 | ⏳ | **`module.id.enabled` runtime enforcement** — 5 module toggle Settings Registry'de var ama UI hiçbirini gizlemiyor | Declarative observability fazında kasıtlı bırakıldı | Settings resolver read-through + UI gate | `docs/redesign/AUDIT_MERGE_READY.md:142` |
 | P-3 | 🟠 | ⏳ | **Token pre-flight "Manuel Yayınla" butonunda** — scheduler'da var ama manuel butonda yok | Gate 4 kapanışında ertelendi | `token_preflight.py` UI entegrasyonu | `docs/gate4-publish-closure.md:151` |
 | P-4 | 🟡 | ⏳ | **Bulk operasyon → SSE bağlantısı** — bulk aksiyon endpoint'leri var, SSE event'leri yok | Gate 4'te düşük öncelik | SSE event namespace + frontend handler | `docs/gate4-publish-closure.md:151` |
-| P-5 | 🟡 | ⏳ | **Otomasyon executor** — politikalar tanımlanabilir ama otomatik çalıştırma yok | Release notes v1'de "Deferred" | Full-auto scheduler + event hook | `docs/release-notes-v1.md:70` |
+| P-5 | 🟡 | 🔶 Kısmen | **Otomasyon executor** — `full_auto/service.py` gerçekten `start_production` + `JobDispatcher` üzerinden job çalıştırıyor; ancak `on_job_completed()` auto-publish yapmıyor (v1 ALWAYS draft) | Auto-publish policy kasıtlı askıda | C-3 ile birlikte çözülür | `backend/app/full_auto/service.py:362,424` |
 | P-6 | 🟡 | ⏳ | **Playlist engagement sync** — CRUD mevcut, YouTube API senkronizasyon tam değil | Release notes v1'de "Deferred" | YouTube API + engagement advanced router | `docs/release-notes-v1.md:71` |
 | P-7 | 🟡 | ⏳ | **YouTube OAuth admin guard** — publish hardening'de ele alınacak | Backlog | Auth guard + admin role check | `docs/release-notes-v1.md:76` |
 
@@ -44,7 +44,7 @@
 
 | # | Öncelik | Durum | Konu | Neden Ertelendi | Önkoşul | Kaynak |
 |---|---|---|---|---|---|---|
-| U-1 | 🟠 | ⏳ | **P3.3 kalan 3 wizard göçü** — `NewsBulletinWizardPage` admin (1409 LoC) + `CreateVideoWizardPage` + `CreateProductReviewWizardPage` | REV-2 dalgası kapanırken Phase AM'e ertelendi | `AdminWizardShell` adapter + test coverage | `docs/redesign/AUDIT_MERGE_READY.md:243` |
+| U-1 | 🟠 | 🔶 Kısmen | **P3.3 wizard göçü** — 3 dosya (NewsBulletinWizardPage, CreateVideoWizardPage, CreateProductReviewWizardPage) implement edilmiş; ancak `AdminWizardShell`/`UserWizardShell` adapter'ına göç yapılmamış, hepsi doğrudan `WizardShell`'e bağlı | REV-2'de ertelendi | `AdminWizardShell` wrap + smoke test | `frontend/src/pages/admin/NewsBulletinWizardPage.tsx` |
 | U-2 | 🟠 | ⏳ | **Surface canon kararı** — Atrium / Bridge / Canvas / Horizon hangisi canon belirsiz | F3/F4 zincirinde ertelendi, redesign R3'te karar verilmeli | IA kararı + migration plan | `docs/redesign/R1_repo_reality_delta_audit.md:237` |
 | U-3 | 🟡 | ⏳ | **Visual automation flow builder** (`@xyflow/react`) — `UserAutomationPage`'de 5-dropdown mevcut, sürükle-bırak akış yok | `@xyflow/react` bağımlılık + 5 yeni tablo gerektirir | `@xyflow/react` + `automation_flow_nodes` tablo | `docs/redesign/R4_preview_prototype_plan.md:605`, `docs/phase_ak_effective_settings_and_gemini_plan_audit.md:180` |
 | U-4 | 🟡 | ⏳ | **Theme persistence** — localStorage'da kalıyor, backend DB'ye (user settings tablosu) taşınmadı | Post-R6'ya ertelendi | `user_settings` tablosu + migration | `docs/project_memory_and_decision_ledger.md:116` |
@@ -63,7 +63,7 @@
 
 | # | Öncelik | Durum | Konu | Neden Ertelendi | Önkoşul | Kaynak |
 |---|---|---|---|---|---|---|
-| B-1 | 🟠 | ⏳ | **Kanal re-import endpoint** — `POST /channel-profiles/{id}/re-import` yok | Phase X kapanışında ertelendi | Channel metadata fetch refactor | `docs/phase-x-closure.md:155`, `backend/app/channels/` |
+| B-1 | 🟠 | ✅ 2026-04-18 | **Kanal re-import endpoint** | `POST /channel-profiles/{id}/reimport` Phase AD'de implement edilmiş | — | `backend/app/channels/router.py:179` |
 | B-2 | 🟠 | ⏳ | **Job retry policy** — `pipeline.py:20`'de "Retry steps (retry policy is a later phase)" notu var | Ayrı faz olarak tasarlandı | Retry backoff policy + settings key | `backend/app/jobs/pipeline.py:20` |
 | B-3 | 🟠 | ⏳ | **`workspace_root` Settings Registry'e bağlanması** — şu an hardcoded `backend/data/workspace/` | `jobs/workspace.py:28`'de "Configurable at runtime (set from Settings Registry in a later phase)" | `KNOWN_SETTINGS` key + resolver wiring | `backend/app/jobs/workspace.py:28` |
 | B-4 | 🟡 | ⏳ | **Template linkage** — `jobs.template_id`, `standard_videos.template_id`, `news_bulletins.template_id` nullable; template sistemi bağlantısı tam değil | Model doc: "will reference a template in a later phase" | Template engine + version locking | `backend/app/db/models.py:213,361,747` |
@@ -76,7 +76,7 @@
 | B-11 | 🟡 | ⏳ | **Subtitle/composition preview üretimi** — `composition_props` / subtitle preview artifact yok | Phase AB'de "honest deferred" | Composition executor + preview artifact | `docs/phase-ab-closure.md:214`, `docs/tracking/STATUS.md:278` |
 | B-12 | 🟡 | ⏳ | **Non-YouTube platform adapter** — Instagram, TikTok vb. adapter yok | CLAUDE.md "Design adapters for later" | Adapter registry + platform schema | `docs/CLAUDE.md:312` |
 | B-13 | ⚪ | ⏳ | **Orphan job otomatik onarım scripti** | Phase X kapanışında ertelendi | Job state reconciler | `docs/phase-x-closure.md:158` |
-| B-14 | ⚪ | ⏳ | **Auth / rol zorlama** — kasıtlı olarak henüz yok (tek kullanıcı lokal) | CLAUDE.md "local-first MVP" | JWT + multi-user model | `docs/testing/test-report-phase-50.md:42` |
+| B-14 | ⚪ | ✅ 2026-04-18 | **Auth / rol zorlama** | JWT Bearer guard (`HTTPBearer`), `require_admin`, `require_user` tam implement; her router kendi `Depends()` ile koruluyor | — | `backend/app/auth/dependencies.py:27,43,82` |
 | B-15 | ⚪ | ⏳ | **Audit trail tam kapsam** — temel izlenebilirlik var, tam audit trail henüz değil | M9/M10 kapsamına alındı | Audit service genişletme | `docs/tracking/CHANGELOG.md:1505` |
 
 ---
@@ -117,7 +117,7 @@
 
 | # | Öncelik | Durum | Konu | Neden Ertelendi | Önkoşul | Kaynak |
 |---|---|---|---|---|---|---|
-| T-1 | 🟠 | ⏳ | **22 smoke test güncellenmeli** — pre-existing failure listesi (MEMORY) | Dalga yan etkisi | Smoke test sabitlerini yeni endpoint/bileşenlere uyarla | `memory/project_preexisting_test_failures.md` |
+| T-1 | 🟠 | ⏳ | **Smoke test güncelliği** — `frontend/src/tests/` altında 213 dosya var; pre-existing failure listesi güncel mi doğrulanmamış (eski not "22 smoke test" diyordu, gerçek sayı çok daha fazla) | Dalga yan etkisi + organik büyüme | Pre-existing failure listesini güncelle | `memory/project_preexisting_test_failures.md` |
 | T-2 | 🟡 | ⏳ | **W-01 AsyncMock pattern** — `test_m2_c6_dispatcher_integration` mock uyarısı | M8 Hardening'e bırakıldı | pytest-asyncio güncelleme | `docs/tracking/CHANGELOG.md:449` |
 | T-3 | 🟡 | ⏳ | **W-02/W-03 aiosqlite bağlantı uyarıları** | M8 Hardening'e bırakıldı | aiosqlite connection teardown fix | `docs/tracking/CHANGELOG.md:463` |
 | T-4 | 🟡 | ⏳ | **E2E Playwright testleri** — publish flow, wizard akışı | Gate 4 kapanışında ertelendi | Playwright kurulumu + CI entegrasyonu | `docs/gate4-publish-closure.md:157` |
@@ -143,3 +143,4 @@
 | Tarih | Kim | Ne Eklendi / Değiştirildi |
 |---|---|---|
 | 2026-04-18 | Claude | Dosya oluşturuldu — tüm `docs/` + `backend/app/` + `frontend/src/` taramasından derlendi |
+| 2026-04-18 | Claude | v2 — Kod taraması ile doğrulama yapıldı: C-1, C-2, C-4, B-1, B-14 kapatıldı (✅); C-3, P-5, U-1 "kısmen yapılmış" (🔶) olarak güncellendi; T-1 sayı güncellendi |

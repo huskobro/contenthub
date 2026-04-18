@@ -1,108 +1,112 @@
 # ContentHub v1.0 — Rollout Checklist
 
-Bu checklist, sistemi production benzeri ortamda calistirmadan once tamamlanmasi gereken adimlari kapsar.
+**Güncellendi:** 2026-04-18
+
+Bu checklist, sistemi production benzeri ortamda çalıştırmadan önce tamamlanması gereken adımları kapsar.
 
 ---
 
-## A. Ortam Hazirligi
+## A. Ortam Hazırlığı
 
-- [ ] Python 3.9+ kurulu
+- [ ] Python 3.11+ kurulu
 - [ ] Node.js 18+ kurulu
-- [ ] `backend/.venv` olusturuldu ve bagimliliklar yuklendi
-- [ ] `frontend/node_modules` yuklendi (`npm install`)
-- [ ] `backend/.env` dosyasi olusturuldu (`.env.example`'dan kopyalanarak)
-- [ ] `CONTENTHUB_JWT_SECRET` set edildi (benzersiz, uzun secret)
-- [ ] `CONTENTHUB_KIE_AI_API_KEY` set edildi
-- [ ] `CONTENTHUB_PEXELS_API_KEY` set edildi
+- [ ] `backend/.venv` oluşturuldu ve bağımlılıklar yüklendi (`pip install -e .`)
+- [ ] `frontend/node_modules` yüklendi (`npm install`)
+- [ ] `backend/.env` dosyası oluşturuldu (`.env.example`'dan kopyalanarak)
+- [ ] `CONTENTHUB_JWT_SECRET` set edildi (benzersiz, uzun secret — **zorunlu**)
 - [ ] `CONTENTHUB_DEBUG=false` (production)
+- [ ] TTS için `CONTENTHUB_DUBVOICE_API_KEY` **veya** EdgeTTS kullanılacaksa key gereksiz
+- [ ] LLM için `CONTENTHUB_KIE_AI_API_KEY` veya `CONTENTHUB_OPENAI_API_KEY`
+- [ ] Görseller için `CONTENTHUB_PEXELS_API_KEY` (opsiyonel, Pixabay fallback var)
+- [ ] YouTube için `CONTENTHUB_YOUTUBE_CLIENT_ID` + `CONTENTHUB_YOUTUBE_CLIENT_SECRET` (opsiyonel)
 
-## B. Veritabani
+## B. Veritabanı
 
-- [ ] Migration calisti: `.venv/bin/python -m alembic upgrade head`
-- [ ] Tek HEAD var: `.venv/bin/python -m alembic current`
-- [ ] `backend/data/contenthub.db` dosyasi olusturuldu
-- [ ] Startup sonrasi seed'ler calisti (log'da dogrulanir)
+- [ ] Migration çalıştı: `backend/.venv/bin/python -m alembic upgrade head`
+- [ ] Tek HEAD var: `backend/.venv/bin/python -m alembic current` → `phase_al_001` (head)
+- [ ] `backend/data/contenthub.db` dosyası oluşturuldu
+- [ ] Startup sonrası seed'ler çalıştı (log'da doğrulanır: `settings seed`, `auth seed`)
+- [ ] `backend/data/contenthub.db` `.gitignore`'da — commit edilmez
 
-## C. Baslangic Dogrulamasi
+## C. Başlangıç Doğrulaması
 
-- [ ] `./start.sh` ile sistem baslatildi
-- [ ] Backend `http://localhost:8000` adresinde erisilebilir
-- [ ] Frontend `http://localhost:5173` adresinde erisilebilir
-- [ ] Health check: `curl http://localhost:8000/api/v1/health` → 200
+- [ ] Backend başlatıldı: `uvicorn app.main:app --reload --port 8000` (venv içinden)
+- [ ] Frontend başlatıldı: `npm run dev`
+- [ ] Backend `http://localhost:8000` adresinde erişilebilir
+- [ ] Frontend `http://localhost:5173` adresinde erişilebilir
+- [ ] Health check: `curl http://localhost:8000/api/v1/health` → `{"status": "ok", "venv_active": true, "db_wal_mode": "wal"}`
 
-## D. Admin Girisi
+## D. Admin Girişi
 
-- [ ] `admin@contenthub.local` ile giris yapildi
-- [ ] Admin dashboard yuklendi (`/admin`)
-- [ ] Ayarlar sayfasinda API anahtarlari gorulebilir
+- [ ] `admin@contenthub.local` ile giriş yapıldı (şifre: `.env`'deki `CONTENTHUB_ADMIN_PASSWORD`)
+- [ ] Admin dashboard yüklendi (`/admin`)
+- [ ] Ayarlar sayfasında API anahtarları görülebilir (`/admin/settings`)
+- [ ] Settings Registry: 204 ayar / 16 grup görünüyor
 
-## E. Icerik Olusturma Smoke Test
+## E. İçerik Oluşturma Smoke Test
 
-- [ ] Standard Video wizard'i baslatildi (`/user/create/video`)
-- [ ] Konu, dil, sure parametreleri girildi
-- [ ] Is olusturuldu ve kuyruge alindi
-- [ ] Is adim adim ilerledi (veya hata mesaji dondu)
-- [ ] Haber Bulteni wizard'i baslatildi (`/user/create/bulletin`)
+- [ ] Standard Video wizard'ı başlatıldı
+- [ ] Konu, dil, süre parametreleri girildi
+- [ ] İş oluşturuldu ve kuyruğa alındı
+- [ ] İş adım adım ilerledi (veya hata mesajı döndü)
+- [ ] Haber Bülteni wizard'ı başlatıldı
+- [ ] Ürün İnceleme wizard'ı başlatıldı (URL ile)
 
-## F. Yayin Akisi Smoke Test
+## F. Yayın Akışı Smoke Test
 
-- [ ] Yayin Merkezi'nde draft kayit gorunuyor
-- [ ] Draft → pending_review gecisi calisiyor
-- [ ] Review → approved gecisi calisiyor
-- [ ] (YouTube baglantisi varsa) Yayin tetikleme calisiyor
+- [ ] Yayın Merkezi'nde draft kayıt görünüyor
+- [ ] Draft → pending_review geçişi çalışıyor
+- [ ] Review → approved geçişi çalışıyor
+- [ ] (YouTube bağlantısı varsa) Yayın tetikleme çalışıyor
 
-## G. Etkilesim Smoke Test
+## G. Bağlantı Merkezi Smoke Test
 
-- [ ] Yorumlar sayfasi yukleniyor (`/user/comments`)
-- [ ] Playlist sayfasi yukleniyor (`/user/playlists`)
-- [ ] Gonderiler sayfasi yukleniyor (`/user/posts`)
-- [ ] Sinirlilik banner'lari gorunuyor (Posts API, Playlist sync)
+- [ ] Bağlantı Merkezi sayfası yükleniyor (`/admin/connections`)
+- [ ] Yetenek matrisi görünüyor
+- [ ] (YouTube OAuth yapılandırıldıysa) Bağlantı durumu kontrol edildi
 
-## H. Baglanti Merkezi Smoke Test
+## H. Inbox / Takvim / Bildirim Smoke Test
 
-- [ ] Baglanti Merkezi sayfasi yukleniyor (`/admin/connections`)
-- [ ] Yetenek matrisi gorunuyor
-- [ ] (YouTube OAuth yapilandirildiysa) Baglanti durumu kontrol edildi
+- [ ] Operations Inbox yükleniyor
+- [ ] Calendar yükleniyor (3 view: liste / hafta / ay)
+- [ ] Bildirim merkezi açılıyor ve kapanıyor
+- [ ] SSE bağlantısı kuruldu (tarayıcı konsolunda doğrulanır)
 
-## I. Inbox / Takvim / Bildirim Smoke Test
+## I. Auth / Rol Smoke Test
 
-- [ ] Operations Inbox yukleniyor (`/user/inbox`)
-- [ ] Takvim yukleniyor (`/user/calendar`)
-- [ ] Bildirim merkezi (cil simgesi) aciliyor ve kapaniyor
-- [ ] SSE baglantisi kuruldu (tarayici konsolunda dogrulanir)
+- [ ] Normal kullanıcı oluşturuldu
+- [ ] Normal kullanıcı admin sayfasına erişemiyor (403)
+- [ ] Auth olmadan API çağrıları 401 dönüyor
+- [ ] Token refresh çalışıyor
 
-## J. Auth / Rol Smoke Test
+## J. Yedekleme
 
-- [ ] Normal kullanici olusturuldu
-- [ ] Normal kullanici admin sayfasina erisamiyor (403)
-- [ ] Auth olmadan API cagirilari 401 donuyor
-- [ ] Token refresh calisiyor (60 dk sonrasi)
+- [ ] `backend/data/contenthub.db` yedeği alındı
+- [ ] `backend/workspace/` yedeği alındı
+- [ ] Yedek dosyalar ayrı konumda saklanıyor
 
-## K. Yedekleme
+## K. Rollback Planı
 
-- [ ] `backend/data/contenthub.db` yedegi alindi
-- [ ] `backend/workspace/` yedegi alindi
-- [ ] Yedek dosyalar ayri konumda saklanıyor
-
-## L. Rollback Plani
-
-- [ ] Onceki veritabani yedegi mevcut
-- [ ] Git tag veya commit hash kaydedildi
-- [ ] Geri donme proseduru biliniyor:
+- [ ] Önceki veritabanı yedeği mevcut
+- [ ] Git tag veya commit hash kaydedildi (`git log --oneline -5`)
+- [ ] Geri dönme prosedürü biliniyor:
   1. Sistemi durdur
-  2. DB yedegini geri yukle
-  3. `git checkout <onceki-commit>`
-  4. Sistemi yeniden baslat
+  2. DB yedeğini geri yükle
+  3. `git checkout <önceki-commit>`
+  4. `backend/.venv/bin/python -m alembic upgrade head`
+  5. Sistemi yeniden başlat
 
 ---
 
-## Sonuc
+## Sonuç
 
-Tum maddeler isaretlendiyse, sistem production kullanima hazirdir.
+Tüm maddeler işaretlendiyse, sistem kullanıma hazırdır.
 
-**Not:** Ilk gunde izlenmesi onerilen metrikler:
+**İzlenmesi önerilen metrikler:**
 - Job success rate (hedef: >90%)
 - Publish success rate (hedef: >95%)
 - API response time (hedef: <500ms p95)
 - Error rate (hedef: <5%)
 - SSE connection stability
+
+**Açık erteleme listesi:** `docs/tracking/DEFERRED_BACKLOG.md`

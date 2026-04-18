@@ -1,104 +1,118 @@
 # ContentHub v1.0 — Release Notes
 
-**Tarih:** 2026-04-09
-**Tip:** MVP Launch Release
+**Tarih:** 2026-04-18 (güncellendi; ilk yayın: 2026-04-09)
+**Tip:** MVP Launch Release — REV-2 dalgası dahil
 
 ---
 
-## Ozet
+## Özet
 
-ContentHub, localhost-first modular icerik uretim ve yayinlama platformudur. Bu surum, tek makine uzerinde calisan tam islevli bir MVP'dir.
+ContentHub, localhost-first modüler içerik üretim ve yayınlama platformudur. Bu sürüm, tek makine üzerinde çalışan tam işlevli bir MVP'dir. REV-2 dalgası (19 P-item) 2026-04-18'de main'e merge edildi.
 
 ---
 
-## Icerik Modulleri
+## İçerik Modülleri
 
-### Standard Video
-- Konu bazli otomatik video uretimi
-- Pipeline: Script → Metadata → TTS → Altyazi → Gorsel → Kompozisyon → Render
-- Wizard ve ileri mod destegi
+### Standard Video (`standard_video`)
+- Konu bazlı otomatik video üretimi
+- Pipeline: Script (LLM) → Metadata → TTS → Altyazı → Görsel → Kompozisyon → Render
+- Wizard + ileri mod desteği
 
-### Haber Bulteni (News Bulletin)
-- RSS/URL/API kaynaklardan haber toplama
-- Dedupe korumasi (kullanilmis haber kaydi)
-- Otomatik bulten scripti ve TTS
+### Haber Bülteni (`news_bulletin`)
+- RSS/URL/API kaynaklardan gerçek haber toplama
+- Dedupe koruması (hard + soft)
+- Otomatik bülten script'i + TTS + render
+
+### Ürün İnceleme (`product_review`)
+- URL scraping (parser chain: site-specific + generic fallback)
+- SSRF guard + robots.txt uyumu
+- Tam pipeline: scrape → script → TTS → render → publish
 
 ---
 
 ## Admin Paneli
 
-- **Ayarlar Kaydi:** 100+ yapilandirilabilir ayar, 15 grup
-- **Gorunurluk Motoru:** Sayfa, widget, alan bazli gorunurluk kontrolu
-- **Wizard Yonetimi:** Modul bazli wizard yapilandirma
-- **Is Motoru:** Kuyruk, adim takibi, ETA, retry, recovery
-- **Yayin Merkezi:** draft → review → approved → publishing → published
-- **Bildirim Merkezi:** Gercek zamanli SSE + backend notification
-- **Baglanti Merkezi:** YouTube OAuth, yetenek matrisi
-- **Analytics:** Platform, icerik, operasyon, yayin metrikleri
-- **Denetim Logu:** Tum degisikliklerin kaydi
+- **Settings Registry:** 204 yapılandırılabilir ayar, 16 grup
+- **Visibility Engine:** Sayfa, widget, alan bazlı görünürlük kontrolü
+- **Wizard Yönetimi:** Modül bazlı wizard yapılandırma + `AdminWizardShell` / `UserWizardShell`
+- **İş Motoru:** Kuyruk, adım takibi, ETA, retry, recovery
+- **Yayın Merkezi:** draft → review → approved → scheduled → published
+- **Bildirim Merkezi:** Gerçek zamanlı SSE + backend notification
+- **Bağlantı Merkezi:** YouTube OAuth, yetenek matrisi
+- **Analytics:** Platform, içerik, operasyon, yayın metrikleri (gerçek veri)
+- **Denetim Logu:** Tüm değişikliklerin kaydı
+- **Prompt Assembly Engine:** Block-tabanlı, Settings Registry entegre
 
 ---
 
-## Kullanici Paneli
+## Kullanıcı Paneli
 
-- Dashboard, projeler, kanallar
-- Video ve bulten olusturma wizard'lari
-- Yorum, playlist, gonderi yonetimi
-- Kisisel analitik ve kanal performansi
-- Operations inbox ve takvim
-- Platform baglantilari
+- Dashboard (Özet + son işler + otomasyonlar)
+- Content Calendar (3 view: liste / hafta / ay)
+- Projeler listesi + proje detay
+- Video, bülten, ürün inceleme oluşturma wizard'ları
+- Yayın sayfası + kişisel işler
+- Kişisel analitik ve kanal performansı
+- Otomasyon yönetimi + Approver ataması
+- Platform bağlantıları
 
 ---
 
-## Teknik Ozellikler
+## Teknik Özellikler
 
-- **Backend:** FastAPI + SQLite WAL + Alembic (44 migration)
-- **Frontend:** React + Vite + TypeScript + Zustand + React Query
-- **Auth:** JWT (access + refresh token), role-based (admin/user)
-- **Gercek zaman:** SSE
-- **Render:** Remotion
-- **TTS:** Microsoft Edge TTS (ucretsiz)
+- **Backend:** FastAPI + SQLite WAL + Alembic (44+ migration)
+- **Frontend:** React + Vite + TypeScript + Zustand + React Query v5
+- **Auth:** JWT (access + refresh token), role-based (admin/user) — `require_admin` / `require_user` guards
+- **Gerçek Zaman:** SSE
+- **Render:** Remotion (`npx remotion render` gerçek subprocess)
+- **TTS:** Microsoft Edge TTS (ücretsiz) + DubVoice (ElevenLabs sarmalı)
 - **LLM:** Kie.ai (Gemini) + OpenAI uyumlu fallback
-- **Gorseller:** Pexels + Pixabay fallback
+- **Görseller:** Pexels + Pixabay fallback
+- **Kanal import:** `POST /channel-profiles/{id}/reimport` (Phase AD)
 
 ---
 
-## Bilinen Sinirlamalar
+## Test Durumu (2026-04-18)
+
+| Kontrol | Sonuç |
+|---------|-------|
+| Backend pytest (geniş) | ✅ 2547/2547 PASS |
+| Frontend vitest (full) | ✅ 2670/2670 PASS |
+| TypeScript `tsc --noEmit` | ✅ exit 0 |
+| Vite build | ✅ exit 0 |
+| Alembic fresh-DB | ✅ 10/10 PASS |
+
+---
+
+## Bilinen Sınırlamalar
 
 | Alan | Durum | Not |
 |------|-------|-----|
-| Otomasyon executor | Deferred | Politikalar tanimlanabilir, otomatik calistirma yok |
-| Playlist engagement sync | Partial | CRUD mevcut, tam entegrasyon deferred |
-| Community Posts API | Kisitli | YouTube API kisitlamasi |
-| Kanal detay sayfasi | Stub | Kanal listesinden bilgi gorulebilir |
-| Analytics retention/watch-time | Deferred | YouTube API entegrasyonu henuz yok |
-| SSE auth | Yok | Localhost-only MVP karari |
-| YouTube OAuth admin guard | Backlog | Publish hardening'de |
-| Render timeout | Sabit (600s) | Ayarlardan override yok |
-| Multi-tenant | Yok | Tek makine MVP |
+| Full-auto publish | Kasıtlı draft | `full_auto/service.py` v1 ALWAYS draft — auto-publish policy Phase AM'de |
+| Approver enforcement | Kısmen | `approver_user_id` kolonu var; state machine zorlama Phase AM'de |
+| `module.id.enabled` runtime | Declarative | UI toggle enforcement sonraki fazda |
+| 3 wizard AdminWizardShell göçü | Kısmen | Dosyalar var; adapter wrap Phase AM'de |
+| Vite bundle code-split | Ertelendi | 1.59 MB tek chunk; localhost-first için bloke değil |
+| Theme persistence (DB'ye) | Ertelendi | Şu an localStorage; DB'ye taşıma Post-R6 |
+| Otomasyon visual flow builder | Ertelendi | `@xyflow/react` + yeni tablo gerekli |
+| Semantic dedupe (haber) | Ertelendi | Hard+soft var; embedding tabanlı CLAUDE.md "can come later" |
+| Multi-tenant | Yok | Tek makine MVP — kalıcı CLAUDE.md kuralı |
+| SSE auth | Yok | Localhost-only MVP kararı |
+| YouTube Analytics admin guard | Backlog | Publish hardening'de |
+
+Tüm açık kalemler: `docs/tracking/DEFERRED_BACKLOG.md`
 
 ---
 
-## Test Durumu
-
-| Kontrol | Sonuc |
-|---------|-------|
-| Backend testleri | 1727 passed |
-| TypeScript | 0 hata |
-| Vite build | Clean |
-| Sprint 4 polish testleri | 56/56 passed |
-| Sprint 3 release validation | 34/34 passed |
-
----
-
-## Upgrade Notlari
-
-Ilk surum oldugu icin upgrade yolu yoktur. Gelecek surumler icin:
+## Upgrade
 
 ```bash
-git pull
-cd backend && source .venv/bin/activate
+git pull origin main
+cd backend
+source .venv/bin/activate
 pip install -e .
 .venv/bin/python -m alembic upgrade head
-cd ../frontend && npm install && npm run build
+cd ../frontend
+npm install
+npm run build
 ```
