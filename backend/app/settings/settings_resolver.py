@@ -966,6 +966,32 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "wired_to": "frontend.PublishCenterPage localStorage bridge",
     },
 
+    # Redesign REV-2 / P2.6 — Automation flow visual preview.
+    # Checkpoint matrisi (5 dropdown) uzerine saf SVG akis onizlemesi ekler:
+    # Kaynak Tarama -> Taslak -> Render -> Yayin -> Yayin Sonrasi. Her kutu
+    # mode'a gore renk (AUTO yesil / ONAY sari / KAPALI gri). Drag-drop yok,
+    # pasif gorsel. @xyflow/react gibi agir dep eklenmedi (MEMORY §5.1).
+    "user.automation.flow_visual.enabled": {
+        "group": "automation",
+        "type": "boolean",
+        "label": "Otomasyon Akis Gorseli",
+        "help_text": (
+            "UserAutomationPage'deki checkpoint matrisinin ustune SVG "
+            "akis onizlemesinin eklenip eklenmeyecegi. Kapali ise yalniz "
+            "mevcut matris/dropdown gosterilir. Admin-only kill switch: "
+            "kullanici override'i yok, sure-idam ile tum kullanicilarda "
+            "kapatilabilir (orn. performans, mobil goster/gizle karari)."
+        ),
+        "module_scope": "automation",
+        "env_var": None,
+        "builtin_default": True,
+        "user_override_allowed": False,
+        "visible_to_user": False,
+        "read_only_for_user": True,
+        "wired": True,
+        "wired_to": "frontend.UserAutomationPage flow visual guard",
+    },
+
     # --- UI Surface Registry (Faz 1 — Infrastructure) ---
     # Surface Registry altyapisinin kill-switch'i. Default: false (altyapi kapali,
     # legacy/horizon davranisi aynen korunur). true yapildiginda resolver

@@ -19,6 +19,7 @@ import {
 } from "../../api/automationApi";
 import { api } from "../../api/client";
 import { cn } from "../../lib/cn";
+import { AutomationFlowSvg } from "../../components/automation/AutomationFlowSvg";
 
 // ---------------------------------------------------------------------------
 // Channel profile fetcher (reuse existing)
@@ -217,6 +218,9 @@ export function UserAutomationPage() {
               {selectedPolicy.is_enabled ? "Aktif" : "Devre Disi"}
             </button>
           </div>
+
+          {/* Flow visual preview (P2.6) — pasif SVG onizleme, matris form her zaman korunur */}
+          <AutomationFlowSvg policy={selectedPolicy} />
 
           {/* Checkpoint matrix */}
           <div className="space-y-3">
