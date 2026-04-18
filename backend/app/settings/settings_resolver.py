@@ -891,6 +891,32 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "wired_to": "frontend.date_formatting",
     },
 
+    # Redesign REV-2 / P2.4 — Calendar default view.
+    # Runtime tarafi localStorage'dan (v=1) ilk deger okur; kullanici
+    # degisiklikleri lokal persist eder. Backend'e read-through senkron yok —
+    # tercihi gorunur kilmak ve dokumante etmek amacli kayit.
+    "user.calendar.default_view": {
+        "group": "ui",
+        "type": "string",
+        "label": "Takvim Varsayilan Gorunumu",
+        "help_text": (
+            "Takvim sayfasinin (admin + user) acilista gosterilecek varsayilan "
+            "gorunumu: 'list' (kronolojik liste), 'week' (haftalik izgara), "
+            "'month' (aylik izgara). Kullanici toggle ile degistirebilir; "
+            "secimi tarayici lokalinde saklanir (localStorage anahtari "
+            "'calendar.default_view', versiyon=1). Admin tarafinda da ayni "
+            "tercih kullanilir cunku admin sayfasi ayni body'yi wrap ediyor."
+        ),
+        "module_scope": "calendar",
+        "env_var": None,
+        "builtin_default": "month",
+        "user_override_allowed": True,
+        "visible_to_user": True,
+        "read_only_for_user": False,
+        "wired": True,
+        "wired_to": "frontend.UserCalendarPage localStorage bridge",
+    },
+
     # --- UI Surface Registry (Faz 1 — Infrastructure) ---
     # Surface Registry altyapisinin kill-switch'i. Default: false (altyapi kapali,
     # legacy/horizon davranisi aynen korunur). true yapildiginda resolver
