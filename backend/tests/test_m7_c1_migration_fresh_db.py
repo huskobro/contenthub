@@ -41,11 +41,15 @@ BACKEND_DIR = Path(__file__).resolve().parents[1]
 # phase_ac_001 forward-only reconciliation migration'dir (live DB drift fix);
 # downgrade'i bilinçli olarak NotImplementedError atar.
 # phase_ag_001 reversible'dir: content_projects.module_type nullable togglesı.
+# phase_al_001 reversible'dir: automation_policies.approver_user_id kolonu
+# + named FK (SQLite batch_alter_table ile uyumlu) — REV-2 P3.2 ile eklendi.
 #
-# Bu yüzden I testi: head (phase_ag_001) → -1 (phase_ac_001) başarılı olmalı,
-# sonra -1 (phase_x_001 hedef) denemesi phase_ac_001 forward-only'si nedeniyle
-# NotImplementedError atmalı.
-ALEMBIC_TARGET = "phase_ag_001"
+# I testi 3-adımlı downgrade chain'i doğrular:
+#   head (phase_al_001) → -1 (phase_ag_001) reversible
+#   phase_ag_001 → -1 (phase_ac_001) reversible
+#   phase_ac_001 → -1 (phase_x_001 hedef) forward-only → NotImplementedError
+ALEMBIC_TARGET = "phase_al_001"
+PHASE_AG_REVISION = "phase_ag_001"
 PHASE_AC_REVISION = "phase_ac_001"
 PHASE_X_REVISION = "phase_x_001"
 PRODUCT_REVIEW_REVISION = "product_review_001"
@@ -238,11 +242,11 @@ def test_g_publish_logs_fk_to_publish_records(migrated_db):
 
 
 # ---------------------------------------------------------------------------
-# H) alembic_version = phase_ag_001 (live head)
+# H) alembic_version = phase_al_001 (live head, REV-2 P3.2 sonrası)
 # ---------------------------------------------------------------------------
 
 def test_h_alembic_version_is_target(migrated_db):
-    """Migration sonrası alembic_version = phase_ag_001 olmalı (PHASE AG head)."""
+    """Migration sonrası alembic_version = phase_al_001 olmalı (PHASE AL head)."""
     version = _get_version(migrated_db)
     assert version == ALEMBIC_TARGET, (
         f"Beklenen alembic_version={ALEMBIC_TARGET}, alınan={version}"
@@ -269,11 +273,13 @@ def test_h_alembic_version_is_target(migrated_db):
 
 def test_i_downgrade_from_head_is_forward_only(fresh_db_dir):
     """
-    PHASE AG (phase_ag_001) reversible'dir — head'ten -1 ile phase_ac_001'e
-    inebilir. Ancak phase_ac_001 forward-only'dir; oradan tekrar -1 denendiginde
-    NotImplementedError firlatilir. Bu test kontrati iki adimda dogrular:
-      (a) head (phase_ag_001) -> phase_ac_001 reversible (return 0)
-      (b) phase_ac_001 -> phase_x_001 forward-only (non-zero + NotImplementedError)
+    PHASE AL (phase_al_001) ve PHASE AG (phase_ag_001) reversible'dir — head'ten
+    art arda -1 downgrade ile phase_ac_001'e kadar inilebilir. Ancak phase_ac_001
+    forward-only'dir; oradan tekrar -1 denendiginde NotImplementedError firlatilir.
+    Bu test kontrati 3 adimda dogrular:
+      (a) head (phase_al_001) -> phase_ag_001 reversible (return 0)
+      (b) phase_ag_001 -> phase_ac_001 reversible (return 0)
+      (c) phase_ac_001 -> phase_x_001 forward-only (non-zero + NotImplementedError)
     """
     up = _run_alembic(["upgrade", "head"], fresh_db_dir)
     assert up.returncode == 0, f"upgrade head başarısız: {up.stderr}"
@@ -281,7 +287,15 @@ def test_i_downgrade_from_head_is_forward_only(fresh_db_dir):
     db_path = os.path.join(fresh_db_dir, "contenthub.db")
     assert _get_version(db_path) == ALEMBIC_TARGET
 
-    # (a) phase_ag_001 -> phase_ac_001 reversible olmali
+    # (a) phase_al_001 -> phase_ag_001 reversible olmali
+    down_al = _run_alembic(["downgrade", "-1"], fresh_db_dir)
+    assert down_al.returncode == 0, (
+        f"phase_al_001 reversible olmaliydi:\n"
+        f"stdout={down_al.stdout}\nstderr={down_al.stderr}"
+    )
+    assert _get_version(db_path) == PHASE_AG_REVISION
+
+    # (b) phase_ag_001 -> phase_ac_001 reversible olmali
     down_ag = _run_alembic(["downgrade", "-1"], fresh_db_dir)
     assert down_ag.returncode == 0, (
         f"phase_ag_001 reversible olmaliydi:\n"
@@ -289,7 +303,7 @@ def test_i_downgrade_from_head_is_forward_only(fresh_db_dir):
     )
     assert _get_version(db_path) == PHASE_AC_REVISION
 
-    # (b) phase_ac_001 -> phase_x_001 forward-only kontrati korunuyor mu
+    # (c) phase_ac_001 -> phase_x_001 forward-only kontrati korunuyor mu
     down_ac = _run_alembic(["downgrade", "-1"], fresh_db_dir)
     assert down_ac.returncode != 0, (
         "phase_ac_001 forward-only olmalı ama downgrade sessizce geçti:\n"
