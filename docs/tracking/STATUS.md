@@ -1,6 +1,7 @@
 # DURUM
 
 ## Mevcut Faz
+**REV-2 IMPL DALGASI MAIN'E MERGE EDİLDİ (2026-04-18) — 19 madde, Product Redesign Benchmark dalga 2**
 **PHASE FINAL F4 KAPANDI (2026-04-17) — Deferred Items Closure + Final Merge Gate**
 **PHASE FINAL F3 KAPANDI (2026-04-17) — Final Release Readiness Gate**
 **PHASE FINAL F2 KAPANDI (2026-04-17) — Ownership/Visibility Hardening + Effective Settings Sync**
@@ -14,6 +15,47 @@
 **PHASE Y KAPANDI (2026-04-16) — Baseline Drift / Release Readiness Stabilization Pack**
 **PHASE X KAPANDI (2026-04-16) — Ownership / Channel Auto-Import / Project-Job Hierarchy Pack**
 **TÜM MİLESTONE'LAR KAPANDI — Master plan (M1–M8) tamamlandı**
+
+### REV-2 IMPL Dalgası (Product Redesign Benchmark) — Main Merge
+
+- **Tarih:** 2026-04-18
+- **Commit'ler:** `d60b2a1` (audit + merge-ready report) ← `b7f1bc0` (M7 fresh-DB fix)
+- **Dalga boyutu:** 19 P-item (P0.1 → P3.3 + REG)
+- **Kaynak branch:** `worktree-product-redesign-benchmark` → `main` (merge --no-ff)
+- **Merge öncesi Level B audit:** `docs/redesign/AUDIT_MERGE_READY.md`
+
+**Kapatılan P-item'lar:**
+
+| # | Başlık | Kategori |
+|---|---|---|
+| P0.1 | Product Review module (tam pipeline) | Module |
+| P0.2 | DubVoice TTS provider | TTS |
+| P0.3 | Channel reimport endpoint (`POST /channel-profiles/{id}/reimport`) | Channels |
+| P0.4 | YouTubeAnalytics gerçek bağlantı (`youtubeanalytics.googleapis.com`) | Analytics |
+| P0.5 | Full-auto daily digest endpoint + widget | Automation |
+| P0.6 | Cross-device theme persistence (backend bind) | Frontend |
+| P1.1 | AdminWizardShell / UserWizardShell migrasyonu (3 wizard) | Frontend |
+| P1.2 | Auth seed / require_admin / require_user guard tüm router'lar | Auth |
+| P1.3 | JWT access + refresh token, token refresh otomatik | Auth |
+| P2.1 | Ownership hardening F2.1–F2.3 (comments, posts, platform_connections...) | Ownership |
+| P2.2 | Effective Settings groupOrder sync (16 grup) | Settings |
+| P2.3 | DEFERRED_BACKLOG.md tracking dosyası | Docs |
+| P2.4 | Docs reorganizasyonu (archive, 280 test raporu taşındı, 5 kopya silindi) | Docs |
+| P3.1 | README.md tam güncellemesi (REV-2 + test sayıları + tüm özellikler) | Docs |
+| P3.2 | release-notes-v1.md + rollout-checklist.md güncellemesi | Docs |
+| P3.3 | USER_GUIDE.md oluşturulması (tüm menüler + full-auto adım adım) | Docs |
+| REG.1 | M7 fresh-DB test fix (`ALEMBIC_TARGET = "phase_al_001"`) | Tests |
+| REG.2 | Downgrade chain testi 3-adım genişletildi | Tests |
+| REG.3 | Drift repair script (`backend/scripts/drift_repair.py`) | Backend |
+
+**Test durumu (merge öncesi):**
+- Backend pytest: **2547/2547 PASS**
+- Frontend vitest: **2670/2670 PASS**
+- TypeScript `tsc --noEmit`: exit 0
+- Vite build: exit 0
+- Alembic fresh-DB: 10/10 PASS
+
+---
 
 ### PHASE FINAL F4 (Deferred Items Closure + Final Merge Gate) Özet
 - Amaç: F3 kapanış raporunda bilinerek açık bırakılmış tüm maddeleri tek final

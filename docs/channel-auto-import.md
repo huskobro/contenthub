@@ -85,7 +85,7 @@ UniqueConstraint(user_id, normalized_url)
 - ✅ Partial state **dürüst kaydedilir:** `import_status="partial"`,
   `import_error="..."`, title NULL.
 - ✅ Kullanıcı daha sonra elle title girebilir; import yeniden denenebilir
-  (re-import endpoint'i şu an kapsamında değil; teknik borç olarak işaretli).
+  (`POST /channel-profiles/{id}/reimport` — Phase AD'de uygulandı).
 
 ---
 
@@ -172,7 +172,7 @@ panelinde (override gerekirse) görünür. Kullanıcı form'u tek alanlıdır:
 - Submit sonrası:
   - `import_status === "success"` → başlık + avatar kartta görünür.
   - `import_status === "partial"` → "Başlık alınamadı" rozeti, kullanıcı
-    elle düzeltebilir (teknik borç: re-import buton yok).
+    elle düzeltebilir veya "Yeniden İçe Aktar" butonu ile metadata yeniden çekebilir.
 - Liste `useChannelProfiles` hook'u üzerinden — server'dan zaten
   scope'lu gelir.
 
@@ -189,12 +189,21 @@ panelinde (override gerekirse) görünür. Kullanıcı form'u tek alanlıdır:
 
 ## 8. Teknik Borç / Ertelenen
 
-- **Re-import endpoint.** Partial ya da eski kayıtlar için `POST
-  /channel-profiles/{id}/re-import` yoktur. Kullanıcı elle title girer ya da
-  kaydı silip tekrar ekler. Sonraki fazda eklenecek.
+- **Re-import endpoint.** `POST /channel-profiles/{id}/reimport` — **Phase AD'de uygulandı.**
+  Partial ya da eski kayıtlar için metadata yeniden çekilebilir.
 - **YouTube API anahtarlı fetch.** OEmbed/Data API yoktur; HTML scrape.
   Daha sağlıklı metadata için API entegrasyonu gelecek fazda.
 - **Non-YouTube platformlar.** TikTok / Instagram / X / diğerleri kapsamda
   değil. `platform` kolonu genişlemeye hazır.
 - **Consent-wall / captcha.** YouTube bazı bölgelerde HTML'yi consent-wall
   arkasına alır. `is_partial=True` döner; operatör dürüstçe görür.
+
+### Re-import Endpoint (Phase AD)
+
+```
+POST /api/v1/channel-profiles/{id}/reimport
+Authorization: Bearer <token>
+```
+
+Mevcut kanalın URL'sini kullanarak metadata yeniden çeker. `import_status`
+ve `title`/`avatar_url` güncellenir. Partial → success geçişi mümkündür.

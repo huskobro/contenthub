@@ -653,6 +653,11 @@ frontend/src/
 
 ## 12. Uygulama Fazları
 
+> **Not (2026-04-18):** Bu §12 faz listesi tarihsel referans olarak korunmuştur.
+> Aktif uygulama sırası `docs/redesign/` (REV-2 dalga planları) ve
+> `docs/tracking/STATUS.md` tarafından yönetilmektedir.
+> REV-2 IMPL dalgası (19 madde) 2026-04-18'de main'e merge edildi.
+
 ### Faz 1: Altyapı + Hemen Görünür İyileştirmeler (4-5 saat)
 ```
 1.1  VideoPlayer component

@@ -8,7 +8,7 @@ Bu rehber ContentHub'i kurmak, calistirmak ve yonetmek icin gereken adimlari kap
 
 | Gereksinim | Minimum |
 |------------|---------|
-| Python | 3.9+ |
+| Python | 3.11+ |
 | Node.js | 18+ |
 | Disk alani | 2 GB (DB + workspace artifacts) |
 | RAM | 2 GB |
@@ -135,7 +135,7 @@ YouTube publish ozelligi icin OAuth baglantisi gereklidir:
 1. [Google Cloud Console](https://console.cloud.google.com)'da bir proje olusturun
 2. YouTube Data API v3'u etkinlestirin
 3. OAuth 2.0 istemci kimlik bilgileri olusturun
-4. Redirect URI olarak `http://localhost:8000/api/v1/settings/youtube-callback` ekleyin
+4. Redirect URI olarak `http://localhost:8000/api/v1/publish/youtube/auth-callback` ekleyin
 5. Admin panelde **Baglanti Merkezi** (`/admin/connections`) sayfasina gidin
 6. YouTube Client ID ve Client Secret'i girin
 7. "Baglan" butonuyla OAuth akisini tamamlayin
@@ -366,7 +366,7 @@ Full-Auto, bir projeye tanimli otomasyon ayarlariyla (zamanlama, guard'lar, yayi
 
 ### Guard Sistemi
 
-8 guard sirali degerlendirme yapilir: global enabled, modul destegi, proje enabled, template atanmis, kanal baglanmis, proje concurrency, kullanici concurrency, gunluk kota. Herhangi biri fail ederse tetikleme reddedilir ve audit log'a yazilir.
+7 guard sirali degerlendirme yapilir: global enabled, modul destegi, proje enabled, template atanmis, kanal baglanmis, proje concurrency, gunluk kota. Herhangi biri fail ederse tetikleme reddedilir ve audit log'a yazilir.
 
 ### Sinirlamalar (v1)
 
@@ -374,7 +374,8 @@ Full-Auto, bir projeye tanimli otomasyon ayarlariyla (zamanlama, guard'lar, yayi
 - Publish step Faz 1: uretim sonucu her zaman taslak kalir
 - Scheduler durumu ilk tick'e kadar (~60sn) `enabled: false` gosterir
 
-Detayli dokumantasyon: `docs/full-auto-v1-closure.md`
+Detayli kullanim: `docs/USER_GUIDE.md` §6 (Full-Auto Mod — Adim Adim Kullanim)  
+Teknik kapanis raporu: `docs/archive/phase-closures/full-auto-v1-closure.md`
 
 ---
 
@@ -385,4 +386,4 @@ Detayli dokumantasyon: `docs/full-auto-v1-closure.md`
 - **TTS:** Microsoft Edge TTS (ucretsiz, API anahtari gerektirmez)
 - **Render:** Remotion ile video render — Node.js ve ffmpeg gerektirir
 - **Ayar degisiklikleri:** Bazi ayarlar (workspace_root, JWT secret, OAuth credentials) yeniden baslatma gerektirir
-- **Otomasyon:** Politikalar tanimlanabilir ama otomatik calistirma henuz aktif degildir
+- **Otomasyon:** Full-Auto scheduler aktif — `automation.full_auto.enabled` ve `automation.scheduler.enabled` ayarlarıyla admin panelinden yönetilir. v1'de üretim sonucu her zaman taslak kalır (otomatik yayın yok).
