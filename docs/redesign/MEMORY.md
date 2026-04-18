@@ -73,7 +73,7 @@ Her kalem: ayrı commit, push, test sonucu MEMORY.md'ye, 7 başlıklı Türkçe 
 | 11 | P2.2 | Analytics tabs (3 → 1) | ✅ Tamam | `237454d` |
 | 12 | P2.3 | Settings module landing | ✅ Tamam | `f5d1e72` |
 | 13 | P3.1 | 6 duplicate çift birleştirme | ✅ Tamam | `3ba6af5` |
-| 14 | P2.4 | Calendar unified (P3.1 sonrası) | ✅ Tamam | (SHA pending) |
+| 14 | P2.4 | Calendar unified (P3.1 sonrası) | ✅ Tamam | `24d1c44` |
 | 15 | P2.5 | PublishBoard toggle | ⏳ | — |
 | 16 | P2.6 | Automation SVG görselleştirme | ⏳ | — |
 | 17 | P3.2 | Approver assignment (Alembic migration + UI) | ⏳ | — |
@@ -161,7 +161,7 @@ Her kalem: ayrı commit, push, test sonucu MEMORY.md'ye, 7 başlıklı Türkçe 
 - `35ef5c3` — P2.2 commit SHA'sı MEMORY.md'ye işleme (docs-only)
 - `f5d1e72` — P2.3 Settings module landing: SettingsModuleLanding bileşeni + `/admin/settings/:group` deep-link rotası + EffectiveSettingsPanel initialGroup prop + 5 smoke test
 - `3ba6af5` — P3.1 6 duplicate çift birleştirme: YouTubeCallback çifti `YouTubeCallbackBody` ortak motorunda toplandı (mode prop ile admin/user davranışı ayrıştırıldı) + 8 smoke test; diğer 5 çiftin mevcut durumu dürüstçe dokümante edildi
-- `(SHA pending)` — P2.4 Calendar unified: `CalendarListView.tsx` yeni bileşen (kronolojik düz liste) + `UserCalendarPage.tsx` 3-button view toggle (Liste/Hafta/Ay) + localStorage persistence (`calendar.default_view` v=1) + `user.calendar.default_view` KNOWN_SETTINGS entry (group=ui, module_scope=calendar, builtin_default="month", visible_to_user=True, user_override_allowed=True) + 12 smoke test (7 view + 5 persistence)
+- `24d1c44` — P2.4 Calendar unified: `CalendarListView.tsx` yeni bileşen (kronolojik düz liste) + `UserCalendarPage.tsx` 3-button view toggle (Liste/Hafta/Ay) + localStorage persistence (`calendar.default_view` v=1) + `user.calendar.default_view` KNOWN_SETTINGS entry (group=ui, module_scope=calendar, builtin_default="month", visible_to_user=True, user_override_allowed=True) + 12 smoke test (7 view + 5 persistence)
 
 ### 4.2 Yeni Dosyalar
 - `docs/redesign/MEMORY.md` (bu dosya)
