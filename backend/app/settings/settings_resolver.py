@@ -992,6 +992,31 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "wired_to": "frontend.UserAutomationPage flow visual guard",
     },
 
+    # --- Phase AL / P3.2: Approver assignment --------------------------------
+    # Otomasyon politikalarina "approver_user_id" assign etme ozelligi. MVP'de
+    # declarative: migration + kolon + UI dropdown ekleniyor, publish-gate
+    # enforcement (yalniz approver onaylar) gelecekteki faza birakiliyor.
+    "automation.approver_assignment.enabled": {
+        "group": "automation",
+        "type": "boolean",
+        "label": "Approver Assignment Ozelligi",
+        "help_text": (
+            "Otomasyon politikalarinda approver (onaylayici) ayirma ozelligi. "
+            "MVP'de UserAutomationPage'de approver dropdown'i gosterilir; "
+            "NULL/bos birakilirsa owner approver kabul edilir. Admin-only "
+            "kontrol: kullanici override'i yok. Gelecekteki fazda publish-gate "
+            "enforcement (yalniz approver onaylar) eklenebilir."
+        ),
+        "module_scope": "automation",
+        "env_var": None,
+        "builtin_default": False,
+        "user_override_allowed": False,
+        "visible_to_user": False,
+        "read_only_for_user": True,
+        "wired": True,
+        "wired_to": "backend.AutomationPolicy.approver_user_id + frontend.UserAutomationPage approver dropdown",
+    },
+
     # --- UI Surface Registry (Faz 1 — Infrastructure) ---
     # Surface Registry altyapisinin kill-switch'i. Default: false (altyapi kapali,
     # legacy/horizon davranisi aynen korunur). true yapildiginda resolver

@@ -265,7 +265,7 @@ export function UserAutomationPage() {
           </div>
 
           {/* Operational limits */}
-          <div className="bg-white border border-neutral-200 rounded-md p-4 space-y-3">
+          <div className="bg-white border border-neutral-200 rounded-md p-4 space-y-3" data-testid="automation-operational-limits">
             <h3 className="m-0 text-md font-semibold text-neutral-800">Operasyonel Limitler</h3>
             <div>
               <label className="block text-xs font-medium text-neutral-600 mb-1">
@@ -283,6 +283,36 @@ export function UserAutomationPage() {
                 }
                 className="w-24 px-2 py-1 text-sm border border-neutral-200 rounded"
               />
+            </div>
+
+            {/* Phase AL / P3.2: Approver assignment (MVP: self-only for non-admin).
+               NULL => owner is approver. Admin ileride bu dropdown'i genisletebilir.
+               Backend spoof koruma var (non-admin yalniz kendi id'sini atar). */}
+            <div data-testid="automation-approver-section">
+              <label className="block text-xs font-medium text-neutral-600 mb-1">
+                Onaylayici (Approver)
+              </label>
+              <select
+                data-testid="automation-approver-select"
+                value={selectedPolicy.approver_user_id ?? ""}
+                onChange={(e) =>
+                  updateMut.mutate({
+                    id: selectedPolicy.id,
+                    approver_user_id: e.target.value === "" ? null : e.target.value,
+                  })
+                }
+                disabled={updateMut.isPending}
+                className="w-full max-w-sm px-2 py-1 text-sm border border-neutral-200 rounded"
+              >
+                <option value="">Owner (varsayilan)</option>
+                {userId && (
+                  <option value={userId}>Kendim</option>
+                )}
+              </select>
+              <p className="m-0 text-[10px] text-neutral-400 mt-1">
+                Bos birakilirsa politikanin sahibi (owner) approver kabul edilir.
+                Publish-gate enforcement bu dalgada yok — alan declarative.
+              </p>
             </div>
           </div>
 

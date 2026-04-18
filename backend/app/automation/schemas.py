@@ -32,6 +32,8 @@ def _validate_mode(v: str) -> str:
 class AutomationPolicyCreate(BaseModel):
     channel_profile_id: str = Field(..., min_length=1, max_length=36)
     owner_user_id: Optional[str] = Field(None, max_length=36)
+    # Phase AL / P3.2: approver assignment (NULL => owner is approver).
+    approver_user_id: Optional[str] = Field(None, max_length=36)
     name: str = Field("Varsayilan Politika", max_length=255)
     is_enabled: bool = False
     source_scan_mode: str = Field("disabled", max_length=50)
@@ -47,6 +49,8 @@ class AutomationPolicyCreate(BaseModel):
 class AutomationPolicyUpdate(BaseModel):
     name: Optional[str] = Field(None, max_length=255)
     is_enabled: Optional[bool] = None
+    # Phase AL / P3.2: approver update allowed (NULL allowed — "owner is approver").
+    approver_user_id: Optional[str] = Field(None, max_length=36)
     source_scan_mode: Optional[str] = Field(None, max_length=50)
     draft_generation_mode: Optional[str] = Field(None, max_length=50)
     render_mode: Optional[str] = Field(None, max_length=50)
@@ -61,6 +65,8 @@ class AutomationPolicyResponse(BaseModel):
     id: str
     channel_profile_id: str
     owner_user_id: Optional[str] = None
+    # Phase AL / P3.2: approver assignment (NULL => owner is approver).
+    approver_user_id: Optional[str] = None
     name: str
     is_enabled: bool
     source_scan_mode: str

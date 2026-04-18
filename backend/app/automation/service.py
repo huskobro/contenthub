@@ -159,9 +159,17 @@ async def create_automation_policy(
         # Non-admin: zorla kendi id'sine sabitle.
         owner_user_id = caller_ctx.user_id
 
+    # Phase AL / P3.2: approver_user_id spoof kontrol.
+    # Non-admin yalnizca kendi id'sini veya NULL atayabilir; admin serbest.
+    approver_user_id = payload.approver_user_id
+    if caller_ctx is not None and not caller_ctx.is_admin_role:
+        if approver_user_id is not None and approver_user_id != caller_ctx.user_id:
+            approver_user_id = caller_ctx.user_id
+
     policy = AutomationPolicy(
         channel_profile_id=payload.channel_profile_id,
         owner_user_id=owner_user_id,
+        approver_user_id=approver_user_id,
         name=payload.name,
         is_enabled=payload.is_enabled,
         source_scan_mode=payload.source_scan_mode,
@@ -212,6 +220,12 @@ async def update_automation_policy(
     for field in CHECKPOINT_FIELDS:
         if field in updates and updates[field] not in CHECKPOINT_MODES:
             raise ValueError(f"Gecersiz mode '{updates[field]}' for {field}")
+
+    # Phase AL / P3.2: approver spoof koruma. Non-admin yalniz kendi id'sini
+    # veya NULL atayabilir; admin istedigini atayabilir.
+    if "approver_user_id" in updates and caller_ctx is not None and not caller_ctx.is_admin_role:
+        if updates["approver_user_id"] is not None and updates["approver_user_id"] != caller_ctx.user_id:
+            updates["approver_user_id"] = caller_ctx.user_id
 
     for field, value in updates.items():
         setattr(policy, field, value)

@@ -1860,6 +1860,18 @@ class AutomationPolicy(Base):
     owner_user_id: Mapped[Optional[str]] = mapped_column(
         String(36), ForeignKey("users.id", ondelete="SET NULL"), nullable=True
     )
+    # Phase AL / P3.2: approver assignment (NULL => owner is approver).
+    # Declarative kolon; publish-gate enforcement sonraki fazda.
+    approver_user_id: Mapped[Optional[str]] = mapped_column(
+        String(36),
+        ForeignKey(
+            "users.id",
+            name="fk_automation_policies_approver_user_id",
+            ondelete="SET NULL",
+        ),
+        nullable=True,
+        index=True,
+    )
     channel_profile_id: Mapped[str] = mapped_column(
         String(36), ForeignKey("channel_profiles.id", ondelete="CASCADE"),
         nullable=False, unique=True, index=True
