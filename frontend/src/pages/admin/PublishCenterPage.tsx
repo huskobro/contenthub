@@ -24,10 +24,55 @@ import {
 import { BulkActionBar } from "../../components/design-system/BulkActionBar";
 import { PublishErrorChip } from "../../components/publish/PublishErrorChip";
 import { SchedulerHealthBadge } from "../../components/publish/SchedulerHealthBadge";
+import { PublishBoard } from "../../components/publish/PublishBoard";
 import { formatDateShort } from "../../lib/formatDate";
+import { cn } from "../../lib/cn";
 import { useSurfacePageOverride } from "../../surfaces/SurfaceContext";
 
 const PAGE_SIZE = 50;
+
+/**
+ * Yayin Merkezi gorunum tipi. Legacy tablo varsayilan; "board" kanban-tarzi
+ * sutunlara dagilmis kart panosu (P2.5). Kullanici tercihi localStorage
+ * anahtari `publish.center.default_view` altinda `{ v: 1, view }` shape ile
+ * saklanir. Settings Registry key: `publish.center.default_view`.
+ */
+type PublishViewMode = "table" | "board";
+
+const PUBLISH_VIEW_STORAGE_KEY = "publish.center.default_view";
+const PUBLISH_VIEW_STORAGE_VERSION = 1;
+
+interface StoredPublishView {
+  v: number;
+  view: PublishViewMode;
+}
+
+function loadDefaultPublishView(): PublishViewMode {
+  try {
+    const raw = window.localStorage.getItem(PUBLISH_VIEW_STORAGE_KEY);
+    if (!raw) return "table";
+    const parsed = JSON.parse(raw) as StoredPublishView;
+    if (parsed?.v !== PUBLISH_VIEW_STORAGE_VERSION) return "table";
+    if (parsed.view === "table" || parsed.view === "board") {
+      return parsed.view;
+    }
+  } catch {
+    // fallthrough
+  }
+  return "table";
+}
+
+function persistDefaultPublishView(view: PublishViewMode): void {
+  try {
+    const payload: StoredPublishView = {
+      v: PUBLISH_VIEW_STORAGE_VERSION,
+      view,
+    };
+    window.localStorage.setItem(PUBLISH_VIEW_STORAGE_KEY, JSON.stringify(payload));
+  } catch {
+    // storage quota / private mode — ignore silently
+  }
+}
 
 function formatDate(iso: string | null) {
   return formatDateShort(iso, "\u2014");
@@ -98,6 +143,14 @@ function LegacyPublishCenterPage() {
   const [offset, setOffset] = useState(0);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [bulkBanner, setBulkBanner] = useState<string | null>(null);
+  const [view, setViewInternal] = useState<PublishViewMode>(() =>
+    loadDefaultPublishView(),
+  );
+
+  function setView(next: PublishViewMode) {
+    setViewInternal(next);
+    persistDefaultPublishView(next);
+  }
 
   const { data, isLoading, isError } = usePublishRecords({
     status: statusFilter || undefined,
@@ -404,34 +457,103 @@ function LegacyPublishCenterPage() {
         </FilterBar>
       </div>
 
-      <BulkActionBar
-        selectedCount={selected.size}
-        actions={bulkActions.map((a) => ({
-          ...a,
-          onClick: bulkPending ? () => {} : a.onClick,
-        }))}
-        onClear={clearSelection}
-      />
+      <div
+        className="mb-3 inline-flex rounded-md border border-neutral-200 bg-white overflow-hidden"
+        data-testid="publish-view-toggle"
+        role="tablist"
+        aria-label="Yayin Merkezi gorunumu"
+      >
+        <button
+          type="button"
+          onClick={() => setView("table")}
+          data-testid="publish-view-table"
+          role="tab"
+          aria-selected={view === "table"}
+          className={cn(
+            "px-3 py-1.5 text-xs transition-colors",
+            view === "table"
+              ? "bg-brand-50 text-brand-700 font-medium"
+              : "text-neutral-600 hover:bg-neutral-50",
+          )}
+        >
+          Tablo
+        </button>
+        <button
+          type="button"
+          onClick={() => setView("board")}
+          data-testid="publish-view-board"
+          role="tab"
+          aria-selected={view === "board"}
+          className={cn(
+            "px-3 py-1.5 text-xs transition-colors border-l border-neutral-200",
+            view === "board"
+              ? "bg-brand-50 text-brand-700 font-medium"
+              : "text-neutral-600 hover:bg-neutral-50",
+          )}
+        >
+          Board
+        </button>
+      </div>
+
+      {view === "table" && (
+        <BulkActionBar
+          selectedCount={selected.size}
+          actions={bulkActions.map((a) => ({
+            ...a,
+            onClick: bulkPending ? () => {} : a.onClick,
+          }))}
+          onClear={clearSelection}
+        />
+      )}
 
       <SectionShell flush title={`Yayin Kayitlari (${items.length})`} testId="publish-list">
-        <DataTable<PublishRecordSummary>
-          columns={columns}
-          data={items}
-          keyFn={(r) => r.id}
-          loading={isLoading}
-          error={isError}
-          errorMessage="Yayin kayitlari yuklenirken hata olustu."
-          emptyMessage="Henuz yayin kaydi bulunmuyor."
-          testId="publish-table"
-        />
-        <Pagination
-          offset={offset}
-          limit={PAGE_SIZE}
-          total={items.length}
-          onPrev={() => setOffset(Math.max(0, offset - PAGE_SIZE))}
-          onNext={() => setOffset(offset + PAGE_SIZE)}
-          testId="publish-pagination"
-        />
+        {view === "table" ? (
+          <>
+            <DataTable<PublishRecordSummary>
+              columns={columns}
+              data={items}
+              keyFn={(r) => r.id}
+              loading={isLoading}
+              error={isError}
+              errorMessage="Yayin kayitlari yuklenirken hata olustu."
+              emptyMessage="Henuz yayin kaydi bulunmuyor."
+              testId="publish-table"
+            />
+            <Pagination
+              offset={offset}
+              limit={PAGE_SIZE}
+              total={items.length}
+              onPrev={() => setOffset(Math.max(0, offset - PAGE_SIZE))}
+              onNext={() => setOffset(offset + PAGE_SIZE)}
+              testId="publish-pagination"
+            />
+          </>
+        ) : (
+          <div className="p-3">
+            {isError ? (
+              <div
+                className="text-xs text-error-dark bg-error-light border border-error/30 rounded px-3 py-2"
+                data-testid="publish-board-error"
+              >
+                Yayin kayitlari yuklenirken hata olustu.
+              </div>
+            ) : isLoading ? (
+              <div className="text-xs text-neutral-500 text-center py-6" data-testid="publish-board-loading">
+                Yukleniyor...
+              </div>
+            ) : items.length === 0 ? (
+              <div className="text-xs text-neutral-400 text-center py-6" data-testid="publish-board-empty-all">
+                Henuz yayin kaydi bulunmuyor.
+              </div>
+            ) : (
+              <PublishBoard
+                records={items}
+                selectedIds={selected}
+                onOpen={(r) => navigate(`/admin/publish/${r.id}`)}
+              />
+            )}
+          </div>
+        )}
       </SectionShell>
     </PageShell>
   );

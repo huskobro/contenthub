@@ -891,6 +891,164 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "wired_to": "frontend.date_formatting",
     },
 
+    # Redesign REV-2 / P2.4 — Calendar default view.
+    # Runtime tarafi localStorage'dan (v=1) ilk deger okur; kullanici
+    # degisiklikleri lokal persist eder. Backend'e read-through senkron yok —
+    # tercihi gorunur kilmak ve dokumante etmek amacli kayit.
+    "user.calendar.default_view": {
+        "group": "ui",
+        "type": "string",
+        "label": "Takvim Varsayilan Gorunumu",
+        "help_text": (
+            "Takvim sayfasinin (admin + user) acilista gosterilecek varsayilan "
+            "gorunumu: 'list' (kronolojik liste), 'week' (haftalik izgara), "
+            "'month' (aylik izgara). Kullanici toggle ile degistirebilir; "
+            "secimi tarayici lokalinde saklanir (localStorage anahtari "
+            "'calendar.default_view', versiyon=1). Admin tarafinda da ayni "
+            "tercih kullanilir cunku admin sayfasi ayni body'yi wrap ediyor."
+        ),
+        "module_scope": "calendar",
+        "env_var": None,
+        "builtin_default": "month",
+        "user_override_allowed": True,
+        "visible_to_user": True,
+        "read_only_for_user": False,
+        "wired": True,
+        "wired_to": "frontend.UserCalendarPage localStorage bridge",
+    },
+
+    # Redesign REV-2 / P2.5 — Publish Center default view.
+    # Tablo gorunumu legacy; kanban "board" gorunumu review-gate durumlarini
+    # sutunlara ayiran alternatif. Toggle kullanici tercihini localStorage'da
+    # persist eder (anahtar 'publish.center.default_view', versiyon=1).
+    # Backend read-through senkron yok — Settings Registry'de dokumante edilmis
+    # default + override deklarasyonu. Board gorunumunun tamamen kapatilmasi
+    # icin 'publish.center.board_view.enabled' ayri bir flag.
+    "publish.center.board_view.enabled": {
+        "group": "publish",
+        "type": "boolean",
+        "label": "Yayin Merkezi Board Gorunumu",
+        "help_text": (
+            "Yayin Merkezi sayfasinda kanban tarzi board gorunumunun etkin "
+            "olup olmadigi. Kapali ise toggle gizlenir ve yalniz tablo "
+            "gorunumu sunulur. Acik ise kullanici Tablo/Board arasinda "
+            "gecis yapabilir (Taslak / Review Bekliyor / Onaylandi / "
+            "Zamanlandi / Yayinda / Basarisiz sutunlari)."
+        ),
+        "module_scope": "publish",
+        "env_var": None,
+        "builtin_default": True,
+        "user_override_allowed": False,
+        "visible_to_user": False,
+        "read_only_for_user": True,
+        "wired": True,
+        "wired_to": "frontend.PublishCenterPage toggle visibility",
+    },
+    "publish.center.default_view": {
+        "group": "publish",
+        "type": "string",
+        "label": "Yayin Merkezi Varsayilan Gorunumu",
+        "help_text": (
+            "Yayin Merkezi sayfasinin acilista gosterilecek varsayilan "
+            "gorunumu: 'table' (varsayilan tablo + filtre + bulk actions) "
+            "veya 'board' (review-gate durumlarina gore sutunlara dagilmis "
+            "kart panosu). Kullanici toggle ile degistirebilir; secimi "
+            "tarayici lokalinde saklanir (localStorage anahtari "
+            "'publish.center.default_view', versiyon=1)."
+        ),
+        "module_scope": "publish",
+        "env_var": None,
+        "builtin_default": "table",
+        "user_override_allowed": True,
+        "visible_to_user": True,
+        "read_only_for_user": False,
+        "wired": True,
+        "wired_to": "frontend.PublishCenterPage localStorage bridge",
+    },
+
+    # Redesign REV-2 / P2.6 — Automation flow visual preview.
+    # Checkpoint matrisi (5 dropdown) uzerine saf SVG akis onizlemesi ekler:
+    # Kaynak Tarama -> Taslak -> Render -> Yayin -> Yayin Sonrasi. Her kutu
+    # mode'a gore renk (AUTO yesil / ONAY sari / KAPALI gri). Drag-drop yok,
+    # pasif gorsel. @xyflow/react gibi agir dep eklenmedi (MEMORY §5.1).
+    "user.automation.flow_visual.enabled": {
+        "group": "automation",
+        "type": "boolean",
+        "label": "Otomasyon Akis Gorseli",
+        "help_text": (
+            "UserAutomationPage'deki checkpoint matrisinin ustune SVG "
+            "akis onizlemesinin eklenip eklenmeyecegi. Kapali ise yalniz "
+            "mevcut matris/dropdown gosterilir. Admin-only kill switch: "
+            "kullanici override'i yok, sure-idam ile tum kullanicilarda "
+            "kapatilabilir (orn. performans, mobil goster/gizle karari)."
+        ),
+        "module_scope": "automation",
+        "env_var": None,
+        "builtin_default": True,
+        "user_override_allowed": False,
+        "visible_to_user": False,
+        "read_only_for_user": True,
+        "wired": True,
+        "wired_to": "frontend.UserAutomationPage flow visual guard",
+    },
+
+    # --- Phase AL / P3.2: Approver assignment --------------------------------
+    # Otomasyon politikalarina "approver_user_id" assign etme ozelligi. MVP'de
+    # declarative: migration + kolon + UI dropdown ekleniyor, publish-gate
+    # enforcement (yalniz approver onaylar) gelecekteki faza birakiliyor.
+    "automation.approver_assignment.enabled": {
+        "group": "automation",
+        "type": "boolean",
+        "label": "Approver Assignment Ozelligi",
+        "help_text": (
+            "Otomasyon politikalarinda approver (onaylayici) ayirma ozelligi. "
+            "MVP'de UserAutomationPage'de approver dropdown'i gosterilir; "
+            "NULL/bos birakilirsa owner approver kabul edilir. Admin-only "
+            "kontrol: kullanici override'i yok. Gelecekteki fazda publish-gate "
+            "enforcement (yalniz approver onaylar) eklenebilir."
+        ),
+        "module_scope": "automation",
+        "env_var": None,
+        "builtin_default": False,
+        "user_override_allowed": False,
+        "visible_to_user": False,
+        "read_only_for_user": True,
+        "wired": True,
+        "wired_to": "backend.AutomationPolicy.approver_user_id + frontend.UserAutomationPage approver dropdown",
+    },
+
+    # --- Phase AL / P3.3: Wizard unification (tek motor + iki shell) ---------
+    # Wizard shell v2 kill-switch'i. AdminWizardShell + UserWizardShell thin
+    # wrapper'larinin aktif oldugu durumun declarative kaydi. Default: True
+    # (shell v2 aktif, pilot 2 sayfa: StandardVideoWizardPage admin +
+    # CreateBulletinWizardPage user). Kalan 3 wizard (news_bulletin admin,
+    # product_review, create_video) bu dalgada legacy WizardShell ile kalir;
+    # Phase AM'de ayrik PR'larda goc edecek. Kapatildiginda pilot sayfalari
+    # shell v2 yerine legacy WizardShell'e dusurmek icin ayri bir degisiklik
+    # gerekir — bu flag declarative observability'dir (tek-satir "on" sinyali),
+    # shell v2 davranisinin runtime switch'i degil.
+    "wizard.shell.v2.enabled": {
+        "group": "wizard",
+        "type": "boolean",
+        "label": "Wizard Shell v2 (Admin/User)",
+        "help_text": (
+            "Wizard sayfalari icin ince admin/user shell wrapper'lari aktif mi? "
+            "Admin shell: snapshot-lock banner + 'kullanici gozuyle onizleme' "
+            "toggle. User shell: rehberli/gelismis mod toggle + scope hatirlatma "
+            "chip'i. Pilot 2 sayfa (StandardVideoWizardPage + "
+            "CreateBulletinWizardPage) bu shell'leri tuketir. Admin-only "
+            "kill-switch; runtime davranisi degistirmez — declarative kayit."
+        ),
+        "module_scope": "wizard",
+        "env_var": None,
+        "builtin_default": True,
+        "user_override_allowed": False,
+        "visible_to_user": False,
+        "read_only_for_user": True,
+        "wired": True,
+        "wired_to": "frontend.AdminWizardShell + frontend.UserWizardShell",
+    },
+
     # --- UI Surface Registry (Faz 1 — Infrastructure) ---
     # Surface Registry altyapisinin kill-switch'i. Default: false (altyapi kapali,
     # legacy/horizon davranisi aynen korunur). true yapildiginda resolver

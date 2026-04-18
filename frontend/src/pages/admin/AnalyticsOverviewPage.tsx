@@ -10,6 +10,7 @@ import {
   MetricGrid,
 } from "../../components/design-system/primitives";
 import { AdminAnalyticsFilterBar } from "../../components/analytics/AdminAnalyticsFilterBar";
+import { AdminAnalyticsTabBar } from "../../components/analytics/AnalyticsTabBar";
 import { ExportButton } from "../../components/analytics/ExportButton";
 import { SnapshotLockDisclaimer } from "../../components/analytics/SnapshotLockDisclaimer";
 import { formatDateShort } from "../../lib/formatDate";
@@ -61,6 +62,7 @@ export function AnalyticsOverviewPage() {
       testId="analytics-overview"
       actions={<ExportButton kind="overview" params={apiParams} />}
     >
+      <AdminAnalyticsTabBar />
       <p className="m-0 mb-2 text-xs text-neutral-400" data-testid="analytics-overview-workflow-note">
         Uretim &rarr; Yayin &rarr; Platform Metrikleri &rarr; Icerik Performansi &rarr; Operasyonel Saglik
       </p>

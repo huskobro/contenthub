@@ -11,6 +11,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useAdminConnections } from "../../hooks/useConnections";
 import { fetchUsers, type UserResponse } from "../../api/usersApi";
 import { fetchChannelProfiles, type ChannelProfileResponse } from "../../api/channelProfilesApi";
+import { useActiveScope } from "../../hooks/useActiveScope";
 import {
   PageShell,
   SectionShell,
@@ -190,26 +191,48 @@ export function AdminConnectionsPage() {
   const [healthFilter, setHealthFilter] = useState("");
   const [reauthFilter, setReauthFilter] = useState("");
 
-  // Phase AM-5: tag query keys with an explicit `admin-scope` marker so
-  // admin-wide caches cannot collide with per-user caches elsewhere in the
-  // app. The backend scopes non-admin callers automatically; this hygiene
-  // is purely about React Query cache segregation.
+  // Redesign REV-2 / P0.3a: Admin scope ile toolbar filtresi iki farkli
+  // yaklasim:
+  //   - AdminScopeSwitcher (global store, P1.1): tum admin sayfalarinda
+  //     ayni "kim" secimi.
+  //   - Bu sayfa ici userFilter (local state): connections tablosu icin
+  //     ekstra local daraltma (e.g. admin scope "all"ken bile bir kullaniciyi
+  //     izole etmek).
+  // Kural: scope store bos/"all" ise sayfa ici userFilter ONCELIKLI. Scope
+  // bir kullaniciya odaklanmissa ve sayfa ici userFilter bos ise scope o
+  // zaman effective filter olur. Boylece user focus'la navigate edince
+  // connections otomatik o kisiye filtrelenir.
+  const scope = useActiveScope();
+  const effectiveUserFilter = userFilter || (scope.role === "admin" ? scope.ownerUserId ?? "" : "");
+
   const { data: users } = useQuery({
-    queryKey: ["users", "admin-scope"],
+    queryKey: ["users", { role: scope.role, ownerUserId: scope.ownerUserId }],
     queryFn: fetchUsers,
+    enabled: scope.isReady && scope.role === "admin",
   });
   const { data: channels } = useQuery({
-    queryKey: ["channel-profiles", "admin-scope"],
-    queryFn: () => fetchChannelProfiles(),
+    queryKey: [
+      "channel-profiles",
+      {
+        ownerUserId: scope.ownerUserId,
+        isAllUsers: scope.isAllUsers,
+        role: scope.role,
+      },
+    ],
+    queryFn: () =>
+      fetchChannelProfiles(
+        scope.ownerUserId && scope.role === "admin" ? scope.ownerUserId : undefined,
+      ),
+    enabled: scope.isReady,
   });
 
   const params = useMemo(() => ({
-    user_id: userFilter || undefined,
+    user_id: effectiveUserFilter || undefined,
     channel_profile_id: channelFilter || undefined,
     platform: platformFilter || undefined,
     health_level: healthFilter || undefined,
     requires_reauth: reauthFilter === "true" ? true : reauthFilter === "false" ? false : undefined,
-  }), [userFilter, channelFilter, platformFilter, healthFilter, reauthFilter]);
+  }), [effectiveUserFilter, channelFilter, platformFilter, healthFilter, reauthFilter]);
 
   const { data, isLoading } = useAdminConnections(params);
 

@@ -28,6 +28,12 @@ import { PostOnboardingHandoff } from "../components/dashboard/PostOnboardingHan
 void PostOnboardingHandoff;
 import { UserJobTracker } from "../components/dashboard/UserJobTracker";
 import { AutomationDigestWidget } from "../components/dashboard/AutomationDigestWidget";
+// Redesign REV-2 / P1.4: kullanıcıya özel "Bugün" digest şeridi — 4 KPI tile
+// (Onayımı Bekleyen / Bu Hafta Yayın / Başarısız İş / Gelen Kutusu).
+// Mevcut "Hızlı Oluştur", "Son Projelerim", "Kanallarım" bölümleri
+// dokunulmadan korunur; digest üstüne konulur (yerine geçmez).
+// Client-side parallel fetch (MEMORY §5.2).
+import { UserDigestDashboard } from "../components/user/UserDigestDashboard";
 import {
   PageShell,
   SectionShell,
@@ -75,6 +81,9 @@ function LegacyUserDashboardPage() {
     >
       {onboardingCompleted ? (
         <div className="space-y-5">
+          {/* P1.4 — "Bugün" digest şeridi (user scope, 4 kişisel KPI + CTA) */}
+          <UserDigestDashboard />
+
           {/* Quick Create */}
           <SectionShell title="Hızlı Oluştur" testId="quick-create">
             <div className="flex gap-3 flex-wrap">

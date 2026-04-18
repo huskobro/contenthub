@@ -25,15 +25,47 @@ import {
   type PublishListParams,
 } from "../api/publishApi";
 import { useApiError } from "./useApiError";
+import { useActiveScope } from "./useActiveScope";
 
 const KEY = "publish-records";
 const SCHEDULER_KEY = "publish-scheduler-status";
 const TOKEN_STATUS_KEY = "publish-connection-token-status";
 
+/**
+ * Redesign REV-2 / P0.3a:
+ *   `usePublishRecords` artik `useActiveScope()` tuketir.
+ *   Query key `[KEY, params, { ownerUserId, isAllUsers }]` formuna alindi.
+ *   Admin'in odaklandigi kullanici degisince cache temiz ayrilir.
+ *
+ *   Fetch param'i:
+ *     - user rolu       -> owner_id gecirilmez (backend zorlar)
+ *     - admin all       -> owner_id gecirilmez
+ *     - admin user focus-> owner_id = scope.ownerUserId
+ *   Caller'dan gelen explicit `params.owner_id` degeri overwrite edilmez —
+ *   by-project / by-job ozel kullanimlar aynen calisir.
+ */
 export function usePublishRecords(params: PublishListParams = {}) {
+  const scope = useActiveScope();
+
+  const scopedOwnerId =
+    params.owner_id ??
+    (scope.ownerUserId && scope.role === "admin" ? scope.ownerUserId : undefined);
+
+  const effectiveParams: PublishListParams = {
+    ...params,
+    ...(scopedOwnerId ? { owner_id: scopedOwnerId } : {}),
+  };
+
   return useQuery({
-    queryKey: [KEY, params],
-    queryFn: () => fetchPublishRecords(params),
+    queryKey: [
+      KEY,
+      effectiveParams,
+      { ownerUserId: scope.ownerUserId, isAllUsers: scope.isAllUsers },
+    ],
+    queryFn: () => fetchPublishRecords(effectiveParams),
+    // isReady gate'i P0.3b'de KALDIRILDI (smoke testlerde auth hidrat
+    // beklenmediği için fetch duruyordu). Cache key scope parmak izi
+    // yeterli; ownership backend'de zorlanır.
   });
 }
 

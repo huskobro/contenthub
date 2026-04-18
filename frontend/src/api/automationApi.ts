@@ -13,6 +13,8 @@ export interface AutomationPolicyResponse {
   id: string;
   channel_profile_id: string;
   owner_user_id: string | null;
+  /** Phase AL / P3.2: approver (NULL => owner is approver). */
+  approver_user_id: string | null;
   name: string;
   is_enabled: boolean;
   source_scan_mode: CheckpointMode;
@@ -30,6 +32,8 @@ export interface AutomationPolicyResponse {
 export interface AutomationPolicyCreate {
   channel_profile_id: string;
   owner_user_id?: string;
+  /** Phase AL / P3.2: NULL/undefined => owner is approver. */
+  approver_user_id?: string | null;
   name?: string;
   is_enabled?: boolean;
   source_scan_mode?: CheckpointMode;
@@ -45,6 +49,8 @@ export interface AutomationPolicyCreate {
 export interface AutomationPolicyUpdate {
   name?: string;
   is_enabled?: boolean;
+  /** Phase AL / P3.2: assign/release approver; null => owner is approver. */
+  approver_user_id?: string | null;
   source_scan_mode?: CheckpointMode;
   draft_generation_mode?: CheckpointMode;
   render_mode?: CheckpointMode;

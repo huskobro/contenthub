@@ -13,7 +13,8 @@
 
 import { useState, useCallback, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { WizardShell, type WizardStep } from "../../components/wizard/WizardShell";
+import { UserWizardShell } from "../../components/wizard/UserWizardShell";
+import type { WizardStep } from "../../components/wizard/WizardShell";
 import { ChannelProfileStep } from "../../components/wizard/ChannelProfileStep";
 import { ContentProjectStep } from "../../components/wizard/ContentProjectStep";
 import { LowerThirdStylePreview } from "../../components/preview/LowerThirdStylePreview";
@@ -98,7 +99,7 @@ export function CreateBulletinWizardPage() {
   }
 
   return (
-    <WizardShell
+    <UserWizardShell
       title="Yeni Haber Bulteni"
       steps={STEPS}
       currentStep={step}
@@ -190,6 +191,6 @@ export function CreateBulletinWizardPage() {
           </div>
         </div>
       )}
-    </WizardShell>
+    </UserWizardShell>
   );
 }

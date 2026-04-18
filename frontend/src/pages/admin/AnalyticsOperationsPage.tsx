@@ -16,6 +16,7 @@ import {
   StatusBadge,
 } from "../../components/design-system/primitives";
 import { AdminAnalyticsFilterBar } from "../../components/analytics/AdminAnalyticsFilterBar";
+import { AdminAnalyticsTabBar } from "../../components/analytics/AnalyticsTabBar";
 import { ProviderLatencyChart } from "../../components/analytics/ProviderLatencyChart";
 import { StepDurationChart } from "../../components/analytics/StepDurationChart";
 import { SystemScopeNote } from "../../components/analytics/SystemScopeNote";
@@ -271,6 +272,7 @@ export function AnalyticsOperationsPage() {
       testId="analytics-operations"
       actions={<ExportButton kind="operations" params={apiParams} />}
     >
+      <AdminAnalyticsTabBar />
       <Link to="/admin/analytics" className="absolute w-px h-px overflow-hidden [clip:rect(0,0,0,0)]">{"\u2190"} Analytics'e don</Link>
       <p className="m-0 mb-3 text-xs text-neutral-400" data-testid="analytics-operations-workflow-note">
         Is Basari &rarr; Retry/Hata &rarr; Provider Sagligi &rarr; Kaynak Etkisi &rarr; Karar Noktasi

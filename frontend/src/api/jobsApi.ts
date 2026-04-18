@@ -54,6 +54,13 @@ export function fetchJobs(
     include_test_data?: boolean;
     content_project_id?: string;
     channel_profile_id?: string;
+    /**
+     * Admin-only override (backend: `owner_id` query param).
+     * Non-admin cagirilarda backend zaten ctx.user_id ile scope uygular;
+     * bu param sadece admin "belirli bir user'a odaklan" modunda dolu gelir.
+     * Gonderilmeyen durum ("all users" admin modu) backend default'u kullanir.
+     */
+    owner_id?: string;
   },
 ): Promise<JobResponse[]> {
   return api.get<JobResponse[]>(BASE_URL, params);

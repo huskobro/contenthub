@@ -119,6 +119,14 @@ async def list_publish_records(
         default=None,
         description="Gate 4: filter failed records by last_error_category.",
     ),
+    owner_id: Optional[str] = Query(
+        default=None,
+        description=(
+            "Admin-only override: sadece belirtilen user'a ait publish "
+            "kayitlari donulur. Non-admin cagirilarda yok sayilir — "
+            "kullanici zaten kendi scope'una zorlanir."
+        ),
+    ),
     limit: int = Query(default=50, ge=1, le=200),
     offset: int = Query(default=0, ge=0),
     ctx: UserContext = Depends(get_current_user_context),
@@ -127,12 +135,21 @@ async def list_publish_records(
     """Filtrelenmiş publish kayıtlarını döndürür.
 
     PHASE X: non-admin icin Job.owner_id esitligi ile scope'lanir.
+
+    Redesign REV-2 / P0.3a:
+        `owner_id` query param sadece admin icin anlamlidir. Admin bunu gecerek
+        "belirli bir kullaniciya odaklan" modunda listeleme yapar. Non-admin
+        cagirilarda backend service layer zaten kendi user_id'sine filtre
+        uyguladigi icin bu param silently ignore edilir (403 atmiyoruz cunku
+        guard cok daha erken noktada).
     """
     # PHASE X: non-admin ve job_id verilmisse o job'un da ayni user'a ait
     # oldugunu on-check et (erken 403 verir; aksi halde list bos doner ve
     # UX 'veri yok' gibi yanlis hisseder).
     if job_id and not ctx.is_admin:
         await ensure_job_ownership(session, job_id, ctx)
+    # Admin-only owner_id override — non-admin icin None olarak gecirilir.
+    effective_owner_id = owner_id if ctx.is_admin else None
     records = await service.list_publish_records(
         session=session,
         job_id=job_id,
@@ -143,6 +160,7 @@ async def list_publish_records(
         limit=limit,
         offset=offset,
         user_context=ctx,
+        admin_owner_id_override=effective_owner_id,
     )
     return records
 

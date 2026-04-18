@@ -13,6 +13,7 @@ import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "../../stores/authStore";
+import { useActiveScope } from "../../hooks/useActiveScope";
 import { useSurfacePageOverride } from "../../surfaces";
 import {
   fetchCalendarEvents,
@@ -24,13 +25,52 @@ import {
   fetchChannelProfiles,
   type ChannelProfileResponse,
 } from "../../api/channelProfilesApi";
+import { CalendarListView } from "../../components/calendar/CalendarListView";
 import { cn } from "../../lib/cn";
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-type ViewMode = "week" | "month";
+type ViewMode = "list" | "week" | "month";
+
+// Redesign REV-2 / P2.4: kullanıcı tercihi localStorage'da persist edilir.
+// Settings Registry key'i `user.calendar.default_view` (settings_resolver.py),
+// ama runtime tarafında buraya read-through senkron yok — sadece dokümante
+// edilmiş ve görünür bir tercih; builtin_default "month".
+const CALENDAR_VIEW_STORAGE_KEY = "calendar.default_view";
+const CALENDAR_VIEW_STORAGE_VERSION = 1;
+
+interface StoredCalendarView {
+  v: number;
+  view: ViewMode;
+}
+
+function loadDefaultView(): ViewMode {
+  try {
+    if (typeof window === "undefined") return "month";
+    const raw = window.localStorage.getItem(CALENDAR_VIEW_STORAGE_KEY);
+    if (!raw) return "month";
+    const parsed = JSON.parse(raw) as StoredCalendarView;
+    if (parsed?.v !== CALENDAR_VIEW_STORAGE_VERSION) return "month";
+    if (parsed.view === "list" || parsed.view === "week" || parsed.view === "month") {
+      return parsed.view;
+    }
+  } catch {
+    // Parse/read hatası — sessiz düşüş, builtin default'u uygula.
+  }
+  return "month";
+}
+
+function persistDefaultView(view: ViewMode): void {
+  try {
+    if (typeof window === "undefined") return;
+    const payload: StoredCalendarView = { v: CALENDAR_VIEW_STORAGE_VERSION, view };
+    window.localStorage.setItem(CALENDAR_VIEW_STORAGE_KEY, JSON.stringify(payload));
+  } catch {
+    // localStorage yoksa veya quota doluysa sessiz düşüş (sadece UX persist'i).
+  }
+}
 type EventTypeFilter = "" | "content_project" | "publish_record" | "platform_post";
 
 const EVENT_TYPE_LABELS: Record<string, string> = {
@@ -141,7 +181,24 @@ export function UserCalendarPage(props: CalendarPageProps = {}) {
 
 function LegacyUserCalendarPage({ isAdmin }: CalendarPageProps) {
   const userId = useAuthStore((s) => s.user?.id);
-  const [view, setView] = useState<ViewMode>("month");
+  // Redesign REV-2 / P0.3b:
+  //   Admin "all users" modunda owner_user_id geçirilmez; admin bir
+  //   kullanıcıya odaklanmışsa calendar o kullanıcıya filtrelenir.
+  //   Non-admin için userId zaten auth store'dan alınır.
+  const scope = useActiveScope();
+  const effectiveOwnerForAdmin =
+    scope.role === "admin" && scope.ownerUserId ? scope.ownerUserId : undefined;
+  const calendarOwnerUserId = isAdmin
+    ? effectiveOwnerForAdmin // admin all -> undefined; admin focus -> focused uid
+    : userId;
+
+  // Redesign REV-2 / P2.4: initial view localStorage v=1'den okunur, yoksa
+  // builtin default "month" (Settings Registry `user.calendar.default_view`).
+  const [view, setViewState] = useState<ViewMode>(() => loadDefaultView());
+  const setView = (next: ViewMode) => {
+    setViewState(next);
+    persistDefaultView(next);
+  };
   const [baseDate, setBaseDate] = useState(() => new Date());
   const [channelFilter, setChannelFilter] = useState("");
   const [typeFilter, setTypeFilter] = useState<EventTypeFilter>("");
@@ -151,8 +208,12 @@ function LegacyUserCalendarPage({ isAdmin }: CalendarPageProps) {
 
   // Channels for filter
   const { data: channels = [] } = useQuery({
-    queryKey: ["channel-profiles", isAdmin ? undefined : userId],
-    queryFn: () => fetchChannelProfiles(isAdmin ? undefined : userId),
+    queryKey: [
+      "channel-profiles",
+      calendarOwnerUserId,
+      { ownerUserId: scope.ownerUserId, isAllUsers: scope.isAllUsers, isAdmin: !!isAdmin },
+    ],
+    queryFn: () => fetchChannelProfiles(calendarOwnerUserId),
     enabled: !!userId || !!isAdmin,
   });
 
@@ -171,15 +232,16 @@ function LegacyUserCalendarPage({ isAdmin }: CalendarPageProps) {
       "calendar-events",
       start.toISOString(),
       end.toISOString(),
-      isAdmin ? undefined : userId,
+      calendarOwnerUserId,
       channelFilter || undefined,
       typeFilter || undefined,
+      { ownerUserId: scope.ownerUserId, isAllUsers: scope.isAllUsers, isAdmin: !!isAdmin },
     ],
     queryFn: () =>
       fetchCalendarEvents({
         start_date: start.toISOString(),
         end_date: end.toISOString(),
-        owner_user_id: isAdmin ? undefined : userId,
+        owner_user_id: calendarOwnerUserId,
         channel_profile_id: channelFilter || undefined,
         event_type: typeFilter || undefined,
       }),
@@ -260,14 +322,33 @@ function LegacyUserCalendarPage({ isAdmin }: CalendarPageProps) {
 
       {/* Filters + Navigation */}
       <div className="flex items-center gap-2 flex-wrap">
-        {/* View toggle */}
-        <div className="flex border border-neutral-200 rounded-md overflow-hidden text-xs">
+        {/* View toggle (P2.4: list / week / month) */}
+        <div
+          className="flex border border-neutral-200 rounded-md overflow-hidden text-xs"
+          data-testid="calendar-view-toggle"
+        >
+          <button
+            type="button"
+            onClick={() => setView("list")}
+            data-testid="calendar-view-list"
+            className={cn(
+              "px-3 py-1.5 transition-colors",
+              view === "list"
+                ? "bg-brand-600 text-white"
+                : "bg-white text-neutral-600 hover:bg-neutral-50",
+            )}
+          >
+            Liste
+          </button>
           <button
             type="button"
             onClick={() => setView("week")}
+            data-testid="calendar-view-week"
             className={cn(
-              "px-3 py-1.5 transition-colors",
-              view === "week" ? "bg-brand-600 text-white" : "bg-white text-neutral-600 hover:bg-neutral-50",
+              "px-3 py-1.5 transition-colors border-l border-neutral-200",
+              view === "week"
+                ? "bg-brand-600 text-white"
+                : "bg-white text-neutral-600 hover:bg-neutral-50",
             )}
           >
             Hafta
@@ -275,9 +356,12 @@ function LegacyUserCalendarPage({ isAdmin }: CalendarPageProps) {
           <button
             type="button"
             onClick={() => setView("month")}
+            data-testid="calendar-view-month"
             className={cn(
-              "px-3 py-1.5 transition-colors",
-              view === "month" ? "bg-brand-600 text-white" : "bg-white text-neutral-600 hover:bg-neutral-50",
+              "px-3 py-1.5 transition-colors border-l border-neutral-200",
+              view === "month"
+                ? "bg-brand-600 text-white"
+                : "bg-white text-neutral-600 hover:bg-neutral-50",
             )}
           >
             Ay
@@ -331,9 +415,15 @@ function LegacyUserCalendarPage({ isAdmin }: CalendarPageProps) {
 
       {/* Main content: calendar + detail */}
       <div className="flex gap-4">
-        {/* Calendar grid */}
+        {/* Calendar grid / list */}
         <div className="flex-1 min-w-0">
-          {view === "month" ? (
+          {view === "list" ? (
+            <CalendarListView
+              eventsByDate={eventsByDate}
+              onSelectEvent={setSelectedEvent}
+              selectedEventId={selectedEvent?.id}
+            />
+          ) : view === "month" ? (
             <MonthGrid
               baseDate={baseDate}
               eventsByDate={eventsByDate}

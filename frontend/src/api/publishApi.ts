@@ -75,6 +75,12 @@ export interface PublishListParams {
   content_ref_type?: string;
   /** Gate 4 (Z-5): triage filter for failed publishes. */
   error_category?: string;
+  /**
+   * Redesign REV-2 / P0.3a — admin-only override.
+   * Non-admin cagirilarda backend silently ignore eder; admin "focus on user"
+   * modunda bu param'i gecerek o kullanicinin kayitlarini gorur.
+   */
+  owner_id?: string;
   limit?: number;
   offset?: number;
 }

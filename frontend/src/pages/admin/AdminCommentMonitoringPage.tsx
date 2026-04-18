@@ -6,12 +6,13 @@
  * Shows: comment list, reply status visibility, error tracking.
  */
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useComments, useSyncStatus } from "../../hooks/useComments";
 import { fetchChannelProfiles, type ChannelProfileResponse } from "../../api/channelProfilesApi";
 import { fetchUsers, type UserResponse } from "../../api/usersApi";
+import { useActiveScope } from "../../hooks/useActiveScope";
 import {
   PageShell,
   SectionShell,
@@ -78,11 +79,28 @@ function replyStatusBadge(status: string): { label: string; className: string } 
 // ---------------------------------------------------------------------------
 
 export function AdminCommentMonitoringPage() {
+  // Redesign REV-2 / P0.3c:
+  //   Admin scope (adminScopeStore) focused-user ise userFilter default
+  //   olarak o user'a atanır. Kullanıcı dropdown'dan başka user seçerse
+  //   manuel override her zaman kazanır. Scope "all" ise filter boş —
+  //   mevcut davranış.
+  const scope = useActiveScope();
+  const scopedDefaultUser =
+    scope.role === "admin" && scope.ownerUserId ? scope.ownerUserId : "";
+
   // Filters
-  const [userFilter, setUserFilter] = useState<string>("");
+  const [userFilter, setUserFilter] = useState<string>(scopedDefaultUser);
   const [channelFilter, setChannelFilter] = useState<string>("");
   const [platformFilter, setPlatformFilter] = useState<string>("");
   const [replyStatusFilter, setReplyStatusFilter] = useState<string>("");
+
+  // Scope admin focus değişince (scope switcher), userFilter manuel
+  // değiştirilmediği sürece yeni scope'a snap eder.
+  useEffect(() => {
+    setUserFilter((prev) => (prev === "" || prev === scopedDefaultUser ? scopedDefaultUser : prev));
+    // Not: manuel seçim durumunda (prev !== "" && prev !== scopedDefaultUser)
+    // bu effect override etmez — kullanıcı tercihi korunur.
+  }, [scopedDefaultUser]);
 
   // Fetch users and channels for filter dropdowns
   const { data: users } = useQuery({
@@ -92,7 +110,11 @@ export function AdminCommentMonitoringPage() {
   });
 
   const { data: channels } = useQuery({
-    queryKey: ["channel-profiles", userFilter || "all"],
+    queryKey: [
+      "channel-profiles",
+      userFilter || "all",
+      { ownerUserId: scope.ownerUserId, isAllUsers: scope.isAllUsers },
+    ],
     queryFn: () => fetchChannelProfiles(userFilter || undefined),
     staleTime: 60_000,
   });

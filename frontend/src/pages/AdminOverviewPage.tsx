@@ -28,6 +28,10 @@ import { AdminAnalyticsFilterBar } from "../components/analytics/AdminAnalyticsF
 import { TrendChart } from "../components/shared/charts/TrendChart";
 import { DistributionDonut } from "../components/shared/charts/DistributionDonut";
 import { ComparisonBar } from "../components/shared/charts/ComparisonBar";
+// Redesign REV-2 / P1.3: "Bugün" digest şeridi — 4 KPI tile (başarısız / review
+// bekleyen / retry adayı / yayın kuyruğu). Mevcut KPI+grafik bölümünün
+// ÜSTÜNE konur, yerine geçmez. Client-side parallel fetch (MEMORY §5.2).
+import { AdminDigestDashboard } from "../components/admin/AdminDigestDashboard";
 
 /* ------------------------------------------------------------------ */
 /* Quick-link definitions                                             */
@@ -292,6 +296,9 @@ export function AdminOverviewPage() {
       subtitle="Operasyonel gözlem merkezi. Filtreleyerek karar verin."
       testId="admin-overview"
     >
+      {/* P1.3 — "Bugün" digest şeridi (scope-aware, 4 acil KPI + hızlı CTA) */}
+      <AdminDigestDashboard />
+
       {/* Filter Bar */}
       <AdminAnalyticsFilterBar analyticsFilters={analyticsFilters} testId="dashboard-filter-bar" />
 

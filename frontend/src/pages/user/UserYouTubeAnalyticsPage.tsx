@@ -28,6 +28,7 @@ import {
   PageShell,
   SectionShell,
 } from "../../components/design-system/primitives";
+import { UserAnalyticsTabBar } from "../../components/analytics/AnalyticsTabBar";
 import { TrendChart } from "../../components/shared/charts/TrendChart";
 import { YouTubeVideoManagementSheet } from "../../components/youtube/YouTubeVideoManagementSheet";
 import { cn } from "../../lib/cn";
@@ -556,6 +557,7 @@ export function UserYouTubeAnalyticsPage() {
         </div>
       }
     >
+      <UserAnalyticsTabBar />
       {/* Empty / error states */}
       {connectionsQuery.isLoading && (
         <SectionShell title="Yükleniyor">

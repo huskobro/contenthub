@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { useSettingsList } from "../../hooks/useSettingsList";
 import { SettingsTable } from "../../components/settings/SettingsTable";
 import { SettingDetailPanel } from "../../components/settings/SettingDetailPanel";
 import { CredentialsPanel } from "../../components/settings/CredentialsPanel";
 import { EffectiveSettingsPanel } from "../../components/settings/EffectiveSettingsPanel";
+import { SettingsModuleLanding } from "../../components/settings/SettingsModuleLanding";
 import { WorkspaceRootPicker } from "../../components/settings/WorkspaceRootPicker";
 import { ReadOnlyGuard } from "../../components/visibility/ReadOnlyGuard";
 import { PageShell, SectionShell, TabBar } from "../../components/design-system/primitives";
@@ -33,12 +35,41 @@ const TAB_ITEMS: { key: TabKey; label: string; description: string }[] = [
 
 const TABS = TAB_ITEMS.map(({ key, label }) => ({ key, label }));
 
+/**
+ * SettingsRegistryPage — `/admin/settings` ve `/admin/settings/:group`.
+ *
+ * Redesign REV-2 / P2.3: rotaya `:group` param eklendi. Param varsa
+ * "effective" sekmesi otomatik açılır ve `EffectiveSettingsPanel`
+ * `initialGroup` prop'uyla filtrelenmiş başlar. Param yoksa "effective"
+ * sekmesinin üstünde `SettingsModuleLanding` kartları gösterilir — admin,
+ * 16+ gruptan hangisini inceleyeceğini tek bakışta seçer.
+ */
 export function SettingsRegistryPage() {
-  const [activeTab, setActiveTab] = useState<TabKey>("credentials");
+  const { group: groupParam } = useParams<{ group?: string }>();
+  const navigate = useNavigate();
+
+  // Param varsa sekme direkt "effective" açılır; yoksa kullanıcı ne seçtiyse.
+  const [activeTab, setActiveTab] = useState<TabKey>(groupParam ? "effective" : "credentials");
   const { data: settings, isLoading, isError, error } = useSettingsList();
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
+  // URL değişince (kart tıklaması / elle navigate) sekmeyi senkronla.
+  useEffect(() => {
+    if (groupParam) {
+      setActiveTab("effective");
+    }
+  }, [groupParam]);
+
   const currentTab = TAB_ITEMS.find((t) => t.key === activeTab)!;
+
+  // Sekme değişirken group param'ını temizle — aksi halde "credentials" sekmesindeyken
+  // URL'de hâlâ /admin/settings/tts olur.
+  const handleTabChange = (next: TabKey) => {
+    setActiveTab(next);
+    if (groupParam && next !== "effective") {
+      navigate("/admin/settings");
+    }
+  };
 
   return (
     <ReadOnlyGuard targetKey="panel:settings">
@@ -46,7 +77,7 @@ export function SettingsRegistryPage() {
         <TabBar<TabKey>
           tabs={TABS}
           active={activeTab}
-          onChange={setActiveTab}
+          onChange={handleTabChange}
           testId="settings-tab"
         />
 
@@ -64,7 +95,26 @@ export function SettingsRegistryPage() {
         {activeTab === "effective" && (
           <>
             <WorkspaceRootPicker />
-            <EffectiveSettingsPanel />
+            {!groupParam && <SettingsModuleLanding />}
+            {groupParam && (
+              <div
+                className="mb-3 flex items-center gap-3"
+                data-testid="settings-module-breadcrumb"
+              >
+                <button
+                  type="button"
+                  onClick={() => navigate("/admin/settings")}
+                  className="text-sm text-brand-600 hover:underline"
+                  data-testid="settings-module-back"
+                >
+                  ← Tüm modüller
+                </button>
+                <span className="text-sm text-neutral-500">
+                  Filtre: <span className="font-semibold">{groupParam}</span>
+                </span>
+              </div>
+            )}
+            <EffectiveSettingsPanel initialGroup={groupParam} />
           </>
         )}
 
