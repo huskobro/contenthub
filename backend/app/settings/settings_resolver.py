@@ -917,6 +917,55 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "wired_to": "frontend.UserCalendarPage localStorage bridge",
     },
 
+    # Redesign REV-2 / P2.5 — Publish Center default view.
+    # Tablo gorunumu legacy; kanban "board" gorunumu review-gate durumlarini
+    # sutunlara ayiran alternatif. Toggle kullanici tercihini localStorage'da
+    # persist eder (anahtar 'publish.center.default_view', versiyon=1).
+    # Backend read-through senkron yok — Settings Registry'de dokumante edilmis
+    # default + override deklarasyonu. Board gorunumunun tamamen kapatilmasi
+    # icin 'publish.center.board_view.enabled' ayri bir flag.
+    "publish.center.board_view.enabled": {
+        "group": "publish",
+        "type": "boolean",
+        "label": "Yayin Merkezi Board Gorunumu",
+        "help_text": (
+            "Yayin Merkezi sayfasinda kanban tarzi board gorunumunun etkin "
+            "olup olmadigi. Kapali ise toggle gizlenir ve yalniz tablo "
+            "gorunumu sunulur. Acik ise kullanici Tablo/Board arasinda "
+            "gecis yapabilir (Taslak / Review Bekliyor / Onaylandi / "
+            "Zamanlandi / Yayinda / Basarisiz sutunlari)."
+        ),
+        "module_scope": "publish",
+        "env_var": None,
+        "builtin_default": True,
+        "user_override_allowed": False,
+        "visible_to_user": False,
+        "read_only_for_user": True,
+        "wired": True,
+        "wired_to": "frontend.PublishCenterPage toggle visibility",
+    },
+    "publish.center.default_view": {
+        "group": "publish",
+        "type": "string",
+        "label": "Yayin Merkezi Varsayilan Gorunumu",
+        "help_text": (
+            "Yayin Merkezi sayfasinin acilista gosterilecek varsayilan "
+            "gorunumu: 'table' (varsayilan tablo + filtre + bulk actions) "
+            "veya 'board' (review-gate durumlarina gore sutunlara dagilmis "
+            "kart panosu). Kullanici toggle ile degistirebilir; secimi "
+            "tarayici lokalinde saklanir (localStorage anahtari "
+            "'publish.center.default_view', versiyon=1)."
+        ),
+        "module_scope": "publish",
+        "env_var": None,
+        "builtin_default": "table",
+        "user_override_allowed": True,
+        "visible_to_user": True,
+        "read_only_for_user": False,
+        "wired": True,
+        "wired_to": "frontend.PublishCenterPage localStorage bridge",
+    },
+
     # --- UI Surface Registry (Faz 1 — Infrastructure) ---
     # Surface Registry altyapisinin kill-switch'i. Default: false (altyapi kapali,
     # legacy/horizon davranisi aynen korunur). true yapildiginda resolver
