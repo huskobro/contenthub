@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { WizardShell, type WizardStep } from "./WizardShell";
+import { AdminWizardShell } from "./AdminWizardShell";
+import type { WizardStep } from "./WizardShell";
 import { TemplateSelector } from "../preview/TemplateSelector";
 import { StyleBlueprintSelector } from "../preview/StyleBlueprintSelector";
 import { CompositionDirectionPreview } from "../preview/CompositionDirectionPreview";
@@ -94,7 +95,7 @@ export function ContentCreationWizard({
   const moduleLabel = moduleType === "standard_video" ? "standard_video" : "news_bulletin";
 
   return (
-    <WizardShell
+    <AdminWizardShell
       title={moduleType === "standard_video" ? "Yeni Video Olustur" : "Yeni Haber Bulteni"}
       steps={STEPS}
       currentStep={step}
@@ -348,7 +349,7 @@ export function ContentCreationWizard({
           )}
         </div>
       )}
-    </WizardShell>
+    </AdminWizardShell>
   );
 }
 

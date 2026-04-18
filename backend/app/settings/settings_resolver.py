@@ -1017,6 +1017,38 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "wired_to": "backend.AutomationPolicy.approver_user_id + frontend.UserAutomationPage approver dropdown",
     },
 
+    # --- Phase AL / P3.3: Wizard unification (tek motor + iki shell) ---------
+    # Wizard shell v2 kill-switch'i. AdminWizardShell + UserWizardShell thin
+    # wrapper'larinin aktif oldugu durumun declarative kaydi. Default: True
+    # (shell v2 aktif, pilot 2 sayfa: StandardVideoWizardPage admin +
+    # CreateBulletinWizardPage user). Kalan 3 wizard (news_bulletin admin,
+    # product_review, create_video) bu dalgada legacy WizardShell ile kalir;
+    # Phase AM'de ayrik PR'larda goc edecek. Kapatildiginda pilot sayfalari
+    # shell v2 yerine legacy WizardShell'e dusurmek icin ayri bir degisiklik
+    # gerekir — bu flag declarative observability'dir (tek-satir "on" sinyali),
+    # shell v2 davranisinin runtime switch'i degil.
+    "wizard.shell.v2.enabled": {
+        "group": "wizard",
+        "type": "boolean",
+        "label": "Wizard Shell v2 (Admin/User)",
+        "help_text": (
+            "Wizard sayfalari icin ince admin/user shell wrapper'lari aktif mi? "
+            "Admin shell: snapshot-lock banner + 'kullanici gozuyle onizleme' "
+            "toggle. User shell: rehberli/gelismis mod toggle + scope hatirlatma "
+            "chip'i. Pilot 2 sayfa (StandardVideoWizardPage + "
+            "CreateBulletinWizardPage) bu shell'leri tuketir. Admin-only "
+            "kill-switch; runtime davranisi degistirmez — declarative kayit."
+        ),
+        "module_scope": "wizard",
+        "env_var": None,
+        "builtin_default": True,
+        "user_override_allowed": False,
+        "visible_to_user": False,
+        "read_only_for_user": True,
+        "wired": True,
+        "wired_to": "frontend.AdminWizardShell + frontend.UserWizardShell",
+    },
+
     # --- UI Surface Registry (Faz 1 — Infrastructure) ---
     # Surface Registry altyapisinin kill-switch'i. Default: false (altyapi kapali,
     # legacy/horizon davranisi aynen korunur). true yapildiginda resolver
