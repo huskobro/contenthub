@@ -3,11 +3,13 @@
 **Tarih:** 2026-04-20 (pass-6.1 / settings auth regression sweep)
 **Branch:** `feature/aurora-dusk-cockpit`
 **Hedef:** `main`
-**Strateji önerisi:** Squash merge
+**Strateji:** Squash merge
+
+> **MERGE TAMAMLANDI.** `feature/aurora-dusk-cockpit` → `main` squash-merge edildi (commit `0d838ad`, 2026-04-20). Aurora Dusk Cockpit şu an main branch'tedir ve aktif frontend'dir. Bu dosya pre-merge karar kaydı olarak korunmaktadır.
 
 ---
 
-## 0. KARAR
+## 0. KARAR (pre-merge)
 
 > **✅ GO. Pass-6 + Pass-6.1 settings auth regression sweep tamamlandı; main'e squash merge edilebilir.**
 

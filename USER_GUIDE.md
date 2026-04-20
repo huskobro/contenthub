@@ -1,8 +1,10 @@
 # USER_GUIDE.md — ContentHub Aurora Kullanım Rehberi
 
-**Tarih:** 2026-04-20 (pass-5 final closure)
-**Versiyon:** Aurora Cockpit (post-redesign + P0/P1 truth-fix final closure)
+**Tarih:** 2026-04-20 (pass-6.1 final — post-merge güncelleme)
+**Versiyon:** Aurora Dusk Cockpit (main branch aktif, commit `0d838ad`)
 **Kapsam:** End-user için sadeleştirilmiş kullanım kılavuzu + Aurora yüzeyine özel notlar + **truth-fix closure kayıtları (Bölüm 6)**.
+
+> **MERGE NOTU (2026-04-20):** `feature/aurora-dusk-cockpit` main'e squash-merge edildi. Aurora Dusk Cockpit artık `main` branch'tedir. Alembic head: `phase_al_001`. Test durumu: backend 2559/2559, frontend 2696/2696 (237 dosya).
 
 > **✅ Pass-5 final closure (2026-04-20):** Pass-3'te tespit edilen 11 P0 sorun pass-4'te kapatıldı; pass-5'te smoke test guard'ı ile yakalanan +1 yeni navigate-404 (`AuroraSourceDetailPage` Düzenle butonu) ve wizard atomikliği (news_bulletin atomik endpoint + product_review dürüst orphan handling) ve undefined token (`--bg-hover` → `--bg-inset`) kapatıldı. Detaylar `CODE_AUDIT_REPORT.md` Bölüm 18 (pass-5 closure addendum) ve `MERGE_READINESS.md` Bölüm 1.2'de.
 >
@@ -321,14 +323,24 @@ Pass-3'te tespit edilen 9 navigate-404 + 2 yalan-handler + 1 URL mismatch listes
 
 ## BOLUM 7 — GELISTIRICI NOTLARI
 
-- **basePath-aware Aurora bileşeni:** `AuroraUserJobDetailPage` `useLocation()` ile `/admin` ya da `/user` algılar; tek bileşen iki context'e hizmet eder. Pattern başka sayfalara da uygulanabilir.
-- **SurfacePageOverride:** `useSurfacePageOverride("user.X")` çağrısı → `AURORA_PAGE_OVERRIDES` map'inde varsa Aurora bileşeni döner; yoksa legacy. `register.tsx` map'i tek truth source. Map kapatılırsa (kill-switch `ui.surface.infrastructure.enabled=false`) deterministik fallback.
-- **Mutation hook'ları:** Tüm gerçek backend mutation'ları React Query `useMutation` + `onSuccess: invalidateQueries`. Pass-5 closure sonrası yalan handler **kalmadı** — AuroraAdminConnectionsPage refresh+disconnect Pass-4'te gerçek mutation'a bağlandı.
-- **CSS canonical wrapper:** `.aurora-dashboard` (dashboard.css) — page + inspector grid layout. `.page` + `.page-head` + `.card` standart sınıfları kullanılır.
-- **Settings yazma yolu:** TEK otorite → `PUT /api/v1/settings/effective/{key}`. Hem AuroraSettings (RowEditor) hem AuroraPrompts buraya yazıyor. Read: `GET /api/v1/settings/effective`. Precedence: user > admin > default > .env > builtin.
-- **Settings auth (Pass-6.1):** Router tüm yazma yollarında artık `Depends(get_effective_role)` kullanıyor (`backend/app/visibility/dependencies.py`). Resolution order: **JWT user.role > X-ContentHub-Role header > "user" default**. Eski `get_caller_role` (header-only) deprecated işaretlendi — yalnızca geriye-dönük test uyumluluğu için tutuluyor. Pass-6.1 öncesi admin'ler header gönderilmediği için "user" olarak algılanıyor ve `user_override_allowed=False` olan ayarları değiştiremiyordu; artık JWT'den gelen role doğru uygulanıyor. Regression guard: `backend/tests/test_settings_auth_role_gate.py` (12 test).
-- **Provider API key naming:** Tek otoriter desen → `provider.{name}.api_key` (`credential_resolver.py` precedence: user > admin > default > .env). Eski `module.{id}.api_key` desenine yeni kod yazılmıyor; runtime tüketici tek read-path kullanıyor. Konsolidasyon kararı: yeni desen tek doğru, eski okuma kalıntıları geriye-dönük uyumluluk için var (kapsam dışı kalıcı ürün kararı: hard removal yapılmıyor).
-- **404 catch-all:** `<NotFoundPage />` (auth.404 Aurora override → AuroraNotFoundPage). Pass-5 closure sonrası tüm Aurora navigate hedefleri router.tsx'e karşı `aurora-navigate-targets.smoke.test.ts` ile guard altında — 11 P0 404 ✅ kapatıldı, regresyon önleme aktif.
+> **Post-merge durum (2026-04-20):** Aurora main'de. Backend 46 modül, 326+ endpoint, Alembic head `phase_al_001`. İlk kurulum için `docs/RUNTIME_AND_STORAGE_POLICY.md` → Clone & First-Run bölümüne bakın.
+
+- **First-run setup:**
+  ```bash
+  cd backend && python3 -m venv .venv && source .venv/bin/activate
+  pip install -e ".[dev]"
+  alembic upgrade head      # DB oluşturur (phase_al_001)
+  python -m app.db.seed     # admin user + KNOWN_SETTINGS
+  cd ../frontend && npm install && npm run dev
+  ```
+- **DB ve workspace git-ignored:** `backend/data/contenthub.db` ve `backend/workspace/` runtime-only; kaynak kontrolünde yoktur. Sadece `.gitkeep` dosyaları izlenir. Detay: `docs/RUNTIME_AND_STORAGE_POLICY.md`.
+- **basePath-aware Aurora bileşeni:** `AuroraUserJobDetailPage` `useLocation()` ile `/admin` ya da `/user` algılar; tek bileşen iki context'e hizmet eder.
+- **SurfacePageOverride:** `useSurfacePageOverride("user.X")` → `AURORA_PAGE_OVERRIDES` map'inde varsa Aurora bileşeni döner; yoksa legacy. `register.tsx` tek truth source. Kill-switch: `ui.surface.infrastructure.enabled=false` → deterministik fallback.
+- **Mutation hook'ları:** Tüm backend mutation'ları React Query `useMutation` + `onSuccess: invalidateQueries`. Yalan handler **kalmadı** — tüm butonlar gerçek endpoint'lere bağlı.
+- **Settings yazma yolu:** TEK otorite → `PUT /api/v1/settings/effective/{key}`. AuroraSettings (RowEditor) + AuroraPrompts aynı endpoint. Read: `GET /api/v1/settings/effective`. Precedence: user > admin > default > .env > builtin.
+- **Settings auth:** Router tüm yazma yollarında `Depends(get_effective_role)` (`backend/app/visibility/dependencies.py`). Resolution order: **JWT user.role > X-ContentHub-Role header > "user" default**. Eski `get_caller_role` (header-only) deprecated — yalnızca geriye-dönük test uyumluluğu. Regression guard: `backend/tests/test_settings_auth_role_gate.py` (12 test).
+- **Provider API key naming:** Tek otoriter desen → `provider.{name}.api_key`. `credential_resolver.py` precedence: user > admin > default > .env. Eski `module.{id}.api_key` sadece geriye-dönük read fallback.
+- **404 catch-all:** `AuroraNotFoundPage`. Tüm Aurora `navigate(...)` hedefleri `aurora-navigate-targets.smoke.test.ts` ile CI guard altında — yeni 404 paterni build'de fail eder.
 
 ---
 

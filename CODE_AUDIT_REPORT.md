@@ -1,7 +1,9 @@
 # CODE_AUDIT_REPORT — Aurora Dusk Cockpit Pre-Merge Truth Audit (Pass-3 + Pass-4 + Pass-5 + Pass-6 + Pass-6.1 final closure)
 
+> **POST-MERGE DURUM (2026-04-20):** `feature/aurora-dusk-cockpit` → `main` squash-merge tamamlandı (commit `0d838ad`). Aurora Dusk Cockpit artık main branch'tedir ve aktif frontend'dir. Alembic head: `phase_al_001` (idempotent, migrasyonlar stabildir). Backend: 46 modül, 326+ endpoint. Test durumu post-merge: backend 2559/2559 PASS, frontend 2696/2696 PASS (237 dosya). Bu dosya pre-merge audit kaydı olarak historical reference olarak korunmaktadır.
+
 **Tarih:** 2026-04-20 (pass-3: 2026-04-19 akşam / pass-4: 2026-04-19 gece / pass-5: 2026-04-20 sabah / pass-6: 2026-04-20 öğleden sonra / **pass-6.1 settings auth sweep: 2026-04-20 akşamı**)
-**Branch:** `feature/aurora-dusk-cockpit` (pass-6 final closure commit'leriyle birlikte)
+**Branch:** `feature/aurora-dusk-cockpit` (pass-6 final closure commit'leriyle birlikte; merge commit: `0d838ad`)
 **Denetçi:** Principal Architect Mode — Recovery Audit (10-faz code-audit + Aurora-odaklı brainstorm + user-guide)
 **Kapsam:** Tıklanabilirlik dürüstlüğü, 404 üreten yönlendirmeler, Aurora overlay backend bağı, source-of-truth tutarlılığı, **main merge güvenliği**.
 **Yöntem:** 4 paralel Explore ajanı (proje anlama, dashboard click-handler tarama, 404/orphan-route tarama, token+performans+polish) + manuel doğrulama (router.tsx tüm Aurora `navigate(...)` çağrılarına çapraz-bakış) + smoke test guard (`aurora-navigate-targets.smoke.test.ts`) + tsc clean (exit 0).

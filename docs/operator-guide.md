@@ -8,7 +8,7 @@ Bu rehber ContentHub'i kurmak, calistirmak ve yonetmek icin gereken adimlari kap
 
 | Gereksinim | Minimum |
 |------------|---------|
-| Python | 3.11+ |
+| Python | 3.9+ |
 | Node.js | 18+ |
 | Disk alani | 2 GB (DB + workspace artifacts) |
 | RAM | 2 GB |
@@ -31,7 +31,7 @@ cd ContentHub
 cd backend
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -e .
+pip install -e ".[dev]"
 ```
 
 ### 2.3 Ortam Degiskenleri
@@ -59,7 +59,17 @@ source .venv/bin/activate
 .venv/bin/python -m alembic upgrade head
 ```
 
-Bu komut SQLite veritabanini `backend/data/contenthub.db` yolunda olusturur ve tum migration'lari uygular.
+Bu komut SQLite veritabanini `backend/data/contenthub.db` yolunda olusturur ve tum migration'lari uygular (head: `phase_al_001`).
+
+Migrasyon sonrasi seed calistirin:
+
+```bash
+python -m app.db.seed
+```
+
+Bu adim admin kullanicisini ve KNOWN_SETTINGS kayitlarini olusturur.
+
+> **Not:** `backend/data/contenthub.db` ve `backend/workspace/` git-ignored'dir (runtime-only). Kaynak kontrolune eklemeyin. Detay: `docs/RUNTIME_AND_STORAGE_POLICY.md`.
 
 ### 2.5 Frontend Kurulumu
 

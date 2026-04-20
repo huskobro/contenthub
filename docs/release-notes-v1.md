@@ -1,13 +1,13 @@
 # ContentHub v1.0 — Release Notes
 
-**Tarih:** 2026-04-18 (güncellendi; ilk yayın: 2026-04-09)
-**Tip:** MVP Launch Release — REV-2 dalgası dahil
+**Tarih:** 2026-04-20 (güncellendi; REV-2: 2026-04-18; Aurora merge: 2026-04-20)
+**Tip:** MVP Launch Release — Aurora Dusk Cockpit main'e squash-merge edildi (commit `0d838ad`)
 
 ---
 
 ## Özet
 
-ContentHub, localhost-first modüler içerik üretim ve yayınlama platformudur. Bu sürüm, tek makine üzerinde çalışan tam işlevli bir MVP'dir. REV-2 dalgası (19 P-item) 2026-04-18'de main'e merge edildi.
+ContentHub, localhost-first modüler içerik üretim ve yayınlama platformudur. Bu sürüm, tek makine üzerinde çalışan tam işlevli bir MVP'dir. REV-2 dalgası (19 P-item) 2026-04-18'de main'e merge edildi. Aurora Dusk Cockpit (tam Aurora UI, ~80 sayfa override) 2026-04-20'de squash-merge ile main'e alındı. Alembic head: `phase_al_001`.
 
 ---
 
@@ -108,8 +108,8 @@ Sürüm geçmişi: `docs/tracking/CHANGELOG.md`.
 git pull origin main
 cd backend
 source .venv/bin/activate
-pip install -e .
-.venv/bin/python -m alembic upgrade head
+pip install -e ".[dev]"
+alembic upgrade head
 cd ../frontend
 npm install
 npm run build

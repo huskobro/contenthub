@@ -8,9 +8,9 @@ Bu checklist, sistemi production benzeri ortamda çalıştırmadan önce tamamla
 
 ## A. Ortam Hazırlığı
 
-- [ ] Python 3.11+ kurulu
+- [ ] Python 3.9+ kurulu
 - [ ] Node.js 18+ kurulu
-- [ ] `backend/.venv` oluşturuldu ve bağımlılıklar yüklendi (`pip install -e .`)
+- [ ] `backend/.venv` oluşturuldu ve bağımlılıklar yüklendi (`pip install -e ".[dev]"`)
 - [ ] `frontend/node_modules` yüklendi (`npm install`)
 - [ ] `backend/.env` dosyası oluşturuldu (`.env.example`'dan kopyalanarak)
 - [ ] `CONTENTHUB_JWT_SECRET` set edildi (benzersiz, uzun secret — **zorunlu**)
