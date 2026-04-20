@@ -21,6 +21,7 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.auth.dependencies import require_admin
 from app.auth.ownership import (
     OwnershipError,
     UserContext,
@@ -72,7 +73,7 @@ async def my_connections(
     )
 
 
-@router.get("/center/admin", response_model=ConnectionCenterListResponse)
+@router.get("/center/admin", response_model=ConnectionCenterListResponse, dependencies=[Depends(require_admin)])
 async def admin_connections(
     user_id: Optional[str] = Query(None),
     channel_profile_id: Optional[str] = Query(None),

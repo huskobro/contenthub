@@ -936,6 +936,26 @@ class RenderStepExecutor(StepExecutor):
                         f"job={job_id} composition_id={composition_id}"
                     ),
                 }
+            except asyncio.CancelledError:
+                # Cancel endpoint (veya shutdown) pipeline'ı iptal etti —
+                # subprocess'i mutlaka öldür; orphan/zombie bırakma.
+                logger.warning(
+                    "RenderStepExecutor: cancel alındı, subprocess kill. "
+                    "job=%s pid=%s",
+                    job_id, getattr(proc, "pid", "?"),
+                )
+                try:
+                    proc.kill()
+                except ProcessLookupError:
+                    pass  # process zaten bitmiş
+                try:
+                    await proc.wait()
+                except Exception:
+                    pass
+                # CancelledError'ı re-raise et — PipelineRunner'a ve oradan
+                # dispatcher.cancel()'a propagate olsun; asyncio task gerçekten
+                # cancelled state'ine girebilsin.
+                raise
 
             stdout_text = stdout.decode("utf-8", errors="replace") if stdout else ""
             stderr_text = stderr.decode("utf-8", errors="replace") if stderr else ""

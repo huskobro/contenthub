@@ -508,12 +508,17 @@ async def create_job(
 @router.post("/{job_id}/cancel", response_model=JobResponse)
 async def cancel_job(
     job_id: str,
+    request: Request,
     ctx: UserContext = Depends(get_current_user_context),
     db: AsyncSession = Depends(get_db),
 ):
     """
     İşi iptal et. Yalnızca terminal olmayan durumlardan (queued, running,
     waiting, retrying) iptal edilebilir.
+
+    Dispatcher'a kayıtlı asyncio task varsa .cancel() çağrılır. Render
+    executor'ları CancelledError bloklarında subprocess'lerini kill etmekle
+    yükümlüdür — aksi halde child process zombie/orphan kalabilir.
     """
     # PHASE X ownership gate
     existing = await service.get_job(db, job_id)
@@ -540,10 +545,27 @@ async def cancel_job(
             except InvalidTransitionError:
                 pass  # step zaten terminal olmuş olabilir
 
+    # Çalışan asyncio task'ini iptal et — DB transition tek başına yeterli değil;
+    # task kill edilmediği sürece subprocess ve heartbeat devam eder.
+    dispatcher = getattr(request.app.state, "job_dispatcher", None)
+    cancel_signalled = False
+    if dispatcher is not None and hasattr(dispatcher, "cancel"):
+        try:
+            cancel_signalled = await dispatcher.cancel(job_id)
+        except Exception as exc:
+            logger.warning(
+                "cancel_job: dispatcher.cancel failed (ignored): job=%s err=%s",
+                job_id, exc,
+            )
+
     await write_audit_log(
         db, action="job.cancel", entity_type="job", entity_id=job_id,
         actor_type="admin",
-        details={"previous_status": job.status, "new_status": "cancelled"},
+        details={
+            "previous_status": job.status,
+            "new_status": "cancelled",
+            "cancel_signalled": cancel_signalled,
+        },
     )
     await db.commit()
 

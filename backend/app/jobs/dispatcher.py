@@ -171,6 +171,11 @@ class JobDispatcher:
         # Arka plan görevlerini tutan set — GC'den koruması için referans tutulur.
         # Görev tamamlanınca kendini setten çıkarır.
         self._background_tasks: set[asyncio.Task] = set()
+        # job_id → asyncio.Task eşlemesi. Cancel endpoint bu mapping üzerinden
+        # çalışan görevi bulur ve .cancel() çağırır. Görev biter bitmez kendini
+        # siler (done_callback). Aynı job_id için yeniden dispatch gelirse
+        # eski task zaten bitmiş olmalıdır; race korumalı overwrite kabul edilir.
+        self._active_tasks: dict[str, asyncio.Task] = {}
 
     async def dispatch(self, job_id: str) -> None:
         """
@@ -289,12 +294,54 @@ class JobDispatcher:
         async def _run_pipeline() -> None:
             try:
                 await runner.run(job_id)
+            except asyncio.CancelledError:
+                # Cancel endpoint (veya shutdown) pipeline'ı durdurdu.
+                # DB row'u zaten 'cancelled' olarak işaretlenmiş olmalı (endpoint
+                # önce transition yapıp sonra task.cancel çağırıyor). Eğer status
+                # hâlâ running'de kaldıysa — örn. cancel endpoint DB commit öncesi
+                # patlarsa — recovery scanner sonunda stale-olarak işaretler.
+                logger.info(
+                    "JobDispatcher: pipeline cancelled. job_id=%s", job_id,
+                )
+                # CancelledError'ı yutma; asyncio task.cancelled() True olmalı.
+                raise
             finally:
                 await pipeline_db.close()
 
         # Task referansı set'te tutulur — GC'den korunmak için.
         task = asyncio.create_task(_run_pipeline())
         self._background_tasks.add(task)
-        task.add_done_callback(self._background_tasks.discard)
+        self._active_tasks[job_id] = task
+
+        def _on_done(t: asyncio.Task, _job_id: str = job_id) -> None:
+            self._background_tasks.discard(t)
+            # Sadece bu job için kayıtlı task'sa sil — çok ender race durumunda
+            # (aynı job_id yeniden dispatch edildiyse) yeni task'ı düşürme.
+            current = self._active_tasks.get(_job_id)
+            if current is t:
+                self._active_tasks.pop(_job_id, None)
+
+        task.add_done_callback(_on_done)
 
         logger.info("JobDispatcher: pipeline arka plan görevi başlatıldı. job_id=%s", job_id)
+
+    async def cancel(self, job_id: str) -> bool:
+        """
+        Çalışan bir job'un asyncio task'ini iptal eder.
+
+        Returns:
+            True  — cancel sinyali gönderildi (task vardı ve bitmemişti).
+            False — job için aktif task yoktu (zaten bitmiş veya dispatcher
+                    bu process'te başlatmamış).
+
+        Not: Bu metot task'in tamamen kapanmasını beklemez. İptal sinyali
+        propagation'ı Python asyncio'ya bırakır; render executor'ları ise
+        kendi subprocess'lerini try/finally veya CancelledError bloklarında
+        kill etmekle yükümlüdür.
+        """
+        task = self._active_tasks.get(job_id)
+        if task is None or task.done():
+            return False
+        task.cancel()
+        logger.info("JobDispatcher: cancel() çağrıldı. job_id=%s", job_id)
+        return True

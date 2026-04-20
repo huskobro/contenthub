@@ -135,6 +135,17 @@ async def run_startup_recovery(
             )
 
     # --- Queued job staleness check ---
+    # A job that is queued but has not been picked up for >threshold minutes
+    # is stuck — the dispatcher that was supposed to pick it up either
+    # crashed before starting it or never existed (e.g. process killed between
+    # job creation and dispatch). Leaving such rows in 'queued' forever means
+    # they accumulate in operator lists and never surface as terminal.
+    #
+    # The state machine only permits queued→{running,cancelled}; we cannot go
+    # queued→failed directly (see contracts/state_machine.py). Semantically
+    # 'cancelled' is the correct terminal for a job that never started, so we
+    # transition stale queued rows to 'cancelled' with a clear last_error so
+    # the operator sees exactly what happened and can retry / clone.
     queued_cutoff = now - timedelta(minutes=queued_stale_threshold_minutes)
     queued_result = await db.execute(
         select(Job).where(Job.status == "queued")
@@ -150,12 +161,35 @@ async def run_startup_recovery(
                 created = created.replace(tzinfo=timezone.utc)
             is_stale = created < queued_cutoff
 
-        if is_stale:
-            summary.stale_queued_jobs += 1
-            summary.stale_queued_job_ids.append(job.id)
-            logger.warning(
-                "Recovery: stale queued job found — id=%s, created_at=%s (queued for >%d min)",
-                job.id, job.created_at, queued_stale_threshold_minutes,
+        if not is_stale:
+            continue
+
+        summary.stale_queued_jobs += 1
+        summary.stale_queued_job_ids.append(job.id)
+        logger.warning(
+            "Recovery: stale queued job found — id=%s, created_at=%s "
+            "(queued for >%d min); transitioning to cancelled.",
+            job.id, job.created_at, queued_stale_threshold_minutes,
+        )
+        reason = (
+            "Stuck in 'queued' for more than "
+            f"{queued_stale_threshold_minutes} minutes — dispatcher "
+            "never picked this job up (process likely crashed before "
+            "dispatch). Marked cancelled during startup recovery."
+        )
+        try:
+            transitioned = await service.transition_job_status(
+                db, job.id, "cancelled",
+            )
+            # The 'cancelled' transition clears last_error by design (see
+            # service.transition_job_status docstring). Persist the recovery
+            # reason as a follow-up data field update so operators can see why.
+            transitioned.last_error = reason
+            await db.commit()
+        except Exception as exc:
+            logger.error(
+                "Recovery: could not transition stale queued job %s to cancelled: %s",
+                job.id, exc,
             )
 
     if summary.recovered_jobs == 0 and summary.stale_queued_jobs == 0:
@@ -170,10 +204,8 @@ async def run_startup_recovery(
             )
         if summary.stale_queued_jobs > 0:
             logger.warning(
-                "Recovery: %d queued job(s) appear stuck (>%d min). IDs: %s. "
-                "Consider manual retry or cancellation.",
+                "Recovery: %d stale queued job(s) transitioned to cancelled. IDs: %s.",
                 summary.stale_queued_jobs,
-                queued_stale_threshold_minutes,
                 summary.stale_queued_job_ids,
             )
 

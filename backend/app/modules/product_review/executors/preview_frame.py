@@ -260,6 +260,20 @@ class ProductReviewPreviewFrameExecutor(StepExecutor):
                 proc.kill()
                 await proc.wait()
                 return {"success": False, "error": f"preview_frame timeout ({_DEFAULT_TIMEOUT_SECONDS}s)"}
+            except asyncio.CancelledError:
+                logger.warning(
+                    "preview_frame: cancel alındı, subprocess kill. job=%s pid=%s",
+                    job_id, getattr(proc, "pid", "?"),
+                )
+                try:
+                    proc.kill()
+                except ProcessLookupError:
+                    pass
+                try:
+                    await proc.wait()
+                except Exception:
+                    pass
+                raise
             stderr_text = (stderr or b"").decode("utf-8", errors="replace")
             if proc.returncode != 0:
                 logger.error(

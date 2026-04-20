@@ -333,6 +333,32 @@ def _scrape_og_image(article_url: str) -> Optional[str]:
         return None
 
 
+async def _scrape_og_image_async(article_url: str) -> Optional[str]:
+    """
+    Async off-load wrapper around the blocking `_scrape_og_image`.
+
+    The sync `_scrape_og_image` uses `urllib.request.urlopen` which blocks the
+    calling thread for up to `_OG_SCRAPE_TIMEOUT` seconds. When called from
+    inside an async scan loop (event loop thread), this freezes the whole
+    FastAPI worker — heartbeats miss, other requests queue, SSE stalls.
+    We therefore run the blocking call on the default thread pool via
+    `asyncio.to_thread`, which returns the event loop to the scheduler.
+
+    Contract identical to `_scrape_og_image`: never raises, returns url or None.
+    """
+    import asyncio as _asyncio
+    try:
+        return await _asyncio.to_thread(_scrape_og_image, article_url)
+    except Exception as exc:
+        # `_scrape_og_image` swallows everything internally; this guard is
+        # purely defensive in case `to_thread` itself fails (extremely rare).
+        logger.debug(
+            "_scrape_og_image_async: off-load basarisiz — %s url=%s",
+            type(exc).__name__, article_url[:80],
+        )
+        return None
+
+
 def normalize_entry(
     entry: object,
     source: object,
@@ -546,9 +572,14 @@ async def execute_rss_scan(
     except Exception:
         pass  # Fall back to module defaults
 
-    # Propagate scrape flag to normalize_entry — avoids threading the flag
-    # through the signature (many existing callers + tests).
-    setattr(normalize_entry, "_og_scrape_enabled", og_scrape_enabled)
+    # IMPORTANT: normalize_entry's own blocking scrape path is disabled for the
+    # async scan runtime — the loop below performs the scrape via
+    # `_scrape_og_image_async` (asyncio.to_thread off-load) so the event loop
+    # stays responsive. Tests that call normalize_entry directly are unaffected
+    # because they don't override this flag.
+    setattr(normalize_entry, "_og_scrape_enabled", False)
+    # Preserve the user's intent so the async loop below can honor it.
+    _og_scrape_enabled_for_loop: bool = bool(og_scrape_enabled)
 
     # -- Mevcut item'lari yukle (hard + soft dedupe, rolling window) --
     existing_items = await _load_existing_items(db, source.id, window_days=dedupe_window_days)
@@ -569,6 +600,22 @@ async def execute_rss_scan(
         if normalized is None:
             skipped_invalid += 1
             continue
+
+        # Async og:image fallback — off-loads blocking urlopen to a thread so
+        # the event loop (heartbeats, SSE, other requests) stays responsive.
+        # normalize_entry has already been told to skip its own sync scrape.
+        if (
+            _og_scrape_enabled_for_loop
+            and not normalized.get("image_url")
+            and normalized.get("url")
+        ):
+            scraped = await _scrape_og_image_async(normalized["url"])
+            if scraped:
+                normalized["image_url"] = scraped
+                if not normalized.get("image_urls_json"):
+                    normalized["image_urls_json"] = json.dumps(
+                        [scraped], ensure_ascii=False
+                    )
 
         decision: DedupeDecision = evaluate_entry(
             url=normalized["url"],

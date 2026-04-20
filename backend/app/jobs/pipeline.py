@@ -25,6 +25,7 @@ All state transitions go through service.transition_job_status /
 service.transition_step_status per P-001.
 """
 
+import asyncio
 import json
 import logging
 from datetime import datetime, timezone
@@ -33,6 +34,7 @@ from typing import Optional, TYPE_CHECKING
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import Job, JobStep
+from app.db.session import AsyncSessionLocal
 from app.jobs import service
 from app.jobs.executor import StepExecutor
 from app.jobs.exceptions import (
@@ -48,8 +50,49 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
+# Background heartbeat interval while a step executor is running.
+# Must stay well below recovery.DEFAULT_STALE_THRESHOLD_MINUTES (5 min).
+# 30s gives the startup scanner plenty of safety margin even under load.
+STEP_HEARTBEAT_INTERVAL_SECONDS: int = 30
+
+
 def _now() -> datetime:
     return datetime.now(timezone.utc)
+
+
+async def _background_heartbeat(job_id: str, interval_seconds: int) -> None:
+    """
+    Periodically bump heartbeat_at on the given job row using a private DB
+    session (short-lived per tick) so we never interleave with the pipeline's
+    own session that the step executor is using.
+
+    Exits cleanly when cancelled (asyncio.CancelledError is re-raised).
+
+    Any DB error is logged and the loop continues — the goal is liveness
+    signalling, not strict correctness. If the DB is genuinely down, the
+    step executor will fail on its own.
+    """
+    try:
+        while True:
+            await asyncio.sleep(interval_seconds)
+            try:
+                async with AsyncSessionLocal() as session:
+                    job = await service.get_job(session, job_id)
+                    if job is None:
+                        # Job vanished — stop heartbeating.
+                        return
+                    job.heartbeat_at = _now()
+                    await session.commit()
+            except asyncio.CancelledError:
+                raise
+            except Exception as exc:  # noqa: BLE001
+                logger.warning(
+                    "background heartbeat write failed: job=%s err=%s",
+                    job_id, exc,
+                )
+    except asyncio.CancelledError:
+        # Expected when the step finishes — swallow and exit.
+        return
 
 
 class PipelineRunner:
@@ -248,8 +291,33 @@ class PipelineRunner:
                 logger.warning("Audit log write failed (%s): %s", "job.step_fail", exc)
             return False
 
+        # Background heartbeat task — keeps heartbeat_at fresh for the entire
+        # duration of the executor. Without this, long-running steps (e.g.
+        # Remotion render ~600s) look stale to the startup recovery scanner
+        # because heartbeat is only bumped at step boundaries otherwise.
+        heartbeat_task = asyncio.create_task(
+            _background_heartbeat(job.id, STEP_HEARTBEAT_INTERVAL_SECONDS)
+        )
+
         try:
-            result: dict = await executor.execute(job, step)
+            try:
+                result: dict = await executor.execute(job, step)
+            finally:
+                heartbeat_task.cancel()
+                try:
+                    await heartbeat_task
+                except asyncio.CancelledError:
+                    # Expected: we just cancelled the task ourselves. Log at
+                    # debug so operators can still see the join completed.
+                    logger.debug(
+                        "background heartbeat joined after cancel: job=%s step=%s",
+                        job.id, step_key,
+                    )
+                except Exception as exc:  # noqa: BLE001
+                    logger.warning(
+                        "background heartbeat task raised on shutdown: "
+                        "job=%s step=%s err=%s", job.id, step_key, exc,
+                    )
         except StepExecutionError as exc:
             logger.error(
                 "Step '%s' on job '%s' failed: %s", step_key, job.id, exc

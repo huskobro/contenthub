@@ -240,6 +240,21 @@ class ProductReviewPreviewMiniExecutor(StepExecutor):
                     "success": False,
                     "error": f"preview_mini timeout ({_DEFAULT_TIMEOUT_SECONDS}s)",
                 }
+            except asyncio.CancelledError:
+                # Cancel — subprocess'i mutlaka öldür, CancelledError'ı re-raise et.
+                logger.warning(
+                    "preview_mini: cancel alındı, subprocess kill. job=%s pid=%s",
+                    job_id, getattr(proc, "pid", "?"),
+                )
+                try:
+                    proc.kill()
+                except ProcessLookupError:
+                    pass
+                try:
+                    await proc.wait()
+                except Exception:
+                    pass
+                raise
             stderr_text = (stderr or b"").decode("utf-8", errors="replace")
             if proc.returncode != 0:
                 logger.error(

@@ -16,7 +16,7 @@ import asyncio
 import logging
 from datetime import datetime, timezone, timedelta
 
-from sqlalchemy import select
+from sqlalchemy import select, update as sa_update
 
 from app.db.models import Job
 
@@ -106,6 +106,39 @@ async def _check_and_retry(
                 if now < earliest_retry:
                     continue  # Not yet time to retry
 
+                # --- Atomic retry lock on the parent row ---------------------
+                # Race scenario: two overlapping poll cycles (e.g. slow DB,
+                # restart during a cycle, or multiple schedulers) can each
+                # select the same failed job and spawn duplicate child jobs.
+                #
+                # Guard: conditionally increment the parent's retry_count via
+                # a compare-and-swap style UPDATE. Only ONE writer succeeds;
+                # the loser sees rowcount == 0 and skips silently. This also
+                # makes the parent ineligible for the next poll because its
+                # retry_count has moved forward.
+                lock_stmt = (
+                    sa_update(Job)
+                    .where(
+                        Job.id == job.id,
+                        Job.status == "failed",
+                        Job.retry_count == job.retry_count,
+                    )
+                    .values(retry_count=job.retry_count + 1)
+                )
+                lock_result = await db.execute(lock_stmt)
+                if lock_result.rowcount != 1:
+                    logger.info(
+                        "Auto-retry lock race: job %s already picked up by "
+                        "another cycle (rowcount=%s); skipping.",
+                        job.id, lock_result.rowcount,
+                    )
+                    await db.commit()  # release any pending tx state
+                    continue
+                # Keep local object consistent with what's now in DB.
+                parent_retry_count_before = job.retry_count
+                job.retry_count = parent_retry_count_before + 1
+                await db.commit()
+
                 # Use the rerun pattern (same as router retry endpoint):
                 # Create a new job with the same inputs and dispatch it.
                 from app.jobs.schemas import JobCreate
@@ -123,8 +156,9 @@ async def _check_and_retry(
                 )
                 new_job = await create_job(db, job_create)
 
-                # Carry forward retry lineage count
-                new_job.retry_count = job.retry_count + 1
+                # Carry forward retry lineage count — based on what the
+                # parent's count was BEFORE we incremented it for the lock.
+                new_job.retry_count = parent_retry_count_before + 1
                 await db.commit()
                 await db.refresh(new_job)
 

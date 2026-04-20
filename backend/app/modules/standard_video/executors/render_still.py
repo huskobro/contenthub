@@ -294,6 +294,20 @@ class RenderStillExecutor(StepExecutor):
                         f"job={job_id}"
                     ),
                 }
+            except asyncio.CancelledError:
+                logger.warning(
+                    "renderStill: cancel alındı, subprocess kill. job=%s pid=%s",
+                    job_id, getattr(proc, "pid", "?"),
+                )
+                try:
+                    proc.kill()
+                except ProcessLookupError:
+                    pass
+                try:
+                    await proc.wait()
+                except Exception:
+                    pass
+                raise
 
             stdout_text = stdout.decode("utf-8", errors="replace") if stdout else ""
             stderr_text = stderr.decode("utf-8", errors="replace") if stderr else ""
