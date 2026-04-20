@@ -180,28 +180,31 @@ Job başladığında tüm ayar ve prompt değerleri snapshot'lanır — çalış
 
 ```bash
 git clone <repo-url> ContentHub
-cd ContentHub/backend
+cd ContentHub
 
-# Sanal ortam + bağımlılıklar
+# Backend sanal ortam + bağımlılıklar
+cd backend
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -e ".[dev]"
 
-# Veritabanı başlat
-alembic upgrade head        # DB'yi oluşturur (head: phase_al_001)
-python -m app.db.seed       # admin kullanıcı + KNOWN_SETTINGS tohumlar
-
-# Frontend
+# Frontend bağımlılıkları
 cd ../frontend
 npm install
-npm run dev
-# http://localhost:5173
 
-# Ayrı terminalde backend
-cd ../backend
-uvicorn app.main:app --reload --port 8000
-# http://localhost:8000
+# Tek komut: alembic upgrade head + seeding + backend + frontend
+cd ..
+./start.sh
+# Backend  : http://localhost:8000
+# Frontend : http://localhost:5173
+# İlk admin: admin@contenthub.local / admin123  (hemen değiştirin)
 ```
+
+Seeding (admin kullanıcı, KNOWN_SETTINGS, prompt blokları, wizard configs,
+product_review blueprint'leri) backend lifespan handler'ı içinde otomatik
+çalışır; ayrı bir seed komutu yoktur. Manuel doğrulama isterseniz
+`cd backend && source .venv/bin/activate && python -m alembic upgrade head`
+çalıştırabilirsiniz — start.sh bunu zaten yapıyor ve başarısızsa boot etmiyor.
 
 Veya repo kökünden: `./start.sh` ya da `ContentHub.command` çift tıkla.
 

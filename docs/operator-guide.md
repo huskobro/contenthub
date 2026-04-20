@@ -61,15 +61,24 @@ source .venv/bin/activate
 
 Bu komut SQLite veritabanini `backend/data/contenthub.db` yolunda olusturur ve tum migration'lari uygular (head: `phase_al_001`).
 
-Migrasyon sonrasi seed calistirin:
-
-```bash
-python -m app.db.seed
-```
-
-Bu adim admin kullanicisini ve KNOWN_SETTINGS kayitlarini olusturur.
+Seeding (admin kullanici, KNOWN_SETTINGS, prompt bloklari, wizard configs,
+product_review blueprint'leri) ilk `uvicorn app.main:app` boot'unda
+**otomatik** olarak lifespan handler icinde calisir — ayri bir seed
+komutu yoktur. Ilk admin bilgisi: `admin@contenthub.local` / `admin123`
+(hemen degistirin). NULL password_hash drift durumunda `seed_admin_user`
+otomatik backfill yapar.
 
 > **Not:** `backend/data/contenthub.db` ve `backend/workspace/` git-ignored'dir (runtime-only). Kaynak kontrolune eklemeyin. Detay: `docs/RUNTIME_AND_STORAGE_POLICY.md`.
+
+**Yedekleme / geri alma (Faz 3):**
+```bash
+cd backend
+python scripts/backup_db.py                          # canli DB snapshot al (backend acik olabilir)
+python scripts/restore_db.py --list                  # snapshot listesi
+# Geri yukleme DESTRUKTIF — once backend'i durdurun (start.sh Ctrl+C):
+python scripts/restore_db.py <snapshot.db> --confirm # eski DB .replaced_<ts> olarak yanda tutulur
+```
+
 
 ### 2.5 Frontend Kurulumu
 

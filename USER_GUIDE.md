@@ -329,10 +329,11 @@ Pass-3'te tespit edilen 9 navigate-404 + 2 yalan-handler + 1 URL mismatch listes
   ```bash
   cd backend && python3 -m venv .venv && source .venv/bin/activate
   pip install -e ".[dev]"
-  alembic upgrade head      # DB oluşturur (phase_al_001)
-  python -m app.db.seed     # admin user + KNOWN_SETTINGS
-  cd ../frontend && npm install && npm run dev
+  cd ../frontend && npm install
+  cd .. && ./start.sh      # alembic upgrade head + backend + frontend; seeding (admin, KNOWN_SETTINGS, prompt blocks, wizard configs) runs automatically in the lifespan handler.
   ```
+  İlk boot sonrası admin: `admin@contenthub.local` / `admin123` — hemen değiştirin.
+- **Yedekleme / geri alma (Faz 3):** canlı DB için `python scripts/backup_db.py`, liste için `python scripts/restore_db.py --list`, geri yükleme için backend durdurulduktan sonra `python scripts/restore_db.py <snapshot> --confirm`. Detay: `docs/RUNTIME_AND_STORAGE_POLICY.md` → Backup & Restore.
 - **DB ve workspace git-ignored:** `backend/data/contenthub.db` ve `backend/workspace/` runtime-only; kaynak kontrolünde yoktur. Sadece `.gitkeep` dosyaları izlenir. Detay: `docs/RUNTIME_AND_STORAGE_POLICY.md`.
 - **basePath-aware Aurora bileşeni:** `AuroraUserJobDetailPage` `useLocation()` ile `/admin` ya da `/user` algılar; tek bileşen iki context'e hizmet eder.
 - **SurfacePageOverride:** `useSurfacePageOverride("user.X")` → `AURORA_PAGE_OVERRIDES` map'inde varsa Aurora bileşeni döner; yoksa legacy. `register.tsx` tek truth source. Kill-switch: `ui.surface.infrastructure.enabled=false` → deterministik fallback.

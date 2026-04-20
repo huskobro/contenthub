@@ -42,10 +42,23 @@ fresh Alembic migrations.
 **Fresh setup flow:**
 ```bash
 git clone <repo>
-cd ContentHub/backend
-python -m alembic upgrade head   # creates contenthub.db from schema
-python -m app.db.seed            # seeds initial data (admin user, known settings)
+cd ContentHub
+./start.sh                       # runs alembic upgrade head + boots backend + frontend
+                                 # seeding happens automatically inside the lifespan
+                                 # handler (admin user, KNOWN_SETTINGS, prompt blocks,
+                                 # wizard configs, product_review blueprints).
 ```
+
+Manual equivalent if you do not want to use start.sh:
+```bash
+cd ContentHub/backend
+source .venv/bin/activate
+python -m alembic upgrade head   # creates contenthub.db from schema
+uvicorn app.main:app             # lifespan handler performs all seeding on first boot
+```
+
+Initial admin credentials after first boot: `admin@contenthub.local` / `admin123`
+(change immediately via the admin panel).
 
 **Do NOT:**
 - Commit `contenthub.db` or any `.db-shm`/`.db-wal` files
@@ -187,18 +200,36 @@ cd backend
 python -m venv .venv
 source .venv/bin/activate
 pip install -e ".[dev]"
-alembic upgrade head          # ← initializes DB from schema
-python -m app.db.seed         # ← seeds admin user + known settings
+# DB schema + seeding happens automatically on first uvicorn boot
+# (alembic upgrade head can also be invoked manually for verification).
 
 # Frontend setup
 cd ../frontend
 npm install
-npm run dev
 
-# Backend dev server
-cd ../backend
-uvicorn app.main:app --reload
+# One-shot: from the repo root, start.sh runs alembic + backend + frontend
+cd ..
+./start.sh
 ```
+
+`start.sh` handles, in order:
+1. Verifies `backend/.venv` and node are present, warns if `backend/.env` is missing or `CONTENTHUB_JWT_SECRET` is empty.
+2. Runs `python -m alembic upgrade head` and **refuses to boot** if the migration fails.
+3. Frees ports 8000 and 5173.
+4. Starts uvicorn (backend) and vite (frontend).
+
+Inside the backend lifespan handler (`app/main.py`), the following run automatically before the server accepts requests:
+- WAL checkpoint
+- Startup recovery (any stale running jobs are marked failed)
+- Module registry registration
+- `seed_known_settings`, visibility-flag sync, default-value sync, orphan repair
+- Workspace root resolution
+- `seed_prompt_blocks`
+- `seed_admin_user` — creates `admin@contenthub.local` / `admin123` if no admin exists; backfills NULL `password_hash` for drift recovery
+- `seed_wizard_configs`
+- `seed_product_review_blueprints`
+- Credential/provider resolution and provider registry init
+- Publish, auto-scan, and job auto-retry schedulers (where enabled)
 
 The following directories will be created at runtime (not from git):
 - `backend/data/contenthub.db` — created by Alembic
@@ -206,5 +237,54 @@ The following directories will be created at runtime (not from git):
 
 ---
 
+## Backup & Restore (Faz 3)
+
+ContentHub ships with a minimum honest backup/restore CLI. It is plain
+SQLite — no proprietary format — and uses SQLite's online backup API,
+so it is safe to run while the backend is live.
+
+**Take a snapshot (safe while backend is running):**
+```bash
+cd backend
+python scripts/backup_db.py
+# → prints absolute path of the snapshot, e.g.
+#   /…/backend/data/contenthub_backup_20260421_160102.db
+```
+
+The snapshot is a regular `.db` file; it can be opened with any SQLite
+tool, copied off-machine, etc.
+
+**List existing snapshots:**
+```bash
+cd backend
+python scripts/restore_db.py --list
+```
+
+**Restore from a snapshot (DESTRUCTIVE — backend MUST be stopped):**
+```bash
+# 1. Stop the backend (Ctrl+C on start.sh)
+# 2. Restore — note the explicit --confirm gate
+cd backend
+python scripts/restore_db.py /path/to/contenthub_backup_<ts>.db --confirm
+# 3. Restart with start.sh
+```
+
+The script:
+- Validates the snapshot is a real SQLite file before touching the live DB.
+- Moves the existing DB and WAL/SHM sidecars to `<file>.replaced_<ts>`
+  so the operator has an explicit rollback path.
+- Refuses to run without `--confirm` (no accidental restores).
+
+**Limitations (called out for honesty):**
+- No automatic schedule yet — operator runs `backup_db.py` manually or
+  via cron.
+- No off-machine push — the snapshot stays under `backend/data/`.
+- No compression — snapshots are full DB-sized files.
+- Restore requires backend downtime; there is no hot-swap.
+
+---
+
 *Policy enforced as of commit `ae0c057` (chore: post-merge cleanup) +
-the following runtime policy closure commit.*
+the following runtime policy closure commit. Backup/restore section
+added as part of Faz 3 — first-run / migration / upgrade / restore
+hardening.*

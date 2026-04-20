@@ -49,7 +49,37 @@ def upgrade() -> None:
     ]
 
     if new_cols_needed or old_cols_present:
-        # Data migration only makes sense when old columns are still present
+        # ORDER MATTERS:
+        #   1. ADD new columns first (so the UPDATE below has somewhere to write)
+        #   2. UPDATE old → new (only if old columns are still present)
+        #   3. DROP old columns
+        #
+        # Faz 3 fix: previously the UPDATE ran before add_column, which crashed
+        # on a fresh DB with `no such column: source_scan_mode`. The fresh DB
+        # path goes through this migration with old cols present (created by
+        # 87a789ff3f45) but new cols absent — so the UPDATE must come AFTER
+        # the add_column step.
+
+        # ---- Step 1: ADD new columns ----
+        _COL_DEFS = {
+            "owner_user_id": sa.Column("owner_user_id", sa.String(36), nullable=True),
+            "name": sa.Column("name", sa.String(255), nullable=False, server_default="Varsayilan Politika"),
+            "is_enabled": sa.Column("is_enabled", sa.Boolean(), nullable=False, server_default=sa.text("0")),
+            "source_scan_mode": sa.Column("source_scan_mode", sa.String(50), nullable=False, server_default="disabled"),
+            "draft_generation_mode": sa.Column("draft_generation_mode", sa.String(50), nullable=False, server_default="manual_review"),
+            "render_mode": sa.Column("render_mode", sa.String(50), nullable=False, server_default="disabled"),
+            "publish_mode": sa.Column("publish_mode", sa.String(50), nullable=False, server_default="manual_review"),
+            "post_publish_mode": sa.Column("post_publish_mode", sa.String(50), nullable=False, server_default="disabled"),
+            "publish_windows_json": sa.Column("publish_windows_json", sa.Text(), nullable=True),
+            "platform_rules_json": sa.Column("platform_rules_json", sa.Text(), nullable=True),
+        }
+        if new_cols_needed:
+            with op.batch_alter_table("automation_policies") as batch_op:
+                for col_name in new_cols_needed:
+                    batch_op.add_column(_COL_DEFS[col_name])
+
+        # ---- Step 2: UPDATE old → new (only when old cols are still around) ----
+        # Data migration only makes sense when old columns are still present.
         if old_cols_present and _has_column("automation_policies", "cp_source_scan"):
             op.execute("""
                 UPDATE automation_policies SET
@@ -83,25 +113,11 @@ def upgrade() -> None:
                     platform_rules_json = platform_specific_rules
             """)
 
-        # Single batch_alter_table — add new + drop old in one pass to avoid
-        # SQLite topological sort circular dependency.
-        _COL_DEFS = {
-            "owner_user_id": sa.Column("owner_user_id", sa.String(36), nullable=True),
-            "name": sa.Column("name", sa.String(255), nullable=False, server_default="Varsayilan Politika"),
-            "is_enabled": sa.Column("is_enabled", sa.Boolean(), nullable=False, server_default=sa.text("0")),
-            "source_scan_mode": sa.Column("source_scan_mode", sa.String(50), nullable=False, server_default="disabled"),
-            "draft_generation_mode": sa.Column("draft_generation_mode", sa.String(50), nullable=False, server_default="manual_review"),
-            "render_mode": sa.Column("render_mode", sa.String(50), nullable=False, server_default="disabled"),
-            "publish_mode": sa.Column("publish_mode", sa.String(50), nullable=False, server_default="manual_review"),
-            "post_publish_mode": sa.Column("post_publish_mode", sa.String(50), nullable=False, server_default="disabled"),
-            "publish_windows_json": sa.Column("publish_windows_json", sa.Text(), nullable=True),
-            "platform_rules_json": sa.Column("platform_rules_json", sa.Text(), nullable=True),
-        }
-        with op.batch_alter_table("automation_policies") as batch_op:
-            for col_name in new_cols_needed:
-                batch_op.add_column(_COL_DEFS[col_name])
-            for col_name in old_cols_present:
-                batch_op.drop_column(col_name)
+        # ---- Step 3: DROP old columns ----
+        if old_cols_present:
+            with op.batch_alter_table("automation_policies") as batch_op:
+                for col_name in old_cols_present:
+                    batch_op.drop_column(col_name)
 
     # --- Create operations_inbox_items table (idempotent) ---
     if not _table_exists("operations_inbox_items"):

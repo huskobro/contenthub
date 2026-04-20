@@ -91,6 +91,26 @@ echo "  Node    : $("$NODE" --version)"
 echo ""
 
 # ---------------------------------------------------------------------------
+# .env kontrolü — kritik production değerleri set edilmemişse uyarı ver
+# ---------------------------------------------------------------------------
+ENV_FILE="$BACKEND_DIR/.env"
+if [ ! -f "$ENV_FILE" ]; then
+  echo "  UYARI: backend/.env bulunamadı."
+  echo "         Dev fallback'lar devreye girecek (JWT secret, encryption key)."
+  echo "         Production için: cp backend/.env.example backend/.env ve doldurun."
+  echo ""
+else
+  # JWT secret boş mu? Boşsa dev fallback insecure mode warning.
+  if grep -qE '^CONTENTHUB_JWT_SECRET=\s*$' "$ENV_FILE" 2>/dev/null \
+     || ! grep -qE '^CONTENTHUB_JWT_SECRET=' "$ENV_FILE" 2>/dev/null; then
+    echo "  UYARI: CONTENTHUB_JWT_SECRET .env içinde boş veya yok."
+    echo "         Dev fallback kullanılacak (production'da güvensiz)."
+    echo "         Üretmek için: openssl rand -hex 32"
+    echo ""
+  fi
+fi
+
+# ---------------------------------------------------------------------------
 # DB: Alembic migration — her başlatmada schema'nın güncel olduğunu garanti et
 # ---------------------------------------------------------------------------
 cd "$BACKEND_DIR"
