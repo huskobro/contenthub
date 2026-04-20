@@ -1,0 +1,36 @@
+# Backend runtime exclusions
+# These mirror root .gitignore for clarity at the backend/ level.
+
+# SQLite runtime database and journal files
+data/*.db
+data/*.db-shm
+data/*.db-wal
+data/*.sqlite
+data/*.bak
+data/*.bak-shm
+data/*.bak-wal
+data/*.broken-*
+data/*.pre-*
+!data/.gitkeep
+
+# Job workspace artifacts — audio, video, JSON, subtitles, images.
+# Regenerable from the job engine. Never commit runtime output to git.
+workspace/**
+!workspace/.gitkeep
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environment
+.venv/
+venv/
+
+# Distribution / packaging
+*.egg-info/
+dist/
+build/

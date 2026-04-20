@@ -1,8 +1,0 @@
-{
-  "srt_path": "/Users/huseyincoskun/Downloads/AntigravityProje/ContentHub/backend/workspace/b0102188-7998-4e9c-85a7-5eda343bcf7d/artifacts/subtitles.srt",
-  "word_timing_path": "/Users/huseyincoskun/Downloads/AntigravityProje/ContentHub/backend/workspace/b0102188-7998-4e9c-85a7-5eda343bcf7d/artifacts/word_timing.json",
-  "segment_count": 2,
-  "total_duration_seconds": 55.11,
-  "language": "tr",
-  "timing_mode": "whisper_word"
-}
