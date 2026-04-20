@@ -12,7 +12,9 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "../../stores/authStore";
 import { useToast } from "../../hooks/useToast";
-import { WizardShell, type WizardStep } from "../../components/wizard/WizardShell";
+import { useSurfacePageOverride } from "../../surfaces/SurfaceContext";
+import { UserWizardShell } from "../../components/wizard/UserWizardShell";
+import type { WizardStep } from "../../components/wizard/WizardShell";
 import { ChannelProfileStep } from "../../components/wizard/ChannelProfileStep";
 import { ContentProjectStep } from "../../components/wizard/ContentProjectStep";
 import { TemplateSelector } from "../../components/preview/TemplateSelector";
@@ -121,10 +123,21 @@ async function createStandardVideo(
 }
 
 // ---------------------------------------------------------------------------
-// Component
+// Public entry — Aurora `user.create.video` override varsa onu kullan; yoksa
+// legacy 6-adımlı wizard.
 // ---------------------------------------------------------------------------
 
 export function CreateVideoWizardPage() {
+  const Override = useSurfacePageOverride("user.create.video");
+  if (Override) return <Override />;
+  return <LegacyCreateVideoWizardPage />;
+}
+
+// ---------------------------------------------------------------------------
+// Legacy wizard (6 adımlı)
+// ---------------------------------------------------------------------------
+
+function LegacyCreateVideoWizardPage() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const toast = useToast();
@@ -209,7 +222,7 @@ export function CreateVideoWizardPage() {
   }
 
   return (
-    <WizardShell
+    <UserWizardShell
       title="Yeni Video Olustur"
       steps={STEPS}
       currentStep={step}
@@ -498,7 +511,7 @@ export function CreateVideoWizardPage() {
           )}
         </div>
       )}
-    </WizardShell>
+    </UserWizardShell>
   );
 }
 

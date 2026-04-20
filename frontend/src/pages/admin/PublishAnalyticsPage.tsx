@@ -3,6 +3,9 @@
  *
  * Dedicated publish analytics: status funnel, platform breakdown,
  * publish trends, and entity-level filtering.
+ *
+ * Public entry point. Aurora surface override (admin.publish.analytics)
+ * geçerliyse onu kullanır; aksi halde legacy yüzeye düşer.
  */
 
 import { Link } from "react-router-dom";
@@ -20,6 +23,7 @@ import { ExportButton } from "../../components/analytics/ExportButton";
 import { TrendChart } from "../../components/shared/charts/TrendChart";
 import { ComparisonBar } from "../../components/shared/charts/ComparisonBar";
 import { DistributionDonut } from "../../components/shared/charts/DistributionDonut";
+import { useSurfacePageOverride } from "../../surfaces/SurfaceContext";
 
 /* ------------------------------------------------------------------ */
 /* Formatters                                                         */
@@ -47,6 +51,12 @@ function fmtDuration(seconds: number | null | undefined): string {
 /* ------------------------------------------------------------------ */
 
 export function PublishAnalyticsPage() {
+  const Override = useSurfacePageOverride("admin.publish.analytics");
+  if (Override) return <Override />;
+  return <LegacyPublishAnalyticsPage />;
+}
+
+function LegacyPublishAnalyticsPage() {
   const analyticsFilters = useAnalyticsFilters("all_time");
   const { data, isLoading, isError } = usePublishAnalytics(analyticsFilters.apiParams);
 

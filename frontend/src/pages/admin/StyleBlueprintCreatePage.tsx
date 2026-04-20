@@ -3,8 +3,15 @@ import { useCreateStyleBlueprint } from "../../hooks/useCreateStyleBlueprint";
 import { StyleBlueprintForm } from "../../components/style-blueprints/StyleBlueprintForm";
 import type { StyleBlueprintFormValues } from "../../components/style-blueprints/StyleBlueprintForm";
 import { useToast } from "../../hooks/useToast";
+import { useSurfacePageOverride } from "../../surfaces/SurfaceContext";
 
 export function StyleBlueprintCreatePage() {
+  const Override = useSurfacePageOverride("admin.style-blueprints.create");
+  if (Override) return <Override />;
+  return <LegacyStyleBlueprintCreatePage />;
+}
+
+function LegacyStyleBlueprintCreatePage() {
   const navigate = useNavigate();
   const toast = useToast();
   const { mutate, isPending, error } = useCreateStyleBlueprint();

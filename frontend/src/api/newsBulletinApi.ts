@@ -341,6 +341,21 @@ export function startBulletinProduction(bulletinId: string): Promise<StartProduc
   return api.post<StartProductionResponse>(`${BASE_URL}/${bulletinId}/start-production`, {});
 }
 
+/**
+ * Atomik 'başlat': bülten alanlarını günceller VE üretim pipeline'ını başlatır.
+ * Dispatch başarısız olursa backend güncellenen alanları eski haline geri alır,
+ * böylece UI hiçbir zaman 'kaydedildi ama iş başlamadı' tutarsızlığı yaşamaz.
+ */
+export function updateAndStartBulletinProduction(
+  bulletinId: string,
+  payload: NewsBulletinUpdatePayload,
+): Promise<StartProductionResponse> {
+  return api.post<StartProductionResponse>(
+    `${BASE_URL}/${bulletinId}/update-and-start-production`,
+    payload,
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Clone
 // ---------------------------------------------------------------------------

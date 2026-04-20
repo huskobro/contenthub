@@ -368,8 +368,14 @@ export function SurfacePickerSection({ scope }: SurfacePickerSectionProps) {
     if (settings.atriumEnabled) set.add("atrium");
     if (settings.bridgeEnabled) set.add("bridge");
     if (settings.canvasEnabled) set.add("canvas");
+    if (settings.auroraEnabled) set.add("aurora");
     return set;
-  }, [settings.atriumEnabled, settings.bridgeEnabled, settings.canvasEnabled]);
+  }, [
+    settings.atriumEnabled,
+    settings.bridgeEnabled,
+    settings.canvasEnabled,
+    settings.auroraEnabled,
+  ]);
 
   // Faz 4E: scope-disallowed yuzeyler listede hic gozukmez. User panel sadece
   // user + both scope yuzeyleri, admin panel sadece admin + both scope

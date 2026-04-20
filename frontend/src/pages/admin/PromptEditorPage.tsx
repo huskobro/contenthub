@@ -20,6 +20,7 @@ import { useToast } from "../../hooks/useToast";
 import { PromptBlockList } from "../../components/prompt-assembly/PromptBlockList";
 import { RelatedRulesSection } from "../../components/prompt-assembly/RelatedRulesSection";
 import { PromptPreviewSection } from "../../components/prompt-assembly/PromptPreviewSection";
+import { useSurfacePageOverride } from "../../surfaces";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -252,6 +253,15 @@ const BLOCK_MODULE_TABS = [
 ];
 
 export function PromptEditorPage() {
+  // Faz 6 P0-7 — Aurora override gate. Aktif surface Aurora ise sade prompt
+  // grid (kart + textarea editör) render edilir; diğer surface'ler tam
+  // editörü görür (legacy LegacyPromptEditorPage).
+  const Override = useSurfacePageOverride("admin.prompts");
+  if (Override) return <Override />;
+  return <LegacyPromptEditorPage />;
+}
+
+function LegacyPromptEditorPage() {
   const [searchParams] = useSearchParams();
   const moduleFilter = searchParams.get("module") ?? "";
   const toast = useToast();
@@ -421,7 +431,7 @@ export function PromptEditorPage() {
               <span>Modül filtresi aktif:</span>
               <code className="font-mono font-semibold">{moduleFilter}</code>
               <a
-                href="/admin/prompt-editor"
+                href="/admin/prompts"
                 className="ml-auto text-xs text-neutral-500 hover:text-neutral-700 no-underline"
               >
                 Tümünü Göster

@@ -1,8 +1,11 @@
 /**
  * SettingGroupSection — Extracted from EffectiveSettingsPanel.
  *
- * Renders a group header with count badges and wired/missing indicators,
- * followed by the list of SettingRow components for that group.
+ * Renders a group header with total + missing count badges, followed by
+ * the list of SettingRow components for that group.
+ *
+ * Registry kontrati: kayitsiz ayar yok — wired sayisi her zaman total'a
+ * esit oldugu icin ayri "wired" rozeti gosterilmez.
  */
 
 import { SettingRow } from "./SettingRow";
@@ -62,11 +65,6 @@ export function SettingGroupSection({
       <div className="flex items-center gap-3 text-base font-semibold text-neutral-700 mb-3 pb-2 border-b border-border">
         <span>{GROUP_LABELS_MAP[group.group] ?? group.label}</span>
         <GroupCountBadge count={group.total} color="var(--ch-neutral-700)" />
-        {group.wired > 0 && (
-          <span className="text-xs text-success-text">
-            {group.wired} wired
-          </span>
-        )}
         {group.missing > 0 && (
           <span className="text-xs text-error-text">
             {group.missing} eksik

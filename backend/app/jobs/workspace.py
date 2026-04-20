@@ -25,7 +25,8 @@ from typing import Optional
 # Default workspace root: two levels up from this file (backend/) + "workspace"
 _DEFAULT_WORKSPACE_ROOT = Path(__file__).parent.parent.parent / "workspace"
 
-# Configurable at runtime (set from Settings Registry in a later phase)
+# Runtime override target: set by `set_workspace_root()` (used by tests and by
+# `app.main` lifespan when CONTENTHUB_WORKSPACE_ROOT env var is provided).
 _workspace_root: Path = _DEFAULT_WORKSPACE_ROOT
 
 

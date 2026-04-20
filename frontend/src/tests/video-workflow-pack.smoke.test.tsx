@@ -263,19 +263,9 @@ describe("Video workflow pack (Phase 269-275)", () => {
       expect(card.textContent).toMatch(/Ana [uü]retim ak[ıi][sş][ıi]/);
     });
 
-    it.skip("post-onboarding handoff still positions video as primary", async () => {
-      // SKIP: PostOnboardingHandoff component is no longer mounted in
-      // UserDashboardPage. Coverage for the handoff's own copy lives in
-      // post-onboarding-handoff.smoke.test.tsx (component-isolated render).
-      expect(true).toBe(true);
-    });
-
-    it.skip("dashboard hub flow chain intact", async () => {
-      // SKIP: DashboardActionHub / hub-flow-desc was removed from the user
-      // dashboard as part of the UserDashboardPage simplification. Hub-like
-      // narrative copy is covered by the user-section-transition-clarity
-      // smoke test where the component is rendered in isolation.
-      expect(true).toBe(true);
-    });
+    // PostOnboardingHandoff ve DashboardActionHub UserDashboardPage'den
+    // kaldirildi; bu bilesenlerin kendi testleri ayrı dosyalarda:
+    //   - post-onboarding-handoff.smoke.test.tsx
+    //   - user-section-transition-clarity.smoke.test.tsx
   });
 });

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useSurfacePageOverride } from "../../surfaces";
 import { useSettingsList } from "../../hooks/useSettingsList";
 import { SettingsTable } from "../../components/settings/SettingsTable";
 import { SettingDetailPanel } from "../../components/settings/SettingDetailPanel";
@@ -45,6 +46,15 @@ const TABS = TAB_ITEMS.map(({ key, label }) => ({ key, label }));
  * 16+ gruptan hangisini inceleyeceğini tek bakışta seçer.
  */
 export function SettingsRegistryPage() {
+  // Faz 6 P0-6 — Aurora override gate. Aktif surface Aurora ise sade
+  // settings inspect sayfası render edilir; diğer surface'ler tam editörü
+  // görür (mevcut credentials/effective/registry üç sekme).
+  const Override = useSurfacePageOverride("admin.settings");
+  if (Override) return <Override />;
+  return <LegacySettingsRegistryPage />;
+}
+
+function LegacySettingsRegistryPage() {
   const { group: groupParam } = useParams<{ group?: string }>();
   const navigate = useNavigate();
 

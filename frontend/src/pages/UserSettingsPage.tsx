@@ -23,6 +23,7 @@ import {
 import { EmptyState } from "../components/design-system/EmptyState";
 import { SkeletonTable } from "../components/design-system/Skeleton";
 import { SurfacePickerSection } from "../components/surfaces/SurfacePickerSection";
+import { useSurfacePageOverride } from "../surfaces";
 
 function SettingEditor({
   settingKey,
@@ -151,6 +152,12 @@ function SettingEditor({
 }
 
 export function UserSettingsPage() {
+  const Override = useSurfacePageOverride("user.settings");
+  if (Override) return <Override />;
+  return <LegacyUserSettingsPage />;
+}
+
+function LegacyUserSettingsPage() {
   const { activeUser, activeUserId } = useActiveUser();
   const { data: settings, isLoading: settingsLoading } = useEffectiveSettings();
   const { data: overrides } = useUserOverrides(activeUserId ?? "");

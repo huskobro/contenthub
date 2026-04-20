@@ -137,10 +137,10 @@ beforeEach(() => {
 });
 
 /* ------------------------------------------------------------------ */
-/*  Phase 318 — Deferred/disabled note standardization                 */
+/*  Phase 318 — Library + analytics filter activation                  */
 /* ------------------------------------------------------------------ */
 
-describe("Phase 318 — Deferred/disabled note standardization", () => {
+describe("Phase 318 — Library + analytics filter activation", () => {
   it("library filter inputs are active (M18-C)", () => {
     renderAdmin("/admin/library");
     const active = screen.getByTestId("library-filters-active");

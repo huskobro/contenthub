@@ -164,13 +164,9 @@ describe("YouTube Analytics Pack (Phase 293-298)", () => {
       expect(note.textContent).toContain("Modul Dagilimi");
     });
 
-    it.skip("content analytics has window selector (M18-B)", () => {
-      // `content-window-selector` testid was retired from
-      // ContentAnalyticsPage in the analytics simplification. Window
-      // selection is now implicit (full-range) with filter area owning
-      // any scoped queries. Intent preserved here; absence is expected.
+    it("content-window-selector is retired (window selection implicit)", () => {
       renderAt("/admin/analytics/content");
-      expect(screen.getByTestId("content-window-selector")).toBeDefined();
+      expect(screen.queryByTestId("content-window-selector")).toBeNull();
     });
 
     it("module distribution section exists", async () => {
@@ -219,20 +215,11 @@ describe("YouTube Analytics Pack (Phase 293-298)", () => {
   /* ---- Phase 297: Date/filter interaction ---- */
 
   describe("Phase 297: date/filter interaction", () => {
-    it.skip("filter area exists on analytics overview", () => {
-      // `analytics-filter-area` testid was retired from
-      // AnalyticsOverviewPage during filter restructure. Filter controls
-      // are now embedded per-section rather than in a top-level area.
+    it("top-level analytics-filter-area + filter-heading/note are retired", () => {
       renderAt("/admin/analytics");
-      expect(screen.getByTestId("analytics-filter-area")).toBeDefined();
-    });
-
-    it.skip("filter heading and note exist", () => {
-      // `filter-heading` / `filter-note` testids retired together with
-      // `analytics-filter-area` — see skip note above.
-      renderAt("/admin/analytics");
-      expect(screen.getByTestId("filter-heading").textContent).toContain("Filtre");
-      expect(screen.getByTestId("filter-note").textContent).toContain("tarih araligi");
+      expect(screen.queryByTestId("analytics-filter-area")).toBeNull();
+      expect(screen.queryByTestId("filter-heading")).toBeNull();
+      expect(screen.queryByTestId("filter-note")).toBeNull();
     });
 
     it("date start filter input exists", () => {
@@ -243,14 +230,6 @@ describe("YouTube Analytics Pack (Phase 293-298)", () => {
     it("date end filter input exists", () => {
       renderAt("/admin/analytics");
       expect(screen.getByTestId("filter-date-end")).toBeDefined();
-    });
-
-    it.skip("filter area is shown when no date range (M17-B)", () => {
-      // See retire notes above — top-level `analytics-filter-area` no
-      // longer exists. Date inputs remain available per-section.
-      renderAt("/admin/analytics");
-      expect(screen.getByTestId("analytics-filter-area")).toBeDefined();
-      expect(screen.getByTestId("filter-date-start")).toBeDefined();
     });
   });
 

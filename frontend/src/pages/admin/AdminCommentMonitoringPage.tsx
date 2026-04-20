@@ -27,6 +27,7 @@ import {
   useModerateYtComments,
 } from "../../hooks/useYoutubeEngagementAdvanced";
 import type { CommentModerationStatus } from "../../api/youtubeEngagementAdvancedApi";
+import { useSurfacePageOverride } from "../../surfaces/SurfaceContext";
 
 // ---------------------------------------------------------------------------
 // Filter options
@@ -79,6 +80,16 @@ function replyStatusBadge(status: string): { label: string; className: string } 
 // ---------------------------------------------------------------------------
 
 export function AdminCommentMonitoringPage() {
+  // Aurora Dusk Cockpit override — `admin.comments.monitoring` slot'una
+  // kayıtlı bir surface varsa o render edilir; yoksa legacy davranış sürer.
+  // Override kaydı `surfaces/manifests/register.tsx` içinde yapılır;
+  // bu dosya sadece trampoline sağlar.
+  const Override = useSurfacePageOverride("admin.comments.monitoring");
+  if (Override) return <Override />;
+  return <LegacyAdminCommentMonitoringPage />;
+}
+
+function LegacyAdminCommentMonitoringPage() {
   // Redesign REV-2 / P0.3c:
   //   Admin scope (adminScopeStore) focused-user ise userFilter default
   //   olarak o user'a atanır. Kullanıcı dropdown'dan başka user seçerse

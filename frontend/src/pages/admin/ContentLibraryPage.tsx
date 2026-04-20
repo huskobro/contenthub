@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
+import { useSurfacePageOverride } from "../../surfaces/SurfaceContext";
 import { useContentLibrary } from "../../hooks/useContentLibrary";
 import {
   cloneStandardVideo,
@@ -34,6 +35,12 @@ function formatDate(iso: string) {
 const PAGE_SIZE = 50;
 
 export function ContentLibraryPage() {
+  const Override = useSurfacePageOverride("admin.library");
+  if (Override) return <Override />;
+  return <LegacyContentLibraryPage />;
+}
+
+function LegacyContentLibraryPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const toast = useToast();

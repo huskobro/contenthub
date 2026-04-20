@@ -24,6 +24,5 @@ Silme yerine arşivleme tercih edildi — denetim izi değeri korunuyor.
 | Kanal auto-import (reimport dahil) | `docs/channel-auto-import.md` |
 | Güncel faz özeti | `docs/tracking/STATUS.md` |
 | Tüm değişiklik kaydı | `docs/tracking/CHANGELOG.md` |
-| Açık/kapalı erteleme listesi | `docs/tracking/DEFERRED_BACKLOG.md` |
 | Mimari kararlar | `docs/project_memory_and_decision_ledger.md` |
 | REV-2+ aktif tasarım dokümanları | `docs/redesign/` |

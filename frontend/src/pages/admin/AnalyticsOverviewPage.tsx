@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useSurfacePageOverride } from "../../surfaces";
 import { useAnalyticsOverview } from "../../hooks/useAnalyticsOverview";
 import { useChannelOverview } from "../../hooks/useChannelOverview";
 import { useAnalyticsFilters } from "../../hooks/useAnalyticsFilters";
@@ -40,6 +41,14 @@ function fmtCount(v: number | null | undefined): string {
 /* ------------------------------------------------------------------ */
 
 export function AnalyticsOverviewPage() {
+  // Faz 6 P0-4 — Aurora override gate. Aktif surface Aurora ise kokpit
+  // analytics render edilir; diğer surface'ler legacy sayfayı görür.
+  const Override = useSurfacePageOverride("admin.analytics.overview");
+  if (Override) return <Override />;
+  return <LegacyAnalyticsOverviewPage />;
+}
+
+function LegacyAnalyticsOverviewPage() {
   const analyticsFilters = useAnalyticsFilters("last_30d");
   const { filters, apiParams } = analyticsFilters;
 

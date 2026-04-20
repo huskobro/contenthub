@@ -28,6 +28,7 @@ import {
   FeedbackBanner,
 } from "../../components/design-system/primitives";
 import type { SyncedComment, CommentListParams } from "../../api/commentsApi";
+import { useSurfacePageOverride } from "../../surfaces";
 
 // ---------------------------------------------------------------------------
 // Filter options
@@ -80,6 +81,12 @@ function replyStatusBadge(status: string): { label: string; className: string } 
 // ---------------------------------------------------------------------------
 
 export function UserCommentsPage() {
+  const Override = useSurfacePageOverride("user.comments");
+  if (Override) return <Override />;
+  return <LegacyUserCommentsPage />;
+}
+
+function LegacyUserCommentsPage() {
   const userId = useAuthStore((s) => s.user?.id ?? null);
 
   // Filters

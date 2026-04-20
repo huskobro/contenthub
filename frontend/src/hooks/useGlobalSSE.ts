@@ -18,8 +18,9 @@ import {
   notificationTypeToCategory,
 } from "../stores/notificationStore";
 import { useAuthStore } from "../stores/authStore";
+import { useSSEStatusStore } from "../stores/sseStatusStore";
 import { useQueryClient } from "@tanstack/react-query";
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 
 interface JobStatusPayload {
   job_id: string;
@@ -129,7 +130,7 @@ export function useGlobalSSE() {
     [addNotification, qc, role],
   );
 
-  return useSSE({
+  const sse = useSSE({
     url: "/api/v1/sse/events",
     enabled: true,
     eventTypes: [
@@ -139,4 +140,15 @@ export function useGlobalSSE() {
     ],
     onEvent: handleEvent,
   });
+
+  // Cockpit Statusbar tüketimi için SSE durumunu store'a yayınla.
+  // connected → "live"; reconnecting → "reconnecting"; aksi → "offline".
+  const setSSEStatus = useSSEStatusStore((s) => s.setStatus);
+  useEffect(() => {
+    if (sse.connected) setSSEStatus("live");
+    else if (sse.reconnecting) setSSEStatus("reconnecting");
+    else setSSEStatus("offline");
+  }, [sse.connected, sse.reconnecting, setSSEStatus]);
+
+  return sse;
 }

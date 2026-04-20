@@ -4,8 +4,19 @@ import { SourceForm } from "../../components/sources/SourceForm";
 import type { SourceCreatePayload } from "../../api/sourcesApi";
 import { createSourceScan, executeSourceScan } from "../../api/sourceScansApi";
 import { useToast } from "../../hooks/useToast";
+import { useSurfacePageOverride } from "../../surfaces/SurfaceContext";
 
+/**
+ * Public entry point. Aurora surface override (admin.sources.create)
+ * geçerliyse onu kullanır; aksi halde legacy yüzeye düşer.
+ */
 export function SourceCreatePage() {
+  const Override = useSurfacePageOverride("admin.sources.create");
+  if (Override) return <Override />;
+  return <LegacySourceCreatePage />;
+}
+
+function LegacySourceCreatePage() {
   const navigate = useNavigate();
   const toast = useToast();
   const { mutate, isPending, error } = useCreateSource();

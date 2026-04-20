@@ -4,6 +4,11 @@
  * Admin Connection Monitoring: all connections across all users.
  * Filters: user, channel, platform, health, reauth.
  * KPI metrics, capability summary, issues highlight.
+ *
+ * Aurora override: trampoline — `admin.connections` slot için Aurora
+ * override mevcutsa AuroraAdminConnectionsPage'e devreder, aksi halde
+ * legacy görünüm render edilir. Override register.tsx içinde ayrı bir
+ * faz adımında bağlanır; bu dosya sadece trampoline'i içerir.
  */
 
 import { useState, useMemo } from "react";
@@ -20,6 +25,7 @@ import {
 } from "../../components/design-system/primitives";
 import type { ConnectionWithHealth, ConnectionHealthKPIs } from "../../api/platformConnectionsApi";
 import { TokenExpiryBadge } from "../../components/publish/TokenExpiryBadge";
+import { useSurfacePageOverride } from "../../surfaces";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -185,6 +191,12 @@ function ConnectionRow({ conn }: { conn: ConnectionWithHealth }) {
 // ---------------------------------------------------------------------------
 
 export function AdminConnectionsPage() {
+  const Override = useSurfacePageOverride("admin.connections");
+  if (Override) return <Override />;
+  return <LegacyAdminConnectionsPage />;
+}
+
+function LegacyAdminConnectionsPage() {
   const [userFilter, setUserFilter] = useState("");
   const [channelFilter, setChannelFilter] = useState("");
   const [platformFilter, setPlatformFilter] = useState("");

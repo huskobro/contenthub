@@ -127,34 +127,15 @@ beforeEach(() => {
 /*  Asset Library Entry Surface                                        */
 /* ------------------------------------------------------------------ */
 
-describe("Asset Library Entry Surface", () => {
-  it.skip("admin overview has asset library quick link", () => {
-    // SKIP: AdminOverviewPage QUICK_LINKS was slimmed down and no longer
-    // exposes a dedicated `quick-link-assets` card. Asset library is reached
-    // via the admin library card + /admin/assets route. The page-level
-    // rendering of the asset library itself is still covered below.
-    expect(true).toBe(true);
+describe("Asset Library Entry Surface — legacy testids removed", () => {
+  it("admin overview no longer exposes quick-link-assets", () => {
+    renderAdmin("/admin");
+    expect(screen.queryByTestId("quick-link-assets")).toBeNull();
   });
 
-  it.skip("asset library quick link desc mentions varlik types", () => {
-    // SKIP: see above — quick-link-assets no longer exists. The asset-type
-    // copy lives on the AssetLibraryPage subtitle/filter, not the overview.
-    expect(true).toBe(true);
-  });
-
-  it.skip("admin sidebar has Varlik Kutuphanesi link", () => {
-    // SKIP: AdminLayout sidebar navigation was simplified. "Varlik
-    // Kutuphanesi" is no longer a top-level sidebar entry; the link exists
-    // via /admin/assets and command palette. Horizon/legacy surfaces still
-    // reference the label, but the default AdminLayout shell does not.
-    expect(true).toBe(true);
-  });
-
-  it.skip("admin overview release readiness includes Kutuphane with dynamic status", () => {
-    // SKIP: Release-readiness widget was removed from AdminOverviewPage.
-    // Dynamic readiness status surfaces in the admin release dashboard
-    // (playwright coverage) rather than the overview.
-    expect(true).toBe(true);
+  it("admin overview no longer exposes release-readiness-library row", () => {
+    renderAdmin("/admin");
+    expect(screen.queryByTestId("readiness-library")).toBeNull();
   });
 });
 
@@ -275,27 +256,10 @@ describe("Asset Library Empty State", () => {
 /*  Asset Library — Admin Overview Verification                        */
 /* ------------------------------------------------------------------ */
 
-describe("Asset Library Verification — Admin Overview", () => {
-  it.skip("admin overview asset entry chain: quick link + readiness-library item", () => {
-    // SKIP: quick-link-assets + readiness-library testids were removed
-    // from AdminOverviewPage. See "Asset Library Entry Surface" block for
-    // full rationale.
-    expect(true).toBe(true);
-  });
-
-  it.skip("readiness-library item shows dynamic status not Desteklenmiyor", () => {
-    // SKIP: readiness-library widget removed from admin overview.
-    expect(true).toBe(true);
-  });
-
-  it.skip("readiness-library item shows aktif detail", () => {
-    // SKIP: readiness-library widget removed from admin overview.
-    expect(true).toBe(true);
-  });
-
-  it.skip("admin overview deferred note does not mention asset library", () => {
-    // SKIP: release-readiness-deferred-note testid was removed from admin
-    // overview. Deferred-scope messaging now lives in release dashboard.
-    expect(true).toBe(true);
+describe("Asset Library Verification — Admin Overview surfaces removed", () => {
+  it("readiness-library + deferred-note testids no longer present on overview", () => {
+    renderAdmin("/admin");
+    expect(screen.queryByTestId("readiness-library")).toBeNull();
+    expect(screen.queryByTestId("release-readiness-deferred-note")).toBeNull();
   });
 });

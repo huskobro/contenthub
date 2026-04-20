@@ -210,18 +210,12 @@ describe("AnalyticsOverviewPage smoke tests", () => {
     );
   });
 
-  it.skip("P: window button click changes selected window (fetch called with new window)", async () => {
-    // SKIP: Window selection now lives in the URL via useSearchParams
-    // (useAnalyticsFilters -> setSearchParams). Clicking the window button
-    // triggers a react-router navigation that uses AbortSignal through
-    // undici in the jsdom environment. jsdom's polyfill is incompatible
-    // with react-router's fetch path ("Expected signal to be AbortSignal"),
-    // so this integration-shaped assertion cannot run here. The behavior
-    // is still covered by the higher-level surface tests that rely on the
-    // real browser (playwright suites). Keeping the test as .skip preserves
-    // the intent for reintroduction once jsdom/undici supports AbortSignal.
-    expect(true).toBe(true);
-  });
+  // NOT: "Pencere butonu tiklaninca fetch yeni pencereyle tekrar cagriliyor"
+  // davranisi URL searchParams uzerinden yonetiliyor; bu jsdom ortaminda
+  // AbortSignal uyumsuzlugu nedeniyle unit testte kosulamiyor, playwright
+  // surface suiti kapsiyor. Bu dosyada window-button render dogrulamasi
+  // (assertion `analytics-window-1d` vs.) yeterli; tekrar tiklama akisi
+  // icin ayri bir browser-test dosyasi var.
 
   it("Q: sub-nav link to operations page is present", () => {
     renderPage(buildFetch(MOCK_OVERVIEW, MOCK_CHANNEL));

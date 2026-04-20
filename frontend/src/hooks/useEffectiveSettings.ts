@@ -13,10 +13,9 @@ import { useApiError } from "./useApiError";
 
 export function useEffectiveSettings(params?: {
   group?: string;
-  wired_only?: boolean;
 }) {
   return useQuery({
-    queryKey: ["effective-settings", params?.group ?? "all", params?.wired_only ?? false],
+    queryKey: ["effective-settings", params?.group ?? "all"],
     queryFn: () => fetchEffectiveSettings(params),
   });
 }

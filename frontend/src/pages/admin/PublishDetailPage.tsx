@@ -21,6 +21,7 @@ import {
 import { useToast } from "../../hooks/useToast";
 import { formatDateTime } from "../../lib/formatDate";
 import { PublishErrorChip } from "../../components/publish/PublishErrorChip";
+import { useSurfacePageOverride } from "../../surfaces/SurfaceContext";
 
 function formatDate(iso: string | null | undefined) {
   return formatDateTime(iso, "\u2014");
@@ -53,6 +54,12 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
 const em = <em className="text-neutral-400">{"\u2014"}</em>;
 
 export function PublishDetailPage() {
+  const Override = useSurfacePageOverride("admin.publish.detail");
+  if (Override) return <Override />;
+  return <LegacyPublishDetailPage />;
+}
+
+function LegacyPublishDetailPage() {
   const { recordId } = useParams<{ recordId: string }>();
   const navigate = useNavigate();
   const toast = useToast();

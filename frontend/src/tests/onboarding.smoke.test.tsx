@@ -629,22 +629,17 @@ describe("OnboardingWorkspaceSetupScreen", () => {
     expect(onBack).toHaveBeenCalledTimes(1);
   });
 
-  it.skip("shows validation error when workspace root is empty", async () => {
-    // Behaviour change: the submit button is now `disabled` while
-    // `isLoading === (workspaceRoot === "")`, so clearing the workspace
-    // input short-circuits before `handleSubmit` ever fires — the inline
-    // "Her iki klasor yolu da zorunludur." message only appears when the
-    // form is submitted with a non-empty workspace root and an empty
-    // output dir (or vice versa). The original assertion no longer has a
-    // path to reach `setValidationError`. Skipped with intent preserved
-    // so the requirement is documented; the happier coverage for the
-    // validation message lives in workspace-setup flow tests instead.
+  it("submit button is disabled when workspace root is empty", () => {
+    // Davranış: workspace input bosken submit butonu `disabled`; boş form
+    // hic submit edilmez, "Her iki klasor yolu da zorunludur." mesaji sadece
+    // bir alan dolu digeri bosken goruntulenir. Pozitif validation mesaji
+    // dogrulamasi workspace-setup flow testlerinde yapilir.
     window.fetch = mockFetch({});
     wrap(<OnboardingWorkspaceSetupScreen onBack={vi.fn()} onComplete={vi.fn()} />);
     const inputs = screen.getAllByRole("textbox");
     fireEvent.change(inputs[0], { target: { value: "" } });
-    fireEvent.click(screen.getByText("Ayarlari Kaydet"));
-    expect(screen.getByText("Her iki klasor yolu da zorunludur.")).toBeDefined();
+    const btn = screen.getByText("Ayarlari Kaydet") as HTMLButtonElement;
+    expect(btn.disabled).toBe(true);
   });
 });
 

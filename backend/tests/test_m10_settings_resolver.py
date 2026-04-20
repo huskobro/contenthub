@@ -250,10 +250,14 @@ class TestListEffective:
             assert item["group"] == "providers"
 
     @pytest.mark.asyncio
-    async def test_filter_wired_only(self, db: AsyncSession):
+    async def test_filter_wired_only_is_noop(self, db: AsyncSession):
+        # Registry kontrati: kayitsiz ayar yok — wired_only parametresi geriye
+        # donuk uyumluluk icin kabul edilir ama sonucu degistirmez.
         from app.settings.settings_resolver import list_effective
-        items = await list_effective(db, wired_only=True)
-        for item in items:
+        all_items = await list_effective(db)
+        wired_items = await list_effective(db, wired_only=True)
+        assert len(wired_items) == len(all_items)
+        for item in wired_items:
             assert item["wired"] is True
 
 
@@ -362,11 +366,17 @@ class TestEffectiveAPI:
             assert item["group"] == "providers"
 
     @pytest.mark.asyncio
-    async def test_list_effective_wired_only(self, client: AsyncClient):
-        resp = await client.get("/api/v1/settings/effective?wired_only=true", headers=ADMIN_ROLE)
-        assert resp.status_code == 200
-        data = resp.json()
-        for item in data:
+    async def test_list_effective_wired_only_is_noop(self, client: AsyncClient):
+        # wired_only parametresi geriye donuk uyumluluk icin kabul edilir
+        # ama filtrelemez (registry kontrati: kayitsiz ayar yok).
+        resp_all = await client.get("/api/v1/settings/effective", headers=ADMIN_ROLE)
+        resp_wired = await client.get("/api/v1/settings/effective?wired_only=true", headers=ADMIN_ROLE)
+        assert resp_all.status_code == 200
+        assert resp_wired.status_code == 200
+        all_data = resp_all.json()
+        wired_data = resp_wired.json()
+        assert len(wired_data) == len(all_data)
+        for item in wired_data:
             assert item["wired"] is True
 
     @pytest.mark.asyncio

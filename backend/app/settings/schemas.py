@@ -5,11 +5,23 @@ Three shapes:
   - SettingCreate  : fields required/allowed when creating a new setting
   - SettingUpdate  : all fields optional for partial PATCH
   - SettingResponse: full representation returned to callers
+
+Guvenlik notu: ``SettingResponse`` icinde ``type == "secret"`` olan satirlar
+icin ``admin_value_json`` ve ``default_value_json`` maskelenir. Boylece API
+yaniti ne ciphertext'i ne de plaintext'i sizdirir — sadece ``"***"`` sentinel
+doner. Effective/plaintext okumak icin ``GET /settings/effective/{key}``
+kullanilmalidir; orada secret degerler zaten son 4 karakter maskeli gosterilir.
 """
 
 from datetime import datetime
-from typing import Optional
-from pydantic import BaseModel, Field
+from typing import Any, Optional
+from pydantic import BaseModel, Field, model_validator
+
+
+# Secret tipi satirlar icin API yanitinda kullanilan sentinel JSON string.
+# Plaintext degeri effective endpoint zaten maskeli donuyor — CRUD endpoint
+# ciphertext/plaintext hicbirini sizdirmaz.
+_SECRET_SENTINEL_JSON = "\"\u25cf\u25cf\u25cf\u25cf (secret)\""
 
 
 class SettingCreate(BaseModel):
@@ -65,3 +77,17 @@ class SettingResponse(BaseModel):
     updated_at: datetime
 
     model_config = {"from_attributes": True}
+
+    @model_validator(mode="after")
+    def _mask_secret_fields(self) -> "SettingResponse":
+        """
+        Secret tipi satirlar icin admin_value_json ve default_value_json
+        alanlarini sabit sentinel ile degistirir. Ciphertext'in ham haliyle
+        client'a gitmesini engeller; plaintext de sizmaz.
+        """
+        if self.type == "secret":
+            if self.admin_value_json and self.admin_value_json != "null":
+                self.admin_value_json = _SECRET_SENTINEL_JSON
+            if self.default_value_json and self.default_value_json != "null":
+                self.default_value_json = _SECRET_SENTINEL_JSON
+        return self

@@ -3,8 +3,15 @@ import { StandardVideoForm } from "../../components/standard-video/StandardVideo
 import type { StandardVideoFormValues } from "../../components/standard-video/StandardVideoForm";
 import { useCreateStandardVideo } from "../../hooks/useCreateStandardVideo";
 import { useToast } from "../../hooks/useToast";
+import { useSurfacePageOverride } from "../../surfaces/SurfaceContext";
 
 export function StandardVideoCreatePage() {
+  const Override = useSurfacePageOverride("admin.standard-video.create");
+  if (Override) return <Override />;
+  return <LegacyStandardVideoCreatePage />;
+}
+
+function LegacyStandardVideoCreatePage() {
   const navigate = useNavigate();
   const toast = useToast();
   const { mutate, isPending, error } = useCreateStandardVideo();

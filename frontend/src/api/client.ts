@@ -181,12 +181,46 @@ async function tryRefreshAndRetry<T>(
     const detail = await parseErrorDetail(retryRes);
     throw new ApiError(detail, retryRes.status, detail);
   }
-  return retryRes.json();
+  return parseJsonOrNull<T>(retryRes);
 }
 
 // ---------------------------------------------------------------------------
 // Core request functions
 // ---------------------------------------------------------------------------
+
+/**
+ * Parse a successful response as JSON, but tolerate empty bodies.
+ *
+ * Pass-6 closure (manual-QA report): backend DELETE handlers return
+ * 204 No Content and the platform-connections disconnect mutation crashed
+ * with "Failed to execute 'json' on 'Response': Unexpected end of JSON input"
+ * because we always called `res.json()`. Empty 200/204 responses now resolve
+ * to `null` (cast as T) instead of throwing.
+ *
+ * Compatibility note: tests across the codebase mock `fetch` with `{ ok, json }`
+ * only — no `text()` / `headers` API. We therefore preserve the legacy
+ * `res.json()` path as the default and ONLY fall back to the empty-body
+ * tolerant code path for 204 responses or when `json()` itself throws on an
+ * empty body. This keeps the regression surface zero for existing test mocks
+ * while still fixing the real 204 disconnect bug.
+ */
+async function parseJsonOrNull<T>(res: Response): Promise<T> {
+  if (res.status === 204) return null as T;
+  // Optional fast-path: if a real Response exposes Content-Length: 0, skip
+  // the json() call entirely. Test mocks usually omit headers — in that case
+  // headers?.get is undefined and we fall through to res.json() like before.
+  const contentLength = res.headers?.get?.("Content-Length");
+  if (contentLength === "0") return null as T;
+  try {
+    return (await res.json()) as T;
+  } catch (err) {
+    // res.json() throws "Unexpected end of JSON input" on a real but empty
+    // body (e.g. a 200 with Content-Length: 0 from a backend that should
+    // have used 204). Treat that as null to keep existing call sites alive.
+    if (err instanceof SyntaxError) return null as T;
+    throw err;
+  }
+}
 
 async function request<T>(
   url: string,
@@ -205,7 +239,7 @@ async function request<T>(
     const detail = await parseErrorDetail(res);
     throw new ApiError(detail, res.status, detail);
   }
-  return res.json();
+  return parseJsonOrNull<T>(res);
 }
 
 async function requestNullable<T>(
@@ -226,7 +260,7 @@ async function requestNullable<T>(
     const detail = await parseErrorDetail(res);
     throw new ApiError(detail, res.status, detail);
   }
-  return res.json();
+  return parseJsonOrNull<T>(res);
 }
 
 export const api = {

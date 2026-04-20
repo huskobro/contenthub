@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Navigate, useSearchParams } from "react-router-dom";
 import { useOnboardingStatus } from "../hooks/useOnboardingStatus";
 import { useVisibility } from "../hooks/useVisibility";
+import { useSurfacePageOverride } from "../surfaces/SurfaceContext";
 import { OnboardingWelcomeScreen } from "../components/onboarding/OnboardingWelcomeScreen";
 import { OnboardingRequirementsScreen } from "../components/onboarding/OnboardingRequirementsScreen";
 import { OnboardingSourceSetupScreen } from "../components/onboarding/OnboardingSourceSetupScreen";
@@ -25,7 +26,18 @@ type OnboardingStep =
   | "review"
   | "completion";
 
+/**
+ * Public entry point. Delegates to a surface override when the active
+ * surface declares one for `auth.onboarding` (Aurora). Otherwise falls
+ * back to the legacy 10-step implementation below.
+ */
 export function OnboardingPage() {
+  const Override = useSurfacePageOverride("auth.onboarding");
+  if (Override) return <Override />;
+  return <LegacyOnboardingPage />;
+}
+
+function LegacyOnboardingPage() {
   const [searchParams] = useSearchParams();
   const forceMode = searchParams.get("force") === "true";
   const { data: onboardingStatus, isLoading: statusLoading } = useOnboardingStatus();

@@ -3,8 +3,20 @@ import { useCreateTemplate } from "../../hooks/useCreateTemplate";
 import { TemplateForm } from "../../components/templates/TemplateForm";
 import type { TemplateFormValues } from "../../components/templates/TemplateForm";
 import { useToast } from "../../hooks/useToast";
+import { useSurfacePageOverride } from "../../surfaces/SurfaceContext";
 
 export function TemplateCreatePage() {
+  // Surface override trampoline — admin.templates.create slot.
+  // When an alternate surface (e.g. Aurora) registers a page override for this
+  // key, render that instead of the legacy form. Otherwise fall through to the
+  // legacy implementation below.
+  const Override = useSurfacePageOverride("admin.templates.create");
+  if (Override) return <Override />;
+
+  return <LegacyTemplateCreatePage />;
+}
+
+function LegacyTemplateCreatePage() {
   const navigate = useNavigate();
   const toast = useToast();
   const { mutate, isPending, error } = useCreateTemplate();

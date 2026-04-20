@@ -109,4 +109,5 @@ Tüm maddeler işaretlendiyse, sistem kullanıma hazırdır.
 - Error rate (hedef: <5%)
 - SSE connection stability
 
-**Açık erteleme listesi:** `docs/tracking/DEFERRED_BACKLOG.md`
+**Durum:** MVP kapsamındaki tüm iş kalemleri kapalı. Sürüm geçmişi
+`docs/tracking/CHANGELOG.md`, güncel durum `docs/tracking/STATUS.md`.

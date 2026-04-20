@@ -17,10 +17,12 @@
 import { useState, useCallback, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { WizardShell, type WizardStep } from "../../components/wizard/WizardShell";
+import { UserWizardShell } from "../../components/wizard/UserWizardShell";
+import type { WizardStep } from "../../components/wizard/WizardShell";
 import { ChannelProfileStep } from "../../components/wizard/ChannelProfileStep";
 import { ContentProjectStep } from "../../components/wizard/ContentProjectStep";
 import { useToast } from "../../hooks/useToast";
+import { useSurfacePageOverride } from "../../surfaces/SurfaceContext";
 import { cn } from "../../lib/cn";
 import {
   createProduct,
@@ -76,7 +78,17 @@ const initialState: WizardState = {
 const inputCls =
   "block w-full px-2 py-1.5 text-sm border border-border rounded-sm box-border focus:outline-none focus:ring-2 focus:ring-focus";
 
+/**
+ * Public entry — Aurora `user.create.product-review` override varsa onu
+ * kullan; yoksa legacy 5-adımlı ürün incelemesi wizard'ı.
+ */
 export function CreateProductReviewWizardPage() {
+  const Override = useSurfacePageOverride("user.create.product-review");
+  if (Override) return <Override />;
+  return <LegacyCreateProductReviewWizardPage />;
+}
+
+function LegacyCreateProductReviewWizardPage() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const toast = useToast();
@@ -154,6 +166,13 @@ export function CreateProductReviewWizardPage() {
   }
 
   // ---------- Submit ----------
+  // İki adımlı akış (create + start). Backend'de bu modül için tek atomik
+  // endpoint yok (news_bulletin'de var); review oluştuktan sonra production
+  // start fail olursa orphan review kalır. Kullanıcıyı kandırmamak için:
+  //   - hata mesajı review.id'yi içerir
+  //   - cache invalidation ile orphan review projects listesinde görünür
+  //   - kullanıcı projects → review detayından elle "Üretimi başlat" tetikler
+  // Bu sessiz hata yutma değil, dürüst telafi akışıdır.
   const { mutate, isPending, error } = useMutation({
     mutationFn: async (v: WizardState) => {
       if (!v.product) throw new Error("Urun secilmedi");
@@ -170,10 +189,18 @@ export function CreateProductReviewWizardPage() {
         disclosure_text: v.disclosure_text.trim() || undefined,
       });
       // Kick production pipeline immediately
-      await startProductReviewProduction(review.id, {
-        content_project_id: v.contentProjectId ?? undefined,
-        channel_profile_id: v.channelProfileId ?? undefined,
-      });
+      try {
+        await startProductReviewProduction(review.id, {
+          content_project_id: v.contentProjectId ?? undefined,
+          channel_profile_id: v.channelProfileId ?? undefined,
+        });
+      } catch (startErr) {
+        const msg = startErr instanceof Error ? startErr.message : String(startErr);
+        throw new Error(
+          `Inceleme olusturuldu (${review.id.slice(0, 8)}...) fakat uretim baslatilamadi: ${msg}. ` +
+            `Projects sayfasindan elle yeniden baslatabilirsiniz.`,
+        );
+      }
       return review;
     },
     onSuccess: () => {
@@ -186,6 +213,13 @@ export function CreateProductReviewWizardPage() {
       } else {
         navigate("/user/projects");
       }
+    },
+    onError: (err) => {
+      const msg = err instanceof Error ? err.message : String(err);
+      toast.error(msg);
+      // Cache invalidation ki orphan review listede dürüstçe görünsün
+      qc.invalidateQueries({ queryKey: ["product-reviews"] });
+      qc.invalidateQueries({ queryKey: ["content-projects"] });
     },
   });
 
@@ -215,7 +249,7 @@ export function CreateProductReviewWizardPage() {
   }
 
   return (
-    <WizardShell
+    <UserWizardShell
       title="Yeni Urun Incelemesi"
       steps={STEPS}
       currentStep={step}
@@ -547,7 +581,7 @@ export function CreateProductReviewWizardPage() {
           </p>
         </div>
       )}
-    </WizardShell>
+    </UserWizardShell>
   );
 }
 

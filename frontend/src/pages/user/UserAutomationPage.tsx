@@ -20,6 +20,7 @@ import {
 import { api } from "../../api/client";
 import { cn } from "../../lib/cn";
 import { AutomationFlowSvg } from "../../components/automation/AutomationFlowSvg";
+import { useSurfacePageOverride } from "../../surfaces";
 
 // ---------------------------------------------------------------------------
 // Channel profile fetcher (reuse existing)
@@ -60,6 +61,12 @@ type CheckpointField = typeof CHECKPOINT_META[number]["key"];
 // ---------------------------------------------------------------------------
 
 export function UserAutomationPage() {
+  const Override = useSurfacePageOverride("user.automation");
+  if (Override) return <Override />;
+  return <LegacyUserAutomationPage />;
+}
+
+function LegacyUserAutomationPage() {
   const userId = useAuthStore((s) => s.user?.id);
   const qc = useQueryClient();
   const toast = useToast();

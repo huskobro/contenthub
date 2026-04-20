@@ -4,9 +4,12 @@
  * Tum bilinen ayarlari grup bazli gosterir. Her ayar icin:
  *   - Effective deger (coerced, maskelenmis)
  *   - Kaynak (admin / default / env / builtin / missing)
- *   - Wired/Deferred durumu
- *   - wired_to bilgisi
+ *   - wired_to consumer izi (hangi modulun tukettigi)
  *   - Admin degeri girme/degistirme
+ *
+ * Registry kontrati: kayitsiz ayar yok — her satir runtime'da gercekten
+ * okunur. Bu yuzden eski "Sadece Wired" filter ve "DEFERRED" badge
+ * kaldirildi.
  *
  * Wave 1 Final: Tailwind classes, useAutoSave, useSearchFocus integrated.
  *
@@ -43,7 +46,6 @@ export function EffectiveSettingsPanel({ initialGroup }: { initialGroup?: string
   useEffect(() => {
     setFilterGroup(initialGroup);
   }, [initialGroup]);
-  const [wiredOnly, setWiredOnly] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
   const searchRef = useRef<HTMLInputElement>(null);
@@ -51,7 +53,7 @@ export function EffectiveSettingsPanel({ initialGroup }: { initialGroup?: string
 
   const { data: groups, isLoading: groupsLoading } = useSettingsGroups();
   const { data: settings, isLoading: settingsLoading, isError, error } =
-    useEffectiveSettings({ group: filterGroup, wired_only: wiredOnly });
+    useEffectiveSettings({ group: filterGroup });
 
   const isLoading = groupsLoading || settingsLoading;
 
@@ -136,15 +138,6 @@ export function EffectiveSettingsPanel({ initialGroup }: { initialGroup?: string
             </option>
           ))}
         </select>
-        <label className="text-sm text-neutral-600 flex items-center gap-1">
-          <input
-            type="checkbox"
-            checked={wiredOnly}
-            onChange={(e) => setWiredOnly(e.target.checked)}
-            data-testid="settings-wired-only"
-          />
-          Sadece Wired
-        </label>
         <span className="text-xs text-neutral-500">
           {filtered.length} / {settings.length} ayar
         </span>

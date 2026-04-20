@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useSurfacePageOverride } from "../../surfaces";
 import { useContentMetrics } from "../../hooks/useContentMetrics";
 import { useTemplateImpact } from "../../hooks/useTemplateImpact";
 import { useAnalyticsFilters } from "../../hooks/useAnalyticsFilters";
@@ -61,6 +62,14 @@ const BLUEPRINT_COLUMNS: { key: string; header: string; render: (item: Blueprint
 ];
 
 export function AnalyticsContentPage() {
+  // Faz 6 — Aurora override gate. Aktif surface Aurora ise kokpit içerik
+  // analytics render edilir; diğer surface'ler legacy sayfayı görür.
+  const Override = useSurfacePageOverride("admin.analytics.content");
+  if (Override) return <Override />;
+  return <LegacyAnalyticsContentPage />;
+}
+
+function LegacyAnalyticsContentPage() {
   const analyticsFilters = useAnalyticsFilters("all_time");
   const window = analyticsFilters.filters.window;
   const { apiParams } = analyticsFilters;

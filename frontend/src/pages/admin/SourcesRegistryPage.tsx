@@ -10,8 +10,19 @@ import { PageShell, SectionShell, ActionButton } from "../../components/design-s
 import { useScopedKeyboardNavigation } from "../../hooks/useScopedKeyboardNavigation";
 import { bulkDeleteSources } from "../../api/sourcesApi";
 import { useToast } from "../../hooks/useToast";
+import { useSurfacePageOverride } from "../../surfaces/SurfaceContext";
 
+/**
+ * Public entry point. Aurora surface override (admin.sources.registry)
+ * geçerliyse onu kullanır; aksi halde legacy yüzeye düşer.
+ */
 export function SourcesRegistryPage() {
+  const Override = useSurfacePageOverride("admin.sources.registry");
+  if (Override) return <Override />;
+  return <LegacySourcesRegistryPage />;
+}
+
+function LegacySourcesRegistryPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const initialSelected = (location.state as { selectedId?: string } | null)?.selectedId ?? null;

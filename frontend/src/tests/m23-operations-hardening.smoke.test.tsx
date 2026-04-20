@@ -7,25 +7,28 @@
  * M23-E: Publish readiness updated
  */
 
-import { describe, it, expect, vi, beforeEach } from "vitest";
-
-// ── Mock react-router-dom ──
-const mockNavigate = vi.fn();
-vi.mock("react-router-dom", () => ({
-  useNavigate: () => mockNavigate,
-  useLocation: () => ({ pathname: "/admin", search: "", hash: "", state: null }),
-}));
-
-// ── Mock React Query ──
-const mockInvalidateQueries = vi.fn();
-vi.mock("@tanstack/react-query", () => ({
-  useQueryClient: () => ({ invalidateQueries: mockInvalidateQueries }),
-  useQuery: () => ({ data: undefined, isLoading: false, isError: false }),
-}));
-
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import React from "react";
 import { render, screen } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AdminOverviewPage } from "../pages/AdminOverviewPage";
+
+function renderOverview() {
+  // AdminOverviewPage uses useQuery/useSearchParams — supply real providers
+  // (no network via mocked fetch returning empty payloads).
+  window.fetch = vi.fn(() =>
+    Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve({}) }),
+  ) as unknown as typeof window.fetch;
+  const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  return render(
+    <QueryClientProvider client={qc}>
+      <MemoryRouter initialEntries={["/admin"]}>
+        <AdminOverviewPage />
+      </MemoryRouter>
+    </QueryClientProvider>,
+  );
+}
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -33,34 +36,16 @@ beforeEach(() => {
 
 // ── M23: Readiness Status Updates ──────────────────────────
 
-describe("M23: Readiness Status Updates", () => {
-  // The `readiness-*` (publish/settings/analytics) testids were removed
-  // from AdminOverviewPage when the release-readiness widget was retired
-  // from the overview in favour of the dedicated release dashboard. These
-  // assertions are preserved in skipped form to keep the M23 intent
-  // documented — coverage of the readiness surface now lives in the
-  // release dashboard's own smoke tests.
-  it.skip("publish readiness shows dynamic status (Hazir or Yapilandirilmadi)", () => {
-    expect(true).toBe(true);
-  });
-
-  it.skip("settings readiness shows Hazir", () => {
-    expect(true).toBe(true);
-  });
-
-  it.skip("analytics readiness shows Hazir", () => {
-    expect(true).toBe(true);
-  });
-
-  it.skip("publish detail mentions yayin", () => {
-    expect(true).toBe(true);
-  });
-
-  it.skip("analytics detail mentions analytics", () => {
-    expect(true).toBe(true);
-  });
-
-  it.skip("settings detail mentions aktif", () => {
-    expect(true).toBe(true);
+describe("M23: Readiness Status Updates — overview surface retired", () => {
+  // Readiness testid'leri (readiness-publish / readiness-settings /
+  // readiness-analytics) AdminOverviewPage'den cikarildi; release-readiness
+  // widget'i dedicated release dashboard'a tasindi. Bu dosyada sadece
+  // "overview'da yok" negatif dogrulamasi tutulur; pozitif readiness
+  // davranisi release dashboard smoke testlerinde dogrulanir.
+  it("readiness-* testids are removed from AdminOverviewPage", () => {
+    renderOverview();
+    expect(screen.queryByTestId("readiness-publish")).toBeNull();
+    expect(screen.queryByTestId("readiness-settings")).toBeNull();
+    expect(screen.queryByTestId("readiness-analytics")).toBeNull();
   });
 });

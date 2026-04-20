@@ -15,9 +15,11 @@ Responsibilities:
   - Update heartbeat_at on job at every step boundary
 
 This class does NOT:
-  - Spawn background tasks (that is M1-C3's concern)
-  - Handle crash recovery (that is M1-C4's startup scanner)
-  - Retry steps (retry policy is a later phase)
+  - Spawn background tasks (that is the queue worker's concern;
+    see `app.jobs.queue` and `app.jobs.worker`)
+  - Handle crash recovery (the startup scanner in `app.main` lifespan
+    requeues stale running jobs)
+  - Retry steps directly (retry policy lives in `app.jobs.retry_scheduler`)
 
 All state transitions go through service.transition_job_status /
 service.transition_step_status per P-001.

@@ -114,9 +114,12 @@ describe("SettingsModuleLanding — P2.3", () => {
     });
 
     // "14 ayar" tts kartında görünmeli.
+    // NOT: "wired" rozeti registry kontrati geregi kaldirildi (kayitsiz ayar
+    // yok — wired sayisi her zaman total'a esit oldugu icin ayri gosterim
+    // bilgi katmiyordu).
     const ttsCard = screen.getByTestId("settings-module-card-tts");
     expect(ttsCard.textContent).toContain("14 ayar");
-    expect(ttsCard.textContent).toContain("12 wired");
+    expect(ttsCard.textContent).not.toContain("wired");
   });
 
   it("shows filter group name in breadcrumb", async () => {

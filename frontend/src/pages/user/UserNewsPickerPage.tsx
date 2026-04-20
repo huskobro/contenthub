@@ -37,10 +37,17 @@ import {
   type SelectableNewsItemResponse,
   type TrustCheckResponse,
 } from "../../api/newsBulletinApi";
+import { useSurfacePageOverride } from "../../surfaces";
 
 const MAX_SELECT = 12;
 
 export function UserNewsPickerPage() {
+  const Override = useSurfacePageOverride("user.news.picker");
+  if (Override) return <Override />;
+  return <LegacyUserNewsPickerPage />;
+}
+
+function LegacyUserNewsPickerPage() {
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
 

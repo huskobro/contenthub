@@ -26,6 +26,7 @@ import {
   useDeleteYtPlaylist,
   useUpdateYtPlaylist,
 } from "../../hooks/useYoutubeEngagementAdvanced";
+import { useSurfacePageOverride } from "../../surfaces/SurfaceContext";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -73,7 +74,18 @@ function syncStatusBadge(status: string): { label: string; className: string } {
 // Component
 // ---------------------------------------------------------------------------
 
+/**
+ * Public entry — surface override aware (Aurora trampoline).
+ * `admin.playlists.monitoring` slot kayıtlıysa onu render eder; aksi halde
+ * legacy implementasyon devreye girer. register.tsx'e dokunulmaz.
+ */
 export function AdminPlaylistMonitoringPage() {
+  const Override = useSurfacePageOverride("admin.playlists.monitoring");
+  if (Override) return <Override />;
+  return <LegacyAdminPlaylistMonitoringPage />;
+}
+
+function LegacyAdminPlaylistMonitoringPage() {
   // Redesign REV-2 / P0.3c:
   //   Admin scope (adminScopeStore) focused-user ise userFilter default
   //   olarak o user'a atanır. Manuel dropdown override her zaman kazanır.

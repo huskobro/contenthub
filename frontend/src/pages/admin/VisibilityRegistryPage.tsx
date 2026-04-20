@@ -6,6 +6,7 @@ import { VisibilityRuleCreateForm } from "../../components/visibility/Visibility
 import { ReadOnlyGuard } from "../../components/visibility/ReadOnlyGuard";
 import { PageShell, SectionShell } from "../../components/design-system/primitives";
 import { Sheet } from "../../components/design-system/Sheet";
+import { useSurfacePageOverride } from "../../surfaces/SurfaceContext";
 
 /**
  * Test fixture detection (F9 — critical UX fix pack).
@@ -27,7 +28,17 @@ function isTestFixtureRule(targetKey: string | null | undefined): boolean {
   return targetKey.startsWith("test:");
 }
 
+/**
+ * Public entry point. Aurora surface override (admin.visibility.registry)
+ * geçerliyse onu kullanır; aksi halde legacy yüzeye düşer.
+ */
 export function VisibilityRegistryPage() {
+  const Override = useSurfacePageOverride("admin.visibility.registry");
+  if (Override) return <Override />;
+  return <LegacyVisibilityRegistryPage />;
+}
+
+function LegacyVisibilityRegistryPage() {
   const { data: rules, isLoading, isError, error } = useVisibilityRulesList();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);

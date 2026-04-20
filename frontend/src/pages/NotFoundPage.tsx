@@ -1,9 +1,20 @@
 import { useNavigate } from "react-router-dom";
+import { useSurfacePageOverride } from "../surfaces/SurfaceContext";
 
 /**
  * 404 Not Found page — shown when no route matches the current URL.
+ *
+ * Public entry point. Delegates to a surface override when the active
+ * surface declares one for `auth.404` (Aurora). Otherwise falls back to
+ * the legacy implementation below.
  */
 export function NotFoundPage() {
+  const Override = useSurfacePageOverride("auth.404");
+  if (Override) return <Override />;
+  return <LegacyNotFoundPage />;
+}
+
+function LegacyNotFoundPage() {
   const navigate = useNavigate();
 
   return (

@@ -10,12 +10,20 @@ import {
 import { useEffectiveSetting, useUpdateSettingValue } from "../../hooks/useEffectiveSettings";
 import { PageShell, SectionShell } from "../../components/design-system/primitives";
 import { cn } from "../../lib/cn";
+import { useSurfacePageOverride } from "../../surfaces/SurfaceContext";
 
 // ---------------------------------------------------------------------------
-// WizardSettingsPage — Admin page for managing wizard governance configs
+// WizardSettingsPage — Public entry. Aurora surface override
+// (admin.wizard.settings) varsa onu kullanır; yoksa legacy gövdeye düşer.
 // ---------------------------------------------------------------------------
 
 export function WizardSettingsPage() {
+  const Override = useSurfacePageOverride("admin.wizard.settings");
+  if (Override) return <Override />;
+  return <LegacyWizardSettingsPage />;
+}
+
+function LegacyWizardSettingsPage() {
   const { data: configs, isLoading, isError, error } = useWizardConfigsList();
   const [expandedId, setExpandedId] = useState<string | null>(null);
 

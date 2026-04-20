@@ -46,6 +46,7 @@ function snapshotAllEnabled(defaults: {
     atriumEnabled: true,
     bridgeEnabled: true,
     canvasEnabled: true,
+    auroraEnabled: true,
     loaded: true,
   });
 }
@@ -58,6 +59,7 @@ function snapshotAtriumGated() {
     atriumEnabled: false, // <-- kapali
     bridgeEnabled: true,
     canvasEnabled: true,
+    auroraEnabled: true,
     loaded: true,
   });
 }
@@ -70,6 +72,7 @@ function snapshotKillSwitchOff() {
     atriumEnabled: true,
     bridgeEnabled: true,
     canvasEnabled: true,
+    auroraEnabled: true,
     loaded: true,
   });
 }

@@ -120,6 +120,7 @@ function makeCtx(admin: Surface, user: Surface, infraEnabled: boolean): SurfaceC
       atriumEnabled: false,
       bridgeEnabled: infraEnabled,
       canvasEnabled: false,
+      auroraEnabled: false,
       loaded: true,
     },
     infrastructureEnabled: infraEnabled,

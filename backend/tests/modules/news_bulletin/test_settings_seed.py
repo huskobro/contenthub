@@ -19,14 +19,15 @@ class TestBulletinSettingsSeed:
         "news_bulletin.prompt.metadata_title_rules",
     ]
 
+    # NOT: render_mode ve render_fps registry sadelestirmesinde dusuruldu
+    # (kayitsiz/tuketilmeyen ayar). render_format runtime tarafindan tuketildigi
+    # icin korundu.
     EXPECTED_CONFIG_KEYS = [
         "news_bulletin.config.default_language",
         "news_bulletin.config.default_tone",
         "news_bulletin.config.default_duration_seconds",
         "news_bulletin.config.max_items_per_bulletin",
         "news_bulletin.config.narration_word_limit_per_item",
-        "news_bulletin.config.render_mode",
-        "news_bulletin.config.render_fps",
         "news_bulletin.config.render_format",
     ]
 
@@ -69,11 +70,13 @@ class TestBulletinSettingsSeed:
                 f"{key} module_scope={meta['module_scope']}"
             )
 
-    def test_all_keys_marked_wired(self):
-        """Tüm bulletin key'lerin wired durumu doğru olmalı."""
+    def test_all_keys_have_wired_to_trace(self):
+        """Registry kontrati: kayitsiz ayar yok — her ayar bir runtime
+        tuketicisine baglidir (wired_to alani dolu olmali)."""
         for key in self.EXPECTED_PROMPT_KEYS + self.EXPECTED_CONFIG_KEYS:
             meta = KNOWN_SETTINGS[key]
-            assert "wired" in meta, f"{key} 'wired' alanı eksik"
+            wired_to = meta.get("wired_to", "")
+            assert wired_to, f"{key} 'wired_to' bos (runtime tuketicisi belgelenmeli)"
 
     def test_config_defaults_reasonable(self):
         """Config varsayılan değerleri makul olmalı."""

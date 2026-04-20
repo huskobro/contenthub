@@ -15,6 +15,7 @@ import {
 } from "../../api/automationApi";
 import { cn } from "../../lib/cn";
 import { useActiveScope } from "../../hooks/useActiveScope";
+import { useSurfacePageOverride } from "../../surfaces";
 
 // ---------------------------------------------------------------------------
 // Type labels and colors
@@ -63,6 +64,12 @@ interface InboxPageProps {
 }
 
 export function UserInboxPage({ isAdmin }: InboxPageProps) {
+  const Override = useSurfacePageOverride("user.inbox");
+  if (Override && !isAdmin) return <Override />;
+  return <LegacyUserInboxPage isAdmin={isAdmin} />;
+}
+
+function LegacyUserInboxPage({ isAdmin }: InboxPageProps) {
   const userId = useAuthStore((s) => s.user?.id);
   const qc = useQueryClient();
   const toast = useToast();

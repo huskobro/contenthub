@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useWizardStore } from "../stores/wizardStore";
 import { useEnabledModules } from "../hooks/useEnabledModules";
 import { useEffectiveSetting } from "../hooks/useEffectiveSettings";
+import { useSurfacePageOverride } from "../surfaces/SurfaceContext";
 
 // Varsayılan rotalar — PHASE AD: user yüzeyi kendi wizard'larını kullanır,
 // admin wizard'a sızıntı yok. Her iki mod (guided/advanced) aynı user wizard'ına
@@ -46,10 +47,12 @@ const CONTENT_TYPES = [
 ];
 
 export function UserContentEntryPage() {
+  const Override = useSurfacePageOverride("user.content");
   const navigate = useNavigate();
   const userMode = useWizardStore((s) => s.userMode);
   const toggleMode = useWizardStore((s) => s.toggleUserMode);
   const { enabledMap } = useEnabledModules();
+  if (Override) return <Override />;
 
   const { data: svEntryMode } = useEffectiveSetting("wizard.standard_video.entry_mode");
   const { data: nbEntryMode } = useEffectiveSetting("wizard.news_bulletin.entry_mode");

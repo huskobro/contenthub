@@ -7,7 +7,21 @@
  * ThemeEngine; the static import below covers ALL built-in themes for
  * instant first-paint rendering.
  */
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Geist+Mono:wght@400;500&family=Outfit:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Instrument+Sans:wght@400;500;600;700&family=Sora:wght@400;500;600;700;800&family=Nunito+Sans:wght@400;500;600;700;800&family=Fira+Code:wght@400;500;600&family=Playfair+Display:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&family=Archivo:wght@400;500;600;700&family=Source+Code+Pro:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Instrument+Sans:wght@400;500;600;700&family=Sora:wght@400;500;600;700;800&family=Nunito+Sans:wght@400;500;600;700;800&family=Fira+Code:wght@400;500;600&family=Playfair+Display:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&family=Archivo:wght@400;500;600;700&family=Source+Code+Pro:wght@400;500;600&display=swap');
+
+/* Aurora surface styles (scoped to [data-surface="aurora"]) */
+@import "./styles/aurora/tokens.css";
+@import "./styles/aurora/cockpit.css";
+@import "./styles/aurora/dashboard.css";
+@import "./styles/aurora/jobs.css";
+@import "./styles/aurora/publish.css";
+@import "./styles/aurora/analytics.css";
+@import "./styles/aurora/themes.css";
+@import "./styles/aurora/settings.css";
+@import "./styles/aurora/prompts.css";
+@import "./styles/aurora/audit.css";
+@import "./styles/aurora/wizard.css";
+@import "./styles/aurora/responsive.css";
 
 /* Tailwind CSS base layers */
 @tailwind base;

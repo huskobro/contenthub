@@ -36,8 +36,20 @@ import {
 import { BulkActionBar } from "../../components/design-system/BulkActionBar";
 import { SchedulerHealthBadge } from "../../components/publish/SchedulerHealthBadge";
 import { formatDateShort } from "../../lib/formatDate";
+import { useSurfacePageOverride } from "../../surfaces/SurfaceContext";
 
 const PAGE_SIZE = 50;
+
+/**
+ * Surface override trampoline — Aurora ve diğer surface'lerin bu sayfayı
+ * `admin.publish.review-queue` override key'i ile değiştirebilmesi için.
+ * Override yoksa veya pasifse legacy implementation çalışır (default davranış).
+ */
+export function PublishReviewQueuePage() {
+  const Override = useSurfacePageOverride("admin.publish.review-queue");
+  if (Override) return <Override />;
+  return <LegacyPublishReviewQueuePage />;
+}
 
 function formatDate(iso: string | null) {
   return formatDateShort(iso, "\u2014");
@@ -50,7 +62,7 @@ function summarizeBulk(resp: BulkActionResponse | undefined): string {
   return `${resp.succeeded} başarılı, ${resp.failed} başarısız.`;
 }
 
-export function PublishReviewQueuePage() {
+function LegacyPublishReviewQueuePage() {
   const navigate = useNavigate();
   const [platformFilter, setPlatformFilter] = useState("");
   const [moduleFilter, setModuleFilter] = useState("");

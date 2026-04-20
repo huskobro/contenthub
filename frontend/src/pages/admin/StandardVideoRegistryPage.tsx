@@ -6,8 +6,19 @@ import {
   SectionShell,
   ActionButton,
 } from "../../components/design-system/primitives";
+import { useSurfacePageOverride } from "../../surfaces/SurfaceContext";
 
+/**
+ * Public entry point. Aurora surface override (admin.standard-video.registry)
+ * geçerliyse onu kullanır; aksi halde legacy yüzeye düşer.
+ */
 export function StandardVideoRegistryPage() {
+  const Override = useSurfacePageOverride("admin.standard-video.registry");
+  if (Override) return <Override />;
+  return <LegacyStandardVideoRegistryPage />;
+}
+
+function LegacyStandardVideoRegistryPage() {
   const { data: videos, isLoading, isError, error } = useStandardVideosList();
   const navigate = useNavigate();
 

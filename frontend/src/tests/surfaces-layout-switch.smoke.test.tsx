@@ -164,6 +164,7 @@ describe("Dynamic layouts — Faz 1 surface resolution", () => {
       atriumEnabled: false,
       bridgeEnabled: false,
       canvasEnabled: false,
+      auroraEnabled: false,
       loaded: true,
     });
     render(
@@ -189,6 +190,7 @@ describe("Dynamic layouts — Faz 1 surface resolution", () => {
       atriumEnabled: false,
       bridgeEnabled: false,
       canvasEnabled: false,
+      auroraEnabled: false,
       loaded: true,
     });
     render(

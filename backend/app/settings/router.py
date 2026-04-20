@@ -58,7 +58,7 @@ from app.settings.settings_seed import (
     seed_known_settings,
 )
 from app.audit.service import write_audit_log
-from app.visibility.dependencies import get_caller_role, get_active_user_id, require_visible
+from app.visibility.dependencies import get_effective_role, get_active_user_id, require_visible
 from app.settings.validation import validate_setting_value, SettingValidationError
 
 logger = logging.getLogger(__name__)
@@ -96,7 +96,9 @@ class EffectiveSettingResponse(BaseModel):
     label: str = ""
     help_text: str = ""
     module_scope: Optional[str] = None
-    wired: bool = False
+    # `wired` registry kontrati geregi her ayar icin daimi True;
+    # alan eski API consumer'lari icin korunur.
+    wired: bool = True
     wired_to: str = ""
     builtin_default: Any = None
     env_var: Optional[str] = ""
@@ -258,9 +260,9 @@ async def validate_credential(
 @router.get("/effective", response_model=List[EffectiveSettingResponse])
 async def list_effective_settings(
     group: Optional[str] = Query(None, description="Filter by group name"),
-    wired_only: bool = Query(False, description="Only wired settings"),
+    wired_only: bool = Query(False, description="(deprecated, no-op) eski client'lar icin korunur"),
     db: AsyncSession = Depends(get_db),
-    role: str = Depends(get_caller_role),
+    role: str = Depends(get_effective_role),
     user_id: Optional[str] = Depends(get_active_user_id),
 ) -> List[EffectiveSettingResponse]:
     """Tum bilinen ayarlar icin effective deger ve kaynak bilgisi doner."""
@@ -368,7 +370,7 @@ async def update_effective_setting(
     key: str,
     body: SettingAdminValueRequest,
     db: AsyncSession = Depends(get_db),
-    caller_role: str = Depends(get_caller_role),
+    caller_role: str = Depends(get_effective_role),
 ):
     """
     Ayarin admin_value degerini gunceller.
@@ -416,22 +418,23 @@ async def update_effective_setting(
             detail=f"Bu ayar kullanici tarafindan degistirilemez: {key}",
         )
 
-    admin_json = json.dumps(body.value)
+    meta = KNOWN_SETTINGS[key]
+    setting_type = meta.get("type", "string")
 
-    # Validation — check against rules before applying
+    # Validation — once plaintext deger uzerinden kontrol.
+    plaintext_json = json.dumps(body.value)
     rules_json = None
     if row is not None:
         rules_json = row.validation_rules_json
     else:
         rules_json = KNOWN_VALIDATION_RULES.get(key)
     if rules_json and rules_json != "{}":
-        meta = KNOWN_SETTINGS[key]
         try:
             validate_setting_value(
                 key=key,
-                value_json=admin_json,
+                value_json=plaintext_json,
                 rules_json=rules_json,
-                setting_type=meta.get("type", "string"),
+                setting_type=setting_type,
             )
         except SettingValidationError as exc:
             raise HTTPException(
@@ -439,17 +442,28 @@ async def update_effective_setting(
                 detail=exc.message,
             )
 
+    # At-rest encryption — secret tipi non-credential ayarlar da SettingCipher
+    # uzerinden sifrelenir (credential.* zaten save_credential'da sifrelenir).
+    value_to_persist: Any = body.value
+    if (
+        setting_type == "secret"
+        and isinstance(value_to_persist, str)
+        and value_to_persist
+    ):
+        from app.core.crypto import get_setting_cipher
+        value_to_persist = get_setting_cipher().encrypt(value_to_persist)
+    admin_json = json.dumps(value_to_persist)
+
     if row is not None:
         row.admin_value_json = admin_json
         row.version = row.version + 1
     else:
         # Seed etmemis olabilir — yeni satir olustur
-        meta = KNOWN_SETTINGS[key]
         builtin = meta.get("builtin_default")
         row = SettingModel(
             key=key,
             group_name=meta.get("group", "general"),
-            type=meta.get("type", "string"),
+            type=setting_type,
             default_value_json=json.dumps(builtin) if builtin is not None else "null",
             admin_value_json=admin_json,
             user_override_allowed=False,
@@ -466,10 +480,15 @@ async def update_effective_setting(
     await db.commit()
     await db.refresh(row)
 
+    # Audit log — secret tipli ayarlarda deger sizmasin, sadece maskeli ozet.
+    if setting_type == "secret":
+        audit_details = {"value": "\u25cf\u25cf\u25cf\u25cf (secret)"}
+    else:
+        audit_details = {"value": str(body.value)[:100]}
     await write_audit_log(
         db, action="settings.effective.update",
         entity_type="setting", entity_id=key,
-        details={"value": str(body.value)[:100]},
+        details=audit_details,
     )
 
     # Return updated effective state
@@ -485,7 +504,7 @@ async def update_effective_setting(
 async def list_settings(
     group_name: Optional[str] = Query(None, description="Filter by group_name"),
     db: AsyncSession = Depends(get_db),
-    role: str = Depends(get_caller_role),
+    role: str = Depends(get_effective_role),
 ) -> List[SettingResponse]:
     visible_to_user_only = role != "admin"
     rows = await service.list_settings(db, group_name=group_name, visible_to_user_only=visible_to_user_only)
@@ -496,7 +515,7 @@ async def list_settings(
 async def get_setting(
     setting_id: str,
     db: AsyncSession = Depends(get_db),
-    role: str = Depends(get_caller_role),
+    role: str = Depends(get_effective_role),
 ) -> SettingResponse:
     row = await service.get_setting(db, setting_id)
     if role != "admin" and not row.visible_to_user:
@@ -527,7 +546,7 @@ async def update_setting(
     setting_id: str,
     payload: SettingUpdate,
     db: AsyncSession = Depends(get_db),
-    caller_role: str = Depends(get_caller_role),
+    caller_role: str = Depends(get_effective_role),
 ) -> SettingResponse:
     # user_override_allowed enforcement
     if caller_role == "user":

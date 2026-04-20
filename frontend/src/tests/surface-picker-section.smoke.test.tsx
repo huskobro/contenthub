@@ -60,6 +60,7 @@ function allEnabledSnapshot() {
     atriumEnabled: true,
     bridgeEnabled: true,
     canvasEnabled: true,
+    auroraEnabled: true,
     loaded: true,
   });
 }
@@ -170,6 +171,7 @@ describe("SurfacePickerSection — Faz 4A smoke", () => {
       atriumEnabled: true,
       bridgeEnabled: false,
       canvasEnabled: true,
+      auroraEnabled: true,
       loaded: true,
     });
     render(<SurfacePickerSection scope="admin" />);

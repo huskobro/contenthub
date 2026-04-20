@@ -20,6 +20,7 @@ import {
   MetricTile,
 } from "../../components/design-system/primitives";
 import type { PlatformPost, PostListParams } from "../../api/postsApi";
+import { useSurfacePageOverride } from "../../surfaces/SurfaceContext";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -91,7 +92,17 @@ function postTypeLabel(type: string): string {
 // Component
 // ---------------------------------------------------------------------------
 
+/**
+ * Public entry point. Aurora surface override (admin.posts.monitoring)
+ * geçerliyse onu kullanır; aksi halde legacy yüzeye düşer.
+ */
 export function AdminPostMonitoringPage() {
+  const Override = useSurfacePageOverride("admin.posts.monitoring");
+  if (Override) return <Override />;
+  return <LegacyAdminPostMonitoringPage />;
+}
+
+function LegacyAdminPostMonitoringPage() {
   // Redesign REV-2 / P0.3c:
   //   Admin scope (adminScopeStore) focused-user ise userFilter default
   //   olarak o user'a atanır. Manuel dropdown override her zaman kazanır.

@@ -3,6 +3,9 @@
  *
  * Admin-facing notification list with filtering, severity indicators,
  * inbox cross-references, and bulk actions.
+ *
+ * Aurora surface override (`admin.notifications`) geçerliyse onu kullanır;
+ * aksi halde legacy yüzeye düşer.
  */
 
 import { useState } from "react";
@@ -19,6 +22,7 @@ import type { NotificationItem } from "../../api/notificationApi";
 import { cn } from "../../lib/cn";
 import { formatDateShort } from "../../lib/formatDate";
 import { useActiveScope } from "../../hooks/useActiveScope";
+import { useSurfacePageOverride } from "../../surfaces/SurfaceContext";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -54,6 +58,12 @@ const STATUS_LABELS: Record<string, string> = {
 // ---------------------------------------------------------------------------
 
 export default function AdminNotificationsPage() {
+  const Override = useSurfacePageOverride("admin.notifications");
+  if (Override) return <Override />;
+  return <LegacyAdminNotificationsPage />;
+}
+
+function LegacyAdminNotificationsPage() {
   const navigate = useNavigate();
   const qc = useQueryClient();
 

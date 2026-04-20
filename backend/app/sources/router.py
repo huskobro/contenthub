@@ -269,11 +269,35 @@ async def trigger_scan(
 
     # Execute inline (keeps behavior symmetric with scheduler; admin-side
     # scans are typically few and this simplifies SSE wiring).
+    #
+    # Pass-6: scan sonuc ozetini de geri donduruyoruz. Frontend boylece
+    # toast'ta "yeni X / fetch Y / dedupe Z" gibi durust geri bildirim
+    # gosterebiliyor; "tarama basladi" gibi belirsiz mesaj yerine "tarama
+    # bitti, X yeni haber yazildi" diyebiliyor.
+    scan_summary: dict[str, int | str | None] = {
+        "status": "queued",
+        "fetched_count": 0,
+        "new_count": 0,
+        "skipped_dedupe": 0,
+        "error_summary": None,
+    }
     try:
-        await execute_rss_scan(db, scan.id, allow_followup=True)
+        result = await execute_rss_scan(db, scan.id, allow_followup=True)
+        if isinstance(result, dict):
+            scan_summary["status"] = str(result.get("status") or "completed")
+            scan_summary["fetched_count"] = int(result.get("fetched_count") or 0)
+            scan_summary["new_count"] = int(result.get("new_count") or 0)
+            scan_summary["skipped_dedupe"] = int(result.get("skipped_dedupe") or 0)
+            err = result.get("error_summary")
+            scan_summary["error_summary"] = str(err) if err else None
     except Exception as exc:
         # execute_rss_scan itself writes a failed scan record; surface 202
         # plus the scan id so the client can see the failure via SSE / GET.
-        pass
+        scan_summary["status"] = "failed"
+        scan_summary["error_summary"] = str(exc)[:200]
 
-    return {"scan_id": scan.id, "source_id": source_id}
+    return {
+        "scan_id": scan.id,
+        "source_id": source_id,
+        **scan_summary,
+    }

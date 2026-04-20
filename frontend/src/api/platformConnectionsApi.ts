@@ -158,3 +158,17 @@ export function fetchConnectionCapability(
 ): Promise<CapabilityMatrix> {
   return api.get<CapabilityMatrix>(`${BASE}/${connectionId}/capability`);
 }
+
+/**
+ * Delete a platform connection (admin operation).
+ *
+ * Backend: `DELETE /api/v1/platform-connections/{connection_id}`
+ * → 204 No Content. Server-side handler also revokes the OAuth token where
+ * possible. The api client returns void/null for 204 responses; we type the
+ * promise as `void` to make consumers resist parsing a body.
+ */
+export function deletePlatformConnection(
+  connectionId: string,
+): Promise<void> {
+  return api.delete<void>(`${BASE}/${connectionId}`);
+}

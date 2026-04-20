@@ -36,6 +36,7 @@ import {
   FeedbackBanner,
 } from "../../components/design-system/primitives";
 import type { SyncedPlaylist, PlaylistListParams } from "../../api/playlistsApi";
+import { useSurfacePageOverride } from "../../surfaces";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -80,6 +81,12 @@ function privacyBadge(status: string): { label: string; className: string } {
 // ---------------------------------------------------------------------------
 
 export function UserPlaylistsPage() {
+  const Override = useSurfacePageOverride("user.playlists");
+  if (Override) return <Override />;
+  return <LegacyUserPlaylistsPage />;
+}
+
+function LegacyUserPlaylistsPage() {
   const userId = useAuthStore((s) => s.user?.id ?? null);
 
   // Filters

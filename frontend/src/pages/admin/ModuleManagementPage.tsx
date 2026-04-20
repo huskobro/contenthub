@@ -15,6 +15,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchModules, setModuleEnabled, type ModuleInfo } from "../../api/modulesApi";
 import { PageShell, SectionShell } from "../../components/design-system/primitives";
 import { useToast } from "../../hooks/useToast";
+import { useSurfacePageOverride } from "../../surfaces";
 
 // ---------------------------------------------------------------------------
 // Yardımcı bileşenler
@@ -190,6 +191,15 @@ function ModuleCard({ mod, onToggle, isToggling }: ModuleCardProps) {
 // ---------------------------------------------------------------------------
 
 export function ModuleManagementPage() {
+  // Aurora surface override gate. Aktif surface Aurora ise (veya başka bir
+  // surface "admin.modules" override'i sağlarsa) ona devreder; aksi halde
+  // legacy implementasyon render edilir.
+  const Override = useSurfacePageOverride("admin.modules");
+  if (Override) return <Override />;
+  return <LegacyModuleManagementPage />;
+}
+
+function LegacyModuleManagementPage() {
   const toast = useToast();
   const queryClient = useQueryClient();
 

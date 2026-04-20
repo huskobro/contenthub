@@ -84,23 +84,21 @@ ContentHub, localhost-first modüler içerik üretim ve yayınlama platformudur.
 
 ---
 
-## Bilinen Sınırlamalar
+## Tasarım Dışı Bırakılan Alanlar (MVP Kapsam Dışı, Kalıcı Karar)
 
-| Alan | Durum | Not |
-|------|-------|-----|
-| Full-auto publish | Kasıtlı draft | `full_auto/service.py` v1 ALWAYS draft — auto-publish policy Phase AM'de |
-| Approver enforcement | Kısmen | `approver_user_id` kolonu var; state machine zorlama Phase AM'de |
-| `module.id.enabled` runtime | Declarative | UI toggle enforcement sonraki fazda |
-| 3 wizard AdminWizardShell göçü | Kısmen | Dosyalar var; adapter wrap Phase AM'de |
-| Vite bundle code-split | Ertelendi | 1.59 MB tek chunk; localhost-first için bloke değil |
-| Theme persistence (DB'ye) | Ertelendi | Şu an localStorage; DB'ye taşıma Post-R6 |
-| Otomasyon visual flow builder | Ertelendi | `@xyflow/react` + yeni tablo gerekli |
-| Semantic dedupe (haber) | Ertelendi | Hard+soft var; embedding tabanlı CLAUDE.md "can come later" |
-| Multi-tenant | Yok | Tek makine MVP — kalıcı CLAUDE.md kuralı |
-| SSE auth | Yok | Localhost-only MVP kararı |
-| YouTube Analytics admin guard | Backlog | Publish hardening'de |
+Aşağıdaki maddeler açık iş değildir — MVP için bilinçli olarak kapsam dışında
+tutulan, CLAUDE.md'deki ürün kurallarının uzantısı niteliğindeki sabit
+kararlardır.
 
-Tüm açık kalemler: `docs/tracking/DEFERRED_BACKLOG.md`
+| Alan | Karar | Gerekçe |
+|------|-------|---------|
+| Multi-tenant | MVP kapsamı dışı | Tek makine localhost MVP — CLAUDE.md kuralı |
+| SSE auth | MVP kapsamı dışı | Localhost-only çalışma ortamı |
+| Semantic dedupe (embedding) | MVP kapsamı dışı | Hard+soft dedupe mevcut; CLAUDE.md "can come later" |
+| Otomasyon visual flow builder | MVP kapsamı dışı | Deterministic policy UI yeterli |
+
+Tüm MVP iş kalemleri kapalı — ayrı bir açık-kalem takip dosyası tutulmuyor.
+Sürüm geçmişi: `docs/tracking/CHANGELOG.md`.
 
 ---
 

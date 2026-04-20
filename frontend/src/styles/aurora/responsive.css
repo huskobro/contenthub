@@ -1,0 +1,256 @@
+/* ==========================================================================
+   Aurora responsive — mobile & tablet adaptations.
+
+   Scope: strictly [data-surface="aurora"]. Aurora kapalıyken bu dosya hiçbir
+   selector'ı etkilemez (prefix ile scope'lu). Tüm breakpoint'ler yalnızca
+   kokpit shell + sayfa iskeleti + primitive grid'leri hedefler.
+
+   Breakpoint stratejisi (mobile-first değil, desktop-down — Aurora masaüstü
+   öncelikli bir kokpit; küçük ekranlarda "operasyon görüntüleme" modu):
+     - ≤ 1200px (tablet landscape)  → inspector gizle, grid'ler sadeleşir
+     - ≤  900px (tablet portrait)   → rail yatay scroll, sayfa padding kısal
+     - ≤  640px (phone)             → tek kolon, ctxbar kompakt, tablo kart'a döner
+
+   Uyarı: Aurora mobilde "okuma + hızlı aksiyon" deneyimidir; karmaşık
+   üretim ekranları (wizard, publish review) hâlâ masaüstü önerilir.
+   Kritik operasyon akışları mobilde erişilebilir ama ideal değildir.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Tablet landscape: ≤ 1200px
+   - Inspector'ı gizle (içerik body'e akar)
+   - 4 kolon grid → 2 kolon
+   - Page max-width: tam genişlik
+   -------------------------------------------------------------------------- */
+@media (max-width: 1200px) {
+  [data-surface="aurora"] .body {
+    grid-template-columns: 1fr;
+  }
+  [data-surface="aurora"] .inspector {
+    display: none;
+  }
+  [data-surface="aurora"] .page {
+    padding: 22px 24px 36px;
+    max-width: 100%;
+  }
+  [data-surface="aurora"] .g-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  [data-surface="aurora"] .g-3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  /* Dashboard meter grid: 6 → 3 kolon */
+  [data-surface="aurora"] .aurora-meter-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+  [data-surface="aurora"] .ctxbar-search {
+    width: 260px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Tablet portrait: ≤ 900px
+   - Rail yatay scroll, alt tarafa taşınır (bottom nav mantığı)
+   - Ctxbar search kısalır, breadcrumbs gizlenir
+   - Sayfa padding daha kompakt
+   -------------------------------------------------------------------------- */
+@media (max-width: 900px) {
+  [data-surface="aurora"] .cockpit {
+    grid-template-columns: 1fr;
+    grid-template-rows: 48px 1fr 52px 28px;
+    grid-template-areas:
+      "ctxbar"
+      "body"
+      "rail"
+      "status";
+  }
+  [data-surface="aurora"] .rail {
+    flex-direction: row;
+    width: 100%;
+    height: 52px;
+    padding: 0 8px;
+    gap: 4px;
+    border-right: 0;
+    border-top: 1px solid var(--border-default);
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+  [data-surface="aurora"] .rail-item {
+    flex-shrink: 0;
+    width: auto;
+    min-width: 44px;
+    height: 40px;
+    padding: 0 10px;
+  }
+  [data-surface="aurora"] .rail-item.active::before {
+    /* Vertical accent bar → horizontal */
+    left: 10%;
+    right: 10%;
+    top: auto;
+    bottom: 0;
+    width: auto;
+    height: 2px;
+  }
+  [data-surface="aurora"] .rail-divider {
+    width: 1px;
+    height: 20px;
+    margin: 0 4px;
+  }
+  [data-surface="aurora"] .rail-spacer {
+    display: none;
+  }
+  [data-surface="aurora"] .rail-item .tt {
+    /* Tooltip'i üstten göster (yatay rail) */
+    left: 50%;
+    top: -28px;
+    transform: translateX(-50%);
+  }
+  [data-surface="aurora"] .rail-item:hover .tt {
+    transform: translateX(-50%) translateY(-2px);
+  }
+
+  [data-surface="aurora"] .ctxbar {
+    padding: 0 12px;
+    gap: 8px;
+  }
+  [data-surface="aurora"] .ctxbar-brand {
+    width: 48px;
+  }
+  [data-surface="aurora"] .ctxbar .breadcrumbs,
+  [data-surface="aurora"] .ctxbar .workspace-pill {
+    display: none;
+  }
+  [data-surface="aurora"] .ctxbar-search {
+    width: auto;
+    flex: 1;
+    min-width: 0;
+    max-width: 240px;
+  }
+  [data-surface="aurora"] .ctxbar-search .k {
+    display: none;
+  }
+
+  [data-surface="aurora"] .page {
+    padding: 18px 16px 30px;
+  }
+  [data-surface="aurora"] .page-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  [data-surface="aurora"] .page-head h1 {
+    font-size: 22px;
+  }
+  [data-surface="aurora"] .g-3 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  [data-surface="aurora"] .aurora-meter-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* Statusbar: sadece kritik cell'ler görünür (genel sağlığı koru) */
+  [data-surface="aurora"] .statusbar .cell.optional {
+    display: none;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Phone: ≤ 640px
+   - Her grid tek kolona düşer
+   - Table → card görünümü (horizontal scroll kalır ama fontlar küçülür)
+   - Ctxbar action'ları sadece ikon
+   -------------------------------------------------------------------------- */
+@media (max-width: 640px) {
+  [data-surface="aurora"] .g-2,
+  [data-surface="aurora"] .g-3,
+  [data-surface="aurora"] .g-4 {
+    grid-template-columns: 1fr;
+  }
+  [data-surface="aurora"] .aurora-meter-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px;
+  }
+  [data-surface="aurora"] .page {
+    padding: 14px 12px 24px;
+  }
+  [data-surface="aurora"] .page-head h1 {
+    font-size: 20px;
+  }
+  [data-surface="aurora"] .section {
+    margin-bottom: 18px;
+  }
+  [data-surface="aurora"] .card-pad {
+    padding: 14px 14px;
+  }
+  [data-surface="aurora"] .card-tight {
+    padding: 10px 10px;
+  }
+
+  /* Table: horizontal scroll wrapper; header ve body font kısılır */
+  [data-surface="aurora"] .aurora-table-wrap {
+    overflow-x: auto;
+  }
+  [data-surface="aurora"] .tbl {
+    min-width: 560px;
+    font-size: 12px;
+  }
+  [data-surface="aurora"] .tbl th {
+    font-size: 9px;
+    padding: 8px 8px;
+  }
+  [data-surface="aurora"] .tbl td {
+    padding: 10px 8px;
+  }
+
+  /* Ctxbar: compact icon-only mode */
+  [data-surface="aurora"] .ctxbar-search {
+    max-width: none;
+    width: 36px;
+    padding: 0;
+    justify-content: center;
+  }
+  [data-surface="aurora"] .ctxbar-search .text,
+  [data-surface="aurora"] .ctxbar-search .k {
+    display: none;
+  }
+  [data-surface="aurora"] .ctxbar-user .name {
+    display: none;
+  }
+
+  /* Buttons fit touch target */
+  [data-surface="aurora"] .btn {
+    height: 36px;
+    padding: 0 14px;
+  }
+  [data-surface="aurora"] .btn.sm {
+    height: 30px;
+  }
+
+  /* Statusbar: tek satır scroll */
+  [data-surface="aurora"] .statusbar {
+    overflow-x: auto;
+    white-space: nowrap;
+    padding: 0 10px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Touch-friendly hit area (any device with coarse pointer, i.e. touchscreens)
+   -------------------------------------------------------------------------- */
+@media (pointer: coarse) {
+  [data-surface="aurora"] .rail-item,
+  [data-surface="aurora"] .ctxbar-action,
+  [data-surface="aurora"] .btn {
+    /* iOS/Android min touch target 44x44 */
+    min-height: 40px;
+  }
+  [data-surface="aurora"] .aurora-row-interactive {
+    /* Rows that are tappable get a slight background on hover emulation */
+    cursor: pointer;
+  }
+  /* Hover-only tooltips are hidden on touch (they can't be dismissed) */
+  [data-surface="aurora"] .rail-item .tt {
+    display: none;
+  }
+}

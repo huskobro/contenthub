@@ -125,9 +125,23 @@ export function bulkDeleteSources(ids: string[]): Promise<void[]> {
 
 /**
  * Trigger an on-demand scan for a source. Creates a new queued scan,
- * executes it inline, and returns the scan record.
+ * executes it inline, and returns the scan record + result summary.
  * Audit-logged as ``source.trigger_scan``.
+ *
+ * Pass-6: backend trigger-scan response artik scan ozetini de iceriyor;
+ * frontend bunlari toast'a yazarak "tarama basladi" yerine "X yeni haber"
+ * durust feedback'i veriyor.
  */
-export function triggerSourceScan(sourceId: string): Promise<{ scan_id: string; status: string }> {
+export interface TriggerScanResult {
+  scan_id: string;
+  source_id: string;
+  status: string;
+  fetched_count: number;
+  new_count: number;
+  skipped_dedupe: number;
+  error_summary: string | null;
+}
+
+export function triggerSourceScan(sourceId: string): Promise<TriggerScanResult> {
   return api.post(`${BASE_URL}/${sourceId}/trigger-scan`, {});
 }

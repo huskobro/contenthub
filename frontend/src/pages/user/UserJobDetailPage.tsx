@@ -9,7 +9,10 @@
  */
 
 import { JobDetailBody } from "../../components/jobs/JobDetailBody";
+import { useSurfacePageOverride } from "../../surfaces";
 
 export function UserJobDetailPage() {
+  const Override = useSurfacePageOverride("user.jobs.detail");
+  if (Override) return <Override />;
   return <JobDetailBody basePath="/user" titleLabel="Is Detayı" testIdPrefix="user-job-detail" />;
 }

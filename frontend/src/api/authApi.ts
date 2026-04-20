@@ -89,3 +89,43 @@ export async function fetchMe(accessToken: string): Promise<UserInfo> {
     headers: { Authorization: `Bearer ${accessToken}` },
   });
 }
+
+// ---------------------------------------------------------------------------
+// Password reset — forgot & reset
+// ---------------------------------------------------------------------------
+
+export interface ForgotPasswordResponse {
+  message: string;
+  /**
+   * Dev/localhost convenience: the server returns the reset token in the
+   * response body when no email transport is configured, so the Aurora
+   * forgot-password form can present the continuation link directly.
+   * In production this field is null and the token arrives via email.
+   */
+  reset_token: string | null;
+}
+
+export interface ResetPasswordResponse {
+  message: string;
+}
+
+export async function requestPasswordReset(
+  email: string,
+): Promise<ForgotPasswordResponse> {
+  return authFetch<ForgotPasswordResponse>(`${AUTH_BASE}/forgot-password`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
+}
+
+export async function confirmPasswordReset(
+  token: string,
+  newPassword: string,
+): Promise<ResetPasswordResponse> {
+  return authFetch<ResetPasswordResponse>(`${AUTH_BASE}/reset-password`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token, new_password: newPassword }),
+  });
+}

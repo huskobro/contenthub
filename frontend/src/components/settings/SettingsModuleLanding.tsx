@@ -106,9 +106,6 @@ export function SettingsModuleLanding() {
               </div>
               <div className="flex gap-2 flex-wrap text-xs text-neutral-500">
                 <span>{g.total} ayar</span>
-                {g.wired > 0 && (
-                  <span className="text-success-text">{g.wired} wired</span>
-                )}
                 {g.missing > 0 && (
                   <span className="text-error-text">{g.missing} eksik</span>
                 )}

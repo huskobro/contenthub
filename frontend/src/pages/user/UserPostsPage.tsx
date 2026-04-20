@@ -30,6 +30,7 @@ import {
   SectionShell,
 } from "../../components/design-system/primitives";
 import type { PlatformPost, PostListParams } from "../../api/postsApi";
+import { useSurfacePageOverride } from "../../surfaces";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -101,6 +102,12 @@ function deliveryBadge(s: string): { label: string; className: string } {
 // ---------------------------------------------------------------------------
 
 export function UserPostsPage() {
+  const Override = useSurfacePageOverride("user.posts");
+  if (Override) return <Override />;
+  return <LegacyUserPostsPage />;
+}
+
+function LegacyUserPostsPage() {
   const userId = useAuthStore((s) => s.user?.id ?? null);
 
   // Filters

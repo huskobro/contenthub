@@ -18,6 +18,7 @@
  */
 
 import { useState, useCallback } from "react";
+import { useSurfacePageOverride } from "../../surfaces";
 import { cn } from "../../lib/cn";
 import {
   PageShell,
@@ -129,6 +130,14 @@ function ThemeCard({
 // ---------------------------------------------------------------------------
 
 export function ThemeRegistryPage() {
+  // Faz 6 P0-5 — Aurora override gate. Aktif surface Aurora ise sade
+  // tema galerisi render edilir; diğer surface'ler legacy sayfayı görür.
+  const Override = useSurfacePageOverride("admin.themes");
+  if (Override) return <Override />;
+  return <LegacyThemeRegistryPage />;
+}
+
+function LegacyThemeRegistryPage() {
   const toast = useToast();
   const themes = useThemeStore((s) => s.themes);
   const activeThemeId = useThemeStore((s) => s.activeThemeId);

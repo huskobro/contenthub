@@ -15,8 +15,19 @@ import {
   fetchNewsBulletinMetadata,
 } from "../../api/newsBulletinApi";
 import { cn } from "../../lib/cn";
+import { useSurfacePageOverride } from "../../surfaces/SurfaceContext";
 
+/**
+ * Public entry point. Aurora surface override (admin.news-bulletins.detail)
+ * geçerliyse onu kullanır; aksi halde legacy yüzeye düşer.
+ */
 export function NewsBulletinDetailPage() {
+  const Override = useSurfacePageOverride("admin.news-bulletins.detail");
+  if (Override) return <Override />;
+  return <LegacyNewsBulletinDetailPage />;
+}
+
+function LegacyNewsBulletinDetailPage() {
   const { itemId } = useParams<{ itemId: string }>();
   const navigate = useNavigate();
 

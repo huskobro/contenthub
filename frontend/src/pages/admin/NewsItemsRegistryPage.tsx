@@ -4,8 +4,15 @@ import { useNewsItemsList } from "../../hooks/useNewsItemsList";
 import { NewsItemsTable } from "../../components/news-items/NewsItemsTable";
 import { NewsItemDetailPanel } from "../../components/news-items/NewsItemDetailPanel";
 import { PageShell, SectionShell, ActionButton } from "../../components/design-system/primitives";
+import { useSurfacePageOverride } from "../../surfaces/SurfaceContext";
 
 export function NewsItemsRegistryPage() {
+  const Override = useSurfacePageOverride("admin.news-items.registry");
+  if (Override) return <Override />;
+  return <LegacyNewsItemsRegistryPage />;
+}
+
+function LegacyNewsItemsRegistryPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const [selectedId, setSelectedId] = useState<string | null>(

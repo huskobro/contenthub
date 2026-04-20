@@ -9,10 +9,22 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../stores/authStore";
 import { cn } from "../lib/cn";
+import { useSurfacePageOverride } from "../surfaces/SurfaceContext";
 
 type Mode = "login" | "register";
 
+/**
+ * Public entry point. Delegates to a surface override when the active
+ * surface declares one for `auth.login` (Aurora). Otherwise falls back
+ * to the legacy implementation below.
+ */
 export function LoginPage() {
+  const Override = useSurfacePageOverride("auth.login");
+  if (Override) return <Override />;
+  return <LegacyLoginPage />;
+}
+
+function LegacyLoginPage() {
   const navigate = useNavigate();
   const login = useAuthStore((s) => s.login);
   const register = useAuthStore((s) => s.register);

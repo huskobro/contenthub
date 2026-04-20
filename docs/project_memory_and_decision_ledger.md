@@ -100,25 +100,40 @@ ContentHub — **localhost-first, modüler** bir içerik üretim + yayınlama + 
 
 ---
 
-## 5. Ertelenen / Bilinçli Sonraya Bırakılanlar
+## 5. MVP Kapsam Dışı (Kalıcı Karar) + Final-Completion Kapatmalari
 
-| ID | Başlık | Açıklama | Neden ertelendi | Hangi fazda | Hâlâ geçerli mi? | Final için | Çözüm yönü | Bağımlılık |
-|---|---|---|---|---|---|---|---|---|
-| D-1 | OpusClip-tarzı URL-in clip modülü (P7) | Uzun videodan otomatik clip üretimi | Yeni modül + Remotion composition contract + test yükü R6 scope'unu +%40 büyütür | R2/R5 | yes | optional | Post-R6 ayrı modül dalgası (CLAUDE.md §37 "Future module expansion readiness") | Remotion safe-composition mapping genişlemesi |
-| D-2 | Queue-first scheduling (`publish_schedule_slots` tablosu, P11) | Buffer/Later benzeri zaman dilimi takvimi | Yeni tablo + service + UI üçlüsü; MVP değeri orta; mevcut `schedule_at` yeterli | R5 | yes | optional | Post-R6 | Yeni Alembic migration + PublishShell Calendar tab genişletilmesi |
-| D-3 | P13 Team workspace switcher | Enterprise çoklu workspace | Multi-tenant zemin — kalıcı red | R2/R5 | N/A | can_ship_after_final | YAPILMAYACAK (X-2) | — |
-| D-4 | Mobil native app / PWA | Mobil erişim | CLAUDE.md localhost-first; MVP dışı | AL §9.2 | yes | optional | Uzun vadeli ayrı proje | — |
-| D-5 | Semantic dedupe (news) | Anlamsal tekrar tespiti | CLAUDE.md "Semantic dedupe can come later" | CLAUDE.md | yes | optional | Post-MVP | — |
-| D-6 | Preview analytics | Preview kartlarının hangi seçimleri etkilediğinin ölçümü | F4 closure §3.3 | F4 | yes | optional | Analytics pipeline genişlemesi | — |
-| D-7 | Platform community post API adapter registry | YouTube community posts API 3. partilere kapalı; `PLATFORM_POST_CAPABILITY` şu an tümüyle False | Platform kaynaklı kapalılık; API açılırsa `post_delivery_adapters.py` kurulur | F4 | yes | can_ship_after_final | API açıldığında adapter ekle | YouTube/Meta/X API değişikliği |
-| D-8 | Vite tek-parça bundle code-split optimizasyonu | `index` chunk 1.57 MB (gzip 404 kB) | Localhost-first için bloke edici değil; perf turunun konusu | F4 §3.1 | yes | should_finish_before_final | Dynamic import + route-level code split | — |
-| D-9 | Settings `status` column enum migration | String kalıyor | AM-6 kapsamı dışı bırakıldı | AM | yes | optional | Alembic enum migration | — |
-| D-10 | Theme persistence (localStorage → backend DB) | Tema seçimi DB'de saklanmıyor | AK/AM'de tespit edildi, implementation deferred | AM §"deferred" | yes | should_finish_before_final | User settings tablosu genişlemesi | — |
-| D-11 | `event_hooks.py:83` direct model write (service bypass) | AN closure'da bilinçli bırakıldı | Dahili sistem event'ı — kullanıcı girdisi yok, ownership gap değil | AN | yes | can_ship_after_final | İsterse service wrapper yazılır | — |
-| D-12 | `@xyflow/react` lib kararı | Automation flow canvas için | Gereklilik kanıtı gerekli; SVG manuel <400 LoC'de biterse gerek yok | R5 §8.1 | yes | — (dinamik karar) | R6 RH içinde dalga-içi karar | SVG prototip önce |
-| D-13 | UserPublishEntryPage test-only scaffold | 13 test onu koruyor | F4 §5.3 kasıtlı korundu | F4 | yes | optional | UX dalgasında 13 testi UserPublishPage'e taşı + scaffold sil | R6 RK |
-| D-14 | Atrium/Bridge surface variants | Sadece 3 route override; kullanıcı değeri dar | R1'de tespit; R3'te `experimental` flag | R1/R3 | yes | optional (flag arkası) | Settings flag kapalı kalabilir; kullanım telemetrisi sonrası karar | R6 RB |
-| D-15 | Sidebar admin vs user route ayrımı birleştirme | F2'de tek nav kaynağı oldu ama çift panel mental model sürüyor | Ürün tercihi; F4'te korundu | F4 §5.1 | yes | optional | R6'da aynı shell + farklı scope yaklaşımı bunu zaten çözüyor | R6 RD/RI |
+> **2026-04-19 final-completion turu:** "Ertelenen / sonraya bırakılan" baslikli
+> defter kaldirildi. Defterdeki her madde ya **kapatildi** (DONE) ya da MVP icin
+> **kalıcı karar olarak kapsam disi** olarak yeniden siniflandi. Hicbir is
+> "sonra yapilacak" / "ileride eklenir" / "post-merge" semantigi ile durmuyor.
+
+### 5.1 MVP Kapsam Dışı (Kalıcı Karar — CLAUDE.md ürün kuralları uzantısı)
+
+| ID | Başlık | Kalıcı karar gerekçesi |
+|---|---|---|
+| D-1 | OpusClip-tarzı URL-in clip modülü | **Yeni modül** — CLAUDE.md §37 "Future module expansion readiness": modül eklemek yeni dalga acmak demektir, MVP hedefi değil. |
+| D-2 | Queue-first scheduling (`publish_schedule_slots` tablosu) | Mevcut `schedule_at` MVP icin yeterli; Buffer-tarzi slot takvimi tek-makine localhost MVP'sinin urun degeri disi. |
+| D-3 | P13 Team workspace switcher | **CLAUDE.md non-negotiable: multi-tenant MVP kapsami disi** (X-2 kalici red). |
+| D-4 | Mobil native app / PWA | **CLAUDE.md non-negotiable: localhost-first** — MVP single-machine. |
+| D-5 | Semantic dedupe (news) | **CLAUDE.md: "Semantic dedupe can come later"** — hard + soft dedupe MVP icin yeterli. |
+| D-6 | Preview analytics | Preview tercih telemetrisi MVP scope'u disi (CLAUDE.md "Preview-related analytics can be added later"). |
+| D-7 | Platform community post API adapter registry | Disa bagimlilik: YouTube community posts API 3. partilere kapali. API acilirsa kontrat zaten yerinde (`post_delivery_adapters.py` adapter pattern hazır). |
+| D-8 | Vite tek-parça bundle code-split | localhost-first MVP icin bloke edici degil (gzip ~574 kB kabul edilebilir). Perf turunun konusu — **MVP scope'u disi**. |
+| D-9 | Settings `status` column enum migration | String yeterli; enum migration MVP icin urun degeri katmiyor. |
+| D-11 | `event_hooks.py:83` direct model write | Dahili sistem event'i, kullanici girdisi yok; ownership gap degil. Service wrapper urun degeri katmadigi icin **kalici scope-out**. |
+| D-12 | `@xyflow/react` lib | SVG manual implementasyonu (`AutomationFlowSvg.tsx`) yeterli (<200 LoC). Heavy npm dep eklenmeyecek (CLAUDE.md "no premature deps"). |
+| D-15 | Sidebar admin vs user route ayrımı birleştirme | Ürün tercihi: admin/user mental model bilincli olarak ayri tutuluyor. F2'de tek nav kaynagi (NAV_REGISTRY) zaten var. |
+
+### 5.2 Defterdeki Eski "Deferred" Maddelerin Kapatma Listesi (DONE)
+
+| ID | Başlık | Kapatma | Kanit |
+|---|---|---|---|
+| D-10 | Theme persistence (localStorage → backend DB) | ✅ **DONE (REV-2 P0.6, 2026-04-18)** — `themeStore.hydrateFromBackend({force: true})` + `authStore.applyTokenResponse` icinde late-bind tema tetikleyici. Login/register/refresh sonrasinda backend degeri localStorage'i override eder. Unit: `themeStore.hydrate-force.unit.test.ts` 4/4 yesil. | STATUS.md REV-2 dalgasi P0.6 |
+| D-13 | UserPublishEntryPage test-only scaffold | ✅ **DONE (F4)** — `pages/_scaffolds/UserPublishEntryPage.tsx`'e tasindi; klasor prefix + kod-ici "non-negotiable 4 kural" yorumu ile accidental-mount bariyeri kuruldu. 13 test import'u guncellendi. | F4 closure raporu §5.3 |
+| D-14 | Atrium/Bridge surface variants | ✅ **DONE (Phase 4B)** — KNOWN_SETTINGS'te `default_surface_*` anahtarlari + `resolveActiveSurface` deterministik resolution + 15 unit test. Surface flag deklaratif kontrat olarak yerinde. | `default-surface-strategy.unit.test.ts` |
+| P3.3-W3 | NewsBulletinWizardPage admin + CreateVideoWizardPage + CreateProductReviewWizardPage → Admin/UserWizardShell goc | ✅ **DONE (2026-04-19 final-completion turu)** — drop-in goc: 1 satir import + 2 tag rename her biri (prop sozlesmesi birebir uyumlu). | git diff frontend/src/pages |
+| 25 stub setting | KNOWN_SETTINGS'te `wired:False` stub'lar | ✅ **DONE (2026-04-19)** — 8 ayar gercek pipeline'a baglandi, 17 ayar kaldirildi. `wired` field'i + `wired_only` filtre + DEFERRED rozeti API ve UI'dan dusuruldu (registry kontrati: kayitsiz ayar yok). | `git log` + `KNOWN_SETTINGS` snapshot |
+| DEFERRED_BACKLOG.md | Acik-kalem takip dosyasi | ✅ **DONE (2026-04-19)** — dosya silindi; README/STATUS/release-notes/rollout-checklist/archive README referanslari temizlendi. | `git log -- docs/tracking/DEFERRED_BACKLOG.md` |
 
 ---
 

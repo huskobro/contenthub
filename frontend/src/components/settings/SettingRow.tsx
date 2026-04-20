@@ -2,10 +2,14 @@
  * SettingRow — Extracted from EffectiveSettingsPanel.
  *
  * Renders a single setting with:
- * - Label, source badge, wired badge, module scope
- * - Help text and wired_to info
+ * - Label, source badge, module scope
+ * - Help text and wired_to consumer trace
  * - Current value display (masked for secrets)
  * - Inline edit with auto-save support
+ *
+ * Registry kontrati: kayitsiz ayar yok — her satir runtime'da gercekten
+ * okunan bir consumer'a baglidir. Bu yuzden eski "WIRED/DEFERRED" badge'i
+ * kaldirildi; yalnizca "→ wired_to" hangi modulun tukettigini gosterir.
  */
 
 import { useState } from "react";
@@ -73,20 +77,6 @@ function SourceBadge({ source }: { source: string }) {
       data-testid={`source-badge-${source}`}
     >
       {source.toUpperCase()}
-    </span>
-  );
-}
-
-function WiredBadge({ wired }: { wired: boolean }) {
-  return (
-    <span
-      className={cn(
-        "inline-block px-2 py-1 rounded-sm text-xs font-semibold",
-        wired ? "bg-success-light text-success-text" : "bg-warning-light text-warning-text",
-      )}
-      data-testid={wired ? "badge-wired" : "badge-deferred"}
-    >
-      {wired ? "WIRED" : "DEFERRED"}
     </span>
   );
 }
@@ -194,7 +184,6 @@ export function SettingRow({ setting }: { setting: EffectiveSetting }) {
       <div className="flex items-center gap-2 flex-wrap">
         <span className="text-base font-semibold text-neutral-900">{setting.label}</span>
         <SourceBadge source={setting.source} />
-        <WiredBadge wired={setting.wired} />
         {setting.module_scope && (
           <span className="text-xs text-neutral-600 italic">
             [{setting.module_scope}]
@@ -204,7 +193,7 @@ export function SettingRow({ setting }: { setting: EffectiveSetting }) {
 
       {setting.help_text && <div className="text-xs text-neutral-500 mt-1 leading-tight">{setting.help_text}</div>}
 
-      {setting.wired && setting.wired_to && (
+      {setting.wired_to && (
         <div className="text-xs text-brand-700 mt-1">
           → {setting.wired_to}
         </div>

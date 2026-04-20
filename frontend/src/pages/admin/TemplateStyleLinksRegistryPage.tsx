@@ -4,8 +4,20 @@ import { useTemplateStyleLinksList } from "../../hooks/useTemplateStyleLinksList
 import { TemplateStyleLinksTable } from "../../components/template-style-links/TemplateStyleLinksTable";
 import { TemplateStyleLinkDetailPanel } from "../../components/template-style-links/TemplateStyleLinkDetailPanel";
 import { PageShell, SectionShell, ActionButton } from "../../components/design-system/primitives";
+import { useSurfacePageOverride } from "../../surfaces/SurfaceContext";
 
+/**
+ * Public entry point. Aurora surface override
+ * (`admin.template-style-links.registry`) geçerliyse onu kullanır; aksi
+ * halde legacy yüzeye düşer.
+ */
 export function TemplateStyleLinksRegistryPage() {
+  const Override = useSurfacePageOverride("admin.template-style-links.registry");
+  if (Override) return <Override />;
+  return <LegacyTemplateStyleLinksRegistryPage />;
+}
+
+function LegacyTemplateStyleLinksRegistryPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const [selectedId, setSelectedId] = useState<string | null>(

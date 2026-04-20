@@ -1,14 +1,24 @@
 """
 Auth endpoints — Faz 3.
 
-Provides login, register, refresh, and /me endpoints.
+Provides login, register, refresh, /me, forgot-password, and reset-password
+endpoints.
+
+Password reset token storage: in-memory (MVP, localhost-first). Tokens are
+process-local and expire after 30 minutes. Restart clears outstanding tokens;
+users must re-initiate "forgot password" after backend restart. This is an
+explicit design choice to avoid a DB migration for a single-instance MVP —
+when the product graduates to multi-instance or persistent state, migrate
+to a `password_reset_tokens` table.
 """
 
 import logging
-from typing import Optional
+import secrets
+from datetime import datetime, timedelta, timezone
+from typing import Dict, Optional, Tuple
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -23,6 +33,22 @@ from jose import JWTError
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
+
+
+# ---------------------------------------------------------------------------
+# Password reset token store (in-memory, process-local, 30-min TTL)
+# ---------------------------------------------------------------------------
+# Map: token -> (user_id, expires_at_utc)
+_RESET_TOKENS: Dict[str, Tuple[str, datetime]] = {}
+_RESET_TOKEN_TTL = timedelta(minutes=30)
+
+
+def _prune_expired_tokens() -> None:
+    """Drop expired tokens from the in-memory store."""
+    now = datetime.now(timezone.utc)
+    dead = [t for t, (_uid, exp) in _RESET_TOKENS.items() if exp <= now]
+    for t in dead:
+        _RESET_TOKENS.pop(t, None)
 
 
 # ---------------------------------------------------------------------------
@@ -184,3 +210,129 @@ async def get_me(user: User = Depends(get_current_user)):
         "role": user.role,
         "status": user.status,
     }
+
+
+# ---------------------------------------------------------------------------
+# Password reset — forgot & reset
+# ---------------------------------------------------------------------------
+
+class ForgotPasswordRequest(BaseModel):
+    email: str = Field(..., min_length=3, max_length=255)
+
+
+class ForgotPasswordResponse(BaseModel):
+    """Always 200 OK to avoid leaking whether the email exists.
+
+    In dev/localhost mode we include the reset token so the operator can
+    test the full flow without SMTP. In production this field must be
+    removed and the token delivered via email.
+    """
+
+    message: str
+    reset_token: Optional[str] = None
+
+
+class ResetPasswordRequest(BaseModel):
+    token: str = Field(..., min_length=16, max_length=128)
+    new_password: str = Field(..., min_length=8, max_length=128)
+
+
+class ResetPasswordResponse(BaseModel):
+    message: str
+
+
+@router.post("/forgot-password", response_model=ForgotPasswordResponse)
+async def forgot_password(
+    body: ForgotPasswordRequest,
+    db: AsyncSession = Depends(get_db),
+) -> ForgotPasswordResponse:
+    """Initiate password reset.
+
+    Always returns 200 to avoid exposing whether the email is registered.
+    Generates a 32-byte urlsafe token, stores it in-memory with a 30-min
+    TTL, and (in localhost/dev mode) returns the token in the response
+    body so the operator can use it without an email transport configured.
+
+    Localhost MVP constraint: reset tokens live in process memory only.
+    After a backend restart, outstanding tokens are invalidated and users
+    must request reset again. This is acceptable for single-machine dev
+    and is documented in the module docstring.
+    """
+
+    _prune_expired_tokens()
+
+    stmt = select(User).where(User.email == body.email)
+    user = (await db.execute(stmt)).scalar_one_or_none()
+
+    if not user or user.status != "active":
+        # Uniform 200 — do not leak existence or status
+        logger.info(
+            "Password reset requested for unknown/inactive email: %s",
+            body.email,
+        )
+        return ForgotPasswordResponse(
+            message="Eğer bu e-posta ile bir hesap eşleşiyorsa sıfırlama bağlantısı gönderildi.",
+            reset_token=None,
+        )
+
+    token = secrets.token_urlsafe(32)
+    expires_at = datetime.now(timezone.utc) + _RESET_TOKEN_TTL
+    _RESET_TOKENS[token] = (user.id, expires_at)
+
+    # Log so the operator can retrieve the token from server logs in dev.
+    logger.info(
+        "Password reset token issued: user_id=%s email=%s token=%s expires_at=%s",
+        user.id,
+        user.email,
+        token,
+        expires_at.isoformat(),
+    )
+
+    # Return token in dev mode so the Aurora form can complete the flow
+    # without an email transport. Remove this field in production deploys.
+    return ForgotPasswordResponse(
+        message="Sıfırlama bağlantısı hazırlandı. 30 dakika geçerlidir.",
+        reset_token=token,
+    )
+
+
+@router.post("/reset-password", response_model=ResetPasswordResponse)
+async def reset_password(
+    body: ResetPasswordRequest,
+    db: AsyncSession = Depends(get_db),
+) -> ResetPasswordResponse:
+    """Complete password reset with a valid token."""
+
+    _prune_expired_tokens()
+
+    entry = _RESET_TOKENS.get(body.token)
+    if entry is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Geçersiz veya süresi dolmuş sıfırlama bağlantısı.",
+        )
+
+    user_id, expires_at = entry
+    if expires_at <= datetime.now(timezone.utc):
+        _RESET_TOKENS.pop(body.token, None)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Sıfırlama bağlantısının süresi dolmuş. Yeniden talep edin.",
+        )
+
+    user = await db.get(User, user_id)
+    if not user or user.status != "active":
+        _RESET_TOKENS.pop(body.token, None)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Kullanıcı bulunamadı ya da aktif değil.",
+        )
+
+    user.password_hash = hash_password(body.new_password)
+    await db.commit()
+
+    # One-shot: invalidate the used token
+    _RESET_TOKENS.pop(body.token, None)
+
+    logger.info("Password reset completed for user_id=%s email=%s", user.id, user.email)
+    return ResetPasswordResponse(message="Şifre başarıyla güncellendi.")

@@ -22,7 +22,9 @@ export interface EffectiveSetting {
   label: string;
   help_text: string;
   module_scope: string | null;
+  /** Geriye donuk uyumluluk: backend tarafinda her ayar wired (kayitsiz ayar yok), bu alan daimi `true`. */
   wired: boolean;
+  /** Bu ayari runtime'da tuketen modul / executor referansi (ornegin "BulletinScriptExecutor"). */
   wired_to: string;
   builtin_default: unknown;
   env_var: string;
@@ -50,7 +52,6 @@ export interface GroupSummary {
 
 export function fetchEffectiveSettings(params?: {
   group?: string;
-  wired_only?: boolean;
 }): Promise<EffectiveSetting[]> {
   return api.get<EffectiveSetting[]>(`${BASE}/effective`, params);
 }

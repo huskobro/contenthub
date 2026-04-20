@@ -12,6 +12,7 @@
  */
 
 import { useParams, useNavigate } from "react-router-dom";
+import { useSurfacePageOverride } from "../../surfaces/SurfaceContext";
 import { useUser, useUserOverrides, useDeleteUserOverride } from "../../hooks/useUsers";
 import { useEffectiveSettings } from "../../hooks/useEffectiveSettings";
 import {
@@ -48,6 +49,12 @@ function UserAvatar({ name, role }: { name: string; role: string }) {
 }
 
 export function UserSettingsDetailPage() {
+  const Override = useSurfacePageOverride("admin.users.detail");
+  if (Override) return <Override />;
+  return <LegacyUserSettingsDetailPage />;
+}
+
+function LegacyUserSettingsDetailPage() {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
   const { data: user, isLoading: userLoading } = useUser(userId ?? "");

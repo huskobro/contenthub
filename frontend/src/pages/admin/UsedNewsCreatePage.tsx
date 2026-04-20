@@ -3,8 +3,21 @@ import { useCreateUsedNews } from "../../hooks/useCreateUsedNews";
 import { UsedNewsForm } from "../../components/used-news/UsedNewsForm";
 import type { UsedNewsFormValues } from "../../components/used-news/UsedNewsForm";
 import { useToast } from "../../hooks/useToast";
+import { useSurfacePageOverride } from "../../surfaces/SurfaceContext";
 
+/**
+ * Public entry point. Aurora surface override (admin.used-news.create)
+ * geçerliyse onu kullanır; aksi halde legacy yüzeye düşer. Override map
+ * kaydı (register.tsx) ayrı bir iş kaleminde yapılacağı için bu hook
+ * şimdilik null dönebilir; trampoline bu durumda legacy formu render eder.
+ */
 export function UsedNewsCreatePage() {
+  const Override = useSurfacePageOverride("admin.used-news.create");
+  if (Override) return <Override />;
+  return <LegacyUsedNewsCreatePage />;
+}
+
+function LegacyUsedNewsCreatePage() {
   const navigate = useNavigate();
   const toast = useToast();
   const { mutate, isPending, error } = useCreateUsedNews();

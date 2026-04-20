@@ -5,9 +5,14 @@
  * Aggregates: production + publish + engagement metrics per channel.
  * Filters: user, channel, platform, date range, time window.
  * Charts: TrendChart, DistributionDonut, ComparisonBar.
+ *
+ * Aurora Dusk: trampoline — delegates to the Aurora cockpit page when the
+ * surface override `admin.analytics.channels` is registered, falls through
+ * to the legacy body otherwise.
  */
 
 import { useMemo } from "react";
+import { useSurfacePageOverride } from "../../surfaces";
 import { useAnalyticsFilters } from "../../hooks/useAnalyticsFilters";
 import { useChannelPerformance } from "../../hooks/useChannelPerformance";
 import { AdminAnalyticsFilterBar } from "../../components/analytics/AdminAnalyticsFilterBar";
@@ -48,6 +53,12 @@ function formatDate(d: string): string {
 // ---------------------------------------------------------------------------
 
 export function AdminChannelPerformancePage() {
+  const Override = useSurfacePageOverride("admin.analytics.channels");
+  if (Override) return <Override />;
+  return <LegacyAdminChannelPerformancePage />;
+}
+
+function LegacyAdminChannelPerformancePage() {
   const analyticsFilters = useAnalyticsFilters("last_30d");
   const { data, isLoading, isError } = useChannelPerformance(analyticsFilters.apiParams);
 

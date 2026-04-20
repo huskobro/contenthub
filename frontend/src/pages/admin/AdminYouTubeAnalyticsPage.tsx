@@ -27,6 +27,7 @@
 
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { useSurfacePageOverride } from "../../surfaces";
 import { useAdminConnections } from "../../hooks/useConnections";
 import {
   useYtChannelTotals,
@@ -384,6 +385,14 @@ function ShareBar({ value, max, color }: ShareBarProps) {
 // ---------------------------------------------------------------------------
 
 export function AdminYouTubeAnalyticsPage() {
+  // Faz 6 — Aurora override gate. Aktif surface Aurora ise kokpit YouTube
+  // analytics render edilir; diğer surface'ler legacy sayfayı görür.
+  const Override = useSurfacePageOverride("admin.analytics.youtube");
+  if (Override) return <Override />;
+  return <LegacyAdminYouTubeAnalyticsPage />;
+}
+
+function LegacyAdminYouTubeAnalyticsPage() {
   const { data: connectionsData, isLoading: connectionsLoading } =
     useAdminConnections({ platform: "youtube", limit: 200 });
 

@@ -1,0 +1,590 @@
+/* ==========================================================================
+   Aurora Dashboard — page-specific styles for AuroraAdminDashboardPage.
+   Direct port of the <style> block in:
+     ContentHub_Design _System/contenthub/pages/admin/dashboard.html
+
+   Scope: every selector prefixed with `[data-surface="aurora"]` so these
+   styles affect ONLY the Aurora surface. Aurora kapali iken hiçbir global
+   class etkilenmez.
+
+   Layout summary:
+     .aurora-dashboard
+       .page                      ← scrollable workbench column
+         .hero (1.4fr | 1fr)      ← KPI snapshot + System health
+         .section / .grid g-4     ← KPI strip with sparklines
+         .dash-grid (2.2fr | 1fr) ← Active renders | Donut + Activity
+         .qa-strip (4 cols)       ← Quick action cards
+       .aurora-inspector-slot     ← inspector wrapper
+   ========================================================================== */
+
+/* ---------- Hero ---------- */
+[data-surface="aurora"] .hero {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+[data-surface="aurora"] .hero-card {
+  position: relative;
+  padding: 22px 24px;
+  background:
+    linear-gradient(135deg, rgba(79,104,247,0.10) 0%, rgba(94,57,191,0.08) 40%, rgba(59,200,184,0.06) 100%),
+    var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(15,18,25,0.2), 0 4px 14px rgba(15,18,25,0.12);
+}
+[data-surface="aurora"] .hero-card::before {
+  content: "";
+  position: absolute; inset: 0;
+  background: radial-gradient(500px 200px at 85% 0%, rgba(79,104,247,0.1), transparent 60%);
+  pointer-events: none;
+}
+[data-surface="aurora"] .hero-title {
+  font-family: var(--font-display);
+  font-size: 22px; font-weight: 500; letter-spacing: -0.02em;
+  margin: 0 0 4px;
+  color: var(--text-primary);
+}
+[data-surface="aurora"] .hero-sub {
+  font-size: 13px; color: var(--text-muted); margin: 0 0 18px;
+}
+[data-surface="aurora"] .hero-stats {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+}
+[data-surface="aurora"] .hs { padding: 10px 0; }
+[data-surface="aurora"] .hs .k {
+  font-size: 10px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--text-muted);
+}
+[data-surface="aurora"] .hs .v {
+  font-family: var(--font-display);
+  font-size: 26px; font-weight: 500; letter-spacing: -0.025em;
+  color: var(--text-primary); line-height: 1.1;
+  margin-top: 4px; font-variant-numeric: tabular-nums;
+}
+[data-surface="aurora"] .hs .d {
+  font-family: var(--font-mono); font-size: 11px; margin-top: 2px;
+}
+[data-surface="aurora"] .hs .d.pos { color: var(--state-success-fg); }
+[data-surface="aurora"] .hs .d.neg { color: var(--state-danger-fg); }
+[data-surface="aurora"] .hs .d.warn { color: var(--state-warning-fg); }
+[data-surface="aurora"] .hs .d.mute { color: var(--text-muted); }
+
+/* ---------- Health cluster ---------- */
+[data-surface="aurora"] .health {
+  padding: 18px 20px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: 14px;
+  display: flex; flex-direction: column; gap: 14px;
+}
+[data-surface="aurora"] .health-head {
+  display: flex; align-items: baseline; justify-content: space-between;
+}
+[data-surface="aurora"] .health-head .t {
+  font-size: 13px; font-weight: 600; color: var(--text-primary);
+}
+[data-surface="aurora"] .health-head .sub {
+  font-family: var(--font-mono); font-size: 10px; color: var(--text-muted);
+  letter-spacing: 0.08em; text-transform: uppercase;
+}
+[data-surface="aurora"] .health-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+}
+[data-surface="aurora"] .hh {
+  display: flex; flex-direction: column; gap: 4px;
+  padding: 10px 12px;
+  background: var(--bg-inset);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+}
+[data-surface="aurora"] .hh .hk {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--text-muted);
+}
+[data-surface="aurora"] .hh .hk .d {
+  width: 7px; height: 7px; border-radius: 50%;
+}
+[data-surface="aurora"] .hh.ok .hk .d {
+  background: var(--state-success-fg); box-shadow: 0 0 6px var(--state-success-fg);
+}
+[data-surface="aurora"] .hh.warn .hk .d {
+  background: var(--state-warning-fg); box-shadow: 0 0 6px var(--state-warning-fg);
+}
+[data-surface="aurora"] .hh.err .hk .d {
+  background: var(--state-danger-fg); box-shadow: 0 0 6px var(--state-danger-fg);
+}
+[data-surface="aurora"] .hh .hv {
+  font-family: var(--font-mono); font-size: 13px;
+  color: var(--text-primary); letter-spacing: -0.01em;
+}
+[data-surface="aurora"] .hh .hm {
+  font-family: var(--font-mono); font-size: 10px; color: var(--text-muted);
+}
+
+/* Tıklanabilir health hücreleri — <button> sürümü statik .hh kutularıyla
+   aynı görsel dili korur, üstüne hover/focus/active afordansı ekler. */
+[data-surface="aurora"] button.hh.hh-click {
+  appearance: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 120ms ease, border-color 120ms ease, transform 120ms ease;
+}
+[data-surface="aurora"] button.hh.hh-click:hover {
+  background: var(--bg-elevated);
+  border-color: var(--border-emphasis);
+}
+[data-surface="aurora"] button.hh.hh-click:active {
+  transform: translateY(1px);
+}
+[data-surface="aurora"] button.hh.hh-click:focus-visible {
+  outline: 2px solid var(--accent-primary-fg);
+  outline-offset: 2px;
+}
+
+/* ---------- Main 3-col layout ---------- */
+[data-surface="aurora"] .dash-grid {
+  display: grid; grid-template-columns: 2.2fr 1fr;
+  gap: 16px; margin-bottom: 18px;
+}
+
+/* ---------- Active renders ---------- */
+[data-surface="aurora"] .renders { padding: 0; }
+[data-surface="aurora"] .renders-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 18px; border-bottom: 1px solid var(--border-subtle);
+}
+[data-surface="aurora"] .renders-head .title {
+  font-size: 13px; font-weight: 600; color: var(--text-primary);
+}
+[data-surface="aurora"] .renders-head .meta {
+  font-family: var(--font-mono); font-size: 11px; color: var(--text-muted);
+}
+[data-surface="aurora"] .render-row {
+  display: grid;
+  grid-template-columns: 72px 1fr 140px 1fr 120px;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border-subtle);
+  transition: background var(--motion-duration-ultra-fast);
+}
+[data-surface="aurora"] .render-row:hover { background: var(--bg-inset); }
+[data-surface="aurora"] .render-row:last-child { border-bottom: none; }
+[data-surface="aurora"] .rr-thumb {
+  width: 72px; height: 42px; border-radius: 6px;
+  background: var(--bg-inset);
+  background-size: cover; background-position: center;
+  position: relative; overflow: hidden;
+  border: 1px solid var(--border-subtle);
+}
+[data-surface="aurora"] .rr-thumb::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(79,104,247,0.25), rgba(94,57,191,0.18));
+}
+[data-surface="aurora"] .rr-thumb.t-news::after {
+  background: linear-gradient(135deg, rgba(94,57,191,0.4), rgba(79,104,247,0.3));
+}
+[data-surface="aurora"] .rr-thumb.t-review::after {
+  background: linear-gradient(135deg, rgba(79,104,247,0.4), rgba(59,200,184,0.25));
+}
+[data-surface="aurora"] .rr-thumb.t-doc::after {
+  background: linear-gradient(135deg, rgba(200,140,40,0.3), rgba(94,57,191,0.25));
+}
+[data-surface="aurora"] .rr-thumb .dur {
+  position: absolute; bottom: 4px; right: 4px;
+  font-family: var(--font-mono); font-size: 9px; font-weight: 500;
+  padding: 1px 5px; border-radius: 3px;
+  background: rgba(15,18,25,0.7); color: var(--text-on-accent);
+  z-index: var(--z-content);
+}
+[data-surface="aurora"] .rr-main .title {
+  font-size: 13px; font-weight: 500; color: var(--text-primary);
+  letter-spacing: -0.005em; margin-bottom: 3px;
+}
+[data-surface="aurora"] .rr-main .meta {
+  display: flex; align-items: center; gap: 8px;
+  font-family: var(--font-mono); font-size: 11px; color: var(--text-muted);
+}
+[data-surface="aurora"] .rr-main .meta .mod {
+  color: var(--accent-primary-hover);
+}
+[data-surface="aurora"] .rr-step {
+  font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text-muted);
+}
+[data-surface="aurora"] .rr-step .cur { color: var(--text-primary); }
+[data-surface="aurora"] .rr-progress { display: flex; align-items: center; gap: 10px; }
+[data-surface="aurora"] .rr-progress .pbar { flex: 1; }
+[data-surface="aurora"] .rr-progress .pct {
+  font-family: var(--font-mono); font-size: 11px;
+  color: var(--text-secondary); min-width: 32px; text-align: right;
+}
+[data-surface="aurora"] .rr-eta {
+  font-family: var(--font-mono); font-size: 11px;
+  color: var(--text-muted); text-align: right;
+}
+[data-surface="aurora"] .rr-eta .v { color: var(--text-primary); }
+
+/* ---------- Donut card ---------- */
+[data-surface="aurora"] .donut-card { padding: 18px 20px; }
+[data-surface="aurora"] .donut-card .t { font-size: 13px; font-weight: 600; margin: 0 0 2px; }
+[data-surface="aurora"] .donut-card .s {
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--text-muted); margin: 0 0 14px;
+}
+[data-surface="aurora"] .donut-wrap {
+  display: flex; align-items: center; gap: 16px;
+}
+[data-surface="aurora"] .donut .center .v {
+  font-family: var(--font-display); font-size: 24px; font-weight: 500;
+  letter-spacing: -0.02em; color: var(--text-primary); line-height: 1;
+}
+[data-surface="aurora"] .donut .center .l {
+  font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--text-muted); margin-top: 2px;
+}
+[data-surface="aurora"] .legend {
+  display: flex; flex-direction: column; gap: 8px; flex: 1;
+}
+[data-surface="aurora"] .legend .row {
+  display: flex; align-items: center; gap: 8px; font-size: 12px;
+}
+[data-surface="aurora"] .legend .row .sw {
+  width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0;
+}
+[data-surface="aurora"] .legend .row .n {
+  color: var(--text-primary); flex: 1;
+  font-family: var(--font-mono); font-size: 11px;
+}
+[data-surface="aurora"] .legend .row .v {
+  font-family: var(--font-mono); font-size: 11px;
+  color: var(--text-muted); font-weight: 500;
+}
+
+/* ---------- Activity feed ---------- */
+[data-surface="aurora"] .activity { padding: 14px 18px 16px; }
+[data-surface="aurora"] .activity .head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  margin-bottom: 8px;
+}
+[data-surface="aurora"] .activity .head .t { font-size: 13px; font-weight: 600; }
+[data-surface="aurora"] .activity .head .s {
+  font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted);
+}
+[data-surface="aurora"] .act-item {
+  display: grid; grid-template-columns: 16px 1fr auto;
+  align-items: center; gap: 10px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 12px;
+}
+[data-surface="aurora"] .act-item:last-child { border-bottom: none; }
+[data-surface="aurora"] .act-item .d {
+  width: 7px; height: 7px; border-radius: 50%; justify-self: center;
+}
+[data-surface="aurora"] .act-item.pub .d {
+  background: var(--state-success-fg); box-shadow: 0 0 6px var(--state-success-fg);
+}
+[data-surface="aurora"] .act-item.app .d {
+  background: var(--accent-primary); box-shadow: 0 0 6px var(--accent-primary);
+}
+[data-surface="aurora"] .act-item.rej .d {
+  background: var(--state-danger-fg); box-shadow: 0 0 6px var(--state-danger-fg);
+}
+[data-surface="aurora"] .act-item.drf .d {
+  background: var(--state-info-fg); box-shadow: 0 0 6px var(--state-info-fg);
+}
+[data-surface="aurora"] .act-item.set .d { background: var(--text-muted); }
+[data-surface="aurora"] .act-item .msg { color: var(--text-primary); }
+[data-surface="aurora"] .act-item .msg .id {
+  font-family: var(--font-mono); font-size: 11px;
+  color: var(--accent-primary-hover);
+}
+[data-surface="aurora"] .act-item .t {
+  font-family: var(--font-mono); font-size: 11px; color: var(--text-muted);
+}
+
+/* ---------- Quick actions strip ---------- */
+[data-surface="aurora"] .qa-strip {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 10px; margin-bottom: 18px;
+}
+[data-surface="aurora"] .qa {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 16px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all var(--motion-duration-fast);
+  text-align: left;
+  width: 100%;
+}
+[data-surface="aurora"] .qa:hover {
+  border-color: var(--accent-primary);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(79,104,247,0.1);
+}
+[data-surface="aurora"] .qa .ic {
+  width: 34px; height: 34px; border-radius: 8px;
+  background: var(--accent-primary-muted);
+  color: var(--accent-primary);
+  display: grid; place-items: center;
+  flex-shrink: 0;
+}
+[data-surface="aurora"] .qa .bd { flex: 1; min-width: 0; }
+[data-surface="aurora"] .qa .tt {
+  font-size: 13px; font-weight: 500; color: var(--text-primary);
+}
+[data-surface="aurora"] .qa .st {
+  font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: 0.04em; color: var(--text-muted); margin-top: 2px;
+}
+[data-surface="aurora"] .qa .kbd {
+  background: var(--bg-inset);
+  border: 1px solid var(--border-default);
+  font-family: var(--font-mono); font-size: 10px;
+  padding: 2px 6px; border-radius: 4px;
+  color: var(--text-muted);
+}
+
+/* ---------- Spark wrap ---------- */
+[data-surface="aurora"] .spark-wrap {
+  margin-top: 10px; height: 28px; position: relative;
+}
+
+/* ---------- Inspector cards ---------- */
+[data-surface="aurora"] .i-alert {
+  padding: 10px 12px;
+  background: var(--state-warning-bg);
+  border: 1px solid var(--state-warning-border);
+  border-radius: 8px;
+  display: flex; gap: 10px; align-items: flex-start;
+}
+[data-surface="aurora"] .i-alert .d {
+  width: 14px; height: 14px; border-radius: 50%;
+  background: var(--state-warning-fg);
+  flex-shrink: 0; margin-top: 1px;
+  display: grid; place-items: center;
+  color: var(--text-on-accent); font-weight: 700; font-size: 9px;
+}
+[data-surface="aurora"] .i-alert .msg {
+  font-size: 12px; color: var(--state-warning-fg); line-height: 1.45;
+}
+
+/* ---------- Settings row ---------- */
+[data-surface="aurora"] .s-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+[data-surface="aurora"] .s-row:last-child { border-bottom: none; }
+[data-surface="aurora"] .s-row .k {
+  font-family: var(--font-mono); font-size: 11px;
+  color: var(--text-muted); flex: 1;
+}
+[data-surface="aurora"] .s-row .v {
+  font-family: var(--font-mono); font-size: 11px;
+  color: var(--text-primary);
+}
+
+/* ---------- Toggle pill ---------- */
+[data-surface="aurora"] .tog {
+  display: inline-flex; align-items: center; gap: 0;
+  background: var(--bg-inset);
+  border: 1px solid var(--border-default);
+  border-radius: 8px; padding: 2px;
+}
+[data-surface="aurora"] .tog button {
+  padding: 4px 10px; font-size: 11px; font-family: var(--font-mono);
+  color: var(--text-muted); border-radius: 6px; letter-spacing: 0.03em;
+  background: transparent; border: 0; cursor: pointer;
+}
+[data-surface="aurora"] .tog button.on {
+  background: var(--bg-surface); color: var(--text-primary);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+/* ---------- Page-level layout glue (when dashboard renders OUTSIDE the
+   CockpitShell wrapper, e.g. while we are still mounting it inside the
+   surface override slot). The aurora-dashboard wrapper provides the same
+   workbench geometry as the shell's body grid: workbench | inspector. ---- */
+[data-surface="aurora"] .aurora-dashboard {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 16px;
+  align-items: stretch;
+  min-height: 100%;
+}
+[data-surface="aurora"] .aurora-inspector-slot {
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid var(--border-subtle);
+  background: var(--bg-surface);
+}
+[data-surface="aurora"] .aurora-dashboard .page {
+  padding: 22px 28px 36px;
+}
+
+/* Section / metric / pbar / kbd reuse cockpit.css definitions; these are
+   only added if missing. */
+[data-surface="aurora"] .section { margin-bottom: 18px; }
+[data-surface="aurora"] .section-head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  margin-bottom: 12px;
+}
+[data-surface="aurora"] .section-head .title {
+  font-size: 13px; font-weight: 600; color: var(--text-primary);
+}
+[data-surface="aurora"] .section-head .meta {
+  font-family: var(--font-mono); font-size: 11px;
+  color: var(--text-muted); letter-spacing: 0.04em;
+}
+
+[data-surface="aurora"] .grid { display: grid; }
+[data-surface="aurora"] .grid.g-4 { grid-template-columns: repeat(4, 1fr); gap: 12px; }
+[data-surface="aurora"] .grid.g-3 { grid-template-columns: repeat(3, 1fr); gap: 12px; }
+[data-surface="aurora"] .grid.g-2 { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+
+[data-surface="aurora"] .metric {
+  position: relative;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: 10px;
+  padding: 14px 16px;
+  overflow: hidden;
+}
+[data-surface="aurora"] .metric .accent {
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, var(--accent-primary), transparent);
+  opacity: 0.7;
+}
+[data-surface="aurora"] .metric .lbl {
+  font-size: 10px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--text-muted); margin-bottom: 6px;
+}
+[data-surface="aurora"] .metric .val {
+  font-family: var(--font-display);
+  font-size: 22px; font-weight: 500; letter-spacing: -0.02em;
+  color: var(--text-primary); font-variant-numeric: tabular-nums;
+}
+[data-surface="aurora"] .metric .delta {
+  font-family: var(--font-mono); font-size: 11px;
+  margin-left: 8px;
+}
+[data-surface="aurora"] .metric .delta.pos { color: var(--state-success-fg); }
+[data-surface="aurora"] .metric .delta.neg { color: var(--state-danger-fg); }
+[data-surface="aurora"] .metric .delta.warn { color: var(--state-warning-fg); }
+[data-surface="aurora"] .metric .delta.mute { color: var(--text-muted); }
+
+[data-surface="aurora"] .pbar {
+  position: relative;
+  height: 4px;
+  background: var(--bg-inset);
+  border-radius: 999px;
+  overflow: hidden;
+}
+[data-surface="aurora"] .pbar .fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-primary), var(--accent-primary-hover));
+  transition: width var(--motion-duration-slow) ease;
+  border-radius: 999px;
+}
+[data-surface="aurora"] .pbar.done .fill {
+  background: var(--state-success-fg);
+}
+
+[data-surface="aurora"] .kbd {
+  background: var(--bg-inset);
+  border: 1px solid var(--border-default);
+  font-family: var(--font-mono); font-size: 10px;
+  padding: 2px 6px; border-radius: 4px;
+  color: var(--text-muted);
+}
+
+[data-surface="aurora"] .card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+/* ---------- Inspector internal frame ---------- */
+[data-surface="aurora"] .inspector {
+  display: flex; flex-direction: column;
+  height: 100%;
+  gap: 0;
+}
+[data-surface="aurora"] .inspector .inspector-head {
+  padding: 14px 16px;
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid var(--border-subtle);
+}
+[data-surface="aurora"] .inspector .inspector-head .title {
+  font-size: 12px; font-weight: 600;
+  letter-spacing: 0.04em; text-transform: uppercase;
+  color: var(--text-secondary);
+}
+[data-surface="aurora"] .inspector-section {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+[data-surface="aurora"] .inspector-section:last-child { border-bottom: none; }
+[data-surface="aurora"] .inspector-section-title {
+  font-size: 10px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+[data-surface="aurora"] .inspector-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+[data-surface="aurora"] .inspector-row:last-child { border-bottom: none; }
+[data-surface="aurora"] .inspector-row .k {
+  font-family: var(--font-mono); font-size: 11px; color: var(--text-muted);
+}
+[data-surface="aurora"] .inspector-row .v {
+  font-family: var(--font-mono); font-size: 11px; color: var(--text-primary);
+}
+
+/* ---------- Responsive overrides for dashboard ---------- */
+@media (max-width: 1200px) {
+  [data-surface="aurora"] .aurora-dashboard {
+    grid-template-columns: 1fr;
+  }
+  [data-surface="aurora"] .aurora-inspector-slot {
+    display: none;
+  }
+  [data-surface="aurora"] .hero { grid-template-columns: 1fr; }
+  [data-surface="aurora"] .dash-grid { grid-template-columns: 1fr; }
+  [data-surface="aurora"] .render-row {
+    grid-template-columns: 56px 1fr 100px 90px;
+  }
+  [data-surface="aurora"] .render-row .rr-progress { display: none; }
+  [data-surface="aurora"] .grid.g-4 { grid-template-columns: repeat(2, 1fr); }
+  [data-surface="aurora"] .qa-strip { grid-template-columns: repeat(2, 1fr); }
+  [data-surface="aurora"] .health-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 640px) {
+  [data-surface="aurora"] .hero-stats { grid-template-columns: 1fr 1fr; }
+  [data-surface="aurora"] .hs:nth-child(3) { grid-column: span 2; }
+  [data-surface="aurora"] .grid.g-4 { grid-template-columns: 1fr 1fr; }
+  [data-surface="aurora"] .qa-strip { grid-template-columns: 1fr; }
+  [data-surface="aurora"] .health-grid { grid-template-columns: 1fr 1fr; }
+  [data-surface="aurora"] .render-row {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+  [data-surface="aurora"] .render-row .rr-thumb { width: 100%; height: 96px; }
+  [data-surface="aurora"] .render-row .rr-step,
+  [data-surface="aurora"] .render-row .rr-eta { display: none; }
+}

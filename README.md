@@ -37,7 +37,8 @@ Klasik bir CMS değildir. İçerik oluşturma, yayın iş akışları, operasyon
 | Prompt Assembly Engine | ✅ Block-tabanlı, Settings Registry entegre |
 | Wizard Shell (Admin + User) | ✅ `AdminWizardShell` / `UserWizardShell` |
 
-**Açık kalemler:** `docs/tracking/DEFERRED_BACKLOG.md` dosyasında takip edilmektedir.
+**Durum:** MVP kapsamı kapalı — açık tutulan iş yok. Değişiklik geçmişi
+`docs/tracking/CHANGELOG.md`, güncel durum `docs/tracking/STATUS.md` içinde.
 
 ---
 
@@ -109,8 +110,7 @@ contenthub/
 ├── docs/
 │   ├── tracking/
 │   │   ├── STATUS.md             # Güncel faz durumu
-│   │   ├── CHANGELOG.md          # Tüm değişiklik kaydı
-│   │   └── DEFERRED_BACKLOG.md   # Açık / kapalı erteleme listesi
+│   │   └── CHANGELOG.md          # Tüm değişiklik kaydı
 │   ├── redesign/                 # REV-2+ aktif tasarım dokümanları
 │   ├── archive/                  # Tarihsel raporlar ve kapanış belgeleri
 │   └── ...                       # TTS, template, publish, analytics kontrat belgeleri
@@ -234,7 +234,6 @@ cd frontend && npx tsc --noEmit
 | [`CLAUDE.md`](./CLAUDE.md) | Ürün kuralları, mimari prensipler, teslim fazları |
 | [`docs/tracking/STATUS.md`](./docs/tracking/STATUS.md) | Güncel faz durumu ve milestone listesi |
 | [`docs/tracking/CHANGELOG.md`](./docs/tracking/CHANGELOG.md) | Tüm değişiklik kaydı |
-| [`docs/tracking/DEFERRED_BACKLOG.md`](./docs/tracking/DEFERRED_BACKLOG.md) | Açık erteleme listesi |
 | [`docs/project_memory_and_decision_ledger.md`](./docs/project_memory_and_decision_ledger.md) | Mimari kararlar ve norm kuralları |
 | [`docs/redesign/`](./docs/redesign/) | REV-2+ aktif tasarım dokümanları |
 

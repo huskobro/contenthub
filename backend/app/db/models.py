@@ -27,8 +27,8 @@ Domain models (Phase M7+):
   - publish_records: Publish Center — birincil publish kayıt objesi
   - publish_logs: Publish Center — denetim izi; her olay ayrı satır
 
-Remaining domain models (analytics)
-will be added in later phases as their subsystems are built.
+Analytics domain models live alongside the analytics service module
+(`app.analytics`); only cross-cutting tables are declared here.
 """
 
 import uuid
@@ -162,8 +162,9 @@ class VisibilityRule(Base):
 
     Each rule declares whether a target (page, widget, field, wizard_step)
     is visible, read-only, or wizard-visible for a given role and/or mode.
-    The resolver (built in a later phase) queries these rows and merges them
-    with the requesting context. Higher priority value = evaluated first.
+    The visibility resolver (`app.visibility.service`) queries these rows and
+    merges them with the requesting context. Higher priority value = evaluated
+    first.
 
     rule_type  : the category of the target (page, widget, field, wizard_step)
     target_key : stable unique identifier of the controlled element
@@ -210,11 +211,14 @@ class Job(Base):
     module_type           : e.g. 'standard_video', 'news_bulletin'
     status                : 'queued' | 'running' | 'completed' | 'failed' | 'cancelled'
     owner_id              : nullable until auth is introduced
-    template_id           : nullable; will reference a template in a later phase
+    template_id           : nullable string FK to Template.id (no DB-level FK
+                            because templates can be cloned/archived independently;
+                            snapshot in template_snapshot_json owns runtime truth)
     source_context_json   : arbitrary JSON for source/news linkage
     current_step_key      : key of the currently active step
     retry_count           : number of retries attempted
-    elapsed_total_seconds : running total; updated by the queue worker (later)
+    elapsed_total_seconds : running total; updated by the queue worker on
+                            every step boundary (see `app.jobs.pipeline`)
     estimated_remaining_seconds : ETA; null until the worker calculates it
     workspace_path        : local directory for job artifacts
     last_error            : short summary of the most recent failure
@@ -499,7 +503,9 @@ class StyleBlueprint(Base):
 
     First-class admin-managed style definition object.
     Defines visual identity, motion, layout, subtitle, thumbnail, and preview rules.
-    Separate from Template; linkage to Templates deferred to a later phase.
+    Separate from Template — Templates and StyleBlueprints are independent
+    first-class objects; selection happens at job creation time via the wizard
+    (no implicit linkage table).
 
     name           : blueprint name
     module_scope   : e.g. 'standard_video', 'news_bulletin', or null (global)

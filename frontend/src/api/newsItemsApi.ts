@@ -57,7 +57,10 @@ export interface NewsItemUpdatePayload {
 export function fetchNewsItems(
   params?: { status?: string; language?: string; source_id?: string; category?: string; search?: string; limit?: number },
 ): Promise<NewsItemResponse[]> {
-  return api.get<NewsItemResponse[]>(BASE_URL, params);
+  // Backend `{items, total, offset, limit}` döner; tüm tüketiciler düz dizi bekliyor.
+  return api
+    .get<{ items: NewsItemResponse[] } | NewsItemResponse[]>(BASE_URL, params)
+    .then((r) => (Array.isArray(r) ? r : (r?.items ?? [])));
 }
 
 export function fetchNewsItemById(id: string): Promise<NewsItemResponse> {
@@ -73,4 +76,23 @@ export function updateNewsItem(
   payload: NewsItemUpdatePayload
 ): Promise<NewsItemResponse> {
   return api.patch<NewsItemResponse>(`${BASE_URL}/${id}`, payload);
+}
+
+/**
+ * Arşiv aksiyonu — status=ignored. Audit-loglu, idempotent.
+ * Backend: POST /api/v1/news-items/{id}/ignore
+ */
+export function ignoreNewsItem(id: string): Promise<NewsItemResponse> {
+  return api.post<NewsItemResponse>(`${BASE_URL}/${id}/ignore`, {});
+}
+
+/**
+ * Kullanım aksiyonu (audit-log varyantı) — status=used + news_item.use audit.
+ * Genel durumda updateNewsItem({status: "used"}) tercih edilir çünkü tek
+ * sorumluluk (status update) daha nettir. Bu endpoint audit trail gerekli
+ * olduğunda kullanılır.
+ * Backend: POST /api/v1/news-items/{id}/use
+ */
+export function useNewsItemAction(id: string): Promise<NewsItemResponse> {
+  return api.post<NewsItemResponse>(`${BASE_URL}/${id}/use`, {});
 }

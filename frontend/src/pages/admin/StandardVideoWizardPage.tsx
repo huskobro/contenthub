@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ContentCreationWizard, type WizardValues } from "../../components/wizard/ContentCreationWizard";
 import { useToast } from "../../hooks/useToast";
 import { api } from "../../api/client";
+import { useSurfacePageOverride } from "../../surfaces/SurfaceContext";
 
 async function createStandardVideo(values: WizardValues) {
   return api.post<{ id: string }>("/api/v1/modules/standard-video", {
@@ -25,7 +26,19 @@ async function createStandardVideo(values: WizardValues) {
   });
 }
 
+/**
+ * Public entry point. Aurora surface override (admin.standard-video.wizard)
+ * varsa onu kullanır; aksi halde legacy yüzeye düşer. Register.tsx bu sayfada
+ * dokunulmadığı için override şu an boş döner — sonraki kayıt aşamasında
+ * AuroraStandardVideoWizardPage otomatik devreye girer.
+ */
 export function StandardVideoWizardPage() {
+  const Override = useSurfacePageOverride("admin.standard-video.wizard");
+  if (Override) return <Override />;
+  return <LegacyStandardVideoWizardPage />;
+}
+
+function LegacyStandardVideoWizardPage() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const toast = useToast();

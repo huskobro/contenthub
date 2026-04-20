@@ -2,7 +2,7 @@ import asyncio
 import json
 import logging
 from pathlib import Path
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
@@ -294,6 +294,72 @@ async def update_news_bulletin(
     await db.commit()
     await db.refresh(item)
     return item
+
+
+async def update_and_start_production(
+    db: AsyncSession,
+    bulletin_id: str,
+    payload: NewsBulletinUpdate,
+    dispatcher,
+    session_factory,
+    owner_id: Optional[str] = None,
+) -> dict:
+    """
+    Atomik 'başlat' akışı: bülten alanlarını günceller VE üretim pipeline'ını
+    başlatır. start_production başarısız olursa bülten alanları eski değerlerine
+    geri alınır — wizard tarafında 'kayıt yapıldı ama iş başlamadı' tutarsızlığı
+    oluşmaz.
+
+    Adımlar:
+      1. Mevcut alan değerlerini hafızada snapshot et (rollback için).
+      2. Update payload'ını uygula ve commit et.
+      3. ``start_production`` çağır.
+      4. Başarılıysa dispatch sonucunu döndür.
+      5. start_production hata fırlatırsa snapshot'tan alanları eski haline
+         getir, commit et ve orijinal hatayı yukarı geçir.
+
+    Not: ``update_news_bulletin`` ile ayrı çağrının aksine burada başarısızlık
+    durumunda UI'ya tek atomik hata döner; yarım kayıt bırakılmaz.
+    """
+    item = await get_news_bulletin(db, bulletin_id)
+    if item is None:
+        raise ValueError(f"Bülten bulunamadı: {bulletin_id}")
+
+    data = payload.model_dump(exclude_unset=True)
+
+    # Rollback icin snapshot — sadece gercekten degisen alanlar.
+    snapshot: Dict[str, Any] = {field: getattr(item, field) for field in data.keys()}
+
+    for field, value in data.items():
+        setattr(item, field, value)
+    await db.commit()
+    await db.refresh(item)
+
+    try:
+        result = await start_production(
+            db=db,
+            bulletin_id=bulletin_id,
+            dispatcher=dispatcher,
+            session_factory=session_factory,
+            owner_id=owner_id,
+        )
+    except Exception:
+        # start_production patladı — bülten alanlarını geri al.
+        try:
+            refreshed = await get_news_bulletin(db, bulletin_id)
+            if refreshed is not None:
+                for field, old_value in snapshot.items():
+                    setattr(refreshed, field, old_value)
+                await db.commit()
+        except Exception as rollback_exc:  # pragma: no cover
+            logger.error(
+                "update_and_start_production rollback basarisiz bulletin=%s: %s",
+                bulletin_id,
+                rollback_exc,
+            )
+        raise
+
+    return result
 
 
 async def get_bulletin_script(

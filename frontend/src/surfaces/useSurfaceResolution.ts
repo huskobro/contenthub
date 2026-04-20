@@ -39,6 +39,7 @@ export interface SurfaceSettingsSnapshot {
   atriumEnabled: boolean;
   bridgeEnabled: boolean;
   canvasEnabled: boolean;
+  auroraEnabled: boolean;
   loaded: boolean;
 }
 
@@ -49,10 +50,57 @@ const DEFAULT_SNAPSHOT: SurfaceSettingsSnapshot = {
   atriumEnabled: false,
   bridgeEnabled: false,
   canvasEnabled: false,
+  auroraEnabled: false,
   loaded: false,
 };
 
-let snapshot: SurfaceSettingsSnapshot = DEFAULT_SNAPSHOT;
+// LocalStorage cache: eliminates the first-paint flash on reload. On module
+// load we synchronously read the last known server snapshot and seed the
+// in-memory one with it, marked as `loaded: true` (optimistic). The real
+// fetch still runs and overrides this cache when it returns. Staleness is
+// bounded because the admin settings API is called on every page mount —
+// within one request the cache is refreshed.
+const CACHE_KEY = "contenthub:surface-settings-snapshot-v1";
+
+function readCachedSnapshot(): SurfaceSettingsSnapshot | null {
+  try {
+    if (typeof localStorage === "undefined") return null;
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<SurfaceSettingsSnapshot> & { v?: number };
+    if (parsed?.v !== 1) return null;
+    return {
+      infrastructureEnabled: Boolean(parsed.infrastructureEnabled),
+      defaultAdmin: (parsed.defaultAdmin ?? null) as SurfaceId | null,
+      defaultUser: (parsed.defaultUser ?? null) as SurfaceId | null,
+      atriumEnabled: Boolean(parsed.atriumEnabled),
+      bridgeEnabled: Boolean(parsed.bridgeEnabled),
+      canvasEnabled: Boolean(parsed.canvasEnabled),
+      auroraEnabled: Boolean(parsed.auroraEnabled),
+      loaded: true,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function writeCachedSnapshot(s: SurfaceSettingsSnapshot): void {
+  try {
+    if (typeof localStorage === "undefined") return;
+    localStorage.setItem(
+      CACHE_KEY,
+      JSON.stringify({ v: 1, ...s })
+    );
+  } catch {
+    /* ignore quota / private mode */
+  }
+}
+
+// Seed the in-memory snapshot synchronously from cache at module load time.
+// If no cache exists, stays at DEFAULT_SNAPSHOT (loaded:false) and the first
+// paint falls back to legacy — same behavior as before for first-time users.
+const cachedSeed = readCachedSnapshot();
+let snapshot: SurfaceSettingsSnapshot = cachedSeed ?? DEFAULT_SNAPSHOT;
 let pendingLoad: Promise<void> | null = null;
 const listeners = new Set<() => void>();
 
@@ -68,13 +116,14 @@ function notifyListeners() {
 
 async function loadSnapshot(): Promise<void> {
   try {
-    const [infra, defAdmin, defUser, atrium, bridge, canvas] = await Promise.all([
+    const [infra, defAdmin, defUser, atrium, bridge, canvas, aurora] = await Promise.all([
       fetchEffectiveSetting("ui.surface.infrastructure.enabled").catch(() => null),
       fetchEffectiveSetting("ui.surface.default.admin").catch(() => null),
       fetchEffectiveSetting("ui.surface.default.user").catch(() => null),
       fetchEffectiveSetting("ui.surface.atrium.enabled").catch(() => null),
       fetchEffectiveSetting("ui.surface.bridge.enabled").catch(() => null),
       fetchEffectiveSetting("ui.surface.canvas.enabled").catch(() => null),
+      fetchEffectiveSetting("ui.surface.aurora.enabled").catch(() => null),
     ]);
     snapshot = {
       infrastructureEnabled: Boolean(infra?.effective_value),
@@ -85,11 +134,13 @@ async function loadSnapshot(): Promise<void> {
       atriumEnabled: Boolean(atrium?.effective_value),
       bridgeEnabled: Boolean(bridge?.effective_value),
       canvasEnabled: Boolean(canvas?.effective_value),
+      auroraEnabled: Boolean(aurora?.effective_value),
       loaded: true,
     };
   } catch {
     snapshot = { ...DEFAULT_SNAPSHOT, loaded: true };
   }
+  writeCachedSnapshot(snapshot);
   notifyListeners();
 }
 
@@ -177,8 +228,14 @@ export function useSurfaceResolution(): UseSurfaceResolutionResult {
     if (currentSnapshot.atriumEnabled) set.add("atrium");
     if (currentSnapshot.bridgeEnabled) set.add("bridge");
     if (currentSnapshot.canvasEnabled) set.add("canvas");
+    if (currentSnapshot.auroraEnabled) set.add("aurora");
     return set;
-  }, [currentSnapshot.atriumEnabled, currentSnapshot.bridgeEnabled, currentSnapshot.canvasEnabled]);
+  }, [
+    currentSnapshot.atriumEnabled,
+    currentSnapshot.bridgeEnabled,
+    currentSnapshot.canvasEnabled,
+    currentSnapshot.auroraEnabled,
+  ]);
 
   const legacyLayoutMode = useMemo(() => {
     const t = activeTheme();

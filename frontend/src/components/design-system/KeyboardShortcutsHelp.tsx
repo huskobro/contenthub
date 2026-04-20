@@ -22,6 +22,7 @@ const SHORTCUT_GROUPS: ShortcutGroup[] = [
     title: "Genel",
     shortcuts: [
       { keys: ["⌘", "K"], description: "Komut Paleti" },
+      { keys: ["⌘", "J"], description: "Sidebar daralt/genişlet" },
       { keys: ["?"], description: "Klavye kisayollari" },
       { keys: ["/"], description: "Arama alanina odaklan" },
       { keys: ["Esc"], description: "Paneli / modali kapat" },

@@ -4,8 +4,15 @@ import { useSourceScansList } from "../../hooks/useSourceScansList";
 import { SourceScansTable } from "../../components/source-scans/SourceScansTable";
 import { SourceScanDetailPanel } from "../../components/source-scans/SourceScanDetailPanel";
 import { PageShell, SectionShell, ActionButton } from "../../components/design-system/primitives";
+import { useSurfacePageOverride } from "../../surfaces/SurfaceContext";
 
 export function SourceScansRegistryPage() {
+  const Override = useSurfacePageOverride("admin.source-scans.registry");
+  if (Override) return <Override />;
+  return <LegacySourceScansRegistryPage />;
+}
+
+function LegacySourceScansRegistryPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const { data: scans, isLoading, isError, error } = useSourceScansList();
   const navigate = useNavigate();

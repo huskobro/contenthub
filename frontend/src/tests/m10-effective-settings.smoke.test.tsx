@@ -3,7 +3,8 @@
  *
  * Tests for:
  *   - EffectiveSettingsPanel renders groups
- *   - Wired/Deferred badges display
+ *   - WIRED/DEFERRED badges no longer render (registry kontrati: kayitsiz
+ *     ayar yok — her ayar daimi wired)
  *   - Source badges display
  *   - Settings tab navigation includes "Effective Ayarlar"
  *   - Search/filter functionality
@@ -161,15 +162,16 @@ describe("M10 Effective Settings", () => {
     });
   });
 
-  it("shows WIRED badges for wired settings", async () => {
+  it("does not render WIRED/DEFERRED badges (registry kontrati: kayitsiz ayar yok)", async () => {
     renderPage();
     const user = userEvent.setup();
     await user.click(screen.getByTestId("settings-tab-effective"));
 
     await waitFor(() => {
-      const wiredBadges = screen.getAllByTestId("badge-wired");
-      expect(wiredBadges.length).toBe(3); // All 3 mock settings are wired
+      expect(screen.getByTestId("settings-group-credentials")).toBeDefined();
     });
+    expect(screen.queryAllByTestId("badge-wired").length).toBe(0);
+    expect(screen.queryAllByTestId("badge-deferred").length).toBe(0);
   });
 
   it("shows source badges", async () => {
@@ -254,14 +256,15 @@ describe("M10 Effective Settings", () => {
     });
   });
 
-  it("shows wired-only checkbox", async () => {
+  it("does not show wired-only checkbox (filter kaldirildi)", async () => {
     renderPage();
     const user = userEvent.setup();
     await user.click(screen.getByTestId("settings-tab-effective"));
 
     await waitFor(() => {
-      expect(screen.getByTestId("settings-wired-only")).toBeDefined();
+      expect(screen.getByTestId("settings-search")).toBeDefined();
     });
+    expect(screen.queryByTestId("settings-wired-only")).toBeNull();
   });
 
   it("shows credential note for credential keys", async () => {

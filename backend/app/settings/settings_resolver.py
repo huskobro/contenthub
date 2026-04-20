@@ -105,7 +105,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": "CONTENTHUB_KIE_AI_API_KEY",
         "builtin_default": None,
-        "wired": True,
         "wired_to": "LLM provider (KieAiProvider) — startup + runtime reinit",
     },
     "credential.openai_api_key": {
@@ -116,7 +115,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": "CONTENTHUB_OPENAI_API_KEY",
         "builtin_default": None,
-        "wired": True,
         "wired_to": "LLM fallback provider (OpenAICompatProvider) — startup + runtime reinit",
     },
     "credential.pexels_api_key": {
@@ -127,7 +125,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": "CONTENTHUB_PEXELS_API_KEY",
         "builtin_default": None,
-        "wired": True,
         "wired_to": "Visuals provider (PexelsProvider) — startup + runtime reinit",
     },
     "credential.pixabay_api_key": {
@@ -138,7 +135,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": "CONTENTHUB_PIXABAY_API_KEY",
         "builtin_default": None,
-        "wired": True,
         "wired_to": "Visuals fallback provider (PixabayProvider) — startup + runtime reinit",
     },
     "credential.youtube_client_id": {
@@ -149,7 +145,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "publish",
         "env_var": "",
         "builtin_default": None,
-        "wired": True,
         "wired_to": "YouTube OAuth auth-url + token exchange",
     },
     "credential.youtube_client_secret": {
@@ -160,16 +155,13 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "publish",
         "env_var": "",
         "builtin_default": None,
-        "wired": True,
         "wired_to": "YouTube OAuth token exchange",
     },
 
     # --- Provider Settings ---
-    # NOT: Asagidaki provider ayarlari tanimlanmis ve UI'da gorunur.
-    # "wired: True" olan ayarlar gercekten resolve() ile runtime'da okunuyor.
-    # "wired: False" olanlar tanimlanmis ama provider kodu henuz bu degeri
-    # settings resolver'dan okumuyor — kendi hardcoded default'larini kullaniyor.
-    # Bu durum durustce "DEFINED" olarak isaretlenmistir.
+    # NOT: Tum provider ayarlari runtime'da resolve() uzerinden okunur.
+    # Registry'deki her satir gercek bir consumer'a baglidir; "wired"
+    # alani artik daimi True — kayitsiz ayar tutmayiz.
     "provider.llm.kie_model": {
         "group": "providers",
         "type": "string",
@@ -178,7 +170,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": "",
         "builtin_default": "gemini-2.5-flash",
-        "wired": True,
         "wired_to": "KieAiProvider constructor — startup + credential reinit",
     },
     "provider.llm.kie_temperature": {
@@ -189,7 +180,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": "",
         "builtin_default": 0.7,
-        "wired": True,
         "wired_to": "KieAiProvider constructor — startup + credential reinit",
     },
     "provider.llm.openai_model": {
@@ -200,7 +190,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": "",
         "builtin_default": "gpt-4o-mini",
-        "wired": True,
         "wired_to": "main.py startup + credential_wiring factory — resolve() ile okunuyor",
     },
     "provider.llm.openai_temperature": {
@@ -211,7 +200,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": "",
         "builtin_default": 0.7,
-        "wired": True,
         "wired_to": "OpenAICompatProvider constructor — startup + credential reinit",
     },
     "provider.llm.timeout_seconds": {
@@ -222,7 +210,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": "",
         "builtin_default": 60.0,
-        "wired": True,
         "wired_to": "_openai_compat_base timeout — startup + credential reinit",
     },
     "provider.tts.edge_default_voice": {
@@ -233,7 +220,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "standard_video",
         "env_var": "",
         "builtin_default": "tr-TR-AhmetNeural",
-        "wired": True,
         "wired_to": "EdgeTTSProvider constructor — startup",
     },
 
@@ -246,7 +232,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": "CONTENTHUB_DUBVOICE_API_KEY",
         "builtin_default": None,
-        "wired": True,
         "wired_to": "DubVoiceProvider constructor — startup + credential reinit",
     },
     "tts.primary_provider": {
@@ -258,7 +243,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": "",
         "builtin_default": "dubvoice",
-        "wired": True,
         "wired_to": "resolve_tts_strict — primary secimi",
     },
     "tts.allow_auto_fallback": {
@@ -271,7 +255,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": "",
         "builtin_default": False,
-        "wired": True,
         "wired_to": "resolve_tts_strict — fallback kilidi",
     },
     "tts.fallback_providers": {
@@ -284,7 +267,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": "",
         "builtin_default": ["edge_tts", "system_tts"],
-        "wired": True,
         "wired_to": "TTS explicit fallback router — Faz 2",
     },
     "tts.default_voice.tr": {
@@ -296,7 +278,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": "",
         "builtin_default": "21m00Tcm4TlvDq8ikWAM",
-        "wired": True,
         "wired_to": "DubVoiceProvider.default_voice_id + voice_map.get_voice",
         # Faz 6: user-facing — kanal/sahip override edebilir, wizard'da gorunur
         "visible_to_user": True,
@@ -312,7 +293,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": "",
         "builtin_default": "pNInz6obpgDQGcFmaJgB",
-        "wired": True,
         "wired_to": "DubVoiceProvider.default_voice_id + voice_map.get_voice",
         # Faz 6: user-facing
         "visible_to_user": True,
@@ -330,7 +310,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": "",
         "builtin_default": "eleven_multilingual_v2",
-        "wired": True,
         "wired_to": "DubVoiceProvider constructor",
     },
     "tts.dubvoice.poll_interval_seconds": {
@@ -341,7 +320,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": "",
         "builtin_default": 1.5,
-        "wired": True,
         "wired_to": "DubVoiceProvider._poll_task",
     },
     "tts.dubvoice.poll_timeout_seconds": {
@@ -352,7 +330,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": "",
         "builtin_default": 120.0,
-        "wired": True,
         "wired_to": "DubVoiceProvider._poll_task",
     },
     "tts.dubvoice.http_timeout_seconds": {
@@ -363,7 +340,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": "",
         "builtin_default": 30.0,
-        "wired": True,
         "wired_to": "DubVoiceProvider httpx.AsyncClient timeout",
     },
     "tts.voice_settings.stability": {
@@ -375,7 +351,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": "",
         "builtin_default": 0.5,
-        "wired": True,
         "wired_to": "VoiceSettings dataclass default",
     },
     "tts.voice_settings.similarity_boost": {
@@ -386,7 +361,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": "",
         "builtin_default": 0.75,
-        "wired": True,
         "wired_to": "VoiceSettings dataclass default",
     },
     "tts.voice_settings.speed": {
@@ -398,7 +372,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": "",
         "builtin_default": 1.0,
-        "wired": True,
         "wired_to": "VoiceSettings dataclass default",
         # Faz 6: user-facing — per-channel speed override
         "visible_to_user": True,
@@ -415,7 +388,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": "",
         "builtin_default": 0.0,
-        "wired": True,
         "wired_to": "VoiceSettings dataclass default",
     },
     "tts.voice_settings.use_speaker_boost": {
@@ -426,7 +398,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": "",
         "builtin_default": True,
-        "wired": True,
         "wired_to": "VoiceSettings dataclass default",
         # Faz 6: user-facing
         "visible_to_user": True,
@@ -445,7 +416,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": "",
         "builtin_default": 0.0,
-        "wired": True,
         "wired_to": "app.tts.controls.build_provider_voice_settings",
         # Faz 6: user-facing
         "visible_to_user": True,
@@ -462,7 +432,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": "",
         "builtin_default": 0.5,
-        "wired": True,
         "wired_to": "app.tts.controls.TTSFineControls.emphasis",
         # Faz 6: user-facing
         "visible_to_user": True,
@@ -480,7 +449,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": "",
         "builtin_default": 0,
-        "wired": True,
         "wired_to": "app.tts.controls.insert_ssml_pauses",
         # Faz 6: user advanced
         "visible_to_user": True,
@@ -497,7 +465,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": "",
         "builtin_default": 0,
-        "wired": True,
         "wired_to": "app.tts.controls.insert_ssml_pauses",
         # Faz 6: user advanced
         "visible_to_user": True,
@@ -514,7 +481,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": "",
         "builtin_default": 0,
-        "wired": True,
         "wired_to": "Composition step — audio gap between scenes",
         # Faz 6: user advanced
         "visible_to_user": True,
@@ -533,7 +499,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": "",
         "builtin_default": {},
-        "wired": True,
         "wired_to": "app.tts.controls.apply_glossary_and_pronunciation",
         # Faz 6: user-facing — kanal bazli marka sozlugu
         "visible_to_user": True,
@@ -550,7 +515,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": "",
         "builtin_default": {},
-        "wired": True,
         "wired_to": "app.tts.controls.apply_glossary_and_pronunciation",
         # Faz 6: user-facing
         "visible_to_user": True,
@@ -568,7 +532,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": "",
         "builtin_default": {},
-        "wired": True,
         "wired_to": "app.tts.controls.apply_glossary_and_pronunciation",
         # Faz 6: user-facing
         "visible_to_user": True,
@@ -586,7 +549,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": "",
         "builtin_default": False,
-        "wired": True,
         "wired_to": "app.tts.controls.plan_scene_tts apply_ssml_pauses bayragi",
     },
     "tts.controls.default_scene_energy": {
@@ -598,7 +560,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": "",
         "builtin_default": "neutral",
-        "wired": True,
         "wired_to": "app.tts.controls.apply_scene_energy",
         # Faz 6: user-facing — guided mode'da tek secim
         "visible_to_user": True,
@@ -617,7 +578,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": "",
         "builtin_default": "Merhaba, bu ses ornegidir. ContentHub ile nasil bir tonda konustugunu dinleyin.",
-        "wired": True,
         "wired_to": "app.tts.preview_service.generate_voice_sample",
         # Faz 6: user-facing — kendi sample cumlesini yazabilir
         "visible_to_user": True,
@@ -634,7 +594,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": "",
         "builtin_default": 1500,
-        "wired": True,
         "wired_to": "app.tts.preview_service.generate_draft_script_preview",
     },
     "tts.preview.workspace_dir": {
@@ -646,7 +605,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": "",
         "builtin_default": "_tts_previews",
-        "wired": True,
         "wired_to": "app.tts.preview_service.resolve_preview_root",
     },
 
@@ -658,7 +616,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": "",
         "builtin_default": 5,
-        "wired": True,
         "wired_to": "PexelsProvider constructor — startup + credential reinit",
     },
     "provider.visuals.pixabay_default_count": {
@@ -669,7 +626,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": "",
         "builtin_default": 5,
-        "wired": True,
         "wired_to": "PixabayProvider constructor — startup + credential reinit",
     },
     "provider.visuals.search_timeout_seconds": {
@@ -680,7 +636,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": "",
         "builtin_default": 30.0,
-        "wired": True,
         "wired_to": "Pexels/Pixabay provider constructor — startup + credential reinit",
     },
     "provider.whisper.model_size": {
@@ -691,7 +646,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "standard_video",
         "env_var": "",
         "builtin_default": "base",
-        "wired": True,
         "wired_to": "LocalWhisperProvider constructor — main.py startup",
     },
 
@@ -704,7 +658,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": "CONTENTHUB_WORKSPACE_ROOT",
         "builtin_default": "",
-        "wired": True,
         "wired_to": "start_production — job workspace_path hesaplanırken okunur",
     },
 
@@ -716,7 +669,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": "CONTENTHUB_OUTPUT_DIR",
         "builtin_default": "",
-        "wired": True,
         "wired_to": "export operations, publish executor — final output destination",
     },
 
@@ -728,7 +680,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": None,
         "builtin_default": "",
-        "wired": True,
         "wired_to": "frontend.userStore + backend user context",
     },
 
@@ -740,7 +691,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "standard_video",
         "env_var": "",
         "builtin_default": 120,
-        "wired": True,
         "wired_to": "RenderStillExecutor._resolve_timeout() — runtime lazy resolve",
     },
 
@@ -753,7 +703,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": None,
         "builtin_default": True,
-        "wired": True,
         "wired_to": "source_scans.scheduler",
     },
     "source_scans.auto_scan_interval_seconds": {
@@ -764,7 +713,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": None,
         "builtin_default": 300,
-        "wired": True,
         "wired_to": "source_scans.scheduler",
     },
     "source_scans.soft_dedupe_threshold": {
@@ -775,7 +723,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "news_bulletin",
         "env_var": "",
         "builtin_default": 0.65,
-        "wired": True,
         "wired_to": "scan_engine.execute_rss_scan → build_dedupe_context(soft_threshold=...)",
     },
     "news_items.soft_dedupe_window_days": {
@@ -786,7 +733,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "news_bulletin",
         "env_var": "",
         "builtin_default": 30,
-        "wired": True,
         "wired_to": "scan_engine.execute_rss_scan → _load_existing_items(window_days=...)",
     },
     "news_items.retention.enabled": {
@@ -797,7 +743,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": None,
         "builtin_default": True,
-        "wired": True,
         "wired_to": "source_scans.retention.poll_retention",
     },
     "news_items.retention.days": {
@@ -808,7 +753,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": None,
         "builtin_default": 180,
-        "wired": True,
         "wired_to": "source_scans.retention.poll_retention",
     },
     "source_scans.retention.days": {
@@ -819,7 +763,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": None,
         "builtin_default": 90,
-        "wired": True,
         "wired_to": "source_scans.retention.poll_retention",
     },
     "source_scans.retention.poll_interval_seconds": {
@@ -830,7 +773,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": None,
         "builtin_default": 3600,
-        "wired": True,
         "wired_to": "source_scans.retention.poll_retention",
     },
     "source_scans.og_scrape_enabled": {
@@ -841,7 +783,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": None,
         "builtin_default": True,
-        "wired": True,
         "wired_to": "scan_engine.normalize_entry → og_scrape",
     },
     "source_scans.og_scrape_min_interval_seconds": {
@@ -852,7 +793,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": None,
         "builtin_default": 5,
-        "wired": True,
         "wired_to": "scan_engine._og_scrape_throttle",
     },
 
@@ -865,7 +805,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": None,
         "builtin_default": "default",
-        "wired": True,
         "wired_to": "frontend.theme_store",
     },
     "ui.timezone": {
@@ -876,7 +815,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": None,
         "builtin_default": "Europe/Istanbul",
-        "wired": True,
         "wired_to": "frontend.date_formatting",
     },
     "ui.date_format": {
@@ -887,7 +825,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": None,
         "builtin_default": "short",
-        "wired": True,
         "wired_to": "frontend.date_formatting",
     },
 
@@ -913,7 +850,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "user_override_allowed": True,
         "visible_to_user": True,
         "read_only_for_user": False,
-        "wired": True,
         "wired_to": "frontend.UserCalendarPage localStorage bridge",
     },
 
@@ -941,7 +877,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "user_override_allowed": False,
         "visible_to_user": False,
         "read_only_for_user": True,
-        "wired": True,
         "wired_to": "frontend.PublishCenterPage toggle visibility",
     },
     "publish.center.default_view": {
@@ -962,7 +897,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "user_override_allowed": True,
         "visible_to_user": True,
         "read_only_for_user": False,
-        "wired": True,
         "wired_to": "frontend.PublishCenterPage localStorage bridge",
     },
 
@@ -988,7 +922,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "user_override_allowed": False,
         "visible_to_user": False,
         "read_only_for_user": True,
-        "wired": True,
         "wired_to": "frontend.UserAutomationPage flow visual guard",
     },
 
@@ -1013,7 +946,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "user_override_allowed": False,
         "visible_to_user": False,
         "read_only_for_user": True,
-        "wired": True,
         "wired_to": "backend.AutomationPolicy.approver_user_id + frontend.UserAutomationPage approver dropdown",
     },
 
@@ -1045,7 +977,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "user_override_allowed": False,
         "visible_to_user": False,
         "read_only_for_user": True,
-        "wired": True,
         "wired_to": "frontend.AdminWizardShell + frontend.UserWizardShell",
     },
 
@@ -1067,7 +998,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "env_var": None,
         # Faz 3/3A/3B teslim edildikten sonra infra uretime hazir; default acik.
         "builtin_default": True,
-        "wired": True,
         "wired_to": "frontend.surfaces.resolver",
     },
     "ui.surface.default.admin": {
@@ -1086,7 +1016,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": None,
         "builtin_default": "canvas",
-        "wired": True,
         "wired_to": "frontend.surfaces.resolver",
     },
     "ui.surface.default.user": {
@@ -1107,7 +1036,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": None,
         "builtin_default": "canvas",
-        "wired": True,
         "wired_to": "frontend.surfaces.resolver",
     },
     "ui.surface.atrium.enabled": {
@@ -1123,7 +1051,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "env_var": None,
         # Faz 4 teslim; yuzey secilebilir listede gorunmeli — varsayilan acik.
         "builtin_default": True,
-        "wired": True,
         "wired_to": "frontend.surfaces.registry",
     },
     "ui.surface.bridge.enabled": {
@@ -1139,7 +1066,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "env_var": None,
         # Faz 2 teslim; admin scope icin en olgun uretim yuzeyi — varsayilan acik.
         "builtin_default": True,
-        "wired": True,
         "wired_to": "frontend.surfaces.registry",
     },
     "ui.surface.canvas.enabled": {
@@ -1155,7 +1081,24 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "env_var": None,
         # Faz 3/3A/3B teslim; user scope icin default yuzey — varsayilan acik.
         "builtin_default": True,
-        "wired": True,
+        "wired_to": "frontend.surfaces.registry",
+    },
+    "ui.surface.aurora.enabled": {
+        "group": "ui",
+        "type": "boolean",
+        "label": "Aurora Yuzeyi Aktif",
+        "help_text": (
+            "Aurora (Aurora Dusk Cockpit) yuzeyini admin/kullanicilara acar. "
+            "Faz 6'da 4-katmanli kokpit kabugu (ctxbar, rail, workbench, "
+            "inspector, statusbar) ile teslim edildi; ilk surumde sayfa "
+            "override yok, sadece chrome swap'i. Kapatildiginda resolver "
+            "legacy'ye duser."
+        ),
+        "module_scope": None,
+        "env_var": None,
+        # Faz 6 teslim; hem admin hem user scope'ta opt-in — varsayilan acik,
+        # kullanici/admin kendi panelinden tercih ederse aktif olur.
+        "builtin_default": True,
         "wired_to": "frontend.surfaces.registry",
     },
 
@@ -1172,7 +1115,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "standard_video",
         "env_var": None,
         "builtin_default": "wizard",
-        "wired": True,
         "wired_to": "user_content_entry → navigation target",
     },
     "wizard.news_bulletin.entry_mode": {
@@ -1187,7 +1129,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "news_bulletin",
         "env_var": None,
         "builtin_default": "wizard",
-        "wired": True,
         "wired_to": "user_content_entry → navigation target",
     },
 
@@ -1200,7 +1141,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": None,
         "builtin_default": False,
-        "wired": True,
         "wired_to": "jobs.retry_scheduler",
     },
     "jobs.max_auto_retries": {
@@ -1211,7 +1151,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": None,
         "builtin_default": 3,
-        "wired": True,
         "wired_to": "jobs.retry_scheduler",
     },
     "jobs.retry_base_delay_seconds": {
@@ -1222,7 +1161,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": None,
         "builtin_default": 60,
-        "wired": True,
         "wired_to": "jobs.retry_scheduler",
     },
 
@@ -1235,7 +1173,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "publish",
         "env_var": "",
         "builtin_default": 60.0,
-        "wired": True,
         "wired_to": "YouTubeAdapter constructor (upload_timeout) — main.py startup",
     },
     "publish.youtube.default_category_id": {
@@ -1246,7 +1183,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "publish",
         "env_var": "",
         "builtin_default": "22",
-        "wired": True,
         "wired_to": "YouTubeAdapter.upload() — payload'da category_id yoksa settings'ten okunur",
     },
     "publish.youtube.default_description": {
@@ -1257,7 +1193,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "publish",
         "env_var": "",
         "builtin_default": "",
-        "wired": True,
         "wired_to": "YouTubeAdapter.upload() — payload'da description yoksa settings'ten okunur",
     },
     "publish.youtube.default_tags": {
@@ -1268,7 +1203,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "publish",
         "env_var": "",
         "builtin_default": "",
-        "wired": True,
         "wired_to": "YouTubeAdapter.upload() — payload'da tags yoksa settings'ten okunur",
     },
     # Phase AI — publish scheduler polling interval. Onceki hardcoded 60s yerine
@@ -1282,7 +1216,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "publish",
         "env_var": "",
         "builtin_default": 60.0,
-        "wired": True,
         "wired_to": "main.py lifespan — poll_scheduled_publishes(interval=...)",
     },
 
@@ -1295,7 +1228,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "publish",
         "env_var": "",
         "builtin_default": 24.0,
-        "wired": True,
         "wired_to": "publish/scheduler.py — youtube_analytics_daily_sync job",
     },
     "publish.youtube.analytics.backfill_days": {
@@ -1306,7 +1238,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "publish",
         "env_var": "",
         "builtin_default": 28.0,
-        "wired": True,
         "wired_to": "analytics/youtube_analytics_service.py — run_sync(window_days)",
     },
     "publish.youtube.analytics.retention_enabled": {
@@ -1317,7 +1248,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "publish",
         "env_var": "",
         "builtin_default": True,
-        "wired": True,
         "wired_to": "youtube_analytics_service.run_sync — retention fetch toggle",
     },
     "publish.youtube.analytics.demographics_enabled": {
@@ -1328,7 +1258,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "publish",
         "env_var": "",
         "builtin_default": True,
-        "wired": True,
         "wired_to": "youtube_analytics_service.run_sync — demographics/traffic/devices fetch toggle",
     },
     "publish.youtube.analytics.max_videos_per_sync": {
@@ -1339,7 +1268,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "publish",
         "env_var": "",
         "builtin_default": 50.0,
-        "wired": True,
         "wired_to": "youtube_analytics_service.fetch_video_daily(max_videos)",
     },
 
@@ -1356,7 +1284,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
             "konusulabilir bir dilde yeniden yaz. Her haber 40-80 kelime arasinda olmali. Turkce formal "
             "broadcast dilini kullan. Cevrilmis metin hissi verme."
         ),
-        "wired": True,
         "wired_to": "BulletinScriptExecutor — narration uretimi sistem prompt",
     },
     "news_bulletin.prompt.narration_style_rules": {
@@ -1375,7 +1302,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
             "- Her haberi bagimsiz anlat, onceki habere referans verme\n"
             "- Kapanisi temiz bitir, 'devam edecek' gibi ifadeler kullanma"
         ),
-        "wired": True,
         "wired_to": "BulletinScriptExecutor — narration stil kurallari",
     },
     "news_bulletin.prompt.anti_clickbait_rules": {
@@ -1393,7 +1319,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
             "- 'According to' kaliplarini kullanma\n"
             "- Soru formunda baslik kullanma"
         ),
-        "wired": True,
         "wired_to": "BulletinScriptExecutor — anti-clickbait kurallari",
     },
     "news_bulletin.prompt.metadata_title_rules": {
@@ -1410,7 +1335,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
             "- Etiketler: 5-10 adet, Turkce, hem genel hem habere ozel\n"
             "- Hashtag: 3-5 adet, #haber #gundem formatinda"
         ),
-        "wired": True,
         "wired_to": "BulletinMetadataExecutor — metadata uretim kurallari",
     },
     "news_bulletin.config.default_language": {
@@ -1421,7 +1345,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "news_bulletin",
         "env_var": "",
         "builtin_default": "tr",
-        "wired": True,
         "wired_to": "BulletinScriptExecutor, BulletinMetadataExecutor — dil secimi",
     },
     "news_bulletin.config.default_tone": {
@@ -1432,7 +1355,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "news_bulletin",
         "env_var": "",
         "builtin_default": "formal",
-        "wired": True,
         "wired_to": "BulletinScriptExecutor — anlatim tonu",
     },
     "news_bulletin.config.default_duration_seconds": {
@@ -1443,7 +1365,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "news_bulletin",
         "env_var": "",
         "builtin_default": 120,
-        "wired": True,
         "wired_to": "BulletinScriptExecutor — hedef sure",
     },
     "news_bulletin.config.max_items_per_bulletin": {
@@ -1454,7 +1375,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "news_bulletin",
         "env_var": "",
         "builtin_default": 10,
-        "wired": True,
         "wired_to": "start_production precondition check",
     },
     "news_bulletin.config.narration_word_limit_per_item": {
@@ -1465,30 +1385,7 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "news_bulletin",
         "env_var": "",
         "builtin_default": 80,
-        "wired": True,
         "wired_to": "BulletinScriptExecutor — kelime limiti",
-    },
-    "news_bulletin.config.render_mode": {
-        "group": "news_bulletin",
-        "type": "string",
-        "label": "Render Modu",
-        "help_text": "M28: sadece 'combined'. M29+: per-category, per-item.",
-        "module_scope": "news_bulletin",
-        "env_var": "",
-        "builtin_default": "combined",
-        "wired": False,
-        "wired_to": "DEFINED — M28 sadece combined destekler",
-    },
-    "news_bulletin.config.render_fps": {
-        "group": "news_bulletin",
-        "type": "integer",
-        "label": "Render FPS",
-        "help_text": "Video render kare hizi.",
-        "module_scope": "news_bulletin",
-        "env_var": "",
-        "builtin_default": 30,
-        "wired": False,
-        "wired_to": "DEFINED — Remotion composition'da kullanilacak",
     },
     "news_bulletin.config.render_format": {
         "group": "news_bulletin",
@@ -1498,7 +1395,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "news_bulletin",
         "env_var": "",
         "builtin_default": "landscape",
-        "wired": True,
         "wired_to": "BulletinCompositionExecutor → composition_props.renderFormat → Root.tsx calculateMetadata",
     },
     # --- News Bulletin Module (M30) ---
@@ -1511,7 +1407,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "news_bulletin",
         "env_var": "",
         "builtin_default": True,
-        "wired": True,
         "wired_to": "BulletinCompositionExecutor → timing_mode override; karaoke kapali ise cursor kullanilir",
     },
     # --- M41: Haber gosterim ayarlari ---
@@ -1523,7 +1418,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "news_bulletin",
         "env_var": "",
         "builtin_default": True,
-        "wired": True,
         "wired_to": "BulletinCompositionExecutor → composition_props.showDate → BulletinLowerThird",
     },
     "news_bulletin.config.show_source": {
@@ -1534,7 +1428,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "news_bulletin",
         "env_var": "",
         "builtin_default": False,
-        "wired": True,
         "wired_to": "BulletinCompositionExecutor → composition_props.showSource → BulletinLowerThird",
     },
     "news_bulletin.config.default_subtitle_style": {
@@ -1545,7 +1438,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "news_bulletin",
         "env_var": "",
         "builtin_default": "clean_white",
-        "wired": True,
         "wired_to": "BulletinCompositionExecutor — subtitle preset secimi",
     },
     "news_bulletin.config.default_lower_third_style": {
@@ -1556,7 +1448,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "news_bulletin",
         "env_var": "",
         "builtin_default": "broadcast",
-        "wired": True,
         "wired_to": "BulletinCompositionExecutor — lower-third stil secimi",
     },
     "news_bulletin.config.trust_enforcement_level": {
@@ -1567,7 +1458,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "news_bulletin",
         "env_var": "",
         "builtin_default": "warn",
-        "wired": True,
         "wired_to": "editorial_gate / service — trust enforcement",
     },
     "news_bulletin.config.category_style_mapping_enabled": {
@@ -1578,7 +1468,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "news_bulletin",
         "env_var": "",
         "builtin_default": True,
-        "wired": True,
         "wired_to": "wizard — category style suggestion",
     },
     "news_bulletin.config.normalize_enabled": {
@@ -1589,7 +1478,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "news_bulletin",
         "env_var": "",
         "builtin_default": True,
-        "wired": True,
         "wired_to": "PromptAssemblyService — nb.normalize block condition",
     },
     "news_bulletin.config.humanize_enabled": {
@@ -1600,7 +1488,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "news_bulletin",
         "env_var": "",
         "builtin_default": False,
-        "wired": True,
         "wired_to": "PromptAssemblyService — nb.humanizer block condition",
     },
     "news_bulletin.config.tts_enhance_enabled": {
@@ -1611,7 +1498,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "news_bulletin",
         "env_var": "",
         "builtin_default": True,
-        "wired": True,
         "wired_to": "PromptAssemblyService — nb.tts_enhance block condition",
     },
     "news_bulletin.config.anti_clickbait_enabled": {
@@ -1622,7 +1508,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "news_bulletin",
         "env_var": "",
         "builtin_default": True,
-        "wired": True,
         "wired_to": "PromptAssemblyService — nb.anti_clickbait block condition",
     },
     # --- News Bulletin Visual Style (M33) ---
@@ -1634,7 +1519,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "news_bulletin",
         "env_var": "",
         "builtin_default": "breaking",
-        "wired": True,
         "wired_to": "BulletinCompositionExecutor — bulletinStyle prop",
     },
     "news_bulletin.config.network_name": {
@@ -1645,7 +1529,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "news_bulletin",
         "env_var": "",
         "builtin_default": "ContentHub Haber",
-        "wired": True,
         "wired_to": "BulletinCompositionExecutor — networkName prop",
     },
     "news_bulletin.config.show_ticker": {
@@ -1656,7 +1539,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "news_bulletin",
         "env_var": "",
         "builtin_default": True,
-        "wired": True,
         "wired_to": "BulletinCompositionExecutor — showTicker prop",
     },
 
@@ -1669,7 +1551,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "news_bulletin",
         "env_var": "",
         "builtin_default": 4,
-        "wired": True,
         "wired_to": "BulletinCompositionExecutor → composition_props.tickerSpeed → NewsTicker",
     },
     "news_bulletin.config.ticker_bg_color": {
@@ -1680,7 +1561,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "news_bulletin",
         "env_var": "",
         "builtin_default": "#1E293B",
-        "wired": True,
         "wired_to": "BulletinCompositionExecutor → composition_props.tickerBgColor → NewsTicker",
     },
     "news_bulletin.config.ticker_text_color": {
@@ -1691,7 +1571,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "news_bulletin",
         "env_var": "",
         "builtin_default": "#FFFFFF",
-        "wired": True,
         "wired_to": "BulletinCompositionExecutor → composition_props.tickerTextColor → NewsTicker",
     },
     "news_bulletin.config.show_live_badge": {
@@ -1702,7 +1581,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "news_bulletin",
         "env_var": "",
         "builtin_default": True,
-        "wired": True,
         "wired_to": "BulletinCompositionExecutor → composition_props.showLiveBadge → NetworkBar",
     },
     "news_bulletin.config.show_category_flash": {
@@ -1713,7 +1591,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "news_bulletin",
         "env_var": "",
         "builtin_default": True,
-        "wired": True,
         "wired_to": "BulletinCompositionExecutor → composition_props.showCategoryFlash → CategoryFlash",
     },
     "news_bulletin.config.category_flash_duration": {
@@ -1724,7 +1601,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "news_bulletin",
         "env_var": "",
         "builtin_default": 1.5,
-        "wired": True,
         "wired_to": "BulletinCompositionExecutor → duration hesabi + composition_props.categoryFlashDuration",
     },
     "news_bulletin.config.show_item_intro": {
@@ -1735,7 +1611,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "news_bulletin",
         "env_var": "",
         "builtin_default": True,
-        "wired": True,
         "wired_to": "BulletinCompositionExecutor → composition_props.showItemIntro → NewsItemIntro",
     },
     "news_bulletin.config.item_intro_duration": {
@@ -1746,7 +1621,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "news_bulletin",
         "env_var": "",
         "builtin_default": 2.0,
-        "wired": True,
         "wired_to": "BulletinCompositionExecutor → duration hesabi + composition_props.itemIntroDuration",
     },
     # --- M43: Lower Third Style Parameters ---
@@ -1758,7 +1632,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "news_bulletin",
         "env_var": "",
         "builtin_default": "Inter",
-        "wired": True,
         "wired_to": "BulletinCompositionExecutor → composition_props.lowerThirdFontFamily",
     },
     "news_bulletin.config.lower_third_font_size": {
@@ -1769,7 +1642,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "news_bulletin",
         "env_var": "",
         "builtin_default": 18,
-        "wired": True,
         "wired_to": "BulletinCompositionExecutor → composition_props.lowerThirdFontSize",
     },
     "news_bulletin.config.lower_third_bg_color": {
@@ -1780,7 +1652,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "news_bulletin",
         "env_var": "",
         "builtin_default": "#000000CC",
-        "wired": True,
         "wired_to": "BulletinCompositionExecutor → composition_props.lowerThirdBgColor",
     },
     "news_bulletin.config.lower_third_text_color": {
@@ -1791,7 +1662,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "news_bulletin",
         "env_var": "",
         "builtin_default": "#FFFFFF",
-        "wired": True,
         "wired_to": "BulletinCompositionExecutor → composition_props.lowerThirdTextColor",
     },
     # --- M43: Subtitle Style Parameters ---
@@ -1803,7 +1673,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "news_bulletin",
         "env_var": "",
         "builtin_default": "Inter",
-        "wired": True,
         "wired_to": "BulletinCompositionExecutor → composition_props.subtitleFontFamily",
     },
     "news_bulletin.config.subtitle_font_size": {
@@ -1814,7 +1683,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "news_bulletin",
         "env_var": "",
         "builtin_default": 28,
-        "wired": True,
         "wired_to": "BulletinCompositionExecutor → composition_props.subtitleFontSize",
     },
     "news_bulletin.config.subtitle_bg_color": {
@@ -1825,7 +1693,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "news_bulletin",
         "env_var": "",
         "builtin_default": "#000000AA",
-        "wired": True,
         "wired_to": "BulletinCompositionExecutor → composition_props.subtitleBgColor",
     },
     "news_bulletin.config.subtitle_text_color": {
@@ -1836,7 +1703,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "news_bulletin",
         "env_var": "",
         "builtin_default": "#FFFFFF",
-        "wired": True,
         "wired_to": "BulletinCompositionExecutor → composition_props.subtitleTextColor",
     },
     "news_bulletin.config.subtitle_stroke_color": {
@@ -1847,7 +1713,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "news_bulletin",
         "env_var": "",
         "builtin_default": "#000000",
-        "wired": True,
         "wired_to": "BulletinCompositionExecutor → composition_props.subtitleStrokeColor",
     },
     "news_bulletin.config.subtitle_stroke_width": {
@@ -1858,7 +1723,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "news_bulletin",
         "env_var": "",
         "builtin_default": 2,
-        "wired": True,
         "wired_to": "BulletinCompositionExecutor → composition_props.subtitleStrokeWidth",
     },
     "news_bulletin.config.subtitle_animation": {
@@ -1869,7 +1733,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "news_bulletin",
         "env_var": "",
         "builtin_default": "karaoke",
-        "wired": True,
         "wired_to": "BulletinCompositionExecutor → composition_props.subtitleAnimation",
     },
     # --- M43: Image & Animation Parameters ---
@@ -1881,7 +1744,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "news_bulletin",
         "env_var": "",
         "builtin_default": True,
-        "wired": True,
         "wired_to": "BulletinCompositionExecutor → composition_props.imageKenBurns → Layout bileşenleri",
     },
     "news_bulletin.config.image_transition": {
@@ -1892,7 +1754,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "news_bulletin",
         "env_var": "",
         "builtin_default": "crossfade",
-        "wired": True,
         "wired_to": "BulletinCompositionExecutor → composition_props.imageTransition → Layout bileşenleri",
     },
     "news_bulletin.config.auto_layout_selection": {
@@ -1903,7 +1764,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "news_bulletin",
         "env_var": "",
         "builtin_default": True,
-        "wired": True,
         "wired_to": "BulletinCompositionExecutor → composition_props.autoLayoutSelection → Layout dispatcher",
     },
     # --- M43: Category Style Mapping (JSON) ---
@@ -1925,7 +1785,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
             "entertainment": {"accent": "#EC4899", "bg": "#1A0515", "grid": "rgba(236,72,153,0.06)", "label_tr": "EĞLENCE/MAGAZİN", "label_en": "ENTERTAINMENT"},
             "dark": {"accent": "#94A3B8", "bg": "#000000", "grid": "rgba(148,163,184,0.06)", "label_tr": "GÜNDEM", "label_en": "HEADLINES"},
         },
-        "wired": True,
         "wired_to": "BulletinCompositionExecutor → composition_props.categoryStyleMapping → StudioBackground, CategoryFlash",
     },
 
@@ -1943,7 +1802,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
             "Dil ve ton kurallari icin asagidaki bilgileri kullan.\n\n"
             "CIKTI FORMATI: Yalnizca gecerli JSON dondur, baska hicbir sey ekleme."
         ),
-        "wired": True,
         "wired_to": "ScriptStepExecutor — script uretimi sistem prompt",
     },
     "standard_video.prompt.metadata_system": {
@@ -1958,7 +1816,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
             "Verilen script'ten platform icin optimize edilmis metadata ureteceksin.\n\n"
             "CIKTI FORMATI: Yalnizca gecerli JSON dondur, baska hicbir sey ekleme."
         ),
-        "wired": True,
         "wired_to": "MetadataStepExecutor — metadata uretimi sistem prompt",
     },
 
@@ -1971,7 +1828,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "standard_video",
         "env_var": "",
         "builtin_default": "landscape",
-        "wired": True,
         "wired_to": "CompositionStepExecutor → composition_props.renderFormat → Root.tsx calculateMetadata",
     },
 
@@ -1984,7 +1840,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "standard_video",
         "env_var": "",
         "builtin_default": True,
-        "wired": True,
         "wired_to": "CompositionStepExecutor → timing_mode override; karaoke kapali ise cursor kullanilir",
     },
 
@@ -1996,7 +1851,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "builtin_default": True,
         "module_scope": "standard_video",
         "help_text": "Acilis hook blogu etkin mi. sv.opening_hooks blocku ile baglantilidlr.",
-        "wired": True,
         "wired_to": "sv.opening_hooks block condition",
     },
     "standard_video.config.humanize_enabled": {
@@ -2006,7 +1860,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "builtin_default": False,
         "module_scope": "standard_video",
         "help_text": "Humanizer blogu etkin mi. sv.humanizer blocku ile baglantilidlr. Varsayilan kapali.",
-        "wired": True,
         "wired_to": "sv.humanizer block condition",
     },
     "standard_video.config.tts_enhance_enabled": {
@@ -2016,7 +1869,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "builtin_default": True,
         "module_scope": "standard_video",
         "help_text": "TTS uyumluluk blogu etkin mi. sv.tts_enhance blocku ile baglantilidlr.",
-        "wired": True,
         "wired_to": "sv.tts_enhance block condition",
     },
     "standard_video.config.seo_rules_enabled": {
@@ -2026,7 +1878,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "builtin_default": True,
         "module_scope": "standard_video",
         "help_text": "SEO optimizasyon blogu etkin mi. sv.metadata_seo_rules blocku ile baglantilidlr.",
-        "wired": True,
         "wired_to": "sv.metadata_seo_rules block condition",
     },
     "standard_video.config.category_guidance_enabled": {
@@ -2036,7 +1887,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "builtin_default": True,
         "module_scope": "standard_video",
         "help_text": "Kategori yonlendirme blogu etkin mi. sv.category_guidance data_presence ile kontrol edilir.",
-        "wired": True,
         "wired_to": "sv.category_guidance block condition",
     },
 
@@ -2049,7 +1899,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "standard_video",
         "env_var": "",
         "builtin_default": "hype",
-        "wired": True,
         "wired_to": "CompositionStepExecutor → composition_props.karaokeAnimPreset → KaraokeSubtitle",
     },
     "standard_video.config.render_fps": {
@@ -2060,7 +1909,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "standard_video",
         "env_var": "",
         "builtin_default": 30,
-        "wired": True,
         "wired_to": "CompositionStepExecutor → composition_props.renderFps → Remotion config",
     },
     "standard_video.config.subtitle_font_family": {
@@ -2071,7 +1919,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "standard_video",
         "env_var": "",
         "builtin_default": "",
-        "wired": True,
         "wired_to": "CompositionStepExecutor → composition_props.subtitleFontFamily → KaraokeSubtitle",
     },
     "standard_video.config.subtitle_font_size": {
@@ -2082,7 +1929,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "standard_video",
         "env_var": "",
         "builtin_default": 0,
-        "wired": True,
         "wired_to": "CompositionStepExecutor → composition_props.subtitleFontSize → KaraokeSubtitle override",
     },
     "standard_video.config.subtitle_text_color": {
@@ -2093,7 +1939,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "standard_video",
         "env_var": "",
         "builtin_default": "",
-        "wired": True,
         "wired_to": "CompositionStepExecutor → composition_props.subtitleTextColor → KaraokeSubtitle override",
     },
     "standard_video.config.subtitle_active_color": {
@@ -2104,7 +1949,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "standard_video",
         "env_var": "",
         "builtin_default": "",
-        "wired": True,
         "wired_to": "CompositionStepExecutor → composition_props.subtitleActiveColor → KaraokeSubtitle override",
     },
     "standard_video.config.subtitle_bg_color": {
@@ -2115,7 +1959,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "standard_video",
         "env_var": "",
         "builtin_default": "",
-        "wired": True,
         "wired_to": "CompositionStepExecutor → composition_props.subtitleBgColor → KaraokeSubtitle override",
     },
     "standard_video.config.subtitle_stroke_color": {
@@ -2126,7 +1969,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "standard_video",
         "env_var": "",
         "builtin_default": "",
-        "wired": True,
         "wired_to": "CompositionStepExecutor → composition_props.subtitleStrokeColor → KaraokeSubtitle override",
     },
     "standard_video.config.subtitle_stroke_width": {
@@ -2137,7 +1979,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "standard_video",
         "env_var": "",
         "builtin_default": -1,
-        "wired": True,
         "wired_to": "CompositionStepExecutor → composition_props.subtitleStrokeWidth → KaraokeSubtitle override",
     },
     "standard_video.config.image_ken_burns": {
@@ -2148,7 +1989,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "standard_video",
         "env_var": "",
         "builtin_default": True,
-        "wired": True,
         "wired_to": "CompositionStepExecutor → composition_props.imageKenBurns → SceneComponent",
     },
     "standard_video.config.image_transition": {
@@ -2159,7 +1999,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "standard_video",
         "env_var": "",
         "builtin_default": "crossfade",
-        "wired": True,
         "wired_to": "CompositionStepExecutor → composition_props.imageTransition → SceneComponent",
     },
     "standard_video.config.scene_transition_duration": {
@@ -2170,7 +2009,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "standard_video",
         "env_var": "",
         "builtin_default": 0.5,
-        "wired": True,
         "wired_to": "CompositionStepExecutor → composition_props.sceneTransitionDuration → SceneComponent",
     },
     "standard_video.config.bg_color": {
@@ -2181,7 +2019,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "standard_video",
         "env_var": "",
         "builtin_default": "#0a0a0a",
-        "wired": True,
         "wired_to": "CompositionStepExecutor → composition_props.bgColor → SceneComponent/AbsoluteFill",
     },
     "standard_video.config.show_title_overlay": {
@@ -2192,7 +2029,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "standard_video",
         "env_var": "",
         "builtin_default": True,
-        "wired": True,
         "wired_to": "CompositionStepExecutor → composition_props.showTitleOverlay → PortraitOverlay/LandscapeOverlay",
     },
     "standard_video.config.title_font_size": {
@@ -2203,7 +2039,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "standard_video",
         "env_var": "",
         "builtin_default": 30,
-        "wired": True,
         "wired_to": "CompositionStepExecutor → composition_props.titleFontSize → PortraitOverlay",
     },
     "standard_video.config.title_color": {
@@ -2214,7 +2049,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "standard_video",
         "env_var": "",
         "builtin_default": "#FFFFFF",
-        "wired": True,
         "wired_to": "CompositionStepExecutor → composition_props.titleColor → PortraitOverlay",
     },
     "standard_video.config.gradient_intensity": {
@@ -2225,7 +2059,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "standard_video",
         "env_var": "",
         "builtin_default": 0.65,
-        "wired": True,
         "wired_to": "CompositionStepExecutor → composition_props.gradientIntensity → LandscapeOverlay/PortraitOverlay",
     },
     "standard_video.config.watermark_text": {
@@ -2236,7 +2069,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "standard_video",
         "env_var": "",
         "builtin_default": "",
-        "wired": True,
         "wired_to": "CompositionStepExecutor → composition_props.watermarkText → WatermarkOverlay",
     },
     "standard_video.config.watermark_opacity": {
@@ -2247,7 +2079,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "standard_video",
         "env_var": "",
         "builtin_default": 0.3,
-        "wired": True,
         "wired_to": "CompositionStepExecutor → composition_props.watermarkOpacity → WatermarkOverlay",
     },
     "standard_video.config.watermark_position": {
@@ -2258,7 +2089,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "standard_video",
         "env_var": "",
         "builtin_default": "bottom-right",
-        "wired": True,
         "wired_to": "CompositionStepExecutor → composition_props.watermarkPosition → WatermarkOverlay",
     },
     # B6: Visual cue overlay kontrolü
@@ -2270,11 +2100,10 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "standard_video",
         "env_var": "",
         "builtin_default": True,
-        "wired": True,
         "wired_to": "CompositionStepExecutor → composition_props.showVisualCue → VisualCueTag",
     },
 
-    # --- Module Registry Settings (Phase 2 — Faz A) ---
+    # --- Module Registry Settings ---
     "module.standard_video.enabled": {
         "group": "modules",
         "type": "boolean",
@@ -2283,7 +2112,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "standard_video",
         "env_var": None,
         "builtin_default": True,
-        "wired": True,
         "wired_to": "Module registry + sidebar + command palette + wizard",
     },
     "module.news_bulletin.enabled": {
@@ -2294,7 +2122,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "news_bulletin",
         "env_var": None,
         "builtin_default": True,
-        "wired": True,
         "wired_to": "Module registry + sidebar + command palette + wizard",
     },
     # Phase AI — product_review modulu admin panelinden yonetilebilir hale getirilir.
@@ -2308,7 +2135,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "product_review",
         "env_var": None,
         "builtin_default": True,
-        "wired": True,
         "wired_to": "Module registry + sidebar + command palette + wizard",
     },
     # --- Automation (Full-Auto Mode v1) ---
@@ -2321,7 +2147,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": None,
         "builtin_default": False,
-        "wired": True,
         "wired_to": "AutomationService.can_full_auto + scheduler + trigger endpoint",
     },
     "automation.full_auto.allowed_modules": {
@@ -2332,7 +2157,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": None,
         "builtin_default": ["standard_video"],
-        "wired": True,
         "wired_to": "AutomationService.validate_module",
     },
     "automation.full_auto.require_review_gate": {
@@ -2343,7 +2167,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": None,
         "builtin_default": True,
-        "wired": True,
         "wired_to": "ContentProject.create defaults",
     },
     "automation.full_auto.default_publish_policy": {
@@ -2354,7 +2177,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": None,
         "builtin_default": "draft",
-        "wired": True,
         "wired_to": "Post-completion hook in AutomationService",
     },
     "automation.full_auto.max_concurrent_per_user": {
@@ -2365,7 +2187,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": None,
         "builtin_default": 1,
-        "wired": True,
         "wired_to": "AutomationService.check_concurrency_guards",
     },
     "automation.full_auto.max_concurrent_per_project": {
@@ -2376,7 +2197,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": None,
         "builtin_default": 1,
-        "wired": True,
         "wired_to": "AutomationService.check_concurrency_guards",
     },
     "automation.full_auto.max_daily_runs_per_project": {
@@ -2387,7 +2207,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": None,
         "builtin_default": 5,
-        "wired": True,
         "wired_to": "AutomationService.check_daily_quota",
     },
     "automation.full_auto.require_template": {
@@ -2398,7 +2217,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": None,
         "builtin_default": True,
-        "wired": True,
         "wired_to": "AutomationService.validate_project_config",
     },
     "automation.full_auto.require_channel": {
@@ -2409,7 +2227,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": None,
         "builtin_default": True,
-        "wired": True,
         "wired_to": "AutomationService.validate_project_config",
     },
     "automation.full_auto.require_blueprint": {
@@ -2420,7 +2237,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": None,
         "builtin_default": False,
-        "wired": True,
         "wired_to": "AutomationService.validate_project_config",
     },
     "automation.scheduler.enabled": {
@@ -2431,7 +2247,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": None,
         "builtin_default": False,
-        "wired": True,
         "wired_to": "app.main.lifespan + AutomationScheduler.poll",
     },
     "automation.scheduler.poll_interval_seconds": {
@@ -2442,7 +2257,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": None,
         "builtin_default": 60,
-        "wired": True,
         "wired_to": "app.main.lifespan",
     },
     "automation.scheduler.default_timezone": {
@@ -2453,25 +2267,13 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": None,
         "env_var": None,
         "builtin_default": "UTC",
-        "wired": True,
         "wired_to": "AutomationScheduler.compute_next_run",
     },
 
     # -----------------------------------------------------------------
-    # Product Review Module (Faz A — 23 setting)
+    # Product Review Module
     # -----------------------------------------------------------------
     # Scrape / ingestion
-    "product_review.scrape.enabled": {
-        "group": "product_review",
-        "type": "boolean",
-        "label": "Urun tarama etkin",
-        "help_text": "Kapali oldugunda product_scrape adimi kullaniciya acik hata verir.",
-        "module_scope": "product_review",
-        "env_var": None,
-        "builtin_default": True,
-        "wired": False,
-        "wired_to": "product_review.executors.ProductScrapeStepExecutor (Faz B)",
-    },
     "product_review.scrape.timeout_seconds": {
         "group": "product_review",
         "type": "integer",
@@ -2480,8 +2282,7 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "product_review",
         "env_var": None,
         "builtin_default": 15,
-        "wired": False,
-        "wired_to": "product_review.executors.ProductScrapeStepExecutor (Faz B)",
+        "wired_to": "product_review.executors.ProductScrapeStepExecutor",
     },
     "product_review.scrape.max_body_bytes": {
         "group": "product_review",
@@ -2491,8 +2292,7 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "product_review",
         "env_var": None,
         "builtin_default": 2_000_000,
-        "wired": False,
-        "wired_to": "product_review.executors.ProductScrapeStepExecutor (Faz B)",
+        "wired_to": "product_review.executors.ProductScrapeStepExecutor",
     },
     "product_review.scrape.min_interval_seconds_per_host": {
         "group": "product_review",
@@ -2502,8 +2302,7 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "product_review",
         "env_var": None,
         "builtin_default": 5,
-        "wired": False,
-        "wired_to": "product_review.executors.ProductScrapeStepExecutor (Faz B)",
+        "wired_to": "product_review.executors.ProductScrapeStepExecutor",
     },
     "product_review.scrape.respect_robots_txt": {
         "group": "product_review",
@@ -2517,136 +2316,8 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "product_review",
         "env_var": None,
         "builtin_default": False,
-        "wired": False,
-        "wired_to": "product_review.executors.ProductScrapeStepExecutor (Faz B)",
+        "wired_to": "product_review.executors.ProductScrapeStepExecutor + product_review.robots_guard",
     },
-    "product_review.scrape.parser_chain_order": {
-        "group": "product_review",
-        "type": "string",
-        "label": "Parser zincir sirasi",
-        "help_text": (
-            "Virgul ile ayrilmis parser adlari. Ornek: 'jsonld,og,site_specific'. "
-            "Ilk geri doneni kazanir; hepsi bos → scrape_confidence 0.0."
-        ),
-        "module_scope": "product_review",
-        "env_var": None,
-        "builtin_default": "jsonld,og,site_specific",
-        "wired": False,
-        "wired_to": "product_review.executors.ProductScrapeStepExecutor (Faz B)",
-    },
-    "product_review.scrape.min_confidence_for_full_auto": {
-        "group": "product_review",
-        "type": "float",
-        "label": "Full-auto icin minimum scrape guveni",
-        "help_text": (
-            "Full-auto mode'da bu esigi gecemeyen job'lar semi_auto'ya dusurulur. "
-            "Publish review gate KORUNUR — bu sadece pipeline otomasyonunu etkiler."
-        ),
-        "module_scope": "product_review",
-        "env_var": None,
-        "builtin_default": 0.7,
-        "wired": False,
-        "wired_to": "product_review.executors.ProductScrapeStepExecutor + full_auto gate (Faz B / E)",
-    },
-
-    # Ingestion — site allowlist
-    "product_review.sites.allowlist": {
-        "group": "product_review",
-        "type": "string",
-        "label": "Desteklenen siteler (allowlist)",
-        "help_text": (
-            "Virgul ile ayrilmis host listesi. v1: amazon,trendyol,hepsiburada,n11,"
-            "shopify,woocommerce. Bu listenin disindaki host'lar generic parser "
-            "ile islenir (sadece jsonld + og; site_specific devre disi)."
-        ),
-        "module_scope": "product_review",
-        "env_var": None,
-        "builtin_default": "amazon,trendyol,hepsiburada,n11,shopify,woocommerce",
-        "wired": False,
-        "wired_to": "product_review.executors.ProductScrapeStepExecutor (Faz B/G)",
-    },
-
-    # Creative / pipeline
-    "product_review.config.default_language": {
-        "group": "product_review",
-        "type": "string",
-        "label": "Varsayilan dil",
-        "help_text": "Senaryo ve metadata icin varsayilan dil (ISO 639-1).",
-        "module_scope": "product_review",
-        "env_var": None,
-        "builtin_default": "tr",
-        "wired": False,
-        "wired_to": "product_review.executors.ScriptStepExecutor (Faz B)",
-    },
-    "product_review.config.default_orientation": {
-        "group": "product_review",
-        "type": "string",
-        "label": "Varsayilan video yonu",
-        "help_text": "'vertical' veya 'horizontal'. v1 vertical ile baslar.",
-        "module_scope": "product_review",
-        "env_var": None,
-        "builtin_default": "vertical",
-        "wired": False,
-        "wired_to": "product_review.executors.CompositionStepExecutor (Faz B)",
-    },
-    "product_review.config.default_duration_seconds": {
-        "group": "product_review",
-        "type": "integer",
-        "label": "Varsayilan video suresi (saniye)",
-        "help_text": "Hedef sure — senaryo buna gore planlanir.",
-        "module_scope": "product_review",
-        "env_var": None,
-        "builtin_default": 60,
-        "wired": False,
-        "wired_to": "product_review.executors.ScriptStepExecutor (Faz B)",
-    },
-    "product_review.config.render_fps": {
-        "group": "product_review",
-        "type": "integer",
-        "label": "Render FPS",
-        "help_text": "Remotion render kare hizi.",
-        "module_scope": "product_review",
-        "env_var": None,
-        "builtin_default": 30,
-        "wired": False,
-        "wired_to": "product_review.executors.RenderStepExecutor (Faz B)",
-    },
-
-    # Preview-first
-    "product_review.preview.level1_enabled": {
-        "group": "product_review",
-        "type": "boolean",
-        "label": "Level 1 preview (renderStill) etkin",
-        "help_text": "Kapatilirsa preview_frame adimi atlanir — user kararina karsin onerilmiyor.",
-        "module_scope": "product_review",
-        "env_var": None,
-        "builtin_default": True,
-        "wired": False,
-        "wired_to": "product_review.executors.PreviewFrameExecutor (Faz C)",
-    },
-    "product_review.preview.level2_enabled": {
-        "group": "product_review",
-        "type": "boolean",
-        "label": "Level 2 preview (mini MP4) etkin",
-        "help_text": "Kapatilirsa preview_mini adimi atlanir — kullanici kararina karsi onerilmiyor.",
-        "module_scope": "product_review",
-        "env_var": None,
-        "builtin_default": True,
-        "wired": False,
-        "wired_to": "product_review.executors.PreviewMiniExecutor (Faz C)",
-    },
-    "product_review.preview.mini_seconds": {
-        "group": "product_review",
-        "type": "integer",
-        "label": "Mini MP4 suresi (saniye)",
-        "help_text": "Level 2 preview MP4'un sure uzunlugu.",
-        "module_scope": "product_review",
-        "env_var": None,
-        "builtin_default": 3,
-        "wired": False,
-        "wired_to": "product_review.executors.PreviewMiniExecutor (Faz C)",
-    },
-
     # Legal / disclosure
     "product_review.legal.affiliate_disclosure_text": {
         "group": "product_review",
@@ -2663,8 +2334,7 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
             "yaparsaniz kanalin kucuk bir komisyon kazanmasi mumkundur; size ek "
             "maliyeti yoktur."
         ),
-        "wired": False,
-        "wired_to": "product_review.executors.MetadataStepExecutor (Faz B)",
+        "wired_to": "product_review.executors.MetadataStepExecutor",
     },
     "product_review.legal.price_disclaimer_text": {
         "group": "product_review",
@@ -2680,8 +2350,7 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
             "Fiyatlar video cekim anindaki duruma gore alinmistir; guncel fiyat "
             "icin ilgili satici sayfasina bakiniz."
         ),
-        "wired": False,
-        "wired_to": "product_review.executors.MetadataStepExecutor (Faz B)",
+        "wired_to": "product_review.executors.MetadataStepExecutor + product_review.executors.PreviewFrameExecutor + PreviewMiniExecutor",
     },
     "product_review.legal.tos_checkbox_required": {
         "group": "product_review",
@@ -2694,81 +2363,7 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "product_review",
         "env_var": None,
         "builtin_default": True,
-        "wired": False,
-        "wired_to": "product_review.router (Faz B wizard) + audit",
-    },
-
-    # Prompts
-    "product_review.prompt.single_script_system": {
-        "group": "product_review",
-        "type": "prompt",
-        "label": "Tek urun senaryo sistem promptu",
-        "help_text": (
-            "Tek urun incelemesi icin senaryo uretimi sistem promptu. "
-            "{brand}, {name}, {price}, {currency}, {rating}, {features} "
-            "placeholder'lari desteklenir."
-        ),
-        "module_scope": "product_review",
-        "env_var": None,
-        "builtin_default": (
-            "Sen urun inceleme videolari icin profesyonel bir senaristsin. "
-            "Turkce, samimi ama bilgilendirici bir tonla yaz. Urunun faydalarina "
-            "ve gercek kullanim senaryolarina odaklan. Abartili ifadelerden kacin. "
-            "Affiliate disclosure + fiyat disclaimer senaryo sonuna KESIN eklenmeli."
-        ),
-        "wired": False,
-        "wired_to": "product_review.executors.ScriptStepExecutor (Faz B)",
-    },
-    "product_review.prompt.comparison_script_system": {
-        "group": "product_review",
-        "type": "prompt",
-        "label": "Karsilastirma senaryo sistem promptu",
-        "help_text": (
-            "Urun karsilastirma (2+ urun) senaryo sistem promptu. "
-            "{primary}, {secondaries} placeholder'lari."
-        ),
-        "module_scope": "product_review",
-        "env_var": None,
-        "builtin_default": (
-            "Sen urun karsilastirma videolari icin objektif bir senaristsin. "
-            "Turkce yaz. Her urunun artisi ve eksisi esit mesafeden degerlendir. "
-            "Sonuc tavsiyesi ver ama okur karar versin. Affiliate disclosure + "
-            "fiyat disclaimer senaryo sonuna KESIN eklenmeli."
-        ),
-        "wired": False,
-        "wired_to": "product_review.executors.ScriptStepExecutor (Faz D)",
-    },
-    "product_review.prompt.alternatives_script_system": {
-        "group": "product_review",
-        "type": "prompt",
-        "label": "Alternatif oneri senaryo sistem promptu",
-        "help_text": "Bir ana urune alternatif urun onerileri senaryo sistem promptu.",
-        "module_scope": "product_review",
-        "env_var": None,
-        "builtin_default": (
-            "Sen urun oneri videolari icin tecrubeli bir senaristsin. Turkce yaz. "
-            "Ana urunu tanit, butce / ozellik / hedef kitleye gore 3 alternatif "
-            "oner. Her alternatifi kisa gerekce ile sun. Affiliate disclosure + "
-            "fiyat disclaimer senaryo sonuna KESIN eklenmeli."
-        ),
-        "wired": False,
-        "wired_to": "product_review.executors.ScriptStepExecutor (Faz D)",
-    },
-    "product_review.prompt.metadata_system": {
-        "group": "product_review",
-        "type": "prompt",
-        "label": "Metadata sistem promptu",
-        "help_text": "Basiklik, aciklama, etiketler uretimi icin prompt.",
-        "module_scope": "product_review",
-        "env_var": None,
-        "builtin_default": (
-            "Sen YouTube/TikTok icerik optimizasyonu konusunda uzman bir "
-            "editorsen. Turkce yaz. Clickbait'ten kacin; basligi dogru ve cekici "
-            "yap. Aciklamaya affiliate disclosure + fiyat disclaimer'i MUTLAKA "
-            "ekle. Etiketler urunun marka, kategori ve kullanim alanina odakli olsun."
-        ),
-        "wired": False,
-        "wired_to": "product_review.executors.MetadataStepExecutor (Faz B)",
+        "wired_to": "product_review.executors.MetadataStepExecutor + audit",
     },
 
     # Full-auto / audit
@@ -2784,8 +2379,7 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "module_scope": "product_review",
         "env_var": None,
         "builtin_default": False,
-        "wired": False,
-        "wired_to": "product_review.executors.PublishStepExecutor + audit (Faz F)",
+        "wired_to": "product_review.confidence + product_review.executors.PublishStepExecutor + audit",
     },
 
     # ---------------------------------------------------------------------
@@ -2806,7 +2400,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "user_override_allowed": False,
         "visible_to_user": True,
         "read_only_for_user": True,
-        "wired": True,
         "wired_to": "app/channel_profiles/router.py POST /channel-profiles (URL-only gate)",
     },
     "channels.metadata_fetch_enabled": {
@@ -2824,7 +2417,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "user_override_allowed": False,
         "visible_to_user": True,
         "read_only_for_user": True,
-        "wired": True,
         "wired_to": "app/channel_profiles/service.py auto_import_from_url",
     },
     "channels.metadata_fetch_timeout_seconds": {
@@ -2841,7 +2433,6 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "user_override_allowed": False,
         "visible_to_user": False,
         "read_only_for_user": True,
-        "wired": True,
         "wired_to": "app/channel_profiles/url_metadata.fetch_metadata",
     },
     "channels.ownership_strict_mode": {
@@ -2859,8 +2450,29 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "user_override_allowed": False,
         "visible_to_user": False,
         "read_only_for_user": True,
-        "wired": True,
         "wired_to": "app/auth/ownership.ensure_owner_or_admin + apply_user_scope",
+    },
+    # ---- Used News (admin-managed taxonomy) ----------------------------
+    "used_news.usage_type_options": {
+        "group": "used_news",
+        "type": "json",
+        "label": "Kullanim Tipi Secenekleri",
+        "help_text": (
+            "Used News kayit formundaki 'reason' chip secenekleri. "
+            "Liste seklinde JSON: [{value, label}]. Aurora UsedNewsCreate sayfasi "
+            "bu listeyi useEffectiveSetting ile cekip render eder."
+        ),
+        "module_scope": None,
+        "env_var": "",
+        "builtin_default": [
+            {"value": "published", "label": "yayinlandi"},
+            {"value": "planned", "label": "planlandi"},
+            {"value": "archived", "label": "arsivlendi"},
+        ],
+        "user_override_allowed": False,
+        "visible_to_user": False,
+        "read_only_for_user": True,
+        "wired_to": "AuroraUsedNewsCreatePage REASON_OPTIONS chip selector",
     },
 }
 
@@ -2881,9 +2493,10 @@ GROUP_LABELS: Dict[str, str] = {
     "system": "Sistem",
     "automation": "Otomasyon",
     "channels": "Kanallar",
+    "used_news": "Kullanilmis Haberler",
 }
 
-GROUP_ORDER = ["credentials", "providers", "execution", "source_scans", "publish", "ui", "jobs", "automation", "wizard", "standard_video", "news_bulletin", "product_review", "modules", "system"]
+GROUP_ORDER = ["credentials", "providers", "execution", "source_scans", "publish", "ui", "jobs", "automation", "wizard", "standard_video", "news_bulletin", "product_review", "used_news", "modules", "system"]
 
 
 # ---------------------------------------------------------------------------
@@ -2918,7 +2531,6 @@ KNOWN_VALIDATION_RULES: Dict[str, str] = {
     "news_bulletin.config.default_duration_seconds": '{"type": "integer", "min": 30, "max": 600}',
     "news_bulletin.config.max_items_per_bulletin": '{"type": "integer", "min": 1, "max": 50}',
     "news_bulletin.config.narration_word_limit_per_item": '{"type": "integer", "min": 20, "max": 200}',
-    "news_bulletin.config.render_fps": '{"type": "integer", "min": 15, "max": 60}',
     # M30
     "news_bulletin.config.default_subtitle_style": '{"type": "string", "required": false}',
     "news_bulletin.config.default_lower_third_style": '{"type": "string", "required": false}',
@@ -2953,24 +2565,12 @@ KNOWN_VALIDATION_RULES: Dict[str, str] = {
     "standard_video.config.image_transition": '{"type": "string", "enum": ["crossfade", "cut", "slide", "zoom"]}',
     "standard_video.config.watermark_opacity": '{"type": "float", "min": 0.0, "max": 1.0}',
     "standard_video.config.watermark_position": '{"type": "string", "enum": ["top-left", "top-right", "bottom-left", "bottom-right"]}',
-    # Product Review (Faz A)
+    # Product Review
     "product_review.scrape.timeout_seconds": '{"type": "integer", "min": 3, "max": 120}',
     "product_review.scrape.max_body_bytes": '{"type": "integer", "min": 10000, "max": 50000000}',
     "product_review.scrape.min_interval_seconds_per_host": '{"type": "integer", "min": 1, "max": 300}',
-    "product_review.scrape.parser_chain_order": '{"type": "string", "required": true}',
-    "product_review.scrape.min_confidence_for_full_auto": '{"type": "float", "min": 0.0, "max": 1.0}',
-    "product_review.sites.allowlist": '{"type": "string", "required": true}',
-    "product_review.config.default_language": '{"type": "string", "required": true}',
-    "product_review.config.default_orientation": '{"type": "string", "enum": ["vertical", "horizontal"]}',
-    "product_review.config.default_duration_seconds": '{"type": "integer", "min": 30, "max": 600}',
-    "product_review.config.render_fps": '{"type": "integer", "min": 15, "max": 60}',
-    "product_review.preview.mini_seconds": '{"type": "integer", "min": 1, "max": 15}',
     "product_review.legal.affiliate_disclosure_text": '{"type": "string", "required": true, "min_length": 10}',
     "product_review.legal.price_disclaimer_text": '{"type": "string", "required": true, "min_length": 10}',
-    "product_review.prompt.single_script_system": '{"type": "string", "required": true, "min_length": 10}',
-    "product_review.prompt.comparison_script_system": '{"type": "string", "required": true, "min_length": 10}',
-    "product_review.prompt.alternatives_script_system": '{"type": "string", "required": true, "min_length": 10}',
-    "product_review.prompt.metadata_system": '{"type": "string", "required": true, "min_length": 10}',
 }
 
 
@@ -3141,7 +2741,9 @@ async def explain(key: str, db: AsyncSession, user_id: Optional[str] = None) -> 
         "label": meta.get("label", key),
         "help_text": meta.get("help_text", ""),
         "module_scope": meta.get("module_scope"),
-        "wired": meta.get("wired", False),
+        # `wired` her ayar icin daimi True (registry kontrati: kayitsiz ayar yok).
+        # Geriye donuk uyumluluk icin alan korunur, sabittir.
+        "wired": True,
         "wired_to": meta.get("wired_to", ""),
         "builtin_default": meta.get("builtin_default"),
         "env_var": meta.get("env_var", ""),
@@ -3172,12 +2774,14 @@ async def list_effective(db: AsyncSession, group: Optional[str] = None,
     """Tum bilinen ayarlar icin explain listesi doner.
 
     M40: user_id verilirse user override katmani eklenir.
+
+    `wired_only` parametresi geriye donuk uyumluluk icin korunur ancak
+    artik no-op'tur — registry'deki her ayar wired (kayitsiz ayar yok).
     """
+    del wired_only  # noqa: F841 — backwards-compat parameter, no filtering needed
     items = []
     for key, meta in KNOWN_SETTINGS.items():
         if group and meta.get("group") != group:
-            continue
-        if wired_only and not meta.get("wired", False):
             continue
         explanation = await explain(key, db, user_id=user_id)
         items.append(explanation)
@@ -3193,8 +2797,8 @@ async def list_groups(db: AsyncSession) -> List[Dict[str, Any]]:
             groups[g] = {"group": g, "label": GROUP_LABELS.get(g, g),
                          "total": 0, "wired": 0, "secret": 0, "missing": 0}
         groups[g]["total"] += 1
-        if meta.get("wired"):
-            groups[g]["wired"] += 1
+        # Registry kontrati: kayitsiz ayar yok — wired her satir icin True.
+        groups[g]["wired"] += 1
         if meta.get("type") == "secret":
             groups[g]["secret"] += 1
 

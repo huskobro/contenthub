@@ -1,0 +1,125 @@
+/* Aurora Prompts — port of prompts.html <style> with [data-surface] scope */
+
+[data-surface="aurora"] .prompt-card {
+  padding: 16px 18px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: 10px; cursor: pointer;
+  transition: border-color var(--motion-duration-fast), box-shadow var(--motion-duration-fast), transform var(--motion-duration-fast);
+  display: flex; flex-direction: column;
+}
+[data-surface="aurora"] .prompt-card:hover {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px rgba(79,104,247,0.10);
+  transform: translateY(-1px);
+}
+[data-surface="aurora"] .prompt-card .p-name {
+  font-size: 13px; font-weight: 600;
+  color: var(--text-primary); margin-bottom: 4px;
+}
+[data-surface="aurora"] .prompt-card .p-desc {
+  font-size: 11px; color: var(--text-muted);
+  margin-bottom: 10px; line-height: 1.5;
+}
+[data-surface="aurora"] .prompt-card .p-preview {
+  font-family: var(--font-mono); font-size: 11px;
+  color: var(--text-secondary);
+  background: var(--bg-inset); border-radius: 6px;
+  padding: 8px 10px; line-height: 1.6;
+  border: 1px solid var(--border-subtle);
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+[data-surface="aurora"] .prompt-card .p-meta {
+  display: flex; align-items: center; gap: 8px;
+  margin-top: 10px; flex-wrap: wrap;
+}
+[data-surface="aurora"] .prompt-card .p-key {
+  font-family: var(--font-mono); font-size: 10px;
+  color: var(--text-muted);
+}
+[data-surface="aurora"] .prompt-card .p-chip {
+  display: inline-block;
+  font-family: var(--font-mono); font-size: 10px;
+  padding: 2px 6px; border-radius: 4px;
+  background: rgba(79,104,247,0.15);
+  color: var(--accent-primary-hover);
+  border: 1px solid rgba(79,104,247,0.3);
+  letter-spacing: 0.04em;
+}
+
+[data-surface="aurora"] .prompt-editor {
+  width: 100%; min-height: 280px;
+  padding: 12px;
+  background: var(--bg-inset);
+  border: 1px solid var(--border-default);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-family: var(--font-mono); font-size: 12px; line-height: 1.7;
+  resize: vertical; outline: none;
+  transition: border-color var(--motion-duration-fast);
+  box-sizing: border-box;
+}
+[data-surface="aurora"] .prompt-editor:focus { border-color: var(--accent-primary); }
+[data-surface="aurora"] .prompt-editor:disabled {
+  opacity: 0.7; cursor: not-allowed;
+}
+
+[data-surface="aurora"] .prompt-back-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 10px; border-radius: 6px;
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  font-size: 11px; font-family: inherit; cursor: pointer;
+  transition: color var(--motion-duration-ultra-fast), border-color var(--motion-duration-ultra-fast);
+}
+[data-surface="aurora"] .prompt-back-btn:hover {
+  color: var(--text-primary);
+  border-color: var(--border-default);
+}
+
+[data-surface="aurora"] .prompt-save-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 14px; border-radius: 7px;
+  background: var(--accent-primary);
+  border: 1px solid var(--accent-primary);
+  color: white;
+  font-size: 12px; font-weight: 500; font-family: inherit;
+  cursor: pointer; transition: background var(--motion-duration-ultra-fast);
+}
+[data-surface="aurora"] .prompt-save-btn:hover { background: var(--accent-primary-hover); }
+[data-surface="aurora"] .prompt-save-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+[data-surface="aurora"] .aurora-prompts {
+  display: grid; grid-template-columns: 1fr 340px;
+  gap: 18px; align-items: start; min-height: 100%;
+}
+[data-surface="aurora"] .aurora-prompts .aurora-inspector-slot { position: sticky; top: 4px; }
+[data-surface="aurora"] .aurora-prompts .page { min-width: 0; }
+[data-surface="aurora"] .aurora-prompts .page-head {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  padding: 4px 0 6px; margin-bottom: 14px;
+}
+[data-surface="aurora"] .aurora-prompts .page-head h1 {
+  font-family: var(--font-serif, var(--font-sans));
+  font-size: 22px; font-weight: 600;
+  color: var(--text-primary); margin: 0 0 4px;
+}
+[data-surface="aurora"] .aurora-prompts .page-head .sub { font-size: 12px; color: var(--text-muted); }
+
+[data-surface="aurora"] .prompt-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+@media (max-width: 1200px) {
+  [data-surface="aurora"] .aurora-prompts { grid-template-columns: 1fr; }
+  [data-surface="aurora"] .aurora-prompts .aurora-inspector-slot { position: static; }
+}
+@media (max-width: 720px) {
+  [data-surface="aurora"] .prompt-grid { grid-template-columns: 1fr; }
+}

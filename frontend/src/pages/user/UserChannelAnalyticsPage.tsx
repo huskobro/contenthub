@@ -22,6 +22,7 @@ import {
 } from "../../components/design-system/primitives";
 import { UserAnalyticsTabBar } from "../../components/analytics/AnalyticsTabBar";
 import type { AnalyticsWindow, AnalyticsFilterParams } from "../../api/analyticsApi";
+import { useSurfacePageOverride } from "../../surfaces";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -57,6 +58,12 @@ function formatDate(d: string): string {
 // ---------------------------------------------------------------------------
 
 export function UserChannelAnalyticsPage() {
+  const Override = useSurfacePageOverride("user.analytics.channels");
+  if (Override) return <Override />;
+  return <LegacyUserChannelAnalyticsPage />;
+}
+
+function LegacyUserChannelAnalyticsPage() {
   const [selectedChannel, setSelectedChannel] = useState("");
   const [window, setWindow] = useState<AnalyticsWindow>("last_30d");
 

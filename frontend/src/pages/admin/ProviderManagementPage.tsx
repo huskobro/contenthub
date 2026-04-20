@@ -18,6 +18,7 @@ import {
 } from "../../api/providersApi";
 import { PageShell, SectionShell } from "../../components/design-system/primitives";
 import { useToast } from "../../hooks/useToast";
+import { useSurfacePageOverride } from "../../surfaces";
 
 // ---------------------------------------------------------------------------
 // Sabitler
@@ -187,7 +188,24 @@ function ProviderCard({
 
 type TestStatusMap = Record<string, "idle" | "loading" | "ok" | "error">;
 
+// ---------------------------------------------------------------------------
+// Surface trampoline — Aurora override gate
+// ---------------------------------------------------------------------------
+//
+// Aktif surface Aurora ise `admin.providers` page-key altına kayıtlı
+// AuroraProvidersPage render edilir (sekmeli kart UI + inspector).
+// Diğer surface'ler (legacy/horizon/canvas/atrium/bridge) eski
+// LegacyProviderManagementPage'i görmeye devam eder. Override register
+// edilmediği sürece (register.tsx'te AURORA_PAGE_OVERRIDES.admin.providers)
+// hook null döner ve fallback otomatik çalışır — fail-safe.
+
 export function ProviderManagementPage() {
+  const Override = useSurfacePageOverride("admin.providers");
+  if (Override) return <Override />;
+  return <LegacyProviderManagementPage />;
+}
+
+function LegacyProviderManagementPage() {
   const toast = useToast();
   const queryClient = useQueryClient();
   const [testStatuses, setTestStatuses] = useState<TestStatusMap>({});

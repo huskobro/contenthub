@@ -16,9 +16,11 @@ Faz A'nin proof testleri:
   D) Composition map: 'product_review' → 'ProductReview', preview + mini
      kayitli ve get_composition_id bilinmeyen modul icin ValueError.
 
-  E) KNOWN_SETTINGS: 23 'product_review.*' anahtar var, hepsi module_scope=
-     'product_review', group='product_review'. GROUP_LABELS + GROUP_ORDER'da
-     'product_review' var.
+  E) KNOWN_SETTINGS: 8 'product_review.*' anahtar var (M10 registry
+     sadelestirmesinde 15 kayitsiz stub kaldirildi — kalan 8 ayar gercekten
+     product_review pipeline'inda okunuyor: 4 scrape + 3 legal + 1 full_auto).
+     Hepsi module_scope='product_review', group='product_review'.
+     GROUP_LABELS + GROUP_ORDER'da 'product_review' var.
 
   F) Settings seed: seed_known_settings() product_review ayarlarini DB'ye
      yazar; idempotent (ikinci kez cagrildiginda yeni kayit acmaz).
@@ -217,14 +219,22 @@ def test_composition_map_rejects_unknown_module():
 # ---------------------------------------------------------------------------
 
 
-def test_known_settings_has_23_product_review_entries():
+def test_known_settings_has_wired_product_review_entries():
+    """
+    Registry kontrati: kayitsiz ayar yok. M10 sadelestirmesi sonrasi
+    product_review.* anahtarlarinin tamami pipeline icinde okunuyor (8 ayar:
+    4 scrape + 3 legal + 1 full_auto). Hepsi module_scope='product_review',
+    group='product_review'.
+    """
     pr_keys = [k for k in KNOWN_SETTINGS if k.startswith("product_review.")]
-    assert len(pr_keys) == 23, f"expected 23 product_review settings, got {len(pr_keys)}: {pr_keys}"
+    assert len(pr_keys) == 8, f"expected 8 wired product_review settings, got {len(pr_keys)}: {pr_keys}"
     # Hepsi module_scope='product_review', group='product_review'
     for k in pr_keys:
         s = KNOWN_SETTINGS[k]
         assert s["module_scope"] == "product_review", f"{k} module_scope: {s['module_scope']!r}"
         assert s["group"] == "product_review", f"{k} group: {s['group']!r}"
+        # wired_to izi olmali (registry kontrati)
+        assert s.get("wired_to"), f"{k} wired_to bos: registry kontrati ihlali"
 
 
 def test_product_review_in_group_labels_and_order():
@@ -296,8 +306,8 @@ async def test_settings_seed_creates_product_review_rows():
             .all()
         )
 
-    assert count_after >= 23, (
-        f"seed did not reach 23 product_review rows: before={count_before}, after={count_after}"
+    assert count_after >= 8, (
+        f"seed did not reach 8 product_review rows: before={count_before}, after={count_after}"
     )
 
 

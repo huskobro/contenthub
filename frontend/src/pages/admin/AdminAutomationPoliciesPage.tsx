@@ -13,6 +13,7 @@ import {
 import { SchedulerStatusCard } from "../../components/full-auto/SchedulerStatusCard";
 import { useActiveScope } from "../../hooks/useActiveScope";
 import { cn } from "../../lib/cn";
+import { useSurfacePageOverride } from "../../surfaces/SurfaceContext";
 
 const MODE_LABELS: Record<CheckpointMode, string> = {
   disabled: "Devre Disi",
@@ -34,7 +35,17 @@ const CHECKPOINTS = [
   { key: "post_publish_mode" as const, label: "Sonrasi" },
 ];
 
+/**
+ * Public entry point. Aurora surface override (admin.automation.policies)
+ * geçerliyse onu kullanır; aksi halde legacy yüzeye düşer.
+ */
 export function AdminAutomationPoliciesPage() {
+  const Override = useSurfacePageOverride("admin.automation.policies");
+  if (Override) return <Override />;
+  return <LegacyAdminAutomationPoliciesPage />;
+}
+
+function LegacyAdminAutomationPoliciesPage() {
   // Redesign REV-2 / P0.3a: Artik gercek scope tuketiyoruz. Admin "all"
   // modundayken backend bir filter uygulamaz (policy evreni admin erisimli);
   // admin "belirli bir kullanici" moduna gecerse fetch `owner_user_id`

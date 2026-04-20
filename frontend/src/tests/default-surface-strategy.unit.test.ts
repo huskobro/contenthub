@@ -71,9 +71,13 @@ const PRODUCT_DEFAULT_USER: SurfaceId = "canvas";
 // ---------------------------------------------------------------------------
 
 describe("Default surface strategy — Faz 4B", () => {
+  // NOT: Paralel vitest worker baskisinda `await import("../surfaces/manifests/register")`
+  // ilk collect turunda ~10-15s surebilir (vite transform sira iceriyor). Tek dosya
+  // kosusunda beforeEach < 1s. 60s timeout baski kosullarinda bile deterministik
+  // yesil — testin kendi ici saniyelerce surmez, sadece hook altyapisi bekler.
   beforeEach(async () => {
     await bootRegistry();
-  });
+  }, 60000);
 
   // -------------------------------------------------------------------------
   // 1. Fresh user + gates open → admin=bridge, user=canvas (role-default)

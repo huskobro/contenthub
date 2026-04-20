@@ -32,6 +32,7 @@ import { UserAnalyticsTabBar } from "../../components/analytics/AnalyticsTabBar"
 import { TrendChart } from "../../components/shared/charts/TrendChart";
 import { YouTubeVideoManagementSheet } from "../../components/youtube/YouTubeVideoManagementSheet";
 import { cn } from "../../lib/cn";
+import { useSurfacePageOverride } from "../../surfaces";
 
 // ---------------------------------------------------------------------------
 // Constants & label maps
@@ -362,6 +363,12 @@ function ShareBar({ value, max, color }: ShareBarProps) {
 // ---------------------------------------------------------------------------
 
 export function UserYouTubeAnalyticsPage() {
+  const Override = useSurfacePageOverride("user.analytics.youtube");
+  if (Override) return <Override />;
+  return <LegacyUserYouTubeAnalyticsPage />;
+}
+
+function LegacyUserYouTubeAnalyticsPage() {
   const [windowDays, setWindowDays] = useState<number>(28);
   const [selectedConnectionId, setSelectedConnectionId] = useState<string>("");
   const [activeMetric, setActiveMetric] = useState<MetricKey>("views");

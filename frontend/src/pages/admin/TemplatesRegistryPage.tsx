@@ -7,8 +7,19 @@ import { ReadOnlyGuard } from "../../components/visibility/ReadOnlyGuard";
 import { Sheet } from "../../components/design-system/Sheet";
 import { PageShell, SectionShell, ActionButton } from "../../components/design-system/primitives";
 import { useScopedKeyboardNavigation } from "../../hooks/useScopedKeyboardNavigation";
+import { useSurfacePageOverride } from "../../surfaces/SurfaceContext";
 
+/**
+ * Public entry point. Aurora surface override (admin.templates.registry)
+ * geçerliyse onu kullanır; aksi halde legacy yüzeye düşer.
+ */
 export function TemplatesRegistryPage() {
+  const Override = useSurfacePageOverride("admin.templates.registry");
+  if (Override) return <Override />;
+  return <LegacyTemplatesRegistryPage />;
+}
+
+function LegacyTemplatesRegistryPage() {
   const location = useLocation();
   const initialSelected = (location.state as { selectedId?: string } | null)?.selectedId ?? null;
   const [selectedId, setSelectedId] = useState<string | null>(initialSelected);

@@ -180,12 +180,9 @@ describe("Library/Gallery/Content Management Pack (Phase 299-304)", () => {
       expect(note.textContent).toContain("Yayin");
     });
 
-    it.skip("user content entry has library crosslink", () => {
-      // `content-to-library-crosslink` testid was retired from
-      // UserContentEntryPage. Library navigation is now reached via
-      // the sidebar rather than an inline crosslink card.
+    it("user content entry no longer carries content-to-library-crosslink", () => {
       renderUser("/user/content");
-      expect(screen.getByTestId("content-to-library-crosslink")).toBeDefined();
+      expect(screen.queryByTestId("content-to-library-crosslink")).toBeNull();
     });
   });
 

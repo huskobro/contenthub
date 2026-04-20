@@ -1,16 +1,20 @@
 """
-Credential Resolver — M9-A.
+Credential Resolver.
 
-Credential degerleri icin DB -> .env oncelik zinciri cozumlemesi.
+Credential degerleri icin DB -> .env oncelik zinciri cozumlemesi + at-rest
+encryption. DB'ye yazılan her credential, SettingCipher ile AES şifrelenir
+(`enc:s1:` prefix'i). resolve sırasında şeffaf şekilde çözülür.
 
 Sorumluluklar:
-  - resolve_credential  : DB admin_value_json -> .env -> None
-  - get_credential_status : tek credential durum raporu
-  - save_credential     : upsert credential into settings table
+  - resolve_credential  : DB admin_value_json -> .env -> None (decrypt sonrası)
+  - get_credential_status : tek credential durum raporu (masked_value)
+  - save_credential     : upsert credential into settings table (encrypted)
   - list_credential_statuses : tum bilinen credential durumlari
 
 Credential'lar settings tablosunda group_name="credentials" ile saklanir.
-admin_value_json alani JSON string olarak deger tutar (ornek: '"sk-abc123"').
+admin_value_json alani JSON string olarak deger tutar; string içeriği
+SettingCipher'dan geçmiş ciphertext'tir (pre-hardening plaintext rows lazy
+migrate edilir — sonraki yazmada şifreli yazılır).
 """
 
 import json
@@ -22,6 +26,7 @@ from typing import Optional
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.crypto import get_setting_cipher, is_encrypted
 from app.db.models import Setting
 
 logger = logging.getLogger(__name__)
@@ -98,16 +103,28 @@ def _mask_value(value: str) -> str:
 
 
 def _parse_admin_value(raw: Optional[str]) -> Optional[str]:
-    """admin_value_json alanindan credential string'ini cikarir."""
+    """
+    admin_value_json alanindan credential string'ini cikarir. Şifreli değerler
+    (SettingCipher prefix'li) şeffaf çözülür. Legacy plaintext satırlar
+    olduğu gibi geçer — bir sonraki yazmada şifreli hale çevrilir.
+    """
     if raw is None or raw in ("", "null"):
         return None
     try:
         parsed = json.loads(raw)
     except (json.JSONDecodeError, TypeError):
         return None
-    if isinstance(parsed, str) and parsed.strip():
-        return parsed
-    return None
+    if not isinstance(parsed, str) or not parsed.strip():
+        return None
+
+    # Şeffaf decrypt — ciphertext ise çöz, plaintext ise olduğu gibi döndür.
+    try:
+        cipher = get_setting_cipher()
+        decrypted = cipher.decrypt(parsed)
+    except Exception as exc:  # pragma: no cover — log ve None döndür
+        logger.error("Credential decrypt hatası: %s", exc)
+        return None
+    return decrypted
 
 
 def _env_value(key: str) -> Optional[str]:
@@ -256,7 +273,11 @@ async def save_credential(key: str, value: str, db: AsyncSession) -> dict:
         )
 
     meta = CREDENTIAL_KEYS[key]
-    admin_json = json.dumps(value)  # '"sk-abc123"' seklinde JSON string
+
+    # At-rest encryption — SettingCipher plaintext'i `enc:s1:<payload>` haline getirir.
+    cipher = get_setting_cipher()
+    encrypted = cipher.encrypt(value)
+    admin_json = json.dumps(encrypted)  # '"enc:s1:..."' JSON string
 
     result = await db.execute(select(Setting).where(Setting.key == key))
     row = result.scalar_one_or_none()

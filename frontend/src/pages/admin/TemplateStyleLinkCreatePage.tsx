@@ -3,8 +3,19 @@ import { useCreateTemplateStyleLink } from "../../hooks/useCreateTemplateStyleLi
 import { TemplateStyleLinkForm } from "../../components/template-style-links/TemplateStyleLinkForm";
 import type { TemplateStyleLinkFormValues } from "../../components/template-style-links/TemplateStyleLinkForm";
 import { useToast } from "../../hooks/useToast";
+import { useSurfacePageOverride } from "../../surfaces/SurfaceContext";
 
+/**
+ * Public entry — Aurora `admin.template-style-links.create` override varsa
+ * onu kullan; yoksa legacy form sayfası.
+ */
 export function TemplateStyleLinkCreatePage() {
+  const Override = useSurfacePageOverride("admin.template-style-links.create");
+  if (Override) return <Override />;
+  return <LegacyTemplateStyleLinkCreatePage />;
+}
+
+function LegacyTemplateStyleLinkCreatePage() {
   const navigate = useNavigate();
   const toast = useToast();
   const { mutate, isPending, error } = useCreateTemplateStyleLink();

@@ -3,8 +3,20 @@ import { useCreateNewsBulletin } from "../../hooks/useCreateNewsBulletin";
 import { NewsBulletinForm } from "../../components/news-bulletin/NewsBulletinForm";
 import type { NewsBulletinFormValues } from "../../components/news-bulletin/NewsBulletinForm";
 import { useToast } from "../../hooks/useToast";
+import { useSurfacePageOverride } from "../../surfaces/SurfaceContext";
 
+/**
+ * Public entry point. Aurora surface override (admin.news-bulletins.create)
+ * varsa onu kullanır; aksi halde legacy yüzeye düşer. (Register.tsx bu PR'da
+ * dokunulmaz — Aurora sayfası kayıt aşamasında otomatik devreye girer.)
+ */
 export function NewsBulletinCreatePage() {
+  const Override = useSurfacePageOverride("admin.news-bulletins.create");
+  if (Override) return <Override />;
+  return <LegacyNewsBulletinCreatePage />;
+}
+
+function LegacyNewsBulletinCreatePage() {
   const navigate = useNavigate();
   const toast = useToast();
   const mutation = useCreateNewsBulletin();

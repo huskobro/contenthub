@@ -24,6 +24,7 @@ import { BulkActionBar } from "../../components/design-system/BulkActionBar";
 import { ColumnSelector } from "../../components/design-system/ColumnSelector";
 import { cn } from "../../lib/cn";
 import { formatDateShort } from "../../lib/formatDate";
+import { useSurfacePageOverride } from "../../surfaces";
 
 const ENTITY_LABELS: Record<string, string> = {
   publish_record: "Yayin Kaydi",
@@ -85,6 +86,14 @@ const AUDIT_COLUMNS = [
 ];
 
 export function AuditLogPage() {
+  // Faz 6 P0-8 — Aurora override gate. Aktif surface Aurora ise sade audit
+  // feed render edilir; diğer surface'ler tam tablo + sheet'i görür.
+  const Override = useSurfacePageOverride("admin.audit");
+  if (Override) return <Override />;
+  return <LegacyAuditLogPage />;
+}
+
+function LegacyAuditLogPage() {
   const [actionFilter, setActionFilter] = useState("");
   const [entityTypeFilter, setEntityTypeFilter] = useState("");
   const [dateFrom, setDateFrom] = useState("");

@@ -14,6 +14,13 @@ import { UserContentEntryPage } from "../pages/UserContentEntryPage";
 // Lazy-loaded user publish page (Faz 11)
 const UserPublishPage = lazy(() => import("../pages/user/UserPublishPage").then(m => ({ default: m.UserPublishPage })));
 import { LoginPage } from "../pages/LoginPage";
+import { ForgotPasswordPage } from "../pages/ForgotPasswordPage";
+// 2FA route removed in final product pass — backend 2FA is not implemented
+// and the sayfa did not perform real verification. When 2FA lands, re-add the
+// /2fa route together with the backend endpoint and enable flag on User.
+import { SessionExpiredPage } from "../pages/SessionExpiredPage";
+import { WorkspaceSwitchPage } from "../pages/WorkspaceSwitchPage";
+import { InternalErrorPage } from "../pages/InternalErrorPage";
 import { SettingsRegistryPage } from "../pages/admin/SettingsRegistryPage";
 import { VisibilityRegistryPage } from "../pages/admin/VisibilityRegistryPage";
 import { JobsRegistryPage } from "../pages/admin/JobsRegistryPage";
@@ -24,6 +31,7 @@ import { TemplateCreatePage } from "../pages/admin/TemplateCreatePage";
 import { StyleBlueprintsRegistryPage } from "../pages/admin/StyleBlueprintsRegistryPage";
 import { StyleBlueprintCreatePage } from "../pages/admin/StyleBlueprintCreatePage";
 import { SourcesRegistryPage } from "../pages/admin/SourcesRegistryPage";
+import { SourceDetailPage } from "../pages/admin/SourceDetailPage";
 import { SourceCreatePage } from "../pages/admin/SourceCreatePage";
 import { SourceScansRegistryPage } from "../pages/admin/SourceScansRegistryPage";
 import { SourceScanCreatePage } from "../pages/admin/SourceScanCreatePage";
@@ -33,6 +41,7 @@ import { UsedNewsRegistryPage } from "../pages/admin/UsedNewsRegistryPage";
 import { UsedNewsCreatePage } from "../pages/admin/UsedNewsCreatePage";
 import { NewsItemsRegistryPage } from "../pages/admin/NewsItemsRegistryPage";
 import { NewsItemCreatePage } from "../pages/admin/NewsItemCreatePage";
+import { NewsItemDetailPage } from "../pages/admin/NewsItemDetailPage";
 import { TemplateStyleLinksRegistryPage } from "../pages/admin/TemplateStyleLinksRegistryPage";
 import { TemplateStyleLinkCreatePage } from "../pages/admin/TemplateStyleLinkCreatePage";
 import { UserYouTubeCallbackPage } from "../pages/user/UserYouTubeCallbackPage";
@@ -40,6 +49,7 @@ import { VisibilityGuard } from "../components/visibility/VisibilityGuard";
 import { ModuleManagementPage } from "../pages/admin/ModuleManagementPage";
 import { ProviderManagementPage } from "../pages/admin/ProviderManagementPage";
 import { PromptEditorPage } from "../pages/admin/PromptEditorPage";
+import { WizardLauncherPage } from "../pages/admin/WizardLauncherPage";
 import { UsersRegistryPage } from "../pages/admin/UsersRegistryPage";
 import { UserSettingsDetailPage } from "../pages/admin/UserSettingsDetailPage";
 import { UserSettingsPage } from "../pages/UserSettingsPage";
@@ -127,6 +137,26 @@ export const router = createBrowserRouter([
     errorElement: <RootErrorBoundary />,
   },
   {
+    path: "/forgot-password",
+    element: <ForgotPasswordPage />,
+    errorElement: <RootErrorBoundary />,
+  },
+  {
+    path: "/session-expired",
+    element: <SessionExpiredPage />,
+    errorElement: <RootErrorBoundary />,
+  },
+  {
+    path: "/workspace-switch",
+    element: <WorkspaceSwitchPage />,
+    errorElement: <RootErrorBoundary />,
+  },
+  {
+    path: "/error",
+    element: <InternalErrorPage />,
+    errorElement: <RootErrorBoundary />,
+  },
+  {
     path: "/admin",
     element: <AuthGuard requiredRole="admin" />,
     errorElement: <RootErrorBoundary />,
@@ -150,6 +180,7 @@ export const router = createBrowserRouter([
       { path: "style-blueprints", element: <StyleBlueprintsRegistryPage /> },
       { path: "sources/new", element: <VisibilityGuard targetKey="panel:sources"><SourceCreatePage /></VisibilityGuard> },
       { path: "sources", element: <VisibilityGuard targetKey="panel:sources"><SourcesRegistryPage /></VisibilityGuard> },
+      { path: "sources/:id", element: <VisibilityGuard targetKey="panel:sources"><SourceDetailPage /></VisibilityGuard> },
       { path: "source-scans/new", element: <SourceScanCreatePage /> },
       { path: "source-scans", element: <SourceScansRegistryPage /> },
       { path: "news-bulletins/new", element: <NewsBulletinCreatePage /> },
@@ -159,6 +190,7 @@ export const router = createBrowserRouter([
       { path: "used-news/new", element: <UsedNewsCreatePage /> },
       { path: "used-news", element: <UsedNewsRegistryPage /> },
       { path: "news-items/new", element: <NewsItemCreatePage /> },
+      { path: "news-items/:id", element: <VisibilityGuard targetKey="panel:news-items"><NewsItemDetailPage /></VisibilityGuard> },
       { path: "news-items", element: <NewsItemsRegistryPage /> },
       { path: "template-style-links/new", element: <TemplateStyleLinkCreatePage /> },
       { path: "template-style-links", element: <TemplateStyleLinksRegistryPage /> },
@@ -186,6 +218,7 @@ export const router = createBrowserRouter([
       { path: "modules", element: <VisibilityGuard targetKey="panel:settings"><ModuleManagementPage /></VisibilityGuard> },
       { path: "providers", element: <VisibilityGuard targetKey="panel:settings"><ProviderManagementPage /></VisibilityGuard> },
       { path: "prompts", element: <VisibilityGuard targetKey="panel:settings"><PromptEditorPage /></VisibilityGuard> },
+      { path: "wizard", element: <WizardLauncherPage /> },
       { path: "users", element: <UsersRegistryPage /> },
       { path: "users/:userId/settings", element: <UserSettingsDetailPage /> },
     ]}],

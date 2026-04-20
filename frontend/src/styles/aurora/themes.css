@@ -1,0 +1,86 @@
+/* Aurora Themes — port of themes.html <style> with [data-surface] scope */
+
+[data-surface="aurora"] .theme-card {
+  border-radius: 12px; overflow: hidden;
+  border: 1px solid var(--border-default);
+  cursor: pointer;
+  transition: border-color var(--motion-duration-fast), box-shadow var(--motion-duration-fast), transform var(--motion-duration-fast);
+  position: relative;
+  background: var(--bg-surface);
+}
+[data-surface="aurora"] .theme-card:hover {
+  border-color: var(--border-strong);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  transform: translateY(-1px);
+}
+[data-surface="aurora"] .theme-card.active {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px rgba(79,104,247,0.15);
+}
+[data-surface="aurora"] .theme-preview {
+  height: 140px; position: relative;
+  display: flex; flex-direction: column;
+}
+[data-surface="aurora"] .theme-preview .tp-bar {
+  height: 28px; display: flex; align-items: center;
+  padding: 0 10px; gap: 6px;
+}
+[data-surface="aurora"] .theme-preview .tp-dot { width: 8px; height: 8px; border-radius: 50%; }
+[data-surface="aurora"] .theme-preview .tp-body { flex: 1; padding: 8px 10px; display: flex; gap: 6px; }
+[data-surface="aurora"] .theme-preview .tp-rail { width: 20px; border-radius: 3px; }
+[data-surface="aurora"] .theme-preview .tp-content { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+[data-surface="aurora"] .theme-preview .tp-card {
+  border-radius: 4px; padding: 6px;
+  display: flex; flex-direction: column; gap: 3px;
+}
+[data-surface="aurora"] .theme-preview .tp-line { height: 2px; border-radius: 1px; }
+
+[data-surface="aurora"] .theme-info {
+  padding: 12px 14px;
+  border-top: 1px solid var(--border-default);
+}
+[data-surface="aurora"] .theme-info .t-name { font-size: 13px; font-weight: 600; margin-bottom: 3px; color: var(--text-primary); }
+[data-surface="aurora"] .theme-info .t-desc { font-size: 11px; color: var(--text-muted); }
+[data-surface="aurora"] .theme-info .t-meta {
+  display: flex; align-items: center; gap: 8px; margin-top: 8px;
+}
+[data-surface="aurora"] .active-badge {
+  position: absolute; top: 10px; right: 10px;
+  background: var(--accent-primary);
+  color: white;
+  font-family: var(--font-mono); font-size: 9px; font-weight: 600;
+  padding: 2px 8px; border-radius: 4px; letter-spacing: 0.06em;
+  z-index: var(--z-content-raised);
+}
+
+[data-surface="aurora"] .aurora-themes {
+  display: grid; grid-template-columns: 1fr 340px;
+  gap: 18px; align-items: start; min-height: 100%;
+}
+[data-surface="aurora"] .aurora-themes .aurora-inspector-slot { position: sticky; top: 4px; }
+[data-surface="aurora"] .aurora-themes .page { min-width: 0; }
+[data-surface="aurora"] .aurora-themes .page-head {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  padding: 4px 0 6px; margin-bottom: 14px;
+}
+[data-surface="aurora"] .aurora-themes .page-head h1 {
+  font-family: var(--font-serif, var(--font-sans));
+  font-size: 22px; font-weight: 600;
+  color: var(--text-primary); margin: 0 0 4px;
+}
+[data-surface="aurora"] .aurora-themes .page-head .sub { font-size: 12px; color: var(--text-muted); }
+
+[data-surface="aurora"] .aurora-themes .grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+@media (max-width: 1200px) {
+  [data-surface="aurora"] .aurora-themes { grid-template-columns: 1fr; }
+  [data-surface="aurora"] .aurora-themes .aurora-inspector-slot { position: static; }
+  [data-surface="aurora"] .aurora-themes .grid-3 { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 720px) {
+  [data-surface="aurora"] .aurora-themes .grid-3 { grid-template-columns: 1fr; }
+}

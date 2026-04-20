@@ -210,30 +210,15 @@ describe("M14 Audit: CredentialsPanel read_only enforcement", () => {
     });
   });
 
-  it.skip("YouTube connect button is disabled when readOnly=true", async () => {
-    // YouTube OAuth flow was moved out of CredentialsPanel into
-    // per-channel settings (/user/channels/:id → "YouTube'a Bağlan").
-    // CredentialsPanel now only surfaces YouTubeChannelBrandingSection,
-    // so the global "YouTube Baglantisi Baslat" button no longer exists
-    // here. ReadOnly enforcement for the per-channel flow is covered by
-    // channel-specific tests.
-    renderInReadOnlyGuard(<CredentialsPanel />, true);
-
-    await waitFor(() => {
-      const btn = screen.getByText("YouTube Baglantisi Baslat");
-      expect(btn).toBeDefined();
-      expect((btn as HTMLButtonElement).disabled).toBe(true);
-    });
-  });
-
-  it.skip("YouTube connect button is enabled when readOnly=false", async () => {
-    // See skip note above — button ownership moved to per-channel flow.
+  it("CredentialsPanel no longer renders global YouTube connect button", async () => {
+    // YouTube OAuth was moved into per-channel settings
+    // (/user/channels/:id -> "YouTube'a Baglan"). CredentialsPanel only
+    // surfaces YouTubeChannelBrandingSection now.
     renderInReadOnlyGuard(<CredentialsPanel />, false);
-
     await waitFor(() => {
-      const btn = screen.getByText("YouTube Baglantisi Baslat");
-      expect(btn).toBeDefined();
-      expect((btn as HTMLButtonElement).disabled).toBe(false);
+      // CredentialsPanel renders synchronously; queryByText returns null
+      // for the legacy label.
+      expect(screen.queryByText("YouTube Baglantisi Baslat")).toBeNull();
     });
   });
 });

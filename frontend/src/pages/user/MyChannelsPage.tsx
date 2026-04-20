@@ -8,9 +8,9 @@
  * through to the legacy grid + form otherwise.
  */
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSurfacePageOverride } from "../../surfaces";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuthStore } from "../../stores/authStore";
 import {
   useChannelProfiles,
@@ -106,7 +106,17 @@ function LegacyMyChannelsPage() {
     deleteMutation.mutate(channelId);
   }
 
-  const [showCreate, setShowCreate] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [showCreate, setShowCreate] = useState(searchParams.get("create") === "1");
+  // ?create=1 query → otomatik kanal ekle paneli aç (Aurora "Kanal ekle" CTA için).
+  useEffect(() => {
+    if (searchParams.get("create") === "1") {
+      setShowCreate(true);
+      const next = new URLSearchParams(searchParams);
+      next.delete("create");
+      setSearchParams(next, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
   // PHASE AE: URL-only mode is the default; advanced mode is hidden behind a
   // disclosure link to keep the primary flow one-decision simple.
   const [createMode, setCreateMode] = useState<"url" | "advanced">("url");

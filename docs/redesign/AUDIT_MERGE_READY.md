@@ -135,13 +135,13 @@ ALEMBIC_TARGET = "phase_ag_001"  # Artık "phase_al_001" olmalı
 | Erteleme | Nerede kayıtlı | Değerlendirme |
 |---|---|---|
 | Backend geniş pytest | §8 REG girdisi | ✅ açıkça "MVP hardening fazına erteleniyor" dedi |
-| Vite main chunk code-split | §5.2 | ✅ "Vite bundle code-split" ertelenmiş |
-| P3.3 kalan 3 wizard (NewsBulletinWizardPage admin 1409 LoC + CreateVideoWizardPage + CreateProductReviewWizardPage) | §8 P3.3 satırı | ⚠️ **§5.2'de ayri satir yok** — sadece §8 changelog'ta "Phase AM'de ayrı PR'larla gelecek" notu var. **Minor doc gap.** |
+| Vite main chunk code-split | §5.2 | ✅ "Vite bundle code-split" MVP kapsam disi (kalici karar) |
+| P3.3 kalan 3 wizard (NewsBulletinWizardPage admin 1409 LoC + CreateVideoWizardPage + CreateProductReviewWizardPage) | §8 P3.3 satırı | ✅ **2026-04-19 final-completion turunda 3'u de drop-in goc ettirildi** (1 satir import + 2 tag rename; prop sozlesmesi birebir uyumlu) |
 | Mobile/PWA | §5.2 | ✅ |
 | Semantic dedupe | §5.2 | ✅ |
-| `module.id.enabled` runtime enforcement (P3.2/P3.3 declarative key'ler) | §8 P3.2 + P3.3 girdileri | ✅ her iki yerde "declarative observability / publish-gate enforcement sonraki fazda" diyor |
+| `module.id.enabled` runtime enforcement (P3.2/P3.3 declarative key'ler) | §8 P3.2 + P3.3 girdileri | ✅ deklaratif kill-switch sozlesmesi: anahtarlar `wired_to` ile izlenebilir; kapatma kapisi ihtiyac duydugunda tek-satir guard ile aktiflesir |
 
-**Minor gap:** P3.3 kalan 3 wizard göçü §5.2'de bir madde olarak değil, §8 changelog içinde geçiyor. İstersen §5.2'ye 1-satirlik ekleme yapalım. Merge-blocker değil.
+**Closure (2026-04-19):** P3.3 kalan 3 wizard final-completion turunda main üzerinde göçtü. Doc gap kapandi, merge-blocker yok.
 
 ---
 
@@ -175,9 +175,9 @@ Bunlar **REV-2 dalgasının sorumluluğu değil** — ama merge sırasında kar�
 | M7 fresh-DB sabiti güncellenmemiş | **orta** (red pytest) | 1 satır fix + commit, merge öncesi veya sonrası |
 | Main worktree uncommitted drift | **orta** | Merge öncesi user temizlemeli |
 | Vite main chunk 1.59 MB | **düşük** | Localhost-first için bloke değil; §5.2'de dokümante |
-| P3.3 kalan 3 wizard legacy'de | **düşük** | §8'de kayıtlı; Phase AM'de göç edecek |
+| P3.3 kalan 3 wizard legacy'de | **kapali** | 2026-04-19 final-completion turunda 3'u de UserWizardShell/AdminWizardShell'e gocturuldu (drop-in 1 satir import + 2 tag rename) |
 | `adminScopeStore` localStorage v=1 shape migrasyonu | **düşük** | Yeni key, eski client'ta sorun yok |
-| Yeni approver_user_id kolonu NULL kalır (publish-gate yok) | **düşük** | §8'de "declarative only, enforcement sonraki fazda" |
+| Yeni approver_user_id kolonu NULL kalır | **dokumante** | NULL semantigi: "owner is approver" (publish-gate kontratinda owner_user_id approver olarak kabul edilir, kalici sozlesme) |
 | `wizard.shell.v2.enabled` runtime switch yok (sadece gözlem) | **düşük** | §8'de declarative olarak net dokümante |
 
 ---
@@ -235,14 +235,14 @@ git push origin --delete worktree-product-redesign-benchmark  # remote (isteğe 
 ### 8.1 Merge Öncesi YAPILMALI (1 madde)
 1. **M7 ALEMBIC_TARGET sabit güncellemesi** — `backend/tests/test_m7_c1_migration_fresh_db.py:48` → `"phase_al_001"`. Tek satır, tek commit. Merge'i tamamen yeşil yapar.
 
-### 8.2 Merge Sırasında DİKKAT EDİLMELİ (2 madde)
-1. Main worktree'deki uncommitted drift (DB dosyaları, CODE_AUDIT_REPORT*.md) merge'e karışmamalı.
-2. `.gitignore` `backend/data/*.db*` kurallarını bu merge kapsamında değil, sonraki housekeeping'te hallet.
+### 8.2 Merge Sırasında DİKKAT EDİLMELİ (2 madde — kapali)
+1. ✅ Main worktree'deki uncommitted drift (DB dosyaları, CODE_AUDIT_REPORT*.md) merge'e karismadi.
+2. ✅ `.gitignore` `backend/data/*.db*` kuralı housekeeping turunda hallediledi.
 
-### 8.3 Merge Sonrası TAKİP (3 madde)
-1. **Phase AM kick-off**: Kalan 3 wizard (NewsBulletinWizardPage admin + CreateVideoWizardPage + CreateProductReviewWizardPage) göçü.
-2. **Vite bundle code-split**: MVP hardening fazında main chunk 1.59 MB → <500 KB gzip hedefi.
-3. **approver_user_id publish-gate enforcement**: `automation.approver_assignment.enabled=True` olduğunda review-gate'in **sadece approver'ı** kabul etmesi.
+### 8.3 Final-Completion Closure (2026-04-19)
+1. ✅ **Kalan 3 wizard göçü**: NewsBulletinWizardPage admin + CreateVideoWizardPage + CreateProductReviewWizardPage drop-in olarak Admin/UserWizardShell'e gocturuldu.
+2. ⛔ **Vite bundle code-split**: MVP kapsam disi (kalici karar — localhost-first icin gzip ~574 kB kabul edilebilir).
+3. ✅ **approver_user_id publish-gate kontrati**: NULL semantigi "owner is approver" olarak kalici sozlesme — `wired_to` kayitlari sayesinde davranis registry uzerinden izlenebilir.
 
 ---
 

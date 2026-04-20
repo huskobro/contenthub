@@ -3,8 +3,21 @@ import { useCreateNewsItem } from "../../hooks/useCreateNewsItem";
 import { NewsItemForm } from "../../components/news-items/NewsItemForm";
 import type { NewsItemFormValues } from "../../components/news-items/NewsItemForm";
 import { useToast } from "../../hooks/useToast";
+import { useSurfacePageOverride } from "../../surfaces/SurfaceContext";
 
+/**
+ * Public entry point. Aurora surface override (admin.news-items.create) varsa
+ * onu kullanır; aksi halde legacy yüzeye düşer. (Register.tsx bu PR'da
+ * dokunulmadığı için override şu an boş döner — sonraki kayıt aşamasında
+ * AuroraNewsItemCreatePage otomatik devreye girer.)
+ */
 export function NewsItemCreatePage() {
+  const Override = useSurfacePageOverride("admin.news-items.create");
+  if (Override) return <Override />;
+  return <LegacyNewsItemCreatePage />;
+}
+
+function LegacyNewsItemCreatePage() {
   const navigate = useNavigate();
   const toast = useToast();
   const { mutate, isPending, error } = useCreateNewsItem();

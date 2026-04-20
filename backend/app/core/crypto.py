@@ -1,19 +1,23 @@
 """
-Token encryption at rest — Publish Core Hardening Pack (Gate 1).
+Symmetric encryption at rest — merkezi cipher altyapısı.
 
-Provides transparent symmetric encryption for OAuth credentials (access_token,
-refresh_token, client_secret) stored in the PlatformCredential table.
+Sağladığı iki ayrı cipher:
+  1. TokenCipher  — OAuth tokens (prefix `enc:v1:`), PlatformCredential.
+  2. SettingCipher — Settings Registry secret değerleri (prefix `enc:s1:`).
+     API key'leri, provider credential'ları burada şifrelenir.
 
 Design:
   * Fernet (AES-128-CBC + HMAC-SHA256) via `cryptography` package.
-  * Prefix-based versioning: `enc:v1:` marks Fernet-encrypted payloads.
-  * Legacy rows (no prefix) are returned as plaintext — lazy migration.
-    The next token refresh re-writes them in encrypted form.
+  * Prefix-based versioning — hem şifreli/plaintext ayrımı hem de cipher
+    çeşidini ayırma sağlar. Yanlış cipher ile decrypt denenince doğru hata
+    yüzeyine çıkar.
+  * Legacy rows (no prefix) plaintext olarak geçer — lazy migration.
+    Bir sonraki yazma (refresh / user edit) şifreli form üretir.
   * Key source: `CONTENTHUB_ENCRYPTION_KEY` env var (via settings).
-    - If unset and `debug=True` → deterministic dev fallback + warning.
-    - If unset and `debug=False` → startup must fail fast (caller's job).
+    - Debug modda boşsa deterministik dev fallback + loud warning.
+    - Production'da boşsa startup fail-fast.
 
-Not intended for large blobs — tokens only.
+Küçük secret'lar için — büyük blob'lar için değil.
 """
 
 from __future__ import annotations
@@ -27,8 +31,17 @@ from cryptography.fernet import Fernet, InvalidToken
 
 logger = logging.getLogger(__name__)
 
-ENC_PREFIX = "enc:v1:"
+ENC_PREFIX = "enc:v1:"  # TokenCipher — OAuth tokens (backward-compat)
+SETTING_ENC_PREFIX = "enc:s1:"  # SettingCipher — Settings Registry secrets
 _DEV_FALLBACK_SEED = "contenthub-dev-encryption-fallback-not-for-production"
+
+# Tüm bilinen şifreleme prefix'leri — mask helper'ları için tek kaynak.
+ALL_ENC_PREFIXES = (ENC_PREFIX, SETTING_ENC_PREFIX)
+
+
+def is_encrypted(value: object) -> bool:
+    """Herhangi bir cipher prefix'i taşıyan string mi?"""
+    return isinstance(value, str) and value.startswith(ALL_ENC_PREFIXES)
 
 
 def _derive_fernet_key(raw_key: str) -> bytes:
@@ -96,41 +109,127 @@ class TokenCipher:
             ) from exc
 
 
+class SettingCipher:
+    """
+    Settings Registry secret değerleri için cipher.
+
+    TokenCipher ile aynı Fernet key'i kullanır ama prefix (`enc:s1:`) farklıdır.
+    Böylece:
+      - bir OAuth token'ı yanlışlıkla setting olarak decrypt edilemez
+      - prefix'ten hangi amaçla şifrelendiği anlaşılır
+      - legacy plaintext (prefix'siz) credential satırları lazy migrate edilir
+
+    save_credential / resolve_credential bu cipher üzerinden yazar/okur.
+    """
+
+    def __init__(self, key: str):
+        self._fernet = Fernet(_derive_fernet_key(key))
+
+    def encrypt(self, plaintext: Optional[str]) -> Optional[str]:
+        """Şifrele. None/empty → olduğu gibi döner. Zaten şifreliyse idempotent."""
+        if plaintext is None or plaintext == "":
+            return plaintext
+        if plaintext.startswith(SETTING_ENC_PREFIX):
+            return plaintext
+        if plaintext.startswith(ENC_PREFIX):
+            # Token cipher prefix'i — setting'e yanlış tipte değer geldi.
+            # Fail fast yerine kendi prefix'imizle yeniden sarmalarız ki
+            # decrypt tarafında doğru cipher seçilsin.
+            raise ValueError(
+                "TokenCipher prefix'li değer SettingCipher ile şifrelenemez — "
+                "yazmadan önce decrypt edin veya doğru cipher kullanın."
+            )
+        token = self._fernet.encrypt(plaintext.encode("utf-8")).decode("utf-8")
+        return f"{SETTING_ENC_PREFIX}{token}"
+
+    def decrypt(self, ciphertext: Optional[str]) -> Optional[str]:
+        """
+        Şifreyi çöz. Prefix yoksa legacy plaintext kabul edilir (lazy migration).
+        Yanlış cipher prefix'i (`enc:v1:`) gelirse ValueError.
+        """
+        if ciphertext is None or ciphertext == "":
+            return ciphertext
+        if not ciphertext.startswith(SETTING_ENC_PREFIX):
+            if ciphertext.startswith(ENC_PREFIX):
+                raise ValueError(
+                    "TokenCipher ciphertext'i SettingCipher ile decrypt edilemez."
+                )
+            # Prefix'siz → legacy plaintext (pre-hardening kayıt). Olduğu gibi geçer.
+            return ciphertext
+        payload = ciphertext[len(SETTING_ENC_PREFIX):]
+        try:
+            return self._fernet.decrypt(payload.encode("utf-8")).decode("utf-8")
+        except InvalidToken as exc:
+            raise ValueError(
+                "Setting decryption failed — encryption key mismatch veya veri bozuk."
+            ) from exc
+
+
 _singleton: Optional[TokenCipher] = None
+_setting_singleton: Optional[SettingCipher] = None
 
 
-def get_token_cipher() -> TokenCipher:
-    """
-    Return the process-wide TokenCipher singleton.
-
-    Reads `settings.encryption_key`. If empty, falls back to a deterministic
-    dev key (with a loud warning) when debug mode is on; otherwise raises.
-    """
-    global _singleton
-    if _singleton is not None:
-        return _singleton
+def _resolve_raw_key() -> str:
+    """Tek otorite: .env CONTENTHUB_ENCRYPTION_KEY → dev fallback/hata."""
     # Lazy import to avoid circular dependency at module load.
     from app.core.config import settings
 
     raw = (settings.encryption_key or "").strip()
-    if not raw:
-        if settings.debug:
-            logger.warning(
-                "CONTENTHUB_ENCRYPTION_KEY unset — using DEV fallback. "
-                "Do NOT use in production. Set the env var in .env."
-            )
-            raw = _DEV_FALLBACK_SEED
-        else:
-            raise RuntimeError(
-                "CONTENTHUB_ENCRYPTION_KEY is required in non-debug mode. "
-                "Generate one with: python -c 'from cryptography.fernet import Fernet; "
-                "print(Fernet.generate_key().decode())'"
-            )
-    _singleton = TokenCipher(raw)
+    if raw:
+        return raw
+    if settings.debug:
+        logger.warning(
+            "CONTENTHUB_ENCRYPTION_KEY unset — using DEV fallback. "
+            "Do NOT use in production. Set the env var in .env."
+        )
+        return _DEV_FALLBACK_SEED
+    raise RuntimeError(
+        "CONTENTHUB_ENCRYPTION_KEY is required in non-debug mode. "
+        "Generate one with: python -c 'from cryptography.fernet import Fernet; "
+        "print(Fernet.generate_key().decode())'"
+    )
+
+
+def get_setting_cipher() -> SettingCipher:
+    """Settings Registry secret'ları için process-wide SettingCipher singleton."""
+    global _setting_singleton
+    if _setting_singleton is not None:
+        return _setting_singleton
+    _setting_singleton = SettingCipher(_resolve_raw_key())
+    return _setting_singleton
+
+
+def get_token_cipher() -> TokenCipher:
+    """Process-wide TokenCipher singleton. Key resolution _resolve_raw_key'de."""
+    global _singleton
+    if _singleton is not None:
+        return _singleton
+    _singleton = TokenCipher(_resolve_raw_key())
     return _singleton
 
 
 def reset_token_cipher_for_tests() -> None:
-    """Test helper — drop the singleton so the next call re-reads settings."""
+    """Test helper — token cipher singleton'ını düşür."""
     global _singleton
     _singleton = None
+
+
+def reset_setting_cipher_for_tests() -> None:
+    """Test helper — setting cipher singleton'ını düşür."""
+    global _setting_singleton
+    _setting_singleton = None
+
+
+def mask_credential_value(value: Optional[str], keep_tail: int = 4) -> str:
+    """
+    Credential değerini son `keep_tail` karakter hariç maskeleyerek döner.
+    Şifreli (prefix'li) değer gelirse sabit bir sentinel döner — orijinal
+    maskelenmez çünkü ciphertext kendisi zaten bilgi vermez.
+    """
+    if value is None or value == "":
+        return ""
+    if is_encrypted(value):
+        return "\u25cf\u25cf\u25cf\u25cf (encrypted)"
+    if len(value) <= keep_tail:
+        return "\u25cf" * len(value)
+    return "\u25cf" * (len(value) - keep_tail) + value[-keep_tail:]

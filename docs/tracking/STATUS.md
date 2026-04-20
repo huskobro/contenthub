@@ -39,7 +39,7 @@
 | P1.3 | JWT access + refresh token, token refresh otomatik | Auth |
 | P2.1 | Ownership hardening F2.1–F2.3 (comments, posts, platform_connections...) | Ownership |
 | P2.2 | Effective Settings groupOrder sync (16 grup) | Settings |
-| P2.3 | DEFERRED_BACKLOG.md tracking dosyası | Docs |
+| P2.3 | Açık-kalem takip dosyası kapatıldı (tüm iş tamamlandı, dosya kaldırıldı) | Docs |
 | P2.4 | Docs reorganizasyonu (archive, 280 test raporu taşındı, 5 kopya silindi) | Docs |
 | P3.1 | README.md tam güncellemesi (REV-2 + test sayıları + tüm özellikler) | Docs |
 | P3.2 | release-notes-v1.md + rollout-checklist.md güncellemesi | Docs |

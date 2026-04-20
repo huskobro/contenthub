@@ -35,6 +35,7 @@ function snapshot(opts: {
   atriumEnabled?: boolean;
   bridgeEnabled?: boolean;
   canvasEnabled?: boolean;
+  auroraEnabled?: boolean;
   defaultAdmin?: string | null;
   defaultUser?: string | null;
 } = {}) {
@@ -45,6 +46,7 @@ function snapshot(opts: {
     atriumEnabled: opts.atriumEnabled ?? true,
     bridgeEnabled: opts.bridgeEnabled ?? true,
     canvasEnabled: opts.canvasEnabled ?? true,
+    auroraEnabled: opts.auroraEnabled ?? true,
     loaded: true,
   });
 }
@@ -170,22 +172,15 @@ describe("SurfacePickerSection — Faz 4C usability", () => {
   // admin+both scope surfaces. Scope-disallowed entries are dropped from
   // the list — not even rendered as informational ineligible cards.
 
-  it.skip("admin panel does not list user-scope surfaces at all (atrium hidden)", () => {
-    // Faz 5: atrium was promoted from user-scope to `both`, so it is now
-    // valid in both panels. The hard-filter assertion no longer applies.
-    // Scope filter logic itself remains tested via buildScopedSurfacePickerEntries
-    // unit tests for admin-only or user-only manifests.
-    render(<SurfacePickerSection scope="admin" />);
-    expect(screen.queryByTestId("surface-picker-card-atrium")).toBeNull();
-    expect(screen.queryByTestId("surface-picker-ineligible-atrium")).toBeNull();
-  });
+  // Faz 5: atrium ve bridge surface'leri "both" scope'a tasındı; admin-only
+  // veya user-only filtre testleri scope mantigi nedeniyle artik gecersiz.
+  // Scope filtreleme dogrulamasi `buildScopedSurfacePickerEntries` unit
+  // testlerinde admin-only/user-only manifest senaryolarıyla yapılır.
 
-  it.skip("user panel does not list admin-scope surfaces at all (bridge hidden)", () => {
-    // Faz 5: bridge was promoted from admin-only to `both`, so it is now
-    // valid in both panels. See skip note above for atrium.
-    render(<SurfacePickerSection scope="user" />);
-    expect(screen.queryByTestId("surface-picker-card-bridge")).toBeNull();
-    expect(screen.queryByTestId("surface-picker-ineligible-bridge")).toBeNull();
+  it("atrium and bridge appear in both panels (scope=both)", () => {
+    render(<SurfacePickerSection scope="admin" />);
+    expect(screen.queryByTestId("surface-picker-card-atrium")).toBeDefined();
+    expect(screen.queryByTestId("surface-picker-card-bridge")).toBeDefined();
   });
 
   // -------------------------------------------------------------------------

@@ -133,16 +133,9 @@ describe("Template/Style/Blueprint pack (Phase 282-286)", () => {
       window.fetch = mockFetch(() => []);
     });
 
-    it.skip("admin overview shows templates quick link with workflow desc", () => {
-      // The `quick-link-templates` tile was removed from AdminOverviewPage
-      // as part of the quick-link simplification (library/new-video/jobs/
-      // analytics/sources/settings remain — templates navigation is now
-      // reached via the sidebar link rather than an overview card).
-      // Intent preserved here; navigation coverage lives in sidebar tests.
+    it("admin overview no longer has quick-link-templates (moved to sidebar)", () => {
       renderAt("/admin");
-      const card = screen.getByTestId("quick-link-templates");
-      expect(card).toBeDefined();
-      expect(card.textContent).toContain("Uretim hattinin yapi taslari");
+      expect(screen.queryByTestId("quick-link-templates")).toBeNull();
     });
 
     it("templates registry shows heading with testid", () => {
@@ -298,14 +291,6 @@ describe("Template/Style/Blueprint pack (Phase 282-286)", () => {
   describe("Phase 286: end-to-end verification", () => {
     beforeEach(() => {
       window.fetch = mockFetch(() => []);
-    });
-
-    it.skip("admin overview templates quick link navigable", () => {
-      // See above — `quick-link-templates` tile has been retired from the
-      // admin overview. Sidebar / header link now owns templates navigation.
-      renderAt("/admin");
-      const card = screen.getByTestId("quick-link-templates");
-      expect(card).toBeDefined();
     });
 
     it("templates registry button present", () => {

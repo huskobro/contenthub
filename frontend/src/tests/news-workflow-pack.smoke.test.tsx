@@ -143,21 +143,15 @@ describe("News workflow pack (Phase 276-281)", () => {
       expect(card.textContent).toContain("Haber kaynaklarınızdan seçtiğiniz haberlerle bülten oluşturun");
     });
 
-    it.skip("admin overview shows news bulletins quick link", () => {
-      // SKIP: Admin overview QUICK_LINKS no longer includes a dedicated
-      // "news-bulletins" quick link. The admin surface now exposes
-      // library/new-video/jobs/analytics/sources/settings only. News workflow
-      // entry lives under /admin/news-bulletins via breadcrumb/library.
-      expect(true).toBe(true);
+    it("admin overview no longer exposes quick-link-news-bulletins", () => {
+      renderAt("/admin");
+      expect(screen.queryByTestId("quick-link-news-bulletins")).toBeNull();
     });
 
-    it.skip("post-onboarding handoff mentions news workflow", async () => {
-      // SKIP: PostOnboardingHandoff is no longer mounted in UserDashboardPage
-      // (component is imported with `void PostOnboardingHandoff` as a pasive
-      // reference). News workflow onboarding copy lives in user-facing
-      // handoff flows outside the dashboard scope of this smoke test.
-      expect(true).toBe(true);
-    });
+    // PostOnboardingHandoff is referenced as a passive import in
+    // UserDashboardPage (kept for module-evaluation side effects); news
+    // workflow onboarding copy is covered by the dedicated user-handoff
+    // smoke suite, not by this admin-focused pack.
   });
 
   describe("Phase 276-277: create flow and source/intake clarity", () => {
@@ -289,20 +283,10 @@ describe("News workflow pack (Phase 276-281)", () => {
       expect(card.textContent).toContain("Yeni Bülten Oluştur");
     });
 
-    it.skip("admin overview news bulletins quick link is present", () => {
-      // SKIP: see Phase 276 block — quick-link-news-bulletins was removed
-      // from admin overview. News bulletin registry still exists at
-      // /admin/news-bulletins but is not a dashboard quick link.
-      expect(true).toBe(true);
-    });
-
-    it.skip("dashboard hub flow chain intact", async () => {
-      // SKIP: DashboardActionHub is no longer mounted in UserDashboardPage.
-      // The hub-flow-desc testid was removed along with the previous
-      // "İlk adım / Sonraki adım" narrative. Component-isolated render is
-      // covered by user-section-transition-clarity.smoke.test.tsx.
-      expect(true).toBe(true);
-    });
+    // quick-link-news-bulletins artik yok (Phase 276); news registry
+    // /admin/news-bulletins yolu ile erisilir ama dashboard quick-link
+    // degil. DashboardActionHub UserDashboardPage'den kaldirildi; hub-flow
+    // dogrulamasi user-section-transition-clarity.smoke.test.tsx'ta yapilir.
 
     it("admin sources quick link is present", () => {
       renderAt("/admin");

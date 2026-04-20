@@ -4,8 +4,15 @@ import { useNewsBulletinsList } from "../../hooks/useNewsBulletinsList";
 import { NewsBulletinsTable } from "../../components/news-bulletin/NewsBulletinsTable";
 import { NewsBulletinDetailPanel } from "../../components/news-bulletin/NewsBulletinDetailPanel";
 import { PageShell, SectionShell, ActionButton } from "../../components/design-system/primitives";
+import { useSurfacePageOverride } from "../../surfaces/SurfaceContext";
 
 export function NewsBulletinRegistryPage() {
+  const Override = useSurfacePageOverride("admin.news-bulletins.registry");
+  if (Override) return <Override />;
+  return <LegacyNewsBulletinRegistryPage />;
+}
+
+function LegacyNewsBulletinRegistryPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const initialSelected = (location.state as { selectedId?: string } | null)?.selectedId ?? null;

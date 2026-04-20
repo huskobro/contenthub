@@ -19,6 +19,7 @@ import { ChannelProfileStep } from "../../components/wizard/ChannelProfileStep";
 import { ContentProjectStep } from "../../components/wizard/ContentProjectStep";
 import { LowerThirdStylePreview } from "../../components/preview/LowerThirdStylePreview";
 import { StyleBlueprintSelector } from "../../components/preview/StyleBlueprintSelector";
+import { useSurfacePageOverride } from "../../surfaces/SurfaceContext";
 
 const STEPS: WizardStep[] = [
   { id: "channel", label: "Kanal" },
@@ -27,7 +28,17 @@ const STEPS: WizardStep[] = [
   { id: "continue", label: "Bulten Wizard" },
 ];
 
+/**
+ * Public entry — Aurora `user.create.bulletin` override varsa onu kullan;
+ * yoksa legacy 4-adımlı bülten wizard'ı.
+ */
 export function CreateBulletinWizardPage() {
+  const Override = useSurfacePageOverride("user.create.bulletin");
+  if (Override) return <Override />;
+  return <LegacyCreateBulletinWizardPage />;
+}
+
+function LegacyCreateBulletinWizardPage() {
   const navigate = useNavigate();
   // PHASE AF: launcher deep-link destegi. ?contentProjectId=... ve
   // ?channelProfileId=... query parametreleri verilmisse wizard o context

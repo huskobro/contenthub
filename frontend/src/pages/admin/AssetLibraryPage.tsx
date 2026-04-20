@@ -29,6 +29,7 @@ import { AssetQuickLookContent } from "../../components/quicklook/AssetQuickLook
 import { useScopedKeyboardNavigation } from "../../hooks/useScopedKeyboardNavigation";
 import { useSearchFocus } from "../../hooks/useSearchFocus";
 import { useToast } from "../../hooks/useToast";
+import { useSurfacePageOverride } from "../../surfaces/SurfaceContext";
 
 const ASSET_TYPE_OPTIONS = [
   { value: "", label: "Tum Turler" },
@@ -66,7 +67,17 @@ function formatDate(iso: string | null): string {
 
 const PAGE_SIZE = 50;
 
+/**
+ * Public entry point. Aurora surface override (admin.assets.library)
+ * geçerliyse onu kullanır; aksi halde legacy yüzeye düşer.
+ */
 export function AssetLibraryPage() {
+  const Override = useSurfacePageOverride("admin.assets.library");
+  if (Override) return <Override />;
+  return <LegacyAssetLibraryPage />;
+}
+
+function LegacyAssetLibraryPage() {
   const queryClient = useQueryClient();
   const toast = useToast();
   const [typeFilter, setTypeFilter] = useState("");

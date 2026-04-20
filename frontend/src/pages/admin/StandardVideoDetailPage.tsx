@@ -21,8 +21,15 @@ import {
   ActionButton,
   Mono,
 } from "../../components/design-system/primitives";
+import { useSurfacePageOverride } from "../../surfaces/SurfaceContext";
 
 export function StandardVideoDetailPage() {
+  const Override = useSurfacePageOverride("admin.standard-video.detail");
+  if (Override) return <Override />;
+  return <LegacyStandardVideoDetailPage />;
+}
+
+function LegacyStandardVideoDetailPage() {
   const { itemId } = useParams<{ itemId: string }>();
   const [editMode, setEditMode] = useState(false);
 

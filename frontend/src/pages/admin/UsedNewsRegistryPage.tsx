@@ -4,8 +4,19 @@ import { useUsedNewsList } from "../../hooks/useUsedNewsList";
 import { UsedNewsTable } from "../../components/used-news/UsedNewsTable";
 import { UsedNewsDetailPanel } from "../../components/used-news/UsedNewsDetailPanel";
 import { PageShell, SectionShell, ActionButton } from "../../components/design-system/primitives";
+import { useSurfacePageOverride } from "../../surfaces/SurfaceContext";
 
+/**
+ * Public entry point. Aurora surface override (admin.used-news.registry)
+ * geçerliyse onu kullanır; aksi halde legacy yüzeye düşer.
+ */
 export function UsedNewsRegistryPage() {
+  const Override = useSurfacePageOverride("admin.used-news.registry");
+  if (Override) return <Override />;
+  return <LegacyUsedNewsRegistryPage />;
+}
+
+function LegacyUsedNewsRegistryPage() {
   const { data: records, isLoading, isError } = useUsedNewsList();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const navigate = useNavigate();

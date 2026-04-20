@@ -381,6 +381,72 @@ async def start_production_endpoint(
     return StartProductionResponse(**result)
 
 
+@router.post(
+    "/{item_id}/update-and-start-production",
+    response_model=StartProductionResponse,
+)
+async def update_and_start_production_endpoint(
+    item_id: str,
+    payload: NewsBulletinUpdate,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+    user_id: Optional[str] = Depends(get_active_user_id),
+    ctx: UserContext = Depends(get_current_user_context),
+):
+    """
+    Atomik 'başlat' endpoint'i: wizard son adımında bülten alanlarını (stil,
+    şablon, render formatı vb.) günceller VE üretim pipeline'ını başlatır.
+
+    Neden ayrı endpoint:
+      Önceki akış iki aşamalıydı — PATCH /modules/news-bulletin/{id} ardından
+      POST /modules/news-bulletin/{id}/start-production. İkinci çağrı
+      başarısız olursa kayıt güncellenmiş ama iş başlamamış olarak kalıyor,
+      UI'da 'başlatıldı' yanılgısı yaratıyor ve kullanıcı tekrar denerken
+      başka hatalarla karşılaşıyor.
+
+      Bu endpoint iki adımı tek transaction mantığı ile yürütür: dispatch
+      başarısız olursa güncellenen alanlar eski haline geri döner.
+    """
+    # Ownership gate — start_production ile aynı kural.
+    from app.publish.ownership import ensure_content_project_ownership
+    bulletin_row = await service.get_news_bulletin(db, item_id)
+    if bulletin_row is None:
+        raise HTTPException(status_code=404, detail="Bulten bulunamadi")
+    if bulletin_row.content_project_id:
+        await ensure_content_project_ownership(db, bulletin_row.content_project_id, ctx)
+    elif not ctx.is_admin:
+        raise HTTPException(
+            status_code=403,
+            detail="Bu bulten orphan (proje yok); yalnizca admin uretim baslatabilir",
+        )
+
+    dispatcher = getattr(request.app.state, "job_dispatcher", None)
+    if dispatcher is None:
+        raise HTTPException(status_code=503, detail="JobDispatcher hazır değil.")
+
+    session_factory = getattr(request.app.state, "session_factory", None)
+    if session_factory is None:
+        from app.db.session import AsyncSessionLocal
+        session_factory = AsyncSessionLocal
+
+    try:
+        result = await service.update_and_start_production(
+            db=db,
+            bulletin_id=item_id,
+            payload=payload,
+            dispatcher=dispatcher,
+            session_factory=session_factory,
+            owner_id=user_id,
+        )
+    except ValueError as err:
+        error_msg = str(err)
+        if "Güvenilirlik engeli" in error_msg:
+            raise HTTPException(status_code=422, detail=error_msg)
+        raise HTTPException(status_code=400, detail=error_msg)
+
+    return StartProductionResponse(**result)
+
+
 # ---------------------------------------------------------------------------
 # Publish adapter — create/lookup PublishRecord for a bulletin
 # (Generic publish core untouched; this is a thin shim that attaches the

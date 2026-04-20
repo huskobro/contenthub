@@ -205,13 +205,10 @@ describe("AnalyticsOperationsPage smoke tests", () => {
     );
   });
 
-  it.skip("M: window button click triggers re-fetch with new window", async () => {
-    // SKIP: Window state migrated to URL via useSearchParams; click triggers a
-    // react-router navigation that uses AbortSignal via undici in jsdom,
-    // which jsdom's polyfill rejects. The behavior is covered by playwright
-    // suites. Keeping the test present (skipped) preserves intent.
-    expect(true).toBe(true);
-  });
+  // NOT: Pencere butonu click → yeniden fetch integration senaryosu URL
+  // searchParams uzerinden calistigindan ve jsdom AbortSignal uyumsuzlugu
+  // bu davranisi unit testte tetikleyemediginden burada dogrulanmaz;
+  // playwright suiti (`e2e/analytics/window-switch.spec.ts`) kapsiyor.
 
   it("N: provider_error_rate shown as dash (null)", async () => {
     renderPage(buildFetch(MOCK_OPERATIONS));

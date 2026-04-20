@@ -76,7 +76,10 @@ async def test_publish_settings_registered():
 
     cat_meta = KNOWN_SETTINGS["publish.youtube.default_category_id"]
     assert cat_meta["builtin_default"] == "22"
-    assert cat_meta["wired"] is True
+    # Registry kontrati: kayitsiz ayar yok — `wired` artik registry data'da
+    # tutulmaz, daimi True olarak explain() icinde uretilir. Burada runtime
+    # tuketicisinin belgelendigini dogruluyoruz.
+    assert cat_meta.get("wired_to"), "wired_to bos olmamali"
 
 
 @pytest.mark.anyio

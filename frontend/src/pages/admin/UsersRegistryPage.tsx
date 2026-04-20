@@ -21,6 +21,17 @@ import {
   FilterSelect,
 } from "../../components/design-system/primitives";
 import { cn } from "../../lib/cn";
+import { useSurfacePageOverride } from "../../surfaces/SurfaceContext";
+
+/**
+ * Public entry point. Aurora surface override (admin.users.registry)
+ * geçerliyse onu kullanır; aksi halde legacy yüzeye düşer.
+ */
+export function UsersRegistryPage() {
+  const Override = useSurfacePageOverride("admin.users.registry");
+  if (Override) return <Override />;
+  return <LegacyUsersRegistryPage />;
+}
 
 interface User {
   id: string;
@@ -46,7 +57,7 @@ function UserAvatar({ name, role }: { name: string; role: string }) {
   );
 }
 
-export function UsersRegistryPage() {
+function LegacyUsersRegistryPage() {
   const { data: users, isLoading, isError } = useUsers();
   const createMutation = useCreateUser();
   const deleteMutation = useDeleteUser();

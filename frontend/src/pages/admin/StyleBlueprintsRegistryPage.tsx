@@ -4,8 +4,20 @@ import { useStyleBlueprintsList } from "../../hooks/useStyleBlueprintsList";
 import { StyleBlueprintsTable } from "../../components/style-blueprints/StyleBlueprintsTable";
 import { StyleBlueprintDetailPanel } from "../../components/style-blueprints/StyleBlueprintDetailPanel";
 import { PageShell, SectionShell, ActionButton } from "../../components/design-system/primitives";
+import { useSurfacePageOverride } from "../../surfaces/SurfaceContext";
 
+/**
+ * Public entry point. Aurora surface override
+ * (`admin.style-blueprints.registry`) geçerliyse onu kullanır; aksi halde
+ * legacy yüzeye düşer.
+ */
 export function StyleBlueprintsRegistryPage() {
+  const Override = useSurfacePageOverride("admin.style-blueprints.registry");
+  if (Override) return <Override />;
+  return <LegacyStyleBlueprintsRegistryPage />;
+}
+
+function LegacyStyleBlueprintsRegistryPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const [selectedId, setSelectedId] = useState<string | null>(

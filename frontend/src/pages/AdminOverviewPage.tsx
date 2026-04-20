@@ -10,6 +10,7 @@
 
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { useSurfacePageOverride } from "../surfaces";
 import { useVisibility } from "../hooks/useVisibility";
 import { useAnalyticsFilters } from "../hooks/useAnalyticsFilters";
 import { useDashboardSummary } from "../hooks/useDashboardSummary";
@@ -263,6 +264,15 @@ function RecentErrorCard({ error, onClick }: {
 /* ------------------------------------------------------------------ */
 
 export function AdminOverviewPage() {
+  // Faz 6 — Aurora override gate. Aktif surface Aurora ise kokpit dashboard
+  // render edilir; diğer surface'ler legacy dashboard'ı görür (değişiklik yok).
+  // Pattern: override hook + erken return (JobsRegistryPage ile aynı).
+  const Override = useSurfacePageOverride("admin.dashboard");
+  if (Override) return <Override />;
+  return <LegacyAdminOverviewPage />;
+}
+
+function LegacyAdminOverviewPage() {
   const navigate = useNavigate();
   const filteredLinks = useFilteredQuickLinks();
   const analyticsFilters = useAnalyticsFilters("last_30d");

@@ -12,7 +12,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { WizardShell, type WizardStep } from "../../components/wizard/WizardShell";
+import { AdminWizardShell } from "../../components/wizard/AdminWizardShell";
+import type { WizardStep } from "../../components/wizard/WizardShell";
 import { CompositionDirectionPreview } from "../../components/preview/CompositionDirectionPreview";
 import { ThumbnailDirectionPreview } from "../../components/preview/ThumbnailDirectionPreview";
 import { LowerThirdStylePreview } from "../../components/preview/LowerThirdStylePreview";
@@ -26,7 +27,6 @@ import {
   type NewsBulletinSelectedItemResponse,
   type SelectableNewsItemResponse,
   createNewsBulletin,
-  updateNewsBulletin,
   fetchNewsBulletinById,
   fetchSelectableNewsItems,
   fetchNewsBulletinSelectedItems,
@@ -35,7 +35,7 @@ import {
   updateNewsBulletinSelectedItem,
   confirmBulletinSelection,
   consumeBulletinNews,
-  startBulletinProduction,
+  updateAndStartBulletinProduction,
   fetchTrustCheck,
   fetchCategoryStyleSuggestion,
 } from "../../api/newsBulletinApi";
@@ -47,6 +47,7 @@ import { fetchSources, type SourceResponse } from "../../api/sourcesApi";
 import { fetchEffectiveSetting } from "../../api/effectiveSettingsApi";
 import { SOURCE_CATEGORIES, SOURCE_CATEGORY_LABELS } from "../../constants/statusOptions";
 import { timeAgo } from "../../lib/formatDate";
+import { useSurfacePageOverride } from "../../surfaces/SurfaceContext";
 
 /** Category style mapping entry from settings */
 interface CategoryStyleEntry {
@@ -94,10 +95,21 @@ const RENDER_MODE_DESCRIPTIONS: Record<string, string> = {
 };
 
 // ---------------------------------------------------------------------------
-// Main wizard page
+// Public entry — trampoline. Surface override (admin.news-bulletins.wizard)
+// kayıtlıysa Aurora yüzeyine geçer; aksi halde legacy gövdesi render olur.
 // ---------------------------------------------------------------------------
 
 export function NewsBulletinWizardPage() {
+  const Override = useSurfacePageOverride("admin.news-bulletins.wizard");
+  if (Override) return <Override />;
+  return <LegacyNewsBulletinWizardPage />;
+}
+
+// ---------------------------------------------------------------------------
+// Legacy wizard page
+// ---------------------------------------------------------------------------
+
+function LegacyNewsBulletinWizardPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const qc = useQueryClient();
@@ -413,9 +425,15 @@ export function NewsBulletinWizardPage() {
     },
   });
 
-  const updateBulletinMut = useMutation({
+  /**
+   * Atomik "kaydet + başlat": stil seçimleri payload'da gönderilir,
+   * backend tek transaction'da hem update hem start-production yapar.
+   * Dispatch fail olursa backend güncellenen alanları geri alır;
+   * bu sayede "kaydedildi ama iş başlamadı" tutarsızlığı imkânsız hale gelir.
+   */
+  const startProductionMut = useMutation({
     mutationFn: () =>
-      updateNewsBulletin(bulletinId!, {
+      updateAndStartBulletinProduction(bulletinId!, {
         composition_direction: compositionDirection || null,
         thumbnail_direction: thumbnailDirection || null,
         template_id: templateId || null,
@@ -428,18 +446,6 @@ export function NewsBulletinWizardPage() {
         karaoke_enabled: karaokeEnabled,
         karaoke_anim_preset: karaokeAnimPreset,
       }),
-    onSuccess: () => {
-      refetchBulletin();
-      refetchTrustCheck();
-    },
-    onError: (err: any) => {
-      const msg = err?.response?.data?.detail || err?.message || "Bilinmeyen hata";
-      toast.error(`Bulten guncellenemedi: ${msg}`);
-    },
-  });
-
-  const startProductionMut = useMutation({
-    mutationFn: () => startBulletinProduction(bulletinId!),
     onSuccess: (res) => {
       qc.invalidateQueries({ queryKey: ["news-bulletins"] });
       qc.invalidateQueries({ queryKey: ["jobs"] });
@@ -493,13 +499,9 @@ export function NewsBulletinWizardPage() {
       if (bulletin?.status !== "in_progress") return;
       setStep(2);
     } else if (step === 2) {
-      // Save style choices then start production (sequential — don't start if update fails)
-      try {
-        await updateBulletinMut.mutateAsync();
-      } catch {
-        // updateBulletinMut.onError already shows toast
-        return;
-      }
+      // Atomik kaydet+başlat: stil seçimleri payload'da geçer, backend tek
+      // transaction'da update + start-production yapar; dispatch fail olursa
+      // backend update'i geri alır. Eski 2-step yarış-koşulu artık imkânsız.
       startProductionMut.mutate();
     }
   }
@@ -517,8 +519,7 @@ export function NewsBulletinWizardPage() {
 
   const isProcessing =
     createBulletinMut.isPending ||
-    startProductionMut.isPending ||
-    updateBulletinMut.isPending;
+    startProductionMut.isPending;
 
   const getNextLabel = () => {
     if (step === 0 && !bulletinId) return createBulletinMut.isPending ? "Olusturuluyor..." : "Bulten Olustur";
@@ -533,7 +534,7 @@ export function NewsBulletinWizardPage() {
     consumeNewsMut.error;
 
   return (
-    <WizardShell
+    <AdminWizardShell
       title="Haber Bulteni Olustur"
       steps={STEPS}
       currentStep={step}
@@ -1182,7 +1183,7 @@ export function NewsBulletinWizardPage() {
           {anyError instanceof Error ? anyError.message : String(anyError)}
         </p>
       )}
-    </WizardShell>
+    </AdminWizardShell>
   );
 }
 
