@@ -26,7 +26,7 @@ from fastapi.responses import JSONResponse
 from app.core.config import settings
 from app.core.logging import setup_logging
 from app.api.router import api_router
-from app.db.session import AsyncSessionLocal, AsyncSessionLocal as _session_factory, create_tables
+from app.db.session import AsyncSessionLocal, AsyncSessionLocal as _session_factory
 from app.jobs.recovery import run_startup_recovery
 from app.jobs.dispatcher import JobDispatcher
 from app.modules.registry import module_registry
@@ -72,8 +72,12 @@ async def lifespan(app: FastAPI):
     Shutdown:
       - Nothing required at this phase.
     """
-    # Ensure tables exist (no-op in production where Alembic is used)
-    await create_tables()
+    # NOTE: create_tables() is intentionally NOT called here.
+    # Schema must be managed exclusively via Alembic (`alembic upgrade head`),
+    # which start.sh now runs before uvicorn. Calling create_tables() alongside
+    # Alembic causes silent schema drift when migrations add/remove columns that
+    # SQLAlchemy metadata doesn't yet reflect.
+    # Tests use conftest.py → override_engine() to create in-memory tables directly.
 
     # --- Startup validation (M38) ---
     import sys

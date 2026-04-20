@@ -39,6 +39,7 @@ from app.jobs.exceptions import (
     JobNotFoundError,
     StepExecutionError,
 )
+from app.jobs.workspace import cleanup_tmp
 from app.audit.service import write_audit_log
 
 if TYPE_CHECKING:
@@ -146,6 +147,11 @@ class PipelineRunner:
                     )
                 except Exception as exc:
                     logger.warning("Audit log write failed (%s): %s", "job.pipeline_fail", exc)
+                # Clean up tmp artifacts so disk does not accumulate across runs.
+                try:
+                    cleanup_tmp(job_id)
+                except Exception as exc:
+                    logger.warning("cleanup_tmp failed after job failure: job=%s err=%s", job_id, exc)
                 await self._update_heartbeat(job_id)
                 return
 
@@ -162,6 +168,13 @@ class PipelineRunner:
             )
         except Exception as exc:
             logger.warning("Audit log write failed (%s): %s", "job.pipeline_complete", exc)
+
+        # Clean up tmp artifacts — durable artifacts (output.mp4, subtitles, etc.)
+        # in /artifacts stay; only the /tmp scratch dir is cleared.
+        try:
+            cleanup_tmp(job_id)
+        except Exception as exc:
+            logger.warning("cleanup_tmp failed after job completion: job=%s err=%s", job_id, exc)
 
         # Full-Auto post-completion hook (v1): no-op except for audit
         # trail when run_mode=='full_auto'. Guard against any exception so

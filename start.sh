@@ -90,6 +90,19 @@ echo "  Python  : $(python3 --version)"
 echo "  Node    : $("$NODE" --version)"
 echo ""
 
+# ---------------------------------------------------------------------------
+# DB: Alembic migration — her başlatmada schema'nın güncel olduğunu garanti et
+# ---------------------------------------------------------------------------
+cd "$BACKEND_DIR"
+echo "  Alembic migration kontrol ediliyor..."
+if ! python -m alembic upgrade head; then
+  echo "HATA: Alembic migration başarısız. Uygulama başlatılmıyor."
+  echo "  Detay için: cd backend && python -m alembic upgrade head"
+  exit 1
+fi
+echo "  Schema güncel ✓"
+echo ""
+
 # Portları temizle
 for PORT in 8000 5173; do
   PIDS=$(lsof -ti :$PORT 2>/dev/null)

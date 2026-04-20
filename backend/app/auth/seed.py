@@ -49,10 +49,9 @@ async def _backfill_missing_password_hashes(db: AsyncSession) -> int:
         u.password_hash = hash_password(default_pw)
         logger.warning(
             "Auth recovery: backfilled password_hash for user email=%s role=%s "
-            "with default password=%s (rotate via admin panel).",
+            "with a default dev password (rotate via admin panel).",
             u.email,
             u.role,
-            default_pw,
         )
     await db.commit()
     return len(rows)
@@ -84,8 +83,8 @@ async def seed_admin_user(db: AsyncSession) -> None:
         db.add(admin)
         await db.commit()
         logger.info(
-            "Initial admin user created: email=admin@contenthub.local, password=%s",
-            _DEFAULT_ADMIN_PASSWORD,
+            "Initial admin user created: email=admin@contenthub.local "
+            "(default dev password set — rotate via admin panel).",
         )
     else:
         logger.debug("Admin user already exists: id=%s", existing_admin.id)

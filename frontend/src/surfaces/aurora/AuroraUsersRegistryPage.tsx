@@ -15,8 +15,10 @@
  * Hiçbir legacy code değiştirilmez; surface override sistemi tarafından
  * `admin.users.registry` slot'una bağlanması beklenir (register.tsx
  * dokunulmaz; Faz P2 kayıt geçişi sırasında eklenir).
+ *
+ * Faz 1 güvenlik: window.prompt() kaldırıldı, CreateUserModal eklendi.
  */
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef, useEffect, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUsers, useDeleteUser, useCreateUser } from "../../hooks/useUsers";
 import type { UserResponse } from "../../api/usersApi";
@@ -28,6 +30,156 @@ import {
   AuroraInspectorRow,
 } from "./primitives";
 import { Icon } from "./icons";
+
+// ---------------------------------------------------------------------------
+// CreateUserModal — inline modal, no external deps
+// ---------------------------------------------------------------------------
+
+interface CreateUserModalProps {
+  open: boolean;
+  onClose: () => void;
+  onSubmit: (data: { email: string; display_name: string; role: string }) => void;
+  isPending: boolean;
+}
+
+const VALID_ROLES = ["user", "operator", "viewer", "admin"] as const;
+
+function CreateUserModal({ open, onClose, onSubmit, isPending }: CreateUserModalProps) {
+  const [email, setEmail] = useState("");
+  const [displayName, setDisplayName] = useState("");
+  const [role, setRole] = useState("user");
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const emailRef = useRef<HTMLInputElement>(null);
+
+  // Reset form when modal opens
+  useEffect(() => {
+    if (open) {
+      setEmail("");
+      setDisplayName("");
+      setRole("user");
+      setErrors({});
+      setTimeout(() => emailRef.current?.focus(), 50);
+    }
+  }, [open]);
+
+  // Derive display name from email when display name is empty
+  const handleEmailChange = (val: string) => {
+    setEmail(val);
+    if (!displayName) {
+      const local = val.split("@")[0] ?? "";
+      if (local) setDisplayName(local);
+    }
+  };
+
+  const validate = () => {
+    const errs: Record<string, string> = {};
+    if (!email.trim()) errs.email = "E-posta zorunludur.";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()))
+      errs.email = "Geçersiz e-posta formatı.";
+    if (!displayName.trim()) errs.displayName = "Görünür ad zorunludur.";
+    return errs;
+  };
+
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    const errs = validate();
+    if (Object.keys(errs).length) { setErrors(errs); return; }
+    onSubmit({ email: email.trim(), display_name: displayName.trim(), role });
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Escape") onClose();
+  };
+
+  if (!open) return null;
+
+  const overlayStyle: React.CSSProperties = {
+    position: "fixed", inset: 0, zIndex: 1000,
+    background: "rgba(0,0,0,0.55)", backdropFilter: "blur(3px)",
+    display: "flex", alignItems: "center", justifyContent: "center",
+  };
+  const panelStyle: React.CSSProperties = {
+    background: "var(--bg-surface, #1a1d23)",
+    border: "1px solid var(--border-subtle, #2a2d35)",
+    borderRadius: 10, padding: "24px 28px", minWidth: 360, maxWidth: 440,
+    boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
+  };
+  const fieldStyle: React.CSSProperties = { display: "flex", flexDirection: "column", gap: 4, marginBottom: 14 };
+  const labelStyle: React.CSSProperties = {
+    fontSize: 12, fontWeight: 600, color: "var(--text-secondary, #9ca3af)",
+    fontFamily: "var(--font-mono, monospace)", letterSpacing: "0.04em",
+  };
+  const inputStyle: React.CSSProperties = {
+    background: "var(--bg-inset, #13151a)", border: "1px solid var(--border-subtle, #2a2d35)",
+    borderRadius: 6, padding: "8px 10px", fontSize: 13, color: "var(--text-primary, #e5e7eb)",
+    fontFamily: "inherit", outline: "none",
+  };
+  const errStyle: React.CSSProperties = { fontSize: 11, color: "var(--state-danger-fg, #f87171)", marginTop: 2 };
+  const footerStyle: React.CSSProperties = { display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 20 };
+
+  return (
+    <div style={overlayStyle} onClick={onClose} onKeyDown={handleKeyDown} role="dialog" aria-modal="true" aria-label="Kullanıcı ekle">
+      <div style={panelStyle} onClick={(e) => e.stopPropagation()}>
+        <h2 style={{ margin: "0 0 18px", fontSize: 15, fontWeight: 600, color: "var(--text-primary, #e5e7eb)" }}>
+          Yeni Kullanıcı Ekle
+        </h2>
+
+        <form onSubmit={handleSubmit} noValidate>
+          <div style={fieldStyle}>
+            <label style={labelStyle}>E-POSTA *</label>
+            <input
+              ref={emailRef}
+              type="email"
+              style={inputStyle}
+              value={email}
+              onChange={(e) => handleEmailChange(e.target.value)}
+              placeholder="kullanici@ornek.com"
+              autoComplete="off"
+              disabled={isPending}
+            />
+            {errors.email && <span style={errStyle}>{errors.email}</span>}
+          </div>
+
+          <div style={fieldStyle}>
+            <label style={labelStyle}>GÖRÜNÜR AD *</label>
+            <input
+              type="text"
+              style={inputStyle}
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              placeholder="Ad Soyad"
+              disabled={isPending}
+            />
+            {errors.displayName && <span style={errStyle}>{errors.displayName}</span>}
+          </div>
+
+          <div style={fieldStyle}>
+            <label style={labelStyle}>ROL</label>
+            <select
+              style={{ ...inputStyle, cursor: "pointer" }}
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+              disabled={isPending}
+            >
+              {VALID_ROLES.map((r) => (
+                <option key={r} value={r}>{r}</option>
+              ))}
+            </select>
+          </div>
+
+          <div style={footerStyle}>
+            <AuroraButton type="button" variant="ghost" size="sm" onClick={onClose} disabled={isPending}>
+              İptal
+            </AuroraButton>
+            <AuroraButton type="submit" variant="primary" size="sm" disabled={isPending}>
+              {isPending ? "Oluşturuluyor…" : "Kullanıcı Oluştur"}
+            </AuroraButton>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
 
 // ---------------------------------------------------------------------------
 // Tone maps — rol ve durum chip renkleri
@@ -103,44 +255,23 @@ export function AuroraUsersRegistryPage() {
   const list = users ?? [];
 
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [createModalOpen, setCreateModalOpen] = useState(false);
 
   const deleteMutation = useDeleteUser();
   const createMutation = useCreateUser();
 
-  // Inline "Kullanıcı ekle" — route yerine window.prompt zinciri ile
-  // gerçek POST /users çağrısına bağlı. Modal/Form UI v2'de eklenecek.
-  const handleCreateUser = () => {
-    const email = window.prompt("Yeni kullanıcı e-postası (zorunlu):")?.trim();
-    if (!email) return;
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      toast.error("Geçersiz e-posta formatı");
-      return;
-    }
-    const displayName = window
-      .prompt("Görünür ad (zorunlu):", email.split("@")[0])
-      ?.trim();
-    if (!displayName) return;
-    const roleInput = window
-      .prompt("Rol: admin / operator / viewer / user", "user")
-      ?.trim()
-      .toLowerCase();
-    const role =
-      roleInput && ["admin", "operator", "viewer", "user"].includes(roleInput)
-        ? roleInput
-        : "user";
-    createMutation.mutate(
-      { email, display_name: displayName, role },
-      {
-        onSuccess: (created) => {
-          toast.success(`${created.display_name} oluşturuldu`);
-          navigate(`/admin/users/${created.id}/settings`);
-        },
-        onError: (err) =>
-          toast.error(
-            err instanceof Error ? err.message : "Kullanıcı oluşturulamadı",
-          ),
+  const handleCreateUser = () => setCreateModalOpen(true);
+
+  const handleCreateSubmit = (data: { email: string; display_name: string; role: string }) => {
+    createMutation.mutate(data, {
+      onSuccess: (created) => {
+        toast.success(`${created.display_name} oluşturuldu`);
+        setCreateModalOpen(false);
+        navigate(`/admin/users/${created.id}/settings`);
       },
-    );
+      onError: (err) =>
+        toast.error(err instanceof Error ? err.message : "Kullanıcı oluşturulamadı"),
+    });
   };
 
   // KPI counts
@@ -247,6 +378,13 @@ export function AuroraUsersRegistryPage() {
   );
 
   return (
+    <>
+    <CreateUserModal
+      open={createModalOpen}
+      onClose={() => setCreateModalOpen(false)}
+      onSubmit={handleCreateSubmit}
+      isPending={createMutation.isPending}
+    />
     <div className="aurora-dashboard">
       <div className="page">
         <div className="page-head">
@@ -458,5 +596,6 @@ export function AuroraUsersRegistryPage() {
       </div>
       <aside className="aurora-inspector-slot">{inspector}</aside>
     </div>
+    </>
   );
 }

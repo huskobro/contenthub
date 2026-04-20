@@ -317,7 +317,19 @@ async def test_user_center_my(db_session, client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_admin_center_with_kpis(db_session, client: AsyncClient):
-    u = await _create_user(db_session)
+    # /center/admin requires admin role — use admin user
+    from app.auth.password import hash_password
+    admin_slug = f"admin-{_uuid()[:8]}"
+    u = User(
+        email=f"{admin_slug}@test.com",
+        display_name="Admin User",
+        slug=admin_slug,
+        role="admin",
+        status="active",
+        password_hash=hash_password("testpass123"),
+    )
+    db_session.add(u)
+    await db_session.commit()
     ch = await _create_channel(db_session, u.id)
     await _create_connection(
         db_session, ch.id,

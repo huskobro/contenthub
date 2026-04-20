@@ -285,13 +285,22 @@ class YouTubeAdapter(PublishAdapter):
                     retryable=False,
                 )
 
-            # Adım 2: Binary video gönder
-            with open(video_path, "rb") as f:
-                video_data = f.read()
+            # Adım 2: Binary video gönder — streaming upload (no full read into RAM).
+            # httpx accepts a sync iterator as `content`, which is read chunk-by-chunk.
+            # This keeps memory use bounded to _CHUNK_SIZE regardless of video size.
+            _CHUNK_SIZE = 8 * 1024 * 1024  # 8 MiB per chunk
+
+            def _video_stream():
+                with open(video_path, "rb") as _f:
+                    while True:
+                        chunk = _f.read(_CHUNK_SIZE)
+                        if not chunk:
+                            break
+                        yield chunk
 
             upload_resp = await client.put(
                 upload_url,
-                content=video_data,
+                content=_video_stream(),
                 headers={
                     "Content-Type": "video/*",
                     "Content-Length": str(file_size),

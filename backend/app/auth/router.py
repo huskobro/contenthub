@@ -28,6 +28,7 @@ from app.auth.jwt import create_access_token, create_refresh_token, decode_token
 from app.auth.password import hash_password, verify_password
 from app.auth.dependencies import get_current_user
 from app.users.slugify import slugify, make_unique_slug
+from app.core.config import settings
 from jose import JWTError
 
 logger = logging.getLogger(__name__)
@@ -279,20 +280,25 @@ async def forgot_password(
     expires_at = datetime.now(timezone.utc) + _RESET_TOKEN_TTL
     _RESET_TOKENS[token] = (user.id, expires_at)
 
-    # Log so the operator can retrieve the token from server logs in dev.
+    # Token is logged at DEBUG so it's retrievable in dev but not leaked
+    # in production log aggregators that strip DEBUG.
     logger.info(
-        "Password reset token issued: user_id=%s email=%s token=%s expires_at=%s",
+        "Password reset token issued: user_id=%s email=%s expires_at=%s",
         user.id,
         user.email,
-        token,
         expires_at.isoformat(),
     )
+    logger.debug(
+        "Password reset token value (DEBUG only — do not surface in prod): token=%s",
+        token,
+    )
 
-    # Return token in dev mode so the Aurora form can complete the flow
-    # without an email transport. Remove this field in production deploys.
+    # Return the token in the response ONLY when debug mode is active.
+    # In production (debug=False) the response omits the token; delivery
+    # must happen via email transport (out of scope for localhost MVP v1).
     return ForgotPasswordResponse(
         message="Sıfırlama bağlantısı hazırlandı. 30 dakika geçerlidir.",
-        reset_token=token,
+        reset_token=token if settings.debug else None,
     )
 
 
