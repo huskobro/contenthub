@@ -13,7 +13,15 @@ branch_labels = None
 depends_on = None
 
 
+def _table_exists(table: str) -> bool:
+    bind = op.get_bind()
+    result = bind.execute(sa.text("SELECT name FROM sqlite_master WHERE type='table' AND name=:t"), {"t": table})
+    return result.fetchone() is not None
+
+
 def upgrade() -> None:
+    if _table_exists("notification_items"):
+        return
     op.create_table(
         "notification_items",
         sa.Column("id", sa.String(36), primary_key=True),

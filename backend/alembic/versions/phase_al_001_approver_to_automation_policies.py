@@ -30,26 +30,40 @@ FK_NAME = "fk_automation_policies_approver_user_id"
 IX_NAME = "ix_automation_policies_approver_user_id"
 
 
+def _has_column(table: str, column: str) -> bool:
+    bind = op.get_bind()
+    result = bind.execute(sa.text(f"PRAGMA table_info({table})"))
+    return any(row[1] == column for row in result)
+
+
+def _index_exists(index_name: str) -> bool:
+    bind = op.get_bind()
+    result = bind.execute(sa.text("SELECT name FROM sqlite_master WHERE type='index' AND name=:n"), {"n": index_name})
+    return result.fetchone() is not None
+
+
 def upgrade() -> None:
     # batch_alter_table required for SQLite FK add.
     # SQLite batch mode enforces NAMED constraints — FK explicitly named below.
-    with op.batch_alter_table("automation_policies") as batch_op:
-        batch_op.add_column(
-            sa.Column(
-                "approver_user_id",
-                sa.String(36),
-                sa.ForeignKey("users.id", name=FK_NAME, ondelete="SET NULL"),
-                nullable=True,
+    if not _has_column("automation_policies", "approver_user_id"):
+        with op.batch_alter_table("automation_policies") as batch_op:
+            batch_op.add_column(
+                sa.Column(
+                    "approver_user_id",
+                    sa.String(36),
+                    sa.ForeignKey("users.id", name=FK_NAME, ondelete="SET NULL"),
+                    nullable=True,
+                )
             )
-        )
     # Index: approver bazli listeleme icin ileride 'filter by assigned approver'
     # senaryosunu ucuzlastirir.
-    op.create_index(
-        IX_NAME,
-        "automation_policies",
-        ["approver_user_id"],
-        unique=False,
-    )
+    if not _index_exists(IX_NAME):
+        op.create_index(
+            IX_NAME,
+            "automation_policies",
+            ["approver_user_id"],
+            unique=False,
+        )
 
 
 def downgrade() -> None:
