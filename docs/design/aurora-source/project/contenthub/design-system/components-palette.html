@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en" data-theme="aurora-dusk">
+<head>
+<meta charset="utf-8" />
+<title>Command palette</title>
+<link rel="stylesheet" href="shell.css" />
+<style>
+  .palette {
+    width: 560px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-2xl), var(--glow-panel-edge);
+    overflow: hidden;
+    margin: 0 auto;
+  }
+  .palette-search {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .palette-search input {
+    flex: 1; background: transparent; border: none; outline: none;
+    color: var(--text-primary); font-size: 14px;
+  }
+  .palette-search input::placeholder { color: var(--text-muted); }
+  .kbd {
+    font-family: var(--font-mono); font-size: 10px;
+    padding: 2px 6px; border-radius: 4px;
+    background: var(--bg-inset); color: var(--text-muted);
+    border: 1px solid var(--border-subtle);
+  }
+  .palette-section {
+    padding: 8px 0;
+  }
+  .palette-section .h {
+    font-size: 10px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--text-muted); padding: 6px 18px;
+  }
+  .palette-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 9px 18px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: background var(--motion-duration-fast) var(--motion-ease-out);
+  }
+  .palette-item.active {
+    background: var(--accent-primary-muted);
+    color: var(--accent-primary-hover);
+    box-shadow: inset 2px 0 0 var(--accent-primary);
+  }
+  .palette-item .title { font-size: 13px; flex: 1; }
+  .palette-item .hint { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); }
+</style>
+</head>
+<body style="padding: 20px;">
+  <div class="palette">
+    <div class="palette-search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <input placeholder="Komut, içerik veya ayar ara…" value="yeni"/>
+      <span class="kbd">ESC</span>
+    </div>
+    <div class="palette-section">
+      <div class="h">Eylemler</div>
+      <div class="palette-item active">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+        <span class="title">Yeni video oluştur</span>
+        <span class="hint">⌘ N</span>
+      </div>
+      <div class="palette-item">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+        <span class="title">Yeni haber bülteni</span>
+        <span class="hint">⌘ ⇧ N</span>
+      </div>
+      <div class="palette-item">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+        <span class="title">Yeni ürün incelemesi</span>
+        <span class="hint">⌘ ⌥ N</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

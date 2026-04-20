@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en" data-theme="aurora-dusk">
+<head>
+<meta charset="utf-8" />
+<title>Motion tokens</title>
+<link rel="stylesheet" href="shell.css" />
+<style>
+  .track { position: relative; height: 36px; background: var(--bg-inset); border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--border-subtle); }
+  .dot { position: absolute; top: 10px; left: 6px; width: 16px; height: 16px; border-radius: 50%; background: var(--accent-primary); box-shadow: var(--glow-accent); }
+  .dot.fast { animation: run 1.4s var(--motion-ease-out) infinite alternate; animation-duration: var(--motion-duration-fast); }
+  .dot.normal { animation: run 1.4s var(--motion-ease-out) infinite alternate; animation-duration: var(--motion-duration-normal); }
+  .dot.slow { animation: run 1.4s var(--motion-ease-out) infinite alternate; animation-duration: var(--motion-duration-slow); }
+  @keyframes run { from { left: 6px; } to { left: calc(100% - 22px); } }
+</style>
+</head>
+<body style="padding: 24px;">
+  <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
+
+    <div>
+      <div class="type-label" style="color: var(--text-muted); margin-bottom: 10px;">Fast · 160ms</div>
+      <div class="track"><div class="dot fast"></div></div>
+      <div class="type-mono" style="color: var(--text-muted); margin-top: 8px;">--motion-duration-fast</div>
+    </div>
+
+    <div>
+      <div class="type-label" style="color: var(--text-muted); margin-bottom: 10px;">Normal · 240ms</div>
+      <div class="track"><div class="dot normal"></div></div>
+      <div class="type-mono" style="color: var(--text-muted); margin-top: 8px;">--motion-duration-normal</div>
+    </div>
+
+    <div>
+      <div class="type-label" style="color: var(--text-muted); margin-bottom: 10px;">Slow · 360ms</div>
+      <div class="track"><div class="dot slow"></div></div>
+      <div class="type-mono" style="color: var(--text-muted); margin-top: 8px;">--motion-duration-slow</div>
+    </div>
+
+    <div style="grid-column: span 3; margin-top: 4px; padding-top: 14px; border-top: 1px solid var(--border-subtle);">
+      <div class="type-caption" style="color: var(--text-secondary);">
+        Easing: <span class="type-mono" style="color: var(--text-primary);">cubic-bezier(0.22, 1, 0.36, 1)</span>
+        <span style="color: var(--text-muted);"> · asymmetric ease-out, composed not bouncy</span>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

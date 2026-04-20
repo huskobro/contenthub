@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="tr" data-theme="aurora-dusk">
+<head>
+<meta charset="utf-8" />
+<title>Cockpit Shell</title>
+<link rel="stylesheet" href="shell.css" />
+<style>
+  body { padding: 24px; overflow: hidden; }
+  .demo {
+    display: grid;
+    grid-template-columns: 56px 1fr;
+    grid-template-rows: 48px 1fr 28px;
+    grid-template-areas: "ctx ctx" "rail body" "stat stat";
+    height: 540px;
+    background: var(--bg-canvas);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+  }
+  .ctx { grid-area: ctx; background: var(--bg-sidebar); border-bottom: 1px solid var(--border-default); display: flex; align-items: center; padding-right: 14px; gap: 10px; }
+  .ctx .brand { width: 56px; height: 48px; display: grid; place-items: center; border-right: 1px solid var(--border-default); }
+  .ctx .mark { width: 26px; height: 26px; border-radius: 7px; background: var(--gradient-brand); display: grid; place-items: center; color: #fff; font-weight: 600; font-size: 13px; box-shadow: var(--glow-accent); }
+  .pill { display: inline-flex; align-items: center; gap: 8px; height: 28px; padding: 0 10px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; font-family: var(--font-mono); font-size: 12px; color: #f6f3fb; }
+  .pill .d { width: 7px; height: 7px; border-radius: 50%; background: var(--state-success-fg); box-shadow: 0 0 6px var(--state-success-fg); }
+  .crumbs { display: flex; align-items: center; gap: 8px; font-size: 12px; color: rgba(255,255,255,0.62); }
+  .crumbs .last { color: #f6f3fb; font-weight: 500; }
+  .crumbs .sep { color: rgba(255,255,255,0.32); }
+  .search { margin-left: auto; display: flex; align-items: center; gap: 8px; width: 240px; height: 28px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 0 10px; color: rgba(255,255,255,0.55); font-size: 12px; }
+  .search .k { margin-left: auto; font-family: var(--font-mono); font-size: 10px; padding: 1px 5px; border-radius: 4px; background: rgba(255,255,255,0.06); }
+  .user-pill { display: flex; align-items: center; gap: 8px; padding: 2px 10px 2px 2px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; font-size: 12px; color: #e5e9f5; }
+  .user-pill .av { width: 22px; height: 22px; border-radius: 50%; background: var(--gradient-brand); display: grid; place-items: center; font-size: 10px; font-weight: 600; }
+
+  .rail { grid-area: rail; background: var(--bg-sidebar); border-right: 1px solid var(--border-default); display: flex; flex-direction: column; align-items: center; padding: 10px 0; gap: 2px; }
+  .ri { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; color: rgba(255,255,255,0.5); position: relative; font-size: 16px; }
+  .ri.on { color: var(--accent-primary-hover); background: var(--accent-primary-muted); }
+  .ri.on::before { content: ""; position: absolute; left: -1px; top: 10px; bottom: 10px; width: 2px; border-radius: 2px; background: var(--accent-primary); box-shadow: 0 0 8px var(--accent-primary); }
+  .ri .ct { position: absolute; top: 4px; right: 4px; font-family: var(--font-mono); font-size: 9px; font-weight: 600; background: var(--accent-primary); color: #fff; padding: 1px 4px; border-radius: 8px; line-height: 1; }
+  .rd { width: 24px; height: 1px; background: rgba(255,255,255,0.08); margin: 6px 0; }
+  .rs { flex: 1; }
+
+  .body { grid-area: body; display: grid; grid-template-columns: 1fr 240px; overflow: hidden; }
+  .work { padding: 22px; background: var(--gradient-aurora-soft); }
+  .work h2 { font-family: var(--font-display); font-size: 22px; font-weight: 500; letter-spacing: -0.022em; margin: 0 0 4px; color: var(--text-primary); }
+  .work .s { font-size: 12px; color: var(--text-muted); margin-bottom: 16px; }
+  .met { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .m { background: var(--bg-surface); border: 1px solid var(--border-default); border-radius: 10px; padding: 12px 14px; position: relative; overflow: hidden; }
+  .m::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--gradient-brand); }
+  .m .l { font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); font-weight: 600; }
+  .m .v { font-family: var(--font-display); font-size: 22px; font-weight: 500; margin-top: 6px; line-height: 1; color: var(--text-primary); }
+
+  .insp { border-left: 1px solid var(--border-default); background: var(--bg-surface); padding: 16px; }
+  .insp .ih { font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); font-weight: 600; padding-bottom: 10px; border-bottom: 1px solid var(--border-subtle); margin-bottom: 12px; }
+  .insp .ir { display: flex; gap: 8px; font-family: var(--font-mono); font-size: 11px; margin-bottom: 5px; }
+  .insp .ir .k { color: var(--text-muted); width: 70px; }
+  .insp .ir .v { color: var(--text-primary); }
+
+  .stat { grid-area: stat; background: var(--bg-sidebar); border-top: 1px solid var(--border-default); display: flex; align-items: center; gap: 14px; padding: 0 14px; font-family: var(--font-mono); font-size: 11px; color: rgba(255,255,255,0.55); }
+  .stat .c { display: flex; align-items: center; gap: 6px; }
+  .stat .c .d { width: 6px; height: 6px; border-radius: 50%; }
+  .stat .c.ok .d { background: var(--state-success-fg); box-shadow: 0 0 6px var(--state-success-fg); }
+  .stat .sp { flex: 1; }
+  .rch { display: flex; align-items: center; gap: 6px; height: 18px; padding: 0 8px; background: var(--accent-primary-muted); border: 1px solid rgba(59,200,184,0.35); border-radius: 9px; color: #c8e0db; }
+  .rch .p { width: 5px; height: 5px; border-radius: 50%; background: var(--accent-primary); box-shadow: 0 0 6px var(--accent-primary); }
+
+  .label { position: absolute; font-family: var(--font-mono); font-size: 9px; color: var(--accent-primary-hover); background: var(--bg-surface); border: 1px solid var(--accent-primary); padding: 2px 6px; border-radius: 4px; }
+</style>
+</head>
+<body>
+  <div class="type-label" style="color: var(--text-muted); margin-bottom: 14px;">Cockpit shell — 5 zone (ctxbar · rail · workbench · inspector · statusbar)</div>
+  <div class="demo">
+    <div class="ctx">
+      <div class="brand"><div class="mark">c</div></div>
+      <div class="pill"><span class="d"></span>@ekonomi_gundem</div>
+      <div class="crumbs"><span>İçerik</span><span class="sep">/</span><span class="last">İş kayıtları</span></div>
+      <div class="search">⌕ <span>Komut, içerik veya ayar…</span> <span class="k">⌘K</span></div>
+      <div class="user-pill"><div class="av">HS</div><span>Hüsko</span></div>
+    </div>
+    <div class="rail">
+      <div class="ri">▦</div>
+      <div class="ri on">≡<span class="ct">17</span></div>
+      <div class="ri">▶</div>
+      <div class="ri">✦</div>
+      <div class="rd"></div>
+      <div class="ri">⌘</div>
+      <div class="ri">⊞</div>
+      <div class="ri">⊟</div>
+      <div class="rs"></div>
+      <div class="rd"></div>
+      <div class="ri">◉</div>
+    </div>
+    <div class="body">
+      <div class="work">
+        <h2>İş kayıtları</h2>
+        <div class="s">17 job · 3 rendering · 5 pending review</div>
+        <div class="met">
+          <div class="m"><div class="l">Queue</div><div class="v">17</div></div>
+          <div class="m"><div class="l">Rendering</div><div class="v">3</div></div>
+          <div class="m"><div class="l">Başarı</div><div class="v">98.4%</div></div>
+        </div>
+      </div>
+      <div class="insp">
+        <div class="ih">inspector</div>
+        <div class="ir"><span class="k">module</span><span class="v">news_bulletin</span></div>
+        <div class="ir"><span class="k">status</span><span class="v">rendering</span></div>
+        <div class="ir"><span class="k">owner</span><span class="v">hüsko</span></div>
+        <div class="ir"><span class="k">eta</span><span class="v">01:32</span></div>
+      </div>
+    </div>
+    <div class="stat">
+      <div class="c ok"><span class="d"></span><span>local</span></div>
+      <div class="c ok"><span class="d"></span><span>db 52ms</span></div>
+      <div class="rch"><span class="p"></span>3 render · eta 4:17</div>
+      <div class="sp"></div>
+      <div class="c"><span>aurora-dusk</span></div>
+      <div class="c"><span>v2.4.1</span></div>
+    </div>
+  </div>
+</body>
+</html>

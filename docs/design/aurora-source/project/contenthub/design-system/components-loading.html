@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en" data-theme="aurora-dusk">
+<head>
+<meta charset="utf-8" />
+<title>Skeletons & loading</title>
+<link rel="stylesheet" href="shell.css" />
+<style>
+  .sk {
+    background: linear-gradient(90deg,
+      var(--bg-inset) 0%,
+      color-mix(in oklab, var(--bg-inset), var(--text-muted) 12%) 50%,
+      var(--bg-inset) 100%);
+    background-size: 800px 100%;
+    animation: shimmer 1.6s linear infinite;
+    border-radius: var(--radius-sm);
+  }
+  @keyframes shimmer {
+    0% { background-position: -400px 0; }
+    100% { background-position: 400px 0; }
+  }
+  .card {
+    padding: 14px 16px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+  }
+</style>
+</head>
+<body style="padding: 22px 24px;">
+  <div class="type-label" style="color: var(--text-muted); margin-bottom: 12px;">Loading states</div>
+
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+    <div class="card">
+      <div class="sk" style="height: 10px; width: 40%;"></div>
+      <div class="sk" style="height: 22px; width: 65%; margin-top: 10px;"></div>
+      <div style="display: flex; gap: 6px; margin-top: 14px;">
+        <div class="sk" style="height: 8px; flex: 1;"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div style="display: flex; gap: 10px; align-items: center;">
+        <div class="sk" style="width: 36px; height: 36px; border-radius: 8px;"></div>
+        <div style="flex: 1;">
+          <div class="sk" style="height: 10px; width: 55%;"></div>
+          <div class="sk" style="height: 8px; width: 35%; margin-top: 6px;"></div>
+        </div>
+      </div>
+      <div style="display: flex; gap: 6px; margin-top: 12px;">
+        <div class="sk" style="height: 20px; width: 70px; border-radius: 999px;"></div>
+        <div class="sk" style="height: 20px; width: 90px; border-radius: 999px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display: flex; align-items: center; gap: 10px; margin-top: 16px;">
+    <span class="type-caption" style="color: var(--text-muted);">Rendering BLT-2026-042…</span>
+    <div style="flex: 1; height: 4px; background: var(--bg-inset); border-radius: 2px; overflow: hidden; position: relative;">
+      <div style="position: absolute; top: 0; left: 0; bottom: 0; width: 38%; background: var(--gradient-brand); border-radius: 2px; box-shadow: var(--glow-accent);"></div>
+    </div>
+    <span class="type-mono" style="color: var(--accent-primary-hover);">38%</span>
+  </div>
+</body>
+</html>

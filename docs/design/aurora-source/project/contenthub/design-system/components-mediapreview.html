@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="tr" data-theme="aurora-dusk">
+<head>
+<meta charset="utf-8" />
+<title>Media Preview</title>
+<link rel="stylesheet" href="shell.css" />
+<style>
+  body { padding: 24px; overflow: hidden; }
+  .grid3 { display: grid; grid-template-columns: 240px 1fr 1fr; gap: 16px; align-items: start; }
+
+  .mp { position: relative; background: var(--bg-inset); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); overflow: hidden; cursor: pointer; transition: border-color .16s, box-shadow .16s; }
+  .mp:hover { border-color: var(--accent-primary); box-shadow: var(--glow-accent); }
+  .mp.thumb { width: 96px; aspect-ratio: 16/9; border-radius: var(--radius-sm); }
+  .mp.card { width: 100%; aspect-ratio: 16/9; }
+  .mp .bg { position: absolute; inset: 0; background: linear-gradient(135deg, #1a1030 0%, #25194a 100%); display: grid; place-items: center; color: var(--accent-primary-hover); font-family: var(--font-mono); font-size: 11px; }
+  .mp .meta { position: absolute; left: 6px; bottom: 6px; right: 6px; display: flex; gap: 6px; font-family: var(--font-mono); font-size: 10px; color: #fff; }
+  .mp .meta .du { background: rgba(0,0,0,0.7); padding: 1px 5px; border-radius: 3px; }
+  .mp .meta .qu { background: rgba(255,255,255,0.85); color: #000; padding: 1px 5px; border-radius: 3px; font-weight: 600; }
+  .mp .ql { position: absolute; top: 6px; right: 6px; width: 22px; height: 22px; border-radius: 5px; background: rgba(0,0,0,0.6); color: #fff; display: grid; place-items: center; font-size: 11px; }
+  .mp .play { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(0,0,0,0.25); opacity: 0; transition: opacity .14s; }
+  .mp:hover .play { opacity: 1; }
+  .mp .pbtn { width: 38px; height: 38px; border-radius: 50%; background: rgba(255,255,255,0.95); display: grid; place-items: center; color: #000; font-size: 14px; }
+  .mp.thumb .pbtn { width: 26px; height: 26px; font-size: 10px; }
+
+  .audio { display: flex; align-items: center; gap: 8px; padding: 6px 10px; background: var(--bg-inset); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); }
+  .audio .pl { width: 22px; height: 22px; border-radius: 50%; background: var(--accent-primary-muted); display: grid; place-items: center; color: var(--accent-primary-hover); font-size: 10px; }
+  .wf { flex: 1; display: flex; align-items: center; gap: 2px; height: 18px; }
+  .wf .b { flex: 1; background: var(--accent-primary); border-radius: 1px; opacity: 0.4; }
+  .wf .b.p { opacity: 1; }
+  .lbl { font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); margin-top: 6px; }
+</style>
+</head>
+<body>
+  <div class="type-label" style="color: var(--text-muted); margin-bottom: 14px;">Media preview — thumb · card · audio variants</div>
+  <div class="grid3">
+    <div>
+      <div class="mp thumb">
+        <div class="bg">▶</div>
+        <div class="meta"><span class="du">02:34</span></div>
+      </div>
+      <div class="lbl">.thumb · 96×54</div>
+    </div>
+    <div>
+      <div class="mp card">
+        <div class="bg">BLT-2026-042</div>
+        <div class="meta"><span class="du">07:14</span><span class="qu">HD</span></div>
+        <div class="ql">👁</div>
+      </div>
+      <div class="lbl">.card · 16:9 · hover→play overlay + quicklook</div>
+    </div>
+    <div>
+      <div class="audio">
+        <div class="pl">▶</div>
+        <div class="wf">
+          <script>
+            for (let i=0;i<32;i++) document.write(`<div class="b ${i<11?'p':''}" style="height:${20+Math.abs(Math.sin(i*0.7))*80}%"></div>`);
+          </script>
+        </div>
+        <span style="font-family: var(--font-mono); font-size: 10px; color: var(--text-muted);">02:24 / 07:14</span>
+      </div>
+      <div class="lbl">.audio · waveform strip · played progress</div>
+    </div>
+  </div>
+</body>
+</html>

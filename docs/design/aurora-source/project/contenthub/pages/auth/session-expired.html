@@ -1,0 +1,608 @@
+<!doctype html>
+<html lang="tr" data-theme="aurora-dusk">
+<head>
+<meta charset="utf-8"/>
+<title>Oturum Sona Erdi · ContentHub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500&family=Geist:wght@400;500;600&family=Instrument+Sans:wght@400;500;600&display=swap"/>
+<style>/* __STANDALONE__ */
+/* ============================================================
+   ContentHub Design System — Semantic Token Layer
+   ============================================================
+
+   Two sibling themes share ONE contract:
+     [data-theme="aurora-dusk"]   — premium dark, plum + teal, restrained glow
+     [data-theme="obsidian-slate"] — cool light admin, indigo (original)
+
+   Components MUST consume semantic tokens only. No raw hex.
+   Layout, spacing, motion tokens are shared across themes.
+
+   Contract surface:
+     --bg-*         Surfaces (canvas, surface, elevated, inset, sidebar, overlay)
+     --text-*       Foreground (primary, secondary, muted, disabled, inverse, on-accent)
+     --border-*     Borders (subtle, default, strong, focus)
+     --accent-*     Brand accents (primary, primary-hover, primary-muted, secondary, tertiary)
+     --state-*      Semantic state (success, warning, danger, info) — each has bg/fg/border
+     --glow-*       Ambient glows (accent, accent-strong, ring-focus)
+     --gradient-*   Multi-stop gradients (brand, surface, aurora, mesh)
+     --shadow-*     Elevation shadows (xs, sm, md, lg, xl, 2xl)
+     --radius-*     Corner radii (xs, sm, md, lg, xl, pill, full)
+     --space-*      Spacing scale (0, 0.5, 1, 1.5, 2, 3, 4, 5, 6, 8, 10, 12, 16)
+     --font-*       Font family tokens
+     --type-*       Typographic roles (display, h1..h3, body, caption, mono-*, label, number)
+     --motion-*     Duration + easing
+     --layout-*     Shell geometry (sidebar/header/panel widths)
+   ============================================================ */
+
+
+/* ------------------------------------------------------------
+   1. Shared tokens — layout, spacing, radius, motion
+   ------------------------------------------------------------ */
+:root {
+  /* Font families */
+  --font-sans: "Geist", "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-display: "Geist", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* Type scale — optical sizes, Swiss-modern restraint */
+  --type-display-size: 2.625rem;   /* 42px — hero numbers, empty states */
+  --type-display-weight: 500;
+  --type-display-tracking: -0.035em;
+  --type-display-leading: 1.05;
+
+  --type-h1-size: 1.75rem;         /* 28px */
+  --type-h1-weight: 500;
+  --type-h1-tracking: -0.028em;
+  --type-h1-leading: 1.15;
+
+  --type-h2-size: 1.25rem;         /* 20px */
+  --type-h2-weight: 500;
+  --type-h2-tracking: -0.022em;
+  --type-h2-leading: 1.25;
+
+  --type-h3-size: 1rem;            /* 16px */
+  --type-h3-weight: 500;
+  --type-h3-tracking: -0.015em;
+  --type-h3-leading: 1.35;
+
+  --type-body-size: 0.875rem;      /* 14px */
+  --type-body-weight: 400;
+  --type-body-tracking: -0.005em;
+  --type-body-leading: 1.5;
+
+  --type-body-sm-size: 0.8125rem;  /* 13px */
+  --type-body-sm-weight: 400;
+  --type-body-sm-tracking: 0em;
+  --type-body-sm-leading: 1.5;
+
+  --type-caption-size: 0.75rem;    /* 12px */
+  --type-caption-weight: 500;
+  --type-caption-tracking: 0.01em;
+  --type-caption-leading: 1.4;
+
+  --type-label-size: 0.6875rem;    /* 11px — UPPERCASE labels */
+  --type-label-weight: 500;
+  --type-label-tracking: 0.12em;
+  --type-label-leading: 1.3;
+
+  --type-mono-size: 0.75rem;       /* 12px */
+  --type-mono-weight: 450;
+  --type-mono-tracking: -0.005em;
+  --type-mono-leading: 1.45;
+
+  --type-number-size: 1.625rem;    /* 26px — metric tile value */
+  --type-number-weight: 500;
+  --type-number-tracking: -0.03em;
+  --type-number-leading: 1;
+
+  /* Spacing — 4px base */
+  --space-0: 0;
+  --space-0-5: 0.125rem;   /* 2 */
+  --space-1: 0.25rem;      /* 4 */
+  --space-1-5: 0.375rem;   /* 6 */
+  --space-2: 0.5rem;       /* 8 */
+  --space-3: 0.75rem;      /* 12 */
+  --space-4: 1rem;         /* 16 */
+  --space-5: 1.25rem;      /* 20 */
+  --space-6: 1.5rem;       /* 24 */
+  --space-8: 2rem;         /* 32 */
+  --space-10: 2.5rem;      /* 40 */
+  --space-12: 3rem;        /* 48 */
+  --space-16: 4rem;        /* 64 */
+
+  /* Radii */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-2xl: 28px;
+  --radius-pill: 9999px;
+  --radius-full: 9999px;
+
+  /* Motion */
+  --motion-duration-instant: 80ms;
+  --motion-duration-fast: 160ms;
+  --motion-duration-normal: 240ms;
+  --motion-duration-slow: 360ms;
+  --motion-duration-slower: 560ms;
+
+  --motion-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --motion-ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --motion-ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --motion-ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+
+  /* Layout */
+  --layout-rail-width: 56px;
+  --layout-panel-width: 264px;
+  --layout-header-height: 52px;
+  --layout-max-width: 1400px;
+  --layout-page-padding-x: 1.75rem;
+  --layout-page-padding-y: 1.25rem;
+  --layout-gutter: 1rem;
+}
+
+
+/* ------------------------------------------------------------
+   2. Aurora Dusk — premium dark, plum + teal
+   ------------------------------------------------------------
+   Deep plum night canvas with atmospheric teal lighting.
+   Surfaces are layered panels lit from within.
+   ------------------------------------------------------------ */
+[data-theme="aurora-dusk"] {
+  /* ---- Palette references (do not consume directly; use semantic tokens below) ---- */
+  --_plum-25:  #f4eff8;
+  --_plum-100: #2a1f3d;
+  --_plum-200: #231934;
+  --_plum-300: #1d1530;
+  --_plum-400: #17112a;
+  --_plum-500: #120d22;
+  --_plum-600: #0d091a;
+  --_plum-700: #090613;
+  --_plum-800: #05030c;
+  --_plum-900: #020106;
+
+  --_teal-200: #8ee8d8;
+  --_teal-300: #5ddacb;
+  --_teal-400: #3bc8b8;
+  --_teal-500: #26b6a6;
+  --_teal-600: #1a9a8c;
+
+  --_aurora-rose: #d88db8;   /* aurora tertiary accent */
+  --_aurora-amber: #e8b87a;
+
+  --_ink-50:  #f6f3fb;
+  --_ink-100: #e8e3f0;
+  --_ink-200: #c9c0d8;
+  --_ink-300: #9f95b2;
+  --_ink-400: #7c7291;
+  --_ink-500: #5f566f;
+  --_ink-600: #433c52;
+  --_ink-700: #2e2838;
+
+  /* ---- Semantic surfaces ---- */
+  --bg-canvas:        #0d0818;                    /* deepest plum, the night */
+  --bg-surface:       #17102a;                    /* cards, panels */
+  --bg-elevated:      #1f1636;                    /* hovered / elevated surface */
+  --bg-inset:         #0a0614;                    /* inputs, code, table header strips */
+  --bg-sidebar:       #0a0614;                    /* rail background */
+  --bg-sidebar-hover: #1a1030;
+  --bg-sidebar-active:#25194a;
+  --bg-overlay:       rgba(5, 3, 12, 0.72);       /* modal scrim */
+  --bg-tooltip:       #25194a;
+
+  /* ---- Foreground ---- */
+  --text-primary:     #f6f3fb;                    /* body copy, titles */
+  --text-secondary:   #c9c0d8;                    /* supporting text */
+  --text-muted:       #8478a0;                    /* metadata, caption */
+  --text-disabled:    #4a4160;
+  --text-inverse:     #120d22;                    /* text on light accent */
+  --text-on-accent:   #f6f3fb;                    /* text on primary accent */
+  --text-link:        #5ddacb;
+
+  /* ---- Borders ---- */
+  --border-subtle:    rgba(201, 192, 216, 0.06);  /* hairline across surface */
+  --border-default:   rgba(201, 192, 216, 0.10);
+  --border-strong:    rgba(201, 192, 216, 0.18);
+  --border-contrast:  rgba(201, 192, 216, 0.28);
+  --border-focus:     #5ddacb;
+
+  /* ---- Accents ---- */
+  --accent-primary:        #3bc8b8;               /* teal — actions, active states */
+  --accent-primary-hover:  #5ddacb;
+  --accent-primary-muted:  rgba(59, 200, 184, 0.14);
+  --accent-primary-strong: #26b6a6;
+
+  --accent-secondary:        #b07ad8;             /* aurora plum — link/highlight */
+  --accent-secondary-hover:  #c495e0;
+  --accent-secondary-muted:  rgba(176, 122, 216, 0.14);
+
+  --accent-tertiary:        #e8b87a;              /* warm aurora edge — used sparingly */
+  --accent-tertiary-muted:  rgba(232, 184, 122, 0.14);
+
+  /* ---- Semantic states ---- */
+  --state-success-bg:      rgba(74, 222, 164, 0.10);
+  --state-success-fg:      #6be2b5;
+  --state-success-border:  rgba(107, 226, 181, 0.25);
+
+  --state-warning-bg:      rgba(245, 183, 97, 0.10);
+  --state-warning-fg:      #f5b761;
+  --state-warning-border:  rgba(245, 183, 97, 0.25);
+
+  --state-danger-bg:       rgba(244, 114, 124, 0.10);
+  --state-danger-fg:       #f4727c;
+  --state-danger-border:   rgba(244, 114, 124, 0.25);
+
+  --state-info-bg:         rgba(122, 162, 247, 0.10);
+  --state-info-fg:         #8ab4f8;
+  --state-info-border:     rgba(138, 180, 248, 0.25);
+
+  --state-neutral-bg:      rgba(201, 192, 216, 0.08);
+  --state-neutral-fg:      #c9c0d8;
+  --state-neutral-border:  rgba(201, 192, 216, 0.18);
+
+  /* ---- Glows (restrained) ---- */
+  --glow-accent:        0 0 24px -4px rgba(59, 200, 184, 0.28);
+  --glow-accent-strong: 0 0 42px -6px rgba(59, 200, 184, 0.42);
+  --glow-secondary:     0 0 28px -6px rgba(176, 122, 216, 0.28);
+  --glow-ring-focus:    0 0 0 2px rgba(59, 200, 184, 0.24);
+  --glow-panel-edge:    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+
+  /* ---- Gradients (aurora signature) ---- */
+  --gradient-brand:
+    linear-gradient(135deg, #26b6a6 0%, #3bc8b8 45%, #b07ad8 100%);
+  --gradient-brand-subtle:
+    linear-gradient(135deg, rgba(59, 200, 184, 0.16) 0%, rgba(176, 122, 216, 0.16) 100%);
+  --gradient-surface:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.02) 0%, rgba(255, 255, 255, 0) 100%);
+  --gradient-aurora:
+    radial-gradient(60% 80% at 15% 0%, rgba(176, 122, 216, 0.14) 0%, transparent 60%),
+    radial-gradient(70% 90% at 85% 100%, rgba(59, 200, 184, 0.12) 0%, transparent 55%),
+    linear-gradient(180deg, #0d0818 0%, #0a0614 100%);
+  --gradient-aurora-soft:
+    radial-gradient(50% 80% at 20% 0%, rgba(176, 122, 216, 0.10) 0%, transparent 60%),
+    radial-gradient(60% 80% at 80% 100%, rgba(59, 200, 184, 0.08) 0%, transparent 55%);
+  --gradient-mesh:
+    radial-gradient(circle at 20% 20%, rgba(176, 122, 216, 0.20), transparent 40%),
+    radial-gradient(circle at 80% 70%, rgba(59, 200, 184, 0.16), transparent 42%),
+    radial-gradient(circle at 50% 50%, rgba(232, 184, 122, 0.06), transparent 60%);
+  --gradient-card-edge:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0) 30%);
+
+  /* ---- Shadows (cinematic, deep) ---- */
+  --shadow-xs:  0 1px 0 0 rgba(0, 0, 0, 0.4);
+  --shadow-sm:  0 1px 2px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.02);
+  --shadow-md:  0 4px 12px rgba(0, 0, 0, 0.35), 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-lg:  0 12px 28px rgba(0, 0, 0, 0.45), 0 2px 4px rgba(0, 0, 0, 0.25);
+  --shadow-xl:  0 24px 48px rgba(0, 0, 0, 0.55), 0 4px 8px rgba(0, 0, 0, 0.3);
+  --shadow-2xl: 0 40px 80px rgba(0, 0, 0, 0.65), 0 8px 16px rgba(0, 0, 0, 0.35);
+
+  /* ---- Color-scheme hint for native controls ---- */
+  color-scheme: dark;
+}
+
+
+/* ------------------------------------------------------------
+   3. Obsidian Slate — sibling theme (kept from original system)
+   ------------------------------------------------------------
+   Cool indigo/slate admin. Light surfaces, compact density.
+   Same contract, swapped values. Layout geometry stays the same.
+   ------------------------------------------------------------ */
+[data-theme="obsidian-slate"] {
+  --bg-canvas:        #f0f2f7;
+  --bg-surface:       #ffffff;
+  --bg-elevated:      #ffffff;
+  --bg-inset:         #e8ebf2;
+  --bg-sidebar:       #111520;
+  --bg-sidebar-hover: #1a1f2d;
+  --bg-sidebar-active:#22293b;
+  --bg-overlay:       rgba(15, 18, 25, 0.45);
+  --bg-tooltip:       #1a1f2b;
+
+  --text-primary:     #1a1f2b;
+  --text-secondary:   #475069;
+  --text-muted:       #6b7690;
+  --text-disabled:    #a5adbf;
+  --text-inverse:     #ffffff;
+  --text-on-accent:   #ffffff;
+  --text-link:        #3b50e6;
+
+  --border-subtle:    #e2e6ee;
+  --border-default:   #d0d5e0;
+  --border-strong:    #b5bcc9;
+  --border-contrast:  #8a95ab;
+  --border-focus:     #3b50e6;
+
+  --accent-primary:        #3b50e6;
+  --accent-primary-hover:  #4f68f7;
+  --accent-primary-muted:  rgba(79, 104, 247, 0.12);
+  --accent-primary-strong: #2d40c4;
+
+  --accent-secondary:        #7c3aed;
+  --accent-secondary-hover:  #8b5cf6;
+  --accent-secondary-muted:  rgba(124, 58, 237, 0.10);
+
+  --accent-tertiary:        #f0a000;
+  --accent-tertiary-muted:  rgba(240, 160, 0, 0.12);
+
+  --state-success-bg:      #e6f6ea;
+  --state-success-fg:      #1a7f37;
+  --state-success-border:  #9fd8ae;
+
+  --state-warning-bg:      #fef3e2;
+  --state-warning-fg:      #a6660a;
+  --state-warning-border:  #f0c97e;
+
+  --state-danger-bg:       #fde7e9;
+  --state-danger-fg:       #b42334;
+  --state-danger-border:   #eba1a8;
+
+  --state-info-bg:         #e5edfc;
+  --state-info-fg:         #2149b8;
+  --state-info-border:     #a5bbf0;
+
+  --state-neutral-bg:      #eef0f5;
+  --state-neutral-fg:      #475069;
+  --state-neutral-border:  #d0d5e0;
+
+  --glow-accent:        0 0 0 1px rgba(59, 80, 230, 0.08);
+  --glow-accent-strong: 0 0 0 2px rgba(59, 80, 230, 0.16);
+  --glow-secondary:     0 0 0 1px rgba(124, 58, 237, 0.10);
+  --glow-ring-focus:    0 0 0 4px rgba(59, 80, 230, 0.16);
+  --glow-panel-edge:    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+
+  --gradient-brand:
+    linear-gradient(135deg, #3b50e6 0%, #4f68f7 50%, #7c3aed 100%);
+  --gradient-brand-subtle:
+    linear-gradient(135deg, rgba(79, 104, 247, 0.10) 0%, rgba(124, 58, 237, 0.08) 100%);
+  --gradient-surface:
+    linear-gradient(180deg, #ffffff 0%, #fafbfd 100%);
+  --gradient-aurora:
+    radial-gradient(50% 60% at 15% 5%, rgba(79, 104, 247, 0.04) 0%, transparent 60%),
+    radial-gradient(55% 65% at 85% 95%, rgba(124, 58, 237, 0.03) 0%, transparent 60%),
+    linear-gradient(180deg, #f0f2f7 0%, #eaeef5 100%);
+  --gradient-aurora-soft:
+    radial-gradient(40% 60% at 20% 0%, rgba(79, 104, 247, 0.03) 0%, transparent 60%);
+  --gradient-mesh:
+    radial-gradient(circle at 20% 20%, rgba(79, 104, 247, 0.08), transparent 40%),
+    radial-gradient(circle at 80% 70%, rgba(124, 58, 237, 0.06), transparent 42%);
+  --gradient-card-edge:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0) 30%);
+
+  --shadow-xs:  0 1px 2px rgba(15, 18, 25, 0.05);
+  --shadow-sm:  0 1px 3px rgba(15, 18, 25, 0.06), 0 1px 2px rgba(15, 18, 25, 0.04);
+  --shadow-md:  0 4px 8px rgba(15, 18, 25, 0.08), 0 2px 4px rgba(15, 18, 25, 0.05);
+  --shadow-lg:  0 12px 24px rgba(15, 18, 25, 0.10), 0 4px 8px rgba(15, 18, 25, 0.06);
+  --shadow-xl:  0 20px 40px rgba(15, 18, 25, 0.12), 0 8px 16px rgba(15, 18, 25, 0.08);
+  --shadow-2xl: 0 32px 64px rgba(15, 18, 25, 0.18), 0 12px 24px rgba(15, 18, 25, 0.10);
+
+  color-scheme: light;
+}
+
+
+/* ------------------------------------------------------------
+   4. Default theme (no data-theme attribute = aurora-dusk)
+   ------------------------------------------------------------ */
+:root:not([data-theme]) {
+  /* Inherit aurora-dusk as the default showcase */
+}
+
+
+/* ------------------------------------------------------------
+   5. Typographic role classes — consume the tokens
+   ------------------------------------------------------------ */
+.type-display {
+  font-family: var(--font-display);
+  font-size: var(--type-display-size);
+  font-weight: var(--type-display-weight);
+  letter-spacing: var(--type-display-tracking);
+  line-height: var(--type-display-leading);
+  font-feature-settings: "ss01", "ss02", "cv11";
+}
+.type-h1 {
+  font-family: var(--font-display);
+  font-size: var(--type-h1-size);
+  font-weight: var(--type-h1-weight);
+  letter-spacing: var(--type-h1-tracking);
+  line-height: var(--type-h1-leading);
+}
+.type-h2 {
+  font-family: var(--font-display);
+  font-size: var(--type-h2-size);
+  font-weight: var(--type-h2-weight);
+  letter-spacing: var(--type-h2-tracking);
+  line-height: var(--type-h2-leading);
+}
+.type-h3 {
+  font-family: var(--font-sans);
+  font-size: var(--type-h3-size);
+  font-weight: var(--type-h3-weight);
+  letter-spacing: var(--type-h3-tracking);
+  line-height: var(--type-h3-leading);
+}
+.type-body {
+  font-family: var(--font-sans);
+  font-size: var(--type-body-size);
+  font-weight: var(--type-body-weight);
+  letter-spacing: var(--type-body-tracking);
+  line-height: var(--type-body-leading);
+}
+.type-body-sm {
+  font-family: var(--font-sans);
+  font-size: var(--type-body-sm-size);
+  line-height: var(--type-body-sm-leading);
+}
+.type-caption {
+  font-family: var(--font-sans);
+  font-size: var(--type-caption-size);
+  font-weight: var(--type-caption-weight);
+  letter-spacing: var(--type-caption-tracking);
+  line-height: var(--type-caption-leading);
+}
+.type-label {
+  font-family: var(--font-sans);
+  font-size: var(--type-label-size);
+  font-weight: var(--type-label-weight);
+  letter-spacing: var(--type-label-tracking);
+  line-height: var(--type-label-leading);
+  text-transform: uppercase;
+}
+.type-mono {
+  font-family: var(--font-mono);
+  font-size: var(--type-mono-size);
+  font-weight: var(--type-mono-weight);
+  letter-spacing: var(--type-mono-tracking);
+  line-height: var(--type-mono-leading);
+  font-variant-numeric: tabular-nums;
+}
+.type-number {
+  font-family: var(--font-display);
+  font-size: var(--type-number-size);
+  font-weight: var(--type-number-weight);
+  letter-spacing: var(--type-number-tracking);
+  line-height: var(--type-number-leading);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "ss01", "tnum";
+}
+
+
+/* ------------------------------------------------------------
+   6. Base reset for preview documents
+   ------------------------------------------------------------ */
+*, *::before, *::after { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg-canvas);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: var(--type-body-size);
+  line-height: var(--type-body-leading);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-variant-numeric: tabular-nums;
+  text-rendering: optimizeLegibility;
+}
+button {
+  font-family: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+input, select, textarea {
+  font-family: inherit;
+  color: inherit;
+}
+
+/* ------------------------------------------------------------
+   7. Keyframes — used across primitives
+   ------------------------------------------------------------ */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+@keyframes aurora-drift {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50%      { transform: translate3d(-2%, 1%, 0); }
+}
+@keyframes pulse-glow {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.5; }
+}
+
+</style>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;padding:0;min-height:100%;font-family:var(--font-sans);font-size:13px;-webkit-font-smoothing:antialiased}
+body{background:var(--bg-canvas);color:var(--text-primary);overflow-x:hidden}
+.bg{position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(70% 60% at 15% 0%,rgba(79,104,247,0.18) 0%,transparent 55%),radial-gradient(60% 70% at 85% 100%,rgba(176,122,216,0.14) 0%,transparent 55%)}
+.pg{position:relative;z-index:1;min-height:100vh;display:grid;grid-template-rows:auto 1fr auto}
+.top{display:flex;align-items:center;justify-content:space-between;padding:22px 28px}
+.brand{display:inline-flex;align-items:center;gap:10px;text-decoration:none;color:inherit}
+.logo{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#4f68f7,#7c3aed);display:grid;place-items:center;font-size:15px;font-weight:700;color:#fff;box-shadow:0 0 14px rgba(79,104,247,0.35)}
+.brand-name{font-family:var(--font-display);font-size:15px;font-weight:500;letter-spacing:-0.01em}
+.top-right{font-size:12px;color:var(--text-muted)}
+.top-right a{color:var(--accent-primary-hover);text-decoration:none}
+.stage{display:grid;place-items:start center;padding:20px}
+.card{background:var(--bg-surface);border:1px solid var(--border-default);border-radius:16px;padding:36px 36px 28px;width:100%;max-width:520px;box-shadow:0 24px 80px rgba(0,0,0,0.3);position:relative}
+.card::before{content:"";position:absolute;top:0;left:24px;right:24px;height:2px;background:linear-gradient(90deg,#4f68f7,#7c3aed,#3bc8b8);border-radius:0 0 2px 2px;opacity:0.8}
+h1{margin:0 0 6px;font-family:var(--font-display);font-size:24px;font-weight:500;letter-spacing:-0.022em}
+.sub{margin:0 0 24px;font-size:13px;color:var(--text-muted);line-height:1.55}
+.btn-p{width:100%;height:44px;background:linear-gradient(135deg,#4f68f7,#3b50e6,#7c3aed);color:#fff;border-radius:10px;font-size:14px;font-weight:600;border:none;cursor:pointer;transition:box-shadow .15s;box-shadow:0 4px 14px rgba(79,104,247,0.35)}
+.btn-p:hover{box-shadow:0 6px 22px rgba(79,104,247,0.5)}
+.btn-s{width:100%;height:42px;background:var(--bg-elevated);border:1px solid var(--border-default);color:var(--text-primary);border-radius:10px;font-size:13px;font-weight:500;cursor:pointer;transition:border-color .14s;margin-top:8px;display:flex;align-items:center;justify-content:center;gap:6px}
+.btn-s:hover{border-color:var(--accent-primary)}
+.link{font-size:12px;color:var(--accent-primary-hover);text-decoration:none}
+.link:hover{text-decoration:underline}
+.stepper{display:flex;align-items:center;gap:0;margin-bottom:24px;overflow-x:auto}
+.stp{display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0}
+.stp-c{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:600}
+.stp-c.done{background:var(--state-success-fg);color:#fff}
+.stp-c.active{background:linear-gradient(135deg,#4f68f7,#7c3aed);color:#fff;box-shadow:0 0 10px rgba(79,104,247,0.4)}
+.stp-c.pending{background:var(--bg-inset);border:1px solid var(--border-default);color:var(--text-muted)}
+.stp-l{font-size:9px;color:var(--text-muted);text-align:center;max-width:54px;line-height:1.3}
+.stp-l.active{color:var(--text-primary)}.stp-l.done{color:var(--state-success-fg)}
+.stp-conn{flex:1;height:2px;min-width:14px;margin-bottom:14px;background:var(--border-subtle)}
+.stp-conn.done{background:var(--state-success-fg)}
+.theme-opt{background:var(--bg-elevated);border:2px solid var(--border-default);border-radius:12px;padding:14px;cursor:pointer;text-align:left;transition:all .14s;width:100%}
+.theme-opt:hover{border-color:var(--border-strong)}
+.theme-opt.sel{border-color:var(--accent-primary);background:rgba(79,104,247,0.04)}
+.swatches{display:flex;gap:3px;height:20px;border-radius:5px;overflow:hidden;margin-bottom:8px}
+.sw{flex:1}
+.session-box{background:var(--bg-inset);border:1px solid var(--border-subtle);border-radius:9px;padding:12px 14px;font-family:var(--font-mono);font-size:11px;color:var(--text-muted);line-height:1.8;margin:16px 0}
+.warn-badge{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 10px;border-radius:6px;background:rgba(245,183,97,0.12);color:var(--state-warning-fg);border:1px solid rgba(245,183,97,0.3);font-family:var(--font-mono);font-size:10px;font-weight:600;margin-bottom:14px}
+.warn-badge .dot{width:5px;height:5px;border-radius:50%;background:currentColor;box-shadow:0 0 5px currentColor}
+.ws-row{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;cursor:pointer;transition:background .1s;text-decoration:none;color:inherit}
+.ws-row:hover{background:var(--bg-inset)}
+.ws-av{width:40px;height:40px;border-radius:10px;display:grid;place-items:center;font-size:15px;font-weight:700;color:#fff;flex-shrink:0}
+.ws-slug{font-family:var(--font-mono);font-size:12px;font-weight:500}
+.ws-meta{font-size:11px;color:var(--text-muted);margin-top:1px}
+.ws-search{display:flex;align-items:center;gap:8px;height:38px;padding:0 14px;background:var(--bg-elevated);border:1px solid var(--border-default);border-radius:10px;margin-bottom:12px}
+.ws-search input{flex:1;background:transparent;border:none;outline:none;font-size:13px;color:var(--text-primary);font-family:inherit}
+.ws-search input::placeholder{color:var(--text-muted)}
+.bot{display:flex;align-items:center;justify-content:space-between;padding:22px 28px;font-family:var(--font-mono);font-size:11px;color:var(--text-muted)}
+.dot-ok{display:inline-block;width:6px;height:6px;border-radius:50%;background:#22c55e;box-shadow:0 0 6px #22c55e;margin-right:5px;vertical-align:middle}
+.foot-row{display:flex;align-items:center;justify-content:space-between;margin-top:20px;padding-top:16px;border-top:1px solid var(--border-subtle)}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fi{width:100%;height:40px;padding:0 12px;background:var(--bg-elevated);border:1px solid var(--border-default);border-radius:9px;font-size:13px;color:var(--text-primary);outline:none;font-family:inherit;transition:border-color .15s}
+.fi:focus{border-color:var(--accent-primary);box-shadow:0 0 0 3px rgba(79,104,247,0.12)}
+.fs{width:100%;height:40px;padding:0 12px;background:var(--bg-elevated);border:1px solid var(--border-default);border-radius:9px;font-size:13px;color:var(--text-primary);outline:none;font-family:inherit}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-secondary);margin-bottom:5px}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="pg">
+<div class="top"><a class="brand" href="#"><div class="logo">c</div><span class="brand-name">ContentHub</span></a></div>
+<div class="stage">
+<div class="card">
+  <div class="warn-badge"><span class="dot"></span>Oturum · sona erdi</div>
+  <h1>Oturumun sona erdi</h1>
+  <p class="sub">Güvenlik için 60 dakika hareketsizlik sonrası otomatik çıkış yapıldı. Yaptığın değişiklikler kaydedildi.</p>
+  <div class="session-box">
+    <div><span style="color:var(--text-muted)">last_active</span>  <span style="color:var(--text-secondary)">2026-04-19 14:32:08</span></div>
+    <div><span style="color:var(--text-muted)">session_id</span>   <span style="color:var(--text-secondary)">ses_a8f2e1c4…</span></div>
+    <div><span style="color:var(--text-muted)">scope</span>        <span style="color:var(--text-secondary)">admin · @ekonomi_gundem</span></div>
+    <div><span style="color:var(--text-muted)">reason</span>       <span style="color:var(--state-warning-fg)">idle_timeout · 3600s</span></div>
+  </div>
+  <button class="btn-p" onclick="window.location='login.html'">Tekrar giriş yap</button>
+  <div style="text-align:center;margin-top:14px;display:flex;gap:16px;justify-content:center">
+    <a class="link" href="#">Tamamen çıkış yap</a>
+    <a class="link" href="#">Oturum geçmişi</a>
+  </div>
+</div>
+</div>
+</div><div class="bot"><div><span class="dot-ok"></span>local · idle_timeout · session ended</div><div>aurora-dusk</div></div>
+</body>
+</html>

@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en" data-theme="aurora-dusk">
+<head>
+<meta charset="utf-8" />
+<title>Progress & timeline</title>
+<link rel="stylesheet" href="shell.css" />
+<style>
+  .timeline {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px 0 8px;
+    position: relative;
+  }
+  /* Connector lines — behind dots via explicit divs */
+  .line-bg, .line-fill {
+    position: absolute;
+    top: 32px;
+    height: 2px;
+    border-radius: 2px;
+    pointer-events: none;
+  }
+  .line-bg {
+    left: 22px;
+    right: 22px;
+    background: var(--border-subtle);
+  }
+  .line-fill {
+    left: 22px;
+    width: 48%;
+    background: var(--gradient-brand);
+    box-shadow: var(--glow-accent);
+  }
+
+  .step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+    z-index: 1;
+    min-width: 60px;
+  }
+  .step .n {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-mono); font-size: 11px; font-weight: 600;
+    background: var(--bg-inset); color: var(--text-muted);
+    border: 1px solid var(--border-default);
+    position: relative; z-index: 2;
+    /* Ensure opaque bg covers the line */
+    background-clip: padding-box;
+  }
+  .step.done .n {
+    background: var(--accent-primary-muted);
+    color: var(--accent-primary-hover);
+    border-color: var(--accent-primary);
+  }
+  .step.active .n {
+    background: var(--accent-primary);
+    color: var(--text-on-accent);
+    border-color: var(--accent-primary);
+    box-shadow: var(--glow-accent-strong);
+  }
+  .step .lbl { font-size: 11px; color: var(--text-muted); font-weight: 500; }
+  .step.done .lbl, .step.active .lbl { color: var(--text-primary); }
+</style>
+</head>
+<body style="padding: 18px 28px 22px;">
+  <div class="type-label" style="color: var(--text-muted); margin-bottom: 4px;">Content pipeline · BLT-2026-042</div>
+  <div class="timeline">
+    <!-- connector lines first, behind everything -->
+    <div class="line-bg"></div>
+    <div class="line-fill"></div>
+
+    <div class="step done">
+      <div class="n">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div class="lbl">Script</div>
+    </div>
+    <div class="step done">
+      <div class="n">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div class="lbl">TTS</div>
+    </div>
+    <div class="step done">
+      <div class="n">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div class="lbl">Subtitles</div>
+    </div>
+    <div class="step active">
+      <div class="n">4</div>
+      <div class="lbl">Visuals</div>
+    </div>
+    <div class="step">
+      <div class="n">5</div>
+      <div class="lbl">Compose</div>
+    </div>
+    <div class="step">
+      <div class="n">6</div>
+      <div class="lbl">Render</div>
+    </div>
+    <div class="step">
+      <div class="n">7</div>
+      <div class="lbl">Publish</div>
+    </div>
+  </div>
+</body>
+</html>

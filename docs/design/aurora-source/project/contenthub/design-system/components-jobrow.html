@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en" data-theme="aurora-dusk">
+<head>
+<meta charset="utf-8" />
+<title>Job row</title>
+<link rel="stylesheet" href="shell.css" />
+<style>
+  .row {
+    display: grid;
+    grid-template-columns: 22px 1fr 180px 120px 100px 32px;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 16px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    transition: border-color var(--motion-duration-normal) var(--motion-ease-out), box-shadow var(--motion-duration-normal) var(--motion-ease-out);
+  }
+  .row:hover { border-color: var(--border-contrast); box-shadow: var(--shadow-md); }
+  .row.selected { border-color: var(--accent-primary); box-shadow: var(--shadow-md), var(--glow-ring-focus); }
+  .check {
+    width: 16px; height: 16px; border-radius: 4px;
+    border: 1px solid var(--border-strong);
+    display: flex; align-items: center; justify-content: center;
+    background: var(--bg-inset);
+  }
+  .check.on {
+    background: var(--accent-primary);
+    border-color: var(--accent-primary);
+    box-shadow: var(--glow-accent);
+  }
+  .bar { height: 6px; background: var(--bg-inset); border-radius: 3px; overflow: hidden; position: relative; }
+  .bar > div { height: 100%; background: var(--gradient-brand); border-radius: 3px; box-shadow: var(--glow-accent); }
+  .badge { display: inline-flex; align-items: center; gap: 6px; padding: 3px 9px; border-radius: var(--radius-pill); font-family: var(--font-mono); font-size: 11px; border: 1px solid transparent; font-variant-numeric: tabular-nums; }
+  .badge .dot { width: 6px; height: 6px; border-radius: 50%; }
+  .badge.info { color: var(--state-info-fg); background: var(--state-info-bg); border-color: var(--state-info-border); }
+  .badge.info .dot { background: var(--state-info-fg); box-shadow: 0 0 6px var(--state-info-fg); }
+  .badge.accent { color: var(--accent-primary-hover); background: var(--accent-primary-muted); border-color: var(--border-subtle); }
+  .badge.accent .dot { background: var(--accent-primary); box-shadow: var(--glow-accent); }
+</style>
+</head>
+<body style="padding: 22px 24px;">
+  <div class="type-label" style="color: var(--text-muted); margin-bottom: 12px;">Job row — default, hover, selected</div>
+  <div style="display: flex; flex-direction: column; gap: 8px;">
+
+    <div class="row">
+      <div class="check"></div>
+      <div>
+        <div style="font-size: 13px; font-weight: 500; color: var(--text-primary);">Haftalık ekonomi bülteni · 42</div>
+        <div style="display: flex; gap: 10px; margin-top: 3px;">
+          <span class="type-mono" style="color: var(--text-muted);">BLT-2026-042</span>
+          <span class="type-mono" style="color: var(--text-muted);">·</span>
+          <span class="type-mono" style="color: var(--text-muted);">news_bulletin</span>
+        </div>
+      </div>
+      <div class="bar"><div style="width: 64%;"></div></div>
+      <span class="badge info"><span class="dot"></span>pending_review</span>
+      <span class="type-mono" style="color: var(--text-secondary);">04:17</span>
+      <button style="width: 24px; height: 24px; border-radius: 4px; color: var(--text-muted); display: flex; align-items: center; justify-content: center;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+      </button>
+    </div>
+
+    <div class="row selected">
+      <div class="check on">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--text-on-accent)" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div>
+        <div style="font-size: 13px; font-weight: 500; color: var(--text-primary);">Ürün inceleme: AirPods Pro 3</div>
+        <div style="display: flex; gap: 10px; margin-top: 3px;">
+          <span class="type-mono" style="color: var(--text-muted);">REV-2026-018</span>
+          <span class="type-mono" style="color: var(--text-muted);">·</span>
+          <span class="type-mono" style="color: var(--text-muted);">product_review</span>
+        </div>
+      </div>
+      <div class="bar"><div style="width: 92%;"></div></div>
+      <span class="badge accent"><span class="dot"></span>approved</span>
+      <span class="type-mono" style="color: var(--text-secondary);">06:02</span>
+      <button style="width: 24px; height: 24px; border-radius: 4px; color: var(--text-muted);"></button>
+    </div>
+
+  </div>
+</body>
+</html>

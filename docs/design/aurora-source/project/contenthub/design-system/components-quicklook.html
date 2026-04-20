@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="tr" data-theme="aurora-dusk">
+<head>
+<meta charset="utf-8" />
+<title>QuickLook</title>
+<link rel="stylesheet" href="shell.css" />
+<style>
+  body { padding: 24px; overflow: hidden; }
+  .stage { position: relative; height: 540px; background: var(--gradient-aurora); border-radius: var(--radius-lg); overflow: hidden; padding: 24px; }
+  .stage::before { content: ""; position: absolute; inset: 0; background: rgba(5,3,12,0.5); backdrop-filter: blur(8px); }
+  .ql {
+    position: relative;
+    width: min(680px, 100%);
+    margin: 0 auto;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-2xl);
+    overflow: hidden;
+    display: flex; flex-direction: column;
+  }
+  .h { display: flex; align-items: center; gap: 12px; padding: 14px 18px; border-bottom: 1px solid var(--border-subtle); }
+  .h .th { width: 46px; height: 46px; border-radius: var(--radius-sm); background: linear-gradient(135deg, #1a1030, #25194a); border: 1px solid var(--border-subtle); display: grid; place-items: center; color: var(--accent-primary-hover); font-size: 14px; }
+  .h .ti { flex: 1; }
+  .h .t { font-family: var(--font-display); font-size: 16px; font-weight: 500; color: var(--text-primary); letter-spacing: -0.015em; }
+  .h .s { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+  .h .nav { display: flex; gap: 4px; }
+  .h .nav button, .h .x { width: 26px; height: 26px; border-radius: 6px; display: grid; place-items: center; color: var(--text-muted); background: transparent; border: none; }
+  .h .nav button:hover, .h .x:hover { background: var(--bg-inset); color: var(--text-primary); }
+
+  .body { background: var(--bg-canvas); display: grid; place-items: center; padding: 20px; }
+  .pv { width: 100%; aspect-ratio: 16/9; background: #000; border-radius: var(--radius-md); position: relative; overflow: hidden; display: grid; place-items: center; color: rgba(255,255,255,0.5); font-family: var(--font-mono); font-size: 12px; }
+  .pv .ic { font-size: 36px; color: var(--accent-primary-hover); opacity: 0.8; }
+  .pv .id { margin-top: 10px; opacity: 0.6; }
+
+  .meta { display: flex; gap: 16px; padding: 12px 18px; border-top: 1px solid var(--border-subtle); background: var(--bg-inset); font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); flex-wrap: wrap; }
+  .meta .c .v { color: var(--text-secondary); margin-left: 4px; }
+
+  .ft { display: flex; align-items: center; gap: 8px; padding: 12px 18px; border-top: 1px solid var(--border-subtle); }
+  .ft .grow { flex: 1; }
+  .kbd { display: inline-flex; font-family: var(--font-mono); font-size: 10px; padding: 1px 6px; border-radius: 4px; background: var(--bg-inset); border: 1px solid var(--border-default); color: var(--text-muted); }
+  .hints { display: flex; gap: 10px; align-items: center; font-size: 11px; color: var(--text-muted); }
+  .btn { display: inline-flex; align-items: center; height: 26px; padding: 0 12px; border-radius: 6px; font-size: 11px; font-weight: 500; border: 1px solid transparent; }
+  .btn.sec { background: var(--bg-surface); color: var(--text-primary); border-color: var(--border-default); }
+  .btn.pri { background: var(--gradient-brand); color: #fff; box-shadow: var(--glow-accent); }
+</style>
+</head>
+<body>
+  <div class="type-label" style="color: var(--text-muted); margin-bottom: 14px;">QuickLook — Space ile herhangi bir kayıtta hızlı önizleme</div>
+  <div class="stage">
+    <div class="ql">
+      <div class="h">
+        <div class="th">▶</div>
+        <div class="ti">
+          <div class="t">Haftalık ekonomi bülteni — 18 Nisan</div>
+          <div class="s">BLT-2026-042 · news_bulletin · rendering</div>
+        </div>
+        <div class="nav">
+          <button>‹</button><button>›</button>
+        </div>
+        <button class="x">✕</button>
+      </div>
+      <div class="body">
+        <div class="pv">
+          <div style="text-align:center">
+            <div class="ic">▶</div>
+            <div class="id">BLT-2026-042 · 1920×1080 · h264</div>
+          </div>
+        </div>
+      </div>
+      <div class="meta">
+        <div class="c">module:<span class="v">news_bulletin</span></div>
+        <div class="c">duration:<span class="v">07:14</span></div>
+        <div class="c">quality:<span class="v">HD</span></div>
+        <div class="c">owner:<span class="v">hüsko</span></div>
+        <div class="c">started:<span class="v">14:32</span></div>
+      </div>
+      <div class="ft">
+        <div class="hints">
+          <span><span class="kbd">←→</span> gezin</span>
+          <span><span class="kbd">esc</span> kapat</span>
+        </div>
+        <div class="grow"></div>
+        <button class="btn sec">Düzenle</button>
+        <button class="btn pri">Yayına gönder</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en" data-theme="aurora-dusk">
+<head>
+<meta charset="utf-8" />
+<title>Form inputs</title>
+<link rel="stylesheet" href="shell.css" />
+<style>
+  .field {
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .field .lbl {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .input, .select {
+    height: 36px;
+    padding: 0 12px;
+    background: var(--bg-inset);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-size: 13px;
+    transition: border-color var(--motion-duration-normal) var(--motion-ease-out), box-shadow var(--motion-duration-normal) var(--motion-ease-out);
+    outline: none;
+  }
+  .input::placeholder { color: var(--text-muted); }
+  .input:focus, .select:focus {
+    border-color: var(--border-focus);
+    box-shadow: var(--glow-ring-focus);
+    background: var(--bg-surface);
+  }
+  .input-with-icon { position: relative; }
+  .input-with-icon .ic { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+  .input-with-icon input { padding-left: 32px; }
+  .toggle-row { display: flex; align-items: center; gap: 10px; }
+  .toggle {
+    position: relative; width: 32px; height: 18px;
+    background: var(--accent-primary-muted);
+    border-radius: var(--radius-pill);
+    transition: background var(--motion-duration-normal) var(--motion-ease-out);
+  }
+  .toggle::after {
+    content: ""; position: absolute; top: 2px; left: 2px;
+    width: 14px; height: 14px; border-radius: 50%;
+    background: var(--accent-primary);
+    box-shadow: var(--glow-accent);
+    transition: left var(--motion-duration-normal) var(--motion-ease-spring);
+  }
+  .toggle.on { background: color-mix(in oklab, var(--accent-primary), transparent 60%); }
+  .toggle.on::after { left: 16px; background: var(--accent-primary-hover); }
+  .toggle.off::after { background: var(--text-muted); box-shadow: none; }
+</style>
+</head>
+<body style="padding: 22px 24px;">
+  <div class="type-label" style="color: var(--text-muted); margin-bottom: 14px;">Inputs & fields</div>
+
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px 16px;">
+
+    <div class="field">
+      <span class="lbl">Search</span>
+      <div class="input-with-icon">
+        <span class="ic">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        </span>
+        <input class="input" style="width: 100%;" placeholder="Ara: BLT-2026-042" />
+      </div>
+    </div>
+
+    <div class="field">
+      <span class="lbl">Module</span>
+      <select class="select">
+        <option>news_bulletin</option>
+        <option>standard_video</option>
+        <option>product_review</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <span class="lbl">Title (focused)</span>
+      <input class="input" value="Haftalık ekonomi bülteni" style="border-color: var(--border-focus); box-shadow: var(--glow-ring-focus); background: var(--bg-surface);" />
+    </div>
+
+    <div class="field">
+      <span class="lbl">Toggles</span>
+      <div style="display: flex; gap: 20px; height: 36px; align-items: center;">
+        <div class="toggle-row"><div class="toggle on"></div><span class="type-body-sm" style="color: var(--text-secondary);">Auto-publish</span></div>
+        <div class="toggle-row"><div class="toggle off"></div><span class="type-body-sm" style="color: var(--text-muted);">Soft dedupe</span></div>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

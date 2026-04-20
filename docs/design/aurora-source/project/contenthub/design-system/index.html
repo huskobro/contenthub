@@ -1,0 +1,1793 @@
+<!doctype html>
+<html lang="tr" data-theme="aurora-dusk">
+<head>
+<meta charset="utf-8" />
+<title>Design System · ContentHub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500&family=Geist:wght@400;500;600;700&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" />
+<link rel="stylesheet" href="../../colors_and_type.css" />
+<style>
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; min-height: 100%; }
+body {
+  background: var(--bg-canvas);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---- Top header ---- */
+.ds-header {
+  position: sticky; top: 0; z-index: 50;
+  display: flex; align-items: center; gap: 14px;
+  padding: 0 32px;
+  height: 56px;
+  background: rgba(13, 8, 24, 0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border-subtle);
+}
+.ds-header .brand {
+  display: flex; align-items: center; gap: 10px;
+}
+.ds-header .logo {
+  width: 28px; height: 28px; border-radius: 7px;
+  background: var(--gradient-brand);
+  display: grid; place-items: center;
+  font-size: 14px; font-weight: 700; color: #fff;
+  box-shadow: var(--glow-accent);
+}
+.ds-header .name {
+  font-family: var(--font-display);
+  font-size: 15px; font-weight: 500;
+  letter-spacing: -0.015em;
+  color: var(--text-primary);
+}
+.ds-header .tag {
+  font-family: var(--font-mono);
+  font-size: 10px; letter-spacing: 0.1em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  padding: 2px 8px;
+  background: var(--bg-inset);
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+}
+.ds-header .spacer { flex: 1; }
+.ds-header nav {
+  display: flex; align-items: center; gap: 2px;
+}
+.ds-header nav a {
+  padding: 5px 12px; border-radius: 6px;
+  font-size: 12px; font-weight: 500;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color .12s, background .12s;
+}
+.ds-header nav a:hover { color: var(--text-primary); background: var(--bg-inset); }
+.ds-header nav a.active { color: var(--accent-primary-hover); background: var(--accent-primary-muted); }
+
+/* ---- Action buttons ---- */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 30px; padding: 0 14px;
+  border-radius: 8px; font-size: 12px; font-weight: 500;
+  border: 1px solid transparent;
+  cursor: pointer; font-family: inherit;
+  transition: all .14s;
+}
+.btn.primary {
+  background: var(--gradient-brand);
+  color: var(--text-on-accent);
+  box-shadow: 0 1px 3px rgba(79,104,247,0.3), inset 0 0 0 1px rgba(79,104,247,0.5);
+}
+.btn.primary:hover { box-shadow: 0 2px 8px rgba(79,104,247,0.4), inset 0 0 0 1px rgba(79,104,247,0.6); }
+.btn.secondary {
+  background: var(--bg-surface); color: var(--text-primary);
+  border-color: var(--border-default);
+}
+.btn.secondary:hover { border-color: var(--border-strong); background: var(--bg-elevated); }
+.btn.ghost { color: var(--text-secondary); }
+.btn.ghost:hover { background: var(--bg-inset); color: var(--text-primary); }
+
+/* ---- Hero ---- */
+.ds-hero {
+  padding: 52px 32px 40px;
+  position: relative;
+  overflow: hidden;
+}
+.ds-hero::before {
+  content: "";
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(60% 80% at 10% 0%, rgba(79,104,247,0.12) 0%, transparent 55%),
+    radial-gradient(50% 60% at 90% 100%, rgba(176,122,216,0.10) 0%, transparent 55%);
+  pointer-events: none;
+}
+.ds-hero h1 {
+  margin: 0 0 8px;
+  font-family: var(--font-display);
+  font-size: 38px; font-weight: 500;
+  letter-spacing: -0.03em;
+  background: linear-gradient(135deg, #e8e4f4 0%, #b07ad8 40%, #3bc8b8 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1.1;
+}
+.ds-hero p {
+  margin: 0 0 28px;
+  font-size: 15px; color: var(--text-secondary);
+  max-width: 600px; line-height: 1.6;
+}
+.ds-hero .meta-row {
+  display: flex; align-items: center; gap: 20px;
+  font-family: var(--font-mono); font-size: 11px;
+  color: var(--text-muted);
+}
+.ds-hero .meta-row .sep { color: var(--border-strong); }
+.ds-hero .meta-row .hi { color: var(--text-secondary); }
+
+/* ---- Section tabs ---- */
+.ds-tabs {
+  display: flex; align-items: center; gap: 0;
+  padding: 0 32px;
+  border-bottom: 1px solid var(--border-subtle);
+  position: sticky; top: 56px; z-index: 40;
+  background: rgba(13,8,24,0.92);
+  backdrop-filter: blur(8px);
+}
+.ds-tabs button {
+  padding: 12px 18px;
+  font-size: 13px; font-weight: 500;
+  color: var(--text-muted);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color .12s, border-color .12s;
+  cursor: pointer;
+  background: none; border-top: none; border-left: none; border-right: none;
+  font-family: inherit;
+}
+.ds-tabs button:hover { color: var(--text-primary); }
+.ds-tabs button.active { color: var(--accent-primary-hover); border-bottom-color: var(--accent-primary); }
+.ds-tabs .spacer { flex: 1; }
+.ds-tabs .count {
+  font-family: var(--font-mono); font-size: 10px;
+  color: var(--text-muted);
+  margin-left: 4px;
+}
+
+/* ---- Main content ---- */
+.ds-content { padding: 32px 32px 60px; }
+
+/* ---- Section ---- */
+.ds-section { margin-bottom: 48px; }
+.ds-section-head {
+  display: flex; align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.ds-section-head h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 20px; font-weight: 500;
+  letter-spacing: -0.02em;
+}
+.ds-section-head .sub {
+  font-family: var(--font-mono); font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 0.08em; text-transform: uppercase;
+}
+
+/* ---- Card grid ---- */
+.ds-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+}
+.ds-grid.lg { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+
+/* ---- Preview card ---- */
+.ds-card {
+  position: relative;
+  display: flex; flex-direction: column;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: 12px;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  transition: border-color .16s, box-shadow .16s, transform .16s;
+}
+.ds-card:hover {
+  border-color: var(--border-strong);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2), 0 0 0 1px rgba(79,104,247,0.15);
+  transform: translateY(-1px);
+}
+.ds-card .preview {
+  width: 100%; aspect-ratio: 16/9;
+  background: var(--bg-inset);
+  overflow: hidden;
+  position: relative;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.ds-card .preview iframe {
+  width: 200%; height: 200%;
+  transform: scale(0.5); transform-origin: top left;
+  border: none; pointer-events: none;
+  overflow: hidden;
+}
+.ds-card .info {
+  padding: 12px 14px;
+  display: flex; flex-direction: column; gap: 3px;
+}
+.ds-card .info .title {
+  font-size: 12px; font-weight: 600;
+  color: var(--text-primary);
+}
+.ds-card .info .sub {
+  font-family: var(--font-mono); font-size: 10px;
+  color: var(--text-muted);
+}
+.ds-card .badge {
+  position: absolute; top: 8px; right: 8px;
+  font-family: var(--font-mono); font-size: 9px;
+  padding: 2px 6px; border-radius: 4px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.ds-card .badge.foundation { background: rgba(59,200,184,0.15); color: var(--state-success-fg); }
+.ds-card .badge.component  { background: rgba(79,104,247,0.15); color: var(--accent-primary-hover); }
+.ds-card .badge.brand      { background: rgba(176,122,216,0.15); color: #b07ad8; }
+
+/* ---- UI Kit section ---- */
+.uikit-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+.uikit-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.uikit-card .uc-head {
+  padding: 12px 16px 10px;
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.uikit-card .uc-head .uc-title {
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text-muted);
+}
+.uikit-card .uc-body {
+  padding: 16px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+
+/* ---- Color swatches ---- */
+.swatch-row { display: flex; gap: 6px; flex-wrap: wrap; }
+.swatch {
+  width: 36px; height: 36px; border-radius: 7px;
+  border: 1px solid rgba(255,255,255,0.08);
+  cursor: pointer;
+  transition: transform .12s;
+  position: relative;
+}
+.swatch:hover { transform: scale(1.1); }
+.swatch .tt {
+  position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  border-radius: 5px;
+  padding: 3px 7px;
+  font-family: var(--font-mono); font-size: 10px; color: var(--text-primary);
+  white-space: nowrap;
+  opacity: 0; pointer-events: none;
+  transition: opacity .1s;
+}
+.swatch:hover .tt { opacity: 1; }
+
+/* ---- Type specimens ---- */
+.type-specimen { display: flex; flex-direction: column; gap: 4px; }
+.type-specimen .t-row { display: flex; align-items: baseline; gap: 10px; }
+.type-specimen .t-lbl { font-family: var(--font-mono); font-size: 9px; color: var(--text-muted); width: 60px; flex-shrink: 0; letter-spacing: 0.1em; text-transform: uppercase; }
+
+/* ---- Spacing tokens ---- */
+.space-row { display: flex; align-items: center; gap: 10px; }
+.space-bar { background: var(--accent-primary); border-radius: 2px; height: 8px; }
+.space-lbl { font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); }
+
+/* ---- Live component demos ---- */
+.demo-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.demo-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  height: 28px; padding: 0 12px;
+  border-radius: 7px; font-size: 11px; font-weight: 500;
+  cursor: pointer; font-family: inherit; transition: all .12s;
+  border: 1px solid transparent;
+}
+.demo-btn.primary {
+  background: var(--gradient-brand); color: white;
+  box-shadow: 0 1px 3px rgba(79,104,247,0.3);
+}
+.demo-btn.secondary { background: var(--bg-surface); border-color: var(--border-default); color: var(--text-primary); }
+.demo-btn.secondary:hover { border-color: var(--border-strong); }
+.demo-btn.ghost { color: var(--text-secondary); }
+.demo-btn.ghost:hover { background: var(--bg-inset); color: var(--text-primary); }
+.demo-btn.danger { background: var(--state-danger-bg); color: var(--state-danger-fg); border-color: var(--state-danger-border); }
+
+/* Chip */
+.demo-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  height: 20px; padding: 0 8px;
+  border-radius: 10px;
+  font-family: var(--font-mono); font-size: 10px;
+  border: 1px solid;
+}
+.demo-chip.ok     { background: var(--state-success-bg); color: var(--state-success-fg); border-color: var(--state-success-border); }
+.demo-chip.warn   { background: var(--state-warning-bg); color: var(--state-warning-fg); border-color: var(--state-warning-border); }
+.demo-chip.err    { background: var(--state-danger-bg);  color: var(--state-danger-fg);  border-color: var(--state-danger-border); }
+.demo-chip.info   { background: var(--state-info-bg);    color: var(--state-info-fg);    border-color: var(--state-info-border); }
+.demo-chip.brand  { background: var(--accent-primary-muted); color: var(--accent-primary-hover); border-color: rgba(79,104,247,0.3); }
+.demo-chip .dot   { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+/* Input */
+.demo-input {
+  height: 30px; padding: 0 10px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: 7px; color: var(--text-primary);
+  font-size: 12px; font-family: inherit; outline: none;
+  transition: border-color .14s;
+  width: 100%;
+}
+.demo-input:focus { border-color: var(--accent-primary); box-shadow: 0 0 0 3px rgba(79,104,247,0.15); }
+
+/* Toggle */
+.demo-toggle {
+  width: 36px; height: 20px; border-radius: 10px;
+  position: relative; cursor: pointer;
+  transition: background .2s;
+  border: none; padding: 0;
+}
+.demo-toggle .knob {
+  position: absolute; top: 2px; left: 2px;
+  width: 16px; height: 16px; border-radius: 50%;
+  background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  transition: transform .2s;
+}
+.demo-toggle.on { background: var(--accent-primary); box-shadow: 0 0 8px rgba(79,104,247,0.4); }
+.demo-toggle.on .knob { transform: translateX(16px); }
+.demo-toggle.off { background: var(--bg-inset); border: 1px solid var(--border-default); }
+
+/* ---- Export panel ---- */
+.export-panel {
+  position: fixed; bottom: 24px; right: 24px; z-index: 100;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: 14px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  padding: 16px 18px;
+  width: 260px;
+  animation: slide-up .2s var(--motion-ease-out);
+}
+@keyframes slide-up { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+.export-panel h3 { margin: 0 0 12px; font-size: 13px; font-weight: 600; }
+.export-panel .exp-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 10px; border-radius: 7px;
+  font-size: 12px; color: var(--text-primary);
+  cursor: pointer;
+  transition: background .1s;
+  text-decoration: none;
+}
+.export-panel .exp-row:hover { background: var(--bg-inset); }
+.export-panel .exp-row .ico { color: var(--text-muted); }
+.export-panel .exp-row .lbl { flex: 1; }
+.export-panel .exp-row .hint { font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); }
+.export-panel .close-btn {
+  position: absolute; top: 10px; right: 10px;
+  width: 24px; height: 24px; border-radius: 6px;
+  display: grid; place-items: center;
+  color: var(--text-muted);
+  cursor: pointer; background: none; border: none; font-family: inherit;
+  transition: background .1s;
+}
+.export-panel .close-btn:hover { background: var(--bg-inset); color: var(--text-primary); }
+
+/* ---- Floating export button ---- */
+.fab {
+  position: fixed; bottom: 24px; right: 24px; z-index: 100;
+  display: flex; align-items: center; gap: 8px;
+  height: 40px; padding: 0 18px;
+  background: var(--gradient-brand);
+  color: white; font-size: 13px; font-weight: 500;
+  border-radius: 20px;
+  box-shadow: 0 4px 16px rgba(79,104,247,0.4), 0 0 0 1px rgba(79,104,247,0.5) inset;
+  cursor: pointer; border: none; font-family: inherit;
+  transition: box-shadow .14s, transform .14s;
+}
+.fab:hover { box-shadow: 0 6px 24px rgba(79,104,247,0.5), 0 0 0 1px rgba(79,104,247,0.6) inset; transform: translateY(-1px); }
+.fab svg { width: 16px; height: 16px; }
+
+/* ---- Search in ds ---- */
+.ds-search {
+  display: flex; align-items: center; gap: 8px;
+  height: 34px; padding: 0 14px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: 8px; min-width: 220px;
+  cursor: text;
+  transition: border-color .14s;
+}
+.ds-search:hover { border-color: var(--border-strong); }
+.ds-search input {
+  flex: 1; background: none; border: none; outline: none;
+  font-size: 12px; color: var(--text-primary); font-family: inherit;
+}
+.ds-search input::placeholder { color: var(--text-muted); }
+
+/* Kbd hint */
+.kbd {
+  display: inline-flex; align-items: center;
+  font-family: var(--font-mono); font-size: 10px;
+  padding: 1px 5px; border-radius: 4px;
+  background: var(--bg-inset); border: 1px solid var(--border-default);
+  color: var(--text-muted);
+}
+
+/* Divider */
+.divider { height: 1px; background: var(--border-subtle); width: 100%; }
+
+/* Token row */
+.token-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 5px 0; font-size: 11px;
+}
+.token-row .t-key { font-family: var(--font-mono); color: var(--text-muted); flex: 1; }
+.token-row .t-val { font-family: var(--font-mono); color: var(--text-secondary); }
+
+/* Status indicator */
+.status-dot { display: inline-flex; align-items: center; gap: 5px; font-family: var(--font-mono); font-size: 11px; }
+.status-dot .d { width: 7px; height: 7px; border-radius: 50%; }
+.status-dot.running .d { background: var(--state-info-fg); box-shadow: 0 0 5px var(--state-info-fg); animation: pulse 1.4s infinite; }
+.status-dot.done .d { background: var(--state-success-fg); }
+.status-dot.failed .d { background: var(--state-danger-fg); }
+.status-dot.pending .d { background: var(--state-warning-fg); }
+@keyframes pulse { 0%,100%{opacity:1}50%{opacity:.4} }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="ds-header">
+  <div class="brand">
+    <div class="logo">c</div>
+    <span class="name">ContentHub</span>
+    <span class="tag">Design System v2.4</span>
+  </div>
+  <div class="spacer"></div>
+  <nav>
+    <a href="#foundation" class="active">Foundation</a>
+    <a href="#components">Components</a>
+    <a href="#brand">Brand</a>
+    <a href="#uikit">UI Kit</a>
+  </nav>
+  <div style="width:1px;height:20px;background:var(--border-subtle);margin:0 8px;"></div>
+  <div class="ds-search">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.75"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input id="ds-search-input" placeholder="Token, bileşen ara…" />
+    <span class="kbd">⌘F</span>
+  </div>
+  <button class="btn secondary" style="margin-left:8px;" onclick="document.getElementById('export-panel').style.display='flex'">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    Export
+  </button>
+</header>
+
+<!-- Hero -->
+<div class="ds-hero">
+  <h1>ContentHub<br>Design System</h1>
+  <p>Aurora-dusk ve Obsidian-slate temalarını destekleyen iki modlu token sistemi. Tüm bileşenler, renkler, tipografi ve spacing primitifleri tek yerden.</p>
+  <div class="meta-row">
+    <span><span class="hi">26</span> preview kartı</span>
+    <span class="sep">·</span>
+    <span><span class="hi">2</span> tema</span>
+    <span class="sep">·</span>
+    <span><span class="hi">aurora-dusk</span> aktif</span>
+    <span class="sep">·</span>
+    <span>colors_and_type.css + cockpit.css</span>
+  </div>
+</div>
+
+<!-- Tabs -->
+<div class="ds-tabs">
+  <button class="active" onclick="showSection('foundation', this)">Foundation <span class="count">14</span></button>
+  <button onclick="showSection('components', this)">Components <span class="count">9</span></button>
+  <button onclick="showSection('brand', this)">Brand <span class="count">3</span></button>
+  <button onclick="showSection('uikit', this)">UI Kit <span class="count">live</span></button>
+  <button onclick="showSection('pages', this)">Pages <span class="count">87</span></button>
+  <div class="spacer"></div>
+  <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);align-self:center">
+    çift tıkla → tam ekran
+  </span>
+</div>
+
+<!-- Content -->
+<div class="ds-content">
+
+  <!-- Foundation -->
+  <div id="section-foundation">
+    <div class="ds-section" id="foundation">
+      <div class="ds-section-head">
+        <h2>Renkler</h2>
+        <span class="sub">5 grup · aurora-dusk + obsidian-slate</span>
+      </div>
+      <div class="ds-grid">
+        <a class="ds-card" href="colors-accents.html">
+          <div class="preview" style="background:linear-gradient(135deg,#4f68f7,#5e39bf,#3bc8b8)">
+            <span class="badge foundation">Foundation</span>
+          </div>
+          <div class="info"><div class="title">Brand & Accent renkleri</div><div class="sub">--accent-primary · aurora + obsidian</div></div>
+        </a>
+        <a class="ds-card" href="colors-surfaces.html">
+          <div class="preview" style="background:linear-gradient(180deg,#0d0818,#17102a,#1f1636)">
+            <span class="badge foundation">Foundation</span>
+          </div>
+          <div class="info"><div class="title">Yüzey renkleri</div><div class="sub">--bg-canvas · --bg-surface · --bg-elevated</div></div>
+        </a>
+        <a class="ds-card" href="colors-semantic.html">
+          <div class="preview" style="background:var(--bg-inset);display:grid;place-items:center;">
+            <div style="display:flex;gap:8px">
+              <div style="width:28px;height:28px;border-radius:6px;background:var(--state-success-bg);border:1px solid var(--state-success-border)"></div>
+              <div style="width:28px;height:28px;border-radius:6px;background:var(--state-warning-bg);border:1px solid var(--state-warning-border)"></div>
+              <div style="width:28px;height:28px;border-radius:6px;background:var(--state-danger-bg);border:1px solid var(--state-danger-border)"></div>
+              <div style="width:28px;height:28px;border-radius:6px;background:var(--state-info-bg);border:1px solid var(--state-info-border)"></div>
+            </div>
+            <span class="badge foundation">Foundation</span>
+          </div>
+          <div class="info"><div class="title">Semantik durum renkleri</div><div class="sub">success · warning · danger · info</div></div>
+        </a>
+        <a class="ds-card" href="colors-text-border.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;gap:6px;padding:16px;justify-content:center">
+            <div style="height:2px;width:80%;background:var(--text-primary);border-radius:1px"></div>
+            <div style="height:2px;width:60%;background:var(--text-secondary);border-radius:1px"></div>
+            <div style="height:2px;width:50%;background:var(--text-muted);border-radius:1px"></div>
+            <div style="height:1px;width:100%;background:var(--border-default);margin-top:4px"></div>
+            <span class="badge foundation">Foundation</span>
+          </div>
+          <div class="info"><div class="title">Metin & kenarlık</div><div class="sub">--text-* · --border-*</div></div>
+        </a>
+        <a class="ds-card" href="colors-gradients.html">
+          <div class="preview" style="background:var(--gradient-aurora)">
+            <span class="badge foundation">Foundation</span>
+          </div>
+          <div class="info"><div class="title">Degradeler & parıltılar</div><div class="sub">--gradient-brand · --glow-accent · aurora</div></div>
+        </a>
+      </div>
+    </div>
+
+    <div class="ds-section">
+      <div class="ds-section-head">
+        <h2>Tipografi</h2>
+        <span class="sub">Geist + Instrument Sans + Geist Mono</span>
+      </div>
+      <div class="ds-grid">
+        <a class="ds-card" href="type-display.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;align-items:center;padding:16px">
+            <span style="font-family:var(--font-display);font-size:28px;font-weight:500;letter-spacing:-0.025em;color:var(--text-primary);line-height:1">Aa</span>
+            <span class="badge foundation">Foundation</span>
+          </div>
+          <div class="info"><div class="title">Display & Headings</div><div class="sub">Instrument Sans · h1–h4</div></div>
+        </a>
+        <a class="ds-card" href="type-body.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;gap:4px;padding:14px;justify-content:center">
+            <div style="font-size:13px;color:var(--text-primary)">Body — Geist 13px</div>
+            <div style="font-size:11px;color:var(--text-secondary)">Caption — 11px secondary</div>
+            <div style="font-family:var(--font-mono);font-size:11px;color:var(--text-muted)">mono — Geist Mono</div>
+            <span class="badge foundation">Foundation</span>
+          </div>
+          <div class="info"><div class="title">Body, caption, label, mono</div><div class="sub">Geist · text-sm/xs · leading</div></div>
+        </a>
+        <a class="ds-card" href="type-numbers.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;align-items:center;padding:16px">
+            <span style="font-family:var(--font-display);font-size:32px;font-weight:500;letter-spacing:-0.03em;color:var(--text-primary);font-variant-numeric:tabular-nums">1,284</span>
+            <span class="badge foundation">Foundation</span>
+          </div>
+          <div class="info"><div class="title">Sayısal & tabular</div><div class="sub">tabular-nums · metric · mono</div></div>
+        </a>
+      </div>
+    </div>
+
+    <div class="ds-section">
+      <div class="ds-section-head">
+        <h2>Spacing, Gölge & Motion</h2>
+        <span class="sub">Space scale · elevation · easing</span>
+      </div>
+      <div class="ds-grid">
+        <a class="ds-card" href="spacing-radius.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;align-items:flex-end;gap:6px;padding:12px 16px">
+            <div style="width:6px;height:6px;border-radius:2px;background:var(--accent-primary)"></div>
+            <div style="width:10px;height:10px;border-radius:3px;background:var(--accent-primary)"></div>
+            <div style="width:16px;height:16px;border-radius:4px;background:var(--accent-primary)"></div>
+            <div style="width:24px;height:24px;border-radius:8px;background:var(--accent-primary)"></div>
+            <div style="width:36px;height:36px;border-radius:12px;background:var(--accent-primary)"></div>
+            <span class="badge foundation">Foundation</span>
+          </div>
+          <div class="info"><div class="title">Spacing & radius</div><div class="sub">--space-1…12 · --radius-sm…2xl</div></div>
+        </a>
+        <a class="ds-card" href="shadows.html">
+          <div class="preview" style="background:var(--bg-canvas);display:grid;place-items:center">
+            <div style="width:60px;height:40px;border-radius:8px;background:var(--bg-surface);box-shadow:var(--shadow-lg)"></div>
+            <span class="badge foundation">Foundation</span>
+          </div>
+          <div class="info"><div class="title">Elevation & gölgeler</div><div class="sub">--shadow-sm…2xl · --glow-*</div></div>
+        </a>
+        <a class="ds-card" href="motion.html">
+          <div class="preview" style="background:var(--bg-inset);display:grid;place-items:center">
+            <div style="width:24px;height:24px;border-radius:50%;background:var(--gradient-brand);animation:spin 2s linear infinite"></div>
+            <span class="badge foundation">Foundation</span>
+          </div>
+          <div class="info"><div class="title">Motion & easing</div><div class="sub">--motion-duration-* · --motion-ease-*</div></div>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Components -->
+  <div id="section-components" style="display:none">
+    <div class="ds-section" id="components">
+      <div class="ds-section-head">
+        <h2>Bileşenler</h2>
+        <span class="sub">9 bileşen · cockpit primitifleri</span>
+      </div>
+      <div class="ds-grid lg">
+        <a class="ds-card" href="components-buttons.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;align-items:center;gap:8px;padding:16px;flex-wrap:wrap">
+            <button class="demo-btn primary">Yayınla</button>
+            <button class="demo-btn secondary">İptal</button>
+            <button class="demo-btn ghost">Düzenle</button>
+            <button class="demo-btn danger">Sil</button>
+            <span class="badge component">Component</span>
+          </div>
+          <div class="info"><div class="title">Butonlar</div><div class="sub">primary · secondary · ghost · danger · icon · disabled</div></div>
+        </a>
+        <a class="ds-card" href="components-badges.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;align-items:center;gap:6px;padding:16px;flex-wrap:wrap">
+            <span class="demo-chip ok"><span class="dot"></span>Yayında</span>
+            <span class="demo-chip warn"><span class="dot"></span>Bekliyor</span>
+            <span class="demo-chip err"><span class="dot"></span>Hata</span>
+            <span class="demo-chip info"><span class="dot"></span>İşleniyor</span>
+            <span class="demo-chip brand"><span class="dot"></span>Taslak</span>
+            <span class="badge component">Component</span>
+          </div>
+          <div class="info"><div class="title">Status badge & chip</div><div class="sub">ok · warn · err · info · brand · inline</div></div>
+        </a>
+        <a class="ds-card" href="components-inputs.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;gap:8px;padding:16px">
+            <input class="demo-input" placeholder="Başlık girin…" />
+            <input class="demo-input" style="border-color:var(--accent-primary);box-shadow:0 0 0 3px rgba(79,104,247,0.15)" placeholder="Fokuslu input" />
+            <span class="badge component">Component</span>
+          </div>
+          <div class="info"><div class="title">Form bileşenleri</div><div class="sub">input · select · textarea · toggle · checkbox</div></div>
+        </a>
+        <a class="ds-card" href="components-metrics.html">
+          <div class="preview" style="background:var(--bg-inset);display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:12px">
+            <div style="background:var(--bg-surface);border:1px solid var(--border-default);border-radius:8px;padding:10px">
+              <div style="font-size:9px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted)">Yayınlanan</div>
+              <div style="font-family:var(--font-display);font-size:20px;font-weight:500;letter-spacing:-0.02em;margin-top:4px">1,284</div>
+            </div>
+            <div style="background:var(--bg-surface);border:1px solid var(--border-default);border-radius:8px;padding:10px">
+              <div style="font-size:9px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted)">Başarı</div>
+              <div style="font-family:var(--font-display);font-size:20px;font-weight:500;letter-spacing:-0.02em;color:var(--state-success-fg);margin-top:4px">98.4%</div>
+            </div>
+            <span class="badge component">Component</span>
+          </div>
+          <div class="info"><div class="title">Metrik kartı</div><div class="sub">KPI tile · sparkline · delta</div></div>
+        </a>
+        <a class="ds-card" href="components-nav.html">
+          <div class="preview" style="background:var(--bg-sidebar);display:flex;gap:0">
+            <div style="width:48px;height:100%;background:var(--bg-sidebar);border-right:1px solid var(--border-default);display:flex;flex-direction:column;align-items:center;padding:8px 0;gap:4px">
+              <div style="width:32px;height:32px;border-radius:8px;background:rgba(79,104,247,0.12);display:grid;place-items:center">
+                <div style="width:14px;height:14px;border-radius:3px;border:1.5px solid var(--accent-primary)"></div>
+              </div>
+              <div style="width:32px;height:32px;border-radius:8px;display:grid;place-items:center;opacity:0.5">
+                <div style="width:14px;height:2px;background:var(--text-muted);border-radius:1px;box-shadow:0 4px 0 var(--text-muted),0 -4px 0 var(--text-muted)"></div>
+              </div>
+            </div>
+            <span class="badge component">Component</span>
+          </div>
+          <div class="info"><div class="title">Navigation rail</div><div class="sub">icon-only · tooltip · active · badge</div></div>
+        </a>
+        <a class="ds-card" href="components-palette.html">
+          <div class="preview" style="background:rgba(15,18,25,0.6);backdrop-filter:blur(4px);display:grid;place-items:flex-start center;padding-top:16px">
+            <div style="width:80%;background:var(--bg-surface);border:1px solid var(--border-default);border-radius:8px;overflow:hidden">
+              <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-bottom:1px solid var(--border-subtle)">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <span style="font-size:10px;color:var(--text-muted)">Komut ara…</span>
+              </div>
+              <div style="padding:4px">
+                <div style="padding:5px 8px;border-radius:4px;background:var(--bg-inset);font-size:10px;color:var(--text-primary)">+ Yeni içerik oluştur</div>
+                <div style="padding:5px 8px;font-size:10px;color:var(--text-muted)">Dashboard'a git</div>
+              </div>
+            </div>
+            <span class="badge component">Component</span>
+          </div>
+          <div class="info"><div class="title">Command palette</div><div class="sub">⌘K · fuzzy search · groups · keyboard nav</div></div>
+        </a>
+        <a class="ds-card" href="components-drawer.html">
+          <div class="preview" style="background:var(--bg-canvas);position:relative;overflow:hidden">
+            <div style="position:absolute;right:0;top:0;bottom:0;width:55%;background:var(--bg-surface);border-left:1px solid var(--border-default);padding:10px">
+              <div style="font-size:9px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px">DETAY</div>
+              <div style="font-size:11px;font-weight:500;color:var(--text-primary);margin-bottom:8px">BLT-2026-042</div>
+              <div style="height:2px;width:100%;background:var(--border-subtle)"></div>
+            </div>
+            <span class="badge component">Component</span>
+          </div>
+          <div class="info"><div class="title">Detail drawer</div><div class="sub">slide-in · tabs · expand · focus trap</div></div>
+        </a>
+        <a class="ds-card" href="components-loading.html">
+          <div class="preview" style="background:var(--bg-surface);display:flex;flex-direction:column;gap:6px;padding:14px">
+            <div style="height:12px;border-radius:4px;background:linear-gradient(90deg,var(--bg-inset) 0%,var(--bg-elevated) 50%,var(--bg-inset) 100%);background-size:400%;animation:shimmer 1.8s infinite"></div>
+            <div style="height:12px;border-radius:4px;width:75%;background:linear-gradient(90deg,var(--bg-inset) 0%,var(--bg-elevated) 50%,var(--bg-inset) 100%);background-size:400%;animation:shimmer 1.8s infinite .2s"></div>
+            <div style="height:12px;border-radius:4px;width:50%;background:linear-gradient(90deg,var(--bg-inset) 0%,var(--bg-elevated) 50%,var(--bg-inset) 100%);background-size:400%;animation:shimmer 1.8s infinite .4s"></div>
+            <span class="badge component">Component</span>
+          </div>
+          <div class="info"><div class="title">Skeleton & loading</div><div class="sub">shimmer · spinner · progress · pulse</div></div>
+        </a>
+        <a class="ds-card" href="components-timeline.html">
+          <div class="preview" style="background:var(--bg-surface);display:flex;flex-direction:column;gap:4px;padding:12px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="width:8px;height:8px;border-radius:50%;background:var(--state-success-fg);flex-shrink:0"></div>
+              <div style="flex:1;height:3px;border-radius:2px;background:var(--state-success-fg)"></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="width:8px;height:8px;border-radius:50%;background:var(--accent-primary);box-shadow:0 0 6px var(--accent-primary);flex-shrink:0"></div>
+              <div style="flex:1;height:3px;border-radius:2px;background:linear-gradient(90deg,var(--accent-primary) 60%,var(--bg-inset) 60%)"></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="width:8px;height:8px;border-radius:50%;border:1.5px solid var(--border-default);background:var(--bg-inset);flex-shrink:0"></div>
+              <div style="flex:1;height:3px;border-radius:2px;background:var(--bg-inset)"></div>
+            </div>
+            <span class="badge component">Component</span>
+          </div>
+          <div class="info"><div class="title">Progress & timeline</div><div class="sub">step progress · job timeline · ETA</div></div>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Brand -->
+  <div id="section-brand" style="display:none">
+    <div class="ds-section" id="brand">
+      <div class="ds-section-head">
+        <h2>Brand & Kimlik</h2>
+        <span class="sub">Logo · iconography · layout</span>
+      </div>
+      <div class="ds-grid lg">
+        <a class="ds-card" href="brand-logo.html">
+          <div class="preview" style="background:var(--bg-canvas);display:grid;place-items:center">
+            <div style="display:flex;align-items:center;gap:12px">
+              <div style="width:48px;height:48px;border-radius:12px;background:var(--gradient-brand);display:grid;place-items:center;font-size:22px;font-weight:700;color:white;box-shadow:var(--glow-accent)">c</div>
+              <div>
+                <div style="font-family:var(--font-display);font-size:20px;font-weight:500;letter-spacing:-0.02em">ContentHub</div>
+                <div style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted)">v2.4 · aurora-dusk</div>
+              </div>
+            </div>
+            <span class="badge brand">Brand</span>
+          </div>
+          <div class="info"><div class="title">Logo & kimlik</div><div class="sub">wordmark · icon · dark/light</div></div>
+        </a>
+        <a class="ds-card" href="iconography.html">
+          <div class="preview" style="background:var(--bg-inset);display:grid;grid-template-columns:repeat(5,1fr);gap:8px;padding:16px;place-items:center">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="1.75"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="1.75"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" stroke-width="1.75"><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="1.75"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="1.75"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <span class="badge brand">Brand</span>
+          </div>
+          <div class="info"><div class="title">İkonografi</div><div class="sub">Lucide stroke 1.75 · 48 ikon seti</div></div>
+        </a>
+        <a class="ds-card" href="layout-cockpit.html">
+          <div class="preview" style="background:var(--bg-canvas);position:relative;overflow:hidden;font-size:0">
+            <div style="width:100%;height:100%;display:grid;grid-template-columns:32px 1fr;grid-template-rows:24px 1fr 14px">
+              <div style="grid-column:1/-1;background:var(--bg-sidebar);border-bottom:1px solid var(--border-default)"></div>
+              <div style="background:var(--bg-sidebar);border-right:1px solid var(--border-default)"></div>
+              <div style="background:var(--bg-canvas)"></div>
+              <div style="grid-column:1/-1;background:var(--bg-sidebar);border-top:1px solid var(--border-default)"></div>
+            </div>
+            <span class="badge brand">Brand</span>
+          </div>
+          <div class="info"><div class="title">Cockpit layout şeması</div><div class="sub">rail 56px · ctxbar 48px · statusbar 28px</div></div>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pages directory -->
+  <div id="section-pages" style="display:none">
+
+
+    <div class="ds-section">
+      <div class="ds-section-head"><h2>Admin · Temel sayfalar</h2><span class="sub">dashboard, jobs, publish, wizard, analytics, settings, audit, prompts, themes, library</span></div>
+      <div class="ds-grid lg">
+        <a class="ds-card" href="../pages/admin/dashboard.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(79,104,247,0.08);color:rgba(79,104,247,0.9);border:1px solid rgba(79,104,247,0.4);letter-spacing:0.04em;text-transform:uppercase">admin</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">dashboard</span>
+          </div>
+          <div class="info"><div class="title">Dashboard</div><div class="sub">KPI · renderlar · sağlık · hızlı eylem</div></div>
+        </a>
+        <a class="ds-card" href="../pages/admin/jobs.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(79,104,247,0.08);color:rgba(79,104,247,0.9);border:1px solid rgba(79,104,247,0.4);letter-spacing:0.04em;text-transform:uppercase">admin</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">job-registry</span>
+          </div>
+          <div class="info"><div class="title">Job Registry</div><div class="sub">tablo · bulk · column selector · context menu</div></div>
+        </a>
+        <a class="ds-card" href="../pages/admin/publish.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(79,104,247,0.08);color:rgba(79,104,247,0.9);border:1px solid rgba(79,104,247,0.4);letter-spacing:0.04em;text-transform:uppercase">admin</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">yayın-merkezi-(kanban)</span>
+          </div>
+          <div class="info"><div class="title">Yayın Merkezi (Kanban)</div><div class="sub">5 sütun · kart taşıma · inspector</div></div>
+        </a>
+        <a class="ds-card" href="../pages/admin/wizard.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(79,104,247,0.08);color:rgba(79,104,247,0.9);border:1px solid rgba(79,104,247,0.4);letter-spacing:0.04em;text-transform:uppercase">admin</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">i̇çerik-sihirbazı</span>
+          </div>
+          <div class="info"><div class="title">İçerik Sihirbazı</div><div class="sub">3 modül · 8 adım · draft autosave</div></div>
+        </a>
+        <a class="ds-card" href="../pages/admin/analytics.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(79,104,247,0.08);color:rgba(79,104,247,0.9);border:1px solid rgba(79,104,247,0.4);letter-spacing:0.04em;text-transform:uppercase">admin</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">analitik</span>
+          </div>
+          <div class="info"><div class="title">Analitik</div><div class="sub">bar/line chart · kanal dağılımı</div></div>
+        </a>
+        <a class="ds-card" href="../pages/admin/settings.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(79,104,247,0.08);color:rgba(79,104,247,0.9);border:1px solid rgba(79,104,247,0.4);letter-spacing:0.04em;text-transform:uppercase">admin</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">ayarlar</span>
+          </div>
+          <div class="info"><div class="title">Ayarlar</div><div class="sub">TTS · render · genel · toggle</div></div>
+        </a>
+        <a class="ds-card" href="../pages/admin/audit.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(79,104,247,0.08);color:rgba(79,104,247,0.9);border:1px solid rgba(79,104,247,0.4);letter-spacing:0.04em;text-transform:uppercase">admin</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">denetim-kaydı</span>
+          </div>
+          <div class="info"><div class="title">Denetim Kaydı</div><div class="sub">aktivite log · kullanıcı · filtre</div></div>
+        </a>
+        <a class="ds-card" href="../pages/admin/prompts.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(79,104,247,0.08);color:rgba(79,104,247,0.9);border:1px solid rgba(79,104,247,0.4);letter-spacing:0.04em;text-transform:uppercase">admin</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">prompt-editör</span>
+          </div>
+          <div class="info"><div class="title">Prompt Editör</div><div class="sub">3-pane · syntax · test paneli</div></div>
+        </a>
+        <a class="ds-card" href="../pages/admin/themes.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(79,104,247,0.08);color:rgba(79,104,247,0.9);border:1px solid rgba(79,104,247,0.4);letter-spacing:0.04em;text-transform:uppercase">admin</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">tema-galerisi</span>
+          </div>
+          <div class="info"><div class="title">Tema Galerisi</div><div class="sub">önizleme · aktif tema seçimi</div></div>
+        </a>
+        <a class="ds-card" href="../pages/admin/library.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(79,104,247,0.08);color:rgba(79,104,247,0.9);border:1px solid rgba(79,104,247,0.4);letter-spacing:0.04em;text-transform:uppercase">admin</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">kütüphane</span>
+          </div>
+          <div class="info"><div class="title">Kütüphane</div><div class="sub">şablonlar · blueprints · kaynaklar · medya</div></div>
+        </a>
+        <a class="ds-card" href="../pages/admin/job-detail.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(79,104,247,0.08);color:rgba(79,104,247,0.9);border:1px solid rgba(79,104,247,0.4);letter-spacing:0.04em;text-transform:uppercase">admin</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">job-detayı</span>
+          </div>
+          <div class="info"><div class="title">Job Detayı</div><div class="sub">tabs: genel · pipeline · artifacts · log</div></div>
+        </a></div>
+    </div>
+
+
+    <div class="ds-section">
+      <div class="ds-section-head"><h2>Admin · İçerik kayıtları</h2><span class="sub">haber, video, kaynak, şablon, blueprint</span></div>
+      <div class="ds-grid lg">
+        <a class="ds-card" href="../pages/admin/news-bulletin-registry.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(79,104,247,0.08);color:rgba(79,104,247,0.9);border:1px solid rgba(79,104,247,0.4);letter-spacing:0.04em;text-transform:uppercase">admin</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">haber-bülteni-kayıtları</span>
+          </div>
+          <div class="info"><div class="title">Haber Bülteni Kayıtları</div><div class="sub">tablo · durum · filtre</div></div>
+        </a>
+        <a class="ds-card" href="../pages/admin/news-bulletin-detail.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(79,104,247,0.08);color:rgba(79,104,247,0.9);border:1px solid rgba(79,104,247,0.4);letter-spacing:0.04em;text-transform:uppercase">admin</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">haber-bülteni-detayı</span>
+          </div>
+          <div class="info"><div class="title">Haber Bülteni Detayı</div><div class="sub">tabs: genel · haberler · senaryo</div></div>
+        </a>
+        <a class="ds-card" href="../pages/admin/news-bulletin-create.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(79,104,247,0.08);color:rgba(79,104,247,0.9);border:1px solid rgba(79,104,247,0.4);letter-spacing:0.04em;text-transform:uppercase">admin</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">haber-bülteni-oluştur</span>
+          </div>
+          <div class="info"><div class="title">Haber Bülteni Oluştur</div><div class="sub">hızlı form</div></div>
+        </a>
+        <a class="ds-card" href="../pages/admin/news-bulletin-wizard.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(79,104,247,0.08);color:rgba(79,104,247,0.9);border:1px solid rgba(79,104,247,0.4);letter-spacing:0.04em;text-transform:uppercase">admin</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">haber-bülteni-sihirbazı</span>
+          </div>
+          <div class="info"><div class="title">Haber Bülteni Sihirbazı</div><div class="sub">8 adım · tam akış</div></div>
+        </a>
+        <a class="ds-card" href="../pages/admin/news-items-registry.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(79,104,247,0.08);color:rgba(79,104,247,0.9);border:1px solid rgba(79,104,247,0.4);letter-spacing:0.04em;text-transform:uppercase">admin</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">haber-öğeleri</span>
+          </div>
+          <div class="info"><div class="title">Haber Öğeleri</div><div class="sub">kaynak · dedupe · kullanım</div></div>
+        </a>
+        <a class="ds-card" href="../pages/admin/news-item-create.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(79,104,247,0.08);color:rgba(79,104,247,0.9);border:1px solid rgba(79,104,247,0.4);letter-spacing:0.04em;text-transform:uppercase">admin</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">haber-öğesi-oluştur</span>
+          </div>
+          <div class="info"><div class="title">Haber Öğesi Oluştur</div><div class="sub">URL · içerik</div></div>
+        </a>
+        <a class="ds-card" href="../pages/admin/standard-video-registry.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(79,104,247,0.08);color:rgba(79,104,247,0.9);border:1px solid rgba(79,104,247,0.4);letter-spacing:0.04em;text-transform:uppercase">admin</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">standart-video-kayıtları</span>
+          </div>
+          <div class="info"><div class="title">Standart Video Kayıtları</div><div class="sub">kalite · süre · durum</div></div>
+        </a>
+        <a class="ds-card" href="../pages/admin/standard-video-detail.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(79,104,247,0.08);color:rgba(79,104,247,0.9);border:1px solid rgba(79,104,247,0.4);letter-spacing:0.04em;text-transform:uppercase">admin</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">standart-video-detayı</span>
+          </div>
+          <div class="info"><div class="title">Standart Video Detayı</div><div class="sub">tabs: genel · artifacts</div></div>
+        </a>
+        <a class="ds-card" href="../pages/admin/standard-video-create.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(79,104,247,0.08);color:rgba(79,104,247,0.9);border:1px solid rgba(79,104,247,0.4);letter-spacing:0.04em;text-transform:uppercase">admin</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">standart-video-oluştur</span>
+          </div>
+          <div class="info"><div class="title">Standart Video Oluştur</div><div class="sub">hızlı form</div></div>
+        </a>
+        <a class="ds-card" href="../pages/admin/sources-registry.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(79,104,247,0.08);color:rgba(79,104,247,0.9);border:1px solid rgba(79,104,247,0.4);letter-spacing:0.04em;text-transform:uppercase">admin</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">kaynaklar</span>
+          </div>
+          <div class="info"><div class="title">Kaynaklar</div><div class="sub">RSS/API/Scrape · sağlık</div></div>
+        </a>
+        <a class="ds-card" href="../pages/admin/source-create.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(79,104,247,0.08);color:rgba(79,104,247,0.9);border:1px solid rgba(79,104,247,0.4);letter-spacing:0.04em;text-transform:uppercase">admin</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">kaynak-ekle</span>
+          </div>
+          <div class="info"><div class="title">Kaynak Ekle</div><div class="sub">URL · filtre kuralları</div></div>
+        </a>
+        <a class="ds-card" href="../pages/admin/source-scans-registry.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(79,104,247,0.08);color:rgba(79,104,247,0.9);border:1px solid rgba(79,104,247,0.4);letter-spacing:0.04em;text-transform:uppercase">admin</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">kaynak-taramaları</span>
+          </div>
+          <div class="info"><div class="title">Kaynak Taramaları</div><div class="sub">tarama geçmişi</div></div>
+        </a>
+        <a class="ds-card" href="../pages/admin/source-scan-create.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(79,104,247,0.08);color:rgba(79,104,247,0.9);border:1px solid rgba(79,104,247,0.4);letter-spacing:0.04em;text-transform:uppercase">admin</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">tarama-başlat</span>
+          </div>
+          <div class="info"><div class="title">Tarama Başlat</div><div class="sub">kaynak · derinlik</div></div>
+        </a>
+        <a class="ds-card" href="../pages/admin/used-news-registry.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(79,104,247,0.08);color:rgba(79,104,247,0.9);border:1px solid rgba(79,104,247,0.4);letter-spacing:0.04em;text-transform:uppercase">admin</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">kullanılan-haberler</span>
+          </div>
+          <div class="info"><div class="title">Kullanılan Haberler</div><div class="sub">dedupe kilitleri</div></div>
+        </a>
+        <a class="ds-card" href="../pages/admin/used-news-create.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(79,104,247,0.08);color:rgba(79,104,247,0.9);border:1px solid rgba(79,104,247,0.4);letter-spacing:0.04em;text-transform:uppercase">admin</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">kullanılan-haber-ekle</span>
+          </div>
+          <div class="info"><div class="title">Kullanılan Haber Ekle</div><div class="sub">kilit süresi</div></div>
+        </a>
+        <a class="ds-card" href="../pages/admin/templates-registry.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(79,104,247,0.08);color:rgba(79,104,247,0.9);border:1px solid rgba(79,104,247,0.4);letter-spacing:0.04em;text-transform:uppercase">admin</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">şablonlar</span>
+          </div>
+          <div class="info"><div class="title">Şablonlar</div><div class="sub">modül · blueprint · kullanım</div></div>
+        </a>
+        <a class="ds-card" href="../pages/admin/template-create.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(79,104,247,0.08);color:rgba(79,104,247,0.9);border:1px solid rgba(79,104,247,0.4);letter-spacing:0.04em;text-transform:uppercase">admin</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">şablon-oluştur</span>
+          </div>
+          <div class="info"><div class="title">Şablon Oluştur</div><div class="sub">modül · blueprint bağlantısı</div></div>
+        </a>
+        <a class="ds-card" href="../pages/admin/style-blueprints-registry.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(79,104,247,0.08);color:rgba(79,104,247,0.9);border:1px solid rgba(79,104,247,0.4);letter-spacing:0.04em;text-transform:uppercase">admin</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">style-blueprints</span>
+          </div>
+          <div class="info"><div class="title">Style Blueprints</div><div class="sub">pipeline adımları</div></div>
+        </a>
+        <a class="ds-card" href="../pages/admin/style-blueprint-create.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(79,104,247,0.08);color:rgba(79,104,247,0.9);border:1px solid rgba(79,104,247,0.4);letter-spacing:0.04em;text-transform:uppercase">admin</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">blueprint-oluştur</span>
+          </div>
+          <div class="info"><div class="title">Blueprint Oluştur</div><div class="sub">modül · adımlar</div></div>
+        </a>
+        <a class="ds-card" href="../pages/admin/template-style-links-registry.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(79,104,247,0.08);color:rgba(79,104,247,0.9);border:1px solid rgba(79,104,247,0.4);letter-spacing:0.04em;text-transform:uppercase">admin</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">template-style-bağlantıları</span>
+          </div>
+          <div class="info"><div class="title">Template-Style Bağlantıları</div><div class="sub">eşleştirme · aktif</div></div>
+        </a></div>
+    </div>
+
+
+    <div class="ds-section">
+      <div class="ds-section-head"><h2>Admin · Yayın, Analitik & İzleme</h2><span class="sub">review queue, youtube, kanal, izleme</span></div>
+      <div class="ds-grid lg">
+        <a class="ds-card" href="../pages/admin/publish-review-queue.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(79,104,247,0.08);color:rgba(79,104,247,0.9);border:1px solid rgba(79,104,247,0.4);letter-spacing:0.04em;text-transform:uppercase">admin</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">i̇nceleme-kuyruğu</span>
+          </div>
+          <div class="info"><div class="title">İnceleme Kuyruğu</div><div class="sub">onay bekleyenler · acil</div></div>
+        </a>
+        <a class="ds-card" href="../pages/admin/publish-detail.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(79,104,247,0.08);color:rgba(79,104,247,0.9);border:1px solid rgba(79,104,247,0.4);letter-spacing:0.04em;text-transform:uppercase">admin</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">yayın-detayı</span>
+          </div>
+          <div class="info"><div class="title">Yayın Detayı</div><div class="sub">önizleme · onayla/reddet</div></div>
+        </a>
+        <a class="ds-card" href="../pages/admin/publish-analytics.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(79,104,247,0.08);color:rgba(79,104,247,0.9);border:1px solid rgba(79,104,247,0.4);letter-spacing:0.04em;text-transform:uppercase">admin</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">yayın-analitik</span>
+          </div>
+          <div class="info"><div class="title">Yayın Analitik</div><div class="sub">kanal bazlı · durum</div></div>
+        </a>
+        <a class="ds-card" href="../pages/admin/youtube-analytics.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(79,104,247,0.08);color:rgba(79,104,247,0.9);border:1px solid rgba(79,104,247,0.4);letter-spacing:0.04em;text-transform:uppercase">admin</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">youtube-analitik</span>
+          </div>
+          <div class="info"><div class="title">YouTube Analitik</div><div class="sub">görüntülenme · retention</div></div>
+        </a>
+        <a class="ds-card" href="../pages/admin/channel-performance.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(79,104,247,0.08);color:rgba(79,104,247,0.9);border:1px solid rgba(79,104,247,0.4);letter-spacing:0.04em;text-transform:uppercase">admin</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">kanal-performansı</span>
+          </div>
+          <div class="info"><div class="title">Kanal Performansı</div><div class="sub">3 kanal · sparklines</div></div>
+        </a>
+        <a class="ds-card" href="../pages/admin/analytics-content.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(79,104,247,0.08);color:rgba(79,104,247,0.9);border:1px solid rgba(79,104,247,0.4);letter-spacing:0.04em;text-transform:uppercase">admin</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">i̇çerik-analitik</span>
+          </div>
+          <div class="info"><div class="title">İçerik Analitik</div><div class="sub">üretim · modül dağılımı</div></div>
+        </a>
+        <a class="ds-card" href="../pages/admin/analytics-operations.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(79,104,247,0.08);color:rgba(79,104,247,0.9);border:1px solid rgba(79,104,247,0.4);letter-spacing:0.04em;text-transform:uppercase">admin</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">operasyon-analitik</span>
+          </div>
+          <div class="info"><div class="title">Operasyon Analitik</div><div class="sub">sağlayıcı · job başarı</div></div>
+        </a>
+        <a class="ds-card" href="../pages/admin/comment-monitoring.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(79,104,247,0.08);color:rgba(79,104,247,0.9);border:1px solid rgba(79,104,247,0.4);letter-spacing:0.04em;text-transform:uppercase">admin</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">yorum-i̇zleme</span>
+          </div>
+          <div class="info"><div class="title">Yorum İzleme</div><div class="sub">sentiment · yanıtsız</div></div>
+        </a>
+        <a class="ds-card" href="../pages/admin/post-monitoring.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(79,104,247,0.08);color:rgba(79,104,247,0.9);border:1px solid rgba(79,104,247,0.4);letter-spacing:0.04em;text-transform:uppercase">admin</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">post-i̇zleme</span>
+          </div>
+          <div class="info"><div class="title">Post İzleme</div><div class="sub">görüntülenme · CTR</div></div>
+        </a>
+        <a class="ds-card" href="../pages/admin/playlist-monitoring.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(79,104,247,0.08);color:rgba(79,104,247,0.9);border:1px solid rgba(79,104,247,0.4);letter-spacing:0.04em;text-transform:uppercase">admin</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">playlist-i̇zleme</span>
+          </div>
+          <div class="info"><div class="title">Playlist İzleme</div><div class="sub">kanal bazlı büyüme</div></div>
+        </a></div>
+    </div>
+
+
+    <div class="ds-section">
+      <div class="ds-section-head"><h2>Admin · Sistem & Ops</h2><span class="sub">kullanıcılar, bağlantılar, otomasyon, bildirimler</span></div>
+      <div class="ds-grid lg">
+        <a class="ds-card" href="../pages/admin/users-registry.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(79,104,247,0.08);color:rgba(79,104,247,0.9);border:1px solid rgba(79,104,247,0.4);letter-spacing:0.04em;text-transform:uppercase">admin</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">kullanıcılar</span>
+          </div>
+          <div class="info"><div class="title">Kullanıcılar</div><div class="sub">rol · kanal · son giriş</div></div>
+        </a>
+        <a class="ds-card" href="../pages/admin/user-settings-detail.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(79,104,247,0.08);color:rgba(79,104,247,0.9);border:1px solid rgba(79,104,247,0.4);letter-spacing:0.04em;text-transform:uppercase">admin</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">kullanıcı-ayar-detayı</span>
+          </div>
+          <div class="info"><div class="title">Kullanıcı Ayar Detayı</div><div class="sub">profil · rol</div></div>
+        </a>
+        <a class="ds-card" href="../pages/admin/visibility-registry.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(79,104,247,0.08);color:rgba(79,104,247,0.9);border:1px solid rgba(79,104,247,0.4);letter-spacing:0.04em;text-transform:uppercase">admin</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">görünürlük-kuralları</span>
+          </div>
+          <div class="info"><div class="title">Görünürlük Kuralları</div><div class="sub">hedef · kural · etki</div></div>
+        </a>
+        <a class="ds-card" href="../pages/admin/modules.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(79,104,247,0.08);color:rgba(79,104,247,0.9);border:1px solid rgba(79,104,247,0.4);letter-spacing:0.04em;text-transform:uppercase">admin</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">modül-yönetimi</span>
+          </div>
+          <div class="info"><div class="title">Modül Yönetimi</div><div class="sub">3 modül · istatistik</div></div>
+        </a>
+        <a class="ds-card" href="../pages/admin/providers.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(79,104,247,0.08);color:rgba(79,104,247,0.9);border:1px solid rgba(79,104,247,0.4);letter-spacing:0.04em;text-transform:uppercase">admin</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">sağlayıcılar</span>
+          </div>
+          <div class="info"><div class="title">Sağlayıcılar</div><div class="sub">TTS/LLM/Görsel · health</div></div>
+        </a>
+        <a class="ds-card" href="../pages/admin/connections.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(79,104,247,0.08);color:rgba(79,104,247,0.9);border:1px solid rgba(79,104,247,0.4);letter-spacing:0.04em;text-transform:uppercase">admin</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">platform-bağlantıları</span>
+          </div>
+          <div class="info"><div class="title">Platform Bağlantıları</div><div class="sub">YouTube OAuth · token</div></div>
+        </a>
+        <a class="ds-card" href="../pages/admin/automation-policies.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(79,104,247,0.08);color:rgba(79,104,247,0.9);border:1px solid rgba(79,104,247,0.4);letter-spacing:0.04em;text-transform:uppercase">admin</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">otomasyon-politikaları</span>
+          </div>
+          <div class="info"><div class="title">Otomasyon Politikaları</div><div class="sub">zamanlama · toggle</div></div>
+        </a>
+        <a class="ds-card" href="../pages/admin/notifications.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(79,104,247,0.08);color:rgba(79,104,247,0.9);border:1px solid rgba(79,104,247,0.4);letter-spacing:0.04em;text-transform:uppercase">admin</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">bildirimler</span>
+          </div>
+          <div class="info"><div class="title">Bildirimler</div><div class="sub">okunmamış · tür bazlı</div></div>
+        </a>
+        <a class="ds-card" href="../pages/admin/inbox.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(79,104,247,0.08);color:rgba(79,104,247,0.9);border:1px solid rgba(79,104,247,0.4);letter-spacing:0.04em;text-transform:uppercase">admin</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">gelen-kutusu-(admin)</span>
+          </div>
+          <div class="info"><div class="title">Gelen Kutusu (Admin)</div><div class="sub">sistem mesajları</div></div>
+        </a>
+        <a class="ds-card" href="../pages/admin/calendar.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(79,104,247,0.08);color:rgba(79,104,247,0.9);border:1px solid rgba(79,104,247,0.4);letter-spacing:0.04em;text-transform:uppercase">admin</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">takvim-(admin)</span>
+          </div>
+          <div class="info"><div class="title">Takvim (Admin)</div><div class="sub">aylık · render/publish</div></div>
+        </a>
+        <a class="ds-card" href="../pages/admin/wizard-settings.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(79,104,247,0.08);color:rgba(79,104,247,0.9);border:1px solid rgba(79,104,247,0.4);letter-spacing:0.04em;text-transform:uppercase">admin</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">sihirbaz-ayarları</span>
+          </div>
+          <div class="info"><div class="title">Sihirbaz Ayarları</div><div class="sub">snapshot · autosave</div></div>
+        </a>
+        <a class="ds-card" href="../pages/admin/asset-library.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(79,104,247,0.08);color:rgba(79,104,247,0.9);border:1px solid rgba(79,104,247,0.4);letter-spacing:0.04em;text-transform:uppercase">admin</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">varlık-kütüphanesi</span>
+          </div>
+          <div class="info"><div class="title">Varlık Kütüphanesi</div><div class="sub">video/görsel/ses</div></div>
+        </a></div>
+    </div>
+
+
+    <div class="ds-section">
+      <div class="ds-section-head"><h2>User · Temel sayfalar</h2><span class="sub">dashboard, projeler, kanallar, analitik, wizard</span></div>
+      <div class="ds-grid lg">
+        <a class="ds-card" href="../pages/user/dashboard.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(59,200,184,0.08);color:rgba(59,200,184,0.9);border:1px solid rgba(59,200,184,0.4);letter-spacing:0.04em;text-transform:uppercase">user</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">user-dashboard</span>
+          </div>
+          <div class="info"><div class="title">User Dashboard</div><div class="sub">KPI · son projeler · hızlı erişim</div></div>
+        </a>
+        <a class="ds-card" href="../pages/user/projects.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(59,200,184,0.08);color:rgba(59,200,184,0.9);border:1px solid rgba(59,200,184,0.4);letter-spacing:0.04em;text-transform:uppercase">user</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">projelerim</span>
+          </div>
+          <div class="info"><div class="title">Projelerim</div><div class="sub">kart grid · filtre · durum</div></div>
+        </a>
+        <a class="ds-card" href="../pages/user/project-detail.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(59,200,184,0.08);color:rgba(59,200,184,0.9);border:1px solid rgba(59,200,184,0.4);letter-spacing:0.04em;text-transform:uppercase">user</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">proje-detayı</span>
+          </div>
+          <div class="info"><div class="title">Proje Detayı</div><div class="sub">özet · adımlar · log</div></div>
+        </a>
+        <a class="ds-card" href="../pages/user/job-detail.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(59,200,184,0.08);color:rgba(59,200,184,0.9);border:1px solid rgba(59,200,184,0.4);letter-spacing:0.04em;text-transform:uppercase">user</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">job-detayı-(user)</span>
+          </div>
+          <div class="info"><div class="title">Job Detayı (User)</div><div class="sub">pipeline · log</div></div>
+        </a>
+        <a class="ds-card" href="../pages/user/channels.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(59,200,184,0.08);color:rgba(59,200,184,0.9);border:1px solid rgba(59,200,184,0.4);letter-spacing:0.04em;text-transform:uppercase">user</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">kanallarım</span>
+          </div>
+          <div class="info"><div class="title">Kanallarım</div><div class="sub">abone · video · istatistik</div></div>
+        </a>
+        <a class="ds-card" href="../pages/user/channel-detail.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(59,200,184,0.08);color:rgba(59,200,184,0.9);border:1px solid rgba(59,200,184,0.4);letter-spacing:0.04em;text-transform:uppercase">user</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">kanal-detayı</span>
+          </div>
+          <div class="info"><div class="title">Kanal Detayı</div><div class="sub">tabs: genel · videolar · analitik</div></div>
+        </a>
+        <a class="ds-card" href="../pages/user/calendar.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(59,200,184,0.08);color:rgba(59,200,184,0.9);border:1px solid rgba(59,200,184,0.4);letter-spacing:0.04em;text-transform:uppercase">user</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">takvim</span>
+          </div>
+          <div class="info"><div class="title">Takvim</div><div class="sub">aylık · yayın etkinlikleri</div></div>
+        </a>
+        <a class="ds-card" href="../pages/user/playlists.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(59,200,184,0.08);color:rgba(59,200,184,0.9);border:1px solid rgba(59,200,184,0.4);letter-spacing:0.04em;text-transform:uppercase">user</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">oynatma-listeleri</span>
+          </div>
+          <div class="info"><div class="title">Oynatma Listeleri</div><div class="sub">liste yönetimi</div></div>
+        </a>
+        <a class="ds-card" href="../pages/user/comments.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(59,200,184,0.08);color:rgba(59,200,184,0.9);border:1px solid rgba(59,200,184,0.4);letter-spacing:0.04em;text-transform:uppercase">user</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">yorumlar</span>
+          </div>
+          <div class="info"><div class="title">Yorumlar</div><div class="sub">moderasyon · yanıtla</div></div>
+        </a>
+        <a class="ds-card" href="../pages/user/analytics.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(59,200,184,0.08);color:rgba(59,200,184,0.9);border:1px solid rgba(59,200,184,0.4);letter-spacing:0.04em;text-transform:uppercase">user</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">analitik</span>
+          </div>
+          <div class="info"><div class="title">Analitik</div><div class="sub">kanal karşılaştırma</div></div>
+        </a>
+        <a class="ds-card" href="../pages/user/identity.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(59,200,184,0.08);color:rgba(59,200,184,0.9);border:1px solid rgba(59,200,184,0.4);letter-spacing:0.04em;text-transform:uppercase">user</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">kimlik-&-profil</span>
+          </div>
+          <div class="info"><div class="title">Kimlik & Profil</div><div class="sub">profil · güvenlik</div></div>
+        </a></div>
+    </div>
+
+
+    <div class="ds-section">
+      <div class="ds-section-head"><h2>User · Wizard'lar & Ops</h2><span class="sub">modül bazlı içerik oluşturma, analitik, bağlantılar</span></div>
+      <div class="ds-grid lg">
+        <a class="ds-card" href="../pages/user/wizard-standard.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(59,200,184,0.08);color:rgba(59,200,184,0.9);border:1px solid rgba(59,200,184,0.4);letter-spacing:0.04em;text-transform:uppercase">user</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">wizard-·-standart-video</span>
+          </div>
+          <div class="info"><div class="title">Wizard · Standart Video</div><div class="sub">8 adım · topic→render</div></div>
+        </a>
+        <a class="ds-card" href="../pages/user/wizard-news.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(59,200,184,0.08);color:rgba(59,200,184,0.9);border:1px solid rgba(59,200,184,0.4);letter-spacing:0.04em;text-transform:uppercase">user</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">wizard-·-haber-bülteni</span>
+          </div>
+          <div class="info"><div class="title">Wizard · Haber Bülteni</div><div class="sub">6 adım · kaynaklar · filtre</div></div>
+        </a>
+        <a class="ds-card" href="../pages/user/wizard-review.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(59,200,184,0.08);color:rgba(59,200,184,0.9);border:1px solid rgba(59,200,184,0.4);letter-spacing:0.04em;text-transform:uppercase">user</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">wizard-·-ürün-i̇ncelemesi</span>
+          </div>
+          <div class="info"><div class="title">Wizard · Ürün İncelemesi</div><div class="sub">8 adım · rating · FTC</div></div>
+        </a>
+        <a class="ds-card" href="../pages/user/youtube-analytics.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(59,200,184,0.08);color:rgba(59,200,184,0.9);border:1px solid rgba(59,200,184,0.4);letter-spacing:0.04em;text-transform:uppercase">user</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">youtube-analitik-(user)</span>
+          </div>
+          <div class="info"><div class="title">YouTube Analitik (User)</div><div class="sub">28g · görüntülenme</div></div>
+        </a>
+        <a class="ds-card" href="../pages/user/channel-analytics.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(59,200,184,0.08);color:rgba(59,200,184,0.9);border:1px solid rgba(59,200,184,0.4);letter-spacing:0.04em;text-transform:uppercase">user</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">kanal-analitik</span>
+          </div>
+          <div class="info"><div class="title">Kanal Analitik</div><div class="sub">top 5 video · metrikler</div></div>
+        </a>
+        <a class="ds-card" href="../pages/user/posts.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(59,200,184,0.08);color:rgba(59,200,184,0.9);border:1px solid rgba(59,200,184,0.4);letter-spacing:0.04em;text-transform:uppercase">user</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">gönderiler</span>
+          </div>
+          <div class="info"><div class="title">Gönderiler</div><div class="sub">görüntülenme · beğeni</div></div>
+        </a>
+        <a class="ds-card" href="../pages/user/user-publish.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(59,200,184,0.08);color:rgba(59,200,184,0.9);border:1px solid rgba(59,200,184,0.4);letter-spacing:0.04em;text-transform:uppercase">user</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">yayın-durumu</span>
+          </div>
+          <div class="info"><div class="title">Yayın Durumu</div><div class="sub">kuyruk · onay</div></div>
+        </a>
+        <a class="ds-card" href="../pages/user/news-picker.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(59,200,184,0.08);color:rgba(59,200,184,0.9);border:1px solid rgba(59,200,184,0.4);letter-spacing:0.04em;text-transform:uppercase">user</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">haber-seçici</span>
+          </div>
+          <div class="info"><div class="title">Haber Seçici</div><div class="sub">ilgililik skoru · çoklu seçim</div></div>
+        </a>
+        <a class="ds-card" href="../pages/user/automation.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(59,200,184,0.08);color:rgba(59,200,184,0.9);border:1px solid rgba(59,200,184,0.4);letter-spacing:0.04em;text-transform:uppercase">user</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">otomasyon</span>
+          </div>
+          <div class="info"><div class="title">Otomasyon</div><div class="sub">zamanlanmış üretim</div></div>
+        </a>
+        <a class="ds-card" href="../pages/user/connections.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(59,200,184,0.08);color:rgba(59,200,184,0.9);border:1px solid rgba(59,200,184,0.4);letter-spacing:0.04em;text-transform:uppercase">user</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">user-bağlantılar</span>
+          </div>
+          <div class="info"><div class="title">User Bağlantılar</div><div class="sub">YouTube OAuth</div></div>
+        </a>
+        <a class="ds-card" href="../pages/user/inbox.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(59,200,184,0.08);color:rgba(59,200,184,0.9);border:1px solid rgba(59,200,184,0.4);letter-spacing:0.04em;text-transform:uppercase">user</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">user-gelen-kutusu</span>
+          </div>
+          <div class="info"><div class="title">User Gelen Kutusu</div><div class="sub">bildirimler</div></div>
+        </a>
+        <a class="ds-card" href="../pages/user/settings.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(59,200,184,0.08);color:rgba(59,200,184,0.9);border:1px solid rgba(59,200,184,0.4);letter-spacing:0.04em;text-transform:uppercase">user</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">user-ayarları</span>
+          </div>
+          <div class="info"><div class="title">User Ayarları</div><div class="sub">bildirimler · tema · dil</div></div>
+        </a></div>
+    </div>
+
+
+    <div class="ds-section">
+      <div class="ds-section-head"><h2>Auth sayfaları</h2><span class="sub">login, 2fa, onboarding, workspace-switch, session-expired, forgot</span></div>
+      <div class="ds-grid lg">
+        <a class="ds-card" href="../pages/auth/login.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(176,122,216,0.08);color:rgba(176,122,216,0.9);border:1px solid rgba(176,122,216,0.4);letter-spacing:0.04em;text-transform:uppercase">auth</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">giriş</span>
+          </div>
+          <div class="info"><div class="title">Giriş</div><div class="sub">e-posta · şifre · SSO</div></div>
+        </a>
+        <a class="ds-card" href="../pages/auth/2fa.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(176,122,216,0.08);color:rgba(176,122,216,0.9);border:1px solid rgba(176,122,216,0.4);letter-spacing:0.04em;text-transform:uppercase">auth</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">i̇ki-adımlı-doğrulama</span>
+          </div>
+          <div class="info"><div class="title">İki Adımlı Doğrulama</div><div class="sub">OTP · countdown</div></div>
+        </a>
+        <a class="ds-card" href="../pages/auth/forgot.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(176,122,216,0.08);color:rgba(176,122,216,0.9);border:1px solid rgba(176,122,216,0.4);letter-spacing:0.04em;text-transform:uppercase">auth</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">şifre-sıfırlama</span>
+          </div>
+          <div class="info"><div class="title">Şifre Sıfırlama</div><div class="sub">form + sent confirmation</div></div>
+        </a>
+        <a class="ds-card" href="../pages/auth/onboarding.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(176,122,216,0.08);color:rgba(176,122,216,0.9);border:1px solid rgba(176,122,216,0.4);letter-spacing:0.04em;text-transform:uppercase">auth</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">onboarding</span>
+          </div>
+          <div class="info"><div class="title">Onboarding</div><div class="sub">4 adım · tema seçimi</div></div>
+        </a>
+        <a class="ds-card" href="../pages/auth/session-expired.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(176,122,216,0.08);color:rgba(176,122,216,0.9);border:1px solid rgba(176,122,216,0.4);letter-spacing:0.04em;text-transform:uppercase">auth</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">oturum-sona-erdi</span>
+          </div>
+          <div class="info"><div class="title">Oturum Sona Erdi</div><div class="sub">idle timeout · metadata</div></div>
+        </a>
+        <a class="ds-card" href="../pages/auth/workspace-switch.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(176,122,216,0.08);color:rgba(176,122,216,0.9);border:1px solid rgba(176,122,216,0.4);letter-spacing:0.04em;text-transform:uppercase">auth</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">workspace-seçici</span>
+          </div>
+          <div class="info"><div class="title">Workspace Seçici</div><div class="sub">OAuth status · kanal listesi</div></div>
+        </a></div>
+    </div>
+
+
+    <div class="ds-section">
+      <div class="ds-section-head"><h2>Empty & Error states</h2><span class="sub">boş durumlar, hata sayfaları, bakım modu</span></div>
+      <div class="ds-grid lg">
+        <a class="ds-card" href="../states/empty-jobs.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(239,68,68,0.08);color:rgba(239,68,68,0.9);border:1px solid rgba(239,68,68,0.4);letter-spacing:0.04em;text-transform:uppercase">states</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">empty-·-i̇ş-kayıtları</span>
+          </div>
+          <div class="info"><div class="title">Empty · İş Kayıtları</div><div class="sub">geometric vignette · CTA</div></div>
+        </a>
+        <a class="ds-card" href="../states/empty-search.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(239,68,68,0.08);color:rgba(239,68,68,0.9);border:1px solid rgba(239,68,68,0.4);letter-spacing:0.04em;text-transform:uppercase">states</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">empty-·-arama</span>
+          </div>
+          <div class="info"><div class="title">Empty · Arama</div><div class="sub">no-results · filtre sıfırla</div></div>
+        </a>
+        <a class="ds-card" href="../states/error-500.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(239,68,68,0.08);color:rgba(239,68,68,0.9);border:1px solid rgba(239,68,68,0.4);letter-spacing:0.04em;text-transform:uppercase">states</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">hata-500</span>
+          </div>
+          <div class="info"><div class="title">Hata 500</div><div class="sub">stack trace · retry · bildir</div></div>
+        </a>
+        <a class="ds-card" href="../states/error-404.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(239,68,68,0.08);color:rgba(239,68,68,0.9);border:1px solid rgba(239,68,68,0.4);letter-spacing:0.04em;text-transform:uppercase">states</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">hata-404</span>
+          </div>
+          <div class="info"><div class="title">Hata 404</div><div class="sub">path display · geri dön</div></div>
+        </a>
+        <a class="ds-card" href="../states/maintenance.html">
+          <div class="preview" style="background:var(--bg-inset);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:6px;min-height:70px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(239,68,68,0.08);color:rgba(239,68,68,0.9);border:1px solid rgba(239,68,68,0.4);letter-spacing:0.04em;text-transform:uppercase">states</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;line-height:1.4">bakım-modu</span>
+          </div>
+          <div class="info"><div class="title">Bakım Modu</div><div class="sub">countdown · sistem durumu</div></div>
+        </a></div>
+    </div>
+
+  </div>
+
+  <!-- UI Kit -->
+  <div id="section-uikit" style="display:none">
+    <div class="ds-section" id="uikit">
+      <div class="ds-section-head">
+        <h2>UI Kit</h2>
+        <span class="sub">Canlı bileşenler · kopyalanabilir token'lar</span>
+      </div>
+      <div class="uikit-grid">
+
+        <!-- Color tokens -->
+        <div class="uikit-card">
+          <div class="uc-head"><div class="uc-title">Brand renkleri</div><span class="badge foundation">token</span></div>
+          <div class="uc-body">
+            <div class="swatch-row">
+              <div class="swatch" style="background:#4f68f7" onclick="copyToken('--accent-primary','#3b50e6')"><div class="tt">--accent-primary</div></div>
+              <div class="swatch" style="background:#5e39bf" onclick="copyToken('--accent-secondary','#5e39bf')"><div class="tt">--accent-secondary</div></div>
+              <div class="swatch" style="background:#3bc8b8" onclick="copyToken('--accent-primary (aurora)','#3bc8b8')"><div class="tt">teal (aurora)</div></div>
+              <div class="swatch" style="background:#b07ad8" onclick="copyToken('--accent-secondary (aurora)','#b07ad8')"><div class="tt">plum (aurora)</div></div>
+              <div class="swatch" style="background:linear-gradient(135deg,#4f68f7,#7c3aed)" onclick="copyToken('--gradient-brand','linear-gradient...')"><div class="tt">gradient-brand</div></div>
+            </div>
+            <div class="divider"></div>
+            <div class="swatch-row">
+              <div class="swatch" style="background:var(--state-success-fg)"><div class="tt">success</div></div>
+              <div class="swatch" style="background:var(--state-warning-fg)"><div class="tt">warning</div></div>
+              <div class="swatch" style="background:var(--state-danger-fg)"><div class="tt">danger</div></div>
+              <div class="swatch" style="background:var(--state-info-fg)"><div class="tt">info</div></div>
+            </div>
+            <div id="copy-feedback" style="font-family:var(--font-mono);font-size:10px;color:var(--state-success-fg);min-height:14px;transition:opacity .3s"></div>
+          </div>
+        </div>
+
+        <!-- Surface tokens -->
+        <div class="uikit-card">
+          <div class="uc-head"><div class="uc-title">Yüzeyler</div><span class="badge foundation">token</span></div>
+          <div class="uc-body">
+            <div class="swatch-row">
+              <div class="swatch" style="background:#0d0818;border:1px solid rgba(255,255,255,0.15)"><div class="tt">--bg-canvas</div></div>
+              <div class="swatch" style="background:#17102a"><div class="tt">--bg-surface</div></div>
+              <div class="swatch" style="background:#1f1636"><div class="tt">--bg-elevated</div></div>
+              <div class="swatch" style="background:#120d22"><div class="tt">--bg-inset</div></div>
+              <div class="swatch" style="background:#0d0a1a"><div class="tt">--bg-sidebar</div></div>
+            </div>
+            <div class="divider"></div>
+            <div class="token-row"><span class="t-key">--bg-canvas</span><span class="t-val">#0d0818</span></div>
+            <div class="token-row"><span class="t-key">--bg-surface</span><span class="t-val">#17102a</span></div>
+            <div class="token-row"><span class="t-key">--bg-elevated</span><span class="t-val">#1f1636</span></div>
+          </div>
+        </div>
+
+        <!-- Buttons live -->
+        <div class="uikit-card">
+          <div class="uc-head"><div class="uc-title">Butonlar</div><span class="badge component">live</span></div>
+          <div class="uc-body">
+            <div class="demo-row">
+              <button class="demo-btn primary">+ Yeni içerik</button>
+              <button class="demo-btn secondary">Önizleme</button>
+            </div>
+            <div class="demo-row">
+              <button class="demo-btn ghost">İptal</button>
+              <button class="demo-btn danger">Sil</button>
+            </div>
+            <div class="divider"></div>
+            <div style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted)">
+              .btn.primary / .btn.secondary / .btn.ghost / .btn.danger
+            </div>
+          </div>
+        </div>
+
+        <!-- Status chips live -->
+        <div class="uikit-card">
+          <div class="uc-head"><div class="uc-title">Status chip & badge</div><span class="badge component">live</span></div>
+          <div class="uc-body">
+            <div class="demo-row">
+              <span class="demo-chip ok"><span class="dot"></span>Yayında</span>
+              <span class="demo-chip warn"><span class="dot"></span>Bekliyor</span>
+              <span class="demo-chip err"><span class="dot"></span>Hata</span>
+            </div>
+            <div class="demo-row">
+              <span class="demo-chip info"><span class="dot"></span>Çalışıyor</span>
+              <span class="demo-chip brand"><span class="dot"></span>Taslak</span>
+            </div>
+            <div class="divider"></div>
+            <div class="demo-row">
+              <span class="status-dot running"><span class="d"></span>running</span>
+              <span class="status-dot done"><span class="d"></span>done</span>
+              <span class="status-dot failed"><span class="d"></span>failed</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Form inputs live -->
+        <div class="uikit-card">
+          <div class="uc-head"><div class="uc-title">Form girdileri</div><span class="badge component">live</span></div>
+          <div class="uc-body">
+            <input class="demo-input" placeholder="Başlık girin…" />
+            <input class="demo-input" type="text" placeholder="🔍 Arama…" />
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <span style="font-size:12px;color:var(--text-secondary)">Bildirimleri göster</span>
+              <button class="demo-toggle on" onclick="this.classList.toggle('on');this.classList.toggle('off')">
+                <span class="knob"></span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Typography live -->
+        <div class="uikit-card">
+          <div class="uc-head"><div class="uc-title">Tipografi</div><span class="badge foundation">specimen</span></div>
+          <div class="uc-body">
+            <div class="type-specimen">
+              <div class="t-row">
+                <span class="t-lbl">display</span>
+                <span style="font-family:var(--font-display);font-size:24px;font-weight:500;letter-spacing:-0.025em;color:var(--text-primary)">İçerik üretimi</span>
+              </div>
+              <div class="t-row">
+                <span class="t-lbl">heading</span>
+                <span style="font-family:var(--font-display);font-size:18px;font-weight:500;color:var(--text-primary)">BLT-2026-042</span>
+              </div>
+              <div class="t-row">
+                <span class="t-lbl">body</span>
+                <span style="font-size:13px;color:var(--text-secondary)">Haftalık ekonomi bülteni</span>
+              </div>
+              <div class="t-row">
+                <span class="t-lbl">caption</span>
+                <span style="font-size:11px;color:var(--text-muted)">news_bulletin · 18 Nis 2026</span>
+              </div>
+              <div class="t-row">
+                <span class="t-lbl">mono</span>
+                <span style="font-family:var(--font-mono);font-size:11px;color:var(--text-muted)">04:17 · 98.4% · v2.4.1</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Spacing -->
+        <div class="uikit-card">
+          <div class="uc-head"><div class="uc-title">Spacing scale</div><span class="badge foundation">token</span></div>
+          <div class="uc-body">
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <div class="space-row"><div class="space-bar" style="width:4px"></div><span class="space-lbl">--space-1 · 4px</span></div>
+              <div class="space-row"><div class="space-bar" style="width:8px"></div><span class="space-lbl">--space-2 · 8px</span></div>
+              <div class="space-row"><div class="space-bar" style="width:12px"></div><span class="space-lbl">--space-3 · 12px</span></div>
+              <div class="space-row"><div class="space-bar" style="width:16px"></div><span class="space-lbl">--space-4 · 16px</span></div>
+              <div class="space-row"><div class="space-bar" style="width:24px"></div><span class="space-lbl">--space-6 · 24px</span></div>
+              <div class="space-row"><div class="space-bar" style="width:32px"></div><span class="space-lbl">--space-8 · 32px</span></div>
+              <div class="space-row"><div class="space-bar" style="width:48px"></div><span class="space-lbl">--space-12 · 48px</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Shadow tokens -->
+        <div class="uikit-card">
+          <div class="uc-head"><div class="uc-title">Elevation</div><span class="badge foundation">token</span></div>
+          <div class="uc-body">
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <div style="display:flex;align-items:center;gap:12px">
+                <div style="width:48px;height:28px;border-radius:6px;background:var(--bg-elevated);box-shadow:var(--shadow-sm)"></div>
+                <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted)">--shadow-sm · card hover</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:12px">
+                <div style="width:48px;height:28px;border-radius:6px;background:var(--bg-elevated);box-shadow:var(--shadow-md)"></div>
+                <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted)">--shadow-md · modal</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:12px">
+                <div style="width:48px;height:28px;border-radius:6px;background:var(--bg-elevated);box-shadow:var(--shadow-lg)"></div>
+                <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted)">--shadow-lg · drawer</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:12px">
+                <div style="width:48px;height:28px;border-radius:6px;background:var(--bg-elevated);box-shadow:0 0 0 1px var(--accent-primary),0 0 12px rgba(79,104,247,0.3)"></div>
+                <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted)">--glow-accent · focus</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Radius tokens -->
+        <div class="uikit-card">
+          <div class="uc-head"><div class="uc-title">Border radius</div><span class="badge foundation">token</span></div>
+          <div class="uc-body">
+            <div style="display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap">
+              <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+                <div style="width:28px;height:28px;background:var(--accent-primary-muted);border:1px solid var(--accent-primary);border-radius:3px"></div>
+                <span style="font-family:var(--font-mono);font-size:9px;color:var(--text-muted)">sm·3</span>
+              </div>
+              <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+                <div style="width:32px;height:32px;background:var(--accent-primary-muted);border:1px solid var(--accent-primary);border-radius:6px"></div>
+                <span style="font-family:var(--font-mono);font-size:9px;color:var(--text-muted)">md·6</span>
+              </div>
+              <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+                <div style="width:36px;height:36px;background:var(--accent-primary-muted);border:1px solid var(--accent-primary);border-radius:8px"></div>
+                <span style="font-family:var(--font-mono);font-size:9px;color:var(--text-muted)">lg·8</span>
+              </div>
+              <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+                <div style="width:40px;height:40px;background:var(--accent-primary-muted);border:1px solid var(--accent-primary);border-radius:12px"></div>
+                <span style="font-family:var(--font-mono);font-size:9px;color:var(--text-muted)">xl·12</span>
+              </div>
+              <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+                <div style="width:44px;height:44px;background:var(--accent-primary-muted);border:1px solid var(--accent-primary);border-radius:50%"></div>
+                <span style="font-family:var(--font-mono);font-size:9px;color:var(--text-muted)">full</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div><!-- /ds-content -->
+
+<!-- Export panel -->
+<div id="export-panel" style="display:none;position:fixed;bottom:24px;right:24px;z-index:100;
+  flex-direction:column;
+  background:var(--bg-surface);border:1px solid var(--border-default);border-radius:14px;
+  box-shadow:0 8px 32px rgba(0,0,0,0.3);padding:16px 18px;width:280px;">
+  <button class="export-panel" style="all:unset;position:absolute;top:10px;right:10px;width:24px;height:24px;border-radius:6px;display:grid;place-items:center;color:var(--text-muted);cursor:pointer;"
+    onmouseenter="this.style.background='var(--bg-inset)'" onmouseleave="this.style.background=''"
+    onclick="document.getElementById('export-panel').style.display='none'">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+  </button>
+  <h3 style="margin:0 0 12px;font-size:13px;font-weight:600;color:var(--text-primary)">Export</h3>
+  <a class="exp-row" href="../../colors_and_type.css" download="colors_and_type.css"
+    style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:7px;text-decoration:none;color:var(--text-primary)"
+    onmouseenter="this.style.background='var(--bg-inset)'" onmouseleave="this.style.background=''">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.75"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    <span style="flex:1;font-size:12px">colors_and_type.css</span>
+    <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted)">token kaynak</span>
+  </a>
+  <a class="exp-row" href="../../cockpit.css" download="cockpit.css"
+    style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:7px;text-decoration:none;color:var(--text-primary)"
+    onmouseenter="this.style.background='var(--bg-inset)'" onmouseleave="this.style.background=''">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.75"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    <span style="flex:1;font-size:12px">cockpit.css</span>
+    <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted)">layout + bileşen</span>
+  </a>
+  <a class="exp-row" href="../../cockpit-shell.jsx" download="cockpit-shell.jsx"
+    style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:7px;text-decoration:none;color:var(--text-primary)"
+    onmouseenter="this.style.background='var(--bg-inset)'" onmouseleave="this.style.background=''">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.75"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+    <span style="flex:1;font-size:12px">cockpit-shell.jsx</span>
+    <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted)">React shell</span>
+  </a>
+  <div style="height:1px;background:var(--border-subtle);margin:8px 0"></div>
+  <button onclick="window.print()"
+    style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:7px;background:none;border:none;color:var(--text-primary);font-family:inherit;font-size:12px;cursor:pointer;width:100%;text-align:left"
+    onmouseenter="this.style.background='var(--bg-inset)'" onmouseleave="this.style.background=''">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.75"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+    <span>PDF olarak yazdır</span>
+    <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);margin-left:auto">⌘P</span>
+  </button>
+</div>
+
+<style>
+@keyframes shimmer { 0%{background-position:100% 0} 100%{background-position:-100% 0} }
+@keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+</style>
+
+<script>
+function showSection(id, btn) {
+  ['foundation','components','brand','uikit','pages'].forEach(s => {
+    document.getElementById('section-' + s).style.display = (s === id) ? '' : 'none';
+  });
+  document.querySelectorAll('.ds-tabs button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.ds-header nav a').forEach(a => {
+    a.classList.toggle('active', a.getAttribute('href') === '#' + id);
+  });
+}
+
+// Nav link → tab activation
+document.querySelectorAll('.ds-header nav a').forEach(a => {
+  a.addEventListener('click', function(e) {
+    e.preventDefault();
+    const target = this.getAttribute('href').replace('#','');
+    const tabBtns = document.querySelectorAll('.ds-tabs button');
+    const sectionMap = ['foundation','components','brand','uikit'];
+    const idx = sectionMap.indexOf(target);
+    if (idx >= 0) showSection(target, tabBtns[idx]);
+  });
+});
+
+// Search filter
+document.getElementById('ds-search-input').addEventListener('input', function() {
+  const q = this.value.toLowerCase();
+  document.querySelectorAll('.ds-card, .uikit-card').forEach(card => {
+    const text = card.textContent.toLowerCase();
+    card.style.display = (!q || text.includes(q)) ? '' : 'none';
+  });
+});
+
+// Copy token
+function copyToken(name, val) {
+  navigator.clipboard.writeText(val).catch(() => {});
+  const fb = document.getElementById('copy-feedback');
+  if (fb) { fb.textContent = '✓ kopyalandı: ' + name; setTimeout(() => fb.textContent = '', 2000); }
+}
+
+// Keyboard shortcut ⌘K
+document.addEventListener('keydown', e => {
+  if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'f') {
+    e.preventDefault();
+    document.getElementById('ds-search-input').focus();
+  }
+  if (e.key === 'Escape') {
+    document.getElementById('export-panel').style.display = 'none';
+    document.getElementById('ds-search-input').blur();
+  }
+});
+
+// Double click card → full screen
+document.querySelectorAll('.ds-card').forEach(card => {
+  card.addEventListener('dblclick', function(e) {
+    const href = this.getAttribute('href');
+    if (href) window.open(href, '_blank');
+  });
+});
+</script>
+</body>
+</html>

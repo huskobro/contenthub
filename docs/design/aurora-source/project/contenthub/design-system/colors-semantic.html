@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en" data-theme="aurora-dusk">
+<head>
+<meta charset="utf-8" />
+<title>Colors — Semantic states</title>
+<link rel="stylesheet" href="shell.css" />
+</head>
+<body style="padding: 22px 24px;">
+  <div style="display: flex; flex-direction: column; gap: 10px;">
+
+    <div style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: var(--state-success-bg); border: 1px solid var(--state-success-border); border-radius: var(--radius-md);">
+      <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--state-success-fg); box-shadow: 0 0 8px var(--state-success-fg);"></span>
+      <span class="type-label" style="color: var(--state-success-fg); min-width: 90px;">Success</span>
+      <span class="type-body-sm" style="color: var(--text-secondary); flex: 1;">Render completed · 04:12 elapsed</span>
+      <span class="type-mono" style="color: var(--text-muted);">--state-success-*</span>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: var(--state-warning-bg); border: 1px solid var(--state-warning-border); border-radius: var(--radius-md);">
+      <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--state-warning-fg); box-shadow: 0 0 8px var(--state-warning-fg);"></span>
+      <span class="type-label" style="color: var(--state-warning-fg); min-width: 90px;">Warning</span>
+      <span class="type-body-sm" style="color: var(--text-secondary); flex: 1;">Soft dedupe match · review suggested</span>
+      <span class="type-mono" style="color: var(--text-muted);">--state-warning-*</span>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: var(--state-danger-bg); border: 1px solid var(--state-danger-border); border-radius: var(--radius-md);">
+      <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--state-danger-fg); box-shadow: 0 0 8px var(--state-danger-fg);"></span>
+      <span class="type-label" style="color: var(--state-danger-fg); min-width: 90px;">Danger</span>
+      <span class="type-body-sm" style="color: var(--text-secondary); flex: 1;">TTS synthesis failed · quota exceeded</span>
+      <span class="type-mono" style="color: var(--text-muted);">--state-danger-*</span>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: var(--state-info-bg); border: 1px solid var(--state-info-border); border-radius: var(--radius-md);">
+      <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--state-info-fg); box-shadow: 0 0 8px var(--state-info-fg);"></span>
+      <span class="type-label" style="color: var(--state-info-fg); min-width: 90px;">Info</span>
+      <span class="type-body-sm" style="color: var(--text-secondary); flex: 1;">Settings snapshot frozen for this run</span>
+      <span class="type-mono" style="color: var(--text-muted);">--state-info-*</span>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: var(--state-neutral-bg); border: 1px solid var(--state-neutral-border); border-radius: var(--radius-md);">
+      <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--state-neutral-fg);"></span>
+      <span class="type-label" style="color: var(--state-neutral-fg); min-width: 90px;">Neutral</span>
+      <span class="type-body-sm" style="color: var(--text-secondary); flex: 1;">Draft · last saved 12m ago</span>
+      <span class="type-mono" style="color: var(--text-muted);">--state-neutral-*</span>
+    </div>
+
+  </div>
+</body>
+</html>

@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en" data-theme="aurora-dusk">
+<head>
+<meta charset="utf-8" />
+<title>Gradients & Glows</title>
+<link rel="stylesheet" href="shell.css" />
+</head>
+<body style="padding: 24px;">
+  <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;">
+
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+      <div style="height: 110px; border-radius: var(--radius-lg); background: var(--gradient-brand); box-shadow: var(--shadow-md);"></div>
+      <div class="type-caption" style="color: var(--text-primary);">Brand</div>
+      <div class="type-mono" style="color: var(--text-muted);">--gradient-brand</div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+      <div style="height: 110px; border-radius: var(--radius-lg); background: var(--gradient-aurora); border: 1px solid var(--border-subtle);"></div>
+      <div class="type-caption" style="color: var(--text-primary);">Aurora</div>
+      <div class="type-mono" style="color: var(--text-muted);">--gradient-aurora</div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+      <div style="height: 110px; border-radius: var(--radius-lg); background: var(--gradient-mesh), var(--bg-canvas); border: 1px solid var(--border-subtle);"></div>
+      <div class="type-caption" style="color: var(--text-primary);">Mesh</div>
+      <div class="type-mono" style="color: var(--text-muted);">--gradient-mesh</div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+      <div style="height: 110px; border-radius: var(--radius-lg); background: var(--bg-surface); border: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: center;">
+        <div style="width: 52px; height: 52px; border-radius: 50%; background: var(--accent-primary); box-shadow: var(--glow-accent-strong);"></div>
+      </div>
+      <div class="type-caption" style="color: var(--text-primary);">Accent glow</div>
+      <div class="type-mono" style="color: var(--text-muted);">--glow-accent-strong</div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+      <div style="height: 110px; border-radius: var(--radius-lg); background: var(--bg-surface); border: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: center;">
+        <div style="width: 52px; height: 52px; border-radius: 50%; background: var(--accent-secondary); box-shadow: var(--glow-secondary);"></div>
+      </div>
+      <div class="type-caption" style="color: var(--text-primary);">Secondary glow</div>
+      <div class="type-mono" style="color: var(--text-muted);">--glow-secondary</div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+      <div style="height: 110px; border-radius: var(--radius-lg); background: var(--gradient-brand-subtle); border: 1px solid var(--border-subtle);"></div>
+      <div class="type-caption" style="color: var(--text-primary);">Brand subtle</div>
+      <div class="type-mono" style="color: var(--text-muted);">--gradient-brand-subtle</div>
+    </div>
+
+  </div>
+</body>
+</html>

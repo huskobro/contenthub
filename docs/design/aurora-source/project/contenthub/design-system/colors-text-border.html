@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en" data-theme="aurora-dusk">
+<head>
+<meta charset="utf-8" />
+<title>Colors — Text & borders</title>
+<link rel="stylesheet" href="shell.css" />
+</head>
+<body style="padding: 28px 32px;">
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 28px;">
+
+    <div>
+      <div class="type-label" style="color: var(--text-muted); margin-bottom: 12px;">Text</div>
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <div><span class="type-body" style="color: var(--text-primary);">Primary · titles, body</span> <span class="type-mono" style="color: var(--text-muted); margin-left: 6px;">--text-primary</span></div>
+        <div><span class="type-body" style="color: var(--text-secondary);">Secondary · supporting</span> <span class="type-mono" style="color: var(--text-muted); margin-left: 6px;">--text-secondary</span></div>
+        <div><span class="type-body" style="color: var(--text-muted);">Muted · metadata</span> <span class="type-mono" style="color: var(--text-muted); margin-left: 6px;">--text-muted</span></div>
+        <div><span class="type-body" style="color: var(--text-disabled);">Disabled state</span> <span class="type-mono" style="color: var(--text-muted); margin-left: 6px;">--text-disabled</span></div>
+        <div><span class="type-body" style="color: var(--text-link);">Link / highlight</span> <span class="type-mono" style="color: var(--text-muted); margin-left: 6px;">--text-link</span></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="type-label" style="color: var(--text-muted); margin-bottom: 12px;">Borders</div>
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="flex: 1; height: 20px; border-radius: 4px; background: var(--bg-surface); border: 1px solid var(--border-subtle);"></div>
+          <span class="type-mono" style="color: var(--text-muted); min-width: 120px;">--border-subtle</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="flex: 1; height: 20px; border-radius: 4px; background: var(--bg-surface); border: 1px solid var(--border-default);"></div>
+          <span class="type-mono" style="color: var(--text-muted); min-width: 120px;">--border-default</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="flex: 1; height: 20px; border-radius: 4px; background: var(--bg-surface); border: 1px solid var(--border-strong);"></div>
+          <span class="type-mono" style="color: var(--text-muted); min-width: 120px;">--border-strong</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="flex: 1; height: 20px; border-radius: 4px; background: var(--bg-surface); border: 1px solid var(--border-contrast);"></div>
+          <span class="type-mono" style="color: var(--text-muted); min-width: 120px;">--border-contrast</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="flex: 1; height: 20px; border-radius: 4px; background: var(--bg-surface); border: 1px solid var(--border-focus); box-shadow: var(--glow-ring-focus);"></div>
+          <span class="type-mono" style="color: var(--text-muted); min-width: 120px;">--border-focus</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

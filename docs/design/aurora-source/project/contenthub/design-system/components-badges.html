@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en" data-theme="aurora-dusk">
+<head>
+<meta charset="utf-8" />
+<title>Status badges</title>
+<link rel="stylesheet" href="shell.css" />
+<style>
+  .badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px;
+    border-radius: var(--radius-pill);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: -0.005em;
+    border: 1px solid transparent;
+    font-variant-numeric: tabular-nums;
+  }
+  .badge .dot { width: 6px; height: 6px; border-radius: 50%; }
+  .badge.success   { color: var(--state-success-fg); background: var(--state-success-bg); border-color: var(--state-success-border); }
+  .badge.success .dot { background: var(--state-success-fg); box-shadow: 0 0 6px var(--state-success-fg); }
+  .badge.warning   { color: var(--state-warning-fg); background: var(--state-warning-bg); border-color: var(--state-warning-border); }
+  .badge.warning .dot { background: var(--state-warning-fg); box-shadow: 0 0 6px var(--state-warning-fg); }
+  .badge.danger    { color: var(--state-danger-fg); background: var(--state-danger-bg); border-color: var(--state-danger-border); }
+  .badge.danger .dot { background: var(--state-danger-fg); box-shadow: 0 0 6px var(--state-danger-fg); }
+  .badge.info      { color: var(--state-info-fg); background: var(--state-info-bg); border-color: var(--state-info-border); }
+  .badge.info .dot { background: var(--state-info-fg); box-shadow: 0 0 6px var(--state-info-fg); }
+  .badge.neutral   { color: var(--state-neutral-fg); background: var(--state-neutral-bg); border-color: var(--state-neutral-border); }
+  .badge.neutral .dot { background: var(--state-neutral-fg); }
+  .badge.accent    { color: var(--accent-primary-hover); background: var(--accent-primary-muted); border-color: var(--border-subtle); }
+  .badge.accent .dot { background: var(--accent-primary); box-shadow: var(--glow-accent); }
+</style>
+</head>
+<body style="padding: 24px;">
+  <div class="type-label" style="color: var(--text-muted); margin-bottom: 14px;">Publish-state badges</div>
+
+  <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 14px;">
+    <span class="badge neutral"><span class="dot"></span>draft</span>
+    <span class="badge info"><span class="dot"></span>pending_review</span>
+    <span class="badge accent"><span class="dot"></span>approved</span>
+    <span class="badge warning"><span class="dot"></span>scheduled</span>
+    <span class="badge success"><span class="dot"></span>published</span>
+    <span class="badge danger"><span class="dot"></span>review_rejected</span>
+  </div>
+
+  <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+    <span class="badge success">04:12 elapsed</span>
+    <span class="badge warning">soft dedupe match</span>
+    <span class="badge info">snapshot locked</span>
+    <span class="badge neutral">12m ago</span>
+  </div>
+</body>
+</html>
