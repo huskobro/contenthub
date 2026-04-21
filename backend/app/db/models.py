@@ -1822,13 +1822,31 @@ class PlatformPost(Base):
 
 
 class BrandProfile(Base):
-    """Marka kimlik profili — basit v1. Faz 2."""
+    """Marka kimlik profili. Faz 2 + Branding Center extension.
+
+    Branding Center (2026-04-22):
+      - channel_profile_id: opsiyonel, kanala direkt bagli brand profili
+      - brand_summary / audience_profile_json / messaging_pillars_json:
+        editorial identity
+      - channel_description / channel_keywords_json: platform output surface
+        (YouTube about / keywords gibi alanlara 'Apply to Platform' ile
+        aktarilir)
+      - banner_prompt / logo_prompt: visual AI generation girdileri
+      - tone_of_voice / positioning_statement: messaging bolumu alanlari
+      - apply_status_json: platform-apply zaman damgasi + sonuc (hangi alan
+        hangi zaman apply edildi)
+    """
 
     __tablename__ = "brand_profiles"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
     owner_user_id: Mapped[str] = mapped_column(
         String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    # Branding Center: opsiyonel kanal bagi — kanala ozel brand profili.
+    channel_profile_id: Mapped[Optional[str]] = mapped_column(
+        String(36), ForeignKey("channel_profiles.id", ondelete="SET NULL"),
+        nullable=True, index=True,
     )
     brand_name: Mapped[str] = mapped_column(String(255), nullable=False)
     palette: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
@@ -1840,6 +1858,18 @@ class BrandProfile(Base):
     intro_template_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True)
     outro_template_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True)
     lower_third_defaults: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    # --- Branding Center: identity + audience + messaging -------------------
+    brand_summary: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    audience_profile_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    messaging_pillars_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    tone_of_voice: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    positioning_statement: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    # --- Branding Center: platform branding output --------------------------
+    channel_description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    channel_keywords_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    banner_prompt: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    logo_prompt: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    apply_status_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=_now
     )

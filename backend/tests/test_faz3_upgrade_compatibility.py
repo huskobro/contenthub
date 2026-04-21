@@ -120,7 +120,7 @@ def test_upgrade_from_initial_foundation_reaches_head():
         )
 
         # Step 3: head schema reached.
-        assert _current_revision(db_path) == "phase_al_001"
+        assert _current_revision(db_path) == "branding_center_001"
 
         # Step 4: critical tables present (matches first-run smoke test).
         tables = _list_tables(db_path)
@@ -197,7 +197,7 @@ def test_upgrade_across_faz13_boundary_is_safe():
             "faz13 inbox table not created on upgrade"
         )
 
-        assert _current_revision(db_path) == "phase_al_001"
+        assert _current_revision(db_path) == "branding_center_001"
     finally:
         shutil.rmtree(workdir, ignore_errors=True)
 
@@ -220,7 +220,7 @@ def test_double_upgrade_head_is_noop():
 
         db_path = _db_path(workdir)
         rev_before = _current_revision(db_path)
-        assert rev_before == "phase_al_001"
+        assert rev_before == "branding_center_001"
 
         proc2 = _run_alembic(workdir, "upgrade", "head")
         assert proc2.returncode == 0, (
@@ -254,7 +254,7 @@ def test_alembic_current_reports_single_head_after_upgrade():
         cur = _run_alembic(workdir, "current")
         assert cur.returncode == 0
         # `alembic current` prints revision id (and (head)) on stdout.
-        assert "phase_al_001" in cur.stdout, (
+        assert "branding_center_001" in cur.stdout, (
             f"alembic current did not report phase_al_001:\n{cur.stdout!r}"
         )
         # No branches: single line of revision output.

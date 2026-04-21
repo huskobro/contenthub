@@ -40,8 +40,10 @@ from app.comments.router import router as comments_router
 from app.playlists.router import router as playlists_router
 from app.posts.router import router as posts_router
 from app.brand_profiles.router import router as brand_profiles_router
+from app.branding_center.router import router as branding_center_router
 from app.automation.router import router as automation_router
 from app.automation.router import inbox_router as operations_inbox_router
+from app.automation_center.router import router as automation_center_router
 from app.full_auto.router import router as full_auto_router
 from app.calendar.router import router as calendar_router
 from app.auth.router import router as auth_router
@@ -69,8 +71,14 @@ api_router.include_router(comments_router, dependencies=[Depends(require_user)])
 api_router.include_router(playlists_router, dependencies=[Depends(require_user)])
 api_router.include_router(posts_router, dependencies=[Depends(require_user)])
 api_router.include_router(brand_profiles_router, dependencies=[Depends(require_user)])
+# Branding Center: aggregate (channel-bound) write surface for brand profile.
+# Ownership enforced inside the router; require_user closes anonymous access.
+api_router.include_router(branding_center_router, dependencies=[Depends(require_user)])
 api_router.include_router(automation_router, dependencies=[Depends(require_user)])
 api_router.include_router(operations_inbox_router, dependencies=[Depends(require_user)])
+# Automation Center: per-project canvas (flow + nodes + run-now). Ownership
+# enforced inside the router; admin force-bypass enforced in the router too.
+api_router.include_router(automation_center_router, dependencies=[Depends(require_user)])
 api_router.include_router(full_auto_router, dependencies=[Depends(require_user)])
 # Providers surface exposes credential presence + health — admin-only.
 # Previously guarded only by visibility (role-derived, header-spoofable).

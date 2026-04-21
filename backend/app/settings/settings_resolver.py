@@ -2271,6 +2271,94 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
     },
 
     # -----------------------------------------------------------------
+    # Automation Center (canvas + node graph + run-now)
+    # -----------------------------------------------------------------
+    "automation_center.enabled": {
+        "group": "automation_center",
+        "type": "boolean",
+        "label": "Automation Center erisilebilir",
+        "help_text": "Kapali olursa /automation-center/* tum kullanicilar icin 404 dondurur.",
+        "module_scope": None,
+        "env_var": None,
+        "builtin_default": True,
+        "wired_to": "app.automation_center.router (visibility gate)",
+    },
+    "automation_center.run_now.enabled": {
+        "group": "automation_center",
+        "type": "boolean",
+        "label": "Run-now butonu aktif",
+        "help_text": "Kapali olursa kullanicilar canvas'tan elle is tetikleyemez (sadece scheduler / inceleme akislari calisir).",
+        "module_scope": None,
+        "env_var": None,
+        "builtin_default": True,
+        "wired_to": "app.automation_center.service.run_now",
+    },
+    "automation_center.run_now.daily_cap_default": {
+        "group": "automation_center",
+        "type": "integer",
+        "label": "Varsayilan gunluk run limit",
+        "help_text": "Proje kendi limitini (max_runs_per_day) tanimlamamissa kullanilan ust sinir.",
+        "module_scope": None,
+        "env_var": None,
+        "builtin_default": 12,
+        "wired_to": "app.automation_center.service.run_now",
+    },
+    "automation_center.snapshot_lock.enforce": {
+        "group": "automation_center",
+        "type": "boolean",
+        "label": "Snapshot lock zorunlu",
+        "help_text": "Aktif is varken flow/node duzenlemeleri kapatilsin mi (ihlal: 409). Acik birakilmasi tavsiye edilir.",
+        "module_scope": None,
+        "env_var": None,
+        "builtin_default": True,
+        "wired_to": "app.automation_center.service.patch_flow / patch_node",
+    },
+
+    # -----------------------------------------------------------------
+    # Branding Center (channel-bound brand workspace)
+    # -----------------------------------------------------------------
+    "branding_center.enabled": {
+        "group": "branding_center",
+        "type": "boolean",
+        "label": "Branding Center erisilebilir",
+        "help_text": "Kapali olursa /branding-center/* 404 doner; URL onboarding sonrasi yonlendirme de devre disi kalir.",
+        "module_scope": None,
+        "env_var": None,
+        "builtin_default": True,
+        "wired_to": "app.branding_center.router (visibility gate)",
+    },
+    "branding_center.apply.enabled": {
+        "group": "branding_center",
+        "type": "boolean",
+        "label": "Apply (yayina sevk) aktif",
+        "help_text": "Kapali olursa Review & Apply sekmesindeki Apply butonu pasif gosterilir.",
+        "module_scope": None,
+        "env_var": None,
+        "builtin_default": True,
+        "wired_to": "app.branding_center.service.apply_branding",
+    },
+    "branding_center.preview.ttl_seconds": {
+        "group": "branding_center",
+        "type": "integer",
+        "label": "Onizleme kodu suresi (saniye)",
+        "help_text": "URL onboarding sirasinda uretilen preview_token bu sure sonra gecersiz olur.",
+        "module_scope": None,
+        "env_var": None,
+        "builtin_default": 900,
+        "wired_to": "app.channels.preview_token (PREVIEW_TOKEN_TTL_SECONDS okunur)",
+    },
+    "branding_center.identity.brand_summary_max_chars": {
+        "group": "branding_center",
+        "type": "integer",
+        "label": "Brand summary maksimum karakter",
+        "help_text": "UI bu limiti karakter sayacinda kullanir; backend dogrulamasi schema'da yapilir.",
+        "module_scope": None,
+        "env_var": None,
+        "builtin_default": 2000,
+        "wired_to": "Branding Center identity section (UI hint)",
+    },
+
+    # -----------------------------------------------------------------
     # Product Review Module
     # -----------------------------------------------------------------
     # Scrape / ingestion
