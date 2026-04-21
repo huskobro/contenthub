@@ -115,6 +115,15 @@ export function AuroraSourcesRegistryPage() {
   const { mutate: scanAll, isPending: scanningAll } = useMutation({
     mutationFn: async () => {
       const targets = list.filter((s) => deriveHealth(s) !== "down");
+      // Faz 4.1 — action feedback: kullanıcı "Tümünü tara"ya bastığında
+      // buton "Taranıyor…" diyordu ama anında görsel toast geri bildirimi
+      // yoktu. Çok kaynakta 3-5 saniye sessiz kalmak "tıkladım mı?"
+      // hissini doğuruyordu. Başlangıç toast'u + sayı bilgisi eklendi.
+      if (targets.length === 0) {
+        toast.warning("Taranacak sağlıklı kaynak yok");
+      } else {
+        toast.info(`${targets.length} kaynak taranmaya başlandı…`);
+      }
       const results = await Promise.allSettled(
         targets.map((s) => triggerSourceScan(s.id)),
       );

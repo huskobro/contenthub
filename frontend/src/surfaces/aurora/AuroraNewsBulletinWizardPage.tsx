@@ -523,6 +523,41 @@ export function AuroraNewsBulletinWizardPage() {
     trustEnforcementLevel,
   ]);
 
+  // Faz 4.1 — disabled nedeni kullanıcıya açıkça söylensin (silent no-op
+  // hissi ortadan kalksın). Hem title hem inline status ile.
+  const nextDisabledReason = useCallback((): string | null => {
+    if (step === 0) {
+      if (!bulletinId) {
+        if (selectedItemsLocal.length === 0 && topic.trim().length === 0) {
+          return "Başlık girin ve en az bir haber seçin.";
+        }
+        if (selectedItemsLocal.length === 0) return "En az bir haber seçin.";
+        if (topic.trim().length === 0) return "Bülten başlığı gerekli.";
+      } else if (selectedItems.length === 0) {
+        return "En az bir haber seçin.";
+      }
+    } else if (step === 1 && bulletin?.status !== "in_progress") {
+      return "Taslak hazır değil — draft oluşturmayı bekleyin.";
+    } else if (
+      step === 2 &&
+      trustCheck &&
+      !trustCheck.pass_check &&
+      trustEnforcementLevel === "block"
+    ) {
+      return "Kaynak güveni düşük — üretim bloklu.";
+    }
+    return null;
+  }, [
+    step,
+    bulletinId,
+    topic,
+    selectedItemsLocal,
+    selectedItems,
+    bulletin,
+    trustCheck,
+    trustEnforcementLevel,
+  ]);
+
   async function handleNext() {
     if (step === 0) {
       if (!bulletinId) {
@@ -1414,11 +1449,27 @@ export function AuroraNewsBulletinWizardPage() {
                   : String(anyError)}
               </span>
             )}
+            {/* Faz 4.1 — disabled nedeni inline bildirim */}
+            {nextDisabledReason() ? (
+              <span
+                role="status"
+                aria-live="polite"
+                style={{
+                  fontSize: 11,
+                  color: "var(--text-muted)",
+                  fontStyle: "italic",
+                }}
+                data-testid="aurora-news-bulletin-next-hint"
+              >
+                {nextDisabledReason()}
+              </span>
+            ) : null}
             <AuroraButton
               variant="primary"
               size="sm"
               onClick={handleNext}
               disabled={!canGoNext() || isProcessing}
+              title={nextDisabledReason() ?? undefined}
               iconRight={
                 step === 2 ? (
                   <Icon name="zap" size={12} />

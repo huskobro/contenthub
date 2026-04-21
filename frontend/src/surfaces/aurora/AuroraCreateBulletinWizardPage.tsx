@@ -88,6 +88,25 @@ export function AuroraCreateBulletinWizardPage() {
     }
   }
 
+  // Faz 4.1 — disabled "Devam et" butonu için kullanıcıya **neden** disabled
+  // olduğunu açık söyleyen yardım metni. Önceden buton soluk görünür,
+  // tıklayınca hiçbir feedback vermezdi (silent no-op). Artık nedeni inline
+  // açıklanır ve screen-reader ile de ulaşılabilir.
+  function nextDisabledReason(): string | null {
+    switch (step) {
+      case 0:
+        return channelProfileId
+          ? null
+          : "Önce bir kanal seçin veya oluşturun.";
+      case 1:
+        return contentProjectId
+          ? null
+          : "Önce bir proje oluşturun veya var olan bir projeyi seçin.";
+      default:
+        return null;
+    }
+  }
+
   function handleNext() {
     if (!isLast) {
       setStep(step + 1);
@@ -235,16 +254,34 @@ export function AuroraCreateBulletinWizardPage() {
           >
             Geri
           </AuroraButton>
-          <AuroraButton
-            variant="primary"
-            size="sm"
-            onClick={handleNext}
-            disabled={!canGoNext()}
-            iconRight={!isLast ? <Icon name="arrow-right" size={12} /> : undefined}
-            data-testid="aurora-bulletin-next"
-          >
-            {isLast ? "Haber Seçimine Geç" : "Devam et"}
-          </AuroraButton>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            {/* Faz 4.1 — disabled nedeni açıkça görünsün */}
+            {nextDisabledReason() ? (
+              <span
+                role="status"
+                aria-live="polite"
+                style={{
+                  fontSize: 11,
+                  color: "var(--text-muted)",
+                  fontStyle: "italic",
+                }}
+                data-testid="aurora-bulletin-next-hint"
+              >
+                {nextDisabledReason()}
+              </span>
+            ) : null}
+            <AuroraButton
+              variant="primary"
+              size="sm"
+              onClick={handleNext}
+              disabled={!canGoNext()}
+              title={nextDisabledReason() ?? undefined}
+              iconRight={!isLast ? <Icon name="arrow-right" size={12} /> : undefined}
+              data-testid="aurora-bulletin-next"
+            >
+              {isLast ? "Haber Seçimine Geç" : "Devam et"}
+            </AuroraButton>
+          </div>
         </div>
       </AuroraPageShell>
       <aside className="aurora-inspector-slot">{inspector}</aside>

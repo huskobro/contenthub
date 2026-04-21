@@ -114,6 +114,9 @@ interface CtxbarProps {
   /** Aktif sayfa (favori star toggle için) */
   currentRoute: string;
   currentRouteLabel: string;
+  /** Faz 4.1 — operasyonel sağlık sinyali: başarısız iş sayısı + SSE durumu */
+  operationalFailedJobs: number;
+  operationalSseStatus: "live" | "reconnecting" | "offline";
 }
 
 function Ctxbar({
@@ -129,6 +132,8 @@ function Ctxbar({
   onSwitchScope,
   currentRoute,
   currentRouteLabel,
+  operationalFailedJobs,
+  operationalSseStatus,
 }: CtxbarProps) {
   const navigate = useNavigate();
   const healthQ = useSystemHealth();
@@ -156,20 +161,48 @@ function Ctxbar({
   }, [recentOpen, favOpen]);
 
   const health = healthQ.data;
-  const healthTone: "ok" | "warn" | "err" = !health
-    ? "warn"
-    : health.status === "ok"
-      ? "ok"
-      : health.status === "degraded"
-        ? "warn"
-        : "err";
-  const healthLabel = !health
-    ? "Sağlık kontrol ediliyor"
-    : health.status === "ok"
-      ? "Sistem sağlıklı"
-      : health.status === "degraded"
-        ? "Sistemde kısıtlama"
-        : "Sistem hatası";
+  // Faz 4.1 — operasyonel sinyaller (failed jobs + SSE offline) artık
+  // "Sistem sağlıklı" rozetini aşağı çeker. Daha önce backend /health yalnız
+  // DB + venv bakardı; footer "Hata 9" görünürken header "Sistem sağlıklı"
+  // derdi — bu çelişki kullanıcı güvenini kırıyordu. Artık tek kaynaktan akış.
+  const backendOk = !!health && health.status === "ok";
+  const backendDegraded = !!health && health.status === "degraded";
+  const backendError = !!health && health.status !== "ok" && health.status !== "degraded";
+  const hasFailedJobs = operationalFailedJobs > 0;
+  const sseOffline = operationalSseStatus === "offline";
+  const sseReconnecting = operationalSseStatus === "reconnecting";
+
+  let healthTone: "ok" | "warn" | "err";
+  let healthLabel: string;
+  if (!health) {
+    healthTone = "warn";
+    healthLabel = "Sağlık kontrol ediliyor";
+  } else if (backendError || (hasFailedJobs && operationalFailedJobs >= 5)) {
+    healthTone = "err";
+    healthLabel = hasFailedJobs && operationalFailedJobs >= 5
+      ? `${operationalFailedJobs} hatalı iş`
+      : "Sistem hatası";
+  } else if (backendDegraded || hasFailedJobs || sseOffline) {
+    healthTone = "warn";
+    if (hasFailedJobs && sseOffline) {
+      healthLabel = `${operationalFailedJobs} hata · SSE kapalı`;
+    } else if (hasFailedJobs) {
+      healthLabel = `${operationalFailedJobs} hatalı iş`;
+    } else if (sseOffline) {
+      healthLabel = "Canlı akış kapalı";
+    } else if (backendDegraded) {
+      healthLabel = "Sistemde kısıtlama";
+    } else {
+      healthLabel = "Dikkat gereken durumlar";
+    }
+  } else if (sseReconnecting) {
+    healthTone = "warn";
+    healthLabel = "Yeniden bağlanıyor";
+  } else {
+    healthTone = backendOk ? "ok" : "warn";
+    healthLabel = "Sistem sağlıklı";
+  }
+
   const healthDetail = health
     ? [
         `App: ${health.app}`,
@@ -178,6 +211,12 @@ function Ctxbar({
         `DB: ${health.db_connected ? "bağlı" : "kopuk"}`,
         `WAL: ${health.db_wal_mode ? "açık" : "kapalı"}`,
         health.db_error ? `DB hata: ${health.db_error}` : null,
+        hasFailedJobs ? `Başarısız iş: ${operationalFailedJobs}` : null,
+        sseOffline
+          ? "SSE: çevrimdışı (fallback polling devrede)"
+          : sseReconnecting
+            ? "SSE: yeniden bağlanıyor"
+            : "SSE: canlı",
       ]
         .filter(Boolean)
         .join(" · ")
@@ -841,6 +880,8 @@ export function CockpitShell({
         onSwitchScope={onSwitchScope}
         currentRoute={location.pathname + location.search}
         currentRouteLabel={currentRouteLabel}
+        operationalFailedJobs={jobs.failed}
+        operationalSseStatus={sseStatus}
       />
       <Rail slots={rail} activeSlotId={activeSlot.id} onSelect={onSelectSlot} />
       <div className={inspectorOpen ? "body" : "body no-inspector"}>
@@ -869,6 +910,35 @@ export function CockpitShell({
                 )),
               )}
             </nav>
+          ) : null}
+          {/* Faz 4.1 — SSE honesty banner.
+              SSE düşerse React Query `refetchInterval` ile polling yapmaya
+              devam ediyor; kullanıcıya "canlı akış yok, polling ile
+              çalışılıyor" gerçeğini açıkça söyle. */}
+          {sseStatus === "offline" ? (
+            <div
+              role="status"
+              aria-live="polite"
+              data-testid="aurora-sse-fallback-banner"
+              style={{
+                margin: "12px 28px 0",
+                padding: "8px 12px",
+                borderRadius: 6,
+                border: "1px solid var(--state-warning-fg)",
+                background: "var(--state-warning-bg, rgba(245,158,11,0.08))",
+                color: "var(--state-warning-fg)",
+                fontSize: 12,
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+              }}
+            >
+              <span style={{ fontFamily: "var(--font-mono)", fontSize: 10 }}>●</span>
+              <span>
+                Canlı akış çevrimdışı — veriler periyodik yenileme (polling) ile
+                güncelleniyor. Gecikme beklenebilir.
+              </span>
+            </div>
           ) : null}
           {children}
         </main>

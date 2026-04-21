@@ -50,6 +50,31 @@ function fmtScheduled(r: PublishRecordSummary): string {
   return "—";
 }
 
+// Faz 4.1 — raw UUID "Yayın · e7d0f6d2" yerine okunabilir başlık.
+// Öncelik: content_project title → platform + oluşturulma tarihi → UUID fallback.
+function humanizePublishTitle(
+  r: PublishRecordSummary,
+  projectTitle: string | null | undefined,
+): string {
+  if (projectTitle && projectTitle.trim().length > 0) return projectTitle;
+  // Fallback: platform + kısa tarih
+  try {
+    const when = new Date(r.created_at).toLocaleDateString("tr-TR", {
+      day: "numeric",
+      month: "short",
+    });
+    const platformLabel =
+      r.platform === "youtube"
+        ? "YouTube"
+        : r.platform === "tiktok"
+          ? "TikTok"
+          : r.platform || "Yayın";
+    return `${platformLabel} yayını · ${when}`;
+  } catch {
+    return `Yayın · ${r.id.slice(0, 8)}`;
+  }
+}
+
 export function AuroraUserPublishPage() {
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
@@ -132,7 +157,7 @@ export function AuroraUserPublishPage() {
               const project = r.content_project_id ? projectById.get(r.content_project_id) : null;
               const channel = project?.channel_profile_id ? channelById.get(project.channel_profile_id) : null;
               const tone = STATUS_TONE[r.status] ?? { label: r.status, color: "var(--text-muted)" };
-              const title = project?.title ?? `Yayın · ${r.id.slice(0, 8)}`;
+              const title = humanizePublishTitle(r, project?.title);
               const channelLabel = channel?.handle ?? channel?.profile_name ?? r.platform ?? "—";
               return (
                 <div

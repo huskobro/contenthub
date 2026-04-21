@@ -221,6 +221,8 @@ export const router = createBrowserRouter([
       { path: "wizard", element: <WizardLauncherPage /> },
       { path: "users", element: <UsersRegistryPage /> },
       { path: "users/:userId/settings", element: <UserSettingsDetailPage /> },
+      // Faz 4.1 — shell-consistent 404: admin NotFound stays inside DynamicAdminLayout
+      { path: "*", element: <NotFoundPage /> },
     ]}],
   },
   {
@@ -255,6 +257,8 @@ export const router = createBrowserRouter([
       { path: "create/product-review", element: <Suspense fallback={<LazyFallback />}><CreateProductReviewWizardPage /></Suspense> },
       { path: "news-picker", element: <Suspense fallback={<LazyFallback />}><UserNewsPickerPage /></Suspense> },
       { path: "settings/youtube-callback", element: <UserYouTubeCallbackPage /> },
+      // Faz 4.1 — shell-consistent 404: user NotFound stays inside DynamicUserLayout
+      { path: "*", element: <NotFoundPage /> },
     ]}],
   },
   {
