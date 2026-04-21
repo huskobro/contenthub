@@ -2,6 +2,86 @@
 
 ---
 
+## [2026-04-22] STABILIZE P0 — Release-candidate audit closure (install + ownership gaps)
+
+### Özet
+Önceki `stabilize/p0-install-contract` iddiası "merge-ready" olarak sunulmuştu;
+kullanıcı bunu reddedip sıkı bir release-candidate denetimi istedi. Audit üç
+gerçek P0 boşluk ortaya çıkardı. Üçü de bu commit'te kapatıldı ve regression
+testleri ile kanıtlandı — docs ancak kanıttan sonra güncelleniyor.
+
+### Düzeltmeler
+
+**1. pyproject runtime kontrat boşluğu**
+- `python-jose[cryptography]>=3.3.0,<4.0` declare edildi.
+  Kanıt: `pip show python-jose` → `Required-by: (empty)` idi. Fresh install,
+  resolver tercihine göre python-jose'u drop edebilirdi; sonuç: `app/auth/jwt.py`
+  ImportError, her korumalı endpoint 500.
+- `mutagen>=1.47.0,<2.0` declare edildi.
+  Kanıt: TTS `measure duration` adımı `shared_helpers.py`, `edge_tts_provider.py`,
+  `dubvoice_provider.py` içinden çağrılıyor. Eksikse silent fail + subtitle
+  timing bozuk.
+- `faster-whisper>=1.0.0,<2.0` opsiyonel `[whisper]` extras'ına taşındı
+  (LocalWhisperProvider opt-in).
+- Dry-run `pip install -e .` clean resolve veriyor.
+
+**2. `_resolve_connection` cross-user leak**
+- `app/publish/youtube/router.py::_resolve_connection` artık opsiyonel `ctx`
+  parametresi alıyor. Non-admin için id-less fallback (legacy dashboard path)
+  `ChannelProfile.user_id == ctx.user_id` ile scope ediliyor.
+- Önce: id verilmediğinde sorgu tüm sistemden `ORDER BY is_primary DESC,
+  created_at DESC LIMIT 1` dönüyordu → kendi bağlantısı olmayan non-admin
+  başka kullanıcının aktif primary YouTube bağlantısına düşebiliyordu.
+- 4 call site (`token_status`, `get_channel_info`, `get_channel_videos`,
+  `get_video_stats`, `revoke_credentials`) ve defense-in-depth için
+  `_find_or_create_connection` ile `auth_url` / `auth_callback` internal
+  call'ları `ctx` geçecek şekilde güncellendi.
+
+**3. `auth_callback` ownership açığı (en kritik)**
+- `app/publish/youtube/router.py::auth_callback` önce `ctx` dependency'si
+  almıyordu. Body veya OAuth `state` query param'ı üzerinden herhangi bir
+  authenticated user başka kullanıcının `channel_profile_id`'sine OAuth
+  token'larını binding yapabilirdi (tam hesap hijack).
+- Fix: `ctx: UserContext = Depends(get_current_user_context)` eklendi;
+  body/state'ten `channel_profile_id` resolve edildikten sonra —ancak
+  `exchange_code_for_tokens` tetiklenmeden önce—
+  `_assert_channel_or_connection_ownership` çağrılıyor.
+- Regression guard: `tests/test_youtube_auth_callback_ownership.py`
+  üç testi geçirir: (a) non-admin body ile cross-user → 403, token exchange
+  *çağrılmıyor*, (b) non-admin state ile cross-user → 403, token exchange
+  çağrılmıyor, (c) admin cross-user → ownership gate bypass (403 değil).
+
+### Doğrulanan Kanıtlar (gerçek komut çıktısı, bu commit)
+- `pytest tests/ -q --timeout=30 -k "youtube or publish or ownership"` →
+  **331 passed, 0 failed, 2260 deselected** (26.0 s).
+- `pytest tests/ -q --timeout=30 -k "not integration and not slow and not render"` →
+  **2430 passed, 0 failed, 161 deselected** (132.8 s).
+- `pytest tests/test_youtube_auth_callback_ownership.py` → **3 passed** (1.5 s).
+- Frontend `npm test` → **237 dosya, 2696 test, 0 failure** (223.0 s).
+- Renderer `npm run build` → `tsc --noEmit` exit 0 (full render tetiklenmiyor).
+- Backend `.venv/bin/python3 -m pip install --dry-run -e .` → clean resolve,
+  `Would install contenthub-backend-0.1.0`.
+
+### Kontrat Satırları
+- code change: **yes** (router + pyproject + 2 test dosyası)
+- migrations run: **no**
+- packages installed: **no** (yalnız declare; venv zaten mutagen+jose içeriyor)
+- db schema mutation: **no**
+- db data mutation: **no**
+- main branch touched: **no** (branch: `stabilize/p0-install-contract`)
+
+### Kapatılmayan / Kapsamlı Tarama Gerektiren
+- Render ve integration scope'u (`tests/ -k "render or integration or slow"`)
+  bu audit'te *çalıştırılmadı* — fast smoke dışında kalıyorlar, MVP hedefinin
+  ötesinde CPU maliyeti var. Release card bunu "evidence not collected" olarak
+  açıkça işaretliyor.
+- Frontend `localStorage.clear is not a function` hatası: **gözlemlenmedi.**
+  Önceki raporun işaret ettiği hata bu run'da tekrarlamadı; patch muhtemelen
+  öncesinde kapandı (commit `88fea97` civarı). Yeni bir regresyon test'i ile
+  *aktif koruma yok* — kullanıcı yeni bir regresyonu mevcut suite yakalayacak.
+
+---
+
 ## [2026-04-21] STABILIZE P0/P1 — Install contract + Auth hardening + Bundle split
 
 ### Özet

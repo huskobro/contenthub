@@ -1,6 +1,6 @@
 # ContentHub v1.0 — Rollout Checklist
 
-**Güncellendi:** 2026-04-18
+**Güncellendi:** 2026-04-22
 
 Bu checklist, sistemi production benzeri ortamda çalıştırmadan önce tamamlanması gereken adımları kapsar.
 
@@ -91,6 +91,8 @@ doğrulaması:
 - [ ] userB `/api/v1/publish/youtube/video-stats?channel_profile_id=<userA-channel>` çağırdı → 403
 - [ ] userB `/api/v1/publish/youtube/video-stats/{userA-video-id}/trend` çağırdı → 404 (existence mask)
 - [ ] userB `/api/v1/publish/youtube/revoke?channel_profile_id=<userA-channel>` → 403
+- [ ] userB `/api/v1/publish/youtube/auth-callback` POST body'de `channel_profile_id=<userA-channel>` → 403 (token exchange *tetiklenmeden*)
+- [ ] userB `/api/v1/publish/youtube/auth-callback?state=<userA-channel>:abc` → 403 (state-path hijack kapalı)
 - [ ] Admin yukarıdaki çağrıların hepsine 2xx döndürüyor (admin bypass)
 - [ ] `/api/v1/providers/...` → non-admin user 403 (admin-only gate)
 - [ ] `/api/v1/source-scans/...` → non-admin user 403

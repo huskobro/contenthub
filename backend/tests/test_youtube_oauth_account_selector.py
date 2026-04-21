@@ -126,7 +126,7 @@ async def test_router_attaches_fresh_nonce_each_call(monkeypatch):
         async def get(self, model, pid):
             return _FakeProfile()
 
-    async def _fake_resolve_connection(db, *, channel_profile_id):
+    async def _fake_resolve_connection(db, *, channel_profile_id=None, connection_id=None, ctx=None):
         return None  # force credential resolver path
 
     async def _fake_resolve_credential(key, db):

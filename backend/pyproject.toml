@@ -28,6 +28,14 @@ dependencies = [
     "bcrypt>=4.1.0,<6.0",
     "cryptography>=42.0.0,<50.0",
     "python-multipart>=0.0.9,<1.0",
+    # JWT — used in app/auth/jwt.py, app/auth/dependencies.py, app/auth/router.py.
+    # Missing this → backend cannot import; every protected endpoint 500s.
+    "python-jose[cryptography]>=3.3.0,<4.0",
+    # Audio duration probe — used by TTS measure step (shared_helpers.py,
+    # edge_tts_provider.py, dubvoice_provider.py). Failure is caught and logs
+    # a warning, but then duration is None and downstream render/subtitle
+    # timing is wrong — treat as required.
+    "mutagen>=1.47.0,<2.0",
 ]
 
 [project.optional-dependencies]
@@ -35,6 +43,12 @@ dev = [
     "pytest>=8.1.0,<9.0",
     "pytest-asyncio>=0.23.0,<2.0",
     "pytest-timeout>=2.3.0,<3.0",
+]
+# Optional: Local whisper transcription. Not needed unless the operator opts
+# into LocalWhisperProvider (providers/whisper/local_whisper_provider.py).
+# Install with:  pip install -e ".[whisper]"
+whisper = [
+    "faster-whisper>=1.0.0,<2.0",
 ]
 
 [tool.setuptools.packages.find]
