@@ -79,6 +79,22 @@ Bu checklist, sistemi production benzeri ortamda çalıştırmadan önce tamamla
 - [ ] Auth olmadan API çağrıları 401 dönüyor
 - [ ] Token refresh çalışıyor
 
+## I.2 Multi-user Ownership Smoke Test (stabilize P0/P1)
+
+Tek makinede birden fazla kullanıcı senaryosu — cross-user leak kapalı
+doğrulaması:
+
+- [ ] İki normal kullanıcı (userA, userB) + bir admin mevcut
+- [ ] userA bir ChannelProfile + PlatformConnection oluşturdu
+- [ ] userB giriş yapıp `/api/v1/publish/youtube/token-status?channel_profile_id=<userA-channel>` çağırdı → 403 (`baska kullanicinin kaynagi`)
+- [ ] userB `/api/v1/publish/youtube/auth-url?channel_profile_id=<userA-channel>&...` çağırdı → 403
+- [ ] userB `/api/v1/publish/youtube/video-stats?channel_profile_id=<userA-channel>` çağırdı → 403
+- [ ] userB `/api/v1/publish/youtube/video-stats/{userA-video-id}/trend` çağırdı → 404 (existence mask)
+- [ ] userB `/api/v1/publish/youtube/revoke?channel_profile_id=<userA-channel>` → 403
+- [ ] Admin yukarıdaki çağrıların hepsine 2xx döndürüyor (admin bypass)
+- [ ] `/api/v1/providers/...` → non-admin user 403 (admin-only gate)
+- [ ] `/api/v1/source-scans/...` → non-admin user 403
+
 ## J. Yedekleme
 
 - [ ] `backend/data/contenthub.db` yedeği alındı

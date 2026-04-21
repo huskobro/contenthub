@@ -2,6 +2,80 @@
 
 ---
 
+## [2026-04-21] STABILIZE P0/P1 — Install contract + Auth hardening + Bundle split
+
+### Özet
+Production-ready single-machine multi-user v1 hedefine yönelik dört bağımsız
+küçük stabilizasyon commit'i `stabilize/p0-install-contract` branch'ı üzerinde.
+Hiçbir yeni feature yok — fresh-install güvenliği, authorization leak kapatma,
+ve bundle boyutu üzerinde odaklı çalışma.
+
+### Düzeltmeler
+
+**1. Install Contract (`db050bb`)**
+- `renderer/package.json`: `build` artık `tsc --noEmit` çalıştırıyor, gerçek
+  `remotion render` tetiklemiyor. Önceki davranış production install sırasında
+  kazara full render başlatabiliyordu.
+- `backend/pyproject.toml`: Tüm bağımlılıklar `>=<floor>,<<ceiling>` aralığına
+  alındı (fastapi, uvicorn, pydantic, sqlalchemy, aiosqlite, alembic, greenlet,
+  httpx, edge-tts, feedparser, pydantic-settings). Runtime'da kullanılan ama
+  önce transitively gelen `bcrypt`, `cryptography`, `python-multipart`
+  explicit declare edildi. `pytest-timeout>=2.3.0,<3.0` dev'e, global 120s
+  timeout (thread method) pytest config'ine eklendi.
+
+**2. Router-Level Auth Gates (`f3c8c42`)**
+- `app/api/router.py` içinde 5 router için require_user / require_admin
+  dependency eklendi: providers (admin), source_scans (admin), youtube_oauth,
+  youtube_video_mgmt, youtube_engagement_advanced (hepsi user). Önce sadece
+  visibility engine (header-spoofable) üzerinden korunuyordu.
+- `test_youtube_video_stats.py`: pre-existing kırık assertion rahatlatıldı
+  (kimlik/credential/baglanti/yetkilendirme token'lardan biri kabul).
+
+**3. Per-Endpoint Ownership Checks (`51988f5`)**
+- `app/publish/youtube/router.py` içinde 9 endpoint UserContext Depends alıyor;
+  `_assert_channel_or_connection_ownership` helper çağırarak admin değilse
+  channel_profile_id / connection_id sahipliğini doğruluyor. Önce herhangi
+  bir authenticated user başka kullanıcının channel'ına OAuth URL üretebiliyor,
+  token status sorgulayabiliyor, PublishRecord video-stats/trend metadata
+  okuyabiliyor ve revoke tetikleyebiliyordu.
+- `get_channel_videos` ve `get_video_stats` içinde PublishRecord enumeration
+  artık non-admin için `Job.owner_id` üzerinden scope ediliyor.
+- `get_video_stats_trend`: non-admin missing record için 404 mask (cross-user
+  existence confirmation engelleniyor).
+- 4 bare-FastAPI test `get_current_user_context` override eklendi;
+  `test_router_attaches_fresh_nonce_each_call` direct function call için
+  explicit admin UserContext geçiriyor.
+
+**4. Vendor Bundle Split (`c470786`)**
+- `frontend/vite.config.ts` içinde `build.rollupOptions.output.manualChunks`
+  tanımlandı: vendor-react, vendor-query, vendor-charts, vendor-icons,
+  vendor-state.
+- Sonuç: index chunk 2,383 kB (582 kB gzip) → 1,713 kB (380 kB gzip).
+  Recharts (409 kB) artık yalnız analytics route'larına lazy-load oluyor.
+
+### Doğrulanan Kanıtlar
+- Backend fast smoke: **2427 passed, 161 deselected, 4 warnings** (130 s).
+  YouTube/publish dar kapsam: **294 passed, 0 failed** (was 290 + 4 fail).
+- Frontend vitest: **237 dosya, 2696 test, 0 failure** (23.89 s).
+- Frontend vite build: başarılı, vendor chunks ayrıştı.
+- `npm run build` (renderer): gerçek render tetiklenmiyor (doğrulandı).
+
+### Kontrat Satırları
+- code change: **yes** (backend router + frontend config + tests)
+- migrations run: **no**
+- packages installed: **no** (yalnız version aralıkları pin'lendi)
+- db schema mutation: **no**
+- db data mutation: **no**
+- main branch touched: **no** (branch: `stabilize/p0-install-contract`)
+
+### Commit Zinciri (Stabilize P0/P1)
+- `db050bb stabilize(p0): install contract — pin backend deps, decouple renderer build from render`
+- `f3c8c42 stabilize(p0): tighten auth gates at api router level — providers, source_scans, youtube`
+- `51988f5 stabilize(p0): per-endpoint ownership checks for YouTube routes`
+- `c470786 stabilize(p1): split vendor bundles to reduce index chunk`
+
+---
+
 ## [2026-04-17] PHASE FINAL F4 — Deferred Items Closure + Final Merge Gate
 
 ### Özet
