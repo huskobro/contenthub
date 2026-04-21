@@ -7,7 +7,9 @@
     "render": "remotion render",
     "still": "remotion still",
     "studio": "remotion studio",
-    "build": "remotion render --log=verbose"
+    "typecheck": "tsc --noEmit",
+    "build": "tsc --noEmit",
+    "render:verbose": "remotion render --log=verbose"
   },
   "dependencies": {
     "@remotion/cli": "^4.0.0",
