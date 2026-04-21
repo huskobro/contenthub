@@ -19,12 +19,16 @@ YT_BASE = "/api/v1/publish/youtube"
 
 @pytest.mark.asyncio
 async def test_video_stats_no_credentials(client: AsyncClient):
-    """Without YouTube OAuth tokens, video-stats returns 401."""
+    """Without YouTube OAuth tokens, video-stats returns 401 with an actionable message."""
     resp = await client.get(f"{YT_BASE}/video-stats")
     assert resp.status_code == 401
     body = resp.json()
     assert "detail" in body
-    assert "kimlik" in body["detail"].lower() or "credential" in body["detail"].lower()
+    detail = body["detail"].lower()
+    # Endpoint may surface either the api-level auth gate ("kimlik") or the
+    # endpoint-internal "no YouTube connection" message ("baglanti" /
+    # "yetkilendirme" / "credential"). All three are honest 401 signals.
+    assert any(tok in detail for tok in ("kimlik", "credential", "baglanti", "yetkilendirme"))
 
 
 # ---------------------------------------------------------------------------
