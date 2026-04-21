@@ -166,6 +166,24 @@ export function AuroraAdminDashboardPage() {
     return [...running, ...queued, ...recentlyDone].slice(0, 4);
   }, [jobs]);
 
+  // Faz 4.1 — single source of truth for queued/running/failed counts.
+  // Statusbar (footer) already uses live jobs list; dashboard cards and
+  // "İşler" hh-tile previously used summary.active_jobs (aggregate, may lag).
+  // Now both draw from the same live jobs snapshot so "0 aktif iş" vs
+  // "4 aktif render" paradox cannot occur.
+  const liveJobCounts = useMemo(() => {
+    let queued = 0;
+    let running = 0;
+    let failed = 0;
+    for (const j of jobs) {
+      const s = j.status;
+      if (s === "queued" || s === "pending" || s === "waiting_review") queued += 1;
+      else if (s === "running" || s === "scheduled" || s === "waiting") running += 1;
+      else if (s === "failed" || s === "error") failed += 1;
+    }
+    return { queued, running, failed };
+  }, [jobs]);
+
   // ---------------- KPI strip ----------------
   const kpis = useMemo(() => {
     const dailyVals = (summary?.daily_trend ?? []).slice(-12).map((d) => d.publish_count);
@@ -185,10 +203,11 @@ export function AuroraAdminDashboardPage() {
         spark: safe,
       },
       {
+        // Faz 4.1 — live jobs snapshot (aynı veri statusbar ile)
         k: "Kuyruk",
-        v: fmtCount(summary?.queue_size ?? 0),
-        d: `${fmtCount(summary?.active_jobs ?? 0)} aktif`,
-        trend: (summary?.queue_size ?? 0) > 5 ? ("warn" as const) : ("mute" as const),
+        v: fmtCount(liveJobCounts.queued),
+        d: `${fmtCount(liveJobCounts.running)} aktif`,
+        trend: liveJobCounts.queued > 5 ? ("warn" as const) : ("mute" as const),
         spark: queueSafe,
       },
       {
@@ -204,15 +223,14 @@ export function AuroraAdminDashboardPage() {
       {
         k: "Başarı oranı",
         v: fmtPct(summary?.publish_success_rate, 1),
-        d:
-          summary?.failed_job_count != null
-            ? `${summary.failed_job_count} hata`
-            : "—",
+        // Faz 4.1 — failed count live jobs'dan; summary.failed_job_count
+        // analitik pencere filtreli olduğu için footer ile uyumsuz kalıyordu.
+        d: `${liveJobCounts.failed} hata`,
         trend: (summary?.publish_success_rate ?? 0) >= 0.95 ? ("pos" as const) : ("warn" as const),
         spark: safe,
       },
     ];
-  }, [summary]);
+  }, [summary, liveJobCounts]);
 
   const heroStats = kpis.slice(0, 3);
 
@@ -503,16 +521,17 @@ export function AuroraAdminDashboardPage() {
               </div>
               <button
                 type="button"
-                className={`hh ${(summary?.active_jobs ?? 0) > 0 ? "warn" : "ok"} hh-click`}
+                // Faz 4.1 — live jobs snapshot (statusbar ile aynı kaynak)
+                className={`hh ${liveJobCounts.running > 0 ? "warn" : "ok"} hh-click`}
                 onClick={() => navigate("/admin/jobs?status=running")}
-                aria-label={`${summary?.active_jobs ?? 0} aktif iş, çalışan iş listesine git`}
+                aria-label={`${liveJobCounts.running} aktif iş, çalışan iş listesine git`}
               >
                 <div className="hk">
                   <span className="d"></span>
                   <span>İşler</span>
                 </div>
-                <div className="hv">{fmtCount(summary?.active_jobs ?? 0)} aktif</div>
-                <div className="hm">{fmtCount(summary?.queue_size ?? 0)} kuyrukta</div>
+                <div className="hv">{fmtCount(liveJobCounts.running)} aktif</div>
+                <div className="hm">{fmtCount(liveJobCounts.queued)} kuyrukta</div>
               </button>
               <div
                 className="hh ok"
@@ -532,16 +551,19 @@ export function AuroraAdminDashboardPage() {
               </div>
               <button
                 type="button"
-                className={`hh ${summary?.failed_job_count ? "warn" : "ok"} hh-click`}
+                // Faz 4.1 — live snapshot. Önceden summary.failed_job_count
+                // (7-gün penceresi) kullanılıyordu, footer "Hata 9" ise canlı
+                // listeden geliyordu; rakamlar çakışıyordu.
+                className={`hh ${liveJobCounts.failed > 0 ? "warn" : "ok"} hh-click`}
                 onClick={() => navigate("/admin/jobs?status=failed")}
-                aria-label={`${summary?.failed_job_count ?? 0} başarısız iş, hata listesine git`}
+                aria-label={`${liveJobCounts.failed} başarısız iş, hata listesine git`}
               >
                 <div className="hk">
                   <span className="d"></span>
                   <span>Hatalar</span>
                 </div>
-                <div className="hv">{fmtCount(summary?.failed_job_count ?? 0)}</div>
-                <div className="hm">son 7 gün</div>
+                <div className="hv">{fmtCount(liveJobCounts.failed)}</div>
+                <div className="hm">canlı</div>
               </button>
             </div>
             <div

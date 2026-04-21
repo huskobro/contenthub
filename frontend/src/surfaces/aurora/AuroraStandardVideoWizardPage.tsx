@@ -313,6 +313,12 @@ export function AuroraStandardVideoWizardPage() {
   const canGoNext = step === 0 ? values.topic.trim().length > 0 : true;
   const isLastStep = step === STEPS.length - 1;
 
+  // Faz 4.1 — disabled "Devam et" butonu için yardım metni
+  const nextDisabledReason: string | null =
+    step === 0 && values.topic.trim().length === 0
+      ? "Devam etmek için 'Konu' alanı zorunludur."
+      : null;
+
   function handleNext() {
     if (isLastStep) {
       mutate(values);
@@ -754,12 +760,28 @@ export function AuroraStandardVideoWizardPage() {
             Geri
           </AuroraButton>
 
-          <div style={{ display: "flex", gap: 8 }}>
+          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+            {/* Faz 4.1 — disabled nedeni inline bildirim */}
+            {nextDisabledReason ? (
+              <span
+                role="status"
+                aria-live="polite"
+                style={{
+                  fontSize: 11,
+                  color: "var(--text-muted)",
+                  fontStyle: "italic",
+                }}
+                data-testid="aurora-svw-next-hint"
+              >
+                {nextDisabledReason}
+              </span>
+            ) : null}
             <AuroraButton
               variant="primary"
               size="sm"
               onClick={handleNext}
               disabled={!canGoNext || isPending}
+              title={nextDisabledReason ?? undefined}
               iconRight={
                 isLastStep ? undefined : <Icon name="arrow-right" size={12} />
               }
