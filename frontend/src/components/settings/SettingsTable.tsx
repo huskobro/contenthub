@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { cn } from "../../lib/cn";
 import type { SettingResponse } from "../../api/settingsApi";
 import { useTableSelection } from "../../hooks/useTableSelection";
@@ -28,17 +28,32 @@ export function SettingsTable({ settings, selectedId, onSelect, onBulkDelete }: 
   const [filters, setFilters] = useState<Record<string, string | null>>({ group_name: null, type: null, status: null });
   const col = useColumnVisibility("settings-table", COLUMNS.map((c) => c.key));
 
-  const groups = Array.from(new Set(settings.map((s) => s.group_name).filter(Boolean))) as string[];
-  const types = Array.from(new Set(settings.map((s) => s.type).filter(Boolean))) as string[];
+  // Faz 4 perf: distinct group/type lists and filter results memoized; with
+  // ~250+ settings this avoided three O(n) walks on every parent re-render.
+  const groups = useMemo(
+    () =>
+      Array.from(new Set(settings.map((s) => s.group_name).filter(Boolean))) as string[],
+    [settings],
+  );
+  const types = useMemo(
+    () =>
+      Array.from(new Set(settings.map((s) => s.type).filter(Boolean))) as string[],
+    [settings],
+  );
 
-  const filtered = settings.filter((s) => {
-    if (filters.group_name && s.group_name !== filters.group_name) return false;
-    if (filters.type && s.type !== filters.type) return false;
-    if (filters.status && s.status !== filters.status) return false;
-    return true;
-  });
+  const filtered = useMemo(
+    () =>
+      settings.filter((s) => {
+        if (filters.group_name && s.group_name !== filters.group_name) return false;
+        if (filters.type && s.type !== filters.type) return false;
+        if (filters.status && s.status !== filters.status) return false;
+        return true;
+      }),
+    [settings, filters.group_name, filters.type, filters.status],
+  );
 
-  const sel = useTableSelection(filtered.map((s) => s.id));
+  const filteredIds = useMemo(() => filtered.map((s) => s.id), [filtered]);
+  const sel = useTableSelection(filteredIds);
 
   if (settings.length === 0) {
     return <p className="text-neutral-600">Henüz kayıtlı ayar yok.</p>;

@@ -324,6 +324,23 @@ Yeniden baslatmada:
 - OAuth token'in gecerliligini kontrol edin
 - Publish log'larini inceleyin (**Yayin Merkezi** → kayit detayi)
 
+### Provider Hatalari (Faz 4 — hata okunabilirligi)
+
+Faz 4'ten itibaren her provider hatasi **type + mesaj + last-error** formatinda Job Detail > Provider Trace'e dusuyor. Eskiden "görsel bulunamadi" gibi generic mesajlar goruluyordu; artik "openverse: HTTPError 401 invalid api key" gibi direkt sebep goruluyor.
+
+**Belirti:** Visuals adimi tum sahnelerde fail, mesaj "Tum sahneler icin gorsel bulunamadi".
+
+**Kontrol sirasi:**
+1. Job Detail > Provider Trace panelini acin. `provider_failures` ve `provider_last_error` alanlarini okuyun.
+2. `401 / 403 / invalid api key` → **Ayarlar > Kimlik Bilgileri** sekmesinden ilgili provider anahtarini guncelleyin, **Dogrula** butonuna basin.
+3. `TimeoutException / ConnectError` → ag / DNS / firewall kontrolu; provider endpoint'i localhost'tan erisilebilir mi?
+4. `RateLimitError / 429` → saglayici kotasi; kisa sure bekleyip **Retry** edin veya fallback provider'i **Ayarlar > Modul Ayarlari > visuals.provider_chain** ile etkinlestirin.
+5. `NonRetryableProviderError` → provider hesabi / plan problemi; uygulama auto-fallback yapmaz (tasarim: yanlis ses/tarz yerine fail).
+
+**TTS icin ayni runbook:** `strict_resolution.py` Faz 4'te `type(exc).__name__ + str(exc)` formatini zorunlu yapti. Provider health registry'de ayni okunabilir format goruluyor.
+
+**Genel pipeline:** bekleenmeyen exception'lar artik `Unexpected error in step 'X': ValueError: ... ← OriginalCause` seklinde Job Detail'e yaziliyor. `<<` oku tipindeki cause zinciri chained exception'lari bozmadan gosterir.
+
 ### Kaynak Tarama Basarisiz
 
 **Belirti:** RSS kaynaklari taranmiyor.

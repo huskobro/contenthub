@@ -19,6 +19,7 @@ import {
 } from "../../api/automationApi";
 import { api } from "../../api/client";
 import { cn } from "../../lib/cn";
+import { toastMessageFromError } from "../../lib/errorUtils";
 import { AutomationFlowSvg } from "../../components/automation/AutomationFlowSvg";
 import { useSurfacePageOverride } from "../../surfaces";
 
@@ -106,6 +107,10 @@ function LegacyUserAutomationPage() {
       qc.invalidateQueries({ queryKey: ["automation-policies"] });
       toast.success("Otomasyon politikasi olusturuldu");
     },
+    onError: (err) => {
+      // Faz 4: surface failure to operator instead of swallowing silently.
+      toast.error(toastMessageFromError(err));
+    },
   });
 
   // Update policy mutation
@@ -115,6 +120,10 @@ function LegacyUserAutomationPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["automation-policies"] });
       toast.success("Politika guncellendi");
+    },
+    onError: (err) => {
+      // Faz 4: was missing — checkpoint mode change failures used to vanish.
+      toast.error(toastMessageFromError(err));
     },
   });
 

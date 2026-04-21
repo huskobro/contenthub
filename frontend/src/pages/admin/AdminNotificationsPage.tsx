@@ -23,6 +23,8 @@ import { cn } from "../../lib/cn";
 import { formatDateShort } from "../../lib/formatDate";
 import { useActiveScope } from "../../hooks/useActiveScope";
 import { useSurfacePageOverride } from "../../surfaces/SurfaceContext";
+import { useToast } from "../../hooks/useToast";
+import { toastMessageFromError } from "../../lib/errorUtils";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -66,6 +68,7 @@ export default function AdminNotificationsPage() {
 function LegacyAdminNotificationsPage() {
   const navigate = useNavigate();
   const qc = useQueryClient();
+  const toast = useToast();
 
   // Redesign REV-2 / P0.3c:
   //   Admin scope focused-user ise notifications listesi ve count o user'a
@@ -117,6 +120,10 @@ function LegacyAdminNotificationsPage() {
       qc.invalidateQueries({ queryKey: ["notifications"] });
       qc.invalidateQueries({ queryKey: ["notification-count"] });
     },
+    onError: (err) => {
+      // Faz 4: notification mutations used to fail silently — surface them.
+      toast.error(toastMessageFromError(err));
+    },
   });
 
   const dismissMut = useMutation({
@@ -124,6 +131,9 @@ function LegacyAdminNotificationsPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["notifications"] });
       qc.invalidateQueries({ queryKey: ["notification-count"] });
+    },
+    onError: (err) => {
+      toast.error(toastMessageFromError(err));
     },
   });
 
@@ -135,6 +145,9 @@ function LegacyAdminNotificationsPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["notifications"] });
       qc.invalidateQueries({ queryKey: ["notification-count"] });
+    },
+    onError: (err) => {
+      toast.error(toastMessageFromError(err));
     },
   });
 

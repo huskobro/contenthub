@@ -23,6 +23,8 @@ import {
   AuroraInspectorRow,
 } from "./primitives";
 import { Icon } from "./icons";
+import { useToast } from "../../hooks/useToast";
+import { toastMessageFromError } from "../../lib/errorUtils";
 
 const MODE_LABEL: Record<string, string> = {
   disabled: "kapalı",
@@ -34,6 +36,7 @@ export function AuroraUserAutomationPage() {
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
   const qc = useQueryClient();
+  const toast = useToast();
   const channelsQ = useMyChannelProfiles();
   const channels = channelsQ.data ?? [];
 
@@ -56,6 +59,10 @@ export function AuroraUserAutomationPage() {
       updateAutomationPolicy(p.id, { is_enabled: !p.is_enabled }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["automation"] });
+    },
+    onError: (err) => {
+      // Faz 4: toggle failures used to vanish — surface them.
+      toast.error(toastMessageFromError(err));
     },
   });
 

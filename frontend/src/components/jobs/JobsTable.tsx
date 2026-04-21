@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { JobResponse } from "../../api/jobsApi";
 import { useTableSelection } from "../../hooks/useTableSelection";
 import { useColumnVisibility } from "../../hooks/useColumnVisibility";
@@ -79,14 +79,38 @@ export function JobsTable({ jobs, selectedId, onSelect, activeIndex, onBulkDelet
   const [filters, setFilters] = useState<Record<string, string | null>>({ status: null, module_type: null });
   const col = useColumnVisibility("jobs-table", JOB_COLUMNS.map((c) => c.key));
 
-  const filtered = jobs.filter((j) => {
-    if (filters.status && j.status !== filters.status) return false;
-    if (filters.module_type && j.module_type !== filters.module_type) return false;
-    return true;
-  });
+  // Faz 4 perf: memoize filtered list, modules, and per-status counts so the
+  // filter bar doesn't re-walk `jobs` four times on every render. With long
+  // job histories (admin "all jobs") this used to be a 5x O(n) per re-render
+  // including parent re-renders triggered by SSE.
+  const filtered = useMemo(
+    () =>
+      jobs.filter((j) => {
+        if (filters.status && j.status !== filters.status) return false;
+        if (filters.module_type && j.module_type !== filters.module_type) return false;
+        return true;
+      }),
+    [jobs, filters.status, filters.module_type],
+  );
 
-  const sel = useTableSelection(filtered.map((j) => j.id));
-  const modules = Array.from(new Set(jobs.map((j) => j.module_type)));
+  const filteredIds = useMemo(() => filtered.map((j) => j.id), [filtered]);
+  const sel = useTableSelection(filteredIds);
+  const modules = useMemo(
+    () => Array.from(new Set(jobs.map((j) => j.module_type))),
+    [jobs],
+  );
+  const statusCounts = useMemo(() => {
+    const acc: Record<string, number> = {
+      completed: 0,
+      failed: 0,
+      queued: 0,
+      retrying: 0,
+    };
+    for (const j of jobs) {
+      if (j.status in acc) acc[j.status]++;
+    }
+    return acc;
+  }, [jobs]);
 
   if (jobs.length === 0) return <p className="text-neutral-600">Henüz kayıtlı job yok.</p>;
 
@@ -99,10 +123,10 @@ export function JobsTable({ jobs, selectedId, onSelect, activeIndex, onBulkDelet
               key: "status",
               label: "Durum",
               options: [
-                { value: "completed", label: "Tamamlandı", count: jobs.filter((j) => j.status === "completed").length },
-                { value: "failed", label: "Başarısız", count: jobs.filter((j) => j.status === "failed").length },
-                { value: "queued", label: "Kuyrukta", count: jobs.filter((j) => j.status === "queued").length },
-                { value: "retrying", label: "Yeniden", count: jobs.filter((j) => j.status === "retrying").length },
+                { value: "completed", label: "Tamamlandı", count: statusCounts.completed },
+                { value: "failed", label: "Başarısız", count: statusCounts.failed },
+                { value: "queued", label: "Kuyrukta", count: statusCounts.queued },
+                { value: "retrying", label: "Yeniden", count: statusCounts.retrying },
               ],
             },
             {

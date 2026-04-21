@@ -4,6 +4,7 @@ import { ContentCreationWizard, type WizardValues } from "../../components/wizar
 import { useToast } from "../../hooks/useToast";
 import { api } from "../../api/client";
 import { useSurfacePageOverride } from "../../surfaces/SurfaceContext";
+import { toastMessageFromError } from "../../lib/errorUtils";
 
 async function createStandardVideo(values: WizardValues) {
   return api.post<{ id: string }>("/api/v1/modules/standard-video", {
@@ -49,6 +50,10 @@ function LegacyStandardVideoWizardPage() {
       qc.invalidateQueries({ queryKey: ["standard-videos"] });
       toast.success("Standard video basariyla olusturuldu");
       navigate(`/admin/standard-videos/${created.id}`);
+    },
+    onError: (err) => {
+      // Faz 4: surface classified server detail in addition to inline message.
+      toast.error(toastMessageFromError(err));
     },
   });
 

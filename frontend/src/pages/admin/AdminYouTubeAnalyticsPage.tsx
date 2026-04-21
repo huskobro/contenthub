@@ -51,6 +51,8 @@ import { AdminAnalyticsTabBar } from "../../components/analytics/AnalyticsTabBar
 import { SnapshotLockDisclaimer } from "../../components/analytics/SnapshotLockDisclaimer";
 import { ExportButton } from "../../components/analytics/ExportButton";
 import { cn } from "../../lib/cn";
+import { useToast } from "../../hooks/useToast";
+import { toastMessageFromError } from "../../lib/errorUtils";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -393,6 +395,7 @@ export function AdminYouTubeAnalyticsPage() {
 }
 
 function LegacyAdminYouTubeAnalyticsPage() {
+  const toast = useToast();
   const { data: connectionsData, isLoading: connectionsLoading } =
     useAdminConnections({ platform: "youtube", limit: 200 });
 
@@ -557,7 +560,13 @@ function LegacyAdminYouTubeAnalyticsPage() {
           <ExportButton kind="channel-performance" label="Performans CSV" />
           <ActionButton
             variant="secondary"
-            onClick={() => syncAll.mutate()}
+            onClick={() =>
+              syncAll.mutate(undefined, {
+                onSuccess: () =>
+                  toast.success("Tüm YouTube kanalları için senkron tetiklendi"),
+                onError: (err) => toast.error(toastMessageFromError(err)),
+              })
+            }
             disabled={syncAll.isPending}
             data-testid="admin-yt-sync-all"
           >
@@ -624,7 +633,13 @@ function LegacyAdminYouTubeAnalyticsPage() {
             </label>
             <ActionButton
               variant="secondary"
-              onClick={() => syncOne.mutate(undefined)}
+              onClick={() =>
+                syncOne.mutate(undefined, {
+                  onSuccess: () =>
+                    toast.success("Bu YouTube kanalı için senkron tetiklendi"),
+                  onError: (err) => toast.error(toastMessageFromError(err)),
+                })
+              }
               disabled={!effectiveId || syncOne.isPending}
               data-testid="admin-yt-sync-one"
             >

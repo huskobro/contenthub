@@ -27,6 +27,7 @@ import { MotionLevelPreview } from "../../components/preview/MotionLevelPreview"
 import { useSubtitlePresets } from "../../hooks/useSubtitlePresets";
 import { api } from "../../api/client";
 import { cn } from "../../lib/cn";
+import { toastMessageFromError } from "../../lib/errorUtils";
 
 // ---------------------------------------------------------------------------
 // Steps — includes Step 0 (Channel) and Step 1 (Project) before content steps
@@ -197,6 +198,11 @@ function LegacyCreateVideoWizardPage() {
       } else {
         navigate(`/user/projects`);
       }
+    },
+    onError: (err) => {
+      // Faz 4: ensure submit failures aren't only inline — toast carries
+      // classified server detail (validation/quota/auth/etc.).
+      toast.error(toastMessageFromError(err));
     },
   });
 

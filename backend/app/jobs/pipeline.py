@@ -342,8 +342,18 @@ class PipelineRunner:
                 logger.warning("Audit log write failed (%s): %s", "job.step_fail", exc_audit)
             return False
         except Exception as exc:
-            # Unexpected exception — wrap and fail the step
-            error_msg = f"Unexpected error in step '{step_key}': {exc}"
+            # Faz 4: previously the wrapped error was just `str(exc)`, which
+            # for bare-string exceptions (ValueError("foo")) collapsed the
+            # exception type and any chained `__cause__`. Operators reading
+            # Job Detail could not tell apart a TimeoutError from a
+            # KeyError. Keep the type name and (if present) the chained
+            # cause so the failure is self-describing in the UI.
+            exc_type = type(exc).__name__
+            cause = getattr(exc, "__cause__", None) or getattr(exc, "__context__", None)
+            cause_suffix = ""
+            if cause is not None and cause is not exc:
+                cause_suffix = f" ← {type(cause).__name__}: {cause}"
+            error_msg = f"Unexpected error in step '{step_key}': {exc_type}: {exc}{cause_suffix}"
             logger.exception(error_msg)
             await service.transition_step_status(
                 self._db,
@@ -359,7 +369,7 @@ class PipelineRunner:
                     self._db, action="job.step_fail",
                     entity_type="job_step", entity_id=str(step.id),
                     actor_type="system",
-                    details={"job_id": str(job.id), "step_key": step_key, "error": str(exc)[:500]},
+                    details={"job_id": str(job.id), "step_key": step_key, "error": error_msg[:500]},
                 )
             except Exception as exc:
                 logger.warning("Audit log write failed (%s): %s", "job.step_fail", exc)

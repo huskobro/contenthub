@@ -29,6 +29,7 @@ import { Icon } from "./icons";
 import { ChannelProfileStep } from "../../components/wizard/ChannelProfileStep";
 import { ContentProjectStep } from "../../components/wizard/ContentProjectStep";
 import { useToast } from "../../hooks/useToast";
+import { toastMessageFromError } from "../../lib/errorUtils";
 import {
   createProduct,
   triggerProductScrape,
@@ -191,6 +192,10 @@ export function AuroraCreateProductReviewWizardPage() {
       } else {
         navigate("/user/projects");
       }
+    },
+    onError: (err) => {
+      // Faz 4: surface scrape/create/start failures (validation/quota/provider).
+      toast.error(toastMessageFromError(err));
     },
   });
 

@@ -38,6 +38,8 @@ import {
   type TrustCheckResponse,
 } from "../../api/newsBulletinApi";
 import { useSurfacePageOverride } from "../../surfaces";
+import { useToast } from "../../hooks/useToast";
+import { toastMessageFromError } from "../../lib/errorUtils";
 
 const MAX_SELECT = 12;
 
@@ -49,6 +51,7 @@ export function UserNewsPickerPage() {
 
 function LegacyUserNewsPickerPage() {
   const navigate = useNavigate();
+  const toast = useToast();
   const [params, setParams] = useSearchParams();
 
   const initialBulletinId = params.get("bulletinId");
@@ -77,6 +80,10 @@ function LegacyUserNewsPickerPage() {
       const next = new URLSearchParams(params);
       next.set("bulletinId", bulletin.id);
       setParams(next, { replace: true });
+    },
+    onError: (err) => {
+      // Faz 4: bulletin creation failures used to vanish — surface them.
+      toast.error(toastMessageFromError(err));
     },
   });
 
@@ -138,6 +145,9 @@ function LegacyUserNewsPickerPage() {
     onSuccess: () => {
       selectedQuery.refetch();
     },
+    onError: (err) => {
+      toast.error(toastMessageFromError(err));
+    },
   });
 
   const removeMutation = useMutation({
@@ -148,6 +158,9 @@ function LegacyUserNewsPickerPage() {
     },
     onSuccess: () => {
       selectedQuery.refetch();
+    },
+    onError: (err) => {
+      toast.error(toastMessageFromError(err));
     },
   });
 
@@ -185,6 +198,10 @@ function LegacyUserNewsPickerPage() {
       if (resp.job_id) {
         navigate(`/user/jobs/${resp.job_id}`);
       }
+    },
+    onError: (err) => {
+      // Faz 4: production start failures (validation/quota/provider) used to vanish.
+      toast.error(toastMessageFromError(err));
     },
   });
 

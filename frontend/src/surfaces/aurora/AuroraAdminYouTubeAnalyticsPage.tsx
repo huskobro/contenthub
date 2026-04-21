@@ -28,6 +28,8 @@ import {
   AuroraStatusChip,
   AuroraSpark,
 } from "./primitives";
+import { useToast } from "../../hooks/useToast";
+import { toastMessageFromError } from "../../lib/errorUtils";
 
 // --- helpers ---------------------------------------------------------------
 
@@ -79,6 +81,7 @@ interface VideoRow {
 }
 
 export function AuroraAdminYouTubeAnalyticsPage() {
+  const toast = useToast();
   const { data: connectionsData, isLoading: connectionsLoading } =
     useAdminConnections({ platform: "youtube", limit: 200 });
 
@@ -326,7 +329,13 @@ export function AuroraAdminYouTubeAnalyticsPage() {
           variant="secondary"
           size="sm"
           disabled={!effectiveId || syncOne.isPending}
-          onClick={() => syncOne.mutate(undefined)}
+          onClick={() =>
+            syncOne.mutate(undefined, {
+              onSuccess: () =>
+                toast.success("Bu YouTube kanalı için senkron tetiklendi"),
+              onError: (err) => toast.error(toastMessageFromError(err)),
+            })
+          }
           style={{ width: "100%", marginTop: 6 }}
         >
           {syncOne.isPending ? "Senkronlanıyor…" : "Bu kanalı senkronla"}
@@ -335,7 +344,13 @@ export function AuroraAdminYouTubeAnalyticsPage() {
           variant="ghost"
           size="sm"
           disabled={syncAll.isPending}
-          onClick={() => syncAll.mutate()}
+          onClick={() =>
+            syncAll.mutate(undefined, {
+              onSuccess: () =>
+                toast.success("Tüm YouTube kanalları için senkron tetiklendi"),
+              onError: (err) => toast.error(toastMessageFromError(err)),
+            })
+          }
           style={{ width: "100%", marginTop: 6 }}
         >
           {syncAll.isPending ? "Senkronlanıyor…" : "Tümünü senkronla"}
@@ -408,7 +423,13 @@ export function AuroraAdminYouTubeAnalyticsPage() {
               variant="secondary"
               size="sm"
               disabled={!effectiveId || syncOne.isPending}
-              onClick={() => syncOne.mutate(undefined)}
+              onClick={() =>
+                syncOne.mutate(undefined, {
+                  onSuccess: () =>
+                    toast.success("Bu YouTube kanalı için senkron tetiklendi"),
+                  onError: (err) => toast.error(toastMessageFromError(err)),
+                })
+              }
             >
               {syncOne.isPending ? "Senkron…" : "Senkronla"}
             </AuroraButton>

@@ -16,6 +16,8 @@ import {
 } from "../../api/youtubeAnalyticsApi";
 import { useMyConnections } from "../../hooks/useConnections";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useToast } from "../../hooks/useToast";
+import { toastMessageFromError } from "../../lib/errorUtils";
 import {
   AuroraButton,
   AuroraSpark,
@@ -51,6 +53,7 @@ function fmtPct(p: number | null): string {
 
 export function AuroraUserYouTubeAnalyticsPage() {
   const qc = useQueryClient();
+  const toast = useToast();
   const connQ = useMyConnections({ platform: "youtube", limit: 50 });
   const ytConnections = useMemo(
     () => (connQ.data?.items ?? []).filter((c) => c.platform === "youtube"),
@@ -84,6 +87,11 @@ export function AuroraUserYouTubeAnalyticsPage() {
     mutationFn: () => triggerYtSync(activeConnId!, windowDays, "manual"),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["yt-analytics"] });
+      toast.success("YouTube senkron tetiklendi");
+    },
+    onError: (err) => {
+      // Faz 4: provider failures used to vanish — surface them.
+      toast.error(toastMessageFromError(err));
     },
   });
 

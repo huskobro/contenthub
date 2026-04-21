@@ -24,6 +24,8 @@ import {
   type NotificationItem,
 } from "../../api/notificationApi";
 import { useActiveScope } from "../../hooks/useActiveScope";
+import { useToast } from "../../hooks/useToast";
+import { toastMessageFromError } from "../../lib/errorUtils";
 import {
   AuroraButton,
   AuroraInspector,
@@ -88,6 +90,7 @@ function fmtSince(iso: string): string {
 export function AuroraAdminNotificationsPage() {
   const navigate = useNavigate();
   const qc = useQueryClient();
+  const toast = useToast();
 
   const scope = useActiveScope();
   const scopedOwnerId =
@@ -135,6 +138,10 @@ export function AuroraAdminNotificationsPage() {
       qc.invalidateQueries({ queryKey: ["notifications"] });
       qc.invalidateQueries({ queryKey: ["notification-count"] });
     },
+    onError: (err) => {
+      // Faz 4: read failures used to vanish — surface them.
+      toast.error(toastMessageFromError(err));
+    },
   });
 
   const dismissMut = useMutation({
@@ -142,6 +149,9 @@ export function AuroraAdminNotificationsPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["notifications"] });
       qc.invalidateQueries({ queryKey: ["notification-count"] });
+    },
+    onError: (err) => {
+      toast.error(toastMessageFromError(err));
     },
   });
 
@@ -153,6 +163,9 @@ export function AuroraAdminNotificationsPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["notifications"] });
       qc.invalidateQueries({ queryKey: ["notification-count"] });
+    },
+    onError: (err) => {
+      toast.error(toastMessageFromError(err));
     },
   });
 

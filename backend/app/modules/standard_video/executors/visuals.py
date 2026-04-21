@@ -159,6 +159,14 @@ class VisualsStepExecutor(StepExecutor):
 
         manifest_scenes: list[dict] = []
         provider_hits: dict[str, int] = {}   # provider_id → hit sayısı
+        # Faz 4: provider_failures lets the operator see in Job Detail's
+        # provider trace which providers failed and how many times. Until
+        # this pass, exceptions in the per-provider try block were logged
+        # at WARNING level only and the symptom that reached the user was
+        # a generic "görsel bulunamadı" — undebuggable for a missing API
+        # key, rate limit, or network outage.
+        provider_failures: dict[str, int] = {}
+        provider_last_error: dict[str, str] = {}
         not_found = 0
         start_time = time.monotonic()
 
@@ -212,6 +220,14 @@ class VisualsStepExecutor(StepExecutor):
                         found = True
                         break
                 except Exception as prov_err:
+                    pid = str(provider.provider_id())
+                    provider_failures[pid] = provider_failures.get(pid, 0) + 1
+                    # Last error is captured (truncated) so trace_info can
+                    # surface the actual failure reason instead of the
+                    # operator having to grep WARNING logs.
+                    provider_last_error[pid] = (
+                        f"{type(prov_err).__name__}: {prov_err}"[:200]
+                    )
                     logger.warning(
                         "VisualsStepExecutor: Sahne %d provider=%s hatası: %s",
                         i,
@@ -243,10 +259,19 @@ class VisualsStepExecutor(StepExecutor):
         total_downloaded = sum(provider_hits.values())
 
         if total_downloaded == 0:
+            # Faz 4: when every provider failed, surface the last error from
+            # each provider so the operator does not have to dig through
+            # WARNING logs to learn it was (e.g.) "401 invalid api key".
+            details = ""
+            if provider_last_error:
+                details = " · " + "; ".join(
+                    f"{pid}: {err}" for pid, err in provider_last_error.items()
+                )
             raise StepExecutionError(
                 self.step_key(),
                 f"Tüm sahneler için görsel bulunamadı: job={job.id}, "
-                f"sahne_sayısı={len(scenes)}",
+                f"sahne_sayısı={len(scenes)}, "
+                f"provider_başarısız={provider_failures}{details}",
             )
 
         manifest_data = {

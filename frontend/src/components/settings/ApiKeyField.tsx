@@ -157,11 +157,12 @@ export function ApiKeyField({ cred }: { cred: CredentialStatus }) {
         {editing ? (
           <>
             <input
-              className="flex-1 min-w-[200px] px-2 py-1 border border-border rounded-sm text-base font-body outline-none transition-colors duration-fast focus:border-focus"
+              className="flex-1 min-w-[200px] px-2 py-1 border border-border rounded-sm text-base font-body outline-none transition-colors duration-fast focus:border-focus focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-500 focus-visible:outline-offset-1"
               type="password"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               placeholder="Yeni deger girin..."
+              aria-label={`${cred.label} için yeni değer girin`}
               autoComplete="off"
               onKeyDown={(e) => { if (e.key === "Enter") handleSave(); }}
             />
@@ -213,6 +214,8 @@ export function ApiKeyField({ cred }: { cred: CredentialStatus }) {
       {/* Feedback */}
       {feedback && (
         <div
+          role="status"
+          aria-live="polite"
           className={cn(
             "mt-1 text-sm",
             feedback.type === "success" && "text-success-text",

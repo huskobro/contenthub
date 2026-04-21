@@ -22,6 +22,7 @@ import {
 } from "../../api/automationApi";
 import { useActiveScope } from "../../hooks/useActiveScope";
 import { useToast } from "../../hooks/useToast";
+import { toastMessageFromError } from "../../lib/errorUtils";
 import {
   AuroraButton,
   AuroraInspector,
@@ -112,6 +113,10 @@ export function AuroraAdminInboxPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["operations-inbox"] });
       toast.success("Inbox öğesi güncellendi");
+    },
+    onError: (err) => {
+      // Faz 4: status changes used to fail silently — surface them.
+      toast.error(toastMessageFromError(err));
     },
   });
 

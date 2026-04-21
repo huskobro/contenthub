@@ -29,7 +29,7 @@ export function TableFilterBar({ groups, active, onChange }: TableFilterBarProps
               type="button"
               onClick={() => onChange(group.key, null)}
               className={cn(
-                "px-2.5 py-0.5 rounded-full text-xs border transition-colors duration-fast cursor-pointer",
+                "px-2.5 py-0.5 rounded-full text-xs border transition-colors duration-fast cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-500 focus-visible:outline-offset-2",
                 active[group.key] == null
                   ? "bg-brand-500 border-brand-500 text-white"
                   : "bg-transparent border-border-default text-neutral-600 hover:border-neutral-500 hover:text-neutral-800"
@@ -43,7 +43,7 @@ export function TableFilterBar({ groups, active, onChange }: TableFilterBarProps
                 type="button"
                 onClick={() => onChange(group.key, active[group.key] === opt.value ? null : opt.value)}
                 className={cn(
-                  "px-2.5 py-0.5 rounded-full text-xs border transition-colors duration-fast cursor-pointer",
+                  "px-2.5 py-0.5 rounded-full text-xs border transition-colors duration-fast cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-500 focus-visible:outline-offset-2",
                   active[group.key] === opt.value
                     ? "bg-brand-500 border-brand-500 text-white"
                     : "bg-transparent border-border-default text-neutral-600 hover:border-neutral-500 hover:text-neutral-800"

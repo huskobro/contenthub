@@ -15,6 +15,10 @@ export function useDashboardSummary(filters: AnalyticsFilterParams = {}) {
     queryKey: ["dashboard-summary", filters],
     queryFn: () => fetchDashboardSummary(filters),
     staleTime: 30_000,
-    refetchInterval: 60_000, // Auto-refresh every 60s for live dashboard feel
+    // Faz 4 perf: 60s polling kept for "live" feel, but pause while the tab
+    // is hidden so a forgotten admin tab doesn't hammer the analytics
+    // aggregator every minute for hours.
+    refetchInterval: 60_000,
+    refetchIntervalInBackground: false,
   });
 }

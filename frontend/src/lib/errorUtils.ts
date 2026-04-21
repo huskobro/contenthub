@@ -129,3 +129,18 @@ export function errorToToastType(classified: ClassifiedError): "error" | "warnin
   if (classified.category === "provider" || classified.retryable) return "warning";
   return "error";
 }
+
+/**
+ * One-line toast message for `mutation.onError` handlers.
+ *
+ * Faz 4: combines `title` and `message` from `classifyError` so the
+ * operator sees a self-contained string in a toast (no separate title
+ * area). Use as: `toast.error(toastMessageFromError(err))`.
+ */
+export function toastMessageFromError(error: unknown): string {
+  const c = classifyError(error);
+  if (c.title && c.message && c.title !== c.message) {
+    return `${c.title}: ${c.message}`;
+  }
+  return c.message || c.title || "Beklenmeyen bir hata olustu.";
+}

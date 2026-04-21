@@ -70,6 +70,7 @@ function NotificationItem({
     <div
       className={cn(
         "px-4 py-3 border-b border-border-subtle transition-colors duration-fast cursor-pointer group",
+        "focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-500 focus-visible:outline-offset-[-2px]",
         notification.read
           ? "bg-surface-card opacity-70"
           : "bg-surface-card hover:bg-brand-50/30",
@@ -81,7 +82,9 @@ function NotificationItem({
       role="button"
       tabIndex={0}
       onKeyDown={(e) => {
-        if (e.key === "Enter") {
+        // Faz 4: Space should also activate button-role elements per ARIA spec.
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
           onRead();
           onNavigate?.();
         }

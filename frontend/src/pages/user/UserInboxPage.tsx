@@ -16,6 +16,7 @@ import {
 import { cn } from "../../lib/cn";
 import { useActiveScope } from "../../hooks/useActiveScope";
 import { useSurfacePageOverride } from "../../surfaces";
+import { toastMessageFromError } from "../../lib/errorUtils";
 
 // ---------------------------------------------------------------------------
 // Type labels and colors
@@ -102,6 +103,10 @@ function LegacyUserInboxPage({ isAdmin }: InboxPageProps) {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["operations-inbox"] });
       toast.success("Inbox ogesi guncellendi");
+    },
+    onError: (err) => {
+      // Faz 4: status changes used to fail silently — surface them.
+      toast.error(toastMessageFromError(err));
     },
   });
 

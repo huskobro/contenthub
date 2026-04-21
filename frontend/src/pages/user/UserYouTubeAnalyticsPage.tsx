@@ -33,6 +33,8 @@ import { TrendChart } from "../../components/shared/charts/TrendChart";
 import { YouTubeVideoManagementSheet } from "../../components/youtube/YouTubeVideoManagementSheet";
 import { cn } from "../../lib/cn";
 import { useSurfacePageOverride } from "../../surfaces";
+import { useToast } from "../../hooks/useToast";
+import { toastMessageFromError } from "../../lib/errorUtils";
 
 // ---------------------------------------------------------------------------
 // Constants & label maps
@@ -369,6 +371,7 @@ export function UserYouTubeAnalyticsPage() {
 }
 
 function LegacyUserYouTubeAnalyticsPage() {
+  const toast = useToast();
   const [windowDays, setWindowDays] = useState<number>(28);
   const [selectedConnectionId, setSelectedConnectionId] = useState<string>("");
   const [activeMetric, setActiveMetric] = useState<MetricKey>("views");
@@ -555,7 +558,16 @@ function LegacyUserYouTubeAnalyticsPage() {
           </select>
           <button
             type="button"
-            onClick={() => syncMutation.mutate({ windowDays, runKind: "manual" })}
+            onClick={() =>
+              syncMutation.mutate(
+                { windowDays, runKind: "manual" },
+                {
+                  onSuccess: () => toast.success("YouTube senkron tetiklendi"),
+                  onError: (err) =>
+                    toast.error(toastMessageFromError(err)),
+                },
+              )
+            }
             disabled={!activeConnectionId || syncMutation.isPending}
             className="inline-flex items-center gap-1.5 rounded-md bg-brand-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50"
           >

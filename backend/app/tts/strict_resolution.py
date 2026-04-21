@@ -193,12 +193,17 @@ async def resolve_tts_strict(
 
     except (ProviderInvokeError, httpx.TimeoutException, httpx.ConnectError) as exc:
         latency_ms = int((time.monotonic() - started) * 1000)
+        # Faz 4: bare `str(exc)` on httpx TimeoutException / ConnectError
+        # collapsed to an empty string, so provider-health outcomes showed
+        # "failed — (no detail)". Including the type name makes the failure
+        # self-describing in the health registry and in downstream UI.
+        error_detail = f"{type(exc).__name__}: {exc}" if str(exc) else type(exc).__name__
         registry.record_outcome(
             capability=ProviderCapability.TTS,
             provider_id=provider_id,
             success=False,
             latency_ms=latency_ms,
-            error_message=str(exc),
+            error_message=error_detail,
         )
         logger.warning(
             "resolve_tts_strict: TTS provider=%s rol=%s basarisiz (AUTO-FALLBACK YOK): %s",

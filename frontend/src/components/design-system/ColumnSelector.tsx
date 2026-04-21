@@ -40,6 +40,20 @@ export function ColumnSelector({ columns, visible, onToggle }: Props) {
     return () => document.removeEventListener("mousedown", handler);
   }, [open]);
 
+  // Faz 4: Escape closes the dropdown and returns focus to the trigger,
+  // matching WAI-ARIA menu-button expectations. Previously Esc did nothing.
+  useEffect(() => {
+    if (!open) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        setOpen(false);
+        btnRef.current?.focus();
+      }
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open]);
+
   return (
     <div className="relative">
       <button
@@ -48,9 +62,11 @@ export function ColumnSelector({ columns, visible, onToggle }: Props) {
         onClick={() => setOpen((v) => !v)}
         aria-haspopup="listbox"
         aria-expanded={open}
+        aria-controls="column-selector-menu"
         className={cn(
           "flex items-center gap-1.5 px-3 py-1.5 rounded text-sm border transition-colors",
           "border-border-subtle text-neutral-500 hover:text-neutral-900 hover:bg-neutral-50",
+          "focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-500 focus-visible:outline-offset-2",
         )}
         title="Sütunları düzenle"
       >
@@ -65,7 +81,9 @@ export function ColumnSelector({ columns, visible, onToggle }: Props) {
       {open && createPortal(
         <div
           ref={dropRef}
+          id="column-selector-menu"
           role="listbox"
+          aria-label="Sütun görünürlüğü"
           className="fixed z-dropdown min-w-[160px] bg-neutral-0 border border-border-subtle rounded-md shadow-lg py-1"
           style={{ top: pos.top, left: pos.left, transform: "translateX(-100%)" }}
         >

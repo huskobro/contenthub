@@ -237,12 +237,13 @@ export function SettingRow({ setting }: { setting: EffectiveSetting }) {
         {editing && (
           <>
             <input
-              className="flex-1 min-w-[180px] px-2 py-1 border border-neutral-400 rounded-sm text-base box-border outline-none focus:border-focus"
+              className="flex-1 min-w-[180px] px-2 py-1 border border-neutral-400 rounded-sm text-base box-border outline-none focus:border-focus focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-500 focus-visible:outline-offset-1"
               type={setting.is_secret ? "password" : "text"}
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onBlur={autoSaveEnabled ? autoSave.triggerSave : undefined}
               placeholder={`${setting.type} deger girin...`}
+              aria-label={`${setting.label} için yeni değer`}
               autoComplete="off"
               onKeyDown={(e) => { if (e.key === "Enter") handleSave(); }}
             />
@@ -271,7 +272,11 @@ export function SettingRow({ setting }: { setting: EffectiveSetting }) {
       </div>
 
       {feedback && (
-        <div className={cn("mt-1 text-xs", feedback.includes("hata") ? "text-error-dark" : "text-success-text")}>
+        <div
+          role="status"
+          aria-live="polite"
+          className={cn("mt-1 text-xs", feedback.includes("hata") ? "text-error-dark" : "text-success-text")}
+        >
           {feedback}
         </div>
       )}

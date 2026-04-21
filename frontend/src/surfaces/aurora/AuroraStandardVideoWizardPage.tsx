@@ -44,6 +44,7 @@ import { useTemplatesList } from "../../hooks/useTemplatesList";
 import { useStyleBlueprintsList } from "../../hooks/useStyleBlueprintsList";
 import { api } from "../../api/client";
 import { useToast } from "../../hooks/useToast";
+import { toastMessageFromError } from "../../lib/errorUtils";
 
 // --- constants -------------------------------------------------------------
 
@@ -298,6 +299,10 @@ export function AuroraStandardVideoWizardPage() {
       qc.invalidateQueries({ queryKey: ["standard-videos"] });
       toast.success("Standard video başarıyla oluşturuldu");
       navigate(`/admin/standard-videos/${created.id}`);
+    },
+    onError: (err) => {
+      // Faz 4: surface classified server detail in addition to inline message.
+      toast.error(toastMessageFromError(err));
     },
   });
 
