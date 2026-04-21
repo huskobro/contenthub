@@ -138,12 +138,23 @@ async def test_router_attaches_fresh_nonce_each_call(monkeypatch):
         yt_router, "expand_youtube_client_id", lambda v: v, raising=False,
     )
 
+    # Stabilize-v1: endpoint now takes ctx: UserContext. Direct function
+    # calls (no FastAPI request dispatch) must pass an explicit admin
+    # context, otherwise the default Depends() sentinel reaches the
+    # ownership helper and explodes.
+    from app.auth.ownership import UserContext
+
+    admin_ctx = UserContext(
+        user_id="test-admin", role="admin", is_admin_role=True
+    )
+
     # Call the endpoint twice for the same channel_profile_id.
     for _ in range(2):
         await yt_router.get_auth_url(
             redirect_uri="http://localhost/cb",
             channel_profile_id="profile-abc",
             client_id=None,
+            ctx=admin_ctx,
             db=_FakeDB(),
         )
 

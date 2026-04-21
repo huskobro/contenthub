@@ -748,12 +748,21 @@ def test_ac_oauth_router_auth_url():
     """
     PHASE X sonrası auth-url artık channel_profile_id'ye zorunlu scope edilir.
     channel_profile_id eksik olursa 422 döner — bu davranış doğru ve beklenendir.
+
+    Stabilize-v1: endpoint now also depends on get_current_user_context for
+    per-endpoint ownership checks; bare FastAPI() test app must override that
+    dependency with an admin UserContext so pydantic validation still fires
+    before the ownership layer.
     """
     from fastapi.testclient import TestClient
     from fastapi import FastAPI
     from app.publish.youtube.router import router
+    from app.auth.ownership import UserContext, get_current_user_context
 
     app = FastAPI()
+    app.dependency_overrides[get_current_user_context] = lambda: UserContext(
+        user_id="test-admin", role="admin", is_admin_role=True
+    )
     app.include_router(router)
     client = TestClient(app)
 
@@ -792,7 +801,12 @@ async def test_ad_oauth_router_auth_callback(data_dir):
     yt_router_mod._token_store = mock_store
 
     try:
+        from app.auth.ownership import UserContext, get_current_user_context
+
         app = FastAPI()
+        app.dependency_overrides[get_current_user_context] = lambda: UserContext(
+            user_id="test-admin", role="admin", is_admin_role=True
+        )
         app.include_router(yt_router_mod.router)
         client = TestClient(app)
 
@@ -856,8 +870,13 @@ def test_ae_oauth_router_status_no_credentials(data_dir):
             yield s
 
     try:
+        from app.auth.ownership import UserContext, get_current_user_context
+
         app = FastAPI()
         app.dependency_overrides[get_db] = override_get_db
+        app.dependency_overrides[get_current_user_context] = lambda: UserContext(
+            user_id="test-admin", role="admin", is_admin_role=True
+        )
         app.include_router(yt_router_mod.router)
         client = TestClient(app)
 
@@ -878,12 +897,20 @@ def test_af_oauth_router_revoke(data_dir):
     """
     PHASE X sonrası revoke en az bir identifier (connection_id veya
     channel_profile_id) gerektirir. İkisi de verilmezse 400 döner.
+
+    Stabilize-v1: endpoint now depends on get_current_user_context; bare
+    FastAPI() test app injects an admin UserContext so the 400/404 contract
+    (not the auth gate) is the assertion surface.
     """
     from fastapi.testclient import TestClient
     from fastapi import FastAPI
     import app.publish.youtube.router as yt_router_mod
+    from app.auth.ownership import UserContext, get_current_user_context
 
     app = FastAPI()
+    app.dependency_overrides[get_current_user_context] = lambda: UserContext(
+        user_id="test-admin", role="admin", is_admin_role=True
+    )
     app.include_router(yt_router_mod.router)
     client = TestClient(app)
 
