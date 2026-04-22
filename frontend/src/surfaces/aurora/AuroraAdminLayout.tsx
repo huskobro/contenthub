@@ -9,7 +9,7 @@
  *   content   — /admin/library, /admin/assets, /admin/standard-videos,
  *               /admin/news-bulletins, /admin/templates,
  *               /admin/style-blueprints, /admin/template-style-links,
- *               /admin/used-news
+ *               /admin/used-news, /admin/channels, /admin/projects
  *   news      — /admin/sources, /admin/source-scans, /admin/news-items
  *   publish   — /admin/publish, /admin/calendar, /admin/comments,
  *               /admin/playlists, /admin/posts (yayın + etkileşim)
@@ -71,6 +71,9 @@ const AURORA_ADMIN_RAIL: AuroraRailSlot[] = [
       "/admin/style-blueprints",
       "/admin/template-style-links",
       "/admin/used-news",
+      // Aurora-native admin surfaces for channels + projects (incl. BC/AC).
+      "/admin/channels",
+      "/admin/projects",
     ],
     homeRoute: "/admin/library",
     groupIds: ["content"],

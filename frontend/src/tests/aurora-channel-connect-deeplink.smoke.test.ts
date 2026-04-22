@@ -33,11 +33,16 @@ function read(path: string): string {
 }
 
 describe("Aurora channel→connections deep-link guard (Pass-6)", () => {
-  it("AuroraChannelDetailPage navigate('/user/connections?channel=…') paternini içermeli", () => {
+  it("AuroraChannelDetailPage 'Bağla' CTA connections deep-link paternine bağlı kalmalı", () => {
     const src = read("../surfaces/aurora/AuroraChannelDetailPage.tsx");
+    // Pass-6'dan sonra channel detail baseRoute-aware oldu; literal `/user/connections`
+    // veya `${baseRoute}/connections` paterni kabul edilir, ikisi de `?channel=…`
+    // query'siyle bitmek zorunda.
+    const literalDeepLink = /navigate\(\s*[`"']\/user\/connections\?channel=/.test(src);
+    const baseRouteDeepLink = /navigate\(\s*`\$\{baseRoute\}\/connections\?channel=/.test(src);
     expect(
-      /navigate\(\s*[`"']\/user\/connections\?channel=/.test(src),
-      "Channel detail sayfasındaki 'Bağlantıları yönet' CTA'sı deep-link paternine bağlı kalmalı",
+      literalDeepLink || baseRouteDeepLink,
+      "Channel detail sayfasındaki 'Bağla' CTA'sı /user/connections veya ${baseRoute}/connections?channel= paternini korumalı",
     ).toBe(true);
   });
 

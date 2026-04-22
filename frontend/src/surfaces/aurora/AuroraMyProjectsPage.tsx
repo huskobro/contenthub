@@ -83,6 +83,10 @@ function progressPct(job: JobResponse | undefined): number {
 export function AuroraMyProjectsPage() {
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
+  const isAdmin = user?.role === "admin";
+  const baseRoute = isAdmin ? "/admin" : "/user";
+  // Admin users can open the full wizard; regular users go through /user/content.
+  const newContentRoute = isAdmin ? "/admin/wizard" : "/user/content";
   const projectsQ = useContentProjects({ user_id: user?.id, limit: 100 });
   const channelsQ = useMyChannelProfiles();
   const jobsQ = useQuery<JobResponse[]>({
@@ -183,7 +187,8 @@ export function AuroraMyProjectsPage() {
               variant="primary"
               size="sm"
               iconLeft={<Icon name="plus" size={12} />}
-              onClick={() => navigate("/admin/wizard")}
+              onClick={() => navigate(newContentRoute)}
+              data-testid="my-projects-new"
             >
               Yeni proje
             </AuroraButton>
@@ -241,7 +246,7 @@ export function AuroraMyProjectsPage() {
                     cursor: "pointer",
                     transition: "border-color .14s, transform .14s",
                   }}
-                  onClick={() => navigate(`/user/projects/${p.id}`)}
+                  onClick={() => navigate(`${baseRoute}/projects/${p.id}`)}
                   onMouseEnter={(e) => (e.currentTarget.style.borderColor = "var(--border-strong)")}
                   onMouseLeave={(e) => (e.currentTarget.style.borderColor = "var(--border-default)")}
                 >
@@ -383,7 +388,7 @@ export function AuroraMyProjectsPage() {
               return (
                 <div
                   key={p.id}
-                  onClick={() => navigate(`/user/projects/${p.id}`)}
+                  onClick={() => navigate(`${baseRoute}/projects/${p.id}`)}
                   style={{
                     display: "grid",
                     gridTemplateColumns: "1fr 200px 100px 100px",

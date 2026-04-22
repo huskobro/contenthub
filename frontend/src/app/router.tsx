@@ -238,9 +238,15 @@ export const router = createBrowserRouter([
       { path: "wizard", element: <WizardLauncherPage /> },
       { path: "users", element: <UsersRegistryPage /> },
       { path: "users/:userId/settings", element: <UserSettingsDetailPage /> },
-      // Branding Center / Automation Center / Channel onboarding — admin sees these too
+      // Branding Center / Automation Center / Channel onboarding — admin sees these too.
+      // Channel + project detail routes mirror user shell so baseRoute-aware
+      // back-buttons and breadcrumbs don't 404 under /admin.
+      { path: "channels", element: <Suspense fallback={<LazyFallback />}><MyChannelsPage /></Suspense> },
       { path: "channels/new", element: <Suspense fallback={<LazyFallback />}><AuroraChannelOnboardingPage /></Suspense> },
+      { path: "channels/:channelId", element: <Suspense fallback={<LazyFallback />}><ChannelDetailPage /></Suspense> },
       { path: "channels/:channelId/branding-center", element: <Suspense fallback={<LazyFallback />}><AuroraBrandingCenterPage /></Suspense> },
+      { path: "projects", element: <Suspense fallback={<LazyFallback />}><MyProjectsPage /></Suspense> },
+      { path: "projects/:projectId", element: <Suspense fallback={<LazyFallback />}><ProjectDetailPage /></Suspense> },
       { path: "projects/:projectId/automation-center", element: <Suspense fallback={<LazyFallback />}><AuroraAutomationCenterPage /></Suspense> },
       // Faz 4.1 — shell-consistent 404: admin NotFound stays inside DynamicAdminLayout
       { path: "*", element: <NotFoundPage /> },

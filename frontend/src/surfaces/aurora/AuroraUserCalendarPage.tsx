@@ -52,6 +52,9 @@ function isoDay(d: Date): string {
 export function AuroraUserCalendarPage() {
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
+  const isAdmin = user?.role === "admin";
+  // "Zamanla" CTA routes to /admin/wizard for admins, /user/content for regular users.
+  const newContentRoute = isAdmin ? "/admin/wizard" : "/user/content";
   const [cursor, setCursor] = useState(() => {
     const t = new Date();
     return new Date(t.getFullYear(), t.getMonth(), 1);
@@ -199,7 +202,8 @@ export function AuroraUserCalendarPage() {
               variant="primary"
               size="sm"
               iconLeft={<Icon name="plus" size={12} />}
-              onClick={() => navigate("/admin/wizard")}
+              onClick={() => navigate(newContentRoute)}
+              data-testid="calendar-schedule-new"
             >
               Zamanla
             </AuroraButton>

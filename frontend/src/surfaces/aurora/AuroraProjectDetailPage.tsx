@@ -8,6 +8,7 @@
 import { useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useContentProject, useProjectJobs } from "../../hooks/useContentProjects";
+import { useCurrentUser } from "../../hooks/useCurrentUser";
 import {
   AuroraInspector,
   AuroraInspectorSection,
@@ -80,6 +81,8 @@ export function AuroraProjectDetailPage() {
   const projectQ = useContentProject(projectId ?? "");
   const jobsQ = useProjectJobs(projectId ?? null);
   const [tab, setTab] = useState<"overview" | "pipeline" | "logs">("overview");
+  const { user } = useCurrentUser();
+  const baseRoute = user?.role === "admin" ? "/admin" : "/user";
 
   const project = projectQ.data;
   const jobs = (jobsQ.data ?? []) as unknown as JobResponse[];
@@ -125,7 +128,7 @@ export function AuroraProjectDetailPage() {
         <AuroraButton
           variant="secondary"
           size="sm"
-          onClick={() => navigate("/user/projects")}
+          onClick={() => navigate(`${baseRoute}/projects`)}
           style={{ width: "100%", marginBottom: 6 }}
           iconLeft={<Icon name="arrow-left" size={11} />}
         >
@@ -135,7 +138,7 @@ export function AuroraProjectDetailPage() {
           variant="primary"
           size="sm"
           onClick={() =>
-            navigate(`/user/projects/${project.id}/automation-center`)
+            navigate(`${baseRoute}/projects/${project.id}/automation-center`)
           }
           style={{ width: "100%", marginBottom: 6 }}
           data-testid="proj-detail-go-automation"
@@ -146,7 +149,7 @@ export function AuroraProjectDetailPage() {
           <AuroraButton
             variant="secondary"
             size="sm"
-            onClick={() => navigate(`/user/jobs/${latestJob.id}`)}
+            onClick={() => navigate(`${baseRoute}/jobs/${latestJob.id}`)}
             style={{ width: "100%" }}
           >
             İş detayı

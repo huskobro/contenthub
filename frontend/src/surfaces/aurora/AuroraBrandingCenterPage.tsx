@@ -1086,11 +1086,16 @@ function ReviewApplyCard({ response, onGoToAutomation }: ReviewApplyCardProps) {
           disabled={!allComplete}
           data-testid="bc-go-automation"
         >
-          Automation Center'a geç
+          Bu kanalın projelerine geç
         </AuroraButton>
         {!allComplete && (
           <span className="caption">
-            Eksik bölümleri tamamladıktan sonra Automation Center açılabilir.
+            Eksik bölümleri tamamlayın; kanal projeleri listesine buradan geçebilirsiniz.
+          </span>
+        )}
+        {allComplete && (
+          <span className="caption" style={{ color: "var(--text-muted)" }}>
+            Automation Center bir projeye bağlıdır; proje seçildiğinde açılır.
           </span>
         )}
       </div>

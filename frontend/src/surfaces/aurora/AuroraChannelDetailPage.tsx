@@ -8,6 +8,7 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useChannelProfile } from "../../hooks/useChannelProfiles";
 import { useChannelConnection } from "../../hooks/useChannelConnection";
+import { useCurrentUser } from "../../hooks/useCurrentUser";
 import {
   AuroraButton,
   AuroraInspector,
@@ -30,6 +31,11 @@ export function AuroraChannelDetailPage() {
   const navigate = useNavigate();
   const channelQ = useChannelProfile(channelId ?? "");
   const conn = useChannelConnection(channelId);
+  const { user } = useCurrentUser();
+  const isAdmin = user?.role === "admin";
+  const baseRoute = isAdmin ? "/admin" : "/user";
+  // Admin-only wizard is under /admin/wizard; regular users route to /user/content.
+  const newContentRoute = isAdmin ? "/admin/wizard" : "/user/content";
 
   const channel = channelQ.data;
 
@@ -69,14 +75,14 @@ export function AuroraChannelDetailPage() {
         )}
       </AuroraInspectorSection>
       <AuroraInspectorSection title="Eylemler">
-        <AuroraButton variant="secondary" size="sm" style={{ width: "100%", marginBottom: 6 }} onClick={() => navigate("/user/channels")}>
+        <AuroraButton variant="secondary" size="sm" style={{ width: "100%", marginBottom: 6 }} onClick={() => navigate(`${baseRoute}/channels`)}>
           Kanallara dön
         </AuroraButton>
         <AuroraButton
           variant="primary"
           size="sm"
           style={{ width: "100%", marginBottom: 6 }}
-          onClick={() => navigate(`/user/channels/${channel.id}/branding-center`)}
+          onClick={() => navigate(`${baseRoute}/channels/${channel.id}/branding-center`)}
           data-testid="channel-detail-go-branding"
         >
           Branding Center
@@ -85,11 +91,11 @@ export function AuroraChannelDetailPage() {
           variant="secondary"
           size="sm"
           style={{ width: "100%", marginBottom: 6 }}
-          onClick={() => navigate(`/user/analytics/channels?channelId=${channel.id}`)}
+          onClick={() => navigate(`${baseRoute}/analytics/channels?channelId=${channel.id}`)}
         >
           Analitik
         </AuroraButton>
-        <AuroraButton variant="primary" size="sm" style={{ width: "100%" }} onClick={() => navigate("/admin/wizard")}>
+        <AuroraButton variant="primary" size="sm" style={{ width: "100%" }} onClick={() => navigate(newContentRoute)}>
           Yeni içerik
         </AuroraButton>
       </AuroraInspectorSection>
@@ -186,7 +192,7 @@ export function AuroraChannelDetailPage() {
             <div style={{ flex: 1, fontSize: 12, color: "var(--text-secondary)" }}>
               YouTube hesabı bağlı değil. Yayın için OAuth bağlantısı gerekli.
             </div>
-            <AuroraButton variant="primary" size="sm" onClick={() => navigate(`/user/connections?channel=${channel.id}`)}>
+            <AuroraButton variant="primary" size="sm" onClick={() => navigate(`${baseRoute}/connections?channel=${channel.id}`)}>
               Bağla
             </AuroraButton>
           </div>

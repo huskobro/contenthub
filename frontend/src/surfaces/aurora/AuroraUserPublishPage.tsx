@@ -78,6 +78,10 @@ function humanizePublishTitle(
 export function AuroraUserPublishPage() {
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
+  const isAdmin = user?.role === "admin";
+  const baseRoute = isAdmin ? "/admin" : "/user";
+  // Admin uses full wizard; users are routed to the content entry hub.
+  const newContentRoute = isAdmin ? "/admin/wizard" : "/user/content";
 
   const recordsQ = useQuery({
     queryKey: ["publish-records", "user-publish-aurora", user?.id ?? ""],
@@ -141,7 +145,8 @@ export function AuroraUserPublishPage() {
             variant="primary"
             size="sm"
             iconLeft={<Icon name="plus" size={12} />}
-            onClick={() => navigate("/admin/wizard")}
+            onClick={() => navigate(newContentRoute)}
+            data-testid="publish-new-content"
           >
             Yeni içerik
           </AuroraButton>
@@ -164,7 +169,7 @@ export function AuroraUserPublishPage() {
                   key={r.id}
                   className="card card-pad"
                   onClick={() => {
-                    if (project) navigate(`/user/projects/${project.id}`);
+                    if (project) navigate(`${baseRoute}/projects/${project.id}`);
                   }}
                   style={{ cursor: project ? "pointer" : "default" }}
                 >
