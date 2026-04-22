@@ -106,6 +106,16 @@ Support:
 - Guided Mode
 - Advanced Mode
 
+### Shell Implementation
+The admin and user panels are implemented as independent Aurora shells:
+- `AuroraAdminLayout` — admin runtime shell (sidebar, ctxbar, inspector slots for admin)
+- `AuroraUserLayout` — user runtime shell (simpler chrome, guided/advanced mode aware)
+- `DynamicAdminLayout` / `DynamicUserLayout` — surface resolver dispatcher; chooses Aurora shell vs legacy layout based on active surface
+
+Routes under `/admin/*` mount through `DynamicAdminLayout`; routes under `/user/*` mount through `DynamicUserLayout`. When the active surface is `aurora`, both dispatchers resolve to their Aurora shell; otherwise they fall back to the legacy layout.
+
+Admin and user panels are separate information architectures. A single page component may be mounted in both shells (see `Canonical Route Vocabulary`), but the shell chrome, navigation, and visibility rules stay independent. A user in the admin shell and the same user in the user shell are not interchangeable contexts.
+
 ## Settings Registry
 Settings are product objects, not ad-hoc config.
 Each setting should support metadata such as:
@@ -371,6 +381,73 @@ Examples of React Query:
 
 Do not duplicate server truth in multiple stores without reason.
 
+### Surface System
+The frontend is organized as surfaces. A surface is a self-contained UI layer with its own pages, layouts, tokens, and primitives. The canonical surface today is **Aurora**. Legacy top-level `frontend/src/pages/` files remain as fallback for non-Aurora surfaces and for auth/error edges.
+
+- **Aurora** (`frontend/src/surfaces/aurora/`) is the canonical production surface. All new pages live here.
+- **Legacy pages** (`frontend/src/pages/`) are fallback only. Do not add new pages there; fix-in-place is allowed for regression.
+- **Surface registration** (`frontend/src/surfaces/manifests/register.tsx`) is the single source of truth mapping canonical page slots to their Aurora implementations. Every new Aurora page must have an entry here.
+- **Surface resolver** (`frontend/src/surfaces/useSurfaceResolution.ts`) reads the active surface setting at runtime and dispatches to the correct layout + page binding.
+- **Layout dispatchers** (`DynamicAdminLayout`, `DynamicUserLayout` in `frontend/src/app/layouts/`) pick between Aurora shells (`AuroraAdminLayout`, `AuroraUserLayout`) and legacy layouts based on surface resolution.
+
+Rules:
+- New pages: only inside `frontend/src/surfaces/aurora/`, with a matching `register.tsx` override entry and a mount in `frontend/src/app/router.tsx`.
+- Never create a duplicate page under `pages/` when an Aurora page exists for the same slot. Duplicate routes make render outcomes ambiguous.
+- Do not touch `register.tsx` or `useSurfaceResolution.ts` for anything other than new-page bindings unless the surface mechanism itself is being evolved.
+
+### Theme System
+Aurora ships with two production themes. Themes are CSS-variable overrides scoped to `[data-surface="aurora"][data-theme="<id>"]`.
+
+- `aurora-dusk` — default dark theme (plum + teal palette). Fully tokenized.
+- `obsidian-slate` — light theme (blue + purple palette). Token file coverage is complete in `tokens.css`, but some Aurora components still read overlay-family tokens that are defined only for Dusk. Slate therefore has partial class-context breakage until those references are migrated.
+
+Token files of record:
+- `frontend/src/styles/aurora/tokens.css` — semantic and overlay tokens for both themes.
+- `frontend/src/styles/aurora/cockpit.css` — layout primitives and class-level styles.
+
+Theme management store: `frontend/src/stores/themeStore.ts`. The active theme id is persisted under the localStorage key `contenthub:active-theme-id`; the active surface id under `contenthub:active-surface-id`.
+
+Rules:
+- Do not add a third theme until Dusk and Slate are both class-context complete. Partial themes are product breakage, not UX polish.
+- Every new component or class must use theme-aware tokens (`var(--token-name)`). No hard-coded colors. No Dusk-only overlay tokens used without a Slate override.
+- Visual QA for any new surface class is required in both themes before merge.
+
+### Theme Availability and Gating
+Theme availability is a user-facing product behavior, not an internal flag. Any gate that hides or blocks a theme from users must follow this policy:
+
+- **Short-lived code gate** (hotfix scope only): a small, clearly commented constant or conditional in `themeStore.ts` or the theme switcher is acceptable when we need to hide a broken theme quickly. Such a gate must reference the tracking issue or branch that will remove it.
+- **Persistent / operator-managed gate**: any gate intended to live beyond a hotfix window must move to the Settings Registry as a setting (e.g. `theme.{id}.enabled`) with admin visibility, audit trail, and versioning. Hidden or ad-hoc flags outside the Settings Registry are prohibited for durable product decisions (see Non-Negotiable Rules: "No hidden settings", "No silent magic flags").
+- **localStorage fallback**: when a theme is gated off, the surface must refuse to render it even if a prior session persisted its id under `contenthub:active-theme-id`. Fall back to `aurora-dusk` (or the current default) deterministically.
+
+### Canonical Route Vocabulary
+Canonical paths are stable product contracts. Use them literally; do not shorten, rename, or fork.
+
+| Canonical path | Component | Shells mounted |
+|---|---|---|
+| `/{shell}/channels/:channelId/branding-center` | `AuroraBrandingCenterPage` | admin, user |
+| `/{shell}/projects/:projectId/automation-center` | `AuroraAutomationCenterPage` | admin, user |
+| `/{shell}/channels/new` | `AuroraChannelOnboardingPage` | admin, user |
+
+`{shell}` ∈ {`admin`, `user`}. Each canonical path is dual-mounted by design; the underlying component resolves the correct shell context at render time.
+
+Forbidden literals (these paths are not mounted and will 404):
+- `/admin/channels/:id/branding` — use `/branding-center`
+- `/admin/projects/:id/automation` — use `/automation-center`
+
+Rules:
+- When adding a new CTA or link, run `rg "/branding\b"` and `rg "/automation\b"` first to catch short-literal mistakes.
+- When renaming a canonical path, add a redirect route for the old path in `router.tsx`, sweep literal sources with `rg`, and update this table and `docs/architecture/canonical-routes-and-surfaces.md` in the same change.
+- The full canonical inventory (all mounted paths, shell mappings, legacy fallbacks, and duplicate-risk notes) lives in `docs/architecture/canonical-routes-and-surfaces.md`. This CLAUDE.md table is the contract; the doc is the ledger.
+
+### Shell Branching Rule
+`/admin/*` and `/user/*` are independent information architectures. A page component may be mounted in both shells, but the URL prefix is the source of truth for "which shell am I in."
+
+- Derive the active shell from the current URL, not from the caller's role.
+- Forbidden pattern: `const baseRoute = isAdmin ? "/admin" : "/user"`. This silently teleports a user across shells and corrupts back-navigation, audit trails, and the user's mental model.
+- Required pattern: derive shell from `useLocation().pathname` (or a route-scoped context that encodes the current shell). Example: `const baseRoute = useLocation().pathname.startsWith("/admin") ? "/admin" : "/user"`.
+- An admin-role user visiting `/user/*` must stay in the user shell. Cross-shell navigation is an explicit user action (e.g., a "Switch to admin panel" control), never an implicit side effect of a card click.
+- This rule applies to every Aurora page. Violations are regressions even if the render output looks correct.
+
 ## Realtime
 Use SSE for real-time updates.
 SSE events should be used to:
@@ -414,8 +491,22 @@ Test categories:
 - Publish simulation tests
 - Analytics aggregation tests
 - Manual QA checklists
+- Real-browser Aurora QA (see below)
 
 Prefer targeted tests over blindly running everything when appropriate, but do not skip required coverage.
+
+### Real-Browser Aurora QA Tier
+Any Aurora UI change that affects layout, theme tokens, navigation, or shell chrome must be validated in a real browser before merge. Static token analysis and unit tests are not sufficient for this tier.
+
+Minimum coverage for an Aurora change:
+- **Dusk + Slate theme coverage** — both themes rendered and visually inspected on the affected page. Token regressions in one theme block merge.
+- **Admin + User shell coverage** — pages mounted in both shells are opened under both `/admin/*` and `/user/*` to confirm chrome, navigation, and shell-aware rendering stay correct.
+- **Shell-cross regression check** — confirm that role-only navigation never silently redirects a user from `/user/*` to `/admin/*` (or vice versa). See Shell Branching Rule.
+- **Canonical path check** — confirm that no CTA or link produces a forbidden literal (`/branding`, `/automation`) instead of its canonical path. See Canonical Route Vocabulary.
+- **State matrix** — for affected components, exercise hover, focus-visible, selected, loading, empty, and error states. Empty vs loading vs error must be visually distinguishable.
+- **Contrast check** — small secondary text must meet WCAG 2.1 AA (4.5:1 normal, 3:1 large) in both themes.
+
+Record the real-browser QA outcome (pages tested, issues found, acceptance decision) alongside the change; do not substitute a static code review for this tier.
 
 ## Release Quality Gates
 Before considering a change done, pass these gates:
