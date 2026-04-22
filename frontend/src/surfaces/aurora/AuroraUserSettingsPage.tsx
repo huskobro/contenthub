@@ -135,7 +135,7 @@ function ToggleRow({
           background: value ? "var(--accent-primary)" : "var(--bg-inset)",
           outline: "none",
           opacity: canEdit ? 1 : 0.5,
-          boxShadow: value ? "0 0 8px rgba(79,104,247,0.4)" : "none",
+          boxShadow: value ? "0 0 8px rgba(var(--accent-primary-rgb), 0.4)" : "none",
         }}
       >
         <span

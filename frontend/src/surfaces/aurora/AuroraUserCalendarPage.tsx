@@ -37,7 +37,7 @@ function eventTone(ev: CalendarEvent): { cls: string; color: string; bg: string 
     return { cls: "render", color: "var(--state-danger-fg)", bg: "rgba(231,76,60,0.15)" };
   }
   if (ev.status === "scheduled" || ev.status === "pending_review" || ev.status === "approved") {
-    return { cls: "pending", color: "var(--accent-primary-hover)", bg: "rgba(79,104,247,0.15)" };
+    return { cls: "pending", color: "var(--accent-primary-hover)", bg: "rgba(var(--accent-primary-rgb), 0.15)" };
   }
   return { cls: "render", color: "var(--state-warning-fg)", bg: "rgba(250,179,135,0.15)" };
 }
@@ -246,7 +246,7 @@ export function AuroraUserCalendarPage() {
               <div
                 key={i}
                 style={{
-                  background: isToday ? "rgba(79,104,247,0.06)" : "var(--bg-surface)",
+                  background: isToday ? "rgba(var(--accent-primary-rgb), 0.08)" : "var(--bg-surface)",
                   padding: "8px 6px",
                   minHeight: 84,
                   opacity: c.other ? 0.4 : 1,

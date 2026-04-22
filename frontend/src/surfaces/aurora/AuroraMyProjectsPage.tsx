@@ -215,7 +215,7 @@ export function AuroraMyProjectsPage() {
                   cursor: "pointer",
                   fontFamily: "inherit",
                   transition: "all .12s",
-                  borderColor: active ? "rgba(79,104,247,0.4)" : "var(--border-default)",
+                  borderColor: active ? "rgba(var(--accent-primary-rgb), 0.4)" : "var(--border-default)",
                   background: active ? "var(--accent-primary-muted)" : "var(--bg-surface)",
                   color: active ? "var(--accent-primary-hover)" : "var(--text-secondary)",
                 }}

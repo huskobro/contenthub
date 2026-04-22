@@ -50,7 +50,7 @@ function eventTone(ev: CalendarEvent): { color: string; bg: string } {
     ev.status === "pending_review" ||
     ev.status === "approved"
   ) {
-    return { color: "var(--accent-primary-hover)", bg: "rgba(79,104,247,0.15)" };
+    return { color: "var(--accent-primary-hover)", bg: "rgba(var(--accent-primary-rgb), 0.15)" };
   }
   return { color: "var(--state-warning-fg)", bg: "rgba(250,179,135,0.15)" };
 }
@@ -380,7 +380,7 @@ export function AuroraAdminCalendarPage() {
                 key={i}
                 style={{
                   background: isToday
-                    ? "rgba(79,104,247,0.06)"
+                    ? "rgba(var(--accent-primary-rgb), 0.08)"
                     : "var(--bg-surface)",
                   padding: "8px 6px",
                   minHeight: 84,

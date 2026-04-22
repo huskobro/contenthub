@@ -219,6 +219,7 @@
   --accent-primary-hover:  #5ddacb;
   --accent-primary-muted:  rgba(59, 200, 184, 0.14);
   --accent-primary-strong: #26b6a6;
+  --accent-primary-rgb:    59, 200, 184;
 
   --accent-secondary:        #b07ad8;
   --accent-secondary-hover:  #c495e0;
@@ -338,6 +339,7 @@
   --accent-primary-hover:  #4f68f7;
   --accent-primary-muted:  rgba(79, 104, 247, 0.12);
   --accent-primary-strong: #2d40c4;
+  --accent-primary-rgb:    79, 104, 247;
 
   --accent-secondary:        #7c3aed;
   --accent-secondary-hover:  #8b5cf6;

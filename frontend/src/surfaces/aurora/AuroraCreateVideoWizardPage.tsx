@@ -743,7 +743,7 @@ export function AuroraCreateVideoWizardPage() {
         title="Yeni Video Oluştur"
         description="Kanal → proje → temel → stil → şablon → önizleme"
         breadcrumbs={[
-          { label: "Projelerim", href: "/u/projects" },
+          { label: "Projelerim", href: "/user/projects" },
           { label: "Yeni Video" },
         ]}
         actions={

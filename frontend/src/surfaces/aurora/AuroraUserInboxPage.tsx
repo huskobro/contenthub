@@ -104,11 +104,11 @@ export function AuroraUserInboxPage() {
                   padding: "12px 16px",
                   borderBottom: i < items.length - 1 ? "1px solid var(--border-subtle)" : "none",
                   cursor: "pointer",
-                  background: unread ? "rgba(79,104,247,0.03)" : "transparent",
+                  background: unread ? "rgba(var(--accent-primary-rgb), 0.06)" : "transparent",
                 }}
                 onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bg-inset)")}
                 onMouseLeave={(e) =>
-                  (e.currentTarget.style.background = unread ? "rgba(79,104,247,0.03)" : "transparent")
+                  (e.currentTarget.style.background = unread ? "rgba(var(--accent-primary-rgb), 0.06)" : "transparent")
                 }
               >
                 <div

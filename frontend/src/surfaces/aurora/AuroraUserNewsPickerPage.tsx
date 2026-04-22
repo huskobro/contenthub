@@ -8,8 +8,10 @@
  * listesini onConfirm callback'ine teslim eder (router üzerinden bültene aktarım).
  */
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { fetchNewsItems, type NewsItemResponse } from "../../api/newsItemsApi";
+import { useAuthStore } from "../../stores/authStore";
 import {
   AuroraButton,
   AuroraInspector,
@@ -38,6 +40,13 @@ function usageBadge(item: NewsItemResponse): { label: string; tone: string } {
 }
 
 export function AuroraUserNewsPickerPage() {
+  const navigate = useNavigate();
+  // Admin shell (admin.news.picker) de user shell (user.news.picker) de bu sayfaya
+  // ulaşıyor. Onay sonrası shell-correct wizard entry'sine gidebilmek için
+  // role-aware baseRoute türetiyoruz. Önceden window.location.assign ile
+  // `/user/wizard/news_bulletin` 404 rotasına atılıyordu (real bug).
+  const role = useAuthStore((s) => s.user?.role);
+  const baseRoute = role === "admin" ? "/admin" : "/user";
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [search, setSearch] = useState("");
 
@@ -100,7 +109,17 @@ export function AuroraUserNewsPickerPage() {
               const ids = Array.from(selected);
               const params = new URLSearchParams();
               params.set("news_ids", ids.join(","));
-              window.location.assign(`/user/wizard/news_bulletin?${params.toString()}`);
+              // Shell-correct: admin → /admin/news-bulletins/wizard,
+              //               user  → /user/create/bulletin
+              // Eski davranış `/user/wizard/news_bulletin` 404'tü + full page
+              // reload veriyordu (window.location.assign). SPA navigate ile
+              // query string preserve edilir; wizard news_ids parametresini
+              // okuyarak hydrate eder.
+              const target =
+                role === "admin"
+                  ? `${baseRoute}/news-bulletins/wizard`
+                  : `${baseRoute}/create/bulletin`;
+              navigate(`${target}?${params.toString()}`);
             }}
           >
             Seçimleri onayla ({selCount})
@@ -153,12 +172,12 @@ export function AuroraUserNewsPickerPage() {
                     padding: "12px 16px",
                     borderBottom: i < items.length - 1 ? "1px solid var(--border-subtle)" : "none",
                     cursor: "pointer",
-                    background: isSel ? "rgba(79,104,247,0.05)" : "transparent",
+                    background: isSel ? "rgba(59,200,184,0.08)" : "transparent",
                     transition: "background .08s",
                   }}
                   onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bg-inset)")}
                   onMouseLeave={(e) =>
-                    (e.currentTarget.style.background = isSel ? "rgba(79,104,247,0.05)" : "transparent")
+                    (e.currentTarget.style.background = isSel ? "rgba(59,200,184,0.08)" : "transparent")
                   }
                 >
                   <input

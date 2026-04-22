@@ -430,7 +430,7 @@ export function AuroraAssetLibraryPage() {
                     ? "var(--accent-primary-hover)"
                     : "var(--text-muted)",
                   borderColor: active
-                    ? "rgba(79,104,247,0.3)"
+                    ? "rgba(var(--accent-primary-rgb), 0.3)"
                     : "var(--border-subtle)",
                 }}
               >

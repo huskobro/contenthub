@@ -38,7 +38,7 @@
   white-space: nowrap;
 }
 [data-surface="aurora"] .filter-chip:hover { border-color: var(--border-strong); color: var(--text-primary); }
-[data-surface="aurora"] .filter-chip.active { background: var(--accent-primary-muted); border-color: rgba(79,104,247,0.4); color: var(--accent-primary-hover); }
+[data-surface="aurora"] .filter-chip.active { background: var(--accent-primary-muted); border-color: rgba(var(--accent-primary-rgb), 0.4); color: var(--accent-primary-hover); }
 [data-surface="aurora"] .filter-chip .badge {
   display: inline-flex; align-items: center; justify-content: center;
   min-width: 18px; height: 18px; padding: 0 5px;
@@ -61,14 +61,14 @@
   display: flex; align-items: center; gap: 10px;
   padding: 8px 14px;
   background: var(--accent-primary-muted);
-  border: 1px solid rgba(79,104,247,0.3);
+  border: 1px solid rgba(var(--accent-primary-rgb), 0.3);
   border-radius: 8px;
   margin-bottom: 10px;
   animation: aurora-bulk-slide-down var(--motion-duration-fast) var(--motion-ease-out, ease-out);
 }
 @keyframes aurora-bulk-slide-down { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
 [data-surface="aurora"] .bulk-bar .count { font-size: 12px; font-weight: 600; color: var(--accent-primary-hover); font-family: var(--font-mono); }
-[data-surface="aurora"] .bulk-bar .divider { width: 1px; height: 18px; background: rgba(79,104,247,0.3); }
+[data-surface="aurora"] .bulk-bar .divider { width: 1px; height: 18px; background: rgba(var(--accent-primary-rgb), 0.3); }
 [data-surface="aurora"] .bulk-bar .spacer { flex: 1; }
 
 /* ---- Column selector dropdown ---- */
@@ -153,7 +153,7 @@
 [data-surface="aurora"] .tbl tbody tr { transition: background var(--motion-duration-instant); }
 [data-surface="aurora"] .tbl tbody tr:hover td { background: var(--bg-inset); cursor: default; }
 [data-surface="aurora"] .tbl tbody tr.selected td { background: var(--accent-primary-muted); box-shadow: inset 2px 0 0 var(--accent-primary); }
-[data-surface="aurora"] .tbl tbody tr.selected:hover td { background: rgba(79,104,247,0.12); }
+[data-surface="aurora"] .tbl tbody tr.selected:hover td { background: rgba(var(--accent-primary-rgb), 0.12); }
 
 /* Thumb in table */
 [data-surface="aurora"] .tbl-thumb {
