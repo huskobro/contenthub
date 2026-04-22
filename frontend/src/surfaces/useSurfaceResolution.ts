@@ -60,7 +60,14 @@ const DEFAULT_SNAPSHOT: SurfaceSettingsSnapshot = {
 // fetch still runs and overrides this cache when it returns. Staleness is
 // bounded because the admin settings API is called on every page mount —
 // within one request the cache is refreshed.
-const CACHE_KEY = "contenthub:surface-settings-snapshot-v1";
+//
+// v2 bump (Aurora-only gecis): v1 cache'i atrium/bridge/canvas'i `enabled:
+// true` olarak seedleyebiliyordu. Aurora-only varsayilanlarla uyumsuz; bu
+// yuzden yeni bir cache anahtari kullaniyoruz. v1 anahtari sessizce
+// yoksayilir (readCachedSnapshot `v !== 2` kontrolunde null doner) ve ilk
+// paint loaded:false patikasindan gecer — kullanici bir frame boyunca
+// legacy safety-net goruyor olabilir, sonraki fetch cache'i v2 ile tazeler.
+const CACHE_KEY = "contenthub:surface-settings-snapshot-v2";
 
 function readCachedSnapshot(): SurfaceSettingsSnapshot | null {
   try {
@@ -68,7 +75,7 @@ function readCachedSnapshot(): SurfaceSettingsSnapshot | null {
     const raw = localStorage.getItem(CACHE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as Partial<SurfaceSettingsSnapshot> & { v?: number };
-    if (parsed?.v !== 1) return null;
+    if (parsed?.v !== 2) return null;
     return {
       infrastructureEnabled: Boolean(parsed.infrastructureEnabled),
       defaultAdmin: (parsed.defaultAdmin ?? null) as SurfaceId | null,
@@ -89,7 +96,7 @@ function writeCachedSnapshot(s: SurfaceSettingsSnapshot): void {
     if (typeof localStorage === "undefined") return;
     localStorage.setItem(
       CACHE_KEY,
-      JSON.stringify({ v: 1, ...s })
+      JSON.stringify({ v: 2, ...s })
     );
   } catch {
     /* ignore quota / private mode */

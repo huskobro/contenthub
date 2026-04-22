@@ -1006,16 +1006,17 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "label": "Admin Paneli Varsayilan Yuzey",
         "help_text": (
             "Kullanici kendi tercihini belirtmemisse admin panelinde varsayilan olarak "
-            "hangi yuzey gosterilsin? Gecerli degerler: legacy, horizon, atrium, bridge, "
-            "canvas. Urunsel varsayilan 'canvas' (Creator Workspace Pro) — scope='both' "
-            "ile hem admin hem user tarafina is yetkin, Faz 3/3A/3B'de 9 sayfa override'i "
-            "ile teslim edildi. Resolver layer-3 role-default olarak kullanir; "
-            "`ui.surface.canvas.enabled=false` veya kill-switch kapaliysa otomatik olarak "
-            "legacy'e duser. Bos/tanimsiz birakilirsa yine legacy kullanilir."
+            "hangi yuzey gosterilsin? Gecerli deger: 'aurora'. Urunsel varsayilan 'aurora' "
+            "(Aurora Dusk Cockpit) — scope='both' ile hem admin hem user tarafinda 80+ "
+            "sayfa override'i ile Wave 7'de teslim edildi. Resolver layer-3 role-default "
+            "olarak kullanir; `ui.surface.aurora.enabled=false` veya kill-switch kapaliysa "
+            "otomatik olarak legacy'e duser (safety-net). Bos/tanimsiz birakilirsa yine "
+            "legacy kullanilir. Legacy/horizon bootstrap ag olarak kayitli kalir ancak "
+            "kullanici panellerine varsayilan olarak gonderilmez."
         ),
         "module_scope": None,
         "env_var": None,
-        "builtin_default": "canvas",
+        "builtin_default": "aurora",
         "wired_to": "frontend.surfaces.resolver",
     },
     "ui.surface.default.user": {
@@ -1024,63 +1025,72 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "label": "Kullanici Paneli Varsayilan Yuzey",
         "help_text": (
             "Kullanici kendi tercihini belirtmemisse kullanici panelinde varsayilan olarak "
-            "hangi yuzey gosterilsin? Gecerli degerler: legacy, horizon, atrium, bridge, "
-            "canvas. Urunsel varsayilan 'canvas' (Creator Workspace Pro) — Faz 3/3A/3B'de "
-            "dokuz sayfa override'i (dashboard, projects list/detail, publish, channels "
-            "list/detail, connections, analytics, calendar) ile teslim edildi ve user "
-            "scope'undaki en kapsamli yuzey. Atrium premium alternatif olarak opt-in "
-            "kalir (yalnizca uc override). Resolver layer-3 role-default olarak kullanir; "
-            "`ui.surface.canvas.enabled=false` veya kill-switch kapaliysa otomatik olarak "
-            "legacy'e duser. Bos/tanimsiz birakilirsa yine legacy kullanilir."
+            "hangi yuzey gosterilsin? Gecerli deger: 'aurora'. Urunsel varsayilan 'aurora' "
+            "(Aurora Dusk Cockpit) — Faz 6 user wave'de 20+ sayfa override'i (dashboard, "
+            "projects list/detail, publish, channels list/detail, connections, analytics, "
+            "calendar, posts, inbox, automation, comments, news picker, playlists, jobs "
+            "detail, settings, content entry) ile teslim edildi. Resolver layer-3 "
+            "role-default olarak kullanir; `ui.surface.aurora.enabled=false` veya "
+            "kill-switch kapaliysa otomatik olarak legacy'e duser (safety-net). "
+            "Bos/tanimsiz birakilirsa yine legacy kullanilir."
         ),
         "module_scope": None,
         "env_var": None,
-        "builtin_default": "canvas",
+        "builtin_default": "aurora",
         "wired_to": "frontend.surfaces.resolver",
     },
     "ui.surface.atrium.enabled": {
         "group": "ui",
         "type": "boolean",
-        "label": "Atrium Yuzeyi Aktif",
+        "label": "Atrium Yuzeyi Aktif (DEPRECATED)",
         "help_text": (
-            "Atrium (Premium Media OS) yuzeyini admin/kullanicilara acar. Faz 4'te "
-            "uc sayfa override'i (dashboard, projects list, project detail) ile "
-            "teslim edildi; kapatildiginda resolver legacy'ye duser."
+            "DEPRECATED — Aurora-only gecisle birlikte kapatildi. Atrium (Premium "
+            "Media OS) yuzeyi Faz 4'te uc sayfa override'i ile teslim edildi; "
+            "Aurora Wave 7 sonrasinda Aurora tum user scope'u 20+ override ile "
+            "karsiladigi icin Atrium varsayilan olarak kapatildi. Ayar varolan "
+            "DB admin_value'larini bozmamak icin KNOWN_SETTINGS'te tutuluyor; "
+            "bir sonraki cleanup dalgasinda surface dosyalariyla birlikte "
+            "kaldirilacak."
         ),
         "module_scope": None,
         "env_var": None,
-        # Faz 4 teslim; yuzey secilebilir listede gorunmeli — varsayilan acik.
-        "builtin_default": True,
+        # Aurora-only gecis: Atrium kullanici yuzeylerinden kaldirildi.
+        "builtin_default": False,
         "wired_to": "frontend.surfaces.registry",
     },
     "ui.surface.bridge.enabled": {
         "group": "ui",
         "type": "boolean",
-        "label": "Bridge Yuzeyi Aktif",
+        "label": "Bridge Yuzeyi Aktif (DEPRECATED)",
         "help_text": (
-            "Bridge (Operations Command Center) yuzeyini admin/kullanicilara acar. "
-            "Faz 2'de uc sayfa override'i (jobs registry, jobs detail, publish "
-            "center) ile teslim edildi; kapatildiginda resolver legacy'ye duser."
+            "DEPRECATED — Aurora-only gecisle birlikte kapatildi. Bridge (Operations "
+            "Command Center) yuzeyi Faz 2'de uc sayfa override'i (jobs registry, "
+            "jobs detail, publish center) ile teslim edildi; Aurora Wave 7 "
+            "sonrasinda Aurora admin scope'unu 60+ override ile karsiladigi icin "
+            "Bridge varsayilan olarak kapatildi. Bir sonraki cleanup dalgasinda "
+            "surface dosyalariyla birlikte kaldirilacak."
         ),
         "module_scope": None,
         "env_var": None,
-        # Faz 2 teslim; admin scope icin en olgun uretim yuzeyi — varsayilan acik.
-        "builtin_default": True,
+        # Aurora-only gecis: Bridge admin yuzeylerinden kaldirildi.
+        "builtin_default": False,
         "wired_to": "frontend.surfaces.registry",
     },
     "ui.surface.canvas.enabled": {
         "group": "ui",
         "type": "boolean",
-        "label": "Canvas Yuzeyi Aktif",
+        "label": "Canvas Yuzeyi Aktif (DEPRECATED)",
         "help_text": (
-            "Canvas (Creator Workspace Pro) yuzeyini admin/kullanicilara acar. "
-            "Faz 3/3A/3B'de dokuz sayfa override'i ile teslim edildi ve user scope "
-            "varsayilan yuzeyidir; kapatildiginda resolver legacy'ye duser."
+            "DEPRECATED — Aurora-only gecisle birlikte kapatildi. Canvas (Creator "
+            "Workspace Pro) yuzeyi Faz 3/3A/3B'de dokuz sayfa override'i ile "
+            "teslim edildi; Aurora Wave 7 sonrasinda Aurora tum user scope'u "
+            "karsiladigi icin Canvas varsayilan olarak kapatildi. Bir sonraki "
+            "cleanup dalgasinda surface dosyalariyla birlikte kaldirilacak."
         ),
         "module_scope": None,
         "env_var": None,
-        # Faz 3/3A/3B teslim; user scope icin default yuzey — varsayilan acik.
-        "builtin_default": True,
+        # Aurora-only gecis: Canvas user yuzeylerinden kaldirildi.
+        "builtin_default": False,
         "wired_to": "frontend.surfaces.registry",
     },
     "ui.surface.aurora.enabled": {
@@ -1089,15 +1099,15 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "label": "Aurora Yuzeyi Aktif",
         "help_text": (
             "Aurora (Aurora Dusk Cockpit) yuzeyini admin/kullanicilara acar. "
-            "Faz 6'da 4-katmanli kokpit kabugu (ctxbar, rail, workbench, "
-            "inspector, statusbar) ile teslim edildi; ilk surumde sayfa "
-            "override yok, sadece chrome swap'i. Kapatildiginda resolver "
-            "legacy'ye duser."
+            "Aurora-only gecisten sonra urunsel varsayilan yuzey; 4-katmanli "
+            "kokpit kabugu (ctxbar, rail, workbench, inspector, statusbar) + "
+            "80+ sayfa override'i (admin + user) ile Wave 7'de kapsandi. "
+            "Kapatildiginda resolver legacy'ye duser (safety-net). Aurora-only "
+            "donem boyunca bu ayarin kapatilmasi beklenmez."
         ),
         "module_scope": None,
         "env_var": None,
-        # Faz 6 teslim; hem admin hem user scope'ta opt-in — varsayilan acik,
-        # kullanici/admin kendi panelinden tercih ederse aktif olur.
+        # Aurora-only gecis: Aurora artik varsayilan urun yuzeyi.
         "builtin_default": True,
         "wired_to": "frontend.surfaces.registry",
     },
@@ -2664,8 +2674,12 @@ KNOWN_VALIDATION_RULES: Dict[str, str] = {
     # Wave: AuroraSettingsPage detects these and renders AuroraSegmented instead
     # of a free-text textarea. Adding enum here is backwards compatible —
     # existing admin_value/default values are already within these sets.
-    "ui.surface.default.admin": '{"type": "string", "enum": ["legacy", "canvas", "atrium", "bridge", "horizon"]}',
-    "ui.surface.default.user": '{"type": "string", "enum": ["legacy", "canvas", "atrium", "bridge", "horizon"]}',
+    # Aurora-only gecis: varsayilan 'aurora'; 'legacy' ve 'horizon' bootstrap
+    # safety-net olarak enum'da kalir, atrium/bridge/canvas DEPRECATED olsa da
+    # mevcut DB admin_value'larini kirmamak icin enum'dan simdilik cikarilmadi.
+    # Bir sonraki cleanup dalgasinda atrium/bridge/canvas enum'dan ve registry'den kaldirilacak.
+    "ui.surface.default.admin": '{"type": "string", "enum": ["aurora", "legacy", "horizon", "canvas", "atrium", "bridge"]}',
+    "ui.surface.default.user": '{"type": "string", "enum": ["aurora", "legacy", "horizon", "canvas", "atrium", "bridge"]}',
     "tts.primary_provider": '{"type": "string", "enum": ["dubvoice", "edge_tts", "system_tts"]}',
     "tts.controls.default_scene_energy": '{"type": "string", "enum": ["", "calm", "neutral", "energetic"]}',
     "wizard.standard_video.entry_mode": '{"type": "string", "enum": ["wizard", "form"]}',
