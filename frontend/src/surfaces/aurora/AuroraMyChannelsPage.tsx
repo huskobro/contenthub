@@ -7,7 +7,7 @@
  * "—" gösterilir, yalan istatistik üretilmez.
  */
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useMyChannelProfiles } from "../../hooks/useMyChannelProfiles";
 import { useCurrentUser } from "../../hooks/useCurrentUser";
 import {
@@ -36,10 +36,14 @@ function avatarChar(c: ChannelProfileResponse): string {
 
 export function AuroraMyChannelsPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useCurrentUser();
-  const baseRoute = user?.role === "admin" ? "/admin" : "/user";
-  // Admin may launch wizard; users land in the content entry hub.
-  const newContentRoute = user?.role === "admin" ? "/admin/wizard" : "/user/content";
+  // Shell Branching Rule (CLAUDE.md): shell is decided by URL, not role.
+  // newContentRoute is still role-gated because it points to a role-specific
+  // destination module (admin wizard vs. user content hub), not a shell.
+  const baseRoute = location.pathname.startsWith("/admin") ? "/admin" : "/user";
+  const isAdmin = user?.role === "admin";
+  const newContentRoute = isAdmin ? "/admin/wizard" : "/user/content";
   const channelsQ = useMyChannelProfiles();
   const channels = channelsQ.data ?? [];
   const [selectedId, setSelectedId] = useState<string | null>(null);

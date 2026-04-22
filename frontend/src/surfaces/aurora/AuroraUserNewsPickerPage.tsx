@@ -8,7 +8,7 @@
  * listesini onConfirm callback'ine teslim eder (router üzerinden bültene aktarım).
  */
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { fetchNewsItems, type NewsItemResponse } from "../../api/newsItemsApi";
 import { useAuthStore } from "../../stores/authStore";
@@ -41,12 +41,16 @@ function usageBadge(item: NewsItemResponse): { label: string; tone: string } {
 
 export function AuroraUserNewsPickerPage() {
   const navigate = useNavigate();
-  // Admin shell (admin.news.picker) de user shell (user.news.picker) de bu sayfaya
-  // ulaşıyor. Onay sonrası shell-correct wizard entry'sine gidebilmek için
-  // role-aware baseRoute türetiyoruz. Önceden window.location.assign ile
-  // `/user/wizard/news_bulletin` 404 rotasına atılıyordu (real bug).
+  const location = useLocation();
+  // Shell Branching Rule (CLAUDE.md): shell (admin vs user) is decided by the
+  // URL, NOT by role. Admin impersonating a user on /user/news/picker must
+  // stay in the user shell. Previously this was `role === "admin"` which
+  // silently crossed admins to /admin/... on CTA submit.
+  // `role` is still used below to pick the wizard entry module (news-bulletins
+  // wizard on admin, legacy /create/bulletin on user) — that is a destination
+  // choice, not a shell choice.
   const role = useAuthStore((s) => s.user?.role);
-  const baseRoute = role === "admin" ? "/admin" : "/user";
+  const baseRoute = location.pathname.startsWith("/admin") ? "/admin" : "/user";
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [search, setSearch] = useState("");
 

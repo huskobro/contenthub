@@ -6,9 +6,8 @@
  * Hardcoded mockup verisi yok; tüm pipeline / log adımları job.steps'ten gelir.
  */
 import { useMemo, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useContentProject, useProjectJobs } from "../../hooks/useContentProjects";
-import { useCurrentUser } from "../../hooks/useCurrentUser";
 import {
   AuroraInspector,
   AuroraInspectorSection,
@@ -78,11 +77,14 @@ function elapsedSec(start: string | null | undefined, end: string | null | undef
 export function AuroraProjectDetailPage() {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const projectQ = useContentProject(projectId ?? "");
   const jobsQ = useProjectJobs(projectId ?? null);
   const [tab, setTab] = useState<"overview" | "pipeline" | "logs">("overview");
-  const { user } = useCurrentUser();
-  const baseRoute = user?.role === "admin" ? "/admin" : "/user";
+  // Shell Branching Rule (CLAUDE.md): derive from URL, not role. Admin visiting
+  // /user/projects/:id must stay in the user shell; role-based derivation
+  // silently crossed users into the admin shell on CTA clicks.
+  const baseRoute = location.pathname.startsWith("/admin") ? "/admin" : "/user";
 
   const project = projectQ.data;
   const jobs = (jobsQ.data ?? []) as unknown as JobResponse[];

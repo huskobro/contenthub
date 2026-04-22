@@ -23,7 +23,7 @@
  */
 
 import { useState, useEffect, useCallback, type ReactNode } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   AuroraButton,
@@ -69,7 +69,6 @@ import {
   SOURCE_CATEGORY_LABELS,
 } from "../../constants/statusOptions";
 import { timeAgo } from "../../lib/formatDate";
-import { useAuthStore } from "../../stores/authStore";
 
 // ---------------------------------------------------------------------------
 // Types & constants
@@ -122,12 +121,13 @@ const STATUS_TONE: Record<string, StatusTone> = {
 export function AuroraNewsBulletinWizardPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  // Admin shell de (admin.news-bulletins.wizard) de user shell de (wizard modülü)
-  // bu sayfaya ulaşabiliyor. Final submit sonrası shell-correct yönlendirme yapmak
-  // için role-aware baseRoute türetiyoruz; yoksa admin kullanıcı silent-shell-cross
-  // yaşıyor (/user/projects/:id'e atılıp cockpit değişiyor).
-  const role = useAuthStore((s) => s.user?.role);
-  const baseRoute = role === "admin" ? "/admin" : "/user";
+  const location = useLocation();
+  // Shell Branching Rule (CLAUDE.md): shell is decided by URL, not role. The
+  // wizard is reachable from /admin/news-bulletins/wizard and from the user
+  // shell's wizard module — whichever shell you entered from, you return to.
+  // Previously this was `role === "admin"` which silently crossed impersonating
+  // admins onto the admin shell on final-submit navigation.
+  const baseRoute = location.pathname.startsWith("/admin") ? "/admin" : "/user";
   const qc = useQueryClient();
   const toast = useToast();
 
