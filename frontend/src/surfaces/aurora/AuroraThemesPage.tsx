@@ -9,7 +9,11 @@
  * sürümü "kullanıcı tarafı" tema seçimi UX'ini hedefler.
  */
 import { useMemo } from "react";
-import { useThemeStore } from "../../stores/themeStore";
+import {
+  useThemeStore,
+  AURORA_GATED_THEME_IDS,
+  AURORA_FALLBACK_THEME_ID,
+} from "../../stores/themeStore";
 import { applyThemeToDOM } from "../../components/design-system/themeEngine";
 import {
   AuroraInspector,
@@ -146,17 +150,31 @@ function ThemePreview({ colors }: { colors: PreviewColors }) {
 // --- page ------------------------------------------------------------------
 
 export function AuroraThemesPage() {
-  const themes = useThemeStore((s) => s.themes);
+  const allThemes = useThemeStore((s) => s.themes);
   const activeThemeId = useThemeStore((s) => s.activeThemeId);
   const setActiveTheme = useThemeStore((s) => s.setActiveTheme);
   const activeThemeFn = useThemeStore((s) => s.activeTheme);
+
+  // Aurora gate: hide gated themes from the surface's own selector. See
+  // AURORA_GATED_THEME_IDS in themeStore.ts for the short-lived hotfix
+  // rationale and tracking branch. Non-Aurora surfaces (legacy, horizon)
+  // can still expose their own switchers; this filter is local to Aurora.
+  const themes = useMemo(
+    () => allThemes.filter((t) => !AURORA_GATED_THEME_IDS.has(t.id)),
+    [allThemes],
+  );
 
   const activeTheme = activeThemeFn();
   const activeColors = useMemo(() => deriveColors(activeTheme), [activeTheme]);
 
   function handleActivate(id: string) {
-    setActiveTheme(id);
-    const theme = themes.find((t) => t.id === id);
+    // Defensive: callers inside Aurora should never hand us a gated id because
+    // the gallery filters them out, but if something does (e.g. a test or a
+    // future programmatic entry), coerce to the Aurora fallback instead of
+    // silently rendering a broken theme.
+    const safeId = AURORA_GATED_THEME_IDS.has(id) ? AURORA_FALLBACK_THEME_ID : id;
+    setActiveTheme(safeId);
+    const theme = allThemes.find((t) => t.id === safeId);
     if (theme) applyThemeToDOM(theme);
   }
 
