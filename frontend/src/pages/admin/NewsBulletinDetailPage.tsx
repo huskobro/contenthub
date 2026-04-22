@@ -115,7 +115,7 @@ function LegacyNewsBulletinDetailPage() {
                 Render ciktilarini gor
               </Link>
               <Link
-                to="/admin/publish-center"
+                to="/admin/publish"
                 className="text-xs font-medium text-success-dark underline"
               >
                 Publish Hub'a git

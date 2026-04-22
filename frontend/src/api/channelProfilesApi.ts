@@ -59,6 +59,35 @@ export interface CreateChannelProfileFromURL {
   notes?: string;
 }
 
+// Branding Center URL onboarding — preview/confirm pair.
+export interface ChannelImportPreviewRequest {
+  source_url: string;
+}
+
+export interface ChannelImportPreview {
+  preview_token: string;
+  platform?: string | null;
+  source_url: string;
+  normalized_url: string;
+  url_kind?: string | null;
+  external_channel_id?: string | null;
+  handle?: string | null;
+  title?: string | null;
+  avatar_url?: string | null;
+  description?: string | null;
+  is_partial: boolean;
+  fetch_error?: string | null;
+  expires_in_seconds: number;
+}
+
+export interface ChannelImportConfirmRequest {
+  preview_token: string;
+  source_url: string;
+  default_language?: string;
+  notes?: string;
+  profile_name?: string;
+}
+
 // ---------------------------------------------------------------------------
 // API functions
 // ---------------------------------------------------------------------------
@@ -86,6 +115,20 @@ export function createChannelProfileFromURL(
   data: CreateChannelProfileFromURL,
 ): Promise<ChannelProfileResponse> {
   return api.post<ChannelProfileResponse>(`${BASE}/from-url`, data);
+}
+
+// Branding Center onboarding — Step 1: preview (no DB row, returns signed token).
+export function previewChannelImport(
+  data: ChannelImportPreviewRequest,
+): Promise<ChannelImportPreview> {
+  return api.post<ChannelImportPreview>(`${BASE}/import-preview`, data);
+}
+
+// Branding Center onboarding — Step 2: confirm with token + URL.
+export function confirmChannelImport(
+  data: ChannelImportConfirmRequest,
+): Promise<ChannelProfileResponse> {
+  return api.post<ChannelProfileResponse>(`${BASE}/import-confirm`, data);
 }
 
 export function deleteChannelProfile(

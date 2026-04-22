@@ -116,6 +116,23 @@ const UserConnectionsPage = lazy(() => import("../pages/user/UserConnectionsPage
 const UserNewsPickerPage = lazy(() => import("../pages/user/UserNewsPickerPage").then(m => ({ default: m.UserNewsPickerPage })));
 const AdminConnectionsPage = lazy(() => import("../pages/admin/AdminConnectionsPage").then(m => ({ default: m.AdminConnectionsPage })));
 
+// Branding Center / Automation Center / Channel URL onboarding (Aurora-final)
+const AuroraBrandingCenterPage = lazy(() =>
+  import("../surfaces/aurora/AuroraBrandingCenterPage").then((m) => ({
+    default: m.AuroraBrandingCenterPage,
+  })),
+);
+const AuroraAutomationCenterPage = lazy(() =>
+  import("../surfaces/aurora/AuroraAutomationCenterPage").then((m) => ({
+    default: m.AuroraAutomationCenterPage,
+  })),
+);
+const AuroraChannelOnboardingPage = lazy(() =>
+  import("../surfaces/aurora/AuroraChannelOnboardingPage").then((m) => ({
+    default: m.AuroraChannelOnboardingPage,
+  })),
+);
+
 function LazyFallback() {
   return <div className="p-8 text-sm text-neutral-400">Yukleniyor...</div>;
 }
@@ -221,6 +238,10 @@ export const router = createBrowserRouter([
       { path: "wizard", element: <WizardLauncherPage /> },
       { path: "users", element: <UsersRegistryPage /> },
       { path: "users/:userId/settings", element: <UserSettingsDetailPage /> },
+      // Branding Center / Automation Center / Channel onboarding — admin sees these too
+      { path: "channels/new", element: <Suspense fallback={<LazyFallback />}><AuroraChannelOnboardingPage /></Suspense> },
+      { path: "channels/:channelId/branding-center", element: <Suspense fallback={<LazyFallback />}><AuroraBrandingCenterPage /></Suspense> },
+      { path: "projects/:projectId/automation-center", element: <Suspense fallback={<LazyFallback />}><AuroraAutomationCenterPage /></Suspense> },
       // Faz 4.1 — shell-consistent 404: admin NotFound stays inside DynamicAdminLayout
       { path: "*", element: <NotFoundPage /> },
     ]}],
@@ -241,7 +262,10 @@ export const router = createBrowserRouter([
       { path: "jobs/:jobId", element: <Suspense fallback={<LazyFallback />}><UserJobDetailPage /></Suspense> },
       { path: "publish/:recordId", element: <VisibilityGuard targetKey="panel:publish"><Suspense fallback={<LazyFallback />}><PublishDetailPage /></Suspense></VisibilityGuard> },
       { path: "channels", element: <Suspense fallback={<LazyFallback />}><MyChannelsPage /></Suspense> },
+      { path: "channels/new", element: <Suspense fallback={<LazyFallback />}><AuroraChannelOnboardingPage /></Suspense> },
       { path: "channels/:channelId", element: <Suspense fallback={<LazyFallback />}><ChannelDetailPage /></Suspense> },
+      { path: "channels/:channelId/branding-center", element: <Suspense fallback={<LazyFallback />}><AuroraBrandingCenterPage /></Suspense> },
+      { path: "projects/:projectId/automation-center", element: <Suspense fallback={<LazyFallback />}><AuroraAutomationCenterPage /></Suspense> },
       { path: "analytics", element: <Suspense fallback={<LazyFallback />}><UserAnalyticsPage /></Suspense> },
       { path: "analytics/channels", element: <Suspense fallback={<LazyFallback />}><UserChannelAnalyticsPage /></Suspense> },
       { path: "analytics/youtube", element: <Suspense fallback={<LazyFallback />}><UserYouTubeAnalyticsPage /></Suspense> },

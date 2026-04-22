@@ -2,6 +2,124 @@
 
 ---
 
+## [2026-04-22] FINAL WAVE — Branding Center + Automation Center + Channel URL Onboarding (final ürün kalitesi)
+
+### Özet
+REV-2 yol haritasının "shell" seviyesinde duran üç yüzeyi son ürün kalitesinde
+kapatıldı: Branding Center (6 kart + completeness + apply hattı), Automation
+Center (canvas + dual-badge + snapshot lock + run-now job navigasyonu) ve
+Channel URL Onboarding (URL → preview → confirm → done CTA). Yarım feature
+bırakma yasağı altında uçtan uca uygulandı.
+
+Tasarım kararları tek otorite olarak
+`docs/superpowers/specs/2026-04-22-branding-automation-onboarding-design.md`
+dosyasında sabitlendi.
+
+### Backend (commit `75f5b8f`)
+
+**Yeni modüller**
+- `app/branding_center/` (router + service + schemas) — 6 kart × identity /
+  audience / visual / messaging / platform / review PATCH'leri + completeness
+  hesaplama + apply pipeline (dry-run vs final).
+- `app/automation_center/` (router + service + schemas + node_catalog) — canvas
+  state, flow header, per-node config, run-now, evaluate. Snapshot lock
+  contract'ı: aktif job'da flow/node mutasyonu 409 döner.
+- `app/channels/preview_token.py` + onboarding genişletmesi — server-side HMAC
+  token, 15 dk TTL (`PREVIEW_TOKEN_TTL_SECONDS = 15 * 60`), partial preview flag.
+
+**Migration**
+- `branding_center_001_brand_profile_extension` — `BrandProfile`'a
+  `brand_summary`, `target_audience`, `visual_palette_json`,
+  `messaging_pillars_json`, `platform_voice_json`, `last_applied_at`,
+  `completeness_json` kolonları eklendi. NULL/JSON{} default — backward
+  compat korunur. Yeni Alembic head: `branding_center_001`.
+
+**Test kapsamı**
+- `backend/tests/test_branding_automation_centers.py` (742 satır, 20 test) —
+  tümü geçiyor. Cross-user 403, snapshot 409, preview token expiry/forgery,
+  completeness gating dahil.
+
+### Frontend (uncommitted bu commit'e gelene kadar)
+
+**Yeni sayfalar**
+- `surfaces/aurora/AuroraBrandingCenterPage.tsx` (lazy chunk 18.55 kB)
+- `surfaces/aurora/AuroraAutomationCenterPage.tsx` (lazy chunk 16.66 kB)
+- `surfaces/aurora/AuroraChannelOnboardingPage.tsx`
+- `surfaces/aurora/AutomationCanvas.tsx` (node renderer + dual-badge DOM
+  attribute disipliRni)
+- `styles/aurora/automation-canvas.css`
+
+**API katmanı**
+- `api/brandingCenterApi.ts`, `api/automationCenterApi.ts` (yeni)
+- `api/channelProfilesApi.ts` (preview/confirm endpoint'leri eklendi)
+
+**Router + bağlayıcı edit'ler**
+- `app/router.tsx` 3 yeni route + lazy import
+- `components/user/UserDigestDashboard.tsx` "Başarısız İş" tile'ı artık
+  `/user/inbox` rotasına yönlendiriyor (audit P0 #1 — `/user/jobs` liste rotası
+  yok, fix tek source-of-truth)
+- `components/dashboard/AutomationDigestWidget.tsx`, `AuroraChannelDetailPage.tsx`,
+  `AuroraMyChannelsPage.tsx`, `AuroraProjectDetailPage.tsx`,
+  `pages/admin/NewsBulletinDetailPage.tsx` — entry point'ler yeni yüzeylere
+  bağlandı.
+
+**Yeni smoke testleri (3 dosya / 14 test)**
+- `tests/aurora-branding-center.smoke.test.tsx` (5 test)
+- `tests/aurora-automation-center.smoke.test.tsx` (5 test)
+- `tests/aurora-channel-onboarding.smoke.test.tsx` (4 test)
+
+**`AuroraAutomationCenterPage` navigate düzeltmeleri**
+- `baseRoute` extracted; `aurora-navigate-targets.smoke.test.ts` regex
+  parser'ı template literal içindeki quote'lara takılıyordu.
+
+### Migration test düzeltmeleri
+
+`branding_center_001` head'i `phase_al_001`'in üstüne taşıdığı için
+aşağıdaki testler explicit revision lock pattern'ine alındı:
+- `test_phase_al_001_approver_migration.py::test_a` — `upgrade phase_al_001`
+- `test_phase_al_001_approver_migration.py::test_d` — `upgrade phase_al_001`
+  → `downgrade -1` → `phase_ag_001`
+- `test_phase_al_001_approver_migration.py::test_e` — aynı pattern (idempotent
+  re-upgrade)
+
+### Acceptance Gate
+
+| Gate | Sonuç |
+|---|---|
+| `tsc --noEmit` | 0 hata |
+| `vitest run` | 240 dosya / 2710 test pass |
+| `vite build` | success — yeni lazy chunk'lar emit edildi |
+| `pytest` | 2611 pass / 0 fail / 1 unrelated coroutine warning (M2/C6) |
+
+### Audit kapanışları (2026-04-22 audit raporundan)
+
+`CODE_AUDIT_REPORT_2026-04-22.md` 3 P0 dashboard problemi tespit etti; üçü de
+kapatıldı:
+1. **404 — `/user/jobs/list`** → `Başarısız İş` tile artık `/user/inbox`
+2. **Dead button — `Branding Center'a geç`** → done step CTA gerçek route
+3. **Misleading toast — Automation save** → snapshot lock contract + 409 +
+   "snapshot kilitli" mesajı (fake success kaldırıldı)
+
+Diğer audit bulguları (orta-düşük öncelik) sonraki wave'e bırakıldı.
+
+### Bilinçli olarak eklenmedi
+- AI-assisted brand suggestions (BC kartlarında auto-fill)
+- Automation Center A/B branch'leri
+- Channel preview OEmbed cache
+- Branding Center version history UI
+- Preview token TTL'i Settings Registry'ye taşımak (not edildi, sonraki wave)
+
+### Kontrat Satırları
+- code change: **yes** (3 yeni backend modülü + 3 yeni frontend page + 3 smoke
+  test dosyası + migration + entry point güncellemeleri)
+- migrations run: **yes** (`branding_center_001`, idempotent guard'lı)
+- packages installed: **no**
+- db schema mutation: **yes** (BrandProfile genişletmesi, NULL default)
+- db data mutation: **no**
+- main branch touched: **no** (final main-merge audit ardından merge edilecek)
+
+---
+
 ## [2026-04-22] STABILIZE P0 — Release-candidate audit closure (install + ownership gaps)
 
 ### Özet

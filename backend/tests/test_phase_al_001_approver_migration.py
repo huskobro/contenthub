@@ -67,18 +67,20 @@ def _fetch_indexes(db_path: Path, table: str) -> set[str]:
 
 
 # ---------------------------------------------------------------------------
-# Test A — upgrade head reaches phase_al_001
+# Test A — upgrade to phase_al_001 succeeds (revision still in history; later
+# revisions like branding_center_001 may move the head past it).
 # ---------------------------------------------------------------------------
 
 def test_a_fresh_db_upgrades_to_phase_al_001():
     with tempfile.TemporaryDirectory() as tmp:
-        result = _run_alembic(["upgrade", "head"], tmp)
-        assert result.returncode == 0, f"upgrade head failed:\nSTDOUT:{result.stdout}\nSTDERR:{result.stderr}"
+        # Upgrade to phase_al_001 explicitly — locks coverage on this revision
+        # without coupling the test to the global alembic head.
+        result = _run_alembic(["upgrade", ALEMBIC_TARGET], tmp)
+        assert result.returncode == 0, f"upgrade {ALEMBIC_TARGET} failed:\nSTDOUT:{result.stdout}\nSTDERR:{result.stderr}"
 
-        # Version check
         current = _run_alembic(["current"], tmp)
         assert ALEMBIC_TARGET in current.stdout, (
-            f"expected head={ALEMBIC_TARGET}, got:\n{current.stdout}"
+            f"expected current={ALEMBIC_TARGET}, got:\n{current.stdout}"
         )
 
 
@@ -121,7 +123,9 @@ def test_c_approver_user_id_index_created():
 
 def test_d_downgrade_drops_approver_column_and_index():
     with tempfile.TemporaryDirectory() as tmp:
-        up = _run_alembic(["upgrade", "head"], tmp)
+        # Upgrade to phase_al_001 explicitly so downgrade -1 lands at the
+        # immediate predecessor (phase_ag_001), independent of later heads.
+        up = _run_alembic(["upgrade", ALEMBIC_TARGET], tmp)
         assert up.returncode == 0
 
         down = _run_alembic(["downgrade", "-1"], tmp)
@@ -148,9 +152,11 @@ def test_d_downgrade_drops_approver_column_and_index():
 
 def test_e_reupgrade_after_downgrade():
     with tempfile.TemporaryDirectory() as tmp:
-        assert _run_alembic(["upgrade", "head"], tmp).returncode == 0
+        # Lock the cycle to phase_al_001 so the test stays meaningful even when
+        # later revisions move the global head past it.
+        assert _run_alembic(["upgrade", ALEMBIC_TARGET], tmp).returncode == 0
         assert _run_alembic(["downgrade", "-1"], tmp).returncode == 0
-        re_up = _run_alembic(["upgrade", "head"], tmp)
+        re_up = _run_alembic(["upgrade", ALEMBIC_TARGET], tmp)
         assert re_up.returncode == 0, (
             f"re-upgrade basarisiz:\nSTDOUT:{re_up.stdout}\nSTDERR:{re_up.stderr}"
         )

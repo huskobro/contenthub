@@ -295,7 +295,7 @@ describe("UserDigestDashboard (P1.4)", () => {
     });
   });
 
-  it("clicking 'Başarısız İş' navigates to /user/jobs", async () => {
+  it("clicking 'Başarısız İş' navigates to /user/inbox (failures land in inbox; /user/jobs has no list route)", async () => {
     primeAuth(USER_PROFILE);
 
     renderDigest();
@@ -307,7 +307,7 @@ describe("UserDigestDashboard (P1.4)", () => {
     fireEvent.click(screen.getByTestId("user-digest-failed-jobs-cta"));
 
     await waitFor(() => {
-      expect(screen.getByTestId("route-user-jobs")).toBeDefined();
+      expect(screen.getByTestId("route-user-inbox")).toBeDefined();
     });
   });
 
