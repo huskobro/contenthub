@@ -6,7 +6,7 @@
  * görünüm tasarımdan; içerik tamamen backend'ten.
  */
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "../../stores/authStore";
 import { useContentProjects } from "../../hooks/useContentProjects";
@@ -82,7 +82,15 @@ function progressPct(job: JobResponse | undefined): number {
 
 export function AuroraMyProjectsPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const user = useAuthStore((s) => s.user);
+  const isAdmin = user?.role === "admin";
+  // Shell Branching Rule (CLAUDE.md): derive shell prefix from the current
+  // URL, never from role. Prevents silent /user/* → /admin/* teleportation
+  // when an admin visits the user shell.
+  const baseRoute = location.pathname.startsWith("/admin") ? "/admin" : "/user";
+  // Admin users can open the full wizard; regular users go through /user/content.
+  const newContentRoute = isAdmin ? "/admin/wizard" : "/user/content";
   const projectsQ = useContentProjects({ user_id: user?.id, limit: 100 });
   const channelsQ = useMyChannelProfiles();
   const jobsQ = useQuery<JobResponse[]>({
@@ -183,7 +191,8 @@ export function AuroraMyProjectsPage() {
               variant="primary"
               size="sm"
               iconLeft={<Icon name="plus" size={12} />}
-              onClick={() => navigate("/admin/wizard")}
+              onClick={() => navigate(newContentRoute)}
+              data-testid="my-projects-new"
             >
               Yeni proje
             </AuroraButton>
@@ -210,7 +219,7 @@ export function AuroraMyProjectsPage() {
                   cursor: "pointer",
                   fontFamily: "inherit",
                   transition: "all .12s",
-                  borderColor: active ? "rgba(79,104,247,0.4)" : "var(--border-default)",
+                  borderColor: active ? "rgba(var(--accent-primary-rgb), 0.4)" : "var(--border-default)",
                   background: active ? "var(--accent-primary-muted)" : "var(--bg-surface)",
                   color: active ? "var(--accent-primary-hover)" : "var(--text-secondary)",
                 }}
@@ -241,7 +250,7 @@ export function AuroraMyProjectsPage() {
                     cursor: "pointer",
                     transition: "border-color .14s, transform .14s",
                   }}
-                  onClick={() => navigate(`/user/projects/${p.id}`)}
+                  onClick={() => navigate(`${baseRoute}/projects/${p.id}`)}
                   onMouseEnter={(e) => (e.currentTarget.style.borderColor = "var(--border-strong)")}
                   onMouseLeave={(e) => (e.currentTarget.style.borderColor = "var(--border-default)")}
                 >
@@ -383,7 +392,7 @@ export function AuroraMyProjectsPage() {
               return (
                 <div
                   key={p.id}
-                  onClick={() => navigate(`/user/projects/${p.id}`)}
+                  onClick={() => navigate(`${baseRoute}/projects/${p.id}`)}
                   style={{
                     display: "grid",
                     gridTemplateColumns: "1fr 200px 100px 100px",

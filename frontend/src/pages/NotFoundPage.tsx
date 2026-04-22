@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useSurfacePageOverride } from "../surfaces/SurfaceContext";
+import { useAuthStore } from "../stores/authStore";
 
 /**
  * 404 Not Found page — shown when no route matches the current URL.
@@ -16,6 +17,9 @@ export function NotFoundPage() {
 
 function LegacyNotFoundPage() {
   const navigate = useNavigate();
+  const user = useAuthStore((s) => s.user);
+  const isAdmin = user?.role === "admin";
+  const homeRoute = isAdmin ? "/admin" : user ? "/user" : "/";
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-surface-page">
@@ -28,14 +32,16 @@ function LegacyNotFoundPage() {
           Aradığınız sayfa mevcut değil veya taşınmış olabilir.
         </p>
         <div className="flex gap-3 justify-center">
+          {isAdmin && (
+            <button
+              onClick={() => navigate("/admin")}
+              className="px-4 py-2 text-sm font-medium text-white bg-brand-600 border-none rounded-lg cursor-pointer hover:bg-brand-700 transition-colors"
+            >
+              Yönetim Paneli
+            </button>
+          )}
           <button
-            onClick={() => navigate("/admin")}
-            className="px-4 py-2 text-sm font-medium text-white bg-brand-600 border-none rounded-lg cursor-pointer hover:bg-brand-700 transition-colors"
-          >
-            Yönetim Paneli
-          </button>
-          <button
-            onClick={() => navigate("/")}
+            onClick={() => navigate(homeRoute)}
             className="px-4 py-2 text-sm font-medium text-neutral-700 bg-neutral-100 border border-neutral-200 rounded-lg cursor-pointer hover:bg-neutral-200 transition-colors"
           >
             Anasayfa

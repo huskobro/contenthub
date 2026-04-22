@@ -34,6 +34,60 @@ const STORAGE_KEY_SURFACE = "contenthub:active-surface-id";
 const SURFACE_STORAGE_VERSION = 1;
 
 // ---------------------------------------------------------------------------
+// Aurora theme gating (short-lived hotfix per CLAUDE.md → Theme Availability
+// and Gating). Themes listed here are known to have class-context breakage
+// inside the Aurora surface (see docs/architecture/canonical-routes-and-surfaces.md
+// § "Current Slate gap"). The Aurora surface refuses to render these themes
+// and falls back to AURORA_FALLBACK_THEME_ID until the class-context migration
+// lands on a follow-up branch that removes this gate.
+//
+// Tracking: qa/aurora-real-user-hardening → follow-up class-context migration.
+// This constant MUST be removed once the referenced classes in
+// frontend/src/styles/aurora/cockpit.css no longer hard-code Dusk-only token
+// chains for breadcrumbs, caption chips, and inset-surface contexts.
+// ---------------------------------------------------------------------------
+
+export const AURORA_GATED_THEME_IDS: ReadonlySet<string> = new Set<string>([
+  "obsidian-slate",
+]);
+
+/**
+ * Aurora CSS (frontend/src/styles/aurora/tokens.css) scopes its default "Dusk"
+ * token set under the bare `[data-surface="aurora"]` selector, so ANY theme id
+ * that does NOT match a specific override selector (e.g. `obsidian-slate`)
+ * renders through Dusk tokens. We still want a deterministic, registered
+ * theme manifest as the fallback target so `activeThemeId` stays coherent and
+ * so `applyThemeToDOM` receives a real manifest. `midnight-ultraviolet` is a
+ * registered dark built-in theme that has no Aurora class-context issues.
+ * When the class-context migration lands and this gate is removed, callers
+ * should fall back to whatever the default theme becomes at that point.
+ */
+export const AURORA_FALLBACK_THEME_ID = "midnight-ultraviolet";
+
+/**
+ * Aurora surface id — matches the manifest registered in
+ * frontend/src/surfaces/manifests/register.tsx. Duplicated here (rather than
+ * imported) to keep themeStore free of circular imports with the surface
+ * registry module graph.
+ */
+const AURORA_SURFACE_ID = "aurora";
+
+/**
+ * Resolve the theme id that should actually be rendered for a given surface.
+ * Pure function — does NOT mutate state or localStorage. Callers that also
+ * want to heal persistence should use `healGatedThemeForSurface()`.
+ */
+export function resolveSafeThemeIdForSurface(
+  themeId: string,
+  surfaceId: string | null | undefined,
+): string {
+  if (surfaceId === AURORA_SURFACE_ID && AURORA_GATED_THEME_IDS.has(themeId)) {
+    return AURORA_FALLBACK_THEME_ID;
+  }
+  return themeId;
+}
+
+// ---------------------------------------------------------------------------
 // Built-in themes (cannot be deleted)
 // ---------------------------------------------------------------------------
 
@@ -203,6 +257,16 @@ interface ThemeState {
    *   no-op if the backend value is absent or the theme id is unknown.
    */
   hydrateFromBackend: (opts?: { force?: boolean }) => void;
+  /**
+   * Heal Aurora-incompatible persisted state. If the currently active theme
+   * is gated on the Aurora surface and the caller's surface is Aurora, this
+   * rewrites both the store state and localStorage to the Aurora fallback
+   * theme. No-op when the theme is safe. Safe to call from ThemeSurfaceBinder
+   * on every surface change — it only writes when a mismatch is detected.
+   *
+   * Short-lived; removed alongside AURORA_GATED_THEME_IDS.
+   */
+  healGatedThemeForSurface: (surfaceId: string | null | undefined) => void;
 }
 
 export const useThemeStore = create<ThemeState>((set, get) => {
@@ -225,6 +289,9 @@ export const useThemeStore = create<ThemeState>((set, get) => {
     setActiveTheme: (id: string) => {
       const { themes } = get();
       if (!themes.some((t) => t.id === id)) return;
+      // Aurora gate: surfaces/aurora enforces its own filter in AuroraThemesPage.
+      // We intentionally do NOT refuse the id here because non-Aurora surfaces
+      // (legacy, horizon) may still honor all built-in themes.
       set({ activeThemeId: id });
       saveActiveThemeId(id);
     },
@@ -294,6 +361,17 @@ export const useThemeStore = create<ThemeState>((set, get) => {
     },
 
     isBuiltin: (id: string) => BUILTIN_THEMES.some((b) => b.id === id),
+
+    healGatedThemeForSurface: (surfaceId: string | null | undefined) => {
+      const { activeThemeId, themes } = get();
+      const safeId = resolveSafeThemeIdForSurface(activeThemeId, surfaceId);
+      if (safeId === activeThemeId) return;
+      // Only heal if the fallback theme is actually registered; otherwise do
+      // nothing so we don't strand the user on an unknown id.
+      if (!themes.some((t) => t.id === safeId)) return;
+      set({ activeThemeId: safeId });
+      saveActiveThemeId(safeId);
+    },
 
     hydrateFromBackend: (opts?: { force?: boolean }): void => {
       const force = opts?.force === true;

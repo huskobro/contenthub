@@ -7,8 +7,9 @@
  * "—" gösterilir, yalan istatistik üretilmez.
  */
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useMyChannelProfiles } from "../../hooks/useMyChannelProfiles";
+import { useCurrentUser } from "../../hooks/useCurrentUser";
 import {
   AuroraButton,
   AuroraInspector,
@@ -35,6 +36,14 @@ function avatarChar(c: ChannelProfileResponse): string {
 
 export function AuroraMyChannelsPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { user } = useCurrentUser();
+  // Shell Branching Rule (CLAUDE.md): shell is decided by URL, not role.
+  // newContentRoute is still role-gated because it points to a role-specific
+  // destination module (admin wizard vs. user content hub), not a shell.
+  const baseRoute = location.pathname.startsWith("/admin") ? "/admin" : "/user";
+  const isAdmin = user?.role === "admin";
+  const newContentRoute = isAdmin ? "/admin/wizard" : "/user/content";
   const channelsQ = useMyChannelProfiles();
   const channels = channelsQ.data ?? [];
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -62,7 +71,7 @@ export function AuroraMyChannelsPage() {
             <AuroraButton
               variant="secondary"
               size="sm"
-              onClick={() => navigate(`/user/channels/${selected.id}`)}
+              onClick={() => navigate(`${baseRoute}/channels/${selected.id}`)}
               style={{ width: "100%", marginBottom: 6 }}
             >
               Kanal detayı
@@ -70,7 +79,7 @@ export function AuroraMyChannelsPage() {
             <AuroraButton
               variant="primary"
               size="sm"
-              onClick={() => navigate("/user/content")}
+              onClick={() => navigate(newContentRoute)}
               style={{ width: "100%" }}
               iconLeft={<Icon name="plus" size={11} />}
             >
@@ -98,7 +107,7 @@ export function AuroraMyChannelsPage() {
             variant="primary"
             size="sm"
             iconLeft={<Icon name="plus" size={12} />}
-            onClick={() => navigate("/user/channels/new")}
+            onClick={() => navigate(`${baseRoute}/channels/new`)}
             data-testid="my-channels-add"
           >
             Kanal ekle
@@ -187,7 +196,7 @@ export function AuroraMyChannelsPage() {
                     iconLeft={<Icon name="edit" size={11} />}
                     onClick={(e) => {
                       e.stopPropagation();
-                      navigate(`/user/channels/${ch.id}`);
+                      navigate(`${baseRoute}/channels/${ch.id}`);
                     }}
                   >
                     Düzenle

@@ -37,7 +37,7 @@ function eventTone(ev: CalendarEvent): { cls: string; color: string; bg: string 
     return { cls: "render", color: "var(--state-danger-fg)", bg: "rgba(231,76,60,0.15)" };
   }
   if (ev.status === "scheduled" || ev.status === "pending_review" || ev.status === "approved") {
-    return { cls: "pending", color: "var(--accent-primary-hover)", bg: "rgba(79,104,247,0.15)" };
+    return { cls: "pending", color: "var(--accent-primary-hover)", bg: "rgba(var(--accent-primary-rgb), 0.15)" };
   }
   return { cls: "render", color: "var(--state-warning-fg)", bg: "rgba(250,179,135,0.15)" };
 }
@@ -52,6 +52,9 @@ function isoDay(d: Date): string {
 export function AuroraUserCalendarPage() {
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
+  const isAdmin = user?.role === "admin";
+  // "Zamanla" CTA routes to /admin/wizard for admins, /user/content for regular users.
+  const newContentRoute = isAdmin ? "/admin/wizard" : "/user/content";
   const [cursor, setCursor] = useState(() => {
     const t = new Date();
     return new Date(t.getFullYear(), t.getMonth(), 1);
@@ -199,7 +202,8 @@ export function AuroraUserCalendarPage() {
               variant="primary"
               size="sm"
               iconLeft={<Icon name="plus" size={12} />}
-              onClick={() => navigate("/admin/wizard")}
+              onClick={() => navigate(newContentRoute)}
+              data-testid="calendar-schedule-new"
             >
               Zamanla
             </AuroraButton>
@@ -242,7 +246,7 @@ export function AuroraUserCalendarPage() {
               <div
                 key={i}
                 style={{
-                  background: isToday ? "rgba(79,104,247,0.06)" : "var(--bg-surface)",
+                  background: isToday ? "rgba(var(--accent-primary-rgb), 0.08)" : "var(--bg-surface)",
                   padding: "8px 6px",
                   minHeight: 84,
                   opacity: c.other ? 0.4 : 1,

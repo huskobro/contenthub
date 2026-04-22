@@ -163,6 +163,56 @@ export function AuroraUserDashboardPage() {
           </AuroraButton>
         </div>
 
+        {/* First-run onboarding banner — channels empty */}
+        {!channelsQ.isLoading && channels.length === 0 && (
+          <div
+            className="card card-pad"
+            data-testid="dashboard-onboarding-banner"
+            style={{
+              marginBottom: 18,
+              display: "flex",
+              alignItems: "center",
+              gap: 14,
+              borderColor: "var(--accent-primary)",
+              background:
+                "linear-gradient(135deg, rgba(59,200,184,0.08), rgba(176,122,216,0.06))",
+            }}
+          >
+            <div
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: 10,
+                background: "var(--accent-primary-muted)",
+                color: "var(--accent-primary)",
+                display: "grid",
+                placeItems: "center",
+                flexShrink: 0,
+              }}
+            >
+              <Icon name="tv" size={18} />
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 14, fontWeight: 500, marginBottom: 2 }}>
+                İlk kanalınızı ekleyin
+              </div>
+              <div style={{ fontSize: 12, color: "var(--text-muted)" }}>
+                Branding ve yayın akışları için önce bir kanal bağlayın.
+                Branding Center ve Automation Center bu kanal üzerinden açılır.
+              </div>
+            </div>
+            <AuroraButton
+              variant="primary"
+              size="sm"
+              iconLeft={<Icon name="plus" size={11} />}
+              onClick={() => navigate("/user/channels/new")}
+              data-testid="dashboard-onboard-channel"
+            >
+              Kanal ekle
+            </AuroraButton>
+          </div>
+        )}
+
         {/* KPI strip */}
         <div className="grid g-4" style={{ marginBottom: 18 }}>
           <div className="metric">
@@ -287,6 +337,15 @@ export function AuroraUserDashboardPage() {
           <div className="grid g-4">
             {[
               { label: "Kanallarım", icon: "tv", href: "/user/channels", sub: `${channels.length} kanal` },
+              // First channel → BC entry. If no channels, point to onboarding.
+              channels[0]
+                ? {
+                    label: "Branding Center",
+                    icon: "sparkles",
+                    href: `/user/channels/${channels[0].id}/branding-center`,
+                    sub: "marka profili",
+                  }
+                : { label: "Kanal ekle", icon: "plus", href: "/user/channels/new", sub: "onboarding" },
               { label: "Takvim", icon: "calendar", href: "/user/calendar", sub: "yayın planı" },
               { label: "Analizler", icon: "bar-chart", href: "/user/analytics", sub: "7g rapor" },
               { label: "Yayın kuyruğu", icon: "send", href: "/user/publish", sub: `${inFlight.length} aktif` },

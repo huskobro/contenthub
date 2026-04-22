@@ -15,7 +15,7 @@
 }
 [data-surface="aurora"] .theme-card.active {
   border-color: var(--accent-primary);
-  box-shadow: 0 0 0 3px rgba(79,104,247,0.15);
+  box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb), 0.18);
 }
 [data-surface="aurora"] .theme-preview {
   height: 140px; position: relative;

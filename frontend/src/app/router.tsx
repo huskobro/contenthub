@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react";
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, Navigate, useParams } from "react-router-dom";
 import { DynamicAdminLayout } from "./layouts/DynamicAdminLayout";
 import { DynamicUserLayout } from "./layouts/DynamicUserLayout";
 import { AppEntryGate } from "./AppEntryGate";
@@ -137,6 +137,25 @@ function LazyFallback() {
   return <div className="p-8 text-sm text-neutral-400">Yukleniyor...</div>;
 }
 
+// ---------------------------------------------------------------------------
+// Canonical Route Vocabulary redirects (CLAUDE.md).
+//
+// Short literals like `/branding` and project-scope `/automation` are
+// forbidden; canonical paths are `/branding-center` and `/automation-center`.
+// We redirect any stray bookmarks/links to the canonical path rather than
+// letting users land on a 404.
+// ---------------------------------------------------------------------------
+
+function BrandingRedirect({ shell }: { shell: "admin" | "user" }) {
+  const { channelId } = useParams<{ channelId: string }>();
+  return <Navigate to={`/${shell}/channels/${channelId ?? ""}/branding-center`} replace />;
+}
+
+function AutomationRedirect({ shell }: { shell: "admin" | "user" }) {
+  const { projectId } = useParams<{ projectId: string }>();
+  return <Navigate to={`/${shell}/projects/${projectId ?? ""}/automation-center`} replace />;
+}
+
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -238,10 +257,25 @@ export const router = createBrowserRouter([
       { path: "wizard", element: <WizardLauncherPage /> },
       { path: "users", element: <UsersRegistryPage /> },
       { path: "users/:userId/settings", element: <UserSettingsDetailPage /> },
-      // Branding Center / Automation Center / Channel onboarding — admin sees these too
+      // Branding Center / Automation Center / Channel onboarding — admin sees these too.
+      // Channel + project detail routes mirror user shell so baseRoute-aware
+      // back-buttons and breadcrumbs don't 404 under /admin.
+      { path: "channels", element: <Suspense fallback={<LazyFallback />}><MyChannelsPage /></Suspense> },
       { path: "channels/new", element: <Suspense fallback={<LazyFallback />}><AuroraChannelOnboardingPage /></Suspense> },
+      { path: "channels/:channelId", element: <Suspense fallback={<LazyFallback />}><ChannelDetailPage /></Suspense> },
       { path: "channels/:channelId/branding-center", element: <Suspense fallback={<LazyFallback />}><AuroraBrandingCenterPage /></Suspense> },
+      // Canonical Route Vocabulary (CLAUDE.md): /branding is a forbidden short
+      // literal; canonical path is /branding-center. Redirect to protect any
+      // lingering bookmarks or stray links.
+      { path: "channels/:channelId/branding", element: <BrandingRedirect shell="admin" /> },
+      { path: "projects", element: <Suspense fallback={<LazyFallback />}><MyProjectsPage /></Suspense> },
+      { path: "projects/:projectId", element: <Suspense fallback={<LazyFallback />}><ProjectDetailPage /></Suspense> },
       { path: "projects/:projectId/automation-center", element: <Suspense fallback={<LazyFallback />}><AuroraAutomationCenterPage /></Suspense> },
+      // Canonical Route Vocabulary (CLAUDE.md): /automation at the
+      // project-scope is a forbidden short literal; canonical is
+      // /automation-center. Top-level /admin/automation is unrelated and
+      // remains canonical.
+      { path: "projects/:projectId/automation", element: <AutomationRedirect shell="admin" /> },
       // Faz 4.1 — shell-consistent 404: admin NotFound stays inside DynamicAdminLayout
       { path: "*", element: <NotFoundPage /> },
     ]}],
@@ -265,7 +299,12 @@ export const router = createBrowserRouter([
       { path: "channels/new", element: <Suspense fallback={<LazyFallback />}><AuroraChannelOnboardingPage /></Suspense> },
       { path: "channels/:channelId", element: <Suspense fallback={<LazyFallback />}><ChannelDetailPage /></Suspense> },
       { path: "channels/:channelId/branding-center", element: <Suspense fallback={<LazyFallback />}><AuroraBrandingCenterPage /></Suspense> },
+      // Canonical Route Vocabulary (CLAUDE.md): /branding → /branding-center.
+      { path: "channels/:channelId/branding", element: <BrandingRedirect shell="user" /> },
       { path: "projects/:projectId/automation-center", element: <Suspense fallback={<LazyFallback />}><AuroraAutomationCenterPage /></Suspense> },
+      // Canonical Route Vocabulary (CLAUDE.md): /automation at project-scope
+      // → /automation-center. Top-level /user/automation is unrelated.
+      { path: "projects/:projectId/automation", element: <AutomationRedirect shell="user" /> },
       { path: "analytics", element: <Suspense fallback={<LazyFallback />}><UserAnalyticsPage /></Suspense> },
       { path: "analytics/channels", element: <Suspense fallback={<LazyFallback />}><UserChannelAnalyticsPage /></Suspense> },
       { path: "analytics/youtube", element: <Suspense fallback={<LazyFallback />}><UserYouTubeAnalyticsPage /></Suspense> },

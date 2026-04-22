@@ -6,7 +6,7 @@
  * Hardcoded mockup verisi yok; tüm pipeline / log adımları job.steps'ten gelir.
  */
 import { useMemo, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useContentProject, useProjectJobs } from "../../hooks/useContentProjects";
 import {
   AuroraInspector,
@@ -77,9 +77,14 @@ function elapsedSec(start: string | null | undefined, end: string | null | undef
 export function AuroraProjectDetailPage() {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const projectQ = useContentProject(projectId ?? "");
   const jobsQ = useProjectJobs(projectId ?? null);
   const [tab, setTab] = useState<"overview" | "pipeline" | "logs">("overview");
+  // Shell Branching Rule (CLAUDE.md): derive from URL, not role. Admin visiting
+  // /user/projects/:id must stay in the user shell; role-based derivation
+  // silently crossed users into the admin shell on CTA clicks.
+  const baseRoute = location.pathname.startsWith("/admin") ? "/admin" : "/user";
 
   const project = projectQ.data;
   const jobs = (jobsQ.data ?? []) as unknown as JobResponse[];
@@ -125,7 +130,7 @@ export function AuroraProjectDetailPage() {
         <AuroraButton
           variant="secondary"
           size="sm"
-          onClick={() => navigate("/user/projects")}
+          onClick={() => navigate(`${baseRoute}/projects`)}
           style={{ width: "100%", marginBottom: 6 }}
           iconLeft={<Icon name="arrow-left" size={11} />}
         >
@@ -135,7 +140,7 @@ export function AuroraProjectDetailPage() {
           variant="primary"
           size="sm"
           onClick={() =>
-            navigate(`/user/projects/${project.id}/automation-center`)
+            navigate(`${baseRoute}/projects/${project.id}/automation-center`)
           }
           style={{ width: "100%", marginBottom: 6 }}
           data-testid="proj-detail-go-automation"
@@ -146,7 +151,7 @@ export function AuroraProjectDetailPage() {
           <AuroraButton
             variant="secondary"
             size="sm"
-            onClick={() => navigate(`/user/jobs/${latestJob.id}`)}
+            onClick={() => navigate(`${baseRoute}/jobs/${latestJob.id}`)}
             style={{ width: "100%" }}
           >
             İş detayı

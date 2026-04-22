@@ -366,7 +366,7 @@ function NotificationRow({
         gap: 12,
         padding: "12px 16px",
         borderBottom: last ? "none" : "1px solid var(--border-subtle)",
-        background: unread ? "rgba(79,104,247,0.03)" : "transparent",
+        background: unread ? "rgba(var(--accent-primary-rgb), 0.06)" : "transparent",
         alignItems: "flex-start",
       }}
     >
@@ -454,7 +454,7 @@ function NotificationRow({
                 onNavigate("/admin/operations-inbox");
               }}
               style={{
-                background: "rgba(79,104,247,0.1)",
+                background: "rgba(var(--accent-primary-rgb), 0.12)",
                 color: "var(--accent-primary-hover)",
                 border: "none",
                 borderRadius: 4,

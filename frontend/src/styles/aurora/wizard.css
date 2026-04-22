@@ -28,7 +28,7 @@
 [data-surface="aurora"] .step-circle.active {
   background: var(--gradient-brand, var(--accent-primary));
   color: var(--text-on-accent);
-  box-shadow: var(--glow-accent, 0 0 14px rgba(79,104,247,0.45));
+  box-shadow: var(--glow-accent, 0 0 14px rgba(var(--accent-primary-rgb), 0.45));
 }
 [data-surface="aurora"] .step-circle.pending {
   background: var(--bg-inset);
@@ -74,7 +74,7 @@
 [data-surface="aurora"] .module-card.selected {
   border-color: var(--accent-primary);
   background: var(--accent-primary-muted);
-  box-shadow: 0 0 0 3px rgba(79,104,247,0.10);
+  box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb), 0.12);
 }
 [data-surface="aurora"] .module-card .mc-icon { font-size: 28px; margin-bottom: 8px; }
 [data-surface="aurora"] .module-card .mc-name {
@@ -107,7 +107,7 @@
 [data-surface="aurora"] .form-input:focus,
 [data-surface="aurora"] .form-select:focus {
   border-color: var(--accent-primary);
-  box-shadow: 0 0 0 3px rgba(79,104,247,0.12);
+  box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb), 0.14);
 }
 [data-surface="aurora"] .form-textarea {
   width: 100%; padding: 10px 12px;
@@ -122,7 +122,7 @@
 }
 [data-surface="aurora"] .form-textarea:focus {
   border-color: var(--accent-primary);
-  box-shadow: 0 0 0 3px rgba(79,104,247,0.12);
+  box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb), 0.14);
 }
 [data-surface="aurora"] .form-hint {
   font-size: 11px; color: var(--text-muted);

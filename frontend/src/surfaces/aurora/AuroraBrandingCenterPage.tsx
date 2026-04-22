@@ -30,7 +30,7 @@
  *     non-dry-run (gives the user the canonical next step).
  */
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   useMutation,
   useQuery,
@@ -110,11 +110,11 @@ function parseListText(text: string): string[] {
 export function AuroraBrandingCenterPage() {
   const { channelId } = useParams<{ channelId: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const qc = useQueryClient();
   const toast = useToast();
-  const { user } = useCurrentUser();
-  const isAdmin = user?.role === "admin";
-  const baseRoute = isAdmin ? "/admin" : "/user";
+  // Shell Branching Rule (CLAUDE.md): derive from URL, not role.
+  const baseRoute = location.pathname.startsWith("/admin") ? "/admin" : "/user";
 
   const dataQ = useQuery({
     queryKey: ["branding-center", channelId],
@@ -212,11 +212,11 @@ export function AuroraBrandingCenterPage() {
         <header className="page-head">
           <div>
             <nav className="breadcrumbs caption" aria-label="Konum">
-              <a href={`${baseRoute}/channels`}>Kanallar</a>
+              <Link to={`${baseRoute}/channels`}>Kanallar</Link>
               <span className="sep"> / </span>
-              <a href={`${baseRoute}/channels/${data.channel.id}`}>
+              <Link to={`${baseRoute}/channels/${data.channel.id}`}>
                 {data.channel.title ?? data.channel.profile_name}
-              </a>
+              </Link>
               <span className="sep"> / </span>
               <span>Branding Center</span>
             </nav>
@@ -1086,11 +1086,16 @@ function ReviewApplyCard({ response, onGoToAutomation }: ReviewApplyCardProps) {
           disabled={!allComplete}
           data-testid="bc-go-automation"
         >
-          Automation Center'a geç
+          Bu kanalın projelerine geç
         </AuroraButton>
         {!allComplete && (
           <span className="caption">
-            Eksik bölümleri tamamladıktan sonra Automation Center açılabilir.
+            Eksik bölümleri tamamlayın; kanal projeleri listesine buradan geçebilirsiniz.
+          </span>
+        )}
+        {allComplete && (
+          <span className="caption" style={{ color: "var(--text-muted)" }}>
+            Automation Center bir projeye bağlıdır; proje seçildiğinde açılır.
           </span>
         )}
       </div>

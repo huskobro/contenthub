@@ -6,7 +6,7 @@
  * Hardcoded yok; her satır gerçek bir publish_record / proje bağlamından gelir.
  */
 import { useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { fetchPublishRecords, type PublishRecordSummary } from "../../api/publishApi";
 import { useContentProjects } from "../../hooks/useContentProjects";
@@ -77,7 +77,13 @@ function humanizePublishTitle(
 
 export function AuroraUserPublishPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const user = useAuthStore((s) => s.user);
+  const isAdmin = user?.role === "admin";
+  // Shell Branching Rule (CLAUDE.md): derive from URL, not role.
+  const baseRoute = location.pathname.startsWith("/admin") ? "/admin" : "/user";
+  // Admin uses full wizard; users are routed to the content entry hub.
+  const newContentRoute = isAdmin ? "/admin/wizard" : "/user/content";
 
   const recordsQ = useQuery({
     queryKey: ["publish-records", "user-publish-aurora", user?.id ?? ""],
@@ -141,7 +147,8 @@ export function AuroraUserPublishPage() {
             variant="primary"
             size="sm"
             iconLeft={<Icon name="plus" size={12} />}
-            onClick={() => navigate("/admin/wizard")}
+            onClick={() => navigate(newContentRoute)}
+            data-testid="publish-new-content"
           >
             Yeni içerik
           </AuroraButton>
@@ -164,7 +171,7 @@ export function AuroraUserPublishPage() {
                   key={r.id}
                   className="card card-pad"
                   onClick={() => {
-                    if (project) navigate(`/user/projects/${project.id}`);
+                    if (project) navigate(`${baseRoute}/projects/${project.id}`);
                   }}
                   style={{ cursor: project ? "pointer" : "default" }}
                 >

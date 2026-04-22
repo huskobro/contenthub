@@ -23,7 +23,7 @@
  */
 
 import { useState, useEffect, useCallback, type ReactNode } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   AuroraButton,
@@ -121,6 +121,13 @@ const STATUS_TONE: Record<string, StatusTone> = {
 export function AuroraNewsBulletinWizardPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const location = useLocation();
+  // Shell Branching Rule (CLAUDE.md): shell is decided by URL, not role. The
+  // wizard is reachable from /admin/news-bulletins/wizard and from the user
+  // shell's wizard module — whichever shell you entered from, you return to.
+  // Previously this was `role === "admin"` which silently crossed impersonating
+  // admins onto the admin shell on final-submit navigation.
+  const baseRoute = location.pathname.startsWith("/admin") ? "/admin" : "/user";
   const qc = useQueryClient();
   const toast = useToast();
 
@@ -130,6 +137,12 @@ export function AuroraNewsBulletinWizardPage() {
   const contextContentProjectId = searchParams.get("contentProjectId");
   const contextLowerThirdStyle = searchParams.get("lowerThirdStyle");
   const contextStyleBlueprintId = searchParams.get("styleBlueprintId");
+  // Aurora news picker (`/user/news-picker` / `/admin/news-picker`) seçim
+  // onaylandığında wizard'a `?news_ids=a,b,c` ile gönderiliyor. Pre-Pass-7'de
+  // wizard bu paramı okumuyordu, dolayısıyla seçim kayıp gidiyordu. Aşağıdaki
+  // hook ilk mount'ta ID listesini alıp, bulletin daha oluşmadığı durumda
+  // `selectedItemsLocal`'a hydrate eder.
+  const preselectIdsCsv = searchParams.get("news_ids");
 
   const [step, setStep] = useState(0);
   const [bulletinId, setBulletinId] = useState<string | null>(resumeId);
@@ -210,6 +223,53 @@ export function AuroraNewsBulletinWizardPage() {
       setStep(1);
     }
   }, [bulletin]);
+
+  // News picker → wizard hand-off hydration.
+  // AuroraUserNewsPickerPage "Seçimleri onayla" butonu CSV `news_ids` ile
+  // buraya yönlendirir. Sadece *yeni* bulletin (bulletinId yok) + henüz seçim
+  // yapılmamış (selectedItemsLocal boş) durumda, ID listesini NewsItemResponse
+  // formatına hydrate edip `selectedItemsLocal`'a aktarırız. Sonraki rerender'larda
+  // effect ya bulletinId (persisted path) ya da boş olmayan local seçim nedeniyle
+  // tetiklenmez → duplicate ekleme olmaz.
+  const { data: preselectItems } = useQuery({
+    queryKey: ["news-picker-preselect", preselectIdsCsv, language],
+    queryFn: async () => {
+      const ids = (preselectIdsCsv ?? "")
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+      if (ids.length === 0) return [] as NewsItemResponse[];
+      // newsItemsApi filter=new + geniş limit; client-side id filter.
+      const list = await fetchNewsItems({
+        status: "new",
+        language: language || undefined,
+        limit: 200,
+      });
+      const idSet = new Set(ids);
+      return list.filter((it) => idSet.has(it.id));
+    },
+    enabled: !!preselectIdsCsv && !bulletinId && selectedItemsLocal.length === 0,
+    staleTime: 60_000,
+  });
+
+  useEffect(() => {
+    if (!preselectItems || preselectItems.length === 0) return;
+    if (bulletinId) return; // persisted path zaten bulletin'den okuyor
+    if (selectedItemsLocal.length > 0) return; // kullanıcı manuel ekledi
+    setSelectedItemsLocal(
+      preselectItems.map((it, i) => ({
+        news_item_id: it.id,
+        sort_order: i,
+        title: it.title,
+        source_name: it.source_name,
+        category: it.category,
+      })),
+    );
+    if (preselectItems[0] && !topic.trim()) {
+      setTopic(preselectItems[0].title);
+      setTopicAutoSet(true);
+    }
+  }, [preselectItems, bulletinId, selectedItemsLocal.length, topic]);
 
   const { data: sourcesList = [] } = useQuery<SourceResponse[]>({
     queryKey: ["sources-active"],
@@ -478,9 +538,9 @@ export function AuroraNewsBulletinWizardPage() {
       refetchTrustCheck();
       toast.success(`Üretim başlatıldı — Job: ${res.job_id.slice(0, 8)}…`);
       if (contextContentProjectId) {
-        navigate(`/user/projects/${contextContentProjectId}`);
+        navigate(`${baseRoute}/projects/${contextContentProjectId}`);
       } else {
-        navigate(`/admin/jobs/${res.job_id}`);
+        navigate(`${baseRoute}/jobs/${res.job_id}`);
       }
     },
     onError: (err: any) => {

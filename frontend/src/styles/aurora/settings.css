@@ -15,7 +15,7 @@
 }
 [data-surface="aurora"] .snav-item:hover { background: var(--bg-inset); color: var(--text-primary); }
 [data-surface="aurora"] .snav-item.active {
-  background: var(--accent-primary-muted, rgba(79,104,247,0.18));
+  background: var(--accent-primary-muted);
   color: var(--accent-primary-hover);
 }
 [data-surface="aurora"] .snav-item .count {
@@ -24,7 +24,7 @@
   background: var(--bg-inset); color: var(--text-muted);
 }
 [data-surface="aurora"] .snav-item.active .count {
-  background: rgba(79,104,247,0.18);
+  background: rgba(var(--accent-primary-rgb), 0.18);
   color: var(--accent-primary-hover);
 }
 [data-surface="aurora"] .snav-section {

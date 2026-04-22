@@ -18,7 +18,7 @@
   flex-shrink: 0;
 }
 [data-surface="aurora"] .audit-icon.create  { background: rgba(59,200,184,0.12);  color: var(--state-success-fg); }
-[data-surface="aurora"] .audit-icon.update  { background: rgba(79,104,247,0.12);  color: var(--accent-primary-hover); }
+[data-surface="aurora"] .audit-icon.update  { background: rgba(var(--accent-primary-rgb), 0.14);  color: var(--accent-primary-hover); }
 [data-surface="aurora"] .audit-icon.delete  { background: rgba(239,68,68,0.12);   color: var(--state-danger-fg); }
 [data-surface="aurora"] .audit-icon.publish { background: rgba(59,200,184,0.12);  color: var(--state-success-fg); }
 [data-surface="aurora"] .audit-icon.login   { background: rgba(176,122,216,0.12); color: #b07ad8; }
@@ -84,7 +84,7 @@
 }
 [data-surface="aurora"] .audit-chip:hover { color: var(--text-primary); }
 [data-surface="aurora"] .audit-chip.active {
-  border-color: rgba(79,104,247,0.4);
+  border-color: rgba(var(--accent-primary-rgb), 0.4);
   background: var(--accent-primary-muted);
   color: var(--accent-primary-hover);
 }

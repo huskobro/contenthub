@@ -7,9 +7,13 @@
  */
 import { useNavigate } from "react-router-dom";
 import { AuroraButton, AuroraCard, AuroraStatusChip } from "./primitives";
+import { useAuthStore } from "../../stores/authStore";
 
 export function AuroraNotFoundPage() {
   const navigate = useNavigate();
+  const user = useAuthStore((s) => s.user);
+  const isAdmin = user?.role === "admin";
+  const homeRoute = isAdmin ? "/admin" : user ? "/user" : "/";
 
   return (
     <div
@@ -81,19 +85,21 @@ export function AuroraNotFoundPage() {
             <AuroraButton
               variant="primary"
               size="md"
-              onClick={() => navigate("/")}
+              onClick={() => navigate(homeRoute)}
               data-testid="aurora-404-home"
             >
               Anasayfaya dön
             </AuroraButton>
-            <AuroraButton
-              variant="secondary"
-              size="md"
-              onClick={() => navigate("/admin")}
-              data-testid="aurora-404-admin"
-            >
-              Yönetim Paneli
-            </AuroraButton>
+            {isAdmin && (
+              <AuroraButton
+                variant="secondary"
+                size="md"
+                onClick={() => navigate("/admin")}
+                data-testid="aurora-404-admin"
+              >
+                Yönetim Paneli
+              </AuroraButton>
+            )}
           </div>
         </AuroraCard>
       </div>

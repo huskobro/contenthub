@@ -8,8 +8,10 @@
  * listesini onConfirm callback'ine teslim eder (router üzerinden bültene aktarım).
  */
 import { useMemo, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { fetchNewsItems, type NewsItemResponse } from "../../api/newsItemsApi";
+import { useAuthStore } from "../../stores/authStore";
 import {
   AuroraButton,
   AuroraInspector,
@@ -38,6 +40,17 @@ function usageBadge(item: NewsItemResponse): { label: string; tone: string } {
 }
 
 export function AuroraUserNewsPickerPage() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  // Shell Branching Rule (CLAUDE.md): shell (admin vs user) is decided by the
+  // URL, NOT by role. Admin impersonating a user on /user/news/picker must
+  // stay in the user shell. Previously this was `role === "admin"` which
+  // silently crossed admins to /admin/... on CTA submit.
+  // `role` is still used below to pick the wizard entry module (news-bulletins
+  // wizard on admin, legacy /create/bulletin on user) — that is a destination
+  // choice, not a shell choice.
+  const role = useAuthStore((s) => s.user?.role);
+  const baseRoute = location.pathname.startsWith("/admin") ? "/admin" : "/user";
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [search, setSearch] = useState("");
 
@@ -100,7 +113,17 @@ export function AuroraUserNewsPickerPage() {
               const ids = Array.from(selected);
               const params = new URLSearchParams();
               params.set("news_ids", ids.join(","));
-              window.location.assign(`/user/wizard/news_bulletin?${params.toString()}`);
+              // Shell-correct: admin → /admin/news-bulletins/wizard,
+              //               user  → /user/create/bulletin
+              // Eski davranış `/user/wizard/news_bulletin` 404'tü + full page
+              // reload veriyordu (window.location.assign). SPA navigate ile
+              // query string preserve edilir; wizard news_ids parametresini
+              // okuyarak hydrate eder.
+              const target =
+                role === "admin"
+                  ? `${baseRoute}/news-bulletins/wizard`
+                  : `${baseRoute}/create/bulletin`;
+              navigate(`${target}?${params.toString()}`);
             }}
           >
             Seçimleri onayla ({selCount})
@@ -153,12 +176,12 @@ export function AuroraUserNewsPickerPage() {
                     padding: "12px 16px",
                     borderBottom: i < items.length - 1 ? "1px solid var(--border-subtle)" : "none",
                     cursor: "pointer",
-                    background: isSel ? "rgba(79,104,247,0.05)" : "transparent",
+                    background: isSel ? "rgba(59,200,184,0.08)" : "transparent",
                     transition: "background .08s",
                   }}
                   onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bg-inset)")}
                   onMouseLeave={(e) =>
-                    (e.currentTarget.style.background = isSel ? "rgba(79,104,247,0.05)" : "transparent")
+                    (e.currentTarget.style.background = isSel ? "rgba(59,200,184,0.08)" : "transparent")
                   }
                 >
                   <input

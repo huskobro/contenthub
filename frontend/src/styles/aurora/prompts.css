@@ -10,7 +10,7 @@
 }
 [data-surface="aurora"] .prompt-card:hover {
   border-color: var(--accent-primary);
-  box-shadow: 0 0 0 3px rgba(79,104,247,0.10);
+  box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb), 0.12);
   transform: translateY(-1px);
 }
 [data-surface="aurora"] .prompt-card .p-name {
@@ -44,9 +44,9 @@
   display: inline-block;
   font-family: var(--font-mono); font-size: 10px;
   padding: 2px 6px; border-radius: 4px;
-  background: rgba(79,104,247,0.15);
+  background: rgba(var(--accent-primary-rgb), 0.15);
   color: var(--accent-primary-hover);
-  border: 1px solid rgba(79,104,247,0.3);
+  border: 1px solid rgba(var(--accent-primary-rgb), 0.3);
   letter-spacing: 0.04em;
 }
 

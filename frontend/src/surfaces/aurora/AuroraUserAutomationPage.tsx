@@ -164,7 +164,7 @@ export function AuroraUserAutomationPage() {
                         transition: "background .2s",
                         background: p.is_enabled ? "var(--accent-primary)" : "var(--bg-inset)",
                         outline: "none",
-                        boxShadow: p.is_enabled ? "0 0 8px rgba(79,104,247,0.4)" : "none",
+                        boxShadow: p.is_enabled ? "0 0 8px rgba(var(--accent-primary-rgb), 0.4)" : "none",
                       }}
                     >
                       <span

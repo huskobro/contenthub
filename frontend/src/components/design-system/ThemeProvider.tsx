@@ -29,10 +29,19 @@ import { SurfaceProvider, useSurfaceContext } from "../../surfaces/SurfaceContex
 function ThemeSurfaceBinder({ children }: { children: React.ReactNode }) {
   const activeThemeId = useThemeStore((s) => s.activeThemeId);
   const activeTheme = useThemeStore((s) => s.activeTheme);
+  const healGatedThemeForSurface = useThemeStore((s) => s.healGatedThemeForSurface);
   const ctx = useSurfaceContext();
 
   const adminSurfaceId = ctx.admin.surface.manifest.id;
   const adminOverrides = ctx.admin.surface.tokenOverrides ?? null;
+
+  // Aurora gate heal: when the resolved surface is Aurora and the persisted
+  // theme is in the Aurora-gated set (see themeStore.ts), coerce to the
+  // Aurora fallback and rewrite localStorage so stale sessions do not render
+  // a broken theme. Short-lived — removed with AURORA_GATED_THEME_IDS.
+  useEffect(() => {
+    healGatedThemeForSurface(adminSurfaceId);
+  }, [adminSurfaceId, activeThemeId, healGatedThemeForSurface]);
 
   useEffect(() => {
     const theme = activeTheme();
