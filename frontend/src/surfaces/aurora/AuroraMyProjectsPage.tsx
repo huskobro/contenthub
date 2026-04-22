@@ -6,7 +6,7 @@
  * görünüm tasarımdan; içerik tamamen backend'ten.
  */
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "../../stores/authStore";
 import { useContentProjects } from "../../hooks/useContentProjects";
@@ -82,9 +82,13 @@ function progressPct(job: JobResponse | undefined): number {
 
 export function AuroraMyProjectsPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const user = useAuthStore((s) => s.user);
   const isAdmin = user?.role === "admin";
-  const baseRoute = isAdmin ? "/admin" : "/user";
+  // Shell Branching Rule (CLAUDE.md): derive shell prefix from the current
+  // URL, never from role. Prevents silent /user/* → /admin/* teleportation
+  // when an admin visits the user shell.
+  const baseRoute = location.pathname.startsWith("/admin") ? "/admin" : "/user";
   // Admin users can open the full wizard; regular users go through /user/content.
   const newContentRoute = isAdmin ? "/admin/wizard" : "/user/content";
   const projectsQ = useContentProjects({ user_id: user?.id, limit: 100 });

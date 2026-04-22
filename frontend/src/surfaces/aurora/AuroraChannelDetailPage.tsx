@@ -5,7 +5,7 @@
  * Veri: useChannelProfile + useYouTubeStatusByChannel + useYouTubeChannelInfoByChannel.
  * Hardcoded yok; meta backend'ten, OAuth durumu YouTube status hook'undan gelir.
  */
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useChannelProfile } from "../../hooks/useChannelProfiles";
 import { useChannelConnection } from "../../hooks/useChannelConnection";
 import { useCurrentUser } from "../../hooks/useCurrentUser";
@@ -29,11 +29,13 @@ function fmtDate(iso: string | null | undefined): string {
 export function AuroraChannelDetailPage() {
   const { channelId } = useParams<{ channelId: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const channelQ = useChannelProfile(channelId ?? "");
   const conn = useChannelConnection(channelId);
   const { user } = useCurrentUser();
   const isAdmin = user?.role === "admin";
-  const baseRoute = isAdmin ? "/admin" : "/user";
+  // Shell Branching Rule (CLAUDE.md): derive from URL, not role.
+  const baseRoute = location.pathname.startsWith("/admin") ? "/admin" : "/user";
   // Admin-only wizard is under /admin/wizard; regular users route to /user/content.
   const newContentRoute = isAdmin ? "/admin/wizard" : "/user/content";
 

@@ -28,7 +28,7 @@
  *   - Test endpoint is dry-run; we never persist its output.
  */
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   fetchAutomationCenter,
@@ -120,11 +120,14 @@ function parseConfigText(text: string): Record<string, unknown> | null {
 export function AuroraAutomationCenterPage() {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const qc = useQueryClient();
   const toast = useToast();
   const { user } = useCurrentUser();
   const isAdmin = user?.role === "admin";
-  const baseRoute = isAdmin ? "/admin" : "/user";
+  // Shell Branching Rule (CLAUDE.md): derive shell prefix from the current
+  // URL, not from role. `isAdmin` is still used to gate admin-only UI below.
+  const baseRoute = location.pathname.startsWith("/admin") ? "/admin" : "/user";
 
   const dataQ = useQuery({
     queryKey: ["automation-center", projectId],

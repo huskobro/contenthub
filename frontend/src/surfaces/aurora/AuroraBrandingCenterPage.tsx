@@ -30,7 +30,7 @@
  *     non-dry-run (gives the user the canonical next step).
  */
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   useMutation,
   useQuery,
@@ -110,11 +110,11 @@ function parseListText(text: string): string[] {
 export function AuroraBrandingCenterPage() {
   const { channelId } = useParams<{ channelId: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const qc = useQueryClient();
   const toast = useToast();
-  const { user } = useCurrentUser();
-  const isAdmin = user?.role === "admin";
-  const baseRoute = isAdmin ? "/admin" : "/user";
+  // Shell Branching Rule (CLAUDE.md): derive from URL, not role.
+  const baseRoute = location.pathname.startsWith("/admin") ? "/admin" : "/user";
 
   const dataQ = useQuery({
     queryKey: ["branding-center", channelId],

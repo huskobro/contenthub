@@ -20,7 +20,7 @@
  * the shell, tokens, and spacing stay consistent. We ship a local,
  * deterministic 3-step flow here rather than fighting two DS systems.
  */
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import {
@@ -41,10 +41,11 @@ type Step = "url" | "confirm" | "done";
 
 export function AuroraChannelOnboardingPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const toast = useToast();
   const { user } = useCurrentUser();
-  const isAdmin = user?.role === "admin";
-  const baseRoute = isAdmin ? "/admin" : "/user";
+  // Shell Branching Rule (CLAUDE.md): derive from URL, not role.
+  const baseRoute = location.pathname.startsWith("/admin") ? "/admin" : "/user";
 
   const [step, setStep] = useState<Step>("url");
   const [sourceUrl, setSourceUrl] = useState("");
