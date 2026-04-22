@@ -28,7 +28,7 @@
  *   - Test endpoint is dry-run; we never persist its output.
  */
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   fetchAutomationCenter,
@@ -310,13 +310,13 @@ export function AuroraAutomationCenterPage() {
         <header className="page-head">
           <div>
             <nav className="breadcrumbs caption" aria-label="Konum">
-              <a href={`${baseRoute}/projects`}>Projeler</a>
+              <Link to={`${baseRoute}/projects`}>Projeler</Link>
               <span className="sep"> / </span>
-              <a
-                href={`${baseRoute}/projects/${data.project.id}`}
+              <Link
+                to={`${baseRoute}/projects/${data.project.id}`}
               >
                 {data.project.title}
-              </a>
+              </Link>
               <span className="sep"> / </span>
               <span>Automation Center</span>
             </nav>

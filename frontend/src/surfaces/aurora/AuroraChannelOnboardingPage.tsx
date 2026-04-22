@@ -20,7 +20,7 @@
  * the shell, tokens, and spacing stay consistent. We ship a local,
  * deterministic 3-step flow here rather than fighting two DS systems.
  */
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import {
@@ -105,7 +105,7 @@ export function AuroraChannelOnboardingPage() {
         <header className="page-head">
           <div>
             <nav className="breadcrumbs caption" aria-label="Konum">
-              <a href={`${baseRoute}/channels`}>Kanallar</a>
+              <Link to={`${baseRoute}/channels`}>Kanallar</Link>
               <span className="sep"> / </span>
               <span>Yeni kanal</span>
             </nav>

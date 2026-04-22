@@ -30,7 +30,7 @@
  *     non-dry-run (gives the user the canonical next step).
  */
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   useMutation,
   useQuery,
@@ -212,11 +212,11 @@ export function AuroraBrandingCenterPage() {
         <header className="page-head">
           <div>
             <nav className="breadcrumbs caption" aria-label="Konum">
-              <a href={`${baseRoute}/channels`}>Kanallar</a>
+              <Link to={`${baseRoute}/channels`}>Kanallar</Link>
               <span className="sep"> / </span>
-              <a href={`${baseRoute}/channels/${data.channel.id}`}>
+              <Link to={`${baseRoute}/channels/${data.channel.id}`}>
                 {data.channel.title ?? data.channel.profile_name}
-              </a>
+              </Link>
               <span className="sep"> / </span>
               <span>Branding Center</span>
             </nav>
