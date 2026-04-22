@@ -31,10 +31,12 @@ import {
 } from "../../constants/statusOptions";
 import {
   AuroraButton,
+  AuroraChipSelect,
   AuroraInspector,
   AuroraInspectorRow,
   AuroraInspectorSection,
   AuroraPageShell,
+  AuroraSegmented,
 } from "./primitives";
 import { Icon } from "./icons";
 
@@ -314,36 +316,29 @@ export function AuroraSourceCreatePage() {
               }}
             >
               <FormField label="Tip" required>
-                <select
-                  className="form-input"
-                  style={INPUT_STYLE}
+                <AuroraSegmented
+                  options={SOURCE_TYPES.map((t) => ({
+                    value: t,
+                    label: typeLabel(t),
+                    hint:
+                      t === "rss"
+                        ? "RSS/Atom feed (otomatik ilk tarama tetiklenir)"
+                        : t === "manual_url"
+                          ? "Manuel URL — operatör tetiklemeli"
+                          : "JSON döndüren API endpoint",
+                  }))}
                   value={sourceType}
-                  onChange={(e) => setSourceType(e.target.value)}
-                  onFocus={focusOn}
-                  onBlur={focusOff}
-                >
-                  {SOURCE_TYPES.map((t) => (
-                    <option key={t} value={t}>
-                      {typeLabel(t)}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(v) => setSourceType(v)}
+                  data-testid="aurora-source-create-type"
+                />
               </FormField>
               <FormField label="Durum" required>
-                <select
-                  className="form-input"
-                  style={INPUT_STYLE}
+                <AuroraSegmented
+                  options={SOURCE_STATUSES.map((s) => ({ value: s, label: s }))}
                   value={status}
-                  onChange={(e) => setStatus(e.target.value)}
-                  onFocus={focusOn}
-                  onBlur={focusOff}
-                >
-                  {SOURCE_STATUSES.map((s) => (
-                    <option key={s} value={s}>
-                      {s}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(v) => setStatus(v)}
+                  data-testid="aurora-source-create-status"
+                />
               </FormField>
             </div>
 
@@ -407,37 +402,33 @@ export function AuroraSourceCreatePage() {
                 gap: 14,
               }}
             >
-              <FormField label="Güven seviyesi">
-                <select
-                  className="form-input"
-                  style={INPUT_STYLE}
+              <FormField
+                label="Güven seviyesi"
+                hint="Sıralama ve duplicate filtrelerinde önceliklendirilir. Boş bırakılabilir."
+              >
+                <AuroraChipSelect
+                  options={TRUST_LEVELS.filter((t) => t).map((t) => ({
+                    value: t,
+                    label: t,
+                  }))}
                   value={trustLevel}
-                  onChange={(e) => setTrustLevel(e.target.value)}
-                  onFocus={focusOn}
-                  onBlur={focusOff}
-                >
-                  {TRUST_LEVELS.map((t) => (
-                    <option key={t || "_"} value={t}>
-                      {t || "—"}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(v) => setTrustLevel(typeof v === "string" ? v : "")}
+                  data-testid="aurora-source-create-trust"
+                />
               </FormField>
-              <FormField label="Tarama modu">
-                <select
-                  className="form-input"
-                  style={INPUT_STYLE}
+              <FormField
+                label="Tarama modu"
+                hint="Otomatik zamanlı tarama tercihi. Boş = operatör tetiklemeli."
+              >
+                <AuroraChipSelect
+                  options={SCAN_MODES.filter((m) => m).map((m) => ({
+                    value: m,
+                    label: m,
+                  }))}
                   value={scanMode}
-                  onChange={(e) => setScanMode(e.target.value)}
-                  onFocus={focusOn}
-                  onBlur={focusOff}
-                >
-                  {SCAN_MODES.map((m) => (
-                    <option key={m || "_"} value={m}>
-                      {m || "—"}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(v) => setScanMode(typeof v === "string" ? v : "")}
+                  data-testid="aurora-source-create-scan"
+                />
               </FormField>
             </div>
 
@@ -448,45 +439,72 @@ export function AuroraSourceCreatePage() {
                 gap: 14,
               }}
             >
-              <FormField label="Dil" hint="ISO kod (tr, en …)">
-                <input
-                  className="form-input"
-                  style={INPUT_STYLE}
-                  value={language}
-                  onChange={(e) => setLanguage(e.target.value)}
-                  onFocus={focusOn}
-                  onBlur={focusOff}
-                  placeholder="tr"
-                />
+              <FormField
+                label="Dil"
+                hint="ISO kod. Listede yoksa özel kod yazabilirsiniz."
+              >
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  <AuroraSegmented
+                    options={[
+                      { value: "tr", label: "TR" },
+                      { value: "en", label: "EN" },
+                      { value: "de", label: "DE" },
+                      { value: "fr", label: "FR" },
+                      { value: "_custom", label: "Özel" },
+                    ]}
+                    value={
+                      ["tr", "en", "de", "fr"].includes(language)
+                        ? language
+                        : language.trim() === ""
+                          ? "tr"
+                          : "_custom"
+                    }
+                    onChange={(v) =>
+                      setLanguage(v === "_custom" ? language || "" : v)
+                    }
+                    data-testid="aurora-source-create-language"
+                  />
+                  {!["tr", "en", "de", "fr", ""].includes(language) && (
+                    <input
+                      className="form-input"
+                      style={INPUT_STYLE}
+                      value={language}
+                      onChange={(e) => setLanguage(e.target.value)}
+                      onFocus={focusOn}
+                      onBlur={focusOff}
+                      placeholder="es, pt, ar, …"
+                      data-testid="aurora-source-create-language-custom"
+                    />
+                  )}
+                </div>
               </FormField>
               <FormField label="Kategori">
-                <select
-                  className="form-input"
-                  style={INPUT_STYLE}
+                <AuroraChipSelect
+                  options={SOURCE_CATEGORIES.filter((c) => c).map((c) => ({
+                    value: c,
+                    label: SOURCE_CATEGORY_LABELS[c] ?? c,
+                  }))}
                   value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  onFocus={focusOn}
-                  onBlur={focusOff}
-                >
-                  {SOURCE_CATEGORIES.map((c) => (
-                    <option key={c || "_"} value={c}>
-                      {SOURCE_CATEGORY_LABELS[c] ?? c}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(v) => setCategory(typeof v === "string" ? v : "")}
+                  data-testid="aurora-source-create-category"
+                />
               </FormField>
             </div>
 
-            <FormField label="Notlar" hint="İsteğe bağlı operatör notu">
+            <FormField
+              label="Notlar"
+              hint={`İsteğe bağlı operatör notu · ${notes.length}/500 karakter`}
+            >
               <textarea
                 className="form-input"
                 style={TEXTAREA_STYLE}
                 value={notes}
-                onChange={(e) => setNotes(e.target.value)}
+                onChange={(e) => setNotes(e.target.value.slice(0, 500))}
                 onFocus={focusOn}
                 onBlur={focusOff}
                 placeholder="İç notlar, kaynak hakkında açıklama …"
                 rows={3}
+                data-testid="aurora-source-create-notes"
               />
             </FormField>
 

@@ -421,7 +421,9 @@
   display: grid;
   grid-template-columns: 1fr 340px;
   gap: 16px;
-  align-items: stretch;
+  /* Aurora Final Polish — children need flex-start so the sticky
+     inspector column can pin to the viewport without being stretched. */
+  align-items: start;
   min-height: 100%;
 }
 [data-surface="aurora"] .aurora-inspector-slot {
@@ -429,6 +431,20 @@
   flex-direction: column;
   border-left: 1px solid var(--border-subtle);
   background: var(--bg-surface);
+  /* Aurora Final Polish — Sticky Inspector.
+     Long forms (Branding Center, Style Blueprint, Settings, Prompts,
+     Wizard Settings, Source Create, News Bulletin Create, Automation
+     Center) drag the form-summary inspector out of the viewport when the
+     workbench scrolls. Pin it to the top so the operator always sees the
+     rolling summary and inspector actions without scrolling back. The
+     CockpitShell statusbar is fixed at the bottom, so we leave 56px
+     breathing room. */
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
+  max-height: calc(100vh - 56px);
+  overflow-y: auto;
+  z-index: 1;
 }
 [data-surface="aurora"] .aurora-dashboard .page {
   padding: 22px 28px 36px;

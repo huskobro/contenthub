@@ -26,6 +26,7 @@ import {
   AuroraInspector,
   AuroraInspectorSection,
   AuroraInspectorRow,
+  AuroraSegmented,
 } from "./primitives";
 import { Icon } from "./icons";
 
@@ -353,17 +354,16 @@ export function AuroraSourceScanCreatePage() {
                   Tarama modu
                   <span style={{ color: "var(--state-danger-fg)", marginLeft: 4 }}>*</span>
                 </label>
-                <select
-                  id="scan-mode"
-                  style={inputStyle}
+                <AuroraSegmented
+                  options={[
+                    { value: "manual", label: "manual", hint: "Anlık tek tarama" },
+                    { value: "auto", label: "auto", hint: "Zamanlanabilir" },
+                    { value: "curated", label: "curated", hint: "Editör eli" },
+                  ]}
                   value={form.scan_mode}
-                  onChange={(e) => update("scan_mode", e.target.value as ScanMode)}
-                  required
-                >
-                  <option value="manual">manual</option>
-                  <option value="auto">auto</option>
-                  <option value="curated">curated</option>
-                </select>
+                  onChange={(v) => update("scan_mode", v as ScanMode)}
+                  data-testid="aurora-source-scan-mode"
+                />
                 <div style={hintStyle}>
                   Manuel: anlık tek tarama. Auto: zamanlanabilir. Curated: editör eli.
                 </div>

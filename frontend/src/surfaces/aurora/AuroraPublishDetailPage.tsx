@@ -40,6 +40,7 @@ import {
   AuroraInspector,
   AuroraInspectorRow,
   AuroraInspectorSection,
+  AuroraConfirmDialog,
 } from "./primitives";
 import { Icon } from "./icons";
 
@@ -165,6 +166,9 @@ export function AuroraPublishDetailPage() {
   const [payloadOpen, setPayloadOpen] = useState(false);
   const [payloadDraft, setPayloadDraft] = useState("");
   const [payloadError, setPayloadError] = useState<string | null>(null);
+  // Destructive-intent modals (replaces window.confirm).
+  const [cancelOpen, setCancelOpen] = useState(false);
+  const [resetOpen, setResetOpen] = useState(false);
 
   const intent = useMemo(
     () =>
@@ -243,14 +247,16 @@ export function AuroraPublishDetailPage() {
       "Yeniden deneme başarısız",
     );
 
-  const onCancel = () => {
-    if (!window.confirm("Bu yayın kaydını iptal etmek istediğinize emin misiniz?"))
-      return;
+  const confirmCancel = () => {
     return run(
       () => cancelMutation.mutateAsync({ recordId: record.id }),
       "Yayın iptal edildi",
       "İptal başarısız",
-    );
+    ).finally(() => setCancelOpen(false));
+  };
+
+  const onCancel = () => {
+    setCancelOpen(true);
   };
 
   const onSchedule = () => {
@@ -308,13 +314,16 @@ export function AuroraPublishDetailPage() {
     );
   };
 
-  const onReset = () => {
-    if (!window.confirm("Kayıt taslağa geri döndürülsün mü?")) return;
+  const confirmReset = () => {
     return run(
       () => resetMutation.mutateAsync(record.id),
       "Kayıt taslağa döndürüldü",
       "Taslağa döndürme başarısız",
-    );
+    ).finally(() => setResetOpen(false));
+  };
+
+  const onReset = () => {
+    setResetOpen(true);
   };
 
   function openPayloadEditor() {
@@ -835,11 +844,29 @@ export function AuroraPublishDetailPage() {
               style={{ marginBottom: 8, borderBottom: "none", paddingBottom: 0 }}
             >
               <div>
-                <h3>Payload</h3>
+                <h3>
+                  Payload{" "}
+                  <span
+                    style={{
+                      marginLeft: 6,
+                      padding: "2px 6px",
+                      fontSize: 10,
+                      letterSpacing: 0.3,
+                      textTransform: "uppercase",
+                      background: "var(--state-warning-bg)",
+                      color: "var(--state-warning-fg)",
+                      border: "1px solid var(--state-warning-border)",
+                      borderRadius: 4,
+                      verticalAlign: "middle",
+                    }}
+                  >
+                    Advanced
+                  </span>
+                </h3>
                 <div className="caption">
                   {payloadOpen
-                    ? "JSON'u düzenleyin ve kaydedin."
-                    : "Kayıt gönderilmeden önce payload'ı güncelleyebilirsiniz."}
+                    ? "Platform özel JSON payload'ı. Düzenleyin ve kaydedin. Şema platforma göre değişir — doğrulama backend tarafında yapılır."
+                    : "Kayıt gönderilmeden önce platforma özel JSON payload'ı güncelleyebilirsiniz. Şema platforma göre değişir."}
                 </div>
               </div>
               {!payloadOpen ? (
@@ -1035,6 +1062,36 @@ export function AuroraPublishDetailPage() {
       </div>
 
       <aside className="aurora-inspector-slot">{inspector}</aside>
+
+      <AuroraConfirmDialog
+        open={cancelOpen}
+        title="Yayın kaydı iptal edilsin mi?"
+        description="Bu yayın kaydını iptal etmek istediğinize emin misiniz? Kayıt artık kuyrukta çalışmayacak."
+        tone="danger"
+        confirmLabel="İptal et"
+        cancelLabel="Vazgeç"
+        busy={cancelMutation.isPending}
+        onCancel={() => setCancelOpen(false)}
+        onConfirm={() => {
+          void confirmCancel();
+        }}
+        data-testid="aurora-publish-detail-confirm-cancel"
+      />
+
+      <AuroraConfirmDialog
+        open={resetOpen}
+        title="Kayıt taslağa döndürülsün mü?"
+        description="Mevcut durum bozulacak ve kayıt tekrar taslağa (draft) alınacak."
+        tone="warning"
+        confirmLabel="Taslağa döndür"
+        cancelLabel="Vazgeç"
+        busy={resetMutation.isPending}
+        onCancel={() => setResetOpen(false)}
+        onConfirm={() => {
+          void confirmReset();
+        }}
+        data-testid="aurora-publish-detail-confirm-reset"
+      />
     </div>
   );
 }

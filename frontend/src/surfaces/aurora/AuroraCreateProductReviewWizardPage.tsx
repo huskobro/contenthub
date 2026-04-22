@@ -24,6 +24,7 @@ import {
   AuroraInspectorSection,
   AuroraInspectorRow,
   AuroraStatusChip,
+  AuroraSegmented,
 } from "./primitives";
 import { Icon } from "./icons";
 import { ChannelProfileStep } from "../../components/wizard/ChannelProfileStep";
@@ -430,14 +431,15 @@ export function AuroraCreateProductReviewWizardPage() {
           </div>
           <div>
             <span style={FIELD_LABEL}>Dil</span>
-            <select
-              style={INPUT_STYLE}
+            <AuroraSegmented
+              options={[
+                { value: "tr", label: "Türkçe" },
+                { value: "en", label: "English" },
+              ]}
               value={values.language}
-              onChange={(e) => set("language", e.target.value)}
-            >
-              <option value="tr">Türkçe</option>
-              <option value="en">English</option>
-            </select>
+              onChange={(v) => set("language", v)}
+              data-testid="aurora-pr-language"
+            />
           </div>
         </div>
 

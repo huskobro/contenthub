@@ -37,6 +37,7 @@ import {
   AuroraInspector,
   AuroraInspectorRow,
   AuroraInspectorSection,
+  AuroraSegmented,
 } from "./primitives";
 import { Icon } from "./icons";
 
@@ -354,15 +355,16 @@ export function AuroraNewsItemCreatePage() {
               </FormField>
 
               <FormField label="Dil">
-                <select
-                  style={INPUT_STYLE}
+                <AuroraSegmented
+                  options={[
+                    { value: "tr", label: "TR" },
+                    { value: "en", label: "EN" },
+                    { value: "", label: "—", hint: "belirtilmedi" },
+                  ]}
                   value={values.language}
-                  onChange={(e) => set("language", e.target.value)}
-                >
-                  <option value="tr">Türkçe (tr)</option>
-                  <option value="en">English (en)</option>
-                  <option value="">— belirtilmedi —</option>
-                </select>
+                  onChange={(v) => set("language", v)}
+                  data-testid="aurora-news-item-language"
+                />
               </FormField>
             </div>
 

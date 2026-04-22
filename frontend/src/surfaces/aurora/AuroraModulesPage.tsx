@@ -169,7 +169,7 @@ export function AuroraModulesPage() {
   const toast = useToast();
   const queryClient = useQueryClient();
   const query = useEnabledModules();
-  const { data: modules, isLoading, isError, error, dataUpdatedAt } = query;
+  const { data: modules, isLoading, isError, error, dataUpdatedAt, refetch } = query;
 
   const toggleMutation = useMutation({
     mutationFn: ({
@@ -257,15 +257,28 @@ export function AuroraModulesPage() {
         {isLoading && (
           <AuroraCard pad="default" data-testid="aurora-module-loading">
             <div style={{ fontSize: 12, color: "var(--text-muted)" }}>
-              Yükleniyor…
+              Modül listesi yükleniyor…
             </div>
           </AuroraCard>
         )}
 
         {isError && (
           <AuroraCard pad="default" data-testid="aurora-module-error">
-            <div style={{ fontSize: 12, color: "var(--state-danger-fg)" }}>
-              Hata: {error instanceof Error ? error.message : "Bilinmeyen hata"}
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 10,
+                alignItems: "flex-start",
+              }}
+            >
+              <span style={{ fontSize: 12, color: "var(--state-danger-fg)" }}>
+                Modül listesi yüklenemedi:{" "}
+                {error instanceof Error ? error.message : "Bilinmeyen hata"}
+              </span>
+              <AuroraButton size="sm" onClick={() => refetch()}>
+                Tekrar dene
+              </AuroraButton>
             </div>
           </AuroraCard>
         )}

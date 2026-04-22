@@ -22,6 +22,7 @@ import {
   AuroraInspectorSection,
   AuroraInspectorRow,
   AuroraStatusChip,
+  AuroraSegmented,
 } from "./primitives";
 import { useCreateTemplateStyleLink } from "../../hooks/useCreateTemplateStyleLink";
 import { useTemplatesList } from "../../hooks/useTemplatesList";
@@ -270,22 +271,24 @@ export function AuroraTemplateStyleLinkCreatePage() {
 
             <div>
               <span style={FIELD_LABEL}>İlişki Rolü</span>
-              <ChipGroup
+              <AuroraSegmented
                 value={linkRole}
                 onChange={setLinkRole}
                 options={[
                   { value: "", label: "—" },
                   ...LINK_ROLES.map((r) => ({ value: r, label: r })),
                 ]}
+                data-testid="aurora-tsl-link-role"
               />
             </div>
 
             <div>
               <span style={FIELD_LABEL}>Durum</span>
-              <ChipGroup
+              <AuroraSegmented
                 value={status}
                 onChange={setStatus}
                 options={LINK_STATUSES.map((s) => ({ value: s, label: s }))}
+                data-testid="aurora-tsl-status"
               />
             </div>
 
@@ -350,49 +353,5 @@ export function AuroraTemplateStyleLinkCreatePage() {
   );
 }
 
-interface ChipOption {
-  value: string;
-  label: string;
-}
-
-interface ChipGroupProps {
-  value: string;
-  onChange: (v: string) => void;
-  options: readonly ChipOption[];
-}
-
-function ChipGroup({ value, onChange, options }: ChipGroupProps) {
-  return (
-    <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-      {options.map((opt) => {
-        const active = opt.value === value;
-        return (
-          <button
-            key={opt.value || "_empty"}
-            type="button"
-            onClick={() => onChange(opt.value)}
-            style={{
-              padding: "6px 12px",
-              borderRadius: 999,
-              fontSize: 12,
-              fontWeight: 500,
-              cursor: "pointer",
-              border: active
-                ? "1px solid var(--accent-primary, var(--border-strong, #6366f1))"
-                : "1px solid var(--border-default)",
-              background: active
-                ? "var(--accent-bg, var(--bg-elevated))"
-                : "var(--bg-surface)",
-              color: active
-                ? "var(--accent-primary, var(--text-primary))"
-                : "var(--text-secondary)",
-              transition: "background 120ms ease, border-color 120ms ease",
-            }}
-          >
-            {opt.label}
-          </button>
-        );
-      })}
-    </div>
-  );
-}
+// Note: local ChipGroup removed in wave 2 — replaced by AuroraSegmented.
+// Parallel component pattern was duplicating primitive functionality.

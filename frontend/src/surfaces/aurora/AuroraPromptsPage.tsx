@@ -9,7 +9,7 @@
  * Yazma: updateSettingAdminValue(key, value) → PUT /settings/effective/{key}.
  * Snapshot kuralı (CLAUDE.md): değişiklik yalnızca yeni job'lara uygulanır.
  */
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   fetchEffectiveSettings,
@@ -17,6 +17,7 @@ import {
 } from "../../api/effectiveSettingsApi";
 import { useEffectiveSettingMutation } from "../../hooks/useEffectiveSettingMutation";
 import {
+  AuroraField,
   AuroraInspector,
   AuroraInspectorSection,
   AuroraInspectorRow,
@@ -44,6 +45,56 @@ function extractVars(text: string): string[] {
   let m: RegExpExecArray | null;
   while ((m = re.exec(text)) !== null) out.add(m[1]);
   return Array.from(out).slice(0, 6);
+}
+
+function extractAllVars(text: string): string[] {
+  const out = new Set<string>();
+  const re = /\{\{?\s*([a-zA-Z0-9_.]+)\s*\}?\}/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(text)) !== null) out.add(m[1]);
+  return Array.from(out);
+}
+
+/**
+ * Suggested variables per module_scope. Keeps editor preset-first instead of
+ * forcing operators to remember templating keys. Scope fallbacks to "global".
+ */
+const SUGGESTED_VARS: Record<string, string[]> = {
+  global: ["topic", "title", "language", "tone"],
+  news_bulletin: [
+    "news_items",
+    "language",
+    "tone",
+    "max_duration_seconds",
+    "channel_name",
+  ],
+  standard_video: [
+    "topic",
+    "language",
+    "tone",
+    "target_duration_seconds",
+    "audience",
+  ],
+  product_review: ["product_name", "key_features", "language", "tone"],
+  educational_video: ["topic", "audience", "language", "learning_objectives"],
+  howto_video: ["topic", "steps", "language", "difficulty"],
+};
+
+function suggestedVarsFor(scope: string | null | undefined): string[] {
+  return SUGGESTED_VARS[scope ?? "global"] ?? SUGGESTED_VARS.global;
+}
+
+/** Parse lightweight section headings (`## HEADING` on its own line). */
+function extractSections(text: string): { line: number; title: string }[] {
+  const out: { line: number; title: string }[] = [];
+  const lines = text.split("\n");
+  for (let i = 0; i < lines.length; i += 1) {
+    const trimmed = lines[i].trim();
+    if (trimmed.startsWith("## ")) {
+      out.push({ line: i, title: trimmed.slice(3).trim() });
+    }
+  }
+  return out;
 }
 
 function shorten(s: string, n: number): string {
@@ -111,6 +162,7 @@ export function AuroraPromptsPage() {
   const [activeBlockModule, setActiveBlockModule] = useState<string | undefined>(
     undefined,
   );
+  const editorRef = useRef<HTMLTextAreaElement | null>(null);
 
   const active = useMemo(
     () => prompts.find((p) => p.key === activeKey) ?? null,
@@ -144,6 +196,64 @@ export function AuroraPromptsPage() {
     return Array.from(map.entries()).sort((a, b) => b[1] - a[1]);
   }, [prompts]);
 
+  // Variable chip set = used ∪ suggested. We dedupe but preserve "used first"
+  // order so operators see what's already present at the top.
+  const chipVars = useMemo<string[]>(() => {
+    if (!active) return [];
+    const used = extractAllVars(draft);
+    const sugg = suggestedVarsFor(active.module_scope);
+    const seen = new Set<string>();
+    const out: string[] = [];
+    for (const v of [...used, ...sugg]) {
+      if (seen.has(v)) continue;
+      seen.add(v);
+      out.push(v);
+    }
+    return out.slice(0, 12);
+  }, [active, draft]);
+
+  const sections = useMemo(() => extractSections(draft), [draft]);
+  const usedVars = useMemo(() => extractAllVars(draft), [draft]);
+
+  /** Insert `{name}` at current caret; preserves dirty flag and focus. */
+  const insertVariable = (name: string) => {
+    const el = editorRef.current;
+    const token = `{${name}}`;
+    if (!el) {
+      setDraft((prev) => prev + token);
+      setDirty(true);
+      return;
+    }
+    const start = el.selectionStart ?? draft.length;
+    const end = el.selectionEnd ?? start;
+    const next = draft.slice(0, start) + token + draft.slice(end);
+    setDraft(next);
+    setDirty(true);
+    // Restore caret after insertion
+    requestAnimationFrame(() => {
+      const node = editorRef.current;
+      if (!node) return;
+      node.focus();
+      const pos = start + token.length;
+      node.setSelectionRange(pos, pos);
+    });
+  };
+
+  /** Jump editor caret to the start of a section heading line. */
+  const jumpToSection = (lineIndex: number) => {
+    const el = editorRef.current;
+    if (!el) return;
+    const lines = draft.split("\n");
+    let offset = 0;
+    for (let i = 0; i < lineIndex && i < lines.length; i += 1) {
+      offset += lines[i].length + 1; // +1 for \n
+    }
+    el.focus();
+    el.setSelectionRange(offset, offset);
+    // scrollTop rough estimate (monospaced ~ 18px/line)
+    el.scrollTop = Math.max(0, lineIndex * 18 - 40);
+  };
+
   // --- inspector ---------------------------------------------------------
 
   const inspector =
@@ -164,6 +274,7 @@ export function AuroraPromptsPage() {
         </AuroraInspectorSection>
         <AuroraInspectorSection title="Editör">
           <AuroraInspectorRow label="karakter" value={String(draft.length)} />
+          <AuroraInspectorRow label="satır" value={String(draft.split("\n").length)} />
           <AuroraInspectorRow
             label="dirty"
             value={
@@ -182,6 +293,34 @@ export function AuroraPromptsPage() {
             />
           )}
         </AuroraInspectorSection>
+        <AuroraInspectorSection title="Değişkenler">
+          <AuroraInspectorRow
+            label="kullanılan"
+            value={String(usedVars.length)}
+          />
+          {usedVars.slice(0, 8).map((v) => (
+            <AuroraInspectorRow
+              key={v}
+              label={`{${v}}`}
+              value={
+                <AuroraStatusChip tone="info">kullanılıyor</AuroraStatusChip>
+              }
+            />
+          ))}
+          {usedVars.length === 0 && (
+            <AuroraInspectorRow
+              label="ipucu"
+              value="chip'e tıklayarak ekle"
+            />
+          )}
+        </AuroraInspectorSection>
+        {sections.length > 0 && (
+          <AuroraInspectorSection title="Bölümler">
+            {sections.slice(0, 12).map((s) => (
+              <AuroraInspectorRow key={s.line} label={`L${s.line + 1}`} value={s.title} />
+            ))}
+          </AuroraInspectorSection>
+        )}
       </AuroraInspector>
     ) : (
       <AuroraInspector title="Prompt envanteri">
@@ -306,16 +445,144 @@ export function AuroraPromptsPage() {
           )}
         </div>
 
-        <textarea
-          className="prompt-editor"
-          value={draft}
-          disabled={saveMutation.isPending}
-          onChange={(e) => {
-            setDraft(e.target.value);
-            setDirty(true);
-          }}
-          spellCheck={false}
-        />
+        {chipVars.length > 0 && (
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 6,
+              alignItems: "center",
+              padding: "6px 8px",
+              border: "1px solid var(--border-subtle)",
+              borderBottom: "none",
+              borderTopLeftRadius: 8,
+              borderTopRightRadius: 8,
+              background: "var(--bg-elevated)",
+            }}
+            data-testid="aurora-prompt-var-chips"
+          >
+            <span
+              style={{
+                fontSize: 10,
+                letterSpacing: "0.06em",
+                textTransform: "uppercase",
+                color: "var(--text-muted)",
+                marginRight: 4,
+              }}
+            >
+              Değişken ekle
+            </span>
+            {chipVars.map((v) => {
+              const isUsed = usedVars.includes(v);
+              return (
+                <button
+                  key={v}
+                  type="button"
+                  title={
+                    isUsed
+                      ? `Prompt içinde {${v}} zaten kullanılıyor — tekrar eklemek için tıklayın`
+                      : `İmleç konumuna {${v}} değişkenini ekle`
+                  }
+                  onClick={() => insertVariable(v)}
+                  disabled={saveMutation.isPending}
+                  style={{
+                    padding: "3px 8px",
+                    borderRadius: 999,
+                    fontSize: 11,
+                    fontFamily: "var(--font-mono, ui-monospace, monospace)",
+                    cursor: saveMutation.isPending ? "not-allowed" : "pointer",
+                    border: isUsed
+                      ? "1px solid var(--accent-primary, var(--border-strong))"
+                      : "1px solid var(--border-default)",
+                    background: isUsed
+                      ? "var(--accent-bg, var(--bg-surface))"
+                      : "var(--bg-surface)",
+                    color: isUsed
+                      ? "var(--accent-primary, var(--text-primary))"
+                      : "var(--text-secondary)",
+                  }}
+                  data-testid={`aurora-prompt-var-chip-${v}`}
+                >
+                  {`{${v}}`}
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {sections.length > 0 && (
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 6,
+              alignItems: "center",
+              padding: "6px 8px",
+              border: "1px solid var(--border-subtle)",
+              borderTop: chipVars.length > 0 ? "none" : "1px solid var(--border-subtle)",
+              borderBottom: "none",
+              background: "var(--bg-surface)",
+            }}
+            data-testid="aurora-prompt-section-nav"
+          >
+            <span
+              style={{
+                fontSize: 10,
+                letterSpacing: "0.06em",
+                textTransform: "uppercase",
+                color: "var(--text-muted)",
+                marginRight: 4,
+              }}
+            >
+              Bölüme atla
+            </span>
+            {sections.map((s) => (
+              <button
+                key={s.line}
+                type="button"
+                onClick={() => jumpToSection(s.line)}
+                disabled={saveMutation.isPending}
+                style={{
+                  padding: "2px 8px",
+                  borderRadius: 4,
+                  fontSize: 11,
+                  cursor: saveMutation.isPending ? "not-allowed" : "pointer",
+                  border: "1px solid var(--border-default)",
+                  background: "var(--bg-elevated)",
+                  color: "var(--text-secondary)",
+                }}
+                title={`Satır ${s.line + 1}: ${s.title}`}
+              >
+                §{" "}{shorten(s.title, 24)}
+              </button>
+            ))}
+          </div>
+        )}
+
+        <AuroraField
+          help={
+            chipVars.length > 0
+              ? "Chip'e tıklayarak imleç konumuna değişken ekleyin. “## Başlık” satırları bölüm olarak algılanır."
+              : "Promptu serbest metin olarak düzenleyin. Değişkenler {isim} formatındadır."
+          }
+        >
+          <textarea
+            ref={editorRef}
+            className="prompt-editor"
+            value={draft}
+            disabled={saveMutation.isPending}
+            onChange={(e) => {
+              setDraft(e.target.value);
+              setDirty(true);
+            }}
+            spellCheck={false}
+            style={
+              chipVars.length > 0 || sections.length > 0
+                ? { borderTopLeftRadius: 0, borderTopRightRadius: 0 }
+                : undefined
+            }
+          />
+        </AuroraField>
 
         <div
           style={{

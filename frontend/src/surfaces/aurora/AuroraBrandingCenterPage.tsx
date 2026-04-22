@@ -57,51 +57,79 @@ import {
   AuroraButton,
   AuroraCard,
   AuroraStatusChip,
+  AuroraField,
+  AuroraTagsInput,
+  AuroraChipSelect,
+  AuroraSegmented,
+  AuroraAssetPathInput,
+  AuroraStructuredJsonEditor,
 } from "./primitives";
 import type { AuroraStatusTone } from "./primitives";
-import { useCurrentUser } from "../../hooks/useCurrentUser";
 import { useToast } from "../../hooks/useToast";
 
 // ---------------------------------------------------------------------------
-// Helpers — parsing free-form fields safely
+// Helpers
 // ---------------------------------------------------------------------------
 
 function isObject(v: unknown): v is Record<string, unknown> {
   return typeof v === "object" && v !== null && !Array.isArray(v);
 }
 
-function jsonToText(value: Record<string, unknown> | null | undefined): string {
-  if (!value || Object.keys(value).length === 0) return "{}";
-  try {
-    return JSON.stringify(value, null, 2);
-  } catch {
-    return "{}";
-  }
+// ---------------------------------------------------------------------------
+// Preset kataloglar — serbest string yerine guided chip/segmented seçim
+// ---------------------------------------------------------------------------
+// Bu kataloglar "seçilebilir ama manuel de kabul et" modunda çalışır. Presetten
+// seçim kullanıcıya bilinen tahmini güvenli değer verir; mevcut kayıtta preset
+// dışı bir string varsa chip listesi onu "Özel" olarak ek gösterir, böylece
+// geçmişte yazılmış değerler kaybolmaz.
+
+interface PalettePreset {
+  id: string;
+  label: string;
+  swatches: [string, string, string];
 }
 
-function parseJsonText(text: string): Record<string, unknown> | null {
-  const trimmed = text.trim();
-  if (trimmed === "") return {};
-  try {
-    const parsed = JSON.parse(trimmed);
-    if (!isObject(parsed)) return null;
-    return parsed;
-  } catch {
-    return null;
-  }
-}
+const PALETTE_PRESETS: PalettePreset[] = [
+  { id: "midnight-cobalt", label: "Midnight Cobalt", swatches: ["#0a1128", "#1a4dd8", "#5db4ff"] },
+  { id: "solar-citrus", label: "Solar Citrus", swatches: ["#141214", "#f59e0b", "#fde68a"] },
+  { id: "rainforest-mist", label: "Rainforest Mist", swatches: ["#0e1f18", "#2f9e6b", "#9ff0c5"] },
+  { id: "sunset-coral", label: "Sunset Coral", swatches: ["#2a0f10", "#f97373", "#fed2a0"] },
+  { id: "obsidian-teal", label: "Obsidian Teal", swatches: ["#070b10", "#1fb2a5", "#a8e6da"] },
+  { id: "lavender-storm", label: "Lavender Storm", swatches: ["#161422", "#8b5cf6", "#d1c4ff"] },
+];
 
-function listToText(items: string[] | null | undefined): string {
-  if (!items || items.length === 0) return "";
-  return items.join(", ");
-}
+const TYPOGRAPHY_PRESETS: string[] = [
+  "Inter / Display Sans",
+  "Satoshi / General Sans",
+  "IBM Plex Sans",
+  "Söhne / Suisse",
+  "Söhne + Newsreader Serif",
+  "Manrope Variable",
+];
 
-function parseListText(text: string): string[] {
-  return text
-    .split(",")
-    .map((part) => part.trim())
-    .filter((part) => part.length > 0);
-}
+const MOTION_PRESETS: Array<{ id: string; label: string; hint: string }> = [
+  { id: "still", label: "Durağan", hint: "Kamera hareketi yok, düz kesimler" },
+  { id: "measured", label: "Ölçülü", hint: "Hafif pan/zoom, nadir geçiş" },
+  { id: "dynamic", label: "Dinamik", hint: "Kesif geçiş, hafif shake" },
+  { id: "kinetic", label: "Kinetik", hint: "Yoğun kart hareketi, parallax" },
+];
+
+const WATERMARK_POSITIONS: Array<{ value: string; label: string }> = [
+  { value: "top-left", label: "Sol üst" },
+  { value: "top-right", label: "Sağ üst" },
+  { value: "bottom-left", label: "Sol alt" },
+  { value: "bottom-right", label: "Sağ alt" },
+  { value: "center", label: "Orta" },
+];
+
+const AUDIENCE_PRESET_KEYS = [
+  "age_range",
+  "locations",
+  "interests",
+  "pain_points",
+  "language",
+  "expertise_level",
+];
 
 // ---------------------------------------------------------------------------
 // Page
@@ -470,10 +498,12 @@ function IdentityCard({
       hint="Markanın adı ve tek satırlık özeti — analitik raporlar ve yayın açıklamalarında geçer."
     >
       <div style={{ display: "grid", gap: 12 }}>
-        <label className="form-label">
-          <span className="overline">Marka adı</span>
+        <AuroraField
+          label="Marka adı"
+          help="Yayında ve raporlarda görünen marka adı."
+        >
           <input
-            className="form-input"
+            className="input"
             type="text"
             value={draft.brand_name ?? ""}
             disabled={disabled}
@@ -482,11 +512,13 @@ function IdentityCard({
             }
             data-testid="bc-identity-name"
           />
-        </label>
-        <label className="form-label">
-          <span className="overline">Marka özeti</span>
+        </AuroraField>
+        <AuroraField
+          label="Marka özeti"
+          help="Tek paragraf — neyi, kime, nasıl anlattığınızı özetleyin."
+        >
           <textarea
-            className="form-input"
+            className="input"
             rows={3}
             value={draft.brand_summary ?? ""}
             disabled={disabled}
@@ -495,7 +527,7 @@ function IdentityCard({
             }
             data-testid="bc-identity-summary"
           />
-        </label>
+        </AuroraField>
       </div>
     </SectionShell>
   );
@@ -520,22 +552,21 @@ function AudienceCard({
 }: AudienceCardProps) {
   const qc = useQueryClient();
   const toast = useToast();
-  const [profileText, setProfileText] = useState(() =>
-    jsonToText(section.audience_profile ?? null),
+  const [profile, setProfile] = useState<Record<string, unknown>>(
+    () => (isObject(section.audience_profile) ? section.audience_profile : {}),
   );
   const [positioning, setPositioning] = useState(
     section.positioning_statement ?? "",
   );
-  const [parseErr, setParseErr] = useState<string | null>(null);
 
   useEffect(() => {
-    setProfileText(jsonToText(section.audience_profile ?? null));
+    setProfile(isObject(section.audience_profile) ? section.audience_profile : {});
     setPositioning(section.positioning_statement ?? "");
-    setParseErr(null);
   }, [section]);
 
   const dirty =
-    profileText.trim() !== jsonToText(section.audience_profile ?? null).trim() ||
+    JSON.stringify(profile) !==
+      JSON.stringify(isObject(section.audience_profile) ? section.audience_profile : {}) ||
     positioning !== (section.positioning_statement ?? "");
 
   const m = useMutation({
@@ -551,14 +582,8 @@ function AudienceCard({
   });
 
   const handleSave = () => {
-    const parsed = parseJsonText(profileText);
-    if (parsed === null) {
-      setParseErr("Hedef kitle profili geçerli bir JSON nesnesi olmalı.");
-      return;
-    }
-    setParseErr(null);
     m.mutate({
-      audience_profile: parsed,
+      audience_profile: profile,
       positioning_statement: positioning.trim() || null,
     });
   };
@@ -572,45 +597,41 @@ function AudienceCard({
       disabled={disabled}
       onSave={handleSave}
       onReset={() => {
-        setProfileText(jsonToText(section.audience_profile ?? null));
+        setProfile(isObject(section.audience_profile) ? section.audience_profile : {});
         setPositioning(section.positioning_statement ?? "");
-        setParseErr(null);
       }}
       testIdPrefix="bc-audience"
       hint="Yapılandırılmış kitle profili ve tek satırlık konumlandırma cümlesi."
     >
       <div style={{ display: "grid", gap: 12 }}>
-        <label className="form-label">
-          <span className="overline">Kitle profili (JSON)</span>
-          <textarea
-            className="form-input mono"
-            rows={6}
-            spellCheck={false}
-            value={profileText}
+        <AuroraField
+          label="Kitle profili"
+          help="Form modu ile alan ekleyin veya Raw JSON sekmesinden elle düzenleyin. Sık kullanılanlar için kısayol butonları hazır."
+        >
+          <AuroraStructuredJsonEditor
+            value={profile}
+            onChange={(next) =>
+              setProfile(isObject(next) ? (next as Record<string, unknown>) : {})
+            }
+            presetKeys={AUDIENCE_PRESET_KEYS}
+            kind="object"
             disabled={disabled}
-            onChange={(e) => setProfileText(e.target.value)}
             data-testid="bc-audience-profile"
           />
-          {parseErr && (
-            <span
-              className="caption"
-              style={{ color: "var(--accent-tertiary)" }}
-            >
-              {parseErr}
-            </span>
-          )}
-        </label>
-        <label className="form-label">
-          <span className="overline">Konumlandırma cümlesi</span>
+        </AuroraField>
+        <AuroraField
+          label="Konumlandırma cümlesi"
+          help="Markayı tek cümlede konumlandırın. Master Prompt'a doğrudan iletilir."
+        >
           <textarea
-            className="form-input"
+            className="input"
             rows={2}
             value={positioning}
             disabled={disabled}
             onChange={(e) => setPositioning(e.target.value)}
             data-testid="bc-audience-positioning"
           />
-        </label>
+        </AuroraField>
       </div>
     </SectionShell>
   );
@@ -663,6 +684,43 @@ function VisualCard({
     value: VisualSection[K],
   ) => setDraft((d) => ({ ...d, [key]: value }));
 
+  // Preset options sanitised — include current value as "custom" if missing.
+  const paletteOptions = useMemo(() => {
+    const base = PALETTE_PRESETS.map((p) => ({
+      value: p.id,
+      label: p.label,
+      swatch: p.swatches[1],
+    }));
+    const current = (draft.palette ?? "").trim();
+    if (current && !PALETTE_PRESETS.some((p) => p.id === current)) {
+      base.push({ value: current, label: `${current} (özel)`, swatch: "#64748b" });
+    }
+    return base;
+  }, [draft.palette]);
+
+  const typographyOptions = useMemo(() => {
+    const base = TYPOGRAPHY_PRESETS.map((t) => ({ value: t, label: t }));
+    const current = (draft.typography ?? "").trim();
+    if (current && !TYPOGRAPHY_PRESETS.includes(current)) {
+      base.push({ value: current, label: `${current} (özel)` });
+    }
+    return base;
+  }, [draft.typography]);
+
+  const motionOptions = useMemo(
+    () =>
+      MOTION_PRESETS.map((m) => ({
+        value: m.id,
+        label: m.label,
+        hint: m.hint,
+      })),
+    [],
+  );
+
+  const positionOptions = WATERMARK_POSITIONS;
+
+  const activePaletteMeta = PALETTE_PRESETS.find((p) => p.id === draft.palette);
+
   return (
     <SectionShell
       title="Görsel Kimlik"
@@ -685,94 +743,112 @@ function VisualCard({
       testIdPrefix="bc-visual"
       hint="Palet, tipografi, hareket dili — Style Blueprint ve Remotion kompozisyonu için sabit referans."
     >
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-          gap: 12,
-        }}
-      >
-        <label className="form-label">
-          <span className="overline">Palet</span>
-          <input
-            className="form-input"
-            type="text"
-            value={draft.palette ?? ""}
-            disabled={disabled}
-            onChange={(e) => setField("palette", e.target.value)}
-            placeholder="örn. midnight-cobalt"
+      <div style={{ display: "grid", gap: 16 }}>
+        <AuroraField
+          label="Palet"
+          help="Öntanımlı paletlerden birini seçin; önizleme için üç anahtar renk gösterilir."
+        >
+          <AuroraChipSelect
+            options={paletteOptions}
+            value={draft.palette ?? null}
+            onChange={(next) =>
+              setField("palette", (Array.isArray(next) ? next[0] : next) ?? null)
+            }
             data-testid="bc-visual-palette"
           />
-        </label>
-        <label className="form-label">
-          <span className="overline">Tipografi</span>
-          <input
-            className="form-input"
-            type="text"
-            value={draft.typography ?? ""}
-            disabled={disabled}
-            onChange={(e) => setField("typography", e.target.value)}
-            placeholder="örn. Inter / Display Sans"
+          {activePaletteMeta && (
+            <div className="preview-swatch-row" aria-hidden="true">
+              {activePaletteMeta.swatches.map((sw) => (
+                <span
+                  key={sw}
+                  className="preview-swatch"
+                  style={{ background: sw }}
+                  title={sw}
+                />
+              ))}
+            </div>
+          )}
+        </AuroraField>
+
+        <AuroraField
+          label="Tipografi"
+          help="Marka tipografisi — gövde ve başlık ikilisi olarak düşünülür."
+        >
+          <AuroraChipSelect
+            options={typographyOptions}
+            value={draft.typography ?? null}
+            onChange={(next) =>
+              setField("typography", (Array.isArray(next) ? next[0] : next) ?? null)
+            }
           />
-        </label>
-        <label className="form-label">
-          <span className="overline">Hareket dili</span>
-          <input
-            className="form-input"
-            type="text"
-            value={draft.motion_style ?? ""}
-            disabled={disabled}
-            onChange={(e) => setField("motion_style", e.target.value)}
-            placeholder="örn. measured, low-motion"
+        </AuroraField>
+
+        <AuroraField
+          label="Hareket dili"
+          help="Videoların genel hareket yoğunluğu — kesim/ geçiş kararlarını etkiler."
+        >
+          <AuroraSegmented
+            options={motionOptions}
+            value={draft.motion_style ?? "measured"}
+            onChange={(next) => setField("motion_style", next)}
+            showDot
           />
-        </label>
-        <label className="form-label">
-          <span className="overline">Logo dosya yolu</span>
-          <input
-            className="form-input mono"
-            type="text"
-            value={draft.logo_path ?? ""}
-            disabled={disabled}
-            onChange={(e) => setField("logo_path", e.target.value)}
-            placeholder="workspace/branding/logo.png"
-          />
-        </label>
-        <label className="form-label">
-          <span className="overline">Filigran dosya yolu</span>
-          <input
-            className="form-input mono"
-            type="text"
-            value={draft.watermark_path ?? ""}
-            disabled={disabled}
-            onChange={(e) => setField("watermark_path", e.target.value)}
-          />
-        </label>
-        <label className="form-label">
-          <span className="overline">Filigran konumu</span>
-          <select
-            className="form-input"
-            value={draft.watermark_position ?? ""}
-            disabled={disabled}
-            onChange={(e) => setField("watermark_position", e.target.value)}
+        </AuroraField>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+            gap: 12,
+          }}
+        >
+          <AuroraField
+            label="Logo dosya yolu"
+            help="Yerel workspace yolu veya HTTPS URL."
           >
-            <option value="">—</option>
-            <option value="top-left">Sol üst</option>
-            <option value="top-right">Sağ üst</option>
-            <option value="bottom-left">Sol alt</option>
-            <option value="bottom-right">Sağ alt</option>
-            <option value="center">Orta</option>
-          </select>
-        </label>
-        <label className="form-label" style={{ gridColumn: "1 / -1" }}>
-          <span className="overline">Lower-third varsayılanları</span>
+            <AuroraAssetPathInput
+              value={draft.logo_path ?? ""}
+              onChange={(v) => setField("logo_path", v)}
+              placeholder="workspace/branding/logo.png"
+              mode="any"
+              disabled={disabled}
+            />
+          </AuroraField>
+
+          <AuroraField
+            label="Filigran dosya yolu"
+            help="Opsiyonel — PNG veya SVG önerilir."
+          >
+            <AuroraAssetPathInput
+              value={draft.watermark_path ?? ""}
+              onChange={(v) => setField("watermark_path", v)}
+              placeholder="workspace/branding/watermark.png"
+              mode="any"
+              disabled={disabled}
+            />
+          </AuroraField>
+
+          <AuroraField label="Filigran konumu" help="Videonun hangi köşesine yerleşsin?">
+            <AuroraSegmented
+              options={positionOptions.map((p) => ({ value: p.value, label: p.label }))}
+              value={draft.watermark_position ?? "bottom-right"}
+              onChange={(next) => setField("watermark_position", next)}
+            />
+          </AuroraField>
+        </div>
+
+        <AuroraField
+          label="Lower-third varsayılanları"
+          help="Alt-üçlü şablonu için metin/stil varsayılanları — Master Prompt'a snapshot geçer."
+        >
           <textarea
-            className="form-input"
+            className="input"
             rows={2}
             value={draft.lower_third_defaults ?? ""}
             disabled={disabled}
             onChange={(e) => setField("lower_third_defaults", e.target.value)}
           />
-        </label>
+        </AuroraField>
       </div>
     </SectionShell>
   );
@@ -789,6 +865,17 @@ interface MessagingCardProps {
   disabled: boolean;
 }
 
+const TONE_PRESETS: string[] = [
+  "authoritative",
+  "calm",
+  "evidence-driven",
+  "friendly",
+  "playful",
+  "educational",
+  "urgent",
+  "inspirational",
+];
+
 function MessagingCard({
   channelId,
   section,
@@ -797,19 +884,32 @@ function MessagingCard({
 }: MessagingCardProps) {
   const qc = useQueryClient();
   const toast = useToast();
-  const [tone, setTone] = useState(section.tone_of_voice ?? "");
-  const [pillarsText, setPillarsText] = useState(
-    listToText(section.messaging_pillars),
+  const [tones, setTones] = useState<string[]>(() =>
+    (section.tone_of_voice ?? "")
+      .split(",")
+      .map((part) => part.trim())
+      .filter(Boolean),
   );
+  const [pillars, setPillars] = useState<string[]>(section.messaging_pillars ?? []);
 
   useEffect(() => {
-    setTone(section.tone_of_voice ?? "");
-    setPillarsText(listToText(section.messaging_pillars));
+    setTones(
+      (section.tone_of_voice ?? "")
+        .split(",")
+        .map((part) => part.trim())
+        .filter(Boolean),
+    );
+    setPillars(section.messaging_pillars ?? []);
   }, [section]);
 
+  const sectionTones = (section.tone_of_voice ?? "")
+    .split(",")
+    .map((p) => p.trim())
+    .filter(Boolean);
+
   const dirty =
-    tone !== (section.tone_of_voice ?? "") ||
-    pillarsText !== listToText(section.messaging_pillars);
+    tones.join("|") !== sectionTones.join("|") ||
+    pillars.join("|") !== (section.messaging_pillars ?? []).join("|");
 
   const m = useMutation({
     mutationFn: (payload: MessagingSection) => saveMessaging(channelId, payload),
@@ -823,6 +923,15 @@ function MessagingCard({
     },
   });
 
+  const toneOptions = useMemo(() => {
+    const presetSet = new Set(TONE_PRESETS);
+    const extras = tones.filter((t) => !presetSet.has(t));
+    return [
+      ...TONE_PRESETS.map((t) => ({ value: t, label: t })),
+      ...extras.map((t) => ({ value: t, label: `${t} (özel)` })),
+    ];
+  }, [tones]);
+
   return (
     <SectionShell
       title="Mesajlaşma"
@@ -832,42 +941,56 @@ function MessagingCard({
       disabled={disabled}
       onSave={() =>
         m.mutate({
-          tone_of_voice: tone.trim() || null,
-          messaging_pillars: parseListText(pillarsText),
+          tone_of_voice: tones.join(", ") || null,
+          messaging_pillars: pillars,
         })
       }
       onReset={() => {
-        setTone(section.tone_of_voice ?? "");
-        setPillarsText(listToText(section.messaging_pillars));
+        setTones(sectionTones);
+        setPillars(section.messaging_pillars ?? []);
       }}
       testIdPrefix="bc-messaging"
       hint="Tone-of-voice ve mesaj sütunları — Master Prompt'a snapshot olarak gider."
     >
       <div style={{ display: "grid", gap: 12 }}>
-        <label className="form-label">
-          <span className="overline">Tone of voice</span>
-          <input
-            className="form-input"
-            type="text"
-            value={tone}
-            disabled={disabled}
-            onChange={(e) => setTone(e.target.value)}
-            placeholder="örn. authoritative, calm, evidence-driven"
+        <AuroraField
+          label="Tone of voice"
+          help="Bir veya birden fazla ton seçin; ihtiyaç halinde aşağıdaki satırdan özel değer ekleyin."
+        >
+          <AuroraChipSelect
+            options={toneOptions}
+            value={tones}
+            multi
+            onChange={(next) => setTones(Array.isArray(next) ? next : [next])}
             data-testid="bc-messaging-tone"
           />
-        </label>
-        <label className="form-label">
-          <span className="overline">Mesaj sütunları (virgülle ayrılmış)</span>
-          <textarea
-            className="form-input"
-            rows={2}
-            value={pillarsText}
+        </AuroraField>
+        <AuroraField
+          label="Özel ton (opsiyonel)"
+          help="Listede yoksa yazın, Enter ile ekleyin."
+        >
+          <AuroraTagsInput
+            value={tones.filter((t) => !TONE_PRESETS.includes(t))}
+            onChange={(custom) => {
+              const presetOnly = tones.filter((t) => TONE_PRESETS.includes(t));
+              setTones([...presetOnly, ...custom]);
+            }}
+            placeholder="örn. data-first, evidence-driven"
             disabled={disabled}
-            onChange={(e) => setPillarsText(e.target.value)}
+          />
+        </AuroraField>
+        <AuroraField
+          label="Mesaj sütunları"
+          help="Enter veya virgül ile yeni sütun ekleyin. Master Prompt'a bu sırayla gider."
+        >
+          <AuroraTagsInput
+            value={pillars}
+            onChange={setPillars}
             placeholder="örn. data-first, low jargon, action-oriented"
+            disabled={disabled}
             data-testid="bc-messaging-pillars"
           />
-        </label>
+        </AuroraField>
       </div>
     </SectionShell>
   );
@@ -895,22 +1018,20 @@ function PlatformOutputCard({
   const [description, setDescription] = useState(
     section.channel_description ?? "",
   );
-  const [keywordsText, setKeywordsText] = useState(
-    listToText(section.channel_keywords),
-  );
+  const [keywords, setKeywords] = useState<string[]>(section.channel_keywords ?? []);
   const [bannerPrompt, setBannerPrompt] = useState(section.banner_prompt ?? "");
   const [logoPrompt, setLogoPrompt] = useState(section.logo_prompt ?? "");
 
   useEffect(() => {
     setDescription(section.channel_description ?? "");
-    setKeywordsText(listToText(section.channel_keywords));
+    setKeywords(section.channel_keywords ?? []);
     setBannerPrompt(section.banner_prompt ?? "");
     setLogoPrompt(section.logo_prompt ?? "");
   }, [section]);
 
   const dirty =
     description !== (section.channel_description ?? "") ||
-    keywordsText !== listToText(section.channel_keywords) ||
+    keywords.join("|") !== (section.channel_keywords ?? []).join("|") ||
     bannerPrompt !== (section.banner_prompt ?? "") ||
     logoPrompt !== (section.logo_prompt ?? "");
 
@@ -927,6 +1048,9 @@ function PlatformOutputCard({
     },
   });
 
+  const descMax = 1000;
+  const descCount = description.length;
+
   return (
     <SectionShell
       title="Platform Çıktıları"
@@ -937,14 +1061,14 @@ function PlatformOutputCard({
       onSave={() =>
         m.mutate({
           channel_description: description.trim() || null,
-          channel_keywords: parseListText(keywordsText),
+          channel_keywords: keywords,
           banner_prompt: bannerPrompt.trim() || null,
           logo_prompt: logoPrompt.trim() || null,
         })
       }
       onReset={() => {
         setDescription(section.channel_description ?? "");
-        setKeywordsText(listToText(section.channel_keywords));
+        setKeywords(section.channel_keywords ?? []);
         setBannerPrompt(section.banner_prompt ?? "");
         setLogoPrompt(section.logo_prompt ?? "");
       }}
@@ -952,48 +1076,57 @@ function PlatformOutputCard({
       hint="YouTube/Apply hedefine push edilecek metinler — Apply çağrısı bu alanları kullanır."
     >
       <div style={{ display: "grid", gap: 12 }}>
-        <label className="form-label">
-          <span className="overline">Kanal açıklaması</span>
+        <AuroraField
+          label="Kanal açıklaması"
+          help={`YouTube kanal açıklaması — ${descCount}/${descMax} karakter`}
+          error={descCount > descMax ? `Karakter sınırı ${descMax}` : null}
+        >
           <textarea
-            className="form-input"
+            className="input"
             rows={4}
             value={description}
             disabled={disabled}
             onChange={(e) => setDescription(e.target.value)}
             data-testid="bc-platform-description"
           />
-        </label>
-        <label className="form-label">
-          <span className="overline">Anahtar kelimeler (virgülle)</span>
-          <textarea
-            className="form-input"
-            rows={2}
-            value={keywordsText}
+        </AuroraField>
+        <AuroraField
+          label="Anahtar kelimeler"
+          help="Enter veya virgül ile ekleyin. YouTube tags alanına gider."
+        >
+          <AuroraTagsInput
+            value={keywords}
+            onChange={setKeywords}
+            placeholder="örn. ai, finans, ürün incelemesi"
+            maxTags={30}
             disabled={disabled}
-            onChange={(e) => setKeywordsText(e.target.value)}
             data-testid="bc-platform-keywords"
           />
-        </label>
-        <label className="form-label">
-          <span className="overline">Banner üretim talimatı</span>
+        </AuroraField>
+        <AuroraField
+          label="Banner üretim talimatı"
+          help="AI banner üretiminde üst seviye yönerge — sabit, deterministik."
+        >
           <textarea
-            className="form-input"
+            className="input"
             rows={2}
             value={bannerPrompt}
             disabled={disabled}
             onChange={(e) => setBannerPrompt(e.target.value)}
           />
-        </label>
-        <label className="form-label">
-          <span className="overline">Logo üretim talimatı</span>
+        </AuroraField>
+        <AuroraField
+          label="Logo üretim talimatı"
+          help="AI logo üretiminde kısa yönerge."
+        >
           <textarea
-            className="form-input"
+            className="input"
             rows={2}
             value={logoPrompt}
             disabled={disabled}
             onChange={(e) => setLogoPrompt(e.target.value)}
           />
-        </label>
+        </AuroraField>
       </div>
     </SectionShell>
   );

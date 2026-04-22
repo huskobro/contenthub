@@ -120,7 +120,7 @@ export function AuroraSourceScansRegistryPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const { data: scans, isLoading, isError, error, isFetching } = useSourceScansList();
+  const { data: scans, isLoading, isError, error, isFetching, refetch } = useSourceScansList();
   const list = scans ?? [];
 
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -470,7 +470,7 @@ export function AuroraSourceScansRegistryPage() {
             className="card card-pad"
             style={{ textAlign: "center", color: "var(--text-muted)" }}
           >
-            Yükleniyor…
+            Tarama kayıtları yükleniyor…
           </div>
         )}
 
@@ -479,12 +479,25 @@ export function AuroraSourceScansRegistryPage() {
             className="card card-pad"
             style={{
               textAlign: "center",
-              color: "var(--state-danger-fg)",
-              fontFamily: "var(--font-mono)",
-              fontSize: 12,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 12,
             }}
           >
-            Hata: {error instanceof Error ? error.message : "Bilinmeyen hata"}
+            <span
+              style={{
+                color: "var(--state-danger-fg)",
+                fontFamily: "var(--font-mono)",
+                fontSize: 12,
+              }}
+            >
+              Tarama geçmişi yüklenemedi:{" "}
+              {error instanceof Error ? error.message : "Bilinmeyen hata"}
+            </span>
+            <AuroraButton size="sm" onClick={() => refetch()}>
+              Tekrar dene
+            </AuroraButton>
           </div>
         )}
 

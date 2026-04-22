@@ -41,6 +41,7 @@ import {
   AuroraInspectorSection,
   AuroraInspectorRow,
   AuroraDetailDrawer,
+  AuroraConfirmDialog,
   type AuroraDrawerItem,
 } from "./primitives";
 import { Icon } from "./icons";
@@ -141,6 +142,13 @@ export function AuroraTemplateStyleLinksRegistryPage() {
 
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [drawerIdx, setDrawerIdx] = useState<number | null>(null);
+  // Destructive-intent confirm for single-link delete (replaces window.confirm).
+  const [confirmDeleteLink, setConfirmDeleteLink] =
+    useState<TemplateStyleLinkResponse | null>(null);
+  // Destructive-intent confirm for bulk delete. Opening this dialog is the
+  // ONLY way to reach `runBulkDelete`; the button itself is a no-op until the
+  // user confirms via AuroraConfirmDialog. Prevents one-click mass deletion.
+  const [confirmBulkDelete, setConfirmBulkDelete] = useState(false);
 
   const counts = useMemo(() => {
     const scope = { default: 0, explicit: 0 };
@@ -167,7 +175,15 @@ export function AuroraTemplateStyleLinksRegistryPage() {
 
   const deleteMutation = useDeleteTemplateStyleLink();
 
-  async function handleBulkDelete() {
+  // Opens the confirm dialog. Never deletes directly — one-click mass delete
+  // is a UX/data-loss anti-pattern, so all real work lives in `runBulkDelete`
+  // behind the AuroraConfirmDialog gate (matches single-row delete standard).
+  function handleBulkDelete() {
+    if (selected.size === 0) return;
+    setConfirmBulkDelete(true);
+  }
+
+  async function runBulkDelete() {
     const ids = Array.from(selected);
     if (ids.length === 0) return;
     let ok = 0;
@@ -259,21 +275,7 @@ export function AuroraTemplateStyleLinksRegistryPage() {
           label: deleteMutation.isPending ? "Siliniyor…" : "Sil",
           variant: "danger",
           onClick: () => {
-            const confirmed = window.confirm(
-              `Bu bağlantı silinecek. Bağlı çalışan job'lar etkilenmez ` +
-                `(template/blueprint snapshot job başında kilitlendi). ` +
-                `Emin misiniz?`,
-            );
-            if (!confirmed) return;
-            void (async () => {
-              try {
-                await deleteMutation.mutateAsync(l.id);
-                toast.success("Bağlantı silindi");
-                setDrawerIdx(null);
-              } catch {
-                // useApiError zaten toast atıyor
-              }
-            })();
+            setConfirmDeleteLink(l);
           },
         },
       ],
@@ -619,6 +621,54 @@ export function AuroraTemplateStyleLinksRegistryPage() {
       <AuroraDetailDrawer
         item={drawerIdx !== null ? buildDrawer(drawerIdx) : null}
         onClose={() => setDrawerIdx(null)}
+      />
+
+      <AuroraConfirmDialog
+        open={confirmDeleteLink !== null}
+        title="Şablon-Stil bağlantısı silinsin mi?"
+        description="Bu bağlantı silinecek. Bağlı çalışan job'lar etkilenmez (template/blueprint snapshot job başında kilitlendi)."
+        tone="danger"
+        confirmLabel="Sil"
+        cancelLabel="Vazgeç"
+        busy={deleteMutation.isPending}
+        onCancel={() => setConfirmDeleteLink(null)}
+        onConfirm={() => {
+          const target = confirmDeleteLink;
+          if (!target) return;
+          void (async () => {
+            try {
+              await deleteMutation.mutateAsync(target.id);
+              toast.success("Bağlantı silindi");
+              setDrawerIdx(null);
+            } catch {
+              // useApiError zaten toast atıyor
+            } finally {
+              setConfirmDeleteLink(null);
+            }
+          })();
+        }}
+        data-testid="aurora-template-style-links-confirm-delete"
+      />
+
+      <AuroraConfirmDialog
+        open={confirmBulkDelete}
+        title={`${selected.size} bağlantı silinsin mi?`}
+        description="Seçili bağlantılar silinecek. Bağlı çalışan job'lar etkilenmez (template/blueprint snapshot job başında kilitlendi)."
+        tone="danger"
+        confirmLabel="Sil"
+        cancelLabel="Vazgeç"
+        busy={deleteMutation.isPending}
+        onCancel={() => setConfirmBulkDelete(false)}
+        onConfirm={() => {
+          void (async () => {
+            try {
+              await runBulkDelete();
+            } finally {
+              setConfirmBulkDelete(false);
+            }
+          })();
+        }}
+        data-testid="aurora-template-style-links-confirm-bulk-delete"
       />
     </div>
   );

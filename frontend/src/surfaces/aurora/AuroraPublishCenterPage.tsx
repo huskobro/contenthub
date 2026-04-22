@@ -26,6 +26,8 @@ import type { PublishRecordSummary } from "../../api/publishApi";
 import { useToast } from "../../hooks/useToast";
 import { Icon } from "./icons";
 import {
+  AuroraDetailDrawer,
+  AuroraField,
   AuroraInspector,
   AuroraInspectorSection,
   AuroraInspectorRow,
@@ -102,6 +104,21 @@ export function AuroraPublishCenterPage() {
   const [bulkBanner, setBulkBanner] = useState<string | null>(null);
   const [channelFilter, setChannelFilter] = useState<string | null>(null);
 
+  // Reject drawer — hem tek kayıt hem toplu reddetmeyi aynı Aurora-native
+  // gerekçe formu üzerinden yürütür. window.prompt artık kullanılmıyor.
+  type RejectMode =
+    | { kind: "single"; recordId: string }
+    | { kind: "bulk"; recordIds: string[] };
+  const [rejectMode, setRejectMode] = useState<RejectMode | null>(null);
+  const [rejectReason, setRejectReason] = useState("");
+  const [rejectError, setRejectError] = useState<string | null>(null);
+
+  const closeRejectDrawer = () => {
+    setRejectMode(null);
+    setRejectReason("");
+    setRejectError(null);
+  };
+
   const approve = useBulkApprovePublishRecords();
   const reject = useBulkRejectPublishRecords();
   const cancel = useBulkCancelPublishRecords();
@@ -166,23 +183,32 @@ export function AuroraPublishCenterPage() {
   };
 
   const onReject = (id: string) => {
-    const reason = window.prompt(
-      "Red gerekçesi (audit log'a kaydedilecek):",
-      "Aurora UI üzerinden reddedildi",
-    );
-    if (reason === null) return; // kullanıcı iptal etti
-    const trimmed = reason.trim() || "Aurora UI üzerinden reddedildi";
-    setPending((p) => [...p, id]);
+    setRejectMode({ kind: "single", recordId: id });
+    setRejectReason("");
+    setRejectError(null);
+  };
+
+  const submitSingleReject = (recordId: string) => {
+    const trimmed = rejectReason.trim();
+    if (!trimmed) {
+      setRejectError("Gerekçe zorunlu — audit log'a kaydedilecek.");
+      return;
+    }
+    setPending((p) => [...p, recordId]);
     reject.mutate(
-      { record_ids: [id], rejection_reason: trimmed },
+      { record_ids: [recordId], rejection_reason: trimmed },
       {
         onSuccess: () => {
           toast.success("Reddedildi");
-          setPending((p) => p.filter((x) => x !== id));
+          setPending((p) => p.filter((x) => x !== recordId));
+          closeRejectDrawer();
         },
         onError: () => {
           toast.error("Reddetme başarısız");
-          setPending((p) => p.filter((x) => x !== id));
+          setPending((p) => p.filter((x) => x !== recordId));
+          setRejectError(
+            "Sunucu hatası — yeniden denemek için form açık bırakılabilir.",
+          );
         },
       },
     );
@@ -245,15 +271,20 @@ export function AuroraPublishCenterPage() {
     }
   };
 
-  const runBulkReject = async () => {
+  const runBulkReject = () => {
     const ids = Array.from(selected);
     if (ids.length === 0) return;
-    const reason = window.prompt(
-      "Toplu red gerekçesi (audit log'a kaydedilecek):",
-      "Aurora UI üzerinden toplu reddedildi",
-    );
-    if (reason === null) return;
-    const trimmed = reason.trim() || "Aurora UI üzerinden toplu reddedildi";
+    setRejectMode({ kind: "bulk", recordIds: ids });
+    setRejectReason("");
+    setRejectError(null);
+  };
+
+  const submitBulkReject = async (ids: string[]) => {
+    const trimmed = rejectReason.trim();
+    if (!trimmed) {
+      setRejectError("Gerekçe zorunlu — audit log'a kaydedilecek.");
+      return;
+    }
     try {
       const res = await reject.mutateAsync({
         record_ids: ids,
@@ -264,8 +295,19 @@ export function AuroraPublishCenterPage() {
         { success: res.succeeded, failed: res.failed },
       );
       clearSelection();
+      closeRejectDrawer();
     } catch {
       toast.error("Toplu reddetme isteği başarısız");
+      setRejectError("Sunucu hatası — formu açık bırakıp tekrar deneyebilirsiniz.");
+    }
+  };
+
+  const handleRejectSubmit = () => {
+    if (!rejectMode) return;
+    if (rejectMode.kind === "single") {
+      submitSingleReject(rejectMode.recordId);
+    } else {
+      void submitBulkReject(rejectMode.recordIds);
     }
   };
 
@@ -840,6 +882,111 @@ export function AuroraPublishCenterPage() {
       </div>
 
       <div className="aurora-inspector-slot">{inspector}</div>
+
+      <AuroraDetailDrawer
+        item={
+          rejectMode
+            ? {
+                breadcrumb:
+                  rejectMode.kind === "single"
+                    ? "Publish · Reddet"
+                    : "Publish · Toplu reddet",
+                title:
+                  rejectMode.kind === "single"
+                    ? "Kaydı reddet"
+                    : `${rejectMode.recordIds.length} kaydı reddet`,
+                children: (
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 12,
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 12,
+                        color: "var(--text-secondary)",
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      Red gerekçesi <strong>zorunludur</strong> ve audit log'a
+                      kaydedilir.{" "}
+                      {rejectMode.kind === "bulk"
+                        ? `Seçili ${rejectMode.recordIds.length} kayıt`
+                        : "Bu kayıt"}{" "}
+                      <code>pending_review → rejected</code> geçişi yapacak.
+                    </div>
+                    <AuroraField
+                      label="Gerekçe"
+                      htmlFor="aurora-publish-reject-reason"
+                    >
+                      <textarea
+                        id="aurora-publish-reject-reason"
+                        value={rejectReason}
+                        onChange={(e) => {
+                          setRejectReason(e.target.value);
+                          if (rejectError) setRejectError(null);
+                        }}
+                        placeholder="Ör: içerik politikasına uymuyor, metadata eksik…"
+                        rows={5}
+                        autoFocus
+                        data-testid="aurora-publish-reject-reason"
+                        style={{
+                          width: "100%",
+                          padding: "8px 12px",
+                          background: "var(--bg-surface)",
+                          border: "1px solid var(--border-default)",
+                          borderRadius: 8,
+                          color: "var(--text-primary)",
+                          fontSize: 13,
+                          fontFamily: "inherit",
+                          resize: "vertical",
+                          minHeight: 96,
+                          lineHeight: 1.5,
+                          boxSizing: "border-box",
+                        }}
+                      />
+                    </AuroraField>
+                    {rejectError && (
+                      <div
+                        role="alert"
+                        style={{
+                          fontSize: 12,
+                          color: "var(--state-danger-fg)",
+                          background: "var(--state-danger-bg)",
+                          border: "1px solid var(--state-danger-border)",
+                          borderRadius: 6,
+                          padding: "8px 10px",
+                        }}
+                      >
+                        {rejectError}
+                      </div>
+                    )}
+                  </div>
+                ),
+                actions: [
+                  {
+                    label: "Vazgeç",
+                    variant: "ghost",
+                    onClick: closeRejectDrawer,
+                  },
+                  { spacer: true },
+                  {
+                    label: reject.isPending
+                      ? "Kaydediliyor…"
+                      : rejectMode.kind === "single"
+                        ? "Reddet"
+                        : `${rejectMode.recordIds.length} kaydı reddet`,
+                    variant: "danger",
+                    onClick: handleRejectSubmit,
+                  },
+                ],
+              }
+            : null
+        }
+        onClose={closeRejectDrawer}
+      />
     </div>
   );
 }

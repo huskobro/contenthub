@@ -27,6 +27,9 @@ import {
   AuroraInspector,
   AuroraInspectorSection,
   AuroraInspectorRow,
+  AuroraStructuredJsonEditor,
+  AuroraField,
+  AuroraSegmented,
 } from "./primitives";
 import { Icon } from "./icons";
 import { useEffectiveSettingMutation } from "../../hooks/useEffectiveSettingMutation";
@@ -106,6 +109,65 @@ function groupLabel(group: string): string {
   return map[group] || group;
 }
 
+// --- validation rule parsing ----------------------------------------------
+//
+// Settings registry supports {required, type, min, max, enum, regex} server-side
+// (backend/app/settings/validation.py). Aurora UI mirrors these so that invalid
+// input can be caught before the network round-trip and the picker can auto-
+// upgrade to a constrained control (enum → segmented picker).
+//
+// Source of truth is still the backend; this is "fail fast + honest UI".
+
+interface SettingValidation {
+  required?: boolean;
+  type?: string;
+  min?: number;
+  max?: number;
+  enum?: unknown[];
+  regex?: string;
+}
+
+function parseValidation(rulesJson: string | null | undefined): SettingValidation {
+  if (!rulesJson) return {};
+  try {
+    const parsed = JSON.parse(rulesJson);
+    return parsed && typeof parsed === "object" ? (parsed as SettingValidation) : {};
+  } catch {
+    return {};
+  }
+}
+
+function validateDraftValue(
+  value: unknown,
+  rules: SettingValidation,
+): string | null {
+  if (rules.required && (value === null || value === undefined || value === "")) {
+    return "Bu ayar zorunlu, boş bırakılamaz.";
+  }
+  if (value === null || value === undefined) return null;
+  if (typeof value === "number") {
+    if (rules.min !== undefined && value < rules.min) {
+      return `En az ${rules.min} olmalı.`;
+    }
+    if (rules.max !== undefined && value > rules.max) {
+      return `En fazla ${rules.max} olmalı.`;
+    }
+  }
+  if (rules.enum && Array.isArray(rules.enum) && !rules.enum.includes(value as never)) {
+    return `Geçerli seçenekler: ${rules.enum.map((x) => String(x)).join(", ")}`;
+  }
+  if (rules.regex && typeof value === "string") {
+    try {
+      if (!new RegExp(rules.regex).test(value)) {
+        return `Desen uyumsuz: ${rules.regex}`;
+      }
+    } catch {
+      /* invalid regex in rules — skip client check, backend is authoritative */
+    }
+  }
+  return null;
+}
+
 // --- inline editor row ----------------------------------------------------
 
 interface RowEditorProps {
@@ -116,6 +178,19 @@ interface RowEditorProps {
 
 function RowEditor({ setting, current, onSaved }: RowEditorProps) {
   const kind = isScalarType(setting.type);
+  const rules = useMemo(
+    () => parseValidation(setting.validation_rules_json),
+    [setting.validation_rules_json],
+  );
+  // Enum metadata → select/segmented auto-upgrade. String-tipinde, enum daha
+  // kısıtlı bir picker sunar; "MANUAL-OK" alanlar enum'a sahip değildir.
+  const enumOptions: string[] | null = useMemo(() => {
+    if (!rules.enum || !Array.isArray(rules.enum)) return null;
+    if (!rules.enum.every((v) => typeof v === "string" || typeof v === "number")) {
+      return null;
+    }
+    return rules.enum.map((v) => String(v));
+  }, [rules.enum]);
 
   const initialString = useMemo(() => {
     // Secret tipi ayarlarda editor her zaman bos acilir. Backend ciphertext
@@ -138,6 +213,7 @@ function RowEditor({ setting, current, onSaved }: RowEditorProps) {
     typeof current === "boolean" ? current : false,
   );
   const [parseError, setParseError] = useState<string | null>(null);
+  const [ruleError, setRuleError] = useState<string | null>(null);
 
   // Save mutation — paylasimli hook. Secret bos-deger reddi, cache invalidation,
   // toast'lar hook icinde. Kind-spesifik value parse burada kalir.
@@ -165,8 +241,26 @@ function RowEditor({ setting, current, onSaved }: RowEditorProps) {
         return;
       }
     }
+    // Client-side rule check (mirrors backend validation.py). Backend remains
+    // authoritative; this is fail-fast UX.
+    const ruleViolation = validateDraftValue(value, rules);
+    if (ruleViolation) {
+      setRuleError(ruleViolation);
+      return;
+    }
+    setRuleError(null);
     save.mutate({ key: setting.key, value, settingType: setting.type });
   }
+
+  // Human-readable constraint summary (required / min / max / regex / enum).
+  // Rendered as a small chip row at the top of the editor so operators see
+  // validation rules without opening the raw JSON registry metadata.
+  const constraintChips: string[] = [];
+  if (rules.required) constraintChips.push("zorunlu");
+  if (rules.min !== undefined) constraintChips.push(`min ${rules.min}`);
+  if (rules.max !== undefined) constraintChips.push(`max ${rules.max}`);
+  if (rules.regex) constraintChips.push(`desen ${rules.regex}`);
+  if (enumOptions) constraintChips.push(`enum · ${enumOptions.length} seçenek`);
 
   return (
     <div
@@ -181,6 +275,32 @@ function RowEditor({ setting, current, onSaved }: RowEditorProps) {
         border: "1px solid var(--border-subtle)",
       }}
     >
+      {constraintChips.length > 0 && (
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: 6,
+            fontSize: 10,
+            color: "var(--text-muted)",
+          }}
+          data-testid={`aurora-setting-constraints-${setting.key}`}
+        >
+          {constraintChips.map((c) => (
+            <span
+              key={c}
+              style={{
+                padding: "2px 6px",
+                background: "var(--bg-surface)",
+                border: "1px solid var(--border-subtle)",
+                borderRadius: 4,
+              }}
+            >
+              {c}
+            </span>
+          ))}
+        </div>
+      )}
       {kind === "bool" && (
         <label
           style={{
@@ -203,6 +323,8 @@ function RowEditor({ setting, current, onSaved }: RowEditorProps) {
           type="number"
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
+          min={rules.min}
+          max={rules.max}
           style={{
             width: "100%",
             padding: "6px 8px",
@@ -215,6 +337,39 @@ function RowEditor({ setting, current, onSaved }: RowEditorProps) {
           }}
         />
       )}
+      {/* String enum → AuroraSegmented (≤4 options) / native select (5+). */}
+      {kind === "string" &&
+        setting.type !== "secret" &&
+        enumOptions &&
+        (enumOptions.length <= 4 ? (
+          <AuroraSegmented
+            options={enumOptions.map((v) => ({ value: v, label: v }))}
+            value={draft as string}
+            onChange={(v) => setDraft(v)}
+            data-testid={`aurora-setting-enum-${setting.key}`}
+          />
+        ) : (
+          <select
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            style={{
+              width: "100%",
+              padding: "6px 8px",
+              background: "var(--bg-surface)",
+              border: "1px solid var(--border-default)",
+              borderRadius: 4,
+              color: "var(--text-primary)",
+              fontSize: 12,
+            }}
+            data-testid={`aurora-setting-enum-${setting.key}`}
+          >
+            {enumOptions.map((v) => (
+              <option key={v} value={v}>
+                {v}
+              </option>
+            ))}
+          </select>
+        ))}
       {kind === "string" && setting.type === "secret" && (
         <input
           type="password"
@@ -234,7 +389,7 @@ function RowEditor({ setting, current, onSaved }: RowEditorProps) {
           }}
         />
       )}
-      {kind === "string" && setting.type !== "secret" && (
+      {kind === "string" && setting.type !== "secret" && !enumOptions && (
         <textarea
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
@@ -254,39 +409,44 @@ function RowEditor({ setting, current, onSaved }: RowEditorProps) {
         />
       )}
       {kind === "json" && (
-        <>
-          <textarea
-            value={draft}
-            onChange={(e) => {
-              setDraft(e.target.value);
+        <AuroraField
+          help="Form modunda anahtar/değer editörü; Raw JSON sekmesi gelişmiş yapılar için."
+          error={parseError ? `JSON: ${parseError}` : null}
+        >
+          <AuroraStructuredJsonEditor
+            value={(() => {
+              try {
+                return draft.trim() === "" ? {} : JSON.parse(draft);
+              } catch {
+                return draft;
+              }
+            })()}
+            onChange={(next) => {
               setParseError(null);
+              try {
+                setDraft(JSON.stringify(next, null, 2));
+              } catch (e) {
+                setParseError(e instanceof Error ? e.message : "JSON serialize hatası");
+              }
             }}
-            rows={6}
-            style={{
-              width: "100%",
-              padding: "6px 8px",
-              background: "var(--bg-surface)",
-              border: "1px solid var(--border-default)",
-              borderRadius: 4,
-              color: "var(--text-primary)",
-              fontFamily: "var(--font-mono)",
-              fontSize: 12,
-              resize: "vertical",
-            }}
-            spellCheck={false}
+            kind={draft.trim().startsWith("[") ? "array" : "object"}
           />
-          {parseError && (
-            <div
-              style={{
-                fontSize: 11,
-                color: "var(--state-danger-fg)",
-                fontFamily: "var(--font-mono)",
-              }}
-            >
-              JSON: {parseError}
-            </div>
-          )}
-        </>
+        </AuroraField>
+      )}
+      {ruleError && (
+        <div
+          style={{
+            fontSize: 11,
+            color: "var(--state-danger-fg)",
+            background: "var(--state-danger-bg)",
+            padding: "4px 8px",
+            borderRadius: 4,
+            border: "1px solid var(--state-danger-border)",
+          }}
+          data-testid={`aurora-setting-rule-error-${setting.key}`}
+        >
+          {ruleError}
+        </div>
       )}
       <div style={{ display: "flex", gap: 8 }}>
         <AuroraButton
@@ -305,6 +465,7 @@ function RowEditor({ setting, current, onSaved }: RowEditorProps) {
             setDraft(initialString);
             setBoolDraft(typeof current === "boolean" ? current : false);
             setParseError(null);
+            setRuleError(null);
           }}
           disabled={save.isPending}
         >

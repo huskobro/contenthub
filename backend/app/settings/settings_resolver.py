@@ -2659,6 +2659,19 @@ KNOWN_VALIDATION_RULES: Dict[str, str] = {
     "product_review.scrape.min_interval_seconds_per_host": '{"type": "integer", "min": 1, "max": 300}',
     "product_review.legal.affiliate_disclosure_text": '{"type": "string", "required": true, "min_length": 10}',
     "product_review.legal.price_disclaimer_text": '{"type": "string", "required": true, "min_length": 10}',
+
+    # ---- Closed-dictionary settings promoted to structured enums (Aurora UX) ---
+    # Wave: AuroraSettingsPage detects these and renders AuroraSegmented instead
+    # of a free-text textarea. Adding enum here is backwards compatible —
+    # existing admin_value/default values are already within these sets.
+    "ui.surface.default.admin": '{"type": "string", "enum": ["legacy", "canvas", "atrium", "bridge", "horizon"]}',
+    "ui.surface.default.user": '{"type": "string", "enum": ["legacy", "canvas", "atrium", "bridge", "horizon"]}',
+    "tts.primary_provider": '{"type": "string", "enum": ["dubvoice", "edge_tts", "system_tts"]}',
+    "tts.controls.default_scene_energy": '{"type": "string", "enum": ["", "calm", "neutral", "energetic"]}',
+    "wizard.standard_video.entry_mode": '{"type": "string", "enum": ["wizard", "form"]}',
+    "wizard.news_bulletin.entry_mode": '{"type": "string", "enum": ["wizard", "form"]}',
+    "news_bulletin.config.default_bulletin_style": '{"type": "string", "enum": ["breaking", "tech", "corporate", "sport", "finance", "weather", "science", "entertainment", "dark"]}',
+    "automation.full_auto.default_publish_policy": '{"type": "string", "enum": ["draft", "schedule", "publish_now"]}',
 }
 
 

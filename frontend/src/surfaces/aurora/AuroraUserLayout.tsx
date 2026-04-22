@@ -22,6 +22,7 @@ import { NotificationCenter } from "../../components/design-system/NotificationC
 import { KeyboardShortcutsHelp } from "../../components/design-system/KeyboardShortcutsHelp";
 import { useCommandPaletteShortcut } from "../../hooks/useCommandPaletteShortcut";
 import { useGlobalSSE } from "../../hooks/useGlobalSSE";
+import { useSSEFallbackRefetch } from "../../hooks/useSSEFallbackRefetch";
 import { useNotifications } from "../../hooks/useNotifications";
 import { useCommandPaletteStore } from "../../stores/commandPaletteStore";
 import { useAuthStore } from "../../stores/authStore";
@@ -91,6 +92,11 @@ export function AuroraUserLayout() {
   useCommandPaletteShortcut();
   useGlobalSSE();
   useNotifications({ mode: "user" });
+  // Aurora Final Polish — SSE çevrimdışıyken polling fallback. Banner artık
+  // sadece bir uyarı değil; bu hook gerçekten 15 sn'de bir invalidate eder.
+  useSSEFallbackRefetch({
+    invalidateKeys: [["jobs"], ["notifications"], ["channels"], ["news-bulletins"]],
+  });
 
   useEffect(() => {
     useCommandPaletteStore.getState().setContext({ currentRoute: location.pathname });

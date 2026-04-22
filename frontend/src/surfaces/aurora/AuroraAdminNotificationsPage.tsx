@@ -304,7 +304,7 @@ export function AuroraAdminNotificationsPage() {
             className="card card-pad"
             style={{ textAlign: "center", color: "var(--text-muted)" }}
           >
-            Yükleniyor…
+            Bildirimler yükleniyor…
           </div>
         ) : notifications.length === 0 ? (
           <div

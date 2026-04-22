@@ -811,16 +811,23 @@ export function AuroraStyleBlueprintCreatePage() {
               </Field>
             </div>
 
-            <div
+            <details
               style={{
                 borderTop: "1px solid var(--border-subtle)",
                 paddingTop: 16,
                 marginTop: 4,
               }}
             >
-              <div style={{ ...labelStyle, marginBottom: 10 }}>
+              <summary
+                style={{
+                  ...labelStyle,
+                  marginBottom: 10,
+                  cursor: "pointer",
+                  listStyle: "revert",
+                }}
+              >
                 JSON Override (gelişmiş)
-              </div>
+              </summary>
               <div style={{ ...hintStyle, marginBottom: 12 }}>
                 Preset üretimi yeterli olmadığında doğrudan kural JSON'u girin.
                 Doluysa preset değerinin üzerine yazılır; canlı doğrulama
@@ -931,7 +938,7 @@ export function AuroraStyleBlueprintCreatePage() {
                   spellCheck={false}
                 />
               </Field>
-            </div>
+            </details>
 
             <Field label="Notlar" hint="Operatör için serbest metin (opsiyonel)">
               <textarea

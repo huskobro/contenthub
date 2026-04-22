@@ -522,13 +522,37 @@ export function AuroraTemplateCreatePage() {
               />
             </Field>
 
-            <div
+            <details
               style={{
                 borderTop: "1px solid var(--border-subtle)",
                 paddingTop: 16,
                 marginTop: 4,
               }}
             >
+              <summary
+                style={{
+                  fontSize: 12,
+                  fontWeight: 600,
+                  color: "var(--text-muted)",
+                  textTransform: "uppercase",
+                  letterSpacing: 0.6,
+                  marginBottom: 10,
+                  cursor: "pointer",
+                  listStyle: "revert",
+                }}
+              >
+                JSON Override (gelişmiş)
+              </summary>
+              <div
+                style={{
+                  fontSize: 12,
+                  color: "var(--text-muted)",
+                  marginBottom: 12,
+                }}
+              >
+                Şablon kuralları için doğrudan JSON girin. Canlı doğrulama
+                inspector'da görünür; geçersiz JSON kaydetmeyi engeller.
+              </div>
               <Field
                 label="style_profile_json"
                 error={errors.style_profile_json}
@@ -580,7 +604,7 @@ export function AuroraTemplateCreatePage() {
                   spellCheck={false}
                 />
               </Field>
-            </div>
+            </details>
 
             <Field label="Notlar" hint="Operatör için serbest metin (opsiyonel)">
               <textarea

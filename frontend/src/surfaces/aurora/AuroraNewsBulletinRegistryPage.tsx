@@ -162,6 +162,7 @@ export function AuroraNewsBulletinRegistryPage() {
     isError,
     error,
     isFetching,
+    refetch,
   } = useNewsBulletinsList();
   const { data: templates } = useTemplatesList({ module_scope: "news_bulletin" });
 
@@ -382,7 +383,7 @@ export function AuroraNewsBulletinRegistryPage() {
             className="card card-pad"
             style={{ textAlign: "center", color: "var(--text-muted)" }}
           >
-            Yükleniyor…
+            Bültenler yükleniyor…
           </div>
         )}
 
@@ -391,17 +392,29 @@ export function AuroraNewsBulletinRegistryPage() {
             className="card card-pad"
             style={{
               textAlign: "center",
-              color: "var(--state-danger-fg)",
-              fontFamily: "var(--font-mono)",
-              fontSize: 12,
-              display: "inline-flex",
+              display: "flex",
+              flexDirection: "column",
               alignItems: "center",
-              gap: 6,
-              justifyContent: "center",
+              gap: 12,
             }}
           >
-            <Icon name="alert-circle" size={12} />
-            Hata: {error instanceof Error ? error.message : "Bilinmeyen hata"}
+            <span
+              style={{
+                color: "var(--state-danger-fg)",
+                fontFamily: "var(--font-mono)",
+                fontSize: 12,
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+              }}
+            >
+              <Icon name="alert-circle" size={12} />
+              Bültenler yüklenemedi:{" "}
+              {error instanceof Error ? error.message : "Bilinmeyen hata"}
+            </span>
+            <AuroraButton size="sm" onClick={() => refetch()}>
+              Tekrar dene
+            </AuroraButton>
           </div>
         )}
 

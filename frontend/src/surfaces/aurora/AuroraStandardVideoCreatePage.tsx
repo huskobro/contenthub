@@ -27,6 +27,7 @@ import {
   AuroraInspectorRow,
   AuroraInspectorSection,
   AuroraPageShell,
+  AuroraSegmented,
   AuroraStatusChip,
   type AuroraStatusTone,
 } from "./primitives";
@@ -378,14 +379,16 @@ export function AuroraStandardVideoCreatePage() {
                   placeholder="120"
                 />
               </Field>
-              <Field label="Dil" hint="ör. tr, en">
-                <input
-                  style={INPUT_STYLE}
+              <Field label="Dil" hint="Seslendirme ve script dili">
+                <AuroraSegmented
+                  options={[
+                    { value: "", label: "—", hint: "Varsayılan kullanılsın" },
+                    { value: "tr", label: "TR", hint: "Türkçe" },
+                    { value: "en", label: "EN", hint: "English" },
+                  ]}
                   value={language}
-                  onChange={(e) => setLanguage(e.target.value)}
-                  onFocus={focusOn}
-                  onBlur={focusOff}
-                  placeholder="tr"
+                  onChange={(v) => setLanguage(v)}
+                  data-testid="aurora-sv-language"
                 />
               </Field>
             </div>
@@ -397,24 +400,32 @@ export function AuroraStandardVideoCreatePage() {
                 gap: 14,
               }}
             >
-              <Field label="Ton" hint="ör. formal, casual, dramatic">
-                <input
-                  style={INPUT_STYLE}
+              <Field label="Ton" hint="Anlatım tonu">
+                <AuroraSegmented
+                  options={[
+                    { value: "", label: "—", hint: "Varsayılan kullanılsın" },
+                    { value: "formal", label: "Formal", hint: "Resmi, kurumsal" },
+                    { value: "casual", label: "Casual", hint: "Günlük, rahat" },
+                    { value: "dramatic", label: "Dramatic", hint: "Vurgulu, sahne dili" },
+                    { value: "inspirational", label: "Inspirational", hint: "Motivasyonel" },
+                  ]}
                   value={tone}
-                  onChange={(e) => setTone(e.target.value)}
-                  onFocus={focusOn}
-                  onBlur={focusOff}
-                  placeholder="formal"
+                  onChange={(v) => setTone(v)}
+                  data-testid="aurora-sv-tone"
                 />
               </Field>
-              <Field label="Görsel Yön" hint="ör. clean, cinematic, minimal">
-                <input
-                  style={INPUT_STYLE}
+              <Field label="Görsel Yön" hint="Kompozisyon karakteri">
+                <AuroraSegmented
+                  options={[
+                    { value: "", label: "—", hint: "Varsayılan kullanılsın" },
+                    { value: "clean", label: "Clean", hint: "Sade, okunur" },
+                    { value: "cinematic", label: "Cinematic", hint: "Sinematik" },
+                    { value: "minimal", label: "Minimal", hint: "Minimal yalın" },
+                    { value: "bold", label: "Bold", hint: "Güçlü kontrast" },
+                  ]}
                   value={visualDirection}
-                  onChange={(e) => setVisualDirection(e.target.value)}
-                  onFocus={focusOn}
-                  onBlur={focusOff}
-                  placeholder="clean"
+                  onChange={(v) => setVisualDirection(v)}
+                  data-testid="aurora-sv-visual-direction"
                 />
               </Field>
             </div>

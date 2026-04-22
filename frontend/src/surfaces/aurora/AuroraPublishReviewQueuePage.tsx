@@ -21,8 +21,8 @@
  *   - useBulkApprove/Reject mutation'larını kullanır; tek kayıt için
  *     record_ids: [id] geçerek backend tarafındaki state machine'i bypass
  *     etmez (PublishCenter ile aynı kontrat).
- *   - Reddet aksiyonu zorunlu gerekçe ister; iptal/boş gerekçe banner'la
- *     bildirilir.
+ *   - Reddet aksiyonu AuroraDetailDrawer içinde zorunlu gerekçe ister;
+ *     boş gerekçede inline hata gösterir. (window.prompt artık kullanılmıyor.)
  *   - Detay tıklaması /admin/publish/:id legacy detay sayfasına yönlenir;
  *     bu sayfa kendi state machine'ini surface katmanından bağımsız
  *     yönetmeye devam eder.
@@ -50,7 +50,8 @@ import {
   AuroraInspectorRow,
   AuroraButton,
   AuroraStatusChip,
-  AuroraCard,
+  AuroraDetailDrawer,
+  AuroraField,
   AuroraTable,
   type AuroraColumn,
 } from "./primitives";
@@ -128,7 +129,15 @@ export function AuroraPublishReviewQueuePage() {
   const reject = useBulkRejectPublishRecords();
 
   const [pending, setPending] = useState<Set<string>>(new Set());
-  const [banner, setBanner] = useState<string | null>(null);
+
+  // Reject drawer — window.prompt yerine Aurora-native gerekçe formu.
+  // rejectTargetId !== null iken drawer açık; kayıt mutation'ı bitince kapanır.
+  const [rejectTargetId, setRejectTargetId] = useState<string | null>(null);
+  const [rejectReason, setRejectReason] = useState("");
+  const [rejectError, setRejectError] = useState<string | null>(null);
+
+  // Approve-all confirmation drawer — window.confirm yerine Aurora drawer.
+  const [approveAllOpen, setApproveAllOpen] = useState(false);
 
   const markPending = (id: string, on: boolean) =>
     setPending((prev) => {
@@ -156,39 +165,63 @@ export function AuroraPublishReviewQueuePage() {
   };
 
   const onReject = (id: string) => {
-    const reason = window.prompt(
-      "Reddetme nedeni (zorunlu, audit log'a kaydedilecek):",
-      "",
-    );
-    if (reason === null) return;
-    const trimmed = reason.trim();
+    setRejectTargetId(id);
+    setRejectReason("");
+    setRejectError(null);
+  };
+
+  const closeRejectDrawer = () => {
+    setRejectTargetId(null);
+    setRejectReason("");
+    setRejectError(null);
+  };
+
+  const submitReject = () => {
+    if (!rejectTargetId) return;
+    const trimmed = rejectReason.trim();
     if (!trimmed) {
-      setBanner("Reddetme iptal edildi: gerekçe zorunlu.");
+      setRejectError(
+        "Gerekçe zorunlu — audit log'a kaydedilecek.",
+      );
       return;
     }
-    markPending(id, true);
+    const targetId = rejectTargetId;
+    markPending(targetId, true);
     reject.mutate(
-      { record_ids: [id], rejection_reason: trimmed },
+      { record_ids: [targetId], rejection_reason: trimmed },
       {
         onSuccess: () => {
           toast.success("Reddedildi");
-          markPending(id, false);
+          markPending(targetId, false);
+          closeRejectDrawer();
         },
         onError: () => {
           toast.error("Reddetme başarısız");
-          markPending(id, false);
+          markPending(targetId, false);
+          setRejectError(
+            "Sunucu hatası — yeniden denemek için formu açık bırakabilirsiniz.",
+          );
         },
       },
     );
   };
 
-  const onApproveAll = () => {
+  const rejectTargetRecord = useMemo(
+    () =>
+      rejectTargetId
+        ? records.find((r) => r.id === rejectTargetId) ?? null
+        : null,
+    [rejectTargetId, records],
+  );
+
+  const openApproveAll = () => {
     if (records.length === 0) return;
-    if (
-      !window.confirm(
-        `${records.length} kayıt onaylanacak. Devam edilsin mi?`,
-      )
-    ) {
+    setApproveAllOpen(true);
+  };
+
+  const confirmApproveAll = () => {
+    if (records.length === 0) {
+      setApproveAllOpen(false);
       return;
     }
     approve.mutate(
@@ -200,8 +233,12 @@ export function AuroraPublishReviewQueuePage() {
               resp.failed > 0 ? ` · ${resp.failed} başarısız` : ""
             }`,
           );
+          setApproveAllOpen(false);
         },
-        onError: () => toast.error("Toplu onaylama başarısız"),
+        onError: () => {
+          toast.error("Toplu onaylama başarısız");
+          setApproveAllOpen(false);
+        },
       },
     );
   };
@@ -412,7 +449,7 @@ export function AuroraPublishReviewQueuePage() {
           size="sm"
           style={{ width: "100%", marginBottom: 6 }}
           disabled={records.length === 0 || approve.isPending}
-          onClick={onApproveAll}
+          onClick={openApproveAll}
         >
           Tümünü onayla
         </AuroraButton>
@@ -450,7 +487,7 @@ export function AuroraPublishReviewQueuePage() {
             variant="primary"
             size="sm"
             disabled={records.length === 0 || approve.isPending}
-            onClick={onApproveAll}
+            onClick={openApproveAll}
             data-testid="aurora-review-approve-all"
           >
             <Icon name="check" size={12} /> Tümünü onayla
@@ -458,37 +495,6 @@ export function AuroraPublishReviewQueuePage() {
         }
         data-testid="aurora-publish-review-queue"
       >
-        {banner && (
-          <AuroraCard
-            pad="tight"
-            className="aurora-review-banner"
-            style={{
-              marginBottom: 12,
-              borderColor: "var(--state-warning-fg)",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                fontSize: 12,
-                color: "var(--text-secondary)",
-              }}
-            >
-              <Icon name="alert-triangle" size={13} />
-              <span style={{ flex: 1 }}>{banner}</span>
-              <AuroraButton
-                variant="ghost"
-                size="sm"
-                onClick={() => setBanner(null)}
-              >
-                Kapat
-              </AuroraButton>
-            </div>
-          </AuroraCard>
-        )}
-
         <AuroraTable<PublishRecordSummary>
           columns={columns}
           rows={records}
@@ -523,6 +529,170 @@ export function AuroraPublishReviewQueuePage() {
       </AuroraPageShell>
 
       <div className="aurora-inspector-slot">{inspector}</div>
+
+      <AuroraDetailDrawer
+        item={
+          rejectTargetId
+            ? {
+                breadcrumb: "Review · Reddet",
+                title: (
+                  <span>
+                    Kaydı reddet{" "}
+                    {rejectTargetRecord && (
+                      <span
+                        style={{
+                          fontFamily: "var(--font-mono)",
+                          fontSize: 11,
+                          color: "var(--text-muted)",
+                          marginLeft: 6,
+                        }}
+                      >
+                        {rowTitle(rejectTargetRecord)}
+                      </span>
+                    )}
+                  </span>
+                ),
+                children: (
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 12,
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 12,
+                        color: "var(--text-secondary)",
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      Reddetme gerekçesi <strong>zorunludur</strong> ve audit
+                      log'a kaydedilir. Kayıt <code>pending_review → rejected</code>{" "}
+                      geçişi yapar.
+                    </div>
+                    <AuroraField label="Gerekçe" htmlFor="aurora-reject-reason">
+                      <textarea
+                        id="aurora-reject-reason"
+                        value={rejectReason}
+                        onChange={(e) => {
+                          setRejectReason(e.target.value);
+                          if (rejectError) setRejectError(null);
+                        }}
+                        placeholder="Ör: hedef hedef kitleye uygun değil, son kontrol başarısız…"
+                        rows={5}
+                        autoFocus
+                        data-testid="aurora-review-reject-reason"
+                        style={{
+                          width: "100%",
+                          padding: "8px 12px",
+                          background: "var(--bg-surface)",
+                          border: "1px solid var(--border-default)",
+                          borderRadius: 8,
+                          color: "var(--text-primary)",
+                          fontSize: 13,
+                          fontFamily: "inherit",
+                          resize: "vertical",
+                          minHeight: 96,
+                          lineHeight: 1.5,
+                          boxSizing: "border-box",
+                        }}
+                      />
+                    </AuroraField>
+                    {rejectError && (
+                      <div
+                        role="alert"
+                        style={{
+                          fontSize: 12,
+                          color: "var(--state-danger-fg)",
+                          background: "var(--state-danger-bg)",
+                          border: "1px solid var(--state-danger-border)",
+                          borderRadius: 6,
+                          padding: "8px 10px",
+                        }}
+                      >
+                        {rejectError}
+                      </div>
+                    )}
+                  </div>
+                ),
+                actions: [
+                  {
+                    label: "Vazgeç",
+                    variant: "ghost",
+                    onClick: closeRejectDrawer,
+                  },
+                  { spacer: true },
+                  {
+                    label: reject.isPending ? "Kaydediliyor…" : "Reddet",
+                    variant: "danger",
+                    onClick: submitReject,
+                  },
+                ],
+              }
+            : null
+        }
+        onClose={closeRejectDrawer}
+      />
+
+      <AuroraDetailDrawer
+        item={
+          approveAllOpen
+            ? {
+                breadcrumb: "Review · Toplu onay",
+                title: "Tüm kayıtları onayla",
+                children: (
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 12,
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 13,
+                        color: "var(--text-primary)",
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      <strong>{records.length}</strong> kayıt{" "}
+                      <code>pending_review → approved</code> geçişi yapacak.
+                      Onaylanan kayıtlar zamanlama veya yayın akışına
+                      ilerleyecektir.
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 12,
+                        color: "var(--text-muted)",
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      Bu işlem geri alınamaz. Backend başarısız olan kayıtları
+                      ayrı raporlayacak.
+                    </div>
+                  </div>
+                ),
+                actions: [
+                  {
+                    label: "Vazgeç",
+                    variant: "ghost",
+                    onClick: () => setApproveAllOpen(false),
+                  },
+                  { spacer: true },
+                  {
+                    label: approve.isPending
+                      ? "Onaylanıyor…"
+                      : `Evet, ${records.length} kaydı onayla`,
+                    variant: "primary",
+                    onClick: confirmApproveAll,
+                  },
+                ],
+              }
+            : null
+        }
+        onClose={() => setApproveAllOpen(false)}
+      />
     </div>
   );
 }

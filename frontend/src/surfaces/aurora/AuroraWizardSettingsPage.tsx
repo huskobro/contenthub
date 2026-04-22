@@ -23,6 +23,7 @@ import {
   AuroraStatusChip,
   AuroraCard,
   AuroraSection,
+  AuroraSegmented,
 } from "./primitives";
 import { useWizardConfigsList } from "../../hooks/useWizardConfig";
 import {
@@ -275,26 +276,23 @@ function WizardCard({ config, entryMode, entrySettingKey }: WizardCardProps) {
                   : "Kullanıcı adım adım wizard akışına yönlendirilir."}
               </div>
             </div>
-            <div style={{ display: "inline-flex", gap: 6 }}>
-              <AuroraButton
-                size="sm"
-                variant={entryMode === "wizard" ? "primary" : "ghost"}
-                onClick={() => handleEntryChange("wizard")}
-                disabled={updateEntry.isPending}
-                data-testid={`aurora-entry-wizard-${config.wizard_type}`}
-              >
-                {entryModeLabel("wizard")}
-              </AuroraButton>
-              <AuroraButton
-                size="sm"
-                variant={entryMode === "form" ? "primary" : "ghost"}
-                onClick={() => handleEntryChange("form")}
-                disabled={updateEntry.isPending}
-                data-testid={`aurora-entry-form-${config.wizard_type}`}
-              >
-                {entryModeLabel("form")}
-              </AuroraButton>
-            </div>
+            <AuroraSegmented
+              options={[
+                {
+                  value: "wizard",
+                  label: entryModeLabel("wizard"),
+                  hint: "Kullanıcı adım adım rehberli akışa yönlendirilir",
+                },
+                {
+                  value: "form",
+                  label: entryModeLabel("form"),
+                  hint: "Kullanıcı tek sayfa forma yönlendirilir — deneyimli kullanıcı için",
+                },
+              ]}
+              value={(entryMode as string) ?? "wizard"}
+              onChange={(v) => handleEntryChange(v)}
+              data-testid={`aurora-entry-mode-${config.wizard_type}`}
+            />
           </div>
         )}
 

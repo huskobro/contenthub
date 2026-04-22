@@ -81,7 +81,7 @@ export function AuroraContentLibraryPage() {
   const [offset, setOffset] = useState(0);
   const [cloningId, setCloningId] = useState<string | null>(null);
 
-  const { data, isLoading, isError } = useContentLibrary({
+  const { data, isLoading, isError, refetch } = useContentLibrary({
     content_type: typeFilter || undefined,
     status: statusFilter || undefined,
     search: search || undefined,
@@ -299,7 +299,7 @@ export function AuroraContentLibraryPage() {
           <div>
             <h1>İçerik Kütüphanesi</h1>
             <div className="sub">
-              {isLoading ? "Yükleniyor…" : `${total} kayıt · birleşik liste`}
+              {isLoading ? "İçerik kütüphanesi yükleniyor…" : `${total} kayıt · birleşik liste`}
             </div>
           </div>
           <div className="hstack" style={{ gap: 8 }}>
@@ -377,12 +377,24 @@ export function AuroraContentLibraryPage() {
             className="card card-pad"
             style={{
               textAlign: "center",
-              color: "var(--state-danger-fg)",
-              fontFamily: "var(--font-mono)",
-              fontSize: 12,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 12,
             }}
           >
-            İçerik kayıtları yüklenirken hata oluştu.
+            <span
+              style={{
+                color: "var(--state-danger-fg)",
+                fontFamily: "var(--font-mono)",
+                fontSize: 12,
+              }}
+            >
+              İçerik kayıtları yüklenirken hata oluştu.
+            </span>
+            <AuroraButton size="sm" onClick={() => refetch()}>
+              Tekrar dene
+            </AuroraButton>
           </div>
         ) : (
           <AuroraTable<ContentLibraryItem>

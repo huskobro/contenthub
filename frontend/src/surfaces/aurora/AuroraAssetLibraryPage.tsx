@@ -39,6 +39,7 @@ import {
   AuroraInspector,
   AuroraInspectorSection,
   AuroraInspectorRow,
+  AuroraConfirmDialog,
 } from "./primitives";
 import { Icon } from "./icons";
 
@@ -152,10 +153,12 @@ export function AuroraAssetLibraryPage() {
   const [uploading, setUploading] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [revealData, setRevealData] = useState<AssetRevealResponse | null>(null);
+  // Destructive-intent confirm (replaces window.confirm).
+  const [pendingDelete, setPendingDelete] = useState<AssetItem | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const { data, isLoading, isError, error } = useAssetList({
+  const { data, isLoading, isError, error, refetch } = useAssetList({
     asset_type: typeFilter || undefined,
     search: search || undefined,
     limit: PAGE_SIZE,
@@ -225,23 +228,26 @@ export function AuroraAssetLibraryPage() {
     }
   }, [queryClient, toast]);
 
-  const handleDelete = useCallback(
-    async (item: AssetItem) => {
-      if (!window.confirm(`"${item.name}" silinsin mi?`)) return;
-      setDeletingId(item.id);
-      try {
-        const result = await deleteAsset(item.id);
-        queryClient.invalidateQueries({ queryKey: ["assets"] });
-        toast.success(result.message);
-      } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : "Silme başarısız oldu.";
-        toast.error(msg);
-      } finally {
-        setDeletingId(null);
-      }
-    },
-    [queryClient, toast],
-  );
+  const handleDelete = useCallback((item: AssetItem) => {
+    setPendingDelete(item);
+  }, []);
+
+  const confirmDelete = useCallback(async () => {
+    const item = pendingDelete;
+    if (!item) return;
+    setDeletingId(item.id);
+    try {
+      const result = await deleteAsset(item.id);
+      queryClient.invalidateQueries({ queryKey: ["assets"] });
+      toast.success(result.message);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Silme başarısız oldu.";
+      toast.error(msg);
+    } finally {
+      setDeletingId(null);
+      setPendingDelete(null);
+    }
+  }, [pendingDelete, queryClient, toast]);
 
   const handleReveal = useCallback(
     async (item: AssetItem) => {
@@ -464,7 +470,7 @@ export function AuroraAssetLibraryPage() {
             className="card card-pad"
             style={{ textAlign: "center", color: "var(--text-muted)" }}
           >
-            Yükleniyor…
+            Varlık kütüphanesi yükleniyor…
           </div>
         )}
 
@@ -473,12 +479,25 @@ export function AuroraAssetLibraryPage() {
             className="card card-pad"
             style={{
               textAlign: "center",
-              color: "var(--state-danger-fg)",
-              fontFamily: "var(--font-mono)",
-              fontSize: 12,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 12,
             }}
           >
-            Hata: {error instanceof Error ? error.message : "Bilinmeyen hata"}
+            <span
+              style={{
+                color: "var(--state-danger-fg)",
+                fontFamily: "var(--font-mono)",
+                fontSize: 12,
+              }}
+            >
+              Varlıklar yüklenemedi:{" "}
+              {error instanceof Error ? error.message : "Bilinmeyen hata"}
+            </span>
+            <AuroraButton size="sm" onClick={() => refetch()}>
+              Tekrar dene
+            </AuroraButton>
           </div>
         )}
 
@@ -662,6 +681,25 @@ export function AuroraAssetLibraryPage() {
         )}
       </div>
       <aside className="aurora-inspector-slot">{inspector}</aside>
+
+      <AuroraConfirmDialog
+        open={pendingDelete !== null}
+        title="Varlık silinsin mi?"
+        description={
+          pendingDelete
+            ? `"${pendingDelete.name}" varlığı kalıcı olarak silinecek. Dosya disk üzerinden de kaldırılır.`
+            : "Bu işlem geri alınamaz."
+        }
+        tone="danger"
+        confirmLabel="Sil"
+        cancelLabel="Vazgeç"
+        busy={deletingId !== null}
+        onCancel={() => setPendingDelete(null)}
+        onConfirm={() => {
+          void confirmDelete();
+        }}
+        data-testid="aurora-asset-library-confirm-delete"
+      />
     </div>
   );
 }

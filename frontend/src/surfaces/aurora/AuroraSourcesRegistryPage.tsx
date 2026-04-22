@@ -99,7 +99,7 @@ export function AuroraSourcesRegistryPage() {
   const toast = useToast();
   const queryClient = useQueryClient();
 
-  const { data: sources, isLoading, isError, error } = useSourcesList();
+  const { data: sources, isLoading, isError, error, refetch } = useSourcesList();
   const list = sources ?? [];
 
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -588,7 +588,7 @@ export function AuroraSourcesRegistryPage() {
             className="card card-pad"
             style={{ textAlign: "center", color: "var(--text-muted)" }}
           >
-            Yükleniyor…
+            Kaynaklar yükleniyor…
           </div>
         )}
 
@@ -597,12 +597,25 @@ export function AuroraSourcesRegistryPage() {
             className="card card-pad"
             style={{
               textAlign: "center",
-              color: "var(--state-danger-fg)",
-              fontFamily: "var(--font-mono)",
-              fontSize: 12,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 12,
             }}
           >
-            Hata: {error instanceof Error ? error.message : "Bilinmeyen hata"}
+            <span
+              style={{
+                color: "var(--state-danger-fg)",
+                fontFamily: "var(--font-mono)",
+                fontSize: 12,
+              }}
+            >
+              Kaynaklar yüklenemedi:{" "}
+              {error instanceof Error ? error.message : "Bilinmeyen hata"}
+            </span>
+            <AuroraButton size="sm" onClick={() => refetch()}>
+              Tekrar dene
+            </AuroraButton>
           </div>
         )}
 

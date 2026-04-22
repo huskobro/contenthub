@@ -117,6 +117,13 @@
   --layout-page-padding-y: 1.25rem;
   --layout-gutter: 1rem;
 
+  /* Cockpit chrome heights — authoritative values used by the grid in
+     `.cockpit` and by any primitive (drawer, veil) that needs to bound
+     itself to the body area between ctxbar (top) and statusbar (bottom).
+     Changing these values updates the grid and the drawer shell in lock-step. */
+  --cockpit-ctxbar-height: 48px;
+  --cockpit-statusbar-height: 28px;
+
   /* Z-index ladder — tek otorite sırası; tüm Aurora katmanları bu değerlerden okur.
      Ara değerleri kullanma (z-index: 53 vs.) — sıralama bu token'lara kilitli. */
   --z-base: 0;

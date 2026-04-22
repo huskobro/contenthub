@@ -14,6 +14,7 @@ import {
   AuroraInspector,
   AuroraInspectorSection,
   AuroraInspectorRow,
+  AuroraConfirmDialog,
 } from "./primitives";
 import { Icon } from "./icons";
 
@@ -49,6 +50,7 @@ export function AuroraUserPostsPage() {
   }, [channels]);
 
   const [filter, setFilter] = useState<string | undefined>(undefined);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const postsQ = usePosts({ status: filter, limit: 50 });
   const statsQ = usePostStats();
   const submitM = useSubmitPost();
@@ -56,6 +58,9 @@ export function AuroraUserPostsPage() {
 
   const items = postsQ.data ?? [];
   const stats = statsQ.data;
+  const confirmTarget = confirmDeleteId
+    ? items.find((p) => p.id === confirmDeleteId) ?? null
+    : null;
 
   const inspector = (
     <AuroraInspector title="Gönderiler">
@@ -199,9 +204,7 @@ export function AuroraUserPostsPage() {
                         variant="ghost"
                         size="sm"
                         disabled={deleteM.isPending}
-                        onClick={() => {
-                          if (window.confirm("Bu gönderi silinsin mi?")) deleteM.mutate(p.id);
-                        }}
+                        onClick={() => setConfirmDeleteId(p.id)}
                       >
                         Sil
                       </AuroraButton>
@@ -230,6 +233,28 @@ export function AuroraUserPostsPage() {
         )}
       </div>
       <aside className="aurora-inspector-slot">{inspector}</aside>
+      <AuroraConfirmDialog
+        open={confirmDeleteId !== null}
+        title="Gönderi silinsin mi?"
+        description={
+          confirmTarget
+            ? `"${confirmTarget.title ?? confirmTarget.id}" gönderisi silinecek. Bu işlem geri alınamaz.`
+            : "Bu işlem geri alınamaz."
+        }
+        tone="danger"
+        confirmLabel="Sil"
+        cancelLabel="Vazgeç"
+        busy={deleteM.isPending}
+        onCancel={() => setConfirmDeleteId(null)}
+        onConfirm={() => {
+          if (confirmDeleteId) {
+            deleteM.mutate(confirmDeleteId, {
+              onSettled: () => setConfirmDeleteId(null),
+            });
+          }
+        }}
+        data-testid="aurora-user-posts-confirm-delete"
+      />
     </div>
   );
 }

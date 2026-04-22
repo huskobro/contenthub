@@ -28,6 +28,7 @@ import {
   AuroraInspector,
   AuroraInspectorSection,
   AuroraInspectorRow,
+  AuroraButton,
 } from "./primitives";
 
 // ---------------------------------------------------------------------------
@@ -100,7 +101,7 @@ export function AuroraAutomationPoliciesPage() {
         ? scope.ownerUserId
         : undefined;
 
-  const { data, isLoading, isError, error } = useQuery({
+  const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: [
       "automation-policies",
       {
@@ -193,7 +194,7 @@ export function AuroraAutomationPoliciesPage() {
             className="card card-pad"
             style={{ textAlign: "center", color: "var(--text-muted)" }}
           >
-            Yükleniyor…
+            Otomasyon politikaları yükleniyor…
           </div>
         )}
 
@@ -202,12 +203,25 @@ export function AuroraAutomationPoliciesPage() {
             className="card card-pad"
             style={{
               textAlign: "center",
-              color: "var(--state-danger-fg)",
-              fontFamily: "var(--font-mono)",
-              fontSize: 12,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 12,
             }}
           >
-            Hata: {error instanceof Error ? error.message : "Bilinmeyen hata"}
+            <span
+              style={{
+                color: "var(--state-danger-fg)",
+                fontFamily: "var(--font-mono)",
+                fontSize: 12,
+              }}
+            >
+              Politikalar yüklenemedi:{" "}
+              {error instanceof Error ? error.message : "Bilinmeyen hata"}
+            </span>
+            <AuroraButton size="sm" onClick={() => refetch()}>
+              Tekrar dene
+            </AuroraButton>
           </div>
         )}
 

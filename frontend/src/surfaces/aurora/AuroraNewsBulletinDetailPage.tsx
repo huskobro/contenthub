@@ -199,7 +199,7 @@ export function AuroraNewsBulletinDetailPage() {
             className="card card-pad"
             style={{ textAlign: "center", color: "var(--text-muted)" }}
           >
-            Yükleniyor…
+            Bülten yükleniyor…
           </div>
         </div>
       </div>
@@ -214,14 +214,28 @@ export function AuroraNewsBulletinDetailPage() {
             className="card card-pad"
             style={{
               textAlign: "center",
-              color: "var(--state-danger-fg)",
-              fontFamily: "var(--font-mono)",
-              fontSize: 12,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 12,
             }}
           >
-            {detailQ.isError
-              ? `Hata: ${detailQ.error instanceof Error ? detailQ.error.message : "Bilinmeyen hata"}`
-              : "Bülten bulunamadı."}
+            <span
+              style={{
+                color: "var(--state-danger-fg)",
+                fontFamily: "var(--font-mono)",
+                fontSize: 12,
+              }}
+            >
+              {detailQ.isError
+                ? `Bülten yüklenemedi: ${detailQ.error instanceof Error ? detailQ.error.message : "Bilinmeyen hata"}`
+                : "Bülten bulunamadı. Silinmiş veya arşive taşınmış olabilir."}
+            </span>
+            {detailQ.isError && (
+              <AuroraButton size="sm" onClick={() => detailQ.refetch()}>
+                Tekrar dene
+              </AuroraButton>
+            )}
           </div>
         </div>
       </div>

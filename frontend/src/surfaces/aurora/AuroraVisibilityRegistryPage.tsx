@@ -14,16 +14,33 @@
  * Veri kaynağı: useVisibilityRulesList() — gerçek VisibilityRuleResponse[].
  * Hiçbir legacy code değiştirilmez; surface override sistemi tarafından
  * `admin.visibility.registry` slot'una kayıtlandığında otomatik devreye girer.
+ *
+ * Aurora Final Polish: "Kural ekle" butonu artık legacy /admin/visibility
+ * yönlendirmesi yapmıyor — AuroraDetailDrawer içinde katalog-temelli Aurora
+ * formu açıyor. (Bkz. AuroraVisibilityRuleCreateForm aşağıda.)
  */
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useVisibilityRulesList } from "../../hooks/useVisibilityRulesList";
-import type { VisibilityRuleResponse } from "../../api/visibilityApi";
+import {
+  createVisibilityRule,
+  type VisibilityRuleCreate,
+  type VisibilityRuleResponse,
+} from "../../api/visibilityApi";
+import { useToast } from "../../hooks/useToast";
+import {
+  filterTargetCatalog,
+  flattenTargetCatalog,
+  type VisibilityTargetOption,
+} from "../../components/visibility/visibilityTargetCatalog";
 import {
   AuroraButton,
+  AuroraDetailDrawer,
+  AuroraField,
   AuroraInspector,
   AuroraInspectorSection,
   AuroraInspectorRow,
+  AuroraSegmented,
 } from "./primitives";
 import { Icon } from "./icons";
 
@@ -41,6 +58,26 @@ const ACTION_TONE: Record<ActionKind, { label: string; color: string }> = {
   write: { label: "write", color: "var(--state-warning-fg)" },
   hidden: { label: "hidden", color: "var(--state-danger-fg)" },
 };
+
+const RULE_TYPE_OPTIONS = [
+  { value: "page", label: "Sayfa" },
+  { value: "panel", label: "Panel" },
+  { value: "widget", label: "Widget" },
+  { value: "field", label: "Alan" },
+  { value: "wizard_step", label: "Wizard" },
+] as const;
+
+const MODULE_OPTIONS = [
+  { value: "", label: "Hepsi" },
+  { value: "standard_video", label: "Standart Video" },
+  { value: "news_bulletin", label: "Haber Bülteni" },
+] as const;
+
+const ROLE_OPTIONS = [
+  { value: "", label: "Hepsi" },
+  { value: "admin", label: "Admin" },
+  { value: "user", label: "Kullanıcı" },
+] as const;
 
 /**
  * Test fixture'ları (target_key `test:` ile başlayan) varsayılan olarak
@@ -82,12 +119,680 @@ function timeAgo(iso: string | null | undefined): string {
   return `${d}g`;
 }
 
+// ---------------------------------------------------------------------------
+// Aurora-native "Yeni kural" formu
+//
+// Legacy Tailwind form (VisibilityRuleCreateForm) ekranda hiçbir zaman mount
+// edilmiyordu; bu bileşen onun Aurora karşılığı. Token-temelli, catalog-first,
+// manuel anahtar fallback destekli.
+// ---------------------------------------------------------------------------
+
+interface RuleFormState {
+  rule_type: string;
+  target_key: string;
+  module_scope: string;
+  role_scope: string;
+  visible: boolean;
+  read_only: boolean;
+  wizard_visible: boolean;
+  priority: number;
+  notes: string;
+}
+
+const INITIAL_FORM: RuleFormState = {
+  rule_type: "page",
+  target_key: "",
+  module_scope: "",
+  role_scope: "",
+  visible: true,
+  read_only: false,
+  wizard_visible: false,
+  priority: 100,
+  notes: "",
+};
+
+const INPUT_STYLE: React.CSSProperties = {
+  width: "100%",
+  height: 34,
+  padding: "0 12px",
+  background: "var(--bg-surface)",
+  border: "1px solid var(--border-default)",
+  borderRadius: 8,
+  color: "var(--text-primary)",
+  fontSize: 13,
+  fontFamily: "inherit",
+  outline: "none",
+  boxSizing: "border-box",
+};
+
+const MONO_INPUT_STYLE: React.CSSProperties = {
+  ...INPUT_STYLE,
+  fontFamily: "var(--font-mono)",
+};
+
+const TEXTAREA_STYLE: React.CSSProperties = {
+  ...INPUT_STYLE,
+  height: "auto",
+  padding: "8px 12px",
+  resize: "vertical",
+  minHeight: 72,
+  lineHeight: 1.5,
+};
+
+interface AuroraVisibilityRuleCreateFormProps {
+  onSuccess: (rule: VisibilityRuleResponse) => void;
+  onCancel: () => void;
+}
+
+function AuroraVisibilityRuleCreateForm({
+  onSuccess,
+  onCancel,
+}: AuroraVisibilityRuleCreateFormProps) {
+  const qc = useQueryClient();
+  const toast = useToast();
+
+  const [form, setForm] = useState<RuleFormState>(INITIAL_FORM);
+  const [manualMode, setManualMode] = useState(false);
+  const [targetQuery, setTargetQuery] = useState("");
+  const [validationError, setValidationError] = useState<string | null>(null);
+
+  const filteredGroups = useMemo(
+    () => filterTargetCatalog(targetQuery),
+    [targetQuery],
+  );
+  const selectedCatalogEntry = useMemo(() => {
+    if (!form.target_key) return null;
+    return (
+      flattenTargetCatalog().find((o) => o.key === form.target_key) ?? null
+    );
+  }, [form.target_key]);
+
+  function selectCatalogOption(opt: VisibilityTargetOption) {
+    setForm((prev) => ({
+      ...prev,
+      target_key: opt.key,
+      rule_type: opt.rule_type,
+    }));
+    setManualMode(false);
+    setValidationError(null);
+  }
+
+  const mut = useMutation({
+    mutationFn: (payload: VisibilityRuleCreate) => createVisibilityRule(payload),
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: ["visibility-rules"] });
+      toast.success(`Kural eklendi: ${data.target_key}`);
+      onSuccess(data);
+    },
+    onError: (err: unknown) => {
+      const message =
+        err instanceof Error ? err.message : "Bilinmeyen hata";
+      toast.error(`Kural eklenemedi: ${message}`);
+    },
+  });
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const trimmedKey = form.target_key.trim();
+    if (!trimmedKey) {
+      setValidationError(
+        "Hedef anahtar zorunlu. Katalogdan seçin veya manuel girin.",
+      );
+      return;
+    }
+    setValidationError(null);
+    mut.mutate({
+      rule_type: form.rule_type,
+      target_key: trimmedKey,
+      module_scope: form.module_scope || null,
+      role_scope: form.role_scope || null,
+      visible: form.visible,
+      read_only: form.read_only,
+      wizard_visible: form.wizard_visible,
+      priority: form.priority,
+      notes: form.notes.trim() || null,
+      status: "active",
+    });
+  }
+
+  return (
+    <form
+      onSubmit={handleSubmit}
+      noValidate
+      // Drawer-body kendisi padding:18px 20px + gap:18px uygulayan bir flex
+      // column container'ı. Form'un kendi gap'i onunla ters yönde toplandığında
+      // ilk alan başlık + toggle satırı drawer-head'in altına gömülüyor gibi
+      // görünüyordu. Form gap'ini drawer-body gap ile aynı (18px) tutarak
+      // spacing hiyerarşisini tek kaynağa indiriyoruz; ilk bölüm de
+      // AuroraField paternine uyan bir header satırı ile containerized.
+      style={{ display: "flex", flexDirection: "column", gap: 18 }}
+      data-testid="aurora-visibility-rule-form"
+    >
+      {/* Hedef seçici başlık + manuel toggle — AuroraField-benzeri header
+          yapısı: küçük label + secondary aksiyon. Uncontained flex row yerine
+          label satırı olarak açıkça bölümlenmiş. */}
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 8,
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 8,
+            minHeight: 18,
+          }}
+        >
+          <label
+            style={{
+              fontSize: 11,
+              fontWeight: 600,
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              color: "var(--text-muted)",
+              margin: 0,
+            }}
+          >
+            Hedef anahtar{" "}
+            <span style={{ color: "var(--state-danger-fg)" }}>*</span>
+          </label>
+          <button
+            type="button"
+            onClick={() => setManualMode((m) => !m)}
+            style={{
+              fontSize: 11,
+              fontWeight: 500,
+              color: "var(--accent-primary-hover)",
+              background: "transparent",
+              border: "none",
+              cursor: "pointer",
+              padding: "2px 6px",
+              borderRadius: 4,
+            }}
+            data-testid="aurora-visibility-manual-toggle"
+          >
+            {manualMode ? "← Kataloğa dön" : "Manuel anahtar gir"}
+          </button>
+        </div>
+
+      {manualMode ? (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <input
+            type="text"
+            value={form.target_key}
+            onChange={(e) =>
+              setForm((prev) => ({ ...prev, target_key: e.target.value }))
+            }
+            placeholder="örn: panel:jobs · field:subtitle_style · page:analytics"
+            style={MONO_INPUT_STYLE}
+            data-testid="aurora-visibility-manual-input"
+            required
+          />
+          <div
+            style={{
+              fontSize: 11,
+              color: "var(--text-muted)",
+              lineHeight: 1.5,
+            }}
+          >
+            Format: <code>tip:alt_anahtar</code>. Katalogda olmayan yeni
+            anahtarlar için kullanın; kural tipini aşağıdan seçin.
+          </div>
+          <AuroraField label="Kural tipi">
+            <AuroraSegmented
+              options={RULE_TYPE_OPTIONS.map((o) => ({
+                value: o.value,
+                label: o.label,
+              }))}
+              value={form.rule_type}
+              onChange={(v) =>
+                setForm((prev) => ({ ...prev, rule_type: v }))
+              }
+              data-testid="aurora-visibility-manual-rule-type"
+            />
+          </AuroraField>
+        </div>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <input
+            type="search"
+            value={targetQuery}
+            onChange={(e) => setTargetQuery(e.target.value)}
+            placeholder="Ara: jobs · analytics · provider trace…"
+            style={INPUT_STYLE}
+            data-testid="aurora-visibility-target-search"
+          />
+
+          {selectedCatalogEntry && (
+            <div
+              data-testid="aurora-visibility-target-selected"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                padding: "8px 10px",
+                borderRadius: 8,
+                border: "1px solid var(--state-info-border)",
+                background: "var(--state-info-bg)",
+                fontSize: 12,
+              }}
+            >
+              <span
+                style={{
+                  fontSize: 10,
+                  fontWeight: 700,
+                  letterSpacing: "0.08em",
+                  textTransform: "uppercase",
+                  color: "var(--state-info-fg)",
+                }}
+              >
+                seçili
+              </span>
+              <code
+                style={{
+                  fontFamily: "var(--font-mono)",
+                  fontSize: 12,
+                  color: "var(--text-primary)",
+                }}
+              >
+                {selectedCatalogEntry.key}
+              </code>
+              <span
+                style={{
+                  flex: 1,
+                  color: "var(--text-secondary)",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {selectedCatalogEntry.label} — {selectedCatalogEntry.description}
+              </span>
+            </div>
+          )}
+
+          <div
+            data-testid="aurora-visibility-target-catalog"
+            style={{
+              maxHeight: 320,
+              overflowY: "auto",
+              border: "1px solid var(--border-default)",
+              borderRadius: 8,
+              background: "var(--bg-surface)",
+            }}
+          >
+            {filteredGroups.length === 0 ? (
+              <div
+                style={{
+                  padding: "18px 12px",
+                  textAlign: "center",
+                  fontSize: 11,
+                  color: "var(--text-muted)",
+                }}
+              >
+                Eşleşen anahtar yok. <em>Manuel anahtar gir</em> seçeneğini
+                kullanabilirsiniz.
+              </div>
+            ) : (
+              filteredGroups.map((group) => (
+                <div
+                  key={group.id}
+                  data-testid={`aurora-visibility-group-${group.id}`}
+                  style={{ borderBottom: "1px solid var(--border-subtle)" }}
+                >
+                  <div
+                    style={{
+                      position: "sticky",
+                      top: 0,
+                      padding: "6px 10px",
+                      background: "var(--bg-inset)",
+                      borderBottom: "1px solid var(--border-subtle)",
+                      zIndex: 1,
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 10,
+                        fontWeight: 700,
+                        letterSpacing: "0.12em",
+                        textTransform: "uppercase",
+                        color: "var(--text-primary)",
+                      }}
+                    >
+                      {group.title}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 10,
+                        color: "var(--text-muted)",
+                        lineHeight: 1.4,
+                      }}
+                    >
+                      {group.summary}
+                    </div>
+                  </div>
+                  <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
+                    {group.options.map((opt) => {
+                      const isSelected = form.target_key === opt.key;
+                      return (
+                        <li key={opt.key}>
+                          <button
+                            type="button"
+                            onClick={() => selectCatalogOption(opt)}
+                            style={{
+                              width: "100%",
+                              textAlign: "left",
+                              padding: "8px 10px",
+                              border: "none",
+                              borderBottom: "1px solid var(--border-subtle)",
+                              background: isSelected
+                                ? "var(--state-info-bg)"
+                                : "transparent",
+                              cursor: "pointer",
+                              display: "flex",
+                              flexDirection: "column",
+                              gap: 3,
+                            }}
+                            data-testid={`aurora-visibility-option-${opt.key}`}
+                          >
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 6,
+                              }}
+                            >
+                              <code
+                                style={{
+                                  fontFamily: "var(--font-mono)",
+                                  fontSize: 12,
+                                  fontWeight: 600,
+                                  color: "var(--text-primary)",
+                                }}
+                              >
+                                {opt.key}
+                              </code>
+                              <span
+                                style={{
+                                  fontFamily: "var(--font-mono)",
+                                  fontSize: 9,
+                                  textTransform: "uppercase",
+                                  color: "var(--text-muted)",
+                                  border: "1px solid var(--border-subtle)",
+                                  borderRadius: 4,
+                                  padding: "0 4px",
+                                }}
+                              >
+                                {opt.rule_type}
+                              </span>
+                              {isSelected && (
+                                <span
+                                  style={{
+                                    marginLeft: "auto",
+                                    fontSize: 10,
+                                    fontWeight: 700,
+                                    textTransform: "uppercase",
+                                    color: "var(--state-info-fg)",
+                                  }}
+                                >
+                                  seçili
+                                </span>
+                              )}
+                            </div>
+                            <div
+                              style={{
+                                fontSize: 12,
+                                color: "var(--text-secondary)",
+                                lineHeight: 1.4,
+                              }}
+                            >
+                              <span
+                                style={{
+                                  fontWeight: 600,
+                                  color: "var(--text-primary)",
+                                }}
+                              >
+                                {opt.label}
+                              </span>{" "}
+                              — {opt.description}
+                            </div>
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+      </div>
+
+      {/* Scope alanları */}
+      <AuroraField label="Modül kapsamı">
+        <AuroraSegmented
+          options={MODULE_OPTIONS.map((o) => ({
+            value: o.value || "__all__",
+            label: o.label,
+          }))}
+          value={form.module_scope || "__all__"}
+          onChange={(v) =>
+            setForm((prev) => ({
+              ...prev,
+              module_scope: v === "__all__" ? "" : v,
+            }))
+          }
+          data-testid="aurora-visibility-module-scope"
+        />
+      </AuroraField>
+
+      <AuroraField label="Rol kapsamı">
+        <AuroraSegmented
+          options={ROLE_OPTIONS.map((o) => ({
+            value: o.value || "__all__",
+            label: o.label,
+          }))}
+          value={form.role_scope || "__all__"}
+          onChange={(v) =>
+            setForm((prev) => ({
+              ...prev,
+              role_scope: v === "__all__" ? "" : v,
+            }))
+          }
+          data-testid="aurora-visibility-role-scope"
+        />
+      </AuroraField>
+
+      {/* Davranış (görünür / salt-okunur / wizard) */}
+      <div
+        style={{
+          border: "1px solid var(--border-subtle)",
+          borderRadius: 8,
+          padding: 12,
+          background: "var(--bg-inset)",
+          display: "flex",
+          flexDirection: "column",
+          gap: 8,
+        }}
+      >
+        <div
+          style={{
+            fontSize: 10,
+            fontWeight: 600,
+            letterSpacing: "0.12em",
+            textTransform: "uppercase",
+            color: "var(--text-muted)",
+          }}
+        >
+          Davranış
+        </div>
+        <label
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            cursor: "pointer",
+            fontSize: 13,
+            color: "var(--text-primary)",
+          }}
+        >
+          <input
+            type="checkbox"
+            checked={form.visible}
+            onChange={(e) =>
+              setForm((prev) => ({ ...prev, visible: e.target.checked }))
+            }
+            data-testid="aurora-visibility-visible"
+          />
+          <span>Görünür</span>
+          <span style={{ fontSize: 11, color: "var(--text-muted)" }}>
+            — hedef bu kapsam için gösterilsin mi?
+          </span>
+        </label>
+        <label
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            cursor: "pointer",
+            fontSize: 13,
+            color: "var(--text-primary)",
+          }}
+        >
+          <input
+            type="checkbox"
+            checked={form.read_only}
+            onChange={(e) =>
+              setForm((prev) => ({ ...prev, read_only: e.target.checked }))
+            }
+            data-testid="aurora-visibility-readonly"
+          />
+          <span>Salt okunur</span>
+          <span style={{ fontSize: 11, color: "var(--text-muted)" }}>
+            — düzenleme devre dışı
+          </span>
+        </label>
+        <label
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            cursor: "pointer",
+            fontSize: 13,
+            color: "var(--text-primary)",
+          }}
+        >
+          <input
+            type="checkbox"
+            checked={form.wizard_visible}
+            onChange={(e) =>
+              setForm((prev) => ({
+                ...prev,
+                wizard_visible: e.target.checked,
+              }))
+            }
+            data-testid="aurora-visibility-wizard-visible"
+          />
+          <span>Wizard'da görünür</span>
+          <span style={{ fontSize: 11, color: "var(--text-muted)" }}>
+            — wizard akışında gösterilsin mi?
+          </span>
+        </label>
+      </div>
+
+      {/* Öncelik */}
+      <AuroraField
+        label="Öncelik"
+        help="Düşük sayı = yüksek öncelik. 100 varsayılan."
+      >
+        <input
+          type="number"
+          value={form.priority}
+          onChange={(e) =>
+            setForm((prev) => ({
+              ...prev,
+              priority: Number.parseInt(e.target.value, 10) || 100,
+            }))
+          }
+          min={0}
+          max={9999}
+          style={INPUT_STYLE}
+          data-testid="aurora-visibility-priority"
+        />
+      </AuroraField>
+
+      {/* Not */}
+      <AuroraField label="Not">
+        <textarea
+          value={form.notes}
+          onChange={(e) =>
+            setForm((prev) => ({ ...prev, notes: e.target.value }))
+          }
+          placeholder="Bu kuralın amacı ve kapsamı hakkında açıklama…"
+          rows={3}
+          style={TEXTAREA_STYLE}
+          data-testid="aurora-visibility-notes"
+        />
+      </AuroraField>
+
+      {(validationError || mut.isError) && (
+        <div
+          role="alert"
+          style={{
+            fontSize: 12,
+            color: "var(--state-danger-fg)",
+            background: "var(--state-danger-bg)",
+            border: "1px solid var(--state-danger-border)",
+            borderRadius: 6,
+            padding: "8px 10px",
+          }}
+        >
+          {validationError ||
+            (mut.error instanceof Error
+              ? mut.error.message
+              : "Kural oluşturulamadı.")}
+        </div>
+      )}
+
+      <div style={{ display: "flex", gap: 8, paddingTop: 4 }}>
+        <AuroraButton
+          type="submit"
+          variant="primary"
+          size="sm"
+          disabled={mut.isPending || !form.target_key.trim()}
+          data-testid="aurora-visibility-submit"
+        >
+          {mut.isPending ? "Kaydediliyor…" : "Kural ekle"}
+        </AuroraButton>
+        <AuroraButton
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={onCancel}
+          disabled={mut.isPending}
+        >
+          Vazgeç
+        </AuroraButton>
+      </div>
+    </form>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Page
+// ---------------------------------------------------------------------------
+
 export function AuroraVisibilityRegistryPage() {
-  const navigate = useNavigate();
   const { data: rules, isLoading, isError, error } = useVisibilityRulesList();
 
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [showFixtures, setShowFixtures] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
 
   const all = rules ?? [];
   const fixtureCount = useMemo(
@@ -204,8 +909,9 @@ export function AuroraVisibilityRegistryPage() {
             <AuroraButton
               variant="primary"
               size="sm"
-              onClick={() => navigate("/admin/visibility")}
+              onClick={() => setCreateOpen(true)}
               iconLeft={<Icon name="plus" size={11} />}
+              data-testid="aurora-visibility-create-open"
             >
               Kural ekle
             </AuroraButton>
@@ -280,7 +986,6 @@ export function AuroraVisibilityRegistryPage() {
                     <tr
                       key={r.id}
                       onClick={() => toggleRow(r.id)}
-                      onDoubleClick={() => navigate(`/admin/visibility`)}
                       style={isSel ? { background: "var(--bg-inset)" } : undefined}
                     >
                       <td onClick={(e) => e.stopPropagation()}>
@@ -381,6 +1086,24 @@ export function AuroraVisibilityRegistryPage() {
         )}
       </div>
       <aside className="aurora-inspector-slot">{inspector}</aside>
+
+      <AuroraDetailDrawer
+        item={
+          createOpen
+            ? {
+                breadcrumb: "Visibility · Kural",
+                title: "Yeni görünürlük kuralı",
+                children: (
+                  <AuroraVisibilityRuleCreateForm
+                    onSuccess={() => setCreateOpen(false)}
+                    onCancel={() => setCreateOpen(false)}
+                  />
+                ),
+              }
+            : null
+        }
+        onClose={() => setCreateOpen(false)}
+      />
     </div>
   );
 }

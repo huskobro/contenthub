@@ -142,13 +142,16 @@ export function useGlobalSSE() {
   });
 
   // Cockpit Statusbar tüketimi için SSE durumunu store'a yayınla.
-  // connected → "live"; reconnecting → "reconnecting"; aksi → "offline".
+  // Aurora Final Polish: yeni `offline` field'ı 8 sn grace window
+  // dolduktan sonra true olur. Grace içindeyken "reconnecting" görünür
+  // ve banner çıkmaz; transient kopmalarda kullanıcı sessiz kalır.
   const setSSEStatus = useSSEStatusStore((s) => s.setStatus);
   useEffect(() => {
     if (sse.connected) setSSEStatus("live");
+    else if (sse.offline) setSSEStatus("offline");
     else if (sse.reconnecting) setSSEStatus("reconnecting");
     else setSSEStatus("offline");
-  }, [sse.connected, sse.reconnecting, setSSEStatus]);
+  }, [sse.connected, sse.reconnecting, sse.offline, setSSEStatus]);
 
   return sse;
 }

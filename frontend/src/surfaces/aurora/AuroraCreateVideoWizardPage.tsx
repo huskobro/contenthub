@@ -21,6 +21,7 @@ import {
   AuroraInspectorSection,
   AuroraInspectorRow,
   AuroraStatusChip,
+  AuroraSegmented,
 } from "./primitives";
 import { Icon } from "./icons";
 import { ChannelProfileStep } from "../../components/wizard/ChannelProfileStep";
@@ -514,11 +515,17 @@ export function AuroraCreateVideoWizardPage() {
         </FormField>
       </div>
       <FormField label="Ton">
-        <input
-          style={INPUT_STYLE}
-          value={values.tone}
-          onChange={(e) => set("tone", e.target.value)}
-          placeholder="formal, casual, dramatic"
+        <AuroraSegmented
+          options={[
+            { value: "", label: "—" },
+            { value: "formal", label: "Formal" },
+            { value: "casual", label: "Casual" },
+            { value: "dramatic", label: "Dramatic" },
+            { value: "inspirational", label: "Inspirational" },
+          ]}
+          value={values.tone ?? ""}
+          onChange={(v) => set("tone", v)}
+          data-testid="aurora-cvw-tone"
         />
       </FormField>
       <FormField label="Görsel yön">

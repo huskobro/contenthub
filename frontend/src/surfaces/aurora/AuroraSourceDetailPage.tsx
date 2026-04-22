@@ -38,6 +38,7 @@ import {
   AuroraInspectorRow,
   AuroraInspectorSection,
   AuroraSection,
+  AuroraConfirmDialog,
 } from "./primitives";
 import { Icon } from "./icons";
 
@@ -231,6 +232,8 @@ export function AuroraSourceDetailPage() {
   // Inline edit state. Buffer source alanları string olarak; "Kaydet" sırasında
   // payload'a yalnızca değişen ve geçerli olanlar konur (PATCH semantics).
   const [editMode, setEditMode] = useState(false);
+  // Destructive-intent confirm (replaces window.confirm).
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const [draftName, setDraftName] = useState("");
   const [draftStatus, setDraftStatus] = useState("");
   const [draftBaseUrl, setDraftBaseUrl] = useState("");
@@ -317,10 +320,7 @@ export function AuroraSourceDetailPage() {
 
   function handleDelete() {
     if (!source) return;
-    const ok = window.confirm(
-      `"${source.name}" kaynağını silmek istediğinize emin misiniz? Bu işlem geri alınamaz.`,
-    );
-    if (ok) deleteSelf();
+    setConfirmDelete(true);
   }
 
   if (isLoading) {
@@ -702,6 +702,26 @@ export function AuroraSourceDetailPage() {
         )}
       </div>
       <aside className="aurora-inspector-slot">{inspector}</aside>
+
+      <AuroraConfirmDialog
+        open={confirmDelete}
+        title="Kaynak silinsin mi?"
+        description={
+          source
+            ? `"${source.name}" kaynağı silinecek. Bu işlem geri alınamaz. Bağlı geçmiş haber kayıtları kalır ancak yeni tarama tetiklenemez.`
+            : "Bu işlem geri alınamaz."
+        }
+        tone="danger"
+        confirmLabel="Sil"
+        cancelLabel="Vazgeç"
+        busy={deleting}
+        onCancel={() => setConfirmDelete(false)}
+        onConfirm={() => {
+          deleteSelf();
+          setConfirmDelete(false);
+        }}
+        data-testid="aurora-source-detail-confirm-delete"
+      />
     </div>
   );
 }

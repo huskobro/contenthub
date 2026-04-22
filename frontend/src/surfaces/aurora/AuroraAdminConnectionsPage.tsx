@@ -28,6 +28,7 @@ import type {
 import {
   AuroraButton,
   AuroraCard,
+  AuroraConfirmDialog,
   AuroraInspector,
   AuroraInspectorRow,
   AuroraInspectorSection,
@@ -385,6 +386,9 @@ export function AuroraAdminConnectionsPage() {
   const [pendingDisconnectId, setPendingDisconnectId] = useState<string | null>(
     null,
   );
+  // Destructive-intent confirm target (replaces window.confirm).
+  const [confirmDisconnect, setConfirmDisconnect] =
+    useState<ConnectionWithHealth | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [lastRefreshAt, setLastRefreshAt] = useState<number | null>(null);
 
@@ -450,26 +454,28 @@ export function AuroraAdminConnectionsPage() {
    * elden geldiğince yapılır.
    */
   const handleDisconnect = (conn: ConnectionWithHealth) => {
+    // Open confirm modal; actual delete executes on confirm.
+    setConfirmDisconnect(conn);
+  };
+
+  const runDisconnect = (conn: ConnectionWithHealth) => {
     const label =
       conn.external_account_name ||
       conn.external_account_id ||
       conn.platform ||
       "bu bağlantı";
-    const confirmed = window.confirm(
-      `${label} bağlantısı silinecek. OAuth token revoke edilecek ve ` +
-        `denetim kaydı oluşturulacak. Emin misiniz?`,
-    );
-    if (!confirmed) return;
     setPendingDisconnectId(conn.id);
     deleteMutation.mutate(conn.id, {
       onSuccess: () => {
         toast.success(`${label} bağlantısı kesildi`);
         if (selectedId === conn.id) setSelectedId(null);
         setPendingDisconnectId(null);
+        setConfirmDisconnect(null);
       },
       onError: () => {
         // useApiError zaten toast atıyor; sadece pending state'i temizliyoruz
         setPendingDisconnectId(null);
+        setConfirmDisconnect(null);
       },
     });
   };
@@ -654,6 +660,30 @@ export function AuroraAdminConnectionsPage() {
           selected={selected}
         />
       </aside>
+
+      <AuroraConfirmDialog
+        open={confirmDisconnect !== null}
+        title="OAuth bağlantısı kesilsin mi?"
+        description={
+          confirmDisconnect
+            ? `${
+                confirmDisconnect.external_account_name ||
+                confirmDisconnect.external_account_id ||
+                confirmDisconnect.platform ||
+                "Bu bağlantı"
+              } bağlantısı silinecek. OAuth token revoke edilecek ve denetim kaydı oluşturulacak.`
+            : "Bu işlem geri alınamaz."
+        }
+        tone="danger"
+        confirmLabel="Bağlantıyı kes"
+        cancelLabel="Vazgeç"
+        busy={pendingDisconnectId !== null}
+        onCancel={() => setConfirmDisconnect(null)}
+        onConfirm={() => {
+          if (confirmDisconnect) runDisconnect(confirmDisconnect);
+        }}
+        data-testid="aurora-admin-connections-confirm-disconnect"
+      />
     </div>
   );
 }

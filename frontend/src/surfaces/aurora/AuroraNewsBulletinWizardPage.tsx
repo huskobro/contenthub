@@ -33,6 +33,8 @@ import {
   AuroraCard,
   AuroraStatusChip,
   AuroraMeterTile,
+  AuroraSegmented,
+  AuroraField,
 } from "./primitives";
 import { Icon } from "./icons";
 import { CompositionDirectionPreview } from "../../components/preview/CompositionDirectionPreview";
@@ -827,17 +829,16 @@ export function AuroraNewsBulletinWizardPage() {
                   marginBottom: 16,
                 }}
               >
-                <div className="form-field" style={{ marginBottom: 0 }}>
-                  <label className="form-label">Dil</label>
-                  <select
-                    className="form-select"
+                <AuroraField label="Dil">
+                  <AuroraSegmented
+                    options={[
+                      { value: "tr", label: "TR" },
+                      { value: "en", label: "EN" },
+                    ]}
                     value={language}
-                    onChange={(e) => setLanguage(e.target.value)}
-                  >
-                    <option value="tr">Türkçe</option>
-                    <option value="en">English</option>
-                  </select>
-                </div>
+                    onChange={setLanguage}
+                  />
+                </AuroraField>
                 <div className="form-field" style={{ marginBottom: 0 }}>
                   <label className="form-label">Kaynak</label>
                   <select
@@ -923,19 +924,18 @@ export function AuroraNewsBulletinWizardPage() {
                           </div>
                         )}
                       </div>
-                      <div className="form-field" style={{ marginBottom: 0 }}>
-                        <label className="form-label">Ton</label>
-                        <select
-                          className="form-select"
+                      <AuroraField label="Ton">
+                        <AuroraSegmented
+                          options={[
+                            { value: "formal", label: "Formal", hint: "Resmi, ciddi ton" },
+                            { value: "casual", label: "Casual", hint: "Rahat, günlük ton" },
+                            { value: "dramatic", label: "Dramatic", hint: "Vurgulu, etkili ton" },
+                            { value: "neutral", label: "Neutral", hint: "Tarafsız ton" },
+                          ]}
                           value={tone}
-                          onChange={(e) => setTone(e.target.value)}
-                        >
-                          <option value="formal">Formal</option>
-                          <option value="casual">Casual</option>
-                          <option value="dramatic">Dramatic</option>
-                          <option value="neutral">Neutral</option>
-                        </select>
-                      </div>
+                          onChange={setTone}
+                        />
+                      </AuroraField>
                       <div className="form-field" style={{ marginBottom: 0 }}>
                         <label className="form-label">Hedef Süre (sn)</label>
                         <input

@@ -31,7 +31,9 @@ import {
   AuroraInspectorRow,
   AuroraInspectorSection,
   AuroraPageShell,
+  AuroraSegmented,
   AuroraStatusChip,
+  AuroraTagsInput,
 } from "./primitives";
 import { Icon } from "./icons";
 
@@ -103,13 +105,6 @@ const textareaStyle: CSSProperties = {
   resize: "vertical",
   minHeight: 80,
   lineHeight: 1.6,
-};
-
-const monoTextareaStyle: CSSProperties = {
-  ...textareaStyle,
-  fontFamily: "var(--font-mono)",
-  fontSize: 12,
-  minHeight: 90,
 };
 
 const hintStyle: CSSProperties = {
@@ -430,107 +425,122 @@ export function AuroraNewsBulletinCreatePage() {
                 />
               </Field>
 
-              <Field label="Dil">
-                <select
-                  style={inputStyle}
+              <Field label="Dil" hint="Seslendirme ve script dili">
+                <AuroraSegmented
+                  options={[
+                    { value: "", label: DASH, hint: "Varsayılan kullanılsın" },
+                    { value: "tr", label: "TR", hint: "Türkçe" },
+                    { value: "en", label: "EN", hint: "English" },
+                  ]}
                   value={values.language}
-                  onChange={(e) => set("language", e.target.value)}
-                  onFocus={focusOn}
-                  onBlur={focusOff}
-                >
-                  <option value="">{DASH}</option>
-                  <option value="tr">Türkçe (tr)</option>
-                  <option value="en">English (en)</option>
-                </select>
+                  onChange={(v) => set("language", v)}
+                  data-testid="aurora-nb-language"
+                />
               </Field>
             </div>
 
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "1fr 1fr 1fr",
+                gridTemplateColumns: "1fr",
                 gap: 14,
               }}
             >
-              <Field label="Ton">
-                <select
-                  style={inputStyle}
+              <Field label="Ton" hint="Sunum tonu">
+                <AuroraSegmented
+                  options={[
+                    { value: "", label: DASH },
+                    { value: "formal", label: "Formal", hint: "Resmi, kurumsal" },
+                    { value: "casual", label: "Casual", hint: "Günlük, rahat" },
+                    { value: "urgent", label: "Urgent", hint: "Son dakika, aciliyet" },
+                  ]}
                   value={values.tone}
-                  onChange={(e) => set("tone", e.target.value)}
-                  onFocus={focusOn}
-                  onBlur={focusOff}
-                >
-                  <option value="">{DASH}</option>
-                  <option value="formal">formal</option>
-                  <option value="casual">casual</option>
-                  <option value="urgent">urgent</option>
-                </select>
+                  onChange={(v) => set("tone", v)}
+                  data-testid="aurora-nb-tone"
+                />
               </Field>
 
-              <Field label="Bülten stili">
-                <select
-                  style={inputStyle}
+              <Field label="Bülten stili" hint="Ana stüdyo yönü">
+                <AuroraSegmented
+                  options={[
+                    { value: "", label: DASH },
+                    { value: "studio", label: "Studio" },
+                    { value: "futuristic", label: "Futuristic" },
+                    { value: "traditional", label: "Traditional" },
+                  ]}
                   value={values.bulletin_style}
-                  onChange={(e) => set("bulletin_style", e.target.value)}
-                  onFocus={focusOn}
-                  onBlur={focusOff}
-                >
-                  <option value="">{DASH}</option>
-                  <option value="studio">studio</option>
-                  <option value="futuristic">futuristic</option>
-                  <option value="traditional">traditional</option>
-                </select>
+                  onChange={(v) => set("bulletin_style", v)}
+                  data-testid="aurora-nb-style"
+                />
               </Field>
 
-              <Field label="Kaynak modu">
-                <select
-                  style={inputStyle}
+              <Field
+                label="Kaynak modu"
+                hint="Haberler nasıl toplanacak"
+              >
+                <AuroraSegmented
+                  options={[
+                    { value: "", label: DASH },
+                    { value: "manual", label: "Manuel", hint: "Operatör tek tek seçer" },
+                    { value: "curated", label: "Curated", hint: "Sistem aday sunar, operatör onaylar" },
+                    { value: "auto", label: "Auto", hint: "Otomatik seçim (dedupe uygulanır)" },
+                  ]}
                   value={values.source_mode}
-                  onChange={(e) => set("source_mode", e.target.value)}
-                  onFocus={focusOn}
-                  onBlur={focusOff}
-                >
-                  <option value="">{DASH}</option>
-                  <option value="manual">manual</option>
-                  <option value="curated">curated</option>
-                  <option value="auto">auto</option>
-                </select>
+                  onChange={(v) => set("source_mode", v)}
+                  data-testid="aurora-nb-source-mode"
+                />
               </Field>
             </div>
 
             <Field
-              label="Seçili haber ID'leri (JSON)"
+              label="Seçili haber ID'leri"
               error={errors.selected_news_ids_json}
-              hint='İsteğe bağlı — manuel ön seçim yapılacaksa örn. ["id-1","id-2"]'
+              hint={
+                values.source_mode === "manual"
+                  ? "Bu bültende kullanılacak haber ID'lerini Enter veya virgülle ekleyin. Haber Seçim aracından kopyalanabilir."
+                  : "Manuel seçim yalnızca kaynak modu Manuel veya Curated iken anlamlı. Auto modda kullanılmaz."
+              }
             >
-              <textarea
-                style={
-                  errors.selected_news_ids_json
-                    ? { ...monoTextareaStyle, ...errorBorderStyle }
-                    : monoTextareaStyle
+              <AuroraTagsInput
+                value={(() => {
+                  const raw = values.selected_news_ids_json.trim();
+                  if (!raw) return [];
+                  try {
+                    const parsed = JSON.parse(raw);
+                    return Array.isArray(parsed)
+                      ? parsed.map((x) => String(x))
+                      : [];
+                  } catch {
+                    // Raw free-form fallback: comma-split
+                    return raw
+                      .split(/[,\n]/)
+                      .map((s) => s.trim())
+                      .filter(Boolean);
+                  }
+                })()}
+                onChange={(tags) =>
+                  set(
+                    "selected_news_ids_json",
+                    tags.length ? JSON.stringify(tags) : "",
+                  )
                 }
-                value={values.selected_news_ids_json}
-                onChange={(e) => set("selected_news_ids_json", e.target.value)}
-                onFocus={focusOn}
-                onBlur={focusOff}
-                placeholder='["id-1","id-2"]'
-                rows={3}
-                spellCheck={false}
+                dedupe
+                placeholder="örn. news-42  (Enter / virgül)"
+                data-testid="aurora-nb-selected-ids"
               />
             </Field>
 
             <Field label="Durum">
-              <select
-                style={inputStyle}
+              <AuroraSegmented
+                options={[
+                  { value: "draft", label: "Taslak", hint: "Henüz yayına hazır değil" },
+                  { value: "ready", label: "Hazır", hint: "Üretime alınabilir" },
+                  { value: "archived", label: "Arşiv", hint: "Kullanılmıyor" },
+                ]}
                 value={values.status}
-                onChange={(e) => set("status", e.target.value)}
-                onFocus={focusOn}
-                onBlur={focusOff}
-              >
-                <option value="draft">draft</option>
-                <option value="ready">ready</option>
-                <option value="archived">archived</option>
-              </select>
+                onChange={(v) => set("status", v)}
+                data-testid="aurora-nb-status"
+              />
             </Field>
 
             {submitErrorMessage && (

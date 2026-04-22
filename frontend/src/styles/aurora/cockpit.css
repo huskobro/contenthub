@@ -68,7 +68,7 @@
   height: 100vh;
   display: grid;
   grid-template-columns: 56px 1fr;
-  grid-template-rows: 48px 1fr 28px;
+  grid-template-rows: var(--cockpit-ctxbar-height) 1fr var(--cockpit-statusbar-height);
   grid-template-areas:
     "ctxbar ctxbar"
     "rail   body"
@@ -686,14 +686,24 @@
 @keyframes aurora-pop-in { from { opacity: 0; transform: translateY(-8px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
 
 /* Drawer (basic) */
+/* Veil is bounded to the body area so the cockpit ctxbar stays visible and
+   interactive while a drawer is open — the user keeps navigation context.
+   Statusbar stays visible below the veil for the same reason. */
 [data-surface="aurora"] .drawer-veil {
-  position: fixed; inset: 0;
+  position: fixed;
+  top: var(--cockpit-ctxbar-height);
+  right: 0;
+  bottom: var(--cockpit-statusbar-height);
+  left: 0;
   background: var(--bg-overlay, rgba(15,18,25,0.35));
   z-index: var(--z-veil);
   animation: aurora-fade-in var(--motion-duration-fast-plus);
 }
 [data-surface="aurora"] .drawer {
-  position: fixed; right: 0; top: 0; bottom: 28px;
+  position: fixed;
+  right: 0;
+  top: var(--cockpit-ctxbar-height);
+  bottom: var(--cockpit-statusbar-height);
   width: min(520px, 90vw);
   background: var(--bg-surface);
   border-left: 1px solid var(--border-default);
@@ -942,9 +952,15 @@
   font-size: 11px; color: var(--text-muted);
 }
 
-/* ---- Detail Drawer (sağdan açılan, BÜYÜK) ---- */
+/* ---- Detail Drawer (sağdan açılan, BÜYÜK) ----
+   Bounded to the cockpit body area so the drawer header (title + close)
+   never ends up hidden behind the ctxbar. See `.drawer-veil` above for the
+   same top/bottom pattern — ctxbar and statusbar stay visible on purpose. */
 [data-surface="aurora"] .drawer-detail {
-  position: fixed; right: 0; top: 0; bottom: 0;
+  position: fixed;
+  right: 0;
+  top: var(--cockpit-ctxbar-height);
+  bottom: var(--cockpit-statusbar-height);
   width: min(640px, 92vw);
   background: var(--bg-surface);
   border-left: 1px solid var(--border-default);
@@ -1188,3 +1204,406 @@
   transition: background var(--motion-duration-ultra-fast), color var(--motion-duration-ultra-fast);
 }
 [data-surface="aurora"] .ctxbar-recent-trigger:hover { background: var(--ink-overlay-3); color: var(--text-on-accent); }
+
+/* ============================================================
+   Aurora Final Polish — structured input primitives
+   ============================================================
+   These classes are used by AuroraSegmented, AuroraChipSelect,
+   AuroraTagsInput, AuroraSlider, AuroraAssetPathInput, and the
+   AuroraStructuredJsonEditor. Token-only colours; no hard-coded
+   greys; works in Dusk + Slate via the [data-theme] overrides
+   already declared in tokens.css.
+*/
+
+/* --- Field row: label + control + help/error stack ------------------- */
+[data-surface="aurora"] .field {
+  display: flex; flex-direction: column; gap: 6px;
+  font-size: 12px;
+}
+[data-surface="aurora"] .field-label {
+  font-size: 10px; font-weight: 600;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--text-muted);
+}
+[data-surface="aurora"] .field-help {
+  font-size: 11px; color: var(--text-muted); line-height: 1.4;
+}
+[data-surface="aurora"] .field-error {
+  font-size: 11px; color: var(--state-danger-fg); line-height: 1.4;
+}
+[data-surface="aurora"] .field.has-error .input,
+[data-surface="aurora"] .field.has-error .seg,
+[data-surface="aurora"] .field.has-error .tagsinput,
+[data-surface="aurora"] .field.has-error .assetpath,
+[data-surface="aurora"] .field.has-error textarea.input {
+  border-color: var(--state-danger-fg);
+}
+
+/* --- Segmented control (2..5 options inline) ------------------------ */
+[data-surface="aurora"] .seg {
+  display: inline-flex;
+  background: var(--bg-inset);
+  border: 1px solid var(--border-default);
+  border-radius: 8px;
+  padding: 2px;
+  gap: 2px;
+  width: 100%;
+}
+[data-surface="aurora"] .seg-opt {
+  flex: 1;
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: 6px;
+  padding: 6px 10px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background var(--motion-duration-ultra-fast),
+              color var(--motion-duration-ultra-fast);
+  min-height: 28px;
+}
+[data-surface="aurora"] .seg-opt:hover { color: var(--text-primary); background: var(--bg-surface); }
+[data-surface="aurora"] .seg-opt:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(var(--accent-primary-rgb), 0.5);
+}
+[data-surface="aurora"] .seg-opt.active {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.18);
+}
+[data-surface="aurora"] .seg-opt.active .seg-opt-dot {
+  background: var(--accent-primary);
+  box-shadow: 0 0 6px var(--accent-primary);
+}
+[data-surface="aurora"] .seg-opt-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--text-muted);
+}
+[data-surface="aurora"] .seg-opt[disabled] {
+  opacity: 0.4; cursor: not-allowed;
+}
+
+/* --- Chip select (multi/single, optional preview swatch) ------------ */
+[data-surface="aurora"] .chipselect {
+  display: flex; flex-wrap: wrap; gap: 6px;
+}
+[data-surface="aurora"] .chipselect-opt {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 6px 12px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all var(--motion-duration-ultra-fast);
+  min-height: 28px;
+}
+[data-surface="aurora"] .chipselect-opt:hover {
+  background: var(--bg-elevated);
+  border-color: var(--border-strong);
+  color: var(--text-primary);
+}
+[data-surface="aurora"] .chipselect-opt:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(var(--accent-primary-rgb), 0.5);
+}
+[data-surface="aurora"] .chipselect-opt.active {
+  color: var(--accent-primary-hover);
+  background: var(--accent-primary-muted);
+  border-color: rgba(var(--accent-primary-rgb), 0.5);
+}
+[data-surface="aurora"] .chipselect-opt[disabled],
+[data-surface="aurora"] .chipselect-opt[aria-disabled="true"] {
+  opacity: 0.45;
+  cursor: not-allowed;
+  background: var(--bg-surface);
+  border-color: var(--border-subtle);
+}
+[data-surface="aurora"] .chipselect-swatch {
+  width: 12px; height: 12px; border-radius: 4px;
+  border: 1px solid var(--border-default);
+  flex-shrink: 0;
+}
+
+/* --- Tags input (chips inside an input-shaped wrapper) --------------- */
+[data-surface="aurora"] .tagsinput {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  min-height: 32px;
+  padding: 5px 8px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: 8px;
+  transition: border-color var(--motion-duration-fast),
+              box-shadow var(--motion-duration-fast);
+}
+[data-surface="aurora"] .tagsinput:focus-within {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb), 0.18);
+}
+[data-surface="aurora"] .tagsinput-tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 6px 2px 8px;
+  font-size: 11px;
+  color: var(--accent-primary-hover);
+  background: var(--accent-primary-muted);
+  border: 1px solid rgba(var(--accent-primary-rgb), 0.3);
+  border-radius: 999px;
+  line-height: 1;
+  height: 22px;
+}
+[data-surface="aurora"] .tagsinput-tag-x {
+  display: inline-grid; place-items: center;
+  width: 14px; height: 14px;
+  margin-left: 2px;
+  border-radius: 50%;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1;
+}
+[data-surface="aurora"] .tagsinput-tag-x:hover { background: rgba(var(--accent-primary-rgb), 0.3); }
+[data-surface="aurora"] .tagsinput-input {
+  flex: 1;
+  min-width: 80px;
+  height: 22px;
+  background: transparent;
+  border: 0;
+  outline: none;
+  color: var(--text-primary);
+  font-size: 12px;
+  font-family: inherit;
+}
+[data-surface="aurora"] .tagsinput-input::placeholder { color: var(--text-muted); }
+
+/* --- Slider (range input with track/fill/thumb) --------------------- */
+[data-surface="aurora"] .slider {
+  display: flex; align-items: center; gap: 12px;
+}
+[data-surface="aurora"] .slider-input {
+  -webkit-appearance: none; appearance: none;
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--bg-inset);
+  outline: none;
+  cursor: pointer;
+}
+[data-surface="aurora"] .slider-input::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  border: 2px solid var(--bg-surface);
+  cursor: pointer;
+  box-shadow: 0 0 8px rgba(var(--accent-primary-rgb), 0.45);
+  transition: transform var(--motion-duration-ultra-fast);
+}
+[data-surface="aurora"] .slider-input::-moz-range-thumb {
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  border: 2px solid var(--bg-surface);
+  cursor: pointer;
+  box-shadow: 0 0 8px rgba(var(--accent-primary-rgb), 0.45);
+}
+[data-surface="aurora"] .slider-input:active::-webkit-slider-thumb { transform: scale(1.1); }
+[data-surface="aurora"] .slider-value {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-primary);
+  min-width: 36px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Asset path input (text + browse + validation) ------------------ */
+[data-surface="aurora"] .assetpath {
+  display: flex; align-items: stretch;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: 8px;
+  overflow: hidden;
+  transition: border-color var(--motion-duration-fast),
+              box-shadow var(--motion-duration-fast);
+}
+[data-surface="aurora"] .assetpath:focus-within {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb), 0.18);
+}
+[data-surface="aurora"] .assetpath-input {
+  flex: 1;
+  height: 30px;
+  padding: 0 12px;
+  background: transparent;
+  border: 0;
+  outline: none;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-primary);
+}
+[data-surface="aurora"] .assetpath-input::placeholder { color: var(--text-muted); }
+[data-surface="aurora"] .assetpath-btn {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 0 10px;
+  background: var(--bg-inset);
+  color: var(--text-secondary);
+  border-left: 1px solid var(--border-default);
+  border-top: 0; border-right: 0; border-bottom: 0;
+  font-size: 11px;
+  cursor: pointer;
+  transition: background var(--motion-duration-ultra-fast), color var(--motion-duration-ultra-fast);
+}
+[data-surface="aurora"] .assetpath-btn:hover { background: var(--bg-elevated); color: var(--text-primary); }
+[data-surface="aurora"] .assetpath-status {
+  display: inline-flex; align-items: center;
+  padding: 0 8px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+}
+[data-surface="aurora"] .assetpath-status.ok { color: var(--state-success-fg); }
+[data-surface="aurora"] .assetpath-status.warn { color: var(--state-warning-fg); }
+[data-surface="aurora"] .assetpath-status.err { color: var(--state-danger-fg); }
+
+/* --- Structured JSON editor (tabs + key-value + raw fallback) ------- */
+[data-surface="aurora"] .structured {
+  display: flex; flex-direction: column;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: 10px;
+  overflow: hidden;
+}
+[data-surface="aurora"] .structured-tabs {
+  display: flex;
+  background: var(--bg-inset);
+  border-bottom: 1px solid var(--border-default);
+}
+[data-surface="aurora"] .structured-tab {
+  padding: 8px 14px;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: color var(--motion-duration-ultra-fast),
+              border-color var(--motion-duration-ultra-fast);
+}
+[data-surface="aurora"] .structured-tab:hover { color: var(--text-primary); }
+[data-surface="aurora"] .structured-tab.active {
+  color: var(--text-primary);
+  border-bottom-color: var(--accent-primary);
+}
+[data-surface="aurora"] .structured-tab.advanced {
+  margin-left: auto;
+  color: var(--text-muted);
+  font-style: italic;
+}
+[data-surface="aurora"] .structured-body {
+  padding: 14px;
+  display: flex; flex-direction: column; gap: 12px;
+  max-height: 360px;
+  overflow-y: auto;
+}
+[data-surface="aurora"] .structured-row {
+  display: grid;
+  grid-template-columns: minmax(120px, 200px) 1fr auto;
+  gap: 8px;
+  align-items: center;
+}
+[data-surface="aurora"] .structured-row .input { height: 28px; padding: 0 10px; font-size: 12px; }
+[data-surface="aurora"] .structured-add {
+  align-self: flex-start;
+  padding: 4px 10px;
+  font-size: 11px;
+  background: transparent;
+  border: 1px dashed var(--border-default);
+  border-radius: 6px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color var(--motion-duration-ultra-fast),
+              border-color var(--motion-duration-ultra-fast);
+}
+[data-surface="aurora"] .structured-add:hover { color: var(--text-primary); border-color: var(--border-strong); }
+[data-surface="aurora"] .structured-row .icon-btn {
+  width: 24px; height: 24px;
+  display: inline-grid; place-items: center;
+  border-radius: 6px;
+  background: transparent;
+  border: 0;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+[data-surface="aurora"] .structured-row .icon-btn:hover { background: var(--bg-inset); color: var(--state-danger-fg); }
+[data-surface="aurora"] textarea.input {
+  height: auto;
+  padding: 10px 12px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.5;
+  resize: vertical;
+  min-height: 120px;
+}
+
+/* --- Inspector sticky footer ---------------------------------------- */
+/* Pages that ship a primary action through inspector should use the
+   `<AuroraInspector stickyActions=...>` pattern. The footer slot stays
+   pinned to the bottom of the rail even while the user scrolls long
+   forms; the actions never disappear. */
+[data-surface="aurora"] .inspector {
+  /* Redeclare to add layout: flex column with footer at the end. */
+  position: relative;
+}
+[data-surface="aurora"] .inspector-body {
+  flex: 1;
+  display: flex; flex-direction: column; gap: 16px;
+  min-height: 0;
+}
+[data-surface="aurora"] .inspector-actions {
+  position: sticky;
+  bottom: 0;
+  margin: 12px -18px -20px;
+  padding: 12px 18px;
+  background: var(--bg-surface);
+  border-top: 1px solid var(--border-default);
+  display: flex; gap: 8px; align-items: center;
+  flex-wrap: wrap;
+  z-index: var(--z-content);
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.18);
+}
+[data-surface="aurora"] .inspector-actions .grow { flex: 1; }
+
+/* --- Body grid: keep inspector visible alongside long pages ----------
+   Inspector itself is `overflow-y: auto` so its own scroll is
+   independent from workbench scroll. That's correct — but on very
+   tall pages the inspector should remain visible while the user
+   scrolls the main column. The grid already gives us that because
+   each grid track has its own scroller. The only addition we need is
+   a responsive collapse on narrow viewports. */
+@media (max-width: 1024px) {
+  [data-surface="aurora"] .body {
+    grid-template-columns: 1fr;
+  }
+  [data-surface="aurora"] .inspector {
+    border-left: 0;
+    border-top: 1px solid var(--border-default);
+  }
+}
+
+/* --- Preview swatch row (used by Branding chips) -------------------- */
+[data-surface="aurora"] .preview-swatch-row {
+  display: flex; gap: 6px;
+  margin-top: 6px;
+}
+[data-surface="aurora"] .preview-swatch {
+  width: 22px; height: 22px;
+  border-radius: 6px;
+  border: 1px solid var(--border-default);
+}
+

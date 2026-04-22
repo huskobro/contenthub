@@ -552,7 +552,7 @@ export function AuroraJobsRegistryPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const toast = useToast();
   const queryClient = useQueryClient();
-  const { data: jobsData, isLoading, isError } = useJobsList(true);
+  const { data: jobsData, isLoading, isError, refetch: refetchJobs } = useJobsList(true);
   const jobs = useMemo(() => jobsData ?? [], [jobsData]);
 
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -829,7 +829,7 @@ export function AuroraJobsRegistryPage() {
             <h1>İş kayıtları</h1>
             <div className="sub">
               {isLoading
-                ? "Yükleniyor…"
+                ? "İş kayıtları yükleniyor…"
                 : `${jobs.length} kayıt · ${
                     statusCounts.running ?? 0
                   } aktif render · gerçek zamanlı`}
@@ -1284,15 +1284,40 @@ export function AuroraJobsRegistryPage() {
                       color: "var(--text-muted)",
                     }}
                   >
-                    <Icon name={"list" as IconName} size={22} />
+                    <Icon
+                      name={(isError ? "alert-circle" : "list") as IconName}
+                      size={22}
+                    />
                     <div style={{ marginTop: 8, fontSize: 13 }}>
-                      {isError ? "Yükleme hatası" : "Sonuç bulunamadı"}
+                      {isError
+                        ? "İş kayıtları yüklenemedi"
+                        : "Sonuç bulunamadı"}
                     </div>
                     <div style={{ fontSize: 11, marginTop: 4 }}>
                       {isError
-                        ? "Bağlantıyı kontrol edin"
+                        ? "Bağlantıyı kontrol edin ve tekrar deneyin"
                         : "Filtreleri veya arama terimini değiştirin"}
                     </div>
+                    {isError && (
+                      <div style={{ marginTop: 12 }}>
+                        <button
+                          type="button"
+                          className="btn-sm"
+                          onClick={() => refetchJobs()}
+                          style={{
+                            background: "var(--bg-surface-alt)",
+                            border: "1px solid var(--border-default)",
+                            borderRadius: 6,
+                            padding: "6px 14px",
+                            color: "var(--text-default)",
+                            cursor: "pointer",
+                            fontSize: 12,
+                          }}
+                        >
+                          Tekrar dene
+                        </button>
+                      </div>
+                    )}
                   </td>
                 </tr>
               )}

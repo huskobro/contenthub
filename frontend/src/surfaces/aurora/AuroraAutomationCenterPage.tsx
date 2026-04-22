@@ -55,6 +55,9 @@ import {
   AuroraInspectorSection,
   AuroraInspectorRow,
   AuroraStatusChip,
+  AuroraSegmented,
+  AuroraStructuredJsonEditor,
+  AuroraField,
 } from "./primitives";
 import { useCurrentUser } from "../../hooks/useCurrentUser";
 import { useToast } from "../../hooks/useToast";
@@ -90,27 +93,6 @@ const MODE_OPTIONS: Array<{ value: NodeOperationMode; label: string }> = [
 
 function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-function configToText(config: Record<string, unknown>): string {
-  if (Object.keys(config).length === 0) return "{}";
-  try {
-    return JSON.stringify(config, null, 2);
-  } catch {
-    return "{}";
-  }
-}
-
-function parseConfigText(text: string): Record<string, unknown> | null {
-  const trimmed = text.trim();
-  if (trimmed === "") return {};
-  try {
-    const parsed = JSON.parse(trimmed);
-    if (!isObject(parsed)) return null;
-    return parsed;
-  } catch {
-    return null;
-  }
 }
 
 // ---------------------------------------------------------------------------
@@ -689,27 +671,19 @@ function NodeInspector({
   onTest,
 }: NodeInspectorProps) {
   const [mode, setMode] = useState<NodeOperationMode>(node.operation_mode);
-  const [configText, setConfigText] = useState(() => configToText(node.config));
-  const [configErr, setConfigErr] = useState<string | null>(null);
+  const [config, setConfig] = useState<Record<string, unknown>>(() => node.config ?? {});
 
   useEffect(() => {
     setMode(node.operation_mode);
-    setConfigText(configToText(node.config));
-    setConfigErr(null);
+    setConfig(node.config ?? {});
   }, [node]);
 
   const dirty =
     mode !== node.operation_mode ||
-    configText.trim() !== configToText(node.config).trim();
+    JSON.stringify(config) !== JSON.stringify(node.config ?? {});
 
   const handleSave = () => {
-    const parsed = parseConfigText(configText);
-    if (parsed === null) {
-      setConfigErr("Config geçerli bir JSON nesnesi olmalı.");
-      return;
-    }
-    setConfigErr(null);
-    onSave({ operation_mode: mode, config: parsed });
+    onSave({ operation_mode: mode, config });
   };
 
   return (
@@ -727,36 +701,28 @@ function NodeInspector({
       </AuroraInspectorSection>
 
       <AuroraInspectorSection title="Mod seçimi">
-        <select
-          className="form-input"
+        <AuroraSegmented
+          options={MODE_OPTIONS.map((o) => ({ value: o.value, label: o.label }))}
           value={mode}
-          disabled={disabled}
-          onChange={(e) => setMode(e.target.value as NodeOperationMode)}
+          onChange={(v) => setMode(v as NodeOperationMode)}
           data-testid="ac-node-mode-select"
-        >
-          {MODE_OPTIONS.map((o) => (
-            <option key={o.value} value={o.value}>
-              {o.label}
-            </option>
-          ))}
-        </select>
+        />
       </AuroraInspectorSection>
 
       <AuroraInspectorSection title="Yapılandırma">
-        <textarea
-          className="form-input mono"
-          rows={8}
-          value={configText}
-          spellCheck={false}
-          disabled={disabled}
-          onChange={(e) => setConfigText(e.target.value)}
-          data-testid="ac-node-config-textarea"
-        />
-        {configErr && (
-          <div className="caption" style={{ color: "var(--accent-tertiary)" }}>
-            {configErr}
-          </div>
-        )}
+        <AuroraField
+          help="Form modunda anahtar/değer ekleyin; ileri JSON için Raw sekmesini kullanın."
+        >
+          <AuroraStructuredJsonEditor
+            value={config}
+            onChange={(next) =>
+              setConfig(isObject(next) ? (next as Record<string, unknown>) : {})
+            }
+            kind="object"
+            disabled={disabled}
+            data-testid="ac-node-config-textarea"
+          />
+        </AuroraField>
       </AuroraInspectorSection>
 
       <AuroraInspectorSection title="Eylemler">
