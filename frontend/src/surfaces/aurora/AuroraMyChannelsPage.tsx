@@ -98,7 +98,8 @@ export function AuroraMyChannelsPage() {
             variant="primary"
             size="sm"
             iconLeft={<Icon name="plus" size={12} />}
-            onClick={() => navigate("/user/connections")}
+            onClick={() => navigate("/user/channels/new")}
+            data-testid="my-channels-add"
           >
             Kanal ekle
           </AuroraButton>

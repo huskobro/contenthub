@@ -131,6 +131,17 @@ export function AuroraProjectDetailPage() {
         >
           Projelere dön
         </AuroraButton>
+        <AuroraButton
+          variant="primary"
+          size="sm"
+          onClick={() =>
+            navigate(`/user/projects/${project.id}/automation-center`)
+          }
+          style={{ width: "100%", marginBottom: 6 }}
+          data-testid="proj-detail-go-automation"
+        >
+          Automation Center
+        </AuroraButton>
         {latestJob && (
           <AuroraButton
             variant="secondary"

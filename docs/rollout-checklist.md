@@ -1,6 +1,6 @@
 # ContentHub v1.0 — Rollout Checklist
 
-**Güncellendi:** 2026-04-18
+**Güncellendi:** 2026-04-22 (Branding Center + Automation Center + Channel URL Onboarding wave)
 
 Bu checklist, sistemi production benzeri ortamda çalıştırmadan önce tamamlanması gereken adımları kapsar.
 
@@ -23,7 +23,7 @@ Bu checklist, sistemi production benzeri ortamda çalıştırmadan önce tamamla
 ## B. Veritabanı
 
 - [ ] Migration çalıştı: `backend/.venv/bin/python -m alembic upgrade head`
-- [ ] Tek HEAD var: `backend/.venv/bin/python -m alembic current` → `phase_al_001` (head)
+- [ ] Tek HEAD var: `backend/.venv/bin/python -m alembic current` → `branding_center_001` (head)
 - [ ] `backend/data/contenthub.db` dosyası oluşturuldu
 - [ ] Startup sonrası seed'ler çalıştı (log'da doğrulanır: `settings seed`, `auth seed`)
 - [ ] `backend/data/contenthub.db` `.gitignore`'da — commit edilmez
@@ -78,6 +78,49 @@ Bu checklist, sistemi production benzeri ortamda çalıştırmadan önce tamamla
 - [ ] Normal kullanıcı admin sayfasına erişemiyor (403)
 - [ ] Auth olmadan API çağrıları 401 dönüyor
 - [ ] Token refresh çalışıyor
+
+## I.2 Multi-user Ownership Smoke Test (stabilize P0/P1)
+
+Tek makinede birden fazla kullanıcı senaryosu — cross-user leak kapalı
+doğrulaması:
+
+- [ ] İki normal kullanıcı (userA, userB) + bir admin mevcut
+- [ ] userA bir ChannelProfile + PlatformConnection oluşturdu
+- [ ] userB giriş yapıp `/api/v1/publish/youtube/token-status?channel_profile_id=<userA-channel>` çağırdı → 403 (`baska kullanicinin kaynagi`)
+- [ ] userB `/api/v1/publish/youtube/auth-url?channel_profile_id=<userA-channel>&...` çağırdı → 403
+- [ ] userB `/api/v1/publish/youtube/video-stats?channel_profile_id=<userA-channel>` çağırdı → 403
+- [ ] userB `/api/v1/publish/youtube/video-stats/{userA-video-id}/trend` çağırdı → 404 (existence mask)
+- [ ] userB `/api/v1/publish/youtube/revoke?channel_profile_id=<userA-channel>` → 403
+- [ ] userB `/api/v1/publish/youtube/auth-callback` POST body'de `channel_profile_id=<userA-channel>` → 403 (token exchange *tetiklenmeden*)
+- [ ] userB `/api/v1/publish/youtube/auth-callback?state=<userA-channel>:abc` → 403 (state-path hijack kapalı)
+- [ ] Admin yukarıdaki çağrıların hepsine 2xx döndürüyor (admin bypass)
+- [ ] `/api/v1/providers/...` → non-admin user 403 (admin-only gate)
+- [ ] `/api/v1/source-scans/...` → non-admin user 403
+
+## I.3 Branding Center + Automation Center + Channel URL Onboarding Smoke
+
+Bu üç yüzey 2026-04-22 wave'inde son ürün kalitesinde tamamlandı. Production
+benzeri ortamda doğrulama:
+
+- [ ] Yeni kanal: `/user/channels/new` → URL gir → preview meta görünüyor →
+      confirm → done step CTA "Branding Center'a geç" çalışıyor
+- [ ] Branding Center: `/user/channels/:id/branding-center` 6 kart yükleniyor
+      (`bc-identity-card`, `bc-audience-card`, `bc-visual-card`,
+      `bc-messaging-card`, `bc-platform-card`, `bc-review-card`)
+- [ ] BC identity kartı kayıt edilince `last_applied_at` server'da set ediliyor
+      (Audit Log'da görünür)
+- [ ] BC `Apply` (dry-run=true) ile çalıştırılınca derived config preview
+      döndürüyor; final apply audit log düşüyor
+- [ ] BC completeness=tüm true olduğunda `bc-go-automation` butonu enabled,
+      diğer durumda disabled
+- [ ] Automation Center: `/user/projects/:id/automation-center` canvas
+      yükleniyor, her node `data-status` + `data-mode` taşıyor
+- [ ] Aktif (running/queued) job varsa `ac-run-now` ve `ac-save-flow` disable +
+      snapshot lock banner görünüyor
+- [ ] Admin rolü `Zorla çalıştır` butonunu görüyor; user rolü görmüyor
+- [ ] Run-Now success → otomatik olarak `/user/jobs/:job_id` (veya
+      `/admin/jobs/:job_id`) sayfasına navigate ediyor
+- [ ] Evaluate blockers → banner'da `Engeller: ...` listesi görünüyor
 
 ## J. Yedekleme
 

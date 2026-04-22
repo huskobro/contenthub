@@ -157,15 +157,16 @@ Job başladığında tüm ayar ve prompt değerleri snapshot'lanır — çalış
 
 ---
 
-## Test Durumu (2026-04-20, post-merge)
+## Test Durumu (2026-04-21, stabilize P0/P1)
 
 | Kapsam | Sonuç |
 |---|---|
-| Backend pytest (geniş) | ✅ 2559/2559 PASS |
+| Backend pytest (fast smoke) | ✅ 2427/2427 PASS, 161 deselected (integration/slow/render) |
 | Frontend vitest (full) | ✅ 2696/2696 PASS (237 dosya) |
 | Frontend `tsc --noEmit` | ✅ exit 0 |
-| Frontend `vite build` | ✅ exit 0 |
+| Frontend `vite build` | ✅ exit 0 — vendor chunks split, index 1.71 MB / gzip 380 kB |
 | Alembic fresh-DB | ✅ head: `phase_al_001` |
+| Install contract | ✅ backend deps pinned, renderer `build` artık render tetiklemiyor |
 
 ---
 

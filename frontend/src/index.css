@@ -21,6 +21,7 @@
 @import "./styles/aurora/prompts.css";
 @import "./styles/aurora/audit.css";
 @import "./styles/aurora/wizard.css";
+@import "./styles/aurora/automation-canvas.css";
 @import "./styles/aurora/responsive.css";
 
 /* Tailwind CSS base layers */

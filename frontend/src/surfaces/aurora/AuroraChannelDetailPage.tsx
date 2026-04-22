@@ -73,6 +73,15 @@ export function AuroraChannelDetailPage() {
           Kanallara dön
         </AuroraButton>
         <AuroraButton
+          variant="primary"
+          size="sm"
+          style={{ width: "100%", marginBottom: 6 }}
+          onClick={() => navigate(`/user/channels/${channel.id}/branding-center`)}
+          data-testid="channel-detail-go-branding"
+        >
+          Branding Center
+        </AuroraButton>
+        <AuroraButton
           variant="secondary"
           size="sm"
           style={{ width: "100%", marginBottom: 6 }}

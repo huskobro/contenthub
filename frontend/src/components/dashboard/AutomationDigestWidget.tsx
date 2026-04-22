@@ -162,7 +162,7 @@ export function AutomationDigestWidget() {
                   "flex items-center justify-between gap-3 py-1",
                   "hover:bg-surface-subtle rounded-md cursor-pointer transition-colors duration-fast",
                 )}
-                onClick={() => navigate(`/user/projects/${p.project_id}/automation`)}
+                onClick={() => navigate(`/user/projects/${p.project_id}/automation-center`)}
                 data-testid={`digest-upcoming-${p.project_id}`}
               >
                 <div className="flex-1 min-w-0">

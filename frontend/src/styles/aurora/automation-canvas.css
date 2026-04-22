@@ -1,0 +1,180 @@
+/* ============================================================
+   Aurora Automation Canvas — fixed-shape pipeline visualization
+   ============================================================
+   Scoped to [data-surface="aurora"] so it never bleeds into
+   other surfaces. Tokens come from tokens.css (text-*, bg-*,
+   border-*, accent-*, space-*).
+   ============================================================ */
+
+[data-surface="aurora"] .automation-canvas {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: var(--space-3) 0;
+  position: relative;
+}
+
+[data-surface="aurora"] .automation-canvas.empty {
+  align-items: center;
+  justify-content: center;
+  min-height: 220px;
+  border: 1px dashed var(--border-default);
+  border-radius: 12px;
+  padding: var(--space-6);
+  background: var(--bg-inset);
+}
+
+[data-surface="aurora"] .automation-canvas.locked {
+  opacity: 0.92;
+}
+
+[data-surface="aurora"] .automation-canvas-lock-banner {
+  align-self: stretch;
+  padding: var(--space-2) var(--space-3);
+  margin-bottom: var(--space-3);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  background: var(--accent-tertiary-muted);
+  color: var(--accent-tertiary);
+  text-align: center;
+}
+
+[data-surface="aurora"] .automation-canvas-node-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+[data-surface="aurora"] .automation-canvas-node {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+  max-width: 520px;
+  padding: var(--space-4);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  border-radius: 12px;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 120ms ease, transform 120ms ease, box-shadow 120ms ease;
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+}
+
+[data-surface="aurora"] .automation-canvas-node:hover {
+  border-color: var(--border-contrast);
+  transform: translateY(-1px);
+}
+
+[data-surface="aurora"] .automation-canvas-node:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+[data-surface="aurora"] .automation-canvas-node.selected {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 2px var(--accent-primary-muted);
+}
+
+[data-surface="aurora"] .automation-canvas-node.is-blocked {
+  border-color: rgba(232, 122, 122, 0.45);
+}
+
+[data-surface="aurora"] .automation-canvas-node.is-disabled {
+  opacity: 0.65;
+}
+
+[data-surface="aurora"] .automation-canvas-node.is-complete {
+  border-color: var(--accent-primary-muted);
+}
+
+[data-surface="aurora"] .automation-canvas.locked .automation-canvas-node {
+  cursor: not-allowed;
+}
+
+[data-surface="aurora"] .automation-canvas-node-head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+[data-surface="aurora"] .automation-canvas-node-scope {
+  color: var(--text-muted);
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  font-size: var(--type-label-size);
+}
+
+[data-surface="aurora"] .automation-canvas-node-title {
+  margin: 0;
+  font-size: var(--type-h3-size);
+  font-weight: var(--type-h3-weight);
+  line-height: var(--type-h3-leading);
+  letter-spacing: var(--type-h3-tracking);
+  color: var(--text-primary);
+}
+
+[data-surface="aurora"] .automation-canvas-node-badges {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+[data-surface="aurora"] .automation-canvas-node-desc {
+  color: var(--text-secondary);
+  font-size: var(--type-body-sm-size);
+  line-height: var(--type-body-sm-leading);
+  margin: 0;
+}
+
+[data-surface="aurora"] .automation-canvas-node-extras {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+[data-surface="aurora"] .automation-canvas-node-extras li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+[data-surface="aurora"] .automation-canvas-node-extra-detail {
+  color: var(--text-muted);
+}
+
+[data-surface="aurora"] .automation-canvas-node-foot {
+  color: var(--text-muted);
+  border-top: 1px dashed var(--border-subtle);
+  padding-top: var(--space-2);
+}
+
+[data-surface="aurora"] .automation-canvas-node-outcome {
+  color: var(--text-secondary);
+}
+
+[data-surface="aurora"] .automation-canvas-connector {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 36px;
+  pointer-events: none;
+}
+
+[data-surface="aurora"] .automation-canvas-connector-line {
+  flex: 1;
+  width: 2px;
+  background: var(--border-strong);
+}
+
+[data-surface="aurora"] .automation-canvas-connector-arrow {
+  color: var(--text-muted);
+  font-size: 14px;
+  line-height: 1;
+  transform: translateY(-2px);
+}

@@ -23,7 +23,16 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.channels.metadata_fetch import ChannelMetadata, fetch_channel_metadata
+from app.channels.preview_token import (
+    PREVIEW_TOKEN_TTL_SECONDS,
+    PreviewTokenError,
+    issue_preview_token,
+    verify_preview_token,
+)
 from app.channels.schemas import (
+    ChannelImportConfirmRequest,
+    ChannelImportPreview,
+    ChannelImportPreviewRequest,
     ChannelProfileCreate,
     ChannelProfileCreateFromURL,
     ChannelProfileUpdate,
@@ -354,4 +363,147 @@ async def delete_channel_profile(
     profile.status = "archived"
     await db.commit()
     await db.refresh(profile)
+    return profile
+
+
+# ---------------------------------------------------------------------------
+# Branding Center onboarding — preview + confirm (no-DB-row preview flow)
+# ---------------------------------------------------------------------------
+
+
+async def preview_channel_import(
+    db: AsyncSession,
+    *,
+    user_id: str,
+    payload: ChannelImportPreviewRequest,
+) -> ChannelImportPreview:
+    """Parse + fetch metadata WITHOUT inserting a DB row.
+
+    Duplicate check still runs (early fail) so the user cannot spend a
+    confirmation step only to be rejected on insert.
+    """
+    try:
+        info = parse_channel_url(payload.source_url)
+    except ChannelURLError as exc:
+        raise ValueError(str(exc))
+
+    await _ensure_no_duplicate(
+        db, user_id=user_id, normalized_url=info.normalized_url
+    )
+
+    meta = await fetch_channel_metadata(info)
+
+    token = issue_preview_token(
+        user_id=user_id,
+        normalized_url=info.normalized_url,
+        platform=info.platform,
+    )
+    return ChannelImportPreview(
+        preview_token=token,
+        platform=info.platform,
+        source_url=info.source_url,
+        normalized_url=info.normalized_url,
+        url_kind=info.kind,
+        external_channel_id=meta.external_channel_id or info.external_channel_id,
+        handle=meta.handle or info.handle,
+        title=meta.title,
+        avatar_url=meta.avatar_url,
+        description=meta.description,
+        is_partial=meta.is_partial,
+        fetch_error=meta.fetch_error,
+        expires_in_seconds=PREVIEW_TOKEN_TTL_SECONDS,
+    )
+
+
+async def confirm_channel_import(
+    db: AsyncSession,
+    *,
+    user_id: str,
+    payload: ChannelImportConfirmRequest,
+) -> ChannelProfile:
+    """Confirm the preview: verify the signed token, re-fetch metadata
+    (source of truth at write time), then create the profile.
+
+    Why re-fetch instead of trusting preview data:
+      - Preview data is minutes old; a re-fetch is cheap.
+      - We never trust client-supplied metadata — signed token only
+        authorizes the create, not what gets stored.
+    """
+    # 1) Parse the URL the client is confirming with.
+    try:
+        info = parse_channel_url(payload.source_url)
+    except ChannelURLError as exc:
+        raise ValueError(str(exc))
+
+    # 2) Verify the signed token and cross-check the URL.
+    try:
+        claims = verify_preview_token(
+            payload.preview_token, expected_user_id=user_id
+        )
+    except PreviewTokenError as exc:
+        raise ValueError(str(exc))
+
+    if claims.get("nurl") != info.normalized_url:
+        raise ValueError(
+            "Onizleme kodu farkli bir URL icin verildi — lutfen yeniden onizleyin"
+        )
+
+    # 3) Duplicate guard — prevents race between preview and confirm.
+    await _ensure_no_duplicate(
+        db, user_id=user_id, normalized_url=info.normalized_url
+    )
+
+    # 4) Re-fetch metadata (source of truth at insert time).
+    meta = await fetch_channel_metadata(info)
+
+    profile_name = payload.profile_name or _derive_profile_name(info, meta)
+    slug_base = _derive_channel_slug(info, meta)
+    slug = await _ensure_unique_slug(db, user_id=user_id, slug=slug_base)
+
+    now = datetime.now(timezone.utc)
+    profile = ChannelProfile(
+        user_id=user_id,
+        profile_name=profile_name,
+        channel_slug=slug,
+        profile_type=None,
+        default_language=payload.default_language,
+        notes=payload.notes,
+        platform=info.platform,
+        source_url=info.source_url,
+        normalized_url=info.normalized_url,
+        external_channel_id=meta.external_channel_id or info.external_channel_id,
+        handle=meta.handle or info.handle,
+        title=meta.title,
+        avatar_url=meta.avatar_url,
+        metadata_json=(
+            json.dumps(
+                {
+                    "description": meta.description,
+                    "fetch_error": meta.fetch_error,
+                    "url_kind": info.kind,
+                    "import_flow": "preview_confirm",
+                },
+                ensure_ascii=False,
+            )
+            if (meta.description or meta.fetch_error or info.kind)
+            else None
+        ),
+        import_status="partial" if meta.is_partial else "success",
+        import_error=meta.fetch_error,
+        last_import_at=now,
+        status="active",
+    )
+    try:
+        db.add(profile)
+        await db.commit()
+        await db.refresh(profile)
+    except IntegrityError as exc:
+        await db.rollback()
+        raise ValueError("Bu kanal URL'i zaten eklenmis") from exc
+    logger.info(
+        "ChannelProfile preview-confirm: id=%s platform=%s status=%s",
+        profile.id,
+        profile.platform,
+        profile.import_status,
+    )
     return profile

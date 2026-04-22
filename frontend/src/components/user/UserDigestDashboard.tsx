@@ -7,7 +7,7 @@
  * 4 KPI tile:
  *   1) Onayımı Bekleyen  → /user/publish (review_state pending_review)
  *   2) Bu Hafta Yayın    → /user/publish (bu haftanın scheduled/published)
- *   3) Başarısız İş      → /user/jobs    (status=failed, son 7 gün)
+ *   3) Başarısız İş      → /user/inbox   (failures land in inbox; /user/jobs has no list route, only :id)
  *   4) Gelen Kutusu      → /user/inbox   (pending status)
  *
  * Veri stratejisi (MEMORY §5.2 kararı — yeni backend endpoint açmıyoruz):
@@ -258,7 +258,7 @@ export function UserDigestDashboard({ className }: UserDigestDashboardProps) {
               note="Son 7 gün"
               testId="user-digest-failed-jobs"
               accentColor="var(--ch-error, #e03131)"
-              onClick={() => navigate("/user/jobs")}
+              onClick={() => navigate("/user/inbox")}
             />
             <ClickableTile
               label="Gelen Kutusu"

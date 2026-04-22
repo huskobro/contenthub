@@ -6,23 +6,49 @@ build-backend = "setuptools.build_meta"
 name = "contenthub-backend"
 version = "0.1.0"
 requires-python = ">=3.9"
+# Dependency contract — pin ranges carefully.
+# Floor = current-installed known-good version (fresh install must yield ≥ this).
+# Ceiling = next breaking line to prevent silent upgrades on fresh installs.
+# Adding bcrypt / cryptography / python-multipart explicitly: they are imported
+# at runtime (app/auth/password.py, app/core/crypto.py, FastAPI UploadFile) but
+# previously pulled in transitively — a fresh install with different resolver
+# order could drop them.
 dependencies = [
-    "fastapi>=0.111.0",
-    "uvicorn[standard]>=0.29.0",
-    "pydantic-settings>=2.2.0",
-    "sqlalchemy>=2.0.0",
-    "aiosqlite>=0.20.0",
-    "alembic>=1.13.0",
-    "greenlet>=3.0.0",
-    "httpx>=0.27.0",
-    "edge-tts>=6.1.0",
-    "feedparser>=6.0.0",
+    "fastapi>=0.115.0,<0.130",
+    "uvicorn[standard]>=0.29.0,<0.40",
+    "pydantic>=2.7.0,<3.0",
+    "pydantic-settings>=2.2.0,<3.0",
+    "sqlalchemy>=2.0.30,<2.1",
+    "aiosqlite>=0.20.0,<1.0",
+    "alembic>=1.13.0,<2.0",
+    "greenlet>=3.0.0,<4.0",
+    "httpx>=0.27.0,<1.0",
+    "edge-tts>=6.1.0,<8.0",
+    "feedparser>=6.0.0,<7.0",
+    "bcrypt>=4.1.0,<6.0",
+    "cryptography>=42.0.0,<50.0",
+    "python-multipart>=0.0.9,<1.0",
+    # JWT — used in app/auth/jwt.py, app/auth/dependencies.py, app/auth/router.py.
+    # Missing this → backend cannot import; every protected endpoint 500s.
+    "python-jose[cryptography]>=3.3.0,<4.0",
+    # Audio duration probe — used by TTS measure step (shared_helpers.py,
+    # edge_tts_provider.py, dubvoice_provider.py). Failure is caught and logs
+    # a warning, but then duration is None and downstream render/subtitle
+    # timing is wrong — treat as required.
+    "mutagen>=1.47.0,<2.0",
 ]
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=8.1.0",
-    "pytest-asyncio>=0.23.0",
+    "pytest>=8.1.0,<9.0",
+    "pytest-asyncio>=0.23.0,<2.0",
+    "pytest-timeout>=2.3.0,<3.0",
+]
+# Optional: Local whisper transcription. Not needed unless the operator opts
+# into LocalWhisperProvider (providers/whisper/local_whisper_provider.py).
+# Install with:  pip install -e ".[whisper]"
+whisper = [
+    "faster-whisper>=1.0.0,<2.0",
 ]
 
 [tool.setuptools.packages.find]
@@ -32,3 +58,8 @@ include = ["app*"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
+# Global safety net — individual tests can override with @pytest.mark.timeout(N).
+# Prevents a single hung coroutine / blocked network call from wedging CI.
+# 120s is generous; render / publish simulations are isolated via mocks.
+timeout = 120
+timeout_method = "thread"

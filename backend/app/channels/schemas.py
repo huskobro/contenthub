@@ -30,6 +30,53 @@ class ChannelProfileCreateFromURL(BaseModel):
     notes: Optional[str] = None
 
 
+# ---------------------------------------------------------------------------
+# Channel URL onboarding — preview flow (Branding Center entry gate)
+# ---------------------------------------------------------------------------
+
+
+class ChannelImportPreviewRequest(BaseModel):
+    """Step 1 of URL onboarding: the user submits a URL, we return a preview
+    card + a signed preview_token. No DB row is created."""
+
+    source_url: str = Field(..., min_length=4, max_length=2000)
+
+
+class ChannelImportPreview(BaseModel):
+    """Preview payload — honest about what metadata fetch actually returned.
+
+    `is_partial=True` means the DB row, if confirmed, will land in
+    `import_status='partial'` (title/avatar missing). UI must surface this
+    clearly before the user confirms.
+    """
+
+    preview_token: str
+    platform: Optional[str] = None
+    source_url: str
+    normalized_url: str
+    url_kind: Optional[str] = None
+    external_channel_id: Optional[str] = None
+    handle: Optional[str] = None
+    title: Optional[str] = None
+    avatar_url: Optional[str] = None
+    description: Optional[str] = None
+    is_partial: bool = False
+    fetch_error: Optional[str] = None
+    expires_in_seconds: int
+
+
+class ChannelImportConfirmRequest(BaseModel):
+    """Step 2 of URL onboarding: the user accepts the preview and we create
+    the ChannelProfile row. `preview_token` is the token issued by the
+    /preview endpoint; `source_url` must match the token."""
+
+    preview_token: str = Field(..., min_length=1)
+    source_url: str = Field(..., min_length=4, max_length=2000)
+    default_language: str = Field("tr", max_length=10)
+    notes: Optional[str] = None
+    profile_name: Optional[str] = Field(None, min_length=1, max_length=255)
+
+
 class ChannelProfileUpdate(BaseModel):
     profile_name: Optional[str] = Field(None, min_length=1, max_length=255)
     profile_type: Optional[str] = Field(None, max_length=100)

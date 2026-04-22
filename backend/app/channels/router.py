@@ -20,6 +20,9 @@ from app.auth.ownership import (
 )
 from app.channels import service
 from app.channels.schemas import (
+    ChannelImportConfirmRequest,
+    ChannelImportPreview,
+    ChannelImportPreviewRequest,
     ChannelProfileCreate,
     ChannelProfileCreateFromURL,
     ChannelProfileResponse,
@@ -115,6 +118,62 @@ async def create_channel_profile_from_url(
         if "zaten eklenmis" in msg:
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=msg)
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=msg)
+
+
+# ---------------------------------------------------------------------------
+# PREVIEW / CONFIRM — Branding Center URL onboarding (no DB row on preview)
+# ---------------------------------------------------------------------------
+
+
+@router.post(
+    "/import-preview",
+    response_model=ChannelImportPreview,
+)
+async def import_preview(
+    payload: ChannelImportPreviewRequest,
+    ctx: UserContext = Depends(get_current_user_context),
+    db: AsyncSession = Depends(get_db),
+):
+    """Returns a no-DB-row preview + signed preview_token. UI decides
+    whether to confirm. Preview is scoped to the current user — a
+    token issued here cannot be redeemed by another user."""
+    try:
+        return await service.preview_channel_import(
+            db, user_id=ctx.user_id, payload=payload
+        )
+    except ValueError as exc:
+        msg = str(exc)
+        if "zaten eklenmis" in msg:
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=msg)
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=msg
+        )
+
+
+@router.post(
+    "/import-confirm",
+    response_model=ChannelProfileResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def import_confirm(
+    payload: ChannelImportConfirmRequest,
+    ctx: UserContext = Depends(get_current_user_context),
+    db: AsyncSession = Depends(get_db),
+):
+    """Confirms the preview and creates the ChannelProfile. Token must
+    be issued for this user AND the same normalized URL — otherwise
+    422. This is where the real DB row is created."""
+    try:
+        return await service.confirm_channel_import(
+            db, user_id=ctx.user_id, payload=payload
+        )
+    except ValueError as exc:
+        msg = str(exc)
+        if "zaten eklenmis" in msg:
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=msg)
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=msg
+        )
 
 
 # ---------------------------------------------------------------------------

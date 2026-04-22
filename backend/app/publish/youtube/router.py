@@ -27,8 +27,17 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
 from app.audit.service import write_audit_log
+from app.auth.ownership import (
+    UserContext,
+    ensure_owner_or_admin,
+    get_current_user_context,
+)
 from app.core.crypto import get_token_cipher
 from app.db.models import PlatformConnection, PlatformCredential, ChannelProfile
+from app.publish.ownership import (
+    ensure_channel_profile_ownership,
+    ensure_platform_connection_ownership,
+)
 from app.publish.youtube.token_store import DBYouTubeTokenStore, YOUTUBE_SCOPE
 from app.publish.youtube.errors import YouTubeAuthError
 from app.settings.credential_resolver import resolve_credential, expand_youtube_client_id
@@ -102,11 +111,20 @@ async def _resolve_connection(
     db: AsyncSession,
     connection_id: Optional[str] = None,
     channel_profile_id: Optional[str] = None,
+    ctx: Optional[UserContext] = None,
 ) -> Optional[PlatformConnection]:
     """
     Resolve a YouTube PlatformConnection.
 
     Priority: connection_id > channel_profile_id > first available.
+
+    Stabilize-v1: when ctx is provided and ctx.is_admin is False, the
+    "first available" fallback is scoped to connections whose
+    ChannelProfile.user_id matches ctx.user_id. Without this scope the
+    fallback path silently returned the newest primary connection in the
+    system — meaning a non-admin caller with no YouTube connection could
+    land on another user's connection. Callers that pre-validate id
+    ownership via _assert_channel_or_connection_ownership are unaffected.
     """
     if connection_id:
         conn = await db.get(PlatformConnection, connection_id)
@@ -120,6 +138,12 @@ async def _resolve_connection(
     )
     if channel_profile_id:
         q = q.where(PlatformConnection.channel_profile_id == channel_profile_id)
+    elif ctx is not None and not ctx.is_admin:
+        # Non-admin no-id fallback: join ChannelProfile and restrict by owner.
+        q = q.join(
+            ChannelProfile,
+            ChannelProfile.id == PlatformConnection.channel_profile_id,
+        ).where(ChannelProfile.user_id == ctx.user_id)
     q = q.order_by(
         PlatformConnection.is_primary.desc(),
         PlatformConnection.created_at.desc(),
@@ -128,12 +152,50 @@ async def _resolve_connection(
     return result.scalars().first()
 
 
+async def _assert_channel_or_connection_ownership(
+    db: AsyncSession,
+    ctx: UserContext,
+    *,
+    connection_id: Optional[str] = None,
+    channel_profile_id: Optional[str] = None,
+) -> None:
+    """
+    Guard YouTube endpoints that accept arbitrary connection_id /
+    channel_profile_id query params. Admin always passes; non-admin must
+    reference a channel / connection they own OR rely on the ctx-scoped
+    "first available" fallback in _resolve_connection (which now filters
+    by ChannelProfile.user_id for non-admin callers).
+
+    The no-id branch is therefore safe to remain as a no-op: any
+    connection _resolve_connection hands back is already owned by ctx.
+    """
+    if ctx.is_admin:
+        return
+    if connection_id:
+        await ensure_platform_connection_ownership(db, connection_id, ctx)
+        return
+    if channel_profile_id:
+        await ensure_channel_profile_ownership(db, channel_profile_id, ctx)
+        return
+    # No identifier provided — rely on _resolve_connection's ctx scoping.
+    # We intentionally do NOT 400 here; legacy dashboards calling /status
+    # with no params and one owned connection must keep working.
+
+
 async def _find_or_create_connection(
     db: AsyncSession,
     channel_profile_id: str,
+    ctx: Optional[UserContext] = None,
 ) -> PlatformConnection:
-    """Find existing YouTube connection for channel_profile_id, or create a new one."""
-    existing = await _resolve_connection(db, channel_profile_id=channel_profile_id)
+    """Find existing YouTube connection for channel_profile_id, or create a new one.
+
+    When ``ctx`` is provided and non-admin, the lookup is scoped to connections
+    owned by the caller (defense-in-depth — callers are expected to have
+    already enforced ownership on ``channel_profile_id``).
+    """
+    existing = await _resolve_connection(
+        db, channel_profile_id=channel_profile_id, ctx=ctx,
+    )
     if existing:
         return existing
 
@@ -192,9 +254,13 @@ async def _fetch_youtube_channel_info(access_token: str) -> Optional[dict]:
 @router.get("/channel-credentials/{channel_profile_id}", response_model=ChannelCredentialsResponse)
 async def get_channel_credentials(
     channel_profile_id: str,
+    ctx: UserContext = Depends(get_current_user_context),
     db: AsyncSession = Depends(get_db),
 ):
     """Belirli bir kanal profili icin YouTube API kimlik bilgileri durumunu dondurur."""
+    await _assert_channel_or_connection_ownership(
+        db, ctx, channel_profile_id=channel_profile_id
+    )
     conn = await _resolve_connection(db, channel_profile_id=channel_profile_id)
     if not conn:
         return ChannelCredentialsResponse(
@@ -224,6 +290,7 @@ async def get_channel_credentials(
 async def save_channel_credentials(
     channel_profile_id: str,
     body: ChannelCredentialsRequest,
+    ctx: UserContext = Depends(get_current_user_context),
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -232,6 +299,10 @@ async def save_channel_credentials(
     PlatformConnection + PlatformCredential yoksa olusturur.
     Sadece client_id/secret saklar — OAuth akisi ayrica gereklidir.
     """
+    # Stabilize-v1: only owners/admin can mutate credentials of a channel.
+    await _assert_channel_or_connection_ownership(
+        db, ctx, channel_profile_id=channel_profile_id
+    )
     # Validate channel exists
     ch = await db.get(ChannelProfile, channel_profile_id)
     if not ch:
@@ -302,6 +373,7 @@ async def get_auth_url(
     redirect_uri: str,
     channel_profile_id: str = Query(..., description="ChannelProfile ID — baglanti bu profile'a scope edilir"),
     client_id: Optional[str] = None,
+    ctx: UserContext = Depends(get_current_user_context),
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -309,6 +381,12 @@ async def get_auth_url(
 
     channel_profile_id zorunlu: OAuth callback'te bu ID ile PlatformConnection olusturulacak.
     """
+    # Stabilize-v1: Non-admin may only mint OAuth URLs for channels they own.
+    # Otherwise any authenticated user could complete OAuth against another
+    # user's channel_profile_id and hijack the resulting PlatformConnection.
+    await _assert_channel_or_connection_ownership(
+        db, ctx, channel_profile_id=channel_profile_id
+    )
     # Validate channel_profile_id exists
     profile = await db.get(ChannelProfile, channel_profile_id)
     if not profile:
@@ -321,7 +399,9 @@ async def get_auth_url(
     resolved_client_id = client_id
 
     if not resolved_client_id:
-        conn = await _resolve_connection(db, channel_profile_id=channel_profile_id)
+        conn = await _resolve_connection(
+            db, channel_profile_id=channel_profile_id, ctx=ctx,
+        )
         if conn:
             cred = await _token_store.load_credential(db, conn.id)
             if cred and cred.client_id:
@@ -362,6 +442,7 @@ async def get_auth_url(
 async def auth_callback(
     body: AuthCallbackRequest,
     state: Optional[str] = Query(None, description="channel_profile_id from OAuth state param"),
+    ctx: UserContext = Depends(get_current_user_context),
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -369,6 +450,10 @@ async def auth_callback(
 
     channel_profile_id body'den veya state query param'dan alinir.
     Basarili exchange sonrasi PlatformConnection + PlatformCredential olusturulur/guncellenir.
+
+    Ownership: non-admin kullanici yalnizca kendi ChannelProfile'i icin OAuth
+    callback tamamlayabilir. Aksi takdirde baska bir kullanicinin kanalina
+    token baglamak mumkun olurdu (hijack).
     """
     # Resolve channel_profile_id: body > state query param.
     # State may be `channel_profile_id:nonce` (account-selector hardening) or
@@ -382,6 +467,13 @@ async def auth_callback(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="channel_profile_id zorunlu. Body'de veya state query param olarak gonderin.",
         )
+
+    # Stabilize-v1: enforce ownership BEFORE any credential lookup or token
+    # exchange. Otherwise any authenticated user could POST /auth-callback
+    # with another user's channel_profile_id and bind OAuth tokens to it.
+    await _assert_channel_or_connection_ownership(
+        db, ctx, channel_profile_id=channel_profile_id
+    )
 
     # Validate channel_profile_id exists
     profile = await db.get(ChannelProfile, channel_profile_id)
@@ -397,7 +489,9 @@ async def auth_callback(
     resolved_client_secret = body.client_secret
 
     if not resolved_client_id or not resolved_client_secret:
-        conn = await _resolve_connection(db, channel_profile_id=channel_profile_id)
+        conn = await _resolve_connection(
+            db, channel_profile_id=channel_profile_id, ctx=ctx,
+        )
         if conn:
             existing_cred = await _token_store.load_credential(db, conn.id)
             if existing_cred:
@@ -446,7 +540,9 @@ async def auth_callback(
 
     # Find or create PlatformConnection
     try:
-        connection = await _find_or_create_connection(db, channel_profile_id)
+        connection = await _find_or_create_connection(
+            db, channel_profile_id, ctx=ctx,
+        )
     except Exception as exc:  # noqa: BLE001
         logger.exception(
             "auth-callback: _find_or_create_connection failed for profile=%s",
@@ -571,6 +667,7 @@ async def auth_callback(
 async def token_status(
     connection_id: Optional[str] = Query(None),
     channel_profile_id: Optional[str] = Query(None),
+    ctx: UserContext = Depends(get_current_user_context),
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -579,7 +676,15 @@ async def token_status(
     connection_id veya channel_profile_id ile belirli baglanti sorgulanabilir.
     Hicbiri verilmezse ilk uygun baglanti kullanilir (geriye uyumluluk).
     """
-    conn = await _resolve_connection(db, connection_id=connection_id, channel_profile_id=channel_profile_id)
+    await _assert_channel_or_connection_ownership(
+        db, ctx, connection_id=connection_id, channel_profile_id=channel_profile_id
+    )
+    conn = await _resolve_connection(
+        db,
+        connection_id=connection_id,
+        channel_profile_id=channel_profile_id,
+        ctx=ctx,
+    )
     if not conn:
         return TokenStatusResponse(
             has_credentials=False,
@@ -617,12 +722,21 @@ async def token_status(
 async def get_channel_info(
     connection_id: Optional[str] = Query(None),
     channel_profile_id: Optional[str] = Query(None),
+    ctx: UserContext = Depends(get_current_user_context),
     db: AsyncSession = Depends(get_db),
 ):
     """
     Bagli YouTube kanalinin temel bilgilerini dondurur.
     """
-    conn = await _resolve_connection(db, connection_id=connection_id, channel_profile_id=channel_profile_id)
+    await _assert_channel_or_connection_ownership(
+        db, ctx, connection_id=connection_id, channel_profile_id=channel_profile_id
+    )
+    conn = await _resolve_connection(
+        db,
+        connection_id=connection_id,
+        channel_profile_id=channel_profile_id,
+        ctx=ctx,
+    )
     if not conn:
         return ChannelInfoResponse(
             connected=False,
@@ -699,12 +813,21 @@ async def get_channel_videos(
     max_results: int = 50,
     connection_id: Optional[str] = Query(None),
     channel_profile_id: Optional[str] = Query(None),
+    ctx: UserContext = Depends(get_current_user_context),
     db: AsyncSession = Depends(get_db),
 ):
     """
     Bagli YouTube kanalinin tum videolarini dondurur (max 50).
     """
-    conn = await _resolve_connection(db, connection_id=connection_id, channel_profile_id=channel_profile_id)
+    await _assert_channel_or_connection_ownership(
+        db, ctx, connection_id=connection_id, channel_profile_id=channel_profile_id
+    )
+    conn = await _resolve_connection(
+        db,
+        connection_id=connection_id,
+        channel_profile_id=channel_profile_id,
+        ctx=ctx,
+    )
     if not conn:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -730,9 +853,10 @@ async def get_channel_videos(
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(exc))
 
     import httpx
-    from app.db.models import PublishRecord
+    from app.db.models import Job, PublishRecord
 
-    # ContentHub yayin listesi — badge icin
+    # ContentHub yayin listesi — badge icin.
+    # Stabilize-v1: non-admin only sees their own publishes in the badge set.
     ch_stmt = (
         select(PublishRecord.platform_video_id)
         .where(
@@ -742,6 +866,10 @@ async def get_channel_videos(
             PublishRecord.platform_video_id != "",
         )
     )
+    if not ctx.is_admin:
+        ch_stmt = ch_stmt.join(Job, Job.id == PublishRecord.job_id).where(
+            Job.owner_id == ctx.user_id
+        )
     ch_result = await db.execute(ch_stmt)
     contenthub_ids: Set[str] = {row[0] for row in ch_result.fetchall()}
 
@@ -881,12 +1009,21 @@ class VideoStatsResponse(BaseModel):
 async def get_video_stats(
     connection_id: Optional[str] = Query(None),
     channel_profile_id: Optional[str] = Query(None),
+    ctx: UserContext = Depends(get_current_user_context),
     db: AsyncSession = Depends(get_db),
 ):
     """
     ContentHub uzerinden yayinlanan videolarin YouTube istatistiklerini dondurur.
     """
-    conn = await _resolve_connection(db, connection_id=connection_id, channel_profile_id=channel_profile_id)
+    await _assert_channel_or_connection_ownership(
+        db, ctx, connection_id=connection_id, channel_profile_id=channel_profile_id
+    )
+    conn = await _resolve_connection(
+        db,
+        connection_id=connection_id,
+        channel_profile_id=channel_profile_id,
+        ctx=ctx,
+    )
     if not conn:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -908,8 +1045,13 @@ async def get_video_stats(
             detail=f"YouTube token alinamadi: {exc}",
         )
 
-    from app.db.models import PublishRecord
+    from app.db.models import Job, PublishRecord
 
+    # Stabilize-v1: scope PublishRecord enumeration by owner for non-admin.
+    # Previously the query collected every user's published YouTube video IDs,
+    # which were then fed into the public YouTube API — the response body
+    # distinguished foreign records only by is_contenthub boolean, but the
+    # raw video IDs of other users' publishes were already leaked upstream.
     stmt = (
         select(PublishRecord.platform_video_id)
         .where(
@@ -921,6 +1063,10 @@ async def get_video_stats(
         .order_by(PublishRecord.published_at.desc())
         .limit(50)
     )
+    if not ctx.is_admin:
+        stmt = stmt.join(Job, Job.id == PublishRecord.job_id).where(
+            Job.owner_id == ctx.user_id
+        )
     result = await db.execute(stmt)
     video_ids = [row[0] for row in result.fetchall()]
 
@@ -1038,24 +1184,43 @@ class VideoStatsTrendResponse(BaseModel):
 
 
 @router.get("/video-stats/{video_id}/trend", response_model=VideoStatsTrendResponse)
-async def get_video_stats_trend(video_id: str, db: AsyncSession = Depends(get_db)):
+async def get_video_stats_trend(
+    video_id: str,
+    ctx: UserContext = Depends(get_current_user_context),
+    db: AsyncSession = Depends(get_db),
+):
     """
     Belirli bir videonun zaman serisi istatistiklerini dondurur.
     Local snapshot verisi kullanir — YouTube Analytics API scope gerektirmez.
     """
     import json
-    from app.db.models import VideoStatsSnapshot, PublishRecord
+    from app.db.models import Job, VideoStatsSnapshot, PublishRecord
 
-    stmt = select(PublishRecord.payload_json).where(
+    # Stabilize-v1: non-admin may only read trend for publishes they own.
+    # The video_id is a YouTube-public identifier, but the stored title /
+    # PublishRecord metadata belong to a specific owner.
+    stmt = select(PublishRecord).where(
         PublishRecord.platform_video_id == video_id,
         PublishRecord.platform == "youtube",
     ).limit(1)
+    if not ctx.is_admin:
+        stmt = stmt.join(Job, Job.id == PublishRecord.job_id).where(
+            Job.owner_id == ctx.user_id
+        )
     result = await db.execute(stmt)
-    row = result.first()
+    record = result.scalars().first()
+    if not record and not ctx.is_admin:
+        # Non-admin can't see this video — mask as 404 to avoid confirming
+        # existence across users.
+        raise HTTPException(status_code=404, detail="Video bulunamadi.")
     title = "Bilinmeyen Video"
-    if row and row[0]:
+    if record and record.payload_json:
         try:
-            payload = json.loads(row[0]) if isinstance(row[0], str) else row[0]
+            payload = (
+                json.loads(record.payload_json)
+                if isinstance(record.payload_json, str)
+                else record.payload_json
+            )
             title = payload.get("title", title)
         except (json.JSONDecodeError, TypeError):
             pass
@@ -1102,6 +1267,7 @@ async def revoke_credentials(
             "profil altindaki YouTube baglantisi bulunup silinir."
         ),
     ),
+    ctx: UserContext = Depends(get_current_user_context),
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -1118,12 +1284,17 @@ async def revoke_credentials(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="connection_id veya channel_profile_id gereklidir.",
         )
+    # Stabilize-v1: only owner/admin may revoke.
+    await _assert_channel_or_connection_ownership(
+        db, ctx, connection_id=connection_id, channel_profile_id=channel_profile_id
+    )
 
-    # Resolve connection
+    # Resolve connection (ctx-scoped for defense-in-depth)
     conn = await _resolve_connection(
         db,
         connection_id=connection_id,
         channel_profile_id=channel_profile_id,
+        ctx=ctx,
     )
     if not conn or conn.platform != "youtube":
         identifier = connection_id or f"channel_profile_id={channel_profile_id}"

@@ -2,6 +2,278 @@
 
 ---
 
+## [2026-04-22] FINAL WAVE — Branding Center + Automation Center + Channel URL Onboarding (final ürün kalitesi)
+
+### Özet
+REV-2 yol haritasının "shell" seviyesinde duran üç yüzeyi son ürün kalitesinde
+kapatıldı: Branding Center (6 kart + completeness + apply hattı), Automation
+Center (canvas + dual-badge + snapshot lock + run-now job navigasyonu) ve
+Channel URL Onboarding (URL → preview → confirm → done CTA). Yarım feature
+bırakma yasağı altında uçtan uca uygulandı.
+
+Tasarım kararları tek otorite olarak
+`docs/superpowers/specs/2026-04-22-branding-automation-onboarding-design.md`
+dosyasında sabitlendi.
+
+### Backend (commit `75f5b8f`)
+
+**Yeni modüller**
+- `app/branding_center/` (router + service + schemas) — 6 kart × identity /
+  audience / visual / messaging / platform / review PATCH'leri + completeness
+  hesaplama + apply pipeline (dry-run vs final).
+- `app/automation_center/` (router + service + schemas + node_catalog) — canvas
+  state, flow header, per-node config, run-now, evaluate. Snapshot lock
+  contract'ı: aktif job'da flow/node mutasyonu 409 döner.
+- `app/channels/preview_token.py` + onboarding genişletmesi — server-side HMAC
+  token, 15 dk TTL (`PREVIEW_TOKEN_TTL_SECONDS = 15 * 60`), partial preview flag.
+
+**Migration**
+- `branding_center_001_brand_profile_extension` — `BrandProfile`'a
+  `brand_summary`, `target_audience`, `visual_palette_json`,
+  `messaging_pillars_json`, `platform_voice_json`, `last_applied_at`,
+  `completeness_json` kolonları eklendi. NULL/JSON{} default — backward
+  compat korunur. Yeni Alembic head: `branding_center_001`.
+
+**Test kapsamı**
+- `backend/tests/test_branding_automation_centers.py` (742 satır, 20 test) —
+  tümü geçiyor. Cross-user 403, snapshot 409, preview token expiry/forgery,
+  completeness gating dahil.
+
+### Frontend (uncommitted bu commit'e gelene kadar)
+
+**Yeni sayfalar**
+- `surfaces/aurora/AuroraBrandingCenterPage.tsx` (lazy chunk 18.55 kB)
+- `surfaces/aurora/AuroraAutomationCenterPage.tsx` (lazy chunk 16.66 kB)
+- `surfaces/aurora/AuroraChannelOnboardingPage.tsx`
+- `surfaces/aurora/AutomationCanvas.tsx` (node renderer + dual-badge DOM
+  attribute disipliRni)
+- `styles/aurora/automation-canvas.css`
+
+**API katmanı**
+- `api/brandingCenterApi.ts`, `api/automationCenterApi.ts` (yeni)
+- `api/channelProfilesApi.ts` (preview/confirm endpoint'leri eklendi)
+
+**Router + bağlayıcı edit'ler**
+- `app/router.tsx` 3 yeni route + lazy import
+- `components/user/UserDigestDashboard.tsx` "Başarısız İş" tile'ı artık
+  `/user/inbox` rotasına yönlendiriyor (audit P0 #1 — `/user/jobs` liste rotası
+  yok, fix tek source-of-truth)
+- `components/dashboard/AutomationDigestWidget.tsx`, `AuroraChannelDetailPage.tsx`,
+  `AuroraMyChannelsPage.tsx`, `AuroraProjectDetailPage.tsx`,
+  `pages/admin/NewsBulletinDetailPage.tsx` — entry point'ler yeni yüzeylere
+  bağlandı.
+
+**Yeni smoke testleri (3 dosya / 14 test)**
+- `tests/aurora-branding-center.smoke.test.tsx` (5 test)
+- `tests/aurora-automation-center.smoke.test.tsx` (5 test)
+- `tests/aurora-channel-onboarding.smoke.test.tsx` (4 test)
+
+**`AuroraAutomationCenterPage` navigate düzeltmeleri**
+- `baseRoute` extracted; `aurora-navigate-targets.smoke.test.ts` regex
+  parser'ı template literal içindeki quote'lara takılıyordu.
+
+### Migration test düzeltmeleri
+
+`branding_center_001` head'i `phase_al_001`'in üstüne taşıdığı için
+aşağıdaki testler explicit revision lock pattern'ine alındı:
+- `test_phase_al_001_approver_migration.py::test_a` — `upgrade phase_al_001`
+- `test_phase_al_001_approver_migration.py::test_d` — `upgrade phase_al_001`
+  → `downgrade -1` → `phase_ag_001`
+- `test_phase_al_001_approver_migration.py::test_e` — aynı pattern (idempotent
+  re-upgrade)
+
+### Acceptance Gate
+
+| Gate | Sonuç |
+|---|---|
+| `tsc --noEmit` | 0 hata |
+| `vitest run` | 240 dosya / 2710 test pass |
+| `vite build` | success — yeni lazy chunk'lar emit edildi |
+| `pytest` | 2611 pass / 0 fail / 1 unrelated coroutine warning (M2/C6) |
+
+### Audit kapanışları (2026-04-22 audit raporundan)
+
+`CODE_AUDIT_REPORT_2026-04-22.md` 3 P0 dashboard problemi tespit etti; üçü de
+kapatıldı:
+1. **404 — `/user/jobs/list`** → `Başarısız İş` tile artık `/user/inbox`
+2. **Dead button — `Branding Center'a geç`** → done step CTA gerçek route
+3. **Misleading toast — Automation save** → snapshot lock contract + 409 +
+   "snapshot kilitli" mesajı (fake success kaldırıldı)
+
+Diğer audit bulguları (orta-düşük öncelik) sonraki wave'e bırakıldı.
+
+### Bilinçli olarak eklenmedi
+- AI-assisted brand suggestions (BC kartlarında auto-fill)
+- Automation Center A/B branch'leri
+- Channel preview OEmbed cache
+- Branding Center version history UI
+- Preview token TTL'i Settings Registry'ye taşımak (not edildi, sonraki wave)
+
+### Kontrat Satırları
+- code change: **yes** (3 yeni backend modülü + 3 yeni frontend page + 3 smoke
+  test dosyası + migration + entry point güncellemeleri)
+- migrations run: **yes** (`branding_center_001`, idempotent guard'lı)
+- packages installed: **no**
+- db schema mutation: **yes** (BrandProfile genişletmesi, NULL default)
+- db data mutation: **no**
+- main branch touched: **no** (final main-merge audit ardından merge edilecek)
+
+---
+
+## [2026-04-22] STABILIZE P0 — Release-candidate audit closure (install + ownership gaps)
+
+### Özet
+Önceki `stabilize/p0-install-contract` iddiası "merge-ready" olarak sunulmuştu;
+kullanıcı bunu reddedip sıkı bir release-candidate denetimi istedi. Audit üç
+gerçek P0 boşluk ortaya çıkardı. Üçü de bu commit'te kapatıldı ve regression
+testleri ile kanıtlandı — docs ancak kanıttan sonra güncelleniyor.
+
+### Düzeltmeler
+
+**1. pyproject runtime kontrat boşluğu**
+- `python-jose[cryptography]>=3.3.0,<4.0` declare edildi.
+  Kanıt: `pip show python-jose` → `Required-by: (empty)` idi. Fresh install,
+  resolver tercihine göre python-jose'u drop edebilirdi; sonuç: `app/auth/jwt.py`
+  ImportError, her korumalı endpoint 500.
+- `mutagen>=1.47.0,<2.0` declare edildi.
+  Kanıt: TTS `measure duration` adımı `shared_helpers.py`, `edge_tts_provider.py`,
+  `dubvoice_provider.py` içinden çağrılıyor. Eksikse silent fail + subtitle
+  timing bozuk.
+- `faster-whisper>=1.0.0,<2.0` opsiyonel `[whisper]` extras'ına taşındı
+  (LocalWhisperProvider opt-in).
+- Dry-run `pip install -e .` clean resolve veriyor.
+
+**2. `_resolve_connection` cross-user leak**
+- `app/publish/youtube/router.py::_resolve_connection` artık opsiyonel `ctx`
+  parametresi alıyor. Non-admin için id-less fallback (legacy dashboard path)
+  `ChannelProfile.user_id == ctx.user_id` ile scope ediliyor.
+- Önce: id verilmediğinde sorgu tüm sistemden `ORDER BY is_primary DESC,
+  created_at DESC LIMIT 1` dönüyordu → kendi bağlantısı olmayan non-admin
+  başka kullanıcının aktif primary YouTube bağlantısına düşebiliyordu.
+- 4 call site (`token_status`, `get_channel_info`, `get_channel_videos`,
+  `get_video_stats`, `revoke_credentials`) ve defense-in-depth için
+  `_find_or_create_connection` ile `auth_url` / `auth_callback` internal
+  call'ları `ctx` geçecek şekilde güncellendi.
+
+**3. `auth_callback` ownership açığı (en kritik)**
+- `app/publish/youtube/router.py::auth_callback` önce `ctx` dependency'si
+  almıyordu. Body veya OAuth `state` query param'ı üzerinden herhangi bir
+  authenticated user başka kullanıcının `channel_profile_id`'sine OAuth
+  token'larını binding yapabilirdi (tam hesap hijack).
+- Fix: `ctx: UserContext = Depends(get_current_user_context)` eklendi;
+  body/state'ten `channel_profile_id` resolve edildikten sonra —ancak
+  `exchange_code_for_tokens` tetiklenmeden önce—
+  `_assert_channel_or_connection_ownership` çağrılıyor.
+- Regression guard: `tests/test_youtube_auth_callback_ownership.py`
+  üç testi geçirir: (a) non-admin body ile cross-user → 403, token exchange
+  *çağrılmıyor*, (b) non-admin state ile cross-user → 403, token exchange
+  çağrılmıyor, (c) admin cross-user → ownership gate bypass (403 değil).
+
+### Doğrulanan Kanıtlar (gerçek komut çıktısı, bu commit)
+- `pytest tests/ -q --timeout=30 -k "youtube or publish or ownership"` →
+  **331 passed, 0 failed, 2260 deselected** (26.0 s).
+- `pytest tests/ -q --timeout=30 -k "not integration and not slow and not render"` →
+  **2430 passed, 0 failed, 161 deselected** (132.8 s).
+- `pytest tests/test_youtube_auth_callback_ownership.py` → **3 passed** (1.5 s).
+- Frontend `npm test` → **237 dosya, 2696 test, 0 failure** (223.0 s).
+- Renderer `npm run build` → `tsc --noEmit` exit 0 (full render tetiklenmiyor).
+- Backend `.venv/bin/python3 -m pip install --dry-run -e .` → clean resolve,
+  `Would install contenthub-backend-0.1.0`.
+
+### Kontrat Satırları
+- code change: **yes** (router + pyproject + 2 test dosyası)
+- migrations run: **no**
+- packages installed: **no** (yalnız declare; venv zaten mutagen+jose içeriyor)
+- db schema mutation: **no**
+- db data mutation: **no**
+- main branch touched: **no** (branch: `stabilize/p0-install-contract`)
+
+### Kapatılmayan / Kapsamlı Tarama Gerektiren
+- Render ve integration scope'u (`tests/ -k "render or integration or slow"`)
+  bu audit'te *çalıştırılmadı* — fast smoke dışında kalıyorlar, MVP hedefinin
+  ötesinde CPU maliyeti var. Release card bunu "evidence not collected" olarak
+  açıkça işaretliyor.
+- Frontend `localStorage.clear is not a function` hatası: **gözlemlenmedi.**
+  Önceki raporun işaret ettiği hata bu run'da tekrarlamadı; patch muhtemelen
+  öncesinde kapandı (commit `88fea97` civarı). Yeni bir regresyon test'i ile
+  *aktif koruma yok* — kullanıcı yeni bir regresyonu mevcut suite yakalayacak.
+
+---
+
+## [2026-04-21] STABILIZE P0/P1 — Install contract + Auth hardening + Bundle split
+
+### Özet
+Production-ready single-machine multi-user v1 hedefine yönelik dört bağımsız
+küçük stabilizasyon commit'i `stabilize/p0-install-contract` branch'ı üzerinde.
+Hiçbir yeni feature yok — fresh-install güvenliği, authorization leak kapatma,
+ve bundle boyutu üzerinde odaklı çalışma.
+
+### Düzeltmeler
+
+**1. Install Contract (`db050bb`)**
+- `renderer/package.json`: `build` artık `tsc --noEmit` çalıştırıyor, gerçek
+  `remotion render` tetiklemiyor. Önceki davranış production install sırasında
+  kazara full render başlatabiliyordu.
+- `backend/pyproject.toml`: Tüm bağımlılıklar `>=<floor>,<<ceiling>` aralığına
+  alındı (fastapi, uvicorn, pydantic, sqlalchemy, aiosqlite, alembic, greenlet,
+  httpx, edge-tts, feedparser, pydantic-settings). Runtime'da kullanılan ama
+  önce transitively gelen `bcrypt`, `cryptography`, `python-multipart`
+  explicit declare edildi. `pytest-timeout>=2.3.0,<3.0` dev'e, global 120s
+  timeout (thread method) pytest config'ine eklendi.
+
+**2. Router-Level Auth Gates (`f3c8c42`)**
+- `app/api/router.py` içinde 5 router için require_user / require_admin
+  dependency eklendi: providers (admin), source_scans (admin), youtube_oauth,
+  youtube_video_mgmt, youtube_engagement_advanced (hepsi user). Önce sadece
+  visibility engine (header-spoofable) üzerinden korunuyordu.
+- `test_youtube_video_stats.py`: pre-existing kırık assertion rahatlatıldı
+  (kimlik/credential/baglanti/yetkilendirme token'lardan biri kabul).
+
+**3. Per-Endpoint Ownership Checks (`51988f5`)**
+- `app/publish/youtube/router.py` içinde 9 endpoint UserContext Depends alıyor;
+  `_assert_channel_or_connection_ownership` helper çağırarak admin değilse
+  channel_profile_id / connection_id sahipliğini doğruluyor. Önce herhangi
+  bir authenticated user başka kullanıcının channel'ına OAuth URL üretebiliyor,
+  token status sorgulayabiliyor, PublishRecord video-stats/trend metadata
+  okuyabiliyor ve revoke tetikleyebiliyordu.
+- `get_channel_videos` ve `get_video_stats` içinde PublishRecord enumeration
+  artık non-admin için `Job.owner_id` üzerinden scope ediliyor.
+- `get_video_stats_trend`: non-admin missing record için 404 mask (cross-user
+  existence confirmation engelleniyor).
+- 4 bare-FastAPI test `get_current_user_context` override eklendi;
+  `test_router_attaches_fresh_nonce_each_call` direct function call için
+  explicit admin UserContext geçiriyor.
+
+**4. Vendor Bundle Split (`c470786`)**
+- `frontend/vite.config.ts` içinde `build.rollupOptions.output.manualChunks`
+  tanımlandı: vendor-react, vendor-query, vendor-charts, vendor-icons,
+  vendor-state.
+- Sonuç: index chunk 2,383 kB (582 kB gzip) → 1,713 kB (380 kB gzip).
+  Recharts (409 kB) artık yalnız analytics route'larına lazy-load oluyor.
+
+### Doğrulanan Kanıtlar
+- Backend fast smoke: **2427 passed, 161 deselected, 4 warnings** (130 s).
+  YouTube/publish dar kapsam: **294 passed, 0 failed** (was 290 + 4 fail).
+- Frontend vitest: **237 dosya, 2696 test, 0 failure** (23.89 s).
+- Frontend vite build: başarılı, vendor chunks ayrıştı.
+- `npm run build` (renderer): gerçek render tetiklenmiyor (doğrulandı).
+
+### Kontrat Satırları
+- code change: **yes** (backend router + frontend config + tests)
+- migrations run: **no**
+- packages installed: **no** (yalnız version aralıkları pin'lendi)
+- db schema mutation: **no**
+- db data mutation: **no**
+- main branch touched: **no** (branch: `stabilize/p0-install-contract`)
+
+### Commit Zinciri (Stabilize P0/P1)
+- `db050bb stabilize(p0): install contract — pin backend deps, decouple renderer build from render`
+- `f3c8c42 stabilize(p0): tighten auth gates at api router level — providers, source_scans, youtube`
+- `51988f5 stabilize(p0): per-endpoint ownership checks for YouTube routes`
+- `c470786 stabilize(p1): split vendor bundles to reduce index chunk`
+
+---
+
 ## [2026-04-17] PHASE FINAL F4 — Deferred Items Closure + Final Merge Gate
 
 ### Özet
