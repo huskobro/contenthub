@@ -318,11 +318,18 @@ function readAuthUserIdFromStorage(): string | null {
 }
 
 /**
- * Fire-and-forget backend persistence for a surface preference. Writes only
- * when:
- *   - the caller knows which shell scope the preference belongs to
+ * Fire-and-forget backend persistence for a surface preference.
+ *
+ * Caller contract (Aurora-only finalization wave):
+ *   - `setActiveSurface` MUST sanitize before calling here. This function
+ *     re-runs sanitization as defense-in-depth (so a misuse from another
+ *     code path cannot land a dirty value in backend) but the warning fire
+ *     paths are no longer expected on the happy `setActiveSurface` flow.
+ *
+ * Writes only when:
+ *   - scope is known (the caller knows which shell the preference belongs to)
  *   - the user is authenticated (we have an id to attach the override to)
- *   - the id sanitizes cleanly for that scope (resolver would accept it)
+ *   - the id still sanitizes cleanly (defense-in-depth)
  *
  * `null` clears the override (DELETE) instead of writing an empty string —
  * matches the resolver's "no preference → fall back to defaults" contract.
@@ -340,12 +347,13 @@ function persistSurfacePreference(
   const sanitized = sanitizeSurfaceForScope(id, scope, readEnabledSurfaceIds());
   const key = SURFACE_PREFERENCE_KEYS[scope];
   if (sanitized === null && id !== null) {
-    // Caller asked to set an id but it failed sanitization. Refuse the write
-    // so the backend record stays clean. localStorage already accepted it
-    // (set() was called) — hydrate-from-backend on next reload will heal.
+    // Defense-in-depth: a non-setActiveSurface caller passed an unsanitized
+    // id. Refuse the write so the backend record stays clean. The proper
+    // call site (setActiveSurface) sanitizes BEFORE calling here, so this
+    // branch should not fire on the happy path.
     // eslint-disable-next-line no-console
     console.warn(
-      `[themeStore] Refusing to persist surface preference: id="${id}" failed sanitization for scope="${scope}".`,
+      `[themeStore] persistSurfacePreference: id="${id}" failed sanitization for scope="${scope}" (defense-in-depth).`,
     );
     return;
   }
@@ -469,13 +477,73 @@ export const useThemeStore = create<ThemeState>((set, get) => {
     },
 
     setActiveSurface: (id: string | null, scope?: SurfacePreferenceScope) => {
-      // Local state + cache update happens unconditionally so the UI reflects
-      // the user's choice immediately (fast path). Backend write is gated by
-      // the scope + auth + sanitization checks inside persistSurfacePreference.
-      set({ activeSurfaceId: id });
-      saveActiveSurfaceId(id);
+      // Source-of-truth contract (Aurora-only finalization wave):
+      //
+      //   in-memory  (this tab, this navigation)        — always reflects
+      //                                                   the latest click
+      //   localStorage  (this browser, all tabs/loads)  — only persists when
+      //                                                   the id sanitizes
+      //                                                   for the resolved
+      //                                                   scope (or is null)
+      //   backend  (this user, all browsers)            — only writes when
+      //                                                   scope known + auth
+      //                                                   ok + sanitization ok
+      //
+      // The split exists so a click on a surface card cannot leave a stale
+      // "dirty" id behind that the resolver would later reject. localStorage
+      // is now treated as a strict cache mirror of what the backend would
+      // accept — if we won't write it to backend, we do not write it locally
+      // either. Otherwise a bad cache outlives the session and forces the
+      // user to manually clear storage.
+      //
+      // `null` clears in-memory + clears LS + DELETEs backend (idempotent).
       const resolvedScope = scope ?? deriveScopeFromLocation();
-      persistSurfacePreference(id, resolvedScope);
+
+      // Always update in-memory state — the user clicked, the UI must respond
+      // for this navigation. We do NOT persist if the choice is invalid for
+      // the current scope; we write the in-memory value so the user can see
+      // the result of their click for diagnostics, but a reload heals the
+      // tab back to the resolver's pick.
+      set({ activeSurfaceId: id });
+
+      if (id === null) {
+        // Explicit clear — wipe local cache, hand off to backend DELETE.
+        saveActiveSurfaceId(null);
+        persistSurfacePreference(null, resolvedScope);
+        return;
+      }
+
+      if (resolvedScope === null) {
+        // We cannot validate without a shell scope (e.g. user clicked from
+        // /login or another non-shell route). Refuse to pollute localStorage.
+        // In-memory state already updated above so the UI responds; the
+        // resolver on next mount will pick a sane surface.
+        // eslint-disable-next-line no-console
+        console.warn(
+          `[themeStore] setActiveSurface("${id}") called outside a shell route; persistence skipped (in-memory only).`,
+        );
+        return;
+      }
+
+      const sanitized = sanitizeSurfaceForScope(
+        id,
+        resolvedScope,
+        readEnabledSurfaceIds(),
+      );
+      if (sanitized === null) {
+        // The id failed sanitization (gated/disabled/unknown/scope-mismatch).
+        // Refuse to write to LS or backend so the cache stays in lock-step
+        // with what the resolver will accept.
+        // eslint-disable-next-line no-console
+        console.warn(
+          `[themeStore] Refusing to persist surface preference "${id}" for scope="${resolvedScope}" (sanitization failed). In-memory state still set so the UI reflects the click; reload will revert to the resolver's pick.`,
+        );
+        return;
+      }
+
+      // Sanitization passed — mirror to LS and backend.
+      saveActiveSurfaceId(sanitized);
+      persistSurfacePreference(sanitized, resolvedScope);
     },
 
     importTheme: (manifest: unknown) => {

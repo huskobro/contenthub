@@ -1096,10 +1096,11 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
     },
     # Aurora-only cleanup wave: ui.surface.atrium.enabled,
     # ui.surface.bridge.enabled, ui.surface.canvas.enabled were removed
-    # alongside the surface source modules. Existing DB admin_value rows
-    # for those keys are now harmless: the resolver simply has no
-    # consumer for them and the resolver/registry no longer registers
-    # those surface ids.
+    # alongside the surface source modules and any surviving DB rows are
+    # hard-deleted by Alembic migration `aurora_surface_001`. The seeder
+    # iterates KNOWN_SETTINGS so it will not recreate them; the orphan
+    # marker (`mark_orphan_settings`) cannot find them either since the
+    # rows are gone. No "harmless leftover" code path is needed.
     "ui.surface.aurora.enabled": {
         "group": "ui",
         "type": "boolean",

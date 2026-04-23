@@ -85,8 +85,17 @@ describe("themeStore — Surface Registry migration", () => {
   });
 
   it("setActiveSurface writes a v1 envelope", async () => {
+    // Surface registry is not auto-populated in test isolation (vi.resetModules
+    // wipes the side-effect import chain). We populate it explicitly so
+    // sanitization in setActiveSurface can resolve "horizon" to its manifest
+    // and confirm the {scope, status, gate} rules are satisfied.
+    await import("../surfaces/manifests/register");
     const mod = await import("../stores/themeStore");
-    mod.useThemeStore.getState().setActiveSurface("horizon");
+    // Aurora-only finalization wave: setActiveSurface now requires a scope
+    // hint (or a resolvable URL prefix) before it will write to localStorage,
+    // so that a dirty id from a non-shell route cannot pollute the cache.
+    // horizon is always-on for any shell so the scope='admin' path accepts it.
+    mod.useThemeStore.getState().setActiveSurface("horizon", "admin");
     const raw = localStorage.getItem(STORAGE_KEY_SURFACE);
     expect(raw).not.toBeNull();
     const parsed = JSON.parse(raw as string);
@@ -95,9 +104,10 @@ describe("themeStore — Surface Registry migration", () => {
   });
 
   it("setActiveSurface(null) writes a v1 envelope with null id", async () => {
+    await import("../surfaces/manifests/register");
     const mod = await import("../stores/themeStore");
-    mod.useThemeStore.getState().setActiveSurface("aurora");
-    mod.useThemeStore.getState().setActiveSurface(null);
+    mod.useThemeStore.getState().setActiveSurface("horizon", "admin");
+    mod.useThemeStore.getState().setActiveSurface(null, "admin");
     const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY_SURFACE) as string);
     expect(parsed).toEqual({ v: 1, id: null });
     expect(mod.useThemeStore.getState().activeSurfaceId).toBeNull();
@@ -105,10 +115,31 @@ describe("themeStore — Surface Registry migration", () => {
 
   it("setActiveSurface does not overwrite activeThemeId", async () => {
     localStorage.setItem(STORAGE_KEY_ACTIVE, "obsidian-slate");
+    await import("../surfaces/manifests/register");
     const mod = await import("../stores/themeStore");
     const before = mod.useThemeStore.getState().activeThemeId;
-    mod.useThemeStore.getState().setActiveSurface("horizon");
+    mod.useThemeStore.getState().setActiveSurface("horizon", "admin");
     const after = mod.useThemeStore.getState().activeThemeId;
     expect(after).toBe(before);
+  });
+
+  it("setActiveSurface refuses to pollute localStorage when scope is unknown (non-shell route)", async () => {
+    await import("../surfaces/manifests/register");
+    const mod = await import("../stores/themeStore");
+    // No scope hint, and jsdom's window.location.pathname defaults to "/"
+    // which matches neither /admin nor /user. LS should stay empty; in-memory
+    // still updates so the click responds.
+    mod.useThemeStore.getState().setActiveSurface("horizon");
+    expect(localStorage.getItem(STORAGE_KEY_SURFACE)).toBeNull();
+    expect(mod.useThemeStore.getState().activeSurfaceId).toBe("horizon");
+  });
+
+  it("setActiveSurface refuses to pollute localStorage for unknown surface id", async () => {
+    await import("../surfaces/manifests/register");
+    const mod = await import("../stores/themeStore");
+    mod.useThemeStore.getState().setActiveSurface("ghost-surface-42", "admin");
+    expect(localStorage.getItem(STORAGE_KEY_SURFACE)).toBeNull();
+    // In-memory state still set so the UI reflects the click; reload heals.
+    expect(mod.useThemeStore.getState().activeSurfaceId).toBe("ghost-surface-42");
   });
 });
