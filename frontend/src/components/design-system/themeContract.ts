@@ -578,25 +578,33 @@ export const VOID_TERMINAL_THEME: ThemeManifest = {
 };
 
 // ---------------------------------------------------------------------------
-// Example: Alternative theme for AI reference
+// Built-in Theme: "Aurora Dusk" — plum + teal, Aurora surface default
+//
+// This is the JS manifest counterpart to the `[data-surface="aurora"][data-theme="aurora-dusk"]`
+// token block in `frontend/src/styles/aurora/tokens.css`. The manifest carries
+// the legacy `--ch-*` variables used by non-Aurora contexts (tests, legacy
+// layout fallback, ThemeEngine exports); the tokens.css block carries the
+// Aurora-scoped semantic tokens (bg/text/border/accent/state/cockpit).
+// Keep the two in sync by palette, not by literal copy — different naming
+// scheme, same design intent.
 // ---------------------------------------------------------------------------
 
-export const EXAMPLE_WARM_EARTH_THEME: ThemeManifest = {
-  id: "warm-earth",
-  name: "Warm Earth",
-  description: "Sicak toprak tonlari ile sakin ve dogal bir admin deneyimi.",
-  author: "ai-generated",
+export const AURORA_DUSK_THEME: ThemeManifest = {
+  id: "aurora-dusk",
+  name: "Aurora Dusk",
+  description: "Aurora yuzeyinin varsayılan koyu teması. Derin erik zemin, teal vurgu, amber ve rose aurora rengi ile stüdyo hissi.",
+  author: "system",
   version: "1.0.0",
-  tone: ["warm", "natural", "calm", "earthy"],
+  tone: ["dark", "aurora", "plum", "teal", "cinematic"],
 
   typography: {
     heading: {
-      family: "DM Sans",
-      stack: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      family: "Geist",
+      stack: "'Geist', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
     },
     body: {
-      family: "DM Sans",
-      stack: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      family: "Geist",
+      stack: "'Geist', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
     },
     mono: {
       family: "Geist Mono",
@@ -604,39 +612,40 @@ export const EXAMPLE_WARM_EARTH_THEME: ThemeManifest = {
     },
     size: {
       xs: "0.6875rem", sm: "0.75rem", base: "0.8125rem", md: "0.875rem",
-      lg: "1rem", xl: "1.125rem", "2xl": "1.375rem", "3xl": "1.75rem",
+      lg: "1rem", xl: "1.125rem", "2xl": "1.5rem", "3xl": "2.125rem",
     },
     weight: { normal: 400, medium: 500, semibold: 600, bold: 700 },
-    lineHeight: { tight: 1.25, normal: 1.5, relaxed: 1.625 },
+    lineHeight: { tight: 1.15, normal: 1.5, relaxed: 1.65 },
+    letterSpacing: { tight: "-0.028em", normal: "-0.005em", wide: "0.12em" },
   },
 
   colors: {
     brand: {
-      50: "#fdf8f0", 100: "#faebd7", 200: "#f5d5a8", 300: "#edb96a",
-      400: "#e5a03c", 500: "#d4882a", 600: "#b87022", 700: "#96581c",
-      800: "#7a4818", 900: "#5e3714",
+      50: "#e7fbf6", 100: "#c3f0e6", 200: "#8ee8d8", 300: "#5ddacb",
+      400: "#3bc8b8", 500: "#26b6a6", 600: "#1a9a8c", 700: "#137a6f",
+      800: "#0e5e55", 900: "#094340",
     },
     neutral: {
-      0: "#ffffff", 25: "#fdfcfa", 50: "#faf8f5", 100: "#f3f0eb",
-      200: "#e8e3dc", 300: "#d9d2c9", 400: "#c4bbb0", 500: "#a9a095",
-      600: "#8a8177", 700: "#5c544c", 800: "#3d3731", 900: "#252119",
-      950: "#171411",
+      0: "#020106", 25: "#05030c", 50: "#090613", 100: "#0d091a",
+      200: "#120d22", 300: "#17112a", 400: "#231934", 500: "#2e2838",
+      600: "#433c52", 700: "#5f566f", 800: "#7c7291", 900: "#c9c0d8",
+      950: "#f6f3fb",
     },
-    success: { light: "#e6f5e8", base: "#4caf50", dark: "#388e3c", text: "#1b5e20" },
-    warning: { light: "#fff8e1", base: "#ff9800", dark: "#ef6c00", text: "#7c4a00" },
-    error: { light: "#fce4ec", base: "#ef5350", dark: "#c62828", text: "#921515" },
-    info: { light: "#e3f2fd", base: "#42a5f5", dark: "#1565c0", text: "#0d47a1" },
+    success: { light: "rgba(107,226,181,0.10)", base: "#6be2b5", dark: "#3cc69a", text: "#6be2b5" },
+    warning: { light: "rgba(245,183,97,0.10)", base: "#f5b761", dark: "#d99942", text: "#f5b761" },
+    error: { light: "rgba(244,114,124,0.10)", base: "#f4727c", dark: "#d8545e", text: "#f4727c" },
+    info: { light: "rgba(138,180,248,0.10)", base: "#8ab4f8", dark: "#6a97e0", text: "#8ab4f8" },
     surface: {
-      page: "#faf8f5", card: "#ffffff", elevated: "#ffffff",
-      inset: "#f3f0eb", sidebar: "#252119", sidebarHover: "#3d3731",
-      sidebarActive: "#5c544c",
-      sidebarText: "#f3f0eb", sidebarTextMuted: "#a9a095",
-      sidebarTextActive: "#edb96a", sidebarSection: "#8a8177",
-      sidebarBorder: "#3d3731",
+      page: "#0d0818", card: "#17102a", elevated: "#1f1636",
+      inset: "#0a0614", sidebar: "#0a0614", sidebarHover: "#1a1030",
+      sidebarActive: "#25194a",
+      sidebarText: "#f6f3fb", sidebarTextMuted: "#8478a0",
+      sidebarTextActive: "#3bc8b8", sidebarSection: "#c9c0d8",
+      sidebarBorder: "#2e2838",
     },
-    border: { subtle: "#e8e3dc", default: "#d9d2c9", strong: "#c4bbb0" },
-    focus: "#d4882a",
-    chart: ["#d4882a", "#4caf50", "#42a5f5", "#ef5350", "#7c3aed", "#e64980"],
+    border: { subtle: "#231934", default: "#2e2838", strong: "#433c52" },
+    focus: "#5ddacb",
+    chart: ["#3bc8b8", "#b07ad8", "#e8b87a", "#d88db8", "#8ab4f8", "#6be2b5", "#f4727c"],
   },
 
   spacing: {
@@ -644,23 +653,23 @@ export const EXAMPLE_WARM_EARTH_THEME: ThemeManifest = {
     5: "1.25rem", 6: "1.5rem", 8: "2rem", 10: "2.5rem", 12: "3rem", 16: "4rem",
   },
 
-  radius: { sm: "6px", md: "8px", lg: "12px", xl: "16px", full: "9999px" },
+  radius: { sm: "6px", md: "10px", lg: "14px", xl: "20px", full: "9999px" },
 
   shadow: {
-    xs: "0 1px 2px rgba(37,33,25,0.05)",
-    sm: "0 1px 3px rgba(37,33,25,0.07), 0 1px 2px rgba(37,33,25,0.04)",
-    md: "0 4px 6px -1px rgba(37,33,25,0.07), 0 2px 4px -2px rgba(37,33,25,0.04)",
-    lg: "0 10px 15px -3px rgba(37,33,25,0.08), 0 4px 6px -4px rgba(37,33,25,0.04)",
-    xl: "0 16px 48px rgba(37,33,25,0.18), 0 8px 16px rgba(37,33,25,0.12)",
-    "2xl": "0 24px 64px rgba(37,33,25,0.22), 0 12px 24px rgba(37,33,25,0.14)",
+    xs: "0 1px 0 0 rgba(0,0,0,0.4)",
+    sm: "0 1px 2px rgba(0,0,0,0.25), 0 0 0 1px rgba(255,255,255,0.02)",
+    md: "0 4px 12px rgba(0,0,0,0.35), 0 1px 2px rgba(0,0,0,0.2)",
+    lg: "0 12px 28px rgba(0,0,0,0.45), 0 2px 4px rgba(0,0,0,0.25)",
+    xl: "0 24px 48px rgba(0,0,0,0.55), 0 4px 8px rgba(0,0,0,0.3)",
+    "2xl": "0 40px 80px rgba(0,0,0,0.65), 0 8px 16px rgba(0,0,0,0.35)",
   },
 
-  motion: { fast: "120ms", normal: "200ms", slow: "300ms", easing: "cubic-bezier(0.2, 0, 0, 1)" },
+  motion: { fast: "120ms", normal: "240ms", slow: "360ms", easing: "cubic-bezier(0.22, 1, 0.36, 1)" },
 
   layout: {
-    sidebarWidth: "240px", sidebarCollapsedWidth: "56px",
-    headerHeight: "52px", pageMaxWidth: "1280px", pagePadding: "1.5rem",
+    sidebarWidth: "264px", sidebarCollapsedWidth: "56px",
+    headerHeight: "52px", pageMaxWidth: "1400px", pagePadding: "1.75rem",
   },
 
-  density: "comfortable",
+  density: "compact",
 };

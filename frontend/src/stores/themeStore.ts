@@ -13,12 +13,11 @@ import {
   type ThemeManifest,
   DEFAULT_THEME,
   VOID_TERMINAL_THEME,
-  EXAMPLE_WARM_EARTH_THEME,
+  AURORA_DUSK_THEME,
   validateThemeManifest,
   type ThemeValidationError,
 } from "../components/design-system/themeContract";
 import { RADICAL_THEMES } from "../components/design-system/themes-radical";
-import { HORIZON_THEMES } from "../components/design-system/themes-horizon";
 import { updateSettingAdminValue, fetchEffectiveSetting } from "../api/effectiveSettingsApi";
 import { setUserOverride, deleteUserOverride } from "../api/usersApi";
 import { buildSurfacePickerEntry } from "../surfaces/selectableSurfaces";
@@ -59,7 +58,25 @@ const SURFACE_STORAGE_VERSION = 1;
 // Built-in themes (cannot be deleted)
 // ---------------------------------------------------------------------------
 
-const BUILTIN_THEMES: ThemeManifest[] = [DEFAULT_THEME, VOID_TERMINAL_THEME, EXAMPLE_WARM_EARTH_THEME, ...RADICAL_THEMES, ...HORIZON_THEMES];
+// Aurora theme curation — `codex/aurora-theme-curation` wave:
+//   - Dropped EXAMPLE_WARM_EARTH_THEME (template/example placeholder, weak
+//     product character, no real identity vs Aurora Dusk / Obsidian Slate).
+//   - Dropped HORIZON_THEMES (four horizon-layout themes — horizon-chalk,
+//     horizon-obsidian, horizon-sand, horizon-midnight). The horizon surface
+//     still exists as a fallback/safety-net shell, but horizon-specific theme
+//     manifests no longer ship as selectable gallery entries.
+//   - Added AURORA_DUSK_THEME as the first entry so the gallery ordering puts
+//     the canonical Aurora Dusk identity before Slate (default legacy id).
+//
+// Remaining gallery set (6 themes, full Aurora token coverage):
+//   aurora-dusk, obsidian-slate (DEFAULT_THEME), void-terminal,
+//   tokyo-neon, ink-and-wire, solar-ember.
+const BUILTIN_THEMES: ThemeManifest[] = [
+  AURORA_DUSK_THEME,
+  DEFAULT_THEME,
+  VOID_TERMINAL_THEME,
+  ...RADICAL_THEMES,
+];
 
 // ---------------------------------------------------------------------------
 // Helpers

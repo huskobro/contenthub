@@ -20,7 +20,7 @@ import { fetchEffectiveSetting } from "../../api/effectiveSettingsApi";
 import { useThemeStore } from "../../stores/themeStore";
 import {
   DEFAULT_THEME,
-  EXAMPLE_WARM_EARTH_THEME,
+  VOID_TERMINAL_THEME,
 } from "../../components/design-system/themeContract";
 
 const STORAGE_KEY = "contenthub:active-theme-id";
@@ -30,17 +30,17 @@ describe("themeStore.hydrateFromBackend — force mode (Phase Final F4)", () => 
     localStorage.clear();
     useThemeStore.setState({
       activeThemeId: DEFAULT_THEME.id,
-      themes: [DEFAULT_THEME, EXAMPLE_WARM_EARTH_THEME],
+      themes: [DEFAULT_THEME, VOID_TERMINAL_THEME],
     });
     vi.mocked(fetchEffectiveSetting).mockReset();
   });
 
   it("force=true overrides localStorage when backend differs", async () => {
-    // localStorage already has default, backend says warm-earth — force wins
+    // localStorage already has default, backend says void-terminal — force wins
     localStorage.setItem(STORAGE_KEY, DEFAULT_THEME.id);
     vi.mocked(fetchEffectiveSetting).mockResolvedValue({
       key: "ui.active_theme",
-      effective_value: "warm-earth",
+      effective_value: "void-terminal",
       has_personal_value: true,
       user_override_allowed: true,
     } as never);
@@ -49,16 +49,16 @@ describe("themeStore.hydrateFromBackend — force mode (Phase Final F4)", () => 
     // await microtasks
     await new Promise((r) => setTimeout(r, 0));
 
-    expect(useThemeStore.getState().activeThemeId).toBe("warm-earth");
-    expect(localStorage.getItem(STORAGE_KEY)).toBe("warm-earth");
+    expect(useThemeStore.getState().activeThemeId).toBe("void-terminal");
+    expect(localStorage.getItem(STORAGE_KEY)).toBe("void-terminal");
   });
 
   it("force=true is a no-op when backend agrees with localStorage", async () => {
-    localStorage.setItem(STORAGE_KEY, "warm-earth");
-    useThemeStore.setState({ activeThemeId: "warm-earth" });
+    localStorage.setItem(STORAGE_KEY, "void-terminal");
+    useThemeStore.setState({ activeThemeId: "void-terminal" });
     vi.mocked(fetchEffectiveSetting).mockResolvedValue({
       key: "ui.active_theme",
-      effective_value: "warm-earth",
+      effective_value: "void-terminal",
       has_personal_value: true,
       user_override_allowed: true,
     } as never);
@@ -66,7 +66,7 @@ describe("themeStore.hydrateFromBackend — force mode (Phase Final F4)", () => 
     useThemeStore.getState().hydrateFromBackend({ force: true });
     await new Promise((r) => setTimeout(r, 0));
 
-    expect(useThemeStore.getState().activeThemeId).toBe("warm-earth");
+    expect(useThemeStore.getState().activeThemeId).toBe("void-terminal");
   });
 
   it("force=true ignores unknown theme id from backend", async () => {
@@ -88,7 +88,7 @@ describe("themeStore.hydrateFromBackend — force mode (Phase Final F4)", () => 
     localStorage.setItem(STORAGE_KEY, DEFAULT_THEME.id);
     vi.mocked(fetchEffectiveSetting).mockResolvedValue({
       key: "ui.active_theme",
-      effective_value: "warm-earth",
+      effective_value: "void-terminal",
       has_personal_value: true,
       user_override_allowed: true,
     } as never);

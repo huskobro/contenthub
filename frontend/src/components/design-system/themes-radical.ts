@@ -1,250 +1,31 @@
 /**
- * Radical Theme Collection — 5 completely different DESIGN SYSTEMS
+ * Radical Theme Collection — Aurora-curated design systems.
  *
  * These are NOT color swaps. Each theme radically changes:
- * - Layout proportions (sidebar width, header height, page padding)
- * - Typography scale & hierarchy
- * - Border radius philosophy (brutalist 0px → pillowed 24px)
- * - Shadow depth & style
- * - Motion timing & easing curves
- * - Density (compact/comfortable/spacious)
- * - Plus unique CSS effects per theme in index.css
+ *   - layout proportions (sidebar width, header height, page padding)
+ *   - typography scale & hierarchy
+ *   - border-radius philosophy (brutalist 0px → sharp 2px → rounded 10px)
+ *   - shadow depth & style
+ *   - motion timing & easing
+ *   - plus unique CSS treatments in index.css
  *
- * 1. Midnight Ultraviolet: Cyberpunk glass-panel OS — compact density, tight grid, holographic glow
- * 2. Arctic Frost: Swiss minimal print — spacious airy, huge radius, whisper-thin shadows
- * 3. Tokyo Neon: Akihabara arcade terminal — ultra-compact, tight type, neon bleed
- * 4. Ink & Wire: Broadsheet newspaper — tall type, editorial spacing, zero radius, ink shadows
- * 5. Solar Ember: Industrial control panel — brutalist grid, monospace-heavy, ember glow
+ * History (Aurora theme curation wave):
+ *   Previously this file carried 5 themes. `midnight-ultraviolet` was removed
+ *   because it duplicated Aurora Dusk's dark+purple direction; `arctic-frost`
+ *   was removed because it overlapped with Obsidian Slate's light-theme slot
+ *   without adding distinct product character. Those palettes can be
+ *   recovered from git history if needed (see themes-radical.ts pre-curation).
+ *
+ * Remaining themes (3):
+ *   1. Tokyo Neon      — Akihabara arcade terminal, ultra-compact, neon pink
+ *   2. Ink & Wire      — broadsheet newspaper, serif dominant, zero radius
+ *   3. Solar Ember     — industrial control panel, monospace heavy, ember glow
  */
 
 import type { ThemeManifest } from "./themeContract";
 
 // ---------------------------------------------------------------------------
-// 1. Midnight Ultraviolet — Cyberpunk glass-panel OS
-//    Think: Figma's dark mode × holographic UI × glassmorphism
-//    Radical: wide sidebar, thin header, pill-shaped buttons, frosted glass cards
-// ---------------------------------------------------------------------------
-
-export const MIDNIGHT_ULTRAVIOLET_THEME: ThemeManifest = {
-  id: "midnight-ultraviolet",
-  name: "Midnight Ultraviolet",
-  description: "Derin mor ve elektrik mavi ile cyberpunk cam-panel arayuzu. Genis sidebar, ince header, buzlu cam kartlar, holografik vurgular.",
-  author: "system",
-  version: "2.0.0",
-  tone: ["dark", "cyberpunk", "ultraviolet", "glass", "futuristic"],
-
-  typography: {
-    heading: {
-      family: "Space Grotesk",
-      stack: "'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-    },
-    body: {
-      family: "Inter",
-      stack: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-    },
-    mono: {
-      family: "JetBrains Mono",
-      stack: "'JetBrains Mono', 'SF Mono', 'Fira Code', monospace",
-    },
-    size: {
-      xs: "0.625rem",     // smaller base — compact cyberpunk feel
-      sm: "0.6875rem",
-      base: "0.75rem",
-      md: "0.8125rem",
-      lg: "0.9375rem",
-      xl: "1.125rem",
-      "2xl": "1.625rem",  // big jump for headings
-      "3xl": "2.5rem",    // hero-sized headings
-    },
-    weight: { normal: 300, medium: 400, semibold: 500, bold: 700 },
-    lineHeight: { tight: 1.15, normal: 1.45, relaxed: 1.6 },
-    letterSpacing: { tight: "-0.03em", normal: "-0.01em", wide: "0.12em" },
-  },
-
-  colors: {
-    brand: {
-      // Faz 6 kontrast fix: Brand skalası standart light→dark yönüne
-      // çevrildi. Primary button (bg-gradient brand-600→brand-700 +
-      // text-white) için 600 #7c3aed = 5.70:1, 700 #6d28d9 = 7.98:1.
-      // Holografik mor vurgu 300-500 aralığında korundu.
-      50: "#f5f3ff", 100: "#ede9fe", 200: "#ddd6fe", 300: "#c4b5fd",
-      400: "#a78bfa", 500: "#8b5cf6", 600: "#7c3aed", 700: "#6d28d9",
-      800: "#5b21b6", 900: "#4c1d95",
-    },
-    neutral: {
-      // Faz 6 kontrast fix: n500 #5c577a (2.78:1) AA altındaydı.
-      // Skala açıldı: n500 → #8d88a8 (5.58:1), n600 → #a5a0c0 (7.53:1),
-      // n700 → #c4bfdb (9.91:1).
-      0: "#09080f", 25: "#0d0b16", 50: "#11101c", 100: "#191726",
-      200: "#221f33", 300: "#2e2b42", 400: "#433f5b", 500: "#8d88a8",
-      600: "#a5a0c0", 700: "#c4bfdb", 800: "#d8d4e8", 900: "#e6e4f0",
-      950: "#f4f3f9",
-    },
-    success: { light: "#0d2618", base: "#10b981", dark: "#059669", text: "#6ee7b7" },
-    warning: { light: "#2a1a05", base: "#f59e0b", dark: "#d97706", text: "#fcd34d" },
-    error: { light: "#2d0a12", base: "#ef4444", dark: "#dc2626", text: "#fca5a5" },
-    info: { light: "#0c1a33", base: "#6366f1", dark: "#4f46e5", text: "#a5b4fc" },
-    surface: {
-      // Faz 6 kontrast fix: sidebarSection #5c577a karanlık sidebar
-      // #0d0b16 üzerinde 2.88:1 (FAIL) idi. neutral.600 (#a5a0c0, 7.53:1)
-      // değerine kaydırılarak AA'yı geçer hale getirildi.
-      page: "#09080f", card: "#11101c", elevated: "#191726",
-      inset: "#0d0b16", sidebar: "#0d0b16", sidebarHover: "#191726",
-      sidebarActive: "#221f33",
-      sidebarText: "#e6e4f0", sidebarTextMuted: "#7f7a9c",
-      sidebarTextActive: "#c4b5fd", sidebarSection: "#a5a0c0",
-      sidebarBorder: "#2e2b42",
-    },
-    border: { subtle: "#221f33", default: "#2e2b42", strong: "#433f5b" },
-    focus: "#8b5cf6",
-    chart: ["#8b5cf6", "#06b6d4", "#f59e0b", "#ef4444", "#10b981", "#ec4899", "#f97316"],
-  },
-
-  spacing: {
-    0: "0", 1: "0.2rem", 2: "0.4rem", 3: "0.6rem", 4: "0.8rem",
-    5: "1rem", 6: "1.2rem", 8: "1.6rem", 10: "2rem", 12: "2.4rem", 16: "3.2rem",
-  },
-
-  // Pill-shaped: large radius for that futuristic glass-panel look
-  radius: { sm: "8px", md: "12px", lg: "16px", xl: "24px", full: "9999px" },
-
-  // Colored glow shadows — purple tinted
-  shadow: {
-    xs: "0 1px 3px rgba(139,92,246,0.08), 0 1px 2px rgba(0,0,0,0.5)",
-    sm: "0 2px 8px rgba(139,92,246,0.10), 0 1px 3px rgba(0,0,0,0.6)",
-    md: "0 4px 16px rgba(139,92,246,0.12), 0 2px 6px rgba(0,0,0,0.5)",
-    lg: "0 8px 32px rgba(139,92,246,0.15), 0 4px 10px rgba(0,0,0,0.6)",
-    xl: "0 20px 60px rgba(139,92,246,0.18), 0 8px 20px rgba(0,0,0,0.7)",
-    "2xl": "0 32px 80px rgba(139,92,246,0.22), 0 16px 32px rgba(0,0,0,0.8)",
-  },
-
-  // Snappy, springy motion
-  motion: { fast: "80ms", normal: "140ms", slow: "220ms", easing: "cubic-bezier(0.16, 1, 0.3, 1)" },
-
-  layout: {
-    sidebarWidth: "272px",             // wider sidebar — more breathing room
-    sidebarCollapsedWidth: "64px",     // wider collapsed too
-    headerHeight: "42px",              // thin header — cyberpunk compact
-    pageMaxWidth: "1440px",            // wider content area
-    pagePadding: "1.25rem",
-  },
-
-  density: "compact",
-};
-
-// ---------------------------------------------------------------------------
-// 2. Arctic Frost — Swiss minimal print design
-//    Think: Dieter Rams × Apple.com × Linear × ultra-whitespace
-//    Radical: huge padding, enormous radius, almost no shadows, white sidebar
-// ---------------------------------------------------------------------------
-
-export const ARCTIC_FROST_THEME: ThemeManifest = {
-  id: "arctic-frost",
-  name: "Arctic Frost",
-  description: "Isvicre minimal baski tasarimi. Genis bosluklar, buyuk radius, neredeyse sifir golge. Beyaz sidebar, havali ve ferah.",
-  author: "system",
-  version: "2.0.0",
-  tone: ["minimal", "frost", "swiss", "airy", "clean", "light"],
-
-  typography: {
-    heading: {
-      family: "Instrument Sans",
-      stack: "'Instrument Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-    },
-    body: {
-      family: "Instrument Sans",
-      stack: "'Instrument Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-    },
-    mono: {
-      family: "Geist Mono",
-      stack: "'Geist Mono', 'JetBrains Mono', 'SF Mono', monospace",
-    },
-    size: {
-      xs: "0.75rem",      // larger base — spacious reading
-      sm: "0.8125rem",
-      base: "0.875rem",
-      md: "0.9375rem",
-      lg: "1.0625rem",
-      xl: "1.25rem",
-      "2xl": "1.5rem",
-      "3xl": "2rem",       // modest headings — swiss restraint
-    },
-    weight: { normal: 400, medium: 500, semibold: 600, bold: 700 },
-    lineHeight: { tight: 1.3, normal: 1.6, relaxed: 1.8 },
-    letterSpacing: { tight: "-0.015em", normal: "0.005em", wide: "0.1em" },
-  },
-
-  colors: {
-    brand: {
-      // Faz 6 kontrast fix: Eski primary button brand.500 #0ea5e9 +
-      // white = 2.77:1 AA altındaydı. Skala bir ton koyulaştırıldı —
-      // brand.500 artık #0284c7 (4.10 LG), brand.600 #0369a1 (5.93 OK),
-      // brand.700 #075985 (7.56). Swiss minimal mavi kimlik korundu.
-      50: "#f0f9ff", 100: "#e0f2fe", 200: "#bae6fd", 300: "#7dd3fc",
-      400: "#38bdf8", 500: "#0284c7", 600: "#0369a1", 700: "#075985",
-      800: "#0c4a6e", 900: "#082f49",
-    },
-    neutral: {
-      0: "#ffffff", 25: "#fdfdfe", 50: "#f9fafb", 100: "#f3f4f6",
-      200: "#e5e7eb", 300: "#d1d5db", 400: "#9ca3af", 500: "#6b7280",
-      600: "#4b5563", 700: "#374151", 800: "#1f2937", 900: "#111827",
-      950: "#030712",
-    },
-    success: { light: "#ecfdf5", base: "#22c55e", dark: "#16a34a", text: "#15803d" },
-    warning: { light: "#fffbeb", base: "#eab308", dark: "#ca8a04", text: "#a16207" },
-    error: { light: "#fef2f2", base: "#ef4444", dark: "#dc2626", text: "#b91c1c" },
-    info: { light: "#eff6ff", base: "#3b82f6", dark: "#2563eb", text: "#1d4ed8" },
-    surface: {
-      // Faz 6 kontrast fix: sidebarSection #9ca3af beyaz sidebar üzerinde
-      // 2.54:1 (FAIL) idi. #6b7280 (4.83:1) yapıldı — Swiss section
-      // header'lar artık net okunuyor. sidebarTextActive eski brand.700
-      // referansı #0369a1 olarak literal kalıyor.
-      page: "#f9fafb", card: "#ffffff", elevated: "#ffffff",
-      inset: "#f3f4f6", sidebar: "#ffffff", sidebarHover: "#f3f4f6",
-      sidebarActive: "#e0f2fe",
-      sidebarText: "#111827", sidebarTextMuted: "#6b7280",
-      sidebarTextActive: "#0369a1", sidebarSection: "#6b7280",
-      sidebarBorder: "#e5e7eb",
-    },
-    border: { subtle: "#f3f4f6", default: "#e5e7eb", strong: "#d1d5db" },
-    focus: "#0ea5e9",
-    chart: ["#0ea5e9", "#22c55e", "#eab308", "#ef4444", "#8b5cf6", "#ec4899", "#14b8a6"],
-  },
-
-  spacing: {
-    0: "0", 1: "0.125rem", 2: "0.25rem", 3: "0.375rem", 4: "0.5rem",
-    5: "0.75rem", 6: "1rem", 8: "1.25rem", 10: "1.5rem", 12: "2rem", 16: "2.5rem",
-  },
-
-  // Super-rounded — pillowy, soft, Apple-inspired
-  radius: { sm: "12px", md: "16px", lg: "20px", xl: "28px", full: "9999px" },
-
-  // Whisper-thin shadows — almost flat design
-  shadow: {
-    xs: "0 0 0 1px rgba(0,0,0,0.03)",
-    sm: "0 1px 2px rgba(0,0,0,0.03), 0 0 0 1px rgba(0,0,0,0.02)",
-    md: "0 2px 4px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.02)",
-    lg: "0 4px 8px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.02)",
-    xl: "0 8px 16px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.02)",
-    "2xl": "0 16px 32px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.03)",
-  },
-
-  // Slow, gentle, breathing motion
-  motion: { fast: "180ms", normal: "320ms", slow: "500ms", easing: "cubic-bezier(0.4, 0, 0.2, 1)" },
-
-  layout: {
-    sidebarWidth: "280px",             // wide sidebar — room to breathe
-    sidebarCollapsedWidth: "72px",
-    headerHeight: "44px",              // compact header
-    pageMaxWidth: "1120px",            // narrow content — reading-optimized
-    pagePadding: "1.25rem",            // compact padding
-  },
-
-  density: "compact",
-};
-
-// ---------------------------------------------------------------------------
-// 3. Tokyo Neon — Akihabara arcade terminal
+// 1. Tokyo Neon — Akihabara arcade terminal
 //    Think: Cyberpunk 2077 UI × retro arcade × dense data displays
 //    Radical: ultra-compact, monospace-influenced, neon bleed, thin sidebar
 // ---------------------------------------------------------------------------
@@ -357,7 +138,7 @@ export const TOKYO_NEON_THEME: ThemeManifest = {
 };
 
 // ---------------------------------------------------------------------------
-// 4. Ink & Wire — Broadsheet newspaper / editorial gazette
+// 2. Ink & Wire — Broadsheet newspaper / editorial gazette
 //    Think: NYT × The Economist × printed broadsheet × typography-first
 //    Radical: zero radius, tall type, wide line-height, heavy weight contrast
 // ---------------------------------------------------------------------------
@@ -468,7 +249,7 @@ export const INK_AND_WIRE_THEME: ThemeManifest = {
 };
 
 // ---------------------------------------------------------------------------
-// 5. Solar Ember — Industrial control panel / HUD
+// 3. Solar Ember — Industrial control panel / HUD
 //    Think: SpaceX mission control × dark factory dashboard × ember heat
 //    Radical: monospace headers, brutalist grid, inset cards, fire glow
 // ---------------------------------------------------------------------------
@@ -583,8 +364,6 @@ export const SOLAR_EMBER_THEME: ThemeManifest = {
 
 /** All radical themes in an array for easy registration */
 export const RADICAL_THEMES: ThemeManifest[] = [
-  MIDNIGHT_ULTRAVIOLET_THEME,
-  ARCTIC_FROST_THEME,
   TOKYO_NEON_THEME,
   INK_AND_WIRE_THEME,
   SOLAR_EMBER_THEME,

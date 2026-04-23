@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { useThemeStore } from "../../stores/themeStore";
-import { DEFAULT_THEME, EXAMPLE_WARM_EARTH_THEME, validateThemeManifest } from "../../components/design-system/themeContract";
+import { DEFAULT_THEME, VOID_TERMINAL_THEME, validateThemeManifest } from "../../components/design-system/themeContract";
 
 describe("themeStore", () => {
   beforeEach(() => {
@@ -9,7 +9,7 @@ describe("themeStore", () => {
     const { setState } = useThemeStore;
     setState({
       activeThemeId: DEFAULT_THEME.id,
-      themes: [DEFAULT_THEME, EXAMPLE_WARM_EARTH_THEME],
+      themes: [DEFAULT_THEME, VOID_TERMINAL_THEME],
     });
   });
 
@@ -22,12 +22,12 @@ describe("themeStore", () => {
     const { themes } = useThemeStore.getState();
     expect(themes.length).toBeGreaterThanOrEqual(2);
     expect(themes.some((t) => t.id === "obsidian-slate")).toBe(true);
-    expect(themes.some((t) => t.id === "warm-earth")).toBe(true);
+    expect(themes.some((t) => t.id === "void-terminal")).toBe(true);
   });
 
   it("switches active theme", () => {
-    useThemeStore.getState().setActiveTheme("warm-earth");
-    expect(useThemeStore.getState().activeThemeId).toBe("warm-earth");
+    useThemeStore.getState().setActiveTheme("void-terminal");
+    expect(useThemeStore.getState().activeThemeId).toBe("void-terminal");
   });
 
   it("does not switch to unknown theme", () => {
@@ -110,8 +110,8 @@ describe("validateThemeManifest", () => {
     expect(validateThemeManifest(DEFAULT_THEME)).toEqual([]);
   });
 
-  it("passes for the example warm earth theme", () => {
-    expect(validateThemeManifest(EXAMPLE_WARM_EARTH_THEME)).toEqual([]);
+  it("passes for the void terminal theme", () => {
+    expect(validateThemeManifest(VOID_TERMINAL_THEME)).toEqual([]);
   });
 
   it("fails for null", () => {

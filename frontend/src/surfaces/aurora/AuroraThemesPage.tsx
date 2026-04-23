@@ -20,20 +20,25 @@ import type { ThemeManifest } from "../../components/design-system/themeContract
 
 // --- helpers ---------------------------------------------------------------
 
-// Faz 4.1 — Theme apply honesty.
-// Aurora surface CSS scopes its semantic tokens under
+// Aurora curated gallery allow-list.
+// The Aurora surface CSS scopes its semantic tokens under
 //   [data-surface="aurora"][data-theme="<id>"]
-// and only ships overrides for a subset of theme ids (see
-// frontend/src/styles/aurora/tokens.css). When the user picks a theme
-// WITHOUT an Aurora block, the surface silently falls back to the base
-// aurora-dusk tokens and nothing visible changes inside Aurora panels —
-// that is the primary "looks fake" complaint from the UX audit.
+// and only ships overrides for a curated set of theme ids (see
+// frontend/src/styles/aurora/tokens.css). Themes outside this set are
+// not registered in the BUILTIN_THEMES array (see themeStore.ts), so
+// they do not reach this page in practice. We keep an explicit
+// allow-list here as a defense-in-depth guard — if the store ever ships
+// a theme without an Aurora token block, the gallery filters it out
+// instead of rendering a broken preview card.
 //
-// We can't safely enumerate selectors from a stylesheet at runtime, so we
-// keep an explicit allow-list here. Keep this in sync with tokens.css.
+// Keep this set in lock-step with the token blocks in tokens.css.
 const AURORA_BOUND_THEME_IDS = new Set<string>([
   "aurora-dusk",
   "obsidian-slate",
+  "void-terminal",
+  "tokyo-neon",
+  "ink-and-wire",
+  "solar-ember",
 ]);
 
 function themeIsAuroraBound(theme: ThemeManifest): boolean {
@@ -151,11 +156,14 @@ export function AuroraThemesPage() {
   const setActiveTheme = useThemeStore((s) => s.setActiveTheme);
   const activeThemeFn = useThemeStore((s) => s.activeTheme);
 
-  // Aurora gate removed: cockpit.css class-context migration shipped, so both
-  // aurora-dusk and obsidian-slate render correctly on Aurora and there is no
-  // longer a "broken" theme to hide. Non-Aurora surfaces continue to expose
-  // their own switchers — the gallery here just lists every registered theme.
-  const themes = allThemes;
+  // Aurora curation wave — the gallery shows ONLY themes that carry a full
+  // Aurora token block in `frontend/src/styles/aurora/tokens.css`. A theme
+  // without Aurora coverage would silently fall back to Dusk tokens inside
+  // Aurora panels (the old "partial" state); we refuse to list it at all so
+  // users can never click into a half-applied preview. Non-Aurora surfaces
+  // (legacy, horizon fallback) expose their own switchers and can still
+  // accept any registered theme.
+  const themes = useMemo(() => allThemes.filter(themeIsAuroraBound), [allThemes]);
 
   const activeTheme = activeThemeFn();
   const activeColors = useMemo(() => deriveColors(activeTheme), [activeTheme]);
@@ -166,8 +174,9 @@ export function AuroraThemesPage() {
     if (theme) applyThemeToDOM(theme);
   }
 
-  // Faz 4.1 — honest hint for the inspector when active theme has no Aurora tokens.
-  const activeAuroraBound = themeIsAuroraBound(activeTheme);
+  // Post-curation: `themes` above is already filtered to Aurora-bound ids, so
+  // every card in the gallery renders a real preview and the inspector
+  // always shows "tam uygulanıyor" for the active theme.
 
   const inspectorRows: Array<[string, string]> = [
     ["page", activeColors.bg],
@@ -209,30 +218,12 @@ export function AuroraThemesPage() {
         <AuroraInspectorRow
           label="aurora uyumu"
           value={
-            activeAuroraBound ? (
-              <span style={{ color: "var(--state-success-fg)" }}>tam uygulanıyor</span>
-            ) : (
-              <span style={{ color: "var(--state-warning-fg)" }}>yalnızca genel tokenlar</span>
-            )
+            <span style={{ color: "var(--state-success-fg)" }}>
+              tam uygulanıyor
+            </span>
           }
         />
       </AuroraInspectorSection>
-      {!activeAuroraBound && (
-        <AuroraInspectorSection title="Uyarı">
-          <div
-            style={{
-              fontSize: 11,
-              color: "var(--text-muted)",
-              lineHeight: 1.5,
-            }}
-            data-testid="aurora-theme-partial-hint"
-          >
-            Bu tema için Aurora yüzeyine özel token seti tanımlanmamış. Aurora
-            panellerinde yalnızca genel CSS değişkenleri değişir; yüzeye özgü
-            renkler aurora-dusk varsayılanında kalır.
-          </div>
-        </AuroraInspectorSection>
-      )}
     </AuroraInspector>
   );
 
@@ -251,7 +242,6 @@ export function AuroraThemesPage() {
           {themes.map((t) => {
             const colors = deriveColors(t);
             const active = t.id === activeThemeId;
-            const auroraBound = themeIsAuroraBound(t);
             return (
               <div
                 key={t.id}
@@ -259,11 +249,6 @@ export function AuroraThemesPage() {
                 onClick={() => handleActivate(t.id)}
                 role="button"
                 tabIndex={0}
-                title={
-                  auroraBound
-                    ? undefined
-                    : "Bu tema Aurora yüzeyinde yalnızca genel tokenları değiştirir."
-                }
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
                     e.preventDefault();
@@ -273,27 +258,6 @@ export function AuroraThemesPage() {
               >
                 <ThemePreview colors={colors} />
                 {active && <div className="active-badge">AKTİF</div>}
-                {!auroraBound && (
-                  <div
-                    className="partial-badge"
-                    data-testid={`aurora-theme-partial-${t.id}`}
-                    style={{
-                      position: "absolute",
-                      top: 8,
-                      right: 8,
-                      padding: "2px 6px",
-                      borderRadius: 3,
-                      background: "var(--state-warning-bg, rgba(245,158,11,0.18))",
-                      color: "var(--state-warning-fg)",
-                      fontFamily: "var(--font-mono)",
-                      fontSize: 9,
-                      letterSpacing: "0.08em",
-                      textTransform: "uppercase",
-                    }}
-                  >
-                    kısmi
-                  </div>
-                )}
                 <div className="theme-info">
                   <div className="t-name">{t.name}</div>
                   <div className="t-desc">{t.description}</div>

@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { generateCSSVariables, resolveTokens } from "../../components/design-system/themeEngine";
-import { DEFAULT_THEME, VOID_TERMINAL_THEME, EXAMPLE_WARM_EARTH_THEME } from "../../components/design-system/themeContract";
+import { DEFAULT_THEME, VOID_TERMINAL_THEME, AURORA_DUSK_THEME } from "../../components/design-system/themeContract";
 
 describe("generateCSSVariables", () => {
   it("generates CSS variables from default theme", () => {
@@ -20,11 +20,11 @@ describe("generateCSSVariables", () => {
     expect(vars["--ch-sidebar-width"]).toBe("248px");
   });
 
-  it("generates different variables for warm earth theme", () => {
-    const vars = generateCSSVariables(EXAMPLE_WARM_EARTH_THEME);
-    expect(vars["--ch-font-body"]).toContain("DM Sans");
-    expect(vars["--ch-brand-500"]).toBe("#d4882a");
-    expect(vars["--ch-neutral-900"]).toBe("#252119");
+  it("generates different variables for aurora dusk theme", () => {
+    const vars = generateCSSVariables(AURORA_DUSK_THEME);
+    expect(vars["--ch-font-body"]).toContain("Geist");
+    expect(vars["--ch-brand-500"]).toBe("#26b6a6");
+    expect(vars["--ch-neutral-900"]).toBe("#c9c0d8");
   });
 
   it("generates dark variables for void terminal theme", () => {
@@ -68,10 +68,10 @@ describe("resolveTokens", () => {
     expect(tokens.transition.fast).toContain("100ms");
   });
 
-  it("resolves different tokens for warm earth theme", () => {
-    const tokens = resolveTokens(EXAMPLE_WARM_EARTH_THEME);
-    expect(tokens.colors.brand[600]).toBe("#b87022");
-    expect(tokens.typography.fontFamily).toContain("DM Sans");
+  it("resolves different tokens for aurora dusk theme", () => {
+    const tokens = resolveTokens(AURORA_DUSK_THEME);
+    expect(tokens.colors.brand[600]).toBe("#1a9a8c");
+    expect(tokens.typography.fontFamily).toContain("Geist");
   });
 
   it("resolves dark tokens for void terminal theme", () => {
