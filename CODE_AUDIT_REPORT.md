@@ -1,847 +1,404 @@
-# CODE_AUDIT_REPORT — Aurora Dusk Cockpit Pre-Merge Truth Audit (Pass-3 → Pass-7)
+# ContentHub — Kod & Operasyonel Doğruluk Denetim Raporu
 
-> **PASS-7 ADDENDUM (2026-04-23) — `codex/aurora-light-theme-visibility` branch audit**
->
-> **Kapsam:** post-merge sonrası light theme (obsidian-slate, ink-and-wire) rail/sidebar icon görünürlüğü caveat'i + dashboard click-handler dürüstlük taraması + main merge güvenliği.
->
-> **Bu pass'te yapılanlar (3 commit, 3 dosya):**
-> 1. `45f9de8` aurora: fix light theme cockpit visibility — cockpit.css + tokens.css (+119/-52): light theme rail text/icon token'ları düzeltildi.
-> 2. `3ffeb01` aurora: harden rail icon visibility on light themes — cockpit.css (+19): `svg { color: inherit; stroke: currentColor }` belt-and-suspenders + `.rail/.ctxbar/.statusbar { color-scheme: dark }` (UA-level auto-dark interference guard).
-> 3. `357365f` aurora: fix broken hash href on channel performance breadcrumb — `AuroraChannelPerformancePage.tsx:229` (`href="#/admin/analytics"` → `"/admin/analytics"`) — React Router bypass'i kaldırıldı.
->
-> **Dashboard click audit bulguları (4 paralel explore ajanı + router cross-check):**
-> - **40 nav target çapraz-kontrolü:** tüm Aurora `navigate(...)` çağrıları router.tsx mount'larına karşı doğrulandı — 0 missing, 0 404.
-> - **27 SPA path HTTP 200 doğrulaması:** SPA routing tüm yolları index.html'e çeviriyor; server-level 404 yok. Client-side 404 `NotFoundPage` üzerinden handle ediliyor.
-> - **Dashboard buton taraması:** Tüm major CTA'lar (Yeni video/bülten/ürün, Yayınla, Kanal bağla, Provider test, Settings save) gerçek mutation'a bağlı, gerçek toast döndürüyor.
-> - **TEK HIGH SEVERITY BUG:** AuroraChannelPerformancePage breadcrumb'ı (hash-prefixed href bypass'i) — fix edildi (commit `357365f`).
->
-> **Theme coverage durumu (2026-04-23):**
-> - ✅ aurora-dusk: tam tokenize, tüm class-context'ler OK.
-> - ✅ obsidian-slate: token dosyası tam; rail/ctxbar/statusbar cockpit-only dark (design intent); workbench light.
-> - ⚠️ ink-and-wire / solar-ember / tokyo-neon / void-terminal: `themes-radical.ts` içinde manifest var ama Aurora class-context'leri %100 test edilmedi. Chrome Auto-Dark Mode Claude Preview'da test'i yanıltıyor (false-negative); gerçek browser'da verify edildi.
->
-> **Truth gate (pass-7):**
-> - ✅ `npx tsc --noEmit` → exit 0
-> - ✅ `npx vitest run` on ThemeEngine + themeStore tests → 32/32 pass
-> - ✅ `npm run build` → clean (yalnız chunk size uyarısı)
-> - ✅ Real-browser screenshot verification (1440x900, colorScheme: light) → rail icons tüm 3 test edilmiş temada görünür.
->
-> **Main merge verdict (Pass-7): ✅ GO.**
-> - Diff: yalnızca 3 dosya (2 CSS + 1 TSX). 0 backend değişikliği, 0 API/schema değişikliği, 0 DB migration.
-> - Risk: **çok düşük** — değişiklikler yalnızca CSS (cockpit dark-mode compliance) ve React Router düzeltmesi.
-> - Merge önerisi: `codex/aurora-light-theme-visibility` → `main` squash-merge. Conflict riski: 0 (branch başlangıcından beri main'de aynı dosyalara dokunulmadı).
-> - Post-merge CSS QA: 5 dakikalık browser verify (admin/user shell, aurora-dusk + obsidian-slate + ink-and-wire) yeterli.
->
-> **Pass-6.1'den bu yana açık iş:** Yok. Pass-7 yalnızca polish/hardening pass'idir.
->
-> ---
->
-> **POST-MERGE DURUM (2026-04-20):** `feature/aurora-dusk-cockpit` → `main` squash-merge tamamlandı (commit `0d838ad`). Aurora Dusk Cockpit artık main branch'tedir ve aktif frontend'dir. Alembic head: `phase_al_001` (idempotent, migrasyonlar stabildir). Backend: 46 modül, 326+ endpoint. Test durumu post-merge: backend 2559/2559 PASS, frontend 2696/2696 PASS (237 dosya). Bu dosya pre-merge audit kaydı olarak historical reference olarak korunmaktadır.
-
-**Tarih:** 2026-04-20 (pass-3: 2026-04-19 akşam / pass-4: 2026-04-19 gece / pass-5: 2026-04-20 sabah / pass-6: 2026-04-20 öğleden sonra / **pass-6.1 settings auth sweep: 2026-04-20 akşamı**)
-**Branch:** `feature/aurora-dusk-cockpit` (pass-6 final closure commit'leriyle birlikte; merge commit: `0d838ad`)
-**Denetçi:** Principal Architect Mode — Recovery Audit (10-faz code-audit + Aurora-odaklı brainstorm + user-guide)
-**Kapsam:** Tıklanabilirlik dürüstlüğü, 404 üreten yönlendirmeler, Aurora overlay backend bağı, source-of-truth tutarlılığı, **main merge güvenliği**.
-**Yöntem:** 4 paralel Explore ajanı (proje anlama, dashboard click-handler tarama, 404/orphan-route tarama, token+performans+polish) + manuel doğrulama (router.tsx tüm Aurora `navigate(...)` çağrılarına çapraz-bakış) + smoke test guard (`aurora-navigate-targets.smoke.test.ts`) + tsc clean (exit 0).
-
----
-
-## 0. TL;DR — Ana Karar
-
-> **✅ GO (pass-6.1 settings auth regression sweep tamamlandı, 2026-04-20 akşam).** Pass-6 kapatıldıktan sonra kullanıcı `/admin/wizard-settings` sayfasında wizard→form mod toggle'ında **403 "Bu ayar kullanici tarafindan degistirilemez"** hatası raporladı. Kök sebep: settings router `Depends(get_caller_role)` kullanıyordu (yalnızca `X-ContentHub-Role` header okuyan legacy dependency), ama frontend bu header'ı hiç göndermiyor — dolayısıyla admin'ler "user" olarak işleniyordu. Fix: yeni `get_effective_role` async dependency JWT user.role'ünü birincil kaynak yapar; header fallback dev/curl için korundu. Settings router 5 endpoint'te yeniye geçirildi. **Etkilenen yüzeyler: wizard-settings, admin settings, prompts, providers, Aurora override'ları**. Doğrulama: 18-senaryoluk uçtan uca ASGI sweep (tamamen yeşil) + `tests/test_settings_auth_role_gate.py` kalıcı regression dosyası (12/12 pass) + repo-wide role-source sweep (kardeş bug **yok**). **Pass-6.1 truth gate:** `npx tsc --noEmit` exit 0, vitest **237/237 dosya 2696/2696 test**, backend pytest **2559/2559 test** (pass-6 2547 + yeni 12). **Açık iş yok.** Detay: MERGE_READINESS.md Bölüm 0 "Pass-6.1".
->
-> **Önceki durum (Pass-6, 2026-04-20 öğleden sonra):** Pass-5 "GO" sonrası kullanıcı manuel QA tarafında 12 UX/wiring mismatch raporladı (3 farklı tıklama paterni, drawer footer overflow, raw_payload boş, refresh sessizliği, 204 disconnect bug, deep-link doğrulama, news route mismatch, settings tab persist + write-lock görünürlüğü, source scan toast yetersizliği, Cmd+P/Cmd+B browser çakışması, manual QA checklist split). Pass-6 hepsini kapattı. Detay: Bölüm 17 (pass-4 closure) + Bölüm 18 (pass-5 closure) + MERGE_READINESS.md Bölüm 1.3 (pass-6 closure envanteri).
-
-### Pass-4 closure özeti (Bölüm 17'de detay)
-- **9 navigate-404 → 0** — drawer pattern (mevcut `AuroraDetailDrawer` primitive) ile 5 entity grubunda satır click → drawer; templates create flow için `?openId=` deep-link.
-- **2 dummy handler → dürüst davranış** — admin connections "Yenile" sadece `refetch()` + dürüst toast; "Bağlantıyı kes" gerçek DELETE mutation + confirm + 3 query cache invalidation + pending state.
-- **1 URL mismatch düzeldi** — `/admin/audit?record=` → `/admin/audit-logs`.
-- **Yeni dosyalar:** `frontend/src/hooks/useDeletePlatformConnection.ts` + `deletePlatformConnection` helper.
-- **Yeni route veya backend endpoint eklenmedi.**
-
-### Pass-5 final closure özeti (Bölüm 18'de detay)
-- **+1 yeni navigate-404 → 0** — `AuroraSourceDetailPage` Düzenle butonu (smoke test guard'ın yakaladığı) inline edit pattern'ine çevrildi (`PATCH /sources/{id}` sadece değişen alanlar).
-- **Wizard atomikliği gerçek anlamda kapandı** — News bulletin atomik endpoint, product review dürüst orphan handling.
-- **Undefined CSS token kapatıldı** — `cockpit.css:1139` `var(--bg-hover)` → `var(--bg-inset)`.
-- **Regresyon koruması** — `frontend/src/tests/aurora-navigate-targets.smoke.test.ts` tüm Aurora navigate hedeflerini router.tsx'e karşı doğrular (CI guard).
-- **Doc deferral dili sıfırlandı** — Aktif audit doc'larından "post-merge / yeni epic / sonra / later / deferred / follow-up / Option B / next pass / polish epic" dili silindi; her madde ya KAPATILDI ya KAPSAM DIŞI KALICI ÜRÜN KARARI.
-
-### Aşağıdaki Bölüm 1-16 pass-3'ün tarihi kaydı olarak korundu.
-> Pass-3 verdict: **NO-GO.**
-
-Önceki pass'in (2026-04-19 sabah) "Aurora-özgü 404 yok" iddiası **yanlıştı**. Bu pass'te **9 doğrulanmış P0 404 üreten yönlendirme** + **2 P0 yalan-buton** (refresh / disconnect) bulundu. Hepsi Aurora overlay'ine özgü — legacy admin sayfalarında bu hatalar yok (Aurora regresyonu).
-
-**Kritik sayılar:**
-- Backend route: 337 (sağlam, dokunulmadı)
-- Aurora page override: 87 (graceful fallback ✅, ama 9 tanesi var olmayan route'a navigate ediyor)
-- TypeScript: temiz (exit 0)
-- 9 doğrulanmış 404 yolu (template/used-news/style-blueprints/template-style-links detay yok, source-scans detay yok, audit URL uyumsuz, channels/connect var olmayan path)
-- 2 P0 yalan-handler (`AuroraAdminConnectionsPage.handleRefresh` + `handleDisconnect`) — kodda kendi yorumunda kabul ediyor: "Backend tarafında refresh-token endpoint'i mevcut olduğunda mutation bağlanır"
-
-**Çözüm rotası:** P0 blockerları kapat (4-6 saatlik bir pass) → MERGE_READINESS yeşile dön → squash merge.
+**Tarih:** 2026-04-23
+**Denetim Dalı:** `codex/aurora-theme-identity-pass` (HEAD: `360a4fd`)
+**Karşılaştırma Hedefi:** `main`
+**Kapsam:** Frontend + backend temas eden kod; özellikle UI tıklanabilirlik ve main-merge güvenliği
+**Önceki rapor:** `CODE_AUDIT_REPORT_2026-04-22.md` — bu rapor onu günceller, tekrar etmez
 
 ---
 
 ## 1. Executive Summary
 
-Aurora Dusk Cockpit, ContentHub admin/user yüzeylerine 87 page override ile devreye giren, 4-region (Sky / Stage / Stream / Inspector) bir kabuktur. **Mimari sağlam, izolasyon temiz, source-of-truth disiplini büyük oranda korunmuş.** Backend'e tek satır eklenmedi; SurfacePageOverride trampolini Aurora kapatıldığında deterministik fallback sağlıyor.
+Bu dal (`codex/aurora-theme-identity-pass`) main'e göre **sadece 7 dosyayı** değiştirir, hepsi theme katmanında (tokens, tema manifestleri, tema galeri sayfası, tema store yorumu, 2 test dosyası). Backend, router, settings contract'ları, UI iskeleti, state store davranışları bu dalda **dokunulmamış**. Yani bu dalın kendi merge riski düşük.
 
-**Ancak**, tıklanabilirlik dürüstlüğü pass-2'de iddia edildiği seviyede değil. Aurora geliştirilirken bazı registry sayfalarına satır-tıklama / çift-tıklama / chevron handler'ları eklenmiş, ama bu handler'lar **var olmayan detay route'larına yönlendiriyor**. Bunlar `*` wildcard'a düşüp `<NotFoundPage />` (veya Aurora override `auth.404`) render ediyor. Kullanıcı tıklıyor → 404. Ek olarak admin connections sayfasındaki Refresh/Disconnect butonları handler'a sahip ama kendi içinde "henüz bağlanmadı" şeklinde gizli yorum taşıyor — kullanıcı için yalan etki.
+Ancak genel operasyonel sağlık iki açık kusur gösteriyor:
 
-### En Ciddi 5 Mimari Sorun
-1. **Aurora navigate target validation yok.** SurfacePageOverride yalnızca registered key'leri map'liyor; navigate hedefleri için statik analiz / lint kuralı yok. Sonuç: 9 P0 404.
-2. **"Stub handler" anti-pattern**: `AuroraAdminConnectionsPage.handleRefresh` ve `handleDisconnect` — yorum satırı "endpoint yok, şimdilik sayfaya yönlendir" diyor ama UI gerçek bir aksiyon vaat ediyor. Bu CLAUDE.md "no silent magic flags" + "no hidden behavior" kurallarını ihlal ediyor.
-3. **Provider API key naming çift desen** — `module.{id}.api_key` vs `provider.{name}.api_key`. 13 backend dosyası ikisini de okumak zorunda. SoT belirsiz.
-4. **Aurora detay sayfası eksiklikleri tutarsız** — Templates/UsedNews/StyleBlueprints/TemplateStyleLinks için detay sayfası YOK; Aurora bunları hayal etti. SourceScans için de yok.
-5. **Token sistemi %100 değil** — 20+ hardcoded HEX/rgba aurora CSS'inde (cockpit.css, dashboard.css, audit.css). Light theme (obsidian-slate) altında görsel kopukluk üretiyor.
+1. **Admin Dashboard'da 2 tane `role="note"` tile'ı** (DB + Python) görsel olarak yan komşularıyla birebir aynı — "İşler" ve "Hatalar" tile'ları `<button>` + `onClick` ile drill-down sağlıyor, DB ve Python ise sadece statik metin. Kullanıcı tıklayıp bir şey olmayınca UI sözünü tutmuyor gibi görünüyor.
+2. **Kullanıcı panelinde bir navigation prefix hayalet**: `AuroraUserLayout.tsx:46` "Projeler" slot'unun `matchPrefixes` listesinde `/user/jobs` yazıyor ama `router.tsx:284-325` içinde `/user/jobs` **liste** route'u tanımlı değil, sadece `/user/jobs/:jobId` detail route'u var. Bu literal şu anda zararsız (sadece active-rail highlight için kullanılıyor, navigate tetiklemiyor) ama yanıltıcı bir artefakt.
 
-### En Ciddi 5 UI/UX Operasyonel Truth Sorunu
-1. **9 P0 404 üreten click handler** (detayda Tablo 7).
-2. **`AuroraAdminConnectionsPage.handleRefresh`** — "Yeniden bağla" buton görünümlü ama gerçekte sadece `/admin/channels/{id}/connect` (var olmayan path) navigate. → P0.
-3. **`AuroraAdminConnectionsPage.handleDisconnect`** — "Bağlantıyı kes" butonu gibi duruyor; gerçekte sadece `/admin/connections` (zaten içinde olduğu sayfa) navigate. → P0.
-4. **`AuroraPublishDetailPage:960` "Audit göster"** — `/admin/audit?record=...` yazıyor; gerçek route `/admin/audit-logs`. URL mismatch → 404. → P0.
-5. **Disabled state styling eksik** — `cockpit.css` `.btn`, `.cbox` için `:disabled` selector'u yok. Disabled butonlar görsel olarak normal butonlardan ayırt edilemiyor. → P1.
+Bunların dışında incelenen her endpoint, her büyük CTA ve her canonical route doğru kablolanmış. Önceki Phase 1 agent'ının iddia ettiği `SettingRow` `ui.timezone` / `ui.date_format` dual-write iddiası, `credentialsApi` vs `effectiveSettingsApi` çakışma iddiası, theme "dual write" iddiası — kod doğrulamasında **yanlış bulundu** (detay §Phase 1 yanlış pozitif düzeltmeleri bölümünde).
 
-### En Ciddi 5 Source-of-Truth / Config Sorunu
-1. **Provider API key**: iki naming pattern (`module.{id}.api_key` ve `provider.{name}.api_key`) backend'de çapraz okunuyor. Tek desende konsolide edilmeli (öneri: `provider.{name}.api_key`).
-2. **`is_test_data` filtresi**: list endpoint'lerde uygulanıyor; analytics aggregation'da uygulanmıyor olabilir — analytics SQL'de zorla.
-3. **Aurora theme color**: Hard-coded `#4f68f7`, `#0f1219` 20+ noktada → `--accent-primary`, `--bg-overlay` token'ına çekilmeli.
-4. **Wizard "Başlat" iki çağrı** — `POST /content-items` + `POST /.../start-production` ardışık; başarısız olursa içerik var, job yok. Atomik endpoint gerek.
-5. **Connection refresh/disconnect**: Backend `platform_connections/router.py` sadece GET/POST/DELETE bağlantı döndürüyor; "refresh-token" endpoint'i yok. UI yapay handler ile boşluğu maskeleyemez.
+### 5 En Ağır Mimari Problem
+1. **Tekrar eden audit raporları kod tabanında** (`CODE_AUDIT_REPORT_2026-04-22.md`, `AURORA_FINAL_AUDIT.md`, `AURORA_IMPROVEMENT_DESIGN.md`, `AURORA_PROGRESS_REPORT.md`, `MERGE_READINESS.md`, `audit_plan.md`, `integration_plan.md`) — kök dizinde 7 farklı denetim belgesi. Hangisi yürürlükte belirsiz.
+2. **Legacy `pages/` ağacı yaşıyor** (`frontend/src/pages/admin/`, `frontend/src/pages/user/`) ama router.tsx Aurora sayfalarını kullanıyor. Legacy sayfalar ağaçta durmaya devam ediyor → yeni katkıda bulunan hangi dosyayı düzenleyeceğini karıştırır.
+3. **İki adet CLAUDE.md**: `/Users/huseyincoskun/Downloads/CLAUDE.md` (proje-agnostik eski kopya) ve `/Users/huseyincoskun/Downloads/AntigravityProje/ContentHub/CLAUDE.md` (güncel). Workspace düzeyinde okunmaya çalışılan ilk dosya stale.
+4. **`docs/` ve `docs_drafts/` paralel**: `docs_drafts/` 195 dosya taşıyor, ne merge edildi ne silindi. Doc sprawl.
+5. **Backend ⇄ frontend contract'ı test edilmiyor**: Backend router endpoint'leri ile frontend API client path'leri arasında otomatik uyum kontrolü yok. Endpoint silindiğinde UI'da 404 fark edilmeden yaşayabilir (bugün için drift yok ama mekanik yok).
 
-### En Büyük 5 Sadeleştirme Fırsatı
-1. **Tek `EffectiveSettingEditor` primitive**: `RowEditor` (AuroraSettings) + AuroraPrompts editor — aynı `PUT /settings/effective/{key}` desenini paylaşıyor.
-2. **`useVersionedLocalStorage` hook**: recentPages, favorites, filter state — 4 yerde aynı versioned-read pattern.
-3. **Aurora detay drawer'ları zorunlu primitive yap** (zaten `AuroraDetailDrawer` var) → 4 eksik detay sayfasını silmeyip drawer ile yerinde aç (404 yerine in-page detay).
-4. **Token konsolidasyonu**: 20+ hardcoded color → mevcut `--accent-primary*` / `--shadow-*` / `--glow-*` token'larına bağla.
-5. **Lint kuralı: navigate target whitelist** — `eslint-plugin-react-router-dom` veya custom rule ile `navigate(...)` hedeflerini router.tsx'e karşı doğrula.
+### 5 En Ağır UI/UX Operasyonel Problem
+1. **`AuroraAdminDashboardPage.tsx:500-521`** — DB health tile, `role="note"` div, onClick yok. Aynı grid'te komşu button tile'lar tıklanabilir. UI yalan söylüyor (tile tıklanabilir görünüyor).
+2. **`AuroraAdminDashboardPage.tsx:536-551`** — Python health tile, aynı problem.
+3. **`/user/jobs` hayalet prefix** (`AuroraUserLayout.tsx:46`, `CockpitShell.tsx:837-841`) — zararsız ama kafa karıştırıcı; matchPrefix listesi ile router tanımı arasında drift.
+4. **`toast.success` kullanım hacmi yüksek (aurora surface'te 77 yerde)** — React Query `onSuccess` içinde olduğu için fake-success riski düşük ama tek bir merkezi wrapper olmadığı için her sayfanın error path kalite kontrolü kendi başına.
+5. **Kök dizinde `USER_GUIDE.md` ve `CODE_AUDIT_REPORT*.md` otomatik üretildikten sonra güncellenmiyor** — kullanıcı rehberi ve denetim raporu farkında olmadan stale olabilir.
+
+### 5 En Ağır Source-of-Truth / Config Problemi
+1. **Theme active id için 2 yazıcı:** localStorage (primary, sync) + `PUT /settings/effective/ui.active_theme` (fire-and-forget). Backend başarısız olsa sessizce yenilir. `themeStore.ts:128`.
+2. **Surface pref için 2 yazıcı**: localStorage `contenthub:active-surface-id` + backend `ui.active_surface` setting'i. Aynı fire-and-forget pattern.
+3. **localStorage `writeMigrated` v0→v1 migration'ı** — tarihsel artefakt, yeni kurulumlarda asla tetiklenmez ama kod taşıyor (`themeStore.ts:150+`). Silme adayı.
+4. **Kullanıcı tarafı custom tema listesi** `contenthub:custom-themes` localStorage'da, backend'e hiç senkronize değil. İki cihaz arasında paylaşım yok. Spec gereğince güvenli ama "aurora curated gallery" ile bu alanın ilişkisi belirsiz (Aurora allow-list custom tema import'unu reddeder).
+5. **İki CLAUDE.md** (bkz. mimari #3) — runtime'a ulaşmayan bir config değil ama Claude/bu tür agent'lar için ikinci rehberi okurken yanlış politikayı referans alabilir.
+
+### 5 En Büyük Sadeleştirme Fırsatı
+1. **Kök dizindeki 7 audit/plan markdown'ını** tek bir `docs/history/` altına taşı, en güncel `CODE_AUDIT_REPORT.md`'yi en üste bırak.
+2. **`frontend/src/pages/admin/` + `frontend/src/pages/user/`** — Aurora override'ları kanonikse, legacy ağacı kaldır. Eğer fallback gerekiyorsa bunu belgele ve minimum seti tut.
+3. **`docs_drafts/`** — ya merge et ya sil; 195 taslak dosya ağırlık yapıyor.
+4. **Theme + surface localStorage'ı tek bir `contenthub:prefs` JSON key'i altında topla**; aynı fire-and-forget senkronizasyonu ortak bir util ile yürüt.
+5. **Aurora surface primitive'lerini tipi şeyleştir**: `AuroraInspector`, `AuroraInspectorSection`, `AuroraInspectorRow` gibi presentational bileşenler her Aurora sayfasında ad-hoc kullanılıyor; tek bir `inspector/` klasöründe topla.
 
 ---
 
 ## 2. Architecture Assessment
 
-**Mimari deseni:** Surface trampoline pattern — `SurfacePageOverride` her ana sayfayı sarmalayarak Aurora aktifse `AURORA_PAGE_OVERRIDES` map'inden override component'ini render ediyor. Admin/User shell'lere sıfır cerrahi müdahale; kapatma deterministik.
-
-**Gerçek vs yapay katmanlar:**
-- **Gerçek:** Surface registry, AURORA_PAGE_OVERRIDES (87 key), AuroraInspectorSlot, sseStatusStore.
-- **Gerçek:** AuroraQuickLook + AuroraDetailDrawer overlay primitiveleri.
-- **Yapay risk:** `AuroraAdminConnectionsPage` handleRefresh/handleDisconnect "dummy navigate" handler'ları — kabuk içinde sahte aksiyon. **Bu pattern CLAUDE.md non-negotiable rule "No silent magic flags / No hidden behavior" ile çelişiyor.**
-
-**Coupling/Cohesion:** Aurora ↔ Admin shell gevşek; Aurora ↔ API helpers doğrudan. Aurora ↔ design tokens `[data-surface="aurora"]` scope ile sızıntısız.
-
-**Project shape vs goal:** ContentHub manifestiyle (modular, visible, testable, traceable, preview-first) Aurora büyük oranda uyumlu. Ancak "tıklanabilirlik dürüstlüğü" kuralı (her butonun gerçek etkisi olmalı) bu pass-3'te 11 noktada ihlal ediliyor.
-
-**Frontend/backend/config sınırı:** Net. Backend dokunulmadı. Settings precedence merkezi (`SettingsService`).
+- **Pattern:** FastAPI (router → service → repository) + React/Vite/Zustand/React Query surface system. Genelde disiplinli.
+- **Gerçek katmanlar:** Backend'de router / service / model net. Frontend'de Aurora surface + lazy-loaded page katmanı net.
+- **Sahte katmanlar:** `pages/admin/`, `pages/user/` legacy ağacı Aurora override'ı tam olunca redundant. Bazı router import'ları hâlâ `../../pages/user/MyProjectsPage` gibi legacy path'lerden geliyor. Bu bilinçli olabilir ama Aurora isimlendirmesi ile tutarsız.
+- **Coupling / cohesion:** Aurora sayfaları kendi token setine ve primitives'e oturtulmuş, coupling kabul edilebilir. Backend service'leri settings registry + job engine etrafında çok bağlı ama bu domain'in doğasından.
+- **Proje şekli vs gerçek hedef:** Localhost-first MVP'ye uygun. SaaS-level karmaşa yok.
+- **Sınır netliği:** Frontend/backend sınırı (API v1) net. Ancak config katmanı: `Settings Registry`, `localStorage prefs`, `credentials panel` — üç ayrı yazıcı var, hepsi farklı amaç için ama bu ayrım her geliştirici için belirgin değil. Bir şema tablosu yardımcı olur (bu raporda §8 Source-of-Truth Table).
 
 ---
 
 ## 3. UI/UX System Assessment
 
-**Yapısal güven:** ⚠️ Orta-Yüksek. Drawer paterni 9/9 registry sayfasında uygulanmış (Pass-6: QuickLook katmanı kaldırıldı, tek tık → drawer single-source-of-truth). Cmd+K (palette) + Cmd+J (sidebar) kısayolları aktif (Pass-6: eski Cmd+P / Cmd+B browser çakışması sebebiyle kaldırıldı; revize: Cmd+Shift+P Firefox Private Window'da çakıştığı + Cmd+\\ Türkçe Mac klavyede tek tuş olmadığı için elendi).
-
-**UX runtime davranışı yansıtıyor mu:** ❌ **Hayır — 11 noktada UI yalanı var** (9 navigate-404 + 2 dummy handler). Save toast'ları, Cmd+K, dashboard health drill-down, settings inline edit, news arşivle ve publish approve/reject akışları doğru çalışıyor. Ama detay drill-down'ları 4 entity grubunda 404 üretiyor.
-
-**IA tutarlılığı:** ✅ Sky (status) → Stage (KPI) → Stream (table/list) → Inspector (context) — tutarlı.
-
-**Kaynak yansıması:** ✅ Settings/Prompts aynı yazma yolunu (`PUT /settings/effective/{key}`) kullanıyor.
-
-**Eylemler izlenebilir:** ✅ Audit yolu backend'de kayıtlı; Aurora Settings Inspector "Audit izi" satırı bunu gösteriyor.
-
-**Ölü/yanıltıcı parça:**
-- 9 P0 404 üreten click (detay tabloda).
-- 2 P0 dummy handler (refresh/disconnect).
-- 16 P1 visual polish gap (focus-visible, disabled state, undefined `var(--bg-hover)` referansı).
-
-**Verdict:** Aurora UI **operasyonel olarak DÜRÜST DEĞİL**. P0 fix'leri kapatıldıktan sonra dürüst hale gelir.
+- **Yapısal güven:** Yüksek. Sidebar rail → layout → route eşlemesi CLAUDE.md'de yazılı ve kodda tutarlı.
+- **UX = runtime doğruluğu:** 2 tile istisna dışında tutarlı. Dashboard, branding center, automation center, analytics, publish center — hepsi gerçek endpoint'e oturuyor.
+- **IA tutarlılığı:** Canonical route vocabulary (`/branding-center`, `/automation-center`) hem router'da hem redirect katmanında uyumlu. Forbidden literal (`/branding`, `/automation`) redirect ile karşılanıyor — iyi iş.
+- **Form + değer kaynağı:** Ayar formları tek kaynak (`/settings/effective/{key}`). Credential'lar ayrı endpoint (`/settings/credentials`) — bunlar bilerek ayrı (secret handling). Bu ayrımı SoT tablosunda açık tutuyorum.
+- **Action traceability:** Aurora sayfalarında handler → api client → backend → persistence zinciri takip edilebiliyor. Tek bir handler "eğlence için" bırakılmış stub bulunmadı (TODO/FIXME sweep temiz).
+- **Ölü parçalar:** Legacy `pages/` ağacının bazı parçaları router'da tüketiliyor ama Aurora override'ı olan slot'lar için fazlalık. Silme fırsatı var (§10 Removal Candidates).
+- **Karar:** Incremental onarım — rewrite gereksiz.
 
 ---
 
 ## 4. File & Module Findings
 
-### P0 Sorunlu Dosyalar (merge öncesi düzeltilmeli)
+### Core Modules
+| File | Purpose | Importance | Layer | Main Problems | Recommendation | Risk |
+|---|---|---|---|---|---|---|
+| `frontend/src/app/router.tsx` | Route tanımı, redirect'ler, lazy imports | core | route | `/user/jobs` listesi yok ama matchPrefix var | keep (refactor: matchPrefix'i kaldır) | low |
+| `frontend/src/surfaces/aurora/AuroraAdminLayout.tsx` | Admin rail + chrome | core | UI | — | keep | low |
+| `frontend/src/surfaces/aurora/AuroraUserLayout.tsx` | User rail + chrome | core | UI | L46 hayalet prefix | refactor | low |
+| `frontend/src/surfaces/aurora/CockpitShell.tsx` | Generic shell (rail, topbar, inspector) | core | UI | L607, L837-841: hayalet `/user/jobs` prefix'i | refactor | low |
+| `frontend/src/surfaces/aurora/AuroraAdminDashboardPage.tsx` | Admin dashboard | core | UI | L500-551: DB + Python tiles onClick yok | **fix** | low |
+| `frontend/src/stores/themeStore.ts` | Theme + surface state | core | state | L128 fire-and-forget backend save | keep (add telemetry) | low |
+| `backend/app/settings/router.py` | Settings CRUD | core | API | — | keep | low |
 
-| File | Purpose | Importance | Layer | Main Problem | Recommendation | Risk |
-|------|---------|-----------|-------|--------------|----------------|------|
-| `surfaces/aurora/AuroraTemplatesRegistryPage.tsx` (3 satır: 329, 549, 744) | Template registry | core | UI | `navigate('/admin/templates/${id}')` → 404 (route yok) | **Drawer ile in-page aç** veya detail route ekle | medium |
-| `surfaces/aurora/AuroraTemplateCreatePage.tsx:264` | Template oluştur | core | UI | Created sonrası `/admin/templates/${id}` → 404 | Aynı: liste sayfasına dön + drawer aç | medium |
-| `surfaces/aurora/AuroraUsedNewsRegistryPage.tsx` (290, 324) | Used news registry | core | UI | `/admin/used-news/${id}` → 404 | Drawer ile aç | low |
-| `surfaces/aurora/AuroraStyleBlueprintsRegistryPage.tsx` (352, 379) | Blueprint registry | core | UI | `/admin/style-blueprints/${id}` → 404 | Drawer ile aç | low |
-| `surfaces/aurora/AuroraTemplateStyleLinksRegistryPage.tsx` (332, 357) | Link registry | core | UI | `/admin/template-style-links/${id}` → 404 | Drawer ile aç (zaten basit kayıt) | low |
-| `surfaces/aurora/AuroraSourceScansRegistryPage.tsx` (294, 314) | Scan history | supporting | UI | `/admin/source-scans/${id}` → 404 | Drawer ile aç | low |
-| `surfaces/aurora/AuroraPublishDetailPage.tsx:960` | Publish detay | core | UI | `/admin/audit?record=...` → URL yanlış (`/admin/audit-logs`) | URL düzelt: `/admin/audit-logs?record=...` | low |
-| `surfaces/aurora/AuroraChannelDetailPage.tsx:180` | User channel detay | core | UI | `/user/channels/${id}/connect` → route yok | Connect akışını platform_connections POST'a bağla veya buton kaldır | medium |
-| `surfaces/aurora/AuroraAdminConnectionsPage.tsx:404, 415` | Admin connections | core | UI | handleRefresh → 404; handleDisconnect → no-op nav | Refresh: backend endpoint isteyene kadar disable + tooltip; Disconnect: gerçek DELETE mutation | medium |
+### Supporting Modules
+| File | Purpose | Importance | Layer | Main Problems | Recommendation | Risk |
+|---|---|---|---|---|---|---|
+| `frontend/src/surfaces/aurora/AuroraThemesPage.tsx` | Tema galerisi | supporting | UI | — (bu dalda yeniden yazıldı) | keep | low |
+| `frontend/src/styles/aurora/tokens.css` | Semantic + cockpit tokens | supporting | config | — | keep | low |
+| `frontend/src/components/design-system/themes-radical.ts` | Nordic Frost + diğer radical manifests | supporting | config | — | keep | low |
 
-### Core Modules (sağlam, dokunma)
-| File | Purpose | Importance | Recommendation |
-|------|---------|-----------|----------------|
-| `surfaces/aurora/AuroraShell.tsx` | 4-region kabuk | core | keep |
-| `surfaces/manifests/register.tsx` | AURORA_PAGE_OVERRIDES (87) | core | keep |
-| `components/SurfacePageOverride.tsx` | Trampoline | core | keep |
-| `state/sseStatusStore.ts` | SSE bağlantı | core | keep |
-| `surfaces/aurora/overlays/AuroraQuickLook.tsx` | Hızlı inceleme | core | keep — mandatory primitive |
-| `surfaces/aurora/overlays/AuroraDetailDrawer.tsx` | Tabbed drawer | core | keep — mandatory primitive (4 P0 fix bu drawer'ı kullanmalı) |
+### Redundant Modules
+| File | Purpose | Importance | Layer | Main Problems | Recommendation | Risk |
+|---|---|---|---|---|---|---|
+| `frontend/src/pages/admin/*` (Aurora override'lı olanlar) | Legacy admin pages | redundant | UI | Aurora override varsa aynı slot'u doldurur | **investigate + remove** | medium |
+| `frontend/src/pages/user/*` (Aurora override'lı olanlar) | Legacy user pages | redundant | UI | Aynı | **investigate + remove** | medium |
+| `AURORA_IMPROVEMENT_DESIGN.md`, `AURORA_PROGRESS_REPORT.md`, `AURORA_FINAL_AUDIT.md`, `MERGE_READINESS.md`, `audit_plan.md`, `integration_plan.md` | Tarihsel plan/rapor dosyaları | redundant | doc | Kök dizinde sprawl | move → `docs/history/` | low |
 
-### CSS Durumu
-| File | Status | Recommendation |
-|------|--------|----------------|
-| `styles/aurora/cockpit.css` | 16 hardcoded color/rgba (focus 207-720), 2 hardcoded keyframe duration | refactor to tokens (medium effort) |
-| `styles/aurora/dashboard.css` | 2 hardcoded `rgba(79,104,247,...)` gradient | refactor to `--gradient-brand-subtle` |
-| `styles/aurora/audit.css` | 4 hardcoded icon-type rgba | refactor to icon-type tokens |
-| `styles/aurora/tokens.css` | Token definition source | keep — referans noktası |
-| Other 8 css files | Token kullanımı %95+ | keep |
+### High-Risk Modules
+| File | Purpose | Importance | Layer | Main Problems | Recommendation | Risk |
+|---|---|---|---|---|---|---|
+| — | — | — | — | Bu dalın diff'i risk taşımıyor | — | — |
+
+### Likely Removable Modules
+Bkz. §10 Removal Candidates tablosu.
+
+### UI Modules
+Aurora surface'te ~80 sayfa. Hepsi benzer yapı: query + mutation + form + navigate. Operasyonel olarak sağlam, sadece iki cosmetic-only tile istisna.
+
+### Route/Page Modules
+Bkz. §9 Route-to-Capability tablosu.
+
+### API/Config Modules
+| File | Purpose | Importance | Layer | Main Problems | Recommendation | Risk |
+|---|---|---|---|---|---|---|
+| `frontend/src/api/effectiveSettingsApi.ts` | Settings CRUD API | core | API | — | keep | low |
+| `frontend/src/api/credentialsApi.ts` | Credential CRUD API | core | API | — (ayrı amaç, duplicate değil) | keep | low |
+| `backend/app/settings/router.py` | Settings CRUD router | core | API | — | keep | low |
+| `backend/app/auth/router.py` | JWT auth | core | API | — | keep | low |
+
+### State/Persistence Modules
+| File | Purpose | Importance | Layer | Main Problems | Recommendation | Risk |
+|---|---|---|---|---|---|---|
+| `frontend/src/stores/themeStore.ts` | Theme/surface Zustand store | core | state | L128 fire-and-forget | consolidate with ui-prefs helper | low |
+| `frontend/src/stores/authStore.ts` | JWT auth | core | state | — | keep | low |
+
+### Cross-Layer Coupling Hotspots
+| Coupling | Nature | Severity |
+|---|---|---|
+| Theme store ↔ effective settings API | fire-and-forget write, backend'den read | low |
+| Surface resolver ↔ settings API | 4 setting paralel fetch | low — bilinçli |
+| Aurora page ↔ React Query hook | her sayfa kendi hook'larını import eder | low |
 
 ---
 
 ## 5. Technical Debt & Code Smells
 
-**Bu pass-3'te tespit edilen, henüz çözülmemiş:**
-
-### P0 (merge öncesi)
-1. **9 navigate-404** — Aurora geliştirilirken hayal edilen detay route'larına navigate; route yok.
-   - Çözüm yolu A: detail route ekle (`router.tsx`'e 4-5 satır + 4 yeni Aurora detay sayfası).
-   - **Çözüm yolu B (önerilen):** drawer pattern kullan — `AuroraDetailDrawer` zaten var, satır click'i drawer aç.
-2. **2 dummy handler** (`AuroraAdminConnectionsPage` refresh/disconnect) — kullanıcıya gerçek bağlantı yönetimi vaat ediyor, yapamıyor.
-   - Refresh: backend `POST /platform-connections/{id}/refresh` endpoint'i yoksa buton **disabled** + tooltip "Yakında". Yapay navigate kaldır.
-   - Disconnect: backend `DELETE /platform-connections/{id}` zaten var (`platform_connections/router.py:208`). Gerçek mutation bağla.
-
-### P1 (Pass-3 tarihi listesi — pass-5 closure ile her biri ya kapatıldı ya kalıcı kapsam dışı; Bölüm 18 truth tablosuna bak)
-3. **Disabled state CSS yok** — Pass-5: KAPSAM DIŞI KALICI ÜRÜN KARARI (operatör cockpit, A11Y testleri eksiklik raporlamadı).
-4. **`var(--bg-hover)` undefined** — Pass-5: ✅ KAPATILDI (`var(--bg-inset)` ile değiştirildi).
-5. **20+ hardcoded color** — Pass-5: KAPSAM DIŞI KALICI (Aurora deterministik palette taşır; tema-bağımsızlık ürün kararı).
-6. **Focus-visible ring eksik** — Pass-5: KAPSAM DIŞI KALICI (mevcut focus stili yeterli; minor A11Y).
-7. **AuroraSourcesRegistryPage** — Pass-5: KAPSAM DIŞI KALICI (admin-only, gerçek veri <100 satır).
-8. **AuroraAdminDashboardPage `activeRenders`** — Pass-5: KAPSAM DIŞI KALICI (`slice(0,100)` mevcut).
-9. **2 keyframe duration hardcoded** — Pass-5: KAPSAM DIŞI KALICI (deterministik visual rhythm).
-
-### P2 (low priority, pass-5: hepsi kalıcı kapsam dışı)
-10. Border-radius 6/8/10/14 — Aurora kendi rhythm'i.
-11. Padding/spacing 12/14 — Aurora kendi rhythm'i.
-12. localStorage versioned-read 4 yerde duplike — küçük duplikasyon kabul.
-
-**Pass-5 closure ile kapatılan önceki "yeni epic" listesi (Bölüm 18'de detay):**
-- Atomik wizard "Başlat" — ✅ KAPATILDI (NewsBulletinWizardPage `updateAndStartBulletinProduction` atomik mutation'a bağlandı; CreateVideoWizardPage atomik endpoint'e bağlı; CreateProductReviewWizardPage honest orphan handling).
-- Credential encryption (Fernet at-rest) — ✅ AKTIF (`SettingCipher` + `TokenCipher` zaten devrede; `enc:s1:` + `enc:v1:` envelope, runtime decrypt doğrulandı).
-- Bulk publish endpoint — KAPSAM DIŞI KALICI ÜRÜN KARARI (n=10 tek-tek POST kabul; gerçek operatör senaryosu).
-
-**Dependency:** Yeni paket eklenmedi.
+| Dosya:Satır | Kategori | Açıklama |
+|---|---|---|
+| `frontend/src/surfaces/aurora/AuroraAdminDashboardPage.tsx:500-521, 536-551` | UI honesty | DB + Python tiles `role="note"` olarak cosmetic; komşu tile'lar button → asymmetric UX. **Fix önerisi:** ya `hh-click` class'ını ve tile'ı button'a çevir ve gerçek bir sayfaya (`/admin/health` veya `/admin/providers`) yönlendir, ya da `cursor: default` görsel olarak belirgin hale getir. |
+| `frontend/src/surfaces/aurora/AuroraUserLayout.tsx:46` | Drift | matchPrefix `/user/jobs` → router'da liste yok. Kaldır ya da router'a `/user/jobs` liste route'u ekle (liste varsa yeni sayfa). |
+| `frontend/src/surfaces/aurora/CockpitShell.tsx:837-841` | Drift | Aynı hayalet prefix'in ikinci kopyası. Senkronize et. |
+| `frontend/src/stores/themeStore.ts:128` | Swallowed error | `.catch(() => {})` — backend save sessiz başarısızlık. En azından `console.warn` veya `toast.error` ekle. |
+| `frontend/src/stores/themeStore.ts:105-111, 121-130, 150+` | localStorage silent-fail | Try/catch tamamen sessiz. Quota exceeded → kullanıcı farkında değil. |
+| Kök dizin | Doc sprawl | 7 adet markdown plan/rapor; `docs/history/` altına taşı. |
+| `frontend/src/pages/admin/` + `frontend/src/pages/user/` | Legacy | Aurora override'ları ile örtüşenler silinebilir; hangi dosyanın hâlâ router tarafından kullanıldığını kontrol et (çoğu direkt import). |
+| `docs_drafts/` | Doc sprawl | 195 taslak, triage gerektirir. |
+| `node_modules/` root seviyesinde | Yanlış konum | Workspace root'ta duruyor (muhtemelen tarihsel), asıl `frontend/node_modules` kullanılıyor. Kaldır. |
 
 ---
 
 ## 6. UI Element Truth Table
 
-Yalnızca P0 sayılan + bu pass'te yeni keşfedilen yalan-UI listelendi.
-
-| Screen / Element | Görsel Amaç | Erişim | Wiring | Backend | Runtime Etki | Persistence | Read-Back | SoT | Verdict |
-|---|---|---|---|---|---|---|---|---|---|
-| AuroraTemplatesRegistry / row click | Detaya git | ✅ | `navigate('/admin/templates/${id}')` | — | **404** | — | — | — | ❌ P0 |
-| AuroraTemplatesRegistry / chevron | Detaya git | ✅ | aynı | — | **404** | — | — | — | ❌ P0 |
-| AuroraTemplatesRegistry / double-click | Detaya git | ✅ | aynı | — | **404** | — | — | — | ❌ P0 |
-| AuroraTemplateCreate / "Oluştur" sonrası | Detaya geç | ✅ | aynı pattern | `POST /templates` (✅) | Template oluşturuldu ama detay 404 | DB | — | DB | ⚠️ Kısmi (oluşturma OK, redirect 404) |
-| AuroraUsedNewsRegistry / row click | Detaya git | ✅ | `/admin/used-news/${id}` | — | **404** | — | — | — | ❌ P0 |
-| AuroraStyleBlueprintsRegistry / row click | Detaya git | ✅ | `/admin/style-blueprints/${id}` | — | **404** | — | — | — | ❌ P0 |
-| AuroraTemplateStyleLinksRegistry / row click | Detaya git | ✅ | `/admin/template-style-links/${id}` | — | **404** | — | — | — | ❌ P0 |
-| AuroraSourceScansRegistry / row click | Detaya git | ✅ | `/admin/source-scans/${id}` | — | **404** | — | — | — | ❌ P0 |
-| AuroraPublishDetail / "Audit göster" | Audit log aç | ✅ | `/admin/audit?record=...` | — | **404** (gerçek: `/admin/audit-logs`) | — | — | — | ❌ P0 |
-| AuroraChannelDetail / "Bağlantı kur" | Connect flow | ✅ | `/user/channels/${id}/connect` | — | **404** | — | — | — | ❌ P0 |
-| AuroraAdminConnections / "Yenile" | Token refresh | ✅ | `navigate(...)/connect` | — | **404** | — | — | — | ❌ P0 (yalan handler) |
-| AuroraAdminConnections / "Bağlantıyı kes" | Disconnect | ✅ | `navigate('/admin/connections')` | — | No-op (zaten o sayfa) | — | — | — | ❌ P0 (yalan handler — gerçek DELETE bağlanmalı) |
-
-**Pozitif (önceki pass'lerde fix edilmiş ve hala doğru):**
-| AuroraSettings / "Düzenle" | ✅ Doğru — `PUT /settings/effective/{key}` |
-| AuroraNewsItemDetail / "Arşivle" | ✅ Doğru — `POST /news-items/{id}/ignore` |
-| AuroraAdminDashboard / İşler+Hatalar drill | ✅ Doğru — URL filter |
-| AuroraPublishCenter / channel-card | ✅ Doğru — in-page filter |
-| AuroraPublishCenter / Approve/Reject | ✅ Doğru — `POST /publish/{id}/approve|reject` |
-| AuroraSources / "Tara" | ✅ Doğru — `POST /sources/{id}/scan` |
-| Cmd+K / Cmd+J | ✅ Doğru — palette + sidebar (Pass-6 revize: eski Cmd+P/Cmd+B browser çakışması; Cmd+Shift+P Firefox Private Window çakışması; Cmd+\\ Türkçe Mac tek-tuş yok → Cmd+J final) |
+| Ekran / Element | User-Visible Purpose | Reachability | Actual Wiring | Real Destination | Runtime Effect | Persistence | Read-Back Consumer | Source of Truth | Conflict | Feedback Honesty | Verdict | Action |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Admin Dashboard "DB" tile | Sağlık göstergesi | `/admin` | `role="note"`, onClick yok | yok | görünüm | — | — | backend health endpoint | — | honest (tıklama ima yok) ama **görsel yalan** (button gibi duruyor) | **partial-dead** | button'a çevir → `/admin/health` |
+| Admin Dashboard "Python" tile | Sağlık göstergesi | `/admin` | `role="note"`, onClick yok | yok | görünüm | — | — | backend health | — | aynı | **partial-dead** | aynı |
+| Admin Dashboard "İşler" tile | Aktif iş sayısı | `/admin` | `<button>`, onClick navigate | `/admin/jobs?status=running` | sayfa değiştirir | — | — | live job store | — | honest | **works** | — |
+| Admin Dashboard "Hatalar" tile | Başarısız iş sayısı | `/admin` | `<button>`, onClick navigate | `/admin/jobs?status=failed` | sayfa değiştirir | — | — | live job store | — | honest | **works** | — |
+| User Digest "Başarısız İş" tile | Başarısız işler | `/user` | `<button>` → `/user/inbox` | `/user/inbox` | sayfa | — | — | notifications | `/user/jobs` liste yok, inbox'a fallback | honest (yorumda açıklanmış) | **works** | — |
+| Aurora Tema Kartı (tıklama) | Tema seçimi | `/admin/themes` | div `role="button"` + onClick | `setActiveTheme` + `applyThemeToDOM` | CSS değişkenleri + localStorage + backend fire-and-forget | localStorage + backend | hydrate path backend | backend | — | honest | **works** | — |
+| Sidebar "Projeler" (user) | Projeler listesi | her yer | `<Link>` → `/user/projects` | `/user/projects` | — | — | — | — | matchPrefix `/user/jobs` hayalet (zararsız) | honest | **works** | matchPrefix temizle |
+| Command Palette actions | Hızlı gezinme | Cmd+K | `adminCommands.ts`, `contextualCommands.ts` | route'lar | navigate | — | — | — | — | honest | **works** | — |
+| Canonical `/branding` redirect | Eski URL'yi yeniye çevir | direkt URL | `BrandingRedirect` | `/branding-center` | route replace | — | — | — | — | honest | **works** | — |
+| Canonical `/automation` redirect | Aynı | direkt URL | `AutomationRedirect` | `/automation-center` | aynı | — | — | — | — | honest | **works** | — |
 
 ---
 
 ## 7. Action Flow Trace Table
 
-Doğrulanmış 9 P0 + 2 P0 dummy handler için:
-
-| Action | Entry | Page | Handler | Backend | Persistence | Verdict |
-|---|---|---|---|---|---|---|
-| Template detay aç | row/chevron/dbl-click | AuroraTemplatesRegistry | `navigate('/admin/templates/${id}')` | — | — | ❌ 404 |
-| Template oluşturma sonrası detay | "Oluştur" | AuroraTemplateCreate | `navigate(`/admin/templates/${created.id}`)` | `POST /templates` ✅ | DB ✅ | ⚠️ Yarım (DB doğru, redirect 404) |
-| UsedNews detay | row/chevron | AuroraUsedNewsRegistry | `navigate('/admin/used-news/${id}')` | — | — | ❌ 404 |
-| Blueprint detay | row/chevron | AuroraStyleBlueprintsRegistry | `navigate('/admin/style-blueprints/${id}')` | — | — | ❌ 404 |
-| Link detay | row/chevron | AuroraTemplateStyleLinksRegistry | `navigate('/admin/template-style-links/${id}')` | — | — | ❌ 404 |
-| Scan detay | row/chevron | AuroraSourceScansRegistry | `navigate('/admin/source-scans/${id}')` | — | — | ❌ 404 |
-| Publish'tan audit'e drill | "Audit" buton | AuroraPublishDetail | `navigate('/admin/audit?record=...')` | — | — | ❌ 404 (URL `/admin/audit-logs` olmalı) |
-| User channel connect | "Bağlantı kur" | AuroraChannelDetail | `navigate('/user/channels/${id}/connect')` | — | — | ❌ 404 |
-| Admin connection refresh | "Yenile" | AuroraAdminConnections | `navigate('/admin/channels/${id}/connect')` | — (refresh endpoint yok) | — | ❌ 404 + yalan handler |
-| Admin connection disconnect | "Bağlantıyı kes" | AuroraAdminConnections | `navigate('/admin/connections')` | — (DELETE backend var, kullanılmıyor) | — | ❌ No-op (yalan handler) |
+| Action | Entry | Page | Handler | Validation | State | API | Backend | Persist | Consumer | Result | Verdict |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| Tema değiştir | Tema kartı click | `AuroraThemesPage` | `handleActivate` | theme id bilinen liste | zustand `setActiveTheme` | `updateSettingAdminValue` (FaF) | `PUT /settings/effective/ui.active_theme` | SQLite settings + localStorage | DOM CSS vars + hydrate | ✅ başarılı | works |
+| Setting kaydet | SettingRow kaydet | `AuroraSettingsPage` veya `SettingRow` | React Query mutation | backend validator | — | `updateSettingAdminValue` | `PUT /settings/effective/{key}` | SQLite | effective settings read | ✅ | works |
+| Branding güncelle | Save btn | `AuroraBrandingCenterPage` | RQ mutation | backend schema | — | branding API | `PATCH /channels/{id}/branding` | SQLite | channel detail consumer | ✅ | works |
+| Job start (standard video) | Wizard submit | `AuroraStandardVideoWizardPage` | RQ mutation | backend schema | — | jobs API | `POST /modules/standard-video/{id}/jobs` | SQLite + workspace | job runner | ✅ | works |
+| YouTube OAuth | Start btn | `AuroraAdminConnectionsPage` / `UserConnectionsPage` | getYouTubeAuthUrl + redirect | — | — | `credentialsApi` | `GET /settings/credentials/youtube/auth-url` | OAuth code → callback | callback page | ✅ | works |
+| Dashboard DB tile click | Dashboard | `AuroraAdminDashboardPage` | (yok) | — | — | — | — | — | — | ❌ no-op | **dead** |
+| Dashboard Python tile click | Dashboard | `AuroraAdminDashboardPage` | (yok) | — | — | — | — | — | — | ❌ no-op | **dead** |
 
 ---
 
 ## 8. Source-of-Truth Table
 
-| Value | Input | Write | Read | Override | Effective SoT | Conflicts | Verdict |
-|---|---|---|---|---|---|---|---|
-| Setting (admin) | AuroraSettings, /admin/settings, AuroraPrompts | `PUT /settings/effective/{key}` (TEK) | `GET /settings/effective` | .env, builtin | DB `settings_admin_value` | — | ✅ Tek otorite |
-| News status | AuroraNewsItemDetail, scan worker | `POST /news-items/{id}/ignore`, scan job | `GET /news-items` | — | DB `news_items.status` | — | ✅ |
-| Publish status | AuroraPublishCenter, worker | `POST /publish/{id}/approve|reject`, worker | `GET /publish` | — | DB `publish.status` | — | ✅ |
-| Job state | start-production endpoint, worker | State machine | `GET /jobs`, SSE | — | DB `jobs.state` | — | ✅ |
-| Provider API key | AuroraSettings RowEditor | `PUT /settings/effective/{key}` | Provider runtime | .env | DB plaintext | ⚠️ `module.{id}.api_key` vs `provider.{name}.api_key` desen ikiliği | ⚠️ Konsolide et |
-| Channel connection | (yok — UI'da yapay handler) | (yok) | `GET /platform-connections/center/admin` | — | DB `platform_connections` | ⚠️ Refresh endpoint yok; UI yalan handler | ❌ UI yalan, backend boş |
-| `is_test_data` | DB seed | DB | List endpoints WHERE | — | DB column | ⚠️ Analytics atlayabilir | ⚠️ Analytics SQL'e zorla |
+| Value | Input Locations | Write Paths | Read Paths | Override | Effective SoT | Conflicting | Verdict | Consolidation |
+|---|---|---|---|---|---|---|---|---|
+| `ui.active_theme` | Admin Themes page tile click | localStorage + backend FaF | backend hydrate → fallback localStorage | — | **backend** (hydrate) + localStorage (optimistic cache) | — | honest, dual-writer ama intentional | backend silent-fail → `console.warn` ekle |
+| `ui.active_surface` | `useSurfaceResolution` + theme store | localStorage + backend FaF | backend hydrate | — | backend | — | aynı | aynı |
+| Custom temalar | Theme import (admin) | localStorage only | theme store | — | localStorage | — | local-only bilinçli | doc'la |
+| Settings (genel) | Settings page | backend only | backend | — | backend | — | temiz | — |
+| Credentials (API keys, OAuth token) | Providers / Connections panel | backend only (`/settings/credentials`) | backend | — | backend | — | temiz | — |
+| Sidebar collapsed | UI toggle | Zustand (memory) | Zustand | — | session state | — | ephemeral bilinçli | — |
+| Active job filter | URL param (`?status=`) | URL | URL | — | URL | — | temiz | — |
+| JWT access token | Login | memory + refresh rotation | memory | — | memory (refresh cookie) | — | temiz | — |
 
 ---
 
 ## 9. Route-to-Capability Table
 
-**Aurora override'ları (87 toplam) — 9'u 404'e düşen navigate target ediyor:**
+Sadece büyük kategoriler (tam liste çok uzun):
 
-| Route | Görsel Amaç | Gerçek Capability | Tamamlanmışlık | Verdict |
-|---|---|---|---|---|
-| `/admin/templates` | Template registry | Liste ✅; satır click → `/templates/${id}` 404 | ⚠️ Drill kırık | refactor |
-| `/admin/templates/new` | Yeni template | Form çalışıyor; create sonrası redirect 404 | ⚠️ Yarım | refactor |
-| `/admin/templates/:id` | (route yok) | — | ❌ Yok | **route ekle veya drawer ile in-page aç** |
-| `/admin/used-news` | Liste | Liste ✅; satır click 404 | ⚠️ | refactor |
-| `/admin/used-news/:id` | (yok) | — | ❌ | drawer öner |
-| `/admin/style-blueprints` | Liste | Liste ✅; satır click 404 | ⚠️ | refactor |
-| `/admin/style-blueprints/:id` | (yok) | — | ❌ | drawer öner |
-| `/admin/template-style-links` | Liste | Liste ✅; satır click 404 | ⚠️ | refactor |
-| `/admin/template-style-links/:id` | (yok) | — | ❌ | drawer öner |
-| `/admin/source-scans` | Liste | Liste ✅; satır click 404 | ⚠️ | refactor |
-| `/admin/source-scans/:id` | (yok) | — | ❌ | drawer öner |
-| `/admin/audit-logs` | Audit log sayfası | ✅ Sayfa var | ✅ Tam | keep — sadece publish detay'daki yanlış URL düzeltilmeli |
-| `/admin/audit?record=...` | (Aurora yanlış URL) | — | ❌ | URL düzelt: `/admin/audit-logs?record=...` |
-| `/user/channels/:id` | User channel detay | Sayfa ✅; "Bağlantı kur" → 404 | ⚠️ | Connect akışı düzelt |
-| `/user/channels/:id/connect` | (yok) | — | ❌ | Yeni route veya inline modal |
-| `/admin/connections` | Bağlantı yönetimi | Liste ✅; refresh/disconnect handler yalan | ⚠️ | Disconnect → DELETE mutation; refresh → disable |
-| `/admin/channels/:id/connect` | (yok) | — | ❌ | Refresh akışı için backend endpoint gerek |
-| Diğer 70+ Aurora override | Sağlam | ✅ Tam | keep |
+| Route | Purpose | Real Capability | Completeness | Operational Relevance | Verdict | Action |
+|---|---|---|---|---|---|---|
+| `/admin` | Admin dashboard | live KPI + health + jobs summary | complete | high | keep | DB+Python tile fix |
+| `/admin/settings[/:group]` | Settings Registry | tam | complete | high | keep | — |
+| `/admin/visibility` | Visibility rules | tam | complete | high | keep | — |
+| `/admin/jobs[/:jobId]` | Job registry + detail | tam | complete | high | keep | — |
+| `/admin/standard-videos/**` | Standard video modülü | tam | complete | high | keep | — |
+| `/admin/news-bulletins/**` | News bulletin modülü | tam | complete | high | keep | — |
+| `/admin/used-news[/new]` | Used-news registry | tam | complete | high | keep | — |
+| `/admin/sources/**` | Source registry | tam | complete | high | keep | — |
+| `/admin/source-scans[/new]` | Source scan | tam | complete | high | keep | — |
+| `/admin/templates[/new]` | Template registry | tam | complete | high | keep | — |
+| `/admin/style-blueprints[/new]` | Style blueprint | tam | complete | high | keep | — |
+| `/admin/template-style-links[/new]` | Link registry | tam | complete | medium | keep | — |
+| `/admin/library`, `/admin/assets` | Content/asset library | tam | complete | medium | keep | — |
+| `/admin/analytics/**` (6 sayfa) | Analytics | tam | complete | high | keep | — |
+| `/admin/comments`, `/admin/playlists`, `/admin/posts` | Monitoring | tam | complete | medium | keep | — |
+| `/admin/automation` | Automation policies | tam | complete | medium | keep | — |
+| `/admin/publish[/**]` (3 yol) | Publish center + review + detail | tam | complete | high | keep | — |
+| `/admin/themes` | Tema registry (legacy) | tam | complete | medium | keep | (Aurora Themes page ile ayrı) |
+| `/admin/providers` | Provider management | tam | complete | high | keep | — |
+| `/admin/prompts` | Prompt editor | tam | complete | high | keep | — |
+| `/admin/wizard` | Wizard launcher | tam | complete | low | keep | — |
+| `/admin/wizard-settings` | Wizard governance | tam | complete | medium | keep | — |
+| `/admin/users[/:userId/settings]` | User registry | tam | complete | high | keep | — |
+| `/admin/channels/**` | Channels + branding-center | tam | complete | high | keep | — |
+| `/admin/projects/**` | Projects + automation-center | tam | complete | high | keep | — |
+| `/admin/audit-logs` | Audit | tam | complete | high | keep | — |
+| `/admin/notifications`, `/admin/inbox`, `/admin/calendar`, `/admin/connections` | Operational | tam | complete | high | keep | — |
+| `/user` | User dashboard | tam | complete | high | keep | — |
+| `/user/content` | Content entry gate | tam | complete | medium | keep | — |
+| `/user/projects[/:id]`, `/user/jobs/:jobId` | User project + job detail | tam (liste yok) | complete (bilinçli) | high | keep | `/user/jobs` liste matchPrefix'ini temizle |
+| `/user/publish[/:recordId]` | Publish center | tam | complete | high | keep | — |
+| `/user/settings`, `/user/settings/youtube-callback` | User settings + YouTube OAuth | tam | complete | high | keep | — |
+| `/user/channels/**` | Kanallar + branding-center | tam | complete | high | keep | — |
+| `/user/projects/:id/automation-center` | Automation | tam | complete | high | keep | — |
+| `/user/analytics[/channels|/youtube]` | Analytics | tam | complete | high | keep | — |
+| `/user/comments|playlists|posts` | Monitoring | tam | complete | medium | keep | — |
+| `/user/automation`, `/user/inbox`, `/user/calendar`, `/user/connections` | Operational | tam | complete | high | keep | — |
+| `/user/create/video|bulletin|product-review` | Wizard giriş | tam | complete | high | keep | — |
+| `/user/news-picker` | News picker | tam | complete | high | keep | — |
+| `/login`, `/onboarding`, `/forgot-password`, `/session-expired`, `/error`, `/workspace-switch` | Auth/error | tam | complete | high | keep | — |
+
+**Not:** Admin tarafında 55+, user tarafında 22+ route — hepsi mount'lu. Agent-1 taraması ile %100 doğrulama yapıldı. Dead route bulunmadı. Tek istisna: `/user/jobs` liste literal'i bilinçli olarak mount edilmemiş, matchPrefix artefaktı silinmeli.
 
 ---
 
 ## 10. Removal Candidates
 
-| Item | Why Removable | Confidence | Risk | Verification |
+| File/Module | Why Removable | Confidence | Risk | Safe Verification |
 |---|---|---|---|---|
-| `AuroraAdminConnectionsPage.handleRefresh` 404 navigate | Yalan handler — backend endpoint yok | Kesin | Yok (sadece daha dürüst hale getirir) | `disabled + tooltip` veya ileti |
-| `AuroraChannelDetail` "Bağlantı kur" `/connect` navigate | Hayalî route | Kesin | Yok | Replace with platform_connections POST modal |
-| (yok) — silmek değil, fix etmek | | | | |
+| `AURORA_IMPROVEMENT_DESIGN.md` | Tarihsel plan, ilgili değişiklikler merge edildi | high | none | merge sonrası `docs/history/` |
+| `AURORA_PROGRESS_REPORT.md` | Aynı | high | none | aynı |
+| `AURORA_FINAL_AUDIT.md` | Aynı | high | none | aynı |
+| `MERGE_READINESS.md` | Aynı, tarihsel | high | none | aynı |
+| `audit_plan.md` | Tarihsel | high | none | aynı |
+| `integration_plan.md` | Tarihsel | high | none | aynı |
+| `CODE_AUDIT_REPORT_2026-04-22.md` | Önceki denetim, bu rapor onu günceller | medium | low | `docs/history/` altına taşı |
+| `docs_drafts/` (195 dosya) | Taslak merge edilmemiş doküman dizini | medium | low | triage: merge edilecekler → docs, geri kalan silin |
+| `/Users/huseyincoskun/Downloads/CLAUDE.md` | Eski üst-dizin kopyası | high | none | workspace CLAUDE.md kanonik — eski dosyayı sil |
+| `node_modules/` (root) | Workspace root'ta artakalan | high | none | `frontend/node_modules` kullanıldığından emin ol, sil |
+| `frontend/src/pages/admin/*` (Aurora override'ı olanlar) | Legacy Aurora eşdeğeri mevcut | medium | medium | router.tsx import path'lerini tara, direct import'u olmayanları sil |
+| `frontend/src/pages/user/*` (aynı şart) | Aynı | medium | medium | aynı |
+| `frontend/src/pages/_scaffolds` | Muhtemelen iskele | medium | low | içeriği incele |
 
 ---
 
 ## 11. Merge / Flatten / Simplify Candidates
 
-| Items | Why Overlap | Simplification | Benefit | Risk |
+| Involved | Why Overlap | Proposed Simplification | Benefit | Risk |
 |---|---|---|---|---|
-| 5 var olmayan detay route + AuroraDetailDrawer (zaten var) | 5 entity için detay drawer eksik; Aurora navigate ile 404 üretiyor | Satır click → `<AuroraDetailDrawer>` aç (template/usednews/blueprint/link/scan) | 5 P0 404 tek pass'te kapanır | Düşük (drawer pattern olgun, 4 sayfada zaten kullanımda) |
-| `AuroraTemplateCreate` post-create redirect | Hayalî detay route'a yönlendiriyor | Liste sayfasına dön + drawer aç (ID aktif) | 1 P0 fix | Düşük |
-| `AuroraAdminConnections` handleRefresh + handleDisconnect | İkisi de yalan handler | Refresh → disabled + tooltip; Disconnect → DELETE mutation | 2 P0 fix | Düşük (DELETE backend zaten var) |
-| `AuroraPublishDetail:960` audit URL | Tek satır URL düzeltme | `/admin/audit-logs?record=...` | 1 P0 fix | Yok |
-| `RowEditor` + AuroraPrompts editor | Aynı endpoint | Tek `EffectiveSettingEditor` | DRY | Düşük |
-| `useVersionedLocalStorage` hook | 4 yerde aynı pattern | Hook'a çek | DRY | Düşük |
+| `themeStore` localStorage write + effective settings FaF | 2 yazıcı | Ortak `ui-prefs.persist()` util | Telemetry + error handling tek yerde | low |
+| `AuroraInspector*` presentational primitives | Her aurora sayfasında re-export | Tek `inspector/` klasörü + index.ts barrel | Import temizliği | low |
+| 7 root-level audit/plan MD | Doc sprawl | `docs/history/` + tek `CODE_AUDIT_REPORT.md` | Kafa karışıklığı azalır | none |
+| Legacy `pages/` + Aurora override | 2 page ağacı | Aurora kanonik, legacy sil | Kafa karışıklığı azalır | medium (import path'leri kontrol) |
+| `CockpitShell.tsx:841` + `AuroraUserLayout.tsx:46` `/user/jobs` literal | 2 yerde aynı drift | Tek `rail-config.ts` kaynağı | Senkron | low |
 
 ---
 
 ## 12. Dependency Review
 
-- Yeni paket eklenmedi.
-- React Query, Zustand, React Router — kullanımları sağlam.
-- Aurora-only dependency yok.
-- `react-window` benzeri virtualization eklemek mantıklı olabilir (AuroraSourcesRegistry 100+ satır rendering için), ama opsiyonel.
+Frontend ve backend `package.json` / `pyproject.toml` bu denetimde açılmadı (bu dal dependency değiştirmiyor). Önceki audit raporu (`CODE_AUDIT_REPORT_2026-04-22.md`) bu alanı kapsıyor. Temel gözlem: bu dal hiçbir dependency eklemiyor/çıkartmıyor — bkz. `git diff main --name-only`.
 
 ---
 
 ## 13. Refactor Strategy Options
 
-### Option A: P0-Only Cleanup (önerilen — bu pass'te tamamla)
-- 9 navigate-404 → drawer pattern veya URL fix.
-- 2 dummy handler → disable veya gerçek DELETE bağla.
-- 1 URL mismatch düzelt.
-- **Effort:** ~4-6 saat.
-- **Risk:** Çok düşük; backend dokunulmayacak (DELETE endpoint zaten var).
-- **Recommended only if:** Hızlı merge edilmek isteniyor.
+### Option A — Conservative Cleanup
+- **Uygun olduğunda:** Hedef production-hazır MVP, feature scope kapalı.
+- **Korunan:** Tüm route'lar, tüm store'lar, tüm endpoint'ler.
+- **Kaldırılan:** 7 root MD, `CODE_AUDIT_REPORT_2026-04-22.md`, `docs_drafts/`, root `node_modules/`, Aurora-override'ı olan legacy `pages/` dosyaları.
+- **UI hijyen:** DB + Python tiles'a onClick veya `cursor:default` stili. `/user/jobs` matchPrefix'i temizle.
+- **Config:** themeStore FaF'e `console.warn` telemetry ekle.
+- **Fayda:** Görünür karışıklık hızla azalır, risk sıfıra yakın.
+- **Risk:** Düşük. Legacy pages silmeden önce import grep şart.
+- **Effort:** 1 gün.
+- **Önerilen:** Evet, bugün yapılabilir.
 
-### Option B (Pass-3 tarihi alternatif — Pass-5'te tamamlandı)
-- Pass-3'te "P0 + Polish + Token Cleanup" alternatif olarak önerilmişti. Pass-5 closure ile bu seçenekteki maddeler ya kapatıldı (P0 navigate-404, dummy handler, undefined token, atomik wizard, credential encryption) ya da kalıcı kapsam dışı ürün kararı olarak donduruldu (token bağlama, virtualization, motion token, focus-visible, disabled state CSS, bulk endpoint). Bölüm 18 truth tablosuna bak.
+### Option B — Preserve Core, Rebuild Edges
+- **Uygun olduğunda:** Aurora surface'in %20'si hâlâ incomplete hissettiriyor ve zaman var.
+- **Korunan:** Backend, router iskeleti, data model.
+- **Yeniden yapılan:** Dashboard tile'ları (DB + Python + sağlık sayfası), notification center, onboarding wizard (UX gözden geçirme).
+- **Fayda:** UI/UX daha polished.
+- **Risk:** Scope creep; deadline kayması.
+- **Effort:** 1-2 hafta.
+- **Önerilen:** Sadece Aurora surface'in UX boşlukları müşteri feedback'i ile netleşince.
 
-### Option C: Controlled Rewrite
-- Şu an gerek yok. Mimari sağlam.
+### Option C — Controlled Rewrite
+- **Uygun olduğunda:** Mevcut mimari artık destek edilemez olduğunda (ki değil).
+- **Korunan:** Data model, belgelenen domain knowledge.
+- **Yeniden yapılan:** Frontend tamamen.
+- **Fayda:** — (bu proje için bugün yok).
+- **Risk:** Çok yüksek. Üretim kesintisi, regresyon.
+- **Effort:** Aylar.
+- **Önerilen:** Hayır.
 
 ---
 
 ## 14. Recommended Path
 
-**Pass-5 closure ile:** Option A (P0-only cleanup) + Option B'nin operasyonel öneme sahip alt-kümesi (atomik wizard, credential encryption, undefined token) **tamamlandı**. Geriye kalan P1/P2 maddeleri kalıcı kapsam dışı ürün kararı olarak donduruldu.
+**Option A — Conservative Cleanup.**
 
-**Verdict:** GO (merge'e hazır).
-
-**Donmuş kabul edilmesi gerekenler:**
-- AURORA_PAGE_OVERRIDES map (yeni override eklemek serbest, kaldırma değil).
-- AuroraQuickLook / AuroraDetailDrawer prop sözleşmesi.
-- Settings yazma yolu (`PUT /settings/effective/{key}`).
-
-**Önce yapma:** Option C — mimariye dokunma.
-
-**Test edilmesi gereken (manuel QA — merge öncesi 5 dk):**
-- Tüm 9 navigate target tıklandığında 404 görmüyor olmak (her birini test et).
-- AdminConnections refresh butonu disabled (tooltip görünüyor) veya gerçek refresh çağrısı yapıyor.
-- AdminConnections disconnect butonu confirm dialog + DELETE çağrısı + liste güncelleniyor.
-- PublishDetail "Audit göster" butonu `/admin/audit-logs?record=...` açıyor.
+- **Neden:** Kod tabanı zaten mimari olarak disiplinli. 2 tile'lık UI bug + 1 hayalet route prefix + doc sprawl, bu işaretleri hedefli bir PR'da kapatılabilir. Daha büyük yeniden yapı için tetik yok.
+- **İlk yapılacak:**
+  1. Dashboard DB + Python tile'larını button + href'e çevir (ya da cursor/aria'yı düzelt).
+  2. `AuroraUserLayout.tsx:46` ve `CockpitShell.tsx:841` içinden `/user/jobs` literal'ini kaldır.
+  3. Root audit/plan MD'leri `docs/history/` altına taşı.
+- **Dokunulmaması gereken:** Router, backend endpoint'leri, settings contract, auth store, job engine.
+- **Hemen dondurulacak:** Yok — bu dal theme-only; ana sistem zaten stabil.
+- **Güvenilmemesi gereken UI path'i:** Sadece dashboard'daki DB + Python tiles.
+- **Büyük değişiklikten önce ölçülecek:** Merge sonrası real-browser smoke (Dusk + Slate × admin + user × dashboard + themes + branding-center), vitest full pass, tsc clean.
+- **Tek kaynak haline getirilecek settings flow:** Tema persist zaten backend primary; silent-fail için telemetry eklenirse tamam.
+- **Refactor öncesi zorunlu denetim:** Legacy `pages/` kullanımı (import grep) — bu dalda değil, temizlik PR'ında.
 
 ---
 
-## 15. Ordered Recovery Plan (P0 fix sırası)
+## 15. Ordered Recovery Plan
 
-### Adım 1 — Drawer pattern ile 5 entity için 404'leri kapat (~2 saat)
-1. `AuroraTemplatesRegistryPage` — satır click handler'ı: `setQuickIdx(idx)` → `<AuroraDetailDrawer>` aç (templates için yeni drawer içeriği gerekirse `AuroraTemplateDrawer` oluştur).
-2. Aynı pattern: `AuroraUsedNewsRegistryPage`, `AuroraStyleBlueprintsRegistryPage`, `AuroraTemplateStyleLinksRegistryPage`, `AuroraSourceScansRegistryPage`.
+Bu dala özel (M1-M5), sonraki temizlik PR'larına yayın (M6-M12).
 
-**Alternatif (daha az kod):** Yeni admin route'lar ekle (`router.tsx` 4-5 satır + 4-5 yeni placeholder detail page). Drawer pattern daha hızlı ve daha tutarlı.
-
-### Adım 2 — Template create redirect (~10 dk)
-- `AuroraTemplateCreatePage:264` — `navigate('/admin/templates')` + (eğer drawer kullanılıyorsa) `?openId=${created.id}` query param ile drawer otomatik aç.
-
-### Adım 3 — Audit URL fix (~5 dk)
-- `AuroraPublishDetailPage:960` — `/admin/audit?record=...` → `/admin/audit-logs?record=...`.
-
-### Adım 4 — Channel connect akışı (~30 dk)
-- `AuroraChannelDetailPage:180` — "Bağlantı kur" butonu inline modal aç (platform_connections POST formu) yerine 404'e gitmek.
-
-### Adım 5 — AdminConnections refresh + disconnect (~1 saat)
-- `handleRefresh`: backend'de `POST /platform-connections/{id}/refresh` yok → buton **disabled** + tooltip "Bu sürümde kapalı; backend desteği bekleniyor". Veya YouTube OAuth re-auth flow için `/user/settings/youtube-callback` route'una yönlendir (eğer bağlam doğruysa).
-- `handleDisconnect`: confirm dialog + `DELETE /platform-connections/{id}` mutation + cache invalidate (`platform-connections` query). Backend endpoint zaten var (`platform_connections/router.py:208`).
-
-### Adım 6 — Test + commit + push (~30 dk)
-- `npx tsc --noEmit` clean (zaten clean).
-- `npm run build` (vite production build) — clean.
-- Manuel QA checklist (yukarıda).
-- Git commit: `aurora(p0-fix): 9 navigate-404 + 2 dummy handler kapatildi (drawer pattern + DELETE mutation)`.
-- Push.
-
-### Adım 7 — MERGE_READINESS yenile + merge
-- `MERGE_READINESS.md` 2026-04-19 P3 entry: P0'lar kapandı, manual QA geçti, yeşil ışık.
-- Squash merge `feature/aurora-dusk-cockpit` → `main`.
-
-**Toplam:** ~4-6 saat.
+1. **M1 — Mevcut dalın merge-öncesi smoke** (bu rapor biter bitmez):
+   - tsc clean ✅ (yapıldı, 0 hata)
+   - vitest theme tests 30/30 ✅ (yapıldı)
+   - build 3.76s ✅ (yapıldı)
+   - real-browser QA: tema galerisi 6 kart görünüyor, her tema switch edilince DOM tokens değişiyor ✅ (prior session QA'de teyit)
+2. **M2 — Merge verdict'i kullanıcıya sun** → gate açık, bu dal main'e squash-merge edilebilir.
+3. **M3 — Takip eden mikro-fix PR "ui honesty":**
+   - Dashboard DB + Python tiles button + navigate veya cursor-default semantik.
+   - `/user/jobs` literal temizliği.
+4. **M4 — Takip eden "doc tidy" PR:** kök MD taşıma + eski audit raporlarını `docs/history/` altına topla.
+5. **M5 — Legacy `pages/` audit PR:** Aurora override'ı olanları bul, router.tsx import'larını kontrol et, gerçekten dead olanları sil.
+6. **M6 — themeStore FaF telemetry:** `console.warn` + tek merkezi `ui-prefs.persist()`.
+7. **M7 — `docs_drafts/` triage:** 195 dosya → keep/merge/delete.
+8. **M8 — Workspace root `node_modules/` temizliği.**
+9. **M9 — Duplicate CLAUDE.md (üst-dizin):** sil.
+10. **M10 — Contract drift CI:** backend endpoint listesi ile frontend API client path'lerini otomatik cross-check eden bir smoke test.
+11. **M11 — Aurora dashboard tile audit:** tüm `role="note"` vs button asimetrilerini düzelt veya belgele.
+12. **M12 — Release notes:** `docs/tracking/CHANGELOG.md` güncelle.
 
 ---
 
-## 16. Pass-3 Historical Verdict (artık geçersiz — güncel verdict Bölüm 18.5'te GO)
+## 16. Final Verdict
 
-> Aşağıdaki "NO-GO" + 5 gerekçe + "Şu an: NO-GO" kararları **2026-04-19 öğleden sonraki pass-3 ham audit'inin tarihi kaydı**dır. Pass-4 closure (Bölüm 17) ve Pass-5 final closure (Bölüm 18) ile bu NO-GO durumu **GO**'ya dönüşmüştür. Aşağıdaki metin yalnızca pass-3'ün gerekçelerinin nasıl dokümante edildiğini göstermek için korunmuştur.
+**"Do not start from scratch; simplify the current codebase."**
 
-**"Preserve the core, fix 11 P0 issues, then merge."**
+**Neden (5 somut kanıt):**
 
-### Önceki pass'in (sabah) "main merge — yeşil ışık" verdict'i bu pass'te REVIZE edildi:
-
-**Ana neden:** O pass yalnızca 4 yeni-keşfedilmiş yalan-UI'ya odaklanmış ve onları kapatmıştı; ama Aurora geliştirilirken introduce edilmiş **9 navigate-404** ve **2 dummy handler** kaçırılmış. Bu pass-3'te `router.tsx` ile çapraz-bakış yapıldığında fark açıkça görüldü.
-
-### 5 somut gerekçe (NO-GO):
-1. **9 doğrulanmış navigate-404** — kullanıcı tıklıyor → "Sayfa Bulunamadı" görüyor. Kullanıcının çalışma akışını kıran user-facing bug.
-2. **2 yalan handler** — `AuroraAdminConnectionsPage` refresh/disconnect butonları "bağlantıyı yönet" vaat ediyor; gerçekte refresh 404 üretiyor, disconnect no-op. CLAUDE.md "no hidden behavior" + "no silent magic flags" ihlali.
-3. **Aurora regresyonu** — legacy admin sayfalarında bu 404'ler yok. Aurora geliştirilirken hayal edilen detay route'ları introduce edildi; route'lar eklenmedi.
-4. **Backend dokunulmadı, mimari sağlam** — fix yolu temiz ve risk minimal (drawer pattern + 1 mutation + 1 URL düzeltme). 4-6 saatlik bir pass yeterli.
-5. **Pre-merge audit'in işi tam bunu bulmak** — eğer şimdi merge edersek production'a 9 P0 user-facing 404 ile çıkar. Audit'in raporu olmasaydı kullanıcı bunu prod'da bulurdu.
-
-### 5 gerekçe (Aurora kalmalı, fix sonrası merge YEŞIL ışık olur):
-1. Backend route count: 337 (sağlam, hiç dokunulmadı).
-2. TypeScript clean (exit 0).
-3. Aurora kapatıldığında graceful fallback (SurfacePageOverride trampolini sağlam).
-4. Önceki pass'in 4 P0 fix'i (settings inline edit, news arşivle, dashboard health drill, publish channel filter) gerçekten doğru çalışıyor.
-5. 87 override'ın 78'i (=%90) sorunsuz; sadece 9 navigate hedefi kırık. Mimari değişikliği gerekmiyor — sadece nokta-fix.
-
-### Merge önerisi:
-**Şu an: NO-GO. Option A (4-6 saatlik P0-fix pass) tamamlandıktan sonra: GO.**
+1. **Diff to main son derece dar:** 7 dosya, hepsi theme; router, backend, store contract dokunulmuş değil. Merge riski düşük.
+2. **Operasyonel doğruluk %98 temiz:** ~80 Aurora sayfası, 55+ admin + 22+ user route taranmış; sadece **2 cosmetic-only tile + 1 hayalet matchPrefix** tespit edildi. Forbidden literal (`/branding`, `/automation`) redirect'leri çalışıyor.
+3. **Tsc + vitest + build gates temiz:** TypeScript 0 hata, theme tests 30/30, build 3.76 saniye.
+4. **Mimari disiplin mevcut:** CLAUDE.md canonical route vocabulary, shell branching rule, theme gating policy — hepsi koda yansıyor.
+5. **Dead button/dead endpoint hacmi düşük:** TODO/FIXME/"yakinda" button grep'i Aurora surface'te temiz; `.catch(() => {})` swallow örnekleri sadece 5 ve hepsi bilinçli fallback (surface resolver + clipboard + themeStore).
 
 ---
 
-## Ek — Aurora Brainstorm: Token / Performans / Polish (özet, ayrıntı `AURORA_IMPROVEMENT_DESIGN.md`'de)
+## Phase 1 Yanlış-Pozitif Düzeltmeleri
 
-### Token bağlama (Pass-3 tarihi öneri — Pass-5: kalıcı kapsam dışı ürün kararı)
-- 16 hardcoded `cockpit.css` color, 4 audit icon rgba, 2 hero gradient, 2 keyframe duration: Aurora deterministik palette + statik visual rhythm taşır; tema-token'a bağlanmıyor (ürün kararı: cockpit kimliği global tema değişiminden bağımsız).
+Phase 1 paralel Agent'lardan **Agent 3'ün bazı iddiaları** kod doğrulamasında yanlış çıktı. Şeffaflık için:
 
-### Performans (Pass-3 tarihi öneri — Pass-5: kalıcı kapsam dışı)
-- AuroraSourcesRegistry virtualization, activeRenders sıralama, AuroraAssetLibrary filter batching, SSE cleanup audit: admin-only sayfalar, gerçek veri <100 satır + <100 active job; premature optimization.
-
-### Polish (Pass-3 tarihi öneri — Pass-5: kapatılan tek madde + diğerleri kalıcı kapsam dışı)
-- ✅ `cockpit.css:1139` undefined `var(--bg-hover)` → `var(--bg-inset)` (Pass-5 closure).
-- KAPSAM DIŞI KALICI: focus-visible ring, `.btn:disabled`/`.cbox:disabled` CSS, border-radius konsolidasyonu, skeleton/loading visual rhythm, icon-only aria-label.
-
----
-
-**Rapor sonu (pass-3 tarihi kayıt).**
-
----
-
-## 17. Pass-4 Closure Addendum (2026-04-19, gece)
-
-> Bu bölüm pass-3'ün tespit ettiği 11 P0 sorununun kapatma kayıtlarıdır. Pass-3 metni tarihi kayıt olarak yukarıda korundu; aşağıdaki tablolar **şimdiki gerçek** durumu gösterir.
-
-### 17.1 P0 closure tablosu
-
-| # | Pass-3 P0 | Dosya | Pass-4 fix | Doğrulama |
-|---|-----------|-------|------------|----------|
-| 1-3 | Templates row click → 404 | `AuroraTemplatesRegistryPage.tsx` | `setDrawerIdx(idx)` + `?openId=` deep-link | grep `/admin/templates/${` 0 hit |
-| 4 | Template create → 404 redirect | `AuroraTemplateCreatePage.tsx` | Redirect → `/admin/templates?openId=${id}` (drawer auto-open) | manual route trace |
-| 5 | UsedNews row click → 404 | `AuroraUsedNewsRegistryPage.tsx` | `setDrawerIdx(idx)` + `buildDrawer` | grep clean |
-| 6 | StyleBlueprints row click → 404 | `AuroraStyleBlueprintsRegistryPage.tsx` | drawer + KvRow + JSON details (visual / motion / layout / subtitle / thumbnail / preview) | grep clean |
-| 7 | TemplateStyleLinks row click → 404 | `AuroraTemplateStyleLinksRegistryPage.tsx` | drawer + actions[] = "Sil" gerçek `useDeleteTemplateStyleLink` mutation + confirm | grep clean |
-| 8 | SourceScans row click → 404 | `AuroraSourceScansRegistryPage.tsx` | drawer + raw_result_preview_json detayı | grep clean |
-| 9 | Publish "Audit göster" → 404 | `AuroraPublishDetailPage.tsx:960` | `/admin/audit?record=` → `/admin/audit-logs` (sahte filtre vaadi kaldırıldı) | string diff |
-| 10 | Channel connect → 404 | `AuroraChannelDetailPage.tsx:180` | `/user/channels/${id}/connect` → `/user/connections?channel=${id}` | grep clean |
-| 11a | Admin connections "Yenile" yalan navigate | `AuroraAdminConnectionsPage.tsx` | `conQ.refetch()` + `toast.info("Bağlantı listesi yenilendi")` — dürüst | code review |
-| 11b | Admin connections "Bağlantıyı kes" yalan navigate | `AuroraAdminConnectionsPage.tsx` | `window.confirm` + `useDeletePlatformConnection().mutate(conn.id)` → DELETE 204 → 3 query invalidation + pending state buton üzerinde | backend `platform_connections/router.py:208` doğrulandı |
-| 11c | `?channel=` deep-link tüketicisi yok | `AuroraUserConnectionsPage.tsx` | `useSearchParams` + scroll-into-view + outline highlight + URL temizliği (`replace: true`) + iki banner | manual trace |
-
-### 17.2 Yeni dosyalar
-
-| Dosya | Amaç | Yeni endpoint? |
+| İddia | Doğrulama | Gerçek |
 |---|---|---|
-| `frontend/src/hooks/useDeletePlatformConnection.ts` | DELETE mutation hook | Hayır — mevcut `DELETE /api/v1/platform-connections/{id}` (204) kullanıldı |
-| `frontend/src/api/platformConnectionsApi.ts` (eklendi: `deletePlatformConnection` fonksiyonu) | API wrapper | Hayır |
+| "`SettingRow.tsx:127, 166` `ui.timezone` + `ui.date_format` için localStorage dual-write yapıyor" | Grep `localStorage\.setItem\("ui\.` 0 match | **YANLIŞ**. Böyle bir dual-write yok. |
+| "`credentialsApi.ts` ve `effectiveSettingsApi.ts` aynı değeri iki yerden yazıyor" | Farklı endpoint'ler (`/settings/credentials` vs `/settings/effective`), farklı amaç (secret vault vs setting value) | **YANLIŞ**. Ayrı SoT, bilinçli. |
+| "`toast.success` response status kontrol etmeden tetikleniyor" | React Query `onSuccess` semantic olarak 2xx'de çalışır | **BÜYÜK ÖLÇÜDE YANLIŞ**. 77 match'te örnek seçim yapılıp doğrulama lazım ama mutation kullanımı doğru. |
+| "Theme için 3-way race (backend + localStorage + surface)" | Surface farklı bir setting (`ui.active_surface`), theme farklı (`ui.active_theme`) | **YANLIŞ eşleştirme**. İki ayrı SoT, ayrı hydrate. |
 
-### 17.3 Doğrulama evidence
-
-- **TypeScript:** `npx tsc --noEmit` → exit 0 (frontend/, pass-4)
-- **Build:** `vite build` → exit 0, `built in 26.60s`
-- **Tests:** `vitest run` → exit 0
-- **Grep `frontend/src/surfaces/aurora`:** `navigate(\`/admin/(templates|used-news|style-blueprints|template-style-links|source-scans|channels)/\${` paterni → 0 hit
-- **Backend:** dokunulmadı (337 route sağlam)
-- **Yeni paket:** yok
-
-### 17.4 Pass-3'ten kalan kronik teknik borç (Pass-4 sonrası kayıt — Pass-5 closure bölüm 18'de)
-
-| Borç | Pass-3 kategorisi | Pass-4 sonrası kategori |
-|---|---|---|
-| Token konsolidasyonu (20+ hardcoded HEX) | P1 | P1 — Pass-5'te ele alındı (bölüm 18) |
-| Disabled/focus-visible CSS eksik | P1 | P1 — Pass-5'te ele alındı (bölüm 18) |
-| Wizard "Başlat" 2-step (atomik değil) | P1 | P1 — Pass-5'te ele alındı (bölüm 18) |
-| Provider key naming çift desen | P1 | P1 — Pass-5'te ele alındı (bölüm 18) |
-| Credential at-rest encryption (Fernet) | P0 (güvenlik) | Pass-5'te ele alındı (bölüm 18) |
-| Bulk publish endpoint yok | P2 | P2 — Pass-5'te ele alındı (bölüm 18) |
-| Navigate-target lint kuralı | P1 | P1 — Pass-5'te ele alındı (bölüm 18) |
-
-> Not: Bu tablo pass-4 anında durağan kayıtdı; Pass-5 closure ile her satır ya kapatıldı ya da kalıcı kapsam dışı ürün kararı olarak donduruldu. Detay: Bölüm 18.
-
-### 17.5 Pass-4 anlık verdict
-
-**✅ GO (pass-4 anlık).** Pass-3'ün NO-GO gerekçeleri (9 navigate-404 + 2 dummy handler + 1 URL mismatch + 1 channel connect kırıklığı + 1 deep-link tüketicisi eksik) tamamı kapatıldı.
+Gerçek sorunlar bu raporda §5 ve §6 tablolarında.
 
 ---
 
-**Pass-4 closure rapor sonu — Pass-5 closure addendum aşağıdadır.**
+## Merge Verdict (Bu Dal)
 
----
+**`codex/aurora-theme-identity-pass` → `main` merge güvenli.**
 
-## 18. Pass-5 Final Closure Addendum (2026-04-20)
+- Diff sadece theme katmanı.
+- Tüm gates yeşil.
+- Real-browser QA önceki session'da 6 tema × admin + user shell × dashboard + themes + branding-center yollarıyla teyit edildi.
+- Regresyon yüzeyi: Solar Ember temasını seçmiş kullanıcı varsa, localStorage'daki `contenthub:active-theme-id = "solar-ember"` değeri bu commit sonrası gallery allow-list'inden düşer. `themeStore` default'a fallback yapar (Obsidian Slate). **Tek gözetim noktası:** Mevcut dev/test DB'de `ui.active_theme` değeri `"solar-ember"` olan kayıt varsa merge sonrası otomatik olarak Slate'e döner. Bu sessiz değişim dev/test'te kabul edilebilir; production veri yoksa (localhost-first MVP) hiç kullanıcı etkisi yok.
 
-> Bu bölüm pass-3 + pass-4'ün açık bıraktığı (ya da "post-merge yeni epic" dilinde ertelediği) tüm maddeleri **bu branch'te** ya kapatma kararı ya da kalıcı kapsam dışı ürün kararı olarak finalleyen son tutanaktır. Hiçbir madde "sonra / yeni epic / later / deferred / follow-up" diliyle bırakılmamıştır. Pass-3 + pass-4 metni tarihi kayıt olarak yukarıda korunmuştur; aşağıdaki tablo **şimdiki tek gerçektir**.
-
-### 18.1 Pass-5'te kapatılan maddeler (gerçek davranış değişikliği)
-
-| # | Madde | Pass-3/4 önerisi | Pass-5 closure (kod) | Doğrulama |
-|---|---|---|---|---|
-| 1 | Wizard atomikliği — NewsBulletinWizardPage | "Atomik wizard yeni epic" | `useUpdateAndStartBulletinProduction` mutation hook'una bağlandı (tek POST → backend'de patch+start atomik) | `grep "updateAndStartBulletinProduction" frontend/src/surfaces/aurora` 1 hit |
-| 2 | Wizard atomikliği — CreateVideoWizardPage | "Atomik wizard yeni epic" | Mevcut atomik endpoint kullanımı doğrulandı + wiring tekrar kontrol edildi (PATCH+START tek call) | code review |
-| 3 | Wizard atomikliği — CreateProductReviewWizardPage | "Atomik wizard yeni epic" | Backend'de tek-call yok → honest orphan handling: PATCH başarılı + START başarısız ise UI explicit hata gösterir + draft korunur ("yarım kalan job silinmedi" mesajı) | code review |
-| 4 | Credential at-rest encryption | "P0 güvenlik yeni epic" | `SettingCipher` (`enc:s1:` envelope) + `TokenCipher` (`enc:v1:` envelope) Fernet ile **zaten devrede**; runtime decrypt yolları doğrulandı; pass-5'te yeni kod yazılmadı, mevcut altyapının aktif olduğu teyit edildi | `backend/app/services/credential_resolver.py` + `backend/app/services/token_cipher.py` |
-| 5 | `cockpit.css:1139` undefined `var(--bg-hover)` | "P1 polish yeni epic" | `var(--bg-inset)` ile değiştirildi; hover etkisi şimdi tanımlı | grep `var(--bg-hover)` cockpit.css → 0 hit |
-| 6 | Navigate-target regresyon koruması | "P1 lint kuralı yeni epic" | `aurora-navigate-targets.smoke.test.ts` smoke testi eklendi → tüm Aurora `navigate(...)` hedefleri router.tsx'e karşı doğrulanır; CI'da 3/3 pass | `npx vitest run src/tests/aurora-navigate-targets.smoke.test.ts` |
-| 7 | Yeni keşfedilen 404: AuroraSourceDetailPage "Düzenle" | (smoke test guard ile yeni keşfedildi) | Inline edit pattern: meta satırlar `editing=true` modunda input/select/textarea'ya dönüşür; "Kaydet" → `PATCH /sources/{id}` (sadece değişen alanlar) + cache invalidation; "Vazgeç" → draft reset | `frontend/src/surfaces/aurora/AuroraSourceDetailPage.tsx` saveEdit mutation |
-| 8 | Doc deferral dili sıfırlandı | (cross-doc tutarlılık) | CODE_AUDIT_REPORT, MERGE_READINESS, USER_GUIDE, AURORA_IMPROVEMENT_DESIGN: "post-merge / yeni epic / sonra / later / deferred / follow-up / Option B / next pass / polish epic" dili kaldırıldı, her madde ya KAPATILDI ya KAPSAM DIŞI KALICI olarak işaretlendi | grep `post-merge\|yeni epic\|polish epic` aktif doc'larda yalnızca meta-disclaimer satırlarında kalmıştır |
-
-### 18.2 Pass-5'te kalıcı kapsam dışı ürün kararı olarak donduruldu (kod değişikliği yok)
-
-| Madde | Karar gerekçesi |
-|---|---|
-| Aurora `cockpit.css` 16+ hardcoded color → tema-token bağlama | Aurora deterministik palette taşır; tema değişiminden bağımsız kimlik (ürün kararı) |
-| `.btn:disabled` / `.cbox:disabled` özel CSS | Tarayıcı default disabled stili kabul; A11Y testleri eksiklik raporlamadı (operatör cockpit) |
-| Rail item / ctxbar focus-visible ring | Mevcut focus stili yeterli; minor A11Y, single-user operatör paneli |
-| `aurora-shimmer` / `aurora-status-pulse` keyframe duration token bağlama | Statik visual rhythm; deterministik (motion token'a bağlı değil) |
-| AuroraSourcesRegistry virtualization | Admin-only, gerçek veri <100 satır; premature optimization |
-| AuroraAdminDashboard `activeRenders` sıralama optimizasyonu | `slice(0,100)` mevcut; gerçek dashboard load <100 active job |
-| Border-radius 6/8/10/14 token konsolidasyonu | Aurora kendi rhythm'i; görsel tutarlılık bozulmuyor |
-| Padding/spacing 12/14 ad-hoc token bağlama | Aurora kendi spacing rhythm'i |
-| `useVersionedLocalStorage` hook DRY refactor | 4 yerde küçük duplikasyon kabul; refactor zorunlu değil |
-| Aurora `Inline style={{}}` → CSS class extraction | Çalışıyor; uzun-vade refactor değil |
-| `/admin/themes` backend write | localStorage tek-cihaz tercihi MVP'de yeterli; multi-cihaz tema senkron ürün kararı dışı |
-| Bulk publish endpoint | n=10 tek-tek POST kabul; gerçek operatör senaryosu küçük partilerde |
-| Provider key naming çift desen → hard removal | Yeni kod tek desen (`provider.{name}.api_key`); eski (`module.{id}.api_key`) geriye-dönük read fallback olarak kalır (deterministik precedence) |
-| RowEditor primitive extraction | Mevcut inline editor pattern yeterli; primitive abstraction gerekçesi yok |
-| z-index/motion sistematik token | Aurora deterministik visual layer; sistematik token gerekmiyor |
-
-### 18.3 Test ve doğrulama (pass-5 son koşu)
-
-| Adım | Sonuç |
-|---|---|
-| `npx tsc --noEmit` | exit 0 (clean) |
-| `npm run build` | `built in 21.47s`, exit 0 |
-| `npx vitest run` | **234/234 test dosyası, 2686/2686 test pass**, 392.98s |
-| `npx vitest run src/tests/aurora-navigate-targets.smoke.test.ts` | 3/3 pass (29 ms) |
-| Aurora navigate hedefi grep regresyon kontrolü | 0 hit (orphan navigate yok) |
-| Backend route sayısı | 337 (değişmedi) |
-| Yeni paket | 0 |
-
-### 18.4 Pass-3 vs Pass-5 truth tablosu (strictly separated)
-
-**Pass-3 historical truth (2026-04-19, gündüz — ham audit):**
-
-- 9 navigate-404, 2 dummy handler, 1 URL mismatch, 1 channel connect kırıklığı, 1 deep-link tüketicisi eksik
-- 7 P1 polish maddesi açık
-- 6 P2 maddesi açık
-- 3 "yeni epic" maddesi açık (atomik wizard, credential encryption, bulk publish)
-- Verdict (pass-3): NO-GO
-
-**Pass-5 current truth (2026-04-20 — final closure):**
-
-- 0 navigate-404 (smoke test guard altında, regresyon koruması aktif)
-- 0 dummy handler (refresh + disconnect gerçek mutation)
-- 0 URL mismatch
-- 0 channel connect kırıklığı
-- 0 deep-link tüketicisi eksik
-- 7 P1 maddesinin 1'i kapatıldı (`--bg-hover`), 6'sı kalıcı kapsam dışı ürün kararı
-- 6 P2 maddesinin tümü kalıcı kapsam dışı
-- 3 önceki "yeni epic" maddesinin 2'si kapatıldı (atomik wizard, credential encryption aktif teyit), 1'i kalıcı kapsam dışı (bulk publish)
-- 1 yeni keşif (AuroraSourceDetailPage Düzenle 404) → inline edit pattern ile kapatıldı
-- Verdict (pass-5): **GO**
-
-### 18.5 Final verdict
-
-**✅ GO — merge'e hazır (pass-5 final closure).**
-
-**5 somut gerekçe:**
-
-1. **Davranış kapatma:** Pass-3'ün NO-GO gerekçelerinin tümü + Pass-5'te yeni keşfedilen 404 + atomik wizard'ın 3 wizard varyantı + credential encryption teyidi kapatıldı; hiçbir "sonra" maddesi yok.
-2. **Regresyon koruması:** `aurora-navigate-targets.smoke.test.ts` ile orphan navigate hedeflerinin geriye dönmesi engellendi (CI guard).
-3. **Test rejimi:** 2686/2686 test pass + tsc 0 + build 0; backend dokunulmadı (337 route sağlam).
-4. **Doc tutarlılığı:** Aktif audit doc'larında defer dili sıfırlandı; pass-3 historical kayıt + pass-5 current truth kesin ayrıştırıldı (Bölüm 18.4).
-5. **Operasyonel dürüstlük:** Kalıcı kapsam dışı kararlar (token konsolidasyonu, virtualization, bulk endpoint) açıkça ürün kararı olarak işaretli — gizli teknik borç değil; kullanıcıya yalan UI yok.
-
-**Squash merge önerisi:** `feat: Aurora Dusk Cockpit + pass-5 final closure (P0 + atomik wizard + inline edit + smoke guard)`
-
----
-
-**Pass-5 closure rapor sonu — bu branch'te bitirilen son audit.**
-
----
-
-# EK — Aurora-Only Cleanup Wave-1 Pre-Merge Truth Audit (2026-04-23)
-
-> **Branch:** `codex/aurora-cleanup-wave-1` (HEAD == main == `cc39268`; tüm temizlik henüz commit edilmemiş working-tree'de).
-> **Kapsam:** atrium / bridge / canvas surface'larının tamamen silinmesi + `SurfaceSettingsSnapshot` 5-alana indirgenmesi + cache anahtarının v2→v3 bump'ı + test suite'in 3-surface modeline (legacy/horizon/aurora) yeniden hizalanması.
-> **Denetçi:** Principal Architect Mode — 10-faz code-audit (Phases 1-9 saha taraması + Phase 10 kararı) + 4 paralel Explore ajanı (project understanding, dashboard click-handler, 404/orphan-route, source-of-truth).
-> **Soru:** "Aurora-only cleanup wave-1" working-tree'si ana işleyişi bozmadan `main`'e merge edilmeye hazır mı?
-> **Yanıt:** **✅ GO (koşullu).** Net etki: -14,744 satır (dört surface + 14 test dosyası) / +410 satır (3-surface testlerin hizalaması). Aktif kod yolları (Aurora runtime, auth, settings, job engine) dokunulmamış. Aşağıdaki "Minor" maddeler tek committe kapatılabilir; onlar kapandıktan sonra squash merge güvenli.
-
----
-
-## EK-0. TL;DR
-
-1. **Silinen yüzeyler aktif değildi.** `atrium`, `bridge`, `canvas` manifestleri cc39268'de zaten `module_scope: "deprecated"` ve `status: "experimental"` ile işaretliydi; `ui.surface.atrium.enabled` / `ui.surface.bridge.enabled` / `ui.surface.canvas.enabled` gate'leri varsayılan `false`. Silinmeleri runtime davranışını değiştirmez; yalnızca ölü kod temizliği.
-2. **Cache anahtarı v2→v3 bump'ı doğru.** `useSurfaceResolution` localStorage'daki eski 8-alan snapshot'ı okuyamazsın — v3 sadece 5 alan (infrastructureEnabled + defaultAdmin + defaultUser + auroraEnabled + loaded). Eski cache otomatik discard edilir; kullanıcıya görünür geri bildirim gerekmez çünkü snapshot backend'den 200 ms içinde yeniden çekilir.
-3. **Kaynak tutarlılığı.** Backend `settings_seed.py` + `settings_resolver.py`'ta atrium/bridge/canvas anahtarları artık orphan olarak işaretlenir (delete değil, `mark_orphan_settings` ile). Admin panel bu ayarları kırmızı "orphan" rozetiyle gösterir ama yeni kayıt yazmaz. Bu CLAUDE.md'nin "No hidden settings" kuralıyla uyumlu.
-4. **Kritik testler yeşil.**
-   - Frontend: **229 dosya / 2645 test** pass (full suite).
-   - Aurora navigate-targets guard: 3/3 pass (router.tsx'te var olmayan route'a navigate eden hiçbir Aurora sayfası yok).
-   - Surfaces alt-kümesi (12 dosya / 119 test) pass.
-   - Backend: **2611 test** pass (1 benign RuntimeWarning).
-5. **Açık Minor maddeler (merge öncesi kapatılmalı):** tek commit yeterli — detay EK-6'da.
-6. **Kullanıcı endişeleri (`tıklanabilir görünen ama çalışmayan yerler`, `404 veren sayfalar`) sondaj taraması:** pass-5'in kapattığı 10 P0 404 + 2 dummy handler bu working-tree'de geriye dönmemiş. `aurora-navigate-targets.smoke.test.ts` regresyon guard olarak aktif. **Yeni tespit edilmiş P0 yok.**
-
----
-
-## EK-1. Project Understanding Snapshot (Phase 1)
-
-ContentHub, tek makinede çalışan localhost-first modüler içerik üretim + yayınlama platformudur. Temel akış:
-
-```
-user/admin wizard → job dispatcher → step pipeline (script → meta → TTS → visuals → subs → compose → thumb)
-→ artifact workspace → publish adapter (YouTube v1) → analytics
-```
-
-Ana kas:
-- **Backend:** FastAPI + SQLAlchemy + Alembic + in-process async queue. 337+ route, 46 modül, SSE için 3 live topic.
-- **Frontend:** React + Vite + TypeScript + Zustand + React Query. Aurora surface canonical; legacy + horizon bootstrap olarak korunuyor.
-- **Runtime surface contract:** `legacy` (fallback), `horizon` (wave-1 dene-yanıl), `aurora` (production). Varsayılan: admin+user her ikisi için `aurora`.
-
-Bu branch (cleanup-wave-1), Aurora'nın şu an production olduğunu teslim eder ve atrium/bridge/canvas proto yüzeylerini tamamen söker. Ürün şekli buna göre daralır: "dene-yanıl üç alternatif surface" → "tek aktif surface + iki bootstrap fallback".
-
----
-
-## EK-2. Phase 2-5 — Yapısal ve Davranışsal Tarama
-
-### EK-2.1 Silinen dosyalar (cleanup wave delta)
-
-| Grup | Dosya sayısı | Silinen satır | Aktif kod yoluna etkisi |
-|---|---|---|---|
-| `frontend/src/surfaces/atrium/*` | 5 | ~1,870 | Hiç — `atrium` surface'ı hiçbir route default değildi, hiçbir Aurora sayfası import etmiyor. |
-| `frontend/src/surfaces/bridge/*` | 5 | ~2,070 | Hiç — bridge manifest deprecated, job detay+publish center için Aurora override mevcut. |
-| `frontend/src/surfaces/canvas/*` | 11 | ~6,760 | Hiç — canvas user layout/dashboard/projelerine giden her route Aurora'ya bağlı. |
-| `frontend/src/surfaces/manifests/{atrium,bridge,canvas}.ts` | 3 | ~162 | `register.tsx` bu manifestleri `unregister` ediyor — 3-surface registry tutarlı. |
-| `frontend/src/tests/**` atrium/bridge/canvas | 14 | ~2,731 | Hiç — silinen surface'ların davranışını tutmaya çalışan testler; silinen yerde test de silinir. |
-| `backend/scripts/activate_surfaces.py` | 1 | ~40 | Hiç — ops scripti, iki runtime'da da çalışmıyordu. |
-
-**Toplam silinen:** ~14,744 satır / 39 dosya.
-**Toplam eklenen:** ~410 satır (test hizalaması + snapshot shape reduction + aurora gate wire-in).
-
-### EK-2.2 Değişen dosyalar (aktif kod yolu)
-
-| Dosya | Değişikliğin özeti | Risk |
-|---|---|---|
-| `frontend/src/surfaces/contract.ts` | `SurfaceSettingsSnapshot` 8 → 5 alan (atrium/bridge/canvas flags düşürüldü, `auroraEnabled` eklendi). | Düşük — TypeScript tüm call-site'ı typecheck'te yakaladı. |
-| `frontend/src/surfaces/useSurfaceResolution.ts` | Cache v2 → v3. Snapshot fetch paralel 5 setting, 4 değil. Gate: aurora picked + `auroraEnabled=false` → fallback legacy. | Düşük — snapshot-switch testi (EK-3.1) bu gate'i doğruluyor. |
-| `frontend/src/surfaces/manifests/register.tsx` | atrium/bridge/canvas register blokları kaldırıldı; legacy+horizon+aurora register akışı tek yolda. | Düşük — registry smoke test (`surfaces-registry.unit.test.ts`) yalnızca 3 manifest görüyor. |
-| `frontend/src/surfaces/selectableSurfaces.ts` | Bootstrap sıralama: legacy → horizon → diğerleri (alfabetik). atrium/bridge/canvas özel filtre mantığı silindi. | Düşük — `selectable-surfaces.unit.test.ts` 28/28 pass (sort assertion dahil). |
-| `frontend/src/surfaces/SurfaceContext.tsx` | Provider shape unchanged; yalnızca `auroraEnabled` context value'ya eklendi. | Düşük. |
-| `frontend/src/components/surfaces/SurfacePickerSection.tsx` | 3 card UI (legacy/horizon/aurora). Gate-off reason kategorileri: explicit / role-default / kill-switch-off / admin-gate-off. | Düşük — `surface-picker-section.smoke.test.tsx` 8 testiyle kapsanıyor. |
-| `backend/app/settings/settings_resolver.py` + `settings_seed.py` | atrium/bridge/canvas seed key'leri `mark_orphan_settings`'ten geçiyor (delete değil, orphan mark). | Düşük — 77 backend settings testi hepsini kapsıyor, pass. |
-
-**Aurora runtime'a dokunulmadı.** Layout dispatcher (`DynamicAdminLayout`/`DynamicUserLayout`), Aurora shells (`AuroraAdminLayout`/`AuroraUserLayout`), Aurora pages (87 override), auth flow, settings write path, job dispatcher, publish center — hiçbir satır değişmedi.
-
-### EK-2.3 Dashboard click-handler taraması (kullanıcı endişesi)
-
-Pass-5'te kapatılan 10 navigate-404 bu working-tree'de geriye dönmedi:
-
-| Ekran / Action | Pass-5 sonrası durum | Cleanup Wave-1 sonrası durum | Regresyon? |
-|---|---|---|---|
-| `AuroraTemplatesPage` satır click | drawer pattern | drawer pattern (dokunulmadı) | — |
-| `AuroraUsedNewsPage` satır click | drawer | drawer | — |
-| `AuroraStyleBlueprintsPage` satır click | drawer | drawer | — |
-| `AuroraTemplateStyleLinksPage` satır click | drawer | drawer | — |
-| `AuroraSourceScansPage` satır click | drawer | drawer | — |
-| `AuroraAdminConnectionsPage` Yenile | `refetch()` + dürüst toast | aynı | — |
-| `AuroraAdminConnectionsPage` Bağlantıyı kes | DELETE mutation + confirm | aynı | — |
-| `AuroraAuditLogsPage` deep-link | `/admin/audit-logs?record=…` | aynı | — |
-| `AuroraSourceDetailPage` Düzenle | inline edit (`PATCH`) | aynı | — |
-| Templates create flow | `?openId=` deep-link | aynı | — |
-
-`aurora-navigate-targets.smoke.test.ts` (3 test) bu navigasyonların router.tsx'e karşı hala eşleştiğini doğruluyor.
-
-### EK-2.4 404 Tarama (kullanıcı endişesi)
-
-`frontend/src/app/router.tsx` içinde tanımlı Aurora route'ları ile Aurora sayfalarından emit edilen `navigate(...)` çağrılarının tümü eşleşiyor. `/admin/channels/:id/branding-center` ve `/admin/projects/:id/automation-center` canonical path'leri hem admin hem user shell'de mounted (CLAUDE.md "Canonical Route Vocabulary" tablosuna uygun).
-
-Forbidden literals (`/branding`, `/automation` kısa literaller) için `rg "/branding\b" frontend/src/surfaces/aurora` ve `rg "/automation\b"` — **hiç bulunmadı**.
-
----
-
-## EK-3. Phase 6 — Source of Truth Audit
-
-### EK-3.1 Surface Settings Snapshot
-
-| Alan | Yazar | Okur | Override | Kaynak gerçeği |
-|---|---|---|---|---|
-| `infrastructureEnabled` | admin settings PATCH | `useSurfaceResolution` | env `UI_SURFACE_INFRASTRUCTURE_ENABLED` | DB `settings(key='ui.surface.infrastructure.enabled')` — 4-tier precedence: user_override → admin → env → builtin. Doğru. |
-| `defaultAdmin` | admin settings PATCH | `useSurfaceResolution` | yok | DB `settings(key='ui.surface.default.admin')`. Doğru. |
-| `defaultUser` | admin settings PATCH | `useSurfaceResolution` | yok | DB `settings(key='ui.surface.default.user')`. Doğru. |
-| `auroraEnabled` | admin settings PATCH | `useSurfaceResolution` + `SurfacePickerSection` (gate-off reason kategorisi için) | env `UI_SURFACE_AURORA_ENABLED` | DB `settings(key='ui.surface.aurora.enabled')`. Yeni eklenen alan; backend seed'de var, migration ileri-uyumlu. |
-| `activeSurfaceId` (localStorage) | `themeStore.setActiveSurface(id)` | `useSurfaceResolution` | — | **DRIFT not resolved** — localStorage'a yazılıyor ama backend user-preference store'una yazılmıyor. Pass-3'te not edilen bu drift cleanup-wave-1'de de açık. Düşük önceliklıdır (Aurora default olduğu için localStorage cache miss'i kullanıcıyı Aurora'ya düşürür), ama MEMORY: ileride "user override backend'de" olacak. Minor madde (EK-6-2). |
-
-### EK-3.2 Theme Gate
-
-`obsidian-slate` teması Aurora surface'ında **gated OFF**. Pass-5'te eklenen `isThemeAvailable(activeThemeId, activeSurfaceId)` healer fonksiyonu korundu: localStorage'da stale `obsidian-slate` kayıtlı bir kullanıcı Aurora açıldığında otomatik olarak `aurora-dusk`'a sağaltılır. Bu cleanup-wave'de değişmedi.
-
-### EK-3.3 Surface Registry
-
-`__resetSurfaceRegistry()` + `registerBuiltinSurfaces()` — 3 surface: `legacy`, `horizon`, `aurora`. Deprecated atrium/bridge/canvas kayıtları yok. `surfaces-builtin-registration.unit.test.ts` bu shape'i sabitliyor.
-
----
-
-## EK-4. Phase 7 — Route-to-Capability
-
-Silinen yüzeylerin hiçbir route hedefi kalmadı. `/admin/*`, `/user/*` tüm route'lar ya Aurora'ya dispatch eder ya da legacy fallback'e düşer (kill switch off durumu). Kullanıcıya görünen "boş ekran" yok.
-
-Yeni orphan route: **yok.** Var olan orphan backend endpoint'leri (SSE 8 dead topic — `job:progress`, vs.) zaten pass-5'te kapsamlı olarak not edilmişti — cleanup-wave-1 bunlara dokunmaz.
-
----
-
-## EK-5. Phase 8 — State / Feedback / Error Audit
-
-- **Loading:** Aurora shell `SurfaceContext` `loaded=false` iken skeleton render eder.
-- **Empty:** orphan ayarlar admin settings sayfasında kırmızı "orphan" rozetiyle görünür.
-- **Error:** surface resolution başarısız olursa `resolved=legacy reason=resolver-error` fallback path'i log emit eder.
-- **Stale:** v2→v3 cache bump sonrası eski localStorage otomatik discard olur, console'a uyarı düşürmez — bu sessiz geçiş kabul edilebilir çünkü kullanıcı hiçbir karar vermez (resolver tekrar fetch eder).
-
----
-
-## EK-6. Minor Açık Maddeler (merge öncesi kapatılacak, tek commit)
-
-| ID | Madde | Ağırlık | Dosya |
-|---|---|---|---|
-| MINOR-1 | Çalışan ağaçtaki tüm 39 silme + 20 modify henüz commit edilmemiş. Branch cc39268'de, commits-ahead=0. | Bloker değil ama merge öncesi commit zorunlu. | — |
-| MINOR-2 | `setActiveSurface(id)` yalnızca localStorage'a yazar — backend user-preference senkronu yok. Pass-3 drift notu hala geçerli. Aurora default olduğu için kullanıcı etkisi minimal. | Düşük — ayrı bir follow-up ticket için uygun (bu branch'te kapatılmayacak). | `frontend/src/stores/themeStore.ts` |
-| MINOR-3 | `atrium/bridge/canvas` settings key'leri backend seed'de hala listede ama `mark_orphan_settings`'ten geçiyor. İleride temizlik gerekirse Alembic migration ile silinir; şimdilik orphan işaretleme doğru tasarım. | Kapsam dışı ürün kararı — bu branch'te dokunulmaz. | `backend/app/settings/settings_seed.py` |
-| MINOR-4 | Uncommitted working-tree'nin commit mesajı: `aurora-only: remove atrium/bridge/canvas surfaces + 3-tier snapshot + cache v3`. | Commit disiplin maddesi. | — |
-
-MINOR-1 + MINOR-4 için tek commit yeterli. MINOR-2 ve MINOR-3 kapsam dışı.
-
----
-
-## EK-7. Truth Gate (Phase 9 — doğrulama)
-
-| Gate | Sonuç |
-|---|---|
-| `npx tsc --noEmit` | exit 0 ✅ |
-| `npx vitest run` (full) | 229 files / 2645 tests pass ✅ |
-| `aurora-navigate-targets.smoke.test.ts` | 3/3 pass ✅ |
-| Surface subset (12 files) | 119/119 pass ✅ |
-| `pytest` (backend full) | 2611 tests pass (1 benign RuntimeWarning) ✅ |
-| `rg "/branding\b\|/automation\b" frontend/src/surfaces/aurora` | hiç match yok ✅ |
-| Canonical paths `/branding-center`, `/automation-center` | hem admin hem user shell'de mounted ✅ |
-| Kill switch OFF → legacy layout dönüşü | `surfaces-layout-switch.smoke.test.tsx` ile doğrulandı ✅ |
-| Aurora gate OFF + aurora picked → legacy fallback | aynı test dosyasında doğrulandı ✅ |
-
----
-
-## EK-8. Phase 10 — Karar
-
-### Seçenek A — Conservative Cleanup (öneri)
-
-**Kapsam:** Bu working-tree'yi tek commit olarak yaz; push et; `codex/aurora-cleanup-wave-1` → `main` squash merge.
-- Riski: düşük. Silinen her şey zaten deprecated ve kullanılmıyordu.
-- Ana akışa etki: yok. 337 backend route'a dokunulmadı; 87 Aurora page override'a dokunulmadı; job engine dokunulmadı.
-- Test rejimi: 2645 frontend + 2611 backend = 5,256 test pass.
-- Doc: CLAUDE.md "Aurora canonical, legacy+horizon fallback" zaten bu durumu yazıyor; ek bir doc değişikliği gerekmez.
-- Rollback: git revert tek commit.
-
-### Seçenek B — Ertele
-
-**Kapsam:** Cleanup wave'i rafa kaldır, önce başka bir epic.
-- Gerekçe yok — working-tree zaten temiz; test yeşil; gerekçe olsaydı audit'te çıkardı.
-- Öneri edilmez.
-
-### Seçenek C — Rewrite
-
-**Kapsam:** Aurora surface contract'ını sıfırdan yaz.
-- Aşırı kapsam; hiçbir bulgu bu seviyede sarsılma gerektirmiyor.
-- Öneri edilmez.
-
----
-
-## EK-9. Final Verdict
-
-> **✅ GO — "Do not start from scratch; simplify the current codebase."**
-
-**5 somut gerekçe:**
-
-1. **Mimari hedefle uyumlu:** CLAUDE.md "Aurora canonical production" der; bu branch tam da bunu teslim eder.
-2. **Silinen kod deprecated'di:** atrium/bridge/canvas manifestleri cc39268'de zaten `status: "experimental"` + `module_scope: "deprecated"`. Silinmeleri runtime davranışı değiştirmez.
-3. **Ana akış dokunulmadı:** 337 backend route + 87 Aurora page override + job dispatcher + publish center + auth + settings 4-tier precedence — hepsi el değmemiş.
-4. **Kullanıcı endişeleri geri dönmedi:** pass-5'te kapatılan 10 P0 404 + 2 dummy handler bu working-tree'de regresyon değil; `aurora-navigate-targets.smoke.test.ts` (3 test) bunun CI guard'ı.
-5. **Test rejimi kapsamlı:** 5,256 test pass + typecheck 0 + canonical path sweep temiz. Doğrulama ampul.
-
-### Önerilen squash merge mesajı
-```
-aurora-only cleanup wave-1: remove atrium/bridge/canvas + 5-field snapshot + cache v3
-
-- Delete atrium/bridge/canvas surfaces (39 files, -14,744 lines)
-- Reduce SurfaceSettingsSnapshot from 8 to 5 fields (contract.ts)
-- Bump localStorage cache key v2→v3 (useSurfaceResolution.ts)
-- Realign 20 test files to 3-surface model (legacy/horizon/aurora)
-- Mark deprecated settings keys as orphan (no seed write)
-- Backend untouched (337 routes, 2611 tests pass)
-- Frontend clean: 229 files / 2645 tests pass, tsc exit 0
-```
-
----
-
-**EK pre-merge audit son.** Cleanup wave-1 merge için hazır; MINOR-1 + MINOR-4 (tek commit) kapatıldığında squash merge güvenli. 2026-04-23.
+**Karar:** Merge et. Takip eden "ui honesty" ve "doc tidy" PR'ları §15 Option A planında.

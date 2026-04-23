@@ -894,128 +894,151 @@
 
 
 /* ------------------------------------------------------------
-   7. Solar Ember — dark industrial HUD, ember orange accent
+   7. Nordic Frost — calm Scandinavian light, steel-blue accent
    ------------------------------------------------------------
-   Palette source: SOLAR_EMBER_THEME in themes-radical.ts
-   (brand #f97316, neutral #0c0a08 → #f5f2ee, Archivo/Source Code).
-   Dark variant → inherits white-based ink-overlay tokens.
-   Inset shadows preserved (brutalist stamped-card aesthetic).
+   Palette source: NORDIC_FROST_THEME in themes-radical.ts
+   (brand #41668a, neutral #fdfefe → #070a0f, Inter/IBM Plex Mono).
+   Light variant → ink-overlay is black-based (parity with Slate).
+   Soft diffused shadows, cool tint — north light through paper.
    ------------------------------------------------------------ */
-[data-surface="aurora"][data-theme="solar-ember"] {
-  --bg-canvas:        #0c0a08;
-  --bg-surface:       #161310;
-  --bg-elevated:      #1e1a16;
-  --bg-inset:         #110e0b;
-  --bg-sidebar:       #0c0a08;
-  --bg-sidebar-hover: #1e1a16;
-  --bg-sidebar-active:#292420;
-  --bg-overlay:       rgba(12, 10, 8, 0.78);
-  --bg-tooltip:       #292420;
+[data-surface="aurora"][data-theme="nordic-frost"] {
+  --bg-canvas:        #f3f6f8;
+  --bg-surface:       #ffffff;
+  --bg-elevated:      #ffffff;
+  --bg-inset:         #e8ecf0;
+  /* Sidebar stays deep — architectural navy, never pure black. */
+  --bg-sidebar:       #1b2027;
+  --bg-sidebar-hover: #2a3037;
+  --bg-sidebar-active:#3f464d;
+  --bg-overlay:       rgba(17, 21, 27, 0.40);
+  --bg-tooltip:       #1b2027;
 
-  --text-primary:     #f5f2ee;
-  --text-secondary:   #e0dad2;
-  --text-muted:       #ada49b;
-  --text-disabled:    #504840;
-  --text-inverse:     #0c0a08;
-  --text-on-accent:   #f5f2ee;
-  --text-link:        #fb923c;
+  --text-primary:     #11151b;
+  --text-secondary:   #2a3037;
+  --text-muted:       #5a6269;
+  --text-disabled:    #b5bec7;
+  --text-inverse:     #ffffff;
+  --text-on-accent:   #ffffff;
+  --text-link:        #41668a;
 
-  --border-subtle:    #292420;
-  --border-default:   #38322c;
-  --border-strong:    #504840;
-  --border-contrast:  #6b6259;
-  --border-focus:     #f97316;
+  --border-subtle:    #e8ecf0;
+  --border-default:   #d5dbe1;
+  --border-strong:    #b5bec7;
+  --border-contrast:  #889299;
+  --border-focus:     #41668a;
 
-  --accent-primary:        #f97316;
-  --accent-primary-hover:  #fb923c;
-  --accent-primary-muted:  rgba(249, 115, 22, 0.14);
-  --accent-primary-strong: #c2410c;
-  --accent-primary-rgb:    249, 115, 22;
+  --accent-primary:        #41668a;
+  --accent-primary-hover:  #587692;
+  --accent-primary-muted:  rgba(65, 102, 138, 0.10);
+  --accent-primary-strong: #2f4c6b;
+  --accent-primary-rgb:    65, 102, 138;
 
-  --accent-secondary:        #38bdf8;
-  --accent-secondary-hover:  #7dd3fc;
-  --accent-secondary-muted:  rgba(56, 189, 248, 0.14);
+  --accent-secondary:        #6b5a8a;
+  --accent-secondary-hover:  #8775a5;
+  --accent-secondary-muted:  rgba(107, 90, 138, 0.10);
 
-  --accent-tertiary:        #facc15;
-  --accent-tertiary-muted:  rgba(250, 204, 21, 0.14);
+  --accent-tertiary:        #c08a1f;
+  --accent-tertiary-muted:  rgba(192, 138, 31, 0.10);
 
-  --state-success-bg:      rgba(34, 197, 94, 0.10);
-  --state-success-fg:      #86efac;
-  --state-success-border:  rgba(134, 239, 172, 0.28);
+  --state-success-bg:      #e6f4ec;
+  --state-success-fg:      #1e6341;
+  --state-success-border:  #a5d3b8;
 
-  --state-warning-bg:      rgba(250, 204, 21, 0.10);
-  --state-warning-fg:      #fef08a;
-  --state-warning-border:  rgba(254, 240, 138, 0.28);
+  --state-warning-bg:      #fcf2dc;
+  --state-warning-fg:      #8f6310;
+  --state-warning-border:  #e7c98a;
 
-  --state-danger-bg:       rgba(239, 68, 68, 0.10);
-  --state-danger-fg:       #fca5a5;
-  --state-danger-border:   rgba(252, 165, 165, 0.28);
+  --state-danger-bg:       #f8e4e3;
+  --state-danger-fg:       #7d2725;
+  --state-danger-border:   #e3aaa9;
 
-  --state-info-bg:         rgba(56, 189, 248, 0.10);
-  --state-info-fg:         #7dd3fc;
-  --state-info-border:     rgba(125, 211, 252, 0.28);
+  --state-info-bg:         #e6eef6;
+  --state-info-fg:         #2a5078;
+  --state-info-border:     #aec3d8;
 
-  --state-neutral-bg:      rgba(224, 218, 210, 0.08);
-  --state-neutral-fg:      #e0dad2;
-  --state-neutral-border:  rgba(224, 218, 210, 0.20);
+  --state-neutral-bg:      #eef1f4;
+  --state-neutral-fg:      #3f464d;
+  --state-neutral-border:  #d5dbe1;
 
-  --module-news-bulletin:    #38bdf8;
-  --module-product-review:   #a855f7;
-  --module-standard-video:   #f97316;
-  --module-educational:      #22c55e;
-  --module-howto:            #facc15;
-  --module-default:          #9a9088;
+  --module-news-bulletin:    #41668a;
+  --module-product-review:   #6b5a8a;
+  --module-standard-video:   #c08a1f;
+  --module-educational:      #2f8a5a;
+  --module-howto:            #a83936;
+  --module-default:          #5a6269;
 
-  --role-admin-fg:     var(--accent-primary-hover);
-  --role-operator-fg:  var(--module-howto);
+  --role-admin-fg:     var(--accent-primary-strong);
+  --role-operator-fg:  var(--accent-tertiary);
   --role-viewer-fg:    var(--state-info-fg);
   --role-user-fg:      var(--state-success-fg);
 
-  --control-knob-bg:      #f5f2ee;
-  --control-knob-shadow:  0 1px 3px rgba(0, 0, 0, 0.5);
-  --media-overlay-bg:     rgba(0, 0, 0, 0.82);
-  --media-overlay-fg:     #f5f2ee;
+  --control-knob-bg:      #ffffff;
+  --control-knob-shadow:  0 1px 3px rgba(27, 32, 39, 0.14);
+  --media-overlay-bg:     rgba(17, 21, 27, 0.78);
+  --media-overlay-fg:     #ffffff;
 
-  --glow-accent:        0 0 24px -4px rgba(249, 115, 22, 0.36);
-  --glow-accent-strong: 0 0 48px -6px rgba(249, 115, 22, 0.54);
-  --glow-secondary:     0 0 28px -6px rgba(56, 189, 248, 0.28);
-  --glow-ring-focus:    0 0 0 2px rgba(249, 115, 22, 0.30);
-  --glow-panel-edge:    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  --glow-accent:        0 0 0 1px rgba(65, 102, 138, 0.08);
+  --glow-accent-strong: 0 0 0 2px rgba(65, 102, 138, 0.16);
+  --glow-secondary:     0 0 0 1px rgba(107, 90, 138, 0.10);
+  --glow-ring-focus:    0 0 0 4px rgba(65, 102, 138, 0.18);
+  --glow-panel-edge:    inset 0 1px 0 rgba(255, 255, 255, 0.6);
 
   --gradient-brand:
-    linear-gradient(135deg, #c2410c 0%, #f97316 50%, #fb923c 100%);
+    linear-gradient(135deg, #2f4c6b 0%, #41668a 50%, #587692 100%);
   --gradient-brand-subtle:
-    linear-gradient(135deg, rgba(249, 115, 22, 0.16) 0%, rgba(250, 204, 21, 0.12) 100%);
+    linear-gradient(135deg, rgba(65, 102, 138, 0.08) 0%, rgba(107, 90, 138, 0.06) 100%);
   --gradient-surface:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.02) 0%, rgba(255, 255, 255, 0) 100%);
+    linear-gradient(180deg, #ffffff 0%, #f7f9fb 100%);
   --gradient-aurora:
-    radial-gradient(60% 80% at 15% 0%, rgba(249, 115, 22, 0.12) 0%, transparent 60%),
-    radial-gradient(70% 90% at 85% 100%, rgba(250, 204, 21, 0.08) 0%, transparent 55%),
-    linear-gradient(180deg, #0c0a08 0%, #110e0b 100%);
+    radial-gradient(55% 70% at 10% 0%, rgba(65, 102, 138, 0.05) 0%, transparent 60%),
+    radial-gradient(50% 65% at 90% 100%, rgba(107, 90, 138, 0.035) 0%, transparent 60%),
+    linear-gradient(180deg, #f3f6f8 0%, #eaeff3 100%);
   --gradient-aurora-soft:
-    radial-gradient(50% 80% at 20% 0%, rgba(249, 115, 22, 0.10) 0%, transparent 60%);
+    radial-gradient(40% 60% at 20% 0%, rgba(65, 102, 138, 0.035) 0%, transparent 60%);
   --gradient-mesh:
-    radial-gradient(circle at 20% 20%, rgba(249, 115, 22, 0.16), transparent 40%),
-    radial-gradient(circle at 80% 70%, rgba(250, 204, 21, 0.10), transparent 42%),
-    radial-gradient(circle at 50% 50%, rgba(56, 189, 248, 0.06), transparent 60%);
+    radial-gradient(circle at 20% 20%, rgba(65, 102, 138, 0.08), transparent 40%),
+    radial-gradient(circle at 80% 70%, rgba(107, 90, 138, 0.06), transparent 42%);
   --gradient-card-edge:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0) 30%);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0) 30%);
 
-  /* Inset shadows — SpaceX mission-control stamped-card aesthetic. */
-  --shadow-xs:  inset 0 1px 2px rgba(0, 0, 0, 0.3), 0 0 1px rgba(249, 115, 22, 0.05);
-  --shadow-sm:  inset 0 1px 3px rgba(0, 0, 0, 0.35), 0 0 2px rgba(249, 115, 22, 0.08);
-  --shadow-md:  inset 0 2px 4px rgba(0, 0, 0, 0.25), 0 0 4px rgba(249, 115, 22, 0.06);
-  --shadow-lg:  inset 0 2px 6px rgba(0, 0, 0, 0.3), 0 0 8px rgba(249, 115, 22, 0.08);
-  --shadow-xl:  0 0 16px rgba(249, 115, 22, 0.12), 0 4px 12px rgba(0, 0, 0, 0.6);
-  --shadow-2xl: 0 0 32px rgba(249, 115, 22, 0.16), 0 8px 24px rgba(0, 0, 0, 0.7);
+  /* Soft diffused shadows — north light through paper. */
+  --shadow-xs:  0 1px 2px rgba(27, 32, 39, 0.04);
+  --shadow-sm:  0 1px 3px rgba(27, 32, 39, 0.05), 0 1px 2px rgba(27, 32, 39, 0.03);
+  --shadow-md:  0 4px 8px rgba(27, 32, 39, 0.06), 0 2px 4px rgba(27, 32, 39, 0.04);
+  --shadow-lg:  0 8px 20px rgba(27, 32, 39, 0.08), 0 4px 8px rgba(27, 32, 39, 0.04);
+  --shadow-xl:  0 16px 36px rgba(27, 32, 39, 0.10), 0 6px 12px rgba(27, 32, 39, 0.05);
+  --shadow-2xl: 0 28px 56px rgba(27, 32, 39, 0.14), 0 12px 24px rgba(27, 32, 39, 0.08);
 
-  --color-workspace-pill-fg: #e9e4de;
-  --color-breadcrumb-sep: rgba(255, 230, 200, 0.32);
-  --color-breadcrumb-last-fg: #f5f2ee;
-  --color-statusbar-value-fg: #e0dad2;
-  --color-btn-dark-fg: #e9e4de;
+  /* Light theme — overlay is black-based (parity with Obsidian Slate). */
+  --ink-overlay-1: rgba(17, 21, 27, 0.03);
+  --ink-overlay-2: rgba(17, 21, 27, 0.05);
+  --ink-overlay-3: rgba(17, 21, 27, 0.07);
+  --ink-overlay-4: rgba(17, 21, 27, 0.10);
+  --ink-overlay-5: rgba(17, 21, 27, 0.14);
+  --ink-overlay-6: rgba(17, 21, 27, 0.20);
+  --ink-overlay-text-soft:   rgba(17, 21, 27, 0.55);
+  --ink-overlay-text-medium: rgba(17, 21, 27, 0.72);
+  --ink-overlay-text-strong: rgba(17, 21, 27, 0.92);
 
-  color-scheme: dark;
+  /* Cockpit chrome override — Nordic Frost is a light content theme but
+     sidebar/rail/ctxbar/statusbar stay dark across every Aurora theme (see
+     --bg-sidebar #1b2027). These tokens keep cockpit foreground light while
+     content surface stays paper-white. --color-btn-dark-fg is used by .btn.dark
+     on light content surfaces too, so it keeps a dark readable tone there. */
+  --color-workspace-pill-fg: #e8ecf0;
+  --color-breadcrumb-sep: rgba(255, 255, 255, 0.30);
+  --color-breadcrumb-last-fg: #f6f8fb;
+  --color-statusbar-value-fg: #d5dbe1;
+  --color-btn-dark-fg: #1b2027;
+
+  /* Rail active — steel-blue #41668a sits at ~3.9:1 on sidebar #1b2027,
+     so use a lifted soft variant #9fb3c4 (7.1:1) for active rail glyphs.
+     Accent still prints as #41668a in charts/CTAs/buttons. */
+  --color-rail-active-fg:  #9fb3c4;
+  --color-rail-active-bg:  rgba(159, 179, 196, 0.14);
+  --color-rail-active-bar: #9fb3c4;
+
+  color-scheme: light;
 }
 
 

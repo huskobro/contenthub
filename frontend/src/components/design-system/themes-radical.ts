@@ -9,17 +9,26 @@
  *   - motion timing & easing
  *   - plus unique CSS treatments in index.css
  *
- * History (Aurora theme curation wave):
+ * History (Aurora theme curation + identity pass):
  *   Previously this file carried 5 themes. `midnight-ultraviolet` was removed
  *   because it duplicated Aurora Dusk's dark+purple direction; `arctic-frost`
  *   was removed because it overlapped with Obsidian Slate's light-theme slot
- *   without adding distinct product character. Those palettes can be
- *   recovered from git history if needed (see themes-radical.ts pre-curation).
+ *   without adding distinct product character. During the identity pass
+ *   `solar-ember` was also removed because its dark+mono+compact+HUD
+ *   character sat too close to `void-terminal` and `tokyo-neon` to feel like
+ *   a distinct "world". In its place we introduced `nordic-frost` — a calm
+ *   Scandinavian light theme that sits opposite Obsidian Slate's indigo-tech
+ *   identity on the light side. Previous palettes remain in git history.
  *
- * Remaining themes (3):
- *   1. Tokyo Neon      — Akihabara arcade terminal, ultra-compact, neon pink
- *   2. Ink & Wire      — broadsheet newspaper, serif dominant, zero radius
- *   3. Solar Ember     — industrial control panel, monospace heavy, ember glow
+ * Remaining themes (3 radical + 3 core):
+ *   Radical file (this):
+ *     1. Tokyo Neon    — Akihabara arcade terminal, ultra-compact, neon pink
+ *     2. Ink & Wire    — broadsheet newspaper, serif dominant, zero radius
+ *     3. Nordic Frost  — Scandinavian minimal light, steel-blue, wide air
+ *   Core themes (themeContract.ts):
+ *     - Aurora Dusk     — plum + teal dark cockpit, aurora glow
+ *     - Obsidian Slate  — indigo light data surface
+ *     - Void Terminal   — black + green CRT terminal
  */
 
 import type { ThemeManifest } from "./themeContract";
@@ -249,122 +258,130 @@ export const INK_AND_WIRE_THEME: ThemeManifest = {
 };
 
 // ---------------------------------------------------------------------------
-// 3. Solar Ember — Industrial control panel / HUD
-//    Think: SpaceX mission control × dark factory dashboard × ember heat
-//    Radical: monospace headers, brutalist grid, inset cards, fire glow
+// 3. Nordic Frost — Scandinavian minimal light / architect's workbench
+//    Think: Helsinki library × Muji stationery × calm airport wayfinding
+//    Radical: cool fog-white surface, steel-blue accent, wide air, soft
+//    diffused shadows, generous line-height, Inter + IBM Plex Mono.
+//    Purpose in the set: counterweights Obsidian Slate's dense indigo-tech
+//    character with calm, focus-first quiet. Slate feels like a trading
+//    desk; Nordic Frost feels like an architect's drafting table.
 // ---------------------------------------------------------------------------
 
-export const SOLAR_EMBER_THEME: ThemeManifest = {
-  id: "solar-ember",
-  name: "Solar Ember",
-  description: "Endustriyel kontrol paneli estetiği. Monospace basliklar, brutalist grid, iceri gomulu kartlar, ates pariltisi.",
+export const NORDIC_FROST_THEME: ThemeManifest = {
+  id: "nordic-frost",
+  name: "Nordic Frost",
+  description: "Iskandinav sakin isik temasi. Buzul beyaz zemin, celik mavi vurgu, genis nefes araligi, yumusak gölgeler. Obsidian Slate'in yogun indigo karakterine sakin/odak karsitligi.",
   author: "system",
-  version: "2.0.0",
-  tone: ["dark", "industrial", "hud", "monospace", "fire", "control-panel"],
+  version: "1.0.0",
+  tone: ["light", "calm", "scandinavian", "airy", "minimal", "focus"],
 
   typography: {
     heading: {
-      family: "Archivo",
-      stack: "'Archivo', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      family: "Inter",
+      stack: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
     },
     body: {
-      family: "Archivo",
-      stack: "'Archivo', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      family: "Inter",
+      stack: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
     },
     mono: {
-      family: "Source Code Pro",
-      stack: "'Source Code Pro', 'SF Mono', 'Fira Code', monospace",
+      family: "IBM Plex Mono",
+      stack: "'IBM Plex Mono', 'JetBrains Mono', 'SF Mono', monospace",
     },
     size: {
-      xs: "0.625rem",
-      sm: "0.6875rem",
-      base: "0.75rem",
-      md: "0.8125rem",
-      lg: "0.9375rem",
-      xl: "1.0625rem",
-      "2xl": "1.375rem",
-      "3xl": "1.875rem",   // moderate headings — utilitarian
+      xs: "0.75rem",
+      sm: "0.8125rem",
+      base: "0.9375rem",    // larger base — breathing room
+      md: "1rem",
+      lg: "1.125rem",
+      xl: "1.3125rem",
+      "2xl": "1.625rem",
+      "3xl": "2.125rem",    // restrained heading scale
     },
-    weight: { normal: 400, medium: 500, semibold: 700, bold: 700 },  // heavy medium-bold jump
-    lineHeight: { tight: 1.15, normal: 1.4, relaxed: 1.55 },
-    letterSpacing: { tight: "0em", normal: "0.02em", wide: "0.14em" },
+    weight: { normal: 400, medium: 500, semibold: 600, bold: 700 },
+    lineHeight: { tight: 1.25, normal: 1.6, relaxed: 1.8 },   // generous
+    letterSpacing: { tight: "-0.015em", normal: "0em", wide: "0.14em" },
   },
 
   colors: {
     brand: {
-      // Faz 6 kontrast fix: Brand skalası standart light→dark yönüne
-      // çevrildi. Eski 600 #ea580c beyaz metin üzerinde 3.56:1 (AA
-      // altı) idi; primary button gradient'i bir ton kaydırılarak
-      // 600 → #c2410c (5.18:1), 700 → #9a3412 (7.51:1) yapıldı.
-      // Ember parıltısı 400-500 aralığında korundu; sidebar fire-accent
-      // (#fb923c) literal olarak sidebarTextActive'de saklanıyor.
-      50: "#fff7ed", 100: "#ffedd5", 200: "#fed7aa", 300: "#fdba74",
-      400: "#fb923c", 500: "#f97316", 600: "#c2410c", 700: "#9a3412",
-      800: "#7c2d12", 900: "#431407",
+      // Muted steel-blue ramp. Distinct from Obsidian Slate's #3b50e6 indigo:
+      // this one is desaturated, greyer, cooler — closer to stone than sky.
+      // 600 #41668a on white = 5.73:1 (AA normal + AAA large).
+      // 700 #2f4c6b = 8.02:1 (AAA all sizes).
+      50: "#f2f5f8", 100: "#e4ebf1", 200: "#c7d5e0", 300: "#9fb3c4",
+      400: "#7894ac", 500: "#587692", 600: "#41668a", 700: "#2f4c6b",
+      800: "#223a54", 900: "#162a40",
     },
     neutral: {
-      // Faz 6 kontrast fix: n500 #6b6259 (3.10:1) küçük metinler için
-      // sınırdaydı. Skala açıldı: n500 → #9a9088 (5.92:1),
-      // n600 → #ada49b (7.54:1).
-      0: "#0c0a08", 25: "#110e0b", 50: "#161310", 100: "#1e1a16",
-      200: "#292420", 300: "#38322c", 400: "#504840", 500: "#9a9088",
-      600: "#ada49b", 700: "#cec7be", 800: "#e0dad2", 900: "#e9e4de",
-      950: "#f5f2ee",
+      // Cool fog-white → charcoal. Everything has a blue undertone so the
+      // theme stays visually coherent without being sterile.
+      0: "#fdfefe", 25: "#f9fbfc", 50: "#f3f6f8", 100: "#e8ecf0",
+      200: "#d5dbe1", 300: "#b5bec7", 400: "#889299", 500: "#5a6269",
+      600: "#3f464d", 700: "#2a3037", 800: "#1b2027", 900: "#11151b",
+      950: "#070a0f",
     },
-    success: { light: "#0d2a14", base: "#22c55e", dark: "#16a34a", text: "#86efac" },
-    warning: { light: "#2a2005", base: "#facc15", dark: "#eab308", text: "#fef08a" },
-    error: { light: "#2e0e0e", base: "#ef4444", dark: "#dc2626", text: "#fca5a5" },
-    info: { light: "#0c1a2e", base: "#38bdf8", dark: "#0ea5e9", text: "#7dd3fc" },
+    success: { light: "#e6f4ec", base: "#2f8a5a", dark: "#1e6341", text: "#0e4a2b" },
+    warning: { light: "#fcf2dc", base: "#c08a1f", dark: "#8f6310", text: "#5e3f05" },
+    error:   { light: "#f8e4e3", base: "#a83936", dark: "#7d2725", text: "#4d1514" },
+    info:    { light: "#e6eef6", base: "#3d6ea1", dark: "#2a5078", text: "#183657" },
     surface: {
-      page: "#0c0a08", card: "#161310", elevated: "#1e1a16",
-      inset: "#110e0b", sidebar: "#0c0a08", sidebarHover: "#1e1a16",
-      sidebarActive: "#292420",
-      // Faz 6 kontrast fix: sidebarSection #6b6259 sidebar #0c0a08
-      // üzerinde 3.31:1 (LG sınırı). n600 #ada49b (7.54:1) ile güçlü AA.
-      sidebarText: "#e9e4de", sidebarTextMuted: "#8a8078",
-      sidebarTextActive: "#fb923c", sidebarSection: "#ada49b",
-      sidebarBorder: "#292420",
+      page: "#f3f6f8",
+      card: "#ffffff",
+      elevated: "#ffffff",
+      inset: "#e8ecf0",
+      // Sidebar: deep navy-charcoal, just enough warmth to feel architectural
+      // (not pure black). Keeps cockpit chrome readable across themes.
+      sidebar: "#1b2027",
+      sidebarHover: "#2a3037",
+      sidebarActive: "#3f464d",
+      sidebarText: "#e8ecf0",
+      sidebarTextMuted: "#889299",
+      sidebarTextActive: "#9fb3c4",
+      sidebarSection: "#889299",
+      sidebarBorder: "#3f464d",
     },
-    border: { subtle: "#292420", default: "#38322c", strong: "#504840" },
-    focus: "#ea580c",
-    chart: ["#ea580c", "#22c55e", "#38bdf8", "#ef4444", "#facc15", "#a855f7", "#ec4899"],
+    border: { subtle: "#e8ecf0", default: "#d5dbe1", strong: "#b5bec7" },
+    focus: "#41668a",
+    chart: ["#41668a", "#2f8a5a", "#c08a1f", "#a83936", "#7894ac", "#6b5a8a", "#3d6ea1"],
   },
 
+  // Generous spacing — airy, calm, architectural
   spacing: {
-    0: "0", 1: "0.125rem", 2: "0.25rem", 3: "0.5rem", 4: "0.75rem",
-    5: "1rem", 6: "1.25rem", 8: "1.5rem", 10: "2rem", 12: "2.5rem", 16: "3rem",
+    0: "0", 1: "0.1875rem", 2: "0.375rem", 3: "0.625rem", 4: "0.875rem",
+    5: "1.125rem", 6: "1.5rem", 8: "2rem", 10: "2.5rem", 12: "3rem", 16: "4rem",
   },
 
-  // Zero radius — brutalist industrial look
-  radius: { sm: "0px", md: "2px", lg: "3px", xl: "4px", full: "9999px" },
+  // Medium-soft radii — not brutalist zero, not arcade pill
+  radius: { sm: "4px", md: "6px", lg: "8px", xl: "12px", full: "9999px" },
 
-  // Inset shadows — cards feel stamped into the surface
+  // Soft diffused shadows, cool tint — like north light through paper
   shadow: {
-    xs: "inset 0 1px 2px rgba(0,0,0,0.3), 0 0 1px rgba(234,88,12,0.05)",
-    sm: "inset 0 1px 3px rgba(0,0,0,0.35), 0 0 2px rgba(234,88,12,0.08)",
-    md: "inset 0 2px 4px rgba(0,0,0,0.25), 0 0 4px rgba(234,88,12,0.06)",
-    lg: "inset 0 2px 6px rgba(0,0,0,0.3), 0 0 8px rgba(234,88,12,0.08)",
-    xl: "0 0 16px rgba(234,88,12,0.12), 0 4px 12px rgba(0,0,0,0.6)",
-    "2xl": "0 0 32px rgba(234,88,12,0.16), 0 8px 24px rgba(0,0,0,0.7)",
+    xs: "0 1px 2px rgba(27, 32, 39, 0.04)",
+    sm: "0 1px 3px rgba(27, 32, 39, 0.05), 0 1px 2px rgba(27, 32, 39, 0.03)",
+    md: "0 4px 8px rgba(27, 32, 39, 0.06), 0 2px 4px rgba(27, 32, 39, 0.04)",
+    lg: "0 8px 20px rgba(27, 32, 39, 0.08), 0 4px 8px rgba(27, 32, 39, 0.04)",
+    xl: "0 16px 36px rgba(27, 32, 39, 0.10), 0 6px 12px rgba(27, 32, 39, 0.05)",
+    "2xl": "0 28px 56px rgba(27, 32, 39, 0.14), 0 12px 24px rgba(27, 32, 39, 0.08)",
   },
 
-  // Instant, mechanical transitions
-  motion: { fast: "50ms", normal: "80ms", slow: "140ms", easing: "cubic-bezier(0, 0, 0.2, 1)" },
+  // Unhurried, smooth transitions — not lethargic, not snappy
+  motion: { fast: "140ms", normal: "220ms", slow: "340ms", easing: "cubic-bezier(0.22, 1, 0.36, 1)" },
 
   layout: {
-    sidebarWidth: "208px",             // narrow sidebar — data-first
-    sidebarCollapsedWidth: "48px",
-    headerHeight: "40px",              // thin header — control panel
-    pageMaxWidth: "1560px",            // ultra-wide — dashboard layout
-    pagePadding: "1rem",               // tight — maximize data density
+    sidebarWidth: "240px",
+    sidebarCollapsedWidth: "56px",
+    headerHeight: "48px",
+    pageMaxWidth: "1280px",            // narrower than HUD themes — focus
+    pagePadding: "1.75rem",            // generous gutters
   },
 
-  density: "compact",
+  density: "comfortable",
 };
 
 /** All radical themes in an array for easy registration */
 export const RADICAL_THEMES: ThemeManifest[] = [
   TOKYO_NEON_THEME,
   INK_AND_WIRE_THEME,
-  SOLAR_EMBER_THEME,
+  NORDIC_FROST_THEME,
 ];

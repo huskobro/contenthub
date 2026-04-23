@@ -38,7 +38,7 @@ const AURORA_BOUND_THEME_IDS = new Set<string>([
   "void-terminal",
   "tokyo-neon",
   "ink-and-wire",
-  "solar-ember",
+  "nordic-frost",
 ]);
 
 function themeIsAuroraBound(theme: ThemeManifest): boolean {
@@ -51,29 +51,71 @@ interface PreviewColors {
   sidebar: string;
   accent: string;
   text: string;
+  // Identity-pass additions — surface each theme's signature so the gallery
+  // differentiates at a glance instead of showing five dark squares with
+  // different accent dots.
+  onAccent: string;
+  borderStrong: string;
+  textMuted: string;
+  radiusMd: string;
+  radiusSm: string;
+  headingFont: string;
+  bodyFont: string;
+  monoFont: string;
+  density: "compact" | "comfortable" | "spacious";
+  isLight: boolean;
+  shadowSm: string;
 }
 
 function deriveColors(theme: ThemeManifest): PreviewColors {
   const c = theme.colors;
+  const pageHex = c.surface.page.replace("#", "");
+  const isLight = (() => {
+    if (pageHex.length !== 6) return false;
+    const r = parseInt(pageHex.slice(0, 2), 16);
+    const g = parseInt(pageHex.slice(2, 4), 16);
+    const b = parseInt(pageHex.slice(4, 6), 16);
+    return (0.2126 * r + 0.7152 * g + 0.0722 * b) > 170;
+  })();
   return {
     bg: c.surface.page,
     surface: c.surface.card,
     sidebar: c.surface.sidebar,
     accent: c.brand[500] || c.brand[600],
-    text: c.neutral[100] || c.neutral[50],
+    text: isLight ? c.neutral[900] || c.neutral[800] : c.neutral[100] || c.neutral[50],
+    onAccent: "#ffffff",
+    borderStrong: c.border.strong,
+    textMuted: isLight ? c.neutral[600] || c.neutral[500] : c.neutral[500] || c.neutral[400],
+    radiusMd: theme.radius.md,
+    radiusSm: theme.radius.sm,
+    headingFont: theme.typography.heading.stack,
+    bodyFont: theme.typography.body.stack,
+    monoFont: theme.typography.mono.stack,
+    density: theme.density,
+    isLight,
+    shadowSm: theme.shadow.sm,
   };
 }
 
 // --- preview component -----------------------------------------------------
 
 function ThemePreview({ colors }: { colors: PreviewColors }) {
+  const divider = colors.isLight
+    ? "rgba(17, 21, 27, 0.06)"
+    : "rgba(255, 255, 255, 0.08)";
+  const railInactive = colors.isLight
+    ? "rgba(255, 255, 255, 0.22)"
+    : "rgba(255, 255, 255, 0.18)";
+  const chipBg = colors.isLight
+    ? "rgba(17, 21, 27, 0.06)"
+    : "rgba(255, 255, 255, 0.08)";
   return (
     <div className="theme-preview" style={{ background: colors.bg }}>
       <div
         className="tp-bar"
         style={{
           background: colors.sidebar,
-          borderBottom: `1px solid rgba(255,255,255,0.08)`,
+          borderBottom: `1px solid ${divider}`,
         }}
       >
         {[colors.accent, "#ef4444", "#f59e0b"].map((c, i) => (
@@ -89,7 +131,7 @@ function ThemePreview({ colors }: { colors: PreviewColors }) {
           className="tp-rail"
           style={{
             background: colors.sidebar,
-            borderRight: `1px solid rgba(255,255,255,0.06)`,
+            borderRight: `1px solid ${divider}`,
           }}
         >
           {[1, 2, 3, 4].map((i) => (
@@ -98,9 +140,9 @@ function ThemePreview({ colors }: { colors: PreviewColors }) {
               style={{
                 width: 12,
                 height: 12,
-                borderRadius: 3,
+                borderRadius: colors.radiusSm,
                 margin: "6px auto",
-                background: i === 1 ? colors.accent : "rgba(255,255,255,0.15)",
+                background: i === 1 ? colors.accent : railInactive,
               }}
             />
           ))}
@@ -110,35 +152,84 @@ function ThemePreview({ colors }: { colors: PreviewColors }) {
             className="tp-card"
             style={{
               background: colors.surface,
-              border: `1px solid rgba(255,255,255,0.07)`,
+              border: `1px solid ${colors.borderStrong}`,
+              borderRadius: colors.radiusMd,
+              boxShadow: colors.shadowSm,
+              padding: 6,
+              display: "flex",
+              flexDirection: "column",
+              gap: 4,
             }}
           >
+            {/* Heading sample — font family tells Inter/Sora/Playfair apart */}
+            <div
+              style={{
+                fontFamily: colors.headingFont,
+                fontSize: 11,
+                fontWeight: 600,
+                color: colors.text,
+                lineHeight: 1.1,
+                letterSpacing:
+                  colors.density === "compact" ? "0.01em" : "-0.005em",
+              }}
+            >
+              Aa
+            </div>
+            {/* Body lines — show typographic rhythm per theme */}
             <div
               className="tp-line"
-              style={{ background: colors.text, opacity: 0.8, width: "60%" }}
+              style={{ background: colors.text, opacity: 0.75, width: "72%" }}
             />
             <div
               className="tp-line"
-              style={{ background: colors.text, opacity: 0.4, width: "40%" }}
+              style={{ background: colors.text, opacity: 0.35, width: "46%" }}
             />
           </div>
-          <div style={{ display: "flex", gap: 4 }}>
+          {/* Button + chip row — shows radius/shape/typographic signature */}
+          <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
             <div
               style={{
-                flex: 1,
-                height: 24,
-                borderRadius: 4,
+                flex: "0 0 42%",
+                height: 20,
+                borderRadius: colors.radiusMd,
                 background: colors.accent,
-                opacity: 0.9,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: colors.onAccent,
+                fontFamily: colors.bodyFont,
+                fontSize: 9,
+                fontWeight: 600,
+                letterSpacing: "0.02em",
+                boxShadow: colors.shadowSm,
               }}
-            />
+            >
+              Kaydet
+            </div>
+            <div
+              style={{
+                height: 20,
+                padding: "0 6px",
+                borderRadius: colors.radiusSm,
+                background: chipBg,
+                color: colors.textMuted,
+                fontFamily: colors.monoFont,
+                fontSize: 8,
+                fontWeight: 500,
+                letterSpacing: "0.04em",
+                display: "flex",
+                alignItems: "center",
+              }}
+            >
+              v1.0
+            </div>
             <div
               style={{
                 flex: 1,
-                height: 24,
-                borderRadius: 4,
-                background: colors.surface,
-                border: `1px solid rgba(255,255,255,0.1)`,
+                height: 20,
+                borderRadius: colors.radiusMd,
+                background: "transparent",
+                border: `1px solid ${colors.borderStrong}`,
               }}
             />
           </div>

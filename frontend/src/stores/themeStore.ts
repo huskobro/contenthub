@@ -58,7 +58,7 @@ const SURFACE_STORAGE_VERSION = 1;
 // Built-in themes (cannot be deleted)
 // ---------------------------------------------------------------------------
 
-// Aurora theme curation — `codex/aurora-theme-curation` wave:
+// Aurora theme curation — history of the gallery set:
 //   - Dropped EXAMPLE_WARM_EARTH_THEME (template/example placeholder, weak
 //     product character, no real identity vs Aurora Dusk / Obsidian Slate).
 //   - Dropped HORIZON_THEMES (four horizon-layout themes — horizon-chalk,
@@ -67,10 +67,15 @@ const SURFACE_STORAGE_VERSION = 1;
 //     manifests no longer ship as selectable gallery entries.
 //   - Added AURORA_DUSK_THEME as the first entry so the gallery ordering puts
 //     the canonical Aurora Dusk identity before Slate (default legacy id).
+//   - Identity pass (`codex/aurora-theme-identity-pass`): dropped solar-ember
+//     because its dark+monospace+compact+HUD character overlapped too much
+//     with void-terminal and tokyo-neon. Replaced with nordic-frost — a calm
+//     Scandinavian light theme that counterweights Obsidian Slate's dense
+//     indigo-tech identity on the light side.
 //
 // Remaining gallery set (6 themes, full Aurora token coverage):
 //   aurora-dusk, obsidian-slate (DEFAULT_THEME), void-terminal,
-//   tokyo-neon, ink-and-wire, solar-ember.
+//   tokyo-neon, ink-and-wire, nordic-frost.
 const BUILTIN_THEMES: ThemeManifest[] = [
   AURORA_DUSK_THEME,
   DEFAULT_THEME,

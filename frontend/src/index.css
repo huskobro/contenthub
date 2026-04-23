@@ -240,18 +240,18 @@ nav[style*="sidebar"] {
   box-shadow: 4px 0 24px rgba(0,0,0,0.12);
 }
 
-/* Solar Ember — atmospheric effects (dark, orange) */
-[data-theme="solar-ember"] {
-  background: radial-gradient(ellipse at 15% 5%, rgba(234,88,12,0.04) 0%, transparent 50%),
-              radial-gradient(ellipse at 85% 95%, rgba(234,88,12,0.03) 0%, transparent 50%),
+/* Nordic Frost — atmospheric effects (light, steel-blue, calm) */
+[data-theme="nordic-frost"] {
+  background: radial-gradient(ellipse at 12% 0%, rgba(65, 102, 138, 0.05) 0%, transparent 55%),
+              radial-gradient(ellipse at 88% 100%, rgba(107, 90, 138, 0.035) 0%, transparent 55%),
               var(--ch-surface-page);
 }
-[data-theme="solar-ember"] [data-testid*="metric"] {
-  transition: transform 0.2s var(--ch-motion-easing), box-shadow 0.2s var(--ch-motion-easing);
+[data-theme="nordic-frost"] [data-testid*="metric"] {
+  transition: transform 0.22s var(--ch-motion-easing), box-shadow 0.22s var(--ch-motion-easing);
 }
-[data-theme="solar-ember"] [data-testid*="metric"]:hover { transform: translateY(-1px); }
-[data-theme="solar-ember"] nav[class*="bg-surface-sidebar"] {
-  box-shadow: 4px 0 24px rgba(0,0,0,0.3);
+[data-theme="nordic-frost"] [data-testid*="metric"]:hover { transform: translateY(-1px); }
+[data-theme="nordic-frost"] nav[class*="bg-surface-sidebar"] {
+  box-shadow: 4px 0 24px rgba(27, 32, 39, 0.10);
 }
 
 /* ---------------------------------------------------------------------------
@@ -525,103 +525,53 @@ body[style*="#0a0a0c"] [data-testid="command-palette-input"]::placeholder {
 }
 
 /* ---------------------------------------------------------------------------
-   Solar Ember — Industrial control panel / HUD
-   Inset cards, monospace headers, grid lines, ember glow, stamped look
+   Nordic Frost — Scandinavian minimal / architect's workbench
+   Calm focus ring, airy chrome, diffused shadows, generous spacing,
+   no scanlines, no texture overlays. The theme's identity comes from
+   restraint, not decoration.
    --------------------------------------------------------------------------- */
 
-[data-theme="solar-ember"] :focus-visible {
-  outline: 1px solid var(--ch-focus, #ea580c);
-  outline-offset: 0px;
-  box-shadow: 0 0 6px rgba(234, 88, 12, 0.3), 0 0 2px rgba(234, 88, 12, 0.5);
+[data-theme="nordic-frost"] :focus-visible {
+  outline: 2px solid var(--ch-focus, #41668a);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(65, 102, 138, 0.15);
 }
 
-/* Sidebar: no gradient, hard top border line */
-[data-theme="solar-ember"] nav {
-  border-top: 3px solid rgba(234, 88, 12, 0.4);
-  border-right: 1px solid rgba(234, 88, 12, 0.08);
+/* Sidebar: soft right-edge shadow, no accent overlay */
+[data-theme="nordic-frost"] nav {
+  border-right: 1px solid rgba(27, 32, 39, 0.08);
   background-image: none !important;
 }
 
-/* Header: industrial — thick bottom border, no blur */
-[data-theme="solar-ember"] header {
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  border-bottom: 2px solid rgba(234, 88, 12, 0.12) !important;
-  box-shadow: none !important;
+/* Header: clean under-line, subtle blur — airport wayfinding calm */
+[data-theme="nordic-frost"] header {
+  backdrop-filter: saturate(140%) blur(6px);
+  -webkit-backdrop-filter: saturate(140%) blur(6px);
+  border-bottom: 1px solid rgba(27, 32, 39, 0.06) !important;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.6) !important;
 }
 
-/* Cards: inset, stamped into surface */
-[data-theme="solar-ember"] section,
-[data-theme="solar-ember"] [class*="bg-surface-card"] {
-  border: 1px solid rgba(234, 88, 12, 0.06);
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+/* Cards: paper with a faint cool shadow — never stamped or neon */
+[data-theme="nordic-frost"] section,
+[data-theme="nordic-frost"] [class*="bg-surface-card"] {
+  border: 1px solid rgba(27, 32, 39, 0.06);
+  box-shadow: 0 1px 2px rgba(27, 32, 39, 0.04);
 }
 
-/* Headings: uppercase, wide tracking — control panel labels */
-[data-theme="solar-ember"] h1,
-[data-theme="solar-ember"] h2,
-[data-theme="solar-ember"] h3 {
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  font-weight: 700;
+/* Headings: left tight tracking, never uppercase — quiet confidence */
+[data-theme="nordic-frost"] h1,
+[data-theme="nordic-frost"] h2,
+[data-theme="nordic-frost"] h3 {
+  letter-spacing: -0.012em;
+  font-weight: 600;
 }
 
-/* Monospace for all data labels */
-[data-theme="solar-ember"] th,
-[data-theme="solar-ember"] label,
-[data-theme="solar-ember"] dt {
-  font-family: var(--ch-font-mono);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  font-size: 0.625rem;
+/* Brand buttons: subtle lift, never glowing */
+[data-theme="nordic-frost"] button[class*="from-brand"] {
+  box-shadow: 0 1px 2px rgba(27, 32, 39, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.20);
 }
-
-/* Buttons: squared, industrial, ember border */
-[data-theme="solar-ember"] button {
-  border-radius: 2px !important;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-/* Brand buttons: fire glow */
-[data-theme="solar-ember"] button[class*="from-brand"] {
-  box-shadow: 0 0 12px rgba(234, 88, 12, 0.2), inset 0 1px 0 rgba(255,255,255,0.05);
-}
-[data-theme="solar-ember"] button[class*="from-brand"]:hover {
-  box-shadow: 0 0 24px rgba(234, 88, 12, 0.35), inset 0 1px 0 rgba(255,255,255,0.08);
-}
-
-/* Table: grid-lined control panel */
-[data-theme="solar-ember"] table {
-  border: 1px solid rgba(234, 88, 12, 0.08);
-}
-[data-theme="solar-ember"] td,
-[data-theme="solar-ember"] th {
-  border: 1px solid rgba(234, 88, 12, 0.05);
-  font-size: 0.6875rem;
-  padding: 0.25rem 0.5rem;
-}
-
-/* Ember scanline overlay */
-[data-theme="solar-ember"]::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 9999;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 2px,
-    rgba(234, 88, 12, 0.006) 2px,
-    rgba(234, 88, 12, 0.006) 4px
-  );
-  mix-blend-mode: screen;
-}
-
-@keyframes emberGlow {
-  0%, 100% { box-shadow: 0 0 6px rgba(234, 88, 12, 0.08); }
-  50%      { box-shadow: 0 0 20px rgba(234, 88, 12, 0.18); }
+[data-theme="nordic-frost"] button[class*="from-brand"]:hover {
+  box-shadow: 0 2px 6px rgba(27, 32, 39, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.24);
 }
 
 /* ===========================================================================
@@ -720,9 +670,10 @@ body[style*="#0a0a0c"] [data-testid="command-palette-input"]::placeholder {
 /* ===========================================================================
    Quiet Hover Override — kullanıcı UX isteği
    ---------------------------------------------------------------------------
-   Daha önce her tema (tokyo-neon, ink-and-wire, solar-ember, aurora-dusk,
-   obsidian-slate ve daha önce kaldırılan horizon/midnight-ultraviolet/
-   arctic-frost blokları) kendi `[data-testid*="metric"]:hover`,
+   Daha önce her tema (tokyo-neon, ink-and-wire, nordic-frost, aurora-dusk,
+   obsidian-slate ve daha önce kaldırılan solar-ember/horizon/
+   midnight-ultraviolet/arctic-frost blokları) kendi
+   `[data-testid*="metric"]:hover`,
    `section:hover` ve `[class*="bg-surface-card"]:hover` kurallarıyla
    `translate / scale` tabanlı mikro-lift uyguluyordu. Bunların toplamı,
    mouse'u hareket ettirirken her kartın zıplamasına neden oluyor ve

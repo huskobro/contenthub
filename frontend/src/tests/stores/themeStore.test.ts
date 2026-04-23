@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { useThemeStore } from "../../stores/themeStore";
 import { DEFAULT_THEME, VOID_TERMINAL_THEME, validateThemeManifest } from "../../components/design-system/themeContract";
+import { NORDIC_FROST_THEME } from "../../components/design-system/themes-radical";
 
 describe("themeStore", () => {
   beforeEach(() => {
@@ -112,6 +113,10 @@ describe("validateThemeManifest", () => {
 
   it("passes for the void terminal theme", () => {
     expect(validateThemeManifest(VOID_TERMINAL_THEME)).toEqual([]);
+  });
+
+  it("passes for the nordic frost theme", () => {
+    expect(validateThemeManifest(NORDIC_FROST_THEME)).toEqual([]);
   });
 
   it("fails for null", () => {

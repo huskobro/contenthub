@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { generateCSSVariables, resolveTokens } from "../../components/design-system/themeEngine";
 import { DEFAULT_THEME, VOID_TERMINAL_THEME, AURORA_DUSK_THEME } from "../../components/design-system/themeContract";
+import { NORDIC_FROST_THEME } from "../../components/design-system/themes-radical";
 
 describe("generateCSSVariables", () => {
   it("generates CSS variables from default theme", () => {
@@ -35,6 +36,17 @@ describe("generateCSSVariables", () => {
     expect(vars["--ch-surface-page"]).toBe("#0a0a0c");
     expect(vars["--ch-neutral-900"]).toBe("#dddff0");
     expect(vars["--ch-focus"]).toBe("#2dd55b");
+  });
+
+  it("generates light steel-blue variables for nordic frost theme", () => {
+    const vars = generateCSSVariables(NORDIC_FROST_THEME);
+    expect(vars["--ch-font-body"]).toContain("Inter");
+    expect(vars["--ch-font-mono"]).toContain("IBM Plex Mono");
+    expect(vars["--ch-brand-500"]).toBe("#587692");
+    expect(vars["--ch-brand-600"]).toBe("#41668a");
+    expect(vars["--ch-surface-page"]).toBe("#f3f6f8");
+    expect(vars["--ch-focus"]).toBe("#41668a");
+    expect(vars["--ch-radius-md"]).toBe("6px");
   });
 
   it("includes all typography size variables", () => {
