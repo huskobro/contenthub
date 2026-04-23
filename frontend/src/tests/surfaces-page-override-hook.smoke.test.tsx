@@ -117,10 +117,7 @@ function makeCtx(admin: Surface, user: Surface, infraEnabled: boolean): SurfaceC
       infrastructureEnabled: infraEnabled,
       defaultAdmin: null,
       defaultUser: null,
-      atriumEnabled: false,
-      bridgeEnabled: infraEnabled,
-      canvasEnabled: false,
-      auroraEnabled: false,
+      auroraEnabled: infraEnabled,
       loaded: true,
     },
     infrastructureEnabled: infraEnabled,
@@ -145,11 +142,11 @@ describe("useSurfacePageOverride — logic", () => {
   });
 
   it("returns null when the kill switch is OFF", () => {
-    const BridgeJobs = () => <span data-testid="bridge">B</span>;
-    const bridge = makeSurface("bridge", { "admin.jobs.registry": BridgeJobs });
+    const SyntheticJobs = () => <span data-testid="synthetic">B</span>;
+    const overrideSurface = makeSurface("test-with-overrides", { "admin.jobs.registry": SyntheticJobs });
     const legacy = makeSurface("legacy");
     render(
-      <FakeSurfaceProvider value={makeCtx(bridge, legacy, false)}>
+      <FakeSurfaceProvider value={makeCtx(overrideSurface, legacy, false)}>
         <Probe pageKey="admin.jobs.registry" />
       </FakeSurfaceProvider>,
     );
@@ -167,25 +164,25 @@ describe("useSurfacePageOverride — logic", () => {
   });
 
   it("returns the override component when the active surface registered one", () => {
-    const BridgeJobs = () => <span data-testid="bridge-impl">BRIDGE</span>;
-    const bridge = makeSurface("bridge", { "admin.jobs.registry": BridgeJobs });
+    const OverrideImpl = () => <span data-testid="override-impl">OVR</span>;
+    const overrideSurface = makeSurface("test-with-overrides", { "admin.jobs.registry": OverrideImpl });
     const legacy = makeSurface("legacy");
     render(
-      <FakeSurfaceProvider value={makeCtx(bridge, legacy, true)}>
+      <FakeSurfaceProvider value={makeCtx(overrideSurface, legacy, true)}>
         <Probe pageKey="admin.jobs.registry" />
       </FakeSurfaceProvider>,
     );
     expect(screen.getByTestId("probe").textContent).toContain("HAS_OVERRIDE");
-    expect(screen.getByTestId("bridge-impl")).toBeDefined();
+    expect(screen.getByTestId("override-impl")).toBeDefined();
   });
 
   it("returns null when the override map lacks the requested key", () => {
-    const BridgeJobs = () => <span>B</span>;
+    const OverrideImpl = () => <span>B</span>;
     // Only registers jobs.registry — asking for publish.center yields null.
-    const bridge = makeSurface("bridge", { "admin.jobs.registry": BridgeJobs });
+    const overrideSurface = makeSurface("test-with-overrides", { "admin.jobs.registry": OverrideImpl });
     const legacy = makeSurface("legacy");
     render(
-      <FakeSurfaceProvider value={makeCtx(bridge, legacy, true)}>
+      <FakeSurfaceProvider value={makeCtx(overrideSurface, legacy, true)}>
         <Probe pageKey="admin.publish.center" />
       </FakeSurfaceProvider>,
     );
@@ -195,13 +192,13 @@ describe("useSurfacePageOverride — logic", () => {
   it("routes user.* keys to the user-scope ResolvedSurface", () => {
     // Admin has NO user override; user surface has one. Asking for user.*
     // must read from user, not admin.
-    const adminBridge = makeSurface("bridge", { "admin.jobs.registry": () => null });
+    const adminSurface = makeSurface("test-admin-overrides", { "admin.jobs.registry": () => null });
     const UserThing = () => <span data-testid="user-thing">U</span>;
     const userSurface = makeSurface("legacy", {
       "user.dashboard.home": UserThing,
     });
     render(
-      <FakeSurfaceProvider value={makeCtx(adminBridge, userSurface, true)}>
+      <FakeSurfaceProvider value={makeCtx(adminSurface, userSurface, true)}>
         <Probe pageKey="user.dashboard.home" />
       </FakeSurfaceProvider>,
     );

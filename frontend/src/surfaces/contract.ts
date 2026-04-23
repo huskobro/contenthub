@@ -1,22 +1,31 @@
 /**
  * Surface Registry — Contract
  *
- * Faz 1 — Infrastructure only.
+ * Aurora-only runtime.
  *
  * A "Surface" is a top-level UI variant (a shell with its own layout structure).
- * The platform ships with multiple surfaces (legacy, horizon, atrium, bridge, canvas),
- * but only enabled surfaces are resolvable at runtime. Disabled surfaces remain
- * registered so the resolver can detect them and fall back to legacy.
+ * The platform currently registers three surfaces:
+ *   - `legacy`  — always-on safety-net (cannot be disabled).
+ *   - `horizon` — always-on safety-net (legacy two-column layout).
+ *   - `aurora`  — production surface (cockpit shell + 80+ page overrides).
+ *
+ * Atrium / Bridge / Canvas were removed in the Aurora-only cleanup wave;
+ * `KnownSurfaceId` no longer enumerates them. The brand-string fallback
+ * still allows callers to pass through arbitrary ids without a type
+ * change, so persisted DB rows or older client snapshots that mention
+ * those ids degrade gracefully (resolver `enabledSurfaceIds` rejects
+ * them and falls back to legacy).
  *
  * Core invariants:
  * - Legacy surface is ALWAYS available and is the ultimate fallback.
- * - Horizon surface is enabled by default (it pre-dates the registry and must
- *   keep working identically).
- * - New surfaces (atrium, bridge, canvas) are registered as disabled placeholders
- *   in Faz 1. They have no real shell yet.
- * - If the kill switch `ui.surface.infrastructure.enabled` is false, the resolver
- *   short-circuits to legacy/horizon using the old layoutMode-based path.
- * - Scope mismatch (e.g. admin picked a user-only surface) → legacy fallback.
+ * - Horizon surface is always-on as a safety-net layout.
+ * - Aurora is the canonical production surface and the role default for
+ *   both admin and user shells.
+ * - If the kill switch `ui.surface.infrastructure.enabled` is false, the
+ *   resolver short-circuits to legacy/horizon using the old
+ *   layoutMode-based path.
+ * - Scope mismatch (e.g. admin picked a user-only surface) → legacy
+ *   fallback.
  * - All errors → legacy fallback with a telemetry event.
  */
 
@@ -27,16 +36,13 @@ import type { ComponentType, ReactNode } from "react";
 // ---------------------------------------------------------------------------
 
 /**
- * Known surface ids in Faz 1. We intentionally keep this as a string union so
- * new surfaces can register themselves without modifying the type surface of
- * the registry callers. The registry itself stores ids as plain strings.
+ * Known surface ids after the Aurora-only cleanup wave. We intentionally keep
+ * this as a string union so new surfaces can register themselves without
+ * modifying the type surface of the registry callers. The registry itself
+ * stores ids as plain strings; arbitrary ids are still accepted via the
+ * brand-string fallback so the resolver can degrade gracefully on stale data.
  */
-export type KnownSurfaceId =
-  | "legacy"
-  | "horizon"
-  | "atrium"
-  | "bridge"
-  | "canvas";
+export type KnownSurfaceId = "legacy" | "horizon" | "aurora";
 
 export type SurfaceId = KnownSurfaceId | (string & { __surfaceIdBrand?: never });
 
@@ -48,10 +54,11 @@ export type SurfaceScope = "admin" | "user" | "both";
 
 /**
  * Lifecycle status of a registered surface.
- * - "stable": production-ready (legacy, horizon)
+ * - "stable": production-ready (legacy, horizon, aurora)
  * - "beta": usable but marked as experimental
  * - "alpha": usable behind explicit opt-in
- * - "disabled": registered slot, not resolvable (atrium/bridge/canvas in Faz 1)
+ * - "disabled": registered slot, not resolvable (no current surface uses
+ *   this state; kept for future contract slots).
  */
 export type SurfaceStatus = "stable" | "beta" | "alpha" | "disabled";
 

@@ -70,14 +70,14 @@ describe("resolveActiveSurface", () => {
     });
 
     it("ignores user preference when kill switch is OFF", () => {
-      // Even if the user has atrium selected, legacy path wins when switch is off.
-      registerSurface(makeSurface("atrium", "stable", "both"));
+      // Even if the user has a synthetic surface selected, legacy path wins when switch is off.
+      registerSurface(makeSurface("test-beta-a", "stable", "both"));
       const out = resolveActiveSurface(
         makeInput({
           infrastructureEnabled: false,
           legacyLayoutMode: "classic",
-          userSurfaceId: "atrium",
-          enabledSurfaceIds: new Set(["legacy", "horizon", "atrium"]),
+          userSurfaceId: "test-beta-a",
+          enabledSurfaceIds: new Set(["legacy", "horizon", "test-beta-a"]),
         }),
       );
       expect(out.surface.manifest.id).toBe("legacy");
@@ -86,20 +86,20 @@ describe("resolveActiveSurface", () => {
 
   describe("layer 1: feature-flag-forced", () => {
     it("uses forcedSurfaceId when set and usable", () => {
-      registerSurface(makeSurface("atrium", "stable", "both"));
+      registerSurface(makeSurface("test-beta-a", "stable", "both"));
       const out = resolveActiveSurface(
         makeInput({
-          forcedSurfaceId: "atrium",
-          enabledSurfaceIds: new Set(["legacy", "horizon", "atrium"]),
+          forcedSurfaceId: "test-beta-a",
+          enabledSurfaceIds: new Set(["legacy", "horizon", "test-beta-a"]),
         }),
       );
-      expect(out.surface.manifest.id).toBe("atrium");
+      expect(out.surface.manifest.id).toBe("test-beta-a");
       expect(out.reason).toBe("feature-flag-forced");
     });
 
     it("falls through when forced surface is disabled", () => {
-      registerSurface(makeSurface("atrium", "disabled", "both"));
-      const out = resolveActiveSurface(makeInput({ forcedSurfaceId: "atrium" }));
+      registerSurface(makeSurface("test-beta-a", "disabled", "both"));
+      const out = resolveActiveSurface(makeInput({ forcedSurfaceId: "test-beta-a" }));
       expect(out.surface.manifest.id).toBe("legacy");
       expect(out.reason).toBe("legacy-fallback");
     });
@@ -113,14 +113,14 @@ describe("resolveActiveSurface", () => {
 
   describe("layer 2: user preference", () => {
     it("uses userSurfaceId when registered + enabled + in-scope", () => {
-      registerSurface(makeSurface("bridge", "stable", "both"));
+      registerSurface(makeSurface("test-beta-b", "stable", "both"));
       const out = resolveActiveSurface(
         makeInput({
-          userSurfaceId: "bridge",
-          enabledSurfaceIds: new Set(["legacy", "horizon", "bridge"]),
+          userSurfaceId: "test-beta-b",
+          enabledSurfaceIds: new Set(["legacy", "horizon", "test-beta-b"]),
         }),
       );
-      expect(out.surface.manifest.id).toBe("bridge");
+      expect(out.surface.manifest.id).toBe("test-beta-b");
       expect(out.reason).toBe("user-preference");
     });
 
@@ -138,17 +138,17 @@ describe("resolveActiveSurface", () => {
     });
 
     it("falls through when surface is disabled", () => {
-      registerSurface(makeSurface("atrium", "disabled", "both"));
-      const out = resolveActiveSurface(makeInput({ userSurfaceId: "atrium" }));
+      registerSurface(makeSurface("test-beta-a", "disabled", "both"));
+      const out = resolveActiveSurface(makeInput({ userSurfaceId: "test-beta-a" }));
       expect(out.surface.manifest.id).toBe("legacy");
     });
 
     it("falls through when surface is not in enabledSurfaceIds", () => {
-      registerSurface(makeSurface("atrium", "stable", "both"));
+      registerSurface(makeSurface("test-beta-a", "stable", "both"));
       const out = resolveActiveSurface(
         makeInput({
-          userSurfaceId: "atrium",
-          enabledSurfaceIds: new Set(["legacy", "horizon"]), // atrium not enabled
+          userSurfaceId: "test-beta-a",
+          enabledSurfaceIds: new Set(["legacy", "horizon"]), // test-beta-a not enabled
         }),
       );
       expect(out.surface.manifest.id).toBe("legacy");
@@ -163,15 +163,15 @@ describe("resolveActiveSurface", () => {
     });
 
     it("role default is only consulted when user preference fails", () => {
-      registerSurface(makeSurface("bridge", "stable", "both"));
+      registerSurface(makeSurface("test-beta-b", "stable", "both"));
       const out = resolveActiveSurface(
         makeInput({
-          userSurfaceId: "bridge",
+          userSurfaceId: "test-beta-b",
           roleDefaultId: "horizon",
-          enabledSurfaceIds: new Set(["legacy", "horizon", "bridge"]),
+          enabledSurfaceIds: new Set(["legacy", "horizon", "test-beta-b"]),
         }),
       );
-      expect(out.surface.manifest.id).toBe("bridge");
+      expect(out.surface.manifest.id).toBe("test-beta-b");
       expect(out.reason).toBe("user-preference");
     });
   });

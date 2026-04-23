@@ -69,7 +69,7 @@ describe("themeStore — Surface Registry migration", () => {
   });
 
   it("future version payload is ignored (conservative downgrade)", async () => {
-    localStorage.setItem(STORAGE_KEY_SURFACE, JSON.stringify({ v: 99, id: "bridge" }));
+    localStorage.setItem(STORAGE_KEY_SURFACE, JSON.stringify({ v: 99, id: "some-future-surface" }));
     const mod = await import("../stores/themeStore");
     expect(mod.useThemeStore.getState().activeSurfaceId).toBeNull();
   });
@@ -96,7 +96,7 @@ describe("themeStore — Surface Registry migration", () => {
 
   it("setActiveSurface(null) writes a v1 envelope with null id", async () => {
     const mod = await import("../stores/themeStore");
-    mod.useThemeStore.getState().setActiveSurface("bridge");
+    mod.useThemeStore.getState().setActiveSurface("aurora");
     mod.useThemeStore.getState().setActiveSurface(null);
     const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY_SURFACE) as string);
     expect(parsed).toEqual({ v: 1, id: null });

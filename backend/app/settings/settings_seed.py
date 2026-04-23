@@ -76,7 +76,7 @@ async def sync_default_values_from_registry(db: AsyncSession) -> int:
     """
     KNOWN_SETTINGS meta'sindaki `builtin_default` degerini mevcut DB satirlarina
     yansitir. Urun evrildikce bir setting'in builtin default'u degisebilir
-    (ornek: 'ui.surface.canvas.enabled' false iken Faz 3 teslim edildikten
+    (ornek: 'ui.surface.aurora.enabled' false iken Aurora-only gecisten
     sonra true olmali). Bu senkronizasyon mevcut kurulumlarin da yeni
     default'u gormesini saglar.
 

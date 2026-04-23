@@ -295,14 +295,14 @@ export function describeIneligibleReason(
       const ss = opts?.surfaceScope;
       const ps = opts?.panelScope;
       if (ss && ps) {
-        // Faz 4D: yonlendirici (positive guidance) metinleri. Kullaniciya
-        // yalnizca "scope uymuyor" demek yerine "bu panelde hangileri
-        // kullanilabilir" bilgisini da veriyoruz.
+        // Faz 4D: yonlendirici (positive guidance) metinleri. Aurora-only
+        // cleanup'tan sonra varsayilan urun yuzeyi her iki panelde de
+        // Aurora; legacy ve horizon ise her iki panelde safety-net.
         if (ss === "admin" && ps === "user") {
-          return "Bu yuzey yalnizca yonetim panelinde calisir (ornek: Bridge). Kullanici panelinde Canvas, Atrium, Legacy veya Horizon kullanabilirsiniz.";
+          return "Bu yuzey yalnizca yonetim panelinde calisir. Kullanici panelinde Aurora, Legacy veya Horizon kullanabilirsiniz.";
         }
         if (ss === "user" && ps === "admin") {
-          return "Bu yuzey yalnizca kullanici panelinde calisir (ornek: Canvas, Atrium). Yonetim panelinde Bridge, Legacy veya Horizon kullanabilirsiniz.";
+          return "Bu yuzey yalnizca kullanici panelinde calisir. Yonetim panelinde Aurora, Legacy veya Horizon kullanabilirsiniz.";
         }
       }
       return "Bu yuzey bu panel icin uygun degil (scope mismatch).";

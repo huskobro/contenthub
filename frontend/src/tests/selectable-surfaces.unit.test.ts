@@ -76,9 +76,10 @@ function allEnabled(): ReadonlySet<string> {
   return new Set<string>([
     "legacy",
     "horizon",
-    "atrium",
-    "bridge",
-    "canvas",
+    "aurora",
+    "alt-user-a",
+    "alt-admin",
+    "alt-user-b",
   ]);
 }
 
@@ -89,7 +90,7 @@ function allEnabled(): ReadonlySet<string> {
 describe("buildSurfacePickerEntry — single-surface eligibility", () => {
   it("marks a stable user-scope surface in a user panel as selectable", () => {
     const entry = buildSurfacePickerEntry(
-      makeSurface("atrium", { scope: "user", status: "beta" }),
+      makeSurface("alt-user-a", { scope: "user", status: "beta" }),
       {
         scope: "user",
         enabledSurfaceIds: allEnabled(),
@@ -126,7 +127,7 @@ describe("buildSurfacePickerEntry — single-surface eligibility", () => {
 
   it("non-bootstrap surface NOT in enabledSurfaceIds → admin-gate-off", () => {
     const entry = buildSurfacePickerEntry(
-      makeSurface("atrium", { scope: "user", status: "beta" }),
+      makeSurface("alt-user-a", { scope: "user", status: "beta" }),
       {
         scope: "user",
         enabledSurfaceIds: new Set<string>(["legacy", "horizon"]),
@@ -139,7 +140,7 @@ describe("buildSurfacePickerEntry — single-surface eligibility", () => {
 
   it("disabled status beats gate-off → status-disabled", () => {
     const entry = buildSurfacePickerEntry(
-      makeSurface("atrium", { scope: "user", status: "disabled" }),
+      makeSurface("alt-user-a", { scope: "user", status: "disabled" }),
       {
         scope: "user",
         enabledSurfaceIds: new Set<string>(["legacy", "horizon"]),
@@ -152,7 +153,7 @@ describe("buildSurfacePickerEntry — single-surface eligibility", () => {
 
   it("scope mismatch (admin panel, user-only surface) → scope-mismatch", () => {
     const entry = buildSurfacePickerEntry(
-      makeSurface("atrium", { scope: "user", status: "beta" }),
+      makeSurface("alt-user-a", { scope: "user", status: "beta" }),
       {
         scope: "admin",
         enabledSurfaceIds: allEnabled(),
@@ -165,7 +166,7 @@ describe("buildSurfacePickerEntry — single-surface eligibility", () => {
 
   it("scope mismatch (user panel, admin-only surface) → scope-mismatch", () => {
     const entry = buildSurfacePickerEntry(
-      makeSurface("bridge", { scope: "admin", status: "beta" }),
+      makeSurface("alt-admin", { scope: "admin", status: "beta" }),
       {
         scope: "user",
         enabledSurfaceIds: allEnabled(),
@@ -256,11 +257,11 @@ describe("buildSurfacePickerEntry — single-surface eligibility", () => {
 
   it("isActive flips when activeSurfaceId matches", () => {
     const entry = buildSurfacePickerEntry(
-      makeSurface("atrium", { scope: "user", status: "beta" }),
+      makeSurface("alt-user-a", { scope: "user", status: "beta" }),
       {
         scope: "user",
         enabledSurfaceIds: allEnabled(),
-        activeSurfaceId: "atrium",
+        activeSurfaceId: "alt-user-a",
       },
     );
     expect(entry.isActive).toBe(true);
@@ -268,7 +269,7 @@ describe("buildSurfacePickerEntry — single-surface eligibility", () => {
 
   it("isActive stays false when activeSurfaceId is null", () => {
     const entry = buildSurfacePickerEntry(
-      makeSurface("atrium", { scope: "user", status: "beta" }),
+      makeSurface("alt-user-a", { scope: "user", status: "beta" }),
       {
         scope: "user",
         enabledSurfaceIds: allEnabled(),
@@ -285,9 +286,9 @@ describe("buildSurfacePickerEntry — single-surface eligibility", () => {
 
 describe("buildSurfacePickerEntries — list + sort", () => {
   const provider = () => [
-    makeSurface("canvas", { scope: "user", status: "beta" }),
-    makeSurface("atrium", { scope: "user", status: "beta" }),
-    makeSurface("bridge", { scope: "admin", status: "beta" }),
+    makeSurface("alt-user-b", { scope: "user", status: "beta" }),
+    makeSurface("alt-user-a", { scope: "user", status: "beta" }),
+    makeSurface("alt-admin", { scope: "admin", status: "beta" }),
     makeSurface("horizon", { scope: "both", status: "stable" }),
     makeSurface("legacy", { scope: "both", status: "stable" }),
   ];
@@ -302,9 +303,9 @@ describe("buildSurfacePickerEntries — list + sort", () => {
     expect(entries.map((e) => e.id)).toEqual([
       "legacy",
       "horizon",
-      "atrium",
-      "bridge",
-      "canvas",
+      "alt-admin",
+      "alt-user-a",
+      "alt-user-b",
     ]);
   });
 
@@ -318,30 +319,30 @@ describe("buildSurfacePickerEntries — list + sort", () => {
     expect(entries.length).toBe(5);
   });
 
-  it("user panel → bridge is present but ineligible (scope-mismatch)", () => {
+  it("user panel → admin-scope surface is present but ineligible (scope-mismatch)", () => {
     const entries = buildSurfacePickerEntries({
       scope: "user",
       enabledSurfaceIds: allEnabled(),
       activeSurfaceId: null,
       surfaceProvider: provider,
     });
-    const bridge = entries.find((e) => e.id === "bridge");
-    expect(bridge).toBeDefined();
-    expect(bridge!.selectable).toBe(false);
-    expect(bridge!.ineligibleReason).toBe("scope-mismatch");
+    const adminOnly = entries.find((e) => e.id === "alt-admin");
+    expect(adminOnly).toBeDefined();
+    expect(adminOnly!.selectable).toBe(false);
+    expect(adminOnly!.ineligibleReason).toBe("scope-mismatch");
   });
 
-  it("admin panel → atrium + canvas present but ineligible (scope-mismatch)", () => {
+  it("admin panel → user-scope surfaces present but ineligible (scope-mismatch)", () => {
     const entries = buildSurfacePickerEntries({
       scope: "admin",
       enabledSurfaceIds: allEnabled(),
       activeSurfaceId: null,
       surfaceProvider: provider,
     });
-    const atrium = entries.find((e) => e.id === "atrium")!;
-    const canvas = entries.find((e) => e.id === "canvas")!;
-    expect(atrium.ineligibleReason).toBe("scope-mismatch");
-    expect(canvas.ineligibleReason).toBe("scope-mismatch");
+    const userA = entries.find((e) => e.id === "alt-user-a")!;
+    const userB = entries.find((e) => e.id === "alt-user-b")!;
+    expect(userA.ineligibleReason).toBe("scope-mismatch");
+    expect(userB.ineligibleReason).toBe("scope-mismatch");
   });
 });
 
@@ -355,7 +356,7 @@ describe("buildVisibleSurfacePickerEntries — hidden filter", () => {
       makeSurface("legacy", { scope: "both" }),
       makeSurface("horizon", { scope: "both" }),
       makeSurface("internal", { scope: "both", hidden: true }),
-      makeSurface("bridge", { scope: "admin", status: "beta" }),
+      makeSurface("alt-admin", { scope: "admin", status: "beta" }),
     ];
     const entries = buildVisibleSurfacePickerEntries({
       scope: "user",
@@ -365,9 +366,9 @@ describe("buildVisibleSurfacePickerEntries — hidden filter", () => {
     });
     const ids = entries.map((e) => e.id);
     expect(ids).not.toContain("internal");
-    // bridge is ineligible (scope-mismatch) but still visible — picker will
-    // show it with a "neden secilemez" etiketi.
-    expect(ids).toContain("bridge");
+    // alt-admin is ineligible (scope-mismatch) but still visible — picker
+    // will show it with a "neden secilemez" etiketi.
+    expect(ids).toContain("alt-admin");
     expect(ids).toContain("legacy");
     expect(ids).toContain("horizon");
   });
@@ -381,19 +382,19 @@ describe("findActivePickerEntry", () => {
   const provider = () => [
     makeSurface("legacy", { scope: "both" }),
     makeSurface("horizon", { scope: "both" }),
-    makeSurface("atrium", { scope: "user", status: "beta" }),
+    makeSurface("alt-user-a", { scope: "user", status: "beta" }),
   ];
 
   it("returns the matching entry when an activeSurfaceId is set", () => {
     const entries = buildVisibleSurfacePickerEntries({
       scope: "user",
       enabledSurfaceIds: allEnabled(),
-      activeSurfaceId: "atrium",
+      activeSurfaceId: "alt-user-a",
       surfaceProvider: provider,
     });
     const active = findActivePickerEntry(entries);
     expect(active).not.toBeNull();
-    expect(active!.id).toBe("atrium");
+    expect(active!.id).toBe("alt-user-a");
   });
 
   it("returns null when no activeSurfaceId is set", () => {
@@ -459,9 +460,9 @@ describe("buildScopedSurfacePickerEntries — Faz 4E", () => {
     return [
       makeSurface("legacy", { scope: "both" }),
       makeSurface("horizon", { scope: "both" }),
-      makeSurface("atrium", { scope: "user" }),
-      makeSurface("canvas", { scope: "user" }),
-      makeSurface("bridge", { scope: "admin" }),
+      makeSurface("alt-user-a", { scope: "user" }),
+      makeSurface("alt-user-b", { scope: "user" }),
+      makeSurface("alt-admin", { scope: "admin" }),
       makeSurface("internal", { scope: "both", hidden: true }),
     ];
   }
@@ -474,12 +475,12 @@ describe("buildScopedSurfacePickerEntries — Faz 4E", () => {
       surfaceProvider: fullRegistry,
     });
     const ids = entries.map((e) => e.id);
-    expect(ids).not.toContain("bridge");
+    expect(ids).not.toContain("alt-admin");
     expect(ids).not.toContain("internal");
     expect(ids).toContain("legacy");
     expect(ids).toContain("horizon");
-    expect(ids).toContain("atrium");
-    expect(ids).toContain("canvas");
+    expect(ids).toContain("alt-user-a");
+    expect(ids).toContain("alt-user-b");
   });
 
   it("admin panel: hides user-scope surfaces entirely", () => {
@@ -490,16 +491,16 @@ describe("buildScopedSurfacePickerEntries — Faz 4E", () => {
       surfaceProvider: fullRegistry,
     });
     const ids = entries.map((e) => e.id);
-    expect(ids).not.toContain("atrium");
-    expect(ids).not.toContain("canvas");
+    expect(ids).not.toContain("alt-user-a");
+    expect(ids).not.toContain("alt-user-b");
     expect(ids).not.toContain("internal");
     expect(ids).toContain("legacy");
     expect(ids).toContain("horizon");
-    expect(ids).toContain("bridge");
+    expect(ids).toContain("alt-admin");
   });
 
   it("keeps ineligible-but-scope-ok entries (e.g. admin-gate-off)", () => {
-    // atrium is user-scope, so it passes scope filter for user panel. But
+    // alt-user-a is user-scope, so it passes scope filter for user panel. But
     // it's NOT in enabledSurfaceIds → should remain in the list as a
     // non-selectable entry with admin-gate-off reason.
     const gated: ReadonlySet<string> = new Set(["legacy", "horizon"]);
@@ -509,17 +510,17 @@ describe("buildScopedSurfacePickerEntries — Faz 4E", () => {
       activeSurfaceId: null,
       surfaceProvider: fullRegistry,
     });
-    const atrium = entries.find((e) => e.id === "atrium");
-    expect(atrium).toBeTruthy();
-    expect(atrium!.selectable).toBe(false);
-    expect(atrium!.ineligibleReason).toBe("admin-gate-off");
+    const gatedEntry = entries.find((e) => e.id === "alt-user-a");
+    expect(gatedEntry).toBeTruthy();
+    expect(gatedEntry!.selectable).toBe(false);
+    expect(gatedEntry!.ineligibleReason).toBe("admin-gate-off");
   });
 
   it("keeps status-disabled scope-ok entries", () => {
     const provider = () => [
       makeSurface("legacy", { scope: "both" }),
       makeSurface("horizon", { scope: "both" }),
-      makeSurface("atrium", { scope: "user", status: "disabled" }),
+      makeSurface("alt-user-a", { scope: "user", status: "disabled" }),
     ];
     const entries = buildScopedSurfacePickerEntries({
       scope: "user",
@@ -527,10 +528,10 @@ describe("buildScopedSurfacePickerEntries — Faz 4E", () => {
       activeSurfaceId: null,
       surfaceProvider: provider,
     });
-    const atrium = entries.find((e) => e.id === "atrium");
-    expect(atrium).toBeTruthy();
-    expect(atrium!.selectable).toBe(false);
-    expect(atrium!.ineligibleReason).toBe("status-disabled");
+    const disabledEntry = entries.find((e) => e.id === "alt-user-a");
+    expect(disabledEntry).toBeTruthy();
+    expect(disabledEntry!.selectable).toBe(false);
+    expect(disabledEntry!.ineligibleReason).toBe("status-disabled");
   });
 
   it("never exposes scope-mismatch as a visible reason", () => {

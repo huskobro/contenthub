@@ -36,9 +36,6 @@ export interface SurfaceSettingsSnapshot {
   infrastructureEnabled: boolean;
   defaultAdmin: SurfaceId | null;
   defaultUser: SurfaceId | null;
-  atriumEnabled: boolean;
-  bridgeEnabled: boolean;
-  canvasEnabled: boolean;
   auroraEnabled: boolean;
   loaded: boolean;
 }
@@ -47,9 +44,6 @@ const DEFAULT_SNAPSHOT: SurfaceSettingsSnapshot = {
   infrastructureEnabled: false,
   defaultAdmin: null,
   defaultUser: null,
-  atriumEnabled: false,
-  bridgeEnabled: false,
-  canvasEnabled: false,
   auroraEnabled: false,
   loaded: false,
 };
@@ -61,13 +55,15 @@ const DEFAULT_SNAPSHOT: SurfaceSettingsSnapshot = {
 // bounded because the admin settings API is called on every page mount —
 // within one request the cache is refreshed.
 //
-// v2 bump (Aurora-only gecis): v1 cache'i atrium/bridge/canvas'i `enabled:
-// true` olarak seedleyebiliyordu. Aurora-only varsayilanlarla uyumsuz; bu
-// yuzden yeni bir cache anahtari kullaniyoruz. v1 anahtari sessizce
-// yoksayilir (readCachedSnapshot `v !== 2` kontrolunde null doner) ve ilk
-// paint loaded:false patikasindan gecer — kullanici bir frame boyunca
-// legacy safety-net goruyor olabilir, sonraki fetch cache'i v2 ile tazeler.
-const CACHE_KEY = "contenthub:surface-settings-snapshot-v2";
+// v3 bump (Aurora-only cleanup wave): v2 cache'i atrium/bridge/canvas
+// alanlarini iceriyordu; bu surface dosyalari kaldirildiktan sonra eski
+// payload'larin alanlari okunsa bile herhangi bir registry binding'ine
+// karsilik gelmiyor. Yeni anahtarda snapshot `auroraEnabled` + altyapi +
+// role-default'lara indirgendi. v2 anahtari sessizce yoksayilir
+// (readCachedSnapshot `v !== 3` kontrolunde null doner); ilk paint
+// loaded:false patikasindan gecer — kullanici bir frame boyunca legacy
+// safety-net goruyor olabilir, sonraki fetch cache'i v3 ile tazeler.
+const CACHE_KEY = "contenthub:surface-settings-snapshot-v3";
 
 function readCachedSnapshot(): SurfaceSettingsSnapshot | null {
   try {
@@ -75,14 +71,11 @@ function readCachedSnapshot(): SurfaceSettingsSnapshot | null {
     const raw = localStorage.getItem(CACHE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as Partial<SurfaceSettingsSnapshot> & { v?: number };
-    if (parsed?.v !== 2) return null;
+    if (parsed?.v !== 3) return null;
     return {
       infrastructureEnabled: Boolean(parsed.infrastructureEnabled),
       defaultAdmin: (parsed.defaultAdmin ?? null) as SurfaceId | null,
       defaultUser: (parsed.defaultUser ?? null) as SurfaceId | null,
-      atriumEnabled: Boolean(parsed.atriumEnabled),
-      bridgeEnabled: Boolean(parsed.bridgeEnabled),
-      canvasEnabled: Boolean(parsed.canvasEnabled),
       auroraEnabled: Boolean(parsed.auroraEnabled),
       loaded: true,
     };
@@ -96,7 +89,7 @@ function writeCachedSnapshot(s: SurfaceSettingsSnapshot): void {
     if (typeof localStorage === "undefined") return;
     localStorage.setItem(
       CACHE_KEY,
-      JSON.stringify({ v: 2, ...s })
+      JSON.stringify({ v: 3, ...s })
     );
   } catch {
     /* ignore quota / private mode */
@@ -123,13 +116,10 @@ function notifyListeners() {
 
 async function loadSnapshot(): Promise<void> {
   try {
-    const [infra, defAdmin, defUser, atrium, bridge, canvas, aurora] = await Promise.all([
+    const [infra, defAdmin, defUser, aurora] = await Promise.all([
       fetchEffectiveSetting("ui.surface.infrastructure.enabled").catch(() => null),
       fetchEffectiveSetting("ui.surface.default.admin").catch(() => null),
       fetchEffectiveSetting("ui.surface.default.user").catch(() => null),
-      fetchEffectiveSetting("ui.surface.atrium.enabled").catch(() => null),
-      fetchEffectiveSetting("ui.surface.bridge.enabled").catch(() => null),
-      fetchEffectiveSetting("ui.surface.canvas.enabled").catch(() => null),
       fetchEffectiveSetting("ui.surface.aurora.enabled").catch(() => null),
     ]);
     snapshot = {
@@ -138,9 +128,6 @@ async function loadSnapshot(): Promise<void> {
         typeof defAdmin?.effective_value === "string" ? (defAdmin.effective_value as SurfaceId) : null,
       defaultUser:
         typeof defUser?.effective_value === "string" ? (defUser.effective_value as SurfaceId) : null,
-      atriumEnabled: Boolean(atrium?.effective_value),
-      bridgeEnabled: Boolean(bridge?.effective_value),
-      canvasEnabled: Boolean(canvas?.effective_value),
       auroraEnabled: Boolean(aurora?.effective_value),
       loaded: true,
     };
@@ -229,20 +216,16 @@ export function useSurfaceResolution(): UseSurfaceResolutionResult {
   void tick;
 
   const enabledSurfaceIds = useMemo<ReadonlySet<SurfaceId>>(() => {
+    // Aurora-only runtime: legacy + horizon are always-on safety-nets;
+    // aurora is gated by its `enabled` setting. Atrium/Bridge/Canvas were
+    // removed in the Aurora-only cleanup wave — their snapshot fields and
+    // settings keys are gone too.
     const set = new Set<SurfaceId>();
     set.add("legacy");
     set.add("horizon");
-    if (currentSnapshot.atriumEnabled) set.add("atrium");
-    if (currentSnapshot.bridgeEnabled) set.add("bridge");
-    if (currentSnapshot.canvasEnabled) set.add("canvas");
     if (currentSnapshot.auroraEnabled) set.add("aurora");
     return set;
-  }, [
-    currentSnapshot.atriumEnabled,
-    currentSnapshot.bridgeEnabled,
-    currentSnapshot.canvasEnabled,
-    currentSnapshot.auroraEnabled,
-  ]);
+  }, [currentSnapshot.auroraEnabled]);
 
   const legacyLayoutMode = useMemo(() => {
     const t = activeTheme();

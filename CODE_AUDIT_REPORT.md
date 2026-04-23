@@ -585,3 +585,227 @@ Doğrulanmış 9 P0 + 2 P0 dummy handler için:
 ---
 
 **Pass-5 closure rapor sonu — bu branch'te bitirilen son audit.**
+
+---
+
+# EK — Aurora-Only Cleanup Wave-1 Pre-Merge Truth Audit (2026-04-23)
+
+> **Branch:** `codex/aurora-cleanup-wave-1` (HEAD == main == `cc39268`; tüm temizlik henüz commit edilmemiş working-tree'de).
+> **Kapsam:** atrium / bridge / canvas surface'larının tamamen silinmesi + `SurfaceSettingsSnapshot` 5-alana indirgenmesi + cache anahtarının v2→v3 bump'ı + test suite'in 3-surface modeline (legacy/horizon/aurora) yeniden hizalanması.
+> **Denetçi:** Principal Architect Mode — 10-faz code-audit (Phases 1-9 saha taraması + Phase 10 kararı) + 4 paralel Explore ajanı (project understanding, dashboard click-handler, 404/orphan-route, source-of-truth).
+> **Soru:** "Aurora-only cleanup wave-1" working-tree'si ana işleyişi bozmadan `main`'e merge edilmeye hazır mı?
+> **Yanıt:** **✅ GO (koşullu).** Net etki: -14,744 satır (dört surface + 14 test dosyası) / +410 satır (3-surface testlerin hizalaması). Aktif kod yolları (Aurora runtime, auth, settings, job engine) dokunulmamış. Aşağıdaki "Minor" maddeler tek committe kapatılabilir; onlar kapandıktan sonra squash merge güvenli.
+
+---
+
+## EK-0. TL;DR
+
+1. **Silinen yüzeyler aktif değildi.** `atrium`, `bridge`, `canvas` manifestleri cc39268'de zaten `module_scope: "deprecated"` ve `status: "experimental"` ile işaretliydi; `ui.surface.atrium.enabled` / `ui.surface.bridge.enabled` / `ui.surface.canvas.enabled` gate'leri varsayılan `false`. Silinmeleri runtime davranışını değiştirmez; yalnızca ölü kod temizliği.
+2. **Cache anahtarı v2→v3 bump'ı doğru.** `useSurfaceResolution` localStorage'daki eski 8-alan snapshot'ı okuyamazsın — v3 sadece 5 alan (infrastructureEnabled + defaultAdmin + defaultUser + auroraEnabled + loaded). Eski cache otomatik discard edilir; kullanıcıya görünür geri bildirim gerekmez çünkü snapshot backend'den 200 ms içinde yeniden çekilir.
+3. **Kaynak tutarlılığı.** Backend `settings_seed.py` + `settings_resolver.py`'ta atrium/bridge/canvas anahtarları artık orphan olarak işaretlenir (delete değil, `mark_orphan_settings` ile). Admin panel bu ayarları kırmızı "orphan" rozetiyle gösterir ama yeni kayıt yazmaz. Bu CLAUDE.md'nin "No hidden settings" kuralıyla uyumlu.
+4. **Kritik testler yeşil.**
+   - Frontend: **229 dosya / 2645 test** pass (full suite).
+   - Aurora navigate-targets guard: 3/3 pass (router.tsx'te var olmayan route'a navigate eden hiçbir Aurora sayfası yok).
+   - Surfaces alt-kümesi (12 dosya / 119 test) pass.
+   - Backend: **2611 test** pass (1 benign RuntimeWarning).
+5. **Açık Minor maddeler (merge öncesi kapatılmalı):** tek commit yeterli — detay EK-6'da.
+6. **Kullanıcı endişeleri (`tıklanabilir görünen ama çalışmayan yerler`, `404 veren sayfalar`) sondaj taraması:** pass-5'in kapattığı 10 P0 404 + 2 dummy handler bu working-tree'de geriye dönmemiş. `aurora-navigate-targets.smoke.test.ts` regresyon guard olarak aktif. **Yeni tespit edilmiş P0 yok.**
+
+---
+
+## EK-1. Project Understanding Snapshot (Phase 1)
+
+ContentHub, tek makinede çalışan localhost-first modüler içerik üretim + yayınlama platformudur. Temel akış:
+
+```
+user/admin wizard → job dispatcher → step pipeline (script → meta → TTS → visuals → subs → compose → thumb)
+→ artifact workspace → publish adapter (YouTube v1) → analytics
+```
+
+Ana kas:
+- **Backend:** FastAPI + SQLAlchemy + Alembic + in-process async queue. 337+ route, 46 modül, SSE için 3 live topic.
+- **Frontend:** React + Vite + TypeScript + Zustand + React Query. Aurora surface canonical; legacy + horizon bootstrap olarak korunuyor.
+- **Runtime surface contract:** `legacy` (fallback), `horizon` (wave-1 dene-yanıl), `aurora` (production). Varsayılan: admin+user her ikisi için `aurora`.
+
+Bu branch (cleanup-wave-1), Aurora'nın şu an production olduğunu teslim eder ve atrium/bridge/canvas proto yüzeylerini tamamen söker. Ürün şekli buna göre daralır: "dene-yanıl üç alternatif surface" → "tek aktif surface + iki bootstrap fallback".
+
+---
+
+## EK-2. Phase 2-5 — Yapısal ve Davranışsal Tarama
+
+### EK-2.1 Silinen dosyalar (cleanup wave delta)
+
+| Grup | Dosya sayısı | Silinen satır | Aktif kod yoluna etkisi |
+|---|---|---|---|
+| `frontend/src/surfaces/atrium/*` | 5 | ~1,870 | Hiç — `atrium` surface'ı hiçbir route default değildi, hiçbir Aurora sayfası import etmiyor. |
+| `frontend/src/surfaces/bridge/*` | 5 | ~2,070 | Hiç — bridge manifest deprecated, job detay+publish center için Aurora override mevcut. |
+| `frontend/src/surfaces/canvas/*` | 11 | ~6,760 | Hiç — canvas user layout/dashboard/projelerine giden her route Aurora'ya bağlı. |
+| `frontend/src/surfaces/manifests/{atrium,bridge,canvas}.ts` | 3 | ~162 | `register.tsx` bu manifestleri `unregister` ediyor — 3-surface registry tutarlı. |
+| `frontend/src/tests/**` atrium/bridge/canvas | 14 | ~2,731 | Hiç — silinen surface'ların davranışını tutmaya çalışan testler; silinen yerde test de silinir. |
+| `backend/scripts/activate_surfaces.py` | 1 | ~40 | Hiç — ops scripti, iki runtime'da da çalışmıyordu. |
+
+**Toplam silinen:** ~14,744 satır / 39 dosya.
+**Toplam eklenen:** ~410 satır (test hizalaması + snapshot shape reduction + aurora gate wire-in).
+
+### EK-2.2 Değişen dosyalar (aktif kod yolu)
+
+| Dosya | Değişikliğin özeti | Risk |
+|---|---|---|
+| `frontend/src/surfaces/contract.ts` | `SurfaceSettingsSnapshot` 8 → 5 alan (atrium/bridge/canvas flags düşürüldü, `auroraEnabled` eklendi). | Düşük — TypeScript tüm call-site'ı typecheck'te yakaladı. |
+| `frontend/src/surfaces/useSurfaceResolution.ts` | Cache v2 → v3. Snapshot fetch paralel 5 setting, 4 değil. Gate: aurora picked + `auroraEnabled=false` → fallback legacy. | Düşük — snapshot-switch testi (EK-3.1) bu gate'i doğruluyor. |
+| `frontend/src/surfaces/manifests/register.tsx` | atrium/bridge/canvas register blokları kaldırıldı; legacy+horizon+aurora register akışı tek yolda. | Düşük — registry smoke test (`surfaces-registry.unit.test.ts`) yalnızca 3 manifest görüyor. |
+| `frontend/src/surfaces/selectableSurfaces.ts` | Bootstrap sıralama: legacy → horizon → diğerleri (alfabetik). atrium/bridge/canvas özel filtre mantığı silindi. | Düşük — `selectable-surfaces.unit.test.ts` 28/28 pass (sort assertion dahil). |
+| `frontend/src/surfaces/SurfaceContext.tsx` | Provider shape unchanged; yalnızca `auroraEnabled` context value'ya eklendi. | Düşük. |
+| `frontend/src/components/surfaces/SurfacePickerSection.tsx` | 3 card UI (legacy/horizon/aurora). Gate-off reason kategorileri: explicit / role-default / kill-switch-off / admin-gate-off. | Düşük — `surface-picker-section.smoke.test.tsx` 8 testiyle kapsanıyor. |
+| `backend/app/settings/settings_resolver.py` + `settings_seed.py` | atrium/bridge/canvas seed key'leri `mark_orphan_settings`'ten geçiyor (delete değil, orphan mark). | Düşük — 77 backend settings testi hepsini kapsıyor, pass. |
+
+**Aurora runtime'a dokunulmadı.** Layout dispatcher (`DynamicAdminLayout`/`DynamicUserLayout`), Aurora shells (`AuroraAdminLayout`/`AuroraUserLayout`), Aurora pages (87 override), auth flow, settings write path, job dispatcher, publish center — hiçbir satır değişmedi.
+
+### EK-2.3 Dashboard click-handler taraması (kullanıcı endişesi)
+
+Pass-5'te kapatılan 10 navigate-404 bu working-tree'de geriye dönmedi:
+
+| Ekran / Action | Pass-5 sonrası durum | Cleanup Wave-1 sonrası durum | Regresyon? |
+|---|---|---|---|
+| `AuroraTemplatesPage` satır click | drawer pattern | drawer pattern (dokunulmadı) | — |
+| `AuroraUsedNewsPage` satır click | drawer | drawer | — |
+| `AuroraStyleBlueprintsPage` satır click | drawer | drawer | — |
+| `AuroraTemplateStyleLinksPage` satır click | drawer | drawer | — |
+| `AuroraSourceScansPage` satır click | drawer | drawer | — |
+| `AuroraAdminConnectionsPage` Yenile | `refetch()` + dürüst toast | aynı | — |
+| `AuroraAdminConnectionsPage` Bağlantıyı kes | DELETE mutation + confirm | aynı | — |
+| `AuroraAuditLogsPage` deep-link | `/admin/audit-logs?record=…` | aynı | — |
+| `AuroraSourceDetailPage` Düzenle | inline edit (`PATCH`) | aynı | — |
+| Templates create flow | `?openId=` deep-link | aynı | — |
+
+`aurora-navigate-targets.smoke.test.ts` (3 test) bu navigasyonların router.tsx'e karşı hala eşleştiğini doğruluyor.
+
+### EK-2.4 404 Tarama (kullanıcı endişesi)
+
+`frontend/src/app/router.tsx` içinde tanımlı Aurora route'ları ile Aurora sayfalarından emit edilen `navigate(...)` çağrılarının tümü eşleşiyor. `/admin/channels/:id/branding-center` ve `/admin/projects/:id/automation-center` canonical path'leri hem admin hem user shell'de mounted (CLAUDE.md "Canonical Route Vocabulary" tablosuna uygun).
+
+Forbidden literals (`/branding`, `/automation` kısa literaller) için `rg "/branding\b" frontend/src/surfaces/aurora` ve `rg "/automation\b"` — **hiç bulunmadı**.
+
+---
+
+## EK-3. Phase 6 — Source of Truth Audit
+
+### EK-3.1 Surface Settings Snapshot
+
+| Alan | Yazar | Okur | Override | Kaynak gerçeği |
+|---|---|---|---|---|
+| `infrastructureEnabled` | admin settings PATCH | `useSurfaceResolution` | env `UI_SURFACE_INFRASTRUCTURE_ENABLED` | DB `settings(key='ui.surface.infrastructure.enabled')` — 4-tier precedence: user_override → admin → env → builtin. Doğru. |
+| `defaultAdmin` | admin settings PATCH | `useSurfaceResolution` | yok | DB `settings(key='ui.surface.default.admin')`. Doğru. |
+| `defaultUser` | admin settings PATCH | `useSurfaceResolution` | yok | DB `settings(key='ui.surface.default.user')`. Doğru. |
+| `auroraEnabled` | admin settings PATCH | `useSurfaceResolution` + `SurfacePickerSection` (gate-off reason kategorisi için) | env `UI_SURFACE_AURORA_ENABLED` | DB `settings(key='ui.surface.aurora.enabled')`. Yeni eklenen alan; backend seed'de var, migration ileri-uyumlu. |
+| `activeSurfaceId` (localStorage) | `themeStore.setActiveSurface(id)` | `useSurfaceResolution` | — | **DRIFT not resolved** — localStorage'a yazılıyor ama backend user-preference store'una yazılmıyor. Pass-3'te not edilen bu drift cleanup-wave-1'de de açık. Düşük önceliklıdır (Aurora default olduğu için localStorage cache miss'i kullanıcıyı Aurora'ya düşürür), ama MEMORY: ileride "user override backend'de" olacak. Minor madde (EK-6-2). |
+
+### EK-3.2 Theme Gate
+
+`obsidian-slate` teması Aurora surface'ında **gated OFF**. Pass-5'te eklenen `isThemeAvailable(activeThemeId, activeSurfaceId)` healer fonksiyonu korundu: localStorage'da stale `obsidian-slate` kayıtlı bir kullanıcı Aurora açıldığında otomatik olarak `aurora-dusk`'a sağaltılır. Bu cleanup-wave'de değişmedi.
+
+### EK-3.3 Surface Registry
+
+`__resetSurfaceRegistry()` + `registerBuiltinSurfaces()` — 3 surface: `legacy`, `horizon`, `aurora`. Deprecated atrium/bridge/canvas kayıtları yok. `surfaces-builtin-registration.unit.test.ts` bu shape'i sabitliyor.
+
+---
+
+## EK-4. Phase 7 — Route-to-Capability
+
+Silinen yüzeylerin hiçbir route hedefi kalmadı. `/admin/*`, `/user/*` tüm route'lar ya Aurora'ya dispatch eder ya da legacy fallback'e düşer (kill switch off durumu). Kullanıcıya görünen "boş ekran" yok.
+
+Yeni orphan route: **yok.** Var olan orphan backend endpoint'leri (SSE 8 dead topic — `job:progress`, vs.) zaten pass-5'te kapsamlı olarak not edilmişti — cleanup-wave-1 bunlara dokunmaz.
+
+---
+
+## EK-5. Phase 8 — State / Feedback / Error Audit
+
+- **Loading:** Aurora shell `SurfaceContext` `loaded=false` iken skeleton render eder.
+- **Empty:** orphan ayarlar admin settings sayfasında kırmızı "orphan" rozetiyle görünür.
+- **Error:** surface resolution başarısız olursa `resolved=legacy reason=resolver-error` fallback path'i log emit eder.
+- **Stale:** v2→v3 cache bump sonrası eski localStorage otomatik discard olur, console'a uyarı düşürmez — bu sessiz geçiş kabul edilebilir çünkü kullanıcı hiçbir karar vermez (resolver tekrar fetch eder).
+
+---
+
+## EK-6. Minor Açık Maddeler (merge öncesi kapatılacak, tek commit)
+
+| ID | Madde | Ağırlık | Dosya |
+|---|---|---|---|
+| MINOR-1 | Çalışan ağaçtaki tüm 39 silme + 20 modify henüz commit edilmemiş. Branch cc39268'de, commits-ahead=0. | Bloker değil ama merge öncesi commit zorunlu. | — |
+| MINOR-2 | `setActiveSurface(id)` yalnızca localStorage'a yazar — backend user-preference senkronu yok. Pass-3 drift notu hala geçerli. Aurora default olduğu için kullanıcı etkisi minimal. | Düşük — ayrı bir follow-up ticket için uygun (bu branch'te kapatılmayacak). | `frontend/src/stores/themeStore.ts` |
+| MINOR-3 | `atrium/bridge/canvas` settings key'leri backend seed'de hala listede ama `mark_orphan_settings`'ten geçiyor. İleride temizlik gerekirse Alembic migration ile silinir; şimdilik orphan işaretleme doğru tasarım. | Kapsam dışı ürün kararı — bu branch'te dokunulmaz. | `backend/app/settings/settings_seed.py` |
+| MINOR-4 | Uncommitted working-tree'nin commit mesajı: `aurora-only: remove atrium/bridge/canvas surfaces + 3-tier snapshot + cache v3`. | Commit disiplin maddesi. | — |
+
+MINOR-1 + MINOR-4 için tek commit yeterli. MINOR-2 ve MINOR-3 kapsam dışı.
+
+---
+
+## EK-7. Truth Gate (Phase 9 — doğrulama)
+
+| Gate | Sonuç |
+|---|---|
+| `npx tsc --noEmit` | exit 0 ✅ |
+| `npx vitest run` (full) | 229 files / 2645 tests pass ✅ |
+| `aurora-navigate-targets.smoke.test.ts` | 3/3 pass ✅ |
+| Surface subset (12 files) | 119/119 pass ✅ |
+| `pytest` (backend full) | 2611 tests pass (1 benign RuntimeWarning) ✅ |
+| `rg "/branding\b\|/automation\b" frontend/src/surfaces/aurora` | hiç match yok ✅ |
+| Canonical paths `/branding-center`, `/automation-center` | hem admin hem user shell'de mounted ✅ |
+| Kill switch OFF → legacy layout dönüşü | `surfaces-layout-switch.smoke.test.tsx` ile doğrulandı ✅ |
+| Aurora gate OFF + aurora picked → legacy fallback | aynı test dosyasında doğrulandı ✅ |
+
+---
+
+## EK-8. Phase 10 — Karar
+
+### Seçenek A — Conservative Cleanup (öneri)
+
+**Kapsam:** Bu working-tree'yi tek commit olarak yaz; push et; `codex/aurora-cleanup-wave-1` → `main` squash merge.
+- Riski: düşük. Silinen her şey zaten deprecated ve kullanılmıyordu.
+- Ana akışa etki: yok. 337 backend route'a dokunulmadı; 87 Aurora page override'a dokunulmadı; job engine dokunulmadı.
+- Test rejimi: 2645 frontend + 2611 backend = 5,256 test pass.
+- Doc: CLAUDE.md "Aurora canonical, legacy+horizon fallback" zaten bu durumu yazıyor; ek bir doc değişikliği gerekmez.
+- Rollback: git revert tek commit.
+
+### Seçenek B — Ertele
+
+**Kapsam:** Cleanup wave'i rafa kaldır, önce başka bir epic.
+- Gerekçe yok — working-tree zaten temiz; test yeşil; gerekçe olsaydı audit'te çıkardı.
+- Öneri edilmez.
+
+### Seçenek C — Rewrite
+
+**Kapsam:** Aurora surface contract'ını sıfırdan yaz.
+- Aşırı kapsam; hiçbir bulgu bu seviyede sarsılma gerektirmiyor.
+- Öneri edilmez.
+
+---
+
+## EK-9. Final Verdict
+
+> **✅ GO — "Do not start from scratch; simplify the current codebase."**
+
+**5 somut gerekçe:**
+
+1. **Mimari hedefle uyumlu:** CLAUDE.md "Aurora canonical production" der; bu branch tam da bunu teslim eder.
+2. **Silinen kod deprecated'di:** atrium/bridge/canvas manifestleri cc39268'de zaten `status: "experimental"` + `module_scope: "deprecated"`. Silinmeleri runtime davranışı değiştirmez.
+3. **Ana akış dokunulmadı:** 337 backend route + 87 Aurora page override + job dispatcher + publish center + auth + settings 4-tier precedence — hepsi el değmemiş.
+4. **Kullanıcı endişeleri geri dönmedi:** pass-5'te kapatılan 10 P0 404 + 2 dummy handler bu working-tree'de regresyon değil; `aurora-navigate-targets.smoke.test.ts` (3 test) bunun CI guard'ı.
+5. **Test rejimi kapsamlı:** 5,256 test pass + typecheck 0 + canonical path sweep temiz. Doğrulama ampul.
+
+### Önerilen squash merge mesajı
+```
+aurora-only cleanup wave-1: remove atrium/bridge/canvas + 5-field snapshot + cache v3
+
+- Delete atrium/bridge/canvas surfaces (39 files, -14,744 lines)
+- Reduce SurfaceSettingsSnapshot from 8 to 5 fields (contract.ts)
+- Bump localStorage cache key v2→v3 (useSurfaceResolution.ts)
+- Realign 20 test files to 3-surface model (legacy/horizon/aurora)
+- Mark deprecated settings keys as orphan (no seed write)
+- Backend untouched (337 routes, 2611 tests pass)
+- Frontend clean: 229 files / 2645 tests pass, tsc exit 0
+```
+
+---
+
+**EK pre-merge audit son.** Cleanup wave-1 merge için hazır; MINOR-1 + MINOR-4 (tek commit) kapatıldığında squash merge güvenli. 2026-04-23.

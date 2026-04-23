@@ -359,23 +359,16 @@ export function SurfacePickerSection({ scope }: SurfacePickerSectionProps) {
     scope === "admin" ? settings.defaultAdmin : settings.defaultUser;
 
   // Resolver hook'unun hesapladigi ayni enabledSurfaceIds setini biz de
-  // yeniden uretiyoruz. Legacy + horizon her zaman acik; digerleri admin
-  // settings'te boolean flag ile gate'lenir.
+  // yeniden uretiyoruz. Legacy + horizon her zaman acik; aurora kendi
+  // boolean flag'i ile gate'lenir. Atrium/Bridge/Canvas Aurora-only cleanup
+  // dalgasinda silindi.
   const enabledSurfaceIds = useMemo<ReadonlySet<SurfaceId>>(() => {
     const set = new Set<SurfaceId>();
     set.add("legacy");
     set.add("horizon");
-    if (settings.atriumEnabled) set.add("atrium");
-    if (settings.bridgeEnabled) set.add("bridge");
-    if (settings.canvasEnabled) set.add("canvas");
     if (settings.auroraEnabled) set.add("aurora");
     return set;
-  }, [
-    settings.atriumEnabled,
-    settings.bridgeEnabled,
-    settings.canvasEnabled,
-    settings.auroraEnabled,
-  ]);
+  }, [settings.auroraEnabled]);
 
   // Faz 4E: scope-disallowed yuzeyler listede hic gozukmez. User panel sadece
   // user + both scope yuzeyleri, admin panel sadece admin + both scope

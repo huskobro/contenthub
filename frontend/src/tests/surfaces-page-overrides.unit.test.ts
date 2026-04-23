@@ -1,27 +1,22 @@
 /**
- * Surface page override unit tests — Faz 2.
+ * Surface page override unit tests.
  *
- * These tests verify the Bridge-era "page override" extension of the surface
- * contract. They cover:
+ * These tests verify the "page override" extension of the surface contract
+ * at the registry level (shape-only). They cover:
  *
  *   1. `pageOverrides` is an accepted Surface field and round-trips through
  *      registry register/get without losing its entries.
- *   2. The bridge manifest (loaded via the real `surfaces` barrel) registers
- *      the three expected admin page overrides:
- *        - admin.jobs.registry
- *        - admin.jobs.detail
- *        - admin.publish.center
- *   3. The bridge surface is admin-scope only — its user-scope behavior still
- *      falls back to legacy, so there is no way for a user-panel caller to
- *      pick up a bridge override by accident.
- *   4. Legacy + Horizon do NOT declare page overrides (Faz 1 contract is
- *      shell-swap only).
- *   5. Unknown page keys return `undefined` — the public hook will treat that
- *      as "no override, render legacy".
+ *   2. Legacy + Horizon (Aurora-only safety-nets) do NOT declare page
+ *      overrides — their contract is shell-swap only.
+ *   3. Aurora — the built-in production surface — declares admin + user
+ *      overrides, and the overrides collection is stable across repeated
+ *      registerBuiltinSurfaces() calls.
+ *   4. Unknown page keys return `undefined` — the public hook will treat
+ *      that as "no override, render legacy".
  *
- * The resolver tests in `surfaces-resolver.unit.test.ts` still own the active-
- * surface selection logic. This file is scoped to the override-map shape and
- * registry contract.
+ * The resolver tests in `surfaces-resolver.unit.test.ts` still own the
+ * active-surface selection logic. This file is scoped to the override-map
+ * shape and registry contract.
  */
 
 import { describe, it, expect, beforeEach } from "vitest";
@@ -66,12 +61,12 @@ describe("Surface pageOverrides — contract roundtrip", () => {
     const JobsReg = () => null;
     const JobsDet = () => null;
     registerSurface(
-      makeSurface("test-bridge", "beta", "admin", {
+      makeSurface("test-with-overrides", "beta", "admin", {
         "admin.jobs.registry": JobsReg,
         "admin.jobs.detail": JobsDet,
       }),
     );
-    const out = getSurface("test-bridge");
+    const out = getSurface("test-with-overrides");
     expect(out).toBeDefined();
     expect(out!.pageOverrides).toBeDefined();
     expect(out!.pageOverrides!["admin.jobs.registry"]).toBe(JobsReg);
@@ -88,28 +83,28 @@ describe("Surface pageOverrides — contract roundtrip", () => {
   it("returns undefined for unknown page keys without throwing", () => {
     const Page = () => null;
     registerSurface(
-      makeSurface("test-bridge", "beta", "admin", {
+      makeSurface("test-with-overrides", "beta", "admin", {
         "admin.jobs.registry": Page,
       }),
     );
-    const out = getSurface("test-bridge");
+    const out = getSurface("test-with-overrides");
     // `SurfacePageKey` is a branded string union so an untyped lookup is ok.
     const missing = out!.pageOverrides!["admin.publish.center"];
     expect(missing).toBeUndefined();
   });
 
-  it("scope=admin surface never leaks pageOverrides into user-panel resolution", () => {
+  it("scope=admin surface never leaks user.* keys into its override map", () => {
     // The resolver handles scope mismatch by ignoring the surface entirely, so
     // from the override map's perspective the test is: an admin-scope surface
     // may carry admin.* keys, and a user-panel consumer will never be handed
     // this surface in the first place. We assert at the shape level here.
     const Page = () => null;
     registerSurface(
-      makeSurface("test-bridge", "beta", "admin", {
+      makeSurface("test-admin-only", "beta", "admin", {
         "admin.jobs.registry": Page,
       }),
     );
-    const out = getSurface("test-bridge")!;
+    const out = getSurface("test-admin-only")!;
     expect(out.manifest.scope).toBe("admin");
     expect(Object.keys(out.pageOverrides ?? {})).toEqual(["admin.jobs.registry"]);
     // No user.* keys smuggled in:
@@ -119,54 +114,36 @@ describe("Surface pageOverrides — contract roundtrip", () => {
   });
 });
 
-describe("Built-in bridge surface registration — Faz 2", () => {
+describe("Built-in surface registration — pageOverrides shape", () => {
   beforeEach(async () => {
-    // The built-in registrar registers ALL surfaces (legacy/horizon/atrium/
-    // bridge/canvas). We reset first to make sure we see a clean slate, then
-    // re-import the bootstrap module to get deterministic registration.
+    // The built-in registrar registers legacy, horizon, aurora. We reset
+    // first to make sure we see a clean slate, then re-import the bootstrap
+    // module to get deterministic registration.
     __resetSurfaceRegistry();
     const mod = await import("../surfaces/manifests/register");
     mod.registerBuiltinSurfaces();
   });
 
-  it("registers bridge with both-scope (Faz 5) and beta status", () => {
-    const bridge = getSurface("bridge");
-    expect(bridge).toBeDefined();
-    expect(bridge!.manifest.id).toBe("bridge");
-    // Faz 5: Bridge artık scope="both" — hem admin hem user paneli için
-    // kendi bağımsız ops-style shell'ini sunar.
-    expect(bridge!.manifest.scope).toBe("both");
-    expect(bridge!.manifest.status).toBe("beta");
+  it("aurora is registered as a both-scope production surface with overrides", () => {
+    const aurora = getSurface("aurora");
+    expect(aurora).toBeDefined();
+    expect(aurora!.manifest.id).toBe("aurora");
+    expect(aurora!.manifest.scope).toBe("both");
+    expect(typeof aurora!.adminLayout).toBe("function");
+    expect(typeof aurora!.userLayout).toBe("function");
+    expect(aurora!.pageOverrides).toBeDefined();
   });
 
-  it("bridge provides BOTH adminLayout and userLayout forwarders (Faz 5)", () => {
-    const bridge = getSurface("bridge")!;
-    expect(typeof bridge.adminLayout).toBe("function");
-    expect(typeof bridge.userLayout).toBe("function");
+  it("aurora declares both admin.* and user.* overrides (both-scope surface)", () => {
+    const aurora = getSurface("aurora")!;
+    const keys = Object.keys(aurora.pageOverrides ?? {});
+    const adminKeys = keys.filter((k) => k.startsWith("admin."));
+    const userKeys = keys.filter((k) => k.startsWith("user."));
+    expect(adminKeys.length).toBeGreaterThan(0);
+    expect(userKeys.length).toBeGreaterThan(0);
   });
 
-  it("bridge declares the three Faz 2 page overrides", () => {
-    const bridge = getSurface("bridge")!;
-    expect(bridge.pageOverrides).toBeDefined();
-    expect(typeof bridge.pageOverrides!["admin.jobs.registry"]).toBe("function");
-    expect(typeof bridge.pageOverrides!["admin.jobs.detail"]).toBe("function");
-    expect(typeof bridge.pageOverrides!["admin.publish.center"]).toBe("function");
-  });
-
-  it("bridge does NOT override unrelated pages (explicit contract)", () => {
-    const bridge = getSurface("bridge")!;
-    const overrides = bridge.pageOverrides ?? {};
-    const keys = Object.keys(overrides);
-    // Exactly three overrides — no accidental surface-wide takeover.
-    expect(keys.length).toBe(3);
-    expect(keys.sort()).toEqual([
-      "admin.jobs.detail",
-      "admin.jobs.registry",
-      "admin.publish.center",
-    ]);
-  });
-
-  it("legacy and horizon do NOT declare pageOverrides", () => {
+  it("legacy and horizon do NOT declare pageOverrides (safety-net shell-swap only)", () => {
     const legacy = getSurface("legacy")!;
     const horizon = getSurface("horizon")!;
     expect(legacy.pageOverrides).toBeUndefined();

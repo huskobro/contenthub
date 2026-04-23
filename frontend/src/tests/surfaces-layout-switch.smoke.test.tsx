@@ -22,9 +22,7 @@ const settingsMock = vi.hoisted(() => {
     "ui.surface.infrastructure.enabled": false,
     "ui.surface.default.admin": "legacy",
     "ui.surface.default.user": "legacy",
-    "ui.surface.atrium.enabled": false,
-    "ui.surface.bridge.enabled": false,
-    "ui.surface.canvas.enabled": false,
+    "ui.surface.aurora.enabled": false,
     "ui.active_theme": "obsidian-slate",
   };
   return {
@@ -144,26 +142,21 @@ describe("Dynamic layouts — Faz 1 surface resolution", () => {
     });
   });
 
-  it("falls back to legacy admin when atrium gate is OFF even with atrium picked", async () => {
-    // Faz 5: atrium is now scope="both" and owns its own admin shell, so the
-    // old "user-only scope mismatch" assertion no longer applies. Instead we
-    // test the admin-gate path: when the admin preference points at atrium
-    // but `ui.surface.atrium.enabled` is false, the resolver must fall
-    // through to legacy — the admin panel must never render an ungated
-    // surface.
+  it("falls back to legacy admin when aurora gate is OFF even with aurora picked", async () => {
+    // Aurora-only cleanup wave: aurora is now scope="both" and owns its own
+    // admin shell. Gate path: when the admin preference points at aurora but
+    // `ui.surface.aurora.enabled` is false, the resolver must fall through
+    // to legacy — the admin panel must never render an ungated surface.
     settingsMock.next({
       "ui.surface.infrastructure.enabled": true,
-      "ui.surface.atrium.enabled": false,
+      "ui.surface.aurora.enabled": false,
     });
     const { admin, resolver, store } = await freshImport();
-    store.useThemeStore.getState().setActiveSurface("atrium");
+    store.useThemeStore.getState().setActiveSurface("aurora");
     resolver.__setSurfaceSettingsSnapshot({
       infrastructureEnabled: true,
       defaultAdmin: "legacy",
       defaultUser: "legacy",
-      atriumEnabled: false,
-      bridgeEnabled: false,
-      canvasEnabled: false,
       auroraEnabled: false,
       loaded: true,
     });
@@ -175,7 +168,7 @@ describe("Dynamic layouts — Faz 1 surface resolution", () => {
       </MemoryRouter>,
     );
     await waitFor(() => {
-      // Atrium gate OFF → admin must still render legacy admin layout.
+      // Aurora gate OFF → admin must still render legacy admin layout.
       expect(screen.getByTestId("admin-layout-classic")).toBeDefined();
     });
   });
@@ -187,9 +180,6 @@ describe("Dynamic layouts — Faz 1 surface resolution", () => {
       infrastructureEnabled: true,
       defaultAdmin: "legacy",
       defaultUser: "legacy",
-      atriumEnabled: false,
-      bridgeEnabled: false,
-      canvasEnabled: false,
       auroraEnabled: false,
       loaded: true,
     });

@@ -1039,60 +1039,12 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "builtin_default": "aurora",
         "wired_to": "frontend.surfaces.resolver",
     },
-    "ui.surface.atrium.enabled": {
-        "group": "ui",
-        "type": "boolean",
-        "label": "Atrium Yuzeyi Aktif (DEPRECATED)",
-        "help_text": (
-            "DEPRECATED — Aurora-only gecisle birlikte kapatildi. Atrium (Premium "
-            "Media OS) yuzeyi Faz 4'te uc sayfa override'i ile teslim edildi; "
-            "Aurora Wave 7 sonrasinda Aurora tum user scope'u 20+ override ile "
-            "karsiladigi icin Atrium varsayilan olarak kapatildi. Ayar varolan "
-            "DB admin_value'larini bozmamak icin KNOWN_SETTINGS'te tutuluyor; "
-            "bir sonraki cleanup dalgasinda surface dosyalariyla birlikte "
-            "kaldirilacak."
-        ),
-        "module_scope": None,
-        "env_var": None,
-        # Aurora-only gecis: Atrium kullanici yuzeylerinden kaldirildi.
-        "builtin_default": False,
-        "wired_to": "frontend.surfaces.registry",
-    },
-    "ui.surface.bridge.enabled": {
-        "group": "ui",
-        "type": "boolean",
-        "label": "Bridge Yuzeyi Aktif (DEPRECATED)",
-        "help_text": (
-            "DEPRECATED — Aurora-only gecisle birlikte kapatildi. Bridge (Operations "
-            "Command Center) yuzeyi Faz 2'de uc sayfa override'i (jobs registry, "
-            "jobs detail, publish center) ile teslim edildi; Aurora Wave 7 "
-            "sonrasinda Aurora admin scope'unu 60+ override ile karsiladigi icin "
-            "Bridge varsayilan olarak kapatildi. Bir sonraki cleanup dalgasinda "
-            "surface dosyalariyla birlikte kaldirilacak."
-        ),
-        "module_scope": None,
-        "env_var": None,
-        # Aurora-only gecis: Bridge admin yuzeylerinden kaldirildi.
-        "builtin_default": False,
-        "wired_to": "frontend.surfaces.registry",
-    },
-    "ui.surface.canvas.enabled": {
-        "group": "ui",
-        "type": "boolean",
-        "label": "Canvas Yuzeyi Aktif (DEPRECATED)",
-        "help_text": (
-            "DEPRECATED — Aurora-only gecisle birlikte kapatildi. Canvas (Creator "
-            "Workspace Pro) yuzeyi Faz 3/3A/3B'de dokuz sayfa override'i ile "
-            "teslim edildi; Aurora Wave 7 sonrasinda Aurora tum user scope'u "
-            "karsiladigi icin Canvas varsayilan olarak kapatildi. Bir sonraki "
-            "cleanup dalgasinda surface dosyalariyla birlikte kaldirilacak."
-        ),
-        "module_scope": None,
-        "env_var": None,
-        # Aurora-only gecis: Canvas user yuzeylerinden kaldirildi.
-        "builtin_default": False,
-        "wired_to": "frontend.surfaces.registry",
-    },
+    # Aurora-only cleanup wave: ui.surface.atrium.enabled,
+    # ui.surface.bridge.enabled, ui.surface.canvas.enabled were removed
+    # alongside the surface source modules. Existing DB admin_value rows
+    # for those keys are now harmless: the resolver simply has no
+    # consumer for them and the resolver/registry no longer registers
+    # those surface ids.
     "ui.surface.aurora.enabled": {
         "group": "ui",
         "type": "boolean",
@@ -2674,12 +2626,12 @@ KNOWN_VALIDATION_RULES: Dict[str, str] = {
     # Wave: AuroraSettingsPage detects these and renders AuroraSegmented instead
     # of a free-text textarea. Adding enum here is backwards compatible —
     # existing admin_value/default values are already within these sets.
-    # Aurora-only gecis: varsayilan 'aurora'; 'legacy' ve 'horizon' bootstrap
-    # safety-net olarak enum'da kalir, atrium/bridge/canvas DEPRECATED olsa da
-    # mevcut DB admin_value'larini kirmamak icin enum'dan simdilik cikarilmadi.
-    # Bir sonraki cleanup dalgasinda atrium/bridge/canvas enum'dan ve registry'den kaldirilacak.
-    "ui.surface.default.admin": '{"type": "string", "enum": ["aurora", "legacy", "horizon", "canvas", "atrium", "bridge"]}',
-    "ui.surface.default.user": '{"type": "string", "enum": ["aurora", "legacy", "horizon", "canvas", "atrium", "bridge"]}',
+    # Aurora-only runtime: varsayilan 'aurora'; 'legacy' ve 'horizon' bootstrap
+    # safety-net olarak enum'da kalir. Atrium/Bridge/Canvas Aurora-only cleanup
+    # dalgasinda hem KNOWN_SETTINGS'ten hem registry'den hem de enum'dan kaldirildi;
+    # eski DB admin_value rows artik resolver tarafindan tuketilmiyor.
+    "ui.surface.default.admin": '{"type": "string", "enum": ["aurora", "legacy", "horizon"]}',
+    "ui.surface.default.user": '{"type": "string", "enum": ["aurora", "legacy", "horizon"]}',
     "tts.primary_provider": '{"type": "string", "enum": ["dubvoice", "edge_tts", "system_tts"]}',
     "tts.controls.default_scene_energy": '{"type": "string", "enum": ["", "calm", "neutral", "energetic"]}',
     "wizard.standard_video.entry_mode": '{"type": "string", "enum": ["wizard", "form"]}',

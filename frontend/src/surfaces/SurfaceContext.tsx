@@ -73,10 +73,13 @@ export function useSurfaceEnabled(id: SurfaceId, scope: "admin" | "user"): boole
   if (scope === "user" && match.manifest.scope !== "user" && match.manifest.scope !== "both") {
     return false;
   }
+  // Aurora-only runtime: legacy + horizon are always-on safety-nets;
+  // aurora is gated by its `enabled` setting. Atrium/Bridge/Canvas were
+  // removed in the Aurora-only cleanup wave; any caller still asking for
+  // those ids falls through to `return false`, which is the correct
+  // "not registered, treat as disabled" answer.
   if (id === "legacy" || id === "horizon") return true;
-  if (id === "atrium") return ctx.settings.atriumEnabled;
-  if (id === "bridge") return ctx.settings.bridgeEnabled;
-  if (id === "canvas") return ctx.settings.canvasEnabled;
+  if (id === "aurora") return ctx.settings.auroraEnabled;
   return false;
 }
 

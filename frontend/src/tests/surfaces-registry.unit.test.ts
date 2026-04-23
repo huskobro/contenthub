@@ -84,23 +84,23 @@ describe("surfaces/registry", () => {
   });
 
   it("allows disabled surfaces to omit layouts", () => {
-    const placeholder = makeSurface("atrium", "disabled", "both", false);
+    const placeholder = makeSurface("test-placeholder", "disabled", "both", false);
     expect(() => registerSurface(placeholder)).not.toThrow();
-    expect(getSurface("atrium")).toBe(placeholder);
+    expect(getSurface("test-placeholder")).toBe(placeholder);
   });
 
   it("isSurfaceRegisteredAndEnabled returns false for disabled", () => {
     registerSurface(makeSurface("legacy", "stable", "both"));
-    registerSurface(makeSurface("atrium", "disabled", "both", false));
+    registerSurface(makeSurface("test-placeholder", "disabled", "both", false));
     expect(isSurfaceRegisteredAndEnabled("legacy")).toBe(true);
-    expect(isSurfaceRegisteredAndEnabled("atrium")).toBe(false);
+    expect(isSurfaceRegisteredAndEnabled("test-placeholder")).toBe(false);
     expect(isSurfaceRegisteredAndEnabled("ghost")).toBe(false);
   });
 
   it("listSurfaces returns all registered surfaces including disabled", () => {
     registerSurface(makeSurface("legacy", "stable", "both"));
     registerSurface(makeSurface("horizon", "stable", "both"));
-    registerSurface(makeSurface("atrium", "disabled", "both", false));
+    registerSurface(makeSurface("test-placeholder", "disabled", "both", false));
     expect(listSurfaces()).toHaveLength(3);
   });
 
@@ -109,7 +109,7 @@ describe("surfaces/registry", () => {
     registerSurface(makeSurface("horizon", "stable", "both"));
     registerSurface(makeSurface("admin-only", "stable", "admin"));
     registerSurface(makeSurface("user-only", "stable", "user"));
-    registerSurface(makeSurface("atrium", "disabled", "both", false));
+    registerSurface(makeSurface("test-placeholder", "disabled", "both", false));
 
     const adminAvail = listAvailableSurfaces("admin");
     expect(adminAvail.map((s) => s.manifest.id).sort()).toEqual([

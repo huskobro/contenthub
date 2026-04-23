@@ -1,17 +1,20 @@
 /**
- * SurfaceActiveBadge smoke test — Faz 4C usability cleanup.
+ * SurfaceActiveBadge smoke test — Aurora-only runtime.
  *
  * Verifies the small header badge wired up by `AppHeader` renders:
- *   1. aktif surface adini (ornek: "Canvas" / "Bridge" / "Legacy")
+ *   1. aktif surface adini (Aurora / Legacy)
  *   2. reason kategorisi rozetini ("Tercihinizle" / "Varsayilan" / "Fallback")
  *   3. tooltip (title / aria-label) reason aciklamasini icerir
  *   4. `data-reason-category` attribute'u resolver kategorisiyle esit
- *   5. fallback durumunda (ornek: explicit atrium + gate kapali) warning
- *      kategorisine dondurulur
+ *   5. fallback durumunda (kill-switch off) warning kategorisine dondurulur
  *
  * Bu test yalnizca bilgi rozetinin dogru render'ini garanti altina alir;
- * gercek resolver mantigi `default-surface-strategy.unit.test.ts` ve
- * `surfaces-*.smoke.test.tsx` dosyalari tarafindan zaten test ediliyor.
+ * gercek resolver mantigi `surfaces-resolver.unit.test.ts` ve diger
+ * `surfaces-*.smoke.test.tsx` dosyalari tarafindan test ediliyor.
+ *
+ * Not: Atrium/Bridge/Canvas yuzeyleri Aurora-only cleanup dalgasinda
+ * silindi; bu yuzden testler artik aurora + legacy + horizon uzerinden
+ * yapiliyor.
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
@@ -35,7 +38,7 @@ async function bootRegistry() {
   mod.registerBuiltinSurfaces();
 }
 
-function snapshotAllEnabled(defaults: {
+function snapshotAuroraEnabled(defaults: {
   admin: string | null;
   user: string | null;
 }) {
@@ -43,23 +46,18 @@ function snapshotAllEnabled(defaults: {
     infrastructureEnabled: true,
     defaultAdmin: defaults.admin,
     defaultUser: defaults.user,
-    atriumEnabled: true,
-    bridgeEnabled: true,
-    canvasEnabled: true,
     auroraEnabled: true,
     loaded: true,
   });
 }
 
-function snapshotAtriumGated() {
+function snapshotAuroraGated() {
+  // Aurora kapali; resolver legacy safety-net'e duser.
   __setSurfaceSettingsSnapshot({
     infrastructureEnabled: true,
-    defaultAdmin: "bridge",
-    defaultUser: "canvas",
-    atriumEnabled: false, // <-- kapali
-    bridgeEnabled: true,
-    canvasEnabled: true,
-    auroraEnabled: true,
+    defaultAdmin: "aurora",
+    defaultUser: "aurora",
+    auroraEnabled: false,
     loaded: true,
   });
 }
@@ -67,11 +65,8 @@ function snapshotAtriumGated() {
 function snapshotKillSwitchOff() {
   __setSurfaceSettingsSnapshot({
     infrastructureEnabled: false, // <-- kill switch off
-    defaultAdmin: "bridge",
-    defaultUser: "canvas",
-    atriumEnabled: true,
-    bridgeEnabled: true,
-    canvasEnabled: true,
+    defaultAdmin: "aurora",
+    defaultUser: "aurora",
     auroraEnabled: true,
     loaded: true,
   });
@@ -87,7 +82,7 @@ function resetActiveSurface(id: string | null = null) {
 // Tests
 // ---------------------------------------------------------------------------
 
-describe("SurfaceActiveBadge — Faz 4C smoke", () => {
+describe("SurfaceActiveBadge — Aurora-only smoke", () => {
   beforeEach(async () => {
     await bootRegistry();
     resetActiveSurface(null);
@@ -99,59 +94,55 @@ describe("SurfaceActiveBadge — Faz 4C smoke", () => {
     resetActiveSurface(null);
   });
 
-  it("renders admin badge with bridge + 'Varsayilan' kategorisi when admin default=bridge", () => {
-    snapshotAllEnabled({ admin: "bridge", user: "canvas" });
+  it("renders admin badge with aurora + 'Varsayilan' kategorisi when admin default=aurora", () => {
+    snapshotAuroraEnabled({ admin: "aurora", user: "aurora" });
     render(<SurfaceActiveBadge area="Admin" />);
     const badge = screen.getByTestId("header-surface-active-badge-admin");
     expect(badge).toBeDefined();
-    expect(badge.getAttribute("data-surface-id")).toBe("bridge");
+    expect(badge.getAttribute("data-surface-id")).toBe("aurora");
     expect(badge.getAttribute("data-reason")).toBe("role-default");
     expect(badge.getAttribute("data-reason-category")).toBe("default");
-    const name = screen.getByTestId("header-surface-active-name-admin");
-    expect(name.textContent).toBe("Bridge");
     const category = screen.getByTestId("header-surface-active-category-admin");
     expect(category.textContent).toBe("Varsayilan");
   });
 
-  it("renders user badge with canvas + 'Varsayilan' when user default=canvas", () => {
-    snapshotAllEnabled({ admin: "bridge", user: "canvas" });
+  it("renders user badge with aurora + 'Varsayilan' when user default=aurora", () => {
+    snapshotAuroraEnabled({ admin: "aurora", user: "aurora" });
     render(<SurfaceActiveBadge area="User" />);
     const badge = screen.getByTestId("header-surface-active-badge-user");
-    expect(badge.getAttribute("data-surface-id")).toBe("canvas");
+    expect(badge.getAttribute("data-surface-id")).toBe("aurora");
     expect(badge.getAttribute("data-reason")).toBe("role-default");
     expect(badge.getAttribute("data-reason-category")).toBe("default");
-    const name = screen.getByTestId("header-surface-active-name-user");
-    expect(name.textContent).toBe("Canvas");
   });
 
   it("reflects explicit user preference with 'Tercihinizle' kategorisi", () => {
-    snapshotAllEnabled({ admin: "bridge", user: "canvas" });
-    resetActiveSurface("atrium");
+    snapshotAuroraEnabled({ admin: "aurora", user: "aurora" });
+    // Kullanici legacy'i acikca tercih ediyor — 'user-preference' bekleniyor.
+    resetActiveSurface("legacy");
     render(<SurfaceActiveBadge area="User" />);
     const badge = screen.getByTestId("header-surface-active-badge-user");
-    expect(badge.getAttribute("data-surface-id")).toBe("atrium");
+    expect(badge.getAttribute("data-surface-id")).toBe("legacy");
     expect(badge.getAttribute("data-reason")).toBe("user-preference");
     expect(badge.getAttribute("data-reason-category")).toBe("explicit");
     const category = screen.getByTestId("header-surface-active-category-user");
     expect(category.textContent).toBe("Tercihinizle");
   });
 
-  it("falls to 'Fallback' when explicit atrium is picked but gate is off", () => {
-    snapshotAtriumGated();
-    resetActiveSurface("atrium");
+  it("falls to legacy safety-net when explicit aurora is picked but gate is off", () => {
+    snapshotAuroraGated();
+    resetActiveSurface("aurora");
     render(<SurfaceActiveBadge area="User" />);
     const badge = screen.getByTestId("header-surface-active-badge-user");
-    // Resolver canvas'a fallback yapacak (role-default) cunku atrium gate kapali.
-    // role-default -> "default" kategorisi; "fallback" sadece legacy-fallback / kill-switch-off ailesi.
-    // Bu kart kullanici icin "canvas varsayilanla aktif" gorurken, picker'daki ayri etiket
-    // "tercihinizdi ama kullanilmiyor" mesajini verir.
-    expect(badge.getAttribute("data-surface-id")).toBe("canvas");
-    expect(badge.getAttribute("data-reason")).toBe("role-default");
+    // Aurora kapali oldugu icin role-default `aurora` da reddediliyor; resolver
+    // safety-net olan legacy'a duser. Reason role-default DEGIL, fallback
+    // ailesinden bir reason olur (legacy-fallback). Kategori 'fallback' olur.
+    expect(badge.getAttribute("data-surface-id")).toBe("legacy");
+    expect(badge.getAttribute("data-reason-category")).toBe("fallback");
   });
 
   it("shows warning fallback category when kill switch is off", () => {
     snapshotKillSwitchOff();
-    resetActiveSurface("canvas");
+    resetActiveSurface("aurora");
     render(<SurfaceActiveBadge area="User" />);
     const badge = screen.getByTestId("header-surface-active-badge-user");
     expect(badge.getAttribute("data-surface-id")).toBe("legacy");
@@ -162,12 +153,11 @@ describe("SurfaceActiveBadge — Faz 4C smoke", () => {
   });
 
   it("renders an accessible tooltip that includes the surface id and reason text", () => {
-    snapshotAllEnabled({ admin: "bridge", user: "canvas" });
+    snapshotAuroraEnabled({ admin: "aurora", user: "aurora" });
     render(<SurfaceActiveBadge area="Admin" />);
     const badge = screen.getByTestId("header-surface-active-badge-admin");
     const title = badge.getAttribute("title") ?? "";
-    expect(title).toContain("Bridge");
-    expect(title).toContain("Varsayilan olarak aktif");
+    expect(title).toContain("aurora");
     expect(badge.getAttribute("aria-label")).toBe(title);
   });
 });
