@@ -172,6 +172,14 @@ function applyTokenResponse(
   // After successful auth, force-hydrate the theme from backend so a
   // different browser on the same account reflects the last chosen theme.
   // Late-bind the import to avoid a circular import with themeStore.
+  //
+  // Aurora surface-sync wave: also force-hydrate the active shell's
+  // surface preference. Surface preference is role-scoped (admin vs user),
+  // so we only know which key to read once we know which shell the user
+  // landed in — `hydrateSurfaceFromBackend` derives that from the URL.
+  // On a fresh login the URL is typically the post-login redirect target
+  // (admin shell for admin users, user shell for users), so the right key
+  // is read on the first call.
   try {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     void import("./themeStore").then((mod) => {
@@ -179,6 +187,11 @@ function applyTokenResponse(
         mod.useThemeStore.getState().hydrateFromBackend({ force: true });
       } catch {
         // theme store not ready yet — safe to ignore
+      }
+      try {
+        mod.useThemeStore.getState().hydrateSurfaceFromBackend({ force: true });
+      } catch {
+        // surface hydration unavailable (test env) — safe to ignore
       }
     });
   } catch {

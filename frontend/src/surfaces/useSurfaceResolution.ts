@@ -102,6 +102,16 @@ function writeCachedSnapshot(s: SurfaceSettingsSnapshot): void {
 const cachedSeed = readCachedSnapshot();
 let snapshot: SurfaceSettingsSnapshot = cachedSeed ?? DEFAULT_SNAPSHOT;
 let pendingLoad: Promise<void> | null = null;
+// Aurora-only cleanup wave (kill-switch freshness fix):
+// readCachedSnapshot() returns `loaded:true` so first paint can avoid the
+// legacy flash. But the previous `ensureLoaded()` then short-circuited on
+// `snapshot.loaded === true`, which meant a backend kill-switch flip never
+// reached the resolver — users stayed on the cached value forever until they
+// manually cleared localStorage. We now track "has the real backend fetch
+// run AT LEAST ONCE in this module load" separately from `loaded`, so the
+// cache still seeds first paint but the authoritative backend fetch always
+// runs once per page load and can flip the snapshot.
+let serverFetchRanThisLoad = false;
 const listeners = new Set<() => void>();
 
 function notifyListeners() {
@@ -131,15 +141,21 @@ async function loadSnapshot(): Promise<void> {
       auroraEnabled: Boolean(aurora?.effective_value),
       loaded: true,
     };
+    serverFetchRanThisLoad = true;
   } catch {
     snapshot = { ...DEFAULT_SNAPSHOT, loaded: true };
+    serverFetchRanThisLoad = true;
   }
   writeCachedSnapshot(snapshot);
   notifyListeners();
 }
 
 function ensureLoaded() {
-  if (snapshot.loaded) return;
+  // We always need to run the backend fetch at least once per module load —
+  // otherwise a backend kill-switch flip cannot propagate until the user
+  // manually clears localStorage. The cache only saves us from the
+  // first-paint legacy flash; it is not a substitute for the real fetch.
+  if (serverFetchRanThisLoad) return;
   if (!pendingLoad) {
     pendingLoad = loadSnapshot().finally(() => {
       pendingLoad = null;
@@ -149,15 +165,27 @@ function ensureLoaded() {
 
 /**
  * Test hook: force a snapshot (bypassing the fetch). Used by unit tests.
+ *
+ * Sets `serverFetchRanThisLoad = true` so `ensureLoaded()` will NOT fire a
+ * real backend fetch on top of the injected value — that would overwrite
+ * the test fixture and break determinism.
  */
 export function __setSurfaceSettingsSnapshot(next: SurfaceSettingsSnapshot): void {
   snapshot = { ...next };
+  serverFetchRanThisLoad = true;
   notifyListeners();
 }
 
-/** Test hook: clear the snapshot back to defaults. */
+/**
+ * Test hook: clear the snapshot back to defaults.
+ *
+ * Resets `serverFetchRanThisLoad` so the next test that injects via
+ * `__setSurfaceSettingsSnapshot` (or relies on a real fetch) starts from a
+ * clean module state.
+ */
 export function __resetSurfaceSettingsSnapshot(): void {
   snapshot = DEFAULT_SNAPSHOT;
+  serverFetchRanThisLoad = false;
   notifyListeners();
 }
 

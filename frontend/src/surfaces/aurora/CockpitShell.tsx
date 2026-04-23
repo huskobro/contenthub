@@ -865,8 +865,15 @@ export function CockpitShell({
     recordRecentPage({ to: path + location.search, label: currentRouteLabel });
   }, [location.pathname, location.search, currentRouteLabel]);
 
+  // NOTE: `data-surface="aurora"` is set on <html> by themeEngine; do NOT
+  // re-declare it on the .cockpit div. Re-declaring makes the bare
+  // `[data-surface="aurora"]` Dusk-default token block re-fire on this
+  // descendant element, which then overrides the more specific
+  // `[data-surface="aurora"][data-theme="obsidian-slate"]` variables
+  // inherited from the root and silently breaks Slate cockpit chrome.
+  // See codex/aurora-surface-sync-and-slate Slate parity fix.
   return (
-    <div className="cockpit" data-surface="aurora" data-testid="aurora-cockpit">
+    <div className="cockpit" data-testid="aurora-cockpit">
       <Ctxbar
         workspace={workspace}
         crumbs={crumbs}
