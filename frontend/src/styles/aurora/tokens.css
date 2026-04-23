@@ -311,14 +311,39 @@
   --shadow-2xl: 0 40px 80px rgba(0, 0, 0, 0.65), 0 8px 16px rgba(0, 0, 0, 0.35);
 
   /* Cockpit chrome — sidebar/topbar/breadcrumb/statusbar foreground tonları.
-     Sidebar koyu kalır (her iki temada da), bu yüzden Dusk default block'unda
-     ışıklı tonlar; Slate override'unda da aynı tonlar (sidebar koyu kalıyor)
-     veya beyaz zemin üzerine düşen elementler için koyu eşdeğeri. */
+     Aurora'daki her tema (dark ya da light içerik yüzeyine sahip olsun)
+     koyu bir sidebar/rail/ctxbar/statusbar cockpit'i kullanır. Bu yüzden
+     cockpit chrome tokenları her temada koyu chrome üstünde okunacak
+     değerlere set edilmelidir. İçerik yüzeyi için `--ink-overlay-*`
+     değişmez (light/dark içerik surface'te doğru kalır); cockpit chrome
+     artık `--cockpit-*` ailesini kullanır. */
   --color-workspace-pill-fg: #e5e9f5;
   --color-breadcrumb-sep: rgba(255, 255, 255, 0.32);
   --color-breadcrumb-last-fg: #f6f3fb;
   --color-statusbar-value-fg: #cfd4e2;
   --color-btn-dark-fg: #e5e9f5;
+
+  /* Cockpit overlay ailesi — rail/ctxbar/statusbar hover/chip/pill
+     dekorasyonları. Cockpit chrome her tema varyantında koyu olduğundan
+     beyaz-tabanlı alfa katmanları kullanırız. */
+  --cockpit-overlay-1: rgba(255, 255, 255, 0.03);
+  --cockpit-overlay-2: rgba(255, 255, 255, 0.05);
+  --cockpit-overlay-3: rgba(255, 255, 255, 0.08);
+  --cockpit-overlay-4: rgba(255, 255, 255, 0.12);
+  --cockpit-overlay-5: rgba(255, 255, 255, 0.16);
+  --cockpit-overlay-6: rgba(255, 255, 255, 0.25);
+  --cockpit-text-soft:   rgba(255, 255, 255, 0.55);
+  --cockpit-text-medium: rgba(255, 255, 255, 0.70);
+  --cockpit-text-strong: rgba(255, 255, 255, 0.90);
+
+  /* Rail active state — cockpit chrome üzerinde en az 3:1 okunurluk.
+     Tema override'larında (özellikle ink-and-wire gibi koyu accent'li
+     light temalarda) rail-active-fg/bar, sidebar üzerinde görünür bir
+     light/accent tonuna çekilir; default (Dusk) block'unda accent
+     doğrudan kullanılabilir. */
+  --color-rail-active-fg:  var(--accent-primary);
+  --color-rail-active-bg:  rgba(var(--accent-primary-rgb), 0.12);
+  --color-rail-active-bar: var(--accent-primary);
 
   color-scheme: dark;
 }
@@ -444,14 +469,25 @@
   --ink-overlay-text-medium: rgba(15, 18, 25, 0.72);
   --ink-overlay-text-strong: rgba(15, 18, 25, 0.92);
 
-  /* Cockpit chrome override — ctxbar/breadcrumb/btn.dark Slate'te beyaz zemine
-     düşüyor; statusbar ise --bg-sidebar (her iki temada koyu) üzerinde durduğu
-     için açık tonu korunuyor. */
-  --color-workspace-pill-fg: #1e2541;
-  --color-breadcrumb-sep: rgba(20, 24, 40, 0.32);
-  --color-breadcrumb-last-fg: #1e2541;
+  /* Cockpit chrome override — Slate bir light tema, ama sidebar/rail/ctxbar/
+     statusbar cockpit'i her Aurora temasında koyu kalıyor (bkz. --bg-sidebar
+     #111520). Cockpit foreground tokenları Slate'te de light tutulur; sadece
+     içerik surface'i (card/drawer/panel) ink-overlay dark varyantı kullanır.
+     --color-btn-dark-fg cockpit dışı `.btn.dark` CTA'larda da kullanıldığı
+     için light content surface üstünde okunur koyu ton korunuyor — cockpit
+     içinde `.btn.dark` görünmüyor. */
+  --color-workspace-pill-fg: #e5e9f5;
+  --color-breadcrumb-sep: rgba(255, 255, 255, 0.32);
+  --color-breadcrumb-last-fg: #f6f3fb;
   --color-statusbar-value-fg: #cfd4e2;
   --color-btn-dark-fg: #1e2541;
+
+  /* Rail active — Slate'te marka indigo'su (#3b50e6) koyu sidebar üstünde
+     sınırda kalıyor (~4.3:1). Daha okunur bir soft-indigo ton kullanıyoruz;
+     accent hâlâ chart/CTA'da indigo gözüküyor. */
+  --color-rail-active-fg:  #96a8ff;
+  --color-rail-active-bg:  rgba(150, 168, 255, 0.14);
+  --color-rail-active-bar: #96a8ff;
 
   color-scheme: light;
 }
@@ -833,13 +869,25 @@
   --ink-overlay-text-medium: rgba(26, 24, 20, 0.72);
   --ink-overlay-text-strong: rgba(26, 24, 20, 0.92);
 
-  /* Cockpit chrome — sidebar dark, ctxbar/breadcrumb light.
-     Ink & Wire adds a serif-ready, ink-on-cream foreground pair. */
-  --color-workspace-pill-fg: #1a1814;
-  --color-breadcrumb-sep: rgba(26, 24, 20, 0.32);
-  --color-breadcrumb-last-fg: #1a1814;
+  /* Cockpit chrome — Ink & Wire bir light tema olsa da sidebar/rail/ctxbar/
+     statusbar her zaman koyu kalır (`--bg-sidebar #1a1814`). Cockpit fg
+     tokenları bu yüzden koyu chrome üstünde okunacak ink-on-dark light
+     tonlara ayarlandı. İçerik yüzeyi (card/panel) hâlâ koyu mürekkep
+     üstünde kağıt hissi veren black-based `--ink-overlay-*` değerlerini
+     kullanır. */
+  --color-workspace-pill-fg: #efe7d6;
+  --color-breadcrumb-sep: rgba(239, 231, 214, 0.32);
+  --color-breadcrumb-last-fg: #faf4e6;
   --color-statusbar-value-fg: #d8d3c8;
   --color-btn-dark-fg: #1a1814;
+
+  /* Rail active — marka brown (#5e4832) sidebar (#1a1814) üzerinde
+     2.07:1 FAIL; koyu chrome üstünde okunur soft-paper tonuna çekildi.
+     Accent hâlâ content surface'te brown kaplar; sadece cockpit rail
+     active state'i burada görünür. */
+  --color-rail-active-fg:  #c4b49a;
+  --color-rail-active-bg:  rgba(196, 180, 154, 0.14);
+  --color-rail-active-bar: #c4b49a;
 
   color-scheme: light;
 }

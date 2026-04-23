@@ -226,7 +226,7 @@ export function AuroraChannelPerformancePage() {
       <AuroraPageShell
         title="Kanal Performansı"
         breadcrumbs={[
-          { label: "Analytics", href: "#/admin/analytics" },
+          { label: "Analytics", href: "/admin/analytics" },
           { label: "Channels" },
         ]}
         description="Kanal bazlı üretim, yayın ve etkileşim performansı."

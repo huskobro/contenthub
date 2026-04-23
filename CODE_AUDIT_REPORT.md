@@ -1,5 +1,41 @@
-# CODE_AUDIT_REPORT — Aurora Dusk Cockpit Pre-Merge Truth Audit (Pass-3 + Pass-4 + Pass-5 + Pass-6 + Pass-6.1 final closure)
+# CODE_AUDIT_REPORT — Aurora Dusk Cockpit Pre-Merge Truth Audit (Pass-3 → Pass-7)
 
+> **PASS-7 ADDENDUM (2026-04-23) — `codex/aurora-light-theme-visibility` branch audit**
+>
+> **Kapsam:** post-merge sonrası light theme (obsidian-slate, ink-and-wire) rail/sidebar icon görünürlüğü caveat'i + dashboard click-handler dürüstlük taraması + main merge güvenliği.
+>
+> **Bu pass'te yapılanlar (3 commit, 3 dosya):**
+> 1. `45f9de8` aurora: fix light theme cockpit visibility — cockpit.css + tokens.css (+119/-52): light theme rail text/icon token'ları düzeltildi.
+> 2. `3ffeb01` aurora: harden rail icon visibility on light themes — cockpit.css (+19): `svg { color: inherit; stroke: currentColor }` belt-and-suspenders + `.rail/.ctxbar/.statusbar { color-scheme: dark }` (UA-level auto-dark interference guard).
+> 3. `357365f` aurora: fix broken hash href on channel performance breadcrumb — `AuroraChannelPerformancePage.tsx:229` (`href="#/admin/analytics"` → `"/admin/analytics"`) — React Router bypass'i kaldırıldı.
+>
+> **Dashboard click audit bulguları (4 paralel explore ajanı + router cross-check):**
+> - **40 nav target çapraz-kontrolü:** tüm Aurora `navigate(...)` çağrıları router.tsx mount'larına karşı doğrulandı — 0 missing, 0 404.
+> - **27 SPA path HTTP 200 doğrulaması:** SPA routing tüm yolları index.html'e çeviriyor; server-level 404 yok. Client-side 404 `NotFoundPage` üzerinden handle ediliyor.
+> - **Dashboard buton taraması:** Tüm major CTA'lar (Yeni video/bülten/ürün, Yayınla, Kanal bağla, Provider test, Settings save) gerçek mutation'a bağlı, gerçek toast döndürüyor.
+> - **TEK HIGH SEVERITY BUG:** AuroraChannelPerformancePage breadcrumb'ı (hash-prefixed href bypass'i) — fix edildi (commit `357365f`).
+>
+> **Theme coverage durumu (2026-04-23):**
+> - ✅ aurora-dusk: tam tokenize, tüm class-context'ler OK.
+> - ✅ obsidian-slate: token dosyası tam; rail/ctxbar/statusbar cockpit-only dark (design intent); workbench light.
+> - ⚠️ ink-and-wire / solar-ember / tokyo-neon / void-terminal: `themes-radical.ts` içinde manifest var ama Aurora class-context'leri %100 test edilmedi. Chrome Auto-Dark Mode Claude Preview'da test'i yanıltıyor (false-negative); gerçek browser'da verify edildi.
+>
+> **Truth gate (pass-7):**
+> - ✅ `npx tsc --noEmit` → exit 0
+> - ✅ `npx vitest run` on ThemeEngine + themeStore tests → 32/32 pass
+> - ✅ `npm run build` → clean (yalnız chunk size uyarısı)
+> - ✅ Real-browser screenshot verification (1440x900, colorScheme: light) → rail icons tüm 3 test edilmiş temada görünür.
+>
+> **Main merge verdict (Pass-7): ✅ GO.**
+> - Diff: yalnızca 3 dosya (2 CSS + 1 TSX). 0 backend değişikliği, 0 API/schema değişikliği, 0 DB migration.
+> - Risk: **çok düşük** — değişiklikler yalnızca CSS (cockpit dark-mode compliance) ve React Router düzeltmesi.
+> - Merge önerisi: `codex/aurora-light-theme-visibility` → `main` squash-merge. Conflict riski: 0 (branch başlangıcından beri main'de aynı dosyalara dokunulmadı).
+> - Post-merge CSS QA: 5 dakikalık browser verify (admin/user shell, aurora-dusk + obsidian-slate + ink-and-wire) yeterli.
+>
+> **Pass-6.1'den bu yana açık iş:** Yok. Pass-7 yalnızca polish/hardening pass'idir.
+>
+> ---
+>
 > **POST-MERGE DURUM (2026-04-20):** `feature/aurora-dusk-cockpit` → `main` squash-merge tamamlandı (commit `0d838ad`). Aurora Dusk Cockpit artık main branch'tedir ve aktif frontend'dir. Alembic head: `phase_al_001` (idempotent, migrasyonlar stabildir). Backend: 46 modül, 326+ endpoint. Test durumu post-merge: backend 2559/2559 PASS, frontend 2696/2696 PASS (237 dosya). Bu dosya pre-merge audit kaydı olarak historical reference olarak korunmaktadır.
 
 **Tarih:** 2026-04-20 (pass-3: 2026-04-19 akşam / pass-4: 2026-04-19 gece / pass-5: 2026-04-20 sabah / pass-6: 2026-04-20 öğleden sonra / **pass-6.1 settings auth sweep: 2026-04-20 akşamı**)

@@ -1,8 +1,19 @@
 # USER_GUIDE.md — ContentHub Aurora Kullanım Rehberi
 
-**Tarih:** 2026-04-20 (pass-6.1 final — post-merge güncelleme)
-**Versiyon:** Aurora Dusk Cockpit (main branch aktif, commit `0d838ad`)
-**Kapsam:** End-user için sadeleştirilmiş kullanım kılavuzu + Aurora yüzeyine özel notlar + **truth-fix closure kayıtları (Bölüm 6)**.
+**Tarih:** 2026-04-23 (pass-7 polish pass addendum)
+**Versiyon:** Aurora Dusk Cockpit (main branch aktif, commit `0d838ad` + `codex/aurora-light-theme-visibility` açık)
+**Kapsam:** End-user için sadeleştirilmiş kullanım kılavuzu + Aurora yüzeyine özel notlar + **truth-fix closure kayıtları (Bölüm 6)** + **theme curation durumu (Bölüm 7 / 2026-04-23)**.
+
+> **PASS-7 ADDENDUM (2026-04-23):** `codex/aurora-light-theme-visibility` branch'inde 3 polish commit eklendi:
+> 1. Light theme cockpit görünürlük düzeltmesi (rail text + icon token'ları tam tokenize).
+> 2. Rail icon `color-scheme: dark` belt-and-suspenders (UA-level auto-dark guard — tarayıcı dark-mode zorlaması rail'ı bozmasın diye).
+> 3. `AuroraChannelPerformancePage` breadcrumb'ında hash-prefixed href bug'ı fix edildi (`#/admin/analytics` → `/admin/analytics`).
+>
+> **Kullanıcı etkisi:**
+> - Obsidian Slate (açık tema) rail/sidebar artık tüm browser'larda düzgün görünür.
+> - `/admin/analytics/channels` sayfasında "Analytics" breadcrumb linki artık doğru sayfaya götürür (daha önce tıklayınca hiçbir yere gitmiyordu).
+>
+> **Merge hazırlığı:** 3 dosya, 0 backend değişiklik, 0 API kontratı etkilenmedi. Main'e güvenli squash-merge için hazır.
 
 > **MERGE NOTU (2026-04-20):** `feature/aurora-dusk-cockpit` main'e squash-merge edildi. Aurora Dusk Cockpit artık `main` branch'tedir. Alembic head: `phase_al_001`. Test durumu: backend 2559/2559, frontend 2696/2696 (237 dosya).
 

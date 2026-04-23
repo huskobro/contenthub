@@ -87,7 +87,7 @@
   padding: 0 14px 0 0;
   background: var(--bg-sidebar);
   border-bottom: 1px solid var(--border-default);
-  color: var(--text-secondary);
+  color: var(--cockpit-text-medium);
   position: relative;
   z-index: var(--z-chrome);
 }
@@ -125,17 +125,17 @@
   cursor: pointer;
   transition: border-color var(--motion-duration-fast) var(--motion-ease-out);
 }
-[data-surface="aurora"] .ctxbar .workspace-pill { background: var(--ink-overlay-1); border-color: var(--ink-overlay-4); color: var(--color-workspace-pill-fg); }
-[data-surface="aurora"] .ctxbar .workspace-pill:hover { border-color: var(--ink-overlay-6); }
+[data-surface="aurora"] .ctxbar .workspace-pill { background: var(--cockpit-overlay-1); border-color: var(--cockpit-overlay-4); color: var(--color-workspace-pill-fg); }
+[data-surface="aurora"] .ctxbar .workspace-pill:hover { border-color: var(--cockpit-overlay-6); }
 [data-surface="aurora"] .workspace-pill .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--state-success-fg); box-shadow: 0 0 8px var(--state-success-fg); }
 
 [data-surface="aurora"] .breadcrumbs {
   display: flex; align-items: center; gap: 8px;
   font-size: 12px;
-  color: var(--ink-overlay-text-medium);
+  color: var(--cockpit-text-medium);
 }
 [data-surface="aurora"] .breadcrumbs .sep { color: var(--color-breadcrumb-sep); font-family: var(--font-mono); }
-[data-surface="aurora"] .breadcrumbs .crumb { color: var(--ink-overlay-text-medium); }
+[data-surface="aurora"] .breadcrumbs .crumb { color: var(--cockpit-text-medium); }
 [data-surface="aurora"] .breadcrumbs .crumb.last { color: var(--color-breadcrumb-last-fg); font-weight: 500; }
 
 [data-surface="aurora"] .ctxbar-search {
@@ -144,46 +144,46 @@
   height: 30px;
   width: 340px;
   padding: 0 10px 0 12px;
-  background: var(--ink-overlay-1);
-  border: 1px solid var(--ink-overlay-4);
+  background: var(--cockpit-overlay-1);
+  border: 1px solid var(--cockpit-overlay-4);
   border-radius: 8px;
-  color: var(--ink-overlay-text-soft);
+  color: var(--cockpit-text-soft);
   font-size: 12px;
   cursor: pointer;
   transition: border-color var(--motion-duration-fast) var(--motion-ease-out);
 }
-[data-surface="aurora"] .ctxbar-search:hover { border-color: var(--ink-overlay-6); color: var(--text-on-accent); }
+[data-surface="aurora"] .ctxbar-search:hover { border-color: var(--cockpit-overlay-6); color: var(--cockpit-text-strong); }
 [data-surface="aurora"] .ctxbar-search .k {
   margin-left: auto;
   font-family: var(--font-mono);
   font-size: 10px;
   padding: 1px 6px;
   border-radius: 4px;
-  background: var(--ink-overlay-3);
-  border: 1px solid var(--ink-overlay-5);
-  color: var(--ink-overlay-text-medium);
+  background: var(--cockpit-overlay-3);
+  border: 1px solid var(--cockpit-overlay-5);
+  color: var(--cockpit-text-medium);
 }
 [data-surface="aurora"] .ctxbar-action {
   width: 30px; height: 30px; border-radius: 8px;
   display: grid; place-items: center;
-  color: var(--ink-overlay-text-medium);
+  color: var(--cockpit-text-medium);
   position: relative;
   transition: background var(--motion-duration-ultra-fast), color var(--motion-duration-ultra-fast);
 }
-[data-surface="aurora"] .ctxbar-action:hover { background: var(--ink-overlay-3); color: var(--text-on-accent); }
+[data-surface="aurora"] .ctxbar-action:hover { background: var(--cockpit-overlay-3); color: var(--cockpit-text-strong); }
 [data-surface="aurora"] .ctxbar-action .pip { position: absolute; top: 6px; right: 6px; width: 6px; height: 6px; border-radius: 50%; background: var(--state-danger-fg); box-shadow: 0 0 6px var(--state-danger-fg); }
 [data-surface="aurora"] .ctxbar-user {
   display: flex; align-items: center; gap: 8px;
   padding: 3px 10px 3px 3px;
   border-radius: 20px;
-  border: 1px solid var(--ink-overlay-4);
-  background: var(--ink-overlay-1);
+  border: 1px solid var(--cockpit-overlay-4);
+  background: var(--cockpit-overlay-1);
   cursor: pointer;
   color: var(--color-workspace-pill-fg);
   font-size: 12px;
   transition: border-color var(--motion-duration-ultra-fast);
 }
-[data-surface="aurora"] .ctxbar-user:hover { border-color: var(--ink-overlay-6); }
+[data-surface="aurora"] .ctxbar-user:hover { border-color: var(--cockpit-overlay-6); }
 [data-surface="aurora"] .ctxbar-user .avatar {
   width: 24px; height: 24px; border-radius: 50%;
   background: var(--gradient-brand);
@@ -202,25 +202,44 @@
   gap: 2px;
   position: relative;
   z-index: var(--z-chrome-bg);
+  /* Aurora cockpit chrome (rail + ctxbar + statusbar) is always a dark
+     surface, independent of the content theme. Declaring dark color-scheme
+     here stops UA-level auto-dark/contrast managers from re-mapping the
+     semi-transparent white rail text to a dark body color on light themes
+     (obsidian-slate, ink-and-wire). Content area stays at the theme's
+     own color-scheme declaration in tokens.css. */
+  color-scheme: dark;
+}
+[data-surface="aurora"] .ctxbar,
+[data-surface="aurora"] .statusbar {
+  color-scheme: dark;
 }
 [data-surface="aurora"] .rail-item {
   width: 40px; height: 40px; border-radius: 10px;
   display: grid; place-items: center;
-  color: var(--ink-overlay-text-soft);
+  color: var(--cockpit-text-soft);
   position: relative;
   cursor: pointer;
   transition: color var(--motion-duration-ultra-fast) var(--motion-ease-out), background var(--motion-duration-ultra-fast) var(--motion-ease-out);
 }
-[data-surface="aurora"] .rail-item:hover { color: var(--text-on-accent); background: var(--ink-overlay-2); }
+[data-surface="aurora"] .rail-item:hover { color: var(--cockpit-text-strong); background: var(--cockpit-overlay-2); }
 [data-surface="aurora"] .rail-item.active {
-  color: var(--accent-primary);
-  background: rgba(var(--accent-primary-rgb), 0.12);
+  color: var(--color-rail-active-fg);
+  background: var(--color-rail-active-bg);
 }
+/* Rail icons must always inherit the rail button color. This protects light
+   themes (obsidian-slate, ink-and-wire) where the cockpit chrome stays dark
+   and the rail button color uses --cockpit-text-soft / --color-rail-active-fg;
+   if a future SVG forgets stroke="currentColor", this fallback still keeps
+   the stroke readable against the dark chrome. Belt-and-suspenders, not a
+   workaround for the icon contract in surfaces/aurora/icons.tsx. */
+[data-surface="aurora"] .rail-item svg { color: inherit; stroke: currentColor; }
+[data-surface="aurora"] .rail-item svg * { stroke: currentColor; }
 [data-surface="aurora"] .rail-item.active::before {
   content: ""; position: absolute; left: -1px; top: 10px; bottom: 10px;
   width: 2px; border-radius: 2px;
-  background: var(--accent-primary);
-  box-shadow: 0 0 8px var(--accent-primary);
+  background: var(--color-rail-active-bar);
+  box-shadow: 0 0 8px var(--color-rail-active-bar);
 }
 [data-surface="aurora"] .rail-item .rail-label {
   position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
@@ -235,7 +254,7 @@
 }
 [data-surface="aurora"] .rail-divider {
   width: 24px; height: 1px; margin: 6px 0;
-  background: var(--ink-overlay-3);
+  background: var(--cockpit-overlay-3);
 }
 [data-surface="aurora"] .rail-spacer { flex: 1; }
 
@@ -252,7 +271,7 @@
   opacity: 0; pointer-events: none;
   transition: opacity var(--motion-duration-ultra-fast), transform var(--motion-duration-ultra-fast);
   z-index: var(--z-dropdown);
-  border: 1px solid var(--ink-overlay-3);
+  border: 1px solid var(--cockpit-overlay-3);
   box-shadow: var(--shadow-lg);
 }
 [data-surface="aurora"] .rail-item:hover .tt { opacity: 1; transform: translateY(-50%) translateX(4px); }
@@ -339,7 +358,7 @@
   padding: 0 14px;
   background: var(--bg-sidebar);
   border-top: 1px solid var(--border-default);
-  color: var(--ink-overlay-text-soft);
+  color: var(--cockpit-text-soft);
   font-family: var(--font-mono);
   font-size: 11px;
   position: relative;
@@ -367,7 +386,7 @@
   height: 22px;
   border-radius: 6px;
 }
-[data-surface="aurora"] .statusbar .cell.clickable:hover { color: var(--text-on-accent); background: var(--ink-overlay-2); }
+[data-surface="aurora"] .statusbar .cell.clickable:hover { color: var(--cockpit-text-strong); background: var(--cockpit-overlay-2); }
 [data-surface="aurora"] .statusbar .cell.clickable:focus-visible {
   outline: 2px solid var(--state-info-fg);
   outline-offset: 1px;
@@ -1101,17 +1120,17 @@
   display: inline-flex; align-items: center; gap: 6px;
   height: 30px; padding: 0 10px;
   border-radius: 8px;
-  border: 1px solid var(--ink-overlay-3);
-  background: var(--ink-overlay-1);
-  color: var(--ink-overlay-text-medium);
+  border: 1px solid var(--cockpit-overlay-3);
+  background: var(--cockpit-overlay-1);
+  color: var(--cockpit-text-medium);
   font-size: 11px;
   cursor: pointer;
   transition: border-color var(--motion-duration-ultra-fast), background var(--motion-duration-ultra-fast), color var(--motion-duration-ultra-fast);
 }
 [data-surface="aurora"] .ctxbar-health:hover {
-  border-color: var(--ink-overlay-6);
-  background: var(--ink-overlay-2);
-  color: var(--text-on-accent);
+  border-color: var(--cockpit-overlay-6);
+  background: var(--cockpit-overlay-2);
+  color: var(--cockpit-text-strong);
 }
 [data-surface="aurora"] .ctxbar-health .dot {
   width: 8px; height: 8px; border-radius: 50%;
@@ -1124,12 +1143,12 @@
   width: 24px; height: 24px;
   display: grid; place-items: center;
   border-radius: 6px;
-  color: var(--ink-overlay-text-soft);
+  color: var(--cockpit-text-soft);
   cursor: pointer;
   transition: color var(--motion-duration-ultra-fast), background var(--motion-duration-ultra-fast);
   margin-left: 6px;
 }
-[data-surface="aurora"] .ctxbar-fav-star:hover { color: var(--text-on-accent); background: var(--ink-overlay-2); }
+[data-surface="aurora"] .ctxbar-fav-star:hover { color: var(--cockpit-text-strong); background: var(--cockpit-overlay-2); }
 [data-surface="aurora"] .ctxbar-fav-star.pinned { color: var(--state-warning-fg); }
 
 [data-surface="aurora"] .hud-popover {
@@ -1199,11 +1218,11 @@
   width: 30px; height: 30px;
   display: grid; place-items: center;
   border-radius: 8px;
-  color: var(--ink-overlay-text-medium);
+  color: var(--cockpit-text-medium);
   cursor: pointer;
   transition: background var(--motion-duration-ultra-fast), color var(--motion-duration-ultra-fast);
 }
-[data-surface="aurora"] .ctxbar-recent-trigger:hover { background: var(--ink-overlay-3); color: var(--text-on-accent); }
+[data-surface="aurora"] .ctxbar-recent-trigger:hover { background: var(--cockpit-overlay-3); color: var(--cockpit-text-strong); }
 
 /* ============================================================
    Aurora Final Polish — structured input primitives
