@@ -393,18 +393,23 @@ export function SurfacePickerSection({ scope }: SurfacePickerSectionProps) {
     | null;
   const [lastAction, setLastAction] = useState<ActivationAction>(null);
 
+  // Aurora surface-sync wave: pass `scope` explicitly so the role-scoped
+  // backend key is selected from the picker context, not derived from URL.
+  // The picker always knows which shell it is rendered in (via `scope` prop)
+  // — this is the safest path and avoids any URL-derive edge case (e.g. the
+  // user opens the picker from a settings drawer that overlays both shells).
   const handleActivate = useCallback(
     (id: SurfaceId) => {
-      setActiveSurface(id);
+      setActiveSurface(id, scope);
       setLastAction({ kind: "activated", id });
     },
-    [setActiveSurface],
+    [setActiveSurface, scope],
   );
 
   const handleReset = useCallback(() => {
-    setActiveSurface(null);
+    setActiveSurface(null, scope);
     setLastAction({ kind: "reset" });
-  }, [setActiveSurface]);
+  }, [setActiveSurface, scope]);
 
   // scope degisirse eski feedback'i sifirla (yanliskarikanlik olmasin).
   useEffect(() => {

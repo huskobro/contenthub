@@ -21,7 +21,7 @@
 [data-surface="aurora"] .audit-icon.update  { background: rgba(var(--accent-primary-rgb), 0.14);  color: var(--accent-primary-hover); }
 [data-surface="aurora"] .audit-icon.delete  { background: rgba(239,68,68,0.12);   color: var(--state-danger-fg); }
 [data-surface="aurora"] .audit-icon.publish { background: rgba(59,200,184,0.12);  color: var(--state-success-fg); }
-[data-surface="aurora"] .audit-icon.login   { background: rgba(176,122,216,0.12); color: #b07ad8; }
+[data-surface="aurora"] .audit-icon.login   { background: var(--accent-secondary-muted); color: var(--accent-secondary); }
 [data-surface="aurora"] .audit-icon.system  { background: var(--ink-overlay-2); color: var(--text-muted); }
 
 [data-surface="aurora"] .audit-time   { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); }

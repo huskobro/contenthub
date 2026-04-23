@@ -20,6 +20,10 @@ import {
 import { RADICAL_THEMES } from "../components/design-system/themes-radical";
 import { HORIZON_THEMES } from "../components/design-system/themes-horizon";
 import { updateSettingAdminValue, fetchEffectiveSetting } from "../api/effectiveSettingsApi";
+import { setUserOverride, deleteUserOverride } from "../api/usersApi";
+import { buildSurfacePickerEntry } from "../surfaces/selectableSurfaces";
+import { getSurface } from "../surfaces/registry";
+import type { SurfaceId } from "../surfaces/contract";
 
 // ---------------------------------------------------------------------------
 // Storage keys
@@ -34,58 +38,22 @@ const STORAGE_KEY_SURFACE = "contenthub:active-surface-id";
 const SURFACE_STORAGE_VERSION = 1;
 
 // ---------------------------------------------------------------------------
-// Aurora theme gating (short-lived hotfix per CLAUDE.md → Theme Availability
-// and Gating). Themes listed here are known to have class-context breakage
-// inside the Aurora surface (see docs/architecture/canonical-routes-and-surfaces.md
-// § "Current Slate gap"). The Aurora surface refuses to render these themes
-// and falls back to AURORA_FALLBACK_THEME_ID until the class-context migration
-// lands on a follow-up branch that removes this gate.
+// Aurora theme gating — REMOVED.
+// History: a short-lived hotfix gate (AURORA_GATED_THEME_IDS) used to mask
+// Slate from the Aurora surface while cockpit.css carried Dusk-only literal
+// foreground colors for breadcrumbs, ctxbar chrome, and the dark button
+// variant. The codex/aurora-surface-sync-and-slate wave moved those literals
+// into theme-aware tokens (--color-workspace-pill-fg, --color-breadcrumb-sep,
+// --color-breadcrumb-last-fg, --color-statusbar-value-fg, --color-btn-dark-fg)
+// with proper Slate overrides. With class-context parity reached, the gate is
+// no longer required. Both Aurora-bound themes (aurora-dusk and obsidian-slate)
+// render directly without coercion.
 //
-// Tracking: qa/aurora-real-user-hardening → follow-up class-context migration.
-// This constant MUST be removed once the referenced classes in
-// frontend/src/styles/aurora/cockpit.css no longer hard-code Dusk-only token
-// chains for breadcrumbs, caption chips, and inset-surface contexts.
+// Old exports (AURORA_GATED_THEME_IDS, AURORA_FALLBACK_THEME_ID,
+// resolveSafeThemeIdForSurface, healGatedThemeForSurface) are intentionally
+// gone. The companion test file themeStore.aurora-gate.unit.test.ts has been
+// removed in the same change.
 // ---------------------------------------------------------------------------
-
-export const AURORA_GATED_THEME_IDS: ReadonlySet<string> = new Set<string>([
-  "obsidian-slate",
-]);
-
-/**
- * Aurora CSS (frontend/src/styles/aurora/tokens.css) scopes its default "Dusk"
- * token set under the bare `[data-surface="aurora"]` selector, so ANY theme id
- * that does NOT match a specific override selector (e.g. `obsidian-slate`)
- * renders through Dusk tokens. We still want a deterministic, registered
- * theme manifest as the fallback target so `activeThemeId` stays coherent and
- * so `applyThemeToDOM` receives a real manifest. `midnight-ultraviolet` is a
- * registered dark built-in theme that has no Aurora class-context issues.
- * When the class-context migration lands and this gate is removed, callers
- * should fall back to whatever the default theme becomes at that point.
- */
-export const AURORA_FALLBACK_THEME_ID = "midnight-ultraviolet";
-
-/**
- * Aurora surface id — matches the manifest registered in
- * frontend/src/surfaces/manifests/register.tsx. Duplicated here (rather than
- * imported) to keep themeStore free of circular imports with the surface
- * registry module graph.
- */
-const AURORA_SURFACE_ID = "aurora";
-
-/**
- * Resolve the theme id that should actually be rendered for a given surface.
- * Pure function — does NOT mutate state or localStorage. Callers that also
- * want to heal persistence should use `healGatedThemeForSurface()`.
- */
-export function resolveSafeThemeIdForSurface(
-  themeId: string,
-  surfaceId: string | null | undefined,
-): string {
-  if (surfaceId === AURORA_SURFACE_ID && AURORA_GATED_THEME_IDS.has(themeId)) {
-    return AURORA_FALLBACK_THEME_ID;
-  }
-  return themeId;
-}
 
 // ---------------------------------------------------------------------------
 // Built-in themes (cannot be deleted)
@@ -213,6 +181,195 @@ function saveActiveSurfaceId(id: string | null): void {
 }
 
 // ---------------------------------------------------------------------------
+// Role-scoped surface preference (Aurora surface-sync wave)
+//
+// Two backend setting keys, one per shell:
+//   - ui.surface.preference.admin
+//   - ui.surface.preference.user
+//
+// localStorage holds a single envelope (the legacy v1 STORAGE_KEY_SURFACE
+// payload) acting as cache/fallback. Backend is the source of truth; on auth
+// bootstrap the store hydrates by reading the key matching the CURRENT shell
+// (URL prefix /admin → admin key, /user → user key). Cross-device consistency
+// for the active shell is restored on every login. The other shell's
+// preference is read lazily when the user navigates into that shell.
+// ---------------------------------------------------------------------------
+
+const SURFACE_PREFERENCE_KEYS = {
+  admin: "ui.surface.preference.admin",
+  user: "ui.surface.preference.user",
+} as const;
+
+export type SurfacePreferenceScope = "admin" | "user";
+
+/**
+ * Derive the active shell scope from the current URL. Falls back to `null`
+ * when the document is not available (test/SSR) or the path matches neither
+ * `/admin/*` nor `/user/*`. Callers that get `null` should NOT write to a
+ * backend key — the preference is shell-bound by design.
+ */
+function deriveScopeFromLocation(): SurfacePreferenceScope | null {
+  try {
+    if (typeof window === "undefined" || !window.location) return null;
+    const path = window.location.pathname || "";
+    if (path.startsWith("/admin")) return "admin";
+    if (path.startsWith("/user")) return "user";
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Sanitize a surface id against the picker rules for a given panel scope.
+ * Returns the id as-is when it would be selectable; returns `null` when the
+ * id is unknown, gated, scope-mismatched, hidden, or status-disabled. We
+ * intentionally route through `buildSurfacePickerEntry` so the resolver and
+ * the persistence layer apply the SAME rules — anything the resolver would
+ * fall back away from never reaches the preference store.
+ *
+ * `null` is always allowed (it means "clear preference / use defaults").
+ */
+function sanitizeSurfaceForScope(
+  id: string | null,
+  scope: SurfacePreferenceScope,
+  enabledSurfaceIds: ReadonlySet<SurfaceId>,
+): string | null {
+  if (id === null) return null;
+  const surface = getSurface(id as SurfaceId);
+  if (!surface) return null;
+  const entry = buildSurfacePickerEntry(surface, {
+    scope,
+    enabledSurfaceIds,
+    activeSurfaceId: null,
+  });
+  return entry.selectable ? id : null;
+}
+
+/**
+ * Lazy snapshot reader cache. We avoid a static import of
+ * `useSurfaceResolution` because that module already imports `themeStore`
+ * (circular). Instead we resolve the module asynchronously on first call and
+ * cache the typed snapshot reader. Callers that need the snapshot before
+ * resolution completes get the conservative default (aurora not enabled).
+ */
+type SurfaceSnapshotReader = () => { auroraEnabled: boolean };
+let cachedSnapshotReader: SurfaceSnapshotReader | null = null;
+let snapshotReaderResolveStarted = false;
+
+function ensureSnapshotReader(): void {
+  if (cachedSnapshotReader || snapshotReaderResolveStarted) return;
+  snapshotReaderResolveStarted = true;
+  void import("../surfaces/useSurfaceResolution")
+    .then((mod) => {
+      const reader = (mod as { __getSurfaceSettingsSnapshot?: SurfaceSnapshotReader })
+        .__getSurfaceSettingsSnapshot;
+      if (typeof reader === "function") {
+        cachedSnapshotReader = reader;
+      }
+    })
+    .catch(() => {
+      // Module unavailable (test env that mocks surfaces) — fall through.
+    });
+}
+
+/**
+ * Build the enabled-surface set the resolver and the picker share. Mirrors
+ * `useSurfaceResolution`'s logic exactly — legacy + horizon are always-on
+ * safety-nets; aurora is gated by `ui.surface.aurora.enabled`. We do a
+ * synchronous best-effort here: if the cached snapshot says aurora is on, we
+ * include it; otherwise we keep aurora out (conservative: no false-positive
+ * persist writes).
+ */
+function readEnabledSurfaceIds(): ReadonlySet<SurfaceId> {
+  ensureSnapshotReader();
+  const set = new Set<SurfaceId>();
+  set.add("legacy");
+  set.add("horizon");
+  if (cachedSnapshotReader) {
+    try {
+      const snap = cachedSnapshotReader();
+      if (snap?.auroraEnabled) set.add("aurora");
+    } catch {
+      /* ignore */
+    }
+  }
+  return set;
+}
+
+/**
+ * Read auth identity (user id) without importing authStore directly. We avoid
+ * the import to keep themeStore free of a circular dep with authStore (which
+ * imports themeStore lazily for theme hydration). localStorage is the single
+ * synchronous shared channel.
+ */
+function readAuthUserIdFromStorage(): string | null {
+  try {
+    if (typeof localStorage === "undefined") return null;
+    const id = localStorage.getItem("contenthub:active-user-id");
+    if (id && id.length > 0) return id;
+    const raw = localStorage.getItem("contenthub:auth-user");
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as { id?: unknown };
+    return typeof parsed.id === "string" && parsed.id.length > 0 ? parsed.id : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Fire-and-forget backend persistence for a surface preference.
+ *
+ * Caller contract (Aurora-only finalization wave):
+ *   - `setActiveSurface` MUST sanitize before calling here. This function
+ *     re-runs sanitization as defense-in-depth (so a misuse from another
+ *     code path cannot land a dirty value in backend) but the warning fire
+ *     paths are no longer expected on the happy `setActiveSurface` flow.
+ *
+ * Writes only when:
+ *   - scope is known (the caller knows which shell the preference belongs to)
+ *   - the user is authenticated (we have an id to attach the override to)
+ *   - the id still sanitizes cleanly (defense-in-depth)
+ *
+ * `null` clears the override (DELETE) instead of writing an empty string —
+ * matches the resolver's "no preference → fall back to defaults" contract.
+ *
+ * Errors are swallowed: localStorage cache stays as the fallback so the user
+ * sees no UI break when the backend is unreachable.
+ */
+function persistSurfacePreference(
+  id: string | null,
+  scope: SurfacePreferenceScope | null,
+): void {
+  if (scope === null) return; // unknown shell, do not write
+  const userId = readAuthUserIdFromStorage();
+  if (!userId) return; // unauthenticated — localStorage cache only
+  const sanitized = sanitizeSurfaceForScope(id, scope, readEnabledSurfaceIds());
+  const key = SURFACE_PREFERENCE_KEYS[scope];
+  if (sanitized === null && id !== null) {
+    // Defense-in-depth: a non-setActiveSurface caller passed an unsanitized
+    // id. Refuse the write so the backend record stays clean. The proper
+    // call site (setActiveSurface) sanitizes BEFORE calling here, so this
+    // branch should not fire on the happy path.
+    // eslint-disable-next-line no-console
+    console.warn(
+      `[themeStore] persistSurfacePreference: id="${id}" failed sanitization for scope="${scope}" (defense-in-depth).`,
+    );
+    return;
+  }
+  if (sanitized === null) {
+    // Explicit clear — DELETE the override.
+    deleteUserOverride(userId, key).catch(() => {
+      // Backend save failed — localStorage is still the primary cache.
+    });
+    return;
+  }
+  setUserOverride(userId, key, sanitized).catch(() => {
+    // Backend save failed — localStorage is still the primary cache.
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Store
 // ---------------------------------------------------------------------------
 
@@ -232,11 +389,25 @@ interface ThemeState {
   /** Switch to a different theme */
   setActiveTheme: (id: string) => void;
   /**
-   * Set the active surface id. Pass `null` to clear the preference and fall
-   * back to role/global defaults. The resolver decides whether the id is
-   * usable — invalid ids still persist but result in a legacy fallback.
+   * Set the active surface id and persist the preference.
+   *
+   * Behavior:
+   *   - In-memory state + localStorage cache are updated immediately.
+   *   - Backend role-scoped key (`ui.surface.preference.{admin|user}`) is
+   *     written fire-and-forget when (a) the caller passes `scope` OR the
+   *     URL prefix can be derived AND (b) the user is authenticated AND
+   *     (c) the id sanitizes cleanly for the resolved scope.
+   *   - Sanitization rejects unknown / disabled / hidden / scope-mismatched
+   *     ids — those would also be refused by the resolver, so we keep the
+   *     persisted preference in lock-step with what the resolver can act on.
+   *   - `null` clears the preference (DELETE on backend, `{v:1, id:null}`
+   *     in localStorage).
+   *
+   * `scope` is optional; when omitted, the store derives it from
+   * `window.location.pathname` (`/admin/*` → admin, `/user/*` → user). In
+   * non-browser environments (tests, SSR), the backend write is skipped.
    */
-  setActiveSurface: (id: string | null) => void;
+  setActiveSurface: (id: string | null, scope?: SurfacePreferenceScope) => void;
   /** Import a new theme. Returns validation errors (empty = success). */
   importTheme: (manifest: unknown) => ThemeValidationError[];
   /** Remove a custom theme by id. Built-in themes cannot be removed. */
@@ -258,15 +429,24 @@ interface ThemeState {
    */
   hydrateFromBackend: (opts?: { force?: boolean }) => void;
   /**
-   * Heal Aurora-incompatible persisted state. If the currently active theme
-   * is gated on the Aurora surface and the caller's surface is Aurora, this
-   * rewrites both the store state and localStorage to the Aurora fallback
-   * theme. No-op when the theme is safe. Safe to call from ThemeSurfaceBinder
-   * on every surface change — it only writes when a mismatch is detected.
+   * Hydrate surface preference from backend.
    *
-   * Short-lived; removed alongside AURORA_GATED_THEME_IDS.
+   * Reads the role-scoped key (`ui.surface.preference.{admin|user}`) for the
+   * current shell and writes the result into in-memory state + localStorage
+   * cache. Behavior mirrors `hydrateFromBackend`:
+   *
+   *   - Opportunistic (default): only when localStorage has no cached
+   *     surface AND the in-memory `activeSurfaceId` is null.
+   *   - Force mode: overrides cache with backend value when they disagree.
+   *     Use at login / auth bootstrap for cross-device consistency.
+   *
+   * Sanitization gates the write: ids the resolver would reject are
+   * discarded (we DO NOT mirror a bad backend value into local state).
+   *
+   * `scope` is optional; when omitted, derives from URL. When neither URL
+   * nor an explicit scope are available, the call is a no-op.
    */
-  healGatedThemeForSurface: (surfaceId: string | null | undefined) => void;
+  hydrateSurfaceFromBackend: (opts?: { force?: boolean; scope?: SurfacePreferenceScope }) => void;
 }
 
 export const useThemeStore = create<ThemeState>((set, get) => {
@@ -296,9 +476,74 @@ export const useThemeStore = create<ThemeState>((set, get) => {
       saveActiveThemeId(id);
     },
 
-    setActiveSurface: (id: string | null) => {
+    setActiveSurface: (id: string | null, scope?: SurfacePreferenceScope) => {
+      // Source-of-truth contract (Aurora-only finalization wave):
+      //
+      //   in-memory  (this tab, this navigation)        — always reflects
+      //                                                   the latest click
+      //   localStorage  (this browser, all tabs/loads)  — only persists when
+      //                                                   the id sanitizes
+      //                                                   for the resolved
+      //                                                   scope (or is null)
+      //   backend  (this user, all browsers)            — only writes when
+      //                                                   scope known + auth
+      //                                                   ok + sanitization ok
+      //
+      // The split exists so a click on a surface card cannot leave a stale
+      // "dirty" id behind that the resolver would later reject. localStorage
+      // is now treated as a strict cache mirror of what the backend would
+      // accept — if we won't write it to backend, we do not write it locally
+      // either. Otherwise a bad cache outlives the session and forces the
+      // user to manually clear storage.
+      //
+      // `null` clears in-memory + clears LS + DELETEs backend (idempotent).
+      const resolvedScope = scope ?? deriveScopeFromLocation();
+
+      // Always update in-memory state — the user clicked, the UI must respond
+      // for this navigation. We do NOT persist if the choice is invalid for
+      // the current scope; we write the in-memory value so the user can see
+      // the result of their click for diagnostics, but a reload heals the
+      // tab back to the resolver's pick.
       set({ activeSurfaceId: id });
-      saveActiveSurfaceId(id);
+
+      if (id === null) {
+        // Explicit clear — wipe local cache, hand off to backend DELETE.
+        saveActiveSurfaceId(null);
+        persistSurfacePreference(null, resolvedScope);
+        return;
+      }
+
+      if (resolvedScope === null) {
+        // We cannot validate without a shell scope (e.g. user clicked from
+        // /login or another non-shell route). Refuse to pollute localStorage.
+        // In-memory state already updated above so the UI responds; the
+        // resolver on next mount will pick a sane surface.
+        // eslint-disable-next-line no-console
+        console.warn(
+          `[themeStore] setActiveSurface("${id}") called outside a shell route; persistence skipped (in-memory only).`,
+        );
+        return;
+      }
+
+      const sanitized = sanitizeSurfaceForScope(
+        id,
+        resolvedScope,
+        readEnabledSurfaceIds(),
+      );
+      if (sanitized === null) {
+        // The id failed sanitization (gated/disabled/unknown/scope-mismatch).
+        // Refuse to write to LS or backend so the cache stays in lock-step
+        // with what the resolver will accept.
+        // eslint-disable-next-line no-console
+        console.warn(
+          `[themeStore] Refusing to persist surface preference "${id}" for scope="${resolvedScope}" (sanitization failed). In-memory state still set so the UI reflects the click; reload will revert to the resolver's pick.`,
+        );
+        return;
+      }
+
+      // Sanitization passed — mirror to LS and backend.
+      saveActiveSurfaceId(sanitized);
+      persistSurfacePreference(sanitized, resolvedScope);
     },
 
     importTheme: (manifest: unknown) => {
@@ -362,17 +607,6 @@ export const useThemeStore = create<ThemeState>((set, get) => {
 
     isBuiltin: (id: string) => BUILTIN_THEMES.some((b) => b.id === id),
 
-    healGatedThemeForSurface: (surfaceId: string | null | undefined) => {
-      const { activeThemeId, themes } = get();
-      const safeId = resolveSafeThemeIdForSurface(activeThemeId, surfaceId);
-      if (safeId === activeThemeId) return;
-      // Only heal if the fallback theme is actually registered; otherwise do
-      // nothing so we don't strand the user on an unknown id.
-      if (!themes.some((t) => t.id === safeId)) return;
-      set({ activeThemeId: safeId });
-      saveActiveThemeId(safeId);
-    },
-
     hydrateFromBackend: (opts?: { force?: boolean }): void => {
       const force = opts?.force === true;
 
@@ -410,6 +644,67 @@ export const useThemeStore = create<ThemeState>((set, get) => {
           // Backend unreachable — use default, no error
         });
     },
+
+    hydrateSurfaceFromBackend: (opts?: {
+      force?: boolean;
+      scope?: SurfacePreferenceScope;
+    }): void => {
+      const force = opts?.force === true;
+      const scope = opts?.scope ?? deriveScopeFromLocation();
+      // Without a known shell scope we cannot pick a key — leave cache as-is.
+      if (scope === null) return;
+
+      const { activeSurfaceId } = get();
+      let localSaved: string | null = null;
+      try {
+        localSaved = localStorage.getItem(STORAGE_KEY_SURFACE);
+      } catch {
+        // localStorage unavailable — continue to backend hydration.
+      }
+      // Opportunistic path: cache or in-memory state already holds a value;
+      // nothing to do unless the caller forced a refresh (e.g. login).
+      if (!force && (activeSurfaceId !== null || localSaved !== null)) return;
+
+      const key = SURFACE_PREFERENCE_KEYS[scope];
+      fetchEffectiveSetting(key)
+        .then((setting) => {
+          const backendId = setting?.effective_value;
+          if (backendId === null || backendId === undefined) {
+            // Backend has no preference yet — clear stale local cache when
+            // forced (cross-device path). On the opportunistic path, leave
+            // the cache alone so the user keeps a deterministic surface.
+            if (force) {
+              set({ activeSurfaceId: null });
+              saveActiveSurfaceId(null);
+            }
+            return;
+          }
+          if (typeof backendId !== "string" || !backendId) return;
+
+          // Sanitize: refuse to mirror a value the resolver would reject.
+          const sanitized = sanitizeSurfaceForScope(
+            backendId,
+            scope,
+            readEnabledSurfaceIds(),
+          );
+          if (sanitized === null) {
+            // Backend value is stale (e.g. references a removed surface).
+            // Do NOT propagate to local state.
+            // eslint-disable-next-line no-console
+            console.warn(
+              `[themeStore] Backend surface preference "${backendId}" failed sanitization for scope="${scope}"; ignored.`,
+            );
+            return;
+          }
+
+          if (force && sanitized === activeSurfaceId) return;
+          set({ activeSurfaceId: sanitized });
+          saveActiveSurfaceId(sanitized);
+        })
+        .catch(() => {
+          // Backend unreachable — keep cache as-is, no error surfaced.
+        });
+    },
   };
 });
 
@@ -417,6 +712,16 @@ export const useThemeStore = create<ThemeState>((set, get) => {
 // If localStorage already has a theme, this is a no-op.
 try {
   useThemeStore.getState().hydrateFromBackend();
+} catch {
+  // Silently fail in test/SSR environments
+}
+// Surface preference hydration: opportunistic on module load, force on
+// login. Module-load path only acts when neither in-memory state nor cache
+// holds a value, so first paint can still render with the backend pref
+// when localStorage was cleared. Auth bootstrap (`applyTokenResponse`)
+// triggers a force-mode call to overwrite stale cache cross-device.
+try {
+  useThemeStore.getState().hydrateSurfaceFromBackend();
 } catch {
   // Silently fail in test/SSR environments
 }

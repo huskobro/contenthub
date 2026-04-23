@@ -1039,12 +1039,68 @@ KNOWN_SETTINGS: Dict[str, Dict[str, Any]] = {
         "builtin_default": "aurora",
         "wired_to": "frontend.surfaces.resolver",
     },
+    # --- Surface User Preferences (role-scoped) ---
+    # Aurora-surface-sync wave: kullanici tercihi artik tek global anahtar
+    # degil, shell-rolune gore ikiye ayrildi. Sebep: admin shell ile user
+    # shell birbirinden bagimsiz IA'lar (CLAUDE.md "Shell Branching Rule").
+    # Admin shell'de yapilan surface secimi user shell'i etkilememeli;
+    # tersi de gecerli. Resolver layer-2 (user-preference) bu iki anahtarin
+    # ilgili rol icin gecerli olanini okur. Frontend themeStore yazimi
+    # `setActiveSurface(id, scope)` kontratiyla yapilir; scope shell URL
+    # prefix'inden tureilir (admin → admin preference, user → user
+    # preference). Sanitize katmani: resolver'in reddedecegi (disabled /
+    # unknown) bir id preference'a yazilmaz — frontend ve backend ayri ayri
+    # filtreler.
+    "ui.surface.preference.admin": {
+        "group": "ui",
+        "type": "string",
+        "label": "Admin Shell Surface Tercihi (Kullanici)",
+        "help_text": (
+            "Kullanici admin shell'de hangi yuzeyi tercih ediyor? Bos "
+            "birakilirsa `ui.surface.default.admin` kullanilir. Resolver "
+            "yine kill-switch + aurora gate kontrolunden gecirir; gated "
+            "veya bilinmeyen id'ler safety-net olarak legacy'e duser. "
+            "Yalniz aktif/registered surface id'leri (legacy, horizon, "
+            "aurora) gecerli degerdir; diger string'ler resolver "
+            "tarafindan reddedilir."
+        ),
+        "module_scope": None,
+        "env_var": None,
+        "builtin_default": None,
+        "user_override_allowed": True,
+        "visible_to_user": True,
+        "visible_in_wizard": False,
+        "read_only_for_user": False,
+        "wired_to": "frontend.themeStore.setActiveSurface(scope='admin') + frontend.surfaces.resolver layer-2",
+    },
+    "ui.surface.preference.user": {
+        "group": "ui",
+        "type": "string",
+        "label": "User Shell Surface Tercihi (Kullanici)",
+        "help_text": (
+            "Kullanici user shell'de hangi yuzeyi tercih ediyor? Bos "
+            "birakilirsa `ui.surface.default.user` kullanilir. Admin "
+            "preference ile bagimsiz: admin shell'deki secim user "
+            "shell'e tasinmaz (CLAUDE.md Shell Branching Rule). "
+            "Sanitize/gate kurallari `ui.surface.preference.admin` ile "
+            "ayni — gated/unknown id'ler reddedilir."
+        ),
+        "module_scope": None,
+        "env_var": None,
+        "builtin_default": None,
+        "user_override_allowed": True,
+        "visible_to_user": True,
+        "visible_in_wizard": False,
+        "read_only_for_user": False,
+        "wired_to": "frontend.themeStore.setActiveSurface(scope='user') + frontend.surfaces.resolver layer-2",
+    },
     # Aurora-only cleanup wave: ui.surface.atrium.enabled,
     # ui.surface.bridge.enabled, ui.surface.canvas.enabled were removed
-    # alongside the surface source modules. Existing DB admin_value rows
-    # for those keys are now harmless: the resolver simply has no
-    # consumer for them and the resolver/registry no longer registers
-    # those surface ids.
+    # alongside the surface source modules and any surviving DB rows are
+    # hard-deleted by Alembic migration `aurora_surface_001`. The seeder
+    # iterates KNOWN_SETTINGS so it will not recreate them; the orphan
+    # marker (`mark_orphan_settings`) cannot find them either since the
+    # rows are gone. No "harmless leftover" code path is needed.
     "ui.surface.aurora.enabled": {
         "group": "ui",
         "type": "boolean",
