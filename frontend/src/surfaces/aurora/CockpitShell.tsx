@@ -604,8 +604,14 @@ interface StatusbarProps {
   renderActiveCount: number;
   jobs: { queued: number; running: number; failed: number };
   sse: "live" | "reconnecting" | "offline";
-  /** Job drill-down route prefix (admin → /admin/jobs, user → /user/jobs) */
-  jobsBase: string;
+  /**
+   * Per-status drill-down URL. Admin shell points all three tiles at
+   * `/admin/jobs?status=…`. User shell has no `/user/jobs` list route, so
+   * queued/running land in `/user/projects` (the user-facing production hub)
+   * and failed lands in `/user/inbox` (UserDigestDashboard's existing rule:
+   * failures surface in the inbox, not a jobs registry).
+   */
+  jobsHref: { queued: string; running: string; failed: string };
 }
 
 function Statusbar({
@@ -613,7 +619,7 @@ function Statusbar({
   renderActiveCount,
   jobs,
   sse,
-  jobsBase,
+  jobsHref,
 }: StatusbarProps) {
   const navigate = useNavigate();
   const sseTone = sse === "live" ? "ok" : sse === "reconnecting" ? "warn" : "err";
@@ -623,7 +629,8 @@ function Statusbar({
       : sse === "reconnecting"
         ? "Yeniden bağlanıyor"
         : "Çevrimdışı";
-  const goJobs = (status: string) => navigate(`${jobsBase}?status=${status}`);
+  const goJobs = (status: "queued" | "running" | "failed") =>
+    navigate(jobsHref[status]);
   return (
     <div className="statusbar" data-testid="aurora-statusbar">
       <div className={`cell ${sseTone}`} title={`SSE bağlantı durumu: ${sseLabel}`}>
@@ -834,12 +841,29 @@ export function CockpitShell({
   // gerçek connection state'ini yazar. Cockpit Statusbar burada okur.
   const sseStatus = useSSEStatusStore((s) => s.status);
 
-  // Job drill-down route prefix: admin → /admin/jobs, user → /user/jobs.
-  // location.pathname'in ilk segmentinden türetilir; "/admin/..." veya
-  // "/user/..." dışındaki route'larda admin'e fallback olur.
-  const jobsBase = useMemo(() => {
-    if (location.pathname.startsWith("/user")) return "/user/jobs";
-    return "/admin/jobs";
+  // Status drill-down URLs per shell. Admin uses `/admin/jobs?status=…`
+  // (registry with status filter). User shell has no `/user/jobs` list
+  // route — only `/user/jobs/:id` — so queued/running route to
+  // `/user/projects` (production hub) and failed to `/user/inbox`
+  // (UserDigestDashboard's convention: failures surface in the inbox).
+  // Anything outside /admin/* and /user/* falls back to admin targets.
+  const jobsHref = useMemo<{
+    queued: string;
+    running: string;
+    failed: string;
+  }>(() => {
+    if (location.pathname.startsWith("/user")) {
+      return {
+        queued: "/user/projects",
+        running: "/user/projects",
+        failed: "/user/inbox",
+      };
+    }
+    return {
+      queued: "/admin/jobs?status=queued",
+      running: "/admin/jobs?status=running",
+      failed: "/admin/jobs?status=failed",
+    };
   }, [location.pathname]);
 
   // Aktif route etiketi — son crumb favori/recent için "okunabilir başlık"
@@ -964,7 +988,7 @@ export function CockpitShell({
         renderActiveCount={renderActiveCount}
         jobs={jobs}
         sse={sseStatus}
-        jobsBase={jobsBase}
+        jobsHref={jobsHref}
       />
     </div>
   );

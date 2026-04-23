@@ -498,7 +498,7 @@ export function AuroraAdminDashboardPage() {
             </div>
             <div className="health-grid">
               <div
-                className={`hh ${health?.db_connected ? "ok" : "warn"}`}
+                className={`hh hh-static ${health?.db_connected ? "ok" : "warn"}`}
                 role="note"
                 aria-label={
                   health?.db_connected ? "Veritabanı bağlı" : "Veritabanı kopuk"
@@ -534,7 +534,7 @@ export function AuroraAdminDashboardPage() {
                 <div className="hm">{fmtCount(liveJobCounts.queued)} kuyrukta</div>
               </button>
               <div
-                className="hh ok"
+                className="hh hh-static ok"
                 role="note"
                 aria-label="Python ortamı"
               >

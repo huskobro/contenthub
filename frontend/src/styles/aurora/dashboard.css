@@ -147,6 +147,18 @@
   outline-offset: 2px;
 }
 
+/* Salt ölçüm (non-interactive) health hücreleri — DB/Python gibi durum
+   kartları. Komşu button.hh-click kardeşleriyle karışmasın diye görsel
+   olarak net ayrılır: kesikli kenar + hafif opaklık + cursor default.
+   Öğe zaten <div role="note">; bu sınıf sadece afordansı görselleştirir. */
+[data-surface="aurora"] .hh.hh-static {
+  cursor: default;
+  background: transparent;
+  border-style: dashed;
+  border-color: var(--border-subtle);
+  opacity: 0.88;
+}
+
 /* ---------- Main 3-col layout ---------- */
 [data-surface="aurora"] .dash-grid {
   display: grid; grid-template-columns: 2.2fr 1fr;

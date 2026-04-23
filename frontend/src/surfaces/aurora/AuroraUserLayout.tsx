@@ -6,11 +6,17 @@
  * bug'ı engellenir.
  *
  *   home      — /user (Anasayfa, Bugün)
- *   projects  — /user/projects, /user/jobs, /user/create, /user/news-picker
+ *   projects  — /user/projects, /user/jobs/:id, /user/create, /user/news-picker
  *   publish   — /user/publish, /user/calendar, /user/content
  *   channels  — /user/channels, /user/connections, /user/automation
  *   engage    — /user/inbox, /user/comments, /user/posts, /user/playlists
  *   analytics — /user/analytics, /user/settings
+ *
+ * Not: `/user/jobs` liste route'u YOKTUR; user tarafında sadece
+ * `/user/jobs/:id` detay sayfası vardır. Detay sayfası "Projeler" rail
+ * slot'u altında rail-highlight alır. Statusbar queued/running/failed
+ * tile'ları user shell'de `/user/projects` ve `/user/inbox`'a gider
+ * (bkz. CockpitShell `jobsHref`).
  */
 
 import { useEffect, useMemo } from "react";
@@ -43,6 +49,9 @@ const AURORA_USER_RAIL: AuroraRailSlot[] = [
     id: "projects",
     label: "Projeler",
     icon: "folder",
+    // `/user/jobs` prefix'i SADECE `/user/jobs/:id` detay sayfasını yakalar
+    // (user'da liste route'u yok). Kullanıcı iş detay'ına girdiğinde
+    // "Projeler" rail slot'u vurgulansın diye burada tutulur.
     matchPrefixes: ["/user/projects", "/user/jobs", "/user/create", "/user/news-picker"],
     homeRoute: "/user/projects",
     groupIds: ["production"],
