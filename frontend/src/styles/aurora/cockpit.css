@@ -480,6 +480,34 @@
 [data-surface="aurora"] .card-pad { padding: 18px 20px; }
 [data-surface="aurora"] .card-tight { padding: 12px 14px; }
 
+/*
+ * Emerald Glass — signature translucent card surfaces.
+ * The theme ships rgba() surface tokens (bg-surface, bg-panel) that are
+ * ~62% opaque; the `backdrop-filter: blur(var(--glass-blur))` rule below
+ * promotes that translucency into a proper frosted-glass effect in
+ * browsers that support it. Browsers without `backdrop-filter` degrade
+ * to the opaque `--glass-fallback-bg` token (set on each translucent
+ * surface) so the theme still reads as intentional petrol-teal glass
+ * rather than a broken panel.
+ *
+ * Scoped to `.card` only — we intentionally do NOT blur the full
+ * cockpit chrome (ctxbar, rail, statusbar) to keep text chrome crisp
+ * and avoid GPU cost on scroll. Selected panels, cards, and overlays
+ * carry the glass signature; structural chrome stays solid.
+ */
+[data-surface="aurora"][data-theme="emerald-glass"] .card {
+  background: var(--glass-fallback-bg, var(--bg-surface));
+  background: var(--bg-surface);
+  backdrop-filter: blur(var(--glass-blur, 14px)) saturate(140%);
+  -webkit-backdrop-filter: blur(var(--glass-blur, 14px)) saturate(140%);
+  border-color: var(--glass-border, var(--border-default));
+}
+@supports not (backdrop-filter: blur(1px)) {
+  [data-surface="aurora"][data-theme="emerald-glass"] .card {
+    background: var(--glass-fallback-bg, #0f2925);
+  }
+}
+
 /* ---- Grid helpers ---- */
 [data-surface="aurora"] .grid { display: grid; gap: 14px; }
 [data-surface="aurora"] .g-2 { grid-template-columns: repeat(2, 1fr); }

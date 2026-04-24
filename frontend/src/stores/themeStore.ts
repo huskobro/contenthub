@@ -72,10 +72,24 @@ const SURFACE_STORAGE_VERSION = 1;
 //     with void-terminal and tokyo-neon. Replaced with nordic-frost — a calm
 //     Scandinavian light theme that counterweights Obsidian Slate's dense
 //     indigo-tech identity on the light side.
+//   - Expansion pass (`codex/aurora-theme-expansion-pass`): dropped
+//     nordic-frost because its quiet Scandinavian identity sat too close
+//     to Obsidian Slate on the light side (priority: differentiation >
+//     theme count). Replaced with a deliberate four-theme set that
+//     widens the visual range:
+//       * emerald-glass  — translucent petrol-teal dark, backdrop-filter
+//         blur with safe fallback, technical-cinematic register.
+//       * copper-dune    — warm earth-and-copper light, DM Sans +
+//         IBM Plex Mono, instrument/workshop register.
+//       * cobalt-storm   — dramatic dark navy with electric cobalt,
+//         sharp radius, high-gravity shadow, trading-desk register.
+//       * rose-laboratory — editorial rose-on-cream light with Fraunces
+//         serif headings, longform/lab-notebook register.
 //
-// Remaining gallery set (6 themes, full Aurora token coverage):
+// Remaining gallery set (9 themes, full Aurora token coverage):
 //   aurora-dusk, obsidian-slate (DEFAULT_THEME), void-terminal,
-//   tokyo-neon, ink-and-wire, nordic-frost.
+//   tokyo-neon, ink-and-wire, emerald-glass, copper-dune, cobalt-storm,
+//   rose-laboratory.
 const BUILTIN_THEMES: ThemeManifest[] = [
   AURORA_DUSK_THEME,
   DEFAULT_THEME,

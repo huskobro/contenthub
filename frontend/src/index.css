@@ -240,20 +240,6 @@ nav[style*="sidebar"] {
   box-shadow: 4px 0 24px rgba(0,0,0,0.12);
 }
 
-/* Nordic Frost — atmospheric effects (light, steel-blue, calm) */
-[data-theme="nordic-frost"] {
-  background: radial-gradient(ellipse at 12% 0%, rgba(65, 102, 138, 0.05) 0%, transparent 55%),
-              radial-gradient(ellipse at 88% 100%, rgba(107, 90, 138, 0.035) 0%, transparent 55%),
-              var(--ch-surface-page);
-}
-[data-theme="nordic-frost"] [data-testid*="metric"] {
-  transition: transform 0.22s var(--ch-motion-easing), box-shadow 0.22s var(--ch-motion-easing);
-}
-[data-theme="nordic-frost"] [data-testid*="metric"]:hover { transform: translateY(-1px); }
-[data-theme="nordic-frost"] nav[class*="bg-surface-sidebar"] {
-  box-shadow: 4px 0 24px rgba(27, 32, 39, 0.10);
-}
-
 /* ---------------------------------------------------------------------------
    Void Terminal — Dark theme ambient glow effects (CSS-only, no JS needed)
    These use CSS variables and only activate when Void Terminal colors are set.
@@ -524,56 +510,6 @@ body[style*="#0a0a0c"] [data-testid="command-palette-input"]::placeholder {
   background-color: rgba(140, 112, 80, 0.04) !important;
 }
 
-/* ---------------------------------------------------------------------------
-   Nordic Frost — Scandinavian minimal / architect's workbench
-   Calm focus ring, airy chrome, diffused shadows, generous spacing,
-   no scanlines, no texture overlays. The theme's identity comes from
-   restraint, not decoration.
-   --------------------------------------------------------------------------- */
-
-[data-theme="nordic-frost"] :focus-visible {
-  outline: 2px solid var(--ch-focus, #41668a);
-  outline-offset: 2px;
-  box-shadow: 0 0 0 4px rgba(65, 102, 138, 0.15);
-}
-
-/* Sidebar: soft right-edge shadow, no accent overlay */
-[data-theme="nordic-frost"] nav {
-  border-right: 1px solid rgba(27, 32, 39, 0.08);
-  background-image: none !important;
-}
-
-/* Header: clean under-line, subtle blur — airport wayfinding calm */
-[data-theme="nordic-frost"] header {
-  backdrop-filter: saturate(140%) blur(6px);
-  -webkit-backdrop-filter: saturate(140%) blur(6px);
-  border-bottom: 1px solid rgba(27, 32, 39, 0.06) !important;
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.6) !important;
-}
-
-/* Cards: paper with a faint cool shadow — never stamped or neon */
-[data-theme="nordic-frost"] section,
-[data-theme="nordic-frost"] [class*="bg-surface-card"] {
-  border: 1px solid rgba(27, 32, 39, 0.06);
-  box-shadow: 0 1px 2px rgba(27, 32, 39, 0.04);
-}
-
-/* Headings: left tight tracking, never uppercase — quiet confidence */
-[data-theme="nordic-frost"] h1,
-[data-theme="nordic-frost"] h2,
-[data-theme="nordic-frost"] h3 {
-  letter-spacing: -0.012em;
-  font-weight: 600;
-}
-
-/* Brand buttons: subtle lift, never glowing */
-[data-theme="nordic-frost"] button[class*="from-brand"] {
-  box-shadow: 0 1px 2px rgba(27, 32, 39, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.20);
-}
-[data-theme="nordic-frost"] button[class*="from-brand"]:hover {
-  box-shadow: 0 2px 6px rgba(27, 32, 39, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.24);
-}
-
 /* ===========================================================================
    Shared UX Animations — Skeleton, Panel, Page Transitions
    All theme-aware via CSS variables
@@ -670,8 +606,8 @@ body[style*="#0a0a0c"] [data-testid="command-palette-input"]::placeholder {
 /* ===========================================================================
    Quiet Hover Override — kullanıcı UX isteği
    ---------------------------------------------------------------------------
-   Daha önce her tema (tokyo-neon, ink-and-wire, nordic-frost, aurora-dusk,
-   obsidian-slate ve daha önce kaldırılan solar-ember/horizon/
+   Daha önce her tema (tokyo-neon, ink-and-wire, aurora-dusk,
+   obsidian-slate ve daha önce kaldırılan solar-ember/horizon/nordic-frost/
    midnight-ultraviolet/arctic-frost blokları) kendi
    `[data-testid*="metric"]:hover`,
    `section:hover` ve `[class*="bg-surface-card"]:hover` kurallarıyla

@@ -894,78 +894,484 @@
 
 
 /* ------------------------------------------------------------
-   7. Nordic Frost — calm Scandinavian light, steel-blue accent
+   7. Emerald Glass — translucent control-room dark, petrol-teal
    ------------------------------------------------------------
-   Palette source: NORDIC_FROST_THEME in themes-radical.ts
-   (brand #41668a, neutral #fdfefe → #070a0f, Inter/IBM Plex Mono).
-   Light variant → ink-overlay is black-based (parity with Slate).
-   Soft diffused shadows, cool tint — north light through paper.
+   Palette source: EMERALD_GLASS_THEME in themes-radical.ts
+   (brand #20a88b, neutral #030806 → #f2f8f6, Inter/JetBrains Mono).
+   Dark variant → inherits white-based ink-overlay tokens from section 1.
+   Signature: translucent surfaces + `backdrop-filter: blur` where
+   supported. Fallback-safe: surfaces carry enough base opacity that
+   the theme remains cohesive on browsers without backdrop-filter.
    ------------------------------------------------------------ */
-[data-surface="aurora"][data-theme="nordic-frost"] {
-  --bg-canvas:        #f3f6f8;
+[data-surface="aurora"][data-theme="emerald-glass"] {
+  --bg-canvas:        #071512;
+  --bg-surface:       rgba(20, 54, 50, 0.62);
+  --bg-elevated:      rgba(28, 70, 64, 0.70);
+  --bg-inset:         #050c0a;
+  --bg-sidebar:       #050c0a;
+  --bg-sidebar-hover: #0f2925;
+  --bg-sidebar-active:#164a42;
+  --bg-overlay:       rgba(3, 14, 12, 0.72);
+  --bg-tooltip:       #143632;
+
+  /* Signature token — components opting into glass cards consume this. */
+  --glass-blur: 14px;
+  --glass-border: 1px solid rgba(188, 211, 206, 0.14);
+  --glass-fallback-bg: #0f2925;
+
+  --text-primary:     #e0ede9;
+  --text-secondary:   #bcd3ce;
+  --text-muted:       #86b1a9;
+  --text-disabled:    #4a6862;
+  --text-inverse:     #071512;
+  --text-on-accent:   #031815;
+  --text-link:        #4fd2b8;
+
+  --border-subtle:    rgba(188, 211, 206, 0.06);
+  --border-default:   rgba(188, 211, 206, 0.12);
+  --border-strong:    rgba(188, 211, 206, 0.22);
+  --border-contrast:  rgba(188, 211, 206, 0.34);
+  --border-focus:     #4fd2b8;
+
+  --accent-primary:        #2fbfa2;
+  --accent-primary-hover:  #4fd2b8;
+  --accent-primary-muted:  rgba(47, 191, 162, 0.14);
+  --accent-primary-strong: #20a88b;
+  --accent-primary-rgb:    47, 191, 162;
+
+  --accent-secondary:        #78c8dc;
+  --accent-secondary-hover:  #a5e0ff;
+  --accent-secondary-muted:  rgba(120, 200, 220, 0.14);
+
+  --accent-tertiary:        #ff7882;
+  --accent-tertiary-muted:  rgba(255, 120, 130, 0.14);
+
+  --state-success-bg:      rgba(95, 220, 180, 0.10);
+  --state-success-fg:      #5fdcb4;
+  --state-success-border:  rgba(95, 220, 180, 0.28);
+
+  --state-warning-bg:      rgba(245, 180, 100, 0.10);
+  --state-warning-fg:      #f5b464;
+  --state-warning-border:  rgba(245, 180, 100, 0.28);
+
+  --state-danger-bg:       rgba(255, 120, 130, 0.12);
+  --state-danger-fg:       #ff7882;
+  --state-danger-border:   rgba(255, 120, 130, 0.32);
+
+  --state-info-bg:         rgba(120, 200, 220, 0.10);
+  --state-info-fg:         #78c8dc;
+  --state-info-border:     rgba(120, 200, 220, 0.28);
+
+  --state-neutral-bg:      rgba(188, 211, 206, 0.08);
+  --state-neutral-fg:      #bcd3ce;
+  --state-neutral-border:  rgba(188, 211, 206, 0.22);
+
+  --module-news-bulletin:    #78c8dc;
+  --module-product-review:   #d9a6ff;
+  --module-standard-video:   #f5b464;
+  --module-educational:      #2fbfa2;
+  --module-howto:            #ff7882;
+  --module-default:          #588f87;
+
+  --role-admin-fg:     var(--accent-primary-hover);
+  --role-operator-fg:  var(--accent-secondary);
+  --role-viewer-fg:    var(--state-info-fg);
+  --role-user-fg:      var(--state-success-fg);
+
+  --control-knob-bg:      #f2f8f6;
+  --control-knob-shadow:  0 1px 3px rgba(0, 12, 10, 0.5), 0 0 4px rgba(47, 191, 162, 0.25);
+  --media-overlay-bg:     rgba(3, 14, 12, 0.82);
+  --media-overlay-fg:     #e0ede9;
+
+  --glow-accent:        0 0 32px -4px rgba(47, 191, 162, 0.36);
+  --glow-accent-strong: 0 0 56px -6px rgba(47, 191, 162, 0.52);
+  --glow-secondary:     0 0 32px -6px rgba(120, 200, 220, 0.30);
+  --glow-ring-focus:    0 0 0 2px rgba(79, 210, 184, 0.30);
+  --glow-panel-edge:    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+
+  --gradient-brand:
+    linear-gradient(135deg, #168a70 0%, #2fbfa2 50%, #78c8dc 100%);
+  --gradient-brand-subtle:
+    linear-gradient(135deg, rgba(47, 191, 162, 0.18) 0%, rgba(120, 200, 220, 0.14) 100%);
+  --gradient-surface:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0) 100%);
+  --gradient-aurora:
+    radial-gradient(65% 80% at 10% 0%, rgba(47, 191, 162, 0.14) 0%, transparent 60%),
+    radial-gradient(70% 90% at 90% 100%, rgba(120, 200, 220, 0.12) 0%, transparent 55%),
+    linear-gradient(180deg, #071512 0%, #050c0a 100%);
+  --gradient-aurora-soft:
+    radial-gradient(55% 80% at 20% 0%, rgba(47, 191, 162, 0.10) 0%, transparent 60%);
+  --gradient-mesh:
+    radial-gradient(circle at 18% 22%, rgba(47, 191, 162, 0.20), transparent 42%),
+    radial-gradient(circle at 78% 68%, rgba(120, 200, 220, 0.16), transparent 44%),
+    radial-gradient(circle at 52% 48%, rgba(255, 120, 130, 0.06), transparent 60%);
+  --gradient-card-edge:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0) 30%);
+
+  --shadow-xs:  0 1px 2px rgba(0, 12, 10, 0.45);
+  --shadow-sm:  0 2px 6px rgba(0, 12, 10, 0.40), 0 0 0 1px rgba(79, 210, 184, 0.06);
+  --shadow-md:  0 10px 28px rgba(0, 12, 10, 0.45), 0 0 0 1px rgba(79, 210, 184, 0.08);
+  --shadow-lg:  0 18px 40px rgba(0, 12, 10, 0.55), 0 0 0 1px rgba(79, 210, 184, 0.10);
+  --shadow-xl:  0 32px 68px rgba(0, 12, 10, 0.60), 0 0 0 1px rgba(79, 210, 184, 0.12);
+  --shadow-2xl: 0 48px 100px rgba(0, 12, 10, 0.70), 0 0 0 1px rgba(79, 210, 184, 0.14);
+
+  --color-workspace-pill-fg: #e0ede9;
+  --color-breadcrumb-sep: rgba(188, 228, 215, 0.32);
+  --color-breadcrumb-last-fg: #e0ede9;
+  --color-statusbar-value-fg: #bcd3ce;
+  --color-btn-dark-fg: #e0ede9;
+
+  --color-rail-active-fg:  #4fd2b8;
+  --color-rail-active-bg:  rgba(79, 210, 184, 0.14);
+  --color-rail-active-bar: #4fd2b8;
+
+  color-scheme: dark;
+}
+
+
+/* ------------------------------------------------------------
+   8. Copper Dune — warm analog instrument light, sand + copper
+   ------------------------------------------------------------
+   Palette source: COPPER_DUNE_THEME in themes-radical.ts
+   (brand #a45625, neutral #fffaf2 → #0a0804, DM Sans/IBM Plex Mono).
+   Light variant → ink-overlay is black-based. Sidebar is warm wood
+   #1f1a14 so cockpit chrome keeps sand-cream foregrounds.
+   Opposite of Ink & Wire: Copper Dune is a cased instrument, not a page.
+   ------------------------------------------------------------ */
+[data-surface="aurora"][data-theme="copper-dune"] {
+  --bg-canvas:        #f5ede2;
+  --bg-surface:       #fdf8f1;
+  --bg-elevated:      #fffaf2;
+  --bg-inset:         #ebe0cf;
+  --bg-sidebar:       #1f1a14;
+  --bg-sidebar-hover: #2d261d;
+  --bg-sidebar-active:#3b3226;
+  --bg-overlay:       rgba(31, 26, 20, 0.55);
+  --bg-tooltip:       #2d261d;
+
+  --text-primary:     #241c13;
+  --text-secondary:   #4b3e28;
+  --text-muted:       #655538;
+  --text-disabled:    #bfa985;
+  --text-inverse:     #fdf8f1;
+  --text-on-accent:   #fdf8f1;
+  --text-link:        #a45625;
+
+  --border-subtle:    #ebe0cf;
+  --border-default:   #d4bfa0;
+  --border-strong:    #b29878;
+  --border-contrast:  #8f7b59;
+  --border-focus:     #a45625;
+
+  --accent-primary:        #a45625;
+  --accent-primary-hover:  #c47c3a;
+  --accent-primary-muted:  rgba(164, 86, 37, 0.10);
+  --accent-primary-strong: #7f431d;
+  --accent-primary-rgb:    164, 86, 37;
+
+  --accent-secondary:        #4a6b7a;
+  --accent-secondary-hover:  #5e8393;
+  --accent-secondary-muted:  rgba(74, 107, 122, 0.10);
+
+  --accent-tertiary:        #4f7a1c;
+  --accent-tertiary-muted:  rgba(79, 122, 28, 0.10);
+
+  --state-success-bg:      #e6f1d8;
+  --state-success-fg:      #375412;
+  --state-success-border:  #bdd79a;
+
+  --state-warning-bg:      #faeccb;
+  --state-warning-fg:      #7f431d;
+  --state-warning-border:  #e8c691;
+
+  --state-danger-bg:       #f5d9cc;
+  --state-danger-fg:       #7d2a15;
+  --state-danger-border:   #e8b094;
+
+  --state-info-bg:         #dee6ea;
+  --state-info-fg:         #304c58;
+  --state-info-border:     #a9bec6;
+
+  --state-neutral-bg:      #ece3d4;
+  --state-neutral-fg:      #4b3e28;
+  --state-neutral-border:  #d4bfa0;
+
+  --module-news-bulletin:    #4a6b7a;
+  --module-product-review:   #6b5aa0;
+  --module-standard-video:   #a45625;
+  --module-educational:      #4f7a1c;
+  --module-howto:            #a63a20;
+  --module-default:          #655538;
+
+  --role-admin-fg:     var(--accent-primary);
+  --role-operator-fg:  var(--accent-tertiary);
+  --role-viewer-fg:    var(--state-info-fg);
+  --role-user-fg:      var(--state-success-fg);
+
+  --control-knob-bg:      #fdf8f1;
+  --control-knob-shadow:  0 1px 3px rgba(91, 58, 28, 0.18);
+  --media-overlay-bg:     rgba(31, 26, 20, 0.80);
+  --media-overlay-fg:     #fdf8f1;
+
+  --glow-accent:        0 0 0 1px rgba(164, 86, 37, 0.10);
+  --glow-accent-strong: 0 0 0 2px rgba(164, 86, 37, 0.20);
+  --glow-secondary:     0 0 0 1px rgba(74, 107, 122, 0.10);
+  --glow-ring-focus:    0 0 0 3px rgba(164, 86, 37, 0.20);
+  --glow-panel-edge:    inset 0 1px 0 rgba(255, 250, 242, 0.6);
+
+  --gradient-brand:
+    linear-gradient(135deg, #7f431d 0%, #a45625 50%, #c47c3a 100%);
+  --gradient-brand-subtle:
+    linear-gradient(135deg, rgba(164, 86, 37, 0.10) 0%, rgba(196, 124, 58, 0.08) 100%);
+  --gradient-surface:
+    linear-gradient(180deg, #fffaf2 0%, #f8efe2 100%);
+  --gradient-aurora:
+    radial-gradient(55% 65% at 12% 0%, rgba(164, 86, 37, 0.05) 0%, transparent 60%),
+    radial-gradient(60% 70% at 90% 100%, rgba(74, 107, 122, 0.04) 0%, transparent 60%),
+    linear-gradient(180deg, #f5ede2 0%, #eadfc9 100%);
+  --gradient-aurora-soft:
+    radial-gradient(45% 60% at 20% 0%, rgba(164, 86, 37, 0.04) 0%, transparent 60%);
+  --gradient-mesh:
+    radial-gradient(circle at 22% 18%, rgba(164, 86, 37, 0.08), transparent 42%),
+    radial-gradient(circle at 80% 72%, rgba(74, 107, 122, 0.06), transparent 44%);
+  --gradient-card-edge:
+    linear-gradient(180deg, rgba(255, 250, 242, 0.85), rgba(255, 250, 242, 0) 30%);
+
+  --shadow-xs:  0 1px 2px rgba(91, 58, 28, 0.06);
+  --shadow-sm:  0 2px 5px rgba(91, 58, 28, 0.08), 0 1px 2px rgba(91, 58, 28, 0.05);
+  --shadow-md:  0 6px 18px rgba(91, 58, 28, 0.14), 0 2px 4px rgba(91, 58, 28, 0.08);
+  --shadow-lg:  0 12px 30px rgba(91, 58, 28, 0.18), 0 4px 8px rgba(91, 58, 28, 0.10);
+  --shadow-xl:  0 20px 48px rgba(91, 58, 28, 0.22), 0 8px 16px rgba(91, 58, 28, 0.12);
+  --shadow-2xl: 0 32px 72px rgba(91, 58, 28, 0.28), 0 12px 24px rgba(91, 58, 28, 0.14);
+
+  /* Light theme — overlay black-based (warm-tinted). */
+  --ink-overlay-1: rgba(36, 28, 19, 0.04);
+  --ink-overlay-2: rgba(36, 28, 19, 0.06);
+  --ink-overlay-3: rgba(36, 28, 19, 0.08);
+  --ink-overlay-4: rgba(36, 28, 19, 0.12);
+  --ink-overlay-5: rgba(36, 28, 19, 0.16);
+  --ink-overlay-6: rgba(36, 28, 19, 0.22);
+  --ink-overlay-text-soft:   rgba(36, 28, 19, 0.55);
+  --ink-overlay-text-medium: rgba(36, 28, 19, 0.72);
+  --ink-overlay-text-strong: rgba(36, 28, 19, 0.92);
+
+  --color-workspace-pill-fg: #f5ede2;
+  --color-breadcrumb-sep: rgba(245, 237, 226, 0.32);
+  --color-breadcrumb-last-fg: #fdf8f1;
+  --color-statusbar-value-fg: #d4bfa0;
+  --color-btn-dark-fg: #241c13;
+
+  /* Rail active — copper #a45625 on sidebar #1f1a14 = 4.98:1 AA. Good. */
+  --color-rail-active-fg:  #d6995f;
+  --color-rail-active-bg:  rgba(214, 153, 95, 0.14);
+  --color-rail-active-bar: #d6995f;
+
+  color-scheme: light;
+}
+
+
+/* ------------------------------------------------------------
+   9. Cobalt Storm — dramatic cold-navy, electric cobalt accent
+   ------------------------------------------------------------
+   Palette source: COBALT_STORM_THEME in themes-radical.ts
+   (brand #2f5cf0, neutral #02040a → #eff3f9, Inter Tight/JetBrains Mono).
+   Dark variant → inherits white-based ink-overlay tokens.
+   Sharp radius, deep black shadows, electric blue highlights.
+   ------------------------------------------------------------ */
+[data-surface="aurora"][data-theme="cobalt-storm"] {
+  --bg-canvas:        #05080f;
+  --bg-surface:       #0d1320;
+  --bg-elevated:      #131a2c;
+  --bg-inset:         #02040a;
+  --bg-sidebar:       #030611;
+  --bg-sidebar-hover: #0d1320;
+  --bg-sidebar-active:#142144;
+  --bg-overlay:       rgba(2, 4, 10, 0.82);
+  --bg-tooltip:       #131a2c;
+
+  --text-primary:     #eff3f9;
+  --text-secondary:   #bac3d9;
+  --text-muted:       #8d9ab8;
+  --text-disabled:    #3b4866;
+  --text-inverse:     #05080f;
+  --text-on-accent:   #eff3f9;
+  --text-link:        #6e91ff;
+
+  --border-subtle:    rgba(186, 195, 217, 0.06);
+  --border-default:   rgba(186, 195, 217, 0.12);
+  --border-strong:    rgba(186, 195, 217, 0.22);
+  --border-contrast:  rgba(186, 195, 217, 0.34);
+  --border-focus:     #6e91ff;
+
+  --accent-primary:        #2f5cf0;
+  --accent-primary-hover:  #4772fb;
+  --accent-primary-muted:  rgba(47, 92, 240, 0.14);
+  --accent-primary-strong: #2049d6;
+  --accent-primary-rgb:    47, 92, 240;
+
+  --accent-secondary:        #9c7aff;
+  --accent-secondary-hover:  #b59aff;
+  --accent-secondary-muted:  rgba(156, 122, 255, 0.14);
+
+  --accent-tertiary:        #ffb03c;
+  --accent-tertiary-muted:  rgba(255, 176, 60, 0.14);
+
+  --state-success-bg:      rgba(58, 215, 146, 0.10);
+  --state-success-fg:      #7be4b2;
+  --state-success-border:  rgba(58, 215, 146, 0.30);
+
+  --state-warning-bg:      rgba(255, 176, 60, 0.10);
+  --state-warning-fg:      #ffc877;
+  --state-warning-border:  rgba(255, 176, 60, 0.30);
+
+  --state-danger-bg:       rgba(255, 92, 96, 0.12);
+  --state-danger-fg:       #ff8c8f;
+  --state-danger-border:   rgba(255, 92, 96, 0.32);
+
+  --state-info-bg:         rgba(110, 145, 255, 0.12);
+  --state-info-fg:         #9cb7ff;
+  --state-info-border:     rgba(110, 145, 255, 0.30);
+
+  --state-neutral-bg:      rgba(186, 195, 217, 0.08);
+  --state-neutral-fg:      #bac3d9;
+  --state-neutral-border:  rgba(186, 195, 217, 0.22);
+
+  --module-news-bulletin:    #2f5cf0;
+  --module-product-review:   #9c7aff;
+  --module-standard-video:   #ffb03c;
+  --module-educational:      #3ad792;
+  --module-howto:            #ff5c60;
+  --module-default:          #5f6d8d;
+
+  --role-admin-fg:     var(--accent-primary-hover);
+  --role-operator-fg:  var(--accent-secondary);
+  --role-viewer-fg:    var(--state-info-fg);
+  --role-user-fg:      var(--state-success-fg);
+
+  --control-knob-bg:      #eff3f9;
+  --control-knob-shadow:  0 1px 3px rgba(0, 0, 0, 0.55), 0 0 4px rgba(47, 92, 240, 0.28);
+  --media-overlay-bg:     rgba(2, 4, 10, 0.85);
+  --media-overlay-fg:     #eff3f9;
+
+  --glow-accent:        0 0 32px -4px rgba(47, 92, 240, 0.42);
+  --glow-accent-strong: 0 0 64px -6px rgba(47, 92, 240, 0.60);
+  --glow-secondary:     0 0 32px -6px rgba(156, 122, 255, 0.32);
+  --glow-ring-focus:    0 0 0 2px rgba(110, 145, 255, 0.34);
+  --glow-panel-edge:    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+
+  --gradient-brand:
+    linear-gradient(135deg, #1a3aad 0%, #2f5cf0 50%, #6e91ff 100%);
+  --gradient-brand-subtle:
+    linear-gradient(135deg, rgba(47, 92, 240, 0.18) 0%, rgba(156, 122, 255, 0.14) 100%);
+  --gradient-surface:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.02) 0%, rgba(255, 255, 255, 0) 100%);
+  --gradient-aurora:
+    radial-gradient(60% 80% at 15% 0%, rgba(47, 92, 240, 0.16) 0%, transparent 60%),
+    radial-gradient(70% 90% at 85% 100%, rgba(156, 122, 255, 0.10) 0%, transparent 55%),
+    linear-gradient(180deg, #05080f 0%, #030611 100%);
+  --gradient-aurora-soft:
+    radial-gradient(50% 80% at 20% 0%, rgba(47, 92, 240, 0.12) 0%, transparent 60%);
+  --gradient-mesh:
+    radial-gradient(circle at 20% 20%, rgba(47, 92, 240, 0.22), transparent 42%),
+    radial-gradient(circle at 80% 70%, rgba(156, 122, 255, 0.14), transparent 44%),
+    radial-gradient(circle at 50% 50%, rgba(255, 176, 60, 0.06), transparent 60%);
+  --gradient-card-edge:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0) 30%);
+
+  --shadow-xs:  0 1px 0 rgba(0, 0, 0, 0.6);
+  --shadow-sm:  0 2px 4px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(47, 92, 240, 0.05);
+  --shadow-md:  0 8px 24px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(47, 92, 240, 0.08);
+  --shadow-lg:  0 20px 44px rgba(0, 0, 0, 0.7), 0 2px 6px rgba(0, 0, 0, 0.45);
+  --shadow-xl:  0 36px 72px rgba(0, 0, 0, 0.78), 0 6px 12px rgba(0, 0, 0, 0.55);
+  --shadow-2xl: 0 56px 110px rgba(0, 0, 0, 0.85), 0 12px 22px rgba(0, 0, 0, 0.65);
+
+  --color-workspace-pill-fg: #dce2ee;
+  --color-breadcrumb-sep: rgba(220, 226, 238, 0.32);
+  --color-breadcrumb-last-fg: #eff3f9;
+  --color-statusbar-value-fg: #bac3d9;
+  --color-btn-dark-fg: #dce2ee;
+
+  --color-rail-active-fg:  #6e91ff;
+  --color-rail-active-bg:  rgba(110, 145, 255, 0.14);
+  --color-rail-active-bar: #6e91ff;
+
+  color-scheme: dark;
+}
+
+
+/* ------------------------------------------------------------
+   10. Rose Laboratory — editorial-clinical light, dusty rose + fuchsia
+   ------------------------------------------------------------
+   Palette source: ROSE_LABORATORY_THEME in themes-radical.ts
+   (brand #be3a5f, neutral #fffcfb → #0b0608, Fraunces/Inter/JetBrains).
+   Light variant → ink-overlay is black-based (rose-tinted).
+   Sidebar is deep bordeaux #1b1216 so cockpit chrome keeps antique-white
+   foregrounds. Opposite of Tokyo Neon: clinical, adult, typographic pink.
+   ------------------------------------------------------------ */
+[data-surface="aurora"][data-theme="rose-laboratory"] {
+  --bg-canvas:        #fbf5f4;
   --bg-surface:       #ffffff;
   --bg-elevated:      #ffffff;
-  --bg-inset:         #e8ecf0;
-  /* Sidebar stays deep — architectural navy, never pure black. */
-  --bg-sidebar:       #1b2027;
-  --bg-sidebar-hover: #2a3037;
-  --bg-sidebar-active:#3f464d;
-  --bg-overlay:       rgba(17, 21, 27, 0.40);
-  --bg-tooltip:       #1b2027;
+  --bg-inset:         #f1e2e2;
+  --bg-sidebar:       #1b1216;
+  --bg-sidebar-hover: #2a1b20;
+  --bg-sidebar-active:#3a252d;
+  --bg-overlay:       rgba(27, 18, 22, 0.55);
+  --bg-tooltip:       #2a1b20;
 
-  --text-primary:     #11151b;
-  --text-secondary:   #2a3037;
-  --text-muted:       #5a6269;
-  --text-disabled:    #b5bec7;
+  --text-primary:     #180f14;
+  --text-secondary:   #3a2830;
+  --text-muted:       #6e4e58;
+  --text-disabled:    #c9a7ad;
   --text-inverse:     #ffffff;
   --text-on-accent:   #ffffff;
-  --text-link:        #41668a;
+  --text-link:        #9d2a4c;
 
-  --border-subtle:    #e8ecf0;
-  --border-default:   #d5dbe1;
-  --border-strong:    #b5bec7;
-  --border-contrast:  #889299;
-  --border-focus:     #41668a;
+  --border-subtle:    #f1e2e2;
+  --border-default:   #e4cccf;
+  --border-strong:    #c9a7ad;
+  --border-contrast:  #9b7480;
+  --border-focus:     #be3a5f;
 
-  --accent-primary:        #41668a;
-  --accent-primary-hover:  #587692;
-  --accent-primary-muted:  rgba(65, 102, 138, 0.10);
-  --accent-primary-strong: #2f4c6b;
-  --accent-primary-rgb:    65, 102, 138;
+  --accent-primary:        #be3a5f;
+  --accent-primary-hover:  #d45e7f;
+  --accent-primary-muted:  rgba(190, 58, 95, 0.10);
+  --accent-primary-strong: #9d2a4c;
+  --accent-primary-rgb:    190, 58, 95;
 
-  --accent-secondary:        #6b5a8a;
-  --accent-secondary-hover:  #8775a5;
-  --accent-secondary-muted:  rgba(107, 90, 138, 0.10);
+  --accent-secondary:        #4858a6;
+  --accent-secondary-hover:  #6371bd;
+  --accent-secondary-muted:  rgba(72, 88, 166, 0.10);
 
-  --accent-tertiary:        #c08a1f;
-  --accent-tertiary-muted:  rgba(192, 138, 31, 0.10);
+  --accent-tertiary:        #a26b13;
+  --accent-tertiary-muted:  rgba(162, 107, 19, 0.10);
 
-  --state-success-bg:      #e6f4ec;
-  --state-success-fg:      #1e6341;
-  --state-success-border:  #a5d3b8;
+  --state-success-bg:      #dff3e4;
+  --state-success-fg:      #1e5a35;
+  --state-success-border:  #a8d4b4;
 
-  --state-warning-bg:      #fcf2dc;
-  --state-warning-fg:      #8f6310;
-  --state-warning-border:  #e7c98a;
+  --state-warning-bg:      #fbecd1;
+  --state-warning-fg:      #7a4e0a;
+  --state-warning-border:  #e3c484;
 
-  --state-danger-bg:       #f8e4e3;
-  --state-danger-fg:       #7d2725;
-  --state-danger-border:   #e3aaa9;
+  --state-danger-bg:       #f8d8d8;
+  --state-danger-fg:       #741c1c;
+  --state-danger-border:   #e3a8a8;
 
-  --state-info-bg:         #e6eef6;
-  --state-info-fg:         #2a5078;
-  --state-info-border:     #aec3d8;
+  --state-info-bg:         #e1e5f4;
+  --state-info-fg:         #2f3d7e;
+  --state-info-border:     #aeb6d5;
 
-  --state-neutral-bg:      #eef1f4;
-  --state-neutral-fg:      #3f464d;
-  --state-neutral-border:  #d5dbe1;
+  --state-neutral-bg:      #efe3e3;
+  --state-neutral-fg:      #3a2830;
+  --state-neutral-border:  #e4cccf;
 
-  --module-news-bulletin:    #41668a;
-  --module-product-review:   #6b5a8a;
-  --module-standard-video:   #c08a1f;
-  --module-educational:      #2f8a5a;
-  --module-howto:            #a83936;
-  --module-default:          #5a6269;
+  --module-news-bulletin:    #4858a6;
+  --module-product-review:   #7c2242;
+  --module-standard-video:   #a26b13;
+  --module-educational:      #2a7d4a;
+  --module-howto:            #be3a5f;
+  --module-default:          #6e4e58;
 
   --role-admin-fg:     var(--accent-primary-strong);
   --role-operator-fg:  var(--accent-tertiary);
@@ -973,70 +1379,63 @@
   --role-user-fg:      var(--state-success-fg);
 
   --control-knob-bg:      #ffffff;
-  --control-knob-shadow:  0 1px 3px rgba(27, 32, 39, 0.14);
-  --media-overlay-bg:     rgba(17, 21, 27, 0.78);
+  --control-knob-shadow:  0 1px 3px rgba(92, 26, 52, 0.16);
+  --media-overlay-bg:     rgba(27, 18, 22, 0.82);
   --media-overlay-fg:     #ffffff;
 
-  --glow-accent:        0 0 0 1px rgba(65, 102, 138, 0.08);
-  --glow-accent-strong: 0 0 0 2px rgba(65, 102, 138, 0.16);
-  --glow-secondary:     0 0 0 1px rgba(107, 90, 138, 0.10);
-  --glow-ring-focus:    0 0 0 4px rgba(65, 102, 138, 0.18);
-  --glow-panel-edge:    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  --glow-accent:        0 0 0 1px rgba(190, 58, 95, 0.10);
+  --glow-accent-strong: 0 0 0 2px rgba(190, 58, 95, 0.20);
+  --glow-secondary:     0 0 0 1px rgba(72, 88, 166, 0.10);
+  --glow-ring-focus:    0 0 0 3px rgba(190, 58, 95, 0.20);
+  --glow-panel-edge:    inset 0 1px 0 rgba(255, 255, 255, 0.7);
 
   --gradient-brand:
-    linear-gradient(135deg, #2f4c6b 0%, #41668a 50%, #587692 100%);
+    linear-gradient(135deg, #7c2242 0%, #be3a5f 50%, #d45e7f 100%);
   --gradient-brand-subtle:
-    linear-gradient(135deg, rgba(65, 102, 138, 0.08) 0%, rgba(107, 90, 138, 0.06) 100%);
+    linear-gradient(135deg, rgba(190, 58, 95, 0.10) 0%, rgba(72, 88, 166, 0.08) 100%);
   --gradient-surface:
-    linear-gradient(180deg, #ffffff 0%, #f7f9fb 100%);
+    linear-gradient(180deg, #ffffff 0%, #fbf3f2 100%);
   --gradient-aurora:
-    radial-gradient(55% 70% at 10% 0%, rgba(65, 102, 138, 0.05) 0%, transparent 60%),
-    radial-gradient(50% 65% at 90% 100%, rgba(107, 90, 138, 0.035) 0%, transparent 60%),
-    linear-gradient(180deg, #f3f6f8 0%, #eaeff3 100%);
+    radial-gradient(55% 65% at 15% 0%, rgba(190, 58, 95, 0.05) 0%, transparent 60%),
+    radial-gradient(60% 70% at 85% 100%, rgba(72, 88, 166, 0.04) 0%, transparent 60%),
+    linear-gradient(180deg, #fbf5f4 0%, #f3e6e5 100%);
   --gradient-aurora-soft:
-    radial-gradient(40% 60% at 20% 0%, rgba(65, 102, 138, 0.035) 0%, transparent 60%);
+    radial-gradient(45% 60% at 20% 0%, rgba(190, 58, 95, 0.04) 0%, transparent 60%);
   --gradient-mesh:
-    radial-gradient(circle at 20% 20%, rgba(65, 102, 138, 0.08), transparent 40%),
-    radial-gradient(circle at 80% 70%, rgba(107, 90, 138, 0.06), transparent 42%);
+    radial-gradient(circle at 20% 20%, rgba(190, 58, 95, 0.10), transparent 42%),
+    radial-gradient(circle at 80% 70%, rgba(72, 88, 166, 0.06), transparent 44%);
   --gradient-card-edge:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0) 30%);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0) 30%);
 
-  /* Soft diffused shadows — north light through paper. */
-  --shadow-xs:  0 1px 2px rgba(27, 32, 39, 0.04);
-  --shadow-sm:  0 1px 3px rgba(27, 32, 39, 0.05), 0 1px 2px rgba(27, 32, 39, 0.03);
-  --shadow-md:  0 4px 8px rgba(27, 32, 39, 0.06), 0 2px 4px rgba(27, 32, 39, 0.04);
-  --shadow-lg:  0 8px 20px rgba(27, 32, 39, 0.08), 0 4px 8px rgba(27, 32, 39, 0.04);
-  --shadow-xl:  0 16px 36px rgba(27, 32, 39, 0.10), 0 6px 12px rgba(27, 32, 39, 0.05);
-  --shadow-2xl: 0 28px 56px rgba(27, 32, 39, 0.14), 0 12px 24px rgba(27, 32, 39, 0.08);
+  --shadow-xs:  0 1px 2px rgba(92, 26, 52, 0.05);
+  --shadow-sm:  0 2px 5px rgba(92, 26, 52, 0.07), 0 1px 2px rgba(92, 26, 52, 0.04);
+  --shadow-md:  0 6px 22px rgba(92, 26, 52, 0.12), 0 2px 4px rgba(92, 26, 52, 0.06);
+  --shadow-lg:  0 14px 36px rgba(92, 26, 52, 0.16), 0 4px 8px rgba(92, 26, 52, 0.08);
+  --shadow-xl:  0 24px 56px rgba(92, 26, 52, 0.20), 0 8px 16px rgba(92, 26, 52, 0.10);
+  --shadow-2xl: 0 40px 88px rgba(92, 26, 52, 0.26), 0 12px 24px rgba(92, 26, 52, 0.12);
 
-  /* Light theme — overlay is black-based (parity with Obsidian Slate). */
-  --ink-overlay-1: rgba(17, 21, 27, 0.03);
-  --ink-overlay-2: rgba(17, 21, 27, 0.05);
-  --ink-overlay-3: rgba(17, 21, 27, 0.07);
-  --ink-overlay-4: rgba(17, 21, 27, 0.10);
-  --ink-overlay-5: rgba(17, 21, 27, 0.14);
-  --ink-overlay-6: rgba(17, 21, 27, 0.20);
-  --ink-overlay-text-soft:   rgba(17, 21, 27, 0.55);
-  --ink-overlay-text-medium: rgba(17, 21, 27, 0.72);
-  --ink-overlay-text-strong: rgba(17, 21, 27, 0.92);
+  /* Light theme — overlay black-based (rose-tinted). */
+  --ink-overlay-1: rgba(24, 15, 20, 0.04);
+  --ink-overlay-2: rgba(24, 15, 20, 0.06);
+  --ink-overlay-3: rgba(24, 15, 20, 0.08);
+  --ink-overlay-4: rgba(24, 15, 20, 0.12);
+  --ink-overlay-5: rgba(24, 15, 20, 0.16);
+  --ink-overlay-6: rgba(24, 15, 20, 0.22);
+  --ink-overlay-text-soft:   rgba(24, 15, 20, 0.55);
+  --ink-overlay-text-medium: rgba(24, 15, 20, 0.72);
+  --ink-overlay-text-strong: rgba(24, 15, 20, 0.92);
 
-  /* Cockpit chrome override — Nordic Frost is a light content theme but
-     sidebar/rail/ctxbar/statusbar stay dark across every Aurora theme (see
-     --bg-sidebar #1b2027). These tokens keep cockpit foreground light while
-     content surface stays paper-white. --color-btn-dark-fg is used by .btn.dark
-     on light content surfaces too, so it keeps a dark readable tone there. */
-  --color-workspace-pill-fg: #e8ecf0;
-  --color-breadcrumb-sep: rgba(255, 255, 255, 0.30);
-  --color-breadcrumb-last-fg: #f6f8fb;
-  --color-statusbar-value-fg: #d5dbe1;
-  --color-btn-dark-fg: #1b2027;
+  --color-workspace-pill-fg: #f8efee;
+  --color-breadcrumb-sep: rgba(248, 239, 238, 0.32);
+  --color-breadcrumb-last-fg: #fdfcfb;
+  --color-statusbar-value-fg: #e4cccf;
+  --color-btn-dark-fg: #180f14;
 
-  /* Rail active — steel-blue #41668a sits at ~3.9:1 on sidebar #1b2027,
-     so use a lifted soft variant #9fb3c4 (7.1:1) for active rail glyphs.
-     Accent still prints as #41668a in charts/CTAs/buttons. */
-  --color-rail-active-fg:  #9fb3c4;
-  --color-rail-active-bg:  rgba(159, 179, 196, 0.14);
-  --color-rail-active-bar: #9fb3c4;
+  /* Rail active — #be3a5f on sidebar #1b1216 = 4.48:1 (borderline).
+     Lift to dusty rose #e48aa2 = 8.9:1 for active rail glyphs. */
+  --color-rail-active-fg:  #e48aa2;
+  --color-rail-active-bg:  rgba(228, 138, 162, 0.14);
+  --color-rail-active-bar: #e48aa2;
 
   color-scheme: light;
 }

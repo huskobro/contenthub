@@ -1,7 +1,12 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { useThemeStore } from "../../stores/themeStore";
 import { DEFAULT_THEME, VOID_TERMINAL_THEME, validateThemeManifest } from "../../components/design-system/themeContract";
-import { NORDIC_FROST_THEME } from "../../components/design-system/themes-radical";
+import {
+  EMERALD_GLASS_THEME,
+  COPPER_DUNE_THEME,
+  COBALT_STORM_THEME,
+  ROSE_LABORATORY_THEME,
+} from "../../components/design-system/themes-radical";
 
 describe("themeStore", () => {
   beforeEach(() => {
@@ -115,8 +120,20 @@ describe("validateThemeManifest", () => {
     expect(validateThemeManifest(VOID_TERMINAL_THEME)).toEqual([]);
   });
 
-  it("passes for the nordic frost theme", () => {
-    expect(validateThemeManifest(NORDIC_FROST_THEME)).toEqual([]);
+  it("passes for the emerald glass theme", () => {
+    expect(validateThemeManifest(EMERALD_GLASS_THEME)).toEqual([]);
+  });
+
+  it("passes for the copper dune theme", () => {
+    expect(validateThemeManifest(COPPER_DUNE_THEME)).toEqual([]);
+  });
+
+  it("passes for the cobalt storm theme", () => {
+    expect(validateThemeManifest(COBALT_STORM_THEME)).toEqual([]);
+  });
+
+  it("passes for the rose laboratory theme", () => {
+    expect(validateThemeManifest(ROSE_LABORATORY_THEME)).toEqual([]);
   });
 
   it("fails for null", () => {

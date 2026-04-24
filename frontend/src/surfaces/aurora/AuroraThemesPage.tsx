@@ -38,7 +38,10 @@ const AURORA_BOUND_THEME_IDS = new Set<string>([
   "void-terminal",
   "tokyo-neon",
   "ink-and-wire",
-  "nordic-frost",
+  "emerald-glass",
+  "copper-dune",
+  "cobalt-storm",
+  "rose-laboratory",
 ]);
 
 function themeIsAuroraBound(theme: ThemeManifest): boolean {

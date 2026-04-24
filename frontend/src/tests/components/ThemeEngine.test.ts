@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { generateCSSVariables, resolveTokens } from "../../components/design-system/themeEngine";
 import { DEFAULT_THEME, VOID_TERMINAL_THEME, AURORA_DUSK_THEME } from "../../components/design-system/themeContract";
-import { NORDIC_FROST_THEME } from "../../components/design-system/themes-radical";
+import { EMERALD_GLASS_THEME } from "../../components/design-system/themes-radical";
 
 describe("generateCSSVariables", () => {
   it("generates CSS variables from default theme", () => {
@@ -38,15 +38,15 @@ describe("generateCSSVariables", () => {
     expect(vars["--ch-focus"]).toBe("#2dd55b");
   });
 
-  it("generates light steel-blue variables for nordic frost theme", () => {
-    const vars = generateCSSVariables(NORDIC_FROST_THEME);
+  it("generates petrol-teal translucent variables for emerald glass theme", () => {
+    const vars = generateCSSVariables(EMERALD_GLASS_THEME);
     expect(vars["--ch-font-body"]).toContain("Inter");
-    expect(vars["--ch-font-mono"]).toContain("IBM Plex Mono");
-    expect(vars["--ch-brand-500"]).toBe("#587692");
-    expect(vars["--ch-brand-600"]).toBe("#41668a");
-    expect(vars["--ch-surface-page"]).toBe("#f3f6f8");
-    expect(vars["--ch-focus"]).toBe("#41668a");
-    expect(vars["--ch-radius-md"]).toBe("6px");
+    expect(vars["--ch-font-mono"]).toContain("JetBrains Mono");
+    expect(vars["--ch-brand-500"]).toBe("#20a88b");
+    expect(vars["--ch-brand-600"]).toBe("#168a70");
+    expect(vars["--ch-surface-page"]).toBe("#071512");
+    expect(vars["--ch-focus"]).toBe("#4fd2b8");
+    expect(vars["--ch-radius-md"]).toBe("14px");
   });
 
   it("includes all typography size variables", () => {

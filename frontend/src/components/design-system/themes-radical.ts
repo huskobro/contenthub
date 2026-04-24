@@ -9,7 +9,7 @@
  *   - motion timing & easing
  *   - plus unique CSS treatments in index.css
  *
- * History (Aurora theme curation + identity pass):
+ * History (Aurora theme curation + expansion pass):
  *   Previously this file carried 5 themes. `midnight-ultraviolet` was removed
  *   because it duplicated Aurora Dusk's dark+purple direction; `arctic-frost`
  *   was removed because it overlapped with Obsidian Slate's light-theme slot
@@ -17,14 +17,25 @@
  *   `solar-ember` was also removed because its dark+mono+compact+HUD
  *   character sat too close to `void-terminal` and `tokyo-neon` to feel like
  *   a distinct "world". In its place we introduced `nordic-frost` — a calm
- *   Scandinavian light theme that sits opposite Obsidian Slate's indigo-tech
- *   identity on the light side. Previous palettes remain in git history.
+ *   Scandinavian light theme.
  *
- * Remaining themes (3 radical + 3 core):
+ *   Expansion pass (`codex/aurora-theme-expansion-pass`): added 4 new themes
+ *   to cover previously empty emotional/visual slots — translucent glass
+ *   cockpit (Emerald Glass), warm analog light (Copper Dune), dramatic
+ *   cold-navy data storm (Cobalt Storm), and editorial-clinical pink
+ *   (Rose Laboratory). During the same pass, Nordic Frost was removed
+ *   because it had lived in the same light/calm slot as Obsidian Slate
+ *   and Copper Dune filled the "warm light" slot without cannibalising
+ *   Ink & Wire. See `AURORA_THEME_EXPANSION_NOTES.md` for full audit.
+ *
+ * Remaining themes (radical file + core themes):
  *   Radical file (this):
- *     1. Tokyo Neon    — Akihabara arcade terminal, ultra-compact, neon pink
- *     2. Ink & Wire    — broadsheet newspaper, serif dominant, zero radius
- *     3. Nordic Frost  — Scandinavian minimal light, steel-blue, wide air
+ *     1. Tokyo Neon       — Akihabara arcade terminal, ultra-compact, neon pink
+ *     2. Ink & Wire       — broadsheet newspaper, serif dominant, zero radius
+ *     3. Emerald Glass    — translucent control-room, blurred petrol-teal glass
+ *     4. Copper Dune      — warm analog instrument light, sand + copper
+ *     5. Cobalt Storm     — dramatic cold-navy data storm, electric blue
+ *     6. Rose Laboratory  — editorial-clinical light, dusty rose + fuchsia
  *   Core themes (themeContract.ts):
  *     - Aurora Dusk     — plum + teal dark cockpit, aurora glow
  *     - Obsidian Slate  — indigo light data surface
@@ -258,22 +269,22 @@ export const INK_AND_WIRE_THEME: ThemeManifest = {
 };
 
 // ---------------------------------------------------------------------------
-// 3. Nordic Frost — Scandinavian minimal light / architect's workbench
-//    Think: Helsinki library × Muji stationery × calm airport wayfinding
-//    Radical: cool fog-white surface, steel-blue accent, wide air, soft
-//    diffused shadows, generous line-height, Inter + IBM Plex Mono.
-//    Purpose in the set: counterweights Obsidian Slate's dense indigo-tech
-//    character with calm, focus-first quiet. Slate feels like a trading
-//    desk; Nordic Frost feels like an architect's drafting table.
+// 3. Emerald Glass — translucent control-room dark
+//    Think: operations room window → frosted glass panes → infrared accents
+//    Radical: petrol-teal palette with semi-transparent surfaces, `backdrop-filter`
+//    blur for signature glass cards, warm-free cyan. Sits opposite Aurora
+//    Dusk's plum cinematic mood with a technical/industrial hardness.
+//    Fallback-safe: surfaces carry enough base opacity that the theme
+//    remains cohesive on browsers without backdrop-filter support.
 // ---------------------------------------------------------------------------
 
-export const NORDIC_FROST_THEME: ThemeManifest = {
-  id: "nordic-frost",
-  name: "Nordic Frost",
-  description: "Iskandinav sakin isik temasi. Buzul beyaz zemin, celik mavi vurgu, genis nefes araligi, yumusak gölgeler. Obsidian Slate'in yogun indigo karakterine sakin/odak karsitligi.",
+export const EMERALD_GLASS_THEME: ThemeManifest = {
+  id: "emerald-glass",
+  name: "Emerald Glass",
+  description: "Yari-seffaf buzlu cam kontrol odasi. Petrol-teal palet, blur'lu yuzeyler, kizilotesi acil durum vurgusu. Dusk'in sinematik moruna teknik/endustriyel bir karsitlik.",
   author: "system",
   version: "1.0.0",
-  tone: ["light", "calm", "scandinavian", "airy", "minimal", "focus"],
+  tone: ["dark", "glass", "technical", "industrial", "petrol", "control-room"],
 
   typography: {
     heading: {
@@ -285,95 +296,353 @@ export const NORDIC_FROST_THEME: ThemeManifest = {
       stack: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
     },
     mono: {
-      family: "IBM Plex Mono",
-      stack: "'IBM Plex Mono', 'JetBrains Mono', 'SF Mono', monospace",
+      family: "JetBrains Mono",
+      stack: "'JetBrains Mono', 'IBM Plex Mono', 'SF Mono', monospace",
     },
     size: {
-      xs: "0.75rem",
-      sm: "0.8125rem",
-      base: "0.9375rem",    // larger base — breathing room
-      md: "1rem",
-      lg: "1.125rem",
-      xl: "1.3125rem",
-      "2xl": "1.625rem",
-      "3xl": "2.125rem",    // restrained heading scale
+      xs: "0.6875rem", sm: "0.75rem", base: "0.8125rem", md: "0.875rem",
+      lg: "1rem", xl: "1.125rem", "2xl": "1.5rem", "3xl": "2rem",
     },
     weight: { normal: 400, medium: 500, semibold: 600, bold: 700 },
-    lineHeight: { tight: 1.25, normal: 1.6, relaxed: 1.8 },   // generous
-    letterSpacing: { tight: "-0.015em", normal: "0em", wide: "0.14em" },
+    lineHeight: { tight: 1.18, normal: 1.5, relaxed: 1.65 },
+    letterSpacing: { tight: "-0.02em", normal: "-0.005em", wide: "0.1em" },
   },
 
   colors: {
     brand: {
-      // Muted steel-blue ramp. Distinct from Obsidian Slate's #3b50e6 indigo:
-      // this one is desaturated, greyer, cooler — closer to stone than sky.
-      // 600 #41668a on white = 5.73:1 (AA normal + AAA large).
-      // 700 #2f4c6b = 8.02:1 (AAA all sizes).
-      50: "#f2f5f8", 100: "#e4ebf1", 200: "#c7d5e0", 300: "#9fb3c4",
-      400: "#7894ac", 500: "#587692", 600: "#41668a", 700: "#2f4c6b",
-      800: "#223a54", 900: "#162a40",
+      50: "#e4faf5", 100: "#bbf1e4", 200: "#86e3cf", 300: "#4fd2b8",
+      400: "#2fbfa2", 500: "#20a88b", 600: "#168a70", 700: "#106b57",
+      800: "#0b4c3e", 900: "#073128",
     },
     neutral: {
-      // Cool fog-white → charcoal. Everything has a blue undertone so the
-      // theme stays visually coherent without being sterile.
-      0: "#fdfefe", 25: "#f9fbfc", 50: "#f3f6f8", 100: "#e8ecf0",
-      200: "#d5dbe1", 300: "#b5bec7", 400: "#889299", 500: "#5a6269",
-      600: "#3f464d", 700: "#2a3037", 800: "#1b2027", 900: "#11151b",
-      950: "#070a0f",
+      0: "#030806", 25: "#050c0a", 50: "#071512", 100: "#0a1d19",
+      200: "#0f2925", 300: "#143632", 400: "#1d4843", 500: "#2f6862",
+      600: "#588f87", 700: "#86b1a9", 800: "#bcd3ce", 900: "#e0ede9",
+      950: "#f2f8f6",
     },
-    success: { light: "#e6f4ec", base: "#2f8a5a", dark: "#1e6341", text: "#0e4a2b" },
-    warning: { light: "#fcf2dc", base: "#c08a1f", dark: "#8f6310", text: "#5e3f05" },
-    error:   { light: "#f8e4e3", base: "#a83936", dark: "#7d2725", text: "#4d1514" },
-    info:    { light: "#e6eef6", base: "#3d6ea1", dark: "#2a5078", text: "#183657" },
+    success: { light: "rgba(95,220,180,0.12)", base: "#5fdcb4", dark: "#2fb488", text: "#5fdcb4" },
+    warning: { light: "rgba(245,180,100,0.12)", base: "#f5b464", dark: "#d3953d", text: "#f5b464" },
+    error:   { light: "rgba(255,120,130,0.14)", base: "#ff7882", dark: "#d64e58", text: "#ff7882" },
+    info:    { light: "rgba(120,200,220,0.12)", base: "#78c8dc", dark: "#4aa2b8", text: "#78c8dc" },
     surface: {
-      page: "#f3f6f8",
-      card: "#ffffff",
-      elevated: "#ffffff",
-      inset: "#e8ecf0",
-      // Sidebar: deep navy-charcoal, just enough warmth to feel architectural
-      // (not pure black). Keeps cockpit chrome readable across themes.
-      sidebar: "#1b2027",
-      sidebarHover: "#2a3037",
-      sidebarActive: "#3f464d",
-      sidebarText: "#e8ecf0",
-      sidebarTextMuted: "#889299",
-      sidebarTextActive: "#9fb3c4",
-      sidebarSection: "#889299",
-      sidebarBorder: "#3f464d",
+      page: "#071512", card: "#0f2925", elevated: "#143632",
+      inset: "#050c0a", sidebar: "#050c0a", sidebarHover: "#0f2925",
+      sidebarActive: "#164a42",
+      sidebarText: "#e0ede9", sidebarTextMuted: "#86b1a9",
+      sidebarTextActive: "#4fd2b8", sidebarSection: "#86b1a9",
+      sidebarBorder: "#143632",
     },
-    border: { subtle: "#e8ecf0", default: "#d5dbe1", strong: "#b5bec7" },
-    focus: "#41668a",
-    chart: ["#41668a", "#2f8a5a", "#c08a1f", "#a83936", "#7894ac", "#6b5a8a", "#3d6ea1"],
+    border: { subtle: "rgba(188, 211, 206, 0.06)", default: "rgba(188, 211, 206, 0.12)", strong: "rgba(188, 211, 206, 0.22)" },
+    focus: "#4fd2b8",
+    chart: ["#2fbfa2", "#78c8dc", "#f5b464", "#ff7882", "#5fdcb4", "#a5e0ff", "#d9a6ff"],
   },
 
-  // Generous spacing — airy, calm, architectural
+  spacing: {
+    0: "0", 1: "0.25rem", 2: "0.5rem", 3: "0.75rem", 4: "1rem",
+    5: "1.25rem", 6: "1.5rem", 8: "2rem", 10: "2.5rem", 12: "3rem", 16: "4rem",
+  },
+
+  radius: { sm: "8px", md: "14px", lg: "18px", xl: "24px", full: "9999px" },
+
+  shadow: {
+    xs: "0 1px 2px rgba(0, 12, 10, 0.40)",
+    sm: "0 2px 6px rgba(0, 12, 10, 0.40), 0 0 0 1px rgba(79, 210, 184, 0.06)",
+    md: "0 10px 28px rgba(0, 12, 10, 0.45), 0 0 0 1px rgba(79, 210, 184, 0.08)",
+    lg: "0 18px 40px rgba(0, 12, 10, 0.55), 0 0 0 1px rgba(79, 210, 184, 0.10)",
+    xl: "0 32px 68px rgba(0, 12, 10, 0.60), 0 0 0 1px rgba(79, 210, 184, 0.12)",
+    "2xl": "0 48px 100px rgba(0, 12, 10, 0.70), 0 0 0 1px rgba(79, 210, 184, 0.14)",
+  },
+
+  motion: { fast: "140ms", normal: "260ms", slow: "380ms", easing: "cubic-bezier(0.22, 1, 0.36, 1)" },
+
+  layout: {
+    sidebarWidth: "252px", sidebarCollapsedWidth: "56px",
+    headerHeight: "50px", pageMaxWidth: "1400px", pagePadding: "1.5rem",
+  },
+
+  density: "compact",
+};
+
+// ---------------------------------------------------------------------------
+// 4. Copper Dune — warm analog light
+//    Think: vintage Leica body × sun-baked sand × patinated copper
+//    Radical: warm sand/cream surfaces, oxidised-copper accent, wooden-case
+//    sidebar, yoruk-desert neutral scale. Opposite of the sepia newsprint
+//    feel of Ink & Wire — Copper Dune is an instrument, not a page.
+// ---------------------------------------------------------------------------
+
+export const COPPER_DUNE_THEME: ThemeManifest = {
+  id: "copper-dune",
+  name: "Copper Dune",
+  description: "Sicak analog cihaz isik temasi. Gunesli kum krem, patinalanmis bakir vurgu, ahsap kasali sidebar. Ink & Wire'in gazete hissinden farkli — Copper Dune bir kagit degil, bir alet.",
+  author: "system",
+  version: "1.0.0",
+  tone: ["light", "warm", "analog", "instrument", "copper", "desert"],
+
+  typography: {
+    heading: {
+      family: "DM Sans",
+      stack: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+    },
+    body: {
+      family: "DM Sans",
+      stack: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+    },
+    mono: {
+      family: "IBM Plex Mono",
+      stack: "'IBM Plex Mono', 'JetBrains Mono', 'SF Mono', monospace",
+    },
+    size: {
+      xs: "0.75rem", sm: "0.8125rem", base: "0.875rem", md: "0.9375rem",
+      lg: "1.0625rem", xl: "1.25rem", "2xl": "1.625rem", "3xl": "2.25rem",
+    },
+    weight: { normal: 400, medium: 500, semibold: 600, bold: 700 },
+    lineHeight: { tight: 1.2, normal: 1.55, relaxed: 1.7 },
+    letterSpacing: { tight: "-0.02em", normal: "-0.005em", wide: "0.12em" },
+  },
+
+  colors: {
+    brand: {
+      // Oxidised copper — warm orange-brown. 600 #a45625 on cream ≈ 5.3:1 AA.
+      50: "#faf1e7", 100: "#f2dcc1", 200: "#e6bd93", 300: "#d6995f",
+      400: "#c47c3a", 500: "#b36c2e", 600: "#a45625", 700: "#7f431d",
+      800: "#5c3115", 900: "#3e200d",
+    },
+    neutral: {
+      // Sun-baked sand → tobacco → charcoal.
+      0: "#fffaf2", 25: "#fcf5eb", 50: "#f5ede2", 100: "#ebe0cf",
+      200: "#d9c9ae", 300: "#bfa985", 400: "#8f7b59", 500: "#655538",
+      600: "#4b3e28", 700: "#362c1d", 800: "#241c13", 900: "#15100a",
+      950: "#0a0804",
+    },
+    success: { light: "#e6f1d8", base: "#4f7a1c", dark: "#375412", text: "#1f350a" },
+    warning: { light: "#faeccb", base: "#a45625", dark: "#7f431d", text: "#4a2610" },
+    error:   { light: "#f5d9cc", base: "#a63a20", dark: "#7d2a15", text: "#4a170a" },
+    info:    { light: "#dee6ea", base: "#4a6b7a", dark: "#304c58", text: "#1a2e36" },
+    surface: {
+      page: "#f5ede2", card: "#fdf8f1", elevated: "#fffaf2",
+      inset: "#ebe0cf", sidebar: "#1f1a14", sidebarHover: "#2d261d",
+      sidebarActive: "#3b3226",
+      sidebarText: "#f5ede2", sidebarTextMuted: "#a49171",
+      sidebarTextActive: "#d6995f", sidebarSection: "#a49171",
+      sidebarBorder: "#3b3226",
+    },
+    border: { subtle: "#ebe0cf", default: "#d4bfa0", strong: "#b29878" },
+    focus: "#a45625",
+    chart: ["#a45625", "#4f7a1c", "#4a6b7a", "#a63a20", "#c47c3a", "#6b5aa0", "#2e6a68"],
+  },
+
   spacing: {
     0: "0", 1: "0.1875rem", 2: "0.375rem", 3: "0.625rem", 4: "0.875rem",
     5: "1.125rem", 6: "1.5rem", 8: "2rem", 10: "2.5rem", 12: "3rem", 16: "4rem",
   },
 
-  // Medium-soft radii — not brutalist zero, not arcade pill
-  radius: { sm: "4px", md: "6px", lg: "8px", xl: "12px", full: "9999px" },
+  radius: { sm: "6px", md: "10px", lg: "14px", xl: "18px", full: "9999px" },
 
-  // Soft diffused shadows, cool tint — like north light through paper
   shadow: {
-    xs: "0 1px 2px rgba(27, 32, 39, 0.04)",
-    sm: "0 1px 3px rgba(27, 32, 39, 0.05), 0 1px 2px rgba(27, 32, 39, 0.03)",
-    md: "0 4px 8px rgba(27, 32, 39, 0.06), 0 2px 4px rgba(27, 32, 39, 0.04)",
-    lg: "0 8px 20px rgba(27, 32, 39, 0.08), 0 4px 8px rgba(27, 32, 39, 0.04)",
-    xl: "0 16px 36px rgba(27, 32, 39, 0.10), 0 6px 12px rgba(27, 32, 39, 0.05)",
-    "2xl": "0 28px 56px rgba(27, 32, 39, 0.14), 0 12px 24px rgba(27, 32, 39, 0.08)",
+    xs: "0 1px 2px rgba(91, 58, 28, 0.06)",
+    sm: "0 2px 5px rgba(91, 58, 28, 0.08), 0 1px 2px rgba(91, 58, 28, 0.05)",
+    md: "0 6px 18px rgba(91, 58, 28, 0.14), 0 2px 4px rgba(91, 58, 28, 0.08)",
+    lg: "0 12px 30px rgba(91, 58, 28, 0.18), 0 4px 8px rgba(91, 58, 28, 0.10)",
+    xl: "0 20px 48px rgba(91, 58, 28, 0.22), 0 8px 16px rgba(91, 58, 28, 0.12)",
+    "2xl": "0 32px 72px rgba(91, 58, 28, 0.28), 0 12px 24px rgba(91, 58, 28, 0.14)",
   },
 
-  // Unhurried, smooth transitions — not lethargic, not snappy
-  motion: { fast: "140ms", normal: "220ms", slow: "340ms", easing: "cubic-bezier(0.22, 1, 0.36, 1)" },
+  motion: { fast: "180ms", normal: "300ms", slow: "460ms", easing: "cubic-bezier(0.32, 0.08, 0.24, 1)" },
 
   layout: {
-    sidebarWidth: "240px",
-    sidebarCollapsedWidth: "56px",
-    headerHeight: "48px",
-    pageMaxWidth: "1280px",            // narrower than HUD themes — focus
-    pagePadding: "1.75rem",            // generous gutters
+    sidebarWidth: "256px", sidebarCollapsedWidth: "60px",
+    headerHeight: "52px", pageMaxWidth: "1240px", pagePadding: "1.625rem",
+  },
+
+  density: "comfortable",
+};
+
+// ---------------------------------------------------------------------------
+// 5. Cobalt Storm — dramatic cold-navy data storm
+//    Think: pre-storm North Atlantic × lightning strike × bond trading floor
+//    at 02:00. Radical: near-black navy, electric cobalt accent, dramatic
+//    shadow drops, sharp 6px radius. Slate is a calm indigo desk — Storm
+//    is the moment the price curve breaks.
+// ---------------------------------------------------------------------------
+
+export const COBALT_STORM_THEME: ThemeManifest = {
+  id: "cobalt-storm",
+  name: "Cobalt Storm",
+  description: "Firtina oncesi deniz. Neredeyse-siyah lacivert, elektrik kobalt vurgu, keskin gölgeler. Slate'in sakin indigo masasindan farkli — Storm fiyat egrisinin kirildigi an.",
+  author: "system",
+  version: "1.0.0",
+  tone: ["dark", "dramatic", "data", "trading", "cold", "storm"],
+
+  typography: {
+    heading: {
+      family: "Inter Tight",
+      stack: "'Inter Tight', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+    },
+    body: {
+      family: "Inter",
+      stack: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+    },
+    mono: {
+      family: "JetBrains Mono",
+      stack: "'JetBrains Mono', 'IBM Plex Mono', 'SF Mono', monospace",
+    },
+    size: {
+      xs: "0.6875rem", sm: "0.75rem", base: "0.8125rem", md: "0.875rem",
+      lg: "1rem", xl: "1.125rem", "2xl": "1.5rem", "3xl": "2rem",
+    },
+    weight: { normal: 400, medium: 500, semibold: 600, bold: 700 },
+    lineHeight: { tight: 1.12, normal: 1.45, relaxed: 1.6 },
+    letterSpacing: { tight: "-0.035em", normal: "-0.01em", wide: "0.14em" },
+  },
+
+  colors: {
+    brand: {
+      // Electric cobalt — bright, dangerous, saturated.
+      50: "#e7efff", 100: "#c7d7ff", 200: "#9cb7ff", 300: "#6e91ff",
+      400: "#4772fb", 500: "#2f5cf0", 600: "#2049d6", 700: "#1a3aad",
+      800: "#152d85", 900: "#0f2160",
+    },
+    neutral: {
+      // Near-black navy → iced blue-white.
+      0: "#02040a", 25: "#050810", 50: "#080c16", 100: "#0d1320",
+      200: "#131a2c", 300: "#1a2438", 400: "#253048", 500: "#3b4866",
+      600: "#5f6d8d", 700: "#8d9ab8", 800: "#bac3d9", 900: "#dce2ee",
+      950: "#eff3f9",
+    },
+    success: { light: "rgba(58,215,146,0.12)", base: "#3ad792", dark: "#27ad72", text: "#7be4b2" },
+    warning: { light: "rgba(255,176,60,0.14)", base: "#ffb03c", dark: "#d48b21", text: "#ffc877" },
+    error:   { light: "rgba(255,92,96,0.14)", base: "#ff5c60", dark: "#d63b40", text: "#ff8c8f" },
+    info:    { light: "rgba(110,145,255,0.14)", base: "#6e91ff", dark: "#4772fb", text: "#9cb7ff" },
+    surface: {
+      page: "#05080f", card: "#0d1320", elevated: "#131a2c",
+      inset: "#02040a", sidebar: "#030611", sidebarHover: "#0d1320",
+      sidebarActive: "#142144",
+      sidebarText: "#dce2ee", sidebarTextMuted: "#8d9ab8",
+      sidebarTextActive: "#6e91ff", sidebarSection: "#8d9ab8",
+      sidebarBorder: "#131a2c",
+    },
+    border: { subtle: "rgba(186, 195, 217, 0.06)", default: "rgba(186, 195, 217, 0.12)", strong: "rgba(186, 195, 217, 0.22)" },
+    focus: "#6e91ff",
+    chart: ["#2f5cf0", "#3ad792", "#ffb03c", "#ff5c60", "#6e91ff", "#9c7aff", "#ffffff"],
+  },
+
+  spacing: {
+    0: "0", 1: "0.25rem", 2: "0.5rem", 3: "0.75rem", 4: "1rem",
+    5: "1.25rem", 6: "1.5rem", 8: "2rem", 10: "2.5rem", 12: "3rem", 16: "4rem",
+  },
+
+  radius: { sm: "3px", md: "6px", lg: "10px", xl: "14px", full: "9999px" },
+
+  shadow: {
+    xs: "0 1px 0 rgba(0, 0, 0, 0.6)",
+    sm: "0 2px 4px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(47, 92, 240, 0.05)",
+    md: "0 8px 24px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(47, 92, 240, 0.08)",
+    lg: "0 20px 44px rgba(0, 0, 0, 0.7), 0 2px 6px rgba(0, 0, 0, 0.45)",
+    xl: "0 36px 72px rgba(0, 0, 0, 0.78), 0 6px 12px rgba(0, 0, 0, 0.55)",
+    "2xl": "0 56px 110px rgba(0, 0, 0, 0.85), 0 12px 22px rgba(0, 0, 0, 0.65)",
+  },
+
+  motion: { fast: "90ms", normal: "160ms", slow: "260ms", easing: "cubic-bezier(0.16, 1, 0.3, 1)" },
+
+  layout: {
+    sidebarWidth: "236px", sidebarCollapsedWidth: "56px",
+    headerHeight: "44px", pageMaxWidth: "1500px", pagePadding: "1.25rem",
+  },
+
+  density: "compact",
+};
+
+// ---------------------------------------------------------------------------
+// 6. Rose Laboratory — editorial-clinical light, dusty rose + fuchsia
+//    Think: biotech monograph × clinical notebook × editorial magazine spread
+//    Radical: antique white surfaces with dusty rose, fuchsia accent, deep
+//    bordeaux secondary, serif display heads. Opposite of Tokyo Neon's
+//    arcade pink — this is clinical, adult, typographic pink.
+// ---------------------------------------------------------------------------
+
+export const ROSE_LABORATORY_THEME: ThemeManifest = {
+  id: "rose-laboratory",
+  name: "Rose Laboratory",
+  description: "Editoryal-klinik pembe laboratuvar. Antik beyaz zemin, dusty rose, fuchsia vurgu, derin bordo ikincil, serif display basliklar. Tokyo Neon'un arcade pembesinin tam karsiti — ciddi, yetiskin, tipografik.",
+  author: "system",
+  version: "1.0.0",
+  tone: ["light", "editorial", "clinical", "biotech", "rose", "serif"],
+
+  typography: {
+    heading: {
+      family: "Fraunces",
+      stack: "'Fraunces', 'Playfair Display', Georgia, serif",
+    },
+    body: {
+      family: "Inter",
+      stack: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+    },
+    mono: {
+      family: "JetBrains Mono",
+      stack: "'JetBrains Mono', 'IBM Plex Mono', 'SF Mono', monospace",
+    },
+    size: {
+      xs: "0.75rem", sm: "0.8125rem", base: "0.9375rem", md: "1rem",
+      lg: "1.125rem", xl: "1.3125rem", "2xl": "1.75rem", "3xl": "2.375rem",
+    },
+    weight: { normal: 400, medium: 500, semibold: 600, bold: 700 },
+    lineHeight: { tight: 1.18, normal: 1.55, relaxed: 1.75 },
+    letterSpacing: { tight: "-0.02em", normal: "0em", wide: "0.16em" },
+  },
+
+  colors: {
+    brand: {
+      // Deep fuchsia-rose, not arcade pink.
+      50: "#fdf0f3", 100: "#f9dde3", 200: "#f0b7c6", 300: "#e48aa2",
+      400: "#d45e7f", 500: "#be3a5f", 600: "#9d2a4c", 700: "#7c2242",
+      800: "#5c1a34", 900: "#3e1225",
+    },
+    neutral: {
+      // Antique white → bordeaux-charcoal.
+      0: "#fffcfb", 25: "#fcf6f5", 50: "#f8efee", 100: "#f1e2e2",
+      200: "#e4cccf", 300: "#c9a7ad", 400: "#9b7480", 500: "#6e4e58",
+      600: "#513842", 700: "#3a2830", 800: "#281b22", 900: "#180f14",
+      950: "#0b0608",
+    },
+    success: { light: "#dff3e4", base: "#2a7d4a", dark: "#1e5a35", text: "#0f3c21" },
+    warning: { light: "#fbecd1", base: "#a26b13", dark: "#7a4e0a", text: "#4a2f05" },
+    error:   { light: "#f8d8d8", base: "#9d2a2a", dark: "#741c1c", text: "#400e0e" },
+    info:    { light: "#e1e5f4", base: "#4858a6", dark: "#2f3d7e", text: "#18224f" },
+    surface: {
+      page: "#fbf5f4", card: "#ffffff", elevated: "#ffffff",
+      inset: "#f1e2e2", sidebar: "#1b1216", sidebarHover: "#2a1b20",
+      sidebarActive: "#3a252d",
+      sidebarText: "#f8efee", sidebarTextMuted: "#a88891",
+      sidebarTextActive: "#e48aa2", sidebarSection: "#a88891",
+      sidebarBorder: "#3a252d",
+    },
+    border: { subtle: "#f1e2e2", default: "#e4cccf", strong: "#c9a7ad" },
+    focus: "#be3a5f",
+    chart: ["#be3a5f", "#7c2242", "#4858a6", "#2a7d4a", "#d45e7f", "#a26b13", "#9d2a2a"],
+  },
+
+  spacing: {
+    0: "0", 1: "0.1875rem", 2: "0.375rem", 3: "0.625rem", 4: "0.875rem",
+    5: "1.125rem", 6: "1.5rem", 8: "2rem", 10: "2.5rem", 12: "3rem", 16: "4rem",
+  },
+
+  radius: { sm: "4px", md: "8px", lg: "14px", xl: "22px", full: "9999px" },
+
+  shadow: {
+    xs: "0 1px 2px rgba(92, 26, 52, 0.05)",
+    sm: "0 2px 5px rgba(92, 26, 52, 0.07), 0 1px 2px rgba(92, 26, 52, 0.04)",
+    md: "0 6px 22px rgba(92, 26, 52, 0.12), 0 2px 4px rgba(92, 26, 52, 0.06)",
+    lg: "0 14px 36px rgba(92, 26, 52, 0.16), 0 4px 8px rgba(92, 26, 52, 0.08)",
+    xl: "0 24px 56px rgba(92, 26, 52, 0.20), 0 8px 16px rgba(92, 26, 52, 0.10)",
+    "2xl": "0 40px 88px rgba(92, 26, 52, 0.26), 0 12px 24px rgba(92, 26, 52, 0.12)",
+  },
+
+  motion: { fast: "160ms", normal: "260ms", slow: "400ms", easing: "cubic-bezier(0.25, 0.1, 0.25, 1)" },
+
+  layout: {
+    sidebarWidth: "252px", sidebarCollapsedWidth: "58px",
+    headerHeight: "50px", pageMaxWidth: "1240px", pagePadding: "1.625rem",
   },
 
   density: "comfortable",
@@ -383,5 +652,8 @@ export const NORDIC_FROST_THEME: ThemeManifest = {
 export const RADICAL_THEMES: ThemeManifest[] = [
   TOKYO_NEON_THEME,
   INK_AND_WIRE_THEME,
-  NORDIC_FROST_THEME,
+  EMERALD_GLASS_THEME,
+  COPPER_DUNE_THEME,
+  COBALT_STORM_THEME,
+  ROSE_LABORATORY_THEME,
 ];
