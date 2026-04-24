@@ -138,6 +138,29 @@ export function deleteChannelProfile(
 }
 
 /**
+ * PATCH a channel profile. Backend `ChannelProfileUpdate` accepts partial
+ * fields; `status` is constrained to `"active" | "archived"`. Used here for
+ * unarchive (status → "active"); the same endpoint can be reused for any
+ * future inline edit.
+ */
+export interface UpdateChannelProfilePayload {
+  status?: "active" | "archived";
+  profile_name?: string;
+  default_language?: string;
+  notes?: string | null;
+  title?: string;
+  handle?: string;
+  avatar_url?: string;
+}
+
+export function updateChannelProfile(
+  profileId: string,
+  payload: UpdateChannelProfilePayload,
+): Promise<ChannelProfileResponse> {
+  return api.patch<ChannelProfileResponse>(`${BASE}/${profileId}`, payload);
+}
+
+/**
  * PHASE AD / PHASE AF — reimport channel metadata (re-run URL fetch).
  *
  * Use when `import_status === "partial"` or `"failed"` so the user can

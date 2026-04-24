@@ -12,8 +12,10 @@ import {
   createChannelProfileFromURL,
   deleteChannelProfile,
   reimportChannelProfile,
+  updateChannelProfile,
   type CreateChannelProfile,
   type CreateChannelProfileFromURL,
+  type UpdateChannelProfilePayload,
 } from "../api/channelProfilesApi";
 import { useApiError } from "./useApiError";
 import { useActiveScope } from "./useActiveScope";
@@ -97,6 +99,28 @@ export function useReimportChannelProfile() {
   const onError = useApiError();
   return useMutation({
     mutationFn: (profileId: string) => reimportChannelProfile(profileId),
+    onError,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["channel-profiles"] });
+    },
+  });
+}
+
+/**
+ * PATCH a channel profile. Used here to flip `status` between "active" and
+ * "archived" (unarchive flow); same hook can serve future inline edits.
+ */
+export function useUpdateChannelProfile() {
+  const queryClient = useQueryClient();
+  const onError = useApiError();
+  return useMutation({
+    mutationFn: ({
+      profileId,
+      payload,
+    }: {
+      profileId: string;
+      payload: UpdateChannelProfilePayload;
+    }) => updateChannelProfile(profileId, payload),
     onError,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["channel-profiles"] });

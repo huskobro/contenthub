@@ -11,10 +11,17 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useMyChannelProfiles } from "../../hooks/useMyChannelProfiles";
 import { useCurrentUser } from "../../hooks/useCurrentUser";
 import {
+  useDeleteChannelProfile,
+  useUpdateChannelProfile,
+} from "../../hooks/useChannelProfiles";
+import { useToast } from "../../hooks/useToast";
+import {
   AuroraButton,
+  AuroraConfirmDialog,
   AuroraInspector,
   AuroraInspectorSection,
   AuroraInspectorRow,
+  AuroraSegmented,
 } from "./primitives";
 import { Icon } from "./icons";
 import type { ChannelProfileResponse } from "../../api/channelProfilesApi";
@@ -45,8 +52,58 @@ export function AuroraMyChannelsPage() {
   const isAdmin = user?.role === "admin";
   const newContentRoute = isAdmin ? "/admin/wizard" : "/user/content";
   const channelsQ = useMyChannelProfiles();
-  const channels = channelsQ.data ?? [];
+  const allChannels = channelsQ.data ?? [];
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  // Filter state. Backend returns active + archived together; this gates only
+  // what the list renders. "Tümü" stays the default so an archive does not
+  // visually disappear unless the user explicitly hides archived rows.
+  type StatusFilter = "all" | "active" | "archived";
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const channels = useMemo(() => {
+    if (statusFilter === "all") return allChannels;
+    return allChannels.filter((c) => c.status === statusFilter);
+  }, [allChannels, statusFilter]);
+  const activeCount = allChannels.filter((c) => c.status === "active").length;
+  const archivedCount = allChannels.filter((c) => c.status === "archived").length;
+
+  // Soft-delete (archive) flow. Backend `DELETE /channel-profiles/{id}` sets
+  // status='archived'; rows stay in the list with the existing status chip.
+  const deleteMutation = useDeleteChannelProfile();
+  const updateMutation = useUpdateChannelProfile();
+  const toast = useToast();
+  const [archiveTarget, setArchiveTarget] = useState<ChannelProfileResponse | null>(null);
+  const [unarchiveTarget, setUnarchiveTarget] = useState<ChannelProfileResponse | null>(null);
+
+  const handleArchiveConfirm = () => {
+    if (!archiveTarget) return;
+    const target = archiveTarget;
+    deleteMutation.mutate(target.id, {
+      onSuccess: () => {
+        toast.success(`"${target.title ?? target.profile_name}" arşivlendi.`);
+        setArchiveTarget(null);
+      },
+      onError: (err) => {
+        toast.error(err instanceof Error ? err.message : "Kanal arşivlenemedi.");
+      },
+    });
+  };
+
+  const handleUnarchiveConfirm = () => {
+    if (!unarchiveTarget) return;
+    const target = unarchiveTarget;
+    updateMutation.mutate(
+      { profileId: target.id, payload: { status: "active" } },
+      {
+        onSuccess: () => {
+          toast.success(`"${target.title ?? target.profile_name}" yeniden aktif.`);
+          setUnarchiveTarget(null);
+        },
+        onError: (err) => {
+          toast.error(err instanceof Error ? err.message : "Kanal aktifleştirilemedi.");
+        },
+      },
+    );
+  };
 
   const selected = useMemo<ChannelProfileResponse | null>(() => {
     if (channels.length === 0) return null;
@@ -80,11 +137,32 @@ export function AuroraMyChannelsPage() {
               variant="primary"
               size="sm"
               onClick={() => navigate(newContentRoute)}
-              style={{ width: "100%" }}
+              style={{ width: "100%", marginBottom: 6 }}
               iconLeft={<Icon name="plus" size={11} />}
             >
               Yeni içerik
             </AuroraButton>
+            {selected.status === "archived" ? (
+              <AuroraButton
+                variant="secondary"
+                size="sm"
+                onClick={() => setUnarchiveTarget(selected)}
+                style={{ width: "100%" }}
+                data-testid="my-channels-unarchive"
+              >
+                Arşivden çıkar
+              </AuroraButton>
+            ) : (
+              <AuroraButton
+                variant="danger"
+                size="sm"
+                onClick={() => setArchiveTarget(selected)}
+                style={{ width: "100%" }}
+                data-testid="my-channels-archive"
+              >
+                Arşivle
+              </AuroraButton>
+            )}
           </AuroraInspectorSection>
         </>
       ) : (
@@ -101,7 +179,9 @@ export function AuroraMyChannelsPage() {
         <div className="page-head">
           <div>
             <h1>Kanallarım</h1>
-            <div className="sub">{channels.length} kanal · {channels.filter((c) => c.status === "active").length} aktif</div>
+            <div className="sub">
+              {allChannels.length} kanal · {activeCount} aktif · {archivedCount} arşiv
+            </div>
           </div>
           <AuroraButton
             variant="primary"
@@ -113,12 +193,30 @@ export function AuroraMyChannelsPage() {
             Kanal ekle
           </AuroraButton>
         </div>
+        <div style={{ marginBottom: 16 }}>
+          <AuroraSegmented<StatusFilter>
+            options={[
+              { value: "all", label: `Tümü (${allChannels.length})` },
+              { value: "active", label: `Aktif (${activeCount})` },
+              { value: "archived", label: `Arşiv (${archivedCount})` },
+            ]}
+            value={statusFilter}
+            onChange={setStatusFilter}
+            data-testid="my-channels-filter"
+          />
+        </div>
 
         {channelsQ.isLoading ? (
           <div className="card card-pad" style={{ textAlign: "center", color: "var(--text-muted)" }}>Yükleniyor…</div>
         ) : channels.length === 0 ? (
           <div className="card card-pad" style={{ textAlign: "center", padding: 32, color: "var(--text-muted)" }}>
-            Henüz kanal eklenmedi.
+            {allChannels.length === 0
+              ? "Henüz kanal eklenmedi."
+              : statusFilter === "active"
+                ? "Aktif kanal yok."
+                : statusFilter === "archived"
+                  ? "Arşivde kanal yok."
+                  : "Bu filtrede kanal yok."}
           </div>
         ) : (
           channels.map((ch) => {
@@ -126,6 +224,9 @@ export function AuroraMyChannelsPage() {
             return (
               <div
                 key={ch.id}
+                data-testid="my-channels-card"
+                data-channel-id={ch.id}
+                data-channel-status={ch.status}
                 onClick={() => setSelectedId(ch.id)}
                 style={{
                   position: "relative",
@@ -260,6 +361,48 @@ export function AuroraMyChannelsPage() {
         )}
       </div>
       <aside className="aurora-inspector-slot">{inspector}</aside>
+      <AuroraConfirmDialog
+        open={archiveTarget !== null}
+        tone="danger"
+        title="Kanalı arşivle?"
+        description={
+          archiveTarget ? (
+            <>
+              <strong>{archiveTarget.title ?? archiveTarget.profile_name}</strong>{" "}
+              kanalı arşivlenecek. Kanal listede kalır ve durumu{" "}
+              <code>archived</code> olur. Geçmiş işler ve yayın kayıtları
+              korunur; kalıcı silme yapılmaz.
+            </>
+          ) : null
+        }
+        confirmLabel={deleteMutation.isPending ? "Arşivleniyor…" : "Arşivle"}
+        cancelLabel="Vazgeç"
+        busy={deleteMutation.isPending}
+        onConfirm={handleArchiveConfirm}
+        onCancel={() => setArchiveTarget(null)}
+        data-testid="my-channels-archive-confirm"
+      />
+      <AuroraConfirmDialog
+        open={unarchiveTarget !== null}
+        tone="neutral"
+        title="Kanalı arşivden çıkar?"
+        description={
+          unarchiveTarget ? (
+            <>
+              <strong>{unarchiveTarget.title ?? unarchiveTarget.profile_name}</strong>{" "}
+              kanalı yeniden <code>active</code> duruma alınacak. Geçmiş işler ve
+              yayın kayıtları zaten korunmuştu; yeni içerik üretimi için tekrar
+              kullanılabilir olur.
+            </>
+          ) : null
+        }
+        confirmLabel={updateMutation.isPending ? "Aktifleştiriliyor…" : "Arşivden çıkar"}
+        cancelLabel="Vazgeç"
+        busy={updateMutation.isPending}
+        onConfirm={handleUnarchiveConfirm}
+        onCancel={() => setUnarchiveTarget(null)}
+        data-testid="my-channels-unarchive-confirm"
+      />
     </div>
   );
 }

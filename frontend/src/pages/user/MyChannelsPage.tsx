@@ -98,7 +98,7 @@ function LegacyMyChannelsPage() {
     e.stopPropagation();
     if (
       !window.confirm(
-        `"${name}" kanalini silmek istediginize emin misiniz? Kanal arsivlenecek (soft delete); gecmis isler ve publish kayitlari korunur.`,
+        `"${name}" kanalını arşivlemek istediğinize emin misiniz? Kanal listede kalır, durumu 'archived' olur; geçmiş işler ve yayın kayıtları korunur.`,
       )
     ) {
       return;
@@ -423,9 +423,9 @@ function LegacyMyChannelsPage() {
                               : "bg-white text-error border-error/40 hover:bg-error-light cursor-pointer",
                           )}
                           data-testid="channel-card-delete"
-                          aria-label={`${ch.profile_name} kanalini sil`}
+                          aria-label={`${ch.profile_name} kanalını arşivle`}
                         >
-                          Sil
+                          Arşivle
                         </button>
                       )}
                     </div>
